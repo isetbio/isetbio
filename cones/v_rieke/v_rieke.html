@@ -1,0 +1,216 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_rieke</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-11-11"><meta name="DC.source" content="v_rieke.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>v_rieke</h1><!--introduction--><p>Implement some tests comparing the s_fredXXX script with our implementation of that script using several functions</p><p>HJ/BW ISETBIO Team, Copyright 2014</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">The Rieke code</a></li><li><a href="#2">ISETBIO Implementation</a></li><li><a href="#3">Plot and compare the results</a></li><li><a href="#4">Plot the two currents against one another</a></li><li><a href="#5">END</a></li></ul></div><h2>The Rieke code<a name="1"></a></h2><p>This produces riekeStim1, riekeStim2, riekeCur1, riekeCur2</p><pre class="codeinput">clear; s_initISET;
+s_fredConeModel;
+</pre><h2>ISETBIO Implementation<a name="2"></a></h2><pre>create human sensor structure</pre><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
+
+<span class="comment">% set photon absorptions</span>
+nSample = length(riekeStim1);
+
+sensor = sensorSet(sensor, <span class="string">'size'</span>, [1 1]); <span class="comment">% Just 1 cone</span>
+sensor = sensorSet(sensor, <span class="string">'photon rate'</span>, <span class="keyword">...</span>
+                   reshape(riekeStim1, [1 1 nSample]));
+
+<span class="comment">% compute adaptation</span>
+params.bgVolts = 0;
+[~, isetbioCur1] = coneAdapt(sensor, <span class="string">'rieke'</span>, params);
+
+<span class="comment">% set photons of stimulus 2 (Impulse)</span>
+sensor = sensorSet(sensor, <span class="string">'photon rate'</span>, <span class="keyword">...</span>
+                   reshape(riekeStim2, [1 1 nSample]));
+
+<span class="comment">% compute adaptation</span>
+[~, isetbioCur2] = coneAdapt(sensor, <span class="string">'rieke'</span>, params);
+</pre><h2>Plot and compare the results<a name="3"></a></h2><p>new figure</p><pre class="codeinput">vcNewGraphWin;
+
+<span class="comment">% plot stimulus</span>
+subplot(2,2,1); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(1:nSample, riekeStim1, <span class="string">'r'</span>, <span class="string">'lineWidth'</span>, 2);
+xlabel(<span class="string">'time (ms)'</span>); ylabel(<span class="string">'Photons per second'</span>);
+subplot(2,2,2); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(1:nSample, riekeStim2, <span class="string">'r'</span>, <span class="string">'lineWidth'</span>, 2);
+xlabel(<span class="string">'time (ms)'</span>); ylabel(<span class="string">'Photons per second'</span>);
+
+<span class="comment">% plot adapted current</span>
+subplot(2,2,3); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(1:nSample, riekeCurrent1, <span class="string">'r'</span>, <span class="string">'lineWidth'</span>, 2);
+plot(1:nSample, isetbioCur1(:), <span class="string">'--b'</span>, <span class="string">'lineWidth'</span>, 2);
+xlabel(<span class="string">'time (ms)'</span>); ylabel(<span class="string">'Adapted Current'</span>);
+legend(<span class="string">'Rieke'</span>, <span class="string">'ISETBIO'</span>);
+
+subplot(2,2,4); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(1:nSample, riekeCurrent2, <span class="string">'r'</span>, <span class="string">'lineWidth'</span>, 2);
+plot(1:nSample, isetbioCur2(:), <span class="string">'--b'</span>, <span class="string">'lineWidth'</span>, 2);
+xlabel(<span class="string">'time (ms)'</span>); ylabel(<span class="string">'Adapted Current'</span>);
+legend(<span class="string">'Rieke'</span>, <span class="string">'ISETBIO'</span>);
+</pre><img vspace="5" hspace="5" src="v_rieke_01.png" alt=""> <h2>Plot the two currents against one another<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
+plot(riekeCurrent1(:),isetbioCur1(:),<span class="string">'.'</span>)
+mean(riekeCurrent1(:) ./ isetbioCur1(:))
+
+<span class="comment">% Compare the means for the impulse</span>
+grid <span class="string">on</span>; axis <span class="string">equal</span>; identityLine;
+disp(mean(riekeCurrent2(:)) / mean(isetbioCur2(:)))
+
+<span class="comment">% Scale and plot adapted currents</span>
+vcNewGraphWin;
+hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(1:nSample, riekeCurrent1/mean(riekeCurrent1(:)), <span class="string">'r'</span>, <span class="string">'lineWidth'</span>, 2);
+plot(1:nSample, isetbioCur1(:)/mean(isetbioCur1(:)), <span class="string">'--b'</span>, <span class="string">'lineWidth'</span>, 2);
+xlabel(<span class="string">'time (ms)'</span>); ylabel(<span class="string">'Adapted Current'</span>);
+legend(<span class="string">'Normalized Rieke'</span>, <span class="string">'Normalized ISETBIO'</span>);
+</pre><pre class="codeoutput">
+ans =
+
+    1.0017
+
+    1.0000
+
+</pre><img vspace="5" hspace="5" src="v_rieke_02.png" alt=""> <img vspace="5" hspace="5" src="v_rieke_03.png" alt=""> <h2>END<a name="5"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% v_rieke
+%
+% Implement some tests comparing the s_fredXXX script with our
+% implementation of that script using several functions
+%
+% HJ/BW ISETBIO Team, Copyright 2014
+
+
+%% The Rieke code
+% This produces riekeStim1, riekeStim2, riekeCur1, riekeCur2
+clear; s_initISET;
+s_fredConeModel;
+
+%% ISETBIO Implementation
+%  create human sensor structure
+sensor = sensorCreate('human');
+
+% set photon absorptions
+nSample = length(riekeStim1);
+
+sensor = sensorSet(sensor, 'size', [1 1]); % Just 1 cone
+sensor = sensorSet(sensor, 'photon rate', ...
+                   reshape(riekeStim1, [1 1 nSample]));
+
+% compute adaptation
+params.bgVolts = 0;
+[~, isetbioCur1] = coneAdapt(sensor, 'rieke', params);
+
+% set photons of stimulus 2 (Impulse)
+sensor = sensorSet(sensor, 'photon rate', ...
+                   reshape(riekeStim2, [1 1 nSample]));
+
+% compute adaptation
+[~, isetbioCur2] = coneAdapt(sensor, 'rieke', params);
+
+%% Plot and compare the results
+% new figure
+vcNewGraphWin;
+
+% plot stimulus
+subplot(2,2,1); hold on; grid on;
+plot(1:nSample, riekeStim1, 'r', 'lineWidth', 2);
+xlabel('time (ms)'); ylabel('Photons per second');
+subplot(2,2,2); hold on; grid on;
+plot(1:nSample, riekeStim2, 'r', 'lineWidth', 2);
+xlabel('time (ms)'); ylabel('Photons per second');
+
+% plot adapted current
+subplot(2,2,3); hold on; grid on;
+plot(1:nSample, riekeCurrent1, 'r', 'lineWidth', 2);
+plot(1:nSample, isetbioCur1(:), 'REPLACE_WITH_DASH_DASHb', 'lineWidth', 2);
+xlabel('time (ms)'); ylabel('Adapted Current');
+legend('Rieke', 'ISETBIO');
+
+subplot(2,2,4); hold on; grid on;
+plot(1:nSample, riekeCurrent2, 'r', 'lineWidth', 2);
+plot(1:nSample, isetbioCur2(:), 'REPLACE_WITH_DASH_DASHb', 'lineWidth', 2);
+xlabel('time (ms)'); ylabel('Adapted Current');
+legend('Rieke', 'ISETBIO');
+
+%% Plot the two currents against one another
+
+vcNewGraphWin;
+plot(riekeCurrent1(:),isetbioCur1(:),'.')
+mean(riekeCurrent1(:) ./ isetbioCur1(:))
+
+% Compare the means for the impulse
+grid on; axis equal; identityLine;
+disp(mean(riekeCurrent2(:)) / mean(isetbioCur2(:)))
+
+% Scale and plot adapted currents
+vcNewGraphWin;
+hold on; grid on;
+plot(1:nSample, riekeCurrent1/mean(riekeCurrent1(:)), 'r', 'lineWidth', 2);
+plot(1:nSample, isetbioCur1(:)/mean(isetbioCur1(:)), 'REPLACE_WITH_DASH_DASHb', 'lineWidth', 2);
+xlabel('time (ms)'); ylabel('Adapted Current');
+legend('Normalized Rieke', 'Normalized ISETBIO');
+
+%% END
+##### SOURCE END #####
+--></body></html>
