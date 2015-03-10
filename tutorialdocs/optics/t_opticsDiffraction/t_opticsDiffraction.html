@@ -1,0 +1,186 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_opticsDiffraction</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-10"><meta name="DC.source" content="t_opticsDiffraction.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_opticsDiffraction</h1><!--introduction--><p>Calculate images using diffraction limited optics and a few simple examples.</p><p>(c) Imageval Consulting, LLC, 2012</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Create a scene and optical image to go with it</a></li><li><a href="#3">Now, create diffraction limited optics with f/# of 12</a></li><li><a href="#4">How the diffraction-limited blur depends on wavelength</a></li><li><a href="#5">End</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Create a scene and optical image to go with it<a name="2"></a></h2><pre class="codeinput">scene = sceneCreate(<span class="string">'point array'</span>);
+scene = sceneSet(scene,<span class="string">'h fov'</span>,2);
+vcAddAndSelectObject(scene); sceneWindow;
+
+<span class="comment">% Default optics is diffraction limited.</span>
+oi = oiCreate;
+optics = oiGet(oi,<span class="string">'optics'</span>);
+oi = oiCompute(oi,scene);
+
+<span class="comment">% Set name after compute, because the computer</span>
+<span class="comment">% itself sets the oi name to be that of the scene.</span>
+oi = oiSet(oi,<span class="string">'name'</span>,<span class="string">'Default f/#'</span>);
+vcAddAndSelectObject(oi);
+oiWindow;
+opticsGet(optics,<span class="string">'f number'</span>)
+</pre><pre class="codeoutput">
+ans =
+
+     4
+
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_01.png" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_02.png" alt=""> <h2>Now, create diffraction limited optics with f/# of 12<a name="3"></a></h2><p>The larger f/# blurs the image more It has larger depth of field, however, because the aperture is smaller.</p><pre class="codeinput">optics = opticsSet(optics,<span class="string">'f number'</span>,12);
+oi = oiSet(oi,<span class="string">'optics'</span>,optics);
+oi = oiCompute(oi,scene);
+oi = oiSet(oi,<span class="string">'name'</span>,<span class="string">'Large f/#'</span>);
+
+vcAddAndSelectObject(oi);
+oiWindow;
+
+<span class="comment">% Check the inter-related parameters</span>
+p = opticsGet(optics,<span class="string">'pupil diameter'</span>,<span class="string">'mm'</span>)
+f = opticsGet(optics,<span class="string">'focal length'</span>,<span class="string">'mm'</span>)
+f/p
+</pre><pre class="codeoutput">
+p =
+
+    0.3219
+
+
+f =
+
+    3.8628
+
+
+ans =
+
+    12
+
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_03.png" alt=""> <h2>How the diffraction-limited blur depends on wavelength<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
+uData = plotOI(oi,<span class="string">'ls wavelength'</span>);
+title(sprintf(<span class="string">'F/# = %.0d'</span>,opticsGet(optics,<span class="string">'f number'</span>)))
+
+<span class="comment">% Look at the returned data structure</span>
+uData
+</pre><pre class="codeoutput">
+uData = 
+
+             x: [1x41 double]
+    wavelength: [31x1 double]
+        lsWave: [31x41 double]
+
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_04.png" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_05.png" alt=""> <h2>End<a name="5"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_opticsDiffraction
+%
+% Calculate images using diffraction limited optics and a few simple examples.
+%
+% (c) Imageval Consulting, LLC, 2012
+
+%% Initialize
+ieInit;
+
+%% Create a scene and optical image to go with it
+scene = sceneCreate('point array');
+scene = sceneSet(scene,'h fov',2);
+vcAddAndSelectObject(scene); sceneWindow;
+
+% Default optics is diffraction limited.
+oi = oiCreate;
+optics = oiGet(oi,'optics');
+oi = oiCompute(oi,scene);
+
+% Set name after compute, because the computer 
+% itself sets the oi name to be that of the scene.
+oi = oiSet(oi,'name','Default f/#');
+vcAddAndSelectObject(oi);
+oiWindow;
+opticsGet(optics,'f number')
+
+%% Now, create diffraction limited optics with f/# of 12
+% The larger f/# blurs the image more 
+% It has larger depth of field, however, because the aperture is smaller.
+optics = opticsSet(optics,'f number',12);
+oi = oiSet(oi,'optics',optics);
+oi = oiCompute(oi,scene);
+oi = oiSet(oi,'name','Large f/#');
+
+vcAddAndSelectObject(oi);
+oiWindow;
+
+% Check the inter-related parameters
+p = opticsGet(optics,'pupil diameter','mm')
+f = opticsGet(optics,'focal length','mm')
+f/p
+
+%%  How the diffraction-limited blur depends on wavelength
+vcNewGraphWin;
+uData = plotOI(oi,'ls wavelength');
+title(sprintf('F/# = %.0d',opticsGet(optics,'f number')))
+
+% Look at the returned data structure
+uData
+
+%% End
+
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,488 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_Rendering</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-10"><meta name="DC.source" content="t_displayRendering.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_Rendering</h1><!--introduction--><p>Review of rendering images on a display</p><p>Class:     Psych 221/EE 362 Tutorial:  Examples of rendering images Author:    Wandell Purpose:   Explain how to render illuminant and surface reflectance            data on a screen.</p><p>Date:      01.02.96 Duration:  20 minutes</p><p>Matlab 5:  Checked 01.06.98 BW Matlab 7:  Checked 01.04.08 BW R2004b  :  Checked and updated to use ieReadSpectra 01.03.15 DHB</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Load data for a default monitor and the XYZ functions</a></li><li><a href="#3">Load in the surface reflectances of the Macbeth ColorChecker.</a></li><li><a href="#4">Render the surfaces for the monitor using the XYZ color matching functions</a></li><li><a href="#5">Doing the match when you only know the RGB values</a></li><li><a href="#6">Compare the linear rgb values we use are doing the match the two different ways.</a></li><li><a href="#7">End</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Load data for a default monitor and the XYZ functions<a name="2"></a></h2><pre class="codeinput">d    = displayCreate(<span class="string">'LCD-Apple'</span>);
+wave = displayGet(d,<span class="string">'wave'</span>);
+phosphors = displayGet(d,<span class="string">'spd'</span>);
+monitorGam = displayGet(d,<span class="string">'gamma'</span>);
+monitorInvGam = displayGet(d,<span class="string">'inverse gamma'</span>);
+
+<span class="comment">% load cmatch/monitorGam</span>
+XYZ = ieReadSpectra(<span class="string">'XYZ'</span>,wave);
+</pre><h2>Load in the surface reflectances of the Macbeth ColorChecker.<a name="3"></a></h2><p>Also, we know the color appearance of a few of them so let's give them labels.</p><pre class="codeinput"><span class="comment">% load macbethChart;</span>
+<span class="comment">%fName = fullfile(isetRootPath,'data','surfaces','macbethChart.mat');</span>
+macbethChart = ieReadSpectra(<span class="string">'macbethChart'</span>,wave);
+
+<span class="comment">% Ooops ... these numbers aren't right.  Must find proper chip numbers</span>
+greenChip = 7; redChip = 11; whiteChip = 4; grayChip = 12;
+
+<span class="comment">% There are 24 surfaces, so we prepare a small matrix (6 by 4) with 24</span>
+<span class="comment">% entries. Later, we will use this matrix to display the 24 surfaces.</span>
+<span class="comment">% The way we will do the display is to build a colormap with 24</span>
+<span class="comment">% rows.  Each row will describe the (r,g,b) values for one surface.</span>
+macbethImage = reshape(1:24,4,6);
+
+<span class="comment">% We can't display a pure surface.  We always need to display a</span>
+<span class="comment">% surface under a particular light.  Hence, an important thing to</span>
+<span class="comment">% remember during this rendering exercise is that we have chosen</span>
+<span class="comment">% a particular light.  Later, you might come back to this point</span>
+<span class="comment">% and load in a different choice for a light.</span>
+<span class="comment">%</span>
+<span class="comment">% For now, load in the D65 illuminant and call it the lgt.</span>
+lgt = ieReadSpectra(<span class="string">'D65'</span>,wave);
+</pre><h2>Render the surfaces for the monitor using the XYZ color matching functions<a name="4"></a></h2><p>First, compute the XYZ values of the macbeth colorchecker under the default illuminant.  These values describe how the human visual system will encode the light reflected from each of the surfaces.  You should check that this calculation makes sense to you by writing it out as a matrix tableau.  Note the use of the diag() function ....</p><pre class="codeinput">macbethXYZ = XYZ'* diag(lgt)* macbethChart;
+
+<span class="comment">% Here, we determine the linear RGB settings we will need in</span>
+<span class="comment">% order to create the same XYZ values on the default monitor.</span>
+<span class="comment">% Your monitor may not be the same, of course.</span>
+macbethLinearRGB = inv(XYZ'*phosphors)*macbethXYZ;
+
+<span class="comment">% Now, we haven't set any absolute units for this match.  For</span>
+<span class="comment">% example, we don't know what the absolute intensity of the light</span>
+<span class="comment">% source is.  In general, we can't match absolute intensities</span>
+<span class="comment">% very well across viewing conditions.  For example, if the</span>
+<span class="comment">% surface is outdoors the outdoor light intensity is several</span>
+<span class="comment">% orders of magnitude greater than the possible output of the</span>
+<span class="comment">% monitor.</span>
+<span class="comment">%</span>
+<span class="comment">% So, we are going to ignore the absolute intensities.  Instead,</span>
+<span class="comment">% we are simply going to assume that the white surface will be</span>
+<span class="comment">% the brightest element of the image.  Consequently, we are going</span>
+<span class="comment">% to scale the RGB values so that the white surface</span>
+<span class="comment">% corresponds to the largest displayable value.</span>
+<span class="comment">%</span>
+<span class="comment">% We are representing the relationship between the linear RGB</span>
+<span class="comment">% values and the RGB values in the frame-buffer using a look-up</span>
+<span class="comment">% table that accounts for for the monitor nonlinearity.  This</span>
+<span class="comment">% lookup table stores the inverse gamma function, and we have</span>
+<span class="comment">% called it monitorInvGam (both here and in other tutorials).</span>
+<span class="comment">% So, let's scale the RGB values so that they fall within the</span>
+<span class="comment">% range set by that table.</span>
+maxQ = size(monitorInvGam,1);
+macbethLinearRGB = round(maxQ*macbethLinearRGB/(max(macbethLinearRGB(:))));
+
+<span class="comment">% Now, we are going to use a trick that people often do -- just a</span>
+<span class="comment">% trick, no deep principles here -- for setting the absolute</span>
+<span class="comment">% levels.  We are going to assume that:  THE WHITE SURFACE XYZ</span>
+<span class="comment">% should correspond to the MONITOR DISPLAY AT [255,255,255].</span>
+<span class="comment">% This is not exactly right.  In fact, it is not right at all.</span>
+<span class="comment">% If you have good calibration methods, you don't need to do</span>
+<span class="comment">% this.  But, people rarely have good calibration methods so they</span>
+<span class="comment">% do this.  Let's carry on, though we will talk about this in class.</span>
+
+<span class="comment">% Here are the RGB settings for the white chip</span>
+wht = macbethLinearRGB(:,whiteChip);
+
+<span class="comment">% Scale ALL of the RGB values so that the white chip has a</span>
+<span class="comment">% framebuffer value that is roughly in the (1,1,1) vector</span>
+<span class="comment">% direction.</span>
+macbethLinearRGB = diag( (1 ./ wht )  ) * macbethLinearRGB;
+macbethLinearRGB = ieScale(macbethLinearRGB,1,maxQ);
+
+<span class="comment">% Correct for the monitor nonlinearity.</span>
+macbethRGB =  monitorInvGam(round(macbethLinearRGB));
+
+<span class="comment">% There are 24 chips, and we have computed the proper display</span>
+<span class="comment">% intensities for each one of them.  We place an image that</span>
+<span class="comment">% consists of the list of values 1:24, into the frame-buffer.  We</span>
+<span class="comment">% set the color table values to the proper r,g,b values.</span>
+macbethColorMap = macbethRGB'/max(macbethRGB(:));
+
+<span class="comment">% Now, we put up this 6 x 4 matrix and set the image to have the</span>
+<span class="comment">% right color map.</span>
+figure; colormap(macbethColorMap)
+image(macbethImage); axis <span class="string">image</span>
+
+<span class="comment">% Voila.</span>
+</pre><img vspace="5" hspace="5" src="t_displayRendering_01.png" alt=""> <h2>Doing the match when you only know the RGB values<a name="5"></a></h2><p>Now, suppose that you don't know very much about either the display or, say, a digital camera that you used to acquire the data you want to display.  What do you do?</p><p>Here, we are going to make some simulated rgb data from a digital camera.  The strategy we will use to match the display and the original image is to MEASURE THE DISPLAY OUTPUT WITH THE DIGITAL CAMERA.  Then, we will try to adjust the display output so that it causes the same RGB signal at the camera as the original macbeth Color Checker image.</p><pre class="codeinput"><span class="comment">% Once again, we compute the color signal from the color checker</span>
+<span class="comment">% under some light.</span>
+colorSignal = diag(lgt)*macbethChart;
+figure; plot(wave,colorSignal)
+
+<span class="comment">% For this simulation, we calculate the expected camera rgb</span>
+<span class="comment">% signals from each of the color signals.</span>
+sensors = ieReadSpectra(<span class="string">'camera'</span>, wave);
+cameraRGB = sensors'* colorSignal;
+
+<span class="comment">% Next, we need to know how the camera would respond to light</span>
+<span class="comment">% from each of the monitor phosphors.  This will permit us to</span>
+<span class="comment">% build a matrix that converts from the linear monitor</span>
+<span class="comment">% intensities to the camera RGB responses.  We will call this</span>
+<span class="comment">% matrix mon2camera.  This will be a 3 x 3 matrix.  The first</span>
+<span class="comment">% column describes the RGB values when the red phoshor is on, the</span>
+<span class="comment">% second and third when the green and blue are on respectively.</span>
+<span class="comment">%</span>
+<span class="comment">% Experimentally, we could obtain these values just by taking a</span>
+<span class="comment">% camera picture of the monitor.  For example, suppose we just</span>
+<span class="comment">% turn on the red phosphor, and we use the camera to take a</span>
+<span class="comment">% picture of the red phosphor.</span>
+<span class="comment">%</span>
+<span class="comment">% In this case, though, we know the sensors.  So, rather than</span>
+<span class="comment">% asking you to do the experiment (but do it if you would like).</span>
+<span class="comment">% However, given that we know the sensors, we can compute this</span>
+<span class="comment">% matrix simply as:</span>
+mon2camera = sensors'*phosphors;
+
+<span class="comment">% This tells us how to set the monitor (linear) RGB values in</span>
+<span class="comment">% order to match a set of (linear) CAMERA RGB values.  N.B.  The</span>
+<span class="comment">% human eye is not involved in this calculation.  We are</span>
+<span class="comment">% adjusting the monitor output so that the camera will have the</span>
+<span class="comment">% same responses.  There is no mention of people, CIE standards,</span>
+<span class="comment">% or the like in any of this calculation.</span>
+camera2mon = inv(mon2camera);
+
+<span class="comment">% We now use the matrix camera2mon to compute the display rgb</span>
+<span class="comment">% values</span>
+macbethCameraLinearRGB = camera2mon*cameraRGB;
+
+<span class="comment">% Again, to make a decent picture we will need to correct for</span>
+<span class="comment">% the framebuffer nonlinearity.  And, we don't really have</span>
+<span class="comment">% much choice about the absolute intensity of various quantities.</span>
+<span class="comment">% So, let's perform the same set of calculations we did before in</span>
+<span class="comment">% order to render a display.</span>
+
+macbethCameraLinearRGB = <span class="keyword">...</span>
+    round(1000*macbethCameraLinearRGB/(max(macbethCameraLinearRGB(:))));
+
+<span class="comment">% Because we don't really know the properties of this display, we</span>
+<span class="comment">% are going to arrange things so that the known white chip is</span>
+<span class="comment">% displayed as the white of the monitor.  This is a cheap trick</span>
+<span class="comment">% that often makes people and managers happy.</span>
+<span class="comment">%</span>
+wht = macbethCameraLinearRGB(:,whiteChip);
+
+macbethCameraLinearRGB = diag( (1 ./ wht )  ) * macbethCameraLinearRGB;
+macbethCameraLinearRGB = ieScale(macbethCameraLinearRGB,1,size(monitorInvGam,1));
+macbethCameraRGB =  monitorInvGam(round(macbethCameraLinearRGB));
+
+<span class="comment">% There are 24 chips, and we have computed the proper display</span>
+<span class="comment">% intensities for each one of them.  We place an image that</span>
+<span class="comment">% consists of the list of values 1:24, into the frame-buffer.  We</span>
+<span class="comment">% set the color table values to the proper r,g,b values.</span>
+<span class="comment">%</span>
+macbethCameraColorMap = ieScale(macbethCameraRGB,0,1)';
+figure; colormap(macbethCameraColorMap)
+image(macbethImage); axis <span class="string">image</span>
+</pre><img vspace="5" hspace="5" src="t_displayRendering_02.png" alt=""> <img vspace="5" hspace="5" src="t_displayRendering_03.png" alt=""> <h2>Compare the linear rgb values we use are doing the match the two different ways.<a name="6"></a></h2><pre class="codeinput">figure, clf
+plot(macbethCameraColorMap(:,1),macbethColorMap(:,1),<span class="string">'ro'</span>), hold <span class="string">on</span>
+plot(macbethCameraColorMap(:,2),macbethColorMap(:,2),<span class="string">'go'</span>), hold <span class="string">on</span>
+plot(macbethCameraColorMap(:,3),macbethColorMap(:,3),<span class="string">'bo'</span>), hold <span class="string">off</span>
+axis <span class="string">equal</span>, axis <span class="string">square</span>, grid <span class="string">on</span>
+
+<span class="comment">% Finally, here is a display with the two images next to one another.</span>
+figure
+bothMap = [macbethColorMap; macbethCameraColorMap];
+colormap(bothMap)
+
+subplot(2,1,1)
+image(macbethImage); axis <span class="string">image</span>
+title(<span class="string">'Matches for Eye'</span>)
+
+subplot(2,1,2)
+image(macbethImage+24); axis <span class="string">image</span>
+title(<span class="string">'Matches for Camera'</span>)
+</pre><img vspace="5" hspace="5" src="t_displayRendering_04.png" alt=""> <img vspace="5" hspace="5" src="t_displayRendering_05.png" alt=""> <h2>End<a name="7"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_Rendering
+%
+% Review of rendering images on a display
+% 
+% Class:     Psych 221/EE 362
+% Tutorial:  Examples of rendering images
+% Author:    Wandell
+% Purpose:   Explain how to render illuminant and surface reflectance
+%            data on a screen. 
+% 
+% Date:      01.02.96	
+% Duration:  20 minutes
+% 
+% Matlab 5:  Checked 01.06.98 BW
+% Matlab 7:  Checked 01.04.08 BW
+% R2004b  :  Checked and updated to use ieReadSpectra 01.03.15 DHB
+
+%% Initialize
+ieInit;
+
+%% Load data for a default monitor and the XYZ functions
+d    = displayCreate('LCD-Apple');
+wave = displayGet(d,'wave');
+phosphors = displayGet(d,'spd');
+monitorGam = displayGet(d,'gamma');
+monitorInvGam = displayGet(d,'inverse gamma');
+
+% load cmatch/monitorGam
+XYZ = ieReadSpectra('XYZ',wave);
+
+%% Load in the surface reflectances of the Macbeth ColorChecker.
+% Also, we know the color appearance of a few of them so let's
+% give them labels.
+
+% load macbethChart; 
+%fName = fullfile(isetRootPath,'data','surfaces','macbethChart.mat');
+macbethChart = ieReadSpectra('macbethChart',wave);
+
+% Ooops ... these numbers aren't right.  Must find proper chip numbers
+greenChip = 7; redChip = 11; whiteChip = 4; grayChip = 12;
+
+% There are 24 surfaces, so we prepare a small matrix (6 by 4) with 24
+% entries. Later, we will use this matrix to display the 24 surfaces.
+% The way we will do the display is to build a colormap with 24
+% rows.  Each row will describe the (r,g,b) values for one surface.
+macbethImage = reshape(1:24,4,6);
+
+% We can't display a pure surface.  We always need to display a
+% surface under a particular light.  Hence, an important thing to
+% remember during this rendering exercise is that we have chosen
+% a particular light.  Later, you might come back to this point
+% and load in a different choice for a light.
+%
+% For now, load in the D65 illuminant and call it the lgt.
+lgt = ieReadSpectra('D65',wave);
+
+%% Render the surfaces for the monitor using the XYZ color matching functions
+%
+% First, compute the XYZ values of the macbeth colorchecker
+% under the default illuminant.  These values describe how the
+% human visual system will encode the light reflected from each
+% of the surfaces.  You should check that this calculation makes
+% sense to you by writing it out as a matrix tableau.  Note the
+% use of the diag() function ....
+macbethXYZ = XYZ'* diag(lgt)* macbethChart;
+
+% Here, we determine the linear RGB settings we will need in
+% order to create the same XYZ values on the default monitor.
+% Your monitor may not be the same, of course.
+macbethLinearRGB = inv(XYZ'*phosphors)*macbethXYZ;
+
+% Now, we haven't set any absolute units for this match.  For
+% example, we don't know what the absolute intensity of the light
+% source is.  In general, we can't match absolute intensities
+% very well across viewing conditions.  For example, if the
+% surface is outdoors the outdoor light intensity is several
+% orders of magnitude greater than the possible output of the
+% monitor.
+%
+% So, we are going to ignore the absolute intensities.  Instead,
+% we are simply going to assume that the white surface will be
+% the brightest element of the image.  Consequently, we are going
+% to scale the RGB values so that the white surface
+% corresponds to the largest displayable value.
+%
+% We are representing the relationship between the linear RGB
+% values and the RGB values in the frame-buffer using a look-up
+% table that accounts for for the monitor nonlinearity.  This
+% lookup table stores the inverse gamma function, and we have
+% called it monitorInvGam (both here and in other tutorials).
+% So, let's scale the RGB values so that they fall within the
+% range set by that table. 
+maxQ = size(monitorInvGam,1);
+macbethLinearRGB = round(maxQ*macbethLinearRGB/(max(macbethLinearRGB(:))));
+
+% Now, we are going to use a trick that people often do REPLACE_WITH_DASH_DASH just a
+% trick, no deep principles here REPLACE_WITH_DASH_DASH for setting the absolute
+% levels.  We are going to assume that:  THE WHITE SURFACE XYZ
+% should correspond to the MONITOR DISPLAY AT [255,255,255].
+% This is not exactly right.  In fact, it is not right at all.
+% If you have good calibration methods, you don't need to do
+% this.  But, people rarely have good calibration methods so they
+% do this.  Let's carry on, though we will talk about this in class.
+
+% Here are the RGB settings for the white chip
+wht = macbethLinearRGB(:,whiteChip);
+
+% Scale ALL of the RGB values so that the white chip has a
+% framebuffer value that is roughly in the (1,1,1) vector
+% direction. 
+macbethLinearRGB = diag( (1 ./ wht )  ) * macbethLinearRGB;
+macbethLinearRGB = ieScale(macbethLinearRGB,1,maxQ);
+
+% Correct for the monitor nonlinearity.
+macbethRGB =  monitorInvGam(round(macbethLinearRGB));
+
+% There are 24 chips, and we have computed the proper display
+% intensities for each one of them.  We place an image that
+% consists of the list of values 1:24, into the frame-buffer.  We
+% set the color table values to the proper r,g,b values.
+macbethColorMap = macbethRGB'/max(macbethRGB(:));
+
+% Now, we put up this 6 x 4 matrix and set the image to have the
+% right color map.
+figure; colormap(macbethColorMap)
+image(macbethImage); axis image
+
+% Voila.
+
+ 
+%% Doing the match when you only know the RGB values
+%
+% Now, suppose that you don't know very much about either the
+% display or, say, a digital camera that you used to acquire the
+% data you want to display.  What do you do?
+%
+% Here, we are going to make some simulated rgb data from a
+% digital camera.  The strategy we will use to match the display
+% and the original image is to MEASURE THE DISPLAY OUTPUT WITH
+% THE DIGITAL CAMERA.  Then, we will try to adjust the display
+% output so that it causes the same RGB signal at the camera as
+% the original macbeth Color Checker image.
+
+% Once again, we compute the color signal from the color checker
+% under some light.
+colorSignal = diag(lgt)*macbethChart;
+figure; plot(wave,colorSignal)
+
+% For this simulation, we calculate the expected camera rgb
+% signals from each of the color signals.
+sensors = ieReadSpectra('camera', wave);
+cameraRGB = sensors'* colorSignal;
+
+% Next, we need to know how the camera would respond to light
+% from each of the monitor phosphors.  This will permit us to
+% build a matrix that converts from the linear monitor
+% intensities to the camera RGB responses.  We will call this
+% matrix mon2camera.  This will be a 3 x 3 matrix.  The first
+% column describes the RGB values when the red phoshor is on, the
+% second and third when the green and blue are on respectively.
+%
+% Experimentally, we could obtain these values just by taking a
+% camera picture of the monitor.  For example, suppose we just
+% turn on the red phosphor, and we use the camera to take a
+% picture of the red phosphor.
+%
+% In this case, though, we know the sensors.  So, rather than
+% asking you to do the experiment (but do it if you would like).
+% However, given that we know the sensors, we can compute this
+% matrix simply as:
+mon2camera = sensors'*phosphors;
+
+% This tells us how to set the monitor (linear) RGB values in
+% order to match a set of (linear) CAMERA RGB values.  N.B.  The
+% human eye is not involved in this calculation.  We are
+% adjusting the monitor output so that the camera will have the
+% same responses.  There is no mention of people, CIE standards,
+% or the like in any of this calculation.
+camera2mon = inv(mon2camera);
+
+% We now use the matrix camera2mon to compute the display rgb
+% values
+macbethCameraLinearRGB = camera2mon*cameraRGB;
+
+% Again, to make a decent picture we will need to correct for
+% the framebuffer nonlinearity.  And, we don't really have
+% much choice about the absolute intensity of various quantities.
+% So, let's perform the same set of calculations we did before in
+% order to render a display.
+
+macbethCameraLinearRGB = ...
+    round(1000*macbethCameraLinearRGB/(max(macbethCameraLinearRGB(:)))); 
+
+% Because we don't really know the properties of this display, we
+% are going to arrange things so that the known white chip is
+% displayed as the white of the monitor.  This is a cheap trick
+% that often makes people and managers happy.
+%
+wht = macbethCameraLinearRGB(:,whiteChip);
+
+macbethCameraLinearRGB = diag( (1 ./ wht )  ) * macbethCameraLinearRGB;
+macbethCameraLinearRGB = ieScale(macbethCameraLinearRGB,1,size(monitorInvGam,1));
+macbethCameraRGB =  monitorInvGam(round(macbethCameraLinearRGB));
+
+% There are 24 chips, and we have computed the proper display
+% intensities for each one of them.  We place an image that
+% consists of the list of values 1:24, into the frame-buffer.  We
+% set the color table values to the proper r,g,b values.
+% 
+macbethCameraColorMap = ieScale(macbethCameraRGB,0,1)';
+figure; colormap(macbethCameraColorMap)
+image(macbethImage); axis image
+
+%% Compare the linear rgb values we use are doing the match the two different ways.
+figure, clf
+plot(macbethCameraColorMap(:,1),macbethColorMap(:,1),'ro'), hold on
+plot(macbethCameraColorMap(:,2),macbethColorMap(:,2),'go'), hold on
+plot(macbethCameraColorMap(:,3),macbethColorMap(:,3),'bo'), hold off
+axis equal, axis square, grid on
+
+% Finally, here is a display with the two images next to one another.
+figure
+bothMap = [macbethColorMap; macbethCameraColorMap];
+colormap(bothMap)
+
+subplot(2,1,1)
+image(macbethImage); axis image
+title('Matches for Eye')
+
+subplot(2,1,2)
+image(macbethImage+24); axis image
+title('Matches for Camera')
+
+%% End
+
+##### SOURCE END #####
+--></body></html>

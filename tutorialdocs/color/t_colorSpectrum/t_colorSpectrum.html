@@ -1,0 +1,420 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_colorSpectrum</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-10"><meta name="DC.source" content="t_colorSpectrum.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_colorSpectrum</h1><!--introduction--><p>Apply color methods to render an approximation to the visible spectrum</p><p>PURPOSE: This tutorial uses the color-matching tools we have developed to create an image approaching the appearance the rainbow (the spectral colors) on your display.</p><p>Class:       Psych 221 - Applied Vision and Image Systems Tutorial:    Color Spectrum Author:      Wandell Purpose:     An example calculation: making a desaturated rainbow Last Update: 01.05.15 (HJ) Duration:    20 minutes</p><p>12/29/14  dhb  Updated for isetbio, and cleaned a bit.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Get display primaries</a></li><li><a href="#3">Get color matching functions</a></li><li><a href="#4">Compute color transfomration matrix</a></li><li><a href="#5">Get RGB values for the spectrum locus</a></li><li><a href="#6">Those pesky negative values</a></li><li><a href="#7">Display the RGB values</a></li><li><a href="#8">Create image for display, and show it</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Get display primaries<a name="2"></a></h2><p>Let's suppose that we know the spectral power distributions of your monitor's primaries. For this example, we will use the SPDs for a sample display description provided with isetbio.</p><pre class="codeinput">wave = (400:5:700)'; <span class="comment">% wavelength samples</span>
+dWave = wave(2) - wave(1); <span class="comment">% bin size</span>
+d = displayCreate(<span class="string">'LCD-Apple'</span>, wave);
+wave = displayGet(d,<span class="string">'wave'</span>);
+primaries = displayGet(d, <span class="string">'spd primaries'</span>);
+
+<span class="comment">% Here is a plot of the primaries.</span>
+vcNewGraphWin; plot(wave,primaries(:,3:-1:1));
+xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Primary power'</span>);
+</pre><pre class="codeoutput">Changing wave and interpolating SPD, for consistency
+</pre><img vspace="5" hspace="5" src="t_colorSpectrum_01.png" alt=""> <h2>Get color matching functions<a name="3"></a></h2><p>We use the CIE XYZ color matching functions for creating calibrated signals. We load them first.  The ieReadSpectra function splines these to match the passed wavelength sampling.</p><pre class="codeinput">XYZ = ieReadSpectra(<span class="string">'XYZ'</span>, wave);
+</pre><h2>Compute color transfomration matrix<a name="4"></a></h2><p>We compute the matrix that converts between XYZ values linear intensities of the monitor RGB values.  We do this in two steps.  First, we find the XYZ values for each of the individual primaries.  The columns of this matrix represent the XYZ values of the red, green and blue primaries, respectively.  These values should be relatively easy to interpret.</p><pre class="codeinput">rgb2xyz = 683 * dWave * XYZ' * primaries; <span class="comment">%#ok</span>
+
+<span class="comment">% Alternatively,</span>
+rgb2xyz = displayGet(d, <span class="string">'rgb2xyz'</span>)';
+
+<span class="comment">% Invert the rgb2xyz matrix so that we can compute from XYZ back to linear</span>
+<span class="comment">% RGB values.</span>
+<span class="comment">%</span>
+<span class="comment">% Notice that the values of the xyz2rgb matrix contain negative values and</span>
+<span class="comment">% are difficult to interpret directly. Such is life.</span>
+xyz2rgb = inv(rgb2xyz);
+</pre><h2>Get RGB values for the spectrum locus<a name="5"></a></h2><p>In principle, we could compute the RGB values of spectral lights now. Remember that the XYZ values of each spectral light are contained in the rows of the XYZ matrix.  So, we need only to multiply the two matrices as in:</p><pre class="codeinput">rgbSpectrum = xyz2rgb * XYZ'; <span class="comment">%#ok</span>
+
+<span class="comment">% This calculation would produce the rgbSpectrum for monochrome lights of</span>
+<span class="comment">% equal energy.  But, equal energy monochrome lights do not appear equally</span>
+<span class="comment">% bright.  The brightest part of the spectrum is near 550nm, and the blue</span>
+<span class="comment">% and red ends are much dimmer (per unit watt).</span>
+<span class="comment">%</span>
+<span class="comment">% So, there is one adjustment I would like to make to the spectral colors.</span>
+<span class="comment">% I would like to display spectral colors that are similar in their</span>
+<span class="comment">% brightness.  To adjust the overall luminance of the spectral values, I</span>
+<span class="comment">% will scale the XYZ values of each spectral light by a function that is</span>
+<span class="comment">% inversely related to its Y value.  Remember that the Y value represents</span>
+<span class="comment">% luminance is roughly correlated with brightness.  So, if we scale by the</span>
+<span class="comment">% Y value, we can compensate a bit for brightness differences.</span>
+<span class="comment">%</span>
+<span class="comment">% Here is what I propose to use as a scale factor. Adding the 0.4</span>
+<span class="comment">% stabilizes the scale factor for small values of Y.</span>
+Yvalues = XYZ(:,2);
+scaleFactors = 1 ./ (Yvalues + 0.4);
+
+<span class="comment">% Now, let's scale the rgb values. Pay attention to the fact that I am</span>
+<span class="comment">% doing this scaling in the linear RGB space.  This calculation would be</span>
+<span class="comment">% wrong if I did it on the frame buffer values, rather than the linear RGB</span>
+<span class="comment">% intensities.</span>
+rgbSpectrum = rgbSpectrum*diag(scaleFactors);
+rgbSpectrum = rgbSpectrum';
+
+<span class="comment">% Here is a plot of the scale factors used to make the brightness of the</span>
+<span class="comment">% wavelengths more nearly equal.</span>
+vcNewGraphWin;
+plot(wave,scaleFactors,<span class="string">'k'</span>)
+set(gca,<span class="string">'ylim'</span>,[0 2]), grid <span class="string">on</span>
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+ylabel(<span class="string">'Normalizing factors'</span>);
+
+<span class="comment">% And here is a graph of the R,G and B values we need for each of the</span>
+<span class="comment">% individual wavelengths when they are presented at approximately equal</span>
+<span class="comment">% brightness. The horizontal axis shows wavelength and the three colored</span>
+<span class="comment">% curves show the linear intensity values needed for the primaries.</span>
+vcNewGraphWin;
+plot(wave,rgbSpectrum(:,1),<span class="string">'r'</span>, <span class="keyword">...</span>
+    wave,rgbSpectrum(:,2),<span class="string">'g'</span>, <span class="keyword">...</span>
+    wave,rgbSpectrum(:,3),<span class="string">'b'</span>)
+grid <span class="string">on</span>
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+ylabel(<span class="string">'Linear RGB values (scaled)'</span>);
+</pre><img vspace="5" hspace="5" src="t_colorSpectrum_02.png" alt=""> <img vspace="5" hspace="5" src="t_colorSpectrum_03.png" alt=""> <h2>Those pesky negative values<a name="6"></a></h2><pre class="codeinput"><span class="comment">% As you can see in the figure, some of the RGB values are negative.  These</span>
+<span class="comment">% are called "out of gamut" and cannot be displayed precisely.  There is no</span>
+<span class="comment">% getting around this problem either for this example or in many real world</span>
+<span class="comment">% applications. Some physical colors in the world simply cannot be</span>
+<span class="comment">% displayed on conventional monitors, with three primaries.  This</span>
+<span class="comment">% corresponds to the observation that in the color-matching experiment</span>
+<span class="comment">% sometimes we must move one of the primaries to the other side of the</span>
+<span class="comment">% field.</span>
+<span class="comment">%</span>
+<span class="comment">% There are many different suggestions (hacks) that people use to overcome</span>
+<span class="comment">% the physical limitation of displays.  For our purposes, we can use a</span>
+<span class="comment">% fairly simple compromise -- some of you may like it, others may not. That</span>
+<span class="comment">% is the nature of this business.</span>
+<span class="comment">%</span>
+<span class="comment">% We can display these rgb values superimposed on a constant gray</span>
+<span class="comment">% background.  By superimposing the spectrum on a constant background, we</span>
+<span class="comment">% can both add and subtract RGB values.</span>
+<span class="comment">%</span>
+<span class="comment">% We will use a gray background that is only as bright as the</span>
+<span class="comment">% most negative rgbSpectrum value.</span>
+grayLevel = abs(min(rgbSpectrum(:)));
+rgbSpectrum = (rgbSpectrum + grayLevel);
+
+<span class="comment">% And, we will scale the RGB values in rgbSpectrum so they are as large as</span>
+<span class="comment">% possible, but the sum of the background and these values will still be</span>
+<span class="comment">% less than the maximum display value (1).</span>
+rgbSpectrum = rgbSpectrum/max(rgbSpectrum(:));
+
+<span class="comment">% Here is a plot of the RGB values scaled to be in range</span>
+vcNewGraphWin;
+plot(rgbSpectrum); grid <span class="string">on</span>
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+ylabel(<span class="string">'Linear RGB values (scaled and normalized)'</span>);
+</pre><img vspace="5" hspace="5" src="t_colorSpectrum_04.png" alt=""> <h2>Display the RGB values<a name="7"></a></h2><pre class="codeinput"><span class="comment">% Now, we correct for the display nonlinearities by presuming that we know</span>
+<span class="comment">% something (which we don't) about your display. Here is the display gamma</span>
+<span class="comment">% function relating a standard monitor frame buffer entries to the display</span>
+<span class="comment">% intensities.</span>
+<span class="comment">%</span>
+<span class="comment">% Here is the function we use to convert the linear values in rgb to the</span>
+<span class="comment">% frame buffer (DAC) values. The call to displayGet returns a table of the</span>
+<span class="comment">% non-linearity, and the function ieLUTInvert inverts it to provide the</span>
+<span class="comment">% inverse table, which is then used by ieLUTLinear to get the desired DAC</span>
+<span class="comment">% values.</span>
+<span class="comment">%</span>
+<span class="comment">% ieLUTLinear assumes a bit depth derived from the length of the table it</span>
+<span class="comment">% is passed, and this length in turn may be set by passing a bit depth</span>
+<span class="comment">% argument to ieLUTInvert. We normalize the DAC values to lie between 0 and</span>
+<span class="comment">% 1, because that is what the image show routines in Matlab want.</span>
+bitDepth      = 10;
+gammaTable    = displayGet(d,<span class="string">'gamma table'</span>);
+invGammaTable = ieLUTInvert(gammaTable,2^bitDepth);
+DAC           = ieLUTLinear(rgbSpectrum, invGammaTable);
+normalizedDAC = DAC/(2^bitDepth);
+
+<span class="comment">% Here is a plot of the DAC values we ended up with.</span>
+vcNewGraphWin;
+plot(wave, normalizedDAC(:,1),<span class="string">'-r'</span>,<span class="keyword">...</span>
+    wave, normalizedDAC(:,2),<span class="string">'-g'</span>,<span class="keyword">...</span>
+    wave, normalizedDAC(:,3),<span class="string">'-b'</span>);
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+ylabel(<span class="string">'DAC values (normalized)'</span>);
+</pre><img vspace="5" hspace="5" src="t_colorSpectrum_05.png" alt=""> <h2>Create image for display, and show it<a name="8"></a></h2><p>We create a horizontal linear ramp as the image. Each x-value corresponds to a single wavelength. We then use the lookup table created for each of the wavelength values (computed normalized DAC) to show the appearance of the spectrum.</p><pre class="codeinput">im = 1:size(DAC,1);  <span class="comment">% One for each wave/DAC value</span>
+mp = normalizedDAC;  <span class="comment">% The DAC values for each wavelength</span>
+
+vcNewGraphWin;
+image(wave,1,im);
+colormap(mp);
+xlabel(<span class="string">'Wavelength (nm)'</span>);
+set(gca,<span class="string">'ytickLabel'</span>,<span class="string">''</span>);
+
+<span class="comment">% Notice that the overall saturation is limited by one part of the</span>
+<span class="comment">% spectrum.  Perhaps if we didn't try to reproduce just that part of the</span>
+<span class="comment">% image, or we adjusted just that part, we could obtain a more saturated</span>
+<span class="comment">% overall appearance. Again, a design decision.</span>
+
+<span class="comment">% END TUTORIAL</span>
+</pre><img vspace="5" hspace="5" src="t_colorSpectrum_06.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_colorSpectrum
+%
+% Apply color methods to render an approximation to the visible spectrum
+% 
+% PURPOSE: This tutorial uses the color-matching tools we have developed to
+% create an image approaching the appearance the rainbow (the spectral
+% colors) on your display.
+%
+% Class:       Psych 221 - Applied Vision and Image Systems
+% Tutorial:    Color Spectrum 
+% Author:      Wandell
+% Purpose:     An example calculation: making a desaturated rainbow
+% Last Update: 01.05.15 (HJ)
+% Duration:    20 minutes
+%
+% 12/29/14  dhb  Updated for isetbio, and cleaned a bit.
+
+%% Initialize
+ieInit;
+
+%% Get display primaries
+%
+% Let's suppose that we know the spectral power distributions of your
+% monitor's primaries. For this example, we will use the SPDs for a sample
+% display description provided with isetbio.
+wave = (400:5:700)'; % wavelength samples
+dWave = wave(2) - wave(1); % bin size
+d = displayCreate('LCD-Apple', wave);
+wave = displayGet(d,'wave');
+primaries = displayGet(d, 'spd primaries');
+
+% Here is a plot of the primaries.
+vcNewGraphWin; plot(wave,primaries(:,3:-1:1));
+xlabel('Wavelength (nm)'); ylabel('Primary power');
+
+%% Get color matching functions
+%
+% We use the CIE XYZ color matching functions for creating calibrated
+% signals. We load them first.  The ieReadSpectra function splines
+% these to match the passed wavelength sampling.
+XYZ = ieReadSpectra('XYZ', wave);
+
+%% Compute color transfomration matrix
+%
+% We compute the matrix that converts between XYZ values linear intensities
+% of the monitor RGB values.  We do this in two steps.  First, we find the
+% XYZ values for each of the individual primaries.  The columns of this
+% matrix represent the XYZ values of the red, green and blue primaries,
+% respectively.  These values should be relatively easy to interpret.
+rgb2xyz = 683 * dWave * XYZ' * primaries; %#ok
+
+% Alternatively,
+rgb2xyz = displayGet(d, 'rgb2xyz')';
+
+% Invert the rgb2xyz matrix so that we can compute from XYZ back to linear
+% RGB values.
+%
+% Notice that the values of the xyz2rgb matrix contain negative values and
+% are difficult to interpret directly. Such is life.
+xyz2rgb = inv(rgb2xyz);
+
+%% Get RGB values for the spectrum locus
+%
+% In principle, we could compute the RGB values of spectral lights now.
+% Remember that the XYZ values of each spectral light are contained in the
+% rows of the XYZ matrix.  So, we need only to multiply the two matrices as
+% in:
+rgbSpectrum = xyz2rgb * XYZ'; %#ok 
+
+% This calculation would produce the rgbSpectrum for monochrome lights of
+% equal energy.  But, equal energy monochrome lights do not appear equally
+% bright.  The brightest part of the spectrum is near 550nm, and the blue
+% and red ends are much dimmer (per unit watt).
+%
+% So, there is one adjustment I would like to make to the spectral colors.
+% I would like to display spectral colors that are similar in their
+% brightness.  To adjust the overall luminance of the spectral values, I
+% will scale the XYZ values of each spectral light by a function that is
+% inversely related to its Y value.  Remember that the Y value represents
+% luminance is roughly correlated with brightness.  So, if we scale by the
+% Y value, we can compensate a bit for brightness differences.
+%
+% Here is what I propose to use as a scale factor. Adding the 0.4
+% stabilizes the scale factor for small values of Y.
+Yvalues = XYZ(:,2);
+scaleFactors = 1 ./ (Yvalues + 0.4);
+
+% Now, let's scale the rgb values. Pay attention to the fact that I am
+% doing this scaling in the linear RGB space.  This calculation would be
+% wrong if I did it on the frame buffer values, rather than the linear RGB
+% intensities.
+rgbSpectrum = rgbSpectrum*diag(scaleFactors);
+rgbSpectrum = rgbSpectrum';
+
+% Here is a plot of the scale factors used to make the brightness of the
+% wavelengths more nearly equal.
+vcNewGraphWin;
+plot(wave,scaleFactors,'k')
+set(gca,'ylim',[0 2]), grid on
+xlabel('Wavelength (nm)');
+ylabel('Normalizing factors');
+
+% And here is a graph of the R,G and B values we need for each of the
+% individual wavelengths when they are presented at approximately equal
+% brightness. The horizontal axis shows wavelength and the three colored
+% curves show the linear intensity values needed for the primaries.
+vcNewGraphWin;
+plot(wave,rgbSpectrum(:,1),'r', ...
+    wave,rgbSpectrum(:,2),'g', ...
+    wave,rgbSpectrum(:,3),'b')
+grid on
+xlabel('Wavelength (nm)');
+ylabel('Linear RGB values (scaled)');
+
+%% Those pesky negative values
+
+% As you can see in the figure, some of the RGB values are negative.  These
+% are called "out of gamut" and cannot be displayed precisely.  There is no
+% getting around this problem either for this example or in many real world
+% applications. Some physical colors in the world simply cannot be
+% displayed on conventional monitors, with three primaries.  This
+% corresponds to the observation that in the color-matching experiment
+% sometimes we must move one of the primaries to the other side of the
+% field.
+%
+% There are many different suggestions (hacks) that people use to overcome
+% the physical limitation of displays.  For our purposes, we can use a
+% fairly simple compromise REPLACE_WITH_DASH_DASH some of you may like it, others may not. That
+% is the nature of this business.
+%
+% We can display these rgb values superimposed on a constant gray
+% background.  By superimposing the spectrum on a constant background, we
+% can both add and subtract RGB values.
+%
+% We will use a gray background that is only as bright as the
+% most negative rgbSpectrum value.
+grayLevel = abs(min(rgbSpectrum(:)));
+rgbSpectrum = (rgbSpectrum + grayLevel);
+
+% And, we will scale the RGB values in rgbSpectrum so they are as large as
+% possible, but the sum of the background and these values will still be
+% less than the maximum display value (1).
+rgbSpectrum = rgbSpectrum/max(rgbSpectrum(:));
+
+% Here is a plot of the RGB values scaled to be in range
+vcNewGraphWin; 
+plot(rgbSpectrum); grid on
+xlabel('Wavelength (nm)');
+ylabel('Linear RGB values (scaled and normalized)');
+
+%% Display the RGB values
+
+% Now, we correct for the display nonlinearities by presuming that we know
+% something (which we don't) about your display. Here is the display gamma
+% function relating a standard monitor frame buffer entries to the display
+% intensities.
+%
+% Here is the function we use to convert the linear values in rgb to the
+% frame buffer (DAC) values. The call to displayGet returns a table of the
+% non-linearity, and the function ieLUTInvert inverts it to provide the
+% inverse table, which is then used by ieLUTLinear to get the desired DAC
+% values.
+%
+% ieLUTLinear assumes a bit depth derived from the length of the table it
+% is passed, and this length in turn may be set by passing a bit depth
+% argument to ieLUTInvert. We normalize the DAC values to lie between 0 and
+% 1, because that is what the image show routines in Matlab want.
+bitDepth      = 10;
+gammaTable    = displayGet(d,'gamma table');
+invGammaTable = ieLUTInvert(gammaTable,2^bitDepth);
+DAC           = ieLUTLinear(rgbSpectrum, invGammaTable);
+normalizedDAC = DAC/(2^bitDepth);
+
+% Here is a plot of the DAC values we ended up with.
+vcNewGraphWin;
+plot(wave, normalizedDAC(:,1),'-r',...
+    wave, normalizedDAC(:,2),'-g',...
+    wave, normalizedDAC(:,3),'-b');
+xlabel('Wavelength (nm)');
+ylabel('DAC values (normalized)');
+
+%% Create image for display, and show it
+%
+% We create a horizontal linear ramp as the image. Each x-value corresponds
+% to a single wavelength. We then use the lookup table created for each of
+% the wavelength values (computed normalized DAC) to show the appearance of
+% the spectrum.
+im = 1:size(DAC,1);  % One for each wave/DAC value
+mp = normalizedDAC;  % The DAC values for each wavelength
+
+vcNewGraphWin;
+image(wave,1,im);
+colormap(mp);
+xlabel('Wavelength (nm)');
+set(gca,'ytickLabel','');
+
+% Notice that the overall saturation is limited by one part of the
+% spectrum.  Perhaps if we didn't try to reproduce just that part of the
+% image, or we adjusted just that part, we could obtain a more saturated
+% overall appearance. Again, a design decision.
+
+% END TUTORIAL
+
+##### SOURCE END #####
+--></body></html>
