@@ -1,0 +1,40 @@
+This extension of liblinear supports incremental and decremental
+learning. If some data are added or removed, it applies a warm-strart
+strategy to efficiently updates the previously trained model. Then you
+do not need to train the new set from scratch. Currently, -s 0
+(solving primal LR) and -s 2 (solving primal l2-loss SVM) are
+supported.
+
+Usage
+=====
+
+The usage is the same as liblinear except the following additional option:
+
+-i initial model file: use a previously trained model for incremental/decremental training (only for -s 0 and 2)
+
+Examples
+========
+
+> ./train -s 0 heart_scale.sample
+
+> ./train -s 0 -i heart_scale.sample.model heart_scale
+
+Library Function for Incremental and Decremental Learning
+=========================================================
+
+- Function: model* warm_start_train(const struct problem *prob, const struct parameter *param, const struct model *wsmodel);
+
+    This function uses wsmodel for the warm-start training of the
+    given data. It constructs and returns a linear classification or
+    regression model. If wsmodel is NULL, then the regular LIBLINEAR
+    training is conducted.
+
+Differences from LIBLINEAR
+==========================
+
+Four files are modified: linear.h, linear.cpp, train.c and
+tron.cpp. The major change is to support the trust region Newton
+method (TRON) to accept a model vector w as the initial point.
+
+
+

@@ -1,0 +1,53 @@
+This extension of liblinear efficiently trains L2-regularized L2-loss linear
+rankSVM by trust region Newton method and selection trees.
+The implementation details can be found in the following paper:
+Ching-Pei Lee and Chih-Jen Lin, Large-scale Linear RankSVM, 2013.
+http://www.csie.ntu.edu.tw/~cjlin/papers/ranksvm/ranksvml2.pdf
+
+Usage
+=====
+
+The usage is the same as liblinear except the following additional option:
+
+-s 8 : L2-regularized L2-loss ranking support vector machine (primal)
+
+Note that the default solver in this extension is -s 8.
+
+The file format is slightly different. In this tool we support
+multiple queries in a training file by specifying a feature called
+qid. Each instance takes the following form.
+
+<label> <index1>:<value1> <index2>:<value2> ...
+
+<label> is a real number to indicate the preference level, while
+<index> can be either the string "qid" or an integer starting from
+1. For example, qid:2 shows that the instance is associated with query
+2.  The preference pairs are formed by instances with the same qid. We
+require that either each instance has a qid or none of the instance
+has a qid.
+
+To support the different file format, a modified svm-scale is
+provided. A sample ranking data 'bodyfat_scale_qid' is also available
+in the package.
+
+Examples
+========
+
+> ./train -s 8 bodyfat_scale_qid
+
+Difference from LIBLINEAR
+=========================
+
+This extension mainly includes two new files: ranksvm.h and ranksvm.cpp.
+
+In these two files we implement a selection tree, a ranksvm solver using trust
+region Newton method and provide two functions: eval_list for evaluating
+ranking performance and rank_cross_validation for ranksvm cross validation.
+We use the selection tree to compute the function value, gradient and
+Hessian-vector products, which are needed by trust region Newton method.
+
+The evaluation metrics considered are pairwise accuracy and the mean NDCG
+formulation of LETOR data sets. For cross validation, we conduct data
+splitting in query level, and when there is only one query, each fold is
+treated as a separate query to avoid ranking inconsistency between different
+models.

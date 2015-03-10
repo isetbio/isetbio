@@ -1,0 +1,1 @@
+This section contains validation scripts for radiometry and related calculations.
