@@ -1,0 +1,373 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_Cones</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-10"><meta name="DC.source" content="v_Cones.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Create appropriate structures</a></li><li><a href="#5">Human cone absorbance.</a></li><li><a href="#6">Now get the full PTB photoreceptors structure of CIE 2-deg</a></li><li><a href="#7">Peak optical density</a></li><li><a href="#8">Get cone spectral absorptance.</a></li><li><a href="#9">Lens transmittance</a></li><li><a href="#10">Macular transmittance</a></li><li><a href="#11">Quantal efficiency of cones</a></li><li><a href="#12">Tuck away other validation data</a></li><li><a href="#13">Plot</a></li><li><a href="#14">Do the whole thing again, but with the macular pigment set to zero</a></li><li><a href="#15">Absorbance</a></li><li><a href="#16">Plot cone spectral absorrptance</a></li><li><a href="#17">Lens transmittance</a></li><li><a href="#18">Macular transmittance</a></li><li><a href="#19">Quantal efficiency of cones</a></li><li><a href="#20">Plot</a></li><li><a href="#21">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_Cones(varargin)
+<span class="comment">%</span>
+<span class="comment">% Test cone, lens and macular function calls.  Compare against PTB answers.</span>
+<span class="comment">%</span>
+<span class="comment">% See also v_IrradianceIsomerizations.</span>
+<span class="comment">%</span>
+<span class="comment">% Issues:</span>
+<span class="comment">%</span>
+<span class="comment">% 1) It might be nice to test some sets as well as gets, and show how to</span>
+<span class="comment">% take a customized set of parameters from PTB and get these parameters to</span>
+<span class="comment">% show up in the isetbio structure.</span>
+<span class="comment">%</span>
+<span class="comment">% 2) Somewhere we should explain what units of retinal irradiance the</span>
+<span class="comment">% quantal efficiencies expect, and figure out how on earth these match the</span>
+<span class="comment">% PTB given that we didn't do any work to match the inner segment diameter.</span>
+<span class="comment">%</span>
+<span class="comment">% ISETBIO Team Copyright 2013-14</span>
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+<span class="keyword">end</span>
+</pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Create appropriate structures<a name="4"></a></h2><pre class="codeinput">    sensor = sensorCreate(<span class="string">'human'</span>);
+    wave   = sensorGet(sensor,<span class="string">'wave'</span>);
+    human  = sensorGet(sensor,<span class="string">'human'</span>);
+</pre><h2>Human cone absorbance.<a name="5"></a></h2><p>These are the Stockman-Sharpe absorbance by default, and are normalized to unity as is standard.</p><pre class="codeinput">    coneAbsorbance = coneGet(human.cone,<span class="string">'absorbance'</span>);
+    wave = coneGet(human.cone,<span class="string">'wave'</span>);
+    UnitTest.validationData(<span class="string">'wave'</span>,wave);
+    UnitTest.validationData(<span class="string">'coneAbsorbance'</span>, coneAbsorbance);
+    temp = load(<span class="string">'T_log10coneabsorbance_ss'</span>);
+    ptbCompare.log10coneAbsorbance = SplineCmf(temp.S_log10coneabsorbance_ss,temp.T_log10coneabsorbance_ss,wave)';
+    ptbCompare.coneAbsorbance = 10.^ptbCompare.log10coneAbsorbance;
+    UnitTest.assertIsZero(max(abs(ptbCompare.coneAbsorbance-coneAbsorbance)),<span class="string">'Difference between PTB datafile and isetbio cone absorbance'</span>,1e-12);
+</pre><h2>Now get the full PTB photoreceptors structure of CIE 2-deg<a name="6"></a></h2><p>This will let us compare absorbance in another way, as well as compare all sorts of other quantities.</p><pre class="codeinput">    ptbPhotoreceptors = ptb.StockmanSharpePhotoreceptors(wave);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.absorbance'-coneAbsorbance)),<span class="string">'Difference between PTB photoreceptor structure and isetbio cone absorbance'</span>,1e-12);
+</pre><h2>Peak optical density<a name="7"></a></h2><p>PTB values differ by a bit, e.g. 0.5000 in isetbio compared with 0.5004 in PTB.  This can be traced to an rounding difference in the CIE standard, which gives the OD by formula in equn 5.2 (which yields e.g. 0.5004 to three places for L cone OD) but which also gives the peak optical density for the L cones as 0.5.</p><pre class="codeinput">    peakOpticalDensity = coneGet(human.cone,<span class="string">'pod'</span>);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.axialDensity.value-peakOpticalDensity)),<span class="string">'Difference between PTB and isebio peak optical density'</span>,1e-3);
+</pre><h2>Get cone spectral absorptance.<a name="8"></a></h2><p>These take optical density into account, but not anything about pre-retinal absorption. The PTB and isetbio values differ by about 0.001, wich I think has to do with the rounding difference in peak optical density (see above).</p><pre class="codeinput">    coneAbsorptance = coneGet(human.cone,<span class="string">'cone spectral absorptance'</span>);
+    UnitTest.validationData(<span class="string">'coneSpectralAbsorptance'</span>, coneAbsorptance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.absorptance'-coneAbsorptance)),<span class="string">'Difference between PTB photoreceptor structure and isetbio cone absorbance'</span>,1e-03);
+</pre><h2>Lens transmittance<a name="9"></a></h2><p>Not sure exactly which PTB file the isetbio lens transmittance was taken from, but the answer comes out very close to what PTB uses for its CIE 2-deg case.</p><pre class="codeinput">    lensTransmittance = lensGet(human.lens,<span class="string">'transmittance'</span>);
+    UnitTest.validationData(<span class="string">'lensTransmittance'</span>, lensTransmittance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.lensDensity.transmittance'-lensTransmittance)),<span class="string">'Difference between PTB and isetbio lens transmittance'</span>,1e-12);
+</pre><h2>Macular transmittance<a name="10"></a></h2><pre class="codeinput">    macularTransmittance = macularGet(human.macular,<span class="string">'transmittance'</span>);
+    UnitTest.validationData(<span class="string">'macularTransmittance'</span>, macularTransmittance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.macularPigmentDensity.transmittance'-macularTransmittance)),<span class="string">'Difference between PTB and isetbio macular transmittance'</span>,0.005);
+</pre><h2>Quantal efficiency of cones<a name="11"></a></h2><p>These are the actual probability that an incident quanta is absorbed, starting with irradiance.  They take into account lens and macular pigment, as well as inner segment diameter and pigment quantal efficiency.</p><pre class="codeinput">    coneQE = sensorGet(sensor,<span class="string">'spectral qe'</span>);
+    UnitTest.validationData(<span class="string">'coneQE'</span>, coneQE);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.isomerizationAbsorptance'-coneQE(:,2:4))),<span class="string">'Difference between PTB and isetbio cone quantal efficiency'</span>,1e-3);
+</pre><h2>Tuck away other validation data<a name="12"></a></h2><pre class="codeinput">    UnitTest.validationData(<span class="string">'ptbCompare'</span>,ptbCompare);
+    UnitTest.validationData(<span class="string">'ptbPhotorceptors'</span>,ptbPhotoreceptors);
+</pre><h2>Plot<a name="13"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcNewGraphWin([],<span class="string">'tall'</span>);
+        subplot(5,1,1)
+        plot(wave,coneAbsorbance);
+        ylim([0 1]);
+        title(<span class="string">'Photopigment spectral absorbance'</span>);
+
+        subplot(5,1,2)
+        plot(wave,coneAbsorptance);
+        ylim([0 1]);
+        title(<span class="string">'Cone photopigment spectral absorptance'</span>)
+
+        subplot(5,1,3)
+        plot(wave,lensTransmittance);
+        ylim([0 1]);
+        title(<span class="string">'Lens transmittance'</span>);
+
+        subplot(5,1,4)
+        plot(wave,macularTransmittance);
+        ylim([0 1]);
+        title(<span class="string">'Macular transmittance'</span>);
+
+        subplot(5,1,5)
+        plot(wave,coneQE);
+        ylim([0 0.5]);
+        title(<span class="string">'Cone quantal efficiency'</span>);
+    <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_Cones_01.png" alt=""> <h2>Do the whole thing again, but with the macular pigment set to zero<a name="14"></a></h2><p>The cone absorbance, cone absorptance, and lens transmittance don't change, but macular transmittance and the cone quantal efficiences do.</p><p>Note that we need to be sure to write the changed human structure back into the sensor.</p><pre class="codeinput">    human.macular = macularSet(human.macular,<span class="string">'density'</span>,0);
+    sensor = sensorSet(sensor,<span class="string">'human'</span>,human);
+    human  = sensorGet(sensor,<span class="string">'human'</span>);
+</pre><h2>Absorbance<a name="15"></a></h2><pre class="codeinput">    coneAbsorbanceNoMac = coneGet(human.cone,<span class="string">'absorbance'</span>);
+    UnitTest.validationData(<span class="string">'coneAbsorbanceNoMac'</span>, coneAbsorbanceNoMac);
+</pre><h2>Plot cone spectral absorrptance<a name="16"></a></h2><pre class="codeinput">    coneSpectralAbsorptanceNoMac = coneGet(human.cone,<span class="string">'cone spectral absorptance'</span>);
+    UnitTest.validationData(<span class="string">'coneSpectralAbsorptanceNoMac'</span>, coneSpectralAbsorptanceNoMac);
+</pre><h2>Lens transmittance<a name="17"></a></h2><pre class="codeinput">    lensTransmittanceNoMac = lensGet(human.lens,<span class="string">'transmittance'</span>);
+    UnitTest.validationData(<span class="string">'lensTransmittanceNoMac'</span>, lensTransmittanceNoMac);
+</pre><h2>Macular transmittance<a name="18"></a></h2><pre class="codeinput">    macularTransmittanceNoMac = macularGet(human.macular,<span class="string">'transmittance'</span>);
+    UnitTest.validationData(<span class="string">'macularTransmittanceNoMac'</span>, macularTransmittanceNoMac);
+</pre><h2>Quantal efficiency of cones<a name="19"></a></h2><pre class="codeinput">    coneQENoMac = sensorGet(sensor,<span class="string">'spectral qe'</span>);
+    UnitTest.validationData(<span class="string">'coneQENoMac'</span>, coneQENoMac);
+</pre><h2>Plot<a name="20"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcNewGraphWin([],<span class="string">'tall'</span>);
+        subplot(5,1,1)
+        plot(wave,coneAbsorbanceNoMac);
+        ylim([0 1]);
+        title(<span class="string">'Photopigment spectral absorbance'</span>);
+
+        subplot(5,1,2)
+        plot(wave,coneSpectralAbsorptanceNoMac);
+        ylim([0 1]);
+        title(<span class="string">'Cone photopigment spectral absorptance'</span>)
+
+        subplot(5,1,3)
+        plot(wave,lensTransmittanceNoMac);
+        ylim([0 1]);
+        title(<span class="string">'Lens transmittance'</span>);
+        subplot(5,1,4)
+        plot(wave,macularTransmittanceNoMac);
+        ylim([0 1]);
+        title(<span class="string">'Macular transmittance - no macular'</span>);
+        subplot(5,1,5)
+        plot(wave,coneQENoMac);
+        ylim([0 0.5]);
+        title(<span class="string">'Cone quantal efficiency - no macular'</span>);
+    <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_Cones_02.png" alt=""> <h2>End<a name="21"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_Cones(varargin)
+%
+% Test cone, lens and macular function calls.  Compare against PTB answers.
+%
+% See also v_IrradianceIsomerizations.
+%
+% Issues:
+%
+% 1) It might be nice to test some sets as well as gets, and show how to
+% take a customized set of parameters from PTB and get these parameters to
+% show up in the isetbio structure.
+%
+% 2) Somewhere we should explain what units of retinal irradiance the
+% quantal efficiencies expect, and figure out how on earth these match the
+% PTB given that we didn't do any work to match the inner segment diameter.
+%
+% ISETBIO Team Copyright 2013-14
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+    %% Create appropriate structures
+    sensor = sensorCreate('human');
+    wave   = sensorGet(sensor,'wave');
+    human  = sensorGet(sensor,'human');
+
+    %% Human cone absorbance.
+    % These are the Stockman-Sharpe absorbance by default, and are
+    % normalized to unity as is standard.
+    coneAbsorbance = coneGet(human.cone,'absorbance');
+    wave = coneGet(human.cone,'wave');
+    UnitTest.validationData('wave',wave);
+    UnitTest.validationData('coneAbsorbance', coneAbsorbance);
+    temp = load('T_log10coneabsorbance_ss');
+    ptbCompare.log10coneAbsorbance = SplineCmf(temp.S_log10coneabsorbance_ss,temp.T_log10coneabsorbance_ss,wave)';
+    ptbCompare.coneAbsorbance = 10.^ptbCompare.log10coneAbsorbance;
+    UnitTest.assertIsZero(max(abs(ptbCompare.coneAbsorbance-coneAbsorbance)),'Difference between PTB datafile and isetbio cone absorbance',1e-12);
+    
+    %% Now get the full PTB photoreceptors structure of CIE 2-deg
+    %
+    % This will let us compare absorbance in another way, as well as compare
+    % all sorts of other quantities.
+    ptbPhotoreceptors = ptb.StockmanSharpePhotoreceptors(wave);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.absorbance'-coneAbsorbance)),'Difference between PTB photoreceptor structure and isetbio cone absorbance',1e-12);
+    
+    %% Peak optical density
+    %
+    % PTB values differ by a bit, e.g. 0.5000 in isetbio compared with
+    % 0.5004 in PTB.  This can be traced to an rounding difference in the CIE
+    % standard, which gives the OD by formula in equn 5.2 (which yields
+    % e.g. 0.5004 to three places for L cone OD) but which also gives the
+    % peak optical density for the L cones as 0.5.  
+    peakOpticalDensity = coneGet(human.cone,'pod');
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.axialDensity.value-peakOpticalDensity)),'Difference between PTB and isebio peak optical density',1e-3);
+
+    %% Get cone spectral absorptance.
+    %
+    % These take optical density into account, but not anything about pre-retinal absorption.
+    % The PTB and isetbio values differ by about 0.001, wich I think has to
+    % do with the rounding difference in peak optical density (see above).
+    coneAbsorptance = coneGet(human.cone,'cone spectral absorptance');
+    UnitTest.validationData('coneSpectralAbsorptance', coneAbsorptance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.absorptance'-coneAbsorptance)),'Difference between PTB photoreceptor structure and isetbio cone absorbance',1e-03);
+
+    %% Lens transmittance
+    %
+    % Not sure exactly which PTB file the isetbio lens transmittance
+    % was taken from, but the answer comes out very close to what PTB 
+    % uses for its CIE 2-deg case.
+    lensTransmittance = lensGet(human.lens,'transmittance');
+    UnitTest.validationData('lensTransmittance', lensTransmittance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.lensDensity.transmittance'-lensTransmittance)),'Difference between PTB and isetbio lens transmittance',1e-12);
+
+    %% Macular transmittance
+    macularTransmittance = macularGet(human.macular,'transmittance');
+    UnitTest.validationData('macularTransmittance', macularTransmittance);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.macularPigmentDensity.transmittance'-macularTransmittance)),'Difference between PTB and isetbio macular transmittance',0.005);
+
+    %% Quantal efficiency of cones
+    %
+    % These are the actual probability that an incident quanta is absorbed,
+    % starting with irradiance.  They take into account lens and macular
+    % pigment, as well as inner segment diameter and pigment quantal
+    % efficiency.
+    coneQE = sensorGet(sensor,'spectral qe');
+    UnitTest.validationData('coneQE', coneQE);
+    UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.isomerizationAbsorptance'-coneQE(:,2:4))),'Difference between PTB and isetbio cone quantal efficiency',1e-3);
+    
+    %% Tuck away other validation data
+    UnitTest.validationData('ptbCompare',ptbCompare);
+    UnitTest.validationData('ptbPhotorceptors',ptbPhotoreceptors);
+
+    %% Plot
+    if (runTimeParams.generatePlots)
+        vcNewGraphWin([],'tall');
+        subplot(5,1,1)
+        plot(wave,coneAbsorbance);
+        ylim([0 1]);
+        title('Photopigment spectral absorbance');
+
+        subplot(5,1,2)
+        plot(wave,coneAbsorptance);
+        ylim([0 1]);
+        title('Cone photopigment spectral absorptance')
+
+        subplot(5,1,3)
+        plot(wave,lensTransmittance);
+        ylim([0 1]);
+        title('Lens transmittance');
+
+        subplot(5,1,4)
+        plot(wave,macularTransmittance);
+        ylim([0 1]);
+        title('Macular transmittance');
+
+        subplot(5,1,5)
+        plot(wave,coneQE);
+        ylim([0 0.5]);
+        title('Cone quantal efficiency');
+    end
+
+    %% Do the whole thing again, but with the macular pigment set to zero
+    % The cone absorbance, cone absorptance, and lens transmittance don't
+    % change, but macular transmittance and the cone quantal efficiences do.
+    %
+    % Note that we need to be sure to write the changed human structure back
+    % into the sensor.
+    human.macular = macularSet(human.macular,'density',0);
+    sensor = sensorSet(sensor,'human',human);
+    human  = sensorGet(sensor,'human');
+
+    %% Absorbance
+    coneAbsorbanceNoMac = coneGet(human.cone,'absorbance');
+    UnitTest.validationData('coneAbsorbanceNoMac', coneAbsorbanceNoMac);
+
+    %% Plot cone spectral absorrptance
+    coneSpectralAbsorptanceNoMac = coneGet(human.cone,'cone spectral absorptance');
+    UnitTest.validationData('coneSpectralAbsorptanceNoMac', coneSpectralAbsorptanceNoMac);
+
+    %% Lens transmittance
+    lensTransmittanceNoMac = lensGet(human.lens,'transmittance');
+    UnitTest.validationData('lensTransmittanceNoMac', lensTransmittanceNoMac);
+
+    %% Macular transmittance
+    macularTransmittanceNoMac = macularGet(human.macular,'transmittance');
+    UnitTest.validationData('macularTransmittanceNoMac', macularTransmittanceNoMac);
+
+    %% Quantal efficiency of cones
+    coneQENoMac = sensorGet(sensor,'spectral qe');
+    UnitTest.validationData('coneQENoMac', coneQENoMac);
+
+    %% Plot
+    if (runTimeParams.generatePlots)
+        vcNewGraphWin([],'tall');
+        subplot(5,1,1)
+        plot(wave,coneAbsorbanceNoMac);
+        ylim([0 1]);
+        title('Photopigment spectral absorbance');
+
+        subplot(5,1,2)
+        plot(wave,coneSpectralAbsorptanceNoMac);
+        ylim([0 1]);
+        title('Cone photopigment spectral absorptance')
+
+        subplot(5,1,3)
+        plot(wave,lensTransmittanceNoMac);
+        ylim([0 1]);
+        title('Lens transmittance');
+        subplot(5,1,4)
+        plot(wave,macularTransmittanceNoMac);
+        ylim([0 1]);
+        title('Macular transmittance - no macular');
+        subplot(5,1,5)
+        plot(wave,coneQENoMac);
+        ylim([0 0.5]);
+        title('Cone quantal efficiency - no macular');
+    end
+
+    %% End
+end
+
+
+##### SOURCE END #####
+--></body></html>
