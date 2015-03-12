@@ -1,10 +1,21 @@
-% Method to set ISETBIO-specific preferences. Generally, this script should
-% be run once only. For different projects, copy this file to the projects' directory
-% and adapt the p-struct according to that project's specifics.
+% Method to set ISETBIO-specific unit testing preferences. 
 %
-% You can just run the distributed (Template) version to accept the
-% defaults, or you can make a copy outside of the distribution and modify
-% for your own system.
+% Generally, this function should be edited for your site and then run
+% once.
+%
+% To use the unit testing framework in different projects, copy this file
+% to the projects' validation directory and adapt the p-struct according
+% to that project's specifics.  You will want to change isetbioValidation
+% and isetbioRootPath and so forth.
+%
+% If you just run the distributed (Template) version to accept the
+% defaults, the FAST validation in isetbio will run.  But the FULL forms of
+% validation need the validation data. These can be found here:
+%
+%  http://????? - To be determined.
+%
+%
+% ISETBIO Team, 2015
 
 function setIsetbioUnitTestPreferencesTemplate
 
