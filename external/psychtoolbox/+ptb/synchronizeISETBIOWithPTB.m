@@ -37,12 +37,12 @@ function synchronizeISETBIOWithPTB
     UNKNOWNFORMATFiles.different = 0; UNKNOWNFORMATFiles.same = 0;
 
     % Do the synchronization
-    fprintf('\nPlease wait. Diffing %d files ...', numel(filesToSynchronize.dest));
+    fprintf('\nPlease wait. Diffing %d files ...\n', numel(filesToSynchronize.dest));
     report = {};
     for k = 1:numel(filesToSynchronize.dest)
         destinationFile = filesToSynchronize.dest{k};
         sourceFile      = filesToSynchronize.src{k};
-        if (exist(sourceFile, 'file') ~= 2) 
+        if (exist(sourceFile, 'file') ~= 2) && (isempty(strfind(sourceFile, '.DS_Store')))
             error('%s does not exist !!', sourceFile);
         else 
             [content_differs, printout] = system(sprintf('diff --side-by-side  %s %s', sourceFile, destinationFile));
