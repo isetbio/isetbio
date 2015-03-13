@@ -17,33 +17,41 @@ function ValidationFunction(runTimeParams)
     
     try
         
+        %% Compare PTB vs ISETBIO LUT inversion for three different displays
         displaysToTest = {'OLED-Sony', 'LCD-Apple', 'CRT-Dell'};
+        
+        %% and four different gamma table lengths
         gammaTableLengthsToTest = [128 256 1024 2048];
         
         for displayIndex = 1:numel(displaysToTest)
-            for resolutionIndex = 1:numel(gammaTableLengthsToTest)
+            
+            %% Create a display object
+            d = displayCreate(displaysToTest{displayIndex});
+
+            %% Retriece key properties of the display
+            % Gamma table
+            gammaTable = displayGet(d, 'gamma table');
+            if (size(gammaTable,2) > 3)
+                gammaTable = gammaTable(:,1:3);
+            end
+            originalGammaTableLength = size(gammaTable,1);
+            originalSettingsValues   = linspace(0,1,originalGammaTableLength);
+            
+            % Primary SPD
+            wave         = displayGet(d, 'wave');
+            spd          = displayGet(d, 'spd primaries');
+            
+            % Screen size and DPI
+            dotsPerMeter = displayGet(d, 'dots per meter');
+            screenSizeInPixels = [1920 1080];
                 
+            %% Generate PTB-compatible calStruct describing the display
+            PTBcal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeInPixels, dotsPerMeter);
+                
+            for resolutionIndex = 1:numel(gammaTableLengthsToTest)
+                %% Compute the inverse gamma table with desired resolution
                 nInputLevels = gammaTableLengthsToTest(resolutionIndex);
                 
-                %% Create a display object (here for the OLED-SONY)
-                d = displayCreate(displaysToTest{displayIndex});
-
-                %% Get key properties of the display (gamma table, spd, resolution
-                gammaTable = displayGet(d, 'gamma table');
-                if (size(gammaTable,2) > 3)
-                    gammaTable = gammaTable(:,1:3);
-                end
-                wave         = displayGet(d, 'wave');
-                spd          = displayGet(d, 'spd primaries');
-                dotsPerMeter = displayGet(d, 'dots per meter');
-                screenSizeInPixels = [1920 1080];
-                originalGammaTableLength = size(gammaTable,1)
-                originalSettingsValues   = linspace(0,1,originalGammaTableLength);
-
-                %% Generate PTB-compatible calStruct describing the display
-                PTBcal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeInPixels, dotsPerMeter);
-
-                %% Compute the inverse gamma table with desires resolution
                 % PTB-solution
                 PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
                 gammaMethod = 1;
@@ -71,7 +79,6 @@ function ValidationFunction(runTimeParams)
             end
         end
         
-
     catch err
         if (~isempty(removedFolderFromCurrentPath))
             % restore original path
@@ -96,6 +103,7 @@ function ValidationFunction(runTimeParams)
                 subplot(numel(displaysToTest),numel(gammaTableLengthsToTest),subplotIndex);
                 hold on;
                 
+                % Plot results for RED channel only
                 channelIndex = 1;
                 
                 % original gamma
@@ -128,14 +136,15 @@ function ValidationFunction(runTimeParams)
     
 end
 
-% Helper functions
+%% Helper functions
+
+% Method to generate a PTB CalStruct for a display with given properties
 function cal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeInPixels, dotsPerMeter)
 
     spectralSamples  = size(wave,1);
     gammaTableLength = size(gammaTable,1);
     nDevices         = size(gammaTable,2);
     gammaInput       = linspace(0,1,gammaTableLength);
-    
     
     displayDescriptionStruct = struct( ...
      'screenSizeMM', screenSizeInPixels/(dotsPerMeter/1000), ...
@@ -145,12 +154,11 @@ function cal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeIn
     'bitsPerSample', 8, ...
   'samplesPerPixel', nDevices ...
         );
-    
-    
+
     gammaStruct = struct(...
           'fitType','simplePower', ...
    'contrastThresh', [], ...
-        'exponents', [1.9899 2.0032 2.0188], ...
+        'exponents', [], ...
    'fitBreakThresh', [], ...
         'useweight', [] ...
         );
@@ -189,9 +197,9 @@ function cal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeIn
         );
     
     rawDataStruct = struct(...
-    'rawGammaInput', gammaInput', ...
-    'rawGammaTable', gammaTable ...
-        );
+       'rawGammaInput', gammaInput', ...
+       'rawGammaTable', gammaTable ...
+    );
     
     
     % Generate a calStruct suitable for use with PTB Cal functions
@@ -227,6 +235,7 @@ function cal = generatePsychToolboxCalStruct(gammaTable, wave, spd, screenSizeIn
   
 end
 
+% Method to remove the BrainardLabPTBOverrides (if they exist on the host computer)
 function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
 
     removedFolderFromCurrentPath = '';
