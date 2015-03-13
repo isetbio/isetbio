@@ -18,7 +18,7 @@ function ValidationFunction(runTimeParams)
     try
         
         displaysToTest = {'OLED-Sony', 'LCD-Apple', 'CRT-Dell'};
-        gammaTableLengthsToTest = [256 1024 2048];
+        gammaTableLengthsToTest = [128 256 1024 2048];
         
         for displayIndex = 1:numel(displaysToTest)
             for resolutionIndex = 1:numel(gammaTableLengthsToTest)
@@ -37,7 +37,7 @@ function ValidationFunction(runTimeParams)
                 spd          = displayGet(d, 'spd primaries');
                 dotsPerMeter = displayGet(d, 'dots per meter');
                 screenSizeInPixels = [1920 1080];
-                originalGammaTableLength = size(gammaTable,1);
+                originalGammaTableLength = size(gammaTable,1)
                 originalSettingsValues   = linspace(0,1,originalGammaTableLength);
 
                 %% Generate PTB-compatible calStruct describing the display
@@ -84,7 +84,7 @@ function ValidationFunction(runTimeParams)
     %% Plot
     if (runTimeParams.generatePlots)
         h = figure(1);
-        set(h, 'Position', [10 10 1300 1250]);
+        set(h, 'Position', [10 10 1704 1196]);
         clf;
         
         subplotIndex = 0;
