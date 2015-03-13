@@ -108,11 +108,11 @@ function ValidationFunction(runTimeParams)
                 plot(dataStruct.settingsValues, dataStruct.ISETBIOinverseGamma(:,channelIndex), 'b.');
                 
                 % ISETBIO-inverted
-                plot(dataStruct.settingsValues, 0.5+dataStruct.PTBinverseGamma(:,channelIndex)-dataStruct.ISETBIOinverseGamma(:,channelIndex), 'k-');
+                plot(dataStruct.settingsValues, 0.5+dataStruct.PTBinverseGamma(:,channelIndex)-dataStruct.ISETBIOinverseGamma(:,channelIndex), 'k-', 'LineWidth', 2.0);
                 
                 hold off;
                 
-                h_legend = legend('Orig. LUT', 'PTB inverse', 'ISETBIO inverse', 'PTB-ISETBIO', 'Location', 'NorthWest');
+                h_legend = legend('Orig. LUT', 'PTB inverse', 'ISETBIO inverse', '0.5+(PTB-ISETBIO)', 'Location', 'NorthWest');
                 set(h_legend,'FontName', 'Menlo', 'FontSize',12);
                 
                 set(gca, 'XLim', [0 1], 'YLim', [0 1], 'XTick', [0:0.1:1.0], 'YTick', [0:0.1:1.0], 'FontSize', 12, 'FontName', 'Helvetica');
