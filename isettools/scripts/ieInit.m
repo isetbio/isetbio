@@ -3,15 +3,14 @@
 % This script 
 %
 %   * Closes down current instance of ISETBIO
-%   * Clears the workspace
+%   * Clears the workspace and open figures
 %   * Starts a fresh version
-%
 %
 % BW, ISETBIO Team, Copyright 2015
 
 %% Check if there is a running instance, closes it, and clears workspace
 ieMainClose;   % Closes open ISETBIO windows
-
+close all;     % Closes other windows (e.g., vcNewGraphWin)
 
 %% Initialize variables
 

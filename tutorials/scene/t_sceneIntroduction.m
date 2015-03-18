@@ -30,7 +30,7 @@
 
 %% Initializing ISET
 % While not necessary, initialization keeps the work space clean
-s_initISET;
+ieInit;
 
 %% Create a scene and explore some of its features
 % The create function initiates the object. Typically, there are many
