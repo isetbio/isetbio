@@ -6,7 +6,7 @@ function em = emCreate(params)
 % Inputs:
 %   params:  eye-movement parameters, optional, for default value see
 %            auxilary function emFillParams below
-%     .emType   - 3x1 flag vector, indicating whether or not to include
+%     .emFlag   - 3x1 flag vector, indicating whether or not to include
 %                 tremor, drift and micro-saccade respectively
 %     .sampTime - sampling time in secs, e.g. 0.001 stands for 1ms per
 %                 sample
@@ -76,7 +76,7 @@ p.sampTime = 0.001; % sample time interval - 1 ms
 % set fields for tremor
 p.tremor.interval   = 0.012;          % Tremor mean frequency - 83 Hz
 p.tremor.intervalSD = 0.001;          % std of tremor frequency - 60~100 Hz
-p.tremor.amplitude  = 18/3600*pi/180; % Tremor amplitude -  18 arcsec
+p.tremor.amplitude  = 0.0073;         % Tremor amplitude -  18 arcsec
 
 % set fields for drift
 % There's a big difference for drift speed between literatures, we just
