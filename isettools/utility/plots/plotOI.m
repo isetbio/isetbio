@@ -823,6 +823,13 @@ switch lower(pType)
         else spaceSamp = 40;
         end
         
+        % The spaceSamp and nSamp parameters are not clearly enough
+        % defined.  The reason we care is because the code is broken when
+        % spaceSamp is not 40.  
+        % The problem appears to be that lsfWave computed below might have
+        % only 60 samples and we might ask for, say 120.  So, we should at
+        % least check.
+        
         % The incoherent cutoff frequency has units of cycles/micron
         % So, 1/inCutoff has units of microns/Nyquist
         % The maximum frequency is at the Nyquist, and there are two
@@ -857,6 +864,12 @@ switch lower(pType)
         % row of the otf to estimate the line spread. This only works if
         % the OTF is circularly symmetric; if it is not, there isn't really
         % a single line spread.
+        
+        % We should figure out the right value of spaceSamp
+        % In some cases spaceSamp is bigger than the otf.  So we need to
+        % cut it back
+        spaceSamp = min(spaceSamp,size(otf,2)-1);
+        % lsWave = zeros(spaceSamp,nWave);
         for ii=1:nWave,
             % The central line in the otf is the first line
             tmp = otf(1,:,ii);  % figure; imagesc(abs(otf(:,:,ii)))

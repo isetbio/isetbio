@@ -368,7 +368,9 @@ switch sceneName
         scene = sceneBar(scene,sz,width);
     case {'vernier'}
         % sceneCreate('vernier', type, params)
-        if ~isempty(varargin), type = varargin{1}; else type = object; end
+        % The possible types are 
+        %   
+        if ~isempty(varargin), type = varargin{1}; else type = 'object'; end
         if length(varargin) > 1, 
             params = varargin{2};
         else
@@ -963,9 +965,10 @@ function scene = sceneVernier(scene, type, params)
 %% scene for vernier acuity
 %    type indicates what scene is created from, can take value from
 %      'display' - scene is created from an image on display
-%      'object'  - scene is creaetd from object with certain illuminance
+%      'object'  - scene is created from the object structure which
+%                  contains specific parameters.  
 %
-%    params structure could include:
+%   The parameters of the vernier object are described here:
 %      sceneSz    - scene resolution, default is 64
 %      barWidth   - bar width in pixels
 %      offset     - displacement in pixels
@@ -978,16 +981,19 @@ function scene = sceneVernier(scene, type, params)
 %      barReflect - bar reflectance, for type = 'object'
 %      bgReflect  - background reflectance, for type = 'object'
 %
+% Any parameters that are not specified in the structure have defaults.
+% See the code below.
 %
+% HJ
 
 % check inputs
 if notDefined('scene'), error('scene requried'); end
 if notDefined('type'),  type = 'object'; end
 
 % init parameters from params
-if isfield(params, 'sceneSz'), sz = params.sceneSz; else sz = 64; end
-if isfield(params, 'barWidth'), width = params.barWidth; else width = 0; end
-if isfield(params, 'offset'), offset = params.offset; else offset = 1; end
+if isfield(params, 'sceneSz'),   sz = params.sceneSz; else sz = 64; end
+if isfield(params, 'barWidth'),  width = params.barWidth; else width = 1; end
+if isfield(params, 'offset'),    offset = params.offset; else offset = 1; end
 if isfield(params, 'lineSpace'), lineSpace = params.lineSpace;
 else lineSpace = inf; end
 

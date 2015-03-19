@@ -16,7 +16,12 @@ function middleM = getMiddleMatrix(m, sz)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-sz = round(sz/2);
+% Changed from round to floor on March 19, 2015.  We are worried, but it
+% had no effect on validationfastall and the routine is only called in a
+% few places where this should be OK.  Delete this comment after a few
+% months.
+% HJ/BW
+sz = floor(sz/2);
 
 center = round(size(m)/2);
 rMin = max(1,center(1)-sz); rMax = min(size(m,1), center(1)+sz);
