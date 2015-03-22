@@ -88,8 +88,8 @@ elseif isfield(params, 'totTime')
     sampTime = sensorGet(sensor, 'sample time interval');
     nSamples = round(params.totTime / sampTime);
 end
-pos = zeros(nSamples, 2);
-sensor = sensorSet(sensor, 'sensorpositions', pos);
+pos    = zeros(nSamples, 2);
+sensor = sensorSet(sensor, 'sensor positions', pos);
 
 sensor = emGenSequence(sensor);
 
