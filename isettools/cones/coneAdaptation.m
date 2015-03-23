@@ -1,5 +1,7 @@
 function absorptions = coneAdaptation(typeAdapt,volts,sensor,species)
-%Cone adaptation
+%Cone adaptation is DEPRECATED
+%
+%                *** DEPRECATED ... see coneAdapt ****
 %
 %   absorptions = coneAdaptation(typeAdapt,volts,sensor,species)
 %

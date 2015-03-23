@@ -1,5 +1,6 @@
 function sensor = emGenSequence(sensor)
 %% Generate eye movement sensor sequence
+%
 %    sensor = emGenSequence([sensor]);
 %
 %  Inputs:
@@ -62,9 +63,12 @@ if emFlag(1)
     indx = 1:find(tPos <= seqLen, 1, 'last');
     tPos = tPos(indx);
     
-    % Generate random move on the selected time
+    % Generate random step at the selected times
     direction = rand(length(tPos),1);
+    
+    % Unit length direction
     pos(tPos, :) = amplitude * [direction sqrt(1-direction.^2)];
+    
     pos(tPos, :) = bsxfun(@times, pos(tPos, :), t(indx)/sampTime);
     pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
     pos = cumsum(pos, 1);

@@ -28,18 +28,18 @@ function val = sceneGet(scene,parm,varargin)
 %      {'size'}*    - scene size (rows,cols)
 %      {'height'}*  - height (meters),
 %      {'width'}*   - width (meters)
-%      {'heightandwidth'}*    - (height,width)
-%      {'diagonalsize'}*      - diagonal
+%      {'height and width'}*  - (height,width)
+%      {'diagonal size'}*     - diagonal
 %      {'area'}*              - area (meters^2)
 %
 % Optical and resolution properties
-%      {'objectdistance'}  - distance from lens to object
+%      {'object distance'} - distance from lens to object
 %      {'horizontal fov'}  - horizontal field of view (deg)
 %      {'hangular'}        - vertical field of view (deg)
-%      {'diagonalfieldofview'} - diagonal field of view
-%      {'aspectratio'}     - row/col
+%      {'diagonal field of view'} - diagonal field of view
+%      {'aspect ratio'}     - row/col
 %      {'magnification','mag'} -  Always 1.
-%      {'depthmap'}        - Distance to points in meters
+%      {'depth map'}        - Distance to points in meters
 %
 % Radiance and reflectance information
 %      {'data'}
@@ -67,7 +67,7 @@ function val = sceneGet(scene,parm,varargin)
 %        {'roi mean reflectance'}   - reflectance spd averaged within in a region of interest 
 %
 %  Luminance and other colorimetric properties
-%        {'meanluminance'}  - mean luminance
+%        {'mean luminance'} - mean luminance
 %        {'luminance'}      - spatial array of luminance
 %        {'xyz'}            - 3D array of XYZ values(CIE 1931, 10 deg)
 %        {'lms'}            - 3D array of cone values (Stockman)
@@ -559,9 +559,14 @@ switch parm
         val = sceneGet(scene,'fov')/sceneGet(scene,'width');
         if ~isempty(varargin), val = val/ieUnitScaleFactor(varargin{1}); end
     case {'degreepersample','degpersamp','degreespersample'}
-        % sceneGet(scene,'deg per samp')
+        % sceneGet(scene,'deg per samp',[units])
+        % units can be degrees, arcmin, arcsec
         val = sceneGet(scene,'fov')/sceneGet(scene,'cols');
-        
+        if ~isempty(varargin)
+            val = deg2rad(val);
+            val = val*ieUnitScaleFactor(varargin{1}); 
+        end
+
     case {'spatialsupport','spatialsamplingpositions'}
         % Spatial locations of points in meters
         % Also, sceneGet(oi,'spatialsupport','microns')

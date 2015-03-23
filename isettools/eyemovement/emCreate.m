@@ -96,6 +96,9 @@ if ~isfield(params, 'msaccade') && isfield(params, 'microsaccade')
     params.msaccade = params.microsaccade;
     params = rmfield(params, 'microsaccade');
 end
+
+% Cool, but I am worried about field name incompatibilities
+% Maybe we should do this as a for loop with emSet(...)
 em = setstructfields(p, params);
 
 % some checks for params

@@ -1,7 +1,7 @@
 function [sensor, adaptedData] = coneAdapt(sensor, typeAdapt, params)
-%% Cone adaptation
+% Cone adaptation
 %
-%   [sensor, adaptedData] = coneAdaptation(sensor, typeAdapt, varargin)
+%   [sensor, adaptedData] = coneAdapt(sensor, typeAdapt, varargin)
 %
 % Implement adaptation models to produce the cone volts. Cone absorption
 % sampels should be computed and stored in sensorGet(sensor, volts).
