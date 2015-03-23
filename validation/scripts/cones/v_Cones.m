@@ -27,7 +27,7 @@ function ValidationFunction(runTimeParams)
     wave   = sensorGet(sensor,'wave');
     human  = sensorGet(sensor,'human');
 
-    %% Human cone absorbance.
+    %% Human cone absorbance
     % These are the Stockman-Sharpe absorbance by default, and are
     % normalized to unity as is standard.
     coneAbsorbance = coneGet(human.cone,'absorbance');
