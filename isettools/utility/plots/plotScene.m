@@ -189,7 +189,7 @@ switch lower(pType)
             ylabel('Wavelength (nm)'); zlabel('Radiance (q/s/nm/m^2)');
             grid on; set(gca,'xtick',ieChooseTickMarks(pos.x,nTicks))
         end
-        colormap(cool)
+        colormap(mp)
 
         udata.wave = wave; udata.pos = pos.x; udata.data = data';
         udata.cmd = 'mesh(pos,wave,data)';
@@ -216,7 +216,7 @@ switch lower(pType)
             ylabel('Wavelength (nm)'); zlabel('Radiance (q/s/nm/m^2)');
             grid on; set(gca,'xtick',ieChooseTickMarks(pos.y,nTicks))
         end
-        colormap(cool)
+        colormap(mp)
 
         udata.wave = wave; udata.pos = pos.y; udata.data = data';
         udata.cmd = 'mesh(pos,wave,data)';

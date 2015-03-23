@@ -1,5 +1,6 @@
 function sensor = emGenSequence(sensor)
 %% Generate eye movement sensor sequence
+%
 %    sensor = emGenSequence([sensor]);
 %
 %  Inputs:
@@ -57,13 +58,18 @@ if emFlag(1)
     % Compute time of tremor occurs
     t = interval + randn(seqLen, 1) * intervalSD;
     t(t < 0.001) = 0.001; % get rid of negative values
-    t = cumsum(t);
-    tPos = round(t / sampTime);
-    tPos = tPos(1:find(tPos <= seqLen, 1, 'last'));
+    tPos = cumsum(t);
+    tPos = round(tPos / sampTime);
+    indx = 1:find(tPos <= seqLen, 1, 'last');
+    tPos = tPos(indx);
     
-    % Generate random move on the selected time
+    % Generate random step at the selected times
     direction = rand(length(tPos),1);
+    
+    % Unit length direction
     pos(tPos, :) = amplitude * [direction sqrt(1-direction.^2)];
+    
+    pos(tPos, :) = bsxfun(@times, pos(tPos, :), t(indx)/sampTime);
     pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
     pos = cumsum(pos, 1);
 end

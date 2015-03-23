@@ -36,15 +36,19 @@ ieSessionGet('font size')
 % all the time.
 %
 
+% Something that takes a few seconds and might use wait bars
+scene = sceneCreate('slanted bar');
+oi = oiCreate('human');
+
 % This is a calculation that takes a few seconds.  To see its progress with
 % a waitbar, you can run
 ieSessionSet('waitbar','on')
-s_scielabPatches
-drawnow
+oi = oiCompute(oi,scene);
 
 %% To suppress the waitbar, you can run
 ieSessionSet('waitbar','off')
-s_scielabPatches
+oi = oiCompute(oi,scene);
+disp('No wait bar, right?')
 
 %% The font size
 
