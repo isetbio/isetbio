@@ -44,7 +44,7 @@ if ~exist('param','var') || isempty(param), error('Param required.'); end
 
 p = [];
 switch ieParamFormat(param)
-    case {'scene'}
+    case 'scene'
         oType = 'scene'; return;
     case 'oi'
         oType = 'oi'; return;
@@ -56,6 +56,8 @@ switch ieParamFormat(param)
         oType = 'pixel'; return;
     case {'vci','ip'}
         oType = 'ip'; return;
+    case {'em', 'eyemove', 'eyemovement'}
+        oType = 'em'; return;
 end
 
 %% Find the string before the first space or the first '/'.  
@@ -84,6 +86,8 @@ if ~isempty(pos)
             oType = 'pixel';
         case {'vci','ip'}
             oType = 'ip';
+        case {'em', 'eyemove', 'eyemovement'}
+            oType = 'em';
     end
     
     % Check for success. Return the parameter, without the prepended term
