@@ -1,4 +1,4 @@
-function em = emCreate(params)
+function em = emCreate(params, varargin)
 %% Create eye movement structure
 %
 %   em = emCreate([params])
@@ -28,8 +28,15 @@ function em = emCreate(params)
 %        .speed      = speed of micro-saccade (rad / sec)
 %        .speedSD    = standard deviation of speed
 %
+%   varargin: name value pair to be set for eye movement. See emSet for
+%             supported parameter list
+%
 % Output Parameter:
 %   em       - eye movement structure
+%
+% Programming Notes:
+%   If one parameter are both specified in params and varargin, the value
+%   provided in varargin will be used (value in params will be overrided)
 %
 % Notes:
 %   1) For all eye-movements, we assume that the acceleration time is
@@ -97,11 +104,42 @@ if ~isfield(params, 'msaccade') && isfield(params, 'microsaccade')
     params = rmfield(params, 'microsaccade');
 end
 
-% Cool, but I am worried about field name incompatibilities
-% Maybe we should do this as a for loop with emSet(...)
+% process values in params
 em = setstructfields(p, params);
+
+% process values in varargin
+for ii = 1 : 2 : length(varargin)
+    em = emSet(em, varargin{ii}, varargin{ii+1});
+end
 
 % some checks for params
 assert(numel(em.emFlag)==3, 'emType should be 3x1 logical vector');
+
+end
+
+function params = setstructfields(params, newP)
+% Replace field values in params with the values in newP
+%   params = setstructfields(params, newP)
+%
+% There is another implementation for this function in recent Matlab
+% release in signal processing toolbox
+%
+% (HJ) ISETBIO TEAM, 2015
+
+% check inputs
+if ~isstruct(params) || ~isstruct(newP) return; end
+
+% Loop over all the fields of params
+fields = fieldnames(params);
+for ii = 1 : length(fields)
+    if isfield(newP, fields{ii})
+        v = newP.(fields{ii});
+        if isstruct(params.(fields{ii})) && isstruct(v)
+            params.(fields{ii}) = setstructfields(params.(fields{ii}), v);
+        else
+            params.(fields{ii}) = v;
+        end
+    end
+end
 
 end

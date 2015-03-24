@@ -57,7 +57,7 @@ switch params
     % Basic information about eye movement
     case {'name'}
         if ischar(val), em.name = val; end
-    case {'emflag'}
+    case {'emflag', 'flag'}
         assert(numel(val) == 3, 'emFlag should be 3x1 vector');
         em.emFlag = val(:);
     case {'sampletime'}
