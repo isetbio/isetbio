@@ -246,6 +246,12 @@ switch oType
         else     val = pixelGet(pixel,param,varargin{1});
         end
         return;
+    case 'em'
+        em = sensor.human.eyemove;
+        if isempty(param), val = em;
+        else val = emGet(em, param);
+        end
+        return;
     otherwise
 end
 
@@ -1141,31 +1147,6 @@ switch param
         seqLen = size(sensorGet(sensor, 'sensor positions'), 1);
         val = seqLen * sampTime;
         
-    case {'eyemove', 'eyemovement'}
-        % eye movement structure
-        if checkfields(sensor, 'human', 'eyemove')
-            val = sensor.human.eyemove;
-        end
-    case {'emflag'}
-        % eye movement type
-        if checkfields(sensor, 'human', 'eyemove', 'emFlag')
-            val = sensor.human.eyemove.emFlag;
-        end
-    case {'emtremor'}
-        % eye movemenet tremor structure
-        if checkfields(sensor, 'human', 'eyemove', 'tremor')
-            val = sensor.human.eyemove.tremor;
-        end        
-    case {'emdrift'}
-        % eye movement drift structure
-        if checkfields(sensor, 'human', 'eyemove', 'drift')
-            val = sensor.human.eyemove.drift;
-        end
-    case {'emmsaccade', 'emmicrosaccade'}
-        % eye movement microsaccade structure
-        if checkfields(sensor, 'human', 'eyemove', 'msaccade')
-            val = sensor.human.eyemove.msaccade;
-        end
     otherwise
         error('Unknown sensor parameter.');
 end

@@ -14,7 +14,7 @@ sensor = sensorCreate('human');
 em = emCreate;
 
 % Attach it to the sensor
-sensor = sensorSet(sensor,'eye movement',em);
+sensor = sensorSet(sensor, 'eyemove',em);
 
 % This is the position every millisecond.  In this case, 0.5 sec.
 sensor = sensorSet(sensor,'positions',zeros(1000,2));
@@ -35,7 +35,7 @@ plot(pos(:,1),pos(:,2),'o-')
 %
 % Make the tremor much bigger
 amp = emGet(em,'tremor amplitude');
-em  = emSet(em,'tremor amplitude',1000*amp);
+em  = emSet(em,'tremor amplitude',10*amp);
 
 sensor = sensorSet(sensor,'eye movement',em);
 sensor = emGenSequence(sensor);

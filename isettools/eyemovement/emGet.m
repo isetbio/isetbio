@@ -62,7 +62,7 @@ switch params
     case {'type'}
         % type = emGet(em, 'type');
         if isfield(em, 'type'), val = em.type; end
-    case {'emflag'}
+    case {'emflag', 'flag'}
         % emFlag = emGet(em, 'em flag');
         if isfield(em, 'emFlag'), val = em.emFlag; end
     case {'sampletime'}

@@ -1,4 +1,4 @@
-function sensor = eyemoveInit(sensor, params)
+function sensor = eyemoveInit(sensor, params, varargin)
 %% Init eye movement parameters in the sensor structure
 %
 %   sensor = eyemoveInit(sensor, [params])
@@ -28,6 +28,9 @@ function sensor = eyemoveInit(sensor, params)
 %        .dirSD      = the randomness of moving direction
 %        .speed      = speed of micro-saccade
 %        .speedSD    = standard deviation of speed
+%
+%   varargin: name value pairs for eyemovement parameters, see emSet for
+%             supported parameters
 %
 % Output Parameter:
 %   sensor       - sensor with eye movement related parameters set, see
@@ -65,7 +68,8 @@ function sensor = eyemoveInit(sensor, params)
 %   sensor = eyemovementInit(sensor);
 %   p.emType = ones(3,1);
 %   p.totTime = 1;
-%   sensor = eyemovementInit(sensor, p);
+%   sensor = eyemoveInit(sensor, p);
+%   sensor = eyemoveInit(sensor, p, 'tremor amplitude', 0.1);
 %
 % See also:
 %   emGenSequence
@@ -77,7 +81,7 @@ if notDefined('sensor'), sensor = sensorCreate('human'); end
 if notDefined('params'), params = []; end
 
 %% Generate eye-movement parameters
-em = emCreate(params);
+em = emCreate(params, varargin{:});
 
 %% Set eye-movement parameters to sensor
 sensor = sensorSet(sensor, 'eye movement', em);

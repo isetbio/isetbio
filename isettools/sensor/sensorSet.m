@@ -131,7 +131,6 @@ if isequal(oType,'pixel')
     if isempty(param)
         % oi = oiSet(oi,'optics',optics);
         sensor.pixel = val;
-        return;
     else
         if isempty(varargin), sensor.pixel = pixelSet(sensor.pixel,param,val);
         elseif length(varargin) == 1
@@ -139,8 +138,15 @@ if isequal(oType,'pixel')
         elseif length(varargin) == 2
             sensor.pixel = pixelSet(sensor.pixel,param,val,varargin{1},varargin{2});
         end
-        return;
     end
+    return;
+elseif isequal(oType, 'em')
+    if isempty(param)
+        sensor.human.eyemove = val;
+    else
+        sensor.human.eyemove = emSet(sensor.human.eyemove, param, val);
+    end
+    return
 elseif isempty(param)
     error('oType %s. Empty param.\n',oType);
 end
@@ -576,24 +582,6 @@ switch lower(param)
             pos = pos(1:seqLen, :);
         end
         sensor = sensorSet(sensor, 'sensorpositions', pos);
-        
-    case {'eyemove', 'eyemovement'}
-        % eye movement structure
-        sensor.human.eyemove = val;
-    case {'emtype'}
-        % eye movement type
-        assert(numel(val)==3, 'emType should be 3x1 vector');
-        sensor.human.eyemove.emType = val(:);
-        
-    case {'emtremor'}
-        % eye movemenet tremor structure
-        sensor.human.eyemove.tremor = val;
-    case {'emdrift'}
-        % eye movement drift structure
-        sensor.human.eyemove.drift = val;
-    case {'emmsaccade', 'emmicrosaccade'}
-        % eye movement microsaccade structure
-        sensor.human.eyemove.msaccade = val;
     otherwise
         error('Unknown parameter.');
 end
