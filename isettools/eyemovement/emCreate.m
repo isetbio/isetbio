@@ -99,7 +99,9 @@ end
 
 % Cool, but I am worried about field name incompatibilities
 % Maybe we should do this as a for loop with emSet(...)
-em = setstructfields(p, params);
+% And also, I couldn't find the function so I asked HJ where he got it.
+% em = setstructfields(p, params);
+em = p;
 
 % some checks for params
 assert(numel(em.emFlag)==3, 'emType should be 3x1 logical vector');

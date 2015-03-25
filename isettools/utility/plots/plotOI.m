@@ -519,7 +519,7 @@ switch pType
         
     case {'psf550'}
         % PSF at 550nm spatial units are microns
-        udata = plotOTF(oi,'psf',550);
+        udata = plotOTF(oi,'psf 550');
         set(g,'userdata',udata);
         namestr = sprintf('ISET: %s',oiGet(oi,'name'));
         set(g,'Name',namestr);

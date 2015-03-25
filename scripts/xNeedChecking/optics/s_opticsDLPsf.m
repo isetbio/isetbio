@@ -117,8 +117,8 @@ oi = oiSet(oi,'optics fnumber',fNumber);
 
 %%  Show linespread at different wavelengths
 uData = plotOI(oi,'ls wavelength');
-fNumber = opticsGet(optics,'fnumber','mm');
-fLength = opticsGet(optics,'focal length','mm');
+fNumber = oiGet(oi,'optics fnumber','mm');
+fLength = oiGet(oi,'optics focal length','mm');
 title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
 
 %% The psf spread in distance only cares about f number
@@ -126,8 +126,7 @@ title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
 oi = oiSet(oi,'optics flength',fLength);
 uData1 = plotOI(oi,'psf 550');
 
-optics = opticsSet(optics,'flength',fLength*10);
-oi = oiSet(oi,'optics',optics);
+oi = oiSet(oi,'optics flength',fLength*10);
 uData2 = plotOI(oi,'psf 550');
 
 %% For a fixed aperture, the spread in angle is invariant to f length.
@@ -135,48 +134,48 @@ uData2 = plotOI(oi,'psf 550');
 % spread function.
 
 % TEST THIS HERE.
-
-
-aphi = sqrt(aRadians(:,1).^2 + aRadians(:,2).^2);
-vcNewGraphWin([],'tall');
-subplot(3,1,1), imagesc(aphi); axis image; colorbar
-subplot(3,1,2), plot(phi10(:),aphi(:),'.'); axis square; grid on
-subplot(3,1,3), plot(phi(:),aphi(:),'.');axis square; grid on
-
-%% Extra
-
-sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
-dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
-optics = oiGet(oi,'optics');
-fLength  = opticsGet(optics,'focal length','mm');
-
-% tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
-phi = atan2(dist,fLength);
-vcNewGraphWin([],'tall');
-subplot(2,1,1), imagesc(phi); axis image; colorbar
-subplot(2,1,2), imagesc(dist); axis image; colorbar
-fNumber = opticsGet(optics,'f number');
-
-%%
-optics = opticsSet(optics,'fnumber',fNumber*2);
-oi = oiSet(oi,'optics',optics);
-sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
-dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
-fLength  = opticsGet(optics,'focal length','mm');
-% tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
-phi2 = atan2(dist,fLength);
-vcNewGraphWin([],'tall'); 
-subplot(2,1,1), imagesc(phi2); axis image; colorbar
-subplot(2,1,2), plot(phi(:),phi2(:),'.');
-
-%%
-optics = opticsSet(optics,'fnumber',fNumber*10);
-oi = oiSet(oi,'optics',optics);
-sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
-dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
-fLength  = opticsGet(optics,'focal length','mm');
-% tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
-phi10 = atan2(dist,fLength);
-vcNewGraphWin([],'tall'); 
-subplot(2,1,1), imagesc(phi); axis image; colorbar
-subplot(2,1,2), plot(phi(:),phi10(:),'.');
+% 
+% 
+% aphi = sqrt(aRadians(:,1).^2 + aRadians(:,2).^2);
+% vcNewGraphWin([],'tall');
+% subplot(3,1,1), imagesc(aphi); axis image; colorbar
+% subplot(3,1,2), plot(phi10(:),aphi(:),'.'); axis square; grid on
+% subplot(3,1,3), plot(phi(:),aphi(:),'.');axis square; grid on
+% 
+% %% Extra
+% 
+% sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
+% dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
+% optics = oiGet(oi,'optics');
+% fLength  = opticsGet(optics,'focal length','mm');
+% 
+% % tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
+% phi = atan2(dist,fLength);
+% vcNewGraphWin([],'tall');
+% subplot(2,1,1), imagesc(phi); axis image; colorbar
+% subplot(2,1,2), imagesc(dist); axis image; colorbar
+% fNumber = opticsGet(optics,'f number');
+% 
+% %%
+% optics = opticsSet(optics,'fnumber',fNumber*2);
+% oi = oiSet(oi,'optics',optics);
+% sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
+% dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
+% fLength  = opticsGet(optics,'focal length','mm');
+% % tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
+% phi2 = atan2(dist,fLength);
+% vcNewGraphWin([],'tall'); 
+% subplot(2,1,1), imagesc(phi2); axis image; colorbar
+% subplot(2,1,2), plot(phi(:),phi2(:),'.');
+% 
+% %%
+% optics = opticsSet(optics,'fnumber',fNumber*10);
+% oi = oiSet(oi,'optics',optics);
+% sSupport = oiGet(oi,'spatial support','mm');  % row,col, x/y
+% dist = sqrt(sSupport(:,:,1).^2 + sSupport(:,:,2).^2);
+% fLength  = opticsGet(optics,'focal length','mm');
+% % tan(phi) = Opp/adjacent; phi = atan2(opp,adjacent);
+% phi10 = atan2(dist,fLength);
+% vcNewGraphWin([],'tall'); 
+% subplot(2,1,1), imagesc(phi); axis image; colorbar
+% subplot(2,1,2), plot(phi(:),phi10(:),'.');

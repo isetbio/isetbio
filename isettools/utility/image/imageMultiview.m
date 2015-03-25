@@ -56,7 +56,7 @@ if singlewindow
     end
 else   rWin = []; fType = 'upper left';
 end
-gam = 1/1.7;  % Figure out a rationale for this.
+gam = 1;  % Figure out a rationale for this.
 subCount = 1; % Which subplot are we in
 
 %% This is the display loop
