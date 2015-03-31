@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_eyemovement</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-10"><meta name="DC.source" content="t_eyemovement.m"><style type="text/css">
+      --><title>t_eyemovement</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-31"><meta name="DC.source" content="t_eyemovement.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -70,7 +70,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>Create the eye movement object.<a name="2"></a></h2><pre class="codeinput">em = emCreate;
 
 <span class="comment">% Attach it to the sensor</span>
-sensor = sensorSet(sensor,<span class="string">'eye movement'</span>,em);
+sensor = sensorSet(sensor, <span class="string">'eyemove'</span>,em);
 
 <span class="comment">% This is the position every millisecond.  In this case, 0.5 sec.</span>
 sensor = sensorSet(sensor,<span class="string">'positions'</span>,zeros(1000,2));
@@ -83,7 +83,7 @@ sensor = emGenSequence(sensor);
 vcNewGraphWin;
 plot(pos(:,1),pos(:,2),<span class="string">'o-'</span>)
 </pre><img vspace="5" hspace="5" src="t_eyemovement_01.png" alt=""> <h2>Adjust the eye movement parameters<a name="4"></a></h2><p>Make the tremor much bigger</p><pre class="codeinput">amp = emGet(em,<span class="string">'tremor amplitude'</span>);
-em  = emSet(em,<span class="string">'tremor amplitude'</span>,1000*amp);
+em  = emSet(em,<span class="string">'tremor amplitude'</span>,10*amp);
 
 sensor = sensorSet(sensor,<span class="string">'eye movement'</span>,em);
 sensor = emGenSequence(sensor);
@@ -110,7 +110,7 @@ sensor = sensorCreate('human');
 em = emCreate;
 
 % Attach it to the sensor
-sensor = sensorSet(sensor,'eye movement',em);
+sensor = sensorSet(sensor, 'eyemove',em);
 
 % This is the position every millisecond.  In this case, 0.5 sec.
 sensor = sensorSet(sensor,'positions',zeros(1000,2));
@@ -131,7 +131,7 @@ plot(pos(:,1),pos(:,2),'o-')
 %
 % Make the tremor much bigger
 amp = emGet(em,'tremor amplitude');
-em  = emSet(em,'tremor amplitude',1000*amp);
+em  = emSet(em,'tremor amplitude',10*amp);
 
 sensor = sensorSet(sensor,'eye movement',em);
 sensor = emGenSequence(sensor);
