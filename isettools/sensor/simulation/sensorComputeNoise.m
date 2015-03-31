@@ -20,6 +20,10 @@ function sensor = sensorComputeNoise(sensor,wBar)
 %     sensor = sensorComputeNoise(sensor,[]);
 %
 % Copyright ImagEval Consultants, LLC, 2011.
+%
+% 3/31/15  dhb  Change if (showWaitBar) -> if (~isempty(showWaitBar)).  
+%               This fixes the fact that a waitbar is now an object in
+%               recent Matlab versions.
 
 %% Define parameters
 if notDefined('sensor'), error('Image sensor array required.'); end
@@ -61,8 +65,9 @@ sensor = sensorSet(sensor,'volts',ieClip(sensorGet(sensor,'volts'),0,vSwing));
 % Compute the digital values (DV).   The results are written into
 % sensor.data.dv.  If the quantization method is Analog, then the data.dv
 % field is cleared and the data are stored only in data.volts.
-
-if showWaitBar, waitbar(0.95,wBar,'Sensor image: A/D'); end
+if (~isempty(showWaitBar))
+    waitbar(0.95,wBar,'Sensor image: A/D');
+end
 switch lower(sensorGet(sensor,'quantizationmethod'))
     case 'analog'
         % dv = [];
