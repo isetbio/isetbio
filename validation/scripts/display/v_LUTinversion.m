@@ -96,6 +96,7 @@ function ValidationFunction(runTimeParams)
         if (~isempty(removedFolderFromCurrentPath))
             path(originalPath);
         end
+        
         % retrhow the error
         rethrow(err);
     end
