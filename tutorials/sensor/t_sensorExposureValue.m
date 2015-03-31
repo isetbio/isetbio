@@ -33,7 +33,8 @@
 s_initISET;
 
 %% Choose an HDR scene
-fName = fullfile(isetRootPath,'data','images','multispectral','Feng_Office-hdrs.mat');
+%fName = fullfile(isetRootPath,'data','images','multispectral','Feng_Office-hdrs.mat');
+fName = fullfile(isetRootPath,'data','images','multispectral','StuffedAnimals_tungsten-hdrs.mat');
 scene = sceneFromFile(fName,'multispectral');
 
 % Set the field of view to 15 deg
