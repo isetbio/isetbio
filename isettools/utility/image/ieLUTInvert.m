@@ -5,7 +5,7 @@ function lut = ieLUTInvert(inLUT, nSteps)
 %
 % Inputs:
 %   inLUT:      gamma table that converts linear DAC values to linear RGB.
-%   nSteps:     samling steps, the returned gamma table is sampled at
+%   nSteps:     sampling steps, the returned gamma table is sampled at
 %               the number of points specified by nSteps.  If it is not
 %               passed in, the default is 2048.
 %
