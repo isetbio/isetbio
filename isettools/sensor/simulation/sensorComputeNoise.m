@@ -24,10 +24,11 @@ function sensor = sensorComputeNoise(sensor,wBar)
 % 3/31/15  dhb  Change if (showWaitBar) -> if (~isempty(showWaitBar)).  
 %               This fixes the fact that a waitbar is now an object in
 %               recent Matlab versions.
+% 4/1/15   dhb  Fix a bug in yesterday's supposed bug fix.
 
 %% Define parameters
 if notDefined('sensor'), error('Image sensor array required.'); end
-if notDefined('wBar'), showWaitBar = 0; else showWaitBar = wBar; end
+if notDefined('wBar'), showWaitBar = []; else showWaitBar = wBar; end
 
 
 %% Sensor electrical and photon noise
