@@ -1,6 +1,15 @@
-function varargout = v_LUTinversion(varargin)
+function varargout = v_DisplayLutInversion(varargin)
 %
-% Validate display calibration and compare against PTB answers.
+% Validate display calibration lut inversion against PTB.
+%
+% The two don't give exactly the same results, as the inversion methods
+% are not identical.  In particular, the PTB routines, the way we are calling
+% them here, fit the gamma function with a power function, which smooths things
+% out.  (The PTB functions have many other options for how they fit gamma functions,
+% but we are not exploring those here.)  The isetbio functions do not do the smoothing.
+%
+% In the graphs, the comparison is ballpark good and we are happy enough with that.
+% We've saved out what the two do, after comparing the graphs here.
 %
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
@@ -12,36 +21,47 @@ function ValidationFunction(runTimeParams)
     %% Initialize ISET
     s_initISET;
     
+    %% Some informative text
+    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display lut inversion.');
+    
     %% Remove the Brainard lab PTB overrides folder from the path
+    % 
+    % This prevents this code from using the new BL object oriented PTB
+    % overrides.  We could include these inside of isetbio, but the risk
+    % is that whether this program worked or not would depend on whether
+    % isetbio was before or after PTB on the user's path, something we
+    % don't want to have to deal with.  Elsewhere (not in isetbio), we have
+    % established that the PTB and BrainardLab routines do the same thing.
     [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
     
     try
         
         %% Compare PTB vs ISETBIO LUT inversion for three different displays
-        displaysToTest = {'OLED-Sony', 'LCD-Apple', 'CRT-Dell'};
-        
-        %% and four different gamma table lengths
+        % and four different gamma table lengths
+        displaysToTest = {'OLED-Sony', 'LCD-Apple', 'CRT-Dell'}; 
         gammaTableLengthsToTest = [128 256 1024 2048];
         
+        % Loop over displays
         for displayIndex = 1:numel(displaysToTest)
             
-            %% Create a display object
+            % Create a display object
             d = displayCreate(displaysToTest{displayIndex});
 
-            %% Retrieve key properties of the display
-            % Gamma table
+            % Retrieve key properties of the display
+            %
+            % Gamma table, remove 4-th primary, if it exists,
+            % for testing purposes.
             gammaTable = displayGet(d, 'gamma table');
-            % Remove 4-th primary, if it exists
             if (size(gammaTable,2) > 3)
                 gammaTable = gammaTable(:,1:3);
             end
             originalGammaTableLength = size(gammaTable,1);
             originalSettingsValues   = linspace(0,1,originalGammaTableLength);
             
-            % Primary SPD
+            % Primary SPDs
+            % Remove 4-th primary, if it exists, for testing purposes.
             wave = displayGet(d, 'wave');
             spd  = displayGet(d, 'spd primaries');
-            % Remove 4-th primary, if it exists
             if (size(spd ,2) > 3)
                 spd = spd(:,1:3);
             end
@@ -50,7 +70,7 @@ function ValidationFunction(runTimeParams)
             dotsPerMeter = displayGet(d, 'dots per meter');
             screenSizeInPixels = [1920 1080];
                 
-            %% Generate PTB-compatible calStruct describing the display
+            % Generate PTB-compatible calStruct describing the display
             PTBcal = ptb.GeneratePsychToolboxCalStruct(...
                 'name', displayGet(d, 'name'), ...
                 'gammaTable', gammaTable, ...
@@ -61,7 +81,7 @@ function ValidationFunction(runTimeParams)
             );
                 
             for resolutionIndex = 1:numel(gammaTableLengthsToTest)
-                %% Compute the inverse gamma table with desired resolution
+                % Compute the inverse gamma table with desired resolution
                 nInputLevels = gammaTableLengthsToTest(resolutionIndex);
                 
                 % PTB-solution
@@ -72,8 +92,8 @@ function ValidationFunction(runTimeParams)
                 settingsValues        = PTBcal.gammaInput;
 
                 % ISETBIO solution
+                % Normalize to max of 1 for comparison with PTB
                 ISETBIOinverseGamma = displayGet(d, 'inverse gamma', nInputLevels);
-                % ISETBIOinverseGamma = ieLUTInvert(gammaTable,nInputLevels);
                 ISETBIOinverseGamma = ISETBIOinverseGamma / (originalGammaTableLength-1);
                 
                 % Log the data 
@@ -92,19 +112,20 @@ function ValidationFunction(runTimeParams)
         end
         
     catch err
-        % restore original path
+        % Restore original path and rethrow error
         if (~isempty(removedFolderFromCurrentPath))
             path(originalPath);
         end
-        
-        % retrhow the error
         rethrow(err);
     end
     
-    % restore original path
+    %% Restore original path
     if (~isempty(removedFolderFromCurrentPath))
        path(originalPath);
     end
+    
+    %% Save validation operations
+    UnitTest.validationData('inversionData', dataStruct);
     
     %% Plot
     if (runTimeParams.generatePlots)
@@ -150,6 +171,7 @@ function ValidationFunction(runTimeParams)
             end
         end
     end
+    
 end
 
 % Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.
