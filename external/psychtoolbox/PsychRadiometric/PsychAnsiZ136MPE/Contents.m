@@ -11,6 +11,11 @@
 %   We have done our best to follow the standard, but it is very complex and
 %   there may be errors.
 %
+%   b) There is now (Jan 2015) an updated version of this standard that is more
+%   conservative.  Thus these routines are now mainly for historical
+%   reference.  We would love it if someone were to provide a Matlab
+%   implementation of the new standard.
+%
 %   b) As of March, 2013, these routines are still very much a work
 %   in progress and should thus be treated with special caution.  See
 %   AnsiZ136MPEBasicTest and AnsiZ136MPEDeloriTest, both for test 

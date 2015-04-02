@@ -20,7 +20,7 @@ fprintf('  * Type 1 continuous corneal irradiance UV unweighted (5.4.1.2)\n');
 fprintf('    * Value: %0.3f, limit %0.3f (uWatts/cm2)\n',ISO2007MPEStruct.cornealUVUnweightedVal_UWattsPerCm2,ISO2007MPEStruct.cornealUVUnweightedLimit_UWattsPerCm2);
 
 %% Retinal irradiance weighted aphakic limit
-fprintf('  * Type 1 continuous aphakic retinal illumiance weighted (5.4.1.3.a)\n');
+fprintf('  * Type 1 continuous aphakic retinal illuminance weighted (5.4.1.3.a)\n');
 fprintf('    * Value: %0.3f, limit %0.3f (uWatts/cm2)\n',ISO2007MPEStruct.retIrradiancePCWeightedVal_UWattsPerCm2,ISO2007MPEStruct.retIrradiancePCWeightedLimit_UWattsPerCm2);
 
 %% Radiance weighted aphakic limit
@@ -32,7 +32,7 @@ fprintf('  * Type 1 continuous corneal irradiance IR unweighted (5.4.1.3.b)\n');
 fprintf('    * Value: %0.3f, limit %0.3f (uWatts/[sr-cm2])\n',ISO2007MPEStruct.cornealIRUnweightedVal_UWattsPerCm2,ISO2007MPEStruct.cornealIRUnweightedLimit_UWattsPerCm2);
 
 %% Retinal irradiance weighted thermal limit
-fprintf('  * Type 1 continuous thermal retinal illumiance weighted (5.4.1.3.a)\n');
+fprintf('  * Type 1 continuous thermal retinal illuminance weighted (5.4.1.3.a)\n');
 fprintf('    * Value: %0.3f, limit %0.3f (uWatts/cm2)\n',ISO2007MPEStruct.retIrradianceTHWeightedVal_UWattsPerCm2,ISO2007MPEStruct.retIrradianceTHWeightedLimit_UWattsPerCm2);
 
 %% Radiance weighted thermal limit
