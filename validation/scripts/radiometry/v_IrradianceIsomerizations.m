@@ -31,9 +31,8 @@ function varargout = v_IrradianceIsomerizations(varargin)
 %
 % 2) Check that integration over wavelength is being done consistently in
 % isetbio and PTB.  PTB works by assuming that spectral power is per
-% wavelength band.  I am not sure about isetbio.  It may take irrandiance
-% in a per nm basis and explicitly include the wavelength sampling step in
-% its numerical integration.
+% wavelength band.  Isetbio takes irrandiance in a per nm basis and explicitly
+% includes the wavelength sampling step in its numerical integration.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -207,7 +206,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.extraData('coneTolerance',coneTolerance);
    
     %% Compute quantal absorptions
-    %  Still need to:
+    %  Need to:
     %  1) Get out L, M, S absorptions from the ROI where we get the spectrum
     %  2) Compare with PTB computation done above.
     %  3) Work through parameters that might lead to differences
