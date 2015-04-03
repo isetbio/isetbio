@@ -105,13 +105,13 @@ matrixtype = ieParamFormat(matrixtype);
 switch lower(matrixtype)
     case {'lms2opp'}
         result = [0.9900   -0.1060   -0.0940; ...
-            -0.6690    0.7420   -0.0270; ...
-            -0.2120   -0.3540    0.9110];
+                 -0.6690    0.7420   -0.0270; ...
+                 -0.2120   -0.3540    0.9110];
 
     case {'opp2lms'}
         result = inv([0.9900   -0.1060   -0.0940; ...
-            -0.6690    0.7420   -0.0270; ...
-            -0.2120   -0.3540    0.9110]);
+                     -0.6690    0.7420   -0.0270; ...
+                     -0.2120   -0.3540    0.9110]);
 
         % Gosh, these are old from XZ times.  Replaced with Stockman in
         % 2012, now that we are starting to perform cone calculations.
@@ -120,51 +120,51 @@ switch lower(matrixtype)
         % Hunt-Pointer-Estevez transformation from cone
         % to XYZ, normalized for D65 (lms=[100 100 100] for D65).
         result = inv([.4002  .7076 -.0808; ...
-            -.2263 1.1653  .0457; ...
-            .0     .0     .9182]);
+                     -.2263 1.1653  .0457; ...
+                      .0     .0     .9182]);
 
     case {'xyz2hpe'}
         % Inverse of Hunt-Pointer-Estevez transformation from cone
         % to XYZ, normalized for D65 (lms=[100 100 100] for D65).
         result = [0.4002    0.7076   -0.0808; ...
-            -0.2263    1.1653    0.0457; ...
-            0         0         0.9182];
+                 -0.2263    1.1653    0.0457; ...
+                  0         0         0.9182];
 
     case {'xyz2sto','xyz2stockman','xyz2lms'}
         % Stockman cone coordinates
-        result = [ 0.2689   -0.3962    0.0214;
-            0.8518    1.1770   -0.0247;
-            -0.0358    0.1055    0.5404]';
+        result = [0.2689   -0.3962    0.0214;
+                  0.8518    1.1770   -0.0247;
+                 -0.0358    0.1055    0.5404]';
 
     case {'stockman2xyz','sto2xyz','lms2xyz'}
         % Stockman cone coordinates
         result = [1.7896    0.6079   -0.0499;
-            -1.2865    0.4072    0.0808;
-            0.3645   -0.0379    1.8040]';
+                 -1.2865    0.4072    0.0808;
+                  0.3645   -0.0379    1.8040]';
 
     case {'xyz2opp','opp2xyz'}
         if notDefined('spacetype'), spacetype = 10; end
         if (spacetype == 2)
             result = [278.7336  721.8031 -106.5520; ...
-                -448.7736  289.8056   77.1569; ...
-                85.9513 -589.9859  501.1089]/1000;
+                     -448.7736  289.8056   77.1569; ...
+                       85.9513 -589.9859  501.1089]/1000;
         elseif (spacetype == 10)
-            result = [ 288.5613  659.7617 -130.5654; ...
-                -464.8864  326.2702   62.4200; ...
-                79.8787 -554.7976  481.4746]/1000;
+            result = [288.5613  659.7617 -130.5654; ...
+                     -464.8864  326.2702   62.4200; ...
+                       79.8787 -554.7976  481.4746]/1000;
         end
         if matrixtype(1) == 'o', result = inv(result); end
 
     case {'xyz2yiq','yiq2xyz' }
-        result = [     0    1.0000         0; ...
-            1.4070   -0.8420   -0.4510; ...
-            0.9320   -1.1890    0.2330];
+        result = [0          1.0000    0; ...
+                  1.4070    -0.8420   -0.4510; ...
+                  0.9320   -1.1890     0.2330];
         if matrixtype(1) == 'y', result = inv(result); end
 
     case {'rgb2yuv' , 'yuv2rgb'}
-        result = [ 0.299   0.587   0.114; ...
-            -0.1687 -0.3313  0.5; ...
-            0.5    -0.4187 -0.0813];
+        result = [0.299   0.587   0.114; ...
+                 -0.1687 -0.3313  0.5; ...
+                  0.5    -0.4187 -0.0813];
         if (matrixtype(1) == 'y'), result = inv(result); end
 
     case{'xyz2srgb','srgb2xyz'}
@@ -184,8 +184,8 @@ switch lower(matrixtype)
         % Calculations assume the 2° standard colorimetric observer.[3]
 
         result = [3.241  -1.5374 -0.4986; ...
-            -0.9692  1.8760  0.0416; ...
-            0.0556 -0.2040  1.0570];
+                 -0.9692  1.8760  0.0416; ...
+                  0.0556 -0.2040  1.0570];
         % If user wanted srgb2xyz, we invert the matrix
         if (matrixtype(1) == 's'), result = inv(result);  end
 
@@ -195,8 +195,8 @@ switch lower(matrixtype)
         % be in the [0,1] range.  We can't figure out why XYZ is not in
         % real units.  Under discussion at Imageval.
         result = [3.241  -1.5374 -0.4986; ...
-            -0.9692  1.8760  0.0416; ...
-            0.0556 -0.2040  1.0570];
+                 -0.9692  1.8760  0.0416; ...
+                  0.0556 -0.2040  1.0570];
         % If user wanted lrgb2xyz, we invert the matrix
         if (matrixtype(1) =='l'),  result = inv(result);    end
 
@@ -222,5 +222,3 @@ end
 result = result';
 
 end
-
-
