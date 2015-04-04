@@ -132,6 +132,11 @@ switch lower(matrixtype)
 
     case {'xyz2sto','xyz2stockman','xyz2lms'}
         % Stockman cone coordinates
+        % This matrix can be programmably computed as
+        %   wave = 400:10:700;
+        %   XYZ  = ieReadSpectra('XYZ', wave);
+        %   sto  = ieReadSpectra('stockman', wave);
+        %   result = inv(XYZ' * XYZ) * XYZ' * sto
         result = [0.2689   -0.3962    0.0214;
                   0.8518    1.1770   -0.0247;
                  -0.0358    0.1055    0.5404]';
