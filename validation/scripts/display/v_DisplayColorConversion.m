@@ -42,17 +42,18 @@ try
     %% Create isetbio display 
     displayToTest = 'LCD-Apple';
     d = displayCreate(displayToTest);
-    temp = displayGet(d, 'gamma table');
-    if (size(temp,2) ~=  3)
+    gammaTable = displayGet(d, 'gamma table');
+    if (size(gammaTable,2) ~=  3)
         error('Don''t feel like dealing with a display with other than 3 primaries for this test.');
     end
+    nInputLevels = size(gammaTable,1);
     
     %% Create a uniform field radiance image in ISETBIO, using the display and the
-    % passed RGB values.
+    % passed RGB values
     RGBToTest = [0.2 0.73 0.42]';
     theRGBImage = ones(20,20,3);
     for i1 = 1:3
-        theRGBImage(:,:,i1) = round(255*RGBToTest(i1));
+        theRGBImage(:,:,i1) = round(nInputLevels*RGBToTest(i1));
     end
     sceneDegrees = 20;  % need large field
     scene = sceneFromFile(theRGBImage,'rgb',[],d);
@@ -117,26 +118,35 @@ try
     
     %% Now we're going to get the isomerizations the PTB way
     % Get cone fundamentals out of isetbio sensor, and convert
-    % to energy units.  We'll use these for PTB calcs
+    % to energy units.  We'll use these for PTB calcs.
     S_cones = WlsToS(sensorGet(sensor,'wave'));
     T_conesQE = sensorGet(sensor,'spectral qe')';
     T_conesQE = T_conesQE(2:4,:);
     T_cones = EnergyToQuanta(S_cones,T_conesQE')';
-
+    
     %% Create PTB calibration structure
-    gammaTable = displayGet(d, 'gamma table');
-    nInputLevels = size(gammaTable,1);
     wave = displayGet(d, 'wave');
-    spd  = displayGet(d, 'spd primaries');
+    spdRadiance  = displayGet(d, 'spd primaries');
     originalGammaTableLength = size(gammaTable,1);
     originalSettingsValues   = linspace(0,1,originalGammaTableLength);
     dotsPerMeter = displayGet(d, 'dots per meter');
     screenSizeInPixels = [1920 1080];
+    
+    % Convert primaries from radiance to retinal irradiance
+    % Adjust for difference in isetbio and PTB wavelength sampling
+    % conventions, and the fact that PTB 
+    pupilDiameterMeters  = opticsGet(optics,'pupil diameter','m');
+    pupilAreaMeters2 = pi*(pupilDiameterMeters/2)^2;
+    eyeLengthMeters = opticsGet(optics,'focal length','m');
+    spdIrradiance = RadianceAndPupilAreaEyeLengthToRetIrradiance(spdRadiance,WlsToS(wave),pupilAreaMeters2,eyeLengthMeters);
+    spdIrradiance = spdIrradiance*(wave(2)-wave(1));
+    
+    % Put into PTB cal structure
     PTBcal = ptb.GeneratePsychToolboxCalStruct(...
         'name', displayGet(d, 'name'), ...
         'gammaTable', gammaTable, ...
         'wave', wave, ...
-        'spd', spd, ...
+        'spd', spdIrradiance, ...
         'screenSizeInPixels', screenSizeInPixels, ...
         'dotsPerMeter', dotsPerMeter ...
         );
