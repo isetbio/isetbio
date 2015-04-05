@@ -9,10 +9,10 @@ function srgb = lms2srgb(lms)
 %  scene    = sceneCreate; imgXYZ   = sceneGet(scene,'xyz');
 %  whiteXYZ = sceneGet(scene,'illuminant xyz');
 %
-%  lms = xyz2lms(imgXYZ,1,whiteXYZ);  % Protan view
+%  lms = xyz2lms(imgXYZ, 1, 'Brettel', whiteXYZ);  % Protan view
 %  imagesc(lms2srgb(lms))
 %
-%  lms = xyz2lms(imgXYZ,0,whiteXYZ);  % Normal view
+%  lms = xyz2lms(imgXYZ, 0);  % Normal view
 %  imagesc(lms2srgb(lms))
 %
 % (c) ImagEval copyright 2012

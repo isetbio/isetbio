@@ -20,7 +20,7 @@ vcAddAndSelectObject(scene); sceneWindow
 % Show color images in a window
 vcNewGraphWin;
 for cbType = 1:3
-    lms =  xyz2lms(imgXYZ, cbType, whiteXYZ);
+    lms =  xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
     cbXYZ = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
     subplot(3,1,cbType), imagesc(xyz2srgb(cbXYZ)); axis image; axis off
 end
@@ -32,7 +32,7 @@ end
 % protan or deutan data.
 vcNewGraphWin; 
 for cbType = 1:3
-    lms =  xyz2lms(imgXYZ, cbType, whiteXYZ);
+    lms =  xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
     cbXYZ = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
     tmp = RGB2XWFormat(cbXYZ);
     subplot(3,1,cbType), plot3(tmp(:,1),tmp(:,2),tmp(:,3),'.'); grid on
@@ -48,7 +48,7 @@ whiteXYZ = sceneGet(scene,'illuminant xyz');
 % Show color images in a window
 vcNewGraphWin;
 for cbType = 1:3
-    lms =  xyz2lms(imgXYZ, cbType, whiteXYZ);
+    lms =  xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
     cbXYZ = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
     subplot(3,1,cbType), imagesc(xyz2srgb(cbXYZ)); axis image; axis off
 end
@@ -72,7 +72,7 @@ end
 
 vcNewGraphWin;
 for cbType = 1:3
-    lms =  xyz2lms(imgXYZ, cbType, whiteXYZ);
+    lms =  xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
     cbXYZ = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
     subplot(3,1,cbType), imagesc(xyz2srgb(cbXYZ)); axis image; axis off
 end
