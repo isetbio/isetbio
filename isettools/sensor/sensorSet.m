@@ -288,6 +288,15 @@ switch lower(param)
         pixel    = pixelSet(pixel,'spectral qe',cFilters);
         sensor   = sensorSet(sensor,'pixel',pixel);
         
+        % For human case, change sampling for cone, macular and lens
+        % structure
+        if sensorCheckHuman(sensor)
+            sensor.human.cone = coneSet(sensor.human.cone, 'wave', val);
+            m = macularSet(sensor.human.macular, 'wave', val);
+            sensor.human.macular = m;
+            sensor.human.lens = lensSet(sensor.human.lens, 'wave', val);
+        end
+        
     case {'integrationtime','exptime','exposuretime','expduration','exposureduration'}
         % Seconds
         sensor.integrationTime = val;
