@@ -18,15 +18,10 @@ function cone = coneSet(cone, param, val, varargin)
 %    {'spatial density'}             - density of each cone type, for
 %                                      human, it should be [K,L,M,S]
 %    {'wave', 'wavelength'}          - wavelength of samples in cones
-%    {'lens'}                        - eye lens structure
-%    {'lens density'}                - lens OD
-%    {'macular'}                     - macular pigment structure
-%    {'macular density'}             - macular density
 %    {'PODs','POD'}                  - PODs vector for [L,M,S]
 %    {'LPOD'}                        - L POD density
 %    {'MPOD'}                        - M POD density
 %    {'SPOD'}                        - S POD density
-%    {'peak lambda', 'lambda max'}   - peak spectra position, nomogram
 %    {'qe', 'peak efficiency'}       - quantal efficiency
 %    {'absorbance'}                  - cone absorbance, not recommended to
 %                                      set this parameter directly unless
@@ -37,7 +32,7 @@ function cone = coneSet(cone, param, val, varargin)
 %    MORE SUPPORTED PARAMETERS CAN BE FOUND IN FUNCTION sensorSet
 %
 %  Example:
-%    cone = coneCreate('human');
+%    cone = coneCreate;
 %    cone = coneSet('spatial density',[0.1 0.65 0.2 0.05]);
 %
 %  See also:
@@ -65,40 +60,13 @@ switch param
         cone.spatialDensity = val;
     
     case {'wave', 'wavelength'}
-        % Make sure wavelengths are consistent.
-        % We interpolate the unit density data in lens and macular by
-        % calling lensSet(lens, 'wave') and macularSet(...)
+        % Change wavelength samples
         val = val(:);
+        
+        % interpolate absorbance
+        cone.absorbance = interp1(cone.wave, cone.absorbance, ...
+                                  val, 'linear', 0);
         cone.wave = val;
-        cone.macular = macularSet(cone.macular, 'wave', val);
-        cone.lens    = lensSet(cone.lens, 'wave', val);
-
-    case {'lens'}
-        % Set the lens structure
-        % We should first make sure that val is actually a lens structure
-        % and it has the same sampling wavelength as the cone structure
-        assert(strcmp(val.type, 'lens'), 'val should be lens structure');
-        cone.lens = lensSet(val, 'wave', coneGet(cone, 'wave'));
-        
-    case {'lensdensity'}
-        % lens OD
-        cone.lens = lensSet(cone.lens, 'density', val);
-        
-    case {'macular'}
-        % Set macular structure
-        % We should first make sure that val is actually a macular
-        % structure and it has the same wavelength as the cone
-        assert(strcmp(val.type, 'macular'),'val should be macular struct');
-        cone.macular = macularSet(val, 'wave', coneGet(cone, 'wave'));
-        
-    case {'maculardensity'}
-        % cone = coneSet(cone,'macular density',val)
-        % val is typically between 0 and 0.7, a range of macular pigment
-        % densities.
-        m    = coneGet(cone,'macular');
-        m    = macularSet(m,'density',val);
-        cone = coneSet(cone,'macular',m);
-        
     case {'pods','pod'}
         % Pigment optical densities for the cones
         if (any(size(cone.PODs)~= size(val)))
@@ -115,24 +83,14 @@ switch param
     case {'spod'}
         if ~isscalar(val), error('val should be scalar'); end
         cone.PODS(3) = val;
-        
-        %     case {'peaklambda', 'lambdamax'}
-        %         cone.peakShift = val;
-        %         cone.absorbance = StockmanSharpeNomogram(cone.wave, val)';
-        %         cone.absorbance = padarray(cone.absorbance,[0 1],'pre');
-        %
+
     case {'peakefficiency', 'qe', 'quantalefficiency'}
         % Peak absorptance
         cone.peakEfficiency = val;
         
     case {'absorbance'}
-        disp('Overwrite absorbance, please be sure what you are doing');
+        % Cone absorbance
         cone.absorbance = val;
-    
-    case {'adaptationtype', 'adapttype'}
-        if cone.adaptType ~= val
-            cone = coneAdapt(cone, val);
-        end
         
     otherwise 
         error('Unknown parameter encountered');
