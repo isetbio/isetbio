@@ -89,7 +89,7 @@ t = max(fSupport(:,:,2)); maxF2 = max(t(:));
 %  We don't want to allow any output frequencies beyond the circle defined
 %  by the minimum of the two largest frequencies.  We will zero those terms
 %  later.
-maxF = min(maxF1,maxF2);  % Highest effective spatial freq (cyd/deg)
+maxF = min(maxF1, maxF2);  % Highest effective spatial freq (cyd/deg)
 
 % The human OTF is smooth.
 % To speed up calculations, we use 40 samples and interpolate the other
@@ -107,11 +107,10 @@ otf      = humanCore(wave,sampleSF,p,D0);
 OTF2D = zeros(r,c,nWave);
 l = (dist > maxF);
 
-for ii=1:nWave
-%    waitbar(ii/nWave,wBar);
-    % We have small imaginary values sometimes.  Probably rounding error
-    % in some calculation above.  We remove them here.
-    tmp = abs(interp1(sampleSF,otf(ii,:),dist,'spline'));
+for ii = 1 : nWave
+    % We remove small imaginary values here. They probably coming from
+    % rounding error in some calculation above.
+    tmp = abs(interp1(sampleSF, otf(ii,:), dist, 'spline'));
     
     % We don't want any frequencies beyond the sampling grid.  Here we
     % zero them out.

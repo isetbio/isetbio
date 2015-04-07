@@ -57,10 +57,11 @@ switch oType
 end
 
 % Set up the optics and attach to OI
-optics = siSynthetic('custom',oi,psfData);
-optics = opticsSet(optics,'model','shiftInvariant');
-optics = opticsSet(optics,'fnumber',flength/pupil);
-optics = opticsSet(optics,'flength',flength);
-oi     = oiSet(oi,'optics',optics);
+optics = siSynthetic('custom', oi, psfData);
+optics = opticsSet(optics, 'model', 'shiftInvariant');
+optics = opticsSet(optics, 'fnumber', flength/pupil);
+optics = opticsSet(optics, 'flength', flength);
+optics = opticsSet(optics, 'name', 'wvf-human');
+oi     = oiSet(oi, 'optics', optics);
 
-return
+end

@@ -107,7 +107,9 @@ switch parm
         optics.name = val;
     case 'type'
         % Should always be 'optics'
-        if ~strcmp(val,'optics'), warning('Non standard optics type setting'); end
+        if ~strcmp(val,'optics')
+            warning('Non standard optics type setting');
+        end
         optics.type = val;
         
     case {'model','opticsmodel'}
@@ -123,7 +125,20 @@ switch parm
     case {'spectrum'}
         % Spectrum structure
         optics.spectrum = val;
-    case {'wavelength','wave'}
+    case {'wavelength', 'wave'}
+        % Change wavelength sampling
+        val = val(:); % a column vector
+        % Interpolate OTF data if it is there
+        otf = opticsGet(optics, 'otf data');
+        if ~isempty(otf)
+            [otf, r, c] = RGB2XWFormat(otf);
+            otf = interp1(optics.OTF.wave, otf', val(:));
+            otf = XW2RGBFormat(otf', r, c);
+            optics = opticsSet(optics, 'otf data', otf);
+            optics.OTF.wave = val;
+        end
+        
+        % Set new wavelength 
         optics.spectrum.wave = val;
         
     case {'transmittance','opticaltransmittance'}

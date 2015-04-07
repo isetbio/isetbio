@@ -170,11 +170,11 @@ switch parm
     case {'data','datastructure'}
         oi.data = val;
 
-    case {'photons','cphotons', 'compressedphotons'}
+    case {'photons', 'cphotons', 'compressedphotons'}
         % oiSet(oi,'photons',val)
         % cphotons is obsolete and should not be used.  It will go away
         % before long.
-        if ~(isa(val, 'double') || isa(val, 'single') || isa(val, 'gpuArray')),
+        if ~(isa(val,'double') || isa(val,'single') || isa(val,'gpuArray'))
             error('Photons must be type double / single / gpuArray');
         end
         
@@ -229,13 +229,31 @@ switch parm
         oi.data.meanIll = val;
 
     case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
-        oi.spectrum  = val;
-        %     case {'binwidth','wavelengthspacing'}
-        %         oi.spectrum.binwidth = val;
+        % Set spectrum structure
+        if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
+        % adjust wavelength sampling
+        if isfield(oi, 'spectrum')
+            oi = oiSet(oi, 'wave', val.wave);
+        else
+            oi.spectrum = val;
+        end
     case {'wave','wavelength','wavelengthnanometers'}
-        % We should probably check that val is a proper set of wavelength
-        % values that make sense ... unique, evenly spaced, stuff like
-        % that.
+        % Set sampling wavelength
+        val = val(:); % column vector
+        
+        % Interpolate photons if computed
+        p = oiGet(oi, 'photons');
+        if ~isempty(p)
+            [p, r, c] = RGB2XWFormat(p); % swtich to XW format
+            p = interp1(oiGet(oi, 'wave'), p', val);
+            p = XW2RGBFormat(p', r, c);
+            oi = oiSet(oi, 'photons', p);
+        end
+        
+        % Change wavelength samples for optics
+        oi = oiSet(oi, 'optics wave', val);
+        
+        % Set new wavelegnth samples
         oi.spectrum.wave = val;
 
         % Optical methods

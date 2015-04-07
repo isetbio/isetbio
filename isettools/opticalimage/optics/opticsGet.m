@@ -370,13 +370,17 @@ switch parm
         % nanometers is default
         % opticsGet(optics,'wavelength',unit)
         %
-        if checkfields(optics,'spectrum','wave'), val = optics.spectrum.wave; end
-        if isempty(val), scene = vcGetObject('scene'); val = sceneGet(scene,'wavelength'); end
-        if isempty(val), val = 400:10:700; end
+        if checkfields(optics, 'spectrum', 'wave')
+            val = optics.spectrum.wave;
+        end
+        if isempty(val)
+            scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');
+        end
+        if isempty(val), val = 400:10:700; val = val(:); end
         
         if ~isempty(varargin)
             s = ieUnitScaleFactor(varargin{1})/ieUnitScaleFactor('nm');
-            val = val*s;
+            val = val * s;
         end
     case {'nwave','numberofwavelengthsamples'}
         if checkfields(optics,'spectrum','wave'), val = length(optics.spectrum.wave);

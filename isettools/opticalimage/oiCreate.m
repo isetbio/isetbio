@@ -74,7 +74,7 @@ switch oiType
         % view (120 deg). Used in lux-sec SNR testing and scripting
         oi = oiCreateUniformD65;
         
-    case {'uniformee','uniformeespecify'}
+    case {'uniformee', 'uniformeespecify'}
         % Uniform, equal energy optical image. No cos4th falloff. Might be used in
         % lux-sec SNR testing or scripting.  Not really used now
         % (5.3.2005).
@@ -83,13 +83,13 @@ switch oiType
         if length(varargin) >= 2, wave = varargin{2}; end
         oi = oiCreateUniformEE(sz,wave);
        
-    case {'human','mwhuman'}
+    case {'human', 'mwhuman'}
         % Marimont and Wandell optics
         % oi = oiCreate('human');
         oi = oiCreate('default');
         oi = oiSet(oi, 'diffuserMethod','skip');
         oi = oiSet(oi, 'consistency',1);
-        oi = oiSet(oi, 'optics',opticsCreate('human'));
+        oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
         
     case {'wvfhuman'}

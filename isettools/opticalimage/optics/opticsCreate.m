@@ -43,9 +43,9 @@ switch lower(opticsType)
         optics = opticsQuarterInch;
     case 'human'
         % Pupil radius in meters.  Default is 3 mm
-        if ~isempty(varargin), pupilRadius = varargin{1}; 
-        else                   pupilRadius = 0.0015; % 3mm diameter default
-        end
+        pupilRadius = 0.0015; % 3mm diameter default
+        if ~isempty(varargin), pupilRadius = varargin{1}; end
+        
         % This creates a shift-invariant optics. The other standard forms
         % are diffraction limited.
         optics = opticsHuman(pupilRadius);
@@ -210,8 +210,8 @@ optics.name = 'human';
 optics      = opticsSet(optics, 'model', 'shiftInvariant');
 
 % Ratio of focal length to diameter.  
-optics = opticsSet(optics,'fnumber',fLength/(2*pupilRadius));  
-optics = opticsSet(optics,'focalLength', fLength);  
+optics = opticsSet(optics, 'fnumber', fLength/(2*pupilRadius));  
+optics = opticsSet(optics, 'focalLength', fLength);  
 
 optics = opticsSet(optics, 'otfMethod', 'humanOTF');
 
@@ -225,24 +225,20 @@ dioptricPower = 1/fLength;      % About 60 diopters
 wave = opticsGet(optics, 'wave');
 
 % The human optics are an SI case, and we store the OTF at this point.  
-[OTF2D, frequencySupport] = humanOTF(pupilRadius, dioptricPower, [], wave);
-optics = opticsSet(optics,'otfData',OTF2D);
+[OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, [], wave);
+optics = opticsSet(optics, 'otfData', OTF2D);
 
-% Support is returned in cyc/deg.  At the human retina, 1 deg is about 300
+% Support is returned in cyc/deg. At the human retina, 1 deg is about 300
 % microns, so there are about 3 cyc/mm.  To convert from cyc/deg to cyc/mm
 % we divide by 0.3. That is:
 %  (cyc/deg * (1/mm/deg)) cyc/mm.  1/mm/deg = 1/.3
-frequencySupport = frequencySupport * (1/0.3);  % Convert to cyc/mm
+fSupport = fSupport * (1/0.3);  % Convert to cyc/mm
 
-fx     = frequencySupport(1,:,1);
-fy     = frequencySupport(:,1,2);
-optics = opticsSet(optics, 'otffx', fx(:)');
-optics = opticsSet(optics, 'otffy', fy(:)');
+fx     = fSupport(1, :, 1);
+fy     = fSupport(:, 1, 2);
+optics = opticsSet(optics, 'otffx', fx(:));
+optics = opticsSet(optics, 'otffy', fy(:));
 
 optics = opticsSet(optics, 'otfWave', wave);
 
-% figure; 
-% mesh(frequencySupport(:,:,1),frequencySupport(:,:,2),OTF2D(:,:,20));
-% mesh(abs(otf2psf(OTF2D(:,:,15))))
-%
 end

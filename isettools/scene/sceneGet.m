@@ -124,7 +124,7 @@ function val = sceneGet(scene,parm,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
+if ~exist('parm','var') || isempty(parm), error('Parameter required'); end
 
 % Default is empty when the parameter is not yet defined.
 val = [];
@@ -393,13 +393,13 @@ switch parm
         if isempty(varargin),
             val = sceneGet(scene,'photons');
             wave = sceneGet(scene,'wave');
-            [XW,r,c,w] = RGB2XWFormat(val); %#ok<NASGU>
+            [XW,r,c] = RGB2XWFormat(val);
             val = Quanta2Energy(wave,XW);
             val = XW2RGBFormat(val,r,c);
         else
             thisWave = varargin{1};  % Only one wavelength, not a list yet
             val = sceneGet(scene,'photons',thisWave);
-            [XW,r,c,w] = RGB2XWFormat(val); %#ok<NASGU>
+            [XW,r,c] = RGB2XWFormat(val);
             val = Quanta2Energy(thisWave,XW);
             val = XW2RGBFormat(val,r,c);
         end

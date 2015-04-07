@@ -59,18 +59,15 @@ function oi = oiCompute(scene,oi,opticsModel)
 if notDefined('scene'), error('Scene required.'); end
 if notDefined('oi'), error('Optical image required.'); end
 if strcmp(oi.type,'scene') && strcmp(scene.type,'opticalimage')
-    % disp('oiCompute: flipping arguments')
     tmp = scene; scene = oi; oi = tmp; clear tmp
 end
-if notDefined('opticsModel'), 
-    optics = oiGet(oi,'optics'); 
-    opticsModel = opticsGet(optics,'model'); 
+if notDefined('opticsModel')
+    opticsModel = oiGet(oi,'optics model'); 
 end
 oi = oiSet(oi, 'distance', sceneGet(scene, 'distance'));
 
 % Compute according to the selected model
-opticsModel = ieParamFormat(opticsModel);
-switch lower(opticsModel)
+switch ieParamFormat(opticsModel)
     case {'diffractionlimited','dlmtf','skip'}
         % The skip case is handled by the DL case
         oi = opticsDLCompute(scene,oi);

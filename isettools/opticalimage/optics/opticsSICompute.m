@@ -15,25 +15,25 @@ if notDefined('scene'), error('Scene required.'); end
 if notDefined('oi'), error('Opticalimage required.'); end
 showWbar = ieSessionGet('waitbar');
 
-% This is the default compute path
-optics = oiGet(oi,'optics');
-
 % Compute the basic parameters of the oi from the scene parameters.
-oi = oiSet(oi,'wangular',sceneGet(scene,'wangular'));
-oi = oiSet(oi,'spectrum',sceneGet(scene,'spectrum'));
+oi = oiSet(oi, 'wangular', sceneGet(scene,'wangular'));
+oi = oiSet(oi, 'wave', sceneGet(scene, 'wave'));
 
-if isempty(opticsGet(optics,'otfdata')), error('No psf data'); end
+% This is the default compute path
+optics = oiGet(oi, 'optics');
+
+if isempty(opticsGet(optics, 'otfdata')), error('No psf data'); end
 
 % We use the custom data.
-optics = opticsSet(optics,'spectrum',oiGet(oi,'spectrum'));
-oi     = oiSet(oi,'optics',optics);
+optics = opticsSet(optics, 'spectrum', oiGet(oi,'spectrum'));
+oi     = oiSet(oi, 'optics', optics);
 
 % Convert radiance units to optical image irradiance (photons/(s m^2 nm))
 if showWbar
     wBar = waitbar(0,'OI-SI: Calculating irradiance...');
 end
 
-oi = oiSet(oi,'cphotons',oiCalculateIrradiance(scene,optics));
+oi = oiSet(oi, 'photons', oiCalculateIrradiance(scene,optics));
 
 %-------------------------------
 % Distortion would go here. If we included it.
