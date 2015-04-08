@@ -128,21 +128,17 @@ if showBar, close(h); end
 if ~isempty(il)
     
     % Interpolate the illuminant data
-    newIlluminant = interp1(curWave,illuminantPhotons,...
-        waveSpectrum.wave,...
-        'linear',min(illuminantPhotons(:)*1e-3)');
-    % vcNewGraphWin; plot(waveSpectrum.wave,newIlluminant);
+    newIlluminant = interp1(curWave,illuminantPhotons, newWave, 'linear');
     
     % Update the scene and illuminant spectrum.
-    scene = sceneSet(scene,'spectrum',waveSpectrum);
-    scene = sceneSet(scene,'illuminant spectrum',waveSpectrum);
+    scene = sceneSet(scene, 'spectrum', waveSpectrum);
+    scene = sceneSet(scene, 'illuminant spectrum',waveSpectrum);
     
     % Put in the new illuminant photons
     scene = sceneSet(scene,'illuminant photons',newIlluminant);
 end
 
 %% Set and then adjust the luminance level
-
 % For broadband scenes, we generally want to preserve the original mean
 % luminance (stored in meanL) despite the resampling. In some cases, such
 % as extracting a monochrome scene, we might not want to preserve the mean
