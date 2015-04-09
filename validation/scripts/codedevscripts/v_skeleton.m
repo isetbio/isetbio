@@ -13,7 +13,7 @@ function ValidationFunction(runTimeParams)
 
     
     %% Initialize ISETBIO
-    s_initISET;
+    close all; ieInit;
     
     %% Isetbio validation code goes here.  
     

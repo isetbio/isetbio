@@ -1,4 +1,4 @@
-function varargout = v_DisplayLutInversion(varargin)
+function varargout = v_DisplayLUTInversion(varargin)
 %
 % Validate display calibration lut inversion against PTB.
 %
@@ -19,7 +19,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISET
-    s_initISET;
+    close all; ieInit;
     
     %% Some informative text
     UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display lut inversion.');
