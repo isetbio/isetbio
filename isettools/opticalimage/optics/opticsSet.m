@@ -132,7 +132,7 @@ switch parm
         otf = opticsGet(optics, 'otf data');
         if ~isempty(otf)
             [otf, r, c] = RGB2XWFormat(otf);
-            otf = interp1(optics.OTF.wave, otf', val(:));
+            otf = interp1(optics.OTF.wave, otf', val(:), 'linear', 0);
             otf = XW2RGBFormat(otf', r, c);
             optics = opticsSet(optics, 'otf data', otf);
             optics.OTF.wave = val;

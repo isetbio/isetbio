@@ -54,7 +54,7 @@ end
 % Convert the SPD data to a visible range image
 if abs(displayFlag) == 1
     % RGB = imageSPD2RGB(SPD,wList,gam);
-    XYZ = ieXYZFromPhotons(SPD,wList);
+    XYZ = ieXYZFromPhotons(SPD, wList);
     XYZ = XYZ/max(XYZ(:));    
     RGB = xyz2srgb(XYZ);
 elseif abs(displayFlag) == 2    % Gray scale image, used for SWIR, NIR

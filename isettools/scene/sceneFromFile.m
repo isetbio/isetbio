@@ -2,8 +2,8 @@ function [scene,I] = sceneFromFile(I, imType, meanLuminance, dispCal, ...
     wList, varargin)
 % Create a scene structure by reading data from a file
 %
-%     [scene, I] = sceneFromFile(imageData, imageType, ...
-%                  [meanLuminance], [display], [wave], [doSub], [ambient])
+%     [scene, I] = sceneFromFile(imageData, imageType, [meanLuminance], ...
+%                       [display], [wave], [doSub], [ambient], [oSample])
 %
 % imageData:  Usually the filename of an RGB image.  It is allowed to send
 %             in RGB data itself, rather than the file name.
