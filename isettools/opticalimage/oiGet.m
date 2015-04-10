@@ -688,7 +688,7 @@ switch parm
         % Render the rgb image
         photons = oiGet(oi,'photons');
         wList   = oiGet(oi,'wave');
-        [row,col,nil] = size(photons); %#ok<NASGU>
+        [row, col, ~] = size(photons);
         %         photons = RGB2XWFormat(photons);
         %         val     = imageSPD2RGB(photons,wList,gam);
         %         val     = XW2RGBFormat(val,row,col);

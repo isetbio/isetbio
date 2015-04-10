@@ -98,7 +98,7 @@ function oi = oiSet(oi,parm,val,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if ~exist('parm','var') || isempty(parm), error('Param must be defined.'); end
+if ~exist('parm','var') || isempty(parm), error('Param required'); end
 if ~exist('val','var'), error('Value field required.'); end
 
 [oType,parm] = ieParameterOtype(parm);
@@ -238,14 +238,17 @@ switch parm
             oi.spectrum = val;
         end
     case {'wave','wavelength','wavelengthnanometers'}
-        % Set sampling wavelength
+        % Set sampling wavelength if new sampling is not the same as
+        % existing wavelength sampling
+        if isequal(oiGet(oi, 'wave'), val), return; end
+        
         val = val(:); % column vector
         
         % Interpolate photons if computed
         p = oiGet(oi, 'photons');
         if ~isempty(p)
             [p, r, c] = RGB2XWFormat(p); % swtich to XW format
-            p = interp1(oiGet(oi, 'wave'), p', val);
+            p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
             p = XW2RGBFormat(p', r, c);
             oi = oiSet(oi, 'photons', p);
         end
