@@ -141,8 +141,8 @@ figure(figNum);
 % See oiShowImage.  In the future, we will read the displayFlag from
 % either a global or a setting in the oi GUI.
 displayFlag = get(handles.popupDisplay,'Value');
-oiShowImage(oi,displayFlag,gam);
-
+% oiShowImage(oi,displayFlag,gam);
+oiGet(oi,'rgb image',gam,displayFlag);
 set(handles.txtOpticalImage,'String',oiDescription(oi));
 
 end
