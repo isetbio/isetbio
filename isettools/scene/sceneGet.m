@@ -718,23 +718,24 @@ switch parm
         
         % For display purposes
     case {'rgb','rgbimage'}
-        % rgb = sceneGet(scene,'rgb image',0.6);
+        % rgb = sceneGet(scene,'rgb image',gam,displayFlag=-1);
         % imshow(rgb)
         % Get the rgb image shown in the window
         
         if isempty(varargin)
             sceneW = ieSessionGet('scene window handle');
-            if isempty(sceneW), gam = 0.6;
+            if isempty(sceneW), gam = 1;
             else gam = str2double(get(sceneW.editGamma,'string'));
             end
         else gam = varargin{1};
         end
         
-        % Render the rgb image
-        % photons = sceneGet(scene, 'photons');
-        % Reference it directly could save great amount of memory and time
-        % when 'photons' are large. This is because Matlab is using copy
-        % when change strategy.
+        % Render the rgb image from photons.  Rather than use the
+        % sceneGet() function again, we reference directly.  This seems
+        % impure, but it saves great amount of memory and time when
+        % 'photons' are large. This is because Matlab is using copy when
+        % change strategy.  In this form, the photons is just a pointer.
+        % The extra memory will not be needed.
         photons = double(scene.data.photons);
         wList   = sceneGet(scene,'wave');
         [row, col, ~] = size(photons);

@@ -51,7 +51,8 @@ if notDefined('wList')
     end
 end
 
-% Convert the SPD data to a visible range image
+% Convert the SPD data to a visible color image (1) or gray scale (2) based
+% on the absolute value
 if abs(displayFlag) == 1
     % RGB = imageSPD2RGB(SPD,wList,gam);
     XYZ = ieXYZFromPhotons(SPD, wList);
@@ -66,18 +67,21 @@ else
     error('Unknown display flag value: %d\n',displayFlag);
 end
 
-% Display the rendered RGB.  Sometimes we just return the RGB
-% values. 
+% If the displayFlag is positive, then we want the data displayed, not just
+% converted.
 if displayFlag >= 1
-    if ~isscalar(gam), RGB = RGB.^gam; end
+    if ~isequal(gam,1), RGB = RGB.^gam; end
+    
+    % Choose the display method
     if notDefined('xcoords') || notDefined('ycoords')
+        % No coordinates, just the image.  This is used in the sceneWindow.
         imagescRGB(RGB); axis image; 
     else
+        % This is used in pulldown callbacks and some scripts
         RGB = RGB/max(RGB(:));
         RGB = ieClip(RGB,0,[]);
         imagesc(xcoords,ycoords,RGB);
-        axis image;
-        grid on; 
+        axis image; grid on; 
         set(gca,'xcolor',[.5 .5 .5]);
         set(gca,'ycolor',[.5 .5 .5]);
     end
