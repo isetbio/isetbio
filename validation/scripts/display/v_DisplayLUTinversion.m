@@ -25,13 +25,15 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display lut inversion.');
     
     %% Remove the Brainard lab PTB overrides folder from the path
-    % 
+    %
     % This prevents this code from using the new BL object oriented PTB
-    % overrides.  We could include these inside of isetbio, but the risk
-    % is that whether this program worked or not would depend on whether
-    % isetbio was before or after PTB on the user's path, something we
-    % don't want to have to deal with.  Elsewhere (not in isetbio), we have
-    % established that the PTB and BrainardLab routines do the same thing.
+    % overrides.  We could include these inside of isetbio, but the risk is
+    % that whether this program worked or not would depend on whether isetbio
+    % was before or after PTB on the user's path, something we don't want to
+    % have to deal with.  Elsewhere (not in isetbio), we have established that
+    % the PTB and BrainardLab routines do the same thing (which is not
+    % surprising, as the actual calculations are done by the same underlying
+    % code in each case, just accessed differently.)
     [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
     
     try
