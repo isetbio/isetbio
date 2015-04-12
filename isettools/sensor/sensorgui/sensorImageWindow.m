@@ -51,9 +51,25 @@ end
 % --- Executes just before sensorImageWindow is made visible.
 function sensorImageWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 
-if  ~sensorOpen(hObject,eventdata,handles), sensorClose; error('No key'); 
-else sensorRefresh(hObject, eventdata, handles); 
+% Choose default command line output for sensorImageWindow
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+figure(hObject); 
+
+vcSetFigureHandles('ISA',hObject,eventdata,handles);
+
+val = vcGetSelectedObject('ISA');
+if isempty(val)
+    sensor = sensorCreate('default');
+    vcReplaceAndSelectObject(sensor,1);
 end
+
+ieFontInit(hObject);
+
+sensorRefresh(hObject, eventdata, handles); 
 
 return;
 

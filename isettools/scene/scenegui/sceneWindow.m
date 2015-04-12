@@ -43,14 +43,18 @@ end
 
 % --- Executes just before sceneWindow is made visible.
 function sceneWindow_OpeningFcn(hObject, eventdata, handles, varargin)
+% Opening function for this window
 
-% sceneOpen.p performs essential functions, but only if the key is
-% verified. Hence, commenting out this test will cause the sceneWindow to
-% fail.
-if ~sceneOpen(hObject,eventdata,handles), 
-    error('Key or license failure');   
-else sceneRefresh(hObject, eventdata, handles); 
-end
+% Update handles structure
+handles.output = hObject;
+guidata(hObject, handles);
+vcSetFigureHandles('SCENE',hObject,eventdata,handles);
+
+%  Check the preferences for ISET and adjust the font size.
+ieFontInit(hObject);
+
+% Refresh the window.
+sceneRefresh(hObject, eventdata, handles); 
 
 return
 

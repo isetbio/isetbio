@@ -11,10 +11,15 @@
 % relies on the old (u,v) format, not the (u',v') format.  See notes in
 % xyz2uv.
 %
+% See also:  blackbody, spd2cct
+%
+% Notes: spd2cct is the routine we use to name an illuminant in the scene,
+% when there is no name given by the user.
+%
 % Copyright Imageval Consulting, LLC 2013
 
 %%
-s_initISET
+ieInit
 
 %% Create an energy representation of the illuminant
 
@@ -53,12 +58,6 @@ disp('-----')
 for ii=1:length(cTemps)
     fprintf('Estimated CCT %.1f and actual %.1f\n',spd2cct(wave,spd(:,ii)),cTemps(ii));
 end
-
-%% Notes
-%
-% This is the routine we use to name an illuminant in the scene, when there
-% is no name given by the user.
-%
 
 %% END
 
