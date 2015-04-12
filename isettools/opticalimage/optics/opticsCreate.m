@@ -236,8 +236,8 @@ fSupport = fSupport * (1/0.3);  % Convert to cyc/mm
 
 fx     = fSupport(1, :, 1);
 fy     = fSupport(:, 1, 2);
-optics = opticsSet(optics, 'otffx', fx(:));
-optics = opticsSet(optics, 'otffy', fy(:));
+optics = opticsSet(optics, 'otffx', fx(:)');
+optics = opticsSet(optics, 'otffy', fy(:)');
 
 optics = opticsSet(optics, 'otfWave', wave);
 
