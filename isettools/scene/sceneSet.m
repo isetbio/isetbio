@@ -255,6 +255,12 @@ switch parm
         % If there are data, we interpolate the data as well as setting the
         % wavelength.
         % If there are no data, we just set the wavelength.
+        
+        % Check whether input is wavelength sample vector or a spectrum
+        % structure
+        if isstruct(val) && isfield(val, 'wave')
+            val = val.wave;
+        end
 
         if ~checkfields(scene,'data','photons') || isempty(scene.data.photons)
             % No data, so just set the spectrum
