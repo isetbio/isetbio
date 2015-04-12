@@ -3,8 +3,7 @@ function varargout = v_DisplayColorConversion(varargin)
 % Validate display calibration color conversion against PTB.  Oddly enough,
 % this also does some checking of LUT inversion.
 %
-% In the graphs, the comparison is ballpark good and we are happy enough with that.
-% We've saved out what the two do, after comparing the graphs here.
+% ISETBIO and PTB agree well on this calculation.
 %
 % See also v_IrradianceIsomerizations, v_DisplayLUTInversion
 
@@ -18,7 +17,7 @@ function ValidationFunction(runTimeParams)
 close all; ieInit;
 
 %% Some informative text
-UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB color conversion.');
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display color conversion.');
 
 %% Remove the Brainard lab PTB overrides folder from the path
 %
@@ -68,6 +67,7 @@ try
     % Choose RGB values in the range where the different gamma correction
     % methods used by ISETBIO and PTB agree (see v_DisplayLUTInversion).
     RGBToTest = [0.3 0.73 0.42]';
+    %RGBToTest = [1 1 1]';
     theRGBImage = ones(20,20,3);
     for i1 = 1:3
         theRGBImage(:,:,i1) = round((nInputLevels-1)*RGBToTest(i1));
@@ -199,43 +199,52 @@ try
     
     %% Compare PTB and ISETBIO LUT inversion
     %
-    % These agree well, although both appear to be a bit off.  This
-    % may be LUT inversion quantization, or something.  Can look into it
-    % further.
+    % These agree well, and match up with the plotted gamma table
     ptbRGBToTestPrimary = SettingsToPrimary(PTBcal,RGBToTest);
     isetbioRGBToTestPrimary = ieLUTDigital(theRGBImage(1,1,:),gammaTable);
     xVals = linspace(0,1,size(gammaTable,1))';
-    figure; hold on;
-    plot(xVals,gammaTable(:,1),'k');
-    plot([RGBToTest(1) RGBToTest(1)],[0 ptbRGBToTestPrimary(1)],'ro','MarkerSize',4,'MarkerFaceColor','r');
-    plot([RGBToTest(1) RGBToTest(1)],[0 isetbioRGBToTestPrimary(1)],'g','MarkerSize',4,'MarkerFaceColor','g');
-    plot([RGBToTest(2) RGBToTest(2)],[0 ptbRGBToTestPrimary(2)],'ro','MarkerSize',4,'MarkerFaceColor','r');
-    plot([RGBToTest(2) RGBToTest(2)],[0 isetbioRGBToTestPrimary(2)],'g','MarkerSize',4,'MarkerFaceColor','g');
-    plot([RGBToTest(3) RGBToTest(3)],[0 ptbRGBToTestPrimary(3)],'ro','MarkerSize',4,'MarkerFaceColor','r');
-    plot([RGBToTest(3) RGBToTest(3)],[0 isetbioRGBToTestPrimary(3)],'g','MarkerSize',4,'MarkerFaceColor','g');
-    xlabel('Input channel value (normalized 0-1)');
-    ylabel('Output channel value (normalized 0-1)');
+    if (runTimeParams.generatePlots)
+        figure; hold on;
+        plot(xVals,gammaTable(:,1),'r');
+        plot(xVals,gammaTable(:,2),'g');
+        plot(xVals,gammaTable(:,3),'b');
+        plot([RGBToTest(1)],[ptbRGBToTestPrimary(1)],'ro','MarkerSize',4,'MarkerFaceColor','r');
+        plot([RGBToTest(1)],[isetbioRGBToTestPrimary(1)],'rx','MarkerSize',6,'MarkerFaceColor','r');
+        plot([RGBToTest(2)],[ptbRGBToTestPrimary(2)],'go','MarkerSize',4,'MarkerFaceColor','g');
+        plot([RGBToTest(2)],[isetbioRGBToTestPrimary(2)],'gx','MarkerSize',6,'MarkerFaceColor','g');
+        plot([RGBToTest(3)],[ptbRGBToTestPrimary(3)],'bo','MarkerSize',4,'MarkerFaceColor','b');
+        plot([RGBToTest(3)],[isetbioRGBToTestPrimary(3)],'bx','MarkerSize',6,'MarkerFaceColor','b');
+        xlabel('Input channel value (normalized 0-1)');
+        ylabel('Output channel value (normalized 0-1)');
+    end
     tolerance = 0.001;
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(1)-isetbioRGBToTestPrimary(1)),'Red inversion comparison',tolerance);
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(2)-isetbioRGBToTestPrimary(2)),'Green inversion comparison',tolerance);
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(3)-isetbioRGBToTestPrimary(3)),'Blue inversion comparison',tolerance);
-  
+    
+    %% Easy to check if PTB LUT inversion is invertible
+    ptbRGBToTestCheck = PrimaryToSettings(PTBcal,ptbRGBToTestPrimary);
+    tolerance = 0.001;
+    UnitTest.assertIsZero(abs(ptbRGBToTestCheck(1)-RGBToTest(1)),'PTB red settings->primary->settings check',tolerance);
+    UnitTest.assertIsZero(abs(ptbRGBToTestCheck(2)-RGBToTest(2)),'PTB green settings->primary->settings check',tolerance);
+    UnitTest.assertIsZero(abs(ptbRGBToTestCheck(3)-RGBToTest(3)),'PTB blue settings->primary->settings check',tolerance);
+    
     %% Compare irradiance in optical image with that computed directly from the primaries
     %
     % First grab irradiance out of the optical image. Then construct spd using the
     % primaries above and the PTB primary settings, obtained above using PTB lut
     % inversion.
-    %
-    % These don't match by about the same amount that the LUT inversions
-    % disagree (and these disagreements are about the same as the
-    % difference in S cone isomerization rates computed below.)
     rect = [sceneSize(2)/2,sceneSize(1)/2,roiPixels,roiPixels];
     roiRoiLocs = ieRoi2Locs(rect);
     isetbioIrradianceSpdPhotons  = oiGet(oi,'roi mean photons',  roiRoiLocs); 
     ptbIrradianceSpdPhotons = ptbPrimarySpdMagCorrectIrradiancePhotons*ptbRGBToTestPrimary;
-    figure; clf; hold on;
-    plot(wave,ptbIrradianceSpdPhotons./(wave(2)-wave(1)),'r');
-    plot(wave,isetbioIrradianceSpdPhotons,'g');
+    if (runTimeParams.generatePlots)
+        figure; clf; hold on;
+        plot(wave,ptbIrradianceSpdPhotons./(wave(2)-wave(1)),'r');
+        plot(wave,isetbioIrradianceSpdPhotons,'g');
+        xlabel('Wavelength (nm)');
+        ylabel('Irradiance (quanta/[sec-m2]');
+    end
     
     %% PTB conversion to isomerization rates
     %
@@ -250,7 +259,6 @@ try
     sensorArea = sensorHeight*sensorWidth;
     ptbLMSIsomerizations = sensorArea*ptbLMSIsomerizationsRaw;
      
-    
     %% Compare the two methods. 
     %
     % Agreement is better than 1% 
@@ -267,6 +275,7 @@ try
         'isetbioIrradianceSpdPhotons',isetbioIrradianceSpdPhotons, ...
         'RGBToTest',RGBToTest, ...
         'ptbRGBToTestPrimary',ptbRGBToTestPrimary, ...
+        'ptbRGBToTestCheck',ptbRGBToTestCheck, ...
         'isetbioRGBToTestPrimary',isetbioRGBToTestPrimary, ...
         'ptbLMSIsomerizations', ptbLMSIsomerizations, ...
         'isetbioLMSIsomerizations', isetbioLMSIsomerizations ...
