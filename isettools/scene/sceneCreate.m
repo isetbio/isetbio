@@ -569,8 +569,13 @@ end
 
 %----------------------------------
 function scene = sceneDefault(scene,illuminantType,args)
-%% Default scene is a Macbeth chart with D65 illuminant and patchSize 16
-% pixels.
+%% Default is a Macbeth chart with D65 illuminant and 16 pixels/patch
+%
+% The input arguments are
+%   pixelsPerPatch and wavelength
+%
+%   sceneDefault(scene,'d65',16,[400:10:700]);
+%
 
 if notDefined('illuminantType'), illuminantType = 'd65'; end
 if notDefined('args'), args = []; end
@@ -580,10 +585,9 @@ else patchSize = args{1};
 end
 
 % Create the scene variable
-scene = sceneSet(scene,'type','scene');
 if isempty(args) || length(args) < 2 || isempty(args{2})
-    scene = initDefaultSpectrum(scene,'hyperspectral');
-else    scene = sceneSet(scene,'spectrum',args{2});
+        scene = initDefaultSpectrum(scene,'hyperspectral');
+else    scene = sceneSet(scene,'wave',args{2});
 end
 wave = sceneGet(scene,'wave');
 

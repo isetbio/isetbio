@@ -673,32 +673,40 @@ switch parm
         
         % Visual information
     case {'rgb','rgbimage'}
-        % Get the rgb image shown in the window
-        % rgb = oiGet(oi,'rgb image',0.6);
-        % imwrite(rgb,fName,'tiff')
+        % Get the rgb image shown in the oi window.  If the displayFlag is
+        % set, show the image too.
+        %
+        %   rgb = oiGet(oi,'rgb image',gamma=1,displayFlag=-1);
         
+        if checkfields(oi,'data','photons')
+            % Get the photons to later render the rgb image
+            photons = oi.data.photons;  % Save a lot of memory by direct access.
+        else
+            % No photons, so return val as empty
+            return;
+        end
+        
+        % Deal with display gamma
         if isempty(varargin)
             oiW = ieSessionGet('oi window handle');
-            if isempty(oiW), gam = 0.6;
+            if isempty(oiW), gam = 1;
             else             gam = str2double(get(oiW.editGamma,'string'));
             end
         else gam = varargin{1}; 
         end
         
-        % Render the rgb image
-        photons = oiGet(oi,'photons');
         wList   = oiGet(oi,'wave');
         [row, col, ~] = size(photons);
-        %         photons = RGB2XWFormat(photons);
-        %         val     = imageSPD2RGB(photons,wList,gam);
-        %         val     = XW2RGBFormat(val,row,col);
-        %
-        displayFlag = -1;  % Compute rgb, but do not display
+
+        displayFlag = -1;  % Default is do not display, just compute
+        if length(varargin) > 1, displayFlag = varargin{2}; end
+        
+        % Compute and show (or not)
         val = imageSPD(photons,wList,gam,row,col,displayFlag);
         
         % Depth information: The depth map in the OI domain indicates
         % locations where there were legitimate scene data for computing
-        % the OI data.  Other regions are 'extrapoalted' by sceneDepthRange
+        % the OI data.  Other regions are 'extrapolated' by sceneDepthRange
         % to keep the calculations correct.  But they don't always
         % correspond to the original data.  When there is no depthMap in
         % the scene, these are all logically '1' (true).
