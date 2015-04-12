@@ -1,6 +1,7 @@
 function varargout = v_DisplayColorConversion(varargin)
 %
-% Validate display calibration color conversion against PTB.
+% Validate display calibration color conversion against PTB.  Oddly enough,
+% this also does some checking of LUT inversion.
 %
 % In the graphs, the comparison is ballpark good and we are happy enough with that.
 % We've saved out what the two do, after comparing the graphs here.
@@ -186,16 +187,9 @@ try
     
     % Kluge.  Should set this properly in creation routine.  It might even
     % be possible to do so, I'm not sure and the documentation in the
-    % function is not clear on what the options are.
+    % function is not clear on what the options are (as there is no
+    % documentation at all, sigh.)
     PTBcal.P_ambient = zeros(length(wave),1);
-    
-    % Refit cal gamma to match better what ISETBIO does.  This example is
-    % not very power function like.
-    %
-    % This should also be something we could specify at the point where we
-    % convert the ISETBIO function to PTB form.
-    PTBcal.describe.gamma.fitType = 'crtLinear';
-    PTBcal = CalibrateFitGamma(PTBcal);
     
     %% Initialize PTB calibration structure.
     PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
@@ -219,7 +213,13 @@ try
     plot([RGBToTest(2) RGBToTest(2)],[0 isetbioRGBToTestPrimary(2)],'g','MarkerSize',4,'MarkerFaceColor','g');
     plot([RGBToTest(3) RGBToTest(3)],[0 ptbRGBToTestPrimary(3)],'ro','MarkerSize',4,'MarkerFaceColor','r');
     plot([RGBToTest(3) RGBToTest(3)],[0 isetbioRGBToTestPrimary(3)],'g','MarkerSize',4,'MarkerFaceColor','g');
-    
+    xlabel('Input channel value (normalized 0-1)');
+    ylabel('Output channel value (normalized 0-1)');
+    tolerance = 0.001;
+    UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(1)-isetbioRGBToTestPrimary(1)),'Red inversion comparison',tolerance);
+    UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(2)-isetbioRGBToTestPrimary(2)),'Green inversion comparison',tolerance);
+    UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(3)-isetbioRGBToTestPrimary(3)),'Blue inversion comparison',tolerance);
+  
     %% Compare irradiance in optical image with that computed directly from the primaries
     %
     % First grab irradiance out of the optical image. Then construct spd using the
@@ -250,15 +250,24 @@ try
     sensorArea = sensorHeight*sensorWidth;
     ptbLMSIsomerizations = sensorArea*ptbLMSIsomerizationsRaw;
      
+    
     %% Compare the two methods. 
     %
-    % Agreement is better than 1% for L and M, about 6% for S.  Why is
-    % S off? 
+    % Agreement is better than 1% 
     isomerizationRatios = ptbLMSIsomerizations ./ isetbioLMSIsomerizations;
     fprintf('PTB/ISETBIO LMS isomerization ratios: %0.3f, %0.3f, %0.3f\n',isomerizationRatios(1),isomerizationRatios(2),isomerizationRatios(3));
+    tolerance = 0.01;
+    UnitTest.assertIsZero(abs(isomerizationRatios(1)-1),'L isomerization comparison',tolerance);
+    UnitTest.assertIsZero(abs(isomerizationRatios(2)-1),'M isomerization comparison',tolerance);
+    UnitTest.assertIsZero(abs(isomerizationRatios(3)-1),'S isomerization comparison',tolerance);
     
     % Log the data
     dataStruct = struct( ...
+        'ptbIrradianceSpdPhotons',ptbIrradianceSpdPhotons, ...
+        'isetbioIrradianceSpdPhotons',isetbioIrradianceSpdPhotons, ...
+        'RGBToTest',RGBToTest, ...
+        'ptbRGBToTestPrimary',ptbRGBToTestPrimary, ...
+        'isetbioRGBToTestPrimary',isetbioRGBToTestPrimary, ...
         'ptbLMSIsomerizations', ptbLMSIsomerizations, ...
         'isetbioLMSIsomerizations', isetbioLMSIsomerizations ...
         );

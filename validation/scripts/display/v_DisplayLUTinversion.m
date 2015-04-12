@@ -11,6 +11,8 @@ function varargout = v_DisplayLUTInversion(varargin)
 % In the graphs, the comparison is ballpark good and we are happy enough with that.
 % We've saved out what the two do, after comparing the graphs here.
 %
+% See also v_IrradianceIsomerizations, v_DisplayColorConversion
+
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
