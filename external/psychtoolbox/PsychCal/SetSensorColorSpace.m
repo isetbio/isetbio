@@ -49,6 +49,9 @@ errorRet = 0;
 P_device = cal.P_device;
 T_device = cal.T_device;
 S_device = cal.S_device;
+if (isempty(S_device) & isfield(cal.describe,'S'))
+    S_device = cal.describe.S;
+end
 nDevices = cal.nDevices;
 nPrimaryBases = cal.nPrimaryBases;
 if isempty(P_device) || isempty(T_device) || isempty(S_device) || ...
@@ -60,6 +63,9 @@ end
 P_ambient = cal.P_ambient;
 T_ambient = cal.T_ambient;
 S_ambient = cal.S_ambient;
+if (isempty(S_ambient) & isfield(cal.describe,'S'))
+    S_ambient = cal.describe.S;
+end
 if isempty(P_ambient) || isempty(T_device) || isempty(S_device)
 	error('Calibration structure does not contain ambient data');
 end
