@@ -46,15 +46,25 @@ end
 % --- Executes just before oiWindow is made visible.
 function oiWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 
-if ~oiOpen(hObject,eventdata,handles), return;
-else
-    g = get(handles.editGamma,'String');
-    set(handles.editGamma,'String',g);
-    oiRefresh(hObject, eventdata, handles);
-end
+% Choose default command line output for microLensWindow
+handles.output = hObject;
 
+% Update handles structure
+guidata(hObject, handles);
 
-return;
+vcSetFigureHandles('OI',hObject,eventdata,handles);
+
+%  Check the preferences for ISET and adjust the font size.
+ieFontInit(hObject);
+
+% Deal with gamma  Not sure why this is here, really. 
+% More important - Gamma is not working here or in scene
+% g = get(handles.editGamma,'String');
+% set(handles.editGamma,'String',g);
+
+oiRefresh(hObject, eventdata, handles);
+
+return
 
 % --- Outputs from this function are returned to the command line.
 function varargout = oiWindow_OutputFcn(hObject, eventdata, handles)
