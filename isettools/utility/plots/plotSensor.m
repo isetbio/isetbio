@@ -159,7 +159,7 @@ switch pType
         [uData, g] = plotSpectra(sensor,'sensor spectral qe');
     case {'sensorspectralsr'}
         % Sensor spectral spectral responsivity
-        error('Not yet implemented: sensor spectral sr.  Check pixelSR');
+        error('Not yet implemented: sensor spectral sr. Check pixelSR');
         
         % Sensor and Pixel electronics related
     case {'pixelsnr'}
@@ -181,6 +181,14 @@ switch pType
         uData.support = support;
         uData.spread = spread;
         uData.delta = delta;
+        g = gcf;
+    case {'humandemosaicimage'}
+        if ~isempty(varargin)
+            uData.srgb = sensorDemosaicCones(sensor, varargin{:});
+        else
+            uData.srgb = sensorDemosaicCones(sensor);
+        end
+        vcNewGraphWin; imshow(uData.srgb);
         g = gcf;
     otherwise
         error('Unknown sensor plot type %s\n',pType);

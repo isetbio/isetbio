@@ -1079,6 +1079,12 @@ switch param
         if checkfields(sensor,'human','rSeed')
             val = sensor.human.rSeed;
         end
+    case {'humandemosaicimage'}
+        if ~isempty(varargin)
+            val = sensorDemosaicCones(sensor, varargin{:});
+        else
+            val = sensorDemosaicCones(sensor);
+        end
         
     case {'sampletimeinterval', 'timeinterval'}
         if checkfields(sensor, 'human', 'timeInterval')
