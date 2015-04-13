@@ -11,14 +11,7 @@
 % Copyright Imageval LLC, 2012
 
 %% Initialize
-s_initISET
-
-% To achieve the same result each time
-try
-    rng('default');  
-catch err
-    randn('seed');
-end
+ieInit;
 
 %% Create a line scene, human optics, and a human sensor
 % This is a broad band stimulus, with a spectral power distribution of
@@ -51,9 +44,9 @@ sensorPlotLine(sensor,'h','photons','space',xy);
 %% Change the line scene to 450nm and plot
 preserveLuminance = 1;
 
-line450S = sceneInterpolateW(lineS,450,preserveLuminance);
-oi = oiCompute(line450S,oi);
-sensor = sensorCompute(sensor,oi);
+line450S = sceneInterpolateW(lineS, 450, preserveLuminance);
+oi450S = oiCompute(line450S,oi);
+sensor = sensorCompute(sensor,oi450S);
 sensor = sensorSet(sensor,'name','human-450');
 y = sensorGet(sensor,'cols')/2;
 xy = [0 y];
@@ -67,8 +60,8 @@ sensorWindow;
 preserveLuminance = 1;
 
 line550S = sceneInterpolateW(lineS,550,preserveLuminance);
-oi = oiCompute(line550S,oi);
-sensor = sensorCompute(sensor,oi);
+oi550S = oiCompute(line550S,oi);
+sensor = sensorCompute(sensor,oi550S);
 sensor = sensorSet(sensor,'name','human-550');
 y = sensorGet(sensor,'cols')/2;
 xy = [0 y];
@@ -100,14 +93,12 @@ sensorPlotLine(sensor,'h','photons','space',xy);
 %% Show the 450 nm version of the grid.  Surprising, hunh?
 % This version is very blurred, of course.  Surprisingly so.
 grid450S = sceneInterpolateW(gridS,450,preserveLuminance);
-oi = oiCompute(grid450S,oi);
+oi450S = oiCompute(grid450S,oi);
 
 sensor = sensorSet(sensor,'exp time',0.050);
-sensor = sensorCompute(sensor,oi);
+sensor = sensorCompute(sensor,oi450S);
 sensor = sensorSet(sensor,'name','human-grid');
 
 vcAddAndSelectObject(sensor);
 sensorWindow;
 sensorPlotLine(sensor,'h','photons','space',xy);
-
-

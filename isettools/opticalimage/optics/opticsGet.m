@@ -595,7 +595,7 @@ switch parm
 
     case {'otffx'}
         % cycles/mm!!! Non-standard unit. Must fix up some day.
-        if checkfields(optics,'OTF','fx'), val = optics.OTF.fx; end
+        if checkfields(optics,'OTF','fx'), val = optics.OTF.fx(:)'; end
         % Transform into other units if required
         if ~isempty(varargin)
             unit = ieParamFormat(varargin{1});
@@ -607,7 +607,7 @@ switch parm
         end
     case {'otffy'}
         % cycles/mm!!! Non-standard unit. Must fix up some day.
-        if checkfields(optics,'OTF','fy'), val= optics.OTF.fy; end
+        if checkfields(optics,'OTF','fy'), val= optics.OTF.fy(:)'; end
         % Put into meters and then apply scale factor
         if ~isempty(varargin), 
             unit = ieParamFormat(varargin{1});
