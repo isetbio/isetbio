@@ -1,0 +1,237 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_humanLineSpread</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-13"><meta name="DC.source" content="t_humanLineSpread.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_humanLineSpread</h1><!--introduction--><p>Illustrate the photon absorptions from a line stimulus.</p><p>This iillustrates the practical measurement of the human line spread function, including photon noise, irregular spacing, and so forth.</p><p>We illustrate the result for various spectral power distributions of the line stimuli, as well as the sum of a few nearby lines.</p><p>Copyright Imageval LLC, 2012</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Create a line scene, human optics, and a human sensor</a></li><li><a href="#3">Compute and display</a></li><li><a href="#4">Plot a line showing the photon absorptions for the broadband stimulus</a></li><li><a href="#5">Change the line scene to 450nm and plot</a></li><li><a href="#6">Show the  450 nm image</a></li><li><a href="#7">Show the spread of the line at 550 nm</a></li><li><a href="#8">Show the 550 nm image</a></li><li><a href="#9">Create a small grid pattern and image it on the sensor</a></li><li><a href="#10">Plot a line through the two grid lines</a></li><li><a href="#11">Show the 450 nm version of the grid.  Surprising, hunh?</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Create a line scene, human optics, and a human sensor<a name="2"></a></h2><p>This is a broad band stimulus, with a spectral power distribution of daylight, 6500 K.  We set the field of view to one degree.</p><p>The optics are the estimated human optics, as per Marimont and Wandell in the mid-90s.</p><p>The sensor has an approximation to the human cones, with random positions of the three cone types.</p><pre class="codeinput">lineS = sceneCreate(<span class="string">'line d65'</span>);
+lineS = sceneSet(lineS,<span class="string">'h fov'</span>,1);
+oi = oiCreate(<span class="string">'human'</span>);
+sensor = sensorCreate(<span class="string">'human'</span>);
+sensor = sensorSet(sensor,<span class="string">'exp time'</span>,0.010);
+</pre><h2>Compute and display<a name="3"></a></h2><pre class="codeinput">oi = oiCompute(lineS,oi);
+sensor = sensorCompute(sensor,oi);
+sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-D65'</span>);
+
+vcAddAndSelectObject(sensor);
+sensorWindow(<span class="string">'scale'</span>,1);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_01.png" alt=""> <h2>Plot a line showing the photon absorptions for the broadband stimulus<a name="4"></a></h2><pre class="codeinput">y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
+xy = [0 y];
+sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_02.png" alt=""> <h2>Change the line scene to 450nm and plot<a name="5"></a></h2><pre class="codeinput">preserveLuminance = 1;
+
+line450S = sceneInterpolateW(lineS, 450, preserveLuminance);
+oi450S = oiCompute(line450S,oi);
+sensor = sensorCompute(sensor,oi450S);
+sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-450'</span>);
+y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
+xy = [0 y];
+sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_03.png" alt=""> <h2>Show the  450 nm image<a name="6"></a></h2><pre class="codeinput">vcAddAndSelectObject(sensor);
+sensorWindow;
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_04.png" alt=""> <h2>Show the spread of the line at 550 nm<a name="7"></a></h2><pre class="codeinput">preserveLuminance = 1;
+
+line550S = sceneInterpolateW(lineS,550,preserveLuminance);
+oi550S = oiCompute(line550S,oi);
+sensor = sensorCompute(sensor,oi550S);
+sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-550'</span>);
+y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
+xy = [0 y];
+sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_05.png" alt=""> <h2>Show the 550 nm image<a name="8"></a></h2><pre class="codeinput">vcAddAndSelectObject(sensor);
+sensorWindow;
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_06.png" alt=""> <h2>Create a small grid pattern and image it on the sensor<a name="9"></a></h2><pre class="codeinput">imgSize = 128; lineSeparation = 32;
+gridS = sceneCreate(<span class="string">'gridlines'</span>,imgSize,lineSeparation);
+gridS = sceneSet(gridS,<span class="string">'h fov'</span>,1);
+oi = oiCompute(gridS,oi);
+sensor = sensorSet(sensor,<span class="string">'exp time'</span>,0.050);
+sensor = sensorCompute(sensor,oi);
+sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-grid'</span>);
+
+<span class="comment">% Show it</span>
+vcAddAndSelectObject(sensor);
+sensorWindow;
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_07.png" alt=""> <h2>Plot a line through the two grid lines<a name="10"></a></h2><p>The</p><pre class="codeinput">y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
+xy = [0 y];
+sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_08.png" alt=""> <h2>Show the 450 nm version of the grid.  Surprising, hunh?<a name="11"></a></h2><p>This version is very blurred, of course.  Surprisingly so.</p><pre class="codeinput">grid450S = sceneInterpolateW(gridS,450,preserveLuminance);
+oi450S = oiCompute(grid450S,oi);
+
+sensor = sensorSet(sensor,<span class="string">'exp time'</span>,0.050);
+sensor = sensorCompute(sensor,oi450S);
+sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-grid'</span>);
+
+vcAddAndSelectObject(sensor);
+sensorWindow;
+sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><img vspace="5" hspace="5" src="t_humanLineSpread_09.png" alt=""> <img vspace="5" hspace="5" src="t_humanLineSpread_10.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_humanLineSpread
+%
+% Illustrate the photon absorptions from a line stimulus.
+%
+% This iillustrates the practical measurement of the human line spread
+% function, including photon noise, irregular spacing, and so forth.
+%
+% We illustrate the result for various spectral power distributions of the
+% line stimuli, as well as the sum of a few nearby lines.
+%
+% Copyright Imageval LLC, 2012
+
+%% Initialize
+ieInit;
+
+%% Create a line scene, human optics, and a human sensor
+% This is a broad band stimulus, with a spectral power distribution of
+% daylight, 6500 K.  We set the field of view to one degree.
+%
+% The optics are the estimated human optics, as per Marimont and Wandell in
+% the mid-90s. 
+%
+% The sensor has an approximation to the human cones, with random positions
+% of the three cone types.
+lineS = sceneCreate('line d65');
+lineS = sceneSet(lineS,'h fov',1);
+oi = oiCreate('human');
+sensor = sensorCreate('human');
+sensor = sensorSet(sensor,'exp time',0.010);
+
+%%  Compute and display
+oi = oiCompute(lineS,oi);
+sensor = sensorCompute(sensor,oi);
+sensor = sensorSet(sensor,'name','human-D65');
+
+vcAddAndSelectObject(sensor);
+sensorWindow('scale',1);
+
+%% Plot a line showing the photon absorptions for the broadband stimulus
+y = sensorGet(sensor,'cols')/2;
+xy = [0 y];
+sensorPlotLine(sensor,'h','photons','space',xy);
+
+%% Change the line scene to 450nm and plot
+preserveLuminance = 1;
+
+line450S = sceneInterpolateW(lineS, 450, preserveLuminance);
+oi450S = oiCompute(line450S,oi);
+sensor = sensorCompute(sensor,oi450S);
+sensor = sensorSet(sensor,'name','human-450');
+y = sensorGet(sensor,'cols')/2;
+xy = [0 y];
+sensorPlotLine(sensor,'h','photons','space',xy);
+
+%% Show the  450 nm image 
+vcAddAndSelectObject(sensor); 
+sensorWindow;
+
+%% Show the spread of the line at 550 nm
+preserveLuminance = 1;
+
+line550S = sceneInterpolateW(lineS,550,preserveLuminance);
+oi550S = oiCompute(line550S,oi);
+sensor = sensorCompute(sensor,oi550S);
+sensor = sensorSet(sensor,'name','human-550');
+y = sensorGet(sensor,'cols')/2;
+xy = [0 y];
+sensorPlotLine(sensor,'h','photons','space',xy);
+
+%% Show the 550 nm image 
+vcAddAndSelectObject(sensor); 
+sensorWindow;
+
+%% Create a small grid pattern and image it on the sensor
+imgSize = 128; lineSeparation = 32;
+gridS = sceneCreate('gridlines',imgSize,lineSeparation);
+gridS = sceneSet(gridS,'h fov',1);
+oi = oiCompute(gridS,oi);
+sensor = sensorSet(sensor,'exp time',0.050);
+sensor = sensorCompute(sensor,oi);
+sensor = sensorSet(sensor,'name','human-grid');
+
+% Show it
+vcAddAndSelectObject(sensor);
+sensorWindow;
+
+%% Plot a line through the two grid lines
+% The
+y = sensorGet(sensor,'cols')/2;
+xy = [0 y];
+sensorPlotLine(sensor,'h','photons','space',xy);
+
+%% Show the 450 nm version of the grid.  Surprising, hunh?
+% This version is very blurred, of course.  Surprisingly so.
+grid450S = sceneInterpolateW(gridS,450,preserveLuminance);
+oi450S = oiCompute(grid450S,oi);
+
+sensor = sensorSet(sensor,'exp time',0.050);
+sensor = sensorCompute(sensor,oi450S);
+sensor = sensorSet(sensor,'name','human-grid');
+
+vcAddAndSelectObject(sensor);
+sensorWindow;
+sensorPlotLine(sensor,'h','photons','space',xy);
+##### SOURCE END #####
+--></body></html>
