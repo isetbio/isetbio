@@ -50,8 +50,6 @@ function cal = CalibrateFitGamma(cal,nInputLevels)
 % 6/11/10  dhb  Allow passing of weighting parameter as part of cal.describe.gamma structure.  Change functional form of betacdf
 %               to include wrapped power functions.
 % 4/12/11  dhb  For simplePower option, return vector of exponents in cal.describe.exponents.
-% 4/12/15  dhb  For crtLinear, handle case where contrast thresh is passed
-%               as empty.  Set it to default value in this case.
 
 % Set nInputLevels
 if (nargin < 2 || isempty(nInputLevels))
@@ -76,7 +74,7 @@ switch(cal.describe.gamma.fitType)
         % Set to zero the raw data we believe to be below reliable measurement
         % threshold, and then fit the rest by linear interpolation.  Force answer
         % to be monotonic.
-        if (~isfield(cal.describe.gamma,'contrastThresh') | isempty(cal.describe.gamma.contrastThresh) )
+        if (~isfield(cal.describe.gamma,'contrastThresh'))
             cal.describe.gamma.contrastThresh = 0.001;
         end
         mGammaMassaged = cal.rawdata.rawGammaTable(:,1:cal.nDevices);
