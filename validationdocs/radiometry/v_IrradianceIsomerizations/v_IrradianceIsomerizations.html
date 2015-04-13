@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_IrradianceIsomerizations</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-02"><meta name="DC.source" content="v_IrradianceIsomerizations.m"><style type="text/css">
+      --><title>v_IrradianceIsomerizations</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-13"><meta name="DC.source" content="v_IrradianceIsomerizations.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -99,9 +99,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">%</span>
 <span class="comment">% 2) Check that integration over wavelength is being done consistently in</span>
 <span class="comment">% isetbio and PTB.  PTB works by assuming that spectral power is per</span>
-<span class="comment">% wavelength band.  I am not sure about isetbio.  It may take irrandiance</span>
-<span class="comment">% in a per nm basis and explicitly include the wavelength sampling step in</span>
-<span class="comment">% its numerical integration.</span>
+<span class="comment">% wavelength band.  Isetbio takes irrandiance in a per nm basis and explicitly</span>
+<span class="comment">% includes the wavelength sampling step in its numerical integration.</span>
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 <span class="keyword">end</span>
@@ -201,7 +200,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     UnitTest.validationData(<span class="string">'isetCones'</span>,isetbioCones);
     UnitTest.validationData(<span class="string">'ptbCones'</span>,ptbCones);
     UnitTest.extraData(<span class="string">'coneTolerance'</span>,coneTolerance);
-</pre><h2>Compute quantal absorptions<a name="18"></a></h2><pre>Still need to:
+</pre><h2>Compute quantal absorptions<a name="18"></a></h2><pre>Need to:
 1) Get out L, M, S absorptions from the ROI where we get the spectrum
 2) Compare with PTB computation done above.
 3) Work through parameters that might lead to differences
@@ -337,9 +336,8 @@ function varargout = v_IrradianceIsomerizations(varargin)
 %
 % 2) Check that integration over wavelength is being done consistently in
 % isetbio and PTB.  PTB works by assuming that spectral power is per
-% wavelength band.  I am not sure about isetbio.  It may take irrandiance
-% in a per nm basis and explicitly include the wavelength sampling step in
-% its numerical integration.
+% wavelength band.  Isetbio takes irrandiance in a per nm basis and explicitly
+% includes the wavelength sampling step in its numerical integration.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -513,7 +511,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.extraData('coneTolerance',coneTolerance);
    
     %% Compute quantal absorptions
-    %  Still need to:
+    %  Need to:
     %  1) Get out L, M, S absorptions from the ROI where we get the spectrum
     %  2) Compare with PTB computation done above.
     %  3) Work through parameters that might lead to differences
