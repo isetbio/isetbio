@@ -36,6 +36,10 @@ function [cal, errorRet] = SetSensorColorSpace(cal, T_sensor, S_sensor,quiet)
 %                   it's possible that deleting those will break something in
 %                   some calling program.  So I'm leaving both in for the next
 %                   few years.
+% 4/14/15  dhb      Handle case where S_device and/or S_ambient are not
+%                   passed, or are passed empty.  This has to do with
+%                   maintaining forward compatibility with BrainardLab
+%                   code.
 
 if nargin < 4 || isempty(quiet)
   quiet = 1;
@@ -43,6 +47,14 @@ end
 
 % Set no error condition
 errorRet = 0;
+
+% Fix up empty S fields that can get passed in BrainardLab land
+if (~isfield(cal,'S_device') | isempty(cal.S_device))
+    cal.S_device = cal.describe.S;
+end
+if (~isfield(cal,'S_ambient') | isempty(cal.S_ambient))
+    cal.S_ambient = cal.describe.S;
+end
 
 % Extract needed fields from calibration structure
 % Colorimetric
