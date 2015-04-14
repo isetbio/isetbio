@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-13"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
+      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-14"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISET</a></li><li><a href="#5">Some informative text</a></li><li><a href="#6">Remove the Brainard lab PTB overrides folder from the path</a></li><li><a href="#8">Compare PTB vs ISETBIO LUT inversion for three different displays</a></li><li><a href="#10">Restore original path</a></li><li><a href="#11">Save validation operations</a></li><li><a href="#12">Plot</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_DisplayLUTInversion(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISET</a></li><li><a href="#5">Some informative text</a></li><li><a href="#6">Remove the Brainard lab PTB overrides folder from the path</a></li><li><a href="#8">Compare PTB vs ISETBIO LUT inversion for three different displays</a></li><li><a href="#10">Restore original path</a></li><li><a href="#11">Save validation operations</a></li><li><a href="#12">Plot</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_DisplayLUTinversion(varargin)
 <span class="comment">%</span>
 <span class="comment">% Validate display calibration lut inversion against PTB.</span>
 <span class="comment">%</span>
@@ -251,7 +251,7 @@ Fitting with linear interpolation
 <span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-function varargout = v_DisplayLUTInversion(varargin)
+function varargout = v_DisplayLUTinversion(varargin)
 %
 % Validate display calibration lut inversion against PTB.
 %
