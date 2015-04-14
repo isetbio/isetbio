@@ -1,0 +1,222 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_skeleton</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-14"><meta name="DC.source" content="v_skeleton.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISETBIO</a></li><li><a href="#5">Isetbio validation code goes here.</a></li><li><a href="#6">Some informative text</a></li><li><a href="#7">Internal validations</a></li><li><a href="#8">Simple assertion</a></li><li><a href="#9">Data for external validations</a></li><li><a href="#10">Data to keep just because it would be nice to have</a></li><li><a href="#11">Plotting</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_skeleton(varargin)
+<span class="comment">%</span>
+<span class="comment">% Skeleton script containing the minimally required code. Copy and add your ISETBIO validation code.</span>
+<span class="comment">%</span>
+<span class="comment">% [THE ONE LINE COMMENT ABOVE WILL GET AUTOPUBLISHED AS THE DESCRIPTION OF</span>
+<span class="comment">% THIS SCRIPT.]</span>
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+<span class="keyword">end</span>
+</pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Initialize ISETBIO<a name="4"></a></h2><pre class="codeinput">    close <span class="string">all</span>; ieInit;
+</pre><h2>Isetbio validation code goes here.<a name="5"></a></h2><h2>Some informative text<a name="6"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Skeleton script. Copy and adapt to your needs.'</span>);
+</pre><h2>Internal validations<a name="7"></a></h2><p>Check whether quantity is within tolerance of zero</p><pre class="codeinput">    quantityOfInterest = randn(100,1)*0.0000001;
+    tolerance = 0.000001;
+    UnitTest.assertIsZero(quantityOfInterest,<span class="string">'Result'</span>,tolerance);
+
+    <span class="comment">% If you want to do a more complicated comparison, you could write</span>
+    <span class="comment">% things out more fully along the lines of the commented out code</span>
+    <span class="comment">% here:</span>
+    <span class="comment">%</span>
+    <span class="comment">% if (max(abs(quantityOfInterest) &gt; tolerance))</span>
+    <span class="comment">%     message = sprintf('Result exceeds specified tolerance (%0.1g). !!!', tolerance);</span>
+    <span class="comment">%     UnitTest.validationRecord('FAILED', message);</span>
+    <span class="comment">% else</span>
+    <span class="comment">%     message = sprintf('Result is within the specified tolerance (%0.1g).', tolerance);</span>
+    <span class="comment">%     UnitTest.validationRecord('PASSED', message);</span>
+    <span class="comment">% end</span>
+</pre><h2>Simple assertion<a name="8"></a></h2><pre class="codeinput">    fundamentalCheckPassed = true;
+    UnitTest.assert(fundamentalCheckPassed,<span class="string">'fundamental assertion'</span>);
+
+    <span class="comment">% You can also do a customized assert that only prints on failure</span>
+    <span class="comment">% as in the commented out code below.  This would also allow you to</span>
+    <span class="comment">% put a return after the check, to abort trying to go along further.</span>
+    <span class="comment">% This method produces a more agressive error message and should be</span>
+    <span class="comment">% reserved only for cases where something is very deeply wrong should</span>
+    <span class="comment">% the assertion fail.</span>
+    <span class="comment">% if (~fundamentalCheckPassed)</span>
+    <span class="comment">%     UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'A fundamental check failed');</span>
+    <span class="comment">% end</span>
+</pre><h2>Data for external validations<a name="9"></a></h2><pre class="codeinput">    dataA = ones(10,20);
+
+    <span class="comment">% Add validation data - these will be contrasted against the</span>
+    <span class="comment">% ground truth data with respect to a specified tolerance level</span>
+    <span class="comment">% and the result will determine whether the validation passes or fails.</span>
+    UnitTest.validationData(<span class="string">'variableNameForDataA'</span>, dataA);
+</pre><h2>Data to keep just because it would be nice to have<a name="10"></a></h2><pre class="codeinput">    dataB = rand(10,30);
+
+    <span class="comment">% Add extra data - these will be contrasted against their stored</span>
+    <span class="comment">% counterpants only when the verbosity level is set to 'med' or higher,</span>
+    <span class="comment">% and only when running in 'FULL' validation mode.</span>
+    <span class="comment">% The validation status does not depend on the status of these comparisons.</span>
+    <span class="comment">% This can be useful for storing variables that have a stochastic component.</span>
+    UnitTest.extraData(<span class="string">'variableNameForDataB'</span>, dataB);
+</pre><h2>Plotting<a name="11"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        figure(7);
+        clf;
+        plot(1:numel(quantityOfInterest ), quantityOfInterest , <span class="string">'k-'</span>);
+        hold <span class="string">on</span>;
+        plot([1 numel(quantityOfInterest )], tolerance*[1 1], <span class="string">'r-'</span>);
+        set(gca, <span class="string">'YLim'</span>, [min(quantityOfInterest ) max([max(quantityOfInterest ) tolerance])*1.1]);
+        drawnow;
+    <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_skeleton_01.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_skeleton(varargin)
+%
+% Skeleton script containing the minimally required code. Copy and add your ISETBIO validation code.
+%
+% [THE ONE LINE COMMENT ABOVE WILL GET AUTOPUBLISHED AS THE DESCRIPTION OF
+% THIS SCRIPT.]
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+    
+    %% Initialize ISETBIO
+    close all; ieInit;
+    
+    %% Isetbio validation code goes here.  
+    
+    
+    %% Some informative text
+    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Skeleton script. Copy and adapt to your needs.');
+    
+    %% Internal validations
+    %
+    % Check whether quantity is within tolerance of zero
+    quantityOfInterest = randn(100,1)*0.0000001;
+    tolerance = 0.000001;
+    UnitTest.assertIsZero(quantityOfInterest,'Result',tolerance);
+    
+    % If you want to do a more complicated comparison, you could write
+    % things out more fully along the lines of the commented out code
+    % here:
+    %
+    % if (max(abs(quantityOfInterest) > tolerance))
+    %     message = sprintf('Result exceeds specified tolerance (%0.1g). !!!', tolerance);
+    %     UnitTest.validationRecord('FAILED', message);
+    % else
+    %     message = sprintf('Result is within the specified tolerance (%0.1g).', tolerance);
+    %     UnitTest.validationRecord('PASSED', message);
+    % end
+    
+    %% Simple assertion
+    fundamentalCheckPassed = true;
+    UnitTest.assert(fundamentalCheckPassed,'fundamental assertion');
+    
+    % You can also do a customized assert that only prints on failure
+    % as in the commented out code below.  This would also allow you to
+    % put a return after the check, to abort trying to go along further.
+    % This method produces a more agressive error message and should be
+    % reserved only for cases where something is very deeply wrong should
+    % the assertion fail.
+    % if (~fundamentalCheckPassed)
+    %     UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'A fundamental check failed');
+    % end
+        
+    
+    %% Data for external validations
+    dataA = ones(10,20);
+    
+    % Add validation data - these will be contrasted against the
+    % ground truth data with respect to a specified tolerance level
+    % and the result will determine whether the validation passes or fails.
+    UnitTest.validationData('variableNameForDataA', dataA);
+    
+    %% Data to keep just because it would be nice to have
+    dataB = rand(10,30);
+     
+    % Add extra data - these will be contrasted against their stored
+    % counterpants only when the verbosity level is set to 'med' or higher,
+    % and only when running in 'FULL' validation mode.
+    % The validation status does not depend on the status of these comparisons.
+    % This can be useful for storing variables that have a stochastic component.
+    UnitTest.extraData('variableNameForDataB', dataB);
+    
+    %% Plotting
+    if (runTimeParams.generatePlots)
+        figure(7);
+        clf;
+        plot(1:numel(quantityOfInterest ), quantityOfInterest , 'k-');
+        hold on;
+        plot([1 numel(quantityOfInterest )], tolerance*[1 1], 'r-');
+        set(gca, 'YLim', [min(quantityOfInterest ) max([max(quantityOfInterest ) tolerance])*1.1]);
+        drawnow;
+    end
+end
+
+##### SOURCE END #####
+--></body></html>
