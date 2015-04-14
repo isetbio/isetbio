@@ -9,7 +9,6 @@ function validateFullAll(varargin)
 %    'verbosity' -    high, med, low ...
 %    'numeric tolerance'
 %    'graph mismatched data'
-%    'update ground truth'
 %    'generate plots'
 %
 % Examples:
@@ -59,8 +58,6 @@ elseif ~isodd(length(varargin))
                 UnitTest.setPref('numericTolerance', val);
             case 'graphMismatchedData'
                 UnitTest.setPref('graphMismatchedData', val);
-            case 'updateGroundTruth'
-                UnitTest.setPref('updateGroundTruth', val);
             case 'generatePlots'
                 UnitTest.setPref('generatePlots',  val);
             otherwise
