@@ -314,12 +314,17 @@ originalPath = path;
 % Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path
 PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';
 
-% determine if the PTBoverridesDirToRemoveFromPath is in the current path
+% determine if the PTBoverridesDirToRemoveFromPath is in the current path,
+% and if it is remove it.
 pathCell = regexp(path, pathsep, 'split');
-onPath = any(strcmpi(PTBoverridesDirToRemoveFromPath, pathCell));
-if (onPath)
-    rmpath(PTBoverridesDirToRemoveFromPath);
-    removedFolderFromCurrentPath = PTBoverridesDirToRemoveFromPath;
+for k = 1:numel(pathCell)
+  % fprintf('[%d] = %s\n', k, pathCell{k});
+   if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
+       rmpath(pathCell{k});
+       removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
+       fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', PTBoverridesDirToRemoveFromPath,k);
+   end
 end
+
 end
 
