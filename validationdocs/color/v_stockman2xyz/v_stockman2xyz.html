@@ -85,7 +85,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     UnitTest.validationData(<span class="string">'wave'</span>, wave);
     UnitTest.validationData(<span class="string">'xyz'</span>, xyz);
     UnitTest.validationData(<span class="string">'stockman'</span>, stock);
-</pre><h2>Make matrix that transforms XYZ to Stockman-Sharpe<a name="6"></a></h2><p>Isetbio keeps sensitivities in columns and matrices are applied to the right to transform.</p><p>Note (sigh) that PTB keeps sensitivities in rows and that matrices are appplied from the left, so if you are going to use PTB routines you need to think about this.</p><pre class="codeinput">    T_xyz2ss = xyz \ stock;
+</pre><img vspace="5" hspace="5" src="v_stockman2xyz_01.png" alt=""> <h2>Make matrix that transforms XYZ to Stockman-Sharpe<a name="6"></a></h2><p>Isetbio keeps sensitivities in columns and matrices are applied to the right to transform.</p><p>Note (sigh) that PTB keeps sensitivities in rows and that matrices are appplied from the left, so if you are going to use PTB routines you need to think about this.</p><pre class="codeinput">    T_xyz2ss = xyz \ stock;
     pred = xyz*T_xyz2ss;
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         plot(pred(:),stock(:), <span class="string">'.'</span>); grid <span class="string">on</span>; axis <span class="string">equal</span>
@@ -93,7 +93,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         xlabel(<span class="string">'Predicted Stockman-Sharpe Sensitivities'</span>);
         ylabel(<span class="string">'Actual Stockman-Sharpe Sensitivities'</span>);
     <span class="keyword">end</span>
-</pre><h2>Make the one that goes the other way.<a name="7"></a></h2><pre class="codeinput">    T_ss2xyz = stock \ xyz;
+</pre><img vspace="5" hspace="5" src="v_stockman2xyz_02.png" alt=""> <h2>Make the one that goes the other way.<a name="7"></a></h2><pre class="codeinput">    T_ss2xyz = stock \ xyz;
     pred = stock*T_ss2xyz;
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         plot(pred(:),xyz(:),<span class="string">'.'</span>); grid <span class="string">on</span>; axis <span class="string">equal</span>
@@ -101,7 +101,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         xlabel(<span class="string">'Predicted XYZ Sensitivities'</span>);
         ylabel(<span class="string">'Actual XYZ Sensitivities'</span>);
     <span class="keyword">end</span>
-</pre><h2>Get the same things out of colorTransformMatrix<a name="8"></a></h2><pre class="codeinput">    T1 = colorTransformMatrix(<span class="string">'stockman 2 xyz'</span>);
+</pre><img vspace="5" hspace="5" src="v_stockman2xyz_03.png" alt=""> <h2>Get the same things out of colorTransformMatrix<a name="8"></a></h2><pre class="codeinput">    T1 = colorTransformMatrix(<span class="string">'stockman 2 xyz'</span>);
     T2 = colorTransformMatrix(<span class="string">'xyz 2 stockman'</span>);
     tolerance = 1e-3;
     quantityOfInterest = T1-T_ss2xyz;

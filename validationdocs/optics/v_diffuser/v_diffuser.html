@@ -94,14 +94,14 @@ figure(1); mesh(X,Y,blurFilter);
         oiWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'oi1'</span>,oi);
-</pre><h2>Rotate the diffusing blur direction 90 degrees.<a name="6"></a></h2><pre class="codeinput">    oi = oiSet(oi,<span class="string">'diffuserBlur'</span>,[2,6]*10^-6);
+</pre><img vspace="5" hspace="5" src="v_diffuser_01.png" alt=""> <h2>Rotate the diffusing blur direction 90 degrees.<a name="6"></a></h2><pre class="codeinput">    oi = oiSet(oi,<span class="string">'diffuserBlur'</span>,[2,6]*10^-6);
     oi = oiCompute(scene,oi);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcReplaceAndSelectObject(oi);
         oiWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'oi2'</span>,oi);
-</pre><h2>END<a name="7"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_diffuser_02.png" alt=""> <h2>END<a name="7"></a></h2><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_diffuser(varargin)

@@ -143,7 +143,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         ylim([0 0.5]);
         title(<span class="string">'Cone quantal efficiency'</span>);
     <span class="keyword">end</span>
-</pre><h2>Do the whole thing again, but with the macular pigment set to zero<a name="14"></a></h2><p>The cone absorbance, cone absorptance, and lens transmittance don't change, but macular transmittance and the cone quantal efficiences do.</p><p>Note that we need to be sure to write the changed human structure back into the sensor.</p><pre class="codeinput">    human.macular = macularSet(human.macular,<span class="string">'density'</span>,0);
+</pre><img vspace="5" hspace="5" src="v_Cones_01.png" alt=""> <h2>Do the whole thing again, but with the macular pigment set to zero<a name="14"></a></h2><p>The cone absorbance, cone absorptance, and lens transmittance don't change, but macular transmittance and the cone quantal efficiences do.</p><p>Note that we need to be sure to write the changed human structure back into the sensor.</p><pre class="codeinput">    human.macular = macularSet(human.macular,<span class="string">'density'</span>,0);
     sensor = sensorSet(sensor,<span class="string">'human'</span>,human);
     human  = sensorGet(sensor,<span class="string">'human'</span>);
 </pre><h2>Absorbance<a name="15"></a></h2><pre class="codeinput">    coneAbsorbanceNoMac = coneGet(human.cone,<span class="string">'absorbance'</span>);
@@ -181,7 +181,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         ylim([0 0.5]);
         title(<span class="string">'Cone quantal efficiency - no macular'</span>);
     <span class="keyword">end</span>
-</pre><h2>End<a name="21"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_Cones_02.png" alt=""> <h2>End<a name="21"></a></h2><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_Cones(varargin)
