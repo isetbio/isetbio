@@ -36,7 +36,9 @@ function ValidationFunction(runTimeParams)
     % the PTB and BrainardLab routines do the same thing (which is not
     % surprising, as the actual calculations are done by the same underlying
     % code in each case, just accessed differently.)
-    [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
+    %
+    % But, we don't think we need this.
+    % [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
     
     try
         
@@ -117,16 +119,16 @@ function ValidationFunction(runTimeParams)
         
     catch err
         % Restore original path and rethrow error
-        if (~isempty(removedFolderFromCurrentPath))
-            path(originalPath);
-        end
+        %if (~isempty(removedFolderFromCurrentPath))
+        %    path(originalPath);
+        %end
         rethrow(err);
     end
     
     %% Restore original path
-    if (~isempty(removedFolderFromCurrentPath))
-       path(originalPath);
-    end
+    %if (~isempty(removedFolderFromCurrentPath))
+    %   path(originalPath);
+    %end
     
     %% Save validation operations
     UnitTest.validationData('inversionData', dataStruct);

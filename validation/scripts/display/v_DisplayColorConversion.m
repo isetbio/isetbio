@@ -29,7 +29,9 @@ UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display col
 % the PTB and BrainardLab routines do the same thing (which is not
 % surprising, as the actual calculations are done by the same underlying
 % code in each case, just accessed differently.)
-[removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
+%
+% But, we don't think we need this.
+%[removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
 
 
 try
@@ -284,16 +286,16 @@ try
     
 catch err
     % Restore original path and rethrow error
-    if (~isempty(removedFolderFromCurrentPath))
-        path(originalPath);
-    end
+    % if (~isempty(removedFolderFromCurrentPath))
+    %     path(originalPath);
+    % end
     rethrow(err);
 end
 
 %% Restore original path
-if (~isempty(removedFolderFromCurrentPath))
-    path(originalPath);
-end
+% if (~isempty(removedFolderFromCurrentPath))
+%     path(originalPath);
+% end
 
 %% Save validation operations
 UnitTest.validationData('conversionData', dataStruct);
