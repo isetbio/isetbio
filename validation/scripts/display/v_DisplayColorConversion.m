@@ -1,7 +1,6 @@
 function varargout = v_DisplayColorConversion(varargin)
 %
-% Validate display calibration color conversion against PTB.  Oddly enough,
-% this also does some checking of LUT inversion.
+% Validate display calibration color conversion against PTB.  Oddly enough, this also does some checking of LUT inversion.
 %
 % ISETBIO and PTB agree well on this calculation.
 %
