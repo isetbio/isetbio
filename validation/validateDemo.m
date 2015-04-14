@@ -67,7 +67,7 @@ function validateDemo
         rootDir = UnitTest.getPref('validationRootDir');
         
         vScriptsList = {...
-           {fullfile(rootDir, 'scripts', 'color', 'v_stockman2xyz.m')}
+           {fullfile(rootDir, 'scripts', 'display', 'v_DisplayColorConversion.m')}
            {fullfile(rootDir, 'scripts', 'codedevscripts', 'v_skeleton.m'), struct('generatePlots', true) }
         };
     end
