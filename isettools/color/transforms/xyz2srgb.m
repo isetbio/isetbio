@@ -70,7 +70,7 @@ Y = xyz(:,:,2); maxY = max(Y(:));
 if maxY > 1, xyz = xyz/maxY; 
 else maxY = 1; end
 if min(xyz(:)) < 0
-    sprintf('Warning:  Clipping negative values in XYZ %f\n',min(xyz(:)));
+    fprintf('Warning:  Clipping negative values in XYZ %f\n',min(xyz(:)));
     xyz = ieClip(xyz,0,1);
 end
 lrgb = imageLinearTransform(xyz, matrix);
