@@ -79,7 +79,7 @@ function result = colorTransformMatrix(matrixtype,spacetype)
 %  Convert between XYZ and Stockman fundamentals
 %   wave = 400:5:700;
 %   xyz = ieReadSpectra('XYZ',wave);
-%   stock = ieReadSpectra('Stockman',wave);
+%   stock = ieReadSpectra('stockman',wave);
 %   T = colorTransformMatrix('stockman 2 xyz');
 %   pred = stock*T; plot(xyz(:),pred(:),'.'); axis equal; grid on
 %
@@ -92,6 +92,8 @@ function result = colorTransformMatrix(matrixtype,spacetype)
 % See also: colorTransformMatrixCreate
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+%
+% 4/13/15  dhb  Comment fix: ieReadSpectra('Stockman',wave) -> ieReadSpectr('stockman',wave)
 
 % Programming Note: When Xuemei originally built this list, she had in mind
 % T3x3*colVector At ImagEval, we use rowVector*T3x3.  We retained her terms
