@@ -68,8 +68,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISET</a></li><li><a href="#5">Some informative text</a></li><li><a href="#6">Remove the Brainard lab PTB overrides folder from the path</a></li><li><a href="#7">Overview</a></li><li><a href="#8">Create isetbio display</a></li><li><a href="#9">Create a uniform field radiance image in ISETBIO</a></li><li><a href="#10">Compute optial image, for delta function optics.</a></li><li><a href="#11">Compute sensor image</a></li><li><a href="#12">Get the LMS isomerization rates out of the sensor image</a></li><li><a href="#13">Get cone fundamentals that ISETBIO is using, for use with PTB routines.</a></li><li><a href="#14">Create PTB calibration structure from ISETBIO display object</a></li><li><a href="#15">Initialize PTB calibration structure.</a></li><li><a href="#16">Compare PTB and ISETBIO LUT inversion</a></li><li><a href="#17">Easy to check if PTB LUT inversion is invertible</a></li><li><a href="#18">Compare irradiance in optical image with that computed directly from the primaries</a></li><li><a href="#19">PTB conversion to isomerization rates</a></li><li><a href="#20">Compare the two methods.</a></li><li><a href="#22">Restore original path</a></li><li><a href="#23">Save validation operations</a></li><li><a href="#24">Plot</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_DisplayColorConversion(varargin)
 <span class="comment">%</span>
-<span class="comment">% Validate display calibration color conversion against PTB.  Oddly enough,</span>
-<span class="comment">% this also does some checking of LUT inversion.</span>
+<span class="comment">% Validate display calibration color conversion against PTB.  Oddly enough, this also does some checking of LUT inversion.</span>
 <span class="comment">%</span>
 <span class="comment">% ISETBIO and PTB agree well on this calculation.</span>
 <span class="comment">%</span>
@@ -298,8 +297,7 @@ pathCell = regexp(path, pathsep, <span class="string">'split'</span>);
 ##### SOURCE BEGIN #####
 function varargout = v_DisplayColorConversion(varargin)
 %
-% Validate display calibration color conversion against PTB.  Oddly enough,
-% this also does some checking of LUT inversion.
+% Validate display calibration color conversion against PTB.  Oddly enough, this also does some checking of LUT inversion.
 %
 % ISETBIO and PTB agree well on this calculation.
 %
