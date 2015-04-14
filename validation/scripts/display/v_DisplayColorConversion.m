@@ -31,6 +31,7 @@ UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display col
 % code in each case, just accessed differently.)
 [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
 
+
 try
     %% Overview
     %
@@ -322,7 +323,7 @@ for k = 1:numel(pathCell)
    if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
        rmpath(pathCell{k});
        removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
-       fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', PTBoverridesDirToRemoveFromPath,k);
+       fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);
    end
 end
 
