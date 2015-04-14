@@ -120,6 +120,8 @@ function ValidationFunction(runTimeParams)
     
     %% sRGB
     %
+    % [Some of this may have changed in isetbio since this was written.]
+    %
     % The iset routines seem to use a matrix that is 1/100 of the standard
     % definition.  Or, at least, 1/100 of what the PTB routines use.  To
     % account for this, I multiply XYZ values by 100 before passing them
@@ -146,6 +148,14 @@ function ValidationFunction(runTimeParams)
     % is hard coded as 2.4.  This causes a failure of the iset sRGB gamma
     % routines to self-invert for gamma other than 2.4, and with their
     % defaults.
+    %
+    % The exact order of clipping and scaling in the conversion from
+    % XYZ to sRGB matters in some cases.  ISETBIO scales in XYZ by
+    % the maximum Y value, then clips negative XYZ values, then converts
+    % to SRGB primaries, and then clips to 0-1.  PTB does not touch the
+    % XYZ values normally, and can either scale to max of 1 in SRGB primary
+    % or clip, depending on how you call SRGBGammaCorrect.  This difference
+    % is not revealed by the testing here, as it doesn't hit this case.
     %
     % One other convention difference is that the PTB routine rounds to
     % integers for the settings, while the iset routine leaves the rounding up
