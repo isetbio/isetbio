@@ -87,9 +87,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
 </pre><h2>Initialize ISET<a name="4"></a></h2><pre class="codeinput">    close <span class="string">all</span>; ieInit;
 </pre><h2>Some informative text<a name="5"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Compare isetbio and PTB display lut inversion.'</span>);
-</pre><h2>Remove the Brainard lab PTB overrides folder from the path<a name="6"></a></h2><p>This prevents this code from using the new BL object oriented PTB overrides.  We could include these inside of isetbio, but the risk is that whether this program worked or not would depend on whether isetbio was before or after PTB on the user's path, something we don't want to have to deal with.  Elsewhere (not in isetbio), we have established that the PTB and BrainardLab routines do the same thing (which is not surprising, as the actual calculations are done by the same underlying code in each case, just accessed differently.)</p><pre class="codeinput">    [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
-
-    <span class="keyword">try</span>
+</pre><h2>Remove the Brainard lab PTB overrides folder from the path<a name="6"></a></h2><p>This prevents this code from using the new BL object oriented PTB overrides.  We could include these inside of isetbio, but the risk is that whether this program worked or not would depend on whether isetbio was before or after PTB on the user's path, something we don't want to have to deal with.  Elsewhere (not in isetbio), we have established that the PTB and BrainardLab routines do the same thing (which is not surprising, as the actual calculations are done by the same underlying code in each case, just accessed differently.)</p><p>But, we don't think we need this. [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();</p><pre class="codeinput">    <span class="keyword">try</span>
 </pre><h2>Compare PTB vs ISETBIO LUT inversion for three different displays<a name="8"></a></h2><p>and four different gamma table lengths</p><pre class="codeinput">        displaysToTest = {<span class="string">'OLED-Sony'</span>, <span class="string">'LCD-Apple'</span>, <span class="string">'CRT-Dell'</span>};
         gammaTableLengthsToTest = [128 256 1024 2048];
 
@@ -176,14 +174,14 @@ Fitting with linear interpolation
 Fitting with linear interpolation
 </pre><pre class="codeinput">    <span class="keyword">catch</span> err
         <span class="comment">% Restore original path and rethrow error</span>
-        <span class="keyword">if</span> (~isempty(removedFolderFromCurrentPath))
-            path(originalPath);
-        <span class="keyword">end</span>
+        <span class="comment">%if (~isempty(removedFolderFromCurrentPath))</span>
+        <span class="comment">%    path(originalPath);</span>
+        <span class="comment">%end</span>
         rethrow(err);
     <span class="keyword">end</span>
-</pre><h2>Restore original path<a name="10"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (~isempty(removedFolderFromCurrentPath))
-       path(originalPath);
-    <span class="keyword">end</span>
+</pre><h2>Restore original path<a name="10"></a></h2><pre class="codeinput">    <span class="comment">%if (~isempty(removedFolderFromCurrentPath))</span>
+    <span class="comment">%   path(originalPath);</span>
+    <span class="comment">%end</span>
 </pre><h2>Save validation operations<a name="11"></a></h2><pre class="codeinput">    UnitTest.validationData(<span class="string">'inversionData'</span>, dataStruct);
 </pre><h2>Plot<a name="12"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
         h = figure(1);
@@ -228,7 +226,7 @@ Fitting with linear interpolation
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayLUTinversion_01.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
 
 <span class="comment">% Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.</span>
 <span class="comment">% We want to remove this override, so we can use the original PTB functions</span>
@@ -289,7 +287,9 @@ function ValidationFunction(runTimeParams)
     % the PTB and BrainardLab routines do the same thing (which is not
     % surprising, as the actual calculations are done by the same underlying
     % code in each case, just accessed differently.)
-    [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
+    %
+    % But, we don't think we need this.
+    % [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
     
     try
         
@@ -370,16 +370,16 @@ function ValidationFunction(runTimeParams)
         
     catch err
         % Restore original path and rethrow error
-        if (~isempty(removedFolderFromCurrentPath))
-            path(originalPath);
-        end
+        %if (~isempty(removedFolderFromCurrentPath))
+        %    path(originalPath);
+        %end
         rethrow(err);
     end
     
     %% Restore original path
-    if (~isempty(removedFolderFromCurrentPath))
-       path(originalPath);
-    end
+    %if (~isempty(removedFolderFromCurrentPath))
+    %   path(originalPath);
+    %end
     
     %% Save validation operations
     UnitTest.validationData('inversionData', dataStruct);
