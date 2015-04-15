@@ -1,4 +1,4 @@
-function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(displayName, calStruct, varargin)
+function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName, calStruct, varargin)
 % displayObject = generateIsetbioDisplayObjectFromCalStructObject(displayName, calStruct, varargin)
 %
 % Method to generate an isetbio display object with given specifications
