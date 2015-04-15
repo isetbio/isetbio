@@ -5,7 +5,7 @@ function synchronizeISETBIOWithPTB
     srcDir = '/Users/Shared/Matlab/Toolboxes/Psychtoolbox-3/Psychtoolbox';
     
     % Get names of sub-directories of $isetbio/external/ptb
-    fprintf('\nChecking contents of %s\n', dstDir);
+    fprintf('\nChecking contents of destination directory (%s) to determine which files to sync.\n', dstDir);
     dirContents = dir(dstDir);
     ignoredDirs = {'+ptb', '', '.', '..'};
     destDirs = {}; srcDirs = {};
