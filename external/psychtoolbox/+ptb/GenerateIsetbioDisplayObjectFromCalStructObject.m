@@ -17,7 +17,7 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     checkCalStruct = @(x) isa(x, 'CalStruct');
 
     % Check is ExtraCalData
-    checkExtraData = @(x) isa(x, 'ExtraCalData');
+    checkExtraData = @(x) isa(x, 'ptb.ExtraCalData');
     
     % Input parser to check validity of inputs
     input = inputParser;
