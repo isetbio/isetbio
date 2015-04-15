@@ -43,17 +43,14 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     if (~isempty(input.Results.ExtraData.subSamplingSvector))
         % Validate that the subSamplingSvector is within range of the original S vector
         validateSVector(calStructOBJ.get('S'), input.Results.ExtraData.subSamplingSvector);
+        fprintf('Will subsample SPDs with a resolution of %d nm\n', input.Results.ExtraData.subSamplingSvector(2));
+        
         % SubSample the SPDs 
         newS = input.Results.ExtraData.subSamplingSvector;              
         lowPassSigmaInNanometers = 4;        
         maintainTotalEnergy = true;
         showFig = false;
-        if (exist('subSampleSPDs', 'file'))
-            fprintf('Will subsample SPDs with a resolution of %d nm\n', newS(2));
-            [subSampledWave, subSampledSPDs] = subSampleSPDs(S, spd, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
-        else
-            error('Function ''subSampleSPDs'', is a function of the BLIlluminationDiscrimination project, but this project is not on your path');
-        end
+        [subSampledWave, subSampledSPDs] = ptb.SubSampleSPDs(S, spd, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
         % Set the display object's SPD to the subsampled versions
         displayObject = displaySet(displayObject, 'wave', subSampledWave);
         displayObject = displaySet(displayObject, 'spd', subSampledSPDs);
