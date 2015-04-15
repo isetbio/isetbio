@@ -10,9 +10,8 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
 % 3/2/2015     xd   Updated to take in ExtraCalData struct
 % 3/9/2015     xd   Updated S Vector behavior
 % 4/15/2015    npc  Cleaned up a bit, subsample Svector is now a property of ExtraData
-    
-    % Input parser to see if optional S vector input exists
-    input = inputParser;
+% 4/15/2015    npc  Added input arg, to control whether to save the generated isetbio display object  
+
     
     % Check that the CalStruct input is indeed a CalStruct
     checkCalStruct = @(x) isa(x, 'CalStruct');
@@ -20,9 +19,12 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     % Check is ExtraCalData
     checkExtraData = @(x) isa(x, 'ExtraCalData');
     
+    % Input parser to check validity of inputs
+    input = inputParser;
     addRequired(input, 'displayName', @ischar);
     addRequired(input, 'calStructOBJ', checkCalStruct);
     addRequired(input, 'ExtraData', checkExtraData);
+    addRequired(input, 'saveDisplayObject', @islogical);
     parse(input, displayName, calStructOBJ, varargin{:});
     
     % Assemble filename for generated display object
@@ -80,10 +82,13 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     dist = input.Results.ExtraData.distance;
     displayObject = displaySet(displayObject, 'viewing distance', dist);
     
-    % Save display object to file
-    fprintf('Saving new display object (''%s'').\n', displayName);
-    d = displayObject;
-    save(displayFileName, 'd');   
+    if (input.Results.saveDisplayObject)
+        % Save display object to file
+        fprintf('Saving new display object (''%s'').\n', displayName);
+        d = displayObject;
+        save(displayFileName, 'd');   
+    end
+    
 end
 
 function validateSVector(oldS, newS)  
