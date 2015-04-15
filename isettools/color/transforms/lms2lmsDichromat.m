@@ -77,10 +77,14 @@ if ischar(cbType), cbType = ieParamFormat(cbType); end
 %
 % The anchor values are roughly
 %   anchor = ieReadSpectra('stockman', [470 475 575 660]);
-anchor = [0.08008 0.1579 0.5897 
-          0.1284 0.2237 0.3636 
-          0.9856 0.7325 0.001079
-          0.0914 0.007009 0.0]';
+% anchor = [0.08008 0.1579 0.5897 
+%           0.1284 0.2237 0.3636 
+%           0.9856 0.7325 0.001079
+%           0.0914 0.007009 0.0]';
+anchor = [0.0970 0.1766 0.6537 
+          0.1193 0.2123 0.5309 
+          0.9881 0.7266 0.0004
+          0.0941 0.0077 0.0]';
 
 % Interpolate missing cone values
 switch cbType

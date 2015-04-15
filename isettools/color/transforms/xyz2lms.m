@@ -60,7 +60,7 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %% Check input parameters
 if notDefined('imgXYZ'), error('XYZ Image Required'); end
 if notDefined('cbType'), cbType = 0; end
-if notDefined('mehtod'), method = 'Brettel'; end
+if notDefined('method'), method = 'Brettel'; end
 
 %% Transform to LMS
 %  Shape of the inputs
