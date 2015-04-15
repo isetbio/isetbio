@@ -23,7 +23,6 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     addRequired(input, 'saveDisplayObject', @islogical);
     parse(input, displayName, calStruct, varargin{:});
     
-    calStruct
     % Assemble filename for generated display object
     displayFileName = sprintf('%s.mat', displayName);
     
