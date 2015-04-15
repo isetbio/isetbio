@@ -1,5 +1,5 @@
-function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(displayName, calStructOBJ, varargin)
-% displayObject = generateIsetbioDisplayObjectFromCalStructObject(displayName, calStructOBJ, varargin)
+function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(displayName, calStruct, varargin)
+% displayObject = generateIsetbioDisplayObjectFromCalStructObject(displayName, calStruct, varargin)
 %
 % Method to generate an isetbio display object with given specifications
 %
@@ -12,21 +12,18 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
 % 4/15/2015    npc  Cleaned up a bit, subsample Svector is now a property of ExtraData
 % 4/15/2015    npc  Added input arg, to control whether to save the generated isetbio display object  
 
-    
-    % Check that the CalStruct input is indeed a CalStruct
-    checkCalStruct = @(x) isa(x, 'CalStruct');
-
     % Check is ExtraCalData
     checkExtraData = @(x) isa(x, 'ptb.ExtraCalData');
     
     % Input parser to check validity of inputs
     input = inputParser;
     addRequired(input, 'displayName', @ischar);
-    addRequired(input, 'calStructOBJ', checkCalStruct);
+    addRequired(input, 'calStruct', @isstruct);
     addRequired(input, 'ExtraData', checkExtraData);
     addRequired(input, 'saveDisplayObject', @islogical);
-    parse(input, displayName, calStructOBJ, varargin{:});
+    parse(input, displayName, calStruct, varargin{:});
     
+    calStruct
     % Assemble filename for generated display object
     displayFileName = sprintf('%s.mat', displayName);
     
@@ -36,13 +33,13 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     % Set the display's name to the input parameter displayName
     displayObject = displaySet(displayObject, 'name', displayFileName);
 
-    % Get the wavelength sampling and the SPD from the CalStructOBJ 
-    S = calStructOBJ.get('S');
-    spd = calStructOBJ.get('P_device');
+    % Get the wavelength sampling and the SPD from the CalStruct
+    S = calStruct.describe.S;
+    spd = calStruct.P_device;
 
     if (~isempty(input.Results.ExtraData.subSamplingSvector))
         % Validate that the subSamplingSvector is within range of the original S vector
-        validateSVector(calStructOBJ.get('S'), input.Results.ExtraData.subSamplingSvector);
+        validateSVector(S, input.Results.ExtraData.subSamplingSvector);
         fprintf('Will subsample SPDs with a resolution of %d nm\n', input.Results.ExtraData.subSamplingSvector(2));
         
         % SubSample the SPDs 
@@ -62,12 +59,11 @@ function displayObject = GenerateIsetbioDisplayObjectFromCalStructObject(display
     end
 
     % Get the display's gamma table
-    displayObject = displaySet(displayObject, 'gTable', calStructOBJ.get('gammaTable'));
+    displayObject = displaySet(displayObject, 'gTable', calStruct.gammaTable);
 
     % Get the display resolution in dots (pixels) per inch
-    m = calStructOBJ.get('screenSizeMM');
-    p = calStructOBJ.get('screenSizePixel');
-
+    m = calStruct.describe.displayDescription.screenSizeMM;
+    p = calStruct.describe.displayDescription.screenSizePixel;
     m = m/25.4;
     mdiag = sqrt(m(1)^2 + m(2)^2);
     pdiag = sqrt(p(1)^2 + p(2)^2);
