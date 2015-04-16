@@ -536,6 +536,13 @@ switch lower(param)
         % Some number of cone types as cone positions.
         sensor.human.coneType = val;
     case {'humanconedensities','densities'}
+        %
+        % Change the cone densities
+        % ******
+        % This needs to be reconfigured to use coneP for
+        % sensorCreateConeMosaic rather than the params.
+        % ******
+        
         assert(numel(val)==4,'val should have 4 entries for KLMS');
         %- densities used to generate mosaic (K,L,M,S)
         cone = sensorGet(sensor, 'human cone');

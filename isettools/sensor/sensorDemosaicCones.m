@@ -57,7 +57,7 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %
 %  Shoe the sRGB image for a protanope, with no noise
 %    cP = coneCreate;
-%    sensor = sensorCreate('human',[],cP);
+%    sensor = sensorCreate('human',cP);
 %    sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 %    sensor = sensorCompute(sensor, oi);
 %    srgb = sensorDemosaicCones(sensor, 'linear');

@@ -1,22 +1,15 @@
 function sensor = sensorCreateConeMosaic(sensor,params)
 %Create a sensor with a random cone mosaic
 %
-%  sensor = sensorCreateConeMosaic(sensor, sz,densities,coneAperture,rSeed,species)
-%
-% This is designed to build up different species.  Human is designed, mouse
-% is started.  For human, you might use sensorCreate('human'), as described
-% below.
+%  sensor = sensorCreateConeMosaic(sensor, coneP)
 %
 % The human mosaic is a random array of empty (K), L, M, and S cones, in
 % proportions given by densities.
 %
-% The mouse mosaic has M cones at the top, mixed M+UV cones in a middle
-% band and UV cones at the bottom.  But it is not fully implemented at
-% present.
 %
 % Inputs
 %  sensor: Initialized sensor
-%  params: parameter structure, could contain
+%  params: cone structure (see coneCreate)
 %    .sz:            72,88 mosaic (default)
 %    .density:     
 %       human:  [0 0.6, 0.3, 0.1] default
@@ -26,7 +19,6 @@ function sensor = sensorCreateConeMosaic(sensor,params)
 %           type.
 %    .coneAperture:  [1.5 1.5]*1e-6 (default). Microns. Probably too small.
 %    .rSeed:         Random number seed for creating the mosaic
-%    .species :      'human' or 'mouse' 
 %
 % Returns
 %  sensor:   Human sensor
@@ -134,31 +126,7 @@ switch ieParamFormat(species)
         sensor = sensorSet(sensor,'cone locs',xy);
         sensor = sensorSet(sensor,'cone type',coneType);
         sensor = sensorSet(sensor,'rSeed',rSeed);
-        
-     case 'mouse'
-         error('Not yet implemented');
-         
-        % mouse sensor
-        % The mosaic is M cones on top, UV on bottom
-
-        % error('Code needs to be fixed like human ... it is a mess now');
-        %
-        % sensor = sensorCreate('mouse');
-        %
-        % fHeight = []; % default is [-0.5, -0.1 0.1 0.5]
-        % [coneType, filters, filterNames] = ...
-        %        mouseConeMosaic(sz, fHeight, densities, sensor);
-        %
-        % xy = 0; rSeed = 0; % for outputs
-        %
-        % No reshape, coneType is already right size
-        % sensor = sensorSet(sensor, 'filterSpectra', filters);
-        % sensor = sensorSet(sensor, 'filterNames', filterNames);
-        
-        % We don't change the mouse cones' size, we keep the default (2um)
-
-
-       
+               
     otherwise
         error('Unknown species %s\n',species);
 end
