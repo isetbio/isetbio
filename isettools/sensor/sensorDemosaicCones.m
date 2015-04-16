@@ -1,6 +1,18 @@
 function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
-%% Demosaic and render human cone photon absorptions
+%% Render an image that produces a pattern of cone absorptions
 %    [srgb,LMSphotons] = sensorDemosaicCones(sensor, [method], [nFrames])
+%
+% This function produces an sRGB image that could create the pattern of
+% cone absorptions in the sensor object.  To create this image, the cone
+% absorption matrix is first demosaicked.  It is then converted to an
+% equivalent XYZ representation and then from there an sRGB image that
+% would produce the XYZ (and hence LMS) values.
+%
+% This function is helpful in visualizing the image one might infer given a
+% particular set of cone absorptions.  It also includes the option of
+% indicating that the sensor is dichromatic.  In that case the demosaicking
+% from the dichromatic to sRGB image is based on the methods developed by
+% HJ and by Brettel et al. and implemented in lms2lmsDichromatic.
 %
 %  Inputs:
 %    sensor  - sensor structure with photon absorption rates computed
@@ -32,6 +44,8 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %       scale image
 %
 %  Examples:
+%  Show the sRGB image for a trichromat
+%
 %    fov = 1;
 %    scene = sceneCreate; scene = sceneSet(scene, 'h fov', fov);
 %    oi = oiCreate('human'); oi = oiCompute(oi, scene);
@@ -41,6 +55,14 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %    srgb = sensorDemosaicCones(sensor, 'linear');
 %    vcNewGraphWin; imshow(srgb);
 %
+%  Shoe the sRGB image for a protanope, with no noise
+%    cP = coneCreate;
+%    sensor = sensorCreate('human',[],cP);
+%    sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+%    sensor = sensorCompute(sensor, oi);
+%    srgb = sensorDemosaicCones(sensor, 'linear');
+%    vcNewGraphWin; imshow(srgb);
+
 %    sensor = sensorComputeNoiseFree(sensor, oi);
 %    srgb   = sensorDemosaicCones(sensor, 'linear');
 %    vcNewGraphWin; imshow(srgb);
