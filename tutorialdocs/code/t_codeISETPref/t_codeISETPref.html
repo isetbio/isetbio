@@ -1,0 +1,259 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_codeISETPref.m</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-16"><meta name="DC.source" content="t_codeISETPref.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_codeISETPref.m</h1><!--introduction--><p>ISETBIO preferences</p><p>Matlab preserves information for you in environmental preference variables. ISETBIO uses these variables to remember certain preferences.  These preferences are accessed using the ieSessionGet and ieSessionSet functions.</p><p>NOTES:   1) Currently broken because it calls a script that no longer exists.</p><p>Copyright ImagEval Consultants, LLC, 2013</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Check your stored ISET preferences</a></li><li><a href="#2">The (logical) waitbar preference</a></li><li><a href="#3">To suppress the waitbar, you can run</a></li><li><a href="#4">The font size</a></li><li><a href="#5">Finally, you can see the pref list using the Matlab command getpref</a></li><li><a href="#6">End</a></li></ul></div><h2>Check your stored ISET preferences<a name="1"></a></h2><pre class="codeinput"><span class="comment">% At present, there are only a small number of stored preferences.</span>
+
+<span class="comment">% Please use the ieSessionGet/Set functions to read and set the</span>
+<span class="comment">% preferences.</span>
+
+<span class="comment">% One variable controls the display of waitbars</span>
+ieSessionGet(<span class="string">'waitbar'</span>)
+
+<span class="comment">% A second controls the size of the font in the display windows</span>
+ieSessionGet(<span class="string">'font size'</span>)
+</pre><pre class="codeoutput">
+ans =
+
+     1
+
+
+ans =
+
+     0
+
+</pre><h2>The (logical) waitbar preference<a name="2"></a></h2><pre class="codeinput"><span class="comment">% The waitbar preference determines whether or not a waitbar is shown</span>
+<span class="comment">% during certain potentially long computations.  Examples are various</span>
+<span class="comment">% oiComputes and sensorComputes.</span>
+<span class="comment">%</span>
+<span class="comment">% It is often desirable to have the waitbar suppressed, say you are looping</span>
+<span class="comment">% through a calculation and just don't want them appearing on your screen</span>
+<span class="comment">% all the time.</span>
+<span class="comment">%</span>
+
+<span class="comment">% Something that takes a few seconds and might use wait bars</span>
+scene = sceneCreate(<span class="string">'slanted bar'</span>);
+oi = oiCreate(<span class="string">'human'</span>);
+
+<span class="comment">% This is a calculation that takes a few seconds.  To see its progress with</span>
+<span class="comment">% a waitbar, you can run</span>
+ieSessionSet(<span class="string">'waitbar'</span>,<span class="string">'on'</span>)
+oi = oiCompute(oi,scene);
+</pre><h2>To suppress the waitbar, you can run<a name="3"></a></h2><pre class="codeinput">ieSessionSet(<span class="string">'waitbar'</span>,<span class="string">'off'</span>)
+oi = oiCompute(oi,scene);
+disp(<span class="string">'No wait bar, right?'</span>)
+</pre><pre class="codeoutput">No wait bar, right?
+</pre><h2>The font size<a name="4"></a></h2><pre class="codeinput"><span class="comment">% The best font size in the display windows varies enormously across</span>
+<span class="comment">% platforms.  If the font is too small or large, you can adjust the size in</span>
+<span class="comment">% most of the windows (e.g., scene, oi, sensor, image).  The adjustment in</span>
+<span class="comment">% one window will apply to all the windows.  The font size is controlled</span>
+<span class="comment">% through the preference</span>
+ieSessionGet(<span class="string">'font size'</span>)
+
+<span class="comment">% This number is a increment (or decrement) relative to the default fonts</span>
+<span class="comment">% in the Matlab display windows.  Here is the font size in your current</span>
+<span class="comment">% scene window</span>
+scene = sceneCreate; vcAddAndSelectObject(scene);
+sceneWindow
+drawnow
+pause(2)
+
+<span class="comment">% To make the font larger, use the pull down  "Edit | Change font size" or</span>
+<span class="comment">% use this command</span>
+d = ieSessionGet(<span class="string">'font delta'</span>);
+ieSessionSet(<span class="string">'font delta'</span>,d+2);
+sceneWindow
+drawnow
+pause(2)
+
+<span class="comment">% To return it to the previous run</span>
+d = ieSessionGet(<span class="string">'font delta'</span>);
+ieSessionSet(<span class="string">'font delta'</span>,d-2);
+sceneWindow
+drawnow
+pause(2)
+</pre><pre class="codeoutput">
+ans =
+
+     0
+
+</pre><img vspace="5" hspace="5" src="t_codeISETPref_01.png" alt=""> <h2>Finally, you can see the pref list using the Matlab command getpref<a name="5"></a></h2><pre class="codeinput">iePref = getpref(<span class="string">'ISET'</span>)
+
+<span class="comment">% But don't do it directly.  Use ieSessionSet/Get as above.</span>
+ieSessionGet(<span class="string">'waitbar'</span>)
+<span class="comment">% And ...</span>
+ieSessionSet(<span class="string">'waitbar'</span>,<span class="string">'on'</span>)
+</pre><pre class="codeoutput">
+iePref = 
+
+      waitbar: 0
+    fontDelta: 0
+
+
+ans =
+
+     0
+
+</pre><h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_codeISETPref.m
+%
+% ISETBIO preferences
+%   
+% Matlab preserves information for you in environmental preference variables.
+% ISETBIO uses these variables to remember certain preferences.  These
+% preferences are accessed using the ieSessionGet and ieSessionSet
+% functions.
+%
+% NOTES:
+%   1) Currently broken because it calls a script that no longer exists.
+%
+% Copyright ImagEval Consultants, LLC, 2013
+
+%% Check your stored ISET preferences
+
+% At present, there are only a small number of stored preferences.  
+
+% Please use the ieSessionGet/Set functions to read and set the
+% preferences.
+
+% One variable controls the display of waitbars
+ieSessionGet('waitbar')
+
+% A second controls the size of the font in the display windows
+ieSessionGet('font size')
+
+%% The (logical) waitbar preference
+
+% The waitbar preference determines whether or not a waitbar is shown
+% during certain potentially long computations.  Examples are various
+% oiComputes and sensorComputes.
+%
+% It is often desirable to have the waitbar suppressed, say you are looping
+% through a calculation and just don't want them appearing on your screen
+% all the time.
+%
+
+% Something that takes a few seconds and might use wait bars
+scene = sceneCreate('slanted bar');
+oi = oiCreate('human');
+
+% This is a calculation that takes a few seconds.  To see its progress with
+% a waitbar, you can run
+ieSessionSet('waitbar','on')
+oi = oiCompute(oi,scene);
+
+%% To suppress the waitbar, you can run
+ieSessionSet('waitbar','off')
+oi = oiCompute(oi,scene);
+disp('No wait bar, right?')
+
+%% The font size
+
+% The best font size in the display windows varies enormously across
+% platforms.  If the font is too small or large, you can adjust the size in
+% most of the windows (e.g., scene, oi, sensor, image).  The adjustment in
+% one window will apply to all the windows.  The font size is controlled
+% through the preference 
+ieSessionGet('font size')
+
+% This number is a increment (or decrement) relative to the default fonts
+% in the Matlab display windows.  Here is the font size in your current
+% scene window
+scene = sceneCreate; vcAddAndSelectObject(scene);
+sceneWindow
+drawnow
+pause(2)
+
+% To make the font larger, use the pull down  "Edit | Change font size" or
+% use this command
+d = ieSessionGet('font delta');
+ieSessionSet('font delta',d+2);
+sceneWindow
+drawnow
+pause(2)
+
+% To return it to the previous run
+d = ieSessionGet('font delta');
+ieSessionSet('font delta',d-2);
+sceneWindow
+drawnow
+pause(2)
+
+%% Finally, you can see the pref list using the Matlab command getpref
+iePref = getpref('ISET')
+
+% But don't do it directly.  Use ieSessionSet/Get as above.
+ieSessionGet('waitbar')
+% And ...
+ieSessionSet('waitbar','on')
+
+
+%% End
+
+##### SOURCE END #####
+--></body></html>
