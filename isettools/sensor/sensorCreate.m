@@ -30,26 +30,21 @@ function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
 %      {'interleaved'} - One transparent channel and 3 RGB.  Same as RGBC
 %                        or RGBW
 %
-% See also: sensorCreateConeMosaic, coneCreate
+% See also: sensorCreateConeMosaic, coneCreate, sensorConePlot
 %
 % Examples
 %  Basic cone mosaic
 %
-%   sensor = sensorCreate('human');   % Default
-%
 %   coneP = coneCreate;               % Specify cone properties
+%   sensor = sensorCreate('human');   
 %   sensor = sensorCreate('human',coneP);
+%   sensor = sensorCreate('human',[],coneP);
 %
-% Monochrome mosaic
-%  coneP = coneCreate('monochrome')
-%  sensor = sensorCreate('Monochrome',coneP);
+%   sensorConePlot(sensor)
 %
-%  params.sz = [128,192];
-%  params.rgbDensities = [0.1 .6 .2 .1]; % Empty (missing cone), L, M, S
-%  params.coneAperture = [3 3]*1e-6;     % In meters
-%  pixel = [];
-%  [sensor, params] = sensorCreate('human',pixel,params);
-%  sensorConePlot(sensor)
+%   coneP = coneSet(coneP,'spatial density',[0.1 0.5 0.2 0.1]);
+%   sensor = sensorCreate('human',coneP);
+%   sensorConePlot(sensor)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
@@ -94,20 +89,22 @@ switch sensorName
     case 'human'
         % s = sensorCreate('human',coneP);
         %
-        % Uses StockmanQuanta
+        % Uses StockmanQuanta for the cone absorptions
         % See example in header.
-        %
         
         % Covers the case of sensorCreate('human',[],coneP)
-        if ~isempty(varargin), coneP = varargin{1}; end
+        if ~isempty(varargin), coneP = varargin{1}; 
+        elseif ~exist('coneP','var'), coneP = coneCreate;
+        end
 
         % Assign key fields
         wave = coneGet(coneP,'wave');
         hPixel = pixelCreate('human',wave);
         
         % Add the default human pixel with StockmanQuanta filters.
-        sensor = sensorSet(sensor,'wave',wave);
+        sensor.spectrum.wave = wave;
         sensor = sensorSet(sensor,'pixel',hPixel);
+        sensor = sensorSet(sensor,'size',[72 88]);
         
         % Add the default lens structure
         lens = lensCreate([], wave);
@@ -118,12 +115,8 @@ switch sensorName
         sensor = sensorSet(sensor, 'human macular', macular);
              
         % Build up a human cone mosaic.
-        sensor = sensorCreateConeMosaic(sensor, params);
-        
-        % We don't want the pixel to saturate
-        pixel  = sensorGet(sensor, 'pixel');
-        pixel  = pixelSet(pixel, 'voltage swing', 1);  % 1 volt
-        sensor = sensorSet(sensor, 'pixel', pixel);
+        sensor = sensorCreateConeMosaic(sensor, coneP);
+
         
         % There are no filter spectra in the human case.  We calculate the
         % spectral qe from the cones, macular, and lens data
@@ -198,7 +191,7 @@ sensor = sensorSet(sensor,'irfilter',ones(sensorGet(sensor,'nwave'),1));
 % Place holder for Macbeth color checker positions
 sensor = sensorSet(sensor,'mccRectHandles',[]);
 
-return;
+return
 
 %-----------------------------
 function sensor = sensorBayer(sensor,filterPattern,filterFile)

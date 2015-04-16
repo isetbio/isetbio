@@ -1,10 +1,12 @@
-function sensor = sensorCreateConeMosaic(sensor,params)
+function sensor = sensorCreateConeMosaic(sensor,coneP)
 %Create a sensor with a random cone mosaic
 %
 %  sensor = sensorCreateConeMosaic(sensor, coneP)
 %
-% The human mosaic is a random array of empty (K), L, M, and S cones, in
-% proportions given by densities.
+% The human mosaic is a random array of empty (K), L, M, and S cones. THe
+% parameters of the coneP (cone structure) object defines many features of
+% the cone mosaic, including the relative cone densities, peak
+% efficiencies, absorbance, and optical Density.
 %
 %
 % Inputs
@@ -49,35 +51,20 @@ function sensor = sensorCreateConeMosaic(sensor,params)
 %  coneType = sensorGet(sensor, 'coneType');
 %  figure(1); conePlot(xy,coneType);
 %
-% See also:  sensorCreate('human'), humanConeMosaic
+% See also:  sensorCreate('human'), coneCreate
 %
 % (c) Copyright, 2010, ImagEval
 
-if notDefined('sensor'), sensor = sensorCreate('human'); end
-if ~isfield(params, 'sz'), sz = [72,88];else sz = params.sz; end
+if notDefined('sensor'), error('Human sensor required'); end
 
-if isfield(params,'rgbDensities')
-    density = params.rgbDensities;
-elseif isfield(params, 'humanConeDensities')
-    density = params.humanConeDensities;
-else
-    density = [0 0.6 0.3 0.1]; 
-end
-
-if isfield(params,'coneAperture'), coneAperture = params.coneAperture;
-else coneAperture = []; end
-
-if isfield(params,'rSeed'), rSeed = params.rSeed;
+density = coneGet(coneP,'spatial density');
+if isfield(coneP,'rSeed'), rSeed = coneP.rSeed;
 else rSeed = []; end
 
-if isfield(params, 'species'), species = params.species;
-elseif sensorCheckHuman(sensor), species = 'human'; 
-else error('Unknown species'); 
-end
-
-% Aperture in meters.
-% Central human cones are 1.5 um in the fovea, 3um in the periphery
-if notDefined('coneAperture'), coneAperture = [1.5 1.5]*1e-6; end
+pixel   = sensorGet(sensor,'pixel');
+coneAperture  = pixelGet(pixel,'size');   % This should get added to coneCreate/Set/Get
+sz      = sensorGet(sensor,'size');
+species = coneGet(coneP,'species');
 
 switch ieParamFormat(species)
     case 'human'
@@ -110,19 +97,10 @@ switch ieParamFormat(species)
         % Instead of loading stockman cone quanta fundamentals, we create a
         % cone structure and compute all ocular transmittance and cone
         % absorptance
-        cone = coneCreate('human');
-        cone = coneSet(cone, 'spatial density', density);
-        sensor = sensorSet(sensor, 'human cone', cone);
+        sensor = sensorSet(sensor, 'human cone', coneP);
         fN = {'kBlack', 'rLong', 'gMiddle', 'bShort'};
-        % vcNewGraphWin; plot(wave,fsQuanta); grid on
         sensor = sensorSet(sensor,'filter names',fN);
-       
-        % change pixel size, keeping the same fillfactor (default human
-        % pixel size = 2um, pdsize = 2um, fillfactor = 1) 
-        pixel  = sensorGet(sensor,'pixel');
-        pixel  = pixelSet(pixel,'size same fill factor',coneAperture);
-        sensor = sensorSet(sensor,'pixel',pixel);
-        
+              
         sensor = sensorSet(sensor,'cone locs',xy);
         sensor = sensorSet(sensor,'cone type',coneType);
         sensor = sensorSet(sensor,'rSeed',rSeed);
