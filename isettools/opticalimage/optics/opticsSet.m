@@ -26,8 +26,8 @@ function optics = opticsSet(optics,parm,val,varargin)
 % Optics parameters are:
 %
 % Optics model  - 
-%      {'model'}  -  DiffractionLimited, ShiftInvariant, RayTrace, or
-%                    UserSupplied
+%      {'model'}  -  DiffractionLimited, ShiftInvariant, RayTrace,
+%                    UserSupplied, or Skip.
 %
 % Diffraction limited optics specifications.
 %      {'name'}    - This optics name
