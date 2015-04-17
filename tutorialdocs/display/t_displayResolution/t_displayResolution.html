@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_displayResolution</h1><!--introduction--><p>Introduction to ISETBIO objects and functions, displays.</p><p>Shows how to ontrol the display spatial resolution and examines effects of subpixel structure.</p><p>Also loads a description of a four primary display and demonstrates that creating a scene based on this does something.</p><p>NOTES:   1( Needs additional comments to at least outline what the principles of   the subpixel rendering algorithm in the underlying routine are.</p><pre class="language-matlab">2) Needs <span class="string">some</span> <span class="string">comments</span> <span class="string">to</span> <span class="string">explain</span> <span class="string">what</span> <span class="string">the</span> <span class="string">four</span> <span class="string">primary</span> <span class="string">display</span> <span class="string">code</span> <span class="string">is</span>
+  </style></head><body><div class="content"><h1>t_displayResolution</h1><!--introduction--><p>Introduction to ISETBIO display objects.</p><p>Shows how to ontrol the display spatial resolution and examines effects of subpixel structure.</p><p>Also loads a description of a four primary display and demonstrates that creating a scene based on this does something.</p><p>NOTES:   1( Needs additional comments to at least outline what the principles of   the subpixel rendering algorithm in the underlying routine are.</p><pre class="language-matlab">2) Needs <span class="string">some</span> <span class="string">comments</span> <span class="string">to</span> <span class="string">explain</span> <span class="string">what</span> <span class="string">the</span> <span class="string">four</span> <span class="string">primary</span> <span class="string">display</span> <span class="string">code</span> <span class="string">is</span>
 likely <span class="string">to</span> <span class="string">be</span> <span class="string">doing</span>, particularly <span class="string">given</span> <span class="string">that</span> <span class="untermstring">we're likely to be looking</span>
 at <span class="string">the</span> <span class="string">scene</span> <span class="string">window</span> <span class="string">on</span> <span class="string">a</span> <span class="string">three-primary</span> <span class="string">display.</span>
 </pre><p>(HJ) ISETBIO TEAM</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize ISET</a></li><li><a href="#2">Create a display</a></li><li><a href="#3">Create scene</a></li><li><a href="#4">Subpixel rendering</a></li><li><a href="#5">Reduce the sampling rate</a></li><li><a href="#6">RGBW display</a></li><li><a href="#7">End</a></li></ul></div><h2>Initialize ISET<a name="1"></a></h2><pre class="codeinput">ieInit;
@@ -117,7 +117,7 @@ vcAddObject(scene); sceneWindow;
 ##### SOURCE BEGIN #####
 %% t_displayResolution
 %
-% Introduction to ISETBIO objects and functions, displays.
+% Introduction to ISETBIO display objects.
 %
 % Shows how to ontrol the display spatial resolution and examines effects of
 % subpixel structure.
