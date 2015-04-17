@@ -14,9 +14,7 @@ function publishOneTutorial
     );
 
     % list of scripts to be skipped from automatic publishing
-    scriptsToSkip = {...
-        't_coneAdapt.m' ...    % requires user input, so it cannot be run automatically in its present form 
-        };
+    scriptsToSkip = {};
     % ----------------------- end of script customization -----------------
     
     UnitTest.publishProjectTutorials(p, scriptsToSkip, 'Single');
