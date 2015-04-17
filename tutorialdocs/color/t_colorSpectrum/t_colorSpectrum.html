@@ -75,7 +75,7 @@ primaries = displayGet(d, <span class="string">'spd primaries'</span>);
 
 <span class="comment">% Plot the primaries.</span>
 vcNewGraphWin; plot(wave,primaries(:,3:-1:1));
-xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Primary power'</span>);
+xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Power'</span>);
 </pre><pre class="codeoutput">Changing wave and interpolating SPD, for consistency
 </pre><img vspace="5" hspace="5" src="t_colorSpectrum_01.png" alt=""> <h2>Get color matching functions<a name="3"></a></h2><p>We use the CIE XYZ color matching functions for creating calibrated signals. We load them first.  The ieReadSpectra function splines these to match the passed wavelength sampling.</p><pre class="codeinput">XYZ = ieReadSpectra(<span class="string">'XYZ'</span>, wave);
 </pre><h2>Compute color transfomration matrix<a name="4"></a></h2><p>We compute the matrix that converts between XYZ values linear intensities of the monitor RGB values.  We do this in two steps.  First, we find the XYZ values for each of the individual primaries.  The columns of this matrix represent the XYZ values of the red, green and blue primaries, respectively.  These values should be relatively easy to interpret.</p><pre class="codeinput">rgb2xyz = 683 * dWave * XYZ' * primaries; <span class="comment">%#ok</span>
@@ -246,7 +246,7 @@ primaries = displayGet(d, 'spd primaries');
 
 % Plot the primaries.
 vcNewGraphWin; plot(wave,primaries(:,3:-1:1));
-xlabel('Wavelength (nm)'); ylabel('Primary power');
+xlabel('Wavelength (nm)'); ylabel('Power');
 
 %% Get color matching functions
 %
