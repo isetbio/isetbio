@@ -1,4 +1,4 @@
-function publishAllTutorials
+function publishOneTutorial
 
     % ------- script customization - adapt to your environment/project -----
     
@@ -19,5 +19,7 @@ function publishAllTutorials
         };
     % ----------------------- end of script customization -----------------
     
-    UnitTest.publishProjectTutorials(p, scriptsToSkip, 'All');
+    UnitTest.publishProjectTutorials(p, scriptsToSkip, 'Single');
 end
+
+
