@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-15"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
+      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-17"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -123,9 +123,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="comment">% Generate PTB-compatible calStruct describing the display</span>
             PTBcal = ptb.GeneratePsychToolboxCalStruct(<span class="keyword">...</span>
                 <span class="string">'name'</span>, displayGet(d, <span class="string">'name'</span>), <span class="keyword">...</span>
+                <span class="string">'gammaInput'</span>, originalSettingsValues, <span class="keyword">...</span>
                 <span class="string">'gammaTable'</span>, gammaTable, <span class="keyword">...</span>
                 <span class="string">'wave'</span>, wave, <span class="keyword">...</span>
                 <span class="string">'spd'</span>, spd, <span class="keyword">...</span>
+                <span class="string">'ambientSpd'</span>, zeros(length(wave),1), <span class="keyword">...</span>
                 <span class="string">'screenSizeInPixels'</span>, screenSizeInPixels, <span class="keyword">...</span>
                 <span class="string">'dotsPerMeter'</span>, dotsPerMeter <span class="keyword">...</span>
             );
@@ -226,7 +228,7 @@ Fitting with linear interpolation
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayLUTinversion_01.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
 
 <span class="comment">% Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.</span>
 <span class="comment">% We want to remove this override, so we can use the original PTB functions</span>
@@ -330,9 +332,11 @@ function ValidationFunction(runTimeParams)
             % Generate PTB-compatible calStruct describing the display
             PTBcal = ptb.GeneratePsychToolboxCalStruct(...
                 'name', displayGet(d, 'name'), ...
+                'gammaInput', originalSettingsValues, ...
                 'gammaTable', gammaTable, ...
                 'wave', wave, ...
                 'spd', spd, ...
+                'ambientSpd', zeros(length(wave),1), ...
                 'screenSizeInPixels', screenSizeInPixels, ...
                 'dotsPerMeter', dotsPerMeter ...
             );
