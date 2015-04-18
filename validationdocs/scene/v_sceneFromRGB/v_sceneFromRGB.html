@@ -67,6 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize</a></li><li><a href="#5">Load display calibration data</a></li><li><a href="#6">Analyze the display properties: Chromaticity</a></li><li><a href="#7">Read in an rgb file and create calibrated display values</a></li><li><a href="#8">Internal validation</a></li><li><a href="#9">Change the illuminant to 4000 K</a></li><li><a href="#10">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_sceneFromRGB(varargin)
+<span class="comment">%</span>
 <span class="comment">% Test how isetbio creates a scene from an rgb data using sceneFromFile</span>
 <span class="comment">%</span>
 <span class="comment">% Function sceneFromFile uses 1) the rgb data and the spectral power</span>
@@ -97,8 +98,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="keyword">end</span>
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)<span class="comment">%% s_sceneFromRGB</span>
 </pre><h2>Initialize<a name="4"></a></h2><pre class="codeinput">    ieInit
-</pre><pre class="codeoutput">No scene and no oi.  Using 128 rows.
-No scene and no oi.  Using 128 cols.
 </pre><h2>Load display calibration data<a name="5"></a></h2><pre class="codeinput">    displayCalFile = <span class="string">'LCD-Apple.mat'</span>;
     load(displayCalFile,<span class="string">'d'</span>); dsp = d;
     wave = displayGet(dsp,<span class="string">'wave'</span>);
@@ -151,6 +150,7 @@ No scene and no oi.  Using 128 cols.
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_sceneFromRGB(varargin)
+%
 % Test how isetbio creates a scene from an rgb data using sceneFromFile
 %
 % Function sceneFromFile uses 1) the rgb data and the spectral power

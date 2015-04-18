@@ -92,7 +92,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'ringsandrays'</span>, scene);
-</pre><h2>Frequency orientation - useful for analyzing demosaicking<a name="7"></a></h2><pre class="codeinput">    parms.angles = linspace(0,pi/2,5);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_01.png" alt=""> <h2>Frequency orientation - useful for analyzing demosaicking<a name="7"></a></h2><pre class="codeinput">    parms.angles = linspace(0,pi/2,5);
     parms.freqs  =  [1,2,4,8,16];
     parms.blockSize = 64;
     parms.contrast  = .8;
@@ -101,33 +101,33 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'freqorient'</span>, scene);
-</pre><h2>Harmonic<a name="8"></a></h2><pre class="codeinput">    parms.freq = 1; parms.contrast = 1; parms.ph = 0;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_02.png" alt=""> <h2>Harmonic<a name="8"></a></h2><pre class="codeinput">    parms.freq = 1; parms.contrast = 1; parms.ph = 0;
     parms.ang= 0; parms.row = 64; parms.col = 64; parms.GaborFlag=0;
     [scene,parms] = sceneCreate(<span class="string">'harmonic'</span>,parms);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'harmonic'</span>, scene);
-</pre><h2>Checkerboard<a name="9"></a></h2><pre class="codeinput">    period = 16; spacing = 8; spectralType = <span class="string">'ep'</span>;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_03.png" alt=""> <h2>Checkerboard<a name="9"></a></h2><pre class="codeinput">    period = 16; spacing = 8; spectralType = <span class="string">'ep'</span>;
     scene = sceneCreate(<span class="string">'checkerboard'</span>,period,spacing,spectralType);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'checkerboard'</span>, scene);
-</pre><h2>Single line<a name="10"></a></h2><pre class="codeinput">    imageSize = 128;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_04.png" alt=""> <h2>Single line<a name="10"></a></h2><pre class="codeinput">    imageSize = 128;
     scene = sceneCreate(<span class="string">'lined65'</span>,imageSize);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'singleline'</span>, scene);
-</pre><h2>Slanted Bar<a name="11"></a></h2><pre class="codeinput">    imageSize = 128;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_05.png" alt=""> <h2>Slanted Bar<a name="11"></a></h2><pre class="codeinput">    imageSize = 128;
     edgeSlope = 1.3;
     scene = sceneCreate(<span class="string">'slantedBar'</span>,imageSize,edgeSlope);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'slantedbar'</span>, scene);
-</pre><h2>Grid Lines<a name="12"></a></h2><pre class="codeinput">    imageSize = 128;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_06.png" alt=""> <h2>Grid Lines<a name="12"></a></h2><pre class="codeinput">    imageSize = 128;
     pixelsBetweenLines = 16;
     scene = sceneCreate(<span class="string">'grid lines'</span>,imageSize,pixelsBetweenLines);
     <span class="comment">% vcAddAndSelectObject(scene); sceneWindow;</span>
@@ -139,7 +139,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'pointarray'</span>, scene);
-</pre><h2>Macbeth<a name="14"></a></h2><pre class="codeinput">    patchSizePixels = 16;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_07.png" alt=""> <h2>Macbeth<a name="14"></a></h2><pre class="codeinput">    patchSizePixels = 16;
     spectrum.wave = 380:5:720;
     scene = sceneCreate(<span class="string">'macbeth tungsten'</span>,patchSizePixels,spectrum);
     scene.data;
@@ -149,14 +149,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'macbeth'</span>, scene);
-</pre><h2>Uniform Field<a name="15"></a></h2><pre class="codeinput">    sz = 128;
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_08.png" alt=""> <h2>Uniform Field<a name="15"></a></h2><pre class="codeinput">    sz = 128;
     wavelength = 380:10:720;
     scene = sceneCreate(<span class="string">'uniformEESpecify'</span>,sz,wavelength);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'uniformfield'</span>, scene);
-</pre><h2>End<a name="16"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_09.png" alt=""> <h2>End<a name="16"></a></h2><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_sceneExamples(varargin)
