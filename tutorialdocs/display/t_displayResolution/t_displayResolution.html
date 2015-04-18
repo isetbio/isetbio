@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_displayResolution</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-17"><meta name="DC.source" content="t_displayResolution.m"><style type="text/css">
+      --><title>t_displayResolution</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-18"><meta name="DC.source" content="t_displayResolution.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_displayResolution</h1><!--introduction--><p>Introduction to ISETBIO display objects.</p><p>Shows how to ontrol the display spatial resolution and examines effects of subpixel structure.</p><p>Also loads a description of a four primary display and demonstrates that creating a scene based on this does something.</p><p>NOTES:   1( Needs additional comments to at least outline what the principles of   the subpixel rendering algorithm in the underlying routine are.</p><pre class="language-matlab">2) Needs <span class="string">some</span> <span class="string">comments</span> <span class="string">to</span> <span class="string">explain</span> <span class="string">what</span> <span class="string">the</span> <span class="string">four</span> <span class="string">primary</span> <span class="string">display</span> <span class="string">code</span> <span class="string">is</span>
+  </style></head><body><div class="content"><h1>t_displayResolution</h1><!--introduction--><p>Introduction to ISETBIO objects and functions, displays.</p><p>Shows how to ontrol the display spatial resolution and examines effects of subpixel structure.</p><p>Also loads a description of a four primary display and demonstrates that creating a scene based on this does something.</p><p>NOTES:   1( Needs additional comments to at least outline what the principles of   the subpixel rendering algorithm in the underlying routine are.</p><pre class="language-matlab">2) Needs <span class="string">some</span> <span class="string">comments</span> <span class="string">to</span> <span class="string">explain</span> <span class="string">what</span> <span class="string">the</span> <span class="string">four</span> <span class="string">primary</span> <span class="string">display</span> <span class="string">code</span> <span class="string">is</span>
 likely <span class="string">to</span> <span class="string">be</span> <span class="string">doing</span>, particularly <span class="string">given</span> <span class="string">that</span> <span class="untermstring">we're likely to be looking</span>
 at <span class="string">the</span> <span class="string">scene</span> <span class="string">window</span> <span class="string">on</span> <span class="string">a</span> <span class="string">three-primary</span> <span class="string">display.</span>
 </pre><p>(HJ) ISETBIO TEAM</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize ISET</a></li><li><a href="#2">Create a display</a></li><li><a href="#3">Create scene</a></li><li><a href="#4">Subpixel rendering</a></li><li><a href="#5">Reduce the sampling rate</a></li><li><a href="#6">RGBW display</a></li><li><a href="#7">End</a></li></ul></div><h2>Initialize ISET<a name="1"></a></h2><pre class="codeinput">ieInit;
@@ -117,7 +117,7 @@ vcAddObject(scene); sceneWindow;
 ##### SOURCE BEGIN #####
 %% t_displayResolution
 %
-% Introduction to ISETBIO display objects.
+% Introduction to ISETBIO objects and functions, displays.
 %
 % Shows how to ontrol the display spatial resolution and examines effects of
 % subpixel structure.
