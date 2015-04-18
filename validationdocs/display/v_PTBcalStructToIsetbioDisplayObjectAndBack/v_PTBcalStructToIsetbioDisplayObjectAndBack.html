@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_PTBcalStructToIsetbioDisplayObjectAndBack</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-17"><meta name="DC.source" content="v_PTBcalStructToIsetbioDisplayObjectAndBack.m"><style type="text/css">
+      --><title>v_PTBcalStructToIsetbioDisplayObjectAndBack</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-18"><meta name="DC.source" content="v_PTBcalStructToIsetbioDisplayObjectAndBack.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -74,7 +74,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="keyword">end</span>
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
 </pre><h2>Initialize ISET<a name="4"></a></h2><pre class="codeinput">    close <span class="string">all</span>; ieInit;
-</pre><h2>Some informative text<a name="5"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Conversion of PTB cal struct to isetbio display object.'</span>);
+</pre><h2>Some informative text<a name="5"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Conversion of PTB cal struct to isetbio display object - This is still in progress.'</span>);
 
     <span class="comment">% Load PTB calibration data for the SONY PVM2541 display</span>
     calDir = fullfile(isetbioRootPath, <span class="string">'isettools'</span>, <span class="string">'data'</span>, <span class="string">'ptbcal'</span>);
@@ -102,11 +102,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     reconstructedPTBdotsPerMeterY= reconstructedPTBcal.describe.displayDescription.screenSizePixel(2)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(2)/1000)
 </pre><pre class="codeoutput">Will not subsample SPDs
 Changing wave and interpolating SPD, for consistency
-
-dpi =
-
-  126.1199
-
 
 ans =
 
@@ -151,7 +146,7 @@ PTBcal =
 
 isetbioDotsPerMeter =
 
-   4.9654e+03
+   3.5302e+03
 
 
 originalPTBdotsPerMeterX =
@@ -161,12 +156,12 @@ originalPTBdotsPerMeterX =
 
 reconstructedPTBdotsPerMeterX =
 
-   4.3277e+03
+   3.0768e+03
 
 
 isetbioDotsPerMeter =
 
-   4.9654e+03
+   3.5302e+03
 
 
 originalPTBdotsPerMeterY =
@@ -176,7 +171,7 @@ originalPTBdotsPerMeterY =
 
 reconstructedPTBdotsPerMeterY =
 
-   2.4343e+03
+   1.7307e+03
 
 </pre><h2>Plot<a name="6"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
     <span class="keyword">end</span>
@@ -197,7 +192,7 @@ function ValidationFunction(runTimeParams)
     close all; ieInit;
     
     %% Some informative text
-    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Conversion of PTB cal struct to isetbio display object.');
+    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Conversion of PTB cal struct to isetbio display object - This is still in progress.');
     
     % Load PTB calibration data for the SONY PVM2541 display
     calDir = fullfile(isetbioRootPath, 'isettools', 'data', 'ptbcal');
