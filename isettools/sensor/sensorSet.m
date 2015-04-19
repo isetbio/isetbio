@@ -114,11 +114,17 @@ function sensor = sensorSet(sensor,param,val,varargin)
 %     {'em drift'}             - eye movement drift structure
 %     {'em microsaccade'}      - eye movement microsaccade structure
 %
-%  
 % Private
 %      {'editfilternames'}
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+%
+% NOTES: When type is 'human', should probably have a set on 'pattern' also
+%        adjust 'cone type'.  Or possibly get rid of the cone type field in
+%        favor of pattern.
+%
+% 4/19/15  dhb  Setting 'cone type' also calls a set on 'pattern' to keep
+%               these in sync.
 
 if ~exist('param','var') || isempty(param)
     error('Parameter field required.');
@@ -530,11 +536,14 @@ switch lower(param)
         sensor = sensorSet(sensor,'macular',m);
     case {'humancone', 'cone'}
         sensor.human.cone = val;
+
     case {'humanconetype','conetype'}
         % Blank (K) K=1 and L,M,S cone at each position
         % L=2, M=3 or S=4 (K means none)
         % Some number of cone types as cone positions.
         sensor.human.coneType = val;
+        sensor = sensorSet(sensor,'pattern',val);
+        
     case {'humanconedensities','densities'}
         assert(numel(val)==4,'val should have 4 entries for KLMS');
         %- densities used to generate mosaic (K,L,M,S)
