@@ -1,0 +1,316 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>s_SurfaceModels</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-20"><meta name="DC.source" content="t_sceneSurfaceModels.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>s_SurfaceModels</h1><!--introduction--><p>We create linear basis functions for the Gretag/Macbeth color checker surface reflectance functions.  This script illustrates how to</p><pre class="language-matlab">(a) Read <span class="string">reflectances</span> <span class="string">and</span> <span class="string">create</span> <span class="string">the</span> <span class="string">basis</span> <span class="string">functions</span>
+(b) Approximate <span class="string">the</span> <span class="string">original</span> <span class="string">functions</span> <span class="string">with</span> <span class="string">lower</span> <span class="string">dimensions</span>
+(b) Render <span class="string">images</span> <span class="string">of</span> <span class="string">the</span> <span class="string">approximation</span> <span class="string">under</span> <span class="string">a</span> <span class="string">variety</span> <span class="string">of</span> <span class="string">lights</span>
+</pre><p>Copyright ImagEval Consultants, LLC, 2009.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Init</a></li><li><a href="#2">The Gretag/Macbeth ColorChecker reflectance spectra</a></li><li><a href="#3">We can obtain an SVD linear model decomposition from the spectra</a></li><li><a href="#4">These graphis illustrate different approximations</a></li><li><a href="#5">Load XYZ nad choose a light for the rendering experiments</a></li><li><a href="#6">Render the lower dimensional images for that light</a></li><li><a href="#7">End</a></li></ul></div><h2>Init<a name="1"></a></h2><pre class="codeinput">s_initISET;
+</pre><h2>The Gretag/Macbeth ColorChecker reflectance spectra<a name="2"></a></h2><pre class="codeinput">wave = 400:10:700;    <span class="comment">% nanometers</span>
+macbethReflectance = macbethReadReflectance(wave);
+
+<span class="comment">% Plot</span>
+vcNewGraphWin;
+p = plot(wave,macbethReflectance);
+set(p,<span class="string">'linewidth'</span>,1);
+t = xlabel(<span class="string">'Wavelength (nm)'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+t = ylabel(<span class="string">'Reflectance'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+grid <span class="string">on</span>
+title(<span class="string">'Macbeth Color Checker Reflectances'</span>);
+</pre><img vspace="5" hspace="5" src="t_sceneSurfaceModels_01.png" alt=""> <h2>We can obtain an SVD linear model decomposition from the spectra<a name="3"></a></h2><p>Build the linear model using the singular value decomposition</p><pre class="codeinput">[U S V] = svd(macbethReflectance);
+
+<span class="comment">% It is also reasonable to build models by first removing the mean.</span>
+<span class="comment">%  mn = mean(macbethReflectance,2);</span>
+<span class="comment">%  tmp = macbethReflectance - repmat(mn,[1,size(macbethReflectance,2)]);</span>
+<span class="comment">%  [U S V] = svd(tmp);</span>
+<span class="comment">%  U = [mn(:), U(:,1:3)];</span>
+<span class="comment">% These basis functions are a lot like the simple SVD functions.</span>
+
+<span class="comment">% The columns of U are the basis functions It is nice to make them more</span>
+<span class="comment">% positive than negative, on balance.</span>
+<span class="keyword">if</span> sum(U(:,1)) &lt; 0, U = -1*U; <span class="keyword">end</span>
+
+<span class="comment">% Plot the basis functions</span>
+vcNewGraphWin;
+<span class="keyword">for</span> ii=1:4
+    subplot(2,2,ii)
+    p = plot(wave,U(:,ii)); set(p,<span class="string">'linewidth'</span>,2)
+    grid <span class="string">on</span>;
+    ylim([-0.4 0.4]);
+    title(sprintf(<span class="string">'Basis function %d'</span>,ii));
+<span class="keyword">end</span>
+subplot(2,2,1)
+t = xlabel(<span class="string">'Wavelength (nm)'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+t = ylabel(<span class="string">'Reflectance'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+</pre><img vspace="5" hspace="5" src="t_sceneSurfaceModels_02.png" alt=""> <h2>These graphis illustrate different approximations<a name="4"></a></h2><pre class="codeinput">[U S V] = svd(macbethReflectance);
+W = S*V';
+hdl = vcNewGraphWin;
+<span class="keyword">for</span> nDims=1:3
+    subplot(2,2,nDims)
+    list = 1:nDims;
+    approxRef = U(:,list)*W(list,:);
+    plot(wave,approxRef)
+    set(gca,<span class="string">'fontName'</span>,<span class="string">'Georgia'</span>)
+    grid <span class="string">on</span>
+    set(gca,<span class="string">'ylim'</span>,[-0.2 1.2])
+    title(sprintf(<span class="string">'N = %d'</span>,nDims));
+<span class="keyword">end</span>
+subplot(2,2,4)
+plot(wave,macbethReflectance);
+set(gca,<span class="string">'ylim'</span>,[-0.2 1.2])
+grid <span class="string">on</span>
+set(gca,<span class="string">'fontName'</span>,<span class="string">'Georgia'</span>)
+title(<span class="string">'Full Spectra'</span>);
+
+subplot(2,2,1)
+t = xlabel(<span class="string">'Wavelength (nm)'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+t = ylabel(<span class="string">'Reflectance'</span>); set(t,<span class="string">'fontname'</span>,<span class="string">'Georgia'</span>)
+</pre><img vspace="5" hspace="5" src="t_sceneSurfaceModels_03.png" alt=""> <h2>Load XYZ nad choose a light for the rendering experiments<a name="5"></a></h2><pre class="codeinput">XYZ = ieReadSpectra(<span class="string">'XYZ'</span>,wave);
+lgt = ieReadSpectra(<span class="string">'D65'</span>,wave);
+
+<span class="comment">% Or try these lights instead</span>
+<span class="comment">% lgt  = ieReadSpectra('tungsten',wave);</span>
+<span class="comment">% lgt  = ieReadSpectra('FluorescentOffice',wave);</span>
+<span class="comment">% lgt  = ieReadSpectra('Fluorescent2',wave);</span>
+<span class="comment">% lgt  = ieReadSpectra('Fluorescent7',wave);</span>
+<span class="comment">% lgt  = ieReadSpectra('Fluorescent11',wave);</span>
+</pre><h2>Render the lower dimensional images for that light<a name="6"></a></h2><pre class="codeinput">[U S V] = svd(macbethReflectance);
+W = S*V';
+vcNewGraphWin;
+<span class="keyword">for</span> nDims= 1:4  <span class="comment">%5:8 %</span>
+    list = 1:nDims;
+
+    <span class="comment">% Render for this light, nDims, and set peak Y to 100</span>
+    mccXYZ = XYZ'*diag(lgt)*U(:,list)*W(list,:);
+    mx = max(mccXYZ(2,:)); mccXYZ = 100*(mccXYZ/mx);
+
+    <span class="comment">% Pack it into an RGB format</span>
+    imRGB = xyz2srgb(XW2RGBFormat(mccXYZ',4,6));
+    imRGB = imageFlip(imRGB,<span class="string">'updown'</span>);
+    imRGB = imageFlip(imRGB,<span class="string">'leftright'</span>);
+
+    <span class="comment">% Show</span>
+    subplot(3,2,nDims)
+    imagesc(imRGB); axis <span class="string">image</span>
+    set(gca,<span class="string">'xtick'</span>,[],<span class="string">'ytick'</span>,[])
+    title(sprintf(<span class="string">'N = %.0f'</span>,nDims))
+<span class="keyword">end</span>
+
+<span class="comment">% Full rendering</span>
+subplot(3,2,5)
+mccXYZ = XYZ'*diag(lgt)*U*W;
+mx = max(mccXYZ(2,:)); mccXYZ = 100*(mccXYZ/mx);
+imRGB = xyz2srgb(XW2RGBFormat(mccXYZ',4,6));
+imRGB = imageFlip(imRGB,<span class="string">'updown'</span>);
+imRGB = imageFlip(imRGB,<span class="string">'leftright'</span>);
+imagesc(imRGB); axis <span class="string">image</span>
+set(gca,<span class="string">'xtick'</span>,[],<span class="string">'ytick'</span>,[])
+title(sprintf(<span class="string">'Full rendering'</span>))
+
+<span class="comment">% Plot the light</span>
+subplot(3,2,6)
+plot(wave,lgt); grid <span class="string">on</span>
+xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Relative power'</span>);
+</pre><pre class="codeoutput">Warning:  Clipping negative values in XYZ -0.025505
+</pre><img vspace="5" hspace="5" src="t_sceneSurfaceModels_04.png" alt=""> <h2>End<a name="7"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% s_SurfaceModels
+%
+% We create linear basis functions for the Gretag/Macbeth color checker
+% surface reflectance functions.  This script illustrates how to
+%
+%   (a) Read reflectances and create the basis functions
+%   (b) Approximate the original functions with lower dimensions
+%   (b) Render images of the approximation under a variety of lights
+%
+% Copyright ImagEval Consultants, LLC, 2009.
+
+%% Init
+s_initISET;
+
+%% The Gretag/Macbeth ColorChecker reflectance spectra
+wave = 400:10:700;    % nanometers
+macbethReflectance = macbethReadReflectance(wave);
+
+% Plot
+vcNewGraphWin;
+p = plot(wave,macbethReflectance);
+set(p,'linewidth',1);
+t = xlabel('Wavelength (nm)'); set(t,'fontname','Georgia')
+t = ylabel('Reflectance'); set(t,'fontname','Georgia')
+grid on
+title('Macbeth Color Checker Reflectances');
+
+%% We can obtain an SVD linear model decomposition from the spectra
+%
+% Build the linear model using the singular value decomposition
+[U S V] = svd(macbethReflectance);
+
+% It is also reasonable to build models by first removing the mean.
+%  mn = mean(macbethReflectance,2);
+%  tmp = macbethReflectance - repmat(mn,[1,size(macbethReflectance,2)]);
+%  [U S V] = svd(tmp);
+%  U = [mn(:), U(:,1:3)];
+% These basis functions are a lot like the simple SVD functions.
+
+% The columns of U are the basis functions It is nice to make them more
+% positive than negative, on balance.  
+if sum(U(:,1)) < 0, U = -1*U; end
+
+% Plot the basis functions
+vcNewGraphWin;
+for ii=1:4
+    subplot(2,2,ii)
+    p = plot(wave,U(:,ii)); set(p,'linewidth',2)
+    grid on;
+    ylim([-0.4 0.4]);
+    title(sprintf('Basis function %d',ii));
+end
+subplot(2,2,1)
+t = xlabel('Wavelength (nm)'); set(t,'fontname','Georgia')
+t = ylabel('Reflectance'); set(t,'fontname','Georgia')
+
+%% These graphis illustrate different approximations
+[U S V] = svd(macbethReflectance);
+W = S*V';
+hdl = vcNewGraphWin;
+for nDims=1:3
+    subplot(2,2,nDims)
+    list = 1:nDims;
+    approxRef = U(:,list)*W(list,:);
+    plot(wave,approxRef)
+    set(gca,'fontName','Georgia')
+    grid on
+    set(gca,'ylim',[-0.2 1.2])
+    title(sprintf('N = %d',nDims));
+end
+subplot(2,2,4)
+plot(wave,macbethReflectance);
+set(gca,'ylim',[-0.2 1.2])
+grid on
+set(gca,'fontName','Georgia')
+title('Full Spectra');
+
+subplot(2,2,1)
+t = xlabel('Wavelength (nm)'); set(t,'fontname','Georgia')
+t = ylabel('Reflectance'); set(t,'fontname','Georgia')
+
+%% Load XYZ nad choose a light for the rendering experiments
+XYZ = ieReadSpectra('XYZ',wave);
+lgt = ieReadSpectra('D65',wave);  
+
+% Or try these lights instead
+% lgt  = ieReadSpectra('tungsten',wave);
+% lgt  = ieReadSpectra('FluorescentOffice',wave); 
+% lgt  = ieReadSpectra('Fluorescent2',wave); 
+% lgt  = ieReadSpectra('Fluorescent7',wave); 
+% lgt  = ieReadSpectra('Fluorescent11',wave);
+
+%% Render the lower dimensional images for that light
+[U S V] = svd(macbethReflectance);
+W = S*V';
+vcNewGraphWin; 
+for nDims= 1:4  %5:8 %
+    list = 1:nDims;
+    
+    % Render for this light, nDims, and set peak Y to 100
+    mccXYZ = XYZ'*diag(lgt)*U(:,list)*W(list,:);
+    mx = max(mccXYZ(2,:)); mccXYZ = 100*(mccXYZ/mx);
+
+    % Pack it into an RGB format
+    imRGB = xyz2srgb(XW2RGBFormat(mccXYZ',4,6));
+    imRGB = imageFlip(imRGB,'updown');
+    imRGB = imageFlip(imRGB,'leftright');
+
+    % Show
+    subplot(3,2,nDims)
+    imagesc(imRGB); axis image
+    set(gca,'xtick',[],'ytick',[])
+    title(sprintf('N = %.0f',nDims))
+end
+
+% Full rendering
+subplot(3,2,5)
+mccXYZ = XYZ'*diag(lgt)*U*W;
+mx = max(mccXYZ(2,:)); mccXYZ = 100*(mccXYZ/mx);
+imRGB = xyz2srgb(XW2RGBFormat(mccXYZ',4,6));
+imRGB = imageFlip(imRGB,'updown');
+imRGB = imageFlip(imRGB,'leftright');
+imagesc(imRGB); axis image
+set(gca,'xtick',[],'ytick',[])
+title(sprintf('Full rendering'))
+
+% Plot the light
+subplot(3,2,6)
+plot(wave,lgt); grid on
+xlabel('Wavelength (nm)'); ylabel('Relative power');
+
+%% End
+
+
+##### SOURCE END #####
+--></body></html>
