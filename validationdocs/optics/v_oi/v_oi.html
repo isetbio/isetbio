@@ -68,7 +68,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISETBIO</a></li><li><a href="#5">Diffraction limited simulation properties</a></li><li><a href="#6">Human optics</a></li><li><a href="#7">Make a scene and show some oiGets and oiCompute work</a></li><li><a href="#8">Check GUI control</a></li><li><a href="#9">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_oi(varargin)
 <span class="comment">%</span>
-<span class="comment">% Test optical image functions.</span>
+<span class="comment">% Test optical image functions</span>
 <span class="comment">%</span>
 <span class="comment">%</span>
 <span class="comment">% Copyright Imageval LLC, 2009</span>
@@ -83,30 +83,30 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         plotOI(oi,<span class="string">'otf'</span>,[],450);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'diffractionOI'</span>, oi);
-</pre><h2>Human optics<a name="6"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
+</pre><img vspace="5" hspace="5" src="v_oi_01.png" alt=""> <img vspace="5" hspace="5" src="v_oi_02.png" alt=""> <h2>Human optics<a name="6"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         plotOI(oi,<span class="string">'psf'</span>,[],420);
         plotOI(oi,<span class="string">'psf'</span>,[],550);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'humanOI'</span>, oi);
-</pre><h2>Make a scene and show some oiGets and oiCompute work<a name="7"></a></h2><pre class="codeinput">    scene = sceneCreate;
+</pre><img vspace="5" hspace="5" src="v_oi_03.png" alt=""> <img vspace="5" hspace="5" src="v_oi_04.png" alt=""> <h2>Make a scene and show some oiGets and oiCompute work<a name="7"></a></h2><pre class="codeinput">    scene = sceneCreate;
     oi = oiCompute(oi,scene);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         plotOI(oi,<span class="string">'illuminance mesh linear'</span>);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'theScene'</span>,scene);
     UnitTest.validationData(<span class="string">'humanOIFromScene'</span>, oi);
-</pre><h2>Check GUI control<a name="8"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+</pre><img vspace="5" hspace="5" src="v_oi_05.png" alt=""> <h2>Check GUI control<a name="8"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(oi);
         oiWindow;
         oiSet([],<span class="string">'gamma'</span>,1);
     <span class="keyword">end</span>
-</pre><h2>End<a name="9"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_oi_06.png" alt=""> <h2>End<a name="9"></a></h2><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_oi(varargin)
 %
-% Test optical image functions.
+% Test optical image functions
 %
 %
 % Copyright Imageval LLC, 2009
