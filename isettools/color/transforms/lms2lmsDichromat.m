@@ -71,18 +71,18 @@ if notDefined('whiteLMS'), error('white LMS values required'); end
 if ischar(cbType), cbType = ieParamFormat(cbType); end
 
 % define the anchor points
-% For protan, the anchor wavelength are 470 nm and 575 nm. For deuteranope,
+% For protan, the anchor wavelength are 475 nm and 575 nm. For deuteranope,
 % the anchor wavelength are 475 nm and 575 nm. For tritanope, the anchor
-% wavelength are 480 nm and 660 nm.
+% wavelength are 485 nm and 660 nm.
 %
 % The anchor values are roughly
-%   anchor = ieReadSpectra('stockman', [470 475 575 660]);
+%   anchor = ieReadSpectra('stockman', [475 485 575 660]);
 % anchor = [0.08008 0.1579 0.5897 
 %           0.1284 0.2237 0.3636 
 %           0.9856 0.7325 0.001079
 %           0.0914 0.007009 0.0]';
-anchor = [0.0970 0.1766 0.6537 
-          0.1193 0.2123 0.5309 
+anchor = [0.1193 0.2123 0.5309 
+          0.1620 0.2709 0.2894 
           0.9881 0.7266 0.0004
           0.0941 0.0077 0.0]';
 
