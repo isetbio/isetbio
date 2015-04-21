@@ -15,7 +15,7 @@ function publishAllTutorials
 
     % list of scripts to be skipped from automatic publishing
     scriptsToSkip = {...
-       % 't_coneAdapt.m' ...    % takes too long to run
+        't_coneAdapt.m' ...    % takes too long to run
         };
     % ----------------------- end of script customization -----------------
     
