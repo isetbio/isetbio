@@ -8,8 +8,9 @@ function [coneMosaicImage,coneMosaicRawImage] = generateConeMosaicImage(cfaPatte
 % 
 % See also: t_generateConeMosaicImage
 %
-% 4/21/15  ncp  Wrote it.
+% 4/21/15  npc  Wrote it.
 % 4/22/15  dhb  Tweaks for isetbio style mosaics
+% 4/23/15 npc   Now accepting odd size cone aperture sizes.
 
     % Convert isetbio cfa to the representation Nicolas used when he wrote
     % this.
@@ -21,6 +22,9 @@ function [coneMosaicImage,coneMosaicRawImage] = generateConeMosaicImage(cfaPatte
         temp(index) = ii;
         coneMosaicRawImage(:,:,ii) = temp;
     end
+    
+    % set minimum coneSize to 2 pixels
+    coneSize = max([2 coneSize]);
     
     % Do the work
     subMosaicL = makeSingleConeMosaic(coneMosaicRawImage(:,:,1), coneSize, style);
@@ -38,9 +42,9 @@ function coneMosaic = makeThreeConeMosaic(mosaicL, mosaicM, mosaicS, style)
             mosaicM = mosaicM * 0.75;
         case 'williams_roorda'
             % boost the brightness a bit
-            mosaicL = mosaicL / 0.75;
-            mosaicM = mosaicM / 0.75;
-            mosaicS = mosaicS / 0.75;
+            mosaicL = mosaicL / 0.3;
+            mosaicM = mosaicM / 0.7;
+            mosaicS = mosaicS / 0.7;
             mosaicL(mosaicL > 1) = 1;
             mosaicM(mosaicM > 1) = 1;
             mosaicS(mosaicS > 1) = 1;
@@ -62,13 +66,12 @@ function singleConeMosaic = makeSingleConeMosaic(pixelMosaic, coneSize, style)
 
 switch (style)
     case 'standard'
-        
         kernel = makeCircularKernel(coneSize/2);
     case 'williams_roorda'
         kernel = makeGaussianKernel(coneSize/2);
 end
 
-singleConeMosaic = upsampleImage(pixelMosaic, coneSize+1);
+singleConeMosaic = upsampleImage(pixelMosaic, coneSize);
 singleConeMosaic = conv2(singleConeMosaic, kernel, 'same');
 end
 
@@ -83,13 +86,13 @@ function kernel = makeCircularKernel(kernelSize)
     [X,Y] = meshgrid(-kernelSize:kernelSize,-kernelSize:kernelSize);
     kernel = zeros(size(X));
     r = sqrt(X.^2 + Y.^2)/kernelSize;
-    kernel(r < 1) = 1;
+    kernel(r < 0.9) = 1;
 end
 
 function upsampledImage = upsampleImage(originalImage, upsampleFactor)
-    offset = (upsampleFactor-1)/2+1;
+    offset = round(upsampleFactor/2+1);
     [nRows,nCols] = size(originalImage);
-    upsampledImage = zeros(upsampleFactor*nRows,upsampleFactor*nCols);
+    upsampledImage = zeros(upsampleFactor*nRows+1,upsampleFactor*nCols+1);
     upsampledImage(offset:upsampleFactor:end,offset:upsampleFactor:end) = originalImage;
 end
 

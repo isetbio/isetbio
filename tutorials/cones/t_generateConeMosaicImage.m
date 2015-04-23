@@ -2,8 +2,9 @@ function t_GenerateConeMosaicImage()
 %
 % Show how to make a nice viewable image of a cone mosaic.
 %
-% 4/21/15 ncp   Wrote it.
+% 4/21/15 npc   Wrote it.
 % 4/22/15 dhb   Tweaks for isetbio compatibility.
+% 4/23/15 npc   Minor fixes.
 
 %% Clear
 close all; clear global; ieInit;
@@ -25,20 +26,20 @@ cfaSize = 30;
 coneCFAPattern = coneCFAPattern(1:cfaSize,1:cfaSize);
 
 %% Specify cone aperture size
-coneSize = 16;
+coneSize = 15;
 
 %% generate the cone mosaic image
 [coneMosaicStandardImage,coneCFARawImage] = generateConeMosaicImage(coneCFAPattern, coneSize, 'standard');
 coneMosaicWRImage = generateConeMosaicImage(coneCFAPattern, coneSize, 'williams_roorda');
 
 % Show the results
-h = figure(1); set(h, 'Name', 'raw cfa mosaic'); clf
+h = figure(1); set(h, 'Name', 'raw cfa mosaic', 'Position', [10 10 100 100]); clf
 imshow(coneCFARawImage);
 
-h = figure(2); set(h, 'Name', 'standard style cone mosaic'); clf
+h = figure(2); set(h, 'Name', 'standard style cone mosaic', 'Position', [400 400 100 100]); clf
 imshow(coneMosaicStandardImage); truesize;
 
-h = figure(3); set(h, 'Name', 'willaims/roorday style cone mosaic'); clf
+h = figure(3); set(h, 'Name', 'Williams/Roorda style cone mosaic', 'Position', [860 400 100 100]); clf
 imshow(coneMosaicWRImage); truesize;
 
 end
