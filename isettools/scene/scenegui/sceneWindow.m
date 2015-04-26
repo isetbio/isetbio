@@ -1160,6 +1160,11 @@ function menuEditSetIlluminant_Callback(hObject, eventdata, handles)
 % Edit | Adjust SPD | Change Illuminant
 
 scene = vcGetObject('scene');
+
+% Hmm.  It is possible for there to be a scene window without any entry in
+% the database.  I am not sure that is OK or how to handle it (BW). 
+if isempty(scene), error('No scene in database'); end
+
 scene = sceneAdjustIlluminant(scene);
 
 % Replace and refresh
