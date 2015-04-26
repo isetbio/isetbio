@@ -6,39 +6,40 @@
 % Copyright ImagEval Consultants, LLC, 2010.
 
 %% 
-s_initISET
+ieInit
 
 %% Show the image of a broadband line
 imSize = 128;
 scene = sceneCreate('lined65',imSize);     % D65 SPD for a thin line
-scene = sceneSet(scene,'fov',0.3);  % Small field of view 
+scene = sceneSet(scene,'fov',1);  % Small field of view 
 vcReplaceObject(scene);
 % sceneWindow;
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiSet(oi,'spectrum',sceneGet(scene,'spectrum'));
-optics = opticsCreate('human');  % Set up for human optics
-oi = oiSet(oi,'optics',optics);
-oi = oiCompute(scene,oi);
+oi = oiCompute(oi,scene);
 vcReplaceObject(oi);
 oiWindow;
 
 %% Make OIs for several different wavelengths
 
 scene410 = sceneInterpolateW(scene,410);
-oi = oiCompute(scene410,oi);
+oi = oiCreate('human');
+oi = oiCompute(oi,scene410);
 oi = oiSet(oi,'name','line-410');
 vcAddAndSelectObject(oi);
 oiWindow;
 
 scene550 = sceneInterpolateW(scene,550);
-oi = oiCompute(scene550,oi);
+oi = oiCreate('human');
+oi = oiCompute(oi,scene550);
 oi = oiSet(oi,'name','line-550');
 vcAddAndSelectObject(oi);
 oiWindow;
 
-scene690 = sceneInterpolateW(scene,690);
-oi = oiCompute(scene690,oi);
+scene690 = sceneInterpolateW(scene,690); % vcAddObject(scene690); sceneWindow;
+oi = oiCreate('human');
+oi = oiCompute(oi, scene690);
 oi = oiSet(oi,'name','line-690');
 vcAddAndSelectObject(oi);
 oiWindow;

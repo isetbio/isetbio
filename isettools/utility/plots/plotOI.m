@@ -161,7 +161,8 @@ switch pType
         udata.wave = wave; udata.pos = posMicrons.x; udata.data = double(data');
         udata.cmd = 'mesh(pos,wave,data)';
         set(g,'Name',sprintf('ISET GraphWin: line %.0f',roiLocs(2)));
-        
+        colormap(jet)
+
     case {'irradiancevline','vline','vlineirradiance',}
         % plotOI(oi,'irradiance vline')
         data = oiGet(oi,'photons');
@@ -189,7 +190,9 @@ switch pType
         % Attach data to the figure
         udata.wave = wave; udata.pos = posMicrons.y; udata.data = double(data');
         set(g,'Name',sprintf('Line %.0f',roiLocs(1)));
-        
+
+        colormap(jet)
+
     case {'irradiancefft'}
         % plot(oi,'irradiance fft',roiLocs,wave)
         % This is the fft of the region at the selected wavelength.
@@ -208,7 +211,6 @@ switch pType
             selectedWave = varargin{1};
         end
         
-        
         data = oiGet(oi,'photons',selectedWave);
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
         
@@ -226,7 +228,8 @@ switch pType
         str = sprintf('Amplitude spectrum at %.0f nm', selectedWave);
         title(str);
         set(g,'Name',sprintf('Irradiance with grid'));
-        
+        colormap(jet)
+
     case {'irradianceimagewave','irradianceimagewavegrid'}
         % plotOI(oi,'irradianceImageWave',wave,gSpacing);
         if isempty(varargin), wave = 500;
@@ -321,7 +324,7 @@ switch pType
         udata.pos = posMicrons.x; udata.data = illum';
         udata.cmd = 'plot(pos,illum)';
         set(g,'Name',sprintf('Line %.0f',roiLocs(2)));
-        
+                        
     case {'illuminancemeshlog'}
         % Mesh plot of image log illuminance
         udata = plotIlluminanceMesh(oi,'log');
@@ -426,7 +429,8 @@ switch pType
         udata.wave = wave; udata.pos = posMicrons.x; udata.data = double(data');
         udata.cmd = 'mesh(pos,wave,data)';
         set(g,'Name',sprintf('Line %.0f',roiLocs(2)));
-        
+        colormap(jet)
+
     case {'contrastvline','vlinecontrast'} % Done
         % plotOI(oi,'contrast vline')
         % Plot percent contrast (difference from the mean as a percentage
