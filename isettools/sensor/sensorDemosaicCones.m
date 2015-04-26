@@ -24,6 +24,8 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %                'natural'
 %                'cubic'
 %                'v4'
+%              'freeman' - Freeman's method.  Median filtering applied to
+%                          color plane differences after basic interpolation
 %    nFrames - number of frames to be rendered, should be no larger than
 %              number of frames in sensorGet(sensor, 'photons'). Default 1
 %
@@ -34,14 +36,17 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %                 image is monochrome, this is returned empty.
 %
 %  Notes:
-%    1) this function can only be used for demosaicing human cone mosaic.
+%    1) This function can only be used for demosaicing human cone mosaic.
 %       For bayer patterns in cameras, use ISET camera modules instead
-%    2) this function will detect dichromacy by checking cone densities.
+%    2) This function will detect dichromacy by checking cone densities.
 %       For dichromatic observers, the rendered image will be the
 %       tranformed image for trichromats. See lms2lmsDichromat for more
 %       details about dichromatic color transformation
 %    3) For monochrome cone mosaic, this function will just scale it a gray
 %       scale image
+%    4) Probably want to pass median filter size and master channel as an
+%       optional parameters for method 'freeman'.  But right now they are
+%       just set in that section of the code.
 %
 %  Examples:
 %  Show the sRGB image for a trichromat
@@ -71,12 +76,24 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %    lms2lmsDichromat, sensorGet, plotSensor
 %
 % (HJ) ISETBIO TEAM, 2015
+%
+% 4/16/15  dhb  Added Freeman method.
 
 %% Check inputs
 if notDefined('sensor'), error('sensor required'); end
 if notDefined('method'), method = 'linear'; end
 if notDefined('nFrames'), nFrames = 1; end
 if ~sensorCheckHuman(sensor), error('only human sensor supported'); end
+
+%% Set up for various methods
+switch (method)
+    case { 'nearest' 'linear' 'natural' 'cubic' 'v4'}
+        gdmethod = method;
+    case {'freeman'}
+        gdmethod = 'linear';
+    otherwise
+        error('Unknown method passed');
+end
 
 p = sensorGet(sensor, 'photons');
 if isempty(p), error('photon absorption not computed'); end
@@ -143,7 +160,41 @@ else % trichromatic or dichromatic case
             [y, x] = ind2sub(sz, indx);
             
             % Let griddata do the work.
-            LMSphotons(:,:,ii-1,curFrame) = griddata(x,y,curP(indx), xq, yq, method);
+            LMSphotons(:,:,ii-1,curFrame) = griddata(x,y,curP(indx), xq, yq, gdmethod);
+        end
+        
+        % Adjust interpolation if it's freeman's method
+        if (strcmp(method,'freeman'))
+            masterSensor = 1;
+            filterSize = 5;
+            freemanInterpLMS = LMSphotons(:,:,:,curFrame);
+            tempMaster = LMSphotons(:,:,masterSensor,curFrame);
+            
+            % Leave the masterSensor plane along, do median filtering on 
+            % difference images for the other two.  For each plane, use
+            % the median filtered version at locations where there isn't a
+            % sensor of that plane.
+            %
+            % This may not be the exact algorithm in the Freeman patent.
+            % My memory is that Bill suggested this version to me as one
+            % that was easy to implement and worked just as well.
+            %
+            % Although the Freeman algorithm works pretty well for the
+            % Bayer mosaic, it only appears to help a little for human cone
+            % layouts.  It is possible this implementation is buggy.
+            for n = 1:3
+                if (n ~= masterSensor)
+                    diffImage = LMSphotons(:,:,n,curFrame) - tempMaster;
+                    diffImage = medfilt2(diffImage,[filterSize filterSize]);
+                    index = find(coneType ~= n+1);
+                    temp = LMSphotons(:,:,n,curFrame);
+                    temp(index) = diffImage(index) + tempMaster(index);
+                    freemanInterpLMS(:,:,n) = temp;
+                end
+            end
+            
+            % Pop this back in
+            LMSPhotons(:,:,:,curFrame) = freemanInterpLMS;
         end
         
         % scale LMS to match stockman normalized spectral qe

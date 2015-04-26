@@ -1,6 +1,5 @@
 function t_codeROI(varargin)
 %% t_codeROI
-%
 % How to retrieve data from a region of interest in isetbio.
 %
 % You can do this from the scene, oi, or sensor.  
