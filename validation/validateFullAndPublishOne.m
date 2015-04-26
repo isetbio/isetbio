@@ -22,7 +22,7 @@ function validateFullAndPublishOne(varargin)
     UnitTest.setPref('graphMismatchedData', true);
 
     %% Print all existing validation scripts and ask the user to select one for validation
-    singleScriptToValidate = UnitTest.SelectScriptFromExistingOnes();
+    singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
     
     %% Validate
     UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'PUBLISH');

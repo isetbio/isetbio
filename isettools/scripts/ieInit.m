@@ -10,7 +10,8 @@
 
 %% Check if there is a running instance, closes it, and clears workspace
 ieMainClose;   % Closes open ISETBIO windows
-close all;     % Closes other windows (e.g., vcNewGraphWin)
+close all;     % Closes other windows (e.g., vcNewGraphWin)]
+clear global   % Clear out pesky globals
 
 %% Initialize variables
 

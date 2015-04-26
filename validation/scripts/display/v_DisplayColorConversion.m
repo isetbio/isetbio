@@ -50,7 +50,8 @@ try
         error('Cannot deal with a display that has other than 3 primaries for this test.');
     end
     nInputLevels = size(gammaTable,1);
-    
+    gammaInput   = linspace(0,1,nInputLevels);
+
     %% Create a uniform field radiance image in ISETBIO
     % Use the display object and the passed RGB values.
     %
@@ -180,18 +181,15 @@ try
     % Put into PTB cal structure
     PTBcal = ptb.GeneratePsychToolboxCalStruct(...
         'name', displayGet(d, 'name'), ...
+        'gammaInput', gammaInput, ...
         'gammaTable', gammaTable, ...
         'wave', wave, ...
         'spd', ptbPrimarySpdMagCorrectIrradiancePhotons, ...
+        'ambientSpd', zeros(length(wave),1), ...
         'screenSizeInPixels', screenSizeInPixels, ...
         'dotsPerMeter', dotsPerMeter ...
         );
     
-    % Kluge.  Should set this properly in creation routine.  It might even
-    % be possible to do so, I'm not sure and the documentation in the
-    % function is not clear on what the options are (as there is no
-    % documentation at all, sigh.)
-    PTBcal.P_ambient = zeros(length(wave),1);
     
     %% Initialize PTB calibration structure.
     PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
