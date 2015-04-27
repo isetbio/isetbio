@@ -1,10 +1,14 @@
 function t_GenerateConeMosaicImage()
 %
-% Show how to make a nice viewable image of a cone mosaic.
+% Show how to make a nice viewable image of a cone mosaic, as well as an
+% image representing the photon responses.
+%
+% See also generateConeMosaicImage, generateConePhotonsImage.
 %
 % 4/21/15 npc   Wrote it.
 % 4/22/15 dhb   Tweaks for isetbio compatibility.
 % 4/23/15 npc   Minor fixes.
+% 4/27/15 dhb   Test photons image routine as well.
 
 %% Clear
 close all; clear global; ieInit;
@@ -25,12 +29,21 @@ coneCFAPattern = sensorGet(sensor,'cfa pattern');
 cfaSize = 30;
 coneCFAPattern = coneCFAPattern(1:cfaSize,1:cfaSize);
 
+%% Make up some photon responses.
+% Here we are just testing that we can make a nice image, so we don't go to
+% any trouble to make this realistic.
+conePhotonResponses = 1e12*rand(size(coneCFAPattern));
+
 %% Specify cone aperture size
 coneSize = 15;
 
-%% generate the cone mosaic image
+%% Generate the cone mosaic image
 [coneMosaicStandardImage,coneCFARawImage] = generateConeMosaicImage(coneCFAPattern, coneSize, 'standard');
 coneMosaicWRImage = generateConeMosaicImage(coneCFAPattern, coneSize, 'williams_roorda');
+
+%% Generate the isomerizations map image
+[conePhotonsStandardImage,conePhotonsRawImage] = generateConePhotonsImage(conePhotonResponses, coneSize, 'standard');
+conePhotonsWRImage = generateConePhotonsImage(conePhotonResponses, coneSize, 'williams_roorda');
 
 % Show the results
 h = figure(1); set(h, 'Name', 'raw cfa mosaic', 'Position', [10 10 100 100]); clf
@@ -41,6 +54,13 @@ imshow(coneMosaicStandardImage); truesize;
 
 h = figure(3); set(h, 'Name', 'Williams/Roorda style cone mosaic', 'Position', [860 400 100 100]); clf
 imshow(coneMosaicWRImage); truesize;
+
+h = figure(4); set(h, 'Name', 'standard style isomerizations', 'Position', [400 400 100 100]); clf
+imshow(conePhotonsStandardImage); truesize;
+
+h = figure(5); set(h, 'Name', 'Williams/Roorda style isomerizations', 'Position', [860 400 100 100]); clf
+imshow(conePhotonsWRImage); truesize;
+
 
 end
 

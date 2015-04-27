@@ -6,7 +6,7 @@ function [coneMosaicImage,coneMosaicRawImage] = generateConeMosaicImage(cfaPatte
 %   'standard' - this is the style used in Benson and Brainard (2014)
 %   'williams_roorda' - this is the style used in Williams/Roorda papers
 % 
-% See also: t_generateConeMosaicImage
+% See also: t_generateConeMosaicImage, generateConePhotonsImage
 %
 % 4/21/15  npc  Wrote it.
 % 4/22/15  dhb  Tweaks for isetbio style mosaics
