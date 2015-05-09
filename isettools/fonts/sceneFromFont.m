@@ -1,7 +1,13 @@
 function scene = sceneFromFont(font,display,scene, varargin)
-% Create a scene from a font and display
+% Create a scene from a font, scene and display
 %
-%  scene = sceneFromFont(font,[display='LCD-Apple'],[scene])
+%     scene = sceneFromFont(font,[display='LCD-Apple'],[scene],[oSample])
+%
+%  font: See fontCreate
+%  display: See displayCreate
+%  scene:   See sceneCreate;
+%  oSample:  Over sample for display rendering, default [20 20], to show
+%            the subpixel image
 %
 % (BW) Vistasoft group, 2014
 

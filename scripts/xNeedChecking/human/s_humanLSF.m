@@ -6,7 +6,7 @@
 % Copyright ImagEval Consultants, LLC, 2010.
 
 %% 
-s_initISET
+ieInit
 
 %% Show the image of a broadband line
 imSize = 128;
