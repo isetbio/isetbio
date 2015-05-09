@@ -7,11 +7,11 @@ function scene = sceneFromFont(font,display,scene, oSample, varargin)
 %    font     - font structure, see fontCreate
 %    display  - display structure, see displayCreate
 %    scene    - scene structure, see sceneCreate
-%    oSample  - up-sampling rate
+%    oSample  - up-sampling rate default: [20,20]
 %
 %    varargin - more parameters, could include:
-%      varargin{1} - pad size for the font bitmap
-%      varargin{2} - pad value for the font bitmap
+%      varargin{1} - pad size for the font bitmap (default: [])
+%      varargin{2} - pad value for the font bitmap (default: [])
 %
 % BW/HJ Vistasoft group, 2014
 
