@@ -22,14 +22,15 @@ function outSensor = sensorCompute(sensor,oi,showBar)
 %  set either through the graphical user interface (sensorImageWindow) or
 %  by scripts.
 %
-%  One of the most important flags is the noise flag.  In general, the
-%  sensorCompute includes photon and electrical noise in the computation.
-%  It can be useful to run the calculation without any noise, or with
-%  photon noise only.  To achieve this set the flag as follows:
+%  One of the most important sensor parameters is the noise flag.  In
+%  general, the sensorCompute includes photon and electrical noise in the
+%  computation. But it is often useful to run the calculation without any
+%  noise, or with photon noise only.  To set the type of noise calculation,
+%  you must set the value of the sensor noise flag:
 %
 %    sensor = sensorSet(sensor,'noise flag',0);   % No noise
 %    sensor = sensorSet(sensor,'noise flag',1);   % Photon only
-%    sensor = sensorSet(sensor,'noise flag',0);   % Photon and electrical
+%    sensor = sensorSet(sensor,'noise flag',2);   % Photon and electrical
 %
 %
 % COMPUTATIONAL OUTLINE:

@@ -1,7 +1,7 @@
 %% Script for testing the plotOI routine
 
 %% 
-s_initISET
+ieInit
 
 %% Initialize the oi structure
 scene = sceneCreate; 

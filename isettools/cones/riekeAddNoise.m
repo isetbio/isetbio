@@ -1,10 +1,11 @@
 function [adaptedCur, params] = riekeAddNoise(curNF, params)
-%% Add noise to membrane current in cone adaptataion
-%   adaptedCur = riekeAddNoise(curNF, params)
+% Add noise to membrane current in cone adaptataion
 %
-%  Noise in cone adaptation is independent of cone signal. The noise is
-%  Gaussian additive and the spectral power distribution can be
-%  characterized by the sum of two lorentz function.
+%      adaptedCur = riekeAddNoise(curNF, params)
+%
+% Noise in cone adaptation is independent of cone signal. The noise is
+% Gaussian additive and the spectral power distribution can be
+% characterized by the sum of two Lorentzian functions.
 %
 %  Inputs:
 %    curNF  - noise free cone adapted membrane current, see

@@ -238,13 +238,13 @@ switch parm
             oi.spectrum = val;
         end
     case {'wave','wavelength','wavelengthnanometers'}
+        % oi = oiSet(oi,'wave',val)
         % Set sampling wavelength if new sampling is not the same as
         % existing wavelength sampling
         if isequal(oiGet(oi, 'wave'), val), return; end
         
+        % Interpolate photons because the wavelength is changed
         val = val(:); % column vector
-        
-        % Interpolate photons if computed
         p = oiGet(oi, 'photons');
         if ~isempty(p)
             [p, r, c] = RGB2XWFormat(p); % swtich to XW format
@@ -253,7 +253,7 @@ switch parm
             oi = oiSet(oi, 'photons', p);
         end
         
-        % Change wavelength samples for optics
+        % Change wavelength for optics, too.
         oi = oiSet(oi, 'optics wave', val);
         
         % Set new wavelegnth samples

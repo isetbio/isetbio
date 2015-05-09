@@ -27,7 +27,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 %
 % Optics model  - 
 %      {'model'}  -  DiffractionLimited, ShiftInvariant, RayTrace,
-%                    UserSupplied, or Skip.
+%                    UserSupplied.
 %
 % Diffraction limited optics specifications.
 %      {'name'}    - This optics name
@@ -42,7 +42,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 %        {'wave'}   - Wavelength samples
 %
 % OTF Information for shift-invariant optics model
-%      {'otfmethod'}   - diffractionlimited, shiftinvariant, raytrace, {'usersupplied','custom'}, or ...
+%      {'otfmethod'}   - diffractionlimited, shiftinvariant, raytrace, {'usersupplied','custom'}, skipotf, or ...
 %      {'otfdata'}     - Used to store custom data.  Row x Col x Wave
 %      {'otffx'}       - frequency samples across col of otfdata (cyc/mm)
 %      {'otffy'}       - frequency samples down rows of otfdata  (cyc/mm)
@@ -130,6 +130,7 @@ switch parm
         val = val(:); % a column vector
         % Interpolate OTF data if it is there
         otf = opticsGet(optics, 'otf data');
+        nWave = opticsGet(optics,'nwave');
         if ~isempty(otf)
             [otf, r, c] = RGB2XWFormat(otf);
             otf = interp1(optics.OTF.wave, otf', val(:), 'linear', 0);

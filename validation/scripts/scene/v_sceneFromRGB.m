@@ -1,4 +1,5 @@
 function varargout = v_sceneFromRGB(varargin)
+%
 % Test how isetbio creates a scene from an rgb data using sceneFromFile
 %
 % Function sceneFromFile uses 1) the rgb data and the spectral power
