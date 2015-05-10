@@ -25,7 +25,8 @@ function lut = ieLUTInvert(inLUT, nSteps)
 %
 % 1/7/15  dhb  Changed convention for passed resolution to be the number of
 %              samples (nSteps) in the returned table.
-% 4/2/15  dhb  Pull clipping out of loop (cleaner) and clip at the correct level (which was wrong)
+% 4/2/15  dhb  Pull clipping out of loop (cleaner) and clip at the correct 
+%              level (which was wrong)
 
 %% Check inputs
 if notDefined('inLUT'), error('input lut required'); end
@@ -43,6 +44,12 @@ for ii = 1 : size(inLUT, 2)
     % and we just set all of them to 0
     [x, indx] = unique(inLUT(:, ii));
     lut(:, ii) = interp1(x, y(indx), iY(:), 'pchip');
+    
+    % Handle extrapolation values
+    % ieClip can handle this if black is black for the display. Otherwise,
+    % we need to handle extrapolation independently
+    lut(iY < min(x), ii) = 0;
+    lut(iY > max(x), ii) = nInSteps;
 end
 
 % Clip the output to the max possible value.  We take this as the maximum
