@@ -203,12 +203,12 @@ switch lower(param)
 
         % In the case of human, resetting the size requires rebuilding the
         % cone mosaic
-        if strfind(sensorGet(sensor,'name'),'human')
+        if sensorCheckHuman(sensor)
             % disp('Resizing human sensor')
             if checkfields(sensor,'human','coneType')
                 d = sensorGet(sensor, 'human cone densities');
                 rSeed = sensor.human.rSeed;
-                umConeWidth = pixelGet(sensorGet(sensor,'pixel'),'width','um');
+                umConeWidth = sensorGet(sensor, 'pixel width', 'um');
                 [xy,coneType] = humanConeMosaic(val,d,umConeWidth,rSeed);
                 sensor.human.coneType = coneType;
                 sensor.human.xy = xy;
@@ -559,12 +559,12 @@ switch lower(param)
         sensor = sensorSet(sensor, 'human cone', cone);
         
         % we should update sensor array here
-        params.sz = sensorGet(sensor, 'size');
-        params.density = sensorGet(sensor, 'human cone densities');
-        params.rSeed = sensorGet(sensor, 'human rseed');
-        params.humanConeDensities = val;
+%         params.sz = sensorGet(sensor, 'size');
+%         params.density = sensorGet(sensor, 'human cone densities');
+%         params.rSeed = sensorGet(sensor, 'human rseed');
+%         params.humanConeDensities = val;
         
-        sensor = sensorCreateConeMosaic(sensor, params);
+        sensor = sensorCreateConeMosaic(sensor, cone);
         
     case {'humanconelocs','conexy','conelocs','xy'}
         %- xy position of the cones in the mosaic
@@ -584,7 +584,8 @@ switch lower(param)
         
     case {'movementpositions', 'sensorpositions', 'positions'}
         % Nx2 vector of (x,y) positions in number of pixels
-        sensor.movement.pos = val;
+        % Only support integer position at this point
+        sensor.movement.pos = round(val);
     case {'framesperposition','exposuretimesperposition','etimeperpos'}
         % Exposure frames for each (x,y) position
         % This is a vector with some number of exposures for each x,y
