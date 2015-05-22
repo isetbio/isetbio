@@ -201,7 +201,7 @@ function val = sensorGet(sensor,param,varargin)
 %    {'xy'}                          - xy position of cones in the mosaic
 %    {'adaptation gain'}             - cone adaptation gain
 %    {'adaptation offset'}           - cone adaptation volts
-%    {'adapted volts'}               - adapted volts, will have negatives
+%    {'adapted data'}                - adapted volts, will have negatives
 %    
 %    {'time interval'}          - human eye sampling time interval
 %    {'total time'}             - total time of eye movement sequence
@@ -228,6 +228,9 @@ function val = sensorGet(sensor,param,varargin)
 % See also:  sensorSet
 %
 % Copyright ImagEval Consultants, LLC, 2005.
+% 
+% 5/22/15  xd, dhb  Changed 'adapted volts' -> 'adapted data' in help text
+%                   above, because that is what the routine expects.
 
 if ~exist('param', 'var') || isempty(param)
     error('Param must be defined.');
@@ -1099,16 +1102,16 @@ switch param
     case {'adaptationoffset'}
         % Adaptation offset
         if checkfields(sensor, 'human', 'adaptOffset')
-            val = sensor.humna.adaptOffset;
+            val = sensor.human.adaptOffset;
         end
         
     case {'adapteddata'}
         % volts after cone adaptation
         gainMap = sensorGet(sensor, 'adaptation gain');
-        offset  = sensorGet(sensor, 'adaptation volts');
+        offset  = sensorGet(sensor, 'adaptation offset');
         volts   = sensorGet(sensor, 'volts');
         
-        if isscaler(gainMap)
+        if isscalar(gainMap)
             val = volts .* gainMap - offset;
         elseif ismatrix(gainMap)
             nSamples = size(volts, 3); 
