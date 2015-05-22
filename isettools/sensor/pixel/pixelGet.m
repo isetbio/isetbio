@@ -67,8 +67,9 @@ function val = pixelGet(pixel,param,varargin)
 %  
 % Copyright ImagEval Consultants, LLC, 2005.
 
-if ~exist('pixel','var') || isempty(pixel), error('Must define pixel.'); end
-if ~exist('param','var') || isempty(param), error('Must define parameter.'); end
+if ~exist('pixel', 'var') || isempty(pixel), error('Pixel required'); end
+if ~exist('param', 'var'), error('Parameter required'); end
+if isempty(param), val = pixel; return; end
 
 param = ieParamFormat(param);
 

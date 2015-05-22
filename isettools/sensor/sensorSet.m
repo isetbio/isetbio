@@ -126,33 +126,20 @@ function sensor = sensorSet(sensor,param,val,varargin)
 % 4/19/15  dhb  Setting 'cone type' also calls a set on 'pattern' to keep
 %               these in sync.
 
-if ~exist('param','var') || isempty(param)
-    error('Parameter field required.');
-end
+if ~exist('sensor', 'var'), error('Sensor required'); end
+if ~exist('param','var'), error('Parameter field required.'); end
 if ~exist('val','var'),   error('Value field required.'); end
+if isempty(param), sensor = val; return; end
 
 % Handling pixel sets via sensorSet call.
 [oType, param] = ieParameterOtype(param);
-if isequal(oType,'pixel')
-    if isempty(param)
-        % oi = oiSet(oi,'optics',optics);
-        sensor.pixel = val;
-    else
-        if isempty(varargin), sensor.pixel = pixelSet(sensor.pixel,param,val);
-        elseif length(varargin) == 1
-            sensor.pixel = pixelSet(sensor.pixel,param,val,varargin{1});
-        elseif length(varargin) == 2
-            sensor.pixel = pixelSet(sensor.pixel,param,val,varargin{1},varargin{2});
-        end
-    end
+if isequal(oType, 'pixel')
+    sensor.pixel = pixelSet(sensor.pixel, param, val, varargin{:});
     return;
 elseif isequal(oType, 'em')
-    if isempty(param)
-        sensor.human.eyemove = val;
-    else
-        sensor.human.eyemove = emSet(sensor.human.eyemove, param, val);
-    end
-    return
+    em = sensor.human.eyemove;
+    sensor.human.eyemove = emSet(em, param, val, varargin{:});
+    return;
 elseif isempty(param)
     error('oType %s. Empty param.\n',oType);
 end

@@ -48,8 +48,9 @@ function em = emSet(em, params, val)
 
 %% Check inputs
 if notDefined('em'), error('eye movement structure required'); end
-if notDefined('params'), error('Parameter name required'); end
+if ~exist('params', 'var'), error('Parameter name required'); end
 if notDefined('val'), error('Value required'); end
+if isempty(params), em = val; return; end
 
 %% Get property value
 params = ieParamFormat(params);  % Lower case and remove spaces

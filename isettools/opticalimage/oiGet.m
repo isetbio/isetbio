@@ -110,7 +110,7 @@ function val = oiGet(oi,parm,varargin)
 %       {'sampled rt psf'}     - Precomputed shift-variant psfs
 %       {'psf sample angles'}  - Vector of sample angle
 %       {'psf angle step'}     - Spacing between ray trace angle samples
-%       {'psf image heights'}  - Vector of sampled image heights (use optics)
+%       {'psf image heights'}  - Vector of sampled image heights (optics)
 %       {'raytrace optics name'}  - Optics used to derive shift-variant psf
 %       {'rt psf size'}        - row,col dimensions of the psf
 %
@@ -119,23 +119,17 @@ function val = oiGet(oi,parm,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if ~exist('parm','var') || isempty(parm)
-    error('Param must be defined.');
-end
+if ~exist('parm','var'), error('Param must be defined.'); end
+if isempty(param), val = oi; return; end
+
 val = [];
 
 % See if this is really an optics call
 [oType,parm] = ieParameterOtype(parm);
 switch oType
     case 'optics'
-        % If optics, then we either return the optics or an optics
-        % parameter.  We could add another varargin{} level.  Or even all.
-        optics = oi.optics;
-        if isempty(parm), val = optics;
-        elseif   isempty(varargin), val = opticsGet(optics,parm);
-        else     val = opticsGet(optics,parm,varargin{1});
-        end
-        return;
+        val = opticsGet(oi.optics, param, varargin{:});
+        return
     otherwise
 end
 
@@ -152,12 +146,13 @@ switch parm
         val = oi.consistency;
               
     case {'rows','row','nrows','nrow'}
-        if checkfields(oi,'data','photons'), val = size(oi.data.photons,1);
+        if checkfields(oi,'data','photons')
+            val = size(oi.data.photons, 1);
         else
             % disp('Using current scene rows')
             scene = vcGetObject('scene');
             if isempty(scene)
-                disp('No scene and no oi.  Using 128 rows.');
+                disp('No scene and no oi. Using 128 rows.');
                 val = 128;
             else
                 val = sceneGet(scene,'rows');
@@ -196,7 +191,9 @@ switch parm
             end
         end
         val = [oiGet(oi,'width')/sz(2) , oiGet(oi,'height')/sz(1)];
-        if ~isempty(varargin), val = val*ieUnitScaleFactor(varargin{1}); end
+        if ~isempty(varargin)
+            val = val*ieUnitScaleFactor(varargin{1});
+        end
 
     case {'samplesize'}
         % This is the spacing between samples.  We expect row and column
@@ -208,7 +205,9 @@ switch parm
         w = oiGet(oi,'width');      % Image width in meters
         c = oiGet(oi,'cols');       % Number of sample columns
         val = w/c;                  % M/sample
-        if ~isempty(varargin), val = val*ieUnitScaleFactor(varargin{1}); end
+        if ~isempty(varargin)
+            val = val*ieUnitScaleFactor(varargin{1});
+        end
 
     case {'distance','imagedistance','focalplanedistance'}
         % We are finding the distance from the lens to the focal plane.
@@ -291,7 +290,9 @@ switch parm
     case {'psfimageheights'}
         % Vector of sampled image heights
         if checkfields(oi,'psf','imgHeight'), val = oi.psf.imgHeight; end
-        if ~isempty(varargin), val = val*ieUnitScaleFactor(varargin{1}); end
+        if ~isempty(varargin)
+            val = val*ieUnitScaleFactor(varargin{1});
+        end
     case {'psfopticsname','raytraceopticsname'}
         % Optics data are derived from
         if checkfields(oi,'psf','opticsName'), val = oi.psf.opticsName; end

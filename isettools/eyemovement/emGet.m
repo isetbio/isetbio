@@ -49,7 +49,8 @@ function val = emGet(em, params, varargin)
 
 %% Check inputs
 if notDefined('em'), error('eye movement structure required'); end
-if notDefined('params'), error('Parameter name required'); end
+if ~exist('params', 'var'), error('Parameter name required'); end
+
 
 %% Get property value
 val = [];

@@ -1,4 +1,4 @@
-function oi = oiSet(oi,parm,val,varargin)
+function oi = oiSet(oi, parm, val, varargin)
 % Set ISET optical image parameter values
 %
 %    oi = oiSet(oi,parm,val,varargin)
@@ -98,38 +98,23 @@ function oi = oiSet(oi,parm,val,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if ~exist('parm','var') || isempty(parm), error('Param required'); end
-if ~exist('val','var'), error('Value field required.'); end
+if ~exist('oi', 'var'), error('OI structure required'); end
+if ~exist('parm', 'var') || isempty(parm), error('Param required'); end
+if ~exist('val', 'var'), error('Value field required.'); end
+if isempty(parm), oi = val; return; end
 
-[oType,parm] = ieParameterOtype(parm);
+[oType, parm] = ieParameterOtype(parm);
 
 % Handling optics setting via oiSet call.
 if isequal(oType,'optics')
-    if isempty(parm)
-        % oi = oiSet(oi,'optics',optics);
-        oi.optics = val;
-        return;
-    else
-        % Allows multiple additional arguments
-        if isempty(varargin), oi.optics = opticsSet(oi.optics,parm,val);
-        elseif length(varargin) == 1
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1});
-        elseif length(varargin) == 2
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1},varargin{2});
-        elseif length(varargin) == 3
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1},varargin{2},varargin{3});
-        end
-        return;
-    end
+    oi.optics = opticsSet(oi.optics, parm, val, varargin{:});
+    return
 elseif isempty(parm)
     error('oType %s. Empty param.\n',oType);
 end
 
-
 parm = ieParamFormat(parm);
-
 switch parm
-
     case {'name','oiname'}
         oi.name = val;
     case 'type'
