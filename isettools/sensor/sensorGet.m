@@ -231,6 +231,11 @@ function val = sensorGet(sensor,param,varargin)
 % 
 % 5/22/15  xd, dhb  Changed 'adapted volts' -> 'adapted data' in help text
 %                   above, because that is what the routine expects.
+%          xd, dhb  In the adatped data calculation, there was a call to
+%                   get 'adapted volts'.  This threw an error.  Since the line
+%                   computed a variable named offset, we changed this to a
+%                   call to get 'adaptation offset'.  Now it runs.  But we
+%                   are not sure this is what was intended.   
 
 if ~exist('param', 'var') || isempty(param)
     error('Param must be defined.');
