@@ -45,13 +45,12 @@ function pixel = pixelSet(pixel,param,val,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
-if ~exist('pixel', 'var') || isempty(pixel), error('Pixel required'); end
-if ~exist('param', 'var'), error('Must define parameter.'); end
-if ~exist('val', 'var'),   error('Value required.');end
-
-if isempty(param), pixel = val; return; end
+if ~exist('pixel','var') || isempty(pixel), error('Must define pixel.'); end
+if ~exist('param','var') || isempty(param), error('Must define parameter.'); end
+if ~exist('val','var'),   error('Value required.');end
 
 param = ieParamFormat(param);
+
 switch param
     case 'name'
         pixel.name = val;

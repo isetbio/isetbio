@@ -59,7 +59,7 @@ if emFlag(1)
     t = interval + randn(seqLen, 1) * intervalSD;
     t(t < 0.001) = 0.001; % get rid of negative values
     tPos = cumsum(t);
-    tPos = ceil(tPos / sampTime);
+    tPos = round(tPos / sampTime);
     indx = 1:find(tPos <= seqLen, 1, 'last');
     tPos = tPos(indx);
     

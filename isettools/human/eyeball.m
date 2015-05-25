@@ -70,9 +70,22 @@ classdef eyeball < handle
         function obj = set(obj, param, val, varargin)
             [oType, p] = ieParameterOtype(param);
             if isequal(oType, 'sensor') % set to sensor
-                obj.sensor = sensorSet(obj.sensor, p, val, varargin{:});
+                if isempty(p)
+                    if ~sensorCheckHuman(val), error('Invalid val'); end
+                    obj.sensor = val;
+                else
+                    obj.sensor = sensorSet(obj.sensor, p, val,varargin{:});
+                end
+                
+                
             elseif isequal(oType, 'oi') % set to oi
-                obj.oi = oiSet(obj.oi, p, val, varargin{:});
+                if isempty(p)
+                    if ~isequal(val.type, 'oi'), error('Invalid val'); end
+                    obj.oi = val;
+                else
+                    obj.oi = oiSet(obj.oi, p, val, varargin{:});
+                end
+                
             else
                 try
                     obj.oi = oiSet(obj.oi, p, val, varargin{:});
@@ -95,9 +108,17 @@ classdef eyeball < handle
         function val = get(obj, param, varargin)
             [oType, p] = ieParameterOtype(param);
             if isequal(oType, 'sensor')
-                val = sensorGet(obj.sensor, p, varargin{:});
+                if isempty(p)
+                    val = obj.sensor;
+                else
+                    val = sensorGet(obj.sensor, p, varargin{:});
+                end
             elseif isequal(oType, 'oi')
-                val = oiGet(obj.oi, p, varargin{:});
+                if isempty(p)
+                    val = obj.oi;
+                else
+                    val = oiGet(obj.oi, p, varargin{:});
+                end
             else
                 try
                     val = oiGet(obj.oi, p, varargin{:});

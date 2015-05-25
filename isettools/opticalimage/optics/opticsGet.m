@@ -166,15 +166,16 @@ function val = opticsGet(optics,parm,varargin)
 % We should probably just store them in meters properly inside of
 % rtImportData.
 %
-% The OTF support functions are in bad shape. Fix.
+% The OTF support functions are in bad shape.  Fix.
 %
 val = [];
 
 if ~exist('optics','var') || isempty(optics), 
     error('No optics specified.'); 
 end
-if ~exist('parm','var'), error('No parameter specified.'); end
-if isempty(param), val = optics; return; end
+if ~exist('parm','var')   || isempty(parm), 
+    error('No parameter specified.');
+end
 
 % We return different parameters depending on whether the user has a
 % shift-invariant lens model (e.g., diffraction-limited) or a general ray

@@ -229,20 +229,28 @@ function val = sensorGet(sensor,param,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-if ~exist('param', 'var'), error('Param must be defined.'); end
-if isempty(param), val = sensor; return; end
+if ~exist('param', 'var') || isempty(param)
+    error('Param must be defined.');
+end
 
 % Default return value.
 val = [];
 
 % Is this a pixel call.
-[oType, param] = ieParameterOtype(param);
+[oType,param] = ieParameterOtype(param);
 switch oType
     case 'pixel'
-        val = pixelGet(sensor.pixel, param, varargin{:});
+        pixel = sensor.pixel;
+        if isempty(param), val = pixel;
+        elseif   isempty(varargin), val = pixelGet(pixel,param);
+        else     val = pixelGet(pixel,param,varargin{1});
+        end
         return;
     case 'em'
-        val = emGet(senosor.human.eyemove, param, varargin{:});
+        em = sensor.human.eyemove;
+        if isempty(param), val = em;
+        else val = emGet(em, param);
+        end
         return;
     otherwise
 end
