@@ -35,6 +35,8 @@ function sensor = coneAbsorptions(sensor, oi, varargin)
 % See also:  s_rgcScene2Cones, sensorHumanResize, sensorComputeSamples
 %
 % (c) Stanford VISTA Team
+% 
+% 5/28/15 xd, dhb  make this routine respect sensor's noise flag
 
 
 %% check inputs
@@ -146,8 +148,15 @@ for p = 1:nPos
     volts(:,:,p) = sum(tmp .* msk, 3);
 end
 
-% Add photon noise
+% Set the volts field
 sensor = sensorSet(sensor, 'volts', volts);
-sensor = sensorSet(sensor, 'volts', noiseShot(sensor));
+
+% Add photon noise
+% This does not distinguish between noise flag value 1 and 2, which for
+% camera sensors determines whether it's just shot noise or shot noise plus
+% electronics noise.
+if (sensorGet(sensor, 'noise flag'))
+    sensor = sensorSet(sensor, 'volts', noiseShot(sensor));
+end
 
 end
