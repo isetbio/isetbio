@@ -23,16 +23,17 @@ function sensor = emGenSequence(sensor)
 %    eyemovementInit
 %
 %  (HJ) Copyright PDCSOFT TEAM 2014
+%
+%  xd  6/1/15  changed this so that the sensor rSeed is not set anymore
 
 %% Init
 if notDefined('sensor'), error('human sensor required'); end
 rSeed = sensorGet(sensor, 'human rseed');
-if isempty(rSeed)
-    rSeed = rng;
-    sensor = sensorSet(sensor, 'human rseed', rSeed);
-else
+
+if (~isempty(rSeed))
     rng(rSeed);
 end
+
 emFlag = sensorGet(sensor, 'em flag');
 if isempty(emFlag), error('eye movement type not defined'); end
 
