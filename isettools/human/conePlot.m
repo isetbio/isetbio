@@ -1,7 +1,7 @@
 function [support, spread, delta, coneMosaicImage] = conePlot(xy,coneType, support, spread, delta, whiteBackground)
 % Plot an image of the cone mosaic
 %
-%    [support, spread, delta] = conePlot(xy,coneType, [support], [spread], [delta], [whiteBackground])
+%    [support, spread, delta, [coneMosaicImage]] = conePlot(xy,coneType, [support], [spread], [delta], [whiteBackground])
 %
 % xy:        Cone positions (um)
 % coneTYpe:  an integer from 1:4 where 1 means no cone (K), 2:4 are L,M,S
