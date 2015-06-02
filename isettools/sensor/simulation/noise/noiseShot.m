@@ -18,11 +18,22 @@ function [noisyImage, theNoise] = noiseShot(ISA)
 %
 % See also:  iePoisson
 %
+% Outputs:
+%   noisyImage - noisy version of the image in the ISA in units of VOLTS
+%   theNoise   - Poisson noise that was added to the image in units of
+%                ELECTRONS
+%
 % Examples:
 %    [noisyImage,theNoise] = noiseShot(vcGetObject('sensor'));
 %    imagesc(theNoise); colormap(gray)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+%
+% 6/2/15  xd  Added a guard against noise that would create negative
+%             electron image
+% 6/2/15  xd  Addressed bug where the poissonCriterion set the value to 
+%             both the Noisy Image as well as the Noise.  The Noise is now 
+%             set as the Poisson distribution minus the mean electron image
 
 electronImage = sensorGet(ISA, 'electrons');
 
@@ -38,6 +49,12 @@ electronImage = sensorGet(ISA, 'electrons');
 % adequate. But we trap (below) the cases when the value is small and
 % replace it with the Poisson random value.
 theNoise = sqrt(electronImage) .* randn(size(electronImage));
+
+% Find where the sum of the mean and noise are less than zero
+% Set the noise to equal the mean to guard against negative values
+noisyImageTemp = electronImage + theNoise;
+negIdx = find(noisyImageTemp(:) < 0);
+theNoise(negIdx) = electronImage(negIdx);
 
 % We add the mean electron and noise electrons together. 
 noisyImage = round(electronImage + theNoise);
@@ -58,7 +75,7 @@ if ~isempty(v)
         % noise; we do not *add* the Poisson noise to the mean
     %    noisyImage(r(ii),c(ii)) = vn(ii);  
     %end
-    theNoise(idx) = vn;
+    theNoise(idx) = vn - electronImage(idx);
     noisyImage(idx) = vn;
 end
 
