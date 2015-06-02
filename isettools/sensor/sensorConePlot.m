@@ -1,7 +1,7 @@
-function [support, spread, delta] = sensorConePlot(sensor,support,spread,delta)
+function [support, spread, delta, coneMosaicImage] = sensorConePlot(sensor,support,spread,delta, whiteBackground)
 % Plot the cone array contained in sensor
 %
-%   [support, spread, delta] = sensorConePlot(sensor,[support],[spread],[delta])
+%   [support, spread, delta, [coneMosaicImage]] = sensorConePlot(sensor,[support],[spread],[delta], [whiteBackground])
 %
 % This should only be run when you have a sensor based on a cone-mosaic.
 % This plotting routinewill not run correctly (or at all) for non-cone
@@ -10,6 +10,10 @@ function [support, spread, delta] = sensorConePlot(sensor,support,spread,delta)
 % The parameters support, spread and delta define the appearance of the
 % plotted cone mosaic.  Each cone is rendered as a small blurry gaussian
 % with support and spread as passed in.  The spatial sampling is delta.
+% The whiteBackground parameters is a boolean indicating whether to generate 
+% an image with white or black background
+% If a fourth output argument is present, the function returns the
+% generated RGB image instead of plotting it.
 %
 % See also:  humanConeMosaic, conePlot, sensorCreateConeMosaic,
 %            sensorShowCFA, sensorCreate
@@ -33,6 +37,7 @@ function [support, spread, delta] = sensorConePlot(sensor,support,spread,delta)
 if notDefined('support'), support = []; end
 if notDefined('spread'), spread = []; end
 if notDefined('delta'), delta = []; end
+if notDefined('whiteBackground'), whiteBackground = false; end
 
 % Read cone mosaic parameters and call cone plotting routine to make it
 % look reasonably nice.
@@ -44,7 +49,11 @@ if isempty(xy)
     fullArray = 1;
     sensorShowCFA(sensor,fullArray);
 else
-    [support, spread, delta] = conePlot(xy, coneType, support, spread, delta);
+    if (nargout < 4)
+        [support, spread, delta] = conePlot(xy, coneType, support, spread, delta, whiteBackground);
+    else
+        [support, spread, delta, coneMosaicImage] = conePlot(xy, coneType, support, spread, delta, whiteBackground);
+    end
 end
 
 end

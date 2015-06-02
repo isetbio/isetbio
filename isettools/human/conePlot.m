@@ -1,12 +1,15 @@
-function [support, spread, delta] = conePlot(xy,coneType, support, spread, delta)
+function [support, spread, delta, coneMosaicImage] = conePlot(xy,coneType, support, spread, delta, whiteBackground)
 % Plot an image of the cone mosaic
 %
-%    [support, spread, delta] = conePlot(xy,coneType, [support], [spread], [delta])
+%    [support, spread, delta] = conePlot(xy,coneType, [support], [spread], [delta], [whiteBackground])
 %
 % xy:        Cone positions (um)
 % coneTYpe:  an integer from 1:4 where 1 means no cone (K), 2:4 are L,M,S
-% support, spread, delta are gaussian blurring parameters for creating the
-% image
+% support, spread, delta are gaussian blurring parameters for creating the image
+% whiteBackground: boolean indicating whether to generate an image with
+% white or black background
+% If a fourth output argument is present, the function returns the
+% generated RGB image instead of plotting it.
 %
 % These images can be compared with the ones measured by Hofer et al. in
 % the J. Neuroscience paper and then published by Williams in a JOV paper.  
@@ -24,7 +27,8 @@ function [support, spread, delta] = conePlot(xy,coneType, support, spread, delta
 %
 % Copyright ImagEval LLLC, 2009
 
-if notDefined('delta'),   delta = 0.4; end  % Sampling in microns
+
+if notDefined('delta'), delta = 0.4; end  % Sampling in microns
 % support and spread are adjusted below, after the grid is built
 
 % low = floor(min(xy(1,:))); high = ceil(max(xy(1,:)));
@@ -57,12 +61,32 @@ if notDefined('spread')
 end
 if notDefined('support'), support = round(3*[spread spread]); end
 
-g = fspecial('gaussian',support,spread);
+
+if notDefined('whiteBackground'), whiteBackground = false; end
+if (whiteBackground)
+    g = fspecial('gaussian',support,spread*0.87);
+    g = g/max(g(:));
+    g(g<0.1) = 0;
+    g = 1.5*g.^0.3;
+    g(g>1) = 1.0;
+else
+    g = fspecial('gaussian',support,spread);
+end
+
 tmp = imfilter(coneImage,g);
 
-% Show the image
-h = vcNewGraphWin;
-set(h,'Name','ISET: Human cone mosaic');
-imagescRGB(tmp);
+if (whiteBackground)
+    tmp = tmp/max(tmp(:));
+    indices = all(tmp < .75,3);
+    tmp(repmat(indices,[1,1,3])) = 1;
+end
 
+if (nargout < 4)
+    % Show the image
+    h = vcNewGraphWin;
+    set(h,'Name','ISET: Human cone mosaic');
+    imagescRGB(tmp);
+else
+    % return the image
+    coneMosaicImage = tmp/max(tmp(:));
 end
