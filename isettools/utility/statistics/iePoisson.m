@@ -38,13 +38,15 @@ function val = iePoisson(lambda, nSamp)
 %   http://www.columbia.edu/~mh2078/MCS04/MCS_generate_rv.pdf
 %
 % Copyright ImagEval, LLC, 2010
+%
+% 6/3/15  xd  iePoissrnd now uses a randomly generated seed
 
 if notDefined('lambda'), error('rate parameter lambda required'); end
 if notDefined('nSamp'), nSamp = 1; end
 
 % Check if we have MEX function
 if (exist('iePoissrnd','file')==3)
-    val = iePoissrnd(lambda, nSamp);
+    val = iePoissrnd(lambda, nSamp, rand * 12345701);
     return;
 end
 
