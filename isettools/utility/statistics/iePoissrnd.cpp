@@ -22,6 +22,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int nSamp = 1;
     std::mt19937 mt; // Mersenne Twister generator
     
+    if (nrhs == 3) {
+        double *seedToUse = mxGetPr(prhs[2]);
+        uint64_t theSeed = (uint64_t)(*seedToUse);
+        // mexPrintf("Using seed %d\n", theSeed);
+        mt.seed(theSeed);
+    }
+    
     if (mxGetNumberOfElements(prhs[0]) == 1) {
         // Single lambda, multiple samples
         // Output is the same size as samples
@@ -30,6 +37,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             plhs[0] = mxCreateDoubleScalar(poisson(mt));
         }
         else{
+           
+            
             int ndim = mxGetNumberOfElements(prhs[1]);
             int totProd = 1;
             mwSize *dimSize = (mwSize*)mxCalloc(ndim, sizeof(mwSize));
