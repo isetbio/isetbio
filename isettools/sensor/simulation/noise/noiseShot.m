@@ -10,8 +10,8 @@ function [noisyImage, theNoise] = noiseShot(ISA)
 % electron image. 
 %
 % This routine uses the normal approximation to the Poisson when there are
-% more than 20 electrons in the pixel.  It uses the Poisson distribution
-% when there are fewer than 20 electrons.  The Poisson function we have is
+% more than 15 electrons in the pixel.  It uses the Poisson distribution
+% when there are fewer than 15 electrons.  The Poisson function we have is
 % slow for larger means, so we separate the calculation this way.  If we
 % have a fast Poisson generator, we could use it throughout.  Matlab has
 % one in the stats toolbox, but we don't want to impose that on others.
