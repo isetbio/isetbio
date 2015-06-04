@@ -1,4 +1,4 @@
-function [noisyImage, theNoise] = noiseShot(ISA)
+function [noisyImage, theNoise] = noiseShot(ISA, variableNoise)
 % Add shot noise (Poisson electron noise) into the image data
 %
 %    [noisyImage,theNoise] = noiseShot(ISA)
@@ -18,10 +18,15 @@ function [noisyImage, theNoise] = noiseShot(ISA)
 %
 % See also:  iePoisson
 %
+% Inputs:
+%   variableNoise - determines whether or not to set a random seed in the MEX 
+%                   iepoissrnd function.  1 to set a seed, 0 not to
+%
 % Outputs:
-%   noisyImage - noisy version of the image in the ISA in units of VOLTS
-%   theNoise   - Poisson noise that was added to the image in units of
-%                ELECTRONS
+%   noisyImage  - noisy version of the image in the ISA in units of VOLTS
+%   theNoise    - Poisson noise that was added to the image in units of
+%                 ELECTRONS
+%                 
 %
 % Examples:
 %    [noisyImage,theNoise] = noiseShot(vcGetObject('sensor'));
@@ -34,6 +39,9 @@ function [noisyImage, theNoise] = noiseShot(ISA)
 % 6/2/15  xd  Addressed bug where the poissonCriterion set the value to 
 %             both the Noisy Image as well as the Noise.  The Noise is now 
 %             set as the Poisson distribution minus the mean electron image
+% 6/4/15  xd  added flag to determine if noise should be frozen
+
+if notDefined('variableNoise'), variableNoise = 0; end;
 
 electronImage = sensorGet(ISA, 'electrons');
 
@@ -68,7 +76,7 @@ poissonCriterion = 25;
 idx = find(electronImage(:) < poissonCriterion);
 v = electronImage(electronImage < poissonCriterion);
 if ~isempty(v)
-    vn = iePoisson(v);  % Poisson samples
+    vn = iePoisson(v, 1, ~variableNoise);  % Poisson samples
     % for ii=1:length(r)
     %    theNoise(r(ii),c(ii))   = vn(ii);
         % For low mean values, we *replace* the mean value with the Poisson

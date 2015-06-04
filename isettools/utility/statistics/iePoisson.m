@@ -1,10 +1,13 @@
-function val = iePoisson(lambda, nSamp)
+function val = iePoisson(lambda, nSamp, useSeed)
 % Create a matrix of Poisson samples using rate parameters in lambda
 %
 %   val = iePoisson(lambda,nSamp)
 %
 % The rate parameter can be a scalar, requesting multiple samples, or it
 % can be a matrix of rate parameters.
+%
+% The useSeed flag determines whether or not to return the same value each
+% time for a given lambda (0), or to return different values (1).
 %
 % This algorithm is from Knuth.
 %
@@ -40,13 +43,19 @@ function val = iePoisson(lambda, nSamp)
 % Copyright ImagEval, LLC, 2010
 %
 % 6/3/15  xd  iePoissrnd now uses a randomly generated seed
+% 6/4/15  xd  added flag to determine if noise should be frozen
 
 if notDefined('lambda'), error('rate parameter lambda required'); end
 if notDefined('nSamp'), nSamp = 1; end
+if notDefined('useSeed'), useSeed = 1; end
 
 % Check if we have MEX function
 if (exist('iePoissrnd','file')==3)
-    val = iePoissrnd(lambda, nSamp, rand * 12345701);
+    if useSeed
+        val = iePoissrnd(lambda, nSamp, rand * 12345701);
+    else
+        val = iePoissrnd(lambda, nSamp);
+    end
     return;
 end
 
