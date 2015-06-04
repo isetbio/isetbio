@@ -41,7 +41,7 @@ function [noisyImage, theNoise] = noiseShot(ISA, variableNoise)
 %             set as the Poisson distribution minus the mean electron image
 % 6/4/15  xd  added flag to determine if noise should be frozen
 
-if notDefined('variableNoise'), variableNoise = 0; end;
+if notDefined('variableNoise'), variableNoise = 1; end;
 
 electronImage = sensorGet(ISA, 'electrons');
 
