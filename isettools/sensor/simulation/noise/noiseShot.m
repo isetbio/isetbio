@@ -76,7 +76,7 @@ poissonCriterion = 25;
 idx = find(electronImage(:) < poissonCriterion);
 v = electronImage(electronImage < poissonCriterion);
 if ~isempty(v)
-    vn = iePoisson(v, 1, ~variableNoise);  % Poisson samples
+    vn = iePoisson(v, 1, variableNoise);  % Poisson samples
     % for ii=1:length(r)
     %    theNoise(r(ii),c(ii))   = vn(ii);
         % For low mean values, we *replace* the mean value with the Poisson
