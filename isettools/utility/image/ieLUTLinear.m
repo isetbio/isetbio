@@ -67,7 +67,7 @@ else
     % Scale the linear RGB values so that that largest value, 1 maps to the
     % row size of the gTable.
     RGB = floor(RGB*size(invGammaTable,1)) + 1;
-    RGB(RGB > size(invGammaTable, 1)) = size(invGammaTable, 1); % crop 
+    RGB(RGB > size(invGammaTable, 1)) = size(invGammaTable, 1); % clip
 
     % Convert through the gamma table.
     DAC = zeros(size(RGB));

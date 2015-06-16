@@ -72,7 +72,7 @@ if isempty(curIll)
     % here.
     disp('Old scene.  Creating d65 illuminant')
     wave   = sceneGet(scene,'wave');
-    curIll = ieReadSpectra('d65',wave);   % D65 in energy units
+    curIll = ieReadSpectra('D65',wave);   % D65 in energy units
     scene  = sceneSet(scene,'illuminant energy',curIll);
     curIll = sceneGet(scene,'illuminant photons');
 end

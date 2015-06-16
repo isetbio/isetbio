@@ -130,6 +130,7 @@ switch parm
         val = val(:); % a column vector
         % Interpolate OTF data if it is there
         otf = opticsGet(optics, 'otf data');
+        nWave = opticsGet(optics,'nwave');
         if ~isempty(otf)
             [otf, r, c] = RGB2XWFormat(otf);
             otf = interp1(optics.OTF.wave, otf', val(:), 'linear', 0);

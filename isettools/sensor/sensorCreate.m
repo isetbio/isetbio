@@ -1,24 +1,25 @@
-function [sensor, params] = sensorCreate(sensorName,pixel,varargin)
-%Create an image sensor array structure
+function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
+% Create an image sensor array structure
 %
-%   [sensor,params] = sensorCreate(sensorName,[pixel],varargin)
+%   [sensor,coneP] = sensorCreate(sensorName,[pixel/coneP],varargin)
 %
-% The sensor array uses a pixel definition that can be specified in the
-% parameter PIXEL. If this is not passed in, a default PIXEL is created and
-% returned.
+% The sensor array comprises a matrix of cone types.  The distribution and
+% spatial array of cone types is specified by the parameter coneP.  This
+% parameter is used in the function sensorCreateConeMosaic.
 %
 % Several type of image sensors can be created, including multispectral and
 % a model of the human cone mosaic.
 %
-%  Bayer RGB combinations
+% Human cone mosaic
+%      {'human'} - Uses Stockman Quanta LMS cones
+%                  Default params:  
+%                     params.XXX
+%
+%  Bayer RGB combinations - may be deprecated
 %      {'bayer-grbg'}
 %      {'bayer-rggb'}
 %      {'bayer-bggr'}
 %      {'bayer-gbrg'}
-%
-%  Bayer CMY combinations
-%      {'bayer (ycmy)'}
-%      {'bayer (cyym)'}
 %
 % Other types
 %      {'monochrome'}
@@ -28,70 +29,47 @@ function [sensor, params] = sensorCreate(sensorName,pixel,varargin)
 %      {'grbc'}        - green, red, blue, cyan
 %      {'interleaved'} - One transparent channel and 3 RGB.  Same as RGBC
 %                        or RGBW
-%      {'fourcolor'}
-%      {'custom'}
 %
-% Human cone mosaic
-%      {'human'} - Uses Stockman Quanta LMS cones
-%                  Default params:  
-%                     params.XXX
-%
-% See also: sensorReadColorFilters, sensorCreateIdeal
+% See also: sensorCreateConeMosaic, coneCreate, sensorConePlot
 %
 % Examples
-%  sensor = sensorCreate;
-%  sensor = sensorCreate('default');
+%  Basic cone mosaic
 %
-%  sensor = sensorCreate('bayer (ycmy)');
-%  sensor = sensorCreate('bayer (rggb)');
-%  sensor = sensorCreate('Monochrome');
+%   coneP = coneCreate;               % Specify cone properties
+%   sensor = sensorCreate('human');   
+%   sensor = sensorCreate('human',coneP);
+%   sensor = sensorCreate('human',[],coneP);
 %
-%  pSize  = 3e-6;
-%  pixel  = [];
-%  sensorType = 'rgb';
-%  sensor = sensorCreate('ideal',pixel,pSize,sensorType);
-%  sensor = sensorCreate('ideal',pixel,pSize,'human','bayer');
+%   sensorConePlot(sensor)
 %
-%  cone   = pixelCreate('human cone'); 
-%  sensor = sensorCreate('Monochrome',cone);
-%  sensor = sensorCreate('human');
-%
-%  filterOrder = [1 2 3; 4 5 2; 3 1 4];
-%  wave = 400:2:700;
-%  filterFile = fullfile(isetRootPath,'data','sensor','colorfilters','sixChannel.mat');
-%  pixel = pixelCreate('default',wave);
-%  sensorSize = [256 256];
-%  sensor = sensorCreate('custom',pixel,filterOrder,filterFile,sensorSize,wave)
-%
-%  params.sz = [128,192];
-%  params.rgbDensities = [0.1 .6 .2 .1]; % Empty (missing cone), L, M, S
-%  params.coneAperture = [3 3]*1e-6;     % In meters
-%  pixel = [];
-%  [sensor, params] = sensorCreate('human',pixel,params);
-%  sensorConePlot(sensor)
+%   coneP = coneSet(coneP,'spatial density',[0.1 0.5 0.2 0.1]);
+%   sensor = sensorCreate('human',coneP);
+%   sensorConePlot(sensor)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
 if notDefined('sensorName'), sensorName = 'default'; end
-
+if notDefined('pixel'), pixel = pixelCreate('default'); end  % Backward compatibility
+    
 sensor.name = [];
 sensor.type = 'sensor';
 
-% Make sure a pixel is defined.
-if notDefined('pixel')
-    pixel  = pixelCreate('default');
-    sensor = sensorSet(sensor,'pixel',pixel);
-    sensor = sensorSet(sensor,'size',sensorFormats('qqcif'));
-else
-    sensor = sensorSet(sensor,'pixel',pixel);
+% If pixel is really a pixel, then we use its parameters to create a cone
+% structure
+switch pixel.type
+    case 'pixel'
+        % Backward compatibility with ISET case
+        sensor = sensorSet(sensor,'pixel',pixel);
+        sensor = sensorSet(sensor,'spectrum',pixelGet(pixel,'spectrum'));
+        sensor = sensorSet(sensor,'size',sensorFormats('qqcif'));
+    case 'cone'
+        % We sent in a cone, not a pixel
+        coneP = pixel;
+    otherwise
+        error('Bad pixel type, must be pixel or cone')
 end
 
-% The sensor should always inherit the spectrum of the pixel.  Probably
-% there should only be one spectrum here, not one for pixel and sensor.
-sensor = sensorSet(sensor,'spectrum',pixelGet(pixel,'spectrum'));
-
 sensor = sensorSet(sensor,'data',[]);
-
 sensor = sensorSet(sensor,'sigmagainfpn',0);    % [V/A]  This is the slope of the transduction function
 sensor = sensorSet(sensor,'sigmaoffsetfpn',0);  % V      This is the offset from 0 volts after reset
 
@@ -108,6 +86,41 @@ sensor = sensorSet(sensor,'quantization','analog');
 
 sensorName = ieParamFormat(sensorName);
 switch sensorName
+    case 'human'
+        % s = sensorCreate('human',coneP);
+        %
+        % Uses StockmanQuanta for the cone absorptions
+        % See example in header.
+        
+        % Covers the case of sensorCreate('human',[],coneP)
+        if ~isempty(varargin), coneP = varargin{1}; 
+        elseif ~exist('coneP','var'), coneP = coneCreate;
+        end
+
+        % Assign key fields
+        wave = coneGet(coneP,'wave');
+        hPixel = pixelCreate('human',wave);
+        
+        % Add the default human pixel with StockmanQuanta filters.
+        sensor.spectrum.wave = wave;
+        sensor = sensorSet(sensor,'pixel',hPixel);
+        sensor = sensorSet(sensor,'size',[72 88]);
+        
+        % Add the default lens structure
+        lens = lensCreate([], wave);
+        sensor = sensorSet(sensor, 'human lens', lens);
+        
+        % Add the default macular structure
+        macular = macularCreate([], wave);
+        sensor = sensorSet(sensor, 'human macular', macular);
+             
+        % Build up a human cone mosaic.
+        sensor = sensorCreateConeMosaic(sensor, coneP);
+
+        
+        % There are no filter spectra in the human case.  We calculate the
+        % spectral qe from the cones, macular, and lens data
+    
     case {'default','color','bayer','bayer(grbg)','bayer-grbg','bayergrbg'}
         filterOrder = [2,1;3,2];
         filterFile = 'RGB';
@@ -124,57 +137,14 @@ switch sensorName
         filterOrder = [2 3 ; 1 2];
         filterFile = 'RGB';
         sensor = sensorBayer(sensor,filterOrder,filterFile);
-    case {'bayer(ycmy)','bayer-ycmy'}
-        filterFile = 'cym';
-        filterOrder = [2,1; 3,2];
-        sensor = sensorBayer(sensor,filterOrder,filterFile);
-    case {'bayer(cyym)','bayer-cyym'}
-        filterFile = 'cym';
-        filterOrder = [1 2 ; 2 3];
-        sensor = sensorBayer(sensor,filterOrder,filterFile);
-    case {'ideal'}
-        % sensorCreate('ideal',[],pSize,sensorType,cPattern);
-        %
-        % sensorType = 'human'  % 'rgb','monochrome'
-        % cPattern = 'bayer'    % any sensorCreate option
-        % sensorCreate('ideal',[],'human','bayer');
-        error('sensorCreate(''ideal'') is deprecated. Set noiseflag to 0');
-
-    case {'custom'}      % Often used for multiple channel
-        % sensorCreate('custom',pixel,filterPattern,filterFile,wave);
-        if length(varargin) >= 1, filterPattern = varargin{1};
-        else  % Must read it here
-        end
-        if length(varargin) >= 2, filterFile = varargin{2};
-        else % Should read it here, NYI
-            error('No filter file specified')
-        end
-        if length(varargin) <= 3 || isempty(varargin{3})
-             sensorSize = size(filterPattern);
-        else sensorSize = varargin{3};
-        end
-        if length(varargin) == 4, wave = varargin{4}; 
-        else wave = 400:10:700;
-        end
-        sensor = sensorSet(sensor,'wave',wave);
-        sensor = sensorCustom(sensor,filterPattern,filterFile);
-        sensor = sensorSet(sensor,'size',sensorSize);
-    case {'fourcolor'}  % Often used for multiple channel
-        % sensorCreate('custom',pixel,filterPattern,filterFile);
-        if length(varargin) >= 1, filterPattern = varargin{1};
-        else  % Must read it here
-        end
-        if length(varargin) >= 2, filterFile = varargin{2};
-        else % Should read it here, NYI
-            error('No filter file specified')
-        end
-        sensor = sensorCustom(sensor,filterPattern,filterFile);
 
     case 'monochrome'
+        % sensorCreate('monochrome')
         filterFile = 'Monochrome';
         sensor = sensorMonochrome(sensor,filterFile);
     case 'monochromearray'
-        % sensorA = sensorCreate('monochrome array',[],5);
+        % nSensors = 5; pixel = [];
+        % sensorA = sensorCreate('monochrome array',pixel,nSensors);
         %
         % Builds an array of monochrome sensors, each corresponding to the
         % default monochrome.  The array of sensors is used for
@@ -195,49 +165,8 @@ switch sensorName
         filterFile = 'interleavedRGBW.mat';
         filterPattern = [1 2; 3 4];
         sensor = sensorInterleaved(sensor,filterPattern,filterFile);
-    case 'human'
-        % sensor = sensorCreate('human',pixel,params);
-        % Uses StockmanQuanta
-        % See example in header.
-        %
-        if length(varargin) >= 1, params = varargin{1};
-        else params = [];
-        end
-
-        % Assign key fields
-        if isfield(params,'wave'), wave = params.wave;
-        else wave = 400:10:700;
-        end
+    
         
-        % Add the default human pixel with StockmanQuanta filters.
-        sensor = sensorSet(sensor,'wave',wave);
-        %         sensor = sensorSet(sensor,'time interval', tInteval);
-        sensor = sensorSet(sensor,'pixel',pixelCreate('human',wave));
-        
-        % Add the default lens structure
-        lens = lensCreate([], wave);
-        sensor = sensorSet(sensor, 'human lens', lens);
-        
-        % Add the default macular structure
-        macular = macularCreate([], wave);
-        sensor = sensorSet(sensor, 'human macular', macular);
-             
-        % Build up a human cone mosaic.
-        sensor = sensorCreateConeMosaic(sensor, params);
-        
-        % We don't want the pixel to saturate
-        pixel  = sensorGet(sensor, 'pixel');
-        pixel  = pixelSet(pixel, 'voltage swing', 1);  % 1 volt
-        sensor = sensorSet(sensor, 'pixel', pixel);
-        
-        % There are no filter spectra in the human case.  We calculate the
-        % spectral qe from the cones, macular, and lens data
-        
-    case 'mouse'
-        error('NYI: mouse needs to be fixed with sensorCreateConeMosaic');
-        %filterFile = 'mouseColorFilters.mat';
-        %sensor = sensorMouse(sensor, filterFile);
-        %sensor = sensorSet(sensor, 'pixel', pixelCreate('mouse'));
     otherwise
         error('Unknown sensor type');
 end
@@ -262,7 +191,7 @@ sensor = sensorSet(sensor,'irfilter',ones(sensorGet(sensor,'nwave'),1));
 % Place holder for Macbeth color checker positions
 sensor = sensorSet(sensor,'mccRectHandles',[]);
 
-return;
+return
 
 %-----------------------------
 function sensor = sensorBayer(sensor,filterPattern,filterFile)

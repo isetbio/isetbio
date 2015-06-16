@@ -69,6 +69,54 @@ pixel = pixelSet(pixel,'pd Spectral QE',ones(size(wave)));
 
 return;
 
+
+%----------------------------------------------
+function pixel = pixelHuman
+% A typical human cone properties.
+%
+% Data source:
+%  Wandell's book.  Baylor.  Other people.
+% Elaborate here, and make this better.
+%
+pixel.name = 'humancone';
+
+pixel = pixelSet(pixel,'type','pixel');
+
+% Human cones are 2 microns, roughly, just outside the foveola
+pixel = pixelSet(pixel,'width',2e-6);
+pixel = pixelSet(pixel,'height',2e-6);
+pixel = pixelSet(pixel,'widthGap',0);
+pixel = pixelSet(pixel,'heightGap',0);
+
+% We make it 100 percent fill factor
+pixel = pixelSet(pixel,'pdWidth',2e-6);
+pixel = pixelSet(pixel,'pdHeight',2e-6);
+pixel = pixelPositionPD(pixel,'center');
+
+% Not sure what this should really be.  It specifies the dynamic range,
+% effectively.
+pixel = pixelSet(pixel,'conversionGain',1.0e-5);    % [V/e-]
+pixel = pixelSet(pixel,'voltageSwing',1);           % [V]
+
+% Noise properties
+pixel = pixelSet(pixel,'darkVoltage',pixelGet(pixel,'voltageSwing')/1000);
+
+% 1 millivolt against 1 V total swing.  not much
+pixel = pixelSet(pixel,'readNoiseVolts',0.001);  % Volts
+
+% Always starts with air and ends with silicon.  We assume in between is
+% silicon nitride and oxide 
+pixel = pixelSet(pixel,'refractiveindices',[1 2 1.46 3.5]);  %
+
+% These thicknesses makes the pixel 5 microns high.
+pixel = pixelSet(pixel,'layerthickness',[0.5 4.5]*10^-6);  % In microns
+        
+% We don't want the pixel to saturate, so large voltage swing
+pixel  = pixelSet(pixel, 'voltage swing', 1);  % 1 volt
+
+return
+
+
 %----------------------------------------------
 function pixel = pixelAPSInit()
 % A typical 2.8 um active pixel sensor
@@ -126,48 +174,6 @@ pixel = pixelSet(pixel,'layerthickness',[2 5]*10^-6);  % In microns.  Air and ma
 
 return;
 
-%----------------------------------------------
-function pixel = pixelHuman
-% A typical human cone properties.
-%
-% Data source:
-%  Wandell's book.  Baylor.  Other people.
-% Elaborate here, and make this better.
-%
-pixel.name = 'humancone';
-
-pixel = pixelSet(pixel,'type','pixel');
-
-% Human cones are 2 microns, roughly, just outside the foveola
-pixel = pixelSet(pixel,'width',2e-6);
-pixel = pixelSet(pixel,'height',2e-6);
-pixel = pixelSet(pixel,'widthGap',0);
-pixel = pixelSet(pixel,'heightGap',0);
-
-% We make it 100 percent fill factor
-pixel = pixelSet(pixel,'pdWidth',2e-6);
-pixel = pixelSet(pixel,'pdHeight',2e-6);
-pixel = pixelPositionPD(pixel,'center');
-
-% Not sure what this should really be.  It specifies the dynamic range,
-% effectively.
-pixel = pixelSet(pixel,'conversionGain',1.0e-5);    % [V/e-]
-pixel = pixelSet(pixel,'voltageSwing',1);           % [V]
-
-% Noise properties
-pixel = pixelSet(pixel,'darkVoltage',pixelGet(pixel,'voltageSwing')/1000);
-
-% 1 millivolt against 1 V total swing.  not much
-pixel = pixelSet(pixel,'readNoiseVolts',0.001);  % Volts
-
-% Always starts with air and ends with silicon.  We assume in between is
-% silicon nitride and oxide 
-pixel = pixelSet(pixel,'refractiveindices',[1 2 1.46 3.5]);  %
-
-% These thicknesses makes the pixel 5 microns high.
-pixel = pixelSet(pixel,'layerthickness',[0.5 4.5]*10^-6);  % In microns
-
-return;
 
 %----------------------------------------------
 function pixel = pixelMouse

@@ -1,15 +1,28 @@
-function scene = sceneFromFont(font,display,scene, varargin)
+function scene = sceneFromFont(font,display,scene, oSample, varargin)
 % Create a scene from a font and display
 %
-%  scene = sceneFromFont(font,[display='LCD-Apple'],[scene])
+%  scene = sceneFromFont(font,[display='LCD-Apple'],[scene], varargin)
+%  
+%  Inputs:
+%    font     - font structure, see fontCreate
+%    display  - display structure, see displayCreate
+%    scene    - scene structure, see sceneCreate
+%    oSample  - up-sampling rate default: [20,20]
 %
-% (BW) Vistasoft group, 2014
+%    varargin - more parameters, could include:
+%      varargin{1} - pad size for the font bitmap (default: [])
+%      varargin{2} - pad value for the font bitmap (default: [])
+%
+% BW/HJ Vistasoft group, 2014
 
 %% Input arguments
 if notDefined('font'),    font = fontCreate; end
 if notDefined('display'), display = displayCreate('LCD-Apple'); end
 if notDefined('scene'),   scene = sceneCreate; end
-if ~isempty(varargin), oSample = varargin; else oSample = [20 20]; end
+if notDefined('oSample'), oSample = [20 20]; end
+if ~isempty(varargin), padsz   = varargin{1}; else padsz = []; end
+if length(varargin)>1, padval  = varargin{2}; else padval = []; end
+
 
 % Initialize the display to match the scene and font properties
 if ischar(display), display = displayCreate(display); end
@@ -20,7 +33,7 @@ if displayGet(display,'dpi') ~= fontGet(font,'dpi')
 end
 
 %% Compute the high resolution display image
-paddedBitmap = fontGet(font,'padded bitmap');
+paddedBitmap = fontGet(font,'padded bitmap', padsz, padval);
 np = displayGet(display, 'n primaries');
 paddedBitmap = padarray(paddedBitmap, ...
                     [0 0 np - size(paddedBitmap, 3)], 'post');

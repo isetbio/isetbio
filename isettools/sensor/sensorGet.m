@@ -627,7 +627,11 @@ switch param
     case {'spectrum','sensorspectrum'}
         val = sensor.spectrum;
     case {'wave','wavelength'}
-        val = sensor.spectrum.wave(:);
+        % 
+        if checkfields(sensor,'spectrum')
+            val = sensor.spectrum.wave(:);
+        end
+        
     case {'binwidth','waveresolution','wavelengthresolution'}
         wave = sensorGet(sensor,'wave');
         if length(wave) > 1, val = wave(2) - wave(1);

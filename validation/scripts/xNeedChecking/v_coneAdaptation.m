@@ -45,7 +45,7 @@ for ii = 1 : length(rRange)
 end
 
 %  Plot
-figure; hold on; grid on;
+vcNewGraphWin; hold on; grid on;
 plot(rRange, rFelice, 'r', 'lineWidth', 2);
 plot(rRange, 1./(1+45000./rRange), 'g', 'lineWidth', 2);
 plot(rRange, (1 - rPDE/max(rPDE)), 'b', 'lineWidth', 2);
@@ -100,7 +100,7 @@ cur = k * cGMP.^h ./ (1 + Ca_slow / cdark);
 ampRatioPDE = (rPDE' - min(cur)) ./ (beta*cdark/q - min(cur(:,1)));
 
 % Plot
-figure; hold on; grid on;
+vcNewGraphWin; hold on; grid on;
 plot(rRange, ampRatioFelice, 'r', 'lineWidth', 2);
 plot(rRange, ampRatioPDE, 'b', 'lineWidth', 2);
 set(gca, 'xScale', 'log');
