@@ -225,8 +225,22 @@ switch typeAdapt
         bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
         
         initialState = riekeAdaptSteadyState(bgR, p, sz);
+        initialState.timeInterval = sensorGet(sensor, 'time interval');
         adaptedData  = riekeAdaptTemporal(pRate, initialState);
-                       
+  
+    case {5, 'linear'}
+        expTime = sensorGet(sensor,'exposure time');
+        sz = sensorGet(sensor,'size');
+        
+        % absRate = sensorGet(sensor,'absorptions per second');        
+        pRate = sensorGet(sensor, 'photon rate');
+                
+        % Compute background adaptation parameters
+        bgR = 0;
+        
+        initialState.timeInterval = sensorGet(sensor, 'time interval')
+        adaptedData  = riekeLinearCone(pRate, initialState);
+       
     otherwise
         error('unknown adaptation type');
 end

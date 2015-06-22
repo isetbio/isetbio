@@ -43,7 +43,7 @@ if isfield(p, 'timeInterval'), dt = p.timeInterval; else dt = 0.001; end
 adaptedData = zeros([size(p.opsin) size(pRate, 3)+1]);
 adaptedData(:,:,1) = p.bgCur;
 for ii = 1 : size(pRate, 3)
-    p.opsin = p.opsin + dt * (pRate(:,:,ii) - p.sigma * p.opsin);
+    p.opsin = p.opsin + dt * (p.OpsinGain * pRate(:,:,ii) - p.sigma * p.opsin);
     p.PDE   = p.PDE   + dt * (p.opsin + p.eta - p.phi * p.PDE);
     p.Ca    = p.Ca    + dt * (p.q*p.k * p.cGMP.^p.h./(1+p.Ca_slow/p.cdark)-p.beta*p.Ca);
     p.Ca_slow = p.Ca_slow - dt * p.betaSlow * (p.Ca_slow - p.Ca);
@@ -60,6 +60,7 @@ for ii = 1 : size(pRate, 3)
 %     p.opsin = p.opsin + dt * (pRate(:,:,ii) - p.sigma * p.opsin);
 end
 
+adaptedData(:, :, size(pRate, 3)+1) = adaptedData(:, :, size(pRate, 3));
 adaptedData = adaptedData(:,:, 2:end);
 
 end
