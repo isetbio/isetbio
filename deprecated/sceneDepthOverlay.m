@@ -24,7 +24,7 @@ function h = sceneDepthOverlay(scene,n)
 % %Not sure how to set the color 
 % set(h,'AlphaData',1 - g)
 
-error('Use plotScene, not sceneDepthOverlay');
+error('Use scenePlot, not sceneDepthOverlay');
 
 %
 % if notDefined('scene'), scene = vcGetObject('scene'); end

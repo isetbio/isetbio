@@ -1,7 +1,7 @@
-function [udata, g] = plotScene(scene,pType,roiLocs,varargin)
+function [udata, g] = scenePlot(scene,pType,roiLocs,varargin)
 % Gateway routine to plot scene radiance properties
 %
-%  [udata, figNum] = plotScene([scene],[pType='hlineluminance'],[roiLocs])
+%  [udata, figNum] = scenePlot([scene],[pType='hlineluminance'],[roiLocs])
 %
 % The scene plots show the radiance, luminance, contrast, illuminant or
 % depth data in various formats.
@@ -54,29 +54,29 @@ function [udata, g] = plotScene(scene,pType,roiLocs,varargin)
 %     {'depth map'}              - Depth map (Meters)
 %     {'depth map contour'}      - Depth map with contour overlaid (Meters)
 %
-% See also:  plotOI, plotSceneRadiance
+% See also:  oiPlot, scenePlotRadiance
 %
 % Examples:
 %  A line plot of the radiance, starting at the (x,y) point [1,rows]
 %     scene = vcGetObject('SCENE');
 %     rows = round(sceneGet(scene,'rows')/2);
-%     plotScene(scene,'hline radiance',[1,rows]);
+%     scenePlot(scene,'hline radiance',[1,rows]);
 %
 %  A region of interest
 %
 %  Fourier Transform of the luminance in the row
-%     uData = plotScene(scene,'luminance fft hline',[1,rows])
+%     uData = scenePlot(scene,'luminance fft hline',[1,rows])
 %
 %  Radiance image with an overlaid spatial grid
-%     plotScene(scene,'radiance image with grid')
+%     scenePlot(scene,'radiance image with grid')
 %
-%     plotScene(scene,'illuminant photons')
-%     plotScene(scene,'depth map')
+%     scenePlot(scene,'illuminant photons')
+%     scenePlot(scene,'depth map')
 %
 %  Reflectance data from an ROI
 %     scene = vcGetObject('scene');
 %     [roiLocs, roiRect]  = vcROISelect(scene);
-%     [f, uData] = plotScene(scene,'reflectance',roiLocs);
+%     [f, uData] = scenePlot(scene,'reflectance',roiLocs);
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
@@ -136,7 +136,7 @@ nTicks = 4;   % For the images and graphs
 switch lower(pType)
     case {'radianceenergyroi'}
         % mean radiance in energy of roi
-        % g = plotScene(scene,'radiance energy roi',roiLocs);
+        % g = scenePlot(scene,'radiance energy roi',roiLocs);
         energy = vcGetROIData(scene,roiLocs,'energy');
         wave   = sceneGet(scene,'wave');
         energy = mean(energy,1);
@@ -153,7 +153,7 @@ switch lower(pType)
         
     case {'radiancephotonsroi'}
         % mean radiance in photons of roi
-        % g = plotScene(scene,'radiance photons roi',roiLocs);
+        % g = scenePlot(scene,'radiance photons roi',roiLocs);
         photons = vcGetROIData(scene,roiLocs,'photons');
         wave = sceneGet(scene,'wave');
         photons = mean(photons,1);
@@ -195,7 +195,7 @@ switch lower(pType)
         udata.cmd = 'mesh(pos,wave,data)';
 
     case {'radiancevline','vlineradiance'}
-        % plotScene(scene,'radiance vline',roiLocs)
+        % scenePlot(scene,'radiance vline',roiLocs)
         %
         data = sceneGet(scene,'photons');
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
@@ -223,7 +223,7 @@ switch lower(pType)
 
     
     case {'reflectanceroi','reflectance'}
-        % plotScene(scene,'reflectance roi')
+        % scenePlot(scene,'reflectance roi')
         wave = sceneGet(scene,'wave');
         % XW format
         radiance = vcGetROIData(scene,roiLocs,'photons');
@@ -316,7 +316,7 @@ switch lower(pType)
         
     case {'radianceimagewithgrid','radianceimage'}
         % scene = vcGetObject('SCENE'); 
-        % plotScene(scene,'radianceimagewithgrid')
+        % scenePlot(scene,'radianceimagewithgrid')
         
         rad  = sceneGet(scene,'photons');
         wave = sceneGet(scene,'wave');
@@ -346,7 +346,7 @@ switch lower(pType)
         set(gca,'xtick',xGrid,'ytick',yGrid); grid on
 
     case {'radiancewavebandimage'}
-        % scene = vcGetObject('SCENE'); plotScene(scene,'wavebandimage')
+        % scene = vcGetObject('SCENE'); scenePlot(scene,'wavebandimage')
 
         % Show just a wavelength range of the image.
         % First developed for rendering infrared band.
@@ -455,7 +455,7 @@ switch lower(pType)
                 
     case {'luminanceroi','luminance'}
         % Mean luminance of roi
-        % g = plotScene(scene,'luminance roi',roiLocs);
+        % g = scenePlot(scene,'luminance roi',roiLocs);
         data = vcGetROIData(scene,roiLocs,'luminance');
         udata.lum = data;
         if isempty(data), error('Luminance must be present in the scene structure.'); end
@@ -465,7 +465,7 @@ switch lower(pType)
         
     case {'chromaticityroi','chromaticity'}
         % Mean CIE-roiLocs chromaticity of roi
-        % g = plotScene(scene,'chromaticity roi',roiLocs);
+        % g = scenePlot(scene,'chromaticity roi',roiLocs);
         photons = vcGetROIData(scene,roiLocs,'photons');
         wave   = sceneGet(scene,'wave');
         XYZ    = ieXYZFromPhotons(photons,wave);
@@ -490,7 +490,7 @@ switch lower(pType)
         text(0.8,0.55,txt);
         axis equal, hold off
 
-        % Contrast - plotSceneContrast?  COuld go there.
+        % Contrast - scenePlotContrast?  COuld go there.
     case {'contrasthline','hlinecontrast'}
         % Plot percent contrast (difference from the mean as a percentage
         % of the mean).
@@ -540,7 +540,7 @@ switch lower(pType)
         udata.cmd = 'mesh(pos,wave,data)';
 
 
-        % Could go into plotSceneLuminance
+        % Could go into scenePlotLuminance
     case {'luminancefft','fftluminance'}
         % Spatial frequency amplitude at a single wavelength.  Axis range
         % could be better.
@@ -558,7 +558,7 @@ switch lower(pType)
         title(str);
         
     case {'luminancemeshlinear','luminancemeshlog10','luminancemeshlog'}
-        % plotScene(scene,'luminance mesh linear')
+        % scenePlot(scene,'luminance mesh linear')
         
         if strfind(pType,'log'), yScale = 'log'; 
         else yScale = 'linear';
@@ -592,10 +592,10 @@ switch lower(pType)
         title('Luminance');
 
         % Illuminant - pure spectral case should go here
-        % Could all go into plotSceneIlluminant 
+        % Could all go into scenePlotIlluminant 
     case {'illuminantenergyroi','illuminantenergy'}
-        % plotScene(scene,'illuminant energy')
-        % plotScene(scene,'illuminant energy roi',roiLocs');
+        % scenePlot(scene,'illuminant energy')
+        % scenePlot(scene,'illuminant energy roi',roiLocs');
         % Graph for spectral, image for spatial spectral
         handle = ieSessionGet('scenewindowhandle');
         ieInWindowMessage('',handle);       
@@ -623,8 +623,8 @@ switch lower(pType)
         udata.comment = sceneGet(scene,'illuminant comment');
         
     case {'illuminantphotonsroi','illuminantphotons'}
-        % plotScene(scene,'illuminant photons')
-        % plotScene(scene,'illuminant photons roi',roiLocs);
+        % scenePlot(scene,'illuminant photons')
+        % scenePlot(scene,'illuminant photons roi',roiLocs);
         % Graph for spectral, image for spatial spectral
         handle = ieSessionGet('scenewindowhandle');
         ieInWindowMessage('',handle);
@@ -650,7 +650,7 @@ switch lower(pType)
         
         % Spatial spectral illumination cases
     case {'illuminantimage'}
-        % plotScene(scene,'illuminant image')
+        % scenePlot(scene,'illuminant image')
         % Make an RGB image showing the spatial image of the illuminant.
         
         wave = sceneGet(scene,'wave');
@@ -675,9 +675,9 @@ switch lower(pType)
         imagesc(sz(1),sz(2),udata.srgb);  grid on; axis off
         title('Illumination image')       
         
-        % Depth - COuld go into plotSceneDepth
+        % Depth - COuld go into scenePlotDepth
     case {'depthmap'}
-        %plotScene(scene,'depth map')
+        %scenePlot(scene,'depth map')
         dmap = sceneGet(scene,'depth map');
         if isempty(dmap), error('No depth map')
         else
@@ -689,7 +689,7 @@ switch lower(pType)
         udata = dmap;
 
     case {'depthmapcontour'}
-        %plotScene(scene,'depth map contour')
+        %scenePlot(scene,'depth map contour')
         if length(varargin) >=1, n = varargin{1}; else n = 4; end
 
         dmap = sceneGet(scene,'depth map'); mx = max(dmap(:));
@@ -704,7 +704,7 @@ switch lower(pType)
         axis off; set(g,'Name',namestr);
 
     otherwise
-        error('Unknown plotScene type.: %s\n',pType);
+        error('Unknown scenePlot type.: %s\n',pType);
 end
 
 % Add roi information to the window.

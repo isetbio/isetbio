@@ -1,13 +1,13 @@
-function [uData,g] = plotSensorEtendue(sensor)
+function [uData,g] = sensorPlotEtendue(sensor)
 %Mesh representing etendue entries in the ISA structure
 %
-%   [uData,g] = plotSensorEtendue([sensor])
+%   [uData,g] = sensorPlotEtendue([sensor])
 %
 % The etendue is computed using mlAnalyzeArrayEtendue.
 %
 % Examples
-%  plotSensorEtendue(vcGetObject('ISA'));
-%  plotSensorEtendue;
+%  sensorPlotEtendue(vcGetObject('ISA'));
+%  sensorPlotEtendue;
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 

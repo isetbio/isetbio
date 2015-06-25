@@ -17,6 +17,7 @@ function [cHistN,cHistX] = plotContrastHistogram(data)
 %
 %    or other general routines
 
+warning('Deprecated. Use built-in hist instead.');
 
 % Calculate the contrast values for this data set.  
 m = mean(data(:));

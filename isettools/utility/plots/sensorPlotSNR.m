@@ -1,7 +1,7 @@
-function [uData,figHdl] = plotSensorSNR(sensor)
+function [uData,figHdl] = sensorPlotSNR(sensor)
 %Graph sensor SNR as a function of voltage level
 %
-%    [uData, figHdl] = plotSensorSNR([sensor])
+%    [uData, figHdl] = sensorPlotSNR([sensor])
 %
 % The SNR is computed in the routine sensorSNR.  See the comments there for
 % the method.
@@ -17,7 +17,7 @@ function [uData,figHdl] = plotSensorSNR(sensor)
 %
 % Example:
 %   sensor = sensorCreate;
-%   plotSensorSNR(sensor)
+%   sensorPlotSNR(sensor)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 

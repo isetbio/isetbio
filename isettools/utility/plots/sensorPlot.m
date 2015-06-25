@@ -1,7 +1,7 @@
-function [uData, g] = plotSensor(sensor, pType, roiLocs, varargin)
+function [uData, g] = sensorPlot(sensor, pType, roiLocs, varargin)
 % Gateway routine for plotting sensor data
 %
-%   [uData, g] = plotSensor([sensor], pType, roiLocs, varargin)
+%   [uData, g] = sensorPlot([sensor], pType, roiLocs, varargin)
 %
 % These plots characterizing the data, sensor parts, or performance of
 % the sensor.  There are many types of plots, and as part of the function
@@ -20,11 +20,11 @@ function [uData, g] = plotSensor(sensor, pType, roiLocs, varargin)
 % In general, you can prevent showing the figure by terminating the
 % arguments with a string, 'no fig', as in
 %
-%   uData = plotSensor(sensor,'volts vline ',[53 1],'no fig');
+%   uData = sensorPlot(sensor,'volts vline ',[53 1],'no fig');
 % 
 % In this case, the data will be returned, but no figure will be produced.
 %
-% The main routine, plotSensor, is a gateway to many other characterization
+% The main routine, sensorPlot, is a gateway to many other characterization
 % and plotting routines.  These are contained within this file.  Sensor
 % plotting should be called from here, if at all possible, so we can avoid
 % duplication.
@@ -73,10 +73,10 @@ function [uData, g] = plotSensor(sensor, pType, roiLocs, varargin)
 % oi = oiCreate; oi = oiCompute(oi,scene);
 % sensor = sensorCreate; sensor = sensorCompute(sensor,oi);
 %
-% plotSensor(sensor,'electrons hline',[20 20]);
-% plotSensor(sensor,'volts vline',[20 20]);
+% sensorPlot(sensor,'electrons hline',[20 20]);
+% sensorPlot(sensor,'volts vline',[20 20]);
 %
-% uData = plotSensor(sensor,'volts vline ',[53 1],'no fig');
+% uData = sensorPlot(sensor,'volts vline ',[53 1],'no fig');
 %
 % (c) Imageval Consulting, LLC, 2012
 
@@ -119,21 +119,21 @@ switch pType
     
     % Sensor data related
     case {'electronshline'}
-        [uData, g] = plotSensorLine(sensor, 'h', 'electrons', 'space', roiLocs);
+        [uData, g] = sensorPlotLine(sensor, 'h', 'electrons', 'space', roiLocs);
     case {'electronsvline'}
-        [uData, g] = plotSensorLine(sensor, 'v', 'electrons', 'space', roiLocs);
+        [uData, g] = sensorPlotLine(sensor, 'v', 'electrons', 'space', roiLocs);
     case {'voltshline'}
-        [uData, g] = plotSensorLine(sensor, 'h', 'volts', 'space', roiLocs);
+        [uData, g] = sensorPlotLine(sensor, 'h', 'volts', 'space', roiLocs);
     case {'voltsvline'}
-        [uData, g] = plotSensorLine(sensor, 'v', 'volts', 'space', roiLocs);
+        [uData, g] = sensorPlotLine(sensor, 'v', 'volts', 'space', roiLocs);
     case {'dvvline'}
-        [uData, g] = plotSensorLine(sensor, 'v', 'dv', 'space', roiLocs);    
+        [uData, g] = sensorPlotLine(sensor, 'v', 'dv', 'space', roiLocs);    
     case {'dvhline'}
-        [uData, g] = plotSensorLine(sensor, 'h', 'dv', 'space', roiLocs);
+        [uData, g] = sensorPlotLine(sensor, 'h', 'dv', 'space', roiLocs);
     case {'voltshistogram','voltshist'}
-        [uData,g] = plotSensorHist(sensor,'v',roiLocs);
+        [uData,g] = sensorPlotHist(sensor,'v',roiLocs);
     case {'electronshistogram','electronshist'}
-        [uData,g] = plotSensorHist(sensor,'e',roiLocs);
+        [uData,g] = sensorPlotHist(sensor,'e',roiLocs);
     case {'shotnoise'}
         [uData, g] = imageNoise('shot noise');
         
@@ -165,7 +165,7 @@ switch pType
     case {'pixelsnr'}
         [uData, g] = plotPixelSNR(sensor);
     case {'sensorsnr','snr'}
-        [uData,g] = plotSensorSNR(sensor);
+        [uData,g] = sensorPlotSNR(sensor);
     case {'dsnu'}
         [uData, g] = imageNoise('dsnu');
     case {'prnu'}
@@ -173,7 +173,7 @@ switch pType
 
         % Optics related
     case {'etendue'}
-        [uData, g] = plotSensorEtendue(sensor);
+        [uData, g] = sensorPlotEtendue(sensor);
         
         % Human
     case {'conemosaic'} % Not sure
@@ -195,7 +195,7 @@ switch pType
 end
 
 % We always create a window.  But, if the user doesn't want a window then
-% plotSensor(......,'no fig')  then we close the window, but still return
+% sensorPlot(......,'no fig')  then we close the window, but still return
 % the data.
 if ~isempty(varargin)
     figStatus = ieParamFormat(varargin{end});
@@ -212,18 +212,18 @@ end
 %% Below are many auxiliary routines that carry out the plots
 % There are many because there are so many special cases and types of
 % plots.  We could move these routines out of here (which is where they
-% started). But for now let's try keeping all the plotSensor stuff together
+% started). But for now let's try keeping all the sensorPlot stuff together
 % in here.
 
 %% Methods for plotting lines of data
 % These are implemented as an overall line plot and then special cases for
 % color and monochrome sensors, and a further special case for integrating
 % data across multiple lines.
-function [uData, figNum] = plotSensorLine(sensor, ori, dataType, sORt, xy)
+function [uData, figNum] = sensorPlotLine(sensor, ori, dataType, sORt, xy)
 % Plot a line of sensor data
 %
 %   [uData, figNum] = ...
-%   plotSensorLine([sensor],[ori='h'],[dataType ='dv'],[spaceOrTransform = 'space'],[xy])
+%   sensorPlotLine([sensor],[ori='h'],[dataType ='dv'],[spaceOrTransform = 'space'],[xy])
 %
 % Plot the values in the sensor array taken from a horizontal or vertical
 % line.  The line passes through the  point xy.
@@ -274,7 +274,7 @@ if nSensors > 1
         % not electrons
         dataType = 'absorptions';
     end    
-    [uData, figNum] = plotSensorLineColor(xy,pos,data,ori,nSensors,dataType,sORt,fColors);
+    [uData, figNum] = sensorPlotLineColor(xy,pos,data,ori,nSensors,dataType,sORt,fColors);
 elseif nSensors == 1
     % figNum = vcNewGraphWin;
     switch lower(ori)
@@ -285,12 +285,12 @@ elseif nSensors == 1
     otherwise
         error('Unknown orientation')
     end
-    [uData, figNum] = plotSensorLineMonochrome(xy,pos,data,ori,dataType,sORt);
+    [uData, figNum] = sensorPlotLineMonochrome(xy,pos,data,ori,dataType,sORt);
 end
 end
 
 %% Color sensor line
-function [uData, figNum] = plotSensorLineColor(xy,pos,data,ori,nSensors,dataType,sORt,fColors)
+function [uData, figNum] = sensorPlotLineColor(xy,pos,data,ori,nSensors,dataType,sORt,fColors)
 %
 % Deal with color sensor case, both CMY and RGB.
 %
@@ -418,7 +418,7 @@ set(figNum,'Name',titleString);
 end
 
 %% Monocrhome sensor line
-function [uData, figNum] = plotSensorLineMonochrome(xy,pos,data,ori,dataType,sORt)
+function [uData, figNum] = sensorPlotLineMonochrome(xy,pos,data,ori,dataType,sORt)
 %
 % Monochrome sensor line plot
 %
@@ -464,7 +464,7 @@ set(figNum,'Name',titleString);
 end
 
 %% Multiple lines
-function [uData, g] = plotSensorLineMultiple(sensor,nLines,ori,xy)
+function [uData, g] = sensorPlotLineMultiple(sensor,nLines,ori,xy)
 %
 % Under development
 %
@@ -506,7 +506,7 @@ function [uData, g] = plotSensorLineMultiple(sensor,nLines,ori,xy)
 end
 
 %% Sensor cross-correlations - Not in here ...
-% function plotSensorColorCorrelations(sa,type)
+% function sensorPlotColorCorrelations(sa,type)
 % % Plot sensor cross-correlations
 % %
 % %     sensorColorPlot(sa,[type=RB'])
@@ -522,8 +522,8 @@ end
 % %
 % % Copyright ImagEval Consultants, LLC, 2005.
 % 
-% % TODO:  This should be moved into plotSensor as a case statement.  After
-% % we write plotSensor, sigh.
+% % TODO:  This should be moved into sensorPlot as a case statement.  After
+% % we write sensorPlot, sigh.
 % 
 % if notDefined('sa'), sa=vcGetObject('isa'); end
 % if notDefined('type'), type = 'rg'; end

@@ -17,16 +17,16 @@ function ValidationFunction(runTimeParams)
     %% Diffraction limited simulation properties
     oi = oiCreate;
     if (runTimeParams.generatePlots)
-        plotOI(oi,'otf',[],550);
-        plotOI(oi,'otf',[],450);
+        oiPlot(oi,'otf',[],550);
+        oiPlot(oi,'otf',[],450);
     end
     UnitTest.validationData('diffractionOI', oi);
 
     %% Human optics
     oi = oiCreate('human');
     if (runTimeParams.generatePlots)
-        plotOI(oi,'psf',[],420);
-        plotOI(oi,'psf',[],550);
+        oiPlot(oi,'psf',[],420);
+        oiPlot(oi,'psf',[],550);
     end
     UnitTest.validationData('humanOI', oi);
 
@@ -34,7 +34,7 @@ function ValidationFunction(runTimeParams)
     scene = sceneCreate;
     oi = oiCompute(oi,scene);
     if (runTimeParams.generatePlots)
-        plotOI(oi,'illuminance mesh linear');
+        oiPlot(oi,'illuminance mesh linear');
     end
     UnitTest.validationData('theScene',scene);
     UnitTest.validationData('humanOIFromScene', oi);

@@ -27,7 +27,7 @@ oi    = oiSet(oi,'optics flength',fLength);
 oi    = oiSet(oi,'optics fnumber',fNumber);
 
 %%  Show linespread at different wavelengths
-uData   = plotOI(oi,'ls wavelength');
+uData   = oiPlot(oi,'ls wavelength');
 fNumber = oiGet(oi,'optics fnumber','mm');
 fLength = oiGet(oi,'optics focal length','mm');
 title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
@@ -44,7 +44,7 @@ ylabel('wavelength (nm)');
 
 %% For a wavelength, show the full psf near the Airy Ring
 thisWave = 400;
-uData = plotOI(oi,'psf',[],thisWave); 
+uData = oiPlot(oi,'psf',[],thisWave); 
 
 view(2)
 AiryRingUM = (2.44*(thisWave/1000)*fNumber);
@@ -70,7 +70,7 @@ str = sprintf('PSF cross section: Wave %d (nm), fNumber %.2f Pupil %.1f (mm)',..
 title(str);
 
 %% Or, here is a single line spread
-uData = plotOI(oi,'lswavelength');
+uData = oiPlot(oi,'lswavelength');
 posMM = uData.x/1000;
 aRadians = atan2(posMM,fLength);    % This is angle in radians
 aMinutes = rad2deg(aRadians,'arcmin');          % This is angle in arc min
@@ -84,7 +84,7 @@ xlabel('arc min')
 
 %% For wvf comparison, here is just at 550nm
 thisWave = 550;
-uData = plotOI(oi,'psf',[],thisWave); 
+uData = oiPlot(oi,'psf',[],thisWave); 
 
 view(2)
 AiryRingUM = (2.44*(thisWave/1000)*fNumber);
@@ -106,7 +106,7 @@ fNumber = 5*(17/3);
 oi = oiSet(oi,'optics fnumber',fNumber);
 
 %%  Show linespread at different wavelengths
-plotOI(oi,'ls wavelength');
+oiPlot(oi,'ls wavelength');
 fNumber = oiGet(oi,'optics fnumber','mm');
 fLength = oiGet(oi,'optics focal length','mm');
 title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
@@ -116,7 +116,7 @@ fNumber = 0.5*(17/3);
 oi = oiSet(oi,'optics fnumber',fNumber);
 
 %%  Show linespread at different wavelengths
-uData = plotOI(oi,'ls wavelength');
+uData = oiPlot(oi,'ls wavelength');
 fNumber = oiGet(oi,'optics fnumber','mm');
 fLength = oiGet(oi,'optics focal length','mm');
 title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
@@ -124,10 +124,10 @@ title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
 %% The psf spread in distance only cares about f number
 % We can change the f length and the functions is the same
 oi = oiSet(oi,'optics flength',fLength);
-uData1 = plotOI(oi,'psf 550');
+uData1 = oiPlot(oi,'psf 550');
 
 oi = oiSet(oi,'optics flength',fLength*10);
-uData2 = plotOI(oi,'psf 550');
+uData2 = oiPlot(oi,'psf 550');
 
 %% For a fixed aperture, the spread in angle is invariant to f length.
 % So, if we change the fnumber, and plot w.r.t angle, we get the same

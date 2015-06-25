@@ -3,7 +3,7 @@
 % Plot the point spread function (PSF) for diffraction limited optics
 %
 % This is the implementation that generates the point spread function (PSF)
-% from diffraction limited optics. The code here is embedded in plotOI/OTF.
+% from diffraction limited optics. The code here is embedded in oiPlot/OTF.
 %
 % Copyright ImagEval Consultants, LLC, 2012.
 
@@ -19,7 +19,7 @@ fNumber = 12;
 optics = opticsSet(optics,'fnumber',fNumber);
 oi     = oiSet(oi,'optics',optics);
 
-%% This is the plotOI/OTF code that converts the OTF to PSF conversion
+%% This is the oiPlot/OTF code that converts the OTF to PSF conversion
 
 % Specify units
 units = 'um';
@@ -35,7 +35,7 @@ clear fSupport
 %
 %  We over sample the frequency to get a smoother PSF image. You can
 %  specify the factor for oversampling if you like in the calling
-%  arguments to plotOI.
+%  arguments to oiPlot.
 s = 4;
 fSupport = fSupport*s;
 

@@ -12,7 +12,7 @@ function [freq,fData] = ieSpace2Amp(pos,data,scaleData)
 % cycles per mm.  If the input data are in meters, then the output is
 % cycles per meter
 %
-% See also:  plotScene, plotOI, sensorPlotLine
+% See also:  scenePlot, oiPlot, sensorPlotLine
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 

@@ -88,7 +88,7 @@ for ii=1:N
     sensorD = sensorCompute(sensor,oiD{ii});
     sensorD = sensorSet(sensorD,'name','Thibos calc');
     vcAddAndSelectObject(sensorD); sensorWindow('scale',1);
-    [uData{ii},g] = plotSensor(sensorD,'electrons hline',[1,80]);
+    [uData{ii},g] = sensorPlot(sensorD,'electrons hline',[1,80]);
     close(g)
 end
 
@@ -109,7 +109,7 @@ end
 % sensorMW = sensorCompute(sensor,oiMW);
 % sensorMW = sensorSet(sensorMW,'name','MW calc');
 % vcAddAndSelectObject(sensorMW); sensorWindow('scale',1);
-% plotSensor(sensorMW,'electrons hline',[1,80]);
+% sensorPlot(sensorMW,'electrons hline',[1,80]);
 % title('Marimont and Wandell')
 
 %% End

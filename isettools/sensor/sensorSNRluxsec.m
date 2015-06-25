@@ -41,7 +41,7 @@ nColors = sensorGet(ISA,'ncolors');
 for ii=1:nColors, luxsec(:,ii) = volts(:) / voltsPerLuxSec(ii); end
 
 if nargout == 0
-    % Make the lux-sec version of the plot in plotSensorSNR
+    % Make the lux-sec version of the plot in sensorPlotSNR
     figNum =  vcSelectFigure('GRAPHWIN');
     plotSetUpWindow(figNum);
     letters = sensorGet(ISA,'filterColorLetters');

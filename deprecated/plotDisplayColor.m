@@ -34,6 +34,8 @@ function plotDisplayColor(ip,dataType)
 % TODO:  Restructure using a new routine, plotIP
 %
 
+error('IP not exist in ISETBIO. Use ISET instead');
+
 %% Variables
 if notDefined('vci');      ip = vcGetObject('vcimage'); end
 if notDefined('dataType'), dataType = 'rgb'; end

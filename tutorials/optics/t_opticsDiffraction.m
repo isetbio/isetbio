@@ -42,7 +42,7 @@ f/p
 
 %%  How the diffraction-limited blur depends on wavelength
 vcNewGraphWin;
-uData = plotOI(oi,'ls wavelength');
+uData = oiPlot(oi,'ls wavelength');
 title(sprintf('F/# = %.0d',opticsGet(optics,'f number')))
 
 % Look at the returned data structure

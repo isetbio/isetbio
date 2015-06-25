@@ -14,6 +14,7 @@ function hdl = plotDisplayGamut(vci)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
+error('USE ISET instead.');
 if notDefined('vci'), vci = vcGetObject('vci'); end
 
 xy = imageGet(vci,'primary xy');

@@ -252,8 +252,8 @@ if ~checkfields(scene,'data','luminance')
 end
 
 % Plots log10 or linear luminance
-% Should be replaced by plotScene call
-plotScene(scene,'luminance mesh log');
+% Should be replaced by scenePlot call
+scenePlot(scene,'luminance mesh log');
 
 return;
 
@@ -268,8 +268,8 @@ if ~checkfields(scene,'data','luminance')
 end
 
 % Plots log10 or linear luminance as a mesh.
-% Should be replaced by plotScene call
-plotScene(scene,'luminance mesh linear');
+% Should be replaced by scenePlot call
+scenePlot(scene,'luminance mesh linear');
 
 return;
 
@@ -324,38 +324,38 @@ return
 % --------------------------------------------------------------------
 function plotRadiance_Callback(hObject, eventdata, handles)
 % Plot | Radiance (Quanta)
-% plotSceneRadiance('photons');
-plotScene(vcGetObject('scene'),'radiance photons roi');
+% scenePlotRadiance('photons');
+scenePlot(vcGetObject('scene'),'radiance photons roi');
 return
 
 % --------------------------------------------------------------------
 function menuPlotRadianceE_Callback(hObject, eventdata, handles)
 % Plot | Radiance (Energy)
-plotScene(vcGetObject('scene'),'radiance energy roi');
+scenePlot(vcGetObject('scene'),'radiance energy roi');
 return
 
 % --------------------------------------------------------------------
 function menuPlotReflectance_Callback(hObject, eventdata, handles)
 % Plot | Reflectance
-plotScene(vcGetObject('scene'),'reflectance');
+scenePlot(vcGetObject('scene'),'reflectance');
 return
 
 % --------------------------------------------------------------------
 function menuPlotIlluminant_Callback(hObject, eventdata, handles)
 % Plot | Illuminant (energy)
-plotScene(vcGetObject('scene'),'illuminant energy roi');
+scenePlot(vcGetObject('scene'),'illuminant energy roi');
 return
 
 % --------------------------------------------------------------------
 function menuPlotIllumPhotons_Callback(hObject, eventdata, handles)
 % Plot | Illuminant (photons)
-plotScene(vcGetObject('scene'),'illuminant photons roi');
+scenePlot(vcGetObject('scene'),'illuminant photons roi');
 return
 
 % --------------------------------------------------------------------
 function menuPlotIlluminantImage_Callback(hObject, eventdata, handles)
 %  Plot | Illuminant image
-plotScene(vcGetObject('scene'),'illuminant image');
+scenePlot(vcGetObject('scene'),'illuminant image');
 return
 
 % --------------------------------------------------------------------
@@ -368,13 +368,13 @@ return
 % --------------------------------------------------------------------
 function menuPlotRadImGrid_Callback(hObject, eventdata, handles)
 % Plot | Radiance image (grid)
-plotScene(vcGetObject('SCENE'), 'radianceimagewithgrid');
+scenePlot(vcGetObject('SCENE'), 'radianceimagewithgrid');
 return
 
 % --------------------------------------------------------------------
 function menuPlotWavebandImage_Callback(hObject, eventdata, handles)
 % Plot | Waveband image
-plotScene(vcGetObject('SCENE'), 'radiance waveband image');
+scenePlot(vcGetObject('SCENE'), 'radiance waveband image');
 return
 
 % --------------------------------------------------------------------
@@ -471,22 +471,22 @@ return;
 
 % --------------------------------------------------------------------
 function menuAnalyzeLineH_Callback(hObject, eventdata, handles)
-plotScene(vcGetObject('SCENE'),'luminance hline');
+scenePlot(vcGetObject('SCENE'),'luminance hline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnalyzeLineV_Callback(hObject, eventdata, handles)
-plotScene(vcGetObject('SCENE'),'luminance vline');
+scenePlot(vcGetObject('SCENE'),'luminance vline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnalyzeLFFTv_Callback(hObject, eventdata, handles)
-plotScene(vcGetObject('SCENE'),'luminance fft vline');
+scenePlot(vcGetObject('SCENE'),'luminance fft vline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnalyzeLFFTH_Callback(hObject, eventdata, handles)
-plotScene(vcGetObject('SCENE'),'luminance fft hline');
+scenePlot(vcGetObject('SCENE'),'luminance fft hline');
 return;
 
 % --------------------------------------------------------------------
@@ -496,13 +496,13 @@ return;
 % --------------------------------------------------------------------
 function menuAnalyzeLWH_Callback(hObject, eventdata, handles)
 scene = vcGetObject('SCENE'); 
-plotScene(scene,'radiance hline');
+scenePlot(scene,'radiance hline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnalyzeLWV_Callback(hObject, eventdata, handles)
 scene = vcGetObject('SCENE'); 
-plotScene(scene,'radiance vline');
+scenePlot(scene,'radiance vline');
 return;
 
 % --------------------------------------------------------------------
@@ -514,7 +514,7 @@ return;
 function menuLuminance_Callback(hObject, eventdata, handles)
 % Analyze | ROI Summary | Luminance
 scene = vcGetObject('scene');
-plotScene(scene,'luminance roi');
+scenePlot(scene,'luminance roi');
 return;
 
 
@@ -536,7 +536,7 @@ return
 function menuPlotCIE_Callback(hObject, eventdata, handles)
 % Analyze | ROI Summary | Chromaticity
 scene = vcGetObject('SCENE');
-plotScene(scene,'chromaticity roi');
+scenePlot(scene,'chromaticity roi');
 return;
 
 % --------------------------------------------------------------------
@@ -549,7 +549,7 @@ if isempty(sceneGet(scene,'depth map'))
     handles = ieSessionGet('sceneimagehandle');
     ieInWindowMessage('No depth map data.',handles,3);
 else
-    plotScene(scene,'depth map');
+    scenePlot(scene,'depth map');
 end
 return
 
@@ -562,7 +562,7 @@ if isempty(oiGet(scene,'depth map'))
     handles = ieSessionGet('scene handle');
     ieInWindowMessage('No depth data.',handles,3);
 else
-    plotScene(scene,'depth map contour');
+    scenePlot(scene,'depth map contour');
 end
 
 return

@@ -56,7 +56,7 @@ semilogx(volts,SNR,'k-');
 grid on; ylabel('SNR (db)'); xlabel('Volts')
 
 %% Another way to do the calculation and plot
-vcNewGraphWin; plotSensorSNR(sensor)
+vcNewGraphWin; sensorPlotSNR(sensor)
 
 % Notice that for this plot we also show the SNR limit associated with
 % specific sources of noise.  In the graph above the Shot and Read noise
@@ -69,14 +69,14 @@ pixel   = pixelSet(pixel,'readNoiseVolts',10*readN);
 sensor2 = sensorSet(sensor,'pixel',pixel);
 
 % In this case, the read noise is the limiter.
-vcNewGraphWin; plotSensorSNR(sensor2)
+vcNewGraphWin; sensorPlotSNR(sensor2)
 
 %% Now we reduce the read noise a lot
 pixel   = pixelSet(pixel,'readNoiseVolts',0.01*readN);
 sensor3 = sensorSet(sensor,'pixel',pixel);
 
 % In this case, the shot noise is the limiter.
-vcNewGraphWin; plotSensorSNR(sensor3)
+vcNewGraphWin; sensorPlotSNR(sensor3)
 
 %% The effect of PRNU
 
@@ -88,14 +88,14 @@ sensor4 = sensorSet(sensor,'gainSD',1.0);
 % When we make the SNR plot, a third line appears to show the SNR limit
 % from this amount of PRNU.  Notice that at this level, it only influences
 % the SNR at the highest voltage range
-vcNewGraphWin; plotSensorSNR(sensor4)
+vcNewGraphWin; sensorPlotSNR(sensor4)
 
 % At this level, the PRNU matters at lower voltage levels and bounds the
 % highest SNR the sensor can achieve.  At lower levels, the read noise is
 % still the dominant factor.  There is a voltage range at which all of the
 % factors matter.
 sensor4 = sensorSet(sensor,'gainSD',4.0);  
-vcNewGraphWin; plotSensorSNR(sensor4)
+vcNewGraphWin; sensorPlotSNR(sensor4)
 
 %% The effect of DSNU
 
@@ -105,12 +105,12 @@ vcNewGraphWin; plotSensorSNR(sensor4)
 sensor5 = sensorSet(sensor,'offsetSD',vSwing*0.0005);
 
 % At this small level (5 parts in 10,000) the DSNU is not important.
-vcNewGraphWin; plotSensorSNR(sensor5)
+vcNewGraphWin; sensorPlotSNR(sensor5)
 
 % If we increase it to half a percent, it  matters.  In this case it is the
 % dominant source of noise until the high voltage levels.
 sensor5 = sensorSet(sensor,'offsetSD',vSwing*0.005);
-vcNewGraphWin; plotSensorSNR(sensor5)
+vcNewGraphWin; sensorPlotSNR(sensor5)
 
 %% Combined noise
 
@@ -122,12 +122,12 @@ pixel   = pixelSet(pixel,'readNoiseVolts',3*readN);
 sensor5 = sensorSet(sensor5,'pixel',pixel);
 sensor5 = sensorSet(sensor5,'gainSD',2.0);  
 sensor5 = sensorSet(sensor5,'offsetSD',vSwing*0.005);
-vcNewGraphWin; plotSensorSNR(sensor5)
+vcNewGraphWin; sensorPlotSNR(sensor5)
 
 
 %% Use the more complete form of sensorSNR function to get SNR components
 
-% The additional SNR returns are the curves plotted in plotSensorSNR
+% The additional SNR returns are the curves plotted in sensorPlotSNR
 [SNR, volts, SNRshot, SNRread, SNRdsnu, SNRprnu] = sensorSNR(sensor5,volts);
 
 % Plot the relation between mean voltage level and SNR limits from the PRNU

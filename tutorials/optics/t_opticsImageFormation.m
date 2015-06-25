@@ -284,7 +284,7 @@ colormap(cool(64)), mesh(ps)
 % wavelengths are contained in the data file:
 oi = oiCreate('human');
 oi = oiSet(oi,'wavelength',370:730);
-lsf = plotOI(oi,'ls wavelength');
+lsf = oiPlot(oi,'ls wavelength');
 
 xDim = lsf.x;
 lineSpread = lsf.lsWave;
@@ -377,7 +377,7 @@ mean(retIm(200,:),2)
 % load combinedOtf;
 % OLD
 
-cOTF = plotOI(oi,'otf wavelength');
+cOTF = oiPlot(oi,'otf wavelength');
 sampleSf = cOTF.fSupport;
 combinedOtf = cOTF.otf;
 

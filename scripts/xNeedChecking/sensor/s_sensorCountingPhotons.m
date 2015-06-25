@@ -22,7 +22,7 @@ sceneWindow;
 % This region is in the middle of the body of the animal
 roiRect = [225 164 16 16];
 roiLocs = ieRoi2Locs(roiRect);
-[udata, f] = plotScene(scene,'radiance photons roi',roiLocs);
+[udata, f] = scenePlot(scene,'radiance photons roi',roiLocs);
 
 % The sum of the mean number of photons from all the wavelengths 
 % q/s/sr/nm/m2
@@ -40,7 +40,7 @@ oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 vcAddAndSelectObject(oi); oiWindow;
 
-plotOI(oi,'irradiance photons roi',roiRect);
+oiPlot(oi,'irradiance photons roi',roiRect);
 udata = get(gcf,'userdata');
 totalQ = sum(udata.y);
 fprintf('F# %f - Total Q: %e\n',opticsGet(optics,'f number'),totalQ)
@@ -50,7 +50,7 @@ optics = opticsSet(optics,'f number',4);
 oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 vcAddAndSelectObject(oi); oiWindow;
-plotOI(oi,'irradiance photons roi',roiRect);
+oiPlot(oi,'irradiance photons roi',roiRect);
 udata = get(gcf,'userdata');
 totalQ = sum(udata.y);
 fprintf('F# %f - Total Q: %e\n',opticsGet(optics,'f number'),totalQ)
@@ -60,7 +60,7 @@ optics = opticsSet(optics,'f number',8);
 oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 vcAddAndSelectObject(oi); oiWindow;
-plotOI(oi,'irradiance photons roi',roiRect);
+oiPlot(oi,'irradiance photons roi',roiRect);
 udata = get(gcf,'userdata');
 totalQ = sum(udata.y);
 fprintf('F# %f - Total Q: %e\n',opticsGet(optics,'f number'),totalQ)

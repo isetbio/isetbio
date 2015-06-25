@@ -11,6 +11,7 @@ function plotMetrics(handles,plotType)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
+error('Use ISET instead');
 if notDefined('handles'); handles = metricsWindow; end
 if notDefined('plotType')
     contents = get(handles.popMetric,'String');

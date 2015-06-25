@@ -26,7 +26,7 @@ scene = sceneFromFile(fullFileName ,'multispectral',[],[],wList);
 vcAddAndSelectObject(scene); sceneWindow;
 
 % Plot the illuminant
-plotScene(scene,'illuminant photons roi')
+scenePlot(scene,'illuminant photons roi')
 
 
 %% Transform the current illuminant to daylight
@@ -44,7 +44,7 @@ scene = sceneSet(scene,'illuminantComment','Daylight (D75) illuminant');
 
 % Have a look
 vcAddAndSelectObject(scene); sceneWindow;
-plotScene(scene,'illuminant photons roi')
+scenePlot(scene,'illuminant photons roi')
 
 
 %% End

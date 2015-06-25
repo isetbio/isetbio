@@ -1,6 +1,6 @@
-function [data,figNum] = plotSensorHistogram(unitType)
+function [data,figNum] = sensorPlotHistogram(unitType)
 %
-%  [data,figNum] = plotSensorHistogram([unitType])
+%  [data,figNum] = sensorPlotHistogram([unitType])
 %
 %  Create a multiple panel plot showing the pixel voltages or electrons in
 %  a region selected by the user. 
@@ -11,8 +11,8 @@ function [data,figNum] = plotSensorHistogram(unitType)
 %
 % Examples:
 %
-%  [data,figNum] = plotSensorHistogram('v');
-%  [data,figNum] = plotSensorHistogram('e')
+%  [data,figNum] = sensorPlotHistogram('v');
+%  [data,figNum] = sensorPlotHistogram('e')
 %
 %
 

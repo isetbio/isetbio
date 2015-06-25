@@ -1,6 +1,6 @@
-function plotSensorVignetting;
+function sensorPlotVignetting;
 %
-%   plotSensorVignetting
+%   sensorPlotVignetting
 %
 % Author: ImagEval
 % Purpose:

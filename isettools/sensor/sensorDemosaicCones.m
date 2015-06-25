@@ -73,7 +73,7 @@ function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
 %    vcNewGraphWin; imshow(srgb);
 %
 %  See also:
-%    lms2lmsDichromat, sensorGet, plotSensor
+%    lms2lmsDichromat, sensorGet, sensorPlot
 %
 % (HJ) ISETBIO TEAM, 2015
 %
