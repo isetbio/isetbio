@@ -9,6 +9,7 @@ function d = displaySet(d,parm,val,varargin)
 %   wave               - sample wavelength
 %   spd                - spectral power distribution (average, not peak)
 %   dpi                - dots per inch
+%   size               - vector of [h, v] in meters
 %   dixel              - subpixel structure
 %   viewing distance   - viewing distance
 %   comment            - comments for this display
@@ -24,6 +25,8 @@ function d = displaySet(d,parm,val,varargin)
 %   displayGet, displayCreate, ieLUTDigital, ieLUTLinear
 %
 % Copyright ImagEval 2011
+%
+% 6/25/15  dhb  Added size set
 
 if notDefined('parm'), error('Parameter not found.');  end
 
@@ -71,6 +74,14 @@ switch parm
         % displaySet(d, 'dpi', val);
         % Dots per inch of the pixels (full pixel center-to-center)
         d.dpi = val;
+        
+    case {'size'}
+        % displaySet(d,'size',val)
+        % [h,v] size in meters
+        if (~ismatrix(val)) error('unknown form for size'); end
+        if (~length(val) == 2) error ('size should be [h,v]'); end
+        d.size = val;
+        
     case {'viewingdistance'}
         % displaySet(d, 'viewing distance', val);
         % viewing distance in meters

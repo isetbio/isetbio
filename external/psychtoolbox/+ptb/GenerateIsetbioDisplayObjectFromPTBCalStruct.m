@@ -1,7 +1,9 @@
 function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName, calStruct, varargin)
 % displayObject = generateIsetbioDisplayObjectFromCalStructObject(displayName, calStruct, varargin)
 %
-% Method to generate an isetbio display object with given specifications
+% Method to generate an isetbio display object with given specifications.
+%
+% NOTES:
 %
 % 2/20/2015    npc  Wrote skeleton script for xiamao ding
 % 2/24/2015    xd   Updated to compute dpi, and set gamma and spds
@@ -11,6 +13,7 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
 % 3/9/2015     xd   Updated S Vector behavior
 % 4/15/2015    npc  Cleaned up a bit, subsample Svector is now a property of ExtraData
 % 4/15/2015    npc  Added input arg, to control whether to save the generated isetbio display object  
+% 6/25/15      dhb  Set ISETBIO display size field
 
     % Check is ExtraCalData
     checkExtraData = @(x) isa(x, 'ptb.ExtraCalData');
@@ -35,7 +38,12 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
     % Get the wavelength sampling and the SPD from the CalStruct
     S = calStruct.describe.S;
     spd = calStruct.P_device;
-
+    if (size(spd,2) ~= 3); error('ISETBIO only handles three-primary devices'); end
+    
+    % Get the ambient and paste it onto the spd as the "fourth" primary.
+    % This is how ISETBIO handles ambient.
+    spd = [spd calStruct.P_ambient];
+    
     if (~isempty(input.Results.ExtraData.subSamplingSvector))
         % Validate that the subSamplingSvector is within range of the original S vector
         validateSVector(S, input.Results.ExtraData.subSamplingSvector);
@@ -57,8 +65,12 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
         displayObject = displaySet(displayObject, 'spd', spd);
     end
 
-    % Get the display's gamma table
-    displayObject = displaySet(displayObject, 'gTable', calStruct.gammaTable);
+    % Get the display's gamma table, and paste on an extra column to handle
+    % the ISETBIO ambient convention.
+    gammaTable = calStruct.gammaTable;
+    gammaLength = size(gammaTable,1);
+    gammaTable = [gammaTable [1 ; zeros(gammaLength-1,1)]];
+    displayObject = displaySet(displayObject, 'gTable', gammaTable);
 
     % Get the display resolution in dots (pixels) per inch
     m = calStruct.describe.displayDescription.screenSizeMM;
@@ -67,8 +79,10 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
     mdiag = sqrt(m(1)^2 + m(2)^2);
     pdiag = sqrt(p(1)^2 + p(2)^2);
     dpi = pdiag / mdiag;
-
     displayObject = displaySet(displayObject, 'dpi', dpi);
+    
+    % Set the display size 
+    displayObject = displaySet(displayObject,'size',calStruct.describe.displayDescription.screenSizeMM/1000);
 
     % Use the viewing distance obtained from the ExtraData Struct
     dist = input.Results.ExtraData.distance;

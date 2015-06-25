@@ -22,6 +22,11 @@ function ValidationFunction(runTimeParams)
     calFile = 'SonyPVM2541';
     PTBcal = LoadCalFile(calFile, [], calDir);
     
+    %% Force pixel pitch to be the same in horiz and vert directions, because ISETBIO just stores one number
+    originalPTBdotsPerMeterX = PTBcal.describe.displayDescription.screenSizePixel(1)/(PTBcal.describe.displayDescription.screenSizeMM(1)/1000);
+    PTBcal.describe.displayDescription.screenSizeMM(2) = 1000*PTBcal.describe.displayDescription.screenSizePixel(2)/originalPTBdotsPerMeterX;
+    originalPTBdotsPerMeterY = PTBcal.describe.displayDescription.screenSizePixel(2)/(PTBcal.describe.displayDescription.screenSizeMM(2)/1000);
+
     %% Generate isetbio display object
     extraData = ptb.ExtraCalData;
     extraData.distance = 0.764;
@@ -32,17 +37,23 @@ function ValidationFunction(runTimeParams)
     reconstructedPTBcal  = ptb.GeneratePTCalStructFromIsetbioDisplayObject(isetbioDisplayObject);
     
     %% Comparisons
-    %
-    % Display resolution (along horizontal dimension)
-    isetbioDotsPerMeter = displayGet(isetbioDisplayObject, 'dots per meter');
-    originalPTBdotsPerMeterX = PTBcal.describe.displayDescription.screenSizePixel(1)/(PTBcal.describe.displayDescription.screenSizeMM(1)/1000);
-    reconstructedPTBdotsPerMeterX = reconstructedPTBcal.describe.displayDescription.screenSizePixel(1)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(1)/1000);
+    % 
+    % Display size
     tolerance = 1e-6;
+    UnitTest.assertIsZero(abs(PTBcal.describe.displayDescription.screenSizeMM-reconstructedPTBcal.describe.displayDescription.screenSizeMM),'Display size mm',tolerance);
+    UnitTest.assertIsZero(abs(PTBcal.describe.displayDescription.screenSizePixel-reconstructedPTBcal.describe.displayDescription.screenSizePixel),'Display size pixel',tolerance);
+
+    % Display resolution (along horizontal dimension)
+    %
+    % For this test, we'll make the PTB dpi the same for horizontal and
+    % vertical, because ISETBIO just takes one number and we can't get two
+    % different numbers back.
+    isetbioDotsPerMeter = displayGet(isetbioDisplayObject, 'dots per meter');
+    reconstructedPTBdotsPerMeterX = reconstructedPTBcal.describe.displayDescription.screenSizePixel(1)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(1)/1000);
     UnitTest.assertIsZero(abs(originalPTBdotsPerMeterX-reconstructedPTBdotsPerMeterX),'Horizontal resolution',tolerance);
     
     % Display resolution (along vertical dimension)
     isetbioDotsPerMeter = displayGet(isetbioDisplayObject, 'dots per meter');
-    originalPTBdotsPerMeterY = PTBcal.describe.displayDescription.screenSizePixel(2)/(PTBcal.describe.displayDescription.screenSizeMM(2)/1000);
     reconstructedPTBdotsPerMeterY= reconstructedPTBcal.describe.displayDescription.screenSizePixel(2)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(2)/1000);
     UnitTest.assertIsZero(abs(originalPTBdotsPerMeterY-reconstructedPTBdotsPerMeterY),'Vertical resolution',tolerance);
     
@@ -61,8 +72,6 @@ function ValidationFunction(runTimeParams)
     % Gamma table
     UnitTest.assertIsZero(abs(PTBcal.gammaInput-reconstructedPTBcal.gammaInput),'Device gamma table',0);
     UnitTest.assertIsZero(abs(PTBcal.gammaTable-reconstructedPTBcal.gammaTable),'Device gamma table',0);
-
-
 
     %% Plots
     if (runTimeParams.generatePlots)
