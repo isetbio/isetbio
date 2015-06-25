@@ -6,9 +6,7 @@ function PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
     % Update key properties
     PTBcal = updateDisplayDescription(PTBcal,display);
     PTBcal = updateSpectralParams(PTBcal, display);
-    PTBcal = updateGammaParams(PTBcal, display);
-    PTBcal
-    
+    PTBcal = updateGammaParams(PTBcal, display);  
 end
     
 function PTBcal = updateGammaParams(oldPTBcal, display)
@@ -47,8 +45,6 @@ function PTBcal = updateDisplayDescription(oldPTBcal,display)
     arbitraryScreenSizeInPixels = [1920 1080];
     phi = atan2(arbitraryScreenSizeInPixels(2), arbitraryScreenSizeInPixels(1));
     dotsPerMeter = dotsPerMeter * [cos(phi) sin(phi)];
-    size(dotsPerMeter)
-    size(arbitraryScreenSizeInPixels )
     screenSizeMM = 1000.0*arbitraryScreenSizeInPixels ./ dotsPerMeter;
     
     PTBcal = oldPTBcal;

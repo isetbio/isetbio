@@ -1,7 +1,10 @@
 function varargout = v_PTBcalStructToIsetbioDisplayObjectAndBack(varargin)
 %
 % Validate conversion of PTBcalStruct to isetbio display object and back.
+% This compares the PTB reconstruction after conversion into isetbio and
+% back with the originally read PTB cal stucture.
 %
+% See also v_IrradianceIsomerizations, v_DisplayColorConversion
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
@@ -12,35 +15,56 @@ function ValidationFunction(runTimeParams)
     close all; ieInit;
     
     %% Some informative text
-    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Conversion of PTB cal struct to isetbio display object - This is still in progress.');
+    UnitTest.validationRecord('SIMPLE_MESSAGE', 'Conversion of PTB cal struct to isetbio display object.');
     
-    % Load PTB calibration data for the SONY PVM2541 display
+    %% Load PTB calibration data for the SONY PVM2541 display
     calDir = fullfile(isetbioRootPath, 'isettools', 'data', 'ptbcal');
     calFile = 'SonyPVM2541';
-    PTBcal  = LoadCalFile(calFile, [], calDir);
+    PTBcal = LoadCalFile(calFile, [], calDir);
     
-
-    % Generate isetbio display object
+    %% Generate isetbio display object
     extraData = ptb.ExtraCalData;
     extraData.distance = 0.764;
-
-    % Generate an isetbio display object to model the display used to obtain the calibration data
     saveDisplayObject = false;
     isetbioDisplayObject = ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct('SonyPVM2541', PTBcal, extraData, saveDisplayObject);
+
+    %% Now go back into PTB format from the isetbio version
     reconstructedPTBcal  = ptb.GeneratePTCalStructFromIsetbioDisplayObject(isetbioDisplayObject);
     
-    % Start comparisons
+    %% Comparisons
+    %
     % Display resolution (along horizontal dimension)
-    isetbioDotsPerMeter       = displayGet(isetbioDisplayObject, 'dots per meter')
-    originalPTBdotsPerMeterX   = PTBcal.describe.displayDescription.screenSizePixel(1)/(PTBcal.describe.displayDescription.screenSizeMM(1)/1000)
-    reconstructedPTBdotsPerMeterX = reconstructedPTBcal.describe.displayDescription.screenSizePixel(1)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(1)/1000)
+    isetbioDotsPerMeter = displayGet(isetbioDisplayObject, 'dots per meter');
+    originalPTBdotsPerMeterX = PTBcal.describe.displayDescription.screenSizePixel(1)/(PTBcal.describe.displayDescription.screenSizeMM(1)/1000);
+    reconstructedPTBdotsPerMeterX = reconstructedPTBcal.describe.displayDescription.screenSizePixel(1)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(1)/1000);
+    tolerance = 1e-6;
+    UnitTest.assertIsZero(abs(originalPTBdotsPerMeterX-reconstructedPTBdotsPerMeterX),'Horizontal resolution',tolerance);
     
-    isetbioDotsPerMeter       = displayGet(isetbioDisplayObject, 'dots per meter')
-    originalPTBdotsPerMeterY   = PTBcal.describe.displayDescription.screenSizePixel(2)/(PTBcal.describe.displayDescription.screenSizeMM(2)/1000)
-    reconstructedPTBdotsPerMeterY= reconstructedPTBcal.describe.displayDescription.screenSizePixel(2)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(2)/1000)
+    % Display resolution (along vertical dimension)
+    isetbioDotsPerMeter = displayGet(isetbioDisplayObject, 'dots per meter');
+    originalPTBdotsPerMeterY = PTBcal.describe.displayDescription.screenSizePixel(2)/(PTBcal.describe.displayDescription.screenSizeMM(2)/1000);
+    reconstructedPTBdotsPerMeterY= reconstructedPTBcal.describe.displayDescription.screenSizePixel(2)/(reconstructedPTBcal.describe.displayDescription.screenSizeMM(2)/1000);
+    UnitTest.assertIsZero(abs(originalPTBdotsPerMeterY-reconstructedPTBdotsPerMeterY),'Vertical resolution',tolerance);
     
+    % Wavelength sampling
+    UnitTest.assertIsZero(abs(PTBcal.describe.S-reconstructedPTBcal.describe.S),'Device gamma table',0);
+
+    % nDevices
+    UnitTest.assertIsZero(abs(PTBcal.nDevices-reconstructedPTBcal.nDevices),'Device gamma table',0);
+
+    % Primaries
+    UnitTest.assertIsZero(abs(PTBcal.P_device-reconstructedPTBcal.P_device),'Device primary spectra',0);
     
-    %% Plot
+    % Ambient
+    UnitTest.assertIsZero(abs(PTBcal.P_ambient-reconstructedPTBcal.P_ambient),'Device ambient spectrum',0);
+    
+    % Gamma table
+    UnitTest.assertIsZero(abs(PTBcal.gammaInput-reconstructedPTBcal.gammaInput),'Device gamma table',0);
+    UnitTest.assertIsZero(abs(PTBcal.gammaTable-reconstructedPTBcal.gammaTable),'Device gamma table',0);
+
+
+
+    %% Plots
     if (runTimeParams.generatePlots)
     end
     

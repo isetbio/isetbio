@@ -70,7 +70,6 @@ try
     % Choose RGB values in the range where the different gamma correction
     % methods used by ISETBIO and PTB agree (see v_DisplayLUTInversion).
     RGBToTest = [0.3 0.73 0.42]';
-    %RGBToTest = [1 1 1]';
     theRGBImage = ones(20,20,3);
     for i1 = 1:3
         theRGBImage(:,:,i1) = round((nInputLevels-1)*RGBToTest(i1));
