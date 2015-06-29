@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImage</h1><!--introduction--><p>Show how to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses.</p><p>See also generateConeMosaicImage, generateConePhotonsImage.</p><p>NOTE: There are ways to produce these images using conePlot and coneSensorPlot, and this tutorial should show those so that it illustrates the usage we want to head for.</p><p>4/21/15 npc   Wrote it. 4/22/15 dhb   Tweaks for isetbio compatibility. 4/23/15 npc   Minor fixes. 4/27/15 dhb   Test photons image routine as well. 6/29/15 dhb   Fix way we set up coneP to be more robust --  old less robust code got broken               by some lower level change.         dhb   Made this a script, not a function.  Friendlier for tutorials.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Clear</a></li><li><a href="#2">Create human sensor to get a cfa</a></li><li><a href="#3">Extract a reasonable size region</a></li><li><a href="#4">Make up some photon responses.</a></li><li><a href="#5">Specify cone aperture size</a></li><li><a href="#6">Generate the cone mosaic image</a></li><li><a href="#7">Generate the isomerizations map image</a></li></ul></div><h2>Clear<a name="1"></a></h2><pre class="codeinput">close <span class="string">all</span>; clear <span class="string">global</span>; ieInit;
+  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImage</h1><!--introduction--><p>Show how to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses.</p><p>See also generateConeMosaicImage, generateConePhotonsImage.</p><p>NOTE: There are ways to produce these images using conePlot and coneSensorPlot (see t_GenerateConeMosaicImageUsingNativeISETBIOfunctions)</p><p>4/21/15 npc   Wrote it. 4/22/15 dhb   Tweaks for isetbio compatibility. 4/23/15 npc   Minor fixes. 4/27/15 dhb   Test photons image routine as well. 6/29/15 dhb   Fix way we set up coneP to be more robust --  old less robust code got broken               by some lower level change.         dhb   Made this a script, not a function.  Friendlier for tutorials.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Clear</a></li><li><a href="#2">Create human sensor to get a cfa</a></li><li><a href="#3">Extract a reasonable size region</a></li><li><a href="#4">Make up some photon responses.</a></li><li><a href="#5">Specify cone aperture size</a></li><li><a href="#6">Generate the cone mosaic image</a></li><li><a href="#7">Generate the isomerizations map image</a></li></ul></div><h2>Clear<a name="1"></a></h2><pre class="codeinput">close <span class="string">all</span>; clear <span class="string">global</span>; ieInit;
 </pre><h2>Create human sensor to get a cfa<a name="2"></a></h2><pre class="codeinput">coneP = coneCreate(<span class="string">'human'</span>);
 coneP = coneSet(coneP,<span class="string">'spatial density'</span>,[0.0 0.625 0.325 .05]);
 sensor = sensorCreate(<span class="string">'human'</span>,[],coneP);
@@ -111,8 +111,7 @@ imshow(conePhotonsWRImage); truesize;
 % See also generateConeMosaicImage, generateConePhotonsImage.
 %
 % NOTE: There are ways to produce these images using conePlot and
-% coneSensorPlot, and this tutorial should show those so that it
-% illustrates the usage we want to head for.
+% coneSensorPlot (see t_GenerateConeMosaicImageUsingNativeISETBIOfunctions)
 %
 % 4/21/15 npc   Wrote it.
 % 4/22/15 dhb   Tweaks for isetbio compatibility.
