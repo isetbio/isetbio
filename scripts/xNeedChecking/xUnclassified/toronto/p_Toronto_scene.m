@@ -23,7 +23,7 @@ scene = sceneAdjustLuminance(scene,50); % This sets the mean scene luminance
 scene = sceneSet(scene,'fov',26.5); % match the scene field of view (fov) with the sensor fov
 
 vcAddAndSelectObject('scene',scene); sceneWindow; % display sceneWindow
-plotScene(scene,'illuminantEnergy')
+scenePlot(scene,'illuminantEnergy')
 
 %% Set illuminant to equal energy
 scene = sceneAdjustIlluminant(scene,'equalEnergy.mat');

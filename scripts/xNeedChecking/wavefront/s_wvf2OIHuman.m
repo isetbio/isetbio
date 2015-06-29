@@ -43,7 +43,7 @@ set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 oiD = wvf2oi(wvfP,'human');
 oiD = oiSet(oiD,'name','Human 3mm');
 vcAddObject(oiD); oiWindow;
-uData = plotOI(oiD,'psf','um',thisWave,maxUM);
+uData = oiPlot(oiD,'psf','um',thisWave,maxUM);
 set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 
 % Not right ... something needs to be fixed here (BW).
@@ -88,7 +88,7 @@ set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 oiD = wvf2oi(wvfP,'human');
 oiD = oiSet(oiD,'name','Human 3mm');
 vcAddAndSelectObject(oiD); oiWindow;
-uData = plotOI(oiD,'psf','um',thisWave);
+uData = oiPlot(oiD,'psf','um',thisWave);
 set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 
 % Interpolate the wvf data onto the spatial grid of the ISET data.  Same as
@@ -136,13 +136,13 @@ scene = sceneSet(scene,'h fov',1);
 oiD = oiCompute(oiD,scene);
 oiD = oiSet(oiD,'name','Thibos');
 vcAddAndSelectObject(oiD); oiWindow;
-uT = plotOI(oiD,'irradiance hline',[1,200]);  % (x,y) format
+uT = oiPlot(oiD,'irradiance hline',[1,200]);  % (x,y) format
 title('Thibos')
 
 oiMW = oiCompute(oiMW,scene);
 oiMW = oiSet(oiMW,'name','MW');
 vcAddAndSelectObject(oiMW); oiWindow;
-uM = plotOI(oiMW,'irradiance hline',[1,200]);  % (x,y) format
+uM = oiPlot(oiMW,'irradiance hline',[1,200]);  % (x,y) format
 title('Marimont and Wandell')
 
 %% The local error is pretty substantial

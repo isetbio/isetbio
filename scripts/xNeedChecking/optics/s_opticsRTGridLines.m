@@ -98,7 +98,7 @@ oi = oiSet(oi,'name','Automated ray trace');
 vcAddAndSelectObject('oi',oi); oiWindow;
 
 % Here is a horizontal line of illuminance
-rtData = plotOI(oi,'illuminance hline',[1,64]);
+rtData = oiPlot(oi,'illuminance hline',[1,64]);
 
 %% Compute using the diffraction-limited method 
 %
@@ -118,7 +118,7 @@ oiDL = oiCompute(scene,oiDL);
 vcAddAndSelectObject('oi',oiDL); oiWindow;
 
 % Here is a horizontal line of illuminance
-dlData = plotOI(oiDL,'illuminance hline',[1,64]);
+dlData = oiPlot(oiDL,'illuminance hline',[1,64]);
 
 %% Make the FOV smaller to see the ray trace blurring
 %

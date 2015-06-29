@@ -6,30 +6,30 @@ talkD = fullfile(isetbioRootPath,'scripts','toronto');
 
 %% Diffraction limited simulation properties
 oi = oiCreate;
-plotOI(oi,'otf',[],550);
-plotOI(oi,'otf',[],450);
+oiPlot(oi,'otf',[],550);
+oiPlot(oi,'otf',[],450);
 
 %% Effect of fnumber
 optics = opticsCreate('one inch');
 
 optics = opticsSet(optics,'fnumber',2);
 oi = oiSet(oi,'optics',optics);
-plotOI(oi,'lsf wavelength');
+oiPlot(oi,'lsf wavelength');
 set(gca,'xlim',[-10 10],'xtick',-10:2:10)
 title(sprintf('Pupil radius %.1f (mm)',opticsGet(optics,'pupil radius','mm')))
 
 optics = opticsSet(optics,'fnumber',8);
 oi = oiSet(oi,'optics',optics);
-plotOI(oi,'lsf wavelength');
+oiPlot(oi,'lsf wavelength');
 set(gca,'xlim',[-10 10],'xtick',-10:2:10)
 opticsGet(optics,'pupil radius','mm')
 title(sprintf('Pupil radius %.1f (mm)',opticsGet(optics,'pupil radius','mm')))
 
 %%
 oi = oiCreate('human');
-plotOI(oi,'lsf wavelength');
-plotOI(oi,'otf',[],600);
-plotOI(oi,'otf',[],420);
+oiPlot(oi,'lsf wavelength');
+oiPlot(oi,'otf',[],600);
+oiPlot(oi,'otf',[],420);
 % Shift-invariant representation
 
 % Human chromatic aberration example
@@ -62,19 +62,19 @@ scene410 = sceneInterpolateW(scene,410);
 oi = oiCompute(scene410,oi);
 oi = oiSet(oi,'name','line-410');
 vcAddAndSelectObject(oi);
-plotOI(oi,'irradiance image with grid',[],gSpacing)
+oiPlot(oi,'irradiance image with grid',[],gSpacing)
 
 scene550 = sceneInterpolateW(scene,550);
 oi = oiCompute(scene550,oi);
 oi = oiSet(oi,'name','line-550');
 vcAddAndSelectObject(oi);
-plotOI(oi,'irradiance image with grid',[],gSpacing)
+oiPlot(oi,'irradiance image with grid',[],gSpacing)
 
 scene690 = sceneInterpolateW(scene,690);
 oi = oiCompute(scene690,oi);
 oi = oiSet(oi,'name','line-690');
 vcAddAndSelectObject(oi);
-plotOI(oi,'irradiance image with grid',[],gSpacing)
+oiPlot(oi,'irradiance image with grid',[],gSpacing)
 
 oiWindow;
 

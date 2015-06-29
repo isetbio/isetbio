@@ -655,20 +655,20 @@ return;
 function plotIrradiance_Callback(hObject, eventdata, handles)
 % Plot | Irradiance (photons)
 oi = vcGetObject('oi');
-plotOI(oi,'irradiance photons roi');
+oiPlot(oi,'irradiance photons roi');
 return;
 
 % --------------------------------------------------------------------
 function menuPlotIrradEnergy_Callback(hObject, eventdata, handles)
 % Plot | Irradiance (energy)
 oi = vcGetObject('oi');
-plotOI(oi,'irradiance energy roi');
+oiPlot(oi,'irradiance energy roi');
 return;
 
 % --------------------------------------------------------------------
 function menuPlotImageGrid_Callback(hObject, eventdata, handles)
 % Plot
-plotOI(vcGetObject('oi'),'irradianceimagewithgrid');
+oiPlot(vcGetObject('oi'),'irradianceimagewithgrid');
 return;
 
 % --------------------------------------------------------------------
@@ -680,7 +680,7 @@ if isempty(oiGet(oi,'depth map'))
     handles = ieSessionGet('opticalimagehandle');
     ieInWindowMessage('No depth data.',handles,3);
 else
-    plotOI(oi,'depth map');
+    oiPlot(oi,'depth map');
 end
 
 return
@@ -694,7 +694,7 @@ if isempty(oiGet(oi,'depth map'))
     handles = ieSessionGet('opticalimagehandle');
     ieInWindowMessage('No depth data.',handles,3);
 else
-    plotOI(oi,'depth map contour');
+    oiPlot(oi,'depth map contour');
 end
 
 return
@@ -704,7 +704,7 @@ return
 function menuPlotHLContrast_Callback(hObject, eventdata, handles)
 % Might never be called.  If it is, it is from Analyze pull down.
 oi = vcGetObject('OPTICALIMAGE');
-plotOI(oi,'hlinecontrast');
+oiPlot(oi,'hlinecontrast');
 return;
 
 
@@ -712,7 +712,7 @@ return;
 function menuPlotVLContrast_Callback(hObject, eventdata, handles)
 % Might never be called.  If it is, it is from Analyze pull down.
 oi = vcGetObject('OPTICALIMAGE');
-plotOI(oi,'vlinecontrast');
+oiPlot(oi,'vlinecontrast');
 return;
 
 % --------------------------------------------------------------------
@@ -728,7 +728,7 @@ end
 
 % Plots log10 or linear luminance,
 % oiPlotIlluminance(oi,'log');
-plotOI(oi,'illuminance mesh log');
+oiPlot(oi,'illuminance mesh log');
 
 return;
 
@@ -742,7 +742,7 @@ if ~checkfields(oi,'data','illuminance')
     vcReplaceObject(oi,val);
 end
 % Plots log10 or linear luminance,
-plotOI(oi,'illuminance mesh linear');
+oiPlot(oi,'illuminance mesh linear');
 
 return;
 
@@ -750,7 +750,7 @@ return;
 function menuPlotCIE_Callback(hObject, eventdata, handles)
 %
 oi = vcGetObject('OI');
-plotOI(oi,'chromaticity roi');
+oiPlot(oi,'chromaticity roi');
 return
 
 % --------------------------------------------------------------------
@@ -785,7 +785,7 @@ switch lower(opticsModel)
     case 'raytrace'
         rtPlot(oi,'psf',550);
     otherwise
-        plotOI(oi,'psf 550');
+        oiPlot(oi,'psf 550');
 end
 return;
 
@@ -801,7 +801,7 @@ switch lower(opticsModel)
         ieInWindowMessage('Ray trace: ls wavelength not yet implemented.',handles);
         disp('Not yet implemented')
     otherwise
-        plotOI(oi,'ls Wavelength');
+        oiPlot(oi,'ls Wavelength');
 end
 
 return;
@@ -817,7 +817,7 @@ switch lower(opticsModel)
     case 'raytrace'
         rtPlot(oi,'otf');
     otherwise
-        plotOI(oi,'otf Wavelength');
+        oiPlot(oi,'otf Wavelength');
 end
 
 return;
@@ -834,7 +834,7 @@ switch lower(opticsModel)
     case 'raytrace'
         rtPlot(oi,'otf');
     otherwise
-        plotOI(oi,'otf');
+        oiPlot(oi,'otf');
 end
 
 return;
@@ -851,7 +851,7 @@ switch lower(opticsModel)
     case 'raytrace'
         rtPlot(oi,'otf 550');
     otherwise
-        plotOI(oi,'otf 550');
+        oiPlot(oi,'otf 550');
 end
 
 return;
@@ -908,7 +908,7 @@ switch lower(opticsModel)
     case 'raytrace'
         rtPlot(oi,'psf');
     otherwise
-        plotOI(oi,'psf');
+        oiPlot(oi,'psf');
 end
 
 return;
@@ -923,22 +923,22 @@ return;
 
 % --------------------------------------------------------------------
 function menuAnLineIllumHorizontal_Callback(hObject, eventdata, handles)
-plotOI(vcGetObject('OI'),'illuminance hline');
+oiPlot(vcGetObject('OI'),'illuminance hline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnLineIllumVertical_Callback(hObject, eventdata, handles)
-plotOI(vcGetObject('OI'),'illuminance vline');
+oiPlot(vcGetObject('OI'),'illuminance vline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnLineIllumHorFFT_Callback(hObject, eventdata, handles)
-plotOI(vcGetObject('OI'),'illuminance fft hline');
+oiPlot(vcGetObject('OI'),'illuminance fft hline');
 return;
 
 % --------------------------------------------------------------------
 function menuAnLineIllumVertFFT_Callback(hObject, eventdata, handles)
-plotOI(vcGetObject('OI'),'illuminance fft vline');
+oiPlot(vcGetObject('OI'),'illuminance fft vline');
 return;
 
 % --------------------------------------------------------------------
@@ -986,7 +986,7 @@ return;
 function menuPlotLuxHist_Callback(hObject, eventdata, handles)
 % Analyze | ROI Summary | Illuminance
 oi = vcGetObject('OI');
-plotOI(oi,'illuminance roi');
+oiPlot(oi,'illuminance roi');
 return;
 
 % --------------------------------------------------------------------
@@ -1007,14 +1007,14 @@ return;
 function menuHline_Callback(hObject, eventdata, handles)
 % Analyze | Line | Horizontal
 oi = vcGetObject('OI');
-plotOI(oi,'hline');
+oiPlot(oi,'hline');
 return;
 
 % --------------------------------------------------------------------
 function menuVLine_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical
 oi = vcGetObject('OI');
-plotOI(oi,'vline');
+oiPlot(oi,'vline');
 return;
 
 % --------------------------------------------------------------------
@@ -1023,7 +1023,7 @@ function menuFFTamp_Callback(hObject, eventdata, handles)
 % Default is whole image and a middle wavelength
 
 oi = vcGetObject('OI');
-plotOI(oi,'irradiance fft');
+oiPlot(oi,'irradiance fft');
 
 return;
 

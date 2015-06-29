@@ -38,6 +38,7 @@ function val = displayGet(d, parm, varargin)
 %
 % Spatial parameters
 %     {'dpi', 'ppi'}           - dots per inch
+%     {'size'}                 - display size in meters [h,v]
 %     {'meters per dot'}
 %     {'dots per meter'}
 %     {'dots per deg'}         - dots per degree visual angle
@@ -69,6 +70,8 @@ function val = displayGet(d, parm, varargin)
 %   plotDisplayGamut(vci)
 %
 % HJ/BW, ISETBIO TEAM, Copyright 2014
+%
+% 6/25/15  dhb  Added get of display size
 
 %% Check parameters
 if notDefined('parm'), error('Parameter not found.');  end
@@ -234,6 +237,10 @@ switch parm
     case {'dpi', 'ppi'}
         if checkfields(d,'dpi'), val = d.dpi;
         else val = 96;
+        end
+    case {'size'}
+        if checkfields(d,'size'), val = d.size;
+        else val = [1024/768*0.3 0.3];
         end
     case {'metersperdot'}
         % displayGet(dsp,'meters per dot','m')

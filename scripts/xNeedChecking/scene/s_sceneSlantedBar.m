@@ -30,7 +30,7 @@ vcAddAndSelectObject(scene);
 sceneWindow;
 
 % Here is the scene energy
-plotScene(scene,'illuminant energy roi')
+scenePlot(scene,'illuminant energy roi')
 
 %% Change the slanted bar to a D65 illuminant, rather than equal energy
 
@@ -39,7 +39,7 @@ scene = sceneAdjustIlluminant(scene,'D65.mat');
 % Have a look
 vcAddAndSelectObject(scene);
 sceneWindow;
-plotScene(scene,'illuminant energy roi')
+scenePlot(scene,'illuminant energy roi')
 
 %% Create slanted bar with another slope
 

@@ -20,7 +20,7 @@ sceneWindow;  % The user selects the region to plot interactively
 
 % Here are the luminance data from a line
 rows = round(sceneGet(scene,'rows')/2);
-[uData, h] = plotScene(scene,'luminance hline',[1,rows]);
+[uData, h] = scenePlot(scene,'luminance hline',[1,rows]);
 
 %% The uData  structure  
 
@@ -31,18 +31,18 @@ uData
 get(h,'userdata')
 
 %% Scenes store information about the illuminant
-plotScene(scene,'illuminant energy roi')
+scenePlot(scene,'illuminant energy roi')
 
 %% You can plot the energy 
 rect = [51    35    10    11];        % Yellow Macbeth patch
 roiLocs = ieRoi2Locs(rect);  % xy locations in scene
-plotScene(scene,'radiance energy roi',roiLocs);
+scenePlot(scene,'radiance energy roi',roiLocs);
 
 %% Mean quanta (photons) at the corresponding location
-plotScene(scene,'radiance photons roi',roiLocs);
+scenePlot(scene,'radiance photons roi',roiLocs);
 
 %% You can also estimate the reflectance
-plotScene(scene,'reflectance',roiLocs);
+scenePlot(scene,'reflectance',roiLocs);
 
 %% If you would just like to read the data with no plot, you can use
 radiance = vcGetROIData(scene,roiLocs,'photons');

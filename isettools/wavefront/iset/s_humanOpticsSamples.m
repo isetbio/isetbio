@@ -40,7 +40,7 @@ oiM = oiCreate('human');
 % vcNewGraphWin; plotOTF(oiM,'otf',550);
 % wvfPlot(wvfP,'otf','mm',2,400);
 
-% vcNewGraphWin; plotOI(oiM,'psf',[],550);
+% vcNewGraphWin; oiPlot(oiM,'psf',[],550);
 % set(gca,'xtick',[-40:10:40],'ytick',[-40:20:40]);
 % set(gca,'xlim',[-50 50],'ylim',[-50 50]);
 

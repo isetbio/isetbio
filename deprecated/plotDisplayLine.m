@@ -14,6 +14,7 @@ function figNum = plotDisplayLine(vci,ori)
 %    figNum = plotDisplayLine('h')
 %
 % Copyright ImagEval Consultants, LLC, 2005.
+error('Use ISET instead');
 
 if notDefined('vci'),    vci = vcGetObject('VCIMAGE'); end
 if notDefined('ori'),    ori = 'h'; end
