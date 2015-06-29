@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImageUsingNativeISETBIOfunctions</h1><p>Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.</p><p>6/29/2015  NPC Wrote it.</p><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
+  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImageUsingNativeISETBIOfunctions</h1><p>Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.</p><p>NOTE: There are ways to produce these images that do not call the ISETBIO functions conePlot and coneSensorPlot (see t_GenerateConeMosaicImage)</p><p>6/29/2015  NPC Wrote it.</p><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
 
 <span class="comment">% extract central 20x20 cones patch</span>
 conesToPlot = 20; coneSize = 30;
@@ -101,6 +101,9 @@ Warning: Image is too big to fit on screen; displaying at 33%
 %% t_GenerateConeMosaicImageUsingNativeISETBIOfunctions
 %
 % Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.
+%
+% NOTE: There are ways to produce these images that do not call the ISETBIO functions
+% conePlot and coneSensorPlot (see t_GenerateConeMosaicImage)
 %
 % 6/29/2015  NPC Wrote it.
 %
