@@ -1,0 +1,215 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_codeROI</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_codeROI.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">t_codeROI</a></li><li><a href="#3">Initialize</a></li><li><a href="#4">Build a test scene</a></li><li><a href="#5">Select a region using the mouse</a></li><li><a href="#6">Get data from the object</a></li><li><a href="#7">The same method can be used with an OI</a></li><li><a href="#8">With a sensor, the data are different.</a></li><li><a href="#9">END</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_codeROI(varargin)
+</pre><h2>t_codeROI<a name="2"></a></h2><p>How to retrieve data from a region of interest in isetbio.</p><p>You can do this from the scene, oi, or sensor.</p><p>ISET has a few routines that manage simple, rectangular ROIs.</p><p>Copyright Imageval Consulting, LLC, 2013</p><pre class="codeinput"><span class="keyword">if</span> nargin == 0
+    interactiveUserInputIsON = false;
+<span class="keyword">else</span>
+    interactiveUserInputIsON = varargin{1};
+<span class="keyword">end</span>
+</pre><h2>Initialize<a name="3"></a></h2><pre class="codeinput">s_initISET
+</pre><h2>Build a test scene<a name="4"></a></h2><pre class="codeinput">scene = sceneCreate;
+vcAddAndSelectObject(scene);
+sceneWindow;
+</pre><img vspace="5" hspace="5" src="t_codeROI_01.png" alt=""> <h2>Select a region using the mouse<a name="5"></a></h2><p>The format of a rect is   [colmin,rowmin,width,height]</p><pre class="codeinput"><span class="keyword">if</span> (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(scene);
+<span class="keyword">else</span>
+    rect = [66  34 13 13];
+    roiLocs = ieRoi2Locs(rect);
+<span class="keyword">end</span>
+
+<span class="comment">% If you know the rect, and want to recover the roiLocs, use this</span>
+<span class="comment">%   roiLocs2 = ieRoi2Locs(rect);</span>
+<span class="comment">%   isequal(roiLocs,roiLocs2)</span>
+</pre><h2>Get data from the object<a name="6"></a></h2><p>The data are returned in XW Format. In this case, every row is the SPD of some point</p><pre class="codeinput">roiData = vcGetROIData(scene,roiLocs,<span class="string">'photons'</span>);
+
+
+<span class="comment">% To convert the roiData back to a little square region run</span>
+spd = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imageSPD(spd,sceneGet(scene,<span class="string">'wave'</span>));
+</pre><img vspace="5" hspace="5" src="t_codeROI_02.png" alt=""> <h2>The same method can be used with an OI<a name="7"></a></h2><pre class="codeinput">oi = oiCreate;
+oi = oiCompute(oi,scene);
+vcAddAndSelectObject(oi); oiWindow;
+<span class="keyword">if</span> (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(oi);
+<span class="keyword">else</span>
+    rect = [78    43    12    12];
+    roiLocs = ieRoi2Locs(rect);
+<span class="keyword">end</span>
+
+roiData = vcGetROIData(oi,roiLocs,<span class="string">'photons'</span>);
+spd = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imageSPD(spd,sceneGet(scene,<span class="string">'wave'</span>));
+</pre><img vspace="5" hspace="5" src="t_codeROI_03.png" alt=""> <img vspace="5" hspace="5" src="t_codeROI_04.png" alt=""> <h2>With a sensor, the data are different.<a name="8"></a></h2><pre class="codeinput">sensor = sensorCreate;
+sensor = sensorSetSizeToFOV(sensor,8);
+sensor = sensorCompute(sensor,oi);
+vcAddAndSelectObject(sensor); sensorWindow;
+<span class="keyword">if</span> (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(sensor);
+<span class="keyword">else</span>
+    rect = [ 101    84    35    33];
+    roiLocs = ieRoi2Locs(rect);
+<span class="keyword">end</span>
+
+<span class="comment">% The sensor roiData has NaNs at all the positions where the sensor is</span>
+<span class="comment">% missing.  Matlab handles plotting these data, even so</span>
+roiData = vcGetROIData(sensor,roiLocs,<span class="string">'electrons'</span>);
+electrons = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imagescRGB(electrons);
+</pre><pre class="codeoutput">Fov estimated using focal length = 0.003863 m
+</pre><img vspace="5" hspace="5" src="t_codeROI_05.png" alt=""> <img vspace="5" hspace="5" src="t_codeROI_06.png" alt=""> <h2>END<a name="9"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function t_codeROI(varargin)
+%% t_codeROI
+% How to retrieve data from a region of interest in isetbio.
+%
+% You can do this from the scene, oi, or sensor.  
+%
+% ISET has a few routines that manage simple, rectangular ROIs.
+%
+% Copyright Imageval Consulting, LLC, 2013
+
+if nargin == 0
+    interactiveUserInputIsON = false;
+else
+    interactiveUserInputIsON = varargin{1};
+end
+
+%% Initialize
+s_initISET
+
+%% Build a test scene
+scene = sceneCreate;
+vcAddAndSelectObject(scene);
+sceneWindow;
+
+%% Select a region using the mouse
+%
+% The format of a rect is
+%   [colmin,rowmin,width,height]
+if (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(scene);
+else
+    rect = [66  34 13 13];
+    roiLocs = ieRoi2Locs(rect);
+end
+
+% If you know the rect, and want to recover the roiLocs, use this
+%   roiLocs2 = ieRoi2Locs(rect);
+%   isequal(roiLocs,roiLocs2)
+
+%% Get data from the object
+%
+% The data are returned in XW Format.
+% In this case, every row is the SPD of some point
+roiData = vcGetROIData(scene,roiLocs,'photons');
+
+
+% To convert the roiData back to a little square region run
+spd = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imageSPD(spd,sceneGet(scene,'wave'));
+
+
+
+%% The same method can be used with an OI
+oi = oiCreate;
+oi = oiCompute(oi,scene);
+vcAddAndSelectObject(oi); oiWindow;
+if (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(oi);
+else
+    rect = [78    43    12    12];
+    roiLocs = ieRoi2Locs(rect);
+end
+
+roiData = vcGetROIData(oi,roiLocs,'photons');
+spd = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imageSPD(spd,sceneGet(scene,'wave'));
+
+
+%% With a sensor, the data are different.
+sensor = sensorCreate;
+sensor = sensorSetSizeToFOV(sensor,8);
+sensor = sensorCompute(sensor,oi);
+vcAddAndSelectObject(sensor); sensorWindow;
+if (interactiveUserInputIsON)
+    [roiLocs,rect] = vcROISelect(sensor);
+else
+    rect = [ 101    84    35    33];
+    roiLocs = ieRoi2Locs(rect);
+end
+
+% The sensor roiData has NaNs at all the positions where the sensor is
+% missing.  Matlab handles plotting these data, even so
+roiData = vcGetROIData(sensor,roiLocs,'electrons');
+electrons = XW2RGBFormat(roiData,rect(4)+1,rect(3)+1);
+vcNewGraphWin; imagescRGB(electrons);
+
+%% END
+##### SOURCE END #####
+--></body></html>

@@ -81,7 +81,7 @@ coneCFAPattern = sensorGet(sensor,<span class="string">'cfa pattern'</span>);
 </pre><h2>Extract a reasonable size region<a name="3"></a></h2><pre class="codeinput">cfaSize = 30;
 coneCFAPattern = coneCFAPattern(1:cfaSize,1:cfaSize);
 </pre><h2>Make up some photon responses.<a name="4"></a></h2><p>Here we are just testing that we can make a nice image, so we don't go to any trouble to make this realistic.</p><pre class="codeinput">conePhotonResponses = 1e12*rand(size(coneCFAPattern));
-</pre><h2>Specify cone aperture size<a name="5"></a></h2><pre class="codeinput">coneSize = 14;
+</pre><h2>Specify cone aperture size<a name="5"></a></h2><pre class="codeinput">coneSize = 15;
 </pre><h2>Generate the cone mosaic image<a name="6"></a></h2><pre class="codeinput">[coneMosaicStandardImage,coneCFARawImage] = generateConeMosaicImage(coneCFAPattern, coneSize, <span class="string">'standard'</span>);
 coneMosaicWRImage = generateConeMosaicImage(coneCFAPattern, coneSize, <span class="string">'williams_roorda'</span>);
 </pre><h2>Generate the isomerizations map image<a name="7"></a></h2><pre class="codeinput">[conePhotonsStandardImage,conePhotonsRawImage] = generateConePhotonsImage(conePhotonResponses, coneSize, <span class="string">'standard'</span>);
@@ -149,7 +149,7 @@ coneCFAPattern = coneCFAPattern(1:cfaSize,1:cfaSize);
 conePhotonResponses = 1e12*rand(size(coneCFAPattern));
 
 %% Specify cone aperture size
-coneSize = 14;
+coneSize = 15;
 
 %% Generate the cone mosaic image
 [coneMosaicStandardImage,coneCFARawImage] = generateConeMosaicImage(coneCFAPattern, coneSize, 'standard');

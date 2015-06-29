@@ -1,0 +1,203 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_displayResolution</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_displayResolution.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_displayResolution</h1><!--introduction--><p>Introduction to ISETBIO objects and functions, displays.</p><p>Shows how to ontrol the display spatial resolution and examines effects of subpixel structure.</p><p>Also loads a description of a four primary display and demonstrates that creating a scene based on this does something.</p><p>NOTES:   1( Needs additional comments to at least outline what the principles of   the subpixel rendering algorithm in the underlying routine are.</p><pre class="language-matlab">2) Needs <span class="string">some</span> <span class="string">comments</span> <span class="string">to</span> <span class="string">explain</span> <span class="string">what</span> <span class="string">the</span> <span class="string">four</span> <span class="string">primary</span> <span class="string">display</span> <span class="string">code</span> <span class="string">is</span>
+likely <span class="string">to</span> <span class="string">be</span> <span class="string">doing</span>, particularly <span class="string">given</span> <span class="string">that</span> <span class="untermstring">we're likely to be looking</span>
+at <span class="string">the</span> <span class="string">scene</span> <span class="string">window</span> <span class="string">on</span> <span class="string">a</span> <span class="string">three-primary</span> <span class="string">display.</span>
+</pre><p>(HJ) ISETBIO TEAM</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize ISET</a></li><li><a href="#2">Create a display</a></li><li><a href="#3">Create scene</a></li><li><a href="#4">Subpixel rendering</a></li><li><a href="#5">Reduce the sampling rate</a></li><li><a href="#6">RGBW display</a></li><li><a href="#7">End</a></li></ul></div><h2>Initialize ISET<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Create a display<a name="2"></a></h2><pre>Create a default display
+Other displays can also be created by specifying the calibration file
+name
+Example:
+  d = displayCreate('LCD-Apple');
+  d = displayCreate('OLED-Sony');
+  d = displayCreate('CRT-Dell');
+Calibration files are stored in data/displays/</pre><pre class="codeinput">d = displayCreate(<span class="string">'OLED-Samsung'</span>);
+vcAddObject(d); displayWindow;
+</pre><pre class="codeoutput">[vcReadImage] Assuming 8bit image and 10 bit LUT
+</pre><img vspace="5" hspace="5" src="t_displayResolution_01.png" alt=""> <h2>Create scene<a name="3"></a></h2><p>Create a low resolution colorful scene</p><pre class="codeinput">scene = sceneCreate;
+scene = sceneInterpolate(scene,[0.25 0.25]);
+vcAddObject(scene); sceneWindow;
+</pre><img vspace="5" hspace="5" src="t_displayResolution_02.png" alt=""> <h2>Subpixel rendering<a name="4"></a></h2><pre>Render with subpixel structure
+Subpixel rendering will up-sample the image. So the input image cannot
+be too large (no more than 100x100)</pre><pre class="codeinput">I_small = sceneGet(scene,<span class="string">'rgb'</span>);
+meanLum = sceneGet(scene,<span class="string">'mean luminance'</span>);
+
+<span class="comment">% The default size is given by the pixel intensity map.</span>
+<span class="comment">% This can take a minute for the highest spatial sampling rate</span>
+<span class="comment">% sz = displayGet(d,'dixel size');</span>
+<span class="comment">%</span>
+<span class="comment">% % Turn subpixel rendering on</span>
+doSub = true;
+
+<span class="comment">% Default wavelength sampling and ambient illumination</span>
+wave = [];
+illum = [];
+
+<span class="comment">% Render.  This might take a while.</span>
+scene = sceneFromFile(I_small, <span class="string">'rgb'</span>, meanLum, d, wave, doSub, illum);
+scene = sceneSet(scene,<span class="string">'Name'</span>,<span class="string">'Full sampling'</span>);
+vcAddObject(scene); sceneWindow;
+</pre><img vspace="5" hspace="5" src="t_displayResolution_03.png" alt=""> <h2>Reduce the sampling rate<a name="5"></a></h2><p>This will take less time</p><pre class="codeinput">sz = displayGet(d,<span class="string">'dixel size'</span>)/4;
+scene = sceneFromFile(I_small, <span class="string">'rgb'</span>, meanLum, d, wave, doSub, illum, sz);
+scene = sceneSet(scene,<span class="string">'Name'</span>,<span class="string">'Quarter sampling'</span>);
+vcAddObject(scene); sceneWindow;
+</pre><img vspace="5" hspace="5" src="t_displayResolution_04.png" alt=""> <h2>RGBW display<a name="6"></a></h2><p>This section creates a four primary display and simulates display of an image on it</p><pre class="codeinput">I = <span class="string">'eagle.jpg'</span>;
+d = displayCreate(<span class="string">'LCD-Samsung-RGBW'</span>);
+vcAddObject(d); displayWindow;
+scene = sceneFromFile(I, <span class="string">'rgb'</span>, [], d);
+vcAddObject(scene); sceneWindow;
+</pre><pre class="codeoutput">[vcReadImage] Assuming 8bit image and 10 bit LUT
+</pre><img vspace="5" hspace="5" src="t_displayResolution_05.png" alt=""> <img vspace="5" hspace="5" src="t_displayResolution_06.png" alt=""> <h2>End<a name="7"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_displayResolution
+%
+% Introduction to ISETBIO objects and functions, displays.
+%
+% Shows how to ontrol the display spatial resolution and examines effects of
+% subpixel structure.
+%
+% Also loads a description of a four primary display and demonstrates that
+% creating a scene based on this does something.
+%
+% NOTES:
+%   1( Needs additional comments to at least outline what the principles of
+%   the subpixel rendering algorithm in the underlying routine are.
+%
+%   2) Needs some comments to explain what the four primary display code is
+%   likely to be doing, particularly given that we're likely to be looking
+%   at the scene window on a three-primary display.
+%
+% (HJ) ISETBIO TEAM
+
+%% Initialize ISET
+ieInit;
+
+%% Create a display
+%  Create a default display
+%  Other displays can also be created by specifying the calibration file
+%  name
+%  Example:
+%    d = displayCreate('LCD-Apple');
+%    d = displayCreate('OLED-Sony');
+%    d = displayCreate('CRT-Dell');
+%  Calibration files are stored in data/displays/
+d = displayCreate('OLED-Samsung');
+vcAddObject(d); displayWindow;
+
+%% Create scene
+%
+% Create a low resolution colorful scene
+scene = sceneCreate;
+scene = sceneInterpolate(scene,[0.25 0.25]);
+vcAddObject(scene); sceneWindow;
+
+%% Subpixel rendering
+%  Render with subpixel structure
+%  Subpixel rendering will up-sample the image. So the input image cannot
+%  be too large (no more than 100x100)
+I_small = sceneGet(scene,'rgb');
+meanLum = sceneGet(scene,'mean luminance');
+
+% The default size is given by the pixel intensity map.
+% This can take a minute for the highest spatial sampling rate
+% sz = displayGet(d,'dixel size');
+%
+% % Turn subpixel rendering on
+doSub = true; 
+
+% Default wavelength sampling and ambient illumination
+wave = []; 
+illum = [];
+
+% Render.  This might take a while.
+scene = sceneFromFile(I_small, 'rgb', meanLum, d, wave, doSub, illum);
+scene = sceneSet(scene,'Name','Full sampling');
+vcAddObject(scene); sceneWindow;
+
+%%  Reduce the sampling rate
+%
+% This will take less time
+sz = displayGet(d,'dixel size')/4;
+scene = sceneFromFile(I_small, 'rgb', meanLum, d, wave, doSub, illum, sz);
+scene = sceneSet(scene,'Name','Quarter sampling');
+vcAddObject(scene); sceneWindow;
+
+%% RGBW display
+%
+% This section creates a four primary display
+% and simulates display of an image on it
+I = 'eagle.jpg';
+d = displayCreate('LCD-Samsung-RGBW');
+vcAddObject(d); displayWindow;
+scene = sceneFromFile(I, 'rgb', [], d);
+vcAddObject(scene); sceneWindow;
+
+%% End
+##### SOURCE END #####
+--></body></html>
