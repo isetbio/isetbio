@@ -61,15 +61,31 @@ end
 
 % Check for stats toolbox
 if checkToolbox('Statistics Toolbox')
+    
+    if ~useSeed
+        p = rng;
+        rng(1);
+    end
+    
     % Matlab toolbox version is present. Use it.
     if isscalar(lambda)
         val = poissrnd(lambda, nSamp);
     else
         val = poissrnd(lambda);
     end
-    return
+    
+    if ~useSeed
+        rng(p);
+    end
+    
+    return 
 end
 
+
+if ~useSeed
+    p = rng;
+    rng(1);
+end
 
 % Use the local ISET methods
 % Simple implementation, this is slow for large lambda
@@ -110,4 +126,7 @@ else
     val = reshape(val,r,c);
 end
 
+if ~useSeed
+    rng(p);
+end
 end
