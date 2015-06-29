@@ -118,7 +118,7 @@ function ValidationFunction(runTimeParams)
             end
         end
         
-        UnitTest.validationData('Validation data struct array', data);
+        UnitTest.validationData('ValidationDataStructArray', data);
 
         
     catch err
