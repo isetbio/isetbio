@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_opticsImageFormation</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_opticsImageFormation.m"><style type="text/css">
+      --><title>t_opticsImageFormation</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_opticsImageFormation.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -329,7 +329,7 @@ colormap(cool(64)), mesh(ps)
 <span class="comment">% you might make this figure: colormap(gray(32)),imagesc(ps), axis image</span>
 </pre><img vspace="5" hspace="5" src="t_opticsImageFormation_13.png" alt=""> <img vspace="5" hspace="5" src="t_opticsImageFormation_14.png" alt=""> <h2>Chromatic aberration:  How the linespread varies with wavelength<a name="12"></a></h2><p>The linespread varies quite strongly with wavelength.  When the eye is in good focus at 580 nm (yellow-part of the spectrum) the light in the short-wavelength (400-450nm) is blurred quite strongly and light in the long-wavelength part of the spectrum is blurred, too, though somewhat less.  We can calculate the linespread as a function of wavelength (Marimont and Wandell, 1993) from basic principles.  The linespreads a various wavelengths are contained in the data file:</p><pre class="codeinput">oi = oiCreate(<span class="string">'human'</span>);
 oi = oiSet(oi,<span class="string">'wavelength'</span>,370:730);
-lsf = plotOI(oi,<span class="string">'ls wavelength'</span>);
+lsf = oiPlot(oi,<span class="string">'ls wavelength'</span>);
 
 xDim = lsf.x;
 lineSpread = lsf.lsWave;
@@ -429,7 +429,7 @@ ans =
 <span class="comment">% load combinedOtf;</span>
 <span class="comment">% OLD</span>
 
-cOTF = plotOI(oi,<span class="string">'otf wavelength'</span>);
+cOTF = oiPlot(oi,<span class="string">'otf wavelength'</span>);
 sampleSf = cOTF.fSupport;
 combinedOtf = cOTF.otf;
 
@@ -825,7 +825,7 @@ colormap(cool(64)), mesh(ps)
 % wavelengths are contained in the data file:
 oi = oiCreate('human');
 oi = oiSet(oi,'wavelength',370:730);
-lsf = plotOI(oi,'ls wavelength');
+lsf = oiPlot(oi,'ls wavelength');
 
 xDim = lsf.x;
 lineSpread = lsf.lsWave;
@@ -918,7 +918,7 @@ mean(retIm(200,:),2)
 % load combinedOtf;
 % OLD
 
-cOTF = plotOI(oi,'otf wavelength');
+cOTF = oiPlot(oi,'otf wavelength');
 sampleSf = cOTF.fSupport;
 combinedOtf = cOTF.otf;
 

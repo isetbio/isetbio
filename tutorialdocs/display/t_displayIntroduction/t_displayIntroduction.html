@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_displayIntroduction</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_displayIntroduction.m"><style type="text/css">
+      --><title>t_displayIntroduction</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_displayIntroduction.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -104,7 +104,7 @@ vcAddObject(scene); sceneWindow;
 <span class="comment">% Note that by default the spectral power distribution of the scene is</span>
 <span class="comment">% based on the primaries of the display.  Also, notice that the illuminant</span>
 <span class="comment">% is equal to the white point of the display</span>
-plotScene(scene,<span class="string">'illuminant photons'</span>)
+scenePlot(scene,<span class="string">'illuminant photons'</span>)
 
 <span class="comment">% You can change the illuminant this way</span>
 <span class="comment">% This method preserves the reflectance, but changes the illuminant and the</span>
@@ -184,7 +184,7 @@ vcAddObject(scene); sceneWindow;
 % Note that by default the spectral power distribution of the scene is
 % based on the primaries of the display.  Also, notice that the illuminant
 % is equal to the white point of the display
-plotScene(scene,'illuminant photons')
+scenePlot(scene,'illuminant photons')
 
 % You can change the illuminant this way
 % This method preserves the reflectance, but changes the illuminant and the

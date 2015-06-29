@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_sensorSpatialResolution</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_sensorSpatialResolution.m"><style type="text/css">
+      --><title>t_sensorSpatialResolution</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_sensorSpatialResolution.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -91,7 +91,7 @@ sensor = sensorCompute(sensor,oi);
 </pre><img vspace="5" hspace="5" src="t_sensorSpatialResolution_03.png" alt=""> <h2>lot the optical image and the voltage response on a common spatial scale.<a name="6"></a></h2><p>First, generate a plot of the voltage across the pixels on the sensor, saving the data in sData.  Choose the middle row.</p><pre class="codeinput">row = sensorGet(sensor,<span class="string">'rows'</span>); row = round(row/2);
 [g sData] = sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'volts'</span>,<span class="string">'space'</span>,[1,row]);
 </pre><img vspace="5" hspace="5" src="t_sensorSpatialResolution_04.png" alt=""> <h2>Generate the optical image plot for illuminance<a name="7"></a></h2><pre class="codeinput">row = sceneGet(oi,<span class="string">'rows'</span>); row = round(row/2);
-oData = plotOI(oi,<span class="string">'horizontallineilluminance'</span>,[1,row]);
+oData = oiPlot(oi,<span class="string">'horizontallineilluminance'</span>,[1,row]);
 
 <span class="comment">% One set of data is in volts and the other in illuminance.  Normalize them</span>
 <span class="comment">% to a common 0,1 range</span>
@@ -126,7 +126,7 @@ vcAddAndSelectObject(sensorSmall); sensorImageWindow;
 row = sensorGet(sensorSmall,<span class="string">'rows'</span>); row = round(row/2);
 [g sData] = sensorPlotLine(sensorSmall,<span class="string">'h'</span>,<span class="string">'volts'</span>,<span class="string">'space'</span>,[1,row]);
 row = sceneGet(oi,<span class="string">'rows'</span>); row = round(row/2);
-oData = plotOI(oi,<span class="string">'horizontallineilluminance'</span>,[1,row]);
+oData = oiPlot(oi,<span class="string">'horizontallineilluminance'</span>,[1,row]);
 sData.normData = ieScale(sData.data,0,1)
 oData.normData = ieScale(oData.data,0,1)
 pSize = pixelGet(sensorGet(sensorSmall,<span class="string">'pixel'</span>), <span class="string">'width'</span>,<span class="string">'microns'</span>)
@@ -218,7 +218,7 @@ row = sensorGet(sensor,'rows'); row = round(row/2);
 
 %% Generate the optical image plot for illuminance
 row = sceneGet(oi,'rows'); row = round(row/2);
-oData = plotOI(oi,'horizontallineilluminance',[1,row]);
+oData = oiPlot(oi,'horizontallineilluminance',[1,row]);
 
 % One set of data is in volts and the other in illuminance.  Normalize them
 % to a common 0,1 range
@@ -257,7 +257,7 @@ vcAddAndSelectObject(sensorSmall); sensorImageWindow;
 row = sensorGet(sensorSmall,'rows'); row = round(row/2);
 [g sData] = sensorPlotLine(sensorSmall,'h','volts','space',[1,row]);
 row = sceneGet(oi,'rows'); row = round(row/2);
-oData = plotOI(oi,'horizontallineilluminance',[1,row]);
+oData = oiPlot(oi,'horizontallineilluminance',[1,row]);
 sData.normData = ieScale(sData.data,0,1)
 oData.normData = ieScale(oData.data,0,1)
 pSize = pixelGet(sensorGet(sensorSmall,'pixel'), 'width','microns')

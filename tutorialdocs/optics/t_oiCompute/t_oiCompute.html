@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_oiCompute</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_oiCompute.m"><style type="text/css">
+      --><title>t_oiCompute</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_oiCompute.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -94,26 +94,26 @@ oi2 = oiCompute(scene,oi2);
 vcAddAndSelectObject(oi2); oiWindow;
 </pre><img vspace="5" hspace="5" src="t_oiCompute_03.png" alt=""> <h2>Plot the psf of the optics<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
 thisWave = 600;
-plotOI(oi,<span class="string">'psf'</span>,[],thisWave);
+oiPlot(oi,<span class="string">'psf'</span>,[],thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20]);
 colormap(0.5*copper + 0.5*ones(size(copper)));
 </pre><img vspace="5" hspace="5" src="t_oiCompute_04.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_05.png" alt=""> <h2>Plot irradiance image<a name="5"></a></h2><pre class="codeinput">vcNewGraphWin;
 gridSpacing = 5; <span class="comment">% um</span>
-plotOI(oi,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
+oiPlot(oi,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 title(sprintf(<span class="string">'F-number = %d'</span>,fnSmall))
 </pre><img vspace="5" hspace="5" src="t_oiCompute_06.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_07.png" alt=""> <h2>What happens if we change the f/# of the optics and replot?<a name="6"></a></h2><pre class="codeinput">vcNewGraphWin;
-plotOI(oi2,<span class="string">'psf'</span>,[],thisWave);
+oiPlot(oi2,<span class="string">'psf'</span>,[],thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 
 colormap(0.5*copper + 0.5*ones(size(copper)))
 title(sprintf(<span class="string">'F-number = %d'</span>,fnBig))
 </pre><img vspace="5" hspace="5" src="t_oiCompute_08.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_09.png" alt=""> <h2>Plot new irradiance image<a name="7"></a></h2><pre class="codeinput">vcNewGraphWin;
 gridSpacing = 5;
-plotOI(oi2,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
+oiPlot(oi2,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 title(sprintf(<span class="string">'F-number = %d'</span>,fnBig))
-</pre><img vspace="5" hspace="5" src="t_oiCompute_10.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_11.png" alt=""> <h2>Here is the psf plot method, including the OTF and PSF<a name="8"></a></h2><p>This is just copied from the plotOI code, really.</p><pre class="codeinput"><span class="comment">% Specify units</span>
+</pre><img vspace="5" hspace="5" src="t_oiCompute_10.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_11.png" alt=""> <h2>Here is the psf plot method, including the OTF and PSF<a name="8"></a></h2><p>This is just copied from the oiPlot code, really.</p><pre class="codeinput"><span class="comment">% Specify units</span>
 units = <span class="string">'um'</span>;
 
 <span class="comment">% Calling conventions should be specified here.</span>
@@ -203,20 +203,20 @@ vcAddAndSelectObject(oi2); oiWindow;
 %% Plot the psf of the optics
 vcNewGraphWin;
 thisWave = 600;
-plotOI(oi,'psf',[],thisWave);
+oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20]);
 colormap(0.5*copper + 0.5*ones(size(copper)));
 
 %% Plot irradiance image
 vcNewGraphWin;
 gridSpacing = 5; % um
-plotOI(oi,'irradiance image with grid',[],gridSpacing);
+oiPlot(oi,'irradiance image with grid',[],gridSpacing);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 title(sprintf('F-number = %d',fnSmall))
 
 %% What happens if we change the f/# of the optics and replot?
 vcNewGraphWin;
-plotOI(oi2,'psf',[],thisWave);
+oiPlot(oi2,'psf',[],thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 
 colormap(0.5*copper + 0.5*ones(size(copper)))
@@ -225,13 +225,13 @@ title(sprintf('F-number = %d',fnBig))
 %% Plot new irradiance image
 vcNewGraphWin;
 gridSpacing = 5;
-plotOI(oi2,'irradiance image with grid',[],gridSpacing);
+oiPlot(oi2,'irradiance image with grid',[],gridSpacing);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 title(sprintf('F-number = %d',fnBig))
 
 %% Here is the psf plot method, including the OTF and PSF
 %
-% This is just copied from the plotOI code, really.
+% This is just copied from the oiPlot code, really.
 
 % Specify units
 units = 'um';

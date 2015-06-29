@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_ColorMetamerism</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_colorMetamerism.m"><style type="text/css">
+      --><title>t_ColorMetamerism</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_colorMetamerism.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -141,7 +141,7 @@ vcAddAndSelectObject(barS); sceneWindow;
 oi = oiCompute(oi,barS);
 vcNewGraphWin;
 midRow = round(oiGet(oi,<span class="string">'rows'</span>)/2);
-plotOI(oi,<span class="string">'h line irradiance'</span>,[1,midRow]);
+oiPlot(oi,<span class="string">'h line irradiance'</span>,[1,midRow]);
 title(<span class="string">'1 cpd bar'</span>);
 vcAddAndSelectObject(oi); oiWindow;
 </pre><img vspace="5" hspace="5" src="t_colorMetamerism_06.png" alt=""> <img vspace="5" hspace="5" src="t_colorMetamerism_07.png" alt=""> <img vspace="5" hspace="5" src="t_colorMetamerism_08.png" alt=""> <h2>Compute the sensor response for these half degree bars.<a name="9"></a></h2><p>Notice that the cone absorptions are fairly constant across the horizontal line at this spatial resolution.</p><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
@@ -156,7 +156,7 @@ oi = oiCompute(oi,barS);
 vcAddAndSelectObject(oi); oiWindow;
 
 vcNewGraphWin;
-plotOI(oi,<span class="string">'h line irradiance'</span>,[10,1]);
+oiPlot(oi,<span class="string">'h line irradiance'</span>,[10,1]);
 title(<span class="string">'4 cpd bar'</span>);
 </pre><img vspace="5" hspace="5" src="t_colorMetamerism_11.png" alt=""> <img vspace="5" hspace="5" src="t_colorMetamerism_12.png" alt=""> <img vspace="5" hspace="5" src="t_colorMetamerism_13.png" alt=""> <h2>END<a name="11"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -273,7 +273,7 @@ oi = oiCreate('human');
 oi = oiCompute(oi,barS); 
 vcNewGraphWin;
 midRow = round(oiGet(oi,'rows')/2);
-plotOI(oi,'h line irradiance',[1,midRow]);
+oiPlot(oi,'h line irradiance',[1,midRow]);
 title('1 cpd bar');
 vcAddAndSelectObject(oi); oiWindow;
 
@@ -297,7 +297,7 @@ oi = oiCompute(oi,barS);
 vcAddAndSelectObject(oi); oiWindow;
 
 vcNewGraphWin;
-plotOI(oi,'h line irradiance',[10,1]);
+oiPlot(oi,'h line irradiance',[10,1]);
 title('4 cpd bar');
 
 %% END

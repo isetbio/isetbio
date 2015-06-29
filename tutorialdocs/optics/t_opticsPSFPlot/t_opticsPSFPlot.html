@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_opticsPSFPlot</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_opticsPSFPlot.m"><style type="text/css">
+      --><title>t_opticsPSFPlot</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_opticsPSFPlot.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_opticsPSFPlot</h1><!--introduction--><p>Plot the point spread function (PSF) for diffraction limited optics</p><p>This is the implementation that generates the point spread function (PSF) from diffraction limited optics. The code here is embedded in plotOI/OTF.</p><p>Copyright ImagEval Consultants, LLC, 2012.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize. Not needed, but often convenient.</a></li><li><a href="#2">Create an optical image and optics with a large f number</a></li><li><a href="#3">This is the plotOI/OTF code that converts the OTF to PSF conversion</a></li><li><a href="#4">Oversampling</a></li><li><a href="#5">Calculate the diffraction limited MTF</a></li><li><a href="#6">Determine first zero crossing</a></li><li><a href="#7">Plot the PSF. Zoom and rotate the image to see the details.</a></li><li><a href="#8">End</a></li></ul></div><h2>Initialize. Not needed, but often convenient.<a name="1"></a></h2><pre class="codeinput">ieInit;
+  </style></head><body><div class="content"><h1>t_opticsPSFPlot</h1><!--introduction--><p>Plot the point spread function (PSF) for diffraction limited optics</p><p>This is the implementation that generates the point spread function (PSF) from diffraction limited optics. The code here is embedded in oiPlot/OTF.</p><p>Copyright ImagEval Consultants, LLC, 2012.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize. Not needed, but often convenient.</a></li><li><a href="#2">Create an optical image and optics with a large f number</a></li><li><a href="#3">This is the oiPlot/OTF code that converts the OTF to PSF conversion</a></li><li><a href="#4">Oversampling</a></li><li><a href="#5">Calculate the diffraction limited MTF</a></li><li><a href="#6">Determine first zero crossing</a></li><li><a href="#7">Plot the PSF. Zoom and rotate the image to see the details.</a></li><li><a href="#8">End</a></li></ul></div><h2>Initialize. Not needed, but often convenient.<a name="1"></a></h2><pre class="codeinput">ieInit;
 </pre><h2>Create an optical image and optics with a large f number<a name="2"></a></h2><pre class="codeinput">oi     = oiCreate;
 optics = oiGet(oi,<span class="string">'optics'</span>);
 
@@ -74,7 +74,7 @@ optics = oiGet(oi,<span class="string">'optics'</span>);
 fNumber = 12;
 optics = opticsSet(optics,<span class="string">'fnumber'</span>,fNumber);
 oi     = oiSet(oi,<span class="string">'optics'</span>,optics);
-</pre><h2>This is the plotOI/OTF code that converts the OTF to PSF conversion<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Specify units</span>
+</pre><h2>This is the oiPlot/OTF code that converts the OTF to PSF conversion<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Specify units</span>
 units = <span class="string">'um'</span>;
 nSamp = 100;   <span class="comment">% Number of frequency steps from 0 to incoherent cutoff</span>
 thisWave = 600;
@@ -85,7 +85,7 @@ clear <span class="string">fSupport</span>
 [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(val{1},val{2});
 </pre><h2>Oversampling<a name="4"></a></h2><pre>We over sample the frequency to get a smoother PSF image. You can
 specify the factor for oversampling if you like in the calling
-arguments to plotOI.</pre><pre class="codeinput">s = 4;
+arguments to oiPlot.</pre><pre class="codeinput">s = 4;
 fSupport = fSupport*s;
 
 <span class="comment">% Frequency units are cycles/micron The spatial frequency support runs from</span>
@@ -122,7 +122,7 @@ xlabel(<span class="string">'um'</span>); ylabel(<span class="string">'um'</span
 % Plot the point spread function (PSF) for diffraction limited optics
 %
 % This is the implementation that generates the point spread function (PSF)
-% from diffraction limited optics. The code here is embedded in plotOI/OTF.
+% from diffraction limited optics. The code here is embedded in oiPlot/OTF.
 %
 % Copyright ImagEval Consultants, LLC, 2012.
 
@@ -138,7 +138,7 @@ fNumber = 12;
 optics = opticsSet(optics,'fnumber',fNumber);
 oi     = oiSet(oi,'optics',optics);
 
-%% This is the plotOI/OTF code that converts the OTF to PSF conversion
+%% This is the oiPlot/OTF code that converts the OTF to PSF conversion
 
 % Specify units
 units = 'um';
@@ -154,7 +154,7 @@ clear fSupport
 %
 %  We over sample the frequency to get a smoother PSF image. You can
 %  specify the factor for oversampling if you like in the calling
-%  arguments to plotOI.
+%  arguments to oiPlot.
 s = 4;
 fSupport = fSupport*s;
 

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_oiIntroduction.m</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-21"><meta name="DC.source" content="t_oiIntroduction.m"><style type="text/css">
+      --><title>t_oiIntroduction.m</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_oiIntroduction.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_oiIntroduction.m</h1><!--introduction--><p>Introduction to ISET objects and functions:  The optical image (OI)</p><p>ISET is organized around several key objects (scene, optics, sensor and processor) that reflect the important parts of the image acquisition pipeline. The ISET methods generally rely on calculating with these objects. By using these objects properly, the code and analysis are much easier to understand.</p><p>This tutorial introduces the ISET object "optical image" or OI. The OI describes the irradiance field at the sensor surface.  It is computed from the scene (radiance), and the optics.  The optics object is stored in a slot within the optical image.</p><p>Use t_"TAB KEY" to see the list of tutorials</p><p>Copyright ImagEval Consultants, LLC, 2012.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize ISET</a></li><li><a href="#2">Create a point array scene</a></li><li><a href="#3">Create and show an optical image</a></li><li><a href="#4">Increase the f-number of the optics and compute again.</a></li><li><a href="#5">Use plotOI to compare the two different optics</a></li><li><a href="#6">Show the effect of the larger f/# on the PSF</a></li><li><a href="#7">Use plotOI to quantify the optical image</a></li><li><a href="#8">Plot an RGB representation of the new irradiance field</a></li><li><a href="#9">Now, run using parameters from human optics</a></li><li><a href="#10">End</a></li></ul></div><h2>Initialize ISET<a name="1"></a></h2><pre class="codeinput">ieInit;
+  </style></head><body><div class="content"><h1>t_oiIntroduction.m</h1><!--introduction--><p>Introduction to ISET objects and functions:  The optical image (OI)</p><p>ISET is organized around several key objects (scene, optics, sensor and processor) that reflect the important parts of the image acquisition pipeline. The ISET methods generally rely on calculating with these objects. By using these objects properly, the code and analysis are much easier to understand.</p><p>This tutorial introduces the ISET object "optical image" or OI. The OI describes the irradiance field at the sensor surface.  It is computed from the scene (radiance), and the optics.  The optics object is stored in a slot within the optical image.</p><p>Use t_"TAB KEY" to see the list of tutorials</p><p>Copyright ImagEval Consultants, LLC, 2012.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize ISET</a></li><li><a href="#2">Create a point array scene</a></li><li><a href="#3">Create and show an optical image</a></li><li><a href="#4">Increase the f-number of the optics and compute again.</a></li><li><a href="#5">Use oiPlot to compare the two different optics</a></li><li><a href="#6">Show the effect of the larger f/# on the PSF</a></li><li><a href="#7">Use oiPlot to quantify the optical image</a></li><li><a href="#8">Plot an RGB representation of the new irradiance field</a></li><li><a href="#9">Now, run using parameters from human optics</a></li><li><a href="#10">End</a></li></ul></div><h2>Initialize ISET<a name="1"></a></h2><pre class="codeinput">ieInit;
 </pre><h2>Create a point array scene<a name="2"></a></h2><p>This and other simple synthetic scenes are useful for examining simple optical properties</p><pre class="codeinput">scene = sceneCreate(<span class="string">'pointarray'</span>);   <span class="comment">% Creates an array of points</span>
 scene = sceneSet(scene,<span class="string">'hfov'</span>,1);    <span class="comment">% 1 deg field of view</span>
 vcAddAndSelectObject(scene); sceneWindow;
@@ -82,15 +82,15 @@ oiBigF  = oiSet(oi,<span class="string">'optics'</span>,optics);
 oiBigF  = oiCompute(scene,oiBigF);
 oiBigF  = oiSet(oiBigF,<span class="string">'name'</span>,<span class="string">'Big f number'</span>);   <span class="comment">% Name for the GUI</span>
 vcAddAndSelectObject(oiBigF); oiWindow;
-</pre><img vspace="5" hspace="5" src="t_oiIntroduction_03.png" alt=""> <h2>Use plotOI to compare the two different optics<a name="5"></a></h2><p>In this case we plot the point spread function at 600 nm.  First for the small f/#.</p><pre class="codeinput"><span class="comment">% Let's view this wavelength</span>
+</pre><img vspace="5" hspace="5" src="t_oiIntroduction_03.png" alt=""> <h2>Use oiPlot to compare the two different optics<a name="5"></a></h2><p>In this case we plot the point spread function at 600 nm.  First for the small f/#.</p><pre class="codeinput"><span class="comment">% Let's view this wavelength</span>
 thisWave = 600;
 <span class="comment">% Most ISET plotting routines can return the plotted data into a variable</span>
-pData = plotOI(oi,<span class="string">'psf'</span>,[], thisWave);
+pData = oiPlot(oi,<span class="string">'psf'</span>,[], thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 colormap(0.5*gray + 0.5*ones(size(gray)))
 title(sprintf(<span class="string">'F-number = %d'</span>,fnSmall))
 
-<span class="comment">% Here are the values returned by plotOI</span>
+<span class="comment">% Here are the values returned by oiPlot</span>
 pData
 </pre><pre class="codeoutput">
 pData = 
@@ -99,7 +99,7 @@ pData =
       y: [200x200 double]
     psf: [200x200 double]
 
-</pre><img vspace="5" hspace="5" src="t_oiIntroduction_04.png" alt=""> <h2>Show the effect of the larger f/# on the PSF<a name="6"></a></h2><p>This is for the larger f/#.  We just show a 20 um square region.</p><pre class="codeinput">plotOI(oiBigF,<span class="string">'psf'</span>,[], thisWave);
+</pre><img vspace="5" hspace="5" src="t_oiIntroduction_04.png" alt=""> <h2>Show the effect of the larger f/# on the PSF<a name="6"></a></h2><p>This is for the larger f/#.  We just show a 20 um square region.</p><pre class="codeinput">oiPlot(oiBigF,<span class="string">'psf'</span>,[], thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 colormap(0.5*copper + 0.5*ones(size(copper)))
 title(sprintf(<span class="string">'F-number = %d'</span>,fnBig))
@@ -114,12 +114,12 @@ pData =
       y: [200x200 double]
     psf: [200x200 double]
 
-</pre><img vspace="5" hspace="5" src="t_oiIntroduction_05.png" alt=""> <h2>Use plotOI to quantify the optical image<a name="7"></a></h2><p>This example plots an RGB representation of the irradiance field in the optical image.</p><pre class="codeinput">xy = [];        <span class="comment">% Irrelevant variable for this plot</span>
+</pre><img vspace="5" hspace="5" src="t_oiIntroduction_05.png" alt=""> <h2>Use oiPlot to quantify the optical image<a name="7"></a></h2><p>This example plots an RGB representation of the irradiance field in the optical image.</p><pre class="codeinput">xy = [];        <span class="comment">% Irrelevant variable for this plot</span>
 gSpacing = 17;  <span class="comment">% The grid spacing in microns</span>
-plotOI(oi,<span class="string">'irradiance image with grid'</span>,xy,gSpacing);
+oiPlot(oi,<span class="string">'irradiance image with grid'</span>,xy,gSpacing);
 title(sprintf(<span class="string">'F-number = %d'</span>,fnSmall))
 </pre><img vspace="5" hspace="5" src="t_oiIntroduction_06.png" alt=""> <h2>Plot an RGB representation of the new irradiance field<a name="8"></a></h2><pre class="codeinput">xy = []; gSpacing = 17;
-plotOI(oiBigF,<span class="string">'irradiance image with grid'</span>,xy,gSpacing);
+oiPlot(oiBigF,<span class="string">'irradiance image with grid'</span>,xy,gSpacing);
 title(sprintf(<span class="string">'Zoomed view: F-number = %d'</span>,fnBig))
 </pre><img vspace="5" hspace="5" src="t_oiIntroduction_07.png" alt=""> <h2>Now, run using parameters from human optics<a name="9"></a></h2><p>The defcous of the human optics is quite surprising.  In particular, the blurring of the short wavelength light is very extreme.  That is illustrated in this example.</p><pre class="codeinput">oiHuman     = oiCreate(<span class="string">'human'</span>);
 oiHuman = oiCompute(scene,oiHuman);
@@ -182,24 +182,24 @@ oiBigF  = oiCompute(scene,oiBigF);
 oiBigF  = oiSet(oiBigF,'name','Big f number');   % Name for the GUI
 vcAddAndSelectObject(oiBigF); oiWindow;
 
-%% Use plotOI to compare the two different optics 
+%% Use oiPlot to compare the two different optics 
 % In this case we plot the point spread function at 600 nm.  First for the
 % small f/#.
 
 % Let's view this wavelength
 thisWave = 600;
 % Most ISET plotting routines can return the plotted data into a variable
-pData = plotOI(oi,'psf',[], thisWave);   
+pData = oiPlot(oi,'psf',[], thisWave);   
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 colormap(0.5*gray + 0.5*ones(size(gray)))
 title(sprintf('F-number = %d',fnSmall))
 
-% Here are the values returned by plotOI
+% Here are the values returned by oiPlot
 pData
 
 %% Show the effect of the larger f/# on the PSF
 % This is for the larger f/#.  We just show a 20 um square region.
-plotOI(oiBigF,'psf',[], thisWave);
+oiPlot(oiBigF,'psf',[], thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 colormap(0.5*copper + 0.5*ones(size(copper)))
 title(sprintf('F-number = %d',fnBig))
@@ -208,17 +208,17 @@ title(sprintf('F-number = %d',fnBig))
 pData = get(gcf,'userdata');
 pData
 
-%% Use plotOI to quantify the optical image 
+%% Use oiPlot to quantify the optical image 
 % This example plots an RGB representation of the irradiance field in the
 % optical image.
 xy = [];        % Irrelevant variable for this plot
 gSpacing = 17;  % The grid spacing in microns
-plotOI(oi,'irradiance image with grid',xy,gSpacing);
+oiPlot(oi,'irradiance image with grid',xy,gSpacing);
 title(sprintf('F-number = %d',fnSmall))
 
 %% Plot an RGB representation of the new irradiance field  
 xy = []; gSpacing = 17;
-plotOI(oiBigF,'irradiance image with grid',xy,gSpacing);
+oiPlot(oiBigF,'irradiance image with grid',xy,gSpacing);
 title(sprintf('Zoomed view: F-number = %d',fnBig))
 
 %% Now, run using parameters from human optics
