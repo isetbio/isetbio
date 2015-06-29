@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_opticsImageFormation</h1><!--introduction--><p>Tutorial on optics and image formation</p><p>Date:      01.02.96 Duration:  45 minutes</p><p>Matlab 5:  Checked 01.06.98, BW 01.07.99:  Added IjSpeert calls, BW 01.12.01   Added new graphs for ijspeert curves and Williams et al. data, BW 01.18.03   Started integration with vCamera-2.0, minor changes. 01.02.08   Verified with local files for single download - BW</p><p>NOTES:   1) This is a really nice tutorial and it runs.  But it relies on data   that are live under the scripts/optics directory.  We need to decide   how we're going to handle those .mat files, which are not in ISET data   format.  It would be nice to conver them to be so, and make the   idiosyncratic data go away.  (DHB)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Visual Angle</a></li><li><a href="#3">The viewing geometry</a></li><li><a href="#4">In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).</a></li><li><a href="#5">The Westheimer linespread function</a></li><li><a href="#6">Another way to calculate and plot the Westheimer function</a></li><li><a href="#7">Convolution of the image and linespread</a></li><li><a href="#8">Defocus in the frequency domain</a></li><li><a href="#9">What happens to cosinusoids at different spatial frequencies.</a></li><li><a href="#10">Compare convolution and the Fourier Transform of the linespread function.</a></li><li><a href="#11">Comparison of the pointspread and linespread</a></li><li><a href="#12">Chromatic aberration:  How the linespread varies with wavelength</a></li><li><a href="#13">Chromatic aberration in the frequency domain</a></li><li><a href="#14">More modern Linespreads, Pointspreads, and MTFs</a></li><li><a href="#15">Comparison of the MTFs with the Williams data</a></li><li><a href="#16">What does the pointspread function look like in 2D?</a></li><li><a href="#17">End</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+  </style></head><body><div class="content"><h1>t_opticsImageFormation</h1><!--introduction--><p>Tutorial on optics and image formation</p><p>Date:      01.02.96 Duration:  45 minutes</p><p>Matlab 5:  Checked 01.06.98, BW 01.07.99:  Added IjSpeert calls, BW 01.12.01   Added new graphs for ijspeert curves and Williams et al. data, BW 01.18.03   Started integration with vCamera-2.0, minor changes. 01.02.08   Verified with local files for single download - BW 06.29.15   Don't use rad2deg and deg2rad as variable names, since these            are Matlab functions.</p><p>NOTES:   1) This is a really nice tutorial and it runs.  But it relies on data   that are live under the scripts/optics directory.  We need to decide   how we're going to handle those .mat files, which are not in ISET data   format.  It would be nice to conver them to be so, and make the   idiosyncratic data go away.  (DHB)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Visual Angle</a></li><li><a href="#3">The viewing geometry</a></li><li><a href="#4">In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).</a></li><li><a href="#5">The Westheimer linespread function</a></li><li><a href="#6">Another way to calculate and plot the Westheimer function</a></li><li><a href="#7">Convolution of the image and linespread</a></li><li><a href="#8">Defocus in the frequency domain</a></li><li><a href="#9">What happens to cosinusoids at different spatial frequencies.</a></li><li><a href="#10">Compare convolution and the Fourier Transform of the linespread function.</a></li><li><a href="#11">Comparison of the pointspread and linespread</a></li><li><a href="#12">Chromatic aberration:  How the linespread varies with wavelength</a></li><li><a href="#13">Chromatic aberration in the frequency domain</a></li><li><a href="#14">More modern Linespreads, Pointspreads, and MTFs</a></li><li><a href="#15">Comparison of the MTFs with the Williams data</a></li><li><a href="#16">What does the pointspread function look like in 2D?</a></li><li><a href="#17">End</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
 </pre><h2>Visual Angle<a name="2"></a></h2><p>To think about the effect of an image on the eye, we must specify the image in terms of degrees of visual angle.  As an example for how to compute spacing in terms of degrees of visual angle, consider a printer whose dots are spaced (dots per inch)</p><pre class="codeinput">dpi = 600
 
 <span class="comment">% Suppose we read the paper at a viewing distance (inches)</span>
@@ -87,9 +87,9 @@ axis <span class="string">equal</span>
 set(gca,<span class="string">'xlim'</span>,[-2 20]), grid <span class="string">on</span>
 xlabel(<span class="string">'Viewing Distance (inch)'</span>)
 ylabel(<span class="string">'Position between spots on paper (inch)'</span>)
-</pre><img vspace="5" hspace="5" src="t_opticsImageFormation_01.png" alt=""> <h2>In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).<a name="4"></a></h2><pre class="codeinput">deg2rad = 2*pi/360;
-rad2deg = 360/(2*pi)
-phi = atan(1/viewingDistance)*rad2deg
+</pre><img vspace="5" hspace="5" src="t_opticsImageFormation_01.png" alt=""> <h2>In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).<a name="4"></a></h2><pre class="codeinput">deg2radFactor = 2*pi/360;
+rad2degFactor = 360/(2*pi)
+phi = atan(1/viewingDistance)*rad2degFactor
 
 <span class="comment">% There are 600 dots per inch, so that each dot occupies</span>
 DegPerDot = phi/dpi
@@ -106,7 +106,7 @@ SecPerDot = 60*MinPerDot
 <span class="comment">% dots per inch, the dot spacing is wider than the spacing that can be just</span>
 <span class="comment">% discriminated by the human eye.</span>
 </pre><pre class="codeoutput">
-rad2deg =
+rad2degFactor =
 
    57.2958
 
@@ -460,7 +460,7 @@ freqIndexRange = 1:50; 		<span class="comment">% The spatial frequency range</sp
 <span class="comment">% corresponds to 1 cycle per deg</span>
 angleInDeg = (-.25:.005:.25);
 angleInSec = angleInDeg*3600;
-angleInRad = angleInDeg*deg2rad;
+angleInRad = angleInDeg*deg2radFactor;
 
 [iMTF, iPSF, iLSF] = ijspeert(age, pupil, pigmentation, <span class="keyword">...</span>
     freqIndexRange, angleInRad);
@@ -551,6 +551,8 @@ surf(angleInRad2D,angleInRad2D,iPSF2D);
 % 01.12.01   Added new graphs for ijspeert curves and Williams et al. data, BW
 % 01.18.03   Started integration with vCamera-2.0, minor changes.
 % 01.02.08   Verified with local files for single download - BW
+% 06.29.15   Don't use rad2deg and deg2rad as variable names, since these
+%            are Matlab functions.
 %
 % NOTES:
 %   1) This is a really nice tutorial and it runs.  But it relies on data
@@ -582,9 +584,9 @@ xlabel('Viewing Distance (inch)')
 ylabel('Position between spots on paper (inch)')
 
 %% In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).
-deg2rad = 2*pi/360;
-rad2deg = 360/(2*pi)
-phi = atan(1/viewingDistance)*rad2deg
+deg2radFactor = 2*pi/360;
+rad2degFactor = 360/(2*pi)
+phi = atan(1/viewingDistance)*rad2degFactor
 
 % There are 600 dots per inch, so that each dot occupies
 DegPerDot = phi/dpi
@@ -962,7 +964,7 @@ freqIndexRange = 1:50; 		% The spatial frequency range
 % corresponds to 1 cycle per deg 
 angleInDeg = (-.25:.005:.25);
 angleInSec = angleInDeg*3600;
-angleInRad = angleInDeg*deg2rad;
+angleInRad = angleInDeg*deg2radFactor;
 
 [iMTF, iPSF, iLSF] = ijspeert(age, pupil, pigmentation, ...
     freqIndexRange, angleInRad);
