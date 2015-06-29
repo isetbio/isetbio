@@ -1,21 +1,29 @@
-function t_GenerateConeMosaicImage()
+%% t_GenerateConeMosaicImage
 %
 % Show how to make a nice viewable image of a cone mosaic, as well as an
 % image representing the photon responses.
 %
 % See also generateConeMosaicImage, generateConePhotonsImage.
 %
+% NOTE: There are ways to produce these images using conePlot and
+% coneSensorPlot, and this tutorial should show those so that it
+% illustrates the usage we want to head for.
+%
 % 4/21/15 npc   Wrote it.
 % 4/22/15 dhb   Tweaks for isetbio compatibility.
 % 4/23/15 npc   Minor fixes.
 % 4/27/15 dhb   Test photons image routine as well.
+% 6/29/15 dhb   Fix way we set up coneP to be more robust --  old less robust code got broken
+%               by some lower level change.
+%         dhb   Made this a script, not a function.  Friendlier for tutorials.
 
 %% Clear
 close all; clear global; ieInit;
 
 %% Create human sensor to get a cfa
-params.rgbDensities = [0.0 0.625 0.325 .05];
-sensor = sensorCreate('human',[],params);
+coneP = coneCreate('human');
+coneP = coneSet(coneP,'spatial density',[0.0 0.625 0.325 .05]);
+sensor = sensorCreate('human',[],coneP);
 sensor = sensorSet(sensor, 'noise flag', 0);
 sensor = sensorSet(sensor,'exp time',2);
 sensor = sensorSet(sensor,'rows',128);
@@ -61,6 +69,4 @@ imshow(conePhotonsStandardImage); truesize;
 h = figure(5); set(h, 'Name', 'Williams/Roorda style isomerizations', 'Position', [860 400 100 100]); clf
 imshow(conePhotonsWRImage); truesize;
 
-
-end
 
