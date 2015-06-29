@@ -189,7 +189,6 @@ try
         'dotsPerMeter', dotsPerMeter ...
         );
     
-    
     %% Initialize PTB calibration structure.
     PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
     gammaMethod = 1;
