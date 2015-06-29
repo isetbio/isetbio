@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImageUsingISETBIOfunctions</h1><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
+  </style></head><body><div class="content"><h1>t_GenerateConeMosaicImageUsingISETBIOfunctions</h1><p>Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.</p><p>6/29/2015  NPC Wrote it.</p><pre class="codeinput">sensor = sensorCreate(<span class="string">'human'</span>);
 
 <span class="comment">% extract central 20x20 cones patch</span>
 conesToPlot = 20; coneSize = 30;
@@ -99,6 +99,11 @@ Warning: Image is too big to fit on screen; displaying at 33%
 </pre><img vspace="5" hspace="5" src="t_generateConeMosaicImageUsingISETBIOfunctions_01.png" alt=""> <img vspace="5" hspace="5" src="t_generateConeMosaicImageUsingISETBIOfunctions_02.png" alt=""> <img vspace="5" hspace="5" src="t_generateConeMosaicImageUsingISETBIOfunctions_03.png" alt=""> <img vspace="5" hspace="5" src="t_generateConeMosaicImageUsingISETBIOfunctions_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_GenerateConeMosaicImageUsingISETBIOfunctions
+%
+% Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.
+%
+% 6/29/2015  NPC Wrote it.
+%
 sensor = sensorCreate('human');
 
 % extract central 20x20 cones patch
