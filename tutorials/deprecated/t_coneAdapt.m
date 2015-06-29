@@ -1,5 +1,9 @@
 %% t_coneAdapt
 %
+% THIS WAS FOR THE OLD CONE ADAPT STUFF, WHICH WE DECIDED WILL BE REPLACED
+% BY THE CONE DYNAMICS CALCULATIONS IN THE TO BE CREATED OUTER SEGMENT
+% OBJECT.  MOVING TO DEPRECATED DIRECTORY.  6/29/15  DHB.
+%
 % Demonstrate the physiological differential equations based cone adaptation model.
 %
 % NOTES:
@@ -9,6 +13,7 @@
 %   I think they are artifacts due to the truncation of the stimulus on each end.
 %   3) Minor glitch in how the % completionprints out at the end of the stimulus generation
 %   loop.
+
 %
 % (HJ) ISETBIO TEAM, 2014
 

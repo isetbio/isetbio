@@ -13,7 +13,6 @@ function varargout = v_DisplayLUTinversion(varargin)
 %
 % See also v_IrradianceIsomerizations, v_DisplayColorConversion
 
-
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
@@ -28,7 +27,7 @@ function ValidationFunction(runTimeParams)
     
     %% Remove the Brainard lab PTB overrides folder from the path
     %
-    % This prevents this code from using the new BL object oriented PTB
+    % Uncommentnig this code from using the new BL object oriented PTB
     % overrides.  We could include these inside of isetbio, but the risk is
     % that whether this program worked or not would depend on whether isetbio
     % was before or after PTB on the user's path, something we don't want to
@@ -118,6 +117,9 @@ function ValidationFunction(runTimeParams)
                 data{displayIndex}{resolutionIndex} = dataStruct;
             end
         end
+        
+        UnitTest.validationData('ValidationDataStructArray', data);
+
         
     catch err
         % Restore original path and rethrow error

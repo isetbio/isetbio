@@ -7,6 +7,7 @@ function hdl = plotDisplaySPD(vci)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
+error('Use ISET instead');
 if notDefined('vci'), vci = vcGetObject('vci'); end
 
 hdl = vcNewGraphWin;

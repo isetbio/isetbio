@@ -1,6 +1,6 @@
-function [uData,figNum] = plotSensorHist(sensor,unitType,roiLocs)
+function [uData,figNum] = sensorPlotHist(sensor,unitType,roiLocs)
 %
-%  [uData, figNum] = plotSensorHist(sensor,unitType,roiLocs)
+%  [uData, figNum] = sensorPlotHist(sensor,unitType,roiLocs)
 %
 % sensor:    ISET sensor structure (color or monochrome)
 % unitType:  electrons or volts
@@ -13,7 +13,7 @@ function [uData,figNum] = plotSensorHist(sensor,unitType,roiLocs)
 %  each channel the non-sampled measurements are NaNs.  To get these out,
 %  you can use l = ~isnan(data(:,1)), for example.
 %
-% Called by plotSensor.  Don't call directly yet.
+% Called by sensorPlot.  Don't call directly yet.
 %
 % (c) Imageval Consulting, LLC, 2012
 

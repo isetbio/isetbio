@@ -1,11 +1,10 @@
 function [adaptedCur, params] = riekeAddNoise(curNF, params)
-% Add noise to membrane current in cone adaptataion
+%% Add noise to membrane current in cone adaptataion
+%   adaptedCur = riekeAddNoise(curNF, params)
 %
-%      adaptedCur = riekeAddNoise(curNF, params)
-%
-% Noise in cone adaptation is independent of cone signal. The noise is
-% Gaussian additive and the spectral power distribution can be
-% characterized by the sum of two Lorentzian functions.
+%  Noise in cone adaptation is independent of cone signal. The noise is
+%  Gaussian additive and the spectral power distribution can be
+%  characterized by the sum of two lorentz function.
 %
 %  Inputs:
 %    curNF  - noise free cone adapted membrane current, see
@@ -48,14 +47,15 @@ if isvector(curNF), curNF = reshape(curNF, [1 1 length(curNF)]); end
 k = ceil((size(curNF, 3)-1)/2);
 params.freq = (0:k)/ sampTime / size(curNF, 3);
 
-LorentzCoeffs = [0.16  55  4;
-                 0.045 190 2.5];
+LorentzCoeffs = [0.16*3  55  4;
+                 0.045*3 190 2.5];
 noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
 
 % make-up the negative frequency part
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];
 noiseSPD = noiseSPD(1:size(curNF, 3));
 noiseSPD = reshape(noiseSPD, [1 1 length(noiseSPD)]);
+figure(2);loglog(squeeze(sqrt(noiseSPD)));
 
 % generate white gaussian noise
 noise = randn(size(curNF));
@@ -65,7 +65,8 @@ noiseFFT = fft(noise, [], 3) / sqrt(size(noise, 3));
 noiseFFT = bsxfun(@times, noiseFFT, sqrt(noiseSPD));
 
 % convert back to time domain to recover noise
-noise = real(ifft(noiseFFT, [], 3)); % take real part
+noise = real(ifft(noiseFFT, [], 3)) / sampTime; % take real part
+%figure(2); plot(squeeze(noise));
 
 % add to noise-free signal
 adaptedCur = curNF + noise;

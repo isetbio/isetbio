@@ -8,7 +8,7 @@
 % This function is also used in teaching to illustrate the OTF at different
 % wavelengths.
 %
-% See also: plotOI, s_HumanLSF
+% See also: oiPlot, s_HumanLSF
 %
 % Copyright ImagEval Consultants, LLC, 2011.
 

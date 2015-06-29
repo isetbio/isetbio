@@ -1,7 +1,7 @@
-function [udata, g] = plotOI(oi,pType,roiLocs,varargin)
+function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 % Gateway routine for plotting optical image (oi) properties
 %
-%   [udata, g] = plotOI([oi],[pType='illuminance hline'],[xy],[wave])
+%   [udata, g] = oiPlot([oi],[pType='illuminance hline'],[xy],[wave])
 %
 % Gateway routine to plot the irradiance or illuminance data in the
 % optical image. There are many options.
@@ -60,34 +60,34 @@ function [udata, g] = plotOI(oi,pType,roiLocs,varargin)
 %         3*incoherent cutoff). Number of spatial samples to plot in the
 %         line spread can be set (default: 40).
 %
-% See also:  plotOITest, and plotScene
+% See also:  s_oiPlot, and scenePlot
 %
 % Examples:
 %   oi = vcGetObject('oi');
 %   rows = round(oiGet(oi,'rows')/2);
 %
-%   uData = plotOI(oi,' irradiance hline',[1,rows])
-%   uData = plotOI(oi,'illuminance fft hline',[1,rows])
+%   uData = oiPlot(oi,' irradiance hline',[1,rows])
+%   uData = oiPlot(oi,'illuminance fft hline',[1,rows])
 %
-%   uData = plotOI(oi,'contrast hline',[1,rows])
+%   uData = oiPlot(oi,'contrast hline',[1,rows])
 %
-%   uData = plotOI(oi,'irradiance image with grid')
-%   uData = plotOI(oi,'irradiance image with grid',[],40)
-%   uData = plotOI(oi,'irradiance image wave',[],500,40);
+%   uData = oiPlot(oi,'irradiance image with grid')
+%   uData = oiPlot(oi,'irradiance image with grid',[],40)
+%   uData = oiPlot(oi,'irradiance image wave',[],500,40);
 %
-%   uData = plotOI(oi,'irradiance energy roi');
+%   uData = oiPlot(oi,'irradiance energy roi');
 %
-%   uData = plotOI(oi,'psf 550','um')
-%   uData = plotOI(oi,'otf 550','um')
-%   uData = plotOI(oi,'ls wavelength')
+%   uData = oiPlot(oi,'psf 550','um')
+%   uData = oiPlot(oi,'otf 550','um')
+%   uData = oiPlot(oi,'ls wavelength')
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
 %% Programming note
 %  This function includes within it the previous functions plotOTF and
-%  plotOIIrradiance. Those have been deprecated.  We should write a script
+%  oiPlotIrradiance. Those have been deprecated.  We should write a script
 %  that tests all the different plotting calls for this function and for
-%  plotScene.  We should create a plotSensor function that is analogous.
+%  scenePlot. We should create a sensorPlot function that is analogous.
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
 if notDefined('pType'), pType = 'hlineilluminance'; end
@@ -125,16 +125,16 @@ switch pType
     
     % Irradiance related
     case {'irradiancephotonsroi'}
-        %[uData, g] = plotOI(oi,'irradiance photons roi',roiLocs);
+        %[uData, g] = oiPlot(oi,'irradiance photons roi',roiLocs);
         %
-        udata = plotOIIrradiance(oi,'photons',roiLocs);
+        udata = oiPlotIrradiance(oi,'photons',roiLocs);
     case {'irradianceenergyroi'}
-        %[uData, g] = plotOI(oi,'irradiance energy roi',roiLocs);
+        %[uData, g] = oiPlot(oi,'irradiance energy roi',roiLocs);
         %
-        udata = plotOIIrradiance(oi,'energy',roiLocs);
+        udata = oiPlotIrradiance(oi,'energy',roiLocs);
         
     case {'irradiancehline','hline','hlineirradiance'}
-        % plotOI('irradiance hline')
+        % oiPlot('irradiance hline')
         data = oiGet(oi,'photons');
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
         
@@ -164,7 +164,7 @@ switch pType
         colormap(jet)
 
     case {'irradiancevline','vline','vlineirradiance',}
-        % plotOI(oi,'irradiance vline')
+        % oiPlot(oi,'irradiance vline')
         data = oiGet(oi,'photons');
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
         
@@ -231,7 +231,7 @@ switch pType
         colormap(jet)
 
     case {'irradianceimagewave','irradianceimagewavegrid'}
-        % plotOI(oi,'irradianceImageWave',wave,gSpacing);
+        % oiPlot(oi,'irradianceImageWave',wave,gSpacing);
         if isempty(varargin), wave = 500;
         else wave = varargin{1};
         end
@@ -265,7 +265,7 @@ switch pType
         set(g,'Name',sprintf('Image with grid'));
         
     case {'irradianceimagegrid','irradianceimagewithgrid','irradianceimage'}
-        % plotOI(oi,'irradianceImage',sampleSpacing-um);
+        % oiPlot(oi,'irradianceImage',sampleSpacing-um);
         irrad   = oiGet(oi,'photons');
         wave    = oiGet(oi,'wave');
         sz      = oiGet(oi,'size');
@@ -305,13 +305,13 @@ switch pType
         % Illuminance and chromaticity
     case {'illuminanceroi'}
         % Histogram of illuminance in an ROI
-        udata = plotOICIE(oi,'illuminance',roiLocs);
+        udata = oiPlotCIE(oi,'illuminance',roiLocs);
     case {'chromaticityroi'}
         % Graph of chromaticity coords in an ROI
-        udata = plotOICIE(oi,'chromaticity',roiLocs);
+        udata = oiPlotCIE(oi,'chromaticity',roiLocs);
         
     case {'illuminancehline','horizontallineilluminance','hlineilluminance'}
-        % plotOI(oi,'illuminance hline')
+        % oiPlot(oi,'illuminance hline')
         data = oiGet(oi,'illuminance');
         if isempty(data), warndlg(sprintf('Illuminance data are unavailable.')); return; end
         illum = data(roiLocs(2),:);
@@ -332,7 +332,7 @@ switch pType
         % Mesh plot of image illuminance
         udata = plotIlluminanceMesh(oi,'linear');
     case {'illuminanceffthline'}
-        % plotOI(oi,'illuminance fft hline')
+        % oiPlot(oi,'illuminance fft hline')
         % The mean is removed to keep the dynamic range reasonable.
         
         data = oiGet(oi,'illuminance');
@@ -352,7 +352,7 @@ switch pType
         set(g,'Name',sprintf('Line %.0f',roiLocs(2)));
         
     case {'illuminancevline','vlineilluminance'}
-        % plotOI(oi,'illuminance vline')
+        % oiPlot(oi,'illuminance vline')
         
         data = oiGet(oi,'illuminance');
         if isempty(data), warndlg(sprintf('Illuminance data are unavailable.')); return; end
@@ -368,7 +368,7 @@ switch pType
         set(g,'Name',sprintf('Line %.0f',roiLocs(1)));
         
     case {'illuminancefftvline'}
-        % plotOI(oi,'illuminance fft vline')
+        % oiPlot(oi,'illuminance fft vline')
         
         % space = oiGet(oi,'spatialSupport');
         
@@ -389,7 +389,7 @@ switch pType
         set(gcf,'Name',sprintf('Line %.0f',roiLocs(1)));
         
     case {'illuminancefft','fftilluminance'}
-        % plotOI(oi,'illuminance fft')
+        % oiPlot(oi,'illuminance fft')
         % Spatial frequency amplitude at a single wavelength.  Axis range
         % could be better.
         
@@ -405,7 +405,7 @@ switch pType
         
         % Contrast related
     case {'contrasthline','hlinecontrast'}
-        % plotOI(oi,'contrast hline')
+        % oiPlot(oi,'contrast hline')
         % Plot percent contrast (difference from the mean as a percentage
         % of the mean).
         
@@ -432,7 +432,7 @@ switch pType
         colormap(jet)
 
     case {'contrastvline','vlinecontrast'} % Done
-        % plotOI(oi,'contrast vline')
+        % oiPlot(oi,'contrast vline')
         % Plot percent contrast (difference from the mean as a percentage
         % of the mean).
         data = oiGet(oi,'photons');
@@ -463,7 +463,7 @@ switch pType
         
         % Depth related
     case {'depthmap'}
-        % plotOI(oi,'depth map')
+        % oiPlot(oi,'depth map')
         dmap = oiGet(oi,'depth map');
         if isempty(dmap),  close(g); error('No depth map')
         else
@@ -473,7 +473,7 @@ switch pType
         end
         udata.dmap = dmap;
     case {'depthmapcontour','depthcontour'}
-        % plotOI(oi,'depth contour')
+        % oiPlot(oi,'depth contour')
         dmap = oiGet(oi,'depth map');
         dmap = ieScale(dmap,0,1); mx = max(dmap(:));
         drgb = cat(3,dmap,dmap,dmap);
@@ -488,7 +488,7 @@ switch pType
     case {'otf','otfanywave'}
         % User asked to select a wavelength
         % Optical transfer function, units are lines/mm
-        % plotOI(oi,'otf',[],420);
+        % oiPlot(oi,'otf',[],420);
         optics = oiGet(oi,'optics');
         opticsModel = opticsGet(optics,'model');
         switch lower(opticsModel)
@@ -512,7 +512,7 @@ switch pType
         
     case {'psf'}
         % Point spread function at selected wavelength
-        % plotOI(oi,'psf',[],420);
+        % oiPlot(oi,'psf',[],420);
         if isempty(varargin), udata = plotOTF(oi,'psf');
         else w = varargin{1}; udata = plotOTF(oi,'psf',w);
         end
@@ -530,7 +530,7 @@ switch pType
         colormap(jet)
         
     case {'lswavelength','lsfwavelength'}
-        % uData = plotOI(oi,pType,[],nSpatialSamps)
+        % uData = oiPlot(oi,pType,[],nSpatialSamps)
         % the nSpatialSamps part isn't working.
         %
         % Line spread function at all wavelengths.
@@ -571,7 +571,7 @@ switch pType
         colormap(jet)
         
     otherwise
-        error('Unknown plotOI type %s.',pType);
+        error('Unknown oiPlot type %s.',pType);
 end
 
 if exist('udata','var'), set(gcf,'userdata',udata); end
@@ -579,10 +579,10 @@ if exist('udata','var'), set(gcf,'userdata',udata); end
 return;
 
 % - Brought into this file from a separate function
-function udata = plotOIIrradiance(oi,dataType,roiLocs)
+function udata = oiPlotIrradiance(oi,dataType,roiLocs)
 %Plot mean irradiance within a selected ROI of the optical image window
 %
-%   udata = plotOIIrradiance(oi,dataType,roiLocs)
+%   udata = oiPlotIrradiance(oi,dataType,roiLocs)
 %
 % Plot the average optical image irradiance within a selected ROI. The
 % default data type is photons.  If the optical image is not  monochrome,
@@ -634,7 +634,7 @@ end
 
 return;
 
-% Moved into plotOI June, 2012.
+% Moved into oiPlot June, 2012.
 function uData = plotOTF(oi,pType,varargin)
 %Plot OTF functions associated with the optics in an optical image
 %
@@ -1010,11 +1010,11 @@ title('Illuminance');
 
 return;
 
-function uData = plotOICIE(oi,dataType,roiLocs)
+function uData = oiPlotCIE(oi,dataType,roiLocs)
 % plotting CIE data from optical image.  Could be moved into the case
 % statements of the mother ship.
 %
-%  uData = plotOICIE(oi,dataType,roiLocs)
+%  uData = oiPlotCIE(oi,dataType,roiLocs)
 %
 %   Graph  optical image properties (Luminance, chromaticity coordinates)
 %   from an ROI.  The user is prompted to select the ROI in the OI window.
@@ -1026,9 +1026,9 @@ function uData = plotOICIE(oi,dataType,roiLocs)
 % Examples:
 %   oi = vcGetObject('oi');
 %   vcNewGraphWin;
-%   udata = plotOICIE(oi,'chromaticity')
-%   plotOICIE(oi,'illuminance',roiLocs);
-%   plotOICIE(oi,'chromaticity',roiLocs);
+%   udata = oiPlotCIE(oi,'chromaticity')
+%   oiPlotCIE(oi,'illuminance',roiLocs);
+%   oiPlotCIE(oi,'chromaticity',roiLocs);
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 

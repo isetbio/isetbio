@@ -57,7 +57,7 @@ vcAddObject(scene); sceneWindow;
 %%
 % Each scene has a stored illuminant. 
 %
-plotScene(scene,'illuminant energy roi');
+scenePlot(scene,'illuminant energy roi');
 
 %%
 % It is possible to change the scene illuminant
@@ -69,7 +69,7 @@ vcAddObject(scene); sceneWindow;
 % Once the scene is loaded, you can adjust different properties
 % using the sceneSet command.  Here we adjust the scene mean luminance and
 % field of view.
-plotScene(scene,'illuminant energy roi');
+scenePlot(scene,'illuminant energy roi');
 scene = sceneAdjustLuminance(scene,200);  % Candelas/m2
 scene = sceneSet(scene,'fov',26.5);       % Set the scene horizontal field of view
 scene = sceneInterpolateW(scene,wave,1);  % Resample, preserve luminance

@@ -18,7 +18,7 @@
 fullFileName = 'eye.mat'; % fullfile('C:\Users\joyce\Documents\Matlab\SVN\iset-4.0\data\scenes\eye.mat');
 load(fullFileName);
 vcAddAndSelectObject(scene); sceneWindow;
-plotScene(scene,'illuminantPhotons')
+scenePlot(scene,'illuminantPhotons')
 
 %% 2.	Convert the scene data to reflectance
 

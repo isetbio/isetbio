@@ -4,11 +4,11 @@ function ISA = sensorVignetting(ISA,pvFlag,nAngles)
 %   ISA = sensorVignetting(ISA,pvFlag)
 %
 %Examples:
-%   foo = sensorVignetting; plotSensorEtendue(foo);
-%   foo = sensorVignetting([],3); plotSensorEtendue(foo);
+%   foo = sensorVignetting; sensorPlotEtendue(foo);
+%   foo = sensorVignetting([],3); sensorPlotEtendue(foo);
 %
 %   ISA = vcGetObject('ISA'); ISA = sensorSet(ISA,'pixelVignetting',1);
-%   foo = sensorVignetting(ISA); plotSensorEtendue(foo);
+%   foo = sensorVignetting(ISA); sensorPlotEtendue(foo);
 %
 % Copyright ImagEval Consultants, LLC, 2006.
 

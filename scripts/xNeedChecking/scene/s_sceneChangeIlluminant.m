@@ -27,7 +27,7 @@ scene = sceneCreate;
 vcAddAndSelectObject(scene); sceneWindow;
 
 % Plot the illuminant
-plotScene(scene,'illuminant photons roi')
+scenePlot(scene,'illuminant photons roi')
 
 
 %% Replace the current scene illuminant with Tungsten
@@ -43,7 +43,7 @@ scene = sceneSet(scene,'illuminantComment','Tungsten illuminant');
 
 % Have a look
 vcAddAndSelectObject(scene); sceneWindow;
-plotScene(scene,'illuminant photons roi')
+scenePlot(scene,'illuminant photons roi')
 
 %% Create a scene based on multispectral scene data
 %
@@ -54,7 +54,7 @@ scene = sceneAdjustLuminance(scene,61); % This sets the mean scene luminance
 scene = sceneSet(scene,'fov',26.5); % match the scene field of view (fov) with the sensor fov
 
 vcAddAndSelectObject('scene',scene); sceneWindow; % display sceneWindow
-plotScene(scene,'illuminant energy roi')
+scenePlot(scene,'illuminant energy roi')
 
 %% Set illuminant to equal energy
 

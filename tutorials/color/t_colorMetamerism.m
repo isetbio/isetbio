@@ -111,7 +111,7 @@ oi = oiCreate('human');
 oi = oiCompute(oi,barS); 
 vcNewGraphWin;
 midRow = round(oiGet(oi,'rows')/2);
-plotOI(oi,'h line irradiance',[1,midRow]);
+oiPlot(oi,'h line irradiance',[1,midRow]);
 title('1 cpd bar');
 vcAddAndSelectObject(oi); oiWindow;
 
@@ -135,7 +135,7 @@ oi = oiCompute(oi,barS);
 vcAddAndSelectObject(oi); oiWindow;
 
 vcNewGraphWin;
-plotOI(oi,'h line irradiance',[10,1]);
+oiPlot(oi,'h line irradiance',[10,1]);
 title('4 cpd bar');
 
 %% END

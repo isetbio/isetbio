@@ -2,10 +2,10 @@
 
 warndlg('Requires some clicking')
 
-plotSceneTest
+s_scenePlot
 
-plotOITest
+s_oiPlot
 
-plotSensorTest
+s_sensorPlot
 
 %% End

@@ -44,7 +44,7 @@ oiD = oiSet(oiD,'name','Diffraction limited');
 vcAddAndSelectObject(oiD);
 
 % Plot the psf
-uData = plotOI(oiD,'psf','um',thisWave);
+uData = oiPlot(oiD,'psf','um',thisWave);
 
 %% Now, compare the plot in uData and u.  
 
@@ -90,7 +90,7 @@ oiD = wvf2oi(wvfP,'shift invariant');
 oiD = oiSet(oiD,'name','Diffraction limited');
 % vcAddAndSelectObject(oiD); 
 % oiWindow;
-uData = plotOI(oiD,'psf','um',thisWave);
+uData = oiPlot(oiD,'psf','um',thisWave);
 
 wvfPlot(wvfP,'2d psf space','um',thisWave,maxUM);
 

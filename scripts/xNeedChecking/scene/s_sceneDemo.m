@@ -85,7 +85,7 @@ sceneWindow;
 % With this one, we might try some simple plots, such as a plot of the
 % luminance across the bottom row
 sz = sceneGet(sceneTest,'size');
-plotScene(sceneTest,'luminance hline',sz);
+scenePlot(sceneTest,'luminance hline',sz);
 %%
 % We can do this ourselves by getting the luminance of this bottom row as
 % follows
@@ -98,7 +98,7 @@ plot(support.x,data,'-');
 xlabel('mm'); ylabel('cd/m2'); grid on
 %%
 rows = round(sceneGet(sceneTest,'rows')/2);
-plotScene(sceneTest,'radiance hline',[1,rows]);
+scenePlot(sceneTest,'radiance hline',[1,rows]);
 
 %% End of Script
 

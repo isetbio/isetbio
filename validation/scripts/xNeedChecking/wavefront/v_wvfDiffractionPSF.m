@@ -109,7 +109,7 @@ fNumber = 17/calcPupilMM;     % Set f-number which fixes pupil diameter
 optics = opticsSet(optics,'flength',fLength);  % Roughly human
 optics = opticsSet(optics,'fnumber',fNumber);   % Roughly human
 oi = oiSet(oi,'optics',optics);
-uData = plotOI(oi,'psf',[],thisWave);
+uData = oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-10 10],'ylim',[-10 10]);
 
 %% Now, compare all three

@@ -58,7 +58,7 @@ row = sensorGet(sensor,'rows'); row = round(row/2);
 
 %% Generate the optical image plot for illuminance
 row = sceneGet(oi,'rows'); row = round(row/2);
-oData = plotOI(oi,'horizontallineilluminance',[1,row]);
+oData = oiPlot(oi,'horizontallineilluminance',[1,row]);
 
 % One set of data is in volts and the other in illuminance.  Normalize them
 % to a common 0,1 range
@@ -97,7 +97,7 @@ vcAddAndSelectObject(sensorSmall); sensorImageWindow;
 row = sensorGet(sensorSmall,'rows'); row = round(row/2);
 [g sData] = sensorPlotLine(sensorSmall,'h','volts','space',[1,row]);
 row = sceneGet(oi,'rows'); row = round(row/2);
-oData = plotOI(oi,'horizontallineilluminance',[1,row]);
+oData = oiPlot(oi,'horizontallineilluminance',[1,row]);
 sData.normData = ieScale(sData.data,0,1)
 oData.normData = ieScale(oData.data,0,1)
 pSize = pixelGet(sensorGet(sensorSmall,'pixel'), 'width','microns')
