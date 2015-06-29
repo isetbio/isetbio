@@ -1,7 +1,6 @@
 %% t_GenerateConeMosaicImage
 %
-% Show how to make a nice viewable image of a cone mosaic, as well as an
-% image representing the photon responses.
+% Show how to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses.
 %
 % See also generateConeMosaicImage, generateConePhotonsImage.
 %
