@@ -5,8 +5,7 @@
 % See also generateConeMosaicImage, generateConePhotonsImage.
 %
 % NOTE: There are ways to produce these images using conePlot and
-% coneSensorPlot, and this tutorial should show those so that it
-% illustrates the usage we want to head for.
+% coneSensorPlot (see t_GenerateConeMosaicImageUsingNativeISETBIOfunctions)
 %
 % 4/21/15 npc   Wrote it.
 % 4/22/15 dhb   Tweaks for isetbio compatibility.
