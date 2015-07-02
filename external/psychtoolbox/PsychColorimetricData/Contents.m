@@ -20,7 +20,8 @@
 %   ComputeRawConeFundamentals - Compute cone fundamentals from specification of various components
 %   DawisNomogram             - Dawis(1981) photopigment nomogram.
 %   DefaultPhotoreceptors     - Set default values for photoreceptors structure.
-%   DegreesToRetinalMM        - Convert retinal extents from degrees to mm of retina.
+%   DegreesToRetinalMM        - Convert foveal retinal extents from degrees to mm of retina.
+%   DegreesToRetinalEccentricityMM - Convert retinal eccentricities from degrees to mm of retina
 %   EyeLength                 - Return estimate of distance between nodal point and retina.
 %   FillInPhotoreceptors      - Convert from data source specification to numeric values in photoreceptors structure.
 %   FitConeFundamentalsWithNomogram - Try to fit CIE cone fundamentals with absorbance from various nomograms.
@@ -35,7 +36,8 @@
 %   PhotoreceptorDimensions   - Estimates of various photoreceptor dimensions.
 %   PrintPhotoreceptors       - Print out what is in photoreceptor structure.
 %   PupilDiameterFromLum      - Estimate pupil diameter from luminance.
-%   RetinalMMToDegrees        - Convert foveal retinal extent from mm of retina to degrees.
+%   RetinalEccentricityMMToDegrees - Convert retinal eccentricities from mm of retina to degrees.
+%   RetinalMMToDegrees        - Convert foveal retinal extents from mm of retina to degrees.
 %   StockmanSharpeNomogram    - Stockman/Sharpe photopigment nomogram (not finished).
 %   ValetonVanNorrenParams    - Return parameters of the Valeton-Van Norren model.
   
