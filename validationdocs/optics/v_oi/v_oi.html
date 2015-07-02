@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_oi</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-24"><meta name="DC.source" content="v_oi.m"><style type="text/css">
+      --><title>v_oi</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-02"><meta name="DC.source" content="v_oi.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -79,20 +79,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>Initialize ISETBIO<a name="4"></a></h2><pre class="codeinput">    s_initISET;
 </pre><h2>Diffraction limited simulation properties<a name="5"></a></h2><pre class="codeinput">    oi = oiCreate;
     <span class="keyword">if</span> (runTimeParams.generatePlots)
-        plotOI(oi,<span class="string">'otf'</span>,[],550);
-        plotOI(oi,<span class="string">'otf'</span>,[],450);
+        oiPlot(oi,<span class="string">'otf'</span>,[],550);
+        oiPlot(oi,<span class="string">'otf'</span>,[],450);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'diffractionOI'</span>, oi);
 </pre><img vspace="5" hspace="5" src="v_oi_01.png" alt=""> <img vspace="5" hspace="5" src="v_oi_02.png" alt=""> <h2>Human optics<a name="6"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
-        plotOI(oi,<span class="string">'psf'</span>,[],420);
-        plotOI(oi,<span class="string">'psf'</span>,[],550);
+        oiPlot(oi,<span class="string">'psf'</span>,[],420);
+        oiPlot(oi,<span class="string">'psf'</span>,[],550);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'humanOI'</span>, oi);
 </pre><img vspace="5" hspace="5" src="v_oi_03.png" alt=""> <img vspace="5" hspace="5" src="v_oi_04.png" alt=""> <h2>Make a scene and show some oiGets and oiCompute work<a name="7"></a></h2><pre class="codeinput">    scene = sceneCreate;
     oi = oiCompute(oi,scene);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
-        plotOI(oi,<span class="string">'illuminance mesh linear'</span>);
+        oiPlot(oi,<span class="string">'illuminance mesh linear'</span>);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'theScene'</span>,scene);
     UnitTest.validationData(<span class="string">'humanOIFromScene'</span>, oi);
@@ -123,16 +123,16 @@ function ValidationFunction(runTimeParams)
     %% Diffraction limited simulation properties
     oi = oiCreate;
     if (runTimeParams.generatePlots)
-        plotOI(oi,'otf',[],550);
-        plotOI(oi,'otf',[],450);
+        oiPlot(oi,'otf',[],550);
+        oiPlot(oi,'otf',[],450);
     end
     UnitTest.validationData('diffractionOI', oi);
 
     %% Human optics
     oi = oiCreate('human');
     if (runTimeParams.generatePlots)
-        plotOI(oi,'psf',[],420);
-        plotOI(oi,'psf',[],550);
+        oiPlot(oi,'psf',[],420);
+        oiPlot(oi,'psf',[],550);
     end
     UnitTest.validationData('humanOI', oi);
 
@@ -140,7 +140,7 @@ function ValidationFunction(runTimeParams)
     scene = sceneCreate;
     oi = oiCompute(oi,scene);
     if (runTimeParams.generatePlots)
-        plotOI(oi,'illuminance mesh linear');
+        oiPlot(oi,'illuminance mesh linear');
     end
     UnitTest.validationData('theScene',scene);
     UnitTest.validationData('humanOIFromScene', oi);

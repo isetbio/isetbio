@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-24"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
+      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-02"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -81,13 +81,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">%</span>
 <span class="comment">% See also v_IrradianceIsomerizations, v_DisplayColorConversion</span>
 
-
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 <span class="keyword">end</span>
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
 </pre><h2>Initialize ISET<a name="4"></a></h2><pre class="codeinput">    close <span class="string">all</span>; ieInit;
 </pre><h2>Some informative text<a name="5"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Compare isetbio and PTB display lut inversion.'</span>);
-</pre><h2>Remove the Brainard lab PTB overrides folder from the path<a name="6"></a></h2><p>This prevents this code from using the new BL object oriented PTB overrides.  We could include these inside of isetbio, but the risk is that whether this program worked or not would depend on whether isetbio was before or after PTB on the user's path, something we don't want to have to deal with.  Elsewhere (not in isetbio), we have established that the PTB and BrainardLab routines do the same thing (which is not surprising, as the actual calculations are done by the same underlying code in each case, just accessed differently.)</p><p>But, we don't think we need this. [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();</p><pre class="codeinput">    <span class="keyword">try</span>
+</pre><h2>Remove the Brainard lab PTB overrides folder from the path<a name="6"></a></h2><p>Uncommentnig this code from using the new BL object oriented PTB overrides.  We could include these inside of isetbio, but the risk is that whether this program worked or not would depend on whether isetbio was before or after PTB on the user's path, something we don't want to have to deal with.  Elsewhere (not in isetbio), we have established that the PTB and BrainardLab routines do the same thing (which is not surprising, as the actual calculations are done by the same underlying code in each case, just accessed differently.)</p><p>But, we don't think we need this. [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();</p><pre class="codeinput">    <span class="keyword">try</span>
 </pre><h2>Compare PTB vs ISETBIO LUT inversion for three different displays<a name="8"></a></h2><p>and four different gamma table lengths</p><pre class="codeinput">        displaysToTest = {<span class="string">'OLED-Sony'</span>, <span class="string">'LCD-Apple'</span>, <span class="string">'CRT-Dell'</span>};
         gammaTableLengthsToTest = [128 256 1024 2048];
 
@@ -162,6 +161,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 data{displayIndex}{resolutionIndex} = dataStruct;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
+
+        UnitTest.validationData(<span class="string">'ValidationDataStructArray'</span>, data);
 </pre><pre class="codeoutput">Fitting with linear interpolation
 Fitting with linear interpolation
 Fitting with linear interpolation
@@ -266,7 +267,6 @@ function varargout = v_DisplayLUTinversion(varargin)
 %
 % See also v_IrradianceIsomerizations, v_DisplayColorConversion
 
-
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
@@ -281,7 +281,7 @@ function ValidationFunction(runTimeParams)
     
     %% Remove the Brainard lab PTB overrides folder from the path
     %
-    % This prevents this code from using the new BL object oriented PTB
+    % Uncommentnig this code from using the new BL object oriented PTB
     % overrides.  We could include these inside of isetbio, but the risk is
     % that whether this program worked or not would depend on whether isetbio
     % was before or after PTB on the user's path, something we don't want to
@@ -371,6 +371,9 @@ function ValidationFunction(runTimeParams)
                 data{displayIndex}{resolutionIndex} = dataStruct;
             end
         end
+        
+        UnitTest.validationData('ValidationDataStructArray', data);
+
         
     catch err
         % Restore original path and rethrow error

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-04-24"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
+      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-02"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -92,7 +92,6 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     nInputLevels = size(gammaTable,1);
     gammaInput   = linspace(0,1,nInputLevels);
 </pre><h2>Create a uniform field radiance image in ISETBIO<a name="9"></a></h2><p>Use the display object and the passed RGB values.</p><p>The assumption here is that isetbio uses the display depth to figure out how to convert integers to the right input for gamma correction.</p><p>ISETBIO displays work with integer display inputs, which makes the bit depth explicit but which require that you keep track of the bit depth carefully.</p><p>PTB works in a world where displays are driven with [0-1] real numbers -- this is how OpenGL works, with the display driver responsible for digitizing. This keeps the code very portable but does make it hard to know the bit depth.</p><p>Choose RGB values in the range where the different gamma correction methods used by ISETBIO and PTB agree (see v_DisplayLUTInversion).</p><pre class="codeinput">    RGBToTest = [0.3 0.73 0.42]';
-    <span class="comment">%RGBToTest = [1 1 1]';</span>
     theRGBImage = ones(20,20,3);
     <span class="keyword">for</span> i1 = 1:3
         theRGBImage(:,:,i1) = round((nInputLevels-1)*RGBToTest(i1));
@@ -252,7 +251,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
         <span class="string">'ptbLMSIsomerizations'</span>, ptbLMSIsomerizations, <span class="keyword">...</span>
         <span class="string">'isetbioLMSIsomerizations'</span>, isetbioLMSIsomerizations <span class="keyword">...</span>
         );
-</pre><pre class="codeoutput">PTB/ISETBIO LMS isomerization ratios: 1.007, 1.007, 1.009
+</pre><pre class="codeoutput">PTB/ISETBIO LMS isomerization ratios: 1.007, 1.007, 1.006
 </pre><pre class="codeinput"><span class="keyword">catch</span> err
     <span class="comment">% Restore original path and rethrow error</span>
     <span class="comment">% if (~isempty(removedFolderFromCurrentPath))</span>
@@ -364,7 +363,6 @@ try
     % Choose RGB values in the range where the different gamma correction
     % methods used by ISETBIO and PTB agree (see v_DisplayLUTInversion).
     RGBToTest = [0.3 0.73 0.42]';
-    %RGBToTest = [1 1 1]';
     theRGBImage = ones(20,20,3);
     for i1 = 1:3
         theRGBImage(:,:,i1) = round((nInputLevels-1)*RGBToTest(i1));
@@ -483,7 +481,6 @@ try
         'screenSizeInPixels', screenSizeInPixels, ...
         'dotsPerMeter', dotsPerMeter ...
         );
-    
     
     %% Initialize PTB calibration structure.
     PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
