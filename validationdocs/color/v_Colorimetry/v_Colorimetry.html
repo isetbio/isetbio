@@ -72,7 +72,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">%</span>
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
-<span class="comment">% OK</span>
 <span class="keyword">end</span>
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
 </pre><h2>Path stuff<a name="4"></a></h2><p>Use ISETBIO's version of lab2xyz, otherwise the new Matlab function of the same name clobbers this and we get screwy answers.</p><p>Probably in the longer run should just use Matlab's version if it gives the same answers. (Changed isetbio to ieLAB2XYZ). lab2xyz = overrideBuiltInFunction('lab2xyz', 'isetbio');</p><h2>SETUP<a name="5"></a></h2><pre class="codeinput">    isetbioPath = fileparts(which(<span class="string">'colorTransformMatrix'</span>));
@@ -318,7 +317,6 @@ function varargout = v_Colorimetry(varargin)
 %
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
-% OK
 end
 
 %% Function implementing the isetbio validation code
