@@ -49,10 +49,10 @@ end
 errorRet = 0;
 
 % Fix up empty S fields that can get passed in BrainardLab land
-if (~isfield(cal,'S_device') | isempty(cal.S_device))
+if (~isfield(cal,'S_device') || isempty(cal.S_device))
     cal.S_device = cal.describe.S;
 end
-if (~isfield(cal,'S_ambient') | isempty(cal.S_ambient))
+if (~isfield(cal,'S_ambient') || isempty(cal.S_ambient))
     cal.S_ambient = cal.describe.S;
 end
 
