@@ -1,29 +1,27 @@
 %% t_sensorInputRefer
 %
-% Illustrates how to look at the mean absorption rate at the detector
-% and infer the oi illuminance and scene luminance.
+% Illustrates how to calculate the mean absorption rate at the detector
+% given a uniform scene.  
 %
-% This code shows that when we know the number of electrons in a particular
-% type of pixel, we can estimate the illuminance of an equal energy light
-% at the sensor, or the luminance of an equal energy light in the scene,
-% prior to the optics.
+% Then illustrates how to set the  scene luminance of a uniform, equal
+% energy scene to achieve any specified absorption rate.
 %
-% Another practical use is that the code shows how to set the scene
-% intensity to produce a specific absorption rate at the sensor.
+% Hence, when we know the number of electrons in a particular type of
+% pixel, we can estimate the illuminance of an equal energy light at the
+% sensor, or the luminance of an equal energy light in the scene, prior to
+% the optics.
 %
-%
-% BW Copyright Imageval Consulting, LLC, 2015
+% BW ISETBIO Team, 2015
 
-%%
 ieInit
 
 %% A target photon absorption rate for the sensor
 tRate = 2;  
 
-fprintf('Adjusting ror a target rate of %.4f\n',tRate);
+fprintf('Adjusting to a target rate of %.4f\n',tRate);
 
 %%  Calculate the photon absorption rate for a 1 cd/m2 at 1 sec
-s = sceneCreate('uniform');
+s = sceneCreate('uniform ee');
 lum = 1;
 s = sceneAdjustLuminance(s,lum);  % 1 cd/m2
 
@@ -64,7 +62,8 @@ pImage = c2e*signalCurrent(oi,sensor);
 fprintf('Direct calculation of photon rate:  %.4f \n',mean(pImage(:)))
 
 
-%%
+%%  The ISET calculation produces the same mean rate
+
 sensor = sensorCompute(sensor,oi);
 
 % Get the photons from the first pixel type
@@ -79,14 +78,14 @@ pRate = mean(photons(:));
 % ieAddObject(oi); ieAddObject(sensor);
 % oiWindow; sensorImageWindow;
 
-%% Figure out how much to adjust the scene luminance
+%% Calculate how to adjust the scene luminance
 
 % Scale the scene luminance
 newLum = lum * (tRate/pRate);
 fprintf('Adjusting the scene luminance to %e cd/m^2\n',newLum);
 s = sceneAdjustLuminance(s,newLum);  % 1 cd/m2
 
-%% Compute the photon rate at the new luminance level
+%% Compute the photon rate at the new scene luminance level
 
 oi = oiCompute(oi,s);
 fprintf('Through the optics the illuminance is %e lux\n',oiGet(oi,'mean illuminance'));
@@ -110,7 +109,8 @@ pImage = c2e*signalCurrent(oi,sensor);
 
 fprintf('Direct calculation of photon rate:  %.4f (target = %.4f)\n',mean(pImage(:)),tRate)
 
-%% Compare photon numbers with straight computation from Poisson distribution
+%% Histogram of photon numbers and expected Poisson distribution
+
 nSamp = round(max(2*sqrt(tRate)*50,1000));
 val = iePoisson(tRate,nSamp);
 
@@ -125,7 +125,6 @@ plot(c(lst),n(lst),'ro-','linewidth',2);
 
 xlabel('Photon count'); ylabel('Number')
 title(sprintf('Photon distribution (mean %.3f)',mean(pImage(:))));
-
 
 
 %% END
