@@ -13,12 +13,12 @@ function val = rdata(func,remote,varargin)
 %  This is the base directory for these examples
 %   remote.host = 'http://scarlet.stanford.edu/validation/SCIEN';
 %
-%  File list
+%  File list - Returns the .mat files in the web-page of the directory
 %   remote.directory = fullfile('L3','people_small');
 %   rdata('cd',remote);
-%   dirList = rdata('ls');                   % Match .mat extension
+%   dirList = rdata('ls');   % Match .mat extension
 %
-%  Different directory, JPG extension
+%  Different directory, must match the JPG extension
 %   remote.directory = fullfile('L3','nikond200','JPG');
 %   dirList = rdata('ls',remote,'.JPG');     % Match the JPG extension
 %
