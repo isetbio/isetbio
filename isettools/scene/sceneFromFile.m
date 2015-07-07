@@ -91,7 +91,7 @@ switch lower(imType)
         if length(varargin) > 2, sz = varargin{3};  else sz = []; end
         
         % read radiance / reflectance
-        photons = vcReadImage(I,imType,dispCal, doSub, sz);
+        photons = vcReadImage(I, imType, dispCal, doSub, sz);
         
         % Match the display wavelength and the scene wavelength
         wave  = displayGet(d, 'wave');
