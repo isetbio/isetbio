@@ -1,6 +1,11 @@
-%% t_eyemovement
+%% t_eyemovementPath
 %
 % Illustrates how to create an eye movement and attach it to a sensor object.
+%
+% This just generates the positions for a static scene and shows how to
+% plot where the eyes land.
+%
+% See also: t_eyemovementCompute, t_eyemovementMovie
 %
 % NOTES:
 %   1) Add code to illustrate microsaccade and frequency parameter change effects
