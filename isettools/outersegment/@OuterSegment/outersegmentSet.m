@@ -20,12 +20,6 @@ switch lower(param)
             error('noiseflag parameter must be 0 or 1.');
         end
         obj.noiseflag = val;
-        
-    case{'type'}
-        if ~((val == 0) || (val == 1))
-            error('type parameter must be 0 or 1: 0 = linear temporal filter, 1 = nonlinear adaptation.');
-        end
-        obj.type = val;
-        
+                
 end
 

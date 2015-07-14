@@ -19,9 +19,6 @@ switch lower(param)
         
         val = obj.noiseflag;
         
-    case{'type'}
-        
-        val = obj.type;
         
 end
 
