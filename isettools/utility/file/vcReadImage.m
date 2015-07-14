@@ -119,7 +119,7 @@ switch lower(imageType)
             [xwImg,r,c,~] = RGB2XWFormat(inImg/255);
             
             % Prevent DR > 10,000.  See ieCompressData.
-            xwImg = ieClip(xwImg,1e-3,1);
+            xwImg = ieClip(xwImg, 1e-3, 1);
             
             % When we render the RGB data in xwImg, they are multipled
             % by the colorBlockMatrix.  By storing the photons this
@@ -143,20 +143,20 @@ switch lower(imageType)
             wave   = displayGet(d, 'wave');  % Primary wavelengths
             gTable = displayGet(d, 'gamma table');
             
-            nprimaries = displayGet(d, 'n primaries');
+            np = displayGet(d, 'n primaries');
             if ismatrix(inImg)
-                inImg = repmat(inImg, [1 1 nprimaries]);
+                inImg = repmat(inImg, [1 1 np]);
             end
             
             % pad third dimension of inImg to nprimaries
-            % we pad 0 here because in most cases, the primary missing in
-            % the inImg is black
-            inImg = padarray(inImg, ...
-                        [0 0 nprimaries-size(inImg,3)], 0, 'post');
-            assert(size(inImg, 3)==nprimaries, 'bad image size');
+            % padding is mainly for multi-primary displays, e.g. rgbw
+            % display. Padding zeros might not be a good idea, but we don't
+            % have a general solution
+            inImg = padarray(inImg, [0 0 np-size(inImg,3)], 0, 'post');
+            assert(size(inImg, 3)==np, 'bad image size');
             
             % Check whether the gTable has enough entries for this
-            % image.
+            % image
             if max(inImg(:)) > size(gTable,1)
                 error('Img exceeds gTable');
             elseif max(inImg(:)) <= 1
@@ -193,7 +193,7 @@ switch lower(imageType)
             if numel(xwImg) < ieSessionGet('image size threshold') ...
                     || ~ieSessionGet('waitBar') % small image
                 % compute directly
-                photons = Energy2Quanta(wave,(xwImg * spd')')';
+                photons = Energy2Quanta(wave, (xwImg * spd')')';
             else
                 % now we have too many pixels, loop over wavelength and
                 % print the progress
@@ -206,6 +206,10 @@ switch lower(imageType)
                 end
                 delete(wBar);
             end
+            
+            am = displayGet(d, 'ambient spd');
+            amQuanta = Energy2Quanta(wave, am(:));
+            photons = bsxfun(@plus, photons, amQuanta');
         end
         photons = XW2RGBFormat(photons,r,c);
         
@@ -229,7 +233,7 @@ switch lower(imageType)
             % Resample basis functions to the user specified wavelength
             % list.  vcReadImage(fullname,'multispectral',[400:20:800]);
             if ~isempty(varargin) && ~isempty(varargin{1})
-                oldWave    = basis.wave;
+                oldWave    = basis.wave; %#ok
                 newWave    = varargin{1};
                 nBases     = size(basis.basis,2);
                 extrapVal  = 0;
@@ -255,7 +259,7 @@ switch lower(imageType)
                 % Resample the image mean to the specified wavelength list
                 if ~isempty(varargin)&& ~isempty(varargin{1})
                     extrapVal  = 0;
-                    imgMean = interp1(oldWave(:), imgMean(:), newWave(:),'linear',extrapVal);
+                    imgMean = interp1(oldWave(:), imgMean(:), newWave(:),'linear',extrapVal); %#ok
                 end
                 
                 % Sometimes we run out of memory here.  So we should have a

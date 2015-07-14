@@ -8,7 +8,7 @@
 % (BW) ISETBIO Team, May 2014
 
 %% Initialize
-ieInit;
+clear; ieInit;
 
 %% Create a small test radiometric scene
 imSize = [32,32]; 

@@ -112,6 +112,9 @@ switch parm
     case {'comment'}
         % comment for the display
         d.comment = val;
+    case {'ambientspd'}
+        % ambient spd for display
+        d.ambient = val;
     otherwise
         error('Unknown parameter %s\n',parm);
 end

@@ -10,6 +10,8 @@
 % 01.12.01   Added new graphs for ijspeert curves and Williams et al. data, BW
 % 01.18.03   Started integration with vCamera-2.0, minor changes.
 % 01.02.08   Verified with local files for single download - BW
+% 06.29.15   Don't use rad2deg and deg2rad as variable names, since these
+%            are Matlab functions.
 %
 % NOTES:
 %   1) This is a really nice tutorial and it runs.  But it relies on data
@@ -41,9 +43,9 @@ xlabel('Viewing Distance (inch)')
 ylabel('Position between spots on paper (inch)')
 
 %% In radians, the viewing angle, phi, satisfies tan(phi) = (opposite/adjacent).
-deg2rad = 2*pi/360;
-rad2deg = 360/(2*pi)
-phi = atan(1/viewingDistance)*rad2deg
+deg2radFactor = 2*pi/360;
+rad2degFactor = 360/(2*pi)
+phi = atan(1/viewingDistance)*rad2degFactor
 
 % There are 600 dots per inch, so that each dot occupies
 DegPerDot = phi/dpi
@@ -421,7 +423,7 @@ freqIndexRange = 1:50; 		% The spatial frequency range
 % corresponds to 1 cycle per deg 
 angleInDeg = (-.25:.005:.25);
 angleInSec = angleInDeg*3600;
-angleInRad = angleInDeg*deg2rad;
+angleInRad = angleInDeg*deg2radFactor;
 
 [iMTF, iPSF, iLSF] = ijspeert(age, pupil, pigmentation, ...
     freqIndexRange, angleInRad);

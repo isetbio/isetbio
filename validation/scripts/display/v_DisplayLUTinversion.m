@@ -118,6 +118,9 @@ function ValidationFunction(runTimeParams)
             end
         end
         
+        UnitTest.validationData('ValidationDataStructArray', data);
+
+        
     catch err
         % Restore original path and rethrow error
         %if (~isempty(removedFolderFromCurrentPath))

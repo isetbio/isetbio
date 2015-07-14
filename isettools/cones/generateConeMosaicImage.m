@@ -85,7 +85,11 @@ function kernel = makeCircularKernel(kernelSize)
 end
 
 function upsampledImage = upsampleImage(originalImage, upsampleFactor)
-    offset = (upsampleFactor-1)/2+1;
+    if mod(upsampleFactor-1,2) == 0
+        offset = (upsampleFactor-1)/2+1;
+    else
+        offset = upsampleFactor/2+1;
+    end
     [nRows,nCols] = size(originalImage);
     upsampledImage = zeros(upsampleFactor*nRows,upsampleFactor*nCols);
     upsampledImage(offset:upsampleFactor:end,offset:upsampleFactor:end) = originalImage;
