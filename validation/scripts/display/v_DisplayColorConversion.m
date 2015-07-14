@@ -46,9 +46,6 @@ try
     displayToTest = 'LCD-Apple';
     d = displayCreate(displayToTest);
     gammaTable = displayGet(d, 'gamma table');
-    if (size(gammaTable,2) ~=  3)
-        error('Cannot deal with a display that has other than 3 primaries for this test.');
-    end
     nInputLevels = size(gammaTable,1);
     gammaInput   = linspace(0,1,nInputLevels);
 
