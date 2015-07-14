@@ -35,14 +35,10 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
     % Set the display's name to the input parameter displayName
     displayObject = displaySet(displayObject, 'name', displayFileName);
 
-    % Get the wavelength sampling and the SPD from the CalStruct
+    % Get the wavelength sampling and channel spds, and ambient spd from the CalStruct
     S = calStruct.describe.S;
     spd = calStruct.P_device;
-    if (size(spd,2) ~= 3); error('ISETBIO only handles three-primary devices'); end
-    
-    % Get the ambient and paste it onto the spd as the "fourth" primary.
-    % This is how ISETBIO handles ambient.
-    spd = [spd calStruct.P_ambient];
+    ambient = calStruct.P_ambient;
     
     if (~isempty(input.Results.ExtraData.subSamplingSvector))
         % Validate that the subSamplingSvector is within range of the original S vector
@@ -55,21 +51,23 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
         maintainTotalEnergy = true;
         showFig = false;
         [subSampledWave, subSampledSPDs] = ptb.SubSampleSPDs(S, spd, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
+        [~, subSampledAmbient] = ptb.SubSampleSPDs(S, ambient, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
+
         % Set the display object's SPD to the subsampled versions
         displayObject = displaySet(displayObject, 'wave', subSampledWave);
         displayObject = displaySet(displayObject, 'spd', subSampledSPDs);
+        displayObject = displaySet(displayObject, 'ambient spd', subSampledAmbient);
     else
         fprintf('Will not subsample SPDs\n');
         % Set the display object's SPD to the original versions
         displayObject = displaySet(displayObject, 'wave', SToWls(S));
         displayObject = displaySet(displayObject, 'spd', spd);
+        displayObject = displaySet(displayObject, 'ambient spd', ambient);
     end
 
-    % Get the display's gamma table, and paste on an extra column to handle
-    % the ISETBIO ambient convention.
+    % Get the display's gamma table.
     gammaTable = calStruct.gammaTable;
     gammaLength = size(gammaTable,1);
-    gammaTable = [gammaTable [1 ; zeros(gammaLength-1,1)]];
     displayObject = displaySet(displayObject, 'gTable', gammaTable);
 
     % Get the display resolution in dots (pixels) per inch

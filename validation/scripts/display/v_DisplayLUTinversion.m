@@ -67,9 +67,6 @@ function ValidationFunction(runTimeParams)
             % Remove 4-th primary, if it exists, for testing purposes.
             wave = displayGet(d, 'wave');
             spd  = displayGet(d, 'spd primaries');
-            if (size(spd ,2) > 3)
-                spd = spd(:,1:3);
-            end
             
             % Screen size and DPI
             dotsPerMeter = displayGet(d, 'dots per meter');

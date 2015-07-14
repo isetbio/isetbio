@@ -34,7 +34,7 @@ function PTBcal = updateSpectralParams(oldPTBcal, display)
     PTBcal.describe.S   = WlsToS(wave);
     PTBcal.S_ambient    = PTBcal.describe.S;
     PTBcal.P_device     = spd;
-    PTBcal.P_ambient    = displayGet(display,'black spd');
+    PTBcal.P_ambient    = displayGet(display,'ambient spd');
     PTBcal.T_ambient    = eye(spectralSamples);
     PTBcal.T_device     = eye(spectralSamples);
     
