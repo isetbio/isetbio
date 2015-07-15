@@ -42,7 +42,7 @@ sensor = sensorSet(sensor, 'time interval', 0.001);
 
 % Magnify the amplitude to get a better visualization later
 amp = emGet(em,'tremor amplitude');
-em  = emSet(em,'tremor amplitude',100*amp);
+em  = emSet(em,'tremor amplitude',10*amp);
 
 sensor = sensorSet(sensor,'eye movement',em);
 sensor = emGenSequence(sensor);
@@ -62,3 +62,5 @@ staticSensor = coneAbsorptions(staticSensor, oi);
 staticPhotons = sensorGet(staticSensor, 'photons');
 figure;
 imshow(staticPhotons/max(staticPhotons(:)));
+
+%% END
