@@ -1,4 +1,4 @@
-%% v_rdata
+function varargout = v_rdata(varargin)
 %
 % Test the rdata (remote data) routine
 %
@@ -6,16 +6,28 @@
 % web.
 %
 % Copyright Imageval Consulting, LLC  2015
+%
+% 7/15/15  dhb  Brought this into the UnitTestToolbox world.
 
-ieInit
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+%% Initialize ISETBIO
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate rdata function.');
 
 %% This is the base directory with SCIEN (ISET, ISETBIO, CISET) files
-
+%
 % We are hosting this site on scarlet.
 remote.host = 'http://scarlet.stanford.edu/validation/SCIEN';
 
 %% ls the lightfield directory for .mat files
-
+%
 % These are the light field data.  Because no extension is specified the
 % .mat files are listed
 remote.directory = fullfile('LIGHTFIELD');
@@ -27,17 +39,23 @@ rdata('ls')  % Returns all the .mat files in the web page listing
 % This is an ISET scene with HDR data and a depth map
 remote.directory = fullfile('LIGHTFIELD','scene');
 scene = rdata('load data',remote,'benchHDR.mat','scene');
+UnitTest.validationData('scene', scene);
 
-% Show the scene
-vcAddObject(scene); sceneWindow;
+%% Show the scene
+if (runTimeParams.generatePlots)
+    vcAddObject(scene); sceneWindow;
+end
 
 %% Read an image file
-
+%
 % There are nice images here from Lubert Stryer
 remote.directory = fullfile('RGB','LStryer');
 img = rdata('read image',remote,'twoBirds.jpg');
+UnitTest.validationData('img', img);
 
-% Show the image
-vcNewGraphWin; imshow(img);
+%% Show the image
+if (runTimeParams.generatePlots)
+    vcNewGraphWin; imshow(img);
+end
 
-%% END
+end
