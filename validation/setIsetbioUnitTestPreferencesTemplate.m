@@ -28,7 +28,7 @@ function setIsetbioUnitTestPreferencesTemplate
             'clonedWikiLocation',    fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_Wiki', 'isetbio.wiki'), ... % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
             'clonedGhPagesLocation', fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_GhPages', 'isetbio'), ...   % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
             'githubRepoURL',         'http://isetbio.github.io/isetbio', ...                                                          % Github URL for the project. This is only used for publishing tutorials.
-            'generateGroundTruthDataIfNotFound',   true, ...  % Flag indicating whether to generate ground truth if one is not found
+            'generateGroundTruthDataIfNotFound',   false, ...  % Flag indicating whether to generate ground truth if one is not found
             'listingScript',         'validateListAllValidationDirs' ...    
         );
 
