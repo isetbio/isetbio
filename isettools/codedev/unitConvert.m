@@ -4,6 +4,8 @@ function [newVal,newUnitStr,oldUnitStr] = unitConvert(oldVal,valType,oldUnitStr,
 % Value types:
 %  'length' - default units: 'm'
 %           - recognized units: 'nm', 'um', 'mm', 'cm'
+%  'wavelength' - default units: 'nm'
+%           - recognized units: 'nm', 'um', 'mm', 'cm'
 %  'area'   - default units: 'm2'
 %           - recognized units: 'nm2', 'um2', 'mm2', 'cm2'
 %  'time'   - default units: 'sec'
@@ -15,6 +17,10 @@ function [newVal,newUnitStr,oldUnitStr] = unitConvert(oldVal,valType,oldUnitStr,
 % default.
 %
 % Convert units following ISETBO conventions.
+%
+% NOTE: Wavelength is special cased as a length quantity, because we are so
+% deeply steeped in thinking about nm that making the default units for
+% wavelength just seems a bridge too far.
 %
 % NOTE: This routine does not convert units of power from energy to quantal
 % units or vice-versa, because that conversion requires knowing the
@@ -61,7 +67,7 @@ switch (valueType)
         
         % Convert
         newVal = oldConverstionFactor*newConversionFactor*oldVal;
-   
+    case 'wavelength'
     case 'area'
     case 'time'
     case 'irradiance'
