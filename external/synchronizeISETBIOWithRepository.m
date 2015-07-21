@@ -24,6 +24,9 @@ function synchronizeISETBIOWithRepository(repositoryName)
         case 'RT3'
             srcDir = '/Users/Shared/Matlab/Toolboxes/RenderToolbox3';
             dstDir = '/Users/Shared/Matlab/Toolboxes/isetbio/external/rendertoolbox3';
+        case 'BLTB'
+            srcDir = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox';
+            dstDir = '/Users/Shared/Matlab/Toolboxes/isetbio/external/brainardlabtoolbox';
         otherwise
             error('No information about how to synchronize ''%s''. Please update ''synchronizeISETBIOWithRepository.m''.', repositoryName);
     end
