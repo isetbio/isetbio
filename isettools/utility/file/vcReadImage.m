@@ -152,7 +152,7 @@ switch lower(imageType)
             % padding is mainly for multi-primary displays, e.g. rgbw
             % display. Padding zeros might not be a good idea, but we don't
             % have a general solution
-            % inImg = padarray(inImg, [0 0 np-size(inImg,3)], 0, 'post');
+            inImg = padarray(inImg, [0 0 np-size(inImg,3)], 0, 'post');
             assert(size(inImg, 3)==np, 'bad image size');
             
             % Check whether the gTable has enough entries for this
