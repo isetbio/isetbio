@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-02"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
+      --><title>v_DisplayLUTinversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-23"><meta name="DC.source" content="v_DisplayLUTinversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -111,9 +111,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
             <span class="comment">% Remove 4-th primary, if it exists, for testing purposes.</span>
             wave = displayGet(d, <span class="string">'wave'</span>);
             spd  = displayGet(d, <span class="string">'spd primaries'</span>);
-            <span class="keyword">if</span> (size(spd ,2) &gt; 3)
-                spd = spd(:,1:3);
-            <span class="keyword">end</span>
 
             <span class="comment">% Screen size and DPI</span>
             dotsPerMeter = displayGet(d, <span class="string">'dots per meter'</span>);
@@ -321,9 +318,6 @@ function ValidationFunction(runTimeParams)
             % Remove 4-th primary, if it exists, for testing purposes.
             wave = displayGet(d, 'wave');
             spd  = displayGet(d, 'spd primaries');
-            if (size(spd ,2) > 3)
-                spd = spd(:,1:3);
-            end
             
             % Screen size and DPI
             dotsPerMeter = displayGet(d, 'dots per meter');

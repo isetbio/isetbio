@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-02"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
+      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-23"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -86,9 +86,6 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 </pre><h2>Overview<a name="7"></a></h2><p>What we are going to do in this script is to create uniform field corresponding to specified display and rgb values and pump it through isetbio to get cone isomerization rates.  Then we are going to do the calculation for the same display, cone fundamentals, and rgb values in PTB.  We start with the isetbio calculation.</p><h2>Create isetbio display<a name="8"></a></h2><pre class="codeinput">    displayToTest = <span class="string">'LCD-Apple'</span>;
     d = displayCreate(displayToTest);
     gammaTable = displayGet(d, <span class="string">'gamma table'</span>);
-    <span class="keyword">if</span> (size(gammaTable,2) ~=  3)
-        error(<span class="string">'Cannot deal with a display that has other than 3 primaries for this test.'</span>);
-    <span class="keyword">end</span>
     nInputLevels = size(gammaTable,1);
     gammaInput   = linspace(0,1,nInputLevels);
 </pre><h2>Create a uniform field radiance image in ISETBIO<a name="9"></a></h2><p>Use the display object and the passed RGB values.</p><p>The assumption here is that isetbio uses the display depth to figure out how to convert integers to the right input for gamma correction.</p><p>ISETBIO displays work with integer display inputs, which makes the bit depth explicit but which require that you keep track of the bit depth carefully.</p><p>PTB works in a world where displays are driven with [0-1] real numbers -- this is how OpenGL works, with the display driver responsible for digitizing. This keeps the code very portable but does make it hard to know the bit depth.</p><p>Choose RGB values in the range where the different gamma correction methods used by ISETBIO and PTB agree (see v_DisplayLUTInversion).</p><pre class="codeinput">    RGBToTest = [0.3 0.73 0.42]';
@@ -339,9 +336,6 @@ try
     displayToTest = 'LCD-Apple';
     d = displayCreate(displayToTest);
     gammaTable = displayGet(d, 'gamma table');
-    if (size(gammaTable,2) ~=  3)
-        error('Cannot deal with a display that has other than 3 primaries for this test.');
-    end
     nInputLevels = size(gammaTable,1);
     gammaInput   = linspace(0,1,nInputLevels);
 
