@@ -1,4 +1,4 @@
-function temporalFilter(obj, sensor, param, varargin)
+function osCompute(obj, sensor, param, varargin)
     
     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
     
@@ -11,11 +11,8 @@ function temporalFilter(obj, sensor, param, varargin)
     
     
     
-    % generate linear temporal filters for L, M, S responses
-    [newIRFs, ~, ~] = cone_linear_filter();
-%     obj.sConeFilter = newIRFs(:,2);
-%     obj.mConeFilter = newIRFs(:,3);
-%     obj.lConeFilter = newIRFs(:,4);
+    % linear temporal filters for L, M, S responses generated in filter
+
     
     % find coordinates of l, m, s cones, get voltage signals
     cone_mosaic = sensorGet(sensor,'cone type');
@@ -29,7 +26,15 @@ function temporalFilter(obj, sensor, param, varargin)
     
     for cone_type = 2:4
         % create rows X cols X time matrix of temporal filters
-        Filter_cone_type = newIRFs(:,cone_type-1);
+        % Filter_cone_type = newIRFs(:,cone_type-1);
+        switch cone_type
+            case 2
+                Filter_cone_type = obj.sConeFilter;
+            case 3
+                Filter_cone_type = obj.mConeFilter;
+            case 4
+                Filter_cone_type = obj.lConeFilter;
+        end
         Filter_block = repmat(fft(Filter_cone_type(1:nSteps)'),[1 size(sensor.data.volts,1) size(sensor.data.volts,2)]);
         Filter_block2 = reshape(Filter_block,size(sensor.data.volts));
         

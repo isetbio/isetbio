@@ -1,4 +1,4 @@
-function [newIRFs, Filter, Ib] = cone_linear_filter()
+function [newIRFs, Filter, Ib] = filterConesLinear()
 
 
 %%  CODE TO GENERATE THE CONE TEMPORAL IMPULSE RESPONSE FUNCTION

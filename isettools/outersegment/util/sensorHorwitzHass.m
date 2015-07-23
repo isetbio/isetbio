@@ -1,4 +1,4 @@
-function sensor = build_sensor_horwitz_hass_2015(params, scene, oi, display)
+function sensor = sensorHorwitzHass(params, scene, oi, display)
 %Build a scene object following parameters from "Chromatic detection from 
 % cone photoreceptors to V1 neurons to behavior in rhesus monkeys" by 
 % Horwitz, Hass, Angueyra, Lindbloom-Brown & Rieke, J. Neuronscience, 2015
@@ -35,7 +35,7 @@ for t = 1 : nSteps
     % Low luminance for first 500 msec and the step up.
     params.ph  = 2*pi*((t-1)/params.period);
     
-    stimulusRGBdata = gabor_color_opponent_norm(params);
+    stimulusRGBdata = rgbGaborColorOpponentNormalized(params);
 % %     stimulusRGBdata = 0.5*ones(128,128,3);
 % 
 %     im_gray = rgb2gray(stimulusRGBdata);

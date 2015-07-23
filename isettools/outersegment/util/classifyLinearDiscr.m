@@ -1,4 +1,4 @@
-function compute_lda(class1_L, class1_M, class1_S, class2_L, class2_M, class2_S)
+function classifyLinearDiscr(class1_L, class1_M, class1_S, class2_L, class2_M, class2_S)
 
 % Still need to separate training and test data!
 

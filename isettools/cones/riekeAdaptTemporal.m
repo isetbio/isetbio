@@ -1,4 +1,4 @@
-function adaptedData = riekeAdaptTemporal(pRate,p)
+ function adaptedData = riekeAdaptTemporal(pRate,p)
 % Time varying voltage response from photon rate and initial state
 %
 %    adaptedData = riekeAdaptTemporal(pRate,initialState)

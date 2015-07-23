@@ -7,13 +7,7 @@ function initialize(obj)
     obj.ConeCurrentSignal = [];
     obj.ConeCurrentSignalPlusNoise = [];
     
-%     obj.filterKernel = [];
-    
-%     obj.outputSignal = [];
-%     obj.inputSignal = [];
-%     obj.time = [];
-%     obj.timeConstant = 100;
-    
+%     filterKernel(obj);
     
 end
 

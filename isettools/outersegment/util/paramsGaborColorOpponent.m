@@ -1,4 +1,4 @@
-function params = gabor_color_opponent_params()
+function params = paramsGaborColorOpponent()
 % Model cone responses for experiment on detection of gabor color opponents
 % found in "Chromatic detection from cone photoreceptors to V1 neurons to
 % behavior in rhesus monkeys" by Horwitz, Hass, Angueyra, Lindbloom-Brown &

@@ -1,10 +1,13 @@
-classdef NonLinearOuterSegment < OuterSegment 
-% @NonLinearOuterSegment: Subclass of @OuterSegment that implements a nonlinear
+classdef osLinear < outerSegment 
+% @osLinear: Subclass of @outerSegment that implements a linear
 % version of the temporalFilter() method
 %
 
     % Public, read-only properties.
-    properties (SetAccess = private, GetAccess = public)        
+    properties (SetAccess = private, GetAccess = public)
+        sConeFilter;
+        mConeFilter;
+        lConeFilter;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -15,9 +18,9 @@ classdef NonLinearOuterSegment < OuterSegment
     methods
         
         % Constructor
-        function obj = NonLinearOuterSegment(varargin)
+        function obj = osLinear(varargin)
             % Initialize the parent class
-            obj = obj@OuterSegment();
+            obj = obj@outerSegment();
             
             % Initialize ourselves
             obj.initialize();
@@ -32,7 +35,15 @@ classdef NonLinearOuterSegment < OuterSegment
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        temporalFilter(obj, sensor, param, varargin);
+        function obj = compute(obj, sensor, param, varargin)
+            osCompute(obj, sensor, param, varargin); 
+        end
+        plotResults(obj, sensor);
+    end    
+    
+    % Methods may be called by the subclasses, but are otherwise private 
+    methods (Access = protected)
+        filterKernel(obj);
     end
     
     % Methods that are totally private (subclasses cannot call these)

@@ -1,4 +1,4 @@
-function [scene , display] = build_scene_horwitz_hass_2015(params)
+function [scene , display] = sceneHorwitzHass(params)
 %Build a scene object following parameters from "Chromatic detection from 
 % cone photoreceptors to V1 neurons to behavior in rhesus monkeys" by 
 % Horwitz, Hass, Angueyra, Lindbloom-Brown & Rieke, J. Neuronscience, 2015
@@ -31,7 +31,7 @@ show_movie_flag = params.disp_movie;
 % Display information you need to get from Rieke/Horwitz
 NspectralSamples = 81;
 %%%% For some reason background gray level is changing
-load('DTcals.mat');
+load('spdCalibrationHorwitzHass.mat');
 % wave  = zeros(NspectralSamples, 1);  % e.g. 400 420 440 .. 800
 wave = cal.monSpectWavelengths; 
 spd = reshape(cal.monSpect,81,3); % power at each of the above wavelengths, in Watts/steradian/m^2/nm, for each of the R,G,B channels
@@ -59,15 +59,15 @@ clear volts
 % Stimulus information
 meanLuminance = params.meanLuminance;
 
-stimulusRGBdata = gabor_color_opponent_norm(params);
+stimulusRGBdata = rgbGaborColorOpponentNormalized(params);
 % figure; hist(sqrt(sum(reshape(stimulusRGBdata.^2,params.row*params.row,3),2)),40)
 
 if show_movie_flag == 1
-    show_gabor_movie_norm(params.color_val,params);
+    playGaborMovie(params.color_val,params);
     close;
 end
 
-load('monitor_cal.mat');
+% load('monitor_cal.mat');
 
 % Generate a display object to model Horwitz's display
 display = displayCreate;
@@ -80,7 +80,7 @@ display = displaySet(display, 'name', 'Horwitz');
 % Set the display's SPDs
 display = displaySet(display, 'wave', wave);
 display = displaySet(display, 'spd', spd);
-
+display = displaySet(display, 'ambientspd', zeros(1,length(spd))); 
 
 % Set the display's resolution (dots-per-inch)
 display = displaySet(display, 'dpi', dpi);

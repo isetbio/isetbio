@@ -1,4 +1,4 @@
-function [noisyL noisyM noisyS] = noisy_repeats(ConeCurrentSignal, reps_max, coneSamplingRate, cone_mosaic)
+function [noisyL noisyM noisyS] = coneSignalNoisyRepeats(ConeCurrentSignal, reps_max, coneSamplingRate, cone_mosaic)
 
 
 [sz1 sz2 sz3] = size(ConeCurrentSignal);
