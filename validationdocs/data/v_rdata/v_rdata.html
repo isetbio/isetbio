@@ -1,0 +1,222 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_rdata</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-25"><meta name="DC.source" content="v_rdata.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISETBIO</a></li><li><a href="#5">Some informative text</a></li><li><a href="#6">This is the base directory with SCIEN (ISET, ISETBIO, CISET) files</a></li><li><a href="#7">ls the lightfield directory for .mat files</a></li><li><a href="#8">Loading a variable from inside a matlab file</a></li><li><a href="#9">Load it via a FUSE/SSHFS mounted disk on OS/X and locally</a></li><li><a href="#10">Show the scene</a></li><li><a href="#11">Read an image file</a></li><li><a href="#12">Show the image</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_rdata(varargin)
+<span class="comment">%</span>
+<span class="comment">% Test the rdata (remote data) routine</span>
+<span class="comment">%</span>
+<span class="comment">% This routine enables users to pull data from a remote file system on the</span>
+<span class="comment">% web.</span>
+<span class="comment">%</span>
+<span class="comment">% Copyright Imageval Consulting, LLC  2015</span>
+<span class="comment">%</span>
+<span class="comment">% 7/15/15  dhb  Brought this into the UnitTestToolbox world.</span>
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+<span class="keyword">end</span>
+</pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Initialize ISETBIO<a name="4"></a></h2><pre class="codeinput">close <span class="string">all</span>; ieInit;
+</pre><h2>Some informative text<a name="5"></a></h2><pre class="codeinput">UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'Validate rdata function.'</span>);
+</pre><h2>This is the base directory with SCIEN (ISET, ISETBIO, CISET) files<a name="6"></a></h2><p>We are hosting this site on scarlet.</p><pre class="codeinput">remote.host = <span class="string">'http://scarlet.stanford.edu/validation/SCIEN'</span>;
+</pre><h2>ls the lightfield directory for .mat files<a name="7"></a></h2><p>These are the light field data.  Because no extension is specified the .mat files are listed</p><pre class="codeinput">remote.directory = fullfile(<span class="string">'LIGHTFIELD'</span>);
+rdata(<span class="string">'cd'</span>,remote);
+rdata(<span class="string">'ls'</span>)  <span class="comment">% Returns all the .mat files in the web page listing</span>
+</pre><pre class="codeoutput">
+ans = 
+
+    'benchLF.mat'
+    'coneArray.mat'
+    'metronome.mat'
+    'metronomeLF-lowres.mat'
+    'metronomeLF.mat'
+    'metronomePinhole.mat'
+    'metronomeWideDOF.mat'
+    'benchHDR.mat'
+    'slantedBarMultLF320.mat'
+    'slantedBarMultLF320Diffract.mat'
+    'slantedBarMultLF80720.mat'
+    'slantedBarMultLF80Diffract.mat'
+    'slantedBarMultLF80Diffract720.mat'
+
+</pre><h2>Loading a variable from inside a matlab file<a name="8"></a></h2><p>This is an ISET scene with HDR data and a depth map</p><pre class="codeinput">remote.directory = fullfile(<span class="string">'LIGHTFIELD'</span>,<span class="string">'scene'</span>);
+tic;
+scene = rdata(<span class="string">'load data'</span>,remote,<span class="string">'benchHDR.mat'</span>,<span class="string">'scene'</span>);
+elapsedTime = toc;
+fprintf(<span class="string">'Remote read via rdata URL took %g seconds\n'</span>,elapsedTime);
+UnitTest.validationData(<span class="string">'scene'</span>, scene);
+</pre><pre class="codeoutput">Remote read via rdata URL took 99.4575 seconds
+</pre><h2>Load it via a FUSE/SSHFS mounted disk on OS/X and locally<a name="9"></a></h2><p>This is not run generally because the paths are specific to DHB's machine.</p><pre class="codeinput">CHECK_DHBTIMING = false;
+<span class="keyword">if</span> (CHECK_DHBTIMING)
+    <span class="comment">% Load a copy on the mounted crimson disk</span>
+    tic;
+    scene2 = load(<span class="string">'/Users/Shared/Volumes/CrimsonSCIEN/LIGHTFIELD/scene/benchHDR.mat'</span>,<span class="string">'scene'</span>);
+    elapsedTime = toc;
+    fprintf(<span class="string">'Remote read via FUSE/SSHFS took %g seconds\n'</span>,elapsedTime);
+
+    <span class="comment">% Load a copy off of David's desktop</span>
+    tic;
+    scene3 = load(<span class="string">'/Users/dhb/Desktop/benchHDR.mat'</span>,<span class="string">'scene'</span>);
+    elapsedTime = toc;
+    fprintf(<span class="string">'Local read took %g seconds\n'</span>,elapsedTime);
+<span class="keyword">end</span>
+</pre><h2>Show the scene<a name="10"></a></h2><pre class="codeinput"><span class="keyword">if</span> (runTimeParams.generatePlots)
+    vcAddObject(scene); sceneWindow;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_rdata_01.png" alt=""> <h2>Read an image file<a name="11"></a></h2><p>There are nice images here from Lubert Stryer</p><pre class="codeinput">remote.directory = fullfile(<span class="string">'RGB'</span>,<span class="string">'LStryer'</span>);
+img = rdata(<span class="string">'read image'</span>,remote,<span class="string">'twoBirds.jpg'</span>);
+UnitTest.validationData(<span class="string">'img'</span>, img);
+</pre><h2>Show the image<a name="12"></a></h2><pre class="codeinput"><span class="keyword">if</span> (runTimeParams.generatePlots)
+    vcNewGraphWin; imshow(img);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_rdata_02.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_rdata(varargin)
+%
+% Test the rdata (remote data) routine
+%
+% This routine enables users to pull data from a remote file system on the
+% web.
+%
+% Copyright Imageval Consulting, LLC  2015
+%
+% 7/15/15  dhb  Brought this into the UnitTestToolbox world.
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+%% Initialize ISETBIO
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate rdata function.');
+
+%% This is the base directory with SCIEN (ISET, ISETBIO, CISET) files
+%
+% We are hosting this site on scarlet.
+remote.host = 'http://scarlet.stanford.edu/validation/SCIEN';
+
+%% ls the lightfield directory for .mat files
+%
+% These are the light field data.  Because no extension is specified the
+% .mat files are listed
+remote.directory = fullfile('LIGHTFIELD');
+rdata('cd',remote);
+rdata('ls')  % Returns all the .mat files in the web page listing
+
+%% Loading a variable from inside a matlab file
+%
+% This is an ISET scene with HDR data and a depth map
+remote.directory = fullfile('LIGHTFIELD','scene');
+tic;
+scene = rdata('load data',remote,'benchHDR.mat','scene');
+elapsedTime = toc;
+fprintf('Remote read via rdata URL took %g seconds\n',elapsedTime);
+UnitTest.validationData('scene', scene);
+
+%% Load it via a FUSE/SSHFS mounted disk on OS/X and locally
+%
+% This is not run generally because the paths are specific to DHB's machine.
+CHECK_DHBTIMING = false;
+if (CHECK_DHBTIMING)
+    % Load a copy on the mounted crimson disk
+    tic;
+    scene2 = load('/Users/Shared/Volumes/CrimsonSCIEN/LIGHTFIELD/scene/benchHDR.mat','scene');
+    elapsedTime = toc;
+    fprintf('Remote read via FUSE/SSHFS took %g seconds\n',elapsedTime);
+    
+    % Load a copy off of David's desktop
+    tic;
+    scene3 = load('/Users/dhb/Desktop/benchHDR.mat','scene');
+    elapsedTime = toc;
+    fprintf('Local read took %g seconds\n',elapsedTime);
+end
+
+%% Show the scene
+if (runTimeParams.generatePlots)
+    vcAddObject(scene); sceneWindow;
+end
+
+%% Read an image file
+%
+% There are nice images here from Lubert Stryer
+remote.directory = fullfile('RGB','LStryer');
+img = rdata('read image',remote,'twoBirds.jpg');
+UnitTest.validationData('img', img);
+
+%% Show the image
+if (runTimeParams.generatePlots)
+    vcNewGraphWin; imshow(img);
+end
+
+end
+##### SOURCE END #####
+--></body></html>
