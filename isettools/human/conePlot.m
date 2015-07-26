@@ -5,18 +5,18 @@ function [support, spread, delta, coneMosaicImage] = ...
 %    [support, spread, delta, [coneMosaicImage]] = conePlot(xy,coneType, [support], [spread], [delta], [whiteBackground],[absorptions])
 %
 % INPUTS
-% xy:        cone xy positions (microns)
-% coneTYpe:  an integer from 1:4 where 1 means no cone (K), 2:4 are L,M,S
+%  xy:        cone xy positions (microns)
+%  coneTYpe:  an integer from 1:4 where 1 means no cone (K), 2:4 are L,M,S
 %            support, spread, delta are gaussian blurring parameters for
 %            creating the image 
-% support:   spatial support for each cone (computed by default)
-% spread:    spatial spread for each cone  (computed by default)
-% delta:     spacing between the cones (microns)
-% whiteBackground: boolean indicating whether to generate an image with
+%  support:   spatial support for each cone (computed by default)
+%  spread:    spatial spread for each cone  (computed by default)
+%  delta:     spacing between the cones (microns)
+%  whiteBackground: boolean indicating whether to generate an image with
 %                  white or black background
 % OUTPUTS
-% support, spread, delta - the values used to create the image
-% coneMosaicImage        - the image  
+%  support, spread, delta - the values used to create the image
+%  coneMosaicImage        - the image  
 %     If this fourth output argument is present, the function returns the
 %     RGB image and does NOT plotting the image
 %

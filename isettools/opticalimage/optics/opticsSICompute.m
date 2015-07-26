@@ -12,7 +12,7 @@ function oi = opticsSICompute(scene,oi)
 % Copyright ImagEval Consultants, LLC, 2005
 
 if notDefined('scene'), error('Scene required.'); end
-if notDefined('oi'), error('Opticalimage required.'); end
+if notDefined('oi'), error('Optical image required.'); end
 showWbar = ieSessionGet('waitbar');
 
 % Compute the basic parameters of the oi from the scene parameters.
@@ -22,7 +22,7 @@ oi = oiSet(oi, 'wave', sceneGet(scene, 'wave'));
 % This is the default compute path
 optics = oiGet(oi, 'optics');
 
-if isempty(opticsGet(optics, 'otfdata')), error('No psf data'); end
+if isempty(opticsGet(optics, 'otf data')), error('No otf data'); end
 
 % We use the custom data.
 optics = opticsSet(optics, 'spectrum', oiGet(oi,'spectrum'));

@@ -247,7 +247,7 @@ switch parm
         val = val(:); % column vector
         p = oiGet(oi, 'photons');
         if ~isempty(p)
-            [p, r, c] = RGB2XWFormat(p); % swtich to XW format
+            [p, r, c] = RGB2XWFormat(p); % switch to XW format
             p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
             p = XW2RGBFormat(p', r, c);
             oi = oiSet(oi, 'photons', p);
