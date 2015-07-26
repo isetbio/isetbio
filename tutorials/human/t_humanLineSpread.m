@@ -34,12 +34,14 @@ sensor = sensorCompute(sensor,oi);
 sensor = sensorSet(sensor,'name','human-D65');
 
 vcAddAndSelectObject(sensor);
-sensorWindow('scale',1);
+sensorWindow('scale',true);
 
 %% Plot a line showing the photon absorptions for the broadband stimulus
 y = sensorGet(sensor,'cols')/2;
 xy = [0 y];
 sensorPlotLine(sensor,'h','photons','space',xy);
+
+% sensorConePlot(sensor)
 
 %% Change the line scene to 450nm and plot
 preserveLuminance = 1;
