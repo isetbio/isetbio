@@ -250,7 +250,8 @@ switch pType
             if isempty(gSpacing), return; end
         end
         
-        imagesc(xCoords,yCoords,irrad); colormap(gray)
+        rgb = imageSPD(irrad,wave);
+        imagesc(xCoords,yCoords,rgb); 
         xlabel('Position (um)'); ylabel('Position (um)');
         
         udata.irrad = irrad;

@@ -2,7 +2,7 @@
 %
 % Illustrate the photon absorptions from a line stimulus.
 %
-% This iillustrates the practical measurement of the human line spread
+% This illustrates the practical measurement of the human line spread
 % function, including photon noise, irregular spacing, and so forth.
 %
 % We illustrate the result for various spectral power distributions of the
