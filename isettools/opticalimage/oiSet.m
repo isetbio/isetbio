@@ -241,23 +241,22 @@ switch parm
         % oi = oiSet(oi,'wave',val)
         % Set sampling wavelength if new sampling is not the same as
         % existing wavelength sampling
-        if isequal(oiGet(oi, 'wave'), val), return; end
+        if isequal(oiGet(oi, 'wave'), val(:)), return; end
         
         % Interpolate photons because the wavelength is changed
-        val = val(:); % column vector
-        p = oiGet(oi, 'photons');
-        if ~isempty(p)
-            [p, r, c] = RGB2XWFormat(p); % switch to XW format
-            p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
-            p = XW2RGBFormat(p', r, c);
-            oi = oiSet(oi, 'photons', p);
-        end
+        % Not sure we need to do this, so for now I am commenting it out.
+        % Maybe we should clear the data since it is no longer consistent.
+        %         p = oiGet(oi, 'photons');
+        %         if ~isempty(p)
+        %             [p, r, c] = RGB2XWFormat(p); % switch to XW format
+        %             p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
+        %             p = XW2RGBFormat(p', r, c);
+        %             oi = oiSet(oi, 'photons', p);
+        %         end
         
-        % Change wavelength for optics, too.
-        oi = oiSet(oi, 'optics wave', val);
-        
-        % Set new wavelegnth samples
-        oi.spectrum.wave = val;
+        % Set new wavelegnth samples.  At this point the photon data might
+        % be inconsistent.  So, we empty them out.
+        oi.spectrum.wave = val(:);
 
         % Optical methods
     case {'opticsmodel'}

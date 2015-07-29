@@ -8,7 +8,7 @@ function validateFullOne(varargin)
     UnitTest.setPref('onRunTimeErrorBehavior', 'catchExceptionAndContinue');
 
     % Plot generation
-    UnitTest.setPref('generatePlots',  false);
+    % UnitTest.setPref('generatePlots',  false);
     UnitTest.setPref('closeFigsOnInit', true);
 
     %% Verbosity Level

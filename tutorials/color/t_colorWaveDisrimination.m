@@ -1,10 +1,10 @@
 %% t_colorWaveDiscrimination
 %
-% Illustrate how wavelength discrimination depends on the mean level given
-% standard assumptions about photon noise (no photoreceptor noise or neural
-% noise).
+% Illustrate how wavelength discrimination depends on the mean luminance
+% level given standard assumptions about photon noise (no photoreceptor
+% noise or neural noise).
 %
-% BW (c)ISETBIO Team
+% BW (c)ISETBIO Team, 2015
 
 % 
 ieInit
@@ -55,7 +55,6 @@ for rr = 1:nLum
         %% Create a monochromatic scene and set the radiance
         % The wavelength is specified in wSamples.
         scene{ww} = sceneCreate('uniform monochromatic',wSamples(:,ww),sz);
-        % scene{ww} = sceneSet(scene{ww},'peak photon radiance',peakRadiance(rr));
         
         % Some people scale for luminance, or equal L+M, which we could do.
         % We could go equal energy, not equal photon.
@@ -65,8 +64,7 @@ for rr = 1:nLum
         % (This oiCreate shouldn't be necessary.  But there is a problem
         % with the monochrome scenes, so we start with a new oi until this
         % is fixed.  The code runs without this in ISET.)
-        oi = oiCreate('human');  
-        oi = oiCompute(scene{ww},oi);
+        oi = oiCompute(oi,scene{ww});
         
         % Create a human sensor.
         sensor{ww} = cSensor;
@@ -79,7 +77,7 @@ for rr = 1:nLum
         sensor{ww} = sensorSet(sensor{ww},'name',sprintf('wave %.0f',wSamples(1,ww)));
         
         % If you want to have a look at the image, run this line.
-        % vcAddAndSelectObject(sensor{ww}); sensorImageWindow;
+        % vcAddObject(sensor{ww}); sensorImageWindow;
     end
 
     %% Extract the data for plotting
