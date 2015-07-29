@@ -254,9 +254,20 @@ switch parm
         %             oi = oiSet(oi, 'photons', p);
         %         end
         
-        % Set new wavelegnth samples.  At this point the photon data might
-        % be inconsistent.  So, we empty them out.
+        % Set new wavelegnth samples.  
         oi.spectrum.wave = val(:);
+        
+        % At this point the photon data might be inconsistent.  So, we
+        % zero the data if the wavelength information doesn't match.  We
+        % don't clear the data, however, because the row/col information
+        % include spatial measurements that are needed subsequently.
+        if checkfields(oi,'data','photons')
+            if length(val) ~= size(oi.data.photons,3)
+                disp('Setting oi photon data to zero.')
+                sz = oiGet(oi,'size');
+                oi = oiSet(oi,'photons',zeros(sz(1),sz(2),length(val)));
+            end
+        end
 
         % Optical methods
     case {'opticsmodel'}
