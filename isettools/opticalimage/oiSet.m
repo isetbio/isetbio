@@ -272,7 +272,7 @@ switch parm
             if oldWave(1) < val(1) && oldWave(end) > val(end)
                 % Interpolation OK.  If the original is monochromatic, we
                 % can't interpolate. 
-                disp('Photon data are being interpolated');
+                disp('Interpolating OI photon data');
                 p = oiGet(oi, 'photons');
                 if ~isempty(p)
                     [p, r, c] = RGB2XWFormat(p); % switch to XW format
