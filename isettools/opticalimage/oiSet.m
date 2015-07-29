@@ -255,15 +255,33 @@ switch parm
         %         end
         
         % Set new wavelegnth samples.  
+        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; end
         oi.spectrum.wave = val(:);
         
-        % At this point the photon data might be inconsistent.  So, we
-        % zero the data if the wavelength information doesn't match.  We
-        % don't clear the data, however, because the row/col information
+        % At this point the photon data might be inconsistent.  
+        % One possibility is to ignore this and let the next computation
+        % take care of it.  But I think we won't be able to open the
+        % oiWindow in this sate.
+        % 
+        % So, we zero the data if the wavelength information doesn't match.
+        % We don't clear the data, however, because the row/col information
         % include spatial measurements that are needed subsequently.
         if checkfields(oi,'data','photons')
-            if length(val) ~= size(oi.data.photons,3)
-                disp('Setting oi photon data to zero.')
+            % Ok, so now we have to deal with the photon data.  If we are
+            % here, we know there is a mis-match.
+            if oldWave(1) < val(1) && oldWave(end) > val(end)
+                % Interpolation OK.  If the original is monochromatic, we
+                % can't interpolate. 
+                disp('Photon data are being interpolated');
+                p = oiGet(oi, 'photons');
+                if ~isempty(p)
+                    [p, r, c] = RGB2XWFormat(p); % switch to XW format
+                    p = interp1(oldWave, p', val, 'linear*', 0);
+                    p = XW2RGBFormat(p', r, c);
+                    oi = oiSet(oi, 'photons', p);
+                end
+            else
+                disp('Extrapolation -  Setting oi photon data to zero.')
                 sz = oiGet(oi,'size');
                 oi = oiSet(oi,'photons',zeros(sz(1),sz(2),length(val)));
             end
