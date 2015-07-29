@@ -100,7 +100,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_01.png" alt=""> <h2>Compute optial image, for delta function optics.<a name="10"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
+</pre><h2>Compute optial image, for delta function optics.<a name="10"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
     optics = oiGet(oi,<span class="string">'optics'</span>);
     optics = opticsSet(optics,<span class="string">'off axis method'</span>,<span class="string">'skip'</span>);
     optics = opticsSet(optics,<span class="string">'otf method'</span>,<span class="string">'skip otf'</span>);
@@ -110,7 +110,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddObject(oi); oiWindow;
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_02.png" alt=""> <h2>Compute sensor image<a name="11"></a></h2><p>Integration time is set to 1 second, so this comes out as isomserizations per second.  The run without photon/shot noise, so that the comparison will not be stochastic.</p><pre class="codeinput">    sensorDegrees = 2;
+</pre><h2>Compute sensor image<a name="11"></a></h2><p>Integration time is set to 1 second, so this comes out as isomserizations per second.  The run without photon/shot noise, so that the comparison will not be stochastic.</p><pre class="codeinput">    sensorDegrees = 2;
     roiPixels = 10;
     sensor = sensorCreate(<span class="string">'human'</span>);
     sensor = sensorSet(sensor,<span class="string">'wave'</span>,displayGet(d,<span class="string">'wave'</span>));
@@ -123,7 +123,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddObject(sensor); sensorWindow(<span class="string">'scale'</span>,1);
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_03.png" alt=""> <h2>Get the LMS isomerization rates out of the sensor image<a name="12"></a></h2><p>Pull out responses of each cone type within ROI. I am doing this by brute force, because I can't find quite the right combination of ROI gets from the sensor image.</p><pre class="codeinput">    isetbioIsomerizationsArray = sensorGet(sensor,<span class="string">'photons'</span>);
+</pre><h2>Get the LMS isomerization rates out of the sensor image<a name="12"></a></h2><p>Pull out responses of each cone type within ROI. I am doing this by brute force, because I can't find quite the right combination of ROI gets from the sensor image.</p><pre class="codeinput">    isetbioIsomerizationsArray = sensorGet(sensor,<span class="string">'photons'</span>);
     sensorCFA = sensorGet(sensor,<span class="string">'cfa'</span>);
     sensorSizePixels = sensorGet(sensor,<span class="string">'size'</span>);
     rect = round([sensorSizePixels(2)/2,sensorSizePixels(1)/2,roiPixels,roiPixels]);
@@ -207,7 +207,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(1)-isetbioRGBToTestPrimary(1)),<span class="string">'Red inversion comparison'</span>,tolerance);
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(2)-isetbioRGBToTestPrimary(2)),<span class="string">'Green inversion comparison'</span>,tolerance);
     UnitTest.assertIsZero(abs(ptbRGBToTestPrimary(3)-isetbioRGBToTestPrimary(3)),<span class="string">'Blue inversion comparison'</span>,tolerance);
-</pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_04.png" alt=""> <h2>Easy to check if PTB LUT inversion is invertible<a name="17"></a></h2><pre class="codeinput">    ptbRGBToTestCheck = PrimaryToSettings(PTBcal,ptbRGBToTestPrimary);
+</pre><h2>Easy to check if PTB LUT inversion is invertible<a name="17"></a></h2><pre class="codeinput">    ptbRGBToTestCheck = PrimaryToSettings(PTBcal,ptbRGBToTestPrimary);
     tolerance = 0.001;
     UnitTest.assertIsZero(abs(ptbRGBToTestCheck(1)-RGBToTest(1)),<span class="string">'PTB red settings-&gt;primary-&gt;settings check'</span>,tolerance);
     UnitTest.assertIsZero(abs(ptbRGBToTestCheck(2)-RGBToTest(2)),<span class="string">'PTB green settings-&gt;primary-&gt;settings check'</span>,tolerance);
@@ -223,7 +223,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
         xlabel(<span class="string">'Wavelength (nm)'</span>);
         ylabel(<span class="string">'Irradiance (quanta/[sec-m2]'</span>);
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_05.png" alt=""> <h2>PTB conversion to isomerization rates<a name="19"></a></h2><p>This gives isomerization rates for a cone with a collecting area of one square meter.</p><pre class="codeinput">    ptbLMSIsomerizationsRaw = SettingsToSensor(PTBcal,RGBToTest);
+</pre><h2>PTB conversion to isomerization rates<a name="19"></a></h2><p>This gives isomerization rates for a cone with a collecting area of one square meter.</p><pre class="codeinput">    ptbLMSIsomerizationsRaw = SettingsToSensor(PTBcal,RGBToTest);
 
     <span class="comment">% Adjust by cone size used in isetbio</span>
     pixel = sensorGet(sensor,<span class="string">'pixel'</span>);
