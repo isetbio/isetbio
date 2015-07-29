@@ -2,7 +2,7 @@
 %
 % Illustrate the photon absorptions from a line stimulus.
 %
-% This iillustrates the practical measurement of the human line spread
+% This illustrates the practical measurement of the human line spread
 % function, including photon noise, irregular spacing, and so forth.
 %
 % We illustrate the result for various spectral power distributions of the
@@ -34,12 +34,14 @@ sensor = sensorCompute(sensor,oi);
 sensor = sensorSet(sensor,'name','human-D65');
 
 vcAddAndSelectObject(sensor);
-sensorWindow('scale',1);
+sensorWindow('scale',true);
 
 %% Plot a line showing the photon absorptions for the broadband stimulus
 y = sensorGet(sensor,'cols')/2;
 xy = [0 y];
 sensorPlotLine(sensor,'h','photons','space',xy);
+
+% sensorConePlot(sensor)
 
 %% Change the line scene to 450nm and plot
 preserveLuminance = 1;

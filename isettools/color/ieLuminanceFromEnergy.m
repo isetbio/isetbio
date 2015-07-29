@@ -53,7 +53,7 @@ V = ieReadSpectra(fName,wave);
 % 683 is the standard factor for conversion when the energy are in Watts.
 % The wavelength difference accounts for the wavelength sampling.
 if numel(wave) > 1,  dWave = wave(2) - wave(1);
-else                 dWave = 10;   disp('10 nm band assumed');
+else                 dWave = 10;   disp('ieLuminanceFromEnergy monochrome: 10 nm band assumed');
 end
 lum = 683*(xwData*V) * dWave;
 

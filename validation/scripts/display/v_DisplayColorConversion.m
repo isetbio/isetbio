@@ -88,7 +88,7 @@ try
     oi = oiCompute(scene,oi);
     oi = oiSet(oi,'fov',sceneDegrees);
     if (runTimeParams.generatePlots)
-        vcAddAndSelectObject(oi); oiWindow;
+        vcAddObject(oi); oiWindow;
     end
     
     %% Compute sensor image
@@ -107,7 +107,7 @@ try
     [sensor, ~] = sensorSetSizeToFOV(sensor,sensorDegrees,scene,oi);
     sensor = sensorCompute(sensor,oi);
     if (runTimeParams.generatePlots)
-        vcAddAndSelectObject(sensor); sensorWindow('scale',1);
+        vcAddObject(sensor); sensorWindow('scale',1);
     end
     
     %% Get the LMS isomerization rates out of the sensor image
@@ -129,7 +129,8 @@ try
         % those things about ISETBIO that you have to know.  
         coneType = sensorCFA.pattern(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2))-1;
         if (coneType > 0)
-            sumIsomerizations(coneType) = sumIsomerizations(coneType)+isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
+            sumIsomerizations(coneType) = sumIsomerizations(coneType) + ...
+                isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
             nSummed(coneType) = nSummed(coneType) + 1;
         end
     end
@@ -140,7 +141,7 @@ try
     % Get cone fundamentals out of isetbio sensor.  We keep these as
     % quantal efficiencies, because it is easier to think about how light
     % produces isomerizations if we work in quantal units.
-    S_cones = WlsToS(sensorGet(sensor,'wave'));
+    S_cones   = WlsToS(sensorGet(sensor,'wave'));
     T_conesQE = sensorGet(sensor,'spectral qe')';
     T_conesQE = T_conesQE(2:4,:);
     
@@ -301,25 +302,25 @@ end
 % Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.
 % We want to remove this override, so we can use the original PTB functions
 % without the CalStructOBJ (which is found only on our computers).
-function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
-
-removedFolderFromCurrentPath = '';
-originalPath = path;
-
-% Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path
-PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';
-
-% determine if the PTBoverridesDirToRemoveFromPath is in the current path,
-% and if it is remove it.
-pathCell = regexp(path, pathsep, 'split');
-for k = 1:numel(pathCell)
-  % fprintf('[%d] = %s\n', k, pathCell{k});
-   if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
-       rmpath(pathCell{k});
-       removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
-       fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);
-   end
-end
-
-end
+% function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
+% 
+% removedFolderFromCurrentPath = '';
+% originalPath = path;
+% 
+% % Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path
+% PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';
+% 
+% % determine if the PTBoverridesDirToRemoveFromPath is in the current path,
+% % and if it is remove it.
+% pathCell = regexp(path, pathsep, 'split');
+% for k = 1:numel(pathCell)
+%   % fprintf('[%d] = %s\n', k, pathCell{k});
+%    if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
+%        rmpath(pathCell{k});
+%        removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
+%        fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);
+%    end
+% end
+% 
+% end
 

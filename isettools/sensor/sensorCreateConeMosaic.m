@@ -25,31 +25,22 @@ function sensor = sensorCreateConeMosaic(sensor,coneP)
 % Returns
 %  sensor:   Human sensor
 %  xy:       Cone xy positions
-%  coneType: Vector? of cone types 1:4 for K,L,M,S
+%  coneType: Vector of cone types 1:4 for K,L,M,S
 %
 % See also:  For an alternative method use:
 %
-%               sz: [200 200]
-%     rgbDensities: [0 0 0.6667 0.3333]
-%     coneAperture: [1.5000e-006 1.5000e-006]
-%            rSeed: 10
-%   sensor = sensorCreate('human',[],params);
+%   coneP = coneCreate;  % Then adjust the coneP values using coneSet/Get
+%   sensor = sensorCreate('human',[],coneP);
 %
 % Examples:
-%  sensor = sensorCreateConeMosaic(sensorCreate);
+%  sensor = sensorCreate('human');
+%  sensor = sensorCreateConeMosaic(sensor,coneCreate);
 %  xy = sensorGet(sensor, 'cone xy'); 
 %  coneType = sensorGet(sensor, 'coneType');
-%  figure(1); plot(sensorGet(sensor,'wave'),sensorGet(sensor,'spectralQE'));
-%  figure(1); conePlot(xy,coneType);
-%  figure(1); sensorConePlot(sensor)
 %
-%
-%  params.sz = [72,88]; params.densities = [0.55, 0.3, 0.1];
-%  params.coneAperture = [3 3]*1e-6 % Microns
-%  sensor = sensorCreateConeMosaic(sensorCreate, params);
-%  xy = sensorGet(sensor, 'cone xy'); 
-%  coneType = sensorGet(sensor, 'coneType');
-%  figure(1); conePlot(xy,coneType);
+%  vcNewGraphWin; plot(sensorGet(sensor,'wave'),sensorGet(sensor,'spectralQE'));
+%  vcNewGraphWin; conePlot(xy,coneType);
+%  vcNewGraphWin; sensorConePlot(sensor)
 %
 % See also:  sensorCreate('human'), coneCreate
 %

@@ -3,18 +3,17 @@ function [uData, g] = sensorPlot(sensor, pType, roiLocs, varargin)
 %
 %   [uData, g] = sensorPlot([sensor], pType, roiLocs, varargin)
 %
-% These plots characterizing the data, sensor parts, or performance of
-% the sensor.  There are many types of plots, and as part of the function
-% they also return the rendered data.  
+% These plots characterize the data, sensor parts, or performance of the
+% sensor.  They return the rendered data.
 %
 % Inputs:
 %  sensor: The image sensor
 %  pType:  The plot type
 %  roiLocs:  When needed, these specify the region of interest
-% Additional arguments may be required for different plot types.
+%  varargin: Additional arguments may be required for different plot types.
 %
 % Outputs:
-%  uData:  Structure of the plotted (user data)
+%  uData:  Structure containing the plotted user data
 %  g:      Figure handle
 %
 % In general, you can prevent showing the figure by terminating the
@@ -24,23 +23,23 @@ function [uData, g] = sensorPlot(sensor, pType, roiLocs, varargin)
 % 
 % In this case, the data will be returned, but no figure will be produced.
 %
-% The main routine, sensorPlot, is a gateway to many other characterization
-% and plotting routines.  These are contained within this file.  Sensor
-% plotting should be called from here, if at all possible, so we can avoid
-% duplication.
+% This routine, sensorPlot, is a gateway to many other plotting routines.
+% Many of these specialized routines are contained within this file. Sensor
+% plotting should be called via this function, if at all possible, because
+% that will help us avoid duplication.
 %
 % The properties that can be plotted are:
 %
 % Sensor Data plots
-%  'electrons hline'
-%  'electrons vline'
-%  'volts hline'
-%  'volts vline'
-%  'dv vline'
-%  'dv hline'
-%  'volts histogram'
-%  'electrons histogram'
-% ' shot noise'
+%  'photons hline'   - Photon absorptions on a horizontal line 
+%  'photons vline'   - Photon absorptions on a vertical line
+%  'volts hline'     - Voltage horizontal line
+%  'volts vline'     - Voltage vertical line
+%  'dv vline'        - Digital values
+%  'dv hline'        - Digital values
+%  'volts histogram'   - Voltage histogram in an ROI
+%  'photons histogram' - Photon absorptions in an ROI
+% ' shot noise'        - Shot noise levels in an ROI
 % 
 % Color filter properties
 %  'cfa block'
@@ -49,34 +48,40 @@ function [uData, g] = sensorPlot(sensor, pType, roiLocs, varargin)
 %  'ir filter'
 %
 % Electrical properties
-%  'pixel spectral qe'
-%     % Volts/Quantum response by wavelength
-%  'pixel spectral sr'
-%     % Volts/Energy response by wavelength
-%  'sensor spectral qe'
-%  'pixel snr'
+%  'pixel spectral qe'  -  Volts/Quantum response by wavelength
+%  'pixel spectral sr'  -  Volts/Energy response by wavelength
+%  'sensor spectral qe' -  Volts/quantum of pixel and any additional filters
+%  'pixel snr' 
 %  'sensor snr'
-%  'dsnu'
-%  'prnu'
+%  'dsnu'  -  Dark signal nonuniformity
+%  'prnu'  -  Photoresponse nonuniformity
 % 
 % Optics related
-%  'etendue'
+%  'etendue' - 
 % 
-% % Human
-% 'conemosaic' % Not sure
+%  'Human cone mosaic'    - Saturated image of the human cones
+%  'Human cone responses' - Saturated image of cones scaled by absorptions
+%  'human demosaic image' - Render an sRGB image that produces a pattern of
+%                           cone absorptions in the sensor
 %
 % Color filter array and spectra
 %
-%Example:
+%Examples:
 % scene = sceneCreate;
 % scene = sceneSet(scene,'fov',2);
-% oi = oiCreate; oi = oiCompute(oi,scene);
-% sensor = sensorCreate; sensor = sensorCompute(sensor,oi);
+% oi = oiCreate('human'); oi = oiCompute(oi,scene);
+% sensor = sensorCreate('human'); 
+% sensor = sensorCompute(sensor,oi);
 %
 % sensorPlot(sensor,'electrons hline',[20 20]);
 % sensorPlot(sensor,'volts vline',[20 20]);
 %
 % uData = sensorPlot(sensor,'volts vline ',[53 1],'no fig');
+%
+% sensorPlot(sensor,'human demosaic image')
+% sensorPlot(sensor,'cone mosaic') % Saturated image of cones
+% 
+%
 %
 % (c) Imageval Consulting, LLC, 2012
 
@@ -91,6 +96,7 @@ pType = ieParamFormat(pType);
 if notDefined('roiLocs')
     switch lower(pType)
         case {'voltshline','electronshline',...
+                'photonshline','photonsvline',...
                 'voltsvline', 'electronsvline', ...
                 'dvvline', 'dvhline'}
             
@@ -98,6 +104,7 @@ if notDefined('roiLocs')
             roiLocs = vcPointSelect(sensor);
             
         case {'electronshistogram','electronshist'...
+                'photonshistogram','photonshist',...
                 'voltshistogram','voltshist'}
             % Region of interest plots
             roiLocs = vcROISelect(sensor);
@@ -118,10 +125,10 @@ end
 switch pType
     
     % Sensor data related
-    case {'electronshline'}
-        [uData, g] = sensorPlotLine(sensor, 'h', 'electrons', 'space', roiLocs);
-    case {'electronsvline'}
-        [uData, g] = sensorPlotLine(sensor, 'v', 'electrons', 'space', roiLocs);
+    case {'electronshline','photonshline'}
+        [uData, g] = sensorPlotLine(sensor, 'h', 'photons', 'space', roiLocs);
+    case {'electronsvline','photonsvline'}
+        [uData, g] = sensorPlotLine(sensor, 'v', 'photons', 'space', roiLocs);
     case {'voltshline'}
         [uData, g] = sensorPlotLine(sensor, 'h', 'volts', 'space', roiLocs);
     case {'voltsvline'}
@@ -132,7 +139,7 @@ switch pType
         [uData, g] = sensorPlotLine(sensor, 'h', 'dv', 'space', roiLocs);
     case {'voltshistogram','voltshist'}
         [uData,g] = sensorPlotHist(sensor,'v',roiLocs);
-    case {'electronshistogram','electronshist'}
+    case {'electronshistogram','electronshist','photonshistogram','photonshist'}
         [uData,g] = sensorPlotHist(sensor,'e',roiLocs);
     case {'shotnoise'}
         [uData, g] = imageNoise('shot noise');
@@ -183,6 +190,7 @@ switch pType
         uData.delta = delta;
         g = gcf;
     case {'humandemosaicimage'}
+        %  Render an image that produces a pattern of cone absorptions
         if ~isempty(varargin)
             uData.srgb = sensorDemosaicCones(sensor, varargin{:});
         else

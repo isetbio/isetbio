@@ -37,12 +37,15 @@ rdata('ls')  % Returns all the .mat files in the web page listing
 %% Loading a variable from inside a matlab file
 %
 % This is an ISET scene with HDR data and a depth map
-remote.directory = fullfile('LIGHTFIELD','scene');
-tic;
-scene = rdata('load data',remote,'benchHDR.mat','scene');
-elapsedTime = toc;
-fprintf('Remote read via rdata URL took %g seconds\n',elapsedTime);
-UnitTest.validationData('scene', scene);
+% I think this is too big a file for validation, particularly when I am
+% traveling in a hotel room. BW
+
+% remote.directory = fullfile('LIGHTFIELD','scene');
+% tic;
+% scene = rdata('load data',remote,'benchHDR.mat','scene');
+% elapsedTime = toc;
+% fprintf('Remote read via rdata URL took %g seconds\n',elapsedTime);
+% UnitTest.validationData('scene', scene);
 
 %% Load it via a FUSE/SSHFS mounted disk on OS/X and locally
 %
@@ -63,15 +66,16 @@ if (CHECK_DHBTIMING)
 end
 
 %% Show the scene
-if (runTimeParams.generatePlots)
-    vcAddObject(scene); sceneWindow;
-end
+% if (runTimeParams.generatePlots)
+%     vcAddObject(scene); sceneWindow;
+% end
 
 %% Read an image file
 %
 % There are nice images here from Lubert Stryer
 remote.directory = fullfile('RGB','LStryer');
-img = rdata('read image',remote,'twoBirds.jpg');
+fprintf('Image read from scarlet\n');
+tic; img = rdata('read image',remote,'twoBirds.jpg'); toc;
 UnitTest.validationData('img', img);
 
 %% Show the image
