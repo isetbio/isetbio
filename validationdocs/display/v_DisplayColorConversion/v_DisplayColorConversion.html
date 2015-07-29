@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-28"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
+      --><title>v_DisplayColorConversion</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-07-30"><meta name="DC.source" content="v_DisplayColorConversion.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -108,7 +108,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     oi = oiCompute(scene,oi);
     oi = oiSet(oi,<span class="string">'fov'</span>,sceneDegrees);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
-        vcAddAndSelectObject(oi); oiWindow;
+        vcAddObject(oi); oiWindow;
     <span class="keyword">end</span>
 </pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_02.png" alt=""> <h2>Compute sensor image<a name="11"></a></h2><p>Integration time is set to 1 second, so this comes out as isomserizations per second.  The run without photon/shot noise, so that the comparison will not be stochastic.</p><pre class="codeinput">    sensorDegrees = 2;
     roiPixels = 10;
@@ -121,7 +121,7 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
     [sensor, ~] = sensorSetSizeToFOV(sensor,sensorDegrees,scene,oi);
     sensor = sensorCompute(sensor,oi);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
-        vcAddAndSelectObject(sensor); sensorWindow(<span class="string">'scale'</span>,1);
+        vcAddObject(sensor); sensorWindow(<span class="string">'scale'</span>,1);
     <span class="keyword">end</span>
 </pre><img vspace="5" hspace="5" src="v_DisplayColorConversion_03.png" alt=""> <h2>Get the LMS isomerization rates out of the sensor image<a name="12"></a></h2><p>Pull out responses of each cone type within ROI. I am doing this by brute force, because I can't find quite the right combination of ROI gets from the sensor image.</p><pre class="codeinput">    isetbioIsomerizationsArray = sensorGet(sensor,<span class="string">'photons'</span>);
     sensorCFA = sensorGet(sensor,<span class="string">'cfa'</span>);
@@ -137,12 +137,13 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
         <span class="comment">% those things about ISETBIO that you have to know.</span>
         coneType = sensorCFA.pattern(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2))-1;
         <span class="keyword">if</span> (coneType &gt; 0)
-            sumIsomerizations(coneType) = sumIsomerizations(coneType)+isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
+            sumIsomerizations(coneType) = sumIsomerizations(coneType) + <span class="keyword">...</span>
+                isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
             nSummed(coneType) = nSummed(coneType) + 1;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
     isetbioLMSIsomerizations = sumIsomerizations ./ nSummed;
-</pre><h2>Get cone fundamentals that ISETBIO is using, for use with PTB routines.<a name="13"></a></h2><p>Get cone fundamentals out of isetbio sensor.  We keep these as quantal efficiencies, because it is easier to think about how light produces isomerizations if we work in quantal units.</p><pre class="codeinput">    S_cones = WlsToS(sensorGet(sensor,<span class="string">'wave'</span>));
+</pre><h2>Get cone fundamentals that ISETBIO is using, for use with PTB routines.<a name="13"></a></h2><p>Get cone fundamentals out of isetbio sensor.  We keep these as quantal efficiencies, because it is easier to think about how light produces isomerizations if we work in quantal units.</p><pre class="codeinput">    S_cones   = WlsToS(sensorGet(sensor,<span class="string">'wave'</span>));
     T_conesQE = sensorGet(sensor,<span class="string">'spectral qe'</span>)';
     T_conesQE = T_conesQE(2:4,:);
 </pre><h2>Create PTB calibration structure from ISETBIO display object<a name="14"></a></h2><p>Specify parameters.  Screen dot pitch and pixel size have no effect on this comparison, but we make something up just to remind us of how to do this in the display to cal conversion should we ever be looking here to figure it out.</p><pre class="codeinput">    wave = displayGet(d, <span class="string">'wave'</span>);
@@ -265,27 +266,27 @@ varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 <span class="comment">% Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.</span>
 <span class="comment">% We want to remove this override, so we can use the original PTB functions</span>
 <span class="comment">% without the CalStructOBJ (which is found only on our computers).</span>
-<span class="keyword">function</span> [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
-
-removedFolderFromCurrentPath = <span class="string">''</span>;
-originalPath = path;
-
-<span class="comment">% Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path</span>
-PTBoverridesDirToRemoveFromPath = <span class="string">'/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3'</span>;
-
-<span class="comment">% determine if the PTBoverridesDirToRemoveFromPath is in the current path,</span>
-<span class="comment">% and if it is remove it.</span>
-pathCell = regexp(path, pathsep, <span class="string">'split'</span>);
-<span class="keyword">for</span> k = 1:numel(pathCell)
-  <span class="comment">% fprintf('[%d] = %s\n', k, pathCell{k});</span>
-   <span class="keyword">if</span> (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
-       rmpath(pathCell{k});
-       removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
-       fprintf(<span class="string">'Found ''%s'' path in entry %d. Removing it from the path.\n'</span>, pathCell{k},k);
-   <span class="keyword">end</span>
-<span class="keyword">end</span>
-
-<span class="keyword">end</span>
+<span class="comment">% function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides</span>
+<span class="comment">%</span>
+<span class="comment">% removedFolderFromCurrentPath = '';</span>
+<span class="comment">% originalPath = path;</span>
+<span class="comment">%</span>
+<span class="comment">% % Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path</span>
+<span class="comment">% PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';</span>
+<span class="comment">%</span>
+<span class="comment">% % determine if the PTBoverridesDirToRemoveFromPath is in the current path,</span>
+<span class="comment">% % and if it is remove it.</span>
+<span class="comment">% pathCell = regexp(path, pathsep, 'split');</span>
+<span class="comment">% for k = 1:numel(pathCell)</span>
+<span class="comment">%   % fprintf('[%d] = %s\n', k, pathCell{k});</span>
+<span class="comment">%    if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))</span>
+<span class="comment">%        rmpath(pathCell{k});</span>
+<span class="comment">%        removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};</span>
+<span class="comment">%        fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);</span>
+<span class="comment">%    end</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_DisplayColorConversion(varargin)
@@ -378,7 +379,7 @@ try
     oi = oiCompute(scene,oi);
     oi = oiSet(oi,'fov',sceneDegrees);
     if (runTimeParams.generatePlots)
-        vcAddAndSelectObject(oi); oiWindow;
+        vcAddObject(oi); oiWindow;
     end
     
     %% Compute sensor image
@@ -397,7 +398,7 @@ try
     [sensor, ~] = sensorSetSizeToFOV(sensor,sensorDegrees,scene,oi);
     sensor = sensorCompute(sensor,oi);
     if (runTimeParams.generatePlots)
-        vcAddAndSelectObject(sensor); sensorWindow('scale',1);
+        vcAddObject(sensor); sensorWindow('scale',1);
     end
     
     %% Get the LMS isomerization rates out of the sensor image
@@ -419,7 +420,8 @@ try
         % those things about ISETBIO that you have to know.  
         coneType = sensorCFA.pattern(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2))-1;
         if (coneType > 0)
-            sumIsomerizations(coneType) = sumIsomerizations(coneType)+isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
+            sumIsomerizations(coneType) = sumIsomerizations(coneType) + ...
+                isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
             nSummed(coneType) = nSummed(coneType) + 1;
         end
     end
@@ -430,7 +432,7 @@ try
     % Get cone fundamentals out of isetbio sensor.  We keep these as
     % quantal efficiencies, because it is easier to think about how light
     % produces isomerizations if we work in quantal units.
-    S_cones = WlsToS(sensorGet(sensor,'wave'));
+    S_cones   = WlsToS(sensorGet(sensor,'wave'));
     T_conesQE = sensorGet(sensor,'spectral qe')';
     T_conesQE = T_conesQE(2:4,:);
     
@@ -591,27 +593,27 @@ end
 % Helper method to remove the BrainardLabPTBOverrides folder if it exists on the current path.
 % We want to remove this override, so we can use the original PTB functions
 % without the CalStructOBJ (which is found only on our computers).
-function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
-
-removedFolderFromCurrentPath = '';
-originalPath = path;
-
-% Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path
-PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';
-
-% determine if the PTBoverridesDirToRemoveFromPath is in the current path,
-% and if it is remove it.
-pathCell = regexp(path, pathsep, 'split');
-for k = 1:numel(pathCell)
-  % fprintf('[%d] = %s\n', k, pathCell{k});
-   if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
-       rmpath(pathCell{k});
-       removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
-       fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);
-   end
-end
-
-end
+% function [removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides
+% 
+% removedFolderFromCurrentPath = '';
+% originalPath = path;
+% 
+% % Folder to remove the Overrides/PTB-3 folder from the current path, if the folder exists on the path
+% PTBoverridesDirToRemoveFromPath = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/Overrides/PTB-3';
+% 
+% % determine if the PTBoverridesDirToRemoveFromPath is in the current path,
+% % and if it is remove it.
+% pathCell = regexp(path, pathsep, 'split');
+% for k = 1:numel(pathCell)
+%   % fprintf('[%d] = %s\n', k, pathCell{k});
+%    if (strncmpi(pathCell{k}, PTBoverridesDirToRemoveFromPath, numel(PTBoverridesDirToRemoveFromPath)))
+%        rmpath(pathCell{k});
+%        removedFolderFromCurrentPath{numel(removedFolderFromCurrentPath)+1} = pathCell{k};
+%        fprintf('Found ''%s'' path in entry %d. Removing it from the path.\n', pathCell{k},k);
+%    end
+% end
+% 
+% end
 
 
 ##### SOURCE END #####
