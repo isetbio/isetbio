@@ -64,6 +64,7 @@ for rr = 1:nLum
         % (This oiCreate shouldn't be necessary.  But there is a problem
         % with the monochrome scenes, so we start with a new oi until this
         % is fixed.  The code runs without this in ISET.)
+        oi = oiClearData(oi);
         oi = oiCompute(oi,scene{ww});
         
         % Create a human sensor.
