@@ -16,7 +16,7 @@ vcAddAndSelectObject(sensor);
 sensorWindow('scale',1');
 
 %%
-sensorPlot(sensor,'electrons hline',[20 20]);
+sensorPlot(sensor,'photons hline',[20 20]);
 
 %%
 [uData, g] = sensorPlot(sensor,'volts vline',[20 20]);
@@ -32,8 +32,8 @@ sensorPlot(sensor,'electrons hline',[20 20]);
 
 %% This requires hand intervention
 
-uData = sensorPlot(sensor,'electrons hist');
-sensorPlot(sensor,'electrons hist',uData.roiLocs)
+uData = sensorPlot(sensor,'photons hist');
+sensorPlot(sensor,'photons hist',uData.roiLocs)
 
 %%
 uData = sensorPlot(sensor,'pixel snr');

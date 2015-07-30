@@ -1,22 +1,28 @@
 function varargout = v_HumanRetinalIlluminance580nm(varargin)
+% Validate that our photon flux measurements agree with assertions from Ed
+% Pugh. 
 %
-% Validate that a photon flux of 10^15 photons/cm^2/sec at 580 nm corresponds to a retinal illuminance of 590,000 photopic trolands.  
+% Ed says that a photon flux of 10^15 photons/cm^2/sec at 580 nm
+% corresponds to a retinal illuminance of 590,000 photopic trolands. He
+% wrote a document (Pugh_Summary_for_FFB.pdf) asserting this based on
+% Delori and Webb 2007.
 %
-% Ed Pugh wrote a document (Pugh_Summary_for_FFB.pdf) asserting that based
-%  on Delori and Webb 2007 he knows that
-%
-% At the eye:
+% He specifically says that at the eye:
 %   10^15 photons cm^-2 sec^-1 at 580 nm corresponds to a retinal
 %   illuminance of 590,000 photopic Trolands.
 %
 % He then says that a photopic Troland is related to candelas/m2 by the
-% principle that a 1 cd m^-2 patch seen a 1 mm^2 pupil area.  For a pupil
-% that is 2 mm diameter, the area is 3.14159 mm^2.  So converting back to the
-% scene,
+% principle that a 1 cd/m^2 patch seen a 1 mm^2 pupil area.  For a pupil
+% that is 2 mm diameter, the area is pi (d/2)^2 = 3.14159 mm^2.  So
+% converting back to the scene,
 %
-%   590,000 Trolands at the retina at 580nm is supposed to be 187,800
-%   cd/m2 at the scene
-
+%   590,000 Trolands at the retina at 580nm is supposed to be 
+%   187,800 cd/m2 in the scene
+%
+% We create a monochromatic 580nm uniform scene.  We set the scene
+% luminance as above and calculate the number of photons.  Our units are in
+% m2/sec, so we convert 10^15 cm2/sec * m2/cm2 = 10^19 m2/sec.
+%
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
@@ -26,7 +32,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    s_initISET;
+    ieInit;
     
     %% Set run parameters
     sceneFOV                = 20;      % 20 degrees scene
@@ -35,8 +41,7 @@ function ValidationFunction(runTimeParams)
     pupilDiameterInMM       = 2;       % mm
 
     %% Create a uniform monochromatic scene
-    scene = sceneCreate('uniformmonochromatic');
-    scene = initDefaultSpectrum(scene,'custom', monoChromaticWavelength);
+    scene = sceneCreate('uniform monochromatic',monoChromaticWavelength);
     scene = sceneSet(scene,'mean luminance', sceneMeanLuminance);   % Cd/m2
     scene = sceneSet(scene,'fov', sceneFOV);
     
@@ -49,20 +54,20 @@ function ValidationFunction(runTimeParams)
     %% Compute optical image from the scene
     oi = oiCompute(scene,oi);
     
-    %% Get irrandiance in the center
-    roi = round(size(oi.depthMap) ./ 2 );
+    %% Get irradiance in the center
+    roi = oiGet(oi,'size') ./2; 
     photonIrradiance = oiGet(oi,'roi mean photons',roi);
     
     %% Compute difference from expected value
     expectedPhotonIrradiance = 10^19;
     percentDifference = (photonIrradiance - expectedPhotonIrradiance)/expectedPhotonIrradiance;
     
-    %% Validate against a 3% error
-    tolerance = 0.03;
+    %% Validate against a 3 percent tolerance
+    tolerance = 0.03;  % 3 percent error
     quantityOfInterest = percentDifference;
     resultString = sprintf('Irradiance (q/sec/m^2/nm) at %.0f nm = %g, Expected = %g, Residual = %g %%', ...
                            monoChromaticWavelength, photonIrradiance, expectedPhotonIrradiance, percentDifference*100);
-    UnitTest.assertIsZero(quantityOfInterest, resultString,tolerance);
+    UnitTest.assertIsZero(quantityOfInterest, resultString, tolerance);
     
     % append to validationData
     UnitTest.validationData('fov', sceneFOV);
@@ -72,12 +77,14 @@ function ValidationFunction(runTimeParams)
     
     %% Plotting
     if (runTimeParams.generatePlots)
-        h = figure(500);
-        set(h, 'Position', [100 100 840 430]);
-        clf;
+        vcNewGraphWin;
+        % set(h, 'Position', [100 100 840 430]);
+        % clf;
         
         bar([1 2], [expectedPhotonIrradiance  photonIrradiance], 'r');
-        set(gca, 'XTick', [1 2], 'XLim', [0.5 2.5], 'YLim', [0 max([expectedPhotonIrradiance  photonIrradiance])*1.1]);
+        set(gca, 'XTick', [1 2], ...
+            'XLim', [0.5 2.5], ...
+            'YLim', [0 max([expectedPhotonIrradiance  photonIrradiance])*1.1]);
         set(gca, 'XTickLabel', {'Expected Photon Irradiance (Ed Pugh)','Photon Irradiance (isetbio)'});
         set(gca, 'FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'bold');
         xlabel('', 'FontName', 'Helvetica', 'FontSize', 14); 

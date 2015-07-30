@@ -1,14 +1,18 @@
 function varargout = v_sceneFromRGB(varargin)
+% Test creating a scene from image rgb data using the sceneFromFile
+% function
 %
-% Test how isetbio creates a scene from an rgb data using sceneFromFile
+% The sceneFromFile logic is this:
 %
-% Function sceneFromFile uses 1) the rgb data and the spectral power
-% distributions (spds) of the display color primaries to calculate the
-% spectral radiance of the displayed image, and 2) the spectral power
-% distribution of the display white point as an estimate of the scene
-% illuminant.
+%  1) the rgb data and the spectral power  distributions (spds) of the
+%  display color primaries are used to calculate the spectral radiance of
+%  the displayed image, and
+%
+%  2) the spectral power distribution of the display white point as an
+%  estimate of the scene illuminant.
 %
 % Notes about the method
+%
 %     If we have display calibration data, we can accurately predict the
 %     radiance emitted when an image is rendered on the display. But we
 %     need a scene illuminant to estimate scene reflectances. We use the
@@ -54,14 +58,14 @@ function ValidationFunction(runTimeParams)%% s_sceneFromRGB
     wave   = displayGet(d,'wave');
     whiteXYZ = ieXYZFromEnergy(whtSPD',wave);
     if (runTimeParams.generatePlots)   
-        fig = chromaticityPlot(chromaticity(whiteXYZ));
+        chromaticityPlot(chromaticity(whiteXYZ));
     end
     UnitTest.validationData('wave1', wave);
     UnitTest.validationData('spd1', spd);
 
     %% Read in an rgb file and create calibrated display values
     rgbFile = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
-    scene = sceneFromFile(rgbFile,'rgb',[],displayCalFile);
+    scene   = sceneFromFile(rgbFile,'rgb',[],displayCalFile);
     if (runTimeParams.generatePlots)   
         vcAddAndSelectObject(scene); sceneWindow;
     end
@@ -96,5 +100,4 @@ function ValidationFunction(runTimeParams)%% s_sceneFromRGB
     UnitTest.validationData('bb', bb);
     UnitTest.validationData('scene1', scene);
 
-    %% End
 end

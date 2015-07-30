@@ -1,34 +1,24 @@
-%% p_Toronto_ColorMatching
+%% t_colorWaveDiscrimination
 %
-% Illustrate some aspects of color matching through simulation.
+% Illustrate how wavelength discrimination depends on the mean luminance
+% level given standard assumptions about photon noise (no photoreceptor
+% noise or neural noise).
 %
-% The script was used for a talk at the OSA.
-%  * The first section creates a sample cone mosaic.
-%  * The second section creates optics that match the human cornea/lens.
-%  * The third section sets a peak radiance (you can choose the photon levels)
-%    and wavelengths, and then produces cone absorptions in the human
-%    sensors. 
-%
-% (c) ImagEval 2011
+% BW (c)ISETBIO Team, 2015
 
-%% 
+% 
 ieInit
-talkD = pwd;
-saveFlag = 0;  % Don't save results
 
 %%  Create a sample cone mosaic
 pixel = [];
 
-% This code is for
-% ISETBIO, but the uniform monochromatic case is not yet set up 
-% it runs in ISET now and I need to move over the fixes.
-
+% Make a cone mosaic
 coneP = coneCreate;
 coneP = coneSet(coneP,'spatial density',[.1 .6 .2 .1]); % Empty, L,M,S
 
 % Here is a look at a typical cone mosaic.  Not used later.
 cSensor = sensorCreate('human',pixel,coneP);
-cSensor = sensorSet(cSensor,'size',[128 192]);
+cSensor = sensorSet(cSensor,'size',[128 128]);
 cSensor = sensorSet(cSensor,'pixel size same fill factor',[2 2]*1e-6);
 cSensor = sensorSet(cSensor,'noise flag',1);   % Photon noise only
 
@@ -42,20 +32,14 @@ cSensor = sensorSet(cSensor,'noise flag',1);   % Photon noise only
 % Illustrate the separation in the LMS clouds for pairs of wavelengths
 oi = oiCreate('human');
 
-%%
-pSize = 2e-6;   %Size in meters of the cone sampling apertures
+%% Set up wavelengths and luminance levels
 
-% Create uniform fields on a human sensor (ideal) with Bayer sampling
-% arrangement.  Then get the photon absorptions and plot them as a 3D graph
-% in the next cell.
+% Create uniform fields 
 wSamples = [520 525 530];
 nWaves = length(wSamples);
-% wSamples = 450:10:640; 
 
-% It is possible to run this for a series of levels.  These levels are
-% chosen to match typical levels of photopic illumination.
-% It is easiest to run just one level, as per below.
-luminance = logspace(1,3,6);
+% Create luminance levels
+luminance = logspace(1,3,5);
 nLum = length(luminance);
 
 % Number of row/col samples in the scene 
@@ -71,15 +55,17 @@ for rr = 1:nLum
         %% Create a monochromatic scene and set the radiance
         % The wavelength is specified in wSamples.
         scene{ww} = sceneCreate('uniform monochromatic',wSamples(:,ww),sz);
-        % scene{ww} = sceneSet(scene{ww},'peak photon radiance',peakRadiance(rr));
         
         % Some people scale for luminance, or equal L+M, which we could do.
         % We could go equal energy, not equal photon.
         scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
         
-        % Compute the irradiance at the retina
-        oi = oiCreate('human');
-        oi = oiCompute(scene{ww},oi);
+        % Compute the irradiance at the retina 
+        % (This oiCreate shouldn't be necessary.  But there is a problem
+        % with the monochrome scenes, so we start with a new oi until this
+        % is fixed.  The code runs without this in ISET.)
+        oi = oiClearData(oi);
+        oi = oiCompute(oi,scene{ww});
         
         % Create a human sensor.
         sensor{ww} = cSensor;
@@ -92,7 +78,7 @@ for rr = 1:nLum
         sensor{ww} = sensorSet(sensor{ww},'name',sprintf('wave %.0f',wSamples(1,ww)));
         
         % If you want to have a look at the image, run this line.
-        % vcAddAndSelectObject(sensor{ww}); sensorImageWindow;
+        % vcAddObject(sensor{ww}); sensorImageWindow;
     end
 
     %% Extract the data for plotting
@@ -126,12 +112,6 @@ for rr = 1:nLum
     title(sprintf('Luminance %.1f\n',luminance(rr)));
     xlabel('L-absorptions'); ylabel('M-Absorptions'); zlabel('S-absorptions'); axis square; grid on
 
-    % Probably don't want to save in general
-    if saveFlag
-        level = 10*round(log10(peakRadiance(rr))/10);
-        fname = fullfile(talkD,'images','CMF',sprintf('CMF-%.0f-%.1f.fig',wSamples(1),level));
-        saveas(f,fname,'fig');
-    end
 end
 
 % vcAddAndSelectObject(sensor{ww}); sensorImageWindow;

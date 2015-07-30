@@ -127,20 +127,19 @@ switch parm
         optics.spectrum = val;
     case {'wavelength', 'wave'}
         % Change wavelength sampling
-        val = val(:); % a column vector
-        % Interpolate OTF data if it is there
-        otf = opticsGet(optics, 'otf data');
-        nWave = opticsGet(optics,'nwave');
-        if ~isempty(otf)
-            [otf, r, c] = RGB2XWFormat(otf);
-            otf = interp1(optics.OTF.wave, otf', val(:), 'linear', 0);
-            otf = XW2RGBFormat(otf', r, c);
-            optics = opticsSet(optics, 'otf data', otf);
-            optics.OTF.wave = val;
-        end
+        %
+        % We used to change the OTF at the same time.  But this is not
+        % necessary because the OTF structure has a wave term, and when we
+        % need the OTF(w) we simply interpolate it from the OTF structure
+        % itsef.
+        %
+        % I am not sure we ever use this particular wave for SI data, where
+        % we use the OTF.wave and the oi.spectrum.wave.  This one is kind
+        % of caught in the middle.  ISETBIO doesn't use rt, so the other
+        % thing to check is whether it is used for diffraction.
         
         % Set new wavelength 
-        optics.spectrum.wave = val;
+        optics.spectrum.wave = val(:);
         
     case {'transmittance','opticaltransmittance'}
         if max(val)>1 || min(val)<0

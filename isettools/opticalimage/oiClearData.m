@@ -18,12 +18,14 @@ function oi = oiClearData(oi)
 bitDepth = oiGet(oi,'bit depth');
 oi = oiSet(oi,'data',[]);
 oi = oiSet(oi,'bit depth',bitDepth);
-
 oi = oiSet(oi, 'wangular', []);
 oi = oiSet(oi, 'depth map', []);
 
-optics = opticsClearData(oiGet(oi,'optics'));
+% Do we really want to change the topics here?
+% All this does is clear the OTF data.  And there is nothing wrong with
+% that data which is specified by its own wavelength OTF.wave anyway.
 
-oi = oiSet(oi, 'optics', optics);
+% optics = opticsClearData(oiGet(oi,'optics'));
+% oi = oiSet(oi, 'optics', optics);
 
 end
