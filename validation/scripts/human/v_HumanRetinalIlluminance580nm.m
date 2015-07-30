@@ -1,6 +1,6 @@
 function varargout = v_HumanRetinalIlluminance580nm(varargin)
-% Validate that our photon flux measurements agree with assertions from Ed
-% Pugh. 
+%
+% Validate photon flux measurements with assertions from Ed Pugh. 
 %
 % Ed says that a photon flux of 10^15 photons/cm^2/sec at 580 nm
 % corresponds to a retinal illuminance of 590,000 photopic trolands. He
@@ -69,7 +69,7 @@ function ValidationFunction(runTimeParams)
                            monoChromaticWavelength, photonIrradiance, expectedPhotonIrradiance, percentDifference*100);
     UnitTest.assertIsZero(quantityOfInterest, resultString, tolerance);
     
-    % append to validationData
+    % Append to validationData
     UnitTest.validationData('fov', sceneFOV);
     UnitTest.validationData('tolerance', tolerance);
     UnitTest.validationData('scene', scene);
