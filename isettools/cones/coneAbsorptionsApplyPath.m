@@ -1,4 +1,4 @@
-function sensor = coneAbsorptionsApplyPath(sensor, LMS, msk)
+function sensor = coneAbsorptionsApplyPath(sensor, LMS, msk, varargin)
 % sensor = coneAbsorptionsApplyPath(sensor, LMS, msk)
 %   Detailed explanation goes here
 
@@ -10,6 +10,14 @@ nPos = length(xpos);
 % Pad to the sensor to max size
 rows = [-min([ypos(:); 0]) max([ypos(:); 0])];
 cols = [max([xpos(:); 0]) -min([xpos(:); 0])];
+
+ip = inputParser;
+ip.addOptional('rows', rows);
+ip.addOptional('cols', cols);
+ip.parse(varargin{:});
+
+rows = ip.Results.rows;
+cols = ip.Results.cols;
 
 % The LMS has a large, full-stack representation of the cones.  We know at
 % each moment in time where the eye is.  This next piece of code takes the
