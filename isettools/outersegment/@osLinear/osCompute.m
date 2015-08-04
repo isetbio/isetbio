@@ -8,14 +8,14 @@ function osCompute(obj, sensor, varargin)
     %    
         
     % regenerate filters with sensor
-    filterConesLinear(sensor);
+    obj.filterKernel(sensor);
     
     % find coordinates of l, m, s cones, get voltage signals
-    cone_mosaic = sensorGet(sensor,'cone type');
+    cone_mosaic = sensorGet(sensor,'cone type')
     [sz1, sz2] = size(cone_mosaic);
     
     % get isomerization array to convert to current (pA)
-    isomerizations = sensorGet(sensor, 'photons');
+    isomerizations = sensorGet(sensor, 'photon rate');
     
     % get number of time steps
     nSteps = size(sensor.data.volts,3);
@@ -37,8 +37,9 @@ function osCompute(obj, sensor, varargin)
         % filter isomerizations matrix
         
         %  MAKE THIS GENERAL
-        coneSamplingRate = 1/sensorGet(sensor, 'time interval'); % samples per second
-        obj.ConeCurrentSignal = 1.6291*real(ifft((Filter_block2) .* fft(isomerizations,[],3),[],3));% * coneSamplingRate;
+        coneSamplingRate = sensorGet(sensor, 'time interval'); % samples per second
+%         obj.ConeCurrentSignal = real(ifft((Filter_block2) .* fft(isomerizations,[],3)),[],3) / coneSamplingRate;
+        obj.ConeCurrentSignal = real(ifft((Filter_block2) .* fft(isomerizations,[],3)./1,[],3)) * 1;
         % NEED TO CHECK AMPLITUDE
         
         % reshape signal matrix

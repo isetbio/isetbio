@@ -30,6 +30,16 @@ classdef osLinear < outerSegment
                 obj.(varargin{k}) = varargin{k+1};
             end
         end
+        
+        % set function, see osLinearSet for details
+        function obj = set(obj, param, val, varargin)
+            osLinearSet(obj, param, val, varargin);
+        end
+        
+        % get function, see osLinearGet for details
+        function val = get(obj, param, varargin)
+           val = osLinearGet(obj, param, varargin);
+        end
       
     end
     
@@ -43,7 +53,7 @@ classdef osLinear < outerSegment
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-        filterKernel(obj);
+        filterKernel(obj, varargin);
     end
     
     % Methods that are totally private (subclasses cannot call these)

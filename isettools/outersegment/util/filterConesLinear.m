@@ -14,11 +14,8 @@ if size(varargin)==0
     dt = 0.001;
 else
     sensor = varargin{1}; % sensor name
-    dt = 1/sensorGet(sensor, 'time interval');
+    dt = sensorGet(sensor, 'time interval');
 end
-
-coneSamplingRate = 10000; % samples per second
-dt = 1/coneSamplingRate;
 
 %make the filter. Juan says the units are time (in sec) vs pA/R*/cone. All
 %of the coefficients for this equation come from Juan's fits to
@@ -51,8 +48,8 @@ Filter = ScFact .* (((TimeAxis./TauR).^3)./(1+((TimeAxis./TauR).^3))) .* exp(-((
 %  gain / gain_dark = 1 / (1 + (Intensity_bkgnd / Intensitity_halfDesensitization))
 
 Io = 2250;                     % half-desensitizing background (in R*/cone/sec, from Juan's paper - corrected)
-Ib = [7131 6017 1973];         % R* per sec due to background adapting field (one for each cone, L, M, S)
-
+% Ib = [7131 6017 1973];         % R* per sec due to background adapting field (one for each cone, L, M, S)
+Ib = [7131 7131 7131];  
                                 % adjust this to specific experiment
 if size(varargin)==0
     stimNormCoeff = 1;
@@ -65,7 +62,7 @@ end
 
 Ib = Ib*stimNormCoeff;
 gain_dark = 0.32;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
-gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
+gainRatio = 1 ./ (1+(Ib./Io)) % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
 
 
 
@@ -79,6 +76,10 @@ IRFScaleFactor = newGain * dt ./ oldGain;
 % plot the original IRF, and the IRFs that have been adjusted to reflect
 % their particular adaptation state
 newIRFs = Filter(:) * IRFScaleFactor;
+
+dt
+figure; plot(newIRFs(:,1));
+
 % 
 % figure(1); clf
 % plot(TimeAxis, newIRFs(:, [3,2,1]))  % implied IRFs at the background intensities used in the model

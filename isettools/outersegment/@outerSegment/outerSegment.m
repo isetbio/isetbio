@@ -36,7 +36,6 @@ classdef outerSegment < handle
             outersegmentSet(obj, param, val, varargin);
         end
         
-        % method declaration 
         % get function, see outersegmentGet for details
         function val = get(obj, param, varargin)
            val = outersegmentGet(obj, param, varargin);

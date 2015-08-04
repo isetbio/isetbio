@@ -27,6 +27,16 @@ classdef osBioPhys < outerSegment
                 obj.(varargin{k}) = varargin{k+1};
             end
         end
+        
+        % set function, see osBioPhysSet for details
+        function obj = set(obj, param, val, varargin)
+            osBioPhysSet(obj, param, val, varargin);
+        end
+        
+        % get function, see osBioPhysGet for details
+        function val = get(obj, param, varargin)
+           val = osBioPhysGet(obj, param, varargin);
+        end
       
     end
     
