@@ -31,8 +31,7 @@ flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin o
 %  create human sensor
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
-
+sensor = sensorSet(sensor, 'time interval', timeStep); 
 %  create stimulus
 stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens;
@@ -44,32 +43,40 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 % compute model current and baseline correct
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
+% [~, adaptedCur] = coneAdapt(sensor, 'linear', params);
 adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes dc
 
 % Create outersegment object
 noiseFlag = 0;
 adaptedOS = osBioPhys('noiseflag', noiseFlag);
+% adaptedOS = osLinear('noiseflag', noiseFlag);
 paramsOS.bgVolts = params.bgVolts;
 paramsOS.dc = 0; % removes dc
 adaptedOS = adaptedOS.compute(sensor, paramsOS);
-% adaptedOs.plotResults(sensor)
+% adaptedOS.plotResults(sensor)
 
 % compute fit to measured response (Angueyra and Rieke, 2013)
 coef = [1 0.05 0.1 1 0];
 tme = (1:nSamples)*timeStep;
 impcoef = nlinfit(tme', squeeze(adaptedCur), 'ConeEmpiricalDimFlash', coef);
-fit = ConeEmpiricalDimFlash(impcoef, tme');
+fit = ConeEmpiricalDimFlash(impcoef, tme'); % warning('off', stats:nlinfit:ModelConstantWRTParam);
 expcoef = [5 0.02 0.03 0.53 34];            % fit to measured response
 expfit = ConeEmpiricalDimFlash(expcoef, tme');
 
 % compare model vs empirical fit to data
 figure(1); clf;
 tme = (1:nSamples)*timeStep;
-plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignal));
+if noiseFlag == 0
+    plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignal));
+elseif noiseFlag == 1
+    plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignalPlusNoise));
+end
 xlabel('sec');
 ylabel('pA');
 title('impulse response');
 legend('model fit', 'model resp', 'exp fit', 'osBioPhys resp');
+
+figure; scatter(adaptedOS.ConeCurrentSignal,adaptedCur)
 
 clear adaptedOS paramsOS
 %% steps + flashes
@@ -316,6 +323,7 @@ title('osBioPhys');
 
 % Check computation in osBioPhys is the same as adaptedCur
 % sum(adaptedCur(:) - adaptedOS.ConeCurrentSignal(:))
+% figure; scatter(adaptedCur(:), adaptedOS.ConeCurrentSignal(:));
 
 clear adaptedOS paramsOS
 %% increment/decrement asymmetry
@@ -414,3 +422,6 @@ semilogx(stimIntensity, -MaxOSDec ./ MaxOSInc, 'o');
 xlabel('background');
 ylabel('dec/inc');
 title('osBioPhys');
+
+
+figure; scatter(adaptedCur(:), adaptedOS.ConeCurrentSignal(:));

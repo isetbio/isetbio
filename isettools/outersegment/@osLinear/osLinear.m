@@ -36,7 +36,7 @@ classdef osLinear < outerSegment
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function obj = compute(obj, sensor, param, varargin)
-            osCompute(obj, sensor, param, varargin); 
+            osCompute(obj, sensor, varargin); 
         end
         plotResults(obj, sensor);
     end    

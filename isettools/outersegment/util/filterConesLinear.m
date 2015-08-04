@@ -1,4 +1,4 @@
-function [newIRFs, Filter, Ib] = filterConesLinear()
+function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
 
 
 %%  CODE TO GENERATE THE CONE TEMPORAL IMPULSE RESPONSE FUNCTION
@@ -9,14 +9,23 @@ function [newIRFs, Filter, Ib] = filterConesLinear()
 % the cone sampling rate to an integer multiple of the montor frame rate.
 % Setting the cone sampling rate to 825 seemed reasonable given the spectra
 % of the cone noise.
-coneSamplingRate = 825; % samples per second
 
+if size(varargin)==0
+    dt = 0.001;
+else
+    sensor = varargin{1}; % sensor name
+    dt = 1/sensorGet(sensor, 'time interval');
+end
+
+coneSamplingRate = 10000; % samples per second
+dt = 1/coneSamplingRate;
 
 %make the filter. Juan says the units are time (in sec) vs pA/R*/cone. All
 %of the coefficients for this equation come from Juan's fits to
 %electrophysiological measurements in a representative set of cones.
 totalTime = 2; %length of IRF in seconds 
-TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
+% TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
+TimeAxis = [1:2000]*dt;
 ScFact = 0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
@@ -43,16 +52,28 @@ Filter = ScFact .* (((TimeAxis./TauR).^3)./(1+((TimeAxis./TauR).^3))) .* exp(-((
 
 Io = 2250;                     % half-desensitizing background (in R*/cone/sec, from Juan's paper - corrected)
 Ib = [7131 6017 1973];         % R* per sec due to background adapting field (one for each cone, L, M, S)
-                               % adjust this to specific experiment
+
+                                % adjust this to specific experiment
+if size(varargin)==0
+    stimNormCoeff = 1;
+else
+%     stimNormCoeff = (max(sensor.data.volts(:,:,1)))./max(Ib);
+    
+    pRate = sensorGet(sensor,'photon rate');
+    stimNormCoeff = max(pRate(:))./max(Ib);
+end
+
+Ib = Ib*stimNormCoeff;
 gain_dark = 0.32;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
 gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
 
 
+
 % scale IRF to reflect amplitude at chosen background
 % using Weber adaptation equation above and gainRatio derived from it
-newGain = gainRatio .* gain_dark;
+newGain = gainRatio .* gain_dark ;
 oldGain = max(Filter);
-IRFScaleFactor = newGain ./ oldGain;
+IRFScaleFactor = newGain * dt ./ oldGain;
 
 
 % plot the original IRF, and the IRFs that have been adjusted to reflect

@@ -10,6 +10,7 @@ if isfield(p, 'timeInterval'), dt = p.timeInterval; else dt = 0.001; end
 %% cone IRF
 
 TimeAxis = [1:size(pRate, 3)]*dt;
+
 ScFact = 0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
@@ -34,5 +35,6 @@ for x = 1:size(pRate, 1)
         adaptedData(x, y, :) = tempData(1:length(Filter)); 
     end
 end
+figure; plot(Filter);
 
 end

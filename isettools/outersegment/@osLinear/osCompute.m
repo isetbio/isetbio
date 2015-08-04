@@ -1,18 +1,14 @@
-function osCompute(obj, sensor, param, varargin)
+function osCompute(obj, sensor, varargin)
     
     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
     
     %
     % call the parent class method to compute the filter
     % obj.computeFilter();
-    % 
-    % compute a linear filtering operation
-    % obj.outputSignal = conv(obj.filterKernel, obj.inputSignal);
-    
-    
-    
-    % linear temporal filters for L, M, S responses generated in filter
-
+    %    
+        
+    % regenerate filters with sensor
+    filterConesLinear(sensor);
     
     % find coordinates of l, m, s cones, get voltage signals
     cone_mosaic = sensorGet(sensor,'cone type');
@@ -35,14 +31,15 @@ function osCompute(obj, sensor, param, varargin)
             case 4
                 Filter_cone_type = obj.lConeFilter;
         end
-        Filter_block = repmat(fft(Filter_cone_type(1:nSteps)'),[1 size(sensor.data.volts,1) size(sensor.data.volts,2)]);
+        Filter_block = repmat(fft(Filter_cone_type',nSteps),[1 size(sensor.data.volts,1) size(sensor.data.volts,2)]);
         Filter_block2 = reshape(Filter_block,size(sensor.data.volts));
         
         % filter isomerizations matrix
         
         %  MAKE THIS GENERAL
-        coneSamplingRate = 825; % samples per second
-        obj.ConeCurrentSignal = real(ifft((Filter_block2) .* fft(isomerizations,[],3),[],3)) / coneSamplingRate;
+        coneSamplingRate = 1/sensorGet(sensor, 'time interval'); % samples per second
+        obj.ConeCurrentSignal = 1.6291*real(ifft((Filter_block2) .* fft(isomerizations,[],3),[],3));% * coneSamplingRate;
+        % NEED TO CHECK AMPLITUDE
         
         % reshape signal matrix
         cone_locations = find(cone_mosaic==cone_type);
@@ -59,8 +56,11 @@ function osCompute(obj, sensor, param, varargin)
         
         % rescale by sampling rate, add noise
         % CHECK IF RESCALE IS CORRECT
-        ConeSignalPlusNoise_rs = riekeAddNoise(ConeSignalFinal_rs*coneSamplingRate)./coneSamplingRate;
-        
+%         ConeSignalPlusNoise_rs = riekeAddNoise(ConeSignalFinal_rs*coneSamplingRate)./coneSamplingRate;
+        params.sampTime = sensorGet(sensor, 'time interval');
+%         ConeSignalPlusNoise_rs = riekeAddNoise(ConeSignalFinal_rs, params);
+        ConeSignalPlusNoise_rs = riekeAddNoise(ConeSignalFinal_rs/params.sampTime).*params.sampTime;
+        close;
         obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoise_rs,[sz1,sz2,nSteps]);
         % reshape
         for cone_type=2:4
