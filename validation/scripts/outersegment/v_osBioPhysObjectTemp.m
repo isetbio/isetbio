@@ -1,4 +1,4 @@
-function varargout = v_osBioPhysObject(varargin)
+function varargout = v_osBioPhysObjectTemp(varargin)
 %
 % Validate the biophysical model of the cone outer segments.
 %
@@ -69,11 +69,13 @@ adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes dc
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
-adaptedOS = osBioPhys('noiseflag', noiseFlag);
-paramsOS.bgVolts = params.bgVolts;
-paramsOS.dc = 0; % removes dc
-adaptedOS = adaptedOS.compute(sensor, paramsOS);
-osAdaptedCur = adaptedOS.ConeCurrentSignal;
+adaptedOS = osBioPhys('noiseFlag', noiseFlag);
+% paramsOS.bgVolts = params.bgVolts;
+% paramsOS.dc = 0; % removes dc
+sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+adaptedOS = adaptedOS.compute(sensor);
+osAdaptedCur = osBioPhysGet(adaptedOS,'ConeCurrentSignal');
+osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 % adaptedOS.plotResults(sensor)
 
 % Plot a comparison of the two.  These should be identical since we
@@ -88,16 +90,17 @@ if (runTimeParams.generatePlots)
     title('impulse response in the dark','FontSize',16);
     legend('original code model resp', 'osBioPhys object resp');
 end
-tolerance = 0.000001;
-UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',0);
+tolerance = 0;
+UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
+
 
 % % Compute fit to measured response (Angueyra and Rieke, 2013)
 % coef = [1 0.05 0.1 1 0];
 % tme = (1:nSamples)*timeStep;
 % impcoef = nlinfit(tme', squeeze(adaptedCur), 'ConeEmpiricalDimFlash', coef);
-% fit = ConeEmpiricalDimFlash(impcoef, tme'); % warning('off', stats:nlinfit:ModelConstantWRTParam);
+% fit = ConeEmpiricalDimFlash(impcoef, tme'); % warning('off', 'stats:nlinfit:ModelConstantWRTParam');
 % expcoef = [5 0.02 0.03 0.53 34];            % fit to measured response
 % expfit = ConeEmpiricalDimFlash(expcoef, tme');
 % 

@@ -35,6 +35,5 @@ for x = 1:size(pRate, 1)
         adaptedData(x, y, :) = tempData(1:length(Filter)); 
     end
 end
-figure; plot(Filter);
 
 end

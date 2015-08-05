@@ -12,9 +12,13 @@ function filterKernel(obj,varargin)
 %     obj.mConeFilter = newIRFs(:,2);
 %     obj.lConeFilter = newIRFs(:,3);
     
-    obj = obj.osLinearSet('sConeFilter', newIRFs(:,1));
-    obj = obj.osLinearSet('mConeFilter', newIRFs(:,2));
-    obj = obj.osLinearSet('lConeFilter', newIRFs(:,3));
+%     obj = obj.osLinearSet('sconefilter', newIRFs(:,1));
+%     obj = obj.osLinearSet('mConeFilter', newIRFs(:,2));
+%     obj = obj.osLinearSet('lConeFilter', newIRFs(:,3));
+
+    obj = osLinearSet(obj, 'sconefilter', newIRFs(:,1),'units','pa');
+    obj = osLinearSet(obj, 'mconefilter', newIRFs(:,2),'units','pa');
+    obj = osLinearSet(obj, 'lconefilter', newIRFs(:,3),'units','pa');
 
 end
 

@@ -14,7 +14,7 @@ classdef outerSegment < handle
     % subclasses can set these
     properties (SetAccess = protected)
 
-        noiseflag;
+        noiseFlag;
         ConeCurrentSignal;
         ConeCurrentSignalPlusNoise;
     end
@@ -47,7 +47,7 @@ classdef outerSegment < handle
     % it cannot instantiate objects.
     methods (Abstract, Access=public)
         compute(obj, sensor, param, varargin);
-        plotResults(obj, sensor);
+        plot(obj, sensor);
     end
     
     % Methods may be called by the subclasses, but are otherwise private 

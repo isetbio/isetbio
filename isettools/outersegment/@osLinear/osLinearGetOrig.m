@@ -1,4 +1,4 @@
-function val = osBioPhysGet(obj, param, varargin)
+function val = osLinearGet(obj, param, varargin)
 %Get isetbio outersegment object parameters
 % 
 % 
@@ -17,6 +17,18 @@ switch lower(param)
 
     case {'noiseflag'}
         
+        val = obj.noiseFlag;
+
+    case{'sconefilter'}
+        val = obj.sConeFilter;
+        
+    case{'mconefilter'}
+        val = obj.mConeFilter;
+    
+    case{'lconefilter'}
+        val = obj.lConeFilter;
+    
+    case{'noiseflag'}
         val = obj.noiseFlag;
         
     case{'conecurrentsignal'}

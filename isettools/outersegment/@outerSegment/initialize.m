@@ -2,7 +2,7 @@
 function initialize(obj) 
     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
     
-    obj.noiseflag = [];
+    obj.noiseFlag = 0;
     
     obj.ConeCurrentSignal = [];
     obj.ConeCurrentSignalPlusNoise = [];

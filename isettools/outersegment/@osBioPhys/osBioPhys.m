@@ -43,9 +43,9 @@ classdef osBioPhys < outerSegment
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)        
         function obj = compute(obj, sensor, varargin)
-            osCompute(obj, sensor, varargin);
+            obj = osBioPhysCompute(obj, sensor, varargin);
         end
-        plotResults(obj, sensor);
+        plot(obj, sensor);
     end
     
     % Methods that are totally private (subclasses cannot call these)

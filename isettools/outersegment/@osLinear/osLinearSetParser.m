@@ -44,18 +44,18 @@ p.parse(varargin{:}); params = p.Results;
 % traffic to whatever needed doing.
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-switch params.what
+switch lower(params.what)
 
     case {'sconefilter'}
 %         if ~((val == 0) || (val == 1))
 %             error('noiseflag parameter must be 0 or 1.');
 %         end
-        obj.sConeFilter = params.value;
+        obj.sConeFilter = val;
         
     case {'mconefilter'}
-        obj.mConeFilter = params.value;
+        obj.mConeFilter = val;
         
     case {'lconefilter'}
-        obj.lConeFilter = params.value;
+        obj.lConeFilter = val;
 end
 
