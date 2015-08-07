@@ -1,29 +1,27 @@
-% v_wvfPlot
+% t_wvfPlot
 %
-%  Illustrate ways to create plots of the wvf structure using the wvfPlot
-%  call.
+%  Illustrate ways to create plots of the wvf structure using the wvfPlot call.
 %
 % (BW) Wavefront Toolbox Team, 2014
-%
-%%
-s_initISET
+
+
+%% Clear and close
+close all; ieInit;
 
 %%  Start with a clean structure
 wvf = wvfCreate;
 wave = 550; wvf = wvfSet(wvf,'calc wave',wave);
 wvf = wvfComputePSF(wvf);
 
-% Make the plot in microns
+%% Make the plot in microns
 unit = 'um';
 [u,p]= wvfPlot(wvf,'1d psf space',unit,wave);
 set(p,'color','k','linewidth',2)
-u
 
 % Normalize the plot
 unit = 'um';
 [u,p]= wvfPlot(wvf,'1d psf space normalized',unit,wave);
 set(p,'color','b','linewidth',2)
-u
 
 % Make the plot distance axis millimeters
 unit = 'mm';
@@ -31,15 +29,15 @@ unit = 'mm';
 set(p,'color','r','linewidth',3,'linestyle',':')
 
 %% Show the return arguments
-
-% data values
+%
+% Data values that were plotted.
 u
 
 % Figure properties that can be set.
 get(p)
 
 
-%%  Change the calculated PSF wavelength and plot again
+%% Change the calculated PSF wavelength and plot again
 wave = 460; wvf = wvfSet(wvf,'calc wave',wave);
 wvf = wvfComputePSF(wvf);
 unit = 'min';
