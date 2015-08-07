@@ -1,5 +1,9 @@
 function obj = osLinearCompute(obj, sensor, varargin)
-    
+% osLinearCompute: a method of @osLinear that computes the linear filter
+% response of the L, M and S cone outer segments. This converts
+% isomerizations (R*) to outer segment current (pA). If the noiseFlag
+% property of the osLinear object is set to 1, this method will add noise
+% to the current output signal.
     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
     
     %
@@ -11,7 +15,7 @@ function obj = osLinearCompute(obj, sensor, varargin)
     obj.filterKernel(sensor);
     
     % find coordinates of l, m, s cones, get voltage signals
-    cone_mosaic = sensorGet(sensor,'cone type')
+    cone_mosaic = sensorGet(sensor,'cone type');
     [sz1, sz2] = size(cone_mosaic);
     
     % get isomerization array to convert to current (pA)

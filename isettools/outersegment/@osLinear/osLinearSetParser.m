@@ -18,7 +18,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % A set function always needs a string to say what is being set, and a
 % value.  So we make those required arguments.
-allowableFieldsToSet = {'sconefilter','mconefilter','lconefilter'};
+allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
 
@@ -45,6 +45,9 @@ p.parse(varargin{:}); params = p.Results;
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 switch lower(params.what)
+    
+    case{'noiseflag'}
+        obj.noiseFlag = val;
 
     case {'sconefilter'}
 %         if ~((val == 0) || (val == 1))

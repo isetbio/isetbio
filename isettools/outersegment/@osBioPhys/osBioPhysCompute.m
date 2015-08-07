@@ -1,5 +1,16 @@
 function obj = osBioPhysCompute(obj, sensor, varargin)
-    
+% osBioPhysCompute: a method of @osBioPhys that computes the output
+% response of the L, M and S cone outer segments. This converts
+% isomerizations (R*) to outer segment current (pA). The differential
+% equation model by Rieke is applied here.
+% If the noiseFlag  property of the osLinear object is set to 1, this 
+% method will add noise to the current output signal.
+% 
+% http://isetbio.github.io/isetbio/cones/adaptation%20model%20-%20rieke.pdf
+% and 
+% https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
+% 
+% 8/2015 JRG NC DHB
     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
 
 %     if size(varargin{1,1})==0

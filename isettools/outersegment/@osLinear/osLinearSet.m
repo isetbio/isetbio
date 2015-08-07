@@ -1,11 +1,11 @@
-function obj = osLinearSetParser(obj, varargin)
-% function obj = osLinearSet(obj, param, val, varargin)
-%Set isetbio outersegment object parameters
+function obj = osLinearSet(obj, varargin)
+% osLinearSet: a method of @osLinear that sets isetbio outersegment object 
+% parameters using the input parser structure.
 % 
 % 
 % 
 % 
-% 6/22/15 James Golden
+% 8/2015 JRG NC DHB
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Check for the number of arguments and create parser object.
@@ -18,7 +18,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % A set function always needs a string to say what is being set, and a
 % value.  So we make those required arguments.
-allowableFieldsToSet = {'sconefilter','mconefilter','lconefilter'};
+allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
 
@@ -44,8 +44,11 @@ p.parse(varargin{:}); params = p.Results;
 % traffic to whatever needed doing.
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-switch params.what
+switch lower(params.what)
 
+    case{'noiseflag'}
+        obj.noiseFlag = val;
+        
     case {'sconefilter'}
 %         if ~((val == 0) || (val == 1))
 %             error('noiseflag parameter must be 0 or 1.');

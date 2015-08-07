@@ -1,5 +1,6 @@
 function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
-
+% filterConesLinear: a utility function of @osLinear that generates the linear filters
+% for the L, M and S cones based on data from Angueyra and Rieke (2013).
 
 %%  CODE TO GENERATE THE CONE TEMPORAL IMPULSE RESPONSE FUNCTION
 %
@@ -12,17 +13,22 @@ function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
 
 if size(varargin)==0
     dt = 0.001;
+    coneSamplingRate = 1/dt;
+    tsz = 1;
 else
     sensor = varargin{1}; % sensor name
     dt = sensorGet(sensor, 'time interval');
+    coneSamplingRate = 1/dt;
+    [xsz ysz tsz] = size(sensor.data.volts);
 end
 
 %make the filter. Juan says the units are time (in sec) vs pA/R*/cone. All
 %of the coefficients for this equation come from Juan's fits to
 %electrophysiological measurements in a representative set of cones.
-totalTime = 2; %length of IRF in seconds 
-% TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
-TimeAxis = [1:2000]*dt;
+
+totalTime = dt * tsz; %length of IRF in seconds 
+TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
+% TimeAxis = [1:2000]*dt;
 ScFact = 0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
@@ -57,7 +63,7 @@ else
 %     stimNormCoeff = (max(sensor.data.volts(:,:,1)))./max(Ib);
     
     pRate = sensorGet(sensor,'photon rate');
-    stimNormCoeff = max(pRate(:))./max(Ib);
+    stimNormCoeff = max(pRate(1))./max(Ib);
 end
 
 Ib = Ib*stimNormCoeff;

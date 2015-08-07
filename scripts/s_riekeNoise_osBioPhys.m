@@ -60,7 +60,7 @@ vcNewGraphWin; plot(adaptedCur(:), measuredCur(1,:), '.');
 
 % Create outersegment object
 noiseFlag = 0;
-adaptedOS = osBioPhys('noiseflag', noiseFlag);
+adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % adaptedOS = osLinear('noiseflag', noiseFlag);
 paramsOS.bgVolts = params.bgVolts;
 % paramsOS.dc = 0; % removes dc
@@ -97,7 +97,7 @@ subplot(2,2,3);  autocorr(res); % independence, should be small
 subplot(2,2,4);  parcorr(res);  % independence, should be small
 
 %  Compute noise for OS object
-noiseOS = measuredCur(1,:) - squeeze(adaptedOS.ConeCurrentSignal))';
+noiseOS = measuredCur(1,:) - squeeze(adaptedOS.ConeCurrentSignal)';
 
 %  Plot ACF and PACF
 vcNewGraphWin; 
@@ -128,7 +128,7 @@ adaptedCurNoise = riekeAddNoise(adaptedCur,params)*1;
 % Create outersegment object
 clear adaptedOS
 noiseFlag = 1;
-adaptedOS = osBioPhys('noiseflag', noiseFlag);
+adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % adaptedOS = osLinear('noiseflag', noiseFlag);
 paramsOS.bgVolts = params.bgVolts;
 % paramsOS.dc = 0; % removes dc

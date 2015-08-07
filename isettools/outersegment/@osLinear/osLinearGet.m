@@ -1,11 +1,11 @@
 function val = osLinearGet(obj, varargin)
-% function val = osLinearGet(obj, param, varargin)
-%Get isetbio outersegment object parameters
+% osLinearGet: a method of @osLinear that gets isetbio outersegment object 
+% parameters using the input parser structure.
 % 
 % 
 % 
 % 
-% 6/22/15 James Golden
+% 8/2015 JRG NC DHB
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Check for the number of arguments and create parser object.
