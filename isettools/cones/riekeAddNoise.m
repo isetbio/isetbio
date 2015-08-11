@@ -1,6 +1,7 @@
 function [adaptedCur, params] = riekeAddNoise(curNF, params)
-%% Add noise to membrane current in cone adaptataion
-%   adaptedCur = riekeAddNoise(curNF, params)
+%Add noise to membrane current in cone adaptataion
+%
+%     adaptedCur = riekeAddNoise(curNF, params)
 %
 %  Noise in cone adaptation is independent of cone signal. The noise is
 %  Gaussian additive and the spectral power distribution can be
@@ -55,7 +56,9 @@ noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];
 noiseSPD = noiseSPD(1:size(curNF, 3));
 noiseSPD = reshape(noiseSPD, [1 1 length(noiseSPD)]);
-figure(2);loglog(squeeze(sqrt(noiseSPD)));
+
+% Have a look at the noise in the frequency domain
+% vcNewGraphWin;loglog(squeeze(sqrt(noiseSPD)));
 
 % generate white gaussian noise
 noise = randn(size(curNF));

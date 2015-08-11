@@ -97,5 +97,7 @@ sensor = sensorSet(sensor, 'sensor positions', pos);
 
 sensor = emGenSequence(sensor);
 
+% ePos = sensorGet(sensor,'sensor positions');
+% vcNewGraphWin; plot(ePos(:,1),ePos(:,2),'-.')
 end
-%% END
+

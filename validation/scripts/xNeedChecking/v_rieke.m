@@ -3,15 +3,18 @@
 % Implement some tests comparing the s_fredXXX script with our
 % implementation of that script using several functions
 %
+% I think this might be out of date.  Possibly deprecated? (BW)
+%
 % HJ/BW ISETBIO Team, Copyright 2014
 
+ieInit;
 
 %% The Rieke code
 % This produces riekeStim1, riekeStim2, riekeCur1, riekeCur2
-clear; s_initISET;
 s_fredConeModel;
 
 %% ISETBIO Implementation
+
 %  create human sensor structure
 sensor = sensorCreate('human');
 
@@ -27,8 +30,9 @@ params.bgVolts = 0;
 [~, isetbioCur1] = coneAdapt(sensor, 'rieke', params);
 
 % set photons of stimulus 2 (Impulse)
-sensor = sensorSet(sensor, 'photon rate', ...
-                   reshape(riekeStim2, [1 1 nSample]));
+% This 'photon rate' set has me worried. (BW).
+sensor = sensorSet(sensor, ...
+    'photon rate', reshape(riekeStim2, [1 1 nSample]));
 
 % compute adaptation
 [~, isetbioCur2] = coneAdapt(sensor, 'rieke', params);
