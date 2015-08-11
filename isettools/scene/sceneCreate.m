@@ -1118,7 +1118,7 @@ switch type
         error('unknown vernier scene type');
 end
 
-if isfield(params, 'meanLum')
+if isfield(params, 'meanLum') && ~isempty(params.meanLum)
     scene = sceneAdjustLuminance(scene, params.meanLum);
 end
 
