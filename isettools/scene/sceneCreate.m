@@ -976,11 +976,15 @@ function scene = sceneVernier(scene, type, params)
 %      sceneSz    - scene resolution, default is 64
 %      barWidth   - bar width in pixels
 %      offset     - displacement in pixels
+%      meanLum    - mean luminance
+%
+%     If type = 'display'
 %      lineSpace  - spacing between the lines in pixels if type = 'display'
 %      display    - display name or structure, useful if type = 'display'
 %      barColor   - bar color, 0~1 RGB value for type = 'display'
 %      bgColor    - background color, 0~1 RGB for type = 'display'
-%      meanLum    - mean luminance
+%
+%     If type = 'object'
 %      il         - illuminanece, for type = 'object'
 %      barReflect - bar reflectance, for type = 'object'
 %      bgReflect  - background reflectance, for type = 'object'
