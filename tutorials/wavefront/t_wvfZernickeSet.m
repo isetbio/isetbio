@@ -1,20 +1,20 @@
-%% v_wvfZernickeSet
+%% t_wvfZernickeSet
 %
-%  Illustrate the effects on the PSF of adjusting different Z-coefficients.
+% Illustrate the effects on the PSF of adjusting different Z-coefficients.
 %
 % BW Wavefront Toolbox Team, 2014
 
-%% 
-s_initISET
+%% Initialize
+ieInit;
 
-%%
+%% Create a scene
 scene = sceneCreate('slanted bar');
 
-%%
+%% Create wavefront object and push it into an optical image object
 wvf = wvfCreate;
 wvf = wvfComputePSF(wvf);
 wvfPlot(wvf,'2d psf space','um',550,20);
-oi = wvf2oi(wvf);
+oi = wvf2oi(wvf,'human');
 
 %% Make an ISET optical image
 oi = oiCompute(oi,scene);
@@ -33,11 +33,9 @@ for ii=1:length(D)
     vcAddObject(oi); oiWindow;
 end
 
-%%
-
+%% Now astigmatism with a little defocus
 wvf = wvfCreate;
 A = [-0.5, 0, 0.5];
-
 for ii=1:length(A)
     wvf = wvfSet(wvf,'zcoeffs',[0.5, A(ii)],{'defocus','vertical_astigmatism'});
     wvf = wvfComputePSF(wvf);
@@ -48,6 +46,6 @@ for ii=1:length(A)
     vcAddObject(oi); oiWindow;
 end
 
-%%
+
 
 
