@@ -1,0 +1,285 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_sceneExamples</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-12"><meta name="DC.source" content="v_sceneExamples.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Validate the scene examples</a></li><li><a href="#4">Initialize ISET</a></li><li><a href="#5">Simple message</a></li><li><a href="#6">Rings and Rays</a></li><li><a href="#7">Frequency orientation - useful for analyzing demosaicking</a></li><li><a href="#8">Harmonic</a></li><li><a href="#9">Checkerboard</a></li><li><a href="#10">Single line</a></li><li><a href="#11">Slanted Bar</a></li><li><a href="#12">Grid Lines</a></li><li><a href="#13">Point Array</a></li><li><a href="#14">Macbeth</a></li><li><a href="#15">Uniform Field</a></li><li><a href="#16">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_sceneExamples(varargin)
+<span class="comment">%</span>
+<span class="comment">% Illustrate and test the types of synthetic scenes.</span>
+<span class="comment">%</span>
+<span class="comment">% These synthetic scenes are useful for testing different features of the</span>
+<span class="comment">% optics and sensors.</span>
+<span class="comment">%</span>
+<span class="comment">% Copyright ImagEval Consultants, LLC, 2003.</span>
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+<span class="keyword">end</span>
+</pre><h2>Validate the scene examples<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Initialize ISET<a name="4"></a></h2><p>This clears the workspace and hides the main ISET window</p><pre class="codeinput">    s_initISET
+</pre><h2>Simple message<a name="5"></a></h2><pre class="codeinput">    UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>,<span class="string">'Testing scene creation.  Some scenes are not displayed.'</span>);
+</pre><h2>Rings and Rays<a name="6"></a></h2><pre class="codeinput">    radF = 24; imSize = 512;
+    scene = sceneCreate(<span class="string">'mackay'</span>,radF,imSize);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'makay'</span>, scene);
+
+    scene = sceneCreate(<span class="string">'rings rays'</span>);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'ringsandrays'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_01.png" alt=""> <h2>Frequency orientation - useful for analyzing demosaicking<a name="7"></a></h2><pre class="codeinput">    parms.angles = linspace(0,pi/2,5);
+    parms.freqs  =  [1,2,4,8,16];
+    parms.blockSize = 64;
+    parms.contrast  = .8;
+    scene = sceneCreate(<span class="string">'frequency orientation'</span>,parms);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'freqorient'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_02.png" alt=""> <h2>Harmonic<a name="8"></a></h2><pre class="codeinput">    parms.freq = 1; parms.contrast = 1; parms.ph = 0;
+    parms.ang= 0; parms.row = 64; parms.col = 64; parms.GaborFlag=0;
+    [scene,parms] = sceneCreate(<span class="string">'harmonic'</span>,parms);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'harmonic'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_03.png" alt=""> <h2>Checkerboard<a name="9"></a></h2><pre class="codeinput">    period = 16; spacing = 8; spectralType = <span class="string">'ep'</span>;
+    scene = sceneCreate(<span class="string">'checkerboard'</span>,period,spacing,spectralType);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'checkerboard'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_04.png" alt=""> <h2>Single line<a name="10"></a></h2><pre class="codeinput">    imageSize = 128;
+    scene = sceneCreate(<span class="string">'lined65'</span>,imageSize);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'singleline'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_05.png" alt=""> <h2>Slanted Bar<a name="11"></a></h2><pre class="codeinput">    imageSize = 128;
+    edgeSlope = 1.3;
+    scene = sceneCreate(<span class="string">'slantedBar'</span>,imageSize,edgeSlope);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'slantedbar'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_06.png" alt=""> <h2>Grid Lines<a name="12"></a></h2><pre class="codeinput">    imageSize = 128;
+    pixelsBetweenLines = 16;
+    scene = sceneCreate(<span class="string">'grid lines'</span>,imageSize,pixelsBetweenLines);
+    <span class="comment">% vcAddAndSelectObject(scene); sceneWindow;</span>
+    UnitTest.validationData(<span class="string">'gridlines'</span>, scene);
+</pre><h2>Point Array<a name="13"></a></h2><pre class="codeinput">    imageSize = 256;
+    pixelsBetweenPoints = 32;
+    scene = sceneCreate(<span class="string">'point array'</span>,imageSize,pixelsBetweenPoints);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'pointarray'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_07.png" alt=""> <h2>Macbeth<a name="14"></a></h2><pre class="codeinput">    patchSizePixels = 16;
+    spectrum.wave = 380:5:720;
+    scene = sceneCreate(<span class="string">'macbeth tungsten'</span>,patchSizePixels,spectrum);
+    scene.data;
+    scene = sceneCreate(<span class="string">'macbeth tungsten'</span>,patchSizePixels,spectrum,<span class="string">'bitdepth'</span>,32);
+    scene.data;
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'macbeth'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_08.png" alt=""> <h2>Uniform Field<a name="15"></a></h2><pre class="codeinput">    sz = 128;
+    wavelength = 380:10:720;
+    scene = sceneCreate(<span class="string">'uniformEESpecify'</span>,sz,wavelength);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'uniformfield'</span>, scene);
+</pre><img vspace="5" hspace="5" src="v_sceneExamples_09.png" alt=""> <h2>End<a name="16"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_sceneExamples(varargin)
+%
+% Illustrate and test the types of synthetic scenes.
+%
+% These synthetic scenes are useful for testing different features of the
+% optics and sensors.
+%
+% Copyright ImagEval Consultants, LLC, 2003.
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Validate the scene examples
+function ValidationFunction(runTimeParams)
+
+    %% Initialize ISET
+    %
+    % This clears the workspace and hides the main ISET window
+    s_initISET
+
+    %% Simple message
+    UnitTest.validationRecord('SIMPLE_MESSAGE','Testing scene creation.  Some scenes are not displayed.');
+
+    %% Rings and Rays
+    radF = 24; imSize = 512;
+    scene = sceneCreate('mackay',radF,imSize);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('makay', scene);
+
+    scene = sceneCreate('rings rays');
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('ringsandrays', scene);
+
+    %% Frequency orientation - useful for analyzing demosaicking
+    parms.angles = linspace(0,pi/2,5);
+    parms.freqs  =  [1,2,4,8,16];
+    parms.blockSize = 64;
+    parms.contrast  = .8;
+    scene = sceneCreate('frequency orientation',parms);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('freqorient', scene);
+
+    %% Harmonic
+    parms.freq = 1; parms.contrast = 1; parms.ph = 0;
+    parms.ang= 0; parms.row = 64; parms.col = 64; parms.GaborFlag=0;
+    [scene,parms] = sceneCreate('harmonic',parms);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('harmonic', scene);
+
+    %% Checkerboard
+    period = 16; spacing = 8; spectralType = 'ep';
+    scene = sceneCreate('checkerboard',period,spacing,spectralType);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('checkerboard', scene);
+
+    %% Single line
+    imageSize = 128; 
+    scene = sceneCreate('lined65',imageSize);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('singleline', scene);
+
+    %% Slanted Bar
+    imageSize = 128;
+    edgeSlope = 1.3;
+    scene = sceneCreate('slantedBar',imageSize,edgeSlope);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('slantedbar', scene);
+
+    %% Grid Lines
+    imageSize = 128;
+    pixelsBetweenLines = 16;
+    scene = sceneCreate('grid lines',imageSize,pixelsBetweenLines);
+    % vcAddAndSelectObject(scene); sceneWindow;
+    UnitTest.validationData('gridlines', scene);
+
+    %% Point Array
+    imageSize = 256;
+    pixelsBetweenPoints = 32;
+    scene = sceneCreate('point array',imageSize,pixelsBetweenPoints);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('pointarray', scene);
+
+    %% Macbeth
+    patchSizePixels = 16;
+    spectrum.wave = 380:5:720;
+    scene = sceneCreate('macbeth tungsten',patchSizePixels,spectrum);
+    scene.data;
+    scene = sceneCreate('macbeth tungsten',patchSizePixels,spectrum,'bitdepth',32);
+    scene.data;
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('macbeth', scene);
+
+    %% Uniform Field
+    sz = 128;
+    wavelength = 380:10:720;
+    scene = sceneCreate('uniformEESpecify',sz,wavelength);
+    if (runTimeParams.generatePlots)
+        vcAddAndSelectObject(scene); sceneWindow;
+    end
+    UnitTest.validationData('uniformfield', scene);
+
+    %% End
+end
+
+##### SOURCE END #####
+--></body></html>
