@@ -26,7 +26,7 @@ UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate rdata function.');
 
 rd = ieRdata('create'); % Test that it opens
 
-ieRdata('web site');    % Open the web page.
+% ieRdata('web site');    % Open the web page.
 
 val =  ieRdata('dir',rd,'Stryer');
 disp(val)
