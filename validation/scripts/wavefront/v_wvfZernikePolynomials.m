@@ -76,7 +76,20 @@ for ii = jindices
     wvfPlot(wvf,'2d psf space','mm',wList,maxMM,'no window');
     
     % Save out what it does today
-    UnitTest.validationData(sprintf('wvf_%d_%d',n,m), wvf);
+    %
+    % Little bit of nonsense here to avoid a "-" in the identifier string,
+    % yet still distinguish plus from minus.
+    if (m < 0)
+        mStr = ['m' num2str(abs(m))];
+    else
+        mStr = num2str(m);
+    end
+    if (n < 0)
+        nStr = ['m' num2str(abs(n))];
+    else
+        nStr = num2str(n);
+    end
+    UnitTest.validationData(sprintf('wvf_%s_%s',mStr,nStr), wvf);
 end
 
 end
