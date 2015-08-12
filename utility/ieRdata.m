@@ -1,128 +1,86 @@
-function val = rdata(func,remote,varargin)
-% Execute a function on data at host h in directory d
+function val = ieRdata(func,rd,varargin)
+% ISETBIO remote data functions
 %
-% MIGHT WANT TO MOVE remote LATER SO WE DON"T HAVE TO USE IT SO MUCH
-% THOUGH IT READS OK AS FUNCTION, REMOTE, (FILE OR FILE PATTERN)
+%   val = ieRdata(cmd,[rd],varargin)
 %
-%   val = rdata(function, remote, varargin)
-%
-% Perform simple operations on data in a remote file system
+% INPUTS
+%  func - 'create', 'web site','file get','read image', 'dir'
+%  rd   - rdata object (optional)
+% 
+% OUTPUT
+%  val
 %
 % Examples:
-%
-%  This is the base directory for these examples
-%   remote.host = 'http://scarlet.stanford.edu/validation/SCIEN';
-%
-%  File list - Returns the .mat files in the web-page of the directory
-%   remote.directory = fullfile('L3','people_small');
-%   rdata('cd',remote);
-%   dirList = rdata('ls');   % Match .mat extension
-%
-%  Different directory, must match the JPG extension
-%   remote.directory = fullfile('L3','nikond200','JPG');
-%   dirList = rdata('ls',remote,'.JPG');     % Match the JPG extension
-%
-%  Read an image
-%   remote.directory = fullfile('L3','nikond200','JPG');
-%   img = rdata('read image',remote,'DSC_0767.JPG');
-%   imshow(img);
-%
-%  Load a .mat file
-%   remote.directory = fullfile('L3','people_small');
-%   scene = rdata('load data',remote,'people_small_1_scene.mat','scene');
-%   vcAddObject(scene); sceneWindow;
-%
-%  Set the remote directory and use it
-%    rdata('cd',remote);
-%    dirList = rdata('ls',[],'.JPG');
+%  rd = ieRdata('create');
+%  ieRdata('web site');
+%  ieRdata('dir',rd,'Stryer')
+%  ieRdata('file get',[],'cText4.mat');
+%  val = ieRdata('load data',rd,'cText4.mat','scene'); vcAddObject(val.scene); sceneWindow;
+%  img = ieRdata('read image',rd,'birdIce'); imshow(img);
 %
 % BW ISETBIO Team, Copyright 2015
 
-val = [];
-
+%%
 if notDefined('func'), func = 'ls'; end
-if notDefined('remote')
-    if ispref('ISET','remote'), remote = getpref('ISET','remote');
-    else
-        remote.host = 'http://scarlet.stanford.edu';
-        remote.directory = fullfile('validation','SCIEN');
-    end
+if notDefined('rd')
+    % Open up the default and show the user the web-page.
+    rd = rdata('base','http://scarlet.stanford.edu/validation/SCIEN');
 end
-webdir = fullfile(remote.host,remote.directory);
 
+%%
 f = ieParamFormat(func);
 switch f
-    
-    case 'ls'
-        % dirList = rdata('ls',remote, extension);
-        if ~isempty(varargin), pattern = varargin{1};
-        else pattern = '.mat';
-        end
-        
-        % Read and parse html string
-        % Some day we might pass this as an argument
-        p    = '<a[^>]*href="(?<link>[^"]*)">(?<name>[^<]*)</a>';
-        
-        % str  = webread(webdir);
-        str  = urlread(webdir);
-        name = regexp(str, p, 'names');
+    case {'create'}
+        % rd = ieRdata('create')
+        val = rdata('base','http://scarlet.stanford.edu/validation/SCIEN');
 
-        %% Filter by user input pattern
-        if ~isempty(pattern)
-            indx = arrayfun(@(x) ~isempty(strfind(x.name, pattern)), name);
-            nfiles = sum(indx);
-            if nfiles == 0, warning('No files match pattern: %s',pattern);
-            else
-                % Copy the matching patterns
-                names = cell(nfiles,1);
-                cnt = 1;
-                for ii=find(indx)
-                    names{cnt} = name(ii).name;
-                    cnt = cnt+1;
-                end
-            end
+    case {'website'}
+        rd.webSite;
+        
+    case {'ls','dir'}
+        % dirList = ieRdata('ls',rd,'png');
+        if isempty(varargin), error('Pattern required\n'); end
+        val = rd.listFiles(varargin{1});
+               
+    case 'fileget'
+        % outName = ieRdata('get',rd,fname);
+        % ieRdata('fileget',[],'cText4.mat');
+        %
+        % One possibility.  Though maybe it should go in tempname/rdata
+        if isempty(varargin), error('File string required'); end
+        
+        fname = varargin{1};
+        destDir = fullfile(isetbioRootPath,'local');
+        if ~exist(destDir,'dir')
+            disp('Making local directory')
+            mkdir(destDir); 
         end
-        val = names;
         
-    case 'cd'
-        % rdata('cd',remote)
-        setpref('ISET','remote',remote);
-        val = remote;
-        
-    case 'get'
-        % outName = rdata('get',remote,fname);
-        rname = fullfile(webdir,varargin{1});
-        oname = tempname;
-        [val,status] = urlwrite(rname,oname);
-        if ~status,  error('File get error.\n'); end
-        
-    case 'put'
-        % NYI
-        error('Put not yet implemented');
+        dest = fullfile(destDir,fname);
+        val = rd.fileGet(fname,dest);
         
     case 'readimage'
-        % rdata('read image', remote, fname);
-        if isempty(varargin), error('remote file name required'); end
-        
-        rname = fullfile(webdir,varargin{1});
-        val = imread(rname);
-        
+        % rdata('read image', rd, fname);
+        if isempty(varargin), error('remote image file name required'); end
+        val = rd.readImage(varargin{1});
+
     case 'loaddata'
-        % rdata('load data',remote,fname,variable)
+        % ieRdata('load data',rd,fname,variableName)
+        %
+        % Loads mat-file data, including a specific variable from a
+        % matfile.
+        %
+        % val = ieRdata('load data',rd,'EurasianFemale_shadow.mat');
+        % val = ieRdata('load data',rd,'cText4.mat','scene');
+        % vcAddObject(val.scene); sceneWindow;
         if isempty(varargin), error('remote data file name required'); end
-        
-        rname = fullfile(webdir,varargin{1});
-        oname = tempname; oname = [oname,'.mat'];
-        [oname, status] = urlwrite(rname,oname);
-        if ~status,  error('Load data error.\n'); end
-        
-        val = load(oname);
-        if length(varargin) == 2
-            eval(['val = val.',varargin{2},';']);
+        dest = ieRdata('file get',rd,varargin{1});
+        if length(varargin) == 2, val = load(dest,varargin{2});
+        else val = load(dest);
         end
 
     otherwise
-        error('Unknown function %s\n',func);
+        error('Unknown ieRdata function %s\n',func);
 end
 
 end

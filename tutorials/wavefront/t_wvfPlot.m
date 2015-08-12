@@ -6,7 +6,7 @@ function t_wvfPlot
 % NOTE: Should improve and demonstrate/explain control over sampling
 % resolutions.
 %
-% (BW) Wavefront Toolbox Team, 2014
+% (BW) Wavefront Toolbox Team, 2014-15
 
 %% Clear and close
 close all; ieInit;

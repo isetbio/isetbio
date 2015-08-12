@@ -1,4 +1,4 @@
-%% t_wvfAstigmatism
+function t_wvfAstigmatism
 %
 % Compute the wavefront-based PSF for various astigmatism and blur levels.
 %
