@@ -1,4 +1,6 @@
-% v_wvfDiffractionPSF
+function varargout = v_wvfDiffractionPSF(varargin)
+%
+% Checks that diffraction-limited PSFs are correct.
 %
 % Compares  monochromatic PSFs computed from Zernike coefficients in this
 % toolbox with those in PTB and ISET. The curves/points in each lineplot
@@ -7,15 +9,18 @@
 % At the end, we calculate a slice through the PSF for each wavelength.
 % Illustrates how to create lines with appropriate spectral colors.
 %
-% TODO:  Split this up into two scripts.
-%
-% See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFunction,
-%   wvfLCAFromWavelengthDifference
-%
 % (c) Wavefront Toolbox Team, 2012
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
 
 %% Initialize
-s_initISET;
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check diffraction limited PSFs.');
 
 %% Compare pointspread function in wvf with psf in Psych Toolbox
 
@@ -46,24 +51,19 @@ wList = wvfGet(wvf0,'calc wave');
 wvf0 = wvfComputePSF(wvf0);
 
 % Make sure psf computed this way (with zcoeffs zeroed) matches
-% what is returned by our internal get of diffraction limited
-% psf.
+% what is returned by our internal get of diffraction limited psf.
 psf = wvfGet(wvf0,'psf');
 
 % We make it easy to simply calculate the diffraction-limited psf of the
 % current structure this way.  Here we make sure that there is no
 % difference.
 diffpsf = wvfGet(wvf0,'diffraction psf');
-if (any(abs(psf(:)-diffpsf(:)) ~= 0))
-    error('Internal computation of diffraction limited psf does not match explicit calc');
-end
+UnitTest.assertIsZero(max(abs(psf(:)-diffpsf(:))),'Internal computation of diffraction limited psf',0);
 
 % Verify that the calculated and measured wavelengths are the same
 calcWavelength = wvfGet(wvf0,'wavelength');
 measWavelength = wvfGet(wvf0,'measured wavelength');
-if (measWavelength ~= calcWavelength)
-    error('Measured and calculation wavelengths should match at this point');
-end
+UnitTest.assertIsZero(max(abs(measWavelength(:)-calcWavelength(:))),'Measured and calculation wavelengths compare',0);
 
 %% Plots 
 
@@ -97,23 +97,24 @@ plot(arcminutes(index),ptbPSF(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcPupilMM,calcWavelength));
+UnitTest.validationData('ptbPSF', ptbPSF);
 
 %% Do the same thing using isetbio functions
-
 thisWave = 550;
 oi = oiCreate;
 optics = oiGet(oi,'optics');
 fLength = 0.017;              % Human focal length is about 17 mm
 fNumber = 17/calcPupilMM;     % Set f-number which fixes pupil diameter
 
-optics = opticsSet(optics,'flength',fLength);  % Roughly human
+optics = opticsSet(optics,'flength',fLength);   % Roughly human
 optics = opticsSet(optics,'fnumber',fNumber);   % Roughly human
 oi = oiSet(oi,'optics',optics);
 uData = oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-10 10],'ylim',[-10 10]);
+UnitTest.validationData('oi', oi);
+
 
 %% Now, compare all three
-
 [r,c] = size(uData.x);
 mid = ceil(r/2);
 psfMid = uData.psf(mid,:);
@@ -129,6 +130,7 @@ xlabel('Arc min')
 set(gca,'xlim',[-2 2])
 grid on
 legend('WVF','ISETBIO','PTB');
+UnitTest.validationData('wvf0', wvf0);
 
 %% Repeat the PSF calculation with a wavelength offset
 
@@ -163,6 +165,8 @@ plot(arcminutes(index),ptbPSF(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,w));
+UnitTest.validationData('wvf1', wvf1);
+UnitTest.validationData('ptbPSF1', ptbPSF);
 
 % PSF angular sampling should be the same across wavelengths
 arcminpersample2 = wvfGet(wvf1,'psf angle per sample','min',w);
@@ -193,6 +197,9 @@ plot(arcminutes(index),ptbPSF(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,wList));
+
+UnitTest.validationData('wvf2', wvf2);
+UnitTest.validationData('ptbPSF2', ptbPSF);
 
 %% Show the PSF slices across wavelengths along with the 'white'
 
@@ -242,11 +249,6 @@ ylabel('Slice through PSF');
 set(gca,'xlim',[-20 20])
 title(sprintf('DL %0.1f mm pupil (water)',wvfGet(wvf3,'calc pupil diameter')));
 
-% The legend shouldn't be needed because the colors tell you the
-% wavelength, more or less.
-% legend(str)
-
-
-%% END
+end
 
 

@@ -1,4 +1,4 @@
-% t_wvfZernike
+function t_wvfZernike
 %
 % Representing wavefront aberrations using Zernike polynomials.
 %
@@ -34,9 +34,8 @@
 %
 % History:
 %   3/12/2012	  Created.  baw, mdl, kp
-%   4/29/12  dhb  Tried to tighten vertical spacing
-%                 and apply uniform convention.  Some editing of
-%                 text for clarity.
+%   4/29/12  dhb  Tried to tighten vertical spacing and apply uniform convention.  Some editing of
+%                 text for clarity.              
 %	
 % (c) Wavefront Toolbox Team 2011, 2012
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

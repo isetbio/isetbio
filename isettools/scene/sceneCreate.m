@@ -377,6 +377,7 @@ switch sceneName
             params = [];
         end
         scene = sceneVernier(scene, type, params);
+        return;
     case {'whitenoise','noise'}
         % sceneCreate('noise',[128 128])
         sz = 128; contrast = 20;
