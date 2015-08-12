@@ -1,4 +1,4 @@
-% t_wvfZernike
+function t_wvfZernike
 %
 % Representing wavefront aberrations using Zernike polynomials.
 %

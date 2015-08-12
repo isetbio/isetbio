@@ -1,4 +1,4 @@
-%% t_wvfZernickeSet
+function t_wvfZernickeSet
 %
 % Illustrate the effects on the PSF of adjusting different Z-coefficients.
 %
