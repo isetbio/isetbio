@@ -6,9 +6,11 @@ function [img, params] = image1d(pattern,varargin)
 % Parameters
 %  pattern:   1D pattern
 %  varargin:  param/val
-%     rows
-%     rgb
-%     
+%     rows:   Set the row length
+%     rgb:    Sets the rgb of the contrast around the mean, leaving the
+%             mean unchanged
+%     pad:    Pad with mean, or maybe it will be edge (Not yet implemented)
+%
 % Create a 2D image from a 1D pattern.
 %
 % Examples
@@ -20,7 +22,7 @@ function [img, params] = image1d(pattern,varargin)
 %   pattern = 0.5*cos(2*pi*f*x) + 0.5;
 %   [img,p] = image1d(pattern,'rows',256); imshow(img)
 %   
-%   [img,p] = image1d(pattern,'rgb',[.2 .2 1]); imshow(img)
+%   [img,p] = image1d(pattern,'rgb',[.2 .2 1],'rows',64); imshow(img)
 %
 % BW ISETBIO Team, Copyright 2015
 
@@ -51,12 +53,17 @@ img = repmat(pattern(:)',[params.rows,1]);
 % Extend the pattern here?
 % Look at params.pad
 
-% Color it in RGB space.  
+% Color the contrast in RGB space, leaving the mean unchanged.
+
 % Perhaps we should color the ccontrast, and not the mean?
 % We could pull out the mean, multiply the contrast, and then add them
 % together.
 [img, r, c] = RGB2XWFormat(img);
-img = img*params.rgb(:)';
+mn = mean(img);
+contrast = img - mn;
+contrast = contrast*params.rgb(:)';
+img = mn + contrast;
 img = XW2RGBFormat(img,r,c);
+
 
 end
