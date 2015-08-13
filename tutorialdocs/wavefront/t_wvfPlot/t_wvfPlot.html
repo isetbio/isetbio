@@ -1,0 +1,309 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_wvfPlot</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_wvfPlot.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Clear and close</a></li><li><a href="#4">Set up wfv object</a></li><li><a href="#5">Make the plot in microns</a></li><li><a href="#6">Show the return arguments</a></li><li><a href="#7">A multiple axis window</a></li><li><a href="#8">Pupil amplitude and phase</a></li><li><a href="#9">Mesh plots of the psf in angle and space</a></li><li><a href="#10">Change the calculated PSF wavelength and plot again</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfPlot
+</pre><pre class="codeinput"><span class="comment">%</span>
+<span class="comment">% Illustrate ways to create plots of the wvf structure using the wvfPlot call.</span>
+<span class="comment">%</span>
+<span class="comment">% NOTE: Should improve and demonstrate/explain control over sampling</span>
+<span class="comment">% resolutions.</span>
+<span class="comment">%</span>
+<span class="comment">% (BW) Wavefront Toolbox Team, 2014-15</span>
+</pre><h2>Clear and close<a name="3"></a></h2><pre class="codeinput">close <span class="string">all</span>; ieInit;
+</pre><h2>Set up wfv object<a name="4"></a></h2><pre class="codeinput">wvf = wvfCreate;
+wave = 550; wvf = wvfSet(wvf,<span class="string">'calc wave'</span>,wave);
+
+<span class="comment">% There is a bit of an art to setting the number</span>
+<span class="comment">% of samples, because of reciprocal relation between</span>
+<span class="comment">% sampling in pupil and retinal domains.  This choice</span>
+<span class="comment">% is an OK compromise, but you can get finer results</span>
+<span class="comment">% with additional fussing</span>
+wvf = wvfSet(wvf,<span class="string">'spatial samples'</span>,401);
+
+<span class="comment">% Compute the PSF</span>
+wvf = wvfComputePSF(wvf);
+</pre><h2>Make the plot in microns<a name="5"></a></h2><pre class="codeinput">unit = <span class="string">'um'</span>;
+[u,p]= wvfPlot(wvf,<span class="string">'1d psf space'</span>,unit,wave);
+set(p,<span class="string">'color'</span>,<span class="string">'k'</span>,<span class="string">'linewidth'</span>,2)
+title([num2str(wave) <span class="string">' nm'</span>]);
+
+<span class="comment">% Normalize the plot</span>
+unit = <span class="string">'um'</span>;
+[u,p]= wvfPlot(wvf,<span class="string">'1d psf space normalized'</span>,unit,wave);
+set(p,<span class="string">'color'</span>,<span class="string">'b'</span>,<span class="string">'linewidth'</span>,2)
+title([num2str(wave) <span class="string">' nm'</span>]);
+
+<span class="comment">% Make the plot distance axis millimeters</span>
+unit = <span class="string">'mm'</span>;
+[u,p]= wvfPlot(wvf,<span class="string">'1d psf space normalized'</span>,unit,wave);
+set(p,<span class="string">'color'</span>,<span class="string">'r'</span>,<span class="string">'linewidth'</span>,3,<span class="string">'linestyle'</span>,<span class="string">':'</span>)
+title([num2str(wave) <span class="string">' nm'</span>]);
+</pre><img vspace="5" hspace="5" src="t_wvfPlot_01.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_02.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_03.png" alt=""> <h2>Show the return arguments<a name="6"></a></h2><p>Data values that were plotted.</p><pre class="codeinput">u
+
+<span class="comment">% Figure properties that can be set.</span>
+get(p)
+</pre><pre class="codeoutput">
+u = 
+
+    x: [1x401 double]
+    y: [1x401 double]
+
+    AlignVertexCenters: 'off'
+            Annotation: [1x1 matlab.graphics.eventdata.Annotation]
+          BeingDeleted: 'off'
+            BusyAction: 'queue'
+         ButtonDownFcn: ''
+              Children: []
+              Clipping: 'on'
+                 Color: [1 0 0]
+             CreateFcn: ''
+             DeleteFcn: ''
+           DisplayName: ''
+      HandleVisibility: 'on'
+               HitTest: 'on'
+         Interruptible: 'on'
+             LineStyle: ':'
+             LineWidth: 3
+                Marker: 'none'
+       MarkerEdgeColor: 'auto'
+       MarkerFaceColor: 'none'
+            MarkerSize: 6
+                Parent: [1x1 Axes]
+         PickableParts: 'visible'
+              Selected: 'off'
+    SelectionHighlight: 'on'
+                   Tag: ''
+                  Type: 'line'
+         UIContextMenu: []
+              UserData: []
+               Visible: 'on'
+                 XData: [1x401 double]
+             XDataMode: 'manual'
+           XDataSource: ''
+                 YData: [1x401 double]
+           YDataSource: ''
+                 ZData: [1x0 double]
+           ZDataSource: ''
+
+</pre><h2>A multiple axis window<a name="7"></a></h2><pre class="codeinput">vcNewGraphWin([],<span class="string">'tall'</span>);
+subplot(3,1,1), wvfPlot(wvf,<span class="string">'1d psf space'</span>,unit,wave,<span class="string">'no window'</span>);
+title([num2str(wave) <span class="string">' nm'</span>]);
+subplot(3,1,2), wvfPlot(wvf,<span class="string">'1d psf space normalized'</span>,unit,wave,<span class="string">'no window'</span>);
+subplot(3,1,3), wvfPlot(wvf,<span class="string">'image psf'</span>,<span class="string">'um'</span>,wave,20,<span class="string">'no window'</span>);
+</pre><img vspace="5" hspace="5" src="t_wvfPlot_04.png" alt=""> <h2>Pupil amplitude and phase<a name="8"></a></h2><pre class="codeinput">unit = <span class="string">'mm'</span>; maxMM = 2;
+wvfPlot(wvf,<span class="string">'image pupil amp'</span>,unit,wave,maxMM);
+title([<span class="string">'Pupil function amplitude '</span> num2str(wave) <span class="string">' nm'</span>]);
+wvfPlot(wvf,<span class="string">'image pupil phase'</span>,unit,wave,maxMM);
+title([<span class="string">'Pupil function phase '</span> num2str(wave) <span class="string">' nm'</span>]);
+</pre><img vspace="5" hspace="5" src="t_wvfPlot_05.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_06.png" alt=""> <h2>Mesh plots of the psf in angle and space<a name="9"></a></h2><pre class="codeinput">unit = <span class="string">'min'</span>; maxMIN = 10;
+wvfPlot(wvf,<span class="string">'2d psf angle'</span>,unit,wave,maxMIN);
+title([num2str(wave) <span class="string">' nm'</span>]);
+
+unit = <span class="string">'mm'</span>; maxMM = .050;
+wvfPlot(wvf,<span class="string">'2d psf space'</span>,unit,wave,maxMM);
+title([num2str(wave) <span class="string">' nm'</span>]);
+
+<span class="comment">% These are linepairs / unit and maximum frequency</span>
+unit = <span class="string">'mm'</span>; maxF = 300;
+wvfPlot(wvf,<span class="string">'2d otf'</span>,unit,wave,maxF);
+</pre><img vspace="5" hspace="5" src="t_wvfPlot_07.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_08.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_09.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_10.png" alt=""> <h2>Change the calculated PSF wavelength and plot again<a name="10"></a></h2><p>Notice that we don't get an Airy disk, because the calculation includes chromatic aberrations.  These show up in the optical phase plot in the pupil plane.</p><p>Another way to say this is that the pupil function is specified at a measurement wavelength, and when we calculate at different wavelengths a model of defocus is applied according to a model of the human eye's chromatic aberrations.</p><pre class="codeinput">wave = 460; wvf = wvfSet(wvf,<span class="string">'calc wave'</span>,wave);
+wvf = wvfComputePSF(wvf);
+unit = <span class="string">'min'</span>;
+wvfPlot(wvf,<span class="string">'image psf angle'</span>,unit,wave);
+title([<span class="string">'Relative amplitude '</span> num2str(wave) <span class="string">' nm'</span>]);
+
+<span class="comment">% A multiple axis window</span>
+vcNewGraphWin([],<span class="string">'tall'</span>);
+subplot(3,1,1), wvfPlot(wvf,<span class="string">'1d psf space'</span>,unit,wave,<span class="string">'no window'</span>);
+title([num2str(wave) <span class="string">' nm'</span>]);
+subplot(3,1,2), wvfPlot(wvf,<span class="string">'1d psf space normalized'</span>,unit,wave,<span class="string">'no window'</span>);
+subplot(3,1,3), wvfPlot(wvf,<span class="string">'image psf'</span>,<span class="string">'um'</span>,wave,20,<span class="string">'no window'</span>);
+
+<span class="comment">% Pupil amplitude and phase</span>
+unit = <span class="string">'mm'</span>; maxMM = 2;
+wvfPlot(wvf,<span class="string">'image pupil amp'</span>,unit,wave,maxMM);
+title([<span class="string">'Pupil function amplitude '</span> num2str(wave) <span class="string">' nm'</span>]);
+wvfPlot(wvf,<span class="string">'image pupil phase'</span>,unit,wave,maxMM);
+title([<span class="string">'Pupil function phase '</span> num2str(wave) <span class="string">' nm'</span>]);
+</pre><img vspace="5" hspace="5" src="t_wvfPlot_11.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_12.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_13.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPlot_14.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function t_wvfPlot
+%
+% Illustrate ways to create plots of the wvf structure using the wvfPlot call.
+%
+% NOTE: Should improve and demonstrate/explain control over sampling
+% resolutions.
+%
+% (BW) Wavefront Toolbox Team, 2014-15
+
+%% Clear and close
+close all; ieInit;
+
+%% Set up wfv object
+wvf = wvfCreate;
+wave = 550; wvf = wvfSet(wvf,'calc wave',wave);
+
+% There is a bit of an art to setting the number
+% of samples, because of reciprocal relation between
+% sampling in pupil and retinal domains.  This choice
+% is an OK compromise, but you can get finer results
+% with additional fussing
+wvf = wvfSet(wvf,'spatial samples',401);
+
+% Compute the PSF
+wvf = wvfComputePSF(wvf);
+
+%% Make the plot in microns
+unit = 'um';
+[u,p]= wvfPlot(wvf,'1d psf space',unit,wave);
+set(p,'color','k','linewidth',2)
+title([num2str(wave) ' nm']);
+
+% Normalize the plot
+unit = 'um';
+[u,p]= wvfPlot(wvf,'1d psf space normalized',unit,wave);
+set(p,'color','b','linewidth',2)
+title([num2str(wave) ' nm']);
+
+% Make the plot distance axis millimeters
+unit = 'mm';
+[u,p]= wvfPlot(wvf,'1d psf space normalized',unit,wave);
+set(p,'color','r','linewidth',3,'linestyle',':')
+title([num2str(wave) ' nm']);
+
+%% Show the return arguments
+%
+% Data values that were plotted.
+u
+
+% Figure properties that can be set.
+get(p)
+
+%% A multiple axis window
+vcNewGraphWin([],'tall');
+subplot(3,1,1), wvfPlot(wvf,'1d psf space',unit,wave,'no window');
+title([num2str(wave) ' nm']);
+subplot(3,1,2), wvfPlot(wvf,'1d psf space normalized',unit,wave,'no window');
+subplot(3,1,3), wvfPlot(wvf,'image psf','um',wave,20,'no window');
+
+%% Pupil amplitude and phase
+unit = 'mm'; maxMM = 2;
+wvfPlot(wvf,'image pupil amp',unit,wave,maxMM);
+title(['Pupil function amplitude ' num2str(wave) ' nm']);
+wvfPlot(wvf,'image pupil phase',unit,wave,maxMM);
+title(['Pupil function phase ' num2str(wave) ' nm']);
+
+%%  Mesh plots of the psf in angle and space
+unit = 'min'; maxMIN = 10;
+wvfPlot(wvf,'2d psf angle',unit,wave,maxMIN);
+title([num2str(wave) ' nm']);
+
+unit = 'mm'; maxMM = .050;
+wvfPlot(wvf,'2d psf space',unit,wave,maxMM);
+title([num2str(wave) ' nm']);
+
+% These are linepairs / unit and maximum frequency
+unit = 'mm'; maxF = 300;
+wvfPlot(wvf,'2d otf',unit,wave,maxF);
+
+%% Change the calculated PSF wavelength and plot again
+%
+% Notice that we don't get an Airy disk, because the
+% calculation includes chromatic aberrations.  These
+% show up in the optical phase plot in the pupil plane.
+%
+% Another way to say this is that the pupil function is
+% specified at a measurement wavelength, and when we
+% calculate at different wavelengths a model of defocus
+% is applied according to a model of the human eye's 
+% chromatic aberrations.
+wave = 460; wvf = wvfSet(wvf,'calc wave',wave);
+wvf = wvfComputePSF(wvf);
+unit = 'min';
+wvfPlot(wvf,'image psf angle',unit,wave);
+title(['Relative amplitude ' num2str(wave) ' nm']);
+
+% A multiple axis window
+vcNewGraphWin([],'tall');
+subplot(3,1,1), wvfPlot(wvf,'1d psf space',unit,wave,'no window');
+title([num2str(wave) ' nm']);
+subplot(3,1,2), wvfPlot(wvf,'1d psf space normalized',unit,wave,'no window');
+subplot(3,1,3), wvfPlot(wvf,'image psf','um',wave,20,'no window');
+
+% Pupil amplitude and phase
+unit = 'mm'; maxMM = 2;
+wvfPlot(wvf,'image pupil amp',unit,wave,maxMM);
+title(['Pupil function amplitude ' num2str(wave) ' nm']);
+wvfPlot(wvf,'image pupil phase',unit,wave,maxMM);
+title(['Pupil function phase ' num2str(wave) ' nm']);
+
+end
+
+##### SOURCE END #####
+--></body></html>
