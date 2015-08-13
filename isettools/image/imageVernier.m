@@ -34,6 +34,7 @@ function [Img,params] = imageVernier(params)
 %  anything we could shift that instead of the line
 
 %% Initialize parameters
+if notDefined('params'), params = []; end
 if isfield(params, 'sceneSz'),   sz = params.sceneSz; else sz = 64; end
 if isfield(params, 'barWidth'),  width = params.barWidth; else width = 1; end
 if isfield(params, 'offset'),    offset = params.offset; else offset = 1; end
