@@ -1,4 +1,4 @@
-function vScriptsList = validateListAllValidationDirs
+function vScriptsList = ieValidateListAllValidationDirs
 %
 % This encapsulates a vull list of our validation directories, so we only
 % need to update it in one place.

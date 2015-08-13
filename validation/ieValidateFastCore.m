@@ -1,4 +1,4 @@
-function validateFastAll
+function ieValidateFastCore
 %
 % Fast run (no figures, hash data check, no publish) of all of our
 % validation functions.
@@ -33,7 +33,8 @@ function validateFastAll
     UnitTest.listPrefs();
     
     %% What to validate
-    vScriptsList = validateListAllValidationDirs;
+    listingScript = UnitTest.getPref('coreListingScript');
+    vScriptsList = eval(listingScript);
     
     %% How to validate
     % Run a FAST validation session (comparing SHA-256 hash keys of the data)
