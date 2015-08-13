@@ -1,4 +1,4 @@
-function validateFullAndPublishAll
+function ieValidateFullAndPublishAll
 %
 % Validation and publish our full list of validation programs
 
@@ -32,7 +32,8 @@ function validateFullAndPublishAll
     UnitTest.listPrefs();
     
     %% What to validate
-    vScriptsList = validateListAllValidationDirs;
+    listingScript = UnitTest.getPref('listingScript');
+    vScriptsList = eval(listingScript);
         
     %% How to validate
     % Run a RUN_TIME_ERRORS_ONLY validation session

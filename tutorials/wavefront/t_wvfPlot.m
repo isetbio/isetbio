@@ -1,5 +1,4 @@
 function t_wvfPlot
-% t_wvfPlot
 %
 % Illustrate ways to create plots of the wvf structure using the wvfPlot call.
 %

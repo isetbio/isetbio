@@ -1,5 +1,4 @@
 function t_wvfPupilSize
-%% t_wvfPupilSize
 %
 % Explore the effect of changing the pupil size in the calculation.
 %

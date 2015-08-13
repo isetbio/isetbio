@@ -1,4 +1,4 @@
-function validateFullOne(varargin)
+function ieValidateFullOne(varargin)
     
     %% We will use preferences for the 'isetbioValidation' project - this is project specific
     UnitTest.usePreferencesForProject('isetbioValidation', 'reset');
