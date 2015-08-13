@@ -10,8 +10,6 @@ function em = emCreate(params, varargin)
 %                 tremor, drift and micro-saccade respectively
 %     .sampTime - sampling time in secs, e.g. 0.001 stands for 1ms per
 %                 sample
-%     .totTime  - total time of eye-movement sequence in secs, will be
-%                 rounded to a multiple of sampTime (removed)
 %     .tremor   - parameters for tremor, could include
 %        .interval   = mean of occurring interval in secs
 %        .intervalSD = standard deviation of interval
