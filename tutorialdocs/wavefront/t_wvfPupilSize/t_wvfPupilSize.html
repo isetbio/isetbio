@@ -66,8 +66,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">t_wvfPupilSize</a></li><li><a href="#3">Initialize</a></li><li><a href="#4">Load the Thibos data for one of the pupil diameter sizes</a></li><li><a href="#5">Calculate the effect of varying the pupil diameter</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfPupilSize
-</pre><h2>t_wvfPupilSize<a name="2"></a></h2><p>Explore the effect of changing the pupil size in the calculation.</p><p>We load the Thibos wavefront data collected at some pupil diameter. There are a few options.  We set these data into the zernicke coefficients.</p><p>We then set the calculated pupil size and compute the expected pointspread function.  That function changes as the pupil diameter gets smaller.</p><p>(BW) (c) Wavefront Toolbox Team, 2014</p><h2>Initialize<a name="3"></a></h2><pre class="codeinput">close <span class="string">all</span>; ieInit;
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialize</a></li><li><a href="#4">Load the Thibos data for one of the pupil diameter sizes</a></li><li><a href="#5">Calculate the effect of varying the pupil diameter</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfPupilSize
+</pre><pre class="codeinput"><span class="comment">%</span>
+<span class="comment">% Explore the effect of changing the pupil size in the calculation.</span>
+<span class="comment">%</span>
+<span class="comment">% We load the Thibos wavefront data collected at some pupil diameter.</span>
+<span class="comment">% There are a few options.  We set these data into the zernicke</span>
+<span class="comment">% coefficients.</span>
+<span class="comment">%</span>
+<span class="comment">% We then set the calculated pupil size and compute the expected</span>
+<span class="comment">% pointspread function.  That function changes as the pupil diameter gets</span>
+<span class="comment">% smaller.</span>
+<span class="comment">%</span>
+<span class="comment">% (BW) (c) Wavefront Toolbox Team, 2014</span>
+</pre><h2>Initialize<a name="3"></a></h2><pre class="codeinput">close <span class="string">all</span>; ieInit;
 </pre><h2>Load the Thibos data for one of the pupil diameter sizes<a name="4"></a></h2><pre class="codeinput">pupilMM = 7.5;   <span class="comment">% Could be 6, 4.5, or 3</span>
 zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 
@@ -128,7 +140,6 @@ ans =
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function t_wvfPupilSize
-%% t_wvfPupilSize
 %
 % Explore the effect of changing the pupil size in the calculation.
 %
