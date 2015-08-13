@@ -125,7 +125,7 @@ pRate = mean(photons(:));
 newLum = lum * (tRate/pRate);
 fprintf(<span class="string">'Adjusting the scene luminance to %e cd/m^2\n'</span>,newLum);
 s = sceneAdjustLuminance(s,newLum);  <span class="comment">% 1 cd/m2</span>
-</pre><pre class="codeoutput">Adjusting the scene luminance to 6.024025e-04 cd/m^2
+</pre><pre class="codeoutput">Adjusting the scene luminance to 6.023544e-04 cd/m^2
 </pre><h2>Compute the photon rate at the new scene luminance level<a name="7"></a></h2><pre class="codeinput">oi = oiCompute(oi,s);
 fprintf(<span class="string">'Through the optics the illuminance is %e lux\n'</span>,oiGet(oi,<span class="string">'mean illuminance'</span>));
 
@@ -147,9 +147,9 @@ c2e = sensorGet(sensor,<span class="string">'integration time'</span>)/ q;
 pImage = c2e*signalCurrent(oi,sensor);
 
 fprintf(<span class="string">'Direct calculation of photon rate:  %.4f (target = %.4f)\n'</span>,mean(pImage(:)),tRate)
-</pre><pre class="codeoutput">Through the optics the illuminance is 2.863757e-05 lux
-Computed mean photon rate 2.021938e+00
-Direct calculation of photon rate:  1.9990 (target = 2.0000)
+</pre><pre class="codeoutput">Through the optics the illuminance is 2.863528e-05 lux
+Computed mean photon rate 2.006629e+00
+Direct calculation of photon rate:  1.9989 (target = 2.0000)
 </pre><h2>Histogram of photon numbers and expected Poisson distribution<a name="8"></a></h2><pre class="codeinput">nSamp = round(max(2*sqrt(tRate)*50,1000));
 val = iePoisson(tRate,nSamp);
 
