@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_colorSpectrum</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_colorSpectrum.m"><style type="text/css">
+      --><title>t_colorSpectrum</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_colorSpectrum.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -76,7 +76,8 @@ primaries = displayGet(d, <span class="string">'spd primaries'</span>);
 <span class="comment">% Here is a plot of the primaries.</span>
 vcNewGraphWin; plot(wave,primaries(:,3:-1:1));
 xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Primary power'</span>);
-</pre><pre class="codeoutput">Changing wave and interpolating SPD, for consistency
+</pre><pre class="codeoutput">Warning: Should set wave as name-value pairs 
+Changing wave and interpolating SPD, for consistency
 </pre><img vspace="5" hspace="5" src="t_colorSpectrum_01.png" alt=""> <h2>Get color matching functions<a name="3"></a></h2><p>We use the CIE XYZ color matching functions for creating calibrated signals. We load them first.  The ieReadSpectra function splines these to match the passed wavelength sampling.</p><pre class="codeinput">XYZ = ieReadSpectra(<span class="string">'XYZ'</span>, wave);
 </pre><h2>Compute color transfomration matrix<a name="4"></a></h2><p>We compute the matrix that converts between XYZ values linear intensities of the monitor RGB values.  We do this in two steps.  First, we find the XYZ values for each of the individual primaries.  The columns of this matrix represent the XYZ values of the red, green and blue primaries, respectively.  These values should be relatively easy to interpret.</p><pre class="codeinput">rgb2xyz = 683 * dWave * XYZ' * primaries; <span class="comment">%#ok</span>
 

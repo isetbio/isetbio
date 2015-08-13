@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_airyDisk</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_opticsAiryDisk.m"><style type="text/css">
+      --><title>t_airyDisk</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_opticsAiryDisk.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,6 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>t_airyDisk</h1><!--introduction--><p>Plotting an Airy disk for diffraction limited optics.</p><p>Copyright ImagEval Consultants, LLC, 2010.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Build up the spatial structure in an optical image</a></li><li><a href="#3">Select spatial samples and wavelength for plotting</a></li><li><a href="#4">Calculate the OTF using diffraction limited MTF (dlMTF)</a></li><li><a href="#5">Plot the diffraction limited PSF.</a></li><li><a href="#6">End</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+</pre><pre class="codeoutput">10 nm band assumed
 </pre><h2>Build up the spatial structure in an optical image<a name="2"></a></h2><pre class="codeinput">scene = sceneCreate;
 oi    = oiCreate;
 oi    = oiCompute(scene,oi);

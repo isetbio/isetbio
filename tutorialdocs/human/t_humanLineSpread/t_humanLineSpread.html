@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_humanLineSpread</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-29"><meta name="DC.source" content="t_humanLineSpread.m"><style type="text/css">
+      --><title>t_humanLineSpread</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_humanLineSpread.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>t_humanLineSpread</h1><!--introduction--><p>Illustrate the photon absorptions from a line stimulus.</p><p>This iillustrates the practical measurement of the human line spread function, including photon noise, irregular spacing, and so forth.</p><p>We illustrate the result for various spectral power distributions of the line stimuli, as well as the sum of a few nearby lines.</p><p>Copyright Imageval LLC, 2012</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Create a line scene, human optics, and a human sensor</a></li><li><a href="#3">Compute and display</a></li><li><a href="#4">Plot a line showing the photon absorptions for the broadband stimulus</a></li><li><a href="#5">Change the line scene to 450nm and plot</a></li><li><a href="#6">Show the  450 nm image</a></li><li><a href="#7">Show the spread of the line at 550 nm</a></li><li><a href="#8">Show the 550 nm image</a></li><li><a href="#9">Create a small grid pattern and image it on the sensor</a></li><li><a href="#10">Plot a line through the two grid lines</a></li><li><a href="#11">Show the 450 nm version of the grid.  Surprising, hunh?</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
+  </style></head><body><div class="content"><h1>t_humanLineSpread</h1><!--introduction--><p>Illustrate the photon absorptions from a line stimulus.</p><p>This illustrates the practical measurement of the human line spread function, including photon noise, irregular spacing, and so forth.</p><p>We illustrate the result for various spectral power distributions of the line stimuli, as well as the sum of a few nearby lines.</p><p>Copyright Imageval LLC, 2012</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Create a line scene, human optics, and a human sensor</a></li><li><a href="#3">Compute and display</a></li><li><a href="#4">Plot a line showing the photon absorptions for the broadband stimulus</a></li><li><a href="#5">Change the line scene to 450nm and plot</a></li><li><a href="#6">Show the  450 nm image</a></li><li><a href="#7">Show the spread of the line at 550 nm</a></li><li><a href="#8">Show the 550 nm image</a></li><li><a href="#9">Create a small grid pattern and image it on the sensor</a></li><li><a href="#10">Plot a line through the two grid lines</a></li><li><a href="#11">Show the 450 nm version of the grid.  Surprising, hunh?</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit;
 </pre><h2>Create a line scene, human optics, and a human sensor<a name="2"></a></h2><p>This is a broad band stimulus, with a spectral power distribution of daylight, 6500 K.  We set the field of view to one degree.</p><p>The optics are the estimated human optics, as per Marimont and Wandell in the mid-90s.</p><p>The sensor has an approximation to the human cones, with random positions of the three cone types.</p><pre class="codeinput">lineS = sceneCreate(<span class="string">'line d65'</span>);
 lineS = sceneSet(lineS,<span class="string">'h fov'</span>,1);
 oi = oiCreate(<span class="string">'human'</span>);
@@ -77,10 +77,12 @@ sensor = sensorCompute(sensor,oi);
 sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string">'human-D65'</span>);
 
 vcAddAndSelectObject(sensor);
-sensorWindow(<span class="string">'scale'</span>,1);
+sensorWindow(<span class="string">'scale'</span>,true);
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_01.png" alt=""> <h2>Plot a line showing the photon absorptions for the broadband stimulus<a name="4"></a></h2><pre class="codeinput">y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
 xy = [0 y];
 sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+
+<span class="comment">% sensorConePlot(sensor)</span>
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_02.png" alt=""> <h2>Change the line scene to 450nm and plot<a name="5"></a></h2><pre class="codeinput">preserveLuminance = 1;
 
 line450S = sceneInterpolateW(lineS, 450, preserveLuminance);
@@ -90,6 +92,7 @@ sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string
 y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
 xy = [0 y];
 sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><pre class="codeoutput">Interpolating OI photon data
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_03.png" alt=""> <h2>Show the  450 nm image<a name="6"></a></h2><pre class="codeinput">vcAddAndSelectObject(sensor);
 sensorWindow;
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_04.png" alt=""> <h2>Show the spread of the line at 550 nm<a name="7"></a></h2><pre class="codeinput">preserveLuminance = 1;
@@ -101,6 +104,7 @@ sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string
 y = sensorGet(sensor,<span class="string">'cols'</span>)/2;
 xy = [0 y];
 sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><pre class="codeoutput">Interpolating OI photon data
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_05.png" alt=""> <h2>Show the 550 nm image<a name="8"></a></h2><pre class="codeinput">vcAddAndSelectObject(sensor);
 sensorWindow;
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_06.png" alt=""> <h2>Create a small grid pattern and image it on the sensor<a name="9"></a></h2><pre class="codeinput">imgSize = 128; lineSeparation = 32;
@@ -127,13 +131,14 @@ sensor = sensorSet(sensor,<span class="string">'name'</span>,<span class="string
 vcAddAndSelectObject(sensor);
 sensorWindow;
 sensorPlotLine(sensor,<span class="string">'h'</span>,<span class="string">'photons'</span>,<span class="string">'space'</span>,xy);
+</pre><pre class="codeoutput">Interpolating OI photon data
 </pre><img vspace="5" hspace="5" src="t_humanLineSpread_09.png" alt=""> <img vspace="5" hspace="5" src="t_humanLineSpread_10.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_humanLineSpread
 %
 % Illustrate the photon absorptions from a line stimulus.
 %
-% This iillustrates the practical measurement of the human line spread
+% This illustrates the practical measurement of the human line spread
 % function, including photon noise, irregular spacing, and so forth.
 %
 % We illustrate the result for various spectral power distributions of the
@@ -165,12 +170,14 @@ sensor = sensorCompute(sensor,oi);
 sensor = sensorSet(sensor,'name','human-D65');
 
 vcAddAndSelectObject(sensor);
-sensorWindow('scale',1);
+sensorWindow('scale',true);
 
 %% Plot a line showing the photon absorptions for the broadband stimulus
 y = sensorGet(sensor,'cols')/2;
 xy = [0 y];
 sensorPlotLine(sensor,'h','photons','space',xy);
+
+% sensorConePlot(sensor)
 
 %% Change the line scene to 450nm and plot
 preserveLuminance = 1;

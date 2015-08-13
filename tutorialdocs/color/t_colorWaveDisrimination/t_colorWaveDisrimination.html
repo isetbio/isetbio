@@ -1,0 +1,301 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_colorWaveDisrimination</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_colorWaveDisrimination.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">t_colorWaveDiscrimination</a></li><li><a href="#2">Create a sample cone mosaic</a></li><li><a href="#3">Cone absorption as a function of mean signal level</a></li><li><a href="#4">Set up wavelengths and luminance levels</a></li><li><a href="#7">Create a monochromatic scene and set the radiance</a></li><li><a href="#9">Extract the data for plotting</a></li></ul></div><h2>t_colorWaveDiscrimination<a name="1"></a></h2><p>Illustrate how wavelength discrimination depends on the mean luminance level given standard assumptions about photon noise (no photoreceptor noise or neural noise).</p><p>BW (c)ISETBIO Team, 2015</p><pre class="codeinput"><span class="comment">%</span>
+ieInit
+</pre><h2>Create a sample cone mosaic<a name="2"></a></h2><pre class="codeinput">pixel = [];
+
+<span class="comment">% Make a cone mosaic</span>
+coneP = coneCreate;
+coneP = coneSet(coneP,<span class="string">'spatial density'</span>,[.1 .6 .2 .1]); <span class="comment">% Empty, L,M,S</span>
+
+<span class="comment">% Here is a look at a typical cone mosaic.  Not used later.</span>
+cSensor = sensorCreate(<span class="string">'human'</span>,pixel,coneP);
+cSensor = sensorSet(cSensor,<span class="string">'size'</span>,[128 128]);
+cSensor = sensorSet(cSensor,<span class="string">'pixel size same fill factor'</span>,[2 2]*1e-6);
+cSensor = sensorSet(cSensor,<span class="string">'noise flag'</span>,1);   <span class="comment">% Photon noise only</span>
+
+<span class="comment">% cSensor = sensorCreate('human');</span>
+
+<span class="comment">% Show an image of the mosaic in saturated colors</span>
+<span class="comment">% sensorConePlot(cSensor)</span>
+</pre><h2>Cone absorption as a function of mean signal level<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Illustrate the separation in the LMS clouds for pairs of wavelengths</span>
+oi = oiCreate(<span class="string">'human'</span>);
+</pre><h2>Set up wavelengths and luminance levels<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Create uniform fields</span>
+wSamples = [520 525 530];
+nWaves = length(wSamples);
+
+<span class="comment">% Create luminance levels</span>
+luminance = logspace(1,3,5);
+nLum = length(luminance);
+
+<span class="comment">% Number of row/col samples in the scene</span>
+sz = 64;
+
+<span class="comment">% We will make a series of scenes at different wavelengths and peak</span>
+<span class="comment">% readiances. We will compute the sensor response.</span>
+scene  = cell(1,nWaves);
+sensor = cell(1,nWaves);
+<span class="keyword">for</span> rr = 1:nLum
+</pre><pre class="codeinput">    <span class="keyword">for</span> ww=1:nWaves
+</pre><h2>Create a monochromatic scene and set the radiance<a name="7"></a></h2><p>The wavelength is specified in wSamples.</p><pre class="codeinput">        scene{ww} = sceneCreate(<span class="string">'uniform monochromatic'</span>,wSamples(:,ww),sz);
+
+        <span class="comment">% Some people scale for luminance, or equal L+M, which we could do.</span>
+        <span class="comment">% We could go equal energy, not equal photon.</span>
+        scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
+
+        <span class="comment">% Compute the irradiance at the retina</span>
+        <span class="comment">% (This oiCreate shouldn't be necessary.  But there is a problem</span>
+        <span class="comment">% with the monochrome scenes, so we start with a new oi until this</span>
+        <span class="comment">% is fixed.  The code runs without this in ISET.)</span>
+        oi = oiClearData(oi);
+        oi = oiCompute(oi,scene{ww});
+
+        <span class="comment">% Create a human sensor.</span>
+        sensor{ww} = cSensor;
+        <span class="comment">% Integrate for 100 ms.</span>
+
+        <span class="comment">% Compute the sensor absorptions</span>
+        sensor{ww} = sensorCompute(sensor{ww},oi);
+
+        <span class="comment">% Give the scene a name</span>
+        sensor{ww} = sensorSet(sensor{ww},<span class="string">'name'</span>,sprintf(<span class="string">'wave %.0f'</span>,wSamples(1,ww)));
+
+        <span class="comment">% If you want to have a look at the image, run this line.</span>
+        <span class="comment">% vcAddObject(sensor{ww}); sensorImageWindow;</span>
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2>Extract the data for plotting<a name="9"></a></h2><pre class="codeinput">    L = cell(1,length(wSamples));
+    M = cell(1,length(wSamples));
+    S = cell(1,length(wSamples));
+
+    <span class="comment">% The cones are in slots 2-4 when not ideal</span>
+    slot = [2 3 4];   <span class="comment">% Typical human 1621 case.  1 empty, 6 L, 2 M, 1 S</span>
+    <span class="keyword">for</span> ww=1:length(wSamples)
+        L{ww} = sensorGet(sensor{ww},<span class="string">'electrons'</span>,slot(1));
+        M{ww} = sensorGet(sensor{ww},<span class="string">'electrons'</span>,slot(2));
+        S{ww} = sensorGet(sensor{ww},<span class="string">'electrons'</span>,slot(3));
+        n = min(100,length(L{ww}));
+
+        <span class="comment">% Make the same length</span>
+        S{ww} = S{ww}(1:n); M{ww} = M{ww}(1:n); L{ww} = L{ww}(1:n);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Plot the absorptions</span>
+    f = vcNewGraphWin;
+    <span class="comment">% sym = {'b.','g.','r.','c.','bs','gs','rs','cs','bo','go','ro','co','bx','gx','rx','cx'};</span>
+    sym = {<span class="string">'bo'</span>,<span class="string">'go'</span>,<span class="string">'ro'</span>,<span class="string">'co'</span>,};
+    az = 65.5; el = 30;
+    <span class="keyword">for</span> ww=1:nWaves
+        s = mod(ww,length(sym))+1;
+        plot3(L{ww}(:),M{ww}(:),S{ww}(:),sym{s})
+        view([az el])
+        hold <span class="string">on</span>
+    <span class="keyword">end</span>
+    title(sprintf(<span class="string">'Luminance %.1f\n'</span>,luminance(rr)));
+    xlabel(<span class="string">'L-absorptions'</span>); ylabel(<span class="string">'M-Absorptions'</span>); zlabel(<span class="string">'S-absorptions'</span>); axis <span class="string">square</span>; grid <span class="string">on</span>
+</pre><img vspace="5" hspace="5" src="t_colorWaveDisrimination_01.png" alt=""> <img vspace="5" hspace="5" src="t_colorWaveDisrimination_02.png" alt=""> <img vspace="5" hspace="5" src="t_colorWaveDisrimination_03.png" alt=""> <img vspace="5" hspace="5" src="t_colorWaveDisrimination_04.png" alt=""> <img vspace="5" hspace="5" src="t_colorWaveDisrimination_05.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+
+<span class="comment">% vcAddAndSelectObject(sensor{ww}); sensorImageWindow;</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_colorWaveDiscrimination
+%
+% Illustrate how wavelength discrimination depends on the mean luminance
+% level given standard assumptions about photon noise (no photoreceptor
+% noise or neural noise).
+%
+% BW (c)ISETBIO Team, 2015
+
+% 
+ieInit
+
+%%  Create a sample cone mosaic
+pixel = [];
+
+% Make a cone mosaic
+coneP = coneCreate;
+coneP = coneSet(coneP,'spatial density',[.1 .6 .2 .1]); % Empty, L,M,S
+
+% Here is a look at a typical cone mosaic.  Not used later.
+cSensor = sensorCreate('human',pixel,coneP);
+cSensor = sensorSet(cSensor,'size',[128 128]);
+cSensor = sensorSet(cSensor,'pixel size same fill factor',[2 2]*1e-6);
+cSensor = sensorSet(cSensor,'noise flag',1);   % Photon noise only
+
+% cSensor = sensorCreate('human');
+
+% Show an image of the mosaic in saturated colors
+% sensorConePlot(cSensor)
+
+%%  Cone absorption as a function of mean signal level 
+
+% Illustrate the separation in the LMS clouds for pairs of wavelengths
+oi = oiCreate('human');
+
+%% Set up wavelengths and luminance levels
+
+% Create uniform fields 
+wSamples = [520 525 530];
+nWaves = length(wSamples);
+
+% Create luminance levels
+luminance = logspace(1,3,5);
+nLum = length(luminance);
+
+% Number of row/col samples in the scene 
+sz = 64; 
+
+% We will make a series of scenes at different wavelengths and peak
+% readiances. We will compute the sensor response.
+scene  = cell(1,nWaves);
+sensor = cell(1,nWaves);
+for rr = 1:nLum
+    for ww=1:nWaves
+
+        %% Create a monochromatic scene and set the radiance
+        % The wavelength is specified in wSamples.
+        scene{ww} = sceneCreate('uniform monochromatic',wSamples(:,ww),sz);
+        
+        % Some people scale for luminance, or equal L+M, which we could do.
+        % We could go equal energy, not equal photon.
+        scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
+        
+        % Compute the irradiance at the retina 
+        % (This oiCreate shouldn't be necessary.  But there is a problem
+        % with the monochrome scenes, so we start with a new oi until this
+        % is fixed.  The code runs without this in ISET.)
+        oi = oiClearData(oi);
+        oi = oiCompute(oi,scene{ww});
+        
+        % Create a human sensor.
+        sensor{ww} = cSensor;
+        % Integrate for 100 ms.
+        
+        % Compute the sensor absorptions
+        sensor{ww} = sensorCompute(sensor{ww},oi);
+        
+        % Give the scene a name
+        sensor{ww} = sensorSet(sensor{ww},'name',sprintf('wave %.0f',wSamples(1,ww)));
+        
+        % If you want to have a look at the image, run this line.
+        % vcAddObject(sensor{ww}); sensorImageWindow;
+    end
+
+    %% Extract the data for plotting
+    L = cell(1,length(wSamples));
+    M = cell(1,length(wSamples));
+    S = cell(1,length(wSamples));
+
+    % The cones are in slots 2-4 when not ideal
+    slot = [2 3 4];   % Typical human 1621 case.  1 empty, 6 L, 2 M, 1 S
+    for ww=1:length(wSamples)
+        L{ww} = sensorGet(sensor{ww},'electrons',slot(1));
+        M{ww} = sensorGet(sensor{ww},'electrons',slot(2));
+        S{ww} = sensorGet(sensor{ww},'electrons',slot(3));
+        n = min(100,length(L{ww}));
+
+        % Make the same length
+        S{ww} = S{ww}(1:n); M{ww} = M{ww}(1:n); L{ww} = L{ww}(1:n);
+    end
+
+    % Plot the absorptions
+    f = vcNewGraphWin;
+    % sym = {'b.','g.','r.','c.','bs','gs','rs','cs','bo','go','ro','co','bx','gx','rx','cx'};
+    sym = {'bo','go','ro','co',};
+    az = 65.5; el = 30;
+    for ww=1:nWaves
+        s = mod(ww,length(sym))+1;
+        plot3(L{ww}(:),M{ww}(:),S{ww}(:),sym{s})
+        view([az el])
+        hold on
+    end
+    title(sprintf('Luminance %.1f\n',luminance(rr)));
+    xlabel('L-absorptions'); ylabel('M-Absorptions'); zlabel('S-absorptions'); axis square; grid on
+
+end
+
+% vcAddAndSelectObject(sensor{ww}); sensorImageWindow;
+
+
+##### SOURCE END #####
+--></body></html>

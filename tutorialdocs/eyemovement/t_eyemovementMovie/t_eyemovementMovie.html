@@ -1,0 +1,202 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_eyemovementMovie</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_eyemovementMovie.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_eyemovementMovie</h1><!--introduction--><p>This tutorial script will go over how to use the eye movement object with a movie stimuli to get the resulting photoisomerization data in the sensor.</p><p>7/15/15  xd  wrote it</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Init</a></li><li><a href="#2">Load scenes for this tutorial</a></li><li><a href="#3">Compute the oi for these scenes</a></li><li><a href="#4">Create a sensor object with eye movements</a></li><li><a href="#5">Compute the sensor data</a></li><li><a href="#6">END</a></li></ul></div><h2>Init<a name="1"></a></h2><pre class="codeinput">ieInit
+ieSessionSet(<span class="string">'wait bar'</span>,<span class="string">'on'</span>);
+</pre><h2>Load scenes for this tutorial<a name="2"></a></h2><pre class="codeinput">movieScenes = load(<span class="string">'t_eyemovementMovieData.mat'</span>);
+movieScenes = movieScenes.scene_cell;
+
+<span class="comment">% Make the scene fov match our desired sensor fov</span>
+fov = 2;
+movieScenes = cellfun(@(X) sceneSet(X, <span class="string">'h fov'</span>, fov), movieScenes);
+movieScenes = num2cell(movieScenes);
+</pre><h2>Compute the oi for these scenes<a name="3"></a></h2><pre class="codeinput">oi = oiCreate(<span class="string">'human'</span>);
+movieOi = cellfun(@(X) oiCompute(X, oi), movieScenes);
+movieOi = num2cell(movieOi);
+</pre><h2>Create a sensor object with eye movements<a name="4"></a></h2><p>The total time for the eye movements should correspond to the length of the movie.  For this tutorial, we will assume that the movie length is 480 ms.  We will also multiply the default tremor amplitude by 10 so that the eye movements are a bit clearer to see.</p><pre class="codeinput">em = emCreate;
+amp = emGet(em,<span class="string">'tremor amplitude'</span>);
+em  = emSet(em,<span class="string">'tremor amplitude'</span>,10*amp);
+
+sensor = sensorCreate(<span class="string">'human'</span>);
+sensor = sensorSetSizeToFOV(sensor, fov, movieScenes{1}, movieOi{1});
+
+<span class="comment">% The default time interval for eye movements is 1ms, so setting 480</span>
+<span class="comment">% initial positions is the same as setting the total eye movement time to</span>
+<span class="comment">% 480 ms.</span>
+sensor = sensorSet(sensor, <span class="string">'positions'</span>, zeros(480, 2));
+sensor = sensorSet(sensor, <span class="string">'eyemove'</span>, em);
+sensor = sensorSet(sensor, <span class="string">'exp time'</span>, 0.001);
+sensor = sensorSet(sensor, <span class="string">'time interval'</span>, 0.001);
+
+sensor = emGenSequence(sensor);
+</pre><h2>Compute the sensor data<a name="5"></a></h2><p>Instead of using the entire position sequence to calculate the data, we will use only the positions corresponding to the current frame in the movie stimulus.</p><pre class="codeinput">totalPositions = sensorGet(sensor, <span class="string">'positions'</span>);
+totalPositionNumber = length(totalPositions);
+volts = zeros([sensorGet(sensor, <span class="string">'size'</span>) totalPositionNumber]);
+
+<span class="comment">% For each frame, find the corresponding eye positions and calculate the</span>
+<span class="comment">% sensor data using only those positions.</span>
+<span class="keyword">for</span> ii = 1:length(movieOi)
+    theMovieFrame = movieOi{ii};
+
+    startIndex = (1 + (ii-1) * totalPositionNumber/length(movieOi));
+    endIndex   = (ii * totalPositionNumber/length(movieOi));
+    framePositions = totalPositions(startIndex:endIndex, :);
+
+    sensorTemp = sensorSet(sensor, <span class="string">'positions'</span>, framePositions);
+    sensorTemp = coneAbsorptions(sensorTemp, theMovieFrame);
+
+    volts(:,:,startIndex:endIndex) = sensorGet(sensorTemp, <span class="string">'volts'</span>);
+<span class="keyword">end</span>
+sensor = sensorSet(sensor, <span class="string">'volts'</span>, volts);
+
+<span class="comment">% View the final volt data</span>
+implay(volts/max(volts(:)), 60);
+</pre><img vspace="5" hspace="5" src="t_eyemovementMovie_01.png" alt=""> <h2>END<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_eyemovementMovie
+%
+% This tutorial script will go over how to use the eye movement object with
+% a movie stimuli to get the resulting photoisomerization data in the
+% sensor.
+%
+% 7/15/15  xd  wrote it
+
+%% Init
+ieInit
+ieSessionSet('wait bar','on');
+
+%% Load scenes for this tutorial
+movieScenes = load('t_eyemovementMovieData.mat');
+movieScenes = movieScenes.scene_cell;
+
+% Make the scene fov match our desired sensor fov
+fov = 2;
+movieScenes = cellfun(@(X) sceneSet(X, 'h fov', fov), movieScenes);
+movieScenes = num2cell(movieScenes);
+
+%% Compute the oi for these scenes
+oi = oiCreate('human');
+movieOi = cellfun(@(X) oiCompute(X, oi), movieScenes);
+movieOi = num2cell(movieOi);
+
+%% Create a sensor object with eye movements
+%
+% The total time for the eye movements should correspond to the length of
+% the movie.  For this tutorial, we will assume that the movie length is
+% 480 ms.  We will also multiply the default tremor amplitude by 10 so that
+% the eye movements are a bit clearer to see.
+
+em = emCreate;
+amp = emGet(em,'tremor amplitude');
+em  = emSet(em,'tremor amplitude',10*amp);
+
+sensor = sensorCreate('human');
+sensor = sensorSetSizeToFOV(sensor, fov, movieScenes{1}, movieOi{1});
+
+% The default time interval for eye movements is 1ms, so setting 480
+% initial positions is the same as setting the total eye movement time to
+% 480 ms.
+sensor = sensorSet(sensor, 'positions', zeros(480, 2));
+sensor = sensorSet(sensor, 'eyemove', em);
+sensor = sensorSet(sensor, 'exp time', 0.001);
+sensor = sensorSet(sensor, 'time interval', 0.001);
+
+sensor = emGenSequence(sensor);
+
+%% Compute the sensor data 
+%
+% Instead of using the entire position sequence to calculate the data, we
+% will use only the positions corresponding to the current frame in the
+% movie stimulus.
+
+totalPositions = sensorGet(sensor, 'positions');
+totalPositionNumber = length(totalPositions);
+volts = zeros([sensorGet(sensor, 'size') totalPositionNumber]);
+
+% For each frame, find the corresponding eye positions and calculate the
+% sensor data using only those positions.
+for ii = 1:length(movieOi)
+    theMovieFrame = movieOi{ii};
+    
+    startIndex = (1 + (ii-1) * totalPositionNumber/length(movieOi));
+    endIndex   = (ii * totalPositionNumber/length(movieOi));
+    framePositions = totalPositions(startIndex:endIndex, :);
+    
+    sensorTemp = sensorSet(sensor, 'positions', framePositions);
+    sensorTemp = coneAbsorptions(sensorTemp, theMovieFrame);
+    
+    volts(:,:,startIndex:endIndex) = sensorGet(sensorTemp, 'volts');
+end
+sensor = sensorSet(sensor, 'volts', volts);
+
+% View the final volt data
+implay(volts/max(volts(:)), 60);
+
+%% END
+##### SOURCE END #####
+--></body></html>
