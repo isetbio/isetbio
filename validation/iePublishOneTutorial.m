@@ -1,4 +1,4 @@
-function publishOneTutorial
+function iePublishOneTutorial
 
     % ------- script customization - adapt to your environment/project -----
     
