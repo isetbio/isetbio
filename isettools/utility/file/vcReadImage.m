@@ -81,7 +81,7 @@ switch lower(imageType)
         else doSub = false;
         end
         
-        % if we do subpixle rendering, the user could specify how many
+        % if we do subpixel rendering, the user could specify how many
         % samples per dixel to be used in scene generation
         if length(varargin) > 2, sz = varargin{3};
         else sz = [];

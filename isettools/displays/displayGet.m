@@ -24,10 +24,12 @@ function val = displayGet(d, parm, varargin)
 %     {'nprimaries'}          - number of primaries
 %
 % Color conversion and metric
-%     {'rgb2xyz'}
-%     {'rgb2lms'}
-%     {'white xyz'}
-%     {'black xyz'}
+%     {'rgb2xyz'}              - Linear rgb to CIE (1931) XYZ
+%     {'rgb2lms'}              = Linear rgb to Stockman cones
+%     {'lms2rgb'}              - Stockman cones to linear RGB (for cone
+%                                isolation)
+%     {'white xyz'}            - Display white point in CIE (1931) XYZ
+%     {'black xyz'}            - Includes stray light from backlight
 %     {'white xy'}
 %     {'white lms'}
 %     {'primaries xyz'}
@@ -203,6 +205,12 @@ switch parm
         %         whiteXYZ = ieXYZFromEnergy(e',wave);
         %         whiteLMS = sum(val);
         %         val = val*(whiteXYZ(2)/(whiteLMS(1)+whiteLMS(2)));
+        
+    case {'lms2rgb'}
+        % Linear rgb to Stockman cone coordinates
+        % [R,G,B] = [L,M,S]*lm2rgb
+        %
+        val = inv(displayGet(d,'rgb2lms'));
         
      case {'whitexyz','whitepoint'}
         % displayGet(dsp,'white xyz',wave)
