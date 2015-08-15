@@ -41,9 +41,9 @@ function [figNum, uData] = sensorPlotLine(sensor, ori, dataType, sORt, xy)
 % Programming Notes:
 %
 %  This function should not be the main sensor plotting function.  There
-%  should be a plotSensor() function that calls this and the several other
-%  sensor plotting functions.  This is implemented for plotOI and
-%  plotScene, but not yet for plotSensor or plotImage
+%  should be a sensorPlot() function that calls this and the several other
+%  sensor plotting functions.  This is implemented for oiPlot and
+%  scenePlot, but not yet for sensorPlot
 
 %%
 if notDefined('sensor'), sensor = vcGetObject('sensor'); end

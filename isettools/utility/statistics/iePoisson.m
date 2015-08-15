@@ -61,15 +61,31 @@ end
 
 % Check for stats toolbox
 if checkToolbox('Statistics Toolbox')
+    
+    if ~useSeed
+        p = rng;
+        rng(1);
+    end
+    
     % Matlab toolbox version is present. Use it.
     if isscalar(lambda)
         val = poissrnd(lambda, nSamp);
     else
         val = poissrnd(lambda);
     end
-    return
+    
+    if ~useSeed
+        rng(p);
+    end
+    
+    return 
 end
 
+
+if ~useSeed
+    p = rng;
+    rng(1);
+end
 
 % Use the local ISET methods
 % Simple implementation, this is slow for large lambda
@@ -78,36 +94,32 @@ warning('Using slow poission random variable generation');
 if isscalar(lambda)
     % Scalar version of the routine
     % Probably we want multiple samples for a single lambda
-    L =  exp(-lambda);
-    val = zeros(1,nSamp);
-    for nn=1:nSamp
+    val = zeros(1, nSamp);
+    for nn = 1 : nSamp
         kk = 0;
-        p = 1;
-        while(p>L)
-            kk = kk+1;
-            u = rand(1,1);
-            p = p*u;
+        p = 0;
+        while p < lambda
+            kk = kk + 1;
+            p = p - log(rand);
         end
-        val(nn) = kk-1;
+        val(nn) = kk - 1;
     end
     % figure(1); hist(val,50)
 else
     % A matrix or vector of lambdas and we return samples for each
-    [r,c] = size(lambda);
-    val = -1*ones(size(lambda));
-    
-    % There is a challenge with the routine because we have to search
-    % through a number of iterations, and the number depends on the largest
-    % value.  This is why the routine is probably too slow for practical
-    % use and large numbers.
-    mx = max(lambda(:))*7;
-    
-    L   = exp(-lambda);
-    for ii=1:numel(L)
-        prodU = cumprod(rand(1,ceil(mx)));
-        val(ii) = length(find(L(ii) < prodU));
+    val = zeros(size(lambda));
+    for ii = 1 : numel(lambda)
+        kk = 0;
+        p = 0;
+        while p < lambda(ii)
+            kk = kk + 1;
+            p = p - log(rand);
+        end
+        val(ii) = kk - 1;
     end
-    val = reshape(val,r,c);
 end
 
+if ~useSeed
+    rng(p);
+end
 end

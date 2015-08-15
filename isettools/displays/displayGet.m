@@ -38,6 +38,7 @@ function val = displayGet(d, parm, varargin)
 %
 % Spatial parameters
 %     {'dpi', 'ppi'}           - dots per inch
+%     {'size'}                 - display size in meters [h,v]
 %     {'meters per dot'}
 %     {'dots per meter'}
 %     {'dots per deg'}         - dots per degree visual angle
@@ -69,6 +70,8 @@ function val = displayGet(d, parm, varargin)
 %   plotDisplayGamut(vci)
 %
 % HJ/BW, ISETBIO TEAM, Copyright 2014
+%
+% 6/25/15  dhb  Added get of display size
 
 %% Check parameters
 if notDefined('parm'), error('Parameter not found.');  end
@@ -129,8 +132,8 @@ switch parm
         val = length(displayGet(d,'wave'));
     case {'nprimaries'}
         % SPD is always nWave by nPrimaries
-        spd = displayGet(d,'spd');
-        val = size(spd,2);
+        spd = displayGet(d, 'spd');
+        val = size(spd, 2);
     case {'spd','spdprimaries'}
         % Units are energy (watts/....)
         % displayGet(dsp,'spd');
@@ -140,8 +143,8 @@ switch parm
         % samples. The PTB uses spectra rather than spd.  This hack makes
         % it compatible.  Or, we could convert displayCreate from spd to
         % spectra some day.
-        if checkfields(d,'spd'),         val = d.spd;
-        elseif checkfields(d,'spectra'), val = d.spectra;
+        if checkfields(d, 'spd'),         val = d.spd;
+        elseif checkfields(d, 'spectra'), val = d.spectra;
         end
         
         % Sometimes users put the data in transposed, sigh.  I am one of
@@ -203,7 +206,7 @@ switch parm
         
      case {'whitexyz','whitepoint'}
         % displayGet(dsp,'white xyz',wave)
-        e = displayGet(d,'white spd');
+        e = displayGet(d, 'white spd');
         if isempty(varargin), wave = displayGet(d,'wave');
         else wave = varargin{1};
         end
@@ -234,6 +237,10 @@ switch parm
     case {'dpi', 'ppi'}
         if checkfields(d,'dpi'), val = d.dpi;
         else val = 96;
+        end
+    case {'size'}
+        if checkfields(d,'size'), val = d.size;
+        else val = [1024/768*0.3 0.3];
         end
     case {'metersperdot'}
         % displayGet(dsp,'meters per dot','m')
@@ -401,21 +408,26 @@ switch parm
         peakLum = displayGet(d, 'peak luminance');
         darkLum = displayGet(d, 'dark luminance');
         val = peakLum / darkLum;
-    case {'darklevel'}
-        % dark level
-        % returns the first line in the gamma table
-        %
-        % displayGet(d, 'dark level')
-        gTable = displayGet(d, 'gTable');
-        val = gTable(1, :);
-    case {'blackspd', 'blackradiance'}
+
+    case {'blackspd', 'blackradiance', 'ambientspd'}
         % black radiance
         % computes dark spd (radiance) of the display in units of energy
         % (watts / ...)
         %
-        % displayGet(d, 'black radiance')
-        dark_level = displayGet(d, 'dark level');
-        val = displayGet(d, 'spd') * dark_level';
+        % displayGet(d, 'black radiance', [wave])
+        wave = displayGet(d, 'wave');
+        if isfield(d, 'ambient')
+            val = d.ambient;
+        else
+            warning('black (ambient) spd not set for display, return 0'); 
+            val = zeros(size(wave));
+        end
+        
+        if ~isempty(varargin)
+            newWave = varargin{1};
+            val = interp1(wave, val, newWave, 'linear', 0);
+        end
+        
     case {'darkluminance', 'blackluminance'}
         % dark luminance
         % returns the luminance of display when all pixels are turned off

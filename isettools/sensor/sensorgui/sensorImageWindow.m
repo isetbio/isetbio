@@ -727,7 +727,7 @@ return;
 function menuAnalyzePOVignetting_Callback(hObject, eventdata, handles)
 % Analyze | Pixel Optics | Relative Illumination
 sensor = vcGetObject('sensor');
-plotSensor(sensor,'etendue');
+sensorPlot(sensor,'etendue');
 return;
 % --------------------------------------------------------------------
 function menuSensorHumanCones_Callback(hObject, eventdata, handles)
@@ -1240,36 +1240,36 @@ return;
 
 % --------------------------------------------------------------------
 function menuPlotPixelSR_Callback(hObject, eventdata, handles)
-plotSensor([],'pixel spectral sr');
+sensorPlot([],'pixel spectral sr');
 return;
 
 % --------------------------------------------------------------------
 function menuPlotColorFilters_Callback(hObject, eventdata, handles)
-plotSensor([],'color filters');
+sensorPlot([],'color filters');
 return;
 
 % --------------------------------------------------------------------
 function plotSpecCFApattern_Callback(hObject, eventdata, handles)
 % Plot | Spectral Information | CFA Pattern
-plotSensor([],'CFA');
+sensorPlot([],'CFA');
 return;
 % --------------------------------------------------------------------
 function menuPlotIR_Callback(hObject, eventdata, handles)
-plotSensor([],'irfilter');
+sensorPlot([],'irfilter');
 return;
 
 % --------------------------------------------------------------------
 function menuPlotPDSpectralQE_Callback(hObject, eventdata, handles)
-plotSensor([],'pixel spectral QE');
+sensorPlot([],'pixel spectral QE');
 return;
 
 % --------------------------------------------------------------------
 function menuPlotSpecResp_Callback(hObject, eventdata, handles)
-plotSensor([],'sensor spectral qe');
+sensorPlot([],'sensor spectral qe');
 return;
 
 % --------------------------------------------------------------------
-function menuPlotSensorImageTSize_Callback(hObject, eventdata, handles)
+function menusensorPlotImageTSize_Callback(hObject, eventdata, handles)
 % Plot | SensorImage (True Size)
 gam      = str2double(get(handles.editGam,'String'));
 scaleMax = get(handles.btnDisplayScale,'Value');
@@ -1344,38 +1344,38 @@ return;
 % --------------------------------------------------------------------
 function menuAnLineV_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Electrons
-plotSensor(vcGetObject('sensor'),'electrons vline');
+sensorPlot(vcGetObject('sensor'),'electrons vline');
 %OLD:  sensorPlotLine(vcGetObject('ISA'),'v','volts','space');
 return;
 
 % --------------------------------------------------------------------
 function menuAnLineH_Callback(hObject, eventdata, handles)
 % Analyze | Line | Horizontal | Volts
-plotSensor(vcGetObject('sensor'),'volts hline');
+sensorPlot(vcGetObject('sensor'),'volts hline');
 return;
 
 % --------------------------------------------------------------------
 function menuHorLineE_Callback(hObject, eventdata, handles)
 % Analyze | Line | Horizontal | Electrons
-plotSensor(vcGetObject('sensor'),'electrons hline');
+sensorPlot(vcGetObject('sensor'),'electrons hline');
 return;
 
 % --------------------------------------------------------------------
 function menuVertLineE_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Electrons
-plotSensor(vcGetObject('sensor'),'electrons vline');
+sensorPlot(vcGetObject('sensor'),'electrons vline');
 return;
 
 % --------------------------------------------------------------------
 function menuHorLineDV_Callback(hObject, eventdata, handles)
 % sensorPlotLine(vcGetObject('sensor'),'h','dv','space');
-plotSensor(vcGetObject('sensor'),'dv hline');
+sensorPlot(vcGetObject('sensor'),'dv hline');
 return;
 
 % --------------------------------------------------------------------
 function menuVertLineDV_Callback(hObject, eventdata, handles)
 % sensorPlotLine(vcGetObject('sensor'),'v','dv','space');
-plotSensor(vcGetObject('sensor'),'dv vline');
+sensorPlot(vcGetObject('sensor'),'dv vline');
 return;
 
 % --------------------------------------------------------------------
@@ -1390,26 +1390,26 @@ return;
 
 % --------------------------------------------------------------------
 function menuAnPixHistQ_Callback(hObject, eventdata, handles)
-plotSensorHistogram('e');
+sensorPlotHistogram('e');
 return;
 
 % --------------------------------------------------------------------
 function menuAnPixHistV_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Volts
-plotSensor(vcGetObject('sensor'),'volts hist');
+sensorPlot(vcGetObject('sensor'),'volts hist');
 return;
 
 % --------------------------------------------------------------------
 function menuAnPixelSNR_Callback(hObject, eventdata, handles)
 % Graph the pixel SNR as a function of voltage swing
-plotSensor(vcGetObject('sensor'),'pixel snr');
+sensorPlot(vcGetObject('sensor'),'pixel snr');
 % plotPixelSNR;
 return;
 
 % --------------------------------------------------------------------
 function menuAnSensorSNR_Callback(hObject, eventdata, handles)
 %
-plotSensorSNR;
+sensorPlotSNR;
 return;
 
 % --------------------------------------------------------------------
@@ -1509,17 +1509,17 @@ return;
 
 % --------------------------------------------------------------------
 function menuImDSNU_Callback(hObject, eventdata, handles)
-plotSensor([],'dsnu');
+sensorPlot([],'dsnu');
 return;
 
 % --------------------------------------------------------------------
 function menuImPRNU_Callback(hObject, eventdata, handles)
-plotSensor([],'prnu');
+sensorPlot([],'prnu');
 return;
 
 % --------------------------------------------------------------------
 function menuImShotNoise_Callback(hObject, eventdata, handles)
-plotSensor([],'shotnoise');
+sensorPlot([],'shotnoise');
 return;
 
 % --------------------------------------------------------------------

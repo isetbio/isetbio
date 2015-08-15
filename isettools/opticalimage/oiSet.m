@@ -241,23 +241,51 @@ switch parm
         % oi = oiSet(oi,'wave',val)
         % Set sampling wavelength if new sampling is not the same as
         % existing wavelength sampling
-        if isequal(oiGet(oi, 'wave'), val), return; end
+        if isequal(oiGet(oi, 'wave'), val(:)), return; end
         
         % Interpolate photons because the wavelength is changed
-        val = val(:); % column vector
-        p = oiGet(oi, 'photons');
-        if ~isempty(p)
-            [p, r, c] = RGB2XWFormat(p); % swtich to XW format
-            p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
-            p = XW2RGBFormat(p', r, c);
-            oi = oiSet(oi, 'photons', p);
+        % Not sure we need to do this, so for now I am commenting it out.
+        % Maybe we should clear the data since it is no longer consistent.
+        %         p = oiGet(oi, 'photons');
+        %         if ~isempty(p)
+        %             [p, r, c] = RGB2XWFormat(p); % switch to XW format
+        %             p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
+        %             p = XW2RGBFormat(p', r, c);
+        %             oi = oiSet(oi, 'photons', p);
+        %         end
+        
+        % Set new wavelegnth samples.  
+        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; end
+        oi.spectrum.wave = val(:);
+        
+        % At this point the photon data might be inconsistent.  
+        % One possibility is to ignore this and let the next computation
+        % take care of it.  But I think we won't be able to open the
+        % oiWindow in this sate.
+        % 
+        % So, we zero the data if the wavelength information doesn't match.
+        % We don't clear the data, however, because the row/col information
+        % include spatial measurements that are needed subsequently.
+        if checkfields(oi,'data','photons')
+            % Ok, so now we have to deal with the photon data.  If we are
+            % here, we know there is a mis-match.
+            if oldWave(1) < val(1) && oldWave(end) > val(end)
+                % Interpolation OK.  If the original is monochromatic, we
+                % can't interpolate. 
+                disp('Interpolating OI photon data');
+                p = oiGet(oi, 'photons');
+                if ~isempty(p)
+                    [p, r, c] = RGB2XWFormat(p); % switch to XW format
+                    p = interp1(oldWave, p', val, 'linear*', 0);
+                    p = XW2RGBFormat(p', r, c);
+                    oi = oiSet(oi, 'photons', p);
+                end
+            else
+                disp('Extrapolation -  Setting oi photon data to zero.')
+                sz = oiGet(oi,'size');
+                oi = oiSet(oi,'photons',zeros(sz(1),sz(2),length(val)));
+            end
         end
-        
-        % Change wavelength for optics, too.
-        oi = oiSet(oi, 'optics wave', val);
-        
-        % Set new wavelegnth samples
-        oi.spectrum.wave = val;
 
         % Optical methods
     case {'opticsmodel'}

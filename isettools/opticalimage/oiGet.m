@@ -59,14 +59,16 @@ function val = oiGet(oi,parm,varargin)
 % Irradiance
 %      {'data'}                 - Data structure
 %        {'photons'}            - Irradiance data
-%        {'photons noise'}      - Irradiance data with photon noise
+%        {'photons noise'}      - Irradiance data with photon noise for 50 msec
+%                                 integration time and 1 pixel collection area.
 %        {'data max'}           - Used for compression, not for general users
 %        {'data min''}          - Used for compression, not for general users
 %        {'bit depth''}         - Used for compression, not for general users
 %        {'energy'}             - Energy rather than photon representation
 %        {'roi energy'}         - Energy of the points in a region of interest
 %        {'roi mean energy'}    - Energy of the points averaged within in a region of interest
-%        {'energy noise'}       - Energy with photon noise
+%        {'energy noise'}       - Energy with photon noise for 50 msec 
+%                                 integration time and 1 pixel collection area.
 %        {'mean illuminance'}   - Mean illuminance
 %        {'illuminance'}        - Spatial array of optical image illuminance
 %        {'xyz'}                - (row,col,3) image of the irradiance XYZ values
@@ -117,7 +119,14 @@ function val = oiGet(oi,parm,varargin)
 % Misc
 %      {'rgb image'}         - RGB rendering of OI data
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% 7/29/15  dhb  Changed 'photon noise' and 'energy noise' so that they
+%               return the noisy image for one pixel collection area and 50
+%               msec integration time.  A better person might make
+%               collection area and integration time things you could pass
+%               for this call.  But if you really want to do that, you
+%               might consider defining an appropriate sensor.
+%
+% Copyright ImagEval Consultants, LLC, 2003-2015.
 
 if ~exist('parm','var') || isempty(parm)
     error('Param must be defined.');
@@ -349,14 +358,25 @@ switch parm
         % pn = oiGet(oi,'photons noise');
         % The current photons are the mean.
         % This returns the mean photons plus Poisson noise
-        val = oiPhotonNoise(oi);
+        %
+        % To compute noise, we need a photon count, not a rate.
+        % We choose the pixel area and a 50 msec integration time,
+        % somewhat arbitrarily.
+        sz = oiGet(oi,'sample spacing');
+        t = 0.050;
+        photons = oiGet(oi,'photons');
+        val = oiPhotonNoise(photons*sz(1)*sz(2)*t);
          
     case {'energynoise','energywithnoise'}
+        % en = oiGet(oi,'energy noise');
         % Return mean energy plus Poisson photon noise
-        % val = oiGet(oi,'energy noise');
-        val = oiPhotonNoise(oi);
+        sz = oiGet(oi,'sample spacing');
+        t = 0.050;
+        photons = oiGet(oi,'photons');
+        val = oiPhotonNoise(photons*sz(1)*sz(2)*t);
         wave = oiGet(oi,'wave');
         val = Quanta2Energy(wave(:),val);
+        
     case {'datamax','dmax'}
         % return data max, not for compression anymore
         if checkfields(oi, 'data', 'photons')
@@ -393,12 +413,12 @@ switch parm
        
     case {'meanilluminance','meanillum'}
         % Get / compute mean illuminance
+        % Always update the mean.  Cheap to do.  Forces synchronization.
         if notDefined('oi.data.illuminance')
             [oi.data.illuminance, oi.data.meanIll] = ...
-                                    oiCalculateIlluminance(oi);  
-        elseif notDefined('oi.data.meanIll')
-            oi.data.meanIll = mean(oi.data.illuminance(:)); 
+                oiCalculateIlluminance(oi);
         end
+        oi.data.meanIll = mean(oi.data.illuminance(:));        
         val = oi.data.meanIll;
         
     case {'illuminance','illum'}

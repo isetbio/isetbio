@@ -36,7 +36,7 @@ vcAddAndSelectObject(scene); sceneWindow;
 % This is a white noise image, so the amplitude spectrum is flat.  Notice
 % that the contrast means we have removed the mean.  We plot the radiance
 % data at 550 nm, but this would be the same at any wavelength.
-plotScene(scene,'radiance fft image',550);
+scenePlot(scene,'radiance fft image',550);
 
 %%  Create the optical image.  Notice that it is significantly blurred
 % This is because of the human optics

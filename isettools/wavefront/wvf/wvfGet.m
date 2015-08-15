@@ -11,6 +11,11 @@ function val = wvfGet(wvf,parm,varargin)
 %  unit specifies the spatial scale of the returned value:
 %    length: 'm', 'cm', 'mm','um', 'nm'.
 %    angle: 'deg', 'min', 'sec'
+%  The wavefront to psf calculations are fundamentally performed in angular
+%  units.  The conversion here to spatial units is done assumming .33 mm
+%  per degree, which is a reasonable number for the human eye.  At some
+%  future date this should stop being hardcoded and be inherited from an
+%  optics structure to which the wavefront object is attached.
 %
 %  A leading '+ indicates that this is a get only parameter and may not be
 %  set.

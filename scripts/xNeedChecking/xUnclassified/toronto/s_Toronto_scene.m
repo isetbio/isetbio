@@ -38,26 +38,26 @@ scene = sceneAdjustLuminance(scene,50); % This sets the mean scene luminance
 scene = sceneSet(scene,'fov',26.5); % match the scene field of view (fov) with the sensor fov
 
 vcAddAndSelectObject('scene',scene); sceneWindow; % display sceneWindow
-plotScene(scene,'illuminantEnergy')
+scenePlot(scene,'illuminantEnergy')
 % Show examples of measured spectral images
-% ?? plotScene(scene,'illuminantEnergy')
+% ?? scenePlot(scene,'illuminantEnergy')
 
 % Set illuminant to equal energy
 scene = sceneAdjustIlluminant(scene,'equalEnergy.mat');
 vcAddAndSelectObject('scene',scene); sceneWindow; % display sceneWindow
-plotScene(scene,'illuminantEnergy')
+scenePlot(scene,'illuminantEnergy')
 
 % Set to equal photon
 scene = sceneAdjustIlluminant(scene,'equalPhotons.mat');
 vcAddAndSelectObject('scene',scene); sceneWindow; % display sceneWindow
-plotScene(scene,'illuminantEnergy')
+scenePlot(scene,'illuminantEnergy')
 
 % Convert the scene to the sunset color, Horizon_Gretag
 % Notice that in this case 'Horizon_Gretag.mat' is a file name, not a
 % data vector. 
 scene = sceneAdjustIlluminant(scene,'Horizon_Gretag.mat');
 vcAddAndSelectObject('scene',scene); sceneWindow; 
-plotScene(scene,'illuminantEnergy')
+scenePlot(scene,'illuminantEnergy')
 
 %% Show example of synthetic images created via Maya and RenderToolbox
 fName = fullfile(isetRootPath,'data','images','multispectral','piano3d.mat');
@@ -65,7 +65,7 @@ load(fName);
 scene = sceneSet(scene,'fov',3);
 vcAddAndSelectObject('scene',scene); sceneWindow; 
 
-plotScene(scene,'depth map contour');
+scenePlot(scene,'depth map contour');
 
 %% Illustrate sceneFromFile with  RGB data on a calibrated display
 fName = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
@@ -76,10 +76,10 @@ vcAddAndSelectObject('scene',scene); sceneWindow;
 sz = sceneGet(scene,'size');
 xy = [1,round(sz(1)/2)];
 
-plotScene(scene,'hline radiance',xy);
-plotScene(scene,'hline luminance',xy);
+scenePlot(scene,'hline radiance',xy);
+scenePlot(scene,'hline luminance',xy);
 
 scene = sceneSet(scene,'distance',100);
 gridSpacing = 2000; %mm
-plotScene(scene,'radiance image with grid',[],gridSpacing);
+scenePlot(scene,'radiance image with grid',[],gridSpacing);
 

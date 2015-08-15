@@ -12,19 +12,30 @@
 % (c) ImagEval 2011
 
 %% 
-s_initISET
+ieInit
 talkD = pwd;
 saveFlag = 0;  % Don't save results
 
 %%  Create a sample cone mosaic
-params.sz = [128,192];
-params.rgbDensities = [0.1 .6 .2 .1]; % Empty, L,M,S
-params.coneAperture = [3 3]*1e-6;     % In meters
 pixel = [];
 
+% This code is for
+% ISETBIO, but the uniform monochromatic case is not yet set up 
+% it runs in ISET now and I need to move over the fixes.
+
+coneP = coneCreate;
+coneP = coneSet(coneP,'spatial density',[.1 .6 .2 .1]); % Empty, L,M,S
+
 % Here is a look at a typical cone mosaic.  Not used later.
-cSensor = sensorCreate('human',pixel,params);
-sensorConePlot(cSensor)
+cSensor = sensorCreate('human',pixel,coneP);
+cSensor = sensorSet(cSensor,'size',[128 192]);
+cSensor = sensorSet(cSensor,'pixel size same fill factor',[2 2]*1e-6);
+cSensor = sensorSet(cSensor,'noise flag',1);   % Photon noise only
+
+% cSensor = sensorCreate('human');
+
+% Show an image of the mosaic in saturated colors
+% sensorConePlot(cSensor)
 
 %%  Cone absorption as a function of mean signal level 
 
@@ -37,48 +48,48 @@ pSize = 2e-6;   %Size in meters of the cone sampling apertures
 % Create uniform fields on a human sensor (ideal) with Bayer sampling
 % arrangement.  Then get the photon absorptions and plot them as a 3D graph
 % in the next cell.
-wSamples = [520  530];
-% wSamples = 450:10:640;
-
-% Number of row/col samples in the scene 
-sz = 128;  
+wSamples = [520 525 530];
+nWaves = length(wSamples);
+% wSamples = 450:10:640; 
 
 % It is possible to run this for a series of levels.  These levels are
 % chosen to match typical levels of photopic illumination.
 % It is easiest to run just one level, as per below.
-%
-% peakRadiance = [1e16 2e16 5e16 1e17 2e17 5e17 1e18];
-peakRadiance = [ 5e16 5e17 ]*(30/100);
+luminance = logspace(1,3,6);
+nLum = length(luminance);
+
+% Number of row/col samples in the scene 
+sz = 64; 
 
 % We will make a series of scenes at different wavelengths and peak
 % readiances. We will compute the sensor response.
-scene  = cell(1,length(wSamples));
-sensor = cell(1,length(wSamples));
-for rr = 1:length(peakRadiance)
-    for ww=1:length(wSamples)
+scene  = cell(1,nWaves);
+sensor = cell(1,nWaves);
+for rr = 1:nLum
+    for ww=1:nWaves
 
         %% Create a monochromatic scene and set the radiance
         % The wavelength is specified in wSamples.
-        scene{ww} = sceneCreate('uniform monochromatic',wSamples(ww),sz);
-        scene{ww} = sceneSet(scene{ww},'peak photon radiance',peakRadiance(rr));
+        scene{ww} = sceneCreate('uniform monochromatic',wSamples(:,ww),sz);
+        % scene{ww} = sceneSet(scene{ww},'peak photon radiance',peakRadiance(rr));
+        
         % Some people scale for luminance, or equal L+M, which we could do.
         % We could go equal energy, not equal photon.
-        % scene{ww} = sceneAdjustLuminance(scene{ww},100);
-
+        scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
+        
         % Compute the irradiance at the retina
+        oi = oiCreate('human');
         oi = oiCompute(scene{ww},oi);
-        sceneGet(scene{ww},'mean luminance')
-
+        
         % Create a human sensor.
-        sensor{ww} = sensorCreate('ideal',[],pSize,'human','bayer');
+        sensor{ww} = cSensor;
         % Integrate for 100 ms.
-        sensor{ww} = sensorSet(sensor{ww},'exposure time',0.10);
         
         % Compute the sensor absorptions
         sensor{ww} = sensorCompute(sensor{ww},oi);
         
         % Give the scene a name
-        sensor{ww} = sensorSet(sensor{ww},'name',sprintf('wave %.0f',wSamples(ww)));
+        sensor{ww} = sensorSet(sensor{ww},'name',sprintf('wave %.0f',wSamples(1,ww)));
         
         % If you want to have a look at the image, run this line.
         % vcAddAndSelectObject(sensor{ww}); sensorImageWindow;
@@ -90,8 +101,7 @@ for rr = 1:length(peakRadiance)
     S = cell(1,length(wSamples));
 
     % The cones are in slots 2-4 when not ideal
-    slot = [ 1 2 3];  % Ideal case
-    % slot = [2 3 4];   % Typical human 1621 case.  1 empty, 6 L, 2 M, 1 S
+    slot = [2 3 4];   % Typical human 1621 case.  1 empty, 6 L, 2 M, 1 S
     for ww=1:length(wSamples)
         L{ww} = sensorGet(sensor{ww},'electrons',slot(1));
         M{ww} = sensorGet(sensor{ww},'electrons',slot(2));
@@ -107,13 +117,13 @@ for rr = 1:length(peakRadiance)
     % sym = {'b.','g.','r.','c.','bs','gs','rs','cs','bo','go','ro','co','bx','gx','rx','cx'};
     sym = {'b.','g.','r.','c.','k.'};
     az = 65.5; el = 30;
-    for ww=1:length(wSamples)
+    for ww=1:nWaves
         s = mod(ww,length(sym))+1;
         plot3(L{ww}(:),M{ww}(:),S{ww}(:),sym{s})
         view([az el])
         hold on
     end
-
+    title(sprintf('Luminance %.1f\n',luminance(rr)));
     xlabel('L-absorptions'); ylabel('M-Absorptions'); zlabel('S-absorptions'); axis square; grid on
 
     % Probably don't want to save in general

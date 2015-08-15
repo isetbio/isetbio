@@ -53,24 +53,24 @@ oiBigF  = oiCompute(scene,oiBigF);
 oiBigF  = oiSet(oiBigF,'name','Big f number');   % Name for the GUI
 vcAddAndSelectObject(oiBigF); oiWindow;
 
-%% Use plotOI to compare the two different optics 
+%% Use oiPlot to compare the two different optics 
 % In this case we plot the point spread function at 600 nm.  First for the
 % small f/#.
 
 % Let's view this wavelength
 thisWave = 600;
 % Most ISET plotting routines can return the plotted data into a variable
-pData = plotOI(oi,'psf',[], thisWave);   
+pData = oiPlot(oi,'psf',[], thisWave);   
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 colormap(0.5*gray + 0.5*ones(size(gray)))
 title(sprintf('F-number = %d',fnSmall))
 
-% Here are the values returned by plotOI
+% Here are the values returned by oiPlot
 pData
 
 %% Show the effect of the larger f/# on the PSF
 % This is for the larger f/#.  We just show a 20 um square region.
-plotOI(oiBigF,'psf',[], thisWave);
+oiPlot(oiBigF,'psf',[], thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 colormap(0.5*copper + 0.5*ones(size(copper)))
 title(sprintf('F-number = %d',fnBig))
@@ -79,17 +79,17 @@ title(sprintf('F-number = %d',fnBig))
 pData = get(gcf,'userdata');
 pData
 
-%% Use plotOI to quantify the optical image 
+%% Use oiPlot to quantify the optical image 
 % This example plots an RGB representation of the irradiance field in the
 % optical image.
 xy = [];        % Irrelevant variable for this plot
 gSpacing = 17;  % The grid spacing in microns
-plotOI(oi,'irradiance image with grid',xy,gSpacing);
+oiPlot(oi,'irradiance image with grid',xy,gSpacing);
 title(sprintf('F-number = %d',fnSmall))
 
 %% Plot an RGB representation of the new irradiance field  
 xy = []; gSpacing = 17;
-plotOI(oiBigF,'irradiance image with grid',xy,gSpacing);
+oiPlot(oiBigF,'irradiance image with grid',xy,gSpacing);
 title(sprintf('Zoomed view: F-number = %d',fnBig))
 
 %% Now, run using parameters from human optics

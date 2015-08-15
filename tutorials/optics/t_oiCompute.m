@@ -33,20 +33,20 @@ vcAddAndSelectObject(oi2); oiWindow;
 %% Plot the psf of the optics
 vcNewGraphWin;
 thisWave = 600;
-plotOI(oi,'psf',[],thisWave);
+oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20]);
 colormap(0.5*copper + 0.5*ones(size(copper)));
 
 %% Plot irradiance image
 vcNewGraphWin;
 gridSpacing = 5; % um
-plotOI(oi,'irradiance image with grid',[],gridSpacing);
+oiPlot(oi,'irradiance image with grid',[],gridSpacing);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 title(sprintf('F-number = %d',fnSmall))
 
 %% What happens if we change the f/# of the optics and replot?
 vcNewGraphWin;
-plotOI(oi2,'psf',[],thisWave);
+oiPlot(oi2,'psf',[],thisWave);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 
 colormap(0.5*copper + 0.5*ones(size(copper)))
@@ -55,13 +55,13 @@ title(sprintf('F-number = %d',fnBig))
 %% Plot new irradiance image
 vcNewGraphWin;
 gridSpacing = 5;
-plotOI(oi2,'irradiance image with grid',[],gridSpacing);
+oiPlot(oi2,'irradiance image with grid',[],gridSpacing);
 set(gca,'xlim',[-20 20],'ylim',[-20 20])
 title(sprintf('F-number = %d',fnBig))
 
 %% Here is the psf plot method, including the OTF and PSF
 %
-% This is just copied from the plotOI code, really.
+% This is just copied from the oiPlot code, really.
 
 % Specify units
 units = 'um';

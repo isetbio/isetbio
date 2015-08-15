@@ -27,7 +27,7 @@ if (runTimeParams.generatePlots)
     vcAddAndSelectObject(scene); sceneWindow;
     
     % Plot the illuminant
-    plotScene(scene,'illuminant photons');
+    scenePlot(scene,'illuminant photons');
 end
 
 %% Compress the hypercube requiring only 95% of the var explained

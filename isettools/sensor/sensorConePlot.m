@@ -1,19 +1,20 @@
 function [support, spread, delta, coneMosaicImage] = sensorConePlot(sensor,support,spread,delta, whiteBackground)
-% Plot the cone array contained in sensor
+% Plot the sensor cone array in saturated colors
 %
-%   [support, spread, delta, [coneMosaicImage]] = sensorConePlot(sensor,[support],[spread],[delta], [whiteBackground])
+%   [support, spread, delta, [coneMosaicImage]] = ...
+%      sensorConePlot(sensor,[support],[spread],[delta], [whiteBackground])
 %
-% This should only be run when you have a sensor based on a cone-mosaic.
-% This plotting routinewill not run correctly (or at all) for non-cone
-% mosaics.
+% This should only be used for sensors based on a human cone-mosaic. This
+% plotting routine will not run correctly (or at all) for typical ISET CMOS
+% sensor mosaics.
 % 
 % The parameters support, spread and delta define the appearance of the
 % plotted cone mosaic.  Each cone is rendered as a small blurry gaussian
-% with support and spread as passed in.  The spatial sampling is delta.
-% The whiteBackground parameters is a boolean indicating whether to generate 
-% an image with white or black background
-% If a fourth output argument is present, the function returns the
-% generated RGB image instead of plotting it.
+% with support and spread as passed in.  The spatial sampling is delta. The
+% whiteBackground parameters is a boolean indicating whether to generate an
+% image with white or black background If a fourth output argument is
+% present, the function returns the generated RGB image instead of plotting
+% it.
 %
 % See also:  humanConeMosaic, conePlot, sensorCreateConeMosaic,
 %            sensorShowCFA, sensorCreate
@@ -21,14 +22,14 @@ function [support, spread, delta, coneMosaicImage] = sensorConePlot(sensor,suppo
 % Examples:
 %
 % All filled up, old defaults
-%   sensor = sensorCreateConeMosaic(sensorCreate,[120,120],[.6 .3 .1]);
+%   sensor = sensorCreate('human');
 %   sensorConePlot(sensor)
 %
+% A much smaller sensor with space in between
 %   support = [7 7]; spread = 3; delta = .1;
 %   sensorConePlot(sensor,support,spread,delta)
 %
 % Some empty spots (black).  New imaging defaults.
-%   sensor = sensorCreateConeMosaic(sensorCreate,[120,120],[.1 .5 .3 .1]);
 %   support = [5 5]; spread = 2; delta = .2;
 %   sensorConePlot(sensor,support,spread,delta)
 %

@@ -15,15 +15,15 @@ function [oi,umDisp] = oiBirefringentDiffuser(oi,umDisp)
 % pitch in the current sensor.
 %
 % Examples:
-%   oi = vcGetObject('oi');  plotOI(oi,'irradianceimagewithgrid',[],100)
+%   oi = vcGetObject('oi');  oiPlot(oi,'irradianceimagewithgrid',[],100)
 %   sensor = vcGetObject('sensor');
 %   umDisp = pixelGet(sensorGet(sensor,'pixel'),'width','um');
 %   [oi,delta] = oiBirefringentDiffuser(oi);
-%   plotOI(oi,'irradianceimagewithgrid',[],100)
+%   oiPlot(oi,'irradianceimagewithgrid',[],100)
 %
 % % Just the defaults (current oi and sensor)
 %   [oi,delta] = oiBirefringentDiffuser;
-%   plotOI(oi,'irradianceimagewithgrid',[],100);
+%   oiPlot(oi,'irradianceimagewithgrid',[],100);
 %
 % Copyright ImagEval Consultants, LLC, 2009.
 
@@ -42,7 +42,7 @@ if notDefined('umDisp'),
 end
 
 % Original irradiance
-% plotOI(oi,'irradianceimagewithgrid',[],100)
+% oiPlot(oi,'irradianceimagewithgrid',[],100)
 
 irrad   = oiGet(oi,'photons');
 spacing = oiGet(oi,'sampleSpacing','um');
@@ -73,6 +73,6 @@ irrad = irrad/4;
 
 oi = oiSet(oi,'photons',irrad);
 % Transformed irradiance
-% plotOI(oi,'irradianceimagewithgrid',[],100)
+% oiPlot(oi,'irradianceimagewithgrid',[],100)
 
 end

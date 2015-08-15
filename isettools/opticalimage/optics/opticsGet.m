@@ -730,7 +730,7 @@ switch parm
         % Returns mesh grid of X and Y values.  Used for mesh plotting
         % often.
         % X/Y could be mixed up in 1 and 2.
-        % This should be replaced by the code in plotOI/OTF psf550 case.
+        % This should be replaced by the code in oiPlot/OTF psf550 case.
         
         if length(varargin) >= 1, units = varargin{1}; 
         else units = 'mm'; end

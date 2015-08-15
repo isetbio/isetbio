@@ -58,7 +58,7 @@ vcAddObject(scene); sceneWindow;
 % Note that by default the spectral power distribution of the scene is
 % based on the primaries of the display.  Also, notice that the illuminant
 % is equal to the white point of the display
-plotScene(scene,'illuminant photons')
+scenePlot(scene,'illuminant photons')
 
 % You can change the illuminant this way
 % This method preserves the reflectance, but changes the illuminant and the

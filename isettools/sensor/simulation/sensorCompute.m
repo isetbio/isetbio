@@ -114,7 +114,7 @@ for ss=1:length(masterSensor)   % Number of sensors
     % This factor converts pixel current to volts for this integration time
     % The conversion units are
     %
-    %   sec * (V/e) * (e/charge) = sec * V / charge = V / current.
+    %   sec * (V/e) * (e/charge) = V / (charge / sec) = V / current (amps).
     %
     % Given the basic rule V = IR, k is effectively a measure of resistance
     % that converts current into volts given the exposure duration.
@@ -124,6 +124,11 @@ for ss=1:length(masterSensor)   % Number of sensors
     q = vcConstants('q');     %Charge/electron
     pixel = sensorGet(sensor,'pixel');
     
+    % Convert current (Amps) to volts
+    % Check the units:
+    %  S * (V / e) * (Coulombs / e)^-1   % https://en.wikipedia.org/wiki/Coulomb
+    %    = S * (V / e) * (( A S ) / e) ^-1
+    %    = S * (V / e) * ( e / (A S)) = (V / A)
     cur2volt = sensorGet(sensor,'integrationTime') * ...
                             pixelGet(pixel,'conversionGain') / q;
     cur2volt = cur2volt(:);

@@ -4,9 +4,11 @@ function oi = oiPad(oi,padSize,sDist,direction)
 %     oi = oiPad(oi,padSize,[sDist],direction)
 %
 % For optics calculations we need to pad the size (to avoid edge wrapping).
-% Here we pad the spatial dimensions with 0s. By changing the row and
-% column numbers, we also must and adjust some parameters, such as the
-% horizontal field of view accordingly.
+% Here we pad arouind the oi, filling in a region with the mean photon
+% level in the oi. This padding changes the row and column numbers, so we
+% also adjust the parameter that stores the horizontal field of view.  This
+% is a problem (says BW).  We shouldn't have this interaction amongst the
+% parameters.  See ISSUES.
 %
 % You can set the argument direction = 'both','pre', or 'post' to pad both
 % or only on one side. By default, the zero-padding takes place on all
@@ -77,7 +79,7 @@ else padCols = padSize(2); end
 newWidth = oiGet(oi,'width')* (1 + padCols/oiGet(oi, 'cols'));
 
 % Find the distance from the image to the lens
-imageDistance = oiGet(oi, 'optics imageDistance', sDist);
+imageDistance = oiGet(oi, 'optics image distance', sDist);
 
 % Now we compute the new horizontal field of view using the formula that
 % says the opposite over adjacent is the tangent of the angle.  We return

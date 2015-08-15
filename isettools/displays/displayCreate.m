@@ -1,48 +1,34 @@
-function d = displayCreate(displayName,varargin)
-% Create a display structure.
+function d = displayCreate(displayName, varargin)
+% Create a display structure
 %
-%  d = displayCreate(displayFileName,varargin)
+%  d = displayCreate(displayFileName, varargin)
 %
 % Display (d) calibration data are stored in a display structure. These are
 % the spectral radiance distribution of its primaries and a gamma function.
 %
-% displayName: Name of a file containing a calibrated display structure.
-%   There are various examples in data/displays.  They contain a variable
-%   ('d') that is a display structure.  See displayGet and displaySet for
-%   the slots.
-% 
-% See Also:  sceneFromFile (RGB read in particular)
+% Inputs:
+%   displayName - Name of a file containing a calibrated display structure.
+%                 The supported display files are stored in data/displays.
+%                 The files should contain a variable ('d') as display
+%                 structure. See displayGet and displaySet for the slots.
+%   varargin    - User defined parameter values, should be in name-value
+%                 pairs. See displaySet for supported parameters
 %
 % Example:
 %   d = displayCreate;
 %   d = displayCreate('lcdExample');
-%   wave = 400:5:700; d = displayCreate('lcdExample',wave);
+%   wave = 400:5:700; d = displayCreate('lcdExample', 'wave', wave);
 %
-%  Some displays have psf data, as well.  For example:
+%   Some displays have psf data, as well, e.g. 
+%     d = displayCreate('LCD-Apple');
 %
-%   d = displayCreate('LCD-Apple');
+% See Also:
+%   sceneFromFile, displayGet, displaySet
 %  
-% Copyright ImagEval Consultants, LLC, 2011.
+% HJ, ISETBIO TEAM, 2015
 
 
-%% sRGB definitions in terms of xy
-%
-%     Red     Green   Blue   White
-% x	0.6400	0.3000	0.1500	0.3127
-% y	0.3300	0.6000	0.0600	0.3290
-%
-% The default is a set of block primaries.  They are close to this.  We
-% should make one that is perfect. The default is shown below, and the
-% white point xy is a little too much x.  The file lcdExample.mat is a
-% little closer.
-%
-% d = displayCreate;
-% displayGet(d,'primaries xy')'
-% displayGet(d,'white xy')'
-%
-
-
-%% Arguments
+%% Init Parameters
 if notDefined('displayName'), displayName = 'default'; end
 
 % Identify the object type
@@ -51,7 +37,7 @@ d.type = 'display';
 % This will change the filename to lower case which can cause problems.
 % displayName = ieParamFormat(displayName);
 
-d = displaySet(d,'name',displayName);
+d = displaySet(d, 'name', displayName);
 
 % We can create some displays, or if it is not on the list perhaps it is a
 % file name that we load.
@@ -75,16 +61,14 @@ switch displayName
 
 end
 
-% Handle user-specified parameter values
-% Now we only support user setting value of wavelength
-if length(varargin) >= 1
-    newWave = varargin{1};
-    oldWave = displayGet(d,'wave');
-    oldSpd = displayGet(d,'spd');
-    newSpd = interp1(oldWave(:),oldSpd,newWave(:));
-    % plot(newWave,newSpd,'k-',oldWave,oldSpd,'y-')
-    d = displaySet(d,'wave',newWave);
-    d = displaySet(d,'spd',newSpd);
+if length(varargin) == 1
+    warning('Should set wave as name-value pairs');
+    d = displaySet(d, 'wave', varargin{1});
+else
+    assert(~isodd(length(varargin)), 'varargin should in pairs');
+    for ii = 1 : 2 : length(varargin)
+        d = displaySet(d, varargin{ii}, varargin{ii+1});
+    end
 end
 
 end
@@ -96,16 +80,16 @@ function d = displayDefault(d)
 %
 wave = 400:10:700;
 spd = pinv(colorBlockMatrix(length(wave)));
-d = displaySet(d,'wave',wave);
-d = displaySet(d,'spd',spd);
+d = displaySet(d, 'wave', wave);
+d = displaySet(d, 'spd', spd);
 
 % Linear gamma function
 N = 256; % 8 bit display
-g = repmat((0:(N-1))'/N,1,3);
-d = displaySet(d,'gamma',g);  % From digital value to linear intensity
+g = repmat(linspace(0, 1, N),3,1)';
+d = displaySet(d, 'gamma', g);  % From digital value to linear intensity
 
 % Spatial matters
-d.dpi = 96;    % Typical display density?  This might be a little low
+d.dpi = 96;    % Typical display density
 d.dist = 0.5;  % Typical viewing distance, 19 inches
 
 end

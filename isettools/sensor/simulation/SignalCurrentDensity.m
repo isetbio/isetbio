@@ -1,28 +1,31 @@
 function scdImage = SignalCurrentDensity(OI,ISA)
-% Estimate the signal current density (current/meter^2) across the sensor surface 
+% Estimate signal current density (current (amps) /meter^2) across the sensor surface 
 %
 %       scdImage = SignalCurrentDensity(OI,ISA)
 %
 %  This image has a spatial sampling density equal to the spatial sampling
-%  of the scene and describes the current per meter.
+%  of the scene and describes the current (amps) per meter.
 %
 %  We perform the calculation two ways, depending on image size. First, we
-%  try to calculate using a quick matrix multiplication. If failed, we try
-%  to compute the signal current by looping over all wavebands. It's
-%  slower, anyway.
+%  try to calculate using a quick matrix multiplication. If this fail, we
+%  compute the signal current by looping over all wavebands. It's slower,
+%  but it works.
 %
 % Computational steps:
 %
 %   The irradiance image in photons (quanta) is multiplied by the spectral
 %   QE information. 
 %
-%   The calculation treats the input data as photons, estimates the
-%   fraction of these that are effective, and then turns this into a charge
-%   per unit area.  
+%   The calculation treats the input data as irradiance (photons per wave
+%   per square meter per sec), and estimates the fraction of these that are
+%   effective. This is a (charge per second = current) per unit area (m^2).
 %
-%   Subsequent calculations account for the photodetector area.
+%   Subsequent calculations (signalCurrent) account for the photodetector
+%   area.
 %
 %   There are many comments in the code explaining each step.
+%
+% See: signalCurrent, sensorCompute, spatialIntegration
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 

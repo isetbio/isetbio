@@ -1,3 +1,9 @@
+% PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
+%
+% Generate a PTB calibration structure from an ISETBIO display object.
+%
+% 6/25/15  dhb  Modify to get display size out of ISETBIO object and use it.
+
 function PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
 
     % Start with a totally empty PTBcal
@@ -6,9 +12,7 @@ function PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
     % Update key properties
     PTBcal = updateDisplayDescription(PTBcal,display);
     PTBcal = updateSpectralParams(PTBcal, display);
-    PTBcal = updateGammaParams(PTBcal, display);
-    PTBcal
-    
+    PTBcal = updateGammaParams(PTBcal, display);  
 end
     
 function PTBcal = updateGammaParams(oldPTBcal, display)
@@ -30,30 +34,20 @@ function PTBcal = updateSpectralParams(oldPTBcal, display)
     PTBcal.describe.S   = WlsToS(wave);
     PTBcal.S_ambient    = PTBcal.describe.S;
     PTBcal.P_device     = spd;
-    PTBcal.P_ambient    = zeros(size(spectralSamples,1), 1);  % note: zero ambient
+    PTBcal.P_ambient    = displayGet(display,'ambient spd');
     PTBcal.T_ambient    = eye(spectralSamples);
     PTBcal.T_device     = eye(spectralSamples);
     
 end
 
-
-function PTBcal = updateDisplayDescription(oldPTBcal,display)
-
-    % isetbio display struct does not store the number of pixels of a
-    % display, only the ppi. So we will enter an arbitrarily number
-    % just to have the correct dpi
-    
+function PTBcal = updateDisplayDescription(oldPTBcal,display)   
     dotsPerMeter = displayGet(display, 'dots per meter');
-    arbitraryScreenSizeInPixels = [1920 1080];
-    phi = atan2(arbitraryScreenSizeInPixels(2), arbitraryScreenSizeInPixels(1));
-    dotsPerMeter = dotsPerMeter * [cos(phi) sin(phi)];
-    size(dotsPerMeter)
-    size(arbitraryScreenSizeInPixels )
-    screenSizeMM = 1000.0*arbitraryScreenSizeInPixels ./ dotsPerMeter;
+    screenSizeMM = 1000.0*displayGet(display,'size');
+    screenSizePixels = round(screenSizeMM/1000*dotsPerMeter);
     
     PTBcal = oldPTBcal;
-    PTBcal.describe.displayDescription.screenSizePixel = arbitraryScreenSizeInPixels;
-    PTBcal.describe.displayDescription.screenSizeMM    = screenSizeMM;
+    PTBcal.describe.displayDescription.screenSizePixel = screenSizePixels;
+    PTBcal.describe.displayDescription.screenSizeMM = screenSizeMM;
 end
 
 

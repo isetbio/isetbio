@@ -98,8 +98,8 @@ for dd = length(depthCenters):-1:1
     % Convert the otf into its 2D format.
     optics = opticsBuild2Dotf(optics,otf,sampleSFmm);
     oi = oiSet(oi,'optics',optics);
-    % plotOI(oi,'ls wavelength')
-    % plotOI(oi,'otf wavelength')
+    % oiPlot(oi,'ls wavelength')
+    % oiPlot(oi,'otf wavelength')
     % vcAddAndSelectObject(scene); sceneWindow
     % oi = oiCompute(scene,oi); vcAddAndSelectObject(oi); oiWindow
     
