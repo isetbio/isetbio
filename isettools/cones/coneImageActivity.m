@@ -10,11 +10,12 @@ function tmp = coneImageActivity(cones,data,step,showFlag)
 % (BW) ISETBIO Team, Copyright 2015
 
 if ieNotDefined('data'), data = sensorGet(cones,'photons'); end
-if ieNotDefined('step'), step = size(data,3)/100; end
-if ieNotDefined('showFlag'), showFlag = true; end
+if ieNotDefined('step'), step = max(1,size(data,3)/100); end
+if ieNotDefined('showFlag'), showFlag = false; end
 
 conesToPlot = max(sensorGet(cones,'size'));
 coneSize = 6;
+
 [xy,coneType, support,spread,delta] = conePlotHelper(cones, conesToPlot, coneSize);
 whiteBackground = false;
 [~,~,~, coneMosaicImage] = conePlot(xy,coneType, support,spread,delta, whiteBackground);
