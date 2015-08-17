@@ -96,6 +96,8 @@ end
 if isfield(params, 'addNoise'),  noiseFlag = params.addNoise;
 else                             noiseFlag = false;
 end
+
+if ~isfield(params, 'Compress'), params.Compress = false; end
     
 
 if ischar(typeAdapt), typeAdapt = ieParamFormat(typeAdapt); end
