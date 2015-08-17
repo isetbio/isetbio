@@ -18,10 +18,15 @@ xpos = sensorGet(sensor,'positions x');
 ypos = sensorGet(sensor,'positions y');
 
 %% Calculate volts.
-
 % Pad to the sensor to max size
 rows = [-min([ypos(:); 0]) max([ypos(:); 0])];
 cols = [max([xpos(:); 0]) -min([xpos(:); 0])];
+
+% need to pad the same to both sides so that the sensor center is not
+% changed
+rows = [max(rows) max(rows)];
+cols = [max(cols) max(cols)];
+
 coneType = sensorGet(sensor, 'cone type');
 sensor2  = sensorHumanResize(sensor, rows, cols);
 
