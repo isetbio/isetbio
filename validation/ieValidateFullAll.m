@@ -1,4 +1,4 @@
-function validateFullAll(varargin)
+function ieValidateFullAll(varargin)
 % Full data check (no figures, no publish) of all validation functions
 %
 %    validateFullAll(param,val, ...)
@@ -72,7 +72,8 @@ end
 UnitTest.listPrefs();
 
 %% What to validate
-vScriptsList = validateListAllValidationDirs;
+listingScript = UnitTest.getPref('listingScript');
+vScriptsList = eval(listingScript);
 
 %% How to validate
 % Run a FULL validation session (comparing actual data)

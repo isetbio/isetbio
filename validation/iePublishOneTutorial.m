@@ -1,4 +1,4 @@
-function publishAllTutorials
+function iePublishOneTutorial
 
     % ------- script customization - adapt to your environment/project -----
     
@@ -14,10 +14,10 @@ function publishAllTutorials
     );
 
     % list of scripts to be skipped from automatic publishing
-    scriptsToSkip = {...
-        't_coneAdapt.m' ...    % takes too long to run, now deprecated.
-        };
+    scriptsToSkip = {};
     % ----------------------- end of script customization -----------------
     
-    UnitTest.publishProjectTutorials(p, scriptsToSkip, 'All');
+    UnitTest.publishProjectTutorials(p, scriptsToSkip, 'Single');
 end
+
+

@@ -377,6 +377,7 @@ switch sceneName
             params = [];
         end
         scene = sceneVernier(scene, type, params);
+        return;
     case {'whitenoise','noise'}
         % sceneCreate('noise',[128 128])
         sz = 128; contrast = 20;
@@ -976,11 +977,15 @@ function scene = sceneVernier(scene, type, params)
 %      sceneSz    - scene resolution, default is 64
 %      barWidth   - bar width in pixels
 %      offset     - displacement in pixels
+%      meanLum    - mean luminance
+%
+%     If type = 'display'
 %      lineSpace  - spacing between the lines in pixels if type = 'display'
 %      display    - display name or structure, useful if type = 'display'
 %      barColor   - bar color, 0~1 RGB value for type = 'display'
 %      bgColor    - background color, 0~1 RGB for type = 'display'
-%      meanLum    - mean luminance
+%
+%     If type = 'object'
 %      il         - illuminanece, for type = 'object'
 %      barReflect - bar reflectance, for type = 'object'
 %      bgReflect  - background reflectance, for type = 'object'
@@ -992,14 +997,12 @@ function scene = sceneVernier(scene, type, params)
 
 % check inputs
 if notDefined('scene'), error('scene requried'); end
-if notDefined('type'),  type = 'object'; end
+if notDefined('type'),  type = 'display'; end
 
 % init parameters from params
 if isfield(params, 'sceneSz'),   sz = params.sceneSz; else sz = 64; end
 if isfield(params, 'barWidth'),  width = params.barWidth; else width = 1; end
 if isfield(params, 'offset'),    offset = params.offset; else offset = 1; end
-if isfield(params, 'lineSpace'), lineSpace = params.lineSpace;
-else lineSpace = inf; end
 
 % Set scene parameters based on type
 switch type
@@ -1079,34 +1082,7 @@ switch type
         end
         if ischar(display), display = displayCreate(display); end
         
-        if isfield(params, 'barColor')
-            barColor = params.barColor;
-        else
-            barColor = 0.99;
-        end
-        if isscalar(barColor), barColor = repmat(barColor, [1 3]); end
-        if isfield(params, 'bgColor')
-            bgColor = params.bgColor;
-        else
-            bgColor = 0;
-        end
-        if isscalar(bgColor), bgColor = repmat(bgColor, [1 3]); end
-        
-        % Create image to be shown on display
-        if isscalar(sz), sz = [sz sz]; end
-        Img = repmat(reshape(bgColor,[1 1 3]),[sz 1]);
-        cc = [round(sz(2)/2):-lineSpace:1 round(sz(2)/2):lineSpace:sz];
-        width = width - 1;
-        for jj = 1 : length(cc)
-            barCols = max(round(cc(jj)-width/2),1) : ...
-                      min(round(cc(jj)+width/2),sz(2));
-            for ii = 1 : 3
-                Img(:, barCols, ii) = barColor(ii);
-            end
-        end
-        % Shift for offset
-        Img(1:round(end/2),:,:) = circshift(Img(1:round(end/2),:,:), ...
-            [0 offset 0]);
+        Img = imageVernier(params);
         
         % Create scene
         scene = sceneFromFile(Img, 'rgb',[], display);
@@ -1114,7 +1090,7 @@ switch type
         error('unknown vernier scene type');
 end
 
-if isfield(params, 'meanLum')
+if isfield(params, 'meanLum') && ~isempty(params.meanLum)
     scene = sceneAdjustLuminance(scene, params.meanLum);
 end
 

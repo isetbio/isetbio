@@ -1,4 +1,4 @@
-%% v_wvfPupilFunction
+function t_wvfPupilSize
 %
 % Explore the effect of changing the pupil size in the calculation.
 %
@@ -12,8 +12,8 @@
 %
 % (BW) (c) Wavefront Toolbox Team, 2014
 
-%% 
-s_initISET
+%% Initialize
+close all; ieInit;
 
 %% Load the Thibos data for one of the pupil diameter sizes 
 pupilMM = 7.5;   % Could be 6, 4.5, or 3
@@ -33,4 +33,4 @@ for ii=1:sum(cPupil<=pupilMM)
     title(sprintf('Calculated pupil diameter %.1f mm',cPupil(ii)));
 end
 
-%% End
+end

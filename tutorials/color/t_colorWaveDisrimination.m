@@ -101,7 +101,7 @@ for rr = 1:nLum
     % Plot the absorptions
     f = vcNewGraphWin;
     % sym = {'b.','g.','r.','c.','bs','gs','rs','cs','bo','go','ro','co','bx','gx','rx','cx'};
-    sym = {'b.','g.','r.','c.','k.'};
+    sym = {'bo','go','ro','co',};
     az = 65.5; el = 30;
     for ww=1:nWaves
         s = mod(ww,length(sym))+1;

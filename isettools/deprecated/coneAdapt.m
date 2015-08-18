@@ -43,8 +43,9 @@ function [sensor, adaptedData] = coneAdapt(sensor, typeAdapt, params)
 %           4 = cone adaptation by physiological differential equation
 %               (Rieke)
 %  params     - Cone adaptation parameters, could include
-%    .bgVolts = background voltage
-%    .vSwing  = maximum volts response
+%    .bgVolts  = background voltage
+%    .vSwing   = maximum volts response
+%    .addNoise = boolean, used in the Rieke cone adapt case
 %
 %
 % Output:
@@ -91,6 +92,13 @@ end
 if isfield(params, 'bgVolts'),     bgVolts = params.bgVolts;
 else                               bgVolts = mean(volts(:));
 end
+
+if isfield(params, 'addNoise'),  noiseFlag = params.addNoise;
+else                             noiseFlag = false;
+end
+
+if ~isfield(params, 'Compress'), params.Compress = false; end
+    
 
 if ischar(typeAdapt), typeAdapt = ieParamFormat(typeAdapt); end
     
@@ -219,7 +227,7 @@ switch typeAdapt
         sz = sensorGet(sensor,'size');
         
         % absRate = sensorGet(sensor,'absorptions per second');        
-        pRate = sensorGet(sensor, 'photon rate');
+        pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
                 
         % Compute background adaptation parameters
         bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
@@ -227,18 +235,27 @@ switch typeAdapt
         initialState = riekeAdaptSteadyState(bgR, p, sz);
         initialState.timeInterval = sensorGet(sensor, 'time interval');
         adaptedData  = riekeAdaptTemporal(pRate, initialState);
+        
+        if noiseFlag
+            adaptedData = riekeAddNoise(adaptedData);
+        end
   
     case {5, 'linear'}
         expTime = sensorGet(sensor,'exposure time');
         sz = sensorGet(sensor,'size');
         
         % absRate = sensorGet(sensor,'absorptions per second');        
-        pRate = sensorGet(sensor, 'photon rate');
+        pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
                 
         % Compute background adaptation parameters
         bgR = 0;
         
-        initialState.timeInterval = sensorGet(sensor, 'time interval')
+        initialState = riekeInit;
+        initialState.timeInterval = sensorGet(sensor, 'time interval');
+        initialState.Compress = params.Compress;
+        if isfield(params, 'Ib')
+            initialState.Ib = params.Ib;
+        end
         adaptedData  = riekeLinearCone(pRate, initialState);
        
     otherwise

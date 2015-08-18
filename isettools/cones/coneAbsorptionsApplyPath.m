@@ -10,6 +10,8 @@ nPos = length(xpos);
 % Pad to the sensor to max size
 rows = [-min([ypos(:); 0]) max([ypos(:); 0])];
 cols = [max([xpos(:); 0]) -min([xpos(:); 0])];
+rows = [max(rows) max(rows)];
+cols = [max(cols) max(cols)];
 
 ip = inputParser;
 ip.addOptional('rows', rows);

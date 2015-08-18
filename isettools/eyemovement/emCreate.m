@@ -10,8 +10,6 @@ function em = emCreate(params, varargin)
 %                 tremor, drift and micro-saccade respectively
 %     .sampTime - sampling time in secs, e.g. 0.001 stands for 1ms per
 %                 sample
-%     .totTime  - total time of eye-movement sequence in secs, will be
-%                 rounded to a multiple of sampTime (removed)
 %     .tremor   - parameters for tremor, could include
 %        .interval   = mean of occurring interval in secs
 %        .intervalSD = standard deviation of interval
@@ -95,7 +93,7 @@ p.drift.speedSD = 1/60*pi/180;   % std of drift speed
 p.msaccade.interval   = 0.6;       % micro-saccade interval - 0.6 secs
 p.msaccade.intervalSD = 0.3;       % std for micro-saccade interval
 p.msaccade.dirSD      = 5*pi/180;  % std for direction
-p.msaccade.speed      = 15*pi/180; % micro saccade speed - 15 rad/s
+p.msaccade.speed      = 15*pi/180; % micro saccade speed - 15 deg/s
 p.msaccade.speedSD    = 5*pi/180;  % std for micro saccade speed
 
 % merge params with default values
@@ -133,7 +131,7 @@ function params = overwritestruct(params, newP)
 % (HJ) ISETBIO TEAM, 2015
 
 % check inputs
-if ~isstruct(params) || ~isstruct(newP) return; end
+if ~isstruct(params) || ~isstruct(newP), return; end
 
 % Loop over all the fields of params
 fields = fieldnames(params);

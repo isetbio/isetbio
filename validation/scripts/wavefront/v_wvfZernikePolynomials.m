@@ -1,4 +1,6 @@
-% v_wvfZernkePolynomials
+function varargout = v_wvfZernkePolynomials(varargin)
+%
+% Test that single Zernike coeffs produce correct wavefront aberrations.
 %
 % Make plots of the wavefront aberrations we get for single Zernike coefficients.
 % These ought to match up with standard pictures of the Zernike pyramid.
@@ -22,14 +24,24 @@
 % it for the defocus case (and presumably for others too, I didn't check.)
 %
 % 7/31/12  dhb  Wrote it.
+% 8/12/15  dhb  UnitTestToolbox'ize
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+% 
 
 %% Initialize
-s_initISET;
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate wavefront individual Zernike coefficients.');
 
 %% Make plots of various pupil functions and their respective
 % point-spread functions for different Zernike polynomials of 1st through
 % 3rd radial orders (OSA j indices 1 through 9).
-%
 %
 % Each time through the loop we see the effect of wiggling one coefficient.
 %
@@ -62,6 +74,22 @@ for ii = jindices
 
     subplot(3,1,3);
     wvfPlot(wvf,'2d psf space','mm',wList,maxMM,'no window');
+    
+    % Save out what it does today
+    %
+    % Little bit of nonsense here to avoid a "-" in the identifier string,
+    % yet still distinguish plus from minus.
+    if (m < 0)
+        mStr = ['m' num2str(abs(m))];
+    else
+        mStr = num2str(m);
+    end
+    if (n < 0)
+        nStr = ['m' num2str(abs(n))];
+    else
+        nStr = num2str(n);
+    end
+    UnitTest.validationData(sprintf('wvf_%s_%s',mStr,nStr), wvf);
 end
 
-%% END
+end
