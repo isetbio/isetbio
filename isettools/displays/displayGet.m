@@ -7,6 +7,7 @@ function val = displayGet(d, parm, varargin)
 %     {'type'}        - Always 'display'
 %     {'name'}        - Which specific display
 %     {'is emissive'} - true (emissive) or false (reflective)
+%     {'main image'}  - image for main display window
 %
 % Transduction
 %     {'gamma table'}   - nLevels x nPrimaries
@@ -50,7 +51,7 @@ function val = displayGet(d, parm, varargin)
 %     {'dixel'}              - dixel structure describing repeating unit
 %     {'pixels per dixel'}   - number of pixels in one repeating unit
 %     {'dixel size'}         - number of samples in one dixel
-%     {'dixel intensity map'}
+%     {'dixel image'}        - image in dixel panel
 %     {'dixel control map'}  - control map, describing which regions are
 %                              individually addressable
 %     {'peak spd'}           - peak spd for each primary
@@ -104,6 +105,9 @@ switch parm
     case {'isemissive'}
         val = true;
         if isfield(d, 'isEmissive'), val = d.isEmissive; end
+    case {'mainimage','mainimg'}
+        % Main image in display window
+        val = d.mainimage;
     case {'bits','dacsize'}
         % color bit depths, e.g. 8 bit / 10 bit
         % This is computed from size of gamma table
@@ -300,7 +304,7 @@ switch parm
     case {'dixelsize'}
         % number of samples in one dixel
         % displayGet(d, 'dixel size')
-        dixel_image = displayGet(d, 'dixel intensity map');
+        dixel_image = displayGet(d, 'dixel image');
         val = size(dixel_image);
         val = val(1:2);
     

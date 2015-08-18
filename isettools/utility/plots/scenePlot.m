@@ -230,12 +230,12 @@ switch lower(pType)
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
         
         wave = sceneGet(scene,'wave');
-        data = squeeze(data(:,roiLocs(1),:));
+        data = squeeze(data(roiLocs(2),:,:));
         pos = sceneSpatialSupport(scene,'mm');
         x = pos.x;
         
         % Make the spectogram image
-        imagesc(x,wave,data')
+        imagesc(x,wave,data');
         ylabel('Wavelength (nm)')
         xlabel('Horizontal position (mm)');
         colormap(hot);
@@ -254,7 +254,7 @@ switch lower(pType)
         y= pos.y;
         
         % Make the spectogram image
-        imagesc(x,wave,data')
+        imagesc(x,wave,data');
         ylabel('Wavelength (nm)')
         xlabel('Vertical Position (mm)');
         colormap(hot);
@@ -723,6 +723,7 @@ switch lower(pType)
         else
             imagesc(dmap); colormap(flipud(gray)); % Near dark, far light
             axis off; set(g,'Name','ISET: Depth map (m)');
+            axis image
             % Far is dark, close is light
             colormap(flipud(gray));
         end

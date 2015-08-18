@@ -1,10 +1,9 @@
 function displaySetEditsAndButtons(handles)
-%% function displaySetEditsAndButtons
-%    Fill scene window fields based on the current display information
+% Fill scene window fields based on the current display information
+%
 %    displaySetEditsAndButtons(handles)
 %
-%  (HJ) May, 2014
-
+%  (HJ) May, 2014, Copyright ISETBIO Team
 
 %% Set values to boxes in display window
 d = vcGetObject('DISPLAY');

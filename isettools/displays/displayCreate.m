@@ -92,4 +92,6 @@ d = displaySet(d, 'gamma', g);  % From digital value to linear intensity
 d.dpi = 96;    % Typical display density
 d.dist = 0.5;  % Typical viewing distance, 19 inches
 
+d.mainimg = [];% Image for main display window
+
 end
