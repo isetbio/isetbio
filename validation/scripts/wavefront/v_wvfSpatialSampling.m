@@ -1,4 +1,4 @@
-function varargout = v_wvfSpatialSampling(varagin)
+function varargout = v_wvfSpatialSampling(varargin)
 %
 % Check consistency of wavefront calcs across different spatial sampling parameters.
 %
@@ -74,6 +74,14 @@ plot(arcmin3,psfLine3/max(psfLine3(:)),'gx','MarkerSize',6,'MarkerFaceColor','k'
 plot(arcmin4,psfLine4/max(psfLine4(:)),'ko','MarkerSize',4,'MarkerFaceColor','k');
 plot(arcmin3,onedPSF3/max(onedPSF3),'b','LineWidth',1);
 
+%% Save validation data
+UnitTest.validationData('arcmin0', arcmin0);
+UnitTest.validationData('arcmin3', arcmin3);
+UnitTest.validationData('arcmin4', arcmin4);
+UnitTest.validationData('psfLine0', psfLine0);
+UnitTest.validationData('psfLine3', psfLine3);
+UnitTest.validationData('psfLine4', psfLine4);
+UnitTest.validationData('onedPSF3', onedPSF3);
 
-%% End
+end
 

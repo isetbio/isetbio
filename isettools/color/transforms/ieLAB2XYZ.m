@@ -1,4 +1,4 @@
-function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,exp)
+function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,labexp)
 % Convert CIE LAB values to CIE XYZ values
 %
 %    XYZ = ieLAB2XYZ(lab,whitepoint,exp,useOldCode)
@@ -10,8 +10,8 @@ function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,exp)
 %
 % lab        - LAB image; can either be in XW or RGB format.
 % whitepoint - a 3-vector of the xyz values of the white point.
-% useOldCode - 0 to use Matalb's routines, 0 otherwise
-% exp        - used by old code; the exponent used in the CIELAB formula.
+% useOldCode - 0 to use Matalb's routines, 1 otherwise
+% labexp     - used by old code; the exponent used in the CIELAB formula.
 %              Default is cube root as used in standard CIELAB. If
 %              specified, use the number as exponent. (note this exponent
 %              here should be the same as the exponent used in vcXYZlab.m)
@@ -26,6 +26,10 @@ function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,exp)
 %
 % See also:  ieXYZ2LAB
 %
+% 8/18/15  dhb  Change conditional on exist of makecform
+%          dhb  Always define labexp, since makecform may not exist.
+%          dhb  Change "exp" -> "labexp" to avoid clobbering function exp.
+%
 % Copyright ImagEval Consultants, LLC, 2009.
 
 if notDefined('lab'), error('No data.'); end
@@ -33,9 +37,9 @@ if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');
 end
 if notDefined('useOldCode'), useOldCode = 0; end
-if notDefined('exp'), if useOldCode, exp = 3; end; end
+if notDefined('exp'), labexp = 3; end
 
-if (exist('makecform','file') == 2) &&  ~useOldCode
+if (exist('makecform','file')) &&  ~useOldCode
     
     % Which version of LAB is this for? 1976.
     % We are worried about the white point.
@@ -62,7 +66,7 @@ else
     
     % Usual formula for Lstar.   (y = Y/Yn)
     fy = (lab(:,1) + 16)/116;
-    y = fy .^ exp;
+    y = fy .^ labexp;
     
     % Find out cases where (Y/Yn) is too small and use other formula
     % Y/Yn = 0.008856 correspond to L=7.9996
@@ -79,8 +83,8 @@ else
     % when (Z/Zn)<0.008856, fz<0.206893
     xx = find(fx<.206893);
     zz = find(fz<.206893);
-    x = fx.^exp;
-    z = fz.^exp;
+    x = fx.^labexp;
+    z = fz.^labexp;
     x(xx) = (fx(xx)-16/116)/7.787;
     z(zz) = (fz(zz)-16/116)/7.787;
     
