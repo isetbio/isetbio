@@ -26,7 +26,8 @@ function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,labexp)
 %
 % See also:  ieXYZ2LAB
 %
-% 8/18/15  dhb  Change conditional on exist of makecform
+% 8/18/15  dhb  Change conditional on exist of makecform, works for p-code
+%               too.
 %          dhb  Always define labexp, since makecform may not exist.
 %          dhb  Change "exp" -> "labexp" to avoid clobbering function exp.
 %

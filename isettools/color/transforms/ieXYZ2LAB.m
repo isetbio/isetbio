@@ -33,6 +33,9 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %
 % See also:  lab2xyz
 %
+% 8/18/15  dhb  Change conditional on exist of makecform, works for
+%               p-code too.
+%
 % Copyright ImagEval Consultants, LLC, 2003.
 
 % TODO:
@@ -45,7 +48,7 @@ if notDefined('xyz'), error('No data.'); end
 if notDefined('whitepoint'), error('Whitepoint is required'); end
 if notDefined('useOldCode'), useOldCode = false; end
 
-if (exist('makecform', 'file') == 2) &&  ~useOldCode
+if (exist('makecform', 'file')) &&  ~useOldCode
     % This is where we want to be, but it only exists in the relatively
     % recent Matlab routines.
     % Matlab's implementation is only for CIELAB 1976
