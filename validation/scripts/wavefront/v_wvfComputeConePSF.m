@@ -1,8 +1,9 @@
-% v_wvfComputeConePSF
+function varargout = v_wvfComputeConePSF(varargin)
 %
-% Test the routines that compute L, M, and S cone PSFs from Zernike
-% coefficients.  Replicates figures from 
-%  Autrusseauet al., 2011, Vision Research, 51, 2282-2294.
+% Test the routines that compute L, M, and S cone PSFs from Zernike coefficients.
+%
+% Replicates figures from 
+%  Autrusseau et al., 2011, Vision Research, 51, 2282-2294.
 %
 % The diffraction limited calcs seem to match up with their
 % Figure 2 pretty well, the MTFs agree well, and Figures 4A
@@ -25,9 +26,18 @@
 % 7/20/12  dhb  Got TEST1 to work without crashing, and possibly even to be correct.
 % 7/23/12  dhb  OTF plot is looking vaguely reasonable.
 %               Added Autrusseau equal energy OTFs for comparison
+% 8/18/15  dhb  UnitTestToolbox'ize.
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
 
 %% Initialize
-s_initISET;
+close all; ieInit;
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check L, M, S cone PSFs.');
 
 %% Parameters
 %
@@ -47,7 +57,7 @@ plotLimitFreq = 80;
 dataSource = 'AutrusseauStandard';
 switch (dataSource)
     case 'AutrusseauStandard';
-        % This is the Autrussea standard observer.
+        % This is the Autrusseau standard observer.
         %
         % Their coefficients are for a measured
         % pupil of 6 mm and that their calculations are
@@ -82,6 +92,7 @@ switch (dataSource)
         calcPupilMM = 6;
         measWavelength = 570;
 end
+UnitTest.validationData('dataSource', dataSource);
 
 % Cone sensitivities and equal energy weighting spectrum
 load('T_cones_ss2');
@@ -156,9 +167,7 @@ for i = 1:length(wls)
 end
 arcminutes1 = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
 arcminutes = wvfGet(wvfParams1,'psf angular samples','min',wls(1));
-if (any(arcminutes ~= arcminutes1))
-    error('Manual computation of angular samples does not agree with what wvfGet returns');
-end
+UnitTest.assertIsZero(max(abs(arcminutes(:)-arcminutes1(:))),'Angular samples compare',0);
 
 %% Center and circularly average if desired
 if (CENTER)
@@ -184,6 +193,12 @@ if (CIRCULARLYAVERAGE)
     mpsfd = psfCircularlyAverage(mpsfd);
     spsfd = psfCircularlyAverage(spsfd);
 end
+UnitTest.validationData('lpsf', lpsf);
+UnitTest.validationData('mpsf', mpsf);
+UnitTest.validationData('spsf', spsf);
+UnitTest.validationData('lpsfd', lpsfd);
+UnitTest.validationData('mpsfd', mpsfd);
+UnitTest.validationData('spsfd', spsfd);
 
 %% Make a figure comparable to Autrusseau et al, Figure 2 (top row) and Figure 4b (bottom row).
 %
@@ -399,8 +414,10 @@ else
 end
 drawnow;
 
-return
+end
 
+% Need to come back to this code and get it working.
+%
 % %% TEST2.  Optimize focus and add to the plot.
 % %
 % % This takes a long time.

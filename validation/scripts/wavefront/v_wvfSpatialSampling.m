@@ -1,7 +1,6 @@
-% v_wvfSpatialSampling
+function varargout = v_wvfSpatialSampling(varagin)
 %
-% Checks consistency of results for a diffraction limited calculation with
-% different choices of spatial sampling parameters.
+% Check consistency of wavefront calcs across different spatial sampling parameters.
 %
 % If this is working, all of the points should fall on the lines in the graph.
 %
@@ -12,16 +11,25 @@
 % See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF,
 % wvfComputePupilFucntion
 %
+% 7/4/12  dhb  Wrote it.
 % 7/27/12 bw   Now that session files are no longer written out, I am
 %              removing the early cd() in these scripts.  And checking
 %              various things.  And putting in vcNewGraphWin instead of
 %              figure.
-% 7/4/12  dhb  Wrote it.
+% 8/18/15 dhb  UnitTestToolbox'ized.
 %
 % (c) Wavefront Toolbox Team, 2012
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
 
 %% Initialize
-s_initISET
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check wavefront spatial sampling.');
 
 %% Set up parameters structure
 wvf0 = wvfCreate;
