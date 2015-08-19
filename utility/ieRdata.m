@@ -38,13 +38,19 @@ switch f
         rd.webSite;
         
     case {'ls','dir'}
-        % dirList = ieRdata('ls',rd,'png');
+        % List the files in the remote data site that are in a directory
+        % matching a specific string 
+        % dirList = ieRdata('ls',rd, DirectoryString);
         if isempty(varargin), error('Pattern required\n'); end
         val = rd.listFiles(varargin{1});
                
+    case {'filesprint'}
+        % List the directories and files
+        rd.filesList;
+        
     case 'fileget'
         % outName = ieRdata('get',rd,fname);
-        % ieRdata('fileget',[],'cText4.mat');
+        % ieRdata('file get',[],'cText4.mat');
         %
         % One possibility.  Though maybe it should go in tempname/rdata
         if isempty(varargin), error('File string required'); end
