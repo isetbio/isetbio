@@ -18,14 +18,14 @@ function [udata, g] = scenePlot(scene,pType,roiLocs,varargin)
 %     {'radiance hline image'}    - Horizontal line radiance as a spectrogram image (photons)
 %     {'radiance vline image'}    - Vertical line radiance as a spectogram image (photons)
 %
-%     {'radiance fft'}            - Contrast spatial frequency amplitude(single wavelength)
-%     {'radiance image with grid'}  - Render radiance image
-%     {'radiance waveband image'}          - Render waveband range of radiance image
-%     {'radiance energy roi'}        - mean energy radiance of roi
-%     {'radiance photons roi'}        - mean quantal radiance of roi
+%     {'radiance fft'}             - Contrast spatial frequency amplitude(single wavelength)
+%     {'radiance energy roi'}      - mean energy radiance of roi
+%     {'radiance photons roi'}     - mean quantal radiance of roi
+%     {'radiance image grid'}      - Render radiance image
+%     {'radiance waveband image'}  - Render waveband range of radiance image
 %
 %    Reflectance
-%     {'reflectance roi'}            - mean reflectance of roi
+%     {'reflectance roi'}          - mean reflectance of roi
 %
 %    Luminance and chromaticity
 %     {'luminance roi'}           - mean luminance of roi
