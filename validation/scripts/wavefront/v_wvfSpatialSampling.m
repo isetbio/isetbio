@@ -1,7 +1,6 @@
-% v_wvfSpatialSampling
+function varargout = v_wvfSpatialSampling(varargin)
 %
-% Checks consistency of results for a diffraction limited calculation with
-% different choices of spatial sampling parameters.
+% Check consistency of wavefront calcs across different spatial sampling parameters.
 %
 % If this is working, all of the points should fall on the lines in the graph.
 %
@@ -12,16 +11,25 @@
 % See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF,
 % wvfComputePupilFucntion
 %
+% 7/4/12  dhb  Wrote it.
 % 7/27/12 bw   Now that session files are no longer written out, I am
 %              removing the early cd() in these scripts.  And checking
 %              various things.  And putting in vcNewGraphWin instead of
 %              figure.
-% 7/4/12  dhb  Wrote it.
+% 8/18/15 dhb  UnitTestToolbox'ized.
 %
 % (c) Wavefront Toolbox Team, 2012
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
 
 %% Initialize
-s_initISET
+close all; ieInit;
+
+%% Some informative text
+UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check wavefront spatial sampling.');
 
 %% Set up parameters structure
 wvf0 = wvfCreate;
@@ -66,6 +74,14 @@ plot(arcmin3,psfLine3/max(psfLine3(:)),'gx','MarkerSize',6,'MarkerFaceColor','k'
 plot(arcmin4,psfLine4/max(psfLine4(:)),'ko','MarkerSize',4,'MarkerFaceColor','k');
 plot(arcmin3,onedPSF3/max(onedPSF3),'b','LineWidth',1);
 
+%% Save validation data
+UnitTest.validationData('arcmin0', arcmin0);
+UnitTest.validationData('arcmin3', arcmin3);
+UnitTest.validationData('arcmin4', arcmin4);
+UnitTest.validationData('psfLine0', psfLine0);
+UnitTest.validationData('psfLine3', psfLine3);
+UnitTest.validationData('psfLine4', psfLine4);
+UnitTest.validationData('onedPSF3', onedPSF3);
 
-%% End
+end
 

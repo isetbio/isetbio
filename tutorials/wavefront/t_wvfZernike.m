@@ -89,10 +89,10 @@ function t_wvfZernike
 % radial orders 0 through 10. The 0th order term (piston) doesn't affect
 % the PSF and we will leave it at 0. Additionally, the 1st order terms
 % (coeffs 1 and 2, known as tip and tilt) only serve to shift the PSF along
-% the x or y axiss. They will also be left at 0 for this tutorial.  
+% the x or y axis. They will also be left at 0 for this tutorial.  
 
 %% Initialize
-s_initISET;
+close all; ieInit;
 
 %% The tutorial only uses 1 wavelength at a time. So, for plotting, we use
 % this index.
@@ -145,7 +145,7 @@ wvfPlot(wvf0,'2dpsf space normalized','um',wList,maxUM);
 % get via names for the low order terms.)
 oblique_astig = 0.75;                             
 wvf3 = wvfSet(wvf0,'zcoeffs',oblique_astig,{'oblique_astigmatism'});
-wvfGet(wvf3,'zcoeffs',3)
+fprintf('Third Zernike coefficient is %g\n',wvfGet(wvf3,'zcoeffs',3));
 
 %% Look at the pupil function for astigmatism with axis at 45 degrees.
 %

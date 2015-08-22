@@ -189,12 +189,16 @@ ind = vcGetSelectedObject('display');
 d = vcGetObject('display', ind);
 
 % Get current image
-global vcSESSION;
-if isfield(vcSESSION, 'imgData')
-    I = vcSESSION.imgData;
-else
-    warning('No image set');
-    return;
+I = displayGet(d,'main image');
+if isempty(I)
+    % Should go away
+    global vcSESSION;
+    if isfield(vcSESSION, 'imgData')
+        I = displayGet(d,'main image');
+    else
+        warning('No image set');
+        return;
+    end
 end
 
 % select region

@@ -13,6 +13,7 @@ function d = displaySet(d,parm,val,varargin)
 %   dixel              - subpixel structure
 %   viewing distance   - viewing distance
 %   comment            - comments for this display
+%   img                - main display window image
 %
 % Examples:
 %
@@ -69,19 +70,16 @@ switch parm
         if ~ismatrix(val), error('unknown spd structure'); end
         if size(val,1) < size(val, 2), val = val'; end
         d.spd = val;
-        
     case {'dpi'}
         % displaySet(d, 'dpi', val);
         % Dots per inch of the pixels (full pixel center-to-center)
         d.dpi = val;
-        
     case {'size'}
         % displaySet(d,'size',val)
         % [h,v] size in meters
         if (~ismatrix(val)) error('unknown form for size'); end
         if (~length(val) == 2) error ('size should be [h,v]'); end
         d.size = val;
-        
     case {'viewingdistance'}
         % displaySet(d, 'viewing distance', val);
         % viewing distance in meters
@@ -89,6 +87,10 @@ switch parm
     case {'refreshrate'}
         % refresh rate of the display in Hz
         d.refreshRate = val;
+    case {'mainimage'}
+        % main display image for displayWindow
+        % This should be an RGB image
+        d.mainimage = val;
     case {'dixel'}
         % displaySet(d, 'dixel', val)
         % dixel structure

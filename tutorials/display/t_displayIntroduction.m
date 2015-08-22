@@ -4,8 +4,8 @@
 %
 %  (HJ) ISETBIO TEAM
 
-%% Initialize ISET
-s_initISET;
+% Initialize ISET
+ieInit;
 
 %% Create a display
 %  create a default display

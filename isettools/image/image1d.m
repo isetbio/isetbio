@@ -9,6 +9,7 @@ function [img, params] = image1d(pattern,varargin)
 %     rows:   Set the row length
 %     rgb:    Sets the rgb of the contrast around the mean, leaving the
 %             mean unchanged
+%     mn:     Treat this value as the image mean
 %     pad:    Pad with mean, or maybe it will be edge (Not yet implemented)
 %
 % Create a 2D image from a 1D pattern.
@@ -40,6 +41,8 @@ for ii=1:2:length(varargin)
             params.rgb = varargin{ii+1};
         case 'rows'
             params.rows = varargin{ii+1};
+        case 'mean'
+            params.mean = varargin{ii+1};
         otherwise
             error('Unknown parameter %s\n',thisP);
     end
@@ -59,7 +62,11 @@ img = repmat(pattern(:)',[params.rows,1]);
 % We could pull out the mean, multiply the contrast, and then add them
 % together.
 [img, r, c] = RGB2XWFormat(img);
-mn = mean(img);
+if ~isfield(params,'mean')
+    mn = mean(img);
+else
+    mn = params.mean;
+end
 contrast = img - mn;
 contrast = contrast*params.rgb(:)';
 img = mn + contrast;
