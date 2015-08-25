@@ -43,10 +43,16 @@ end
 %  Make sure curNF is [row, col, time] 3D matrix
 if isvector(curNF), curNF = reshape(curNF, [1 1 length(curNF)]); end
 
+if (ndims(curNF) == 3)
+    temporalDimIndex = 3;
+elseif (ndims(curNF) == 2)
+    temporalDimIndex = 2;
+end
+
 % Generate the noise according to the noise spectral
 % distribution
-k = ceil((size(curNF, 3)-1)/2);
-params.freq = (0:k)/ sampTime / size(curNF, 3);
+k = ceil((size(curNF, temporalDimIndex)-1)/2);
+params.freq = (0:k)/ sampTime / size(curNF, temporalDimIndex);
 
 LorentzCoeffs = [0.16  55  4;
                  0.045 190 2.5];
@@ -54,21 +60,24 @@ noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
 
 % make-up the negative frequency part
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];
-noiseSPD = noiseSPD(1:size(curNF, 3));
-noiseSPD = reshape(noiseSPD, [1 1 length(noiseSPD)]);
-
+noiseSPD = noiseSPD(1:size(curNF, temporalDimIndex));
+if (temporalDimIndex == 3)
+    noiseSPD = reshape(noiseSPD, [1 1 length(noiseSPD)]);
+elseif (temporalDimIndex == 2)
+    noiseSPD = reshape(noiseSPD, [1 length(noiseSPD)]);
+end
 % Have a look at the noise in the frequency domain
 % vcNewGraphWin;loglog(squeeze(sqrt(noiseSPD)));
 
 % generate white gaussian noise
 noise = randn(size(curNF));
-noiseFFT = fft(noise, [], 3); % / sqrt(size(noise, 3));
+noiseFFT = fft(noise, [], temporalDimIndex); % / sqrt(size(noise, 3));
 
 % adjust the spectral power distribution of the noise
 noiseFFT = bsxfun(@times, noiseFFT, sqrt(noiseSPD));
 
 % convert back to time domain to recover noise
-noise = real(ifft(noiseFFT, [], 3)) / sqrt(2*sampTime); % take real part
+noise = real(ifft(noiseFFT, [], temporalDimIndex)) / sqrt(2*sampTime); % take real part
 %figure(2); plot(squeeze(noise));
 
 % add to noise-free signal
