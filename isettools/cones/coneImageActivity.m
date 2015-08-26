@@ -9,9 +9,9 @@ function tmp = coneImageActivity(cones,data,step,dFlag)
 %
 % (BW) ISETBIO Team, Copyright 2015
 
-if ieNotDefined('data'), data = sensorGet(cones,'photons'); end
-if ieNotDefined('step'), step = max(1,size(data,3)/100); end
-if ieNotDefined('dFlag'), dFlag = false; end
+if notDefined('data'), data = sensorGet(cones,'photons'); end
+if notDefined('step'), step = max(1,size(data,3)/100); end
+if notDefined('dFlag'), dFlag = false; end
 
 conesToPlot = max(sensorGet(cones,'size'));
 coneSize = 6;

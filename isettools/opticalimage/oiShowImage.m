@@ -1,7 +1,17 @@
-function oiShowImage(oi,displayFlag,gam)
+function img = oiShowImage(oi,displayFlag,gam)
 %Render an image of the scene data
 %
-%    oiShowImage(oi,displayFlag,gam)
+%    img = oiShowImage(oi,displayFlag,gam)
+%
+% oi: optical image
+% displayFlag: <= 0 means no display. (default = 1, visible RGB and show)
+%     Absolute value used to guide the type of rendering.  Thus,
+%     if abs(displayFlag) = 
+%              1:  Typical visible band to RGB
+%              2:  Gray scale image, used for SWIR, NIR
+% gam: Exponent for gamma correction
+%
+% Returns the display image
 %
 % Examples:
 %   vcNewGraphWin;
@@ -33,7 +43,7 @@ end
     
 % The displayFlag flag determines how imageSPD converts the data into a
 % displayed image. 
-imageSPD(photons,wList,gam,sz(1),sz(2),displayFlag);
+img = imageSPD(photons,wList,gam,sz(1),sz(2),displayFlag);
 axis image; axis off
 
 end
