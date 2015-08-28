@@ -5,10 +5,15 @@ function filterKernel(obj,varargin)
 % method and the osLinearCompute method. The details of the generation of
 % the impulse responses for the L, M and S cones are found in the
 % filterConesLinear() utility function.
+%
+% Inputs: a cone osLinear object.
+% Outputs: a cone osLinear object with the filter fields set to the temporal
+% impulse response via the filterConesLinear function.
+%
+% 7/2015 JRG
 % 
-    fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
-    
-    if length(varargin)==0
+   
+    if isempty(varargin)
         [newIRFs, ~, ~] = filterConesLinear();
     else
         sensor = varargin{1};

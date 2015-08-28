@@ -52,7 +52,7 @@ stimulus = zeros(1, nSteps);
 fprintf('The computation of the stimulus is very slow.\n');
 fprintf('Go get a cup of coffee while this runs.\n');
 fprintf('Computing cone isomerization:    ');
-for t = 1 : nSteps
+for t = 1 %: nSteps
     fprintf('\b\b\b%02d%%', round(100*t/nSteps));
     % Low luminance for first 500 msec and the step up.
     if t < nSteps / 2

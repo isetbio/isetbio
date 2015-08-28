@@ -1,5 +1,5 @@
 classdef outerSegment < handle
-% OuterSegment Parent class
+% OuterSegment parent class
 %
 % Outersegment parent class for modeling the responses 
 % of the cone outer segment.
@@ -53,6 +53,10 @@ classdef outerSegment < handle
         % see osLinearGet, osBioPhysGet
         function val = get(obj, param, varargin)
            val = outersegmentGet(obj, param, varargin);
+        end
+        
+        function [osCurrent, obj] = adapt(sensor, typeAdapt)
+            [osCurrent, obj] = coneAdaptAlt(sensor, typeAdapt);
         end
     end
     

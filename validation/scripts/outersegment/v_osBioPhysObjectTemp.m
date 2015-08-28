@@ -27,7 +27,7 @@ function varargout = v_osBioPhysObjectTemp(varargin)
 % outersegement object does directly against underlying measurements.
 %
 % 6/2015 FMR   Created.
-% 7/2015 JRG   Test with ISETBIO outersegment object
+% 7/2015 JRG   Test with ISETBIO outersegment object.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -44,25 +44,25 @@ ieInit;
 % We'll compare the original code and the outer segment object for this
 % case.
 %
-% Set up parameters for stimulus
+% Set up parameters for stimulus.
 nSamples = 2000;        % 2000 samples
 timeStep = 1e-4;        % time step
 flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
-% Create human sensor
+% Create human sensor.
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep); 
 
-% Create stimulus
+% Create stimulus.
 stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
-% Set photon rates
+% Set photon rates.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-% Compute model current and baseline correct
+% Compute model current and baseline correct.
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
 adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes dc
@@ -73,6 +73,8 @@ noiseFlag = 0;
 adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % paramsOS.bgVolts = params.bgVolts;
 % paramsOS.dc = 0; % removes dc
+
+% NEED TO FIX - NOT ADAPTATION OFFSET!
 sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
 adaptedOS = osBioPhysCompute(adaptedOS, sensor);
 osAdaptedCur = osBioPhysGet(adaptedOS,'ConeCurrentSignal');
@@ -97,7 +99,7 @@ UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 
 
-% % Compute fit to measured response (Angueyra and Rieke, 2013)
+% % Compute fit to measured response (Angueyra and Rieke, 2013).
 % coef = [1 0.05 0.1 1 0];
 % tme = (1:nSamples)*timeStep;
 % impcoef = nlinfit(tme', squeeze(adaptedCur), 'ConeEmpiricalDimFlash', coef);
@@ -105,7 +107,7 @@ UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 % expcoef = [5 0.02 0.03 0.53 34];            % fit to measured response
 % expfit = ConeEmpiricalDimFlash(expcoef, tme');
 % 
-% % Compare model vs empirical fit to data
+% % Compare model vs empirical fit to data.
 % figure(1); clf;
 % if noiseFlag == 0
 %     plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignal));
@@ -120,16 +122,17 @@ UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 
 
 clear adaptedOS paramsOS
-%% steps + flashes
+%% Steps + flashes
 
-%  set up parameters for stimulus
+% Set up parameters for stimulus.
 stimPeriod = [4000 22000];          % start and end time of step
 nSamples = stimPeriod(2)+4000;      % number of samples
 timeStep = 1e-4;                    % time step
 flashTime = stimPeriod - 3000;      % time of flashes
 flashDur = 10;                      % flash duration (bins)
 flashIntens = 10000;                % flash intensity R*/cone/sec
-%  create human sensor
+
+% Create human sensor.
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
@@ -143,28 +146,28 @@ ylabel('pA');
 clear SSCur stimIntensity FlashAmp
 FlashScFact = 1;                     % scaling of flash to compensate adaptation
 
-% go through series of step intensities (slow)
+% Go through series of step intensities (slow).
 for step = 1:11
     
-    %  create stimulus: step alone
+    % Create stimulus: step alone.
     stimIntensity(step) = 50 * 2^step;          
     stimulus = zeros(nSamples, 1);
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
     stimulus = reshape(stimulus, [1 1 nSamples]);
     
-    % increase flash strength if we are in range where cones adapting
+    % Increase flash strength if we are in range where cones adapting.
     if (stimIntensity(step) > 4000);
         FlashScFact = FlashScFact * 2;
     end
     
-    % set photon rates
+    % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % compute adapted current
+    % Compute adapted current.
     params.bgVolts  = 0;
     [~, adaptedCurStepOnly] = coneAdapt(sensor, 'rieke', params);
     
-    % Create outersegment object
+    % Create outersegment object.
     noiseFlag = 0;
     adaptedOSStepOnly = osBioPhys('noiseFlag', noiseFlag);
 %     paramsOSStepOnly.bgVolts = params.bgVolts;
@@ -173,21 +176,21 @@ for step = 1:11
     adaptedOSStepOnly = osBioPhysCompute(adaptedOSStepOnly, sensor);
     % adaptedOs.plotResults(sensor)
 
-    %  create stimulus: step + flashes
+    % Create stimulus: step + flashes.
     stimulus = zeros(nSamples, 1);
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
     stimulus(flashTime(1):flashTime(1)+flashDur) = stimulus(flashTime(1):flashTime(1)+flashDur) + flashIntens;
     stimulus(flashTime(2):flashTime(2)+flashDur) = stimulus(flashTime(2):flashTime(2)+flashDur) + flashIntens*FlashScFact;
     stimulus = reshape(stimulus, [1 1 nSamples]);
 
-    % set photon rates
+    % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % compute adapted current
+    % Compute adapted current.
     params.bgVolts  = 0;
     [~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
     
-    % Create outersegment object
+    % Create outersegment object.
     noiseFlag = 0;
     adaptedOS = osBioPhys('noiseFlag', noiseFlag);
     paramsOS.bgVolts = params.bgVolts;
@@ -195,7 +198,7 @@ for step = 1:11
     adaptedOS = adaptedOS.compute(sensor, paramsOS);
     % adaptedOs.plotResults(sensor)
 
-    % plot
+    % Plot.
     subplot(1, 4, 1);
     plot((1:nSamples)*timeStep, adaptedCur(:), 'k', 'lineWidth', 2);
     subplot(1, 4, 2);
@@ -209,7 +212,7 @@ for step = 1:11
     tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
     pause(0.1);
 
-    % summary statistics
+    % Summary measures.
     FlashAmp(step) = max(temp(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(temp(flashTime(1):flashTime(1)+1000)));
     SSCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
     [MaxVal, MaxLoc] = max(temp(flashTime(2):flashTime(2)+1000));
@@ -218,7 +221,7 @@ for step = 1:11
     FlashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
     SSCurOS(step) = -(adaptedOSStepOnly.ConeCurrentSignal(1, 1, stimPeriod(2)) - adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1))/adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1);
     
-    % fit transient of step response
+    % Fit transient of step response.
     Transient = adaptedCurStepOnly(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
     Transient = Transient - Transient(length(Transient));
     
@@ -230,7 +233,7 @@ end
 subplot(1, 4, 3); title('coneAdapt');
 subplot(1, 4, 4); title('osBioPhys');
 
-% fit steady-state stimulus-response relation
+% Fit steady-state stimulus-response relation.
 % half max 45000 (Dunn et al 2007)
 figure(2);clf;
 % subplot(1,2,1);
@@ -258,7 +261,7 @@ axis tight;
 title('osBioPhys Object ');
 legend('coneAdapt','fit','osBioPhys','location','northwest');
 
-% fit sensitivity vs intensity relation
+% Fit sensitivity vs intensity relation.
 % half desens around 2500 (Angueyra and Rieke, 2013)
 figure(3);clf;
 % subplot(1,2,1);
@@ -286,8 +289,8 @@ axis tight;
 title('osBioPhys Object ');
 legend('coneAdapt','fit','osBioPhys');
 
-% fit current transient - two temporal components which contrast fast and
-% slow Calcium feedback terms
+% Fit current transient - two temporal components which contrast fast and
+% slow Calcium feedback terms.
 % 3:1 ratio of amps, rate constants 1 and 12
 tme = (1:length(Transient))*timeStep;
 coef = [1 1 3 12];
@@ -319,33 +322,33 @@ UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 
 
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
-%% saccade-like stimuli
+%% Saccade-like stimuli
 
-% load experimental data and baseline correct
+% Load experimental data and baseline correct.
 load('ConeData/EyeMovementsExample.mat');
 measuredCur = EyeMovementsExample.Mean - EyeMovementsExample.Mean(length(EyeMovementsExample.Mean));
 
-%  create stimulus
+% Create stimulus.
 stimulus = EyeMovementsExample.Stim;
 nSamples = length(stimulus);
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
-% Compute adapted current using DEQ model
+% Compute adapted current using DEQ model.
 
-%  create human sensor
+% Create human sensor.
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', 5e-5);
 
-% set photon rates
+% Set photon rates.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-% compute adapted current
+% Compute adapted current.
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
 adaptedCur = adaptedCur - adaptedCur(:, :, length(stimulus));
 
-% Create outersegment object
+% Create outersegment object.
 noiseFlag = 0;
 adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % paramsOS.bgVolts = params.bgVolts;
@@ -358,7 +361,7 @@ adaptedOS = osBioPhysCompute(adaptedOS, sensor);
 osAdaptedCur = osBioPhysGet(adaptedOS, 'ConeCurrentSignal');
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
-% plot against measurement data
+% Plot against measurement data.
 figure(5); 
 clf;
 % subplot(1,2,1);
@@ -391,15 +394,15 @@ UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 % figure; scatter(adaptedCur(:), adaptedOS.ConeCurrentSignal(:));
 
 clear adaptedOS paramsOS
-%% increment/decrement asymmetry
+%% Increment/decrement asymmetry
 
-%  set up parameters for stimulus
+% Set up parameters for stimulus.
 stimPeriod = [5000 7500]; % start and end time of step
 nSamples = stimPeriod(2)+5000;
 timeStep = 2e-4;
 Contrast = 1;
 
-%  create human sensor
+% Create human sensor.
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
@@ -407,8 +410,8 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 figure(1); clf;
 clear MaxInc MaxDec stimIntensity;
 
-% predict responses to increments and decrements across range of light
-% levels
+% Predict responses to increments and decrements across range of light
+% levels.
 for step = 1:7
     
     %  create stimulus: step alone
@@ -418,25 +421,25 @@ for step = 1:7
     stimulusInc(stimPeriod(1):stimPeriod(2)) = stimIntensity(step)*(1 + Contrast);
     stimulus = reshape(stimulusInc, [1 1 nSamples]);
 
-    % set photon rates
+    % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % compute adapted current
+    % Compute adapted current.
     params.bgVolts  = 0;
     [~, adaptedCurInc] = coneAdapt(sensor, 'rieke', params);
     
-    % Create outersegment object
+    % Create outersegment object.
     noiseFlag = 0;
     adaptedOSInc = osBioPhys('noiseFlag', noiseFlag);
     
     sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
-%     paramsOSInc.bgVolts = params.bgVolts;
+    % paramsOSInc.bgVolts = params.bgVolts;
     % paramsOS.dc = 0; % removes dc
     adaptedOSInc = osBioPhysCompute(adaptedOSInc, sensor);
     % adaptedOs.plotResults(sensor)
     
     osAdaptedCur = osBioPhysGet(adaptedOSInc, 'ConeCurrentSignal');
-%     osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
+    % osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
 
     %  create stimulus: step + flashes
@@ -445,14 +448,14 @@ for step = 1:7
     stimulusDec(stimPeriod(1):stimPeriod(2)) = stimIntensity(step)*(1 - Contrast);
     stimulus = reshape(stimulusDec, [1 1 nSamples]);
 
-    % set photon rates
+    % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % compute adapted current
+    % Compute adapted current.
     params.bgVolts  = 0;
     [~, adaptedCurDec] = coneAdapt(sensor, 'rieke', params);
     
-    % Create outersegment object
+    % Create outersegment object.
     noiseFlag = 0;
     adaptedOSDec = osBioPhys('noiseFlag', noiseFlag);
     paramsOSDec.bgVolts = params.bgVolts;
@@ -460,14 +463,14 @@ for step = 1:7
     adaptedOSDec = adaptedOSDec.compute(sensor, paramsOSDec);
     % adaptedOs.plotResults(sensor)
 
-    % summary stats
+    % Summary measures.
     MaxInc(step) = adaptedCurInc(1, 1, stimPeriod(2)-1) - adaptedCurInc(1, 1, stimPeriod(1)-1);
     MaxDec(step) = adaptedCurDec(1, 1, stimPeriod(2)-1) - adaptedCurDec(1, 1, stimPeriod(1)-1);
     
     MaxOSInc(step) = adaptedOSInc.ConeCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSInc.ConeCurrentSignal(1, 1, stimPeriod(1)-1);
     MaxOSDec(step) = adaptedOSDec.ConeCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSDec.ConeCurrentSignal(1, 1, stimPeriod(1)-1);
     
-    % plot
+    % Plot.
     subplot(1,2,1);
     plot((1:nSamples)*timeStep, adaptedCurInc(:), (1:nSamples)*timeStep, adaptedCurDec(:));
     pause(0.1);

@@ -1,8 +1,7 @@
 function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
 % filterConesLinear: a utility function of @osLinear that generates the linear filters
 % for the L, M and S cones based on data from Angueyra and Rieke (2013).
-
-%%  CODE TO GENERATE THE CONE TEMPORAL IMPULSE RESPONSE FUNCTION
+% 
 %
 % Set the cone "sampling rate". This rate effectively dictates the rest of
 % the simulation. Even though our monitor refreshed at 75 Hz, the cones
@@ -10,16 +9,32 @@ function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
 % the cone sampling rate to an integer multiple of the montor frame rate.
 % Setting the cone sampling rate to 825 seemed reasonable given the spectra
 % of the cone noise.
+%
+% Inputs: sensor (optional) to match the sampling rate of the cone
+% isomerization signal.
+% 
+% Outputs: 
+%  newIRFs: an nx3 matrix with each row the temporal impulse response for
+%  the L, M and S cones, respectively.
+%  Filter: an nx1 vector that is scaled to generate newIRFs.
+%  Ib: adjusted gain of impulse response.
+% 
+% Originally by FMR
+% 8/2015 modified by JRG 
+
 
 if size(varargin)==0
     dt = 0.001;
     coneSamplingRate = 1/dt;
-    tsz = 1;
+    tsz = 300;
+    meanIsomerization = 1;
 else
     sensor = varargin{1}; % sensor name
     dt = sensorGet(sensor, 'time interval');
     coneSamplingRate = 1/dt;
     [xsz ysz tsz] = size(sensor.data.volts);
+    pRate = sensorGet(sensor, 'photon rate');
+    meanIsomerization = mean(pRate(:));
 end
 
 %make the filter. Juan says the units are time (in sec) vs pA/R*/cone. All
@@ -28,6 +43,13 @@ end
 
 totalTime = dt * tsz; %length of IRF in seconds 
 TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
+
+
+% only compute filter for 0.3 seconds
+% TimeAxis = (1:timeBins)*dt;
+TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
+
+
 % TimeAxis = [1:2000]*dt;
 ScFact = 0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
@@ -57,17 +79,16 @@ Io = 2250;                     % half-desensitizing background (in R*/cone/sec, 
 Ib = [7131 6017 1973];         % R* per sec due to background adapting field (one for each cone, L, M, S)
 % Ib = [7131 7131 7131];  
                                 % adjust this to specific experiment
-if size(varargin)==0
-    stimNormCoeff = 1;
-else
-%     stimNormCoeff = (max(sensor.data.volts(:,:,1)))./max(Ib);
-    
-    pRate = sensorGet(sensor,'photon rate');
-    stimNormCoeff = max(pRate(1))./max(Ib);
-end
-
+% if size(varargin)==0
+    stimNormCoeff = meanIsomerization/max(Ib);
+% else
+% %     stimNormCoeff = (max(sensor.data.volts(:,:,1)))./max(Ib);
+%     
+%     pRate = sensorGet(sensor,'photon rate');
+%     stimNormCoeff = max(pRate(1))./max(Ib);
+% end
 Ib = Ib*stimNormCoeff;
-gain_dark = 0.32;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
+gain_dark = 0.22;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
 gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
 
 

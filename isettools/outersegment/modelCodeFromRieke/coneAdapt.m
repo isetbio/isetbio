@@ -238,7 +238,9 @@ switch typeAdapt
         % Compute background adaptation parameters
         bgR = 0;
         
-        initialState.timeInterval = sensorGet(sensor, 'time interval')
+        initialState = riekeInit;
+        initialState.Compress = 0;
+        initialState.timeInterval = sensorGet(sensor, 'time interval');
         adaptedData  = riekeLinearCone(pRate, initialState);
        
     otherwise

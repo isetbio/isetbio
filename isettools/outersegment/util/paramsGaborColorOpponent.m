@@ -6,8 +6,8 @@ function params = paramsGaborColorOpponent()
 % 
 % 
     % parameters found in Fig. 6 caption
-    params.color_val = 1;         % 1 = s_iso, 2 = L-M, 3 = LMS, 4 = L-M
-    params.contrast = 0.8;        % set max contrast of gabor
+    params.color_val = 2;         % 1 = s_iso, 2 = L-M, 3 = LMS, 4 = L-M
+    params.contrast = 0.01;        % set max contrast of gabor
     params.image_size = 64;       % scene is (image_size X image_size) pixels
     params.disp_movie = 0;        % display movie flag
     
@@ -19,5 +19,5 @@ function params = paramsGaborColorOpponent()
     params.row = params.image_size;
     params.col = params.image_size;
     params.GaborFlag = (128/params.image_size)*0.1/3.6; % standard deviation of the Gaussian window FIX
-    params.nsteps = 8;% total length of movie in millseconds
+    params.nsteps = 666;% total length of movie in millseconds
     params.meanLuminance = 100;

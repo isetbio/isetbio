@@ -1,13 +1,10 @@
-% Method to set the default values of all properties
-function initialize(obj) 
-    fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
-    
+function initialize(obj)
+% initialize: a method of @outerSegment to set the default values of all properties
+
     obj.noiseFlag = 0;
     
     obj.ConeCurrentSignal = [];
     obj.ConeCurrentSignalPlusNoise = [];
-    
-%     filterKernel(obj);
     
 end
 

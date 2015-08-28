@@ -5,23 +5,13 @@ classdef osLinear < outerSegment
 % experiments found in Angueyra and Rieke (2013) to convert cone 
 % isomerizations (R*) to current (pA).
 % 
-% % Example code
-% nSamples = 2000;        % 2000 samples
-% timeStep = 1e-4;        % time step
-% flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-% sensor = sensorCreate('human');
-% sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-% sensor = sensorSet(sensor, 'time interval', timeStep); 
-% stimulus = zeros(nSamples, 1); stimulus(1) = flashIntens;
-% stimulus = reshape(stimulus, [1 1 nSamples]);
-% sensor = sensorSet(sensor, 'photon rate', stimulus);
-% noiseFlag = 0; adaptedOS = osLinear('noiseFlag', noiseFlag);
-% sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
-% sensor = sensorSet(sensor,'cone type', 2); % set s cone
-% adaptedOS = osLinearCompute(adaptedOS, sensor);
-% osAdaptedCur = osLinearGet(adaptedOS, 'ConeCurrentSignal');
-% osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
-% osLinearPlot(adaptedOS, sensor);
+% The osLinear object calculates the outer segment 
+% current by convolving linear filters for the L, M and S cones with the 
+% isomerization signal.
+% 
+% linearOS = osLinear(); 
+%
+% 7/2015 JRG
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)

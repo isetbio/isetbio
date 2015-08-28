@@ -1,5 +1,6 @@
-% Initialize NonLinearOuterSegment object
 function initialize(obj)
-    fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename()); 
+% initialize: a method of @osBioPhys to set initial properties
+
+%     fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename()); 
 end
 

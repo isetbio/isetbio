@@ -352,7 +352,9 @@ switch(param)
         fbDip = zeros(size(t));  fbDip(1:2) = -1*linF;
         fbSlow = zeros(size(t)); fbSlow(3:6) = linF; fbSlow(7:12) = -linF/2;
         % Could blur the fbSlow and fbDip here
-        val = fbDip + fbSlow;
+%         val = fbDip + fbSlow; %%%%% ORIGINAL LINE
+        
+        val = fbDip(size(t)) + fbSlow(size(t)); %% NEW LINE
         % vcNewGraphWin; plot(val)
                 
     case {'cptr','couplingtemporalresponse'}

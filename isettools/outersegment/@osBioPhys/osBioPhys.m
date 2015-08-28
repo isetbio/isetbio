@@ -1,5 +1,5 @@
 classdef osBioPhys < outerSegment 
-% @osBioPhys: Subclass of @OuterSegment that implements a biophysical model
+% @osBioPhys: Subclass of @outerSegment that implements a biophysical model
 % of the phototransduction cascade to convert cone isomerizations (R*) to 
 % current (pA). The model was built by Fred Rieke, and details can be found
 % at:

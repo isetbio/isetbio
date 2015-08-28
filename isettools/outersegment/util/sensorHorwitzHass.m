@@ -54,15 +54,29 @@ for t = 1 : nSteps
     sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
     sensor = sensorSet(sensor, 'exp time', 0.001); % 1 ms
     sensor = sensorSet(sensor, 'time interval', 0.001); % 1 ms
-%     
-%     if t < 160 %nSteps / 4
-%         scene = sceneAdjustLuminance(scene, 200 * (t/(160)) );
-% %     elseif (t >= nSteps / 4) && (t <= 3 * nSteps / 4)
-%     elseif (t >= 160) && (t <= 160+346)
-%         scene = sceneAdjustLuminance(scene, 200);
-%     elseif t > 160+346 %3 * nSteps / 4
-%         scene = sceneAdjustLuminance(scene, 200 * (((160+346+160) - t)/160) );
-%     end
+    
+    
+    % According to the paper, cone collecting area is 0.6 um^2
+    wave = sceneGet(scene,'wave');
+    pixel = pixelCreate('human', wave);
+    pixel = pixelSet(pixel, 'pd width', 0.774e-6); % photo-detector width
+    pixel = pixelSet(pixel, 'pd height', 0.774e-6);
+    sensor = sensorSet(sensor, 'pixel', pixel);
+    
+    % macular pigment absorbance was scaled to 0.35 at 460 nm
+    macular = sensorGet(sensor, 'human macular');
+    macular = macularSet(macular, 'density', 0.35);
+    macular = macularSet(macular, 'density', 0);
+    sensor = sensorSet(sensor, 'human macular', macular);
+
+    if t < 160 %nSteps / 4
+        scene = sceneAdjustLuminance(scene, 200 * (t/(160)) );
+%     elseif (t >= nSteps / 4) && (t <= 3 * nSteps / 4)
+    elseif (t >= 160) && (t <= 160+346)
+        scene = sceneAdjustLuminance(scene, 200);
+    elseif t > 160+346 %3 * nSteps / 4
+        scene = sceneAdjustLuminance(scene, 200 * (((160+346+160) - t)/160) );
+    end
 
     
     % Compute optical image

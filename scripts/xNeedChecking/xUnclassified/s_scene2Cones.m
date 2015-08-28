@@ -61,6 +61,7 @@ vcAddAndSelectObject(oi); oiWindow;
 
 %% Human Sensor
 % initialize cone parameters
+params = coneCreate;
 params.rgbDensities = coneDensity;
 params.coneAperture = coneAperture;
 
@@ -110,9 +111,13 @@ volts  = sensorGet(sensor,'volts');
 rgcP = rgcParameters;
 
 % The absorptions structure is also the RGC parameter data
-rgcP.set('cone voltages',cones.data);
-rgcP.set('sensor',cones.sensor);
-rgcP.set('oi',cones.oi);
+% rgcP.set('cone voltages',cones.data);
+% rgcP.set('sensor',cones.sensor);
+% rgcP.set('oi',cones.oi);
+rgcP.set('cone voltages',adaptedCur); % this should be cone current
+rgcP.set('sensor',sensor);
+rgcP.set('oi',oi);
+
 
 % What is the default?  RGC spacing the same as cone spacing (I think).
 rgcP.addLayer('on parasol', 20);  

@@ -6,7 +6,7 @@ function [noisyL noisyM noisyS] = coneSignalNoisyRepeats(ConeCurrentSignal, reps
 ConeCurrentSignal_rs = reshape(ConeCurrentSignal, sz1*sz2, sz3);
 
 for noise_reps = 1:reps_max
-    ConeSignalFinalPlusNoise_rs = riekeAddNoise(ConeCurrentSignal_rs*coneSamplingRate);
+    ConeSignalFinalPlusNoise_rs = riekeAddNoise(ConeCurrentSignal_rs);%*coneSamplingRate);
     
     for cone_type=2:4
         

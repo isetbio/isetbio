@@ -1,4 +1,4 @@
-function color_var_disp_sc = gabor_color_opponent_norm(params)
+function color_var_disp_sc = rgbGaborColorOpponentNormalized(params)
 
 % clear
 % figure;

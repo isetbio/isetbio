@@ -55,17 +55,32 @@ noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];
 noiseSPD = noiseSPD(1:size(curNF, 3));
 noiseSPD = reshape(noiseSPD, [1 1 length(noiseSPD)]);
-figure(2);loglog(squeeze(sqrt(noiseSPD)));
+% figure(2);loglog(squeeze(sqrt(noiseSPD)));
+
+% % generate white gaussian noise
+% noise = randn(size(curNF));
+% noiseFFT = fft(noise, [], 3) / sqrt(size(noise, 3));
+% 
+% % adjust the spectral power distribution of the noise
+% noiseFFT = bsxfun(@times, noiseFFT, sqrt(noiseSPD));
+% 
+% % convert back to time domain to recover noise
+% noise = real(ifft(noiseFFT, [], 3)) / sampTime; % take real part
+% %figure(2); plot(squeeze(noise));
+% 
+% % add to noise-free signal
+% adaptedCur = curNF + noise;
+
 
 % generate white gaussian noise
 noise = randn(size(curNF));
-noiseFFT = fft(noise, [], 3) / sqrt(size(noise, 3));
+noiseFFT = fft(noise, [], 3); % / sqrt(size(noise, 3));
 
 % adjust the spectral power distribution of the noise
 noiseFFT = bsxfun(@times, noiseFFT, sqrt(noiseSPD));
 
 % convert back to time domain to recover noise
-noise = real(ifft(noiseFFT, [], 3)) / sampTime; % take real part
+noise = real(ifft(noiseFFT, [], 3)) / sqrt(2*sampTime); % take real part
 %figure(2); plot(squeeze(noise));
 
 % add to noise-free signal
