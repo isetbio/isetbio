@@ -43,7 +43,13 @@ function [noisyImage, theNoise] = noiseShot(ISA, variableNoise)
 
 if notDefined('variableNoise'), variableNoise = 1; end;
 
-electronImage = sensorGet(ISA, 'electrons');
+% Get electron image
+% We get electron image by converting the volts image with the conversion
+% gain instead of directly use sensorGet('photons') to avoid rounding and
+% quantization. This is important in low light or short exposure duration
+% (1ms) situations
+cg = sensorGet(ISA, 'conversion gain');
+electronImage = sensorGet(ISA, 'volts') / cg;
 
 % N.B. The noise is Poisson in electron  units. But the distribution in
 % voltage units is NOT Poisson.  The voltage signal, however, does have the
