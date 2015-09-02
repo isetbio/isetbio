@@ -13,9 +13,9 @@ clear
 % parameters found in Fig. 6 caption
 
 params = paramsGaborColorOpponent()
-params.color_val = 2;         % 1 = s_iso, 2 = L-M, 3 = LMS, 4 = L-M
+params.color_val = 1;         % 1 = s_iso, 2 = L-M, 3 = LMS, 4 = L-M
 params.disp_movie = 1;        % display movie flag
-
+params.contrast = 0.2;
 % build scene
 [scene, display] = sceneHorwitzHass(params);
 displayClose;

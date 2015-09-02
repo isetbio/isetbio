@@ -1,7 +1,7 @@
 function obj = osBioPhysSet(obj, varargin)
 % osBioPhysSet: a method of @osBioPhys that sets isetbio outersegment object 
 % parameters using the input parser structure.
-% ß
+% 
 % Parameters:
 %       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
 % 

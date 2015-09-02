@@ -66,7 +66,7 @@ for t = 1 : nSteps
     % macular pigment absorbance was scaled to 0.35 at 460 nm
     macular = sensorGet(sensor, 'human macular');
     macular = macularSet(macular, 'density', 0.35);
-    macular = macularSet(macular, 'density', 0);
+%     macular = macularSet(macular, 'density', 0);
     sensor = sensorSet(sensor, 'human macular', macular);
 
     if t < 160 %nSteps / 4

@@ -3,7 +3,9 @@ function val = osBioPhysGet(obj, varargin)
 % parameters using the input parser structure.
 % 
 % Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'noiseFlag'} -  gets noise flag, noise-free ('0') or noisy ('1')
+%       {'ConeCurrentSignal'} - cone current as a function of time
+%       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
 % 
 % osBioPhysGet(adaptedOS, 'noiseFlag')
 % 
@@ -42,5 +44,7 @@ switch lower(params.what);  % Lower case and remove spaces
     case{'conecurrentsignal'}
         val = obj.ConeCurrentSignal;
         
+    case{'conecurrentsignalplusnoise'}        
+        val = obj.ConeCurrentSignalPlusNoise;
 end
 

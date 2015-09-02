@@ -2,12 +2,13 @@ function obj = osLinearSet(obj, varargin)
 % osLinearSet: a method of @osLinear that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
-% Parameters:edit 
+% Parameters:
 %       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
 %       {'sConeFilter'} - the linear filter for S-cone temporal response
 %       {'mConeFilter'} - the linear filter for M-cone temporal response
 %       {'lConeFilter'} - the linear filter for L-cone temporal response
 % 
+% % Example code:
 % noiseFlag = 0;
 % adaptedOS = osLinearSet(adaptedOS, 'noiseFlag', noiseFlag);
 % 

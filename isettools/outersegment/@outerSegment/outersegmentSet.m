@@ -1,25 +1,44 @@
-function obj = outersegmentSet(obj, param, val, varargin)
-%Set isetbio outersegment object parameters
+function obj = outersegmentSet(obj, varargin)
+% outersegmentSet: a method of @outersegment that sets  outersegment object 
+% parameters using the input parser structure.
+% 
+% Parameters:
+%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
 % 
 % 
+% 8/2015 JRG NC DHB
+
+
+% Check for the number of arguments and create parser object.
+% Parse key-value pairs.
 % 
-% 
-% 6/22/15 James Golden
+% Check key names with a case-insensitive string, errors in this code are
+% attributed to this function and not the parser object.
+error(nargchk(0, Inf, nargin));
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
-if ~exist('param','var') || isempty(param)
-    error('Parameter field required.');
-end
-if ~exist('val','var'),   error('Value field required.'); end;
+% Make key properties that can be set required arguments, and require
+% values along with key names.
+allowableFieldsToSet = {'noiseflag'};
+p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('value');
 
+% Define what units are allowable.
+allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
 
-param = ieParamFormat(param);  % Lower case and remove spaces
-switch lower(param)
+% Set up key value pairs.
+% Defaults units:
+p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 
-    case {'noiseflag'}
-        if ~((val == 0) || (val == 1))
-            error('noiseflag parameter must be 0 or 1.');
-        end
-        obj.noiseflag = val;
-                
+% Parse and put results into structure p.
+p.parse(varargin{:}); params = p.Results;
+
+switch lower(params.what);  % Lower case and remove spaces
+
+    
+    case{'noiseflag'}
+        obj.noiseFlag = params.value;
+               
+
 end
 

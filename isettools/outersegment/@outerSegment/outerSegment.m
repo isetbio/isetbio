@@ -1,8 +1,12 @@
 classdef outerSegment < handle
-% OuterSegment parent class
-%
-% Outersegment parent class for modeling the responses 
-% of the cone outer segment.
+% The @outerSegment parent class for modeling the responses 
+% of the cone outer segment. The subclasses @osLinear and @osBioPhys
+% calculate outer segment current responses using either a linear temporal
+% filter model or a biophysical difference equations model (both based on
+% physiology from Fred Rieke's lab, and both models determined by Fred
+% Rieke). The class also allows the addition of noise based on
+% physiological measurements of cone responses to a neutral gray background
+% (physiology and model also by Fred Rieke). 
 %
 % See subclasses osLinear and osBioPhys for examples.
 % 
@@ -55,6 +59,8 @@ classdef outerSegment < handle
            val = outersegmentGet(obj, param, varargin);
         end
         
+        % coneAdapt function allows backwards compatibility with the
+        % deprecated function 'coneAdapt'
         function [osCurrent, obj] = adapt(sensor, typeAdapt)
             [osCurrent, obj] = coneAdaptAlt(sensor, typeAdapt);
         end

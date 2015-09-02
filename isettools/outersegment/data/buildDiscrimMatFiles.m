@@ -4,9 +4,9 @@
 clear
 
 
-for color_val = 3%[1 3 4]
+for color_val = 1%[1 3 4]
 %     for contrast = [0 0.001 0.002 0.004 0.006 0.008 0.01]% 0.05 0.1 0.15 0.2 0.4 0.6 0.8]
-for contrast = [.1600]%[0.0002 0.0004 0.0006 0.0008]
+for contrast = [0.0002 0.0004 0.0006 0.0008]
         [color_val contrast]
         % parameters found in Fig. 6 caption
         
