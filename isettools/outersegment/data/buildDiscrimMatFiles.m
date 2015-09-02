@@ -41,7 +41,7 @@ for contrast = [0.0002 0.0004 0.0006 0.0008]
         % compute outersegment current output
         linearOS = osLinearCompute(linearOS,sensor,params);
         
-        pooledData = pooledConeResponse(linearOS, sensor);
+        pooledData = pooledConeResponse_orig(linearOS, sensor);
         
        
         savestr2 = ['pooled_Response_new_CV_' num2str(color_val) '_Cont_' sprintf('%0.4d',10000*contrast) '.mat'];

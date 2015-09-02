@@ -11,7 +11,7 @@ contrast_arr = [0.001 0.002 0.004 0.006 0.008 0.01];
 for contrast_ind = 1:length(contrast_arr)    
     contrast = contrast_arr(contrast_ind);
 
-    load('pooled_Response_new_CV_3_Cont_0010.mat')
+    load('pooled_Response_new_CV_3_Cont_0000.mat')
     
     pooledData0 = pooledData;
     
@@ -19,7 +19,7 @@ for contrast_ind = 1:length(contrast_arr)
     
     figure; scatter3(pooledData0(:,1),pooledData0(:,2),pooledData0(:,3))
     
-    load('pooled_Response_new_CV_3_Cont_0600.mat');
+    load('pooled_Response_new_CV_3_Cont_1600.mat');
     
     pooledData1 = pooledData;
     
