@@ -319,7 +319,7 @@ for ii=1:nL, layer{ii}.set('rgc volt thresh',0.2*vSwingOriginal); end
 % end
 
 rgcComputeSpikes(rgcP);
-figure; imagesc(rgcP.layers{1,1}.currentSpkTS')
+% figure; imagesc(rgcP.layers{1,1}.currentSpkTS')
 
 
 %%
@@ -340,3 +340,34 @@ for spind = 1:4
     end
 xlabel('time (ms)'); ylabel('RGC Spikes');
 end
+
+%% Black and white version
+vcNewGraphWin;
+% vObj = VideoWriter('coneVoltage.avi');
+%  open(vObj);
+% adaptedData = 150*ieScale(adaptedData,0,1);
+spind = 4;
+rsv = rgcP.layers{1,spind}.gridSize;
+adaptedData = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
+colormap('default');
+nframes = size(adaptedData,3);
+% Record the movie
+for j = 1:step:nframes
+    image(adaptedData(:,:,j));
+    switch spind
+        case 1
+            title('on parasol');
+        case 2
+            title('off parsol');
+        case 3
+            title('on midget');
+        case 4 
+            title('off midget');
+        case 5
+            title('small bistratified');
+    end
+    drawnow;
+    %     F = getframe;
+    %     writeVideo(vObj,F);
+end
+%  close(vObj
