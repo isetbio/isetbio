@@ -282,7 +282,7 @@ rgcP = rgcParameters;
 % rgcP.set('scene',scene);
 rgcP.set('oi',oi);
 rgcP.set('sensor',cones);
-rgcP.set('cone voltages',adaptedOS.ConeCurrentSignal);
+rgcP.set('cone voltages',adaptedOS.ConeCurrentSignal); % check units on cone voltages
 
 % What is the default?  RGC spacing the same as cone spacing (I think).
 rgcP.addLayer('on parasol', 20);  
@@ -324,8 +324,8 @@ rgcComputeSpikes(rgcP);
 
 %%
 figure; 
-for spind = 1:4
-    subplot(2,2,spind); 
+for spind = 1:5
+    subplot(3,2,spind); 
 %     imagesc(rgcP.layers{1,spind}.currentSpkTS);
         imagesc(rgcP.layers{1,spind}.rgcvTimeSeries);
     switch spind
@@ -337,6 +337,8 @@ for spind = 1:4
             title('on midget');
         case 4 
             title('off midget');
+        case 5
+            title('small bistratified');
     end
 xlabel('time (ms)'); ylabel('RGC Spikes');
 end
@@ -346,10 +348,11 @@ vcNewGraphWin;
 % vObj = VideoWriter('coneVoltage.avi');
 %  open(vObj);
 % adaptedData = 150*ieScale(adaptedData,0,1);
-spind = 4;
+spind = 2;
 rsv = rgcP.layers{1,spind}.gridSize;
 adaptedData = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
-colormap('default');
+% adaptedData = 150*ieScale(reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500),0,1);
+colormap('gray');
 nframes = size(adaptedData,3);
 % Record the movie
 for j = 1:step:nframes

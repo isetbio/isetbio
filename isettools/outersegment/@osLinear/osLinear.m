@@ -1,5 +1,5 @@
 classdef osLinear < outerSegment 
-% @osLinear: Subclass of @outerSegment object
+% @osLinear: a subclass of @outerSegment object
 % 
 % This subclass implements the cone linear filters determined by the
 % experiments found in Angueyra and Rieke (2013) to convert cone 

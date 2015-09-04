@@ -73,7 +73,7 @@ noiseFlag = 0; % or can be initialized with noise flag setting
 adaptedOS = osLinear('noiseFlag', noiseFlag);
 % paramsOS.dc = 0; % removes offset
 sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
-sensor = sensorSet(sensor,'cone type', 2); % set s cone
+sensor = sensorSet(sensor,'cone type', 3); % set s cone
 % adaptedOS = adaptedOS.compute(sensor);
 
 % Compute the linear response.
@@ -90,7 +90,7 @@ osLinearPlot(adaptedOS, sensor);
 % if (runTimeParams.generatePlots)
     figure; clf; hold on
     tme = (1:nSamples)*timeStep;
-    plot(tme,squeeze(adaptedCur),'r','LineWidth',3);
+    plot(tme,squeeze(adaptedCur),'r','LineWidth',4);
     plot(tme(1:end-1),squeeze(osAdaptedCur(1,1,2:end)),'k:','LineWidth',2);
 % % % % % % % % %     FIX TEMPORAL OFFSET HERE
     xlabel('sec','FontSize',14);
@@ -103,6 +103,9 @@ UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark imp
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 
+
+% sq1 = squeeze(adaptedCur); sq2 = squeeze(osAdaptedCur(1,1,2:end));
+% max(sq1(1:end-1) - sq2)
 % end%function
 
 % % Compute fit to measured response (Angueyra and Rieke, 2013)

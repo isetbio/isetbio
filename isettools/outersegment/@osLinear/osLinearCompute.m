@@ -10,7 +10,9 @@ function obj = osLinearCompute(obj, sensor, varargin)
 % Inputs: the osLinear object, the sensor object and an optional parameters
 % field. params.offest determines the current offset.
 % 
-% Outputs: 
+% Outputs: the osLinear object, with the cone outer segment current and
+% optionally a noisy version of the cone outer segment current.
+% 
 % 8/2015 JRG NC DHB
 
 

@@ -20,7 +20,7 @@ end
 
 % only compute filter for 0.3 seconds
 TimeAxis = (1:timeBins)*dt;
-TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
+% TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
 
 % move these to riekeInit
 TauR = 0.0216;   % Rising Phase Time Constant

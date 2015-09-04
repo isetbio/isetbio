@@ -1,5 +1,5 @@
 classdef osBioPhys < outerSegment 
-% @osBioPhys: Subclass of @outerSegment that implements a biophysical model
+% @osBioPhys: a subclass of @outerSegment that implements a biophysical model
 % of the phototransduction cascade to convert cone isomerizations (R*) to 
 % current (pA). The model was built by Fred Rieke, and details can be found
 % at:
@@ -8,24 +8,9 @@ classdef osBioPhys < outerSegment
 % and 
 % https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 %
-% % Example code:
-% nSamples = 2000;        % 2000 samples
-% timeStep = 1e-4;        % time step
-% flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-% sensor = sensorCreate('human');
-% sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-% sensor = sensorSet(sensor, 'time interval', timeStep); 
-% stimulus = zeros(nSamples, 1);
-% stimulus(1) = flashIntens;
-% stimulus = reshape(stimulus, [1 1 nSamples]);
-% sensor = sensorSet(sensor, 'photon rate', stimulus);
-% noiseFlag = 0;
-% adaptedOS = osBioPhys('noiseFlag', noiseFlag);
-% sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
-% adaptedOS = osBioPhysCompute(adaptedOS, sensor);
-% osAdaptedCur = osBioPhysGet(adaptedOS,'ConeCurrentSignal');
-% osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
-% osBioPhysPlot(adaptedOS, sensor);
+% adaptedOS = osBioPhys();
+% 
+% 7/2015 JRG
 
 
     % Public, read-only properties.

@@ -41,8 +41,7 @@ p.parse(varargin{:}); params = p.Results;
 
 switch lower(params.what)
 
-    case {'noiseflag'}
-        
+    case {'noiseflag'}        
         val = obj.noiseFlag;
 
     case{'sconefilter'}

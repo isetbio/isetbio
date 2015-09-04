@@ -10,6 +10,12 @@ function obj = osBioPhysCompute(obj, sensor, varargin)
 % and 
 % https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 % 
+% Inputs: the osBioPhys object, the sensor object and an optional parameters
+% field. params.offest determines the current offset.
+% 
+% Outputs: the osBioPhys object, with the cone outer segment current and
+% optionally a noisy version of the cone outer segment current.
+% 
 % 8/2015 JRG NC DHB
 
     

@@ -2,6 +2,10 @@ function osLinearPlot(obj, sensor)
 % osLinearPlot: a method to plot the input, filters and computed results of 
 % the outsergment object.
 % 
+% Inputs: the osLinear object and the sensor object.
+% 
+% Outputs: no variables, but a figure with two subplots is generated. The
+% first shows the input signal and the second shows the output signal.
 % 
 % 8/2015 JRG NC DHB
 

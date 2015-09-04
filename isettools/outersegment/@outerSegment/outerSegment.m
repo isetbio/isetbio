@@ -59,11 +59,12 @@ classdef outerSegment < handle
            val = outersegmentGet(obj, param, varargin);
         end
         
-        % coneAdapt function allows backwards compatibility with the
-        % deprecated function 'coneAdapt'
-        function [osCurrent, obj] = adapt(sensor, typeAdapt)
-            [osCurrent, obj] = coneAdaptAlt(sensor, typeAdapt);
-        end
+        % DELETE
+%         % coneAdapt function allows backwards compatibility with the
+%         % deprecated function 'coneAdapt'
+%         function [osCurrent, obj] = adapt(sensor, typeAdapt)
+%             [osCurrent, obj] = coneAdaptAlt(sensor, typeAdapt);
+%         end
     end
     
     % Methods that must only be implemented in the subclasses.

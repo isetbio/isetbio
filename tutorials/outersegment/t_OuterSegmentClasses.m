@@ -40,8 +40,8 @@ function t_OuterSegmentClasses
     stimulus(1) = flashIntens;
     stimulus = reshape(stimulus, [1 1 nSamples]);
     
-    % Set photon rates.
-    sensor = sensorSet(sensor, 'photon rate', stimulus);
+    % Set photons.
+    sensor = sensorSet(sensor, 'photons', stimulus);
     
     % Instantiate an osLinear class.
     linearOS = osLinear('noiseFlag', 1); %osLinear

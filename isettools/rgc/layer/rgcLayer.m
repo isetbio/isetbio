@@ -342,7 +342,7 @@ function val = layerInit(param,rgcP,varargin)
 tShift = .05;
 linF   = .02;
 
-param = stringFormat(param);
+param = ieParamFormat(param);
 switch(param)
     case {'fbtr','feedbacktemporalresponse'}
         % Feedback temporal response

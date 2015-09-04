@@ -3,6 +3,11 @@ function osBioPhysPlot(obj, sensor)
 % outsergment object.
 % 
 % 
+% Inputs: the osBioPhys object and the sensor object.
+% 
+% Outputs: no variables, but a figure with two subplots is generated. The
+% first shows the input signal and the second shows the output signal.
+% 
 % 8/2015 JRG NC DHB
 
 % fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
