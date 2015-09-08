@@ -404,7 +404,7 @@ switch param
             val = sensorColorData(val,sensor,varargin{1});
         end
 
-    case {'electron','electrons','photons'}
+    case {'electron', 'electrons', 'photons'}
         % sensorGet(sensor,'electrons');
         % sensorGet(sensor,'electrons',2);
         % This is also used for human case, where we call the data photons,
@@ -416,8 +416,12 @@ switch param
         if ~isempty(varargin)
             val = sensorColorData(val,sensor,varargin{1});
         end
-        % Electrons are ints
-        val = round(val);
+        
+        % If there is no noise, the mean number of electrons is returned. 
+        % Otherwise, we round electrons to be integers
+        if sensorGet(sensor, 'noise flag') > 0
+            val = round(val);
+        end
 
     case {'dvorvolts'}
         val = sensorGet(sensor,'dv');
