@@ -48,7 +48,7 @@ function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
-if notDefined('sensorName'), sensorName = 'default'; end
+if notDefined('sensorName'), sensorName = 'human'; end
 if notDefined('pixel'), pixel = pixelCreate('default'); end  % Backward compatibility
     
 sensor.name = [];
@@ -86,7 +86,7 @@ sensor = sensorSet(sensor,'quantization','analog');
 
 sensorName = ieParamFormat(sensorName);
 switch sensorName
-    case 'human'
+    case {'default','human'}
         % s = sensorCreate('human',coneP);
         %
         % Uses StockmanQuanta for the cone absorptions
@@ -121,7 +121,7 @@ switch sensorName
         % There are no filter spectra in the human case.  We calculate the
         % spectral qe from the cones, macular, and lens data
     
-    case {'default','color','bayer','bayer(grbg)','bayer-grbg','bayergrbg'}
+    case {'color','bayer','bayer(grbg)','bayer-grbg','bayergrbg'}
         filterOrder = [2,1;3,2];
         filterFile = 'RGB';
         sensor = sensorBayer(sensor,filterOrder,filterFile);

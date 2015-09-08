@@ -1,11 +1,12 @@
 function tmp = coneImageActivity(cones,data,step,dFlag)
-% Make a movie of absorptions on a color version of the cone mosaic
+% Make a movie or a single image of cone absorptions on a colored mosaic
 %
-%   tmp = coneImageActivity(data,cones,step,showFlag)
+%   tmp = coneImageActivity(cones,data,step, [displayFlag=false])
 %
 % Example:
+%   
 %
-% See Also
+% See Also:  conePlot, conePlotHelper 
 %
 % (BW) ISETBIO Team, Copyright 2015
 
