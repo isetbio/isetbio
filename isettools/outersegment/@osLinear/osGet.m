@@ -1,5 +1,5 @@
-function obj = osLinearSet(obj, varargin)
-% osLinearSet: a method of @osLinear that sets isetbio outersegment object 
+function val = osGet(obj, varargin)
+% osLinearGet: a method of @osLinear that gets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -8,11 +8,10 @@ function obj = osLinearSet(obj, varargin)
 %       {'mConeFilter'} - the linear filter for M-cone temporal response
 %       {'lConeFilter'} - the linear filter for L-cone temporal response
 % 
-% % Example code:
-% noiseFlag = 0;
-% adaptedOS = osLinearSet(adaptedOS, 'noiseFlag', noiseFlag);
+% osLinearGet(adaptedOS, 'noiseFlag')
 % 
 % 8/2015 JRG NC DHB
+
 
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
@@ -24,9 +23,8 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter'};
+allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter','conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
 
 % Define what units are allowable.
 allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -41,25 +39,22 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
-
-% Set key-value pairs.
 switch lower(params.what)
 
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;
+    case {'noiseflag'}        
+        val = obj.noiseFlag;
+
+    case{'sconefilter'}
+        val = obj.sConeFilter;
         
-    case {'sconefilter'}
-        obj.sConeFilter = params.value;
+    case{'mconefilter'}
+        val = obj.mConeFilter;
+    
+    case{'lconefilter'}
+        val = obj.lConeFilter;
+    
+    case{'conecurrentsignal'}
+        val = obj.ConeCurrentSignal;
         
-    case {'mconefilter'}
-        obj.mConeFilter = params.value;
-        
-    case {'lconefilter'}
-        obj.lConeFilter = params.value;
 end
 

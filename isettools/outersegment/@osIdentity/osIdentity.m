@@ -1,20 +1,21 @@
-classdef osBioPhys < outerSegment 
-% @osBioPhys: a subclass of @outerSegment that implements a biophysical model
-% of the phototransduction cascade to convert cone isomerizations (R*) to 
-% current (pA). The model was built by Fred Rieke, and details can be found
-% at:
-%
-% http://isetbio.github.io/isetbio/cones/adaptation%20model%20-%20rieke.pdf
-% and 
-% https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
-%
-% adaptedOS = osBioPhys();
+classdef osIdentity < outerSegment 
+% @osIdentity: a subclass of @outerSegment object
 % 
+% This subclass implements the cone Identity filters determined by the
+% experiments found in Angueyra and Rieke (2013) to convert cone 
+% isomerizations (R*) to current (pA).
+% 
+% The osIdentity object calculates the outer segment 
+% current by convolving Identity filters for the L, M and S cones with the 
+% isomerization signal.
+% 
+% IdentityOS = osIdentity(); 
+%
 % 7/2015 JRG
 
-
     % Public, read-only properties.
-    properties (SetAccess = private, GetAccess = public)        
+    properties (SetAccess = private, GetAccess = public)
+        % These are the Identity filters generated below via filterKernel.
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -25,7 +26,7 @@ classdef osBioPhys < outerSegment
     methods
         
         % Constructor
-        function obj = osBioPhys(varargin)
+        function obj = osIdentity(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
             
@@ -38,28 +39,33 @@ classdef osBioPhys < outerSegment
             end
         end
         
-        % set function, see osBioPhysSet for details
+        % set function, see osIdentitySet for details
         function obj = set(obj, param, val, varargin)
-            osSet(obj, param, val, varargin);
+            osIdentitySet(obj, param, val, varargin);
         end
         
-        % get function, see osBioPhysGet for details
+        % get function, see osIdentityGet for details
         function val = get(obj, param, varargin)
-           val = osGet(obj, param, varargin);
+           val = osIdentityGet(obj, param, varargin);
         end
       
     end
     
     % Methods that must only be implemented (Abstract in parent class).
-    methods (Access=public)        
-        function obj = compute(obj, sensor, varargin)
+    methods (Access=public)
+        function obj = compute(obj, sensor, param, varargin)
             % see osCompute for details
-            obj = osCompute(obj, sensor, varargin);
+            obj = osCompute(obj, sensor, varargin); 
         end
         function plot(obj, sensor)
             % see osPlot for details
             osPlot(obj, sensor);
         end
+    end    
+    
+    % Methods may be called by the subclasses, but are otherwise private 
+    methods (Access = protected)
+
     end
     
     % Methods that are totally private (subclasses cannot call these)

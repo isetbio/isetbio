@@ -1,4 +1,4 @@
-function osLinearPlot(obj, sensor)
+function osPlot(obj, sensor)
 % osLinearPlot: a method to plot the input, filters and computed results of 
 % the outsergment object.
 % 
@@ -33,8 +33,8 @@ ylabel('R*');
 subplot(1,3,2);
 hold on;
 plot((0:numel(obj.sConeFilter)-1)*dt, obj.sConeFilter,'b'); 
-plot((0:numel(obj.mConeFilter)-1)*dt,obj.mConeFilter,'g'); 
-plot((0:numel(obj.lConeFilter)-1)*dt,obj.lConeFilter,'r');
+plot((0:numel(obj.mConeFilter)-1)*dt, obj.mConeFilter,'g'); 
+plot((0:numel(obj.lConeFilter)-1)*dt, obj.lConeFilter,'r');
 title('L, M, S cone filter kernels');
 xlabel('Time (sec)');
 ylabel('pA');

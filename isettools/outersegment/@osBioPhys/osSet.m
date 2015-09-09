@@ -1,4 +1,4 @@
-function obj = osBioPhysSet(obj, varargin)
+function obj = osSet(obj, varargin)
 % osBioPhysSet: a method of @osBioPhys that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 

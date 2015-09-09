@@ -20,9 +20,9 @@ function filterKernel(obj,varargin)
         [newIRFs, ~, ~] = filterConesLinear(sensor);
     end
     
-    obj = osLinearSet(obj, 'sconefilter', newIRFs(:,1),'units','pa');
-    obj = osLinearSet(obj, 'mconefilter', newIRFs(:,2),'units','pa');
-    obj = osLinearSet(obj, 'lconefilter', newIRFs(:,3),'units','pa');
+    obj = osSet(obj, 'lconefilter', newIRFs(:,1),'units','pa');
+    obj = osSet(obj, 'mconefilter', newIRFs(:,2),'units','pa');
+    obj = osSet(obj, 'sconefilter', newIRFs(:,3),'units','pa');
 
 end
 

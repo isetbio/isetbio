@@ -1,4 +1,4 @@
-function obj = osLinearCompute(obj, sensor, varargin)
+function obj = osCompute(obj, sensor, varargin)
 % osLinearCompute: a method of @osLinear that computes the linear filter
 % response of the L, M and S cone outer segments. This converts
 % isomerizations (R*) to outer segment current (pA). If the noiseFlag
@@ -50,18 +50,17 @@ for cone_type = 2:4
     % Pull out the appropriate 1D filter for the cone type.
     % Filter_cone_type = newIRFs(:,cone_type-1);
     switch cone_type
-        case 2
+        case 4
             FilterConeType = obj.sConeFilter;
         case 3
             FilterConeType = obj.mConeFilter;
-        case 4
+        case 2
             FilterConeType = obj.lConeFilter;
     end
     
     % Only place the output signals corresponding to pixels in the mosaic
     % into the final output matrix.
     cone_locations = find(cone_mosaic==cone_type);
-    
     
     isomerizationsSingleType = isomerizationsRS(cone_locations,:);
     
@@ -80,7 +79,8 @@ for cone_type = 2:4
             else
                 tempData = tempData - meanCur;
             end
-            adaptedDataSingleType(y, :) = tempData(1:nSteps);
+            % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
+            adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
             
         end
         

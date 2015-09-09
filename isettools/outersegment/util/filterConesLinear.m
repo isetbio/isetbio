@@ -47,11 +47,11 @@ TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
 
 % only compute filter for 0.3 seconds
 % TimeAxis = (1:timeBins)*dt;
-TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
+% TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
 
 
 % TimeAxis = [1:2000]*dt;
-ScFact = 0.6745; % To get amplitude right
+ScFact = 1;%0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
 TauP = 0.5311;   % Period

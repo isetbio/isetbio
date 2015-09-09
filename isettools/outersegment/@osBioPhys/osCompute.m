@@ -1,4 +1,4 @@
-function obj = osBioPhysCompute(obj, sensor, varargin)
+function obj = osCompute(obj, sensor, varargin)
 % osBioPhysCompute: a method of @osBioPhys that computes the output
 % response of the L, M and S cone outer segments. This converts
 % isomerizations (R*) to outer segment current (pA). The difference

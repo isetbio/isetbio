@@ -72,18 +72,17 @@ adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes offset
 noiseFlag = 0; % or can be initialized with noise flag setting
 adaptedOS = osLinear('noiseFlag', noiseFlag);
 % paramsOS.dc = 0; % removes offset
-sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
-sensor = sensorSet(sensor,'cone type', 3); % set s cone
+sensor = sensorSet(sensor,'cone type', 2); % set L cone
 % adaptedOS = adaptedOS.compute(sensor);
 
 % Compute the linear response.
-adaptedOS = osLinearCompute(adaptedOS, sensor);
+adaptedOS = osCompute(adaptedOS, sensor);
 % Get the current.
-osAdaptedCur = osLinearGet(adaptedOS, 'ConeCurrentSignal');
+osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
 % Subtract away the offset voltage.
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
-osLinearPlot(adaptedOS, sensor);
+osPlot(adaptedOS, sensor);
 
 % Plot a comparison of the two.  These should be identical since we
 % think they are the same code doing the same thing. 
@@ -91,14 +90,14 @@ osLinearPlot(adaptedOS, sensor);
     figure; clf; hold on
     tme = (1:nSamples)*timeStep;
     plot(tme,squeeze(adaptedCur),'r','LineWidth',4);
-    plot(tme(1:end-1),squeeze(osAdaptedCur(1,1,2:end)),'k:','LineWidth',2);
+    plot(tme,squeeze(osAdaptedCur),'k:','LineWidth',2);
 % % % % % % % % %     FIX TEMPORAL OFFSET HERE
     xlabel('sec','FontSize',14);
     ylabel('pA','FontSize',14);
     title('impulse response in the dark','FontSize',16);
     legend('original code model resp', 'osLinear object resp');
 % end
-tolerance = 1e-3;
+tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
@@ -146,6 +145,8 @@ sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
 
+sensor = sensorSet(sensor,'cone type', 2); % set s cone
+
 h1 = figure(1); clf; subplot(1, 4, 1); hold on; subplot(1, 4, 2); hold on; subplot(1, 4, 3); hold on
 subplot(1,4,4); hold on;
 
@@ -184,7 +185,7 @@ for step = 1:11
     % paramsOSStepOnly.bgVolts = params.bgVolts;
     % paramsOSStepOnly.dc = 0; % removes dc
     % adaptedOSStepOnly = adaptedOSStepOnly.compute(sensor, paramsOSStepOnly);
-    adaptedOSStepOnly = osLinearCompute(adaptedOSStepOnly, sensor);
+    adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
     % adaptedOs.plotResults(sensor)
 
     % Create stimulus: step + flashes.
@@ -216,7 +217,7 @@ for step = 1:11
     % paramsOSStepOnly.bgVolts = params.bgVolts;
     % paramsOSStepOnly.dc = 0; % removes dc
     % adaptedOSStepOnly = adaptedOSStepOnly.compute(sensor, paramsOSStepOnly);
-    adaptedOS = osLinearCompute(adaptedOS, sensor);
+    adaptedOS = osCompute(adaptedOS, sensor);
 
     % Plot.
     % if (runTimeParams.generatePlots)
@@ -338,7 +339,7 @@ title('osLinear Object ');
 % fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoef(2), stepcoef(4));
 % fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
 
-tolerance = 1e-8;
+tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(FlashAmp(:)-FlashAmpOS(:))),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
@@ -369,24 +370,28 @@ sensor = sensorSet(sensor, 'time interval', 5e-5);
 % Set photon rates.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
+
+sensor = sensorSet(sensor,'cone type', 2); % set s cone
+
 % Compute adapted current.
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'linear', params);
-adaptedCur = adaptedCur - adaptedCur(:, :, length(stimulus));
+% adaptedCur = adaptedCur - adaptedCur(:, :, length(stimulus));
 
 % Create outersegment object.
 noiseFlag = 0;
 adaptedOS = osLinear('noiseFlag', noiseFlag);
+
 % paramsOS.bgVolts = params.bgVolts;
 % paramsOS.dc = 0; % removes dc
 
-sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+% sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
 % adaptedOS = adaptedOS.compute(sensor, paramsOS);
-adaptedOS = osLinearCompute(adaptedOS, sensor);
+adaptedOS = osCompute(adaptedOS, sensor);
 % adaptedOs.plotResults(sensor)
 
-osAdaptedCur = osLinearGet(adaptedOS, 'ConeCurrentSignal');
-osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
+osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
+% osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
 % Plot against measurement data.
 % if (runTimeParams.generatePlots)
@@ -413,7 +418,7 @@ legend('coneAdapt','osLinear');
 
 % end
 
-tolerance = 1e-8;
+tolerance = 1e-11;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
@@ -462,7 +467,7 @@ for step = 1:7
     sensor = sensorSet(sensor,'cone type', 2); % set s cone
     sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
 %     adaptedOSInc = adaptedOSInc.compute(sensor, paramsOSInc);
-    adaptedOSInc = osLinearCompute(adaptedOSInc, sensor);
+    adaptedOSInc = osCompute(adaptedOSInc, sensor);
     % adaptedOs.plotResults(sensor)
 
     % Create stimulus: step + flashes.
@@ -486,10 +491,10 @@ for step = 1:7
 %     paramsOSDec.bgVolts = params.bgVolts;
     % paramsOS.dc = 0; % removes dc
 %     adaptedOSDec = adaptedOSDec.compute(sensor, paramsOSDec);
-    adaptedOSDec = osLinearCompute(adaptedOSDec, sensor);
+    adaptedOSDec = osCompute(adaptedOSDec, sensor);
     % adaptedOs.plotResults(sensor)
     
-    osAdaptedCur = osLinearGet(adaptedOS, 'ConeCurrentSignal');
+    osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
 
     % Summary measures.
     MaxInc(step) = adaptedCurInc(1, 1, stimPeriod(2)-1) - adaptedCurInc(1, 1, stimPeriod(1)-1);

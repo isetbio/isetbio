@@ -43,6 +43,9 @@ meanLum = 50;
 sceneA = sceneFromFile(imgA, 'rgb', meanLum, d); % aligned
 sceneM = sceneFromFile(imgM, 'rgb', meanLum, d); % mis-aligned
 
+sceneA = sceneSet(sceneA,'fov',0.4);
+sceneM = sceneSet(sceneM,'fov',0.4);
+
 vcAddObject(sceneA); 
 vcAddObject(sceneM); 
 sceneWindow;
@@ -344,33 +347,167 @@ xlabel('time (ms)'); ylabel('RGC Spikes');
 end
 
 %% Black and white version
-vcNewGraphWin;
-% vObj = VideoWriter('coneVoltage.avi');
+h1 = vcNewGraphWin;
+% vObj = VideoWriter('rgcOffParaVolts.avi');
+% vObj.FrameRate = 30;
 %  open(vObj);
 % adaptedData = 150*ieScale(adaptedData,0,1);
 spind = 2;
 rsv = rgcP.layers{1,spind}.gridSize;
-adaptedData = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
-% adaptedData = 150*ieScale(reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500),0,1);
+
+% adaptedDataRGC = 255*(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500));
+adaptedDataRGC = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
+% adaptedDataRGC = 150*ieScale(reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500),0,1);
 colormap('gray');
-nframes = size(adaptedData,3);
+nframes = size(adaptedDataRGC,3);
 % Record the movie
 for j = 1:step:nframes
-    image(adaptedData(:,:,j));
+    image(adaptedDataRGC(:,:,j));
+    axis off;
     switch spind
         case 1
-            title('on parasol');
+            title('ON parasol','fontsize',16);
         case 2
-            title('off parsol');
+            title('OFF parsol','fontsize',16);
         case 3
-            title('on midget');
+            title('ON midget','fontsize',16);
         case 4 
-            title('off midget');
+            title('OFF midget','fontsize',16);
         case 5
-            title('small bistratified');
+            title('small bistratified','fontsize',16);
     end
     drawnow;
-    %     F = getframe;
-    %     writeVideo(vObj,F);
+%         F = getframe(h1);
+%         writeVideo(vObj,F);
 end
-%  close(vObj
+%  close(vObj);
+%% Black and white version
+h1 = vcNewGraphWin;
+% vObj = VideoWriter('rgcOffParaVolts.avi');
+
+% vObj = VideoWriter('rgcOffParaVoltsRed.mp4','MPEG-4');
+% vObj.FrameRate = 30;
+%  open(vObj);
+% adaptedData = 150*ieScale(adaptedData,0,1);
+spind = 1;
+rsv = rgcP.layers{1,spind}.gridSize;
+
+
+for spind = 1:2
+% adaptedDataRGC = 255*(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500));
+adaptedDataRGC = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
+% adaptedDataRGC = 150*ieScale(reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500),0,1);
+% adaptedDataRGCall{spind} = (reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500));
+end
+
+% colormap('gray');
+nframes = size(adaptedDataRGCall{1},3);
+% Record the movie
+for j = 1:step:nframes
+    
+        for spind = 1%:2
+%         subplot(1,2,spind)
+    frData = 0.5*zeros(rsv(1),rsv(2),3);
+    frData(:,:,1) = adaptedDataRGCall{spind}(:,:,j);
+    
+    
+    frD1(:,:) = frData(:,:,1); 
+   
+    zind = find(frD1 == 0);
+    frD1(zind) = 0.5;
+    frD2(:,:) = frData(:,:,2); 
+    frD2(zind) = 0.5;
+    frD3(:,:) = frData(:,:,3);
+    frD3(zind) = 0.5;
+    
+    frData(:,:,1) = frData(:,:,1) + frD1;
+    frData(:,:,2) = frD2;
+    frData(:,:,3) = frD3;
+    
+%     zind = find(frData==0); frData(zind) = 0.5;
+    
+    image(frData);
+    caxis([0 1]);
+    axis off;
+    switch spind
+        case 1
+            title('ON parasol','fontsize',16);
+        case 2
+            title('OFF parsol','fontsize',16);
+        case 3
+            title('ON midget','fontsize',16);
+        case 4 
+            title('OFF midget','fontsize',16);
+        case 5
+            title('small bistratified','fontsize',16);
+    end
+%     clear frData frD1 frD2 frD3
+        end
+    drawnow;
+%         F = getframe(h1);
+%         writeVideo(vObj,F);
+end
+%  close(vObj);
+
+%% Black and white version, all types
+h1 = vcNewGraphWin;
+set(h1,'position',[0.1 0.1 0.4 0.7])
+vObj = VideoWriter('new1.avi');
+vObj.FrameRate = 30;
+ open(vObj);
+% adaptedData = 150*ieScale(adaptedData,0,1);
+for spind = 1:5
+    rsv = rgcP.layers{1,spind}.gridSize;
+    adaptedDataRGCall{spind} = 150*ieScale(reshape(rgcP.layers{1,spind}.rgcvTimeSeries,rsv(1),rsv(2),2500),0,1);
+%     adaptedDataRGCall{spind} = 150*ieScale(reshape(rgcP.layers{1,spind}.currentSpkTS,rsv(1),rsv(2),2500),0,1);
+end
+colormap('gray');
+nframes = size(adaptedDataRGCall{1},3);
+% Record the movie
+
+for j = 1:step:nframes
+    for spind = 1:5
+        subplot(3,2,spind)
+        image(adaptedDataRGCall{spind}(:,:,j));
+        axis off;
+        switch spind
+            case 1
+                title('ON parasol','fontsize',16);
+            case 2
+                title('OFF parsol','fontsize',16);
+            case 3
+                title('ON midget','fontsize',16);
+            case 4
+                title('OFF midget','fontsize',16);
+            case 5
+                title('small bistratified','fontsize',16);
+        end
+    end
+        drawnow;
+        F = getframe(h1);
+        writeVideo(vObj,F);
+end
+close(vObj);
+
+%%
+
+
+% Visualize some stuff
+ whichLayer = 5;
+ rgcVisualize('all tirf',rgcP, whichLayer)
+ rgcVisualize('fbtr',rgcP, whichLayer)
+ rgcVisualize('cptr',rgcP, whichLayer)
+ rgcVisualize('RF Mesh',rgcP)
+%
+%  rgcVisualize('RF image',rgcP, whichLayer);  % Single RGC receptive field 
+%  rgcVisualize('RF mesh',rgcP, whichLayer);   % Single RGC receptive field 
+%  rgcVisualize('RF mesh',rgcP, 1);   % Single RGC receptive field 
+%  rgcVisualize('RF mesh',rgcP, 2);   % Single RGC receptive field 
+%
+% Would be nice to show the 1 SD outline over the cone mosaic.
+% How about it guys?
+%
+%  rgcVisualize('RF center',rgcP, whichLayer);         % Just the center
+%  rgcVisualize('RF surround',rgcP, whichLayer);       % Just the surround
+%
+%  rgcVisualize('tirf',rgcP, whichLayer);     % Temporal Impulse Response

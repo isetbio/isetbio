@@ -44,11 +44,13 @@ function t_OuterSegmentClasses
     sensor = sensorSet(sensor, 'photons', stimulus);
     
     % Instantiate an osLinear class.
-    linearOS = osLinear('noiseFlag', 1); %osLinear
+    linearOS = osCreate('linear','noiseFlag', 1);
+    % linearOS = osLinear('noiseFlag', 1); %osLinear
     
     % Instantiate an osBioPhys class.
-    adaptedOS = osBioPhys(); % osBioPhys
-    adaptedOS = osBioPhysSet(adaptedOS, 'noiseFlag', 1);
+    adaptedOS = osCreate('biophys');
+    % adaptedOS = osBioPhys(); % osBioPhys
+    adaptedOS = osSet(adaptedOS, 'noiseFlag', 1);
     
     % Print methods and properties (when verbosity > 0).
     verbosity = 0;
@@ -56,20 +58,20 @@ function t_OuterSegmentClasses
     printClassInfo(verbosity, adaptedOS);
     
     % Compute linear outer segment response.
-    linearOS = osLinearCompute(linearOS, sensor);
+    linearOS = osCompute(linearOS, sensor);
     % params.offset = 0;
     % linearOS = osLinearCompute(linearOS, sensor, params);
-    osLinearGet(linearOS, 'noiseFlag');
+    osGet(linearOS, 'noiseFlag');
     
     % Compute nonlinear outer segment response.
-    adaptedOS = osBioPhysCompute(adaptedOS, sensor);
+    adaptedOS = osCompute(adaptedOS, sensor);
     % params.bgVolts = 0; params.offset = 0;
     % adaptedOS = osBioPhysCompute(adaptedOS, sensor, params);
-    osBioPhysGet(adaptedOS, 'noiseFlag');
+    osGet(adaptedOS, 'noiseFlag');
     
     % Plot results.
-    osLinearPlot(linearOS, sensor);
-    osBioPhysPlot(adaptedOS, sensor);
+    osPlot(linearOS, sensor);
+    osPlot(adaptedOS, sensor);
     
     % Alternate function call, provides backwards compatibility with
     % coneAdapt but calls through outerSegment object code.

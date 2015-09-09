@@ -48,13 +48,13 @@ classdef outerSegment < handle
         end
         
         % set function, see outersegmentSet for details
-        % see osLinearSet, osBioPhysSet
+        % see osSet in @osLinear and @osBioPhys
         function obj = set(obj, param, val, varargin)
             outersegmentSet(obj, param, val, varargin);
         end
         
         % get function, see outersegmentGet for details
-        % see osLinearGet, osBioPhysGet
+        % see osGet in @osLinear and @osBioPhys
         function val = get(obj, param, varargin)
            val = outersegmentGet(obj, param, varargin);
         end

@@ -1,13 +1,12 @@
-function val = osBioPhysGet(obj, varargin)
-% osBioPhysGet: a method of @osBioPhys that sets isetbio outersegment object 
+function obj = osSet(obj, varargin)
+% osSet: a method of @osIdentity that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
-%       {'noiseFlag'} -  gets noise flag, noise-free ('0') or noisy ('1')
-%       {'ConeCurrentSignal'} - cone current as a function of time
-%       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
+%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
 % 
-% osBioPhysGet(adaptedOS, 'noiseFlag')
+% noiseFlag = 0;
+% adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
 % 
 % 8/2015 JRG NC DHB
 
@@ -22,8 +21,9 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','conecurrentsignal'};
+allowableFieldsToSet = {'noiseflag'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('value');
 
 % Define what units are allowable.
 allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -37,14 +37,10 @@ p.parse(varargin{:}); params = p.Results;
 
 switch lower(params.what);  % Lower case and remove spaces
 
-    case {'noiseflag'}
-        
-        val = obj.noiseFlag;
-        
-    case{'conecurrentsignal'}
-        val = obj.ConeCurrentSignal;
-        
-    case{'conecurrentsignalplusnoise'}        
-        val = obj.ConeCurrentSignalPlusNoise;
+    
+    case{'noiseflag'}
+        obj.noiseFlag = params.value;
+               
+
 end
 

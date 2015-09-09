@@ -57,12 +57,12 @@ classdef osLinear < outerSegment
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function obj = compute(obj, sensor, param, varargin)
-            % see osLinearCompute for details
-            obj = osLinearCompute(obj, sensor, varargin); 
+            % see osCompute for details
+            obj = osCompute(obj, sensor, varargin); 
         end
         function plot(obj, sensor)
-            % see osLinearPlot for details
-            osLinearPlot(obj, sensor);
+            % see osPlot for details
+            osPlot(obj, sensor);
         end
     end    
     

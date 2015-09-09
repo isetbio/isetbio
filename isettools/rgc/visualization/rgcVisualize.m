@@ -78,7 +78,7 @@ end
 layer     = rgcP.get('layer',whichLayer);
 
 % Lower case and remove spaces
-plotType = stringFormat(plotType);
+plotType = ieParamFormat(plotType);
 
 switch lower(plotType)
 
@@ -120,7 +120,7 @@ switch lower(plotType)
         absorptions = rgcP.get('absorptions');
         absorptions = 255*(absorptions - min(absorptions(:))/max(absorptions(:)));
         % Update call to mplayData ... see below.
-        mp = mplay(absorptions);
+        mp = implay(absorptions);
         mFig = mp.hfig;
         set(mFig,'name','Cone absorptions')
         
@@ -447,9 +447,15 @@ return
 %% Interface to mplay that the figure and controls the size
 function mplayData(type,data,varargin)
 
+nSamples = size(data,3);
+for frameval = 1:nSamples
+    dataRS(:,:,frameval) = imresize(data(:,:,frameval),5);
+end
+data = dataRS;
+
 switch stringFormat(type)
     case {'cvolts', 'conevoltages'}        
-        mp = mplay(data); mFig = mp.hfig;
+        mp = implay(data); mFig = mp.hfig;
         set(mFig,'name', 'Cone Voltages')
         
     case {'lints','lineartimeseries'}
@@ -457,7 +463,7 @@ switch stringFormat(type)
         else layer = varargin{1};
         end
         
-        mp = mplay(data); mFig = mp.hfig;
+        mp = implay(data); mFig = mp.hfig;
         rfCoefs = layer.get('rfcoeffs');       
         set(mFig,'name',sprintf('Linear TS: %s, [%1.2f %1.2f]', ...
             layer.get('name'),rfCoefs(1),rfCoefs(2)))
@@ -468,7 +474,7 @@ switch stringFormat(type)
         end
 
         rfCoefs = layer.get('rfcoeffs');
-        mp = mplay(data); mFig = mp.hfig;
+        mp = implay(data); mFig = mp.hfig;
         set(mFig,'name',sprintf('Component TS: %s, [%1.2f %1.2f]', ...
             layer.get('name'),rfCoefs(1),rfCoefs(2)))
 
@@ -477,7 +483,7 @@ switch stringFormat(type)
         else layer = varargin{1};
         end
         
-        mp = mplay(data); mFig = mp.hfig;
+        mp = implay(data); mFig = mp.hfig;
         rfCoefs = layer.get('rfcoeffs');
         set(mFig,'name',sprintf('RGC TS: %s, [%1.2f %1.2f]', ...
             layer.get('name'),rfCoefs(1),rfCoefs(2)))
@@ -487,7 +493,7 @@ switch stringFormat(type)
         else layer = varargin{1};
         end
 
-        mp = mplay(data); mFig = mp.hfig;
+        mp = implay(data); mFig = mp.hfig;
         rfCoefs = layer.get('rfcoeffs');
         set(mFig,'name',sprintf('Spike TS: %s, [%1.2f %1.2f]', ...
             layer.get('name'),rfCoefs(1),rfCoefs(2)))
@@ -499,7 +505,9 @@ end
 % Make sure window size is reasonable.  If the data are small, the window
 % is small.  So, we check and never let the window height be smaller than
 % the width.
+% screenSize = get(0, 'screensize');
 pos = get(mFig,'position');
+set(mFig,'position',[0.1 0.1 0.4 0.4].*screenSize);
 if size(data,2) < pos(3)
     pos(4) = pos(3); set(mFig,'position',pos); 
 end
