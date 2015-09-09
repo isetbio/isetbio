@@ -94,7 +94,7 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %      {'slanted edge'} - Used for ISO spatial resolution, equal photon spectrum
 %      {'moire orient'} - Circular Moire pattern
 %      {'zone plate'}   - Circular zone plot, equal photon spectrum
-%      {'star pattern'} - Radial lines used to test printers and displays
+%      {'radial lines'} - Radial lines used to test printers and displays
 %
 %  Additional parameters are available for several of the patterns.  For
 %  example, the harmonic call can set the frequency, contrast, phase,
@@ -127,6 +127,7 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %         sceneCreate('point array',imageSize,pixelsBetweenPoints);
 %         sceneCreate('moire orient',imageSize,edgeSlope);
 %         sceneCreate('vernier',imageSize,lineWidth,pixelOffset);
+%         sceneCreate('radial lines', imageSize);
 %
 % TEXT
 %      {'letter', 'font}- Scene created for certain character and display
@@ -451,8 +452,8 @@ switch sceneName
     case {'starpattern','radiallines'}
         % Thin radial lines - Useful for testing oriented blur
         %
-        % scene = sceneCreate('starPattern');
-        % scene = sceneCreate('starPattern',384);
+        % scene = sceneCreate('radial lines');
+        % scene = sceneCreate('star pattern',384);
         imSize = 256; spectralType = 'ep'; nLines = 8;
         if length(varargin) >=1, imSize = varargin{1}; end
         if length(varargin) >=2, spectralType = varargin{2}; end
