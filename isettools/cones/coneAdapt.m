@@ -235,7 +235,7 @@ switch typeAdapt
         adaptedData  = riekeAdaptTemporal(pRate, initialState);
         
         if noiseFlag
-            adaptedData = riekeAddNoise(adaptedData);
+            adaptedData = riekeAddNoise(adaptedData, params);
         end
   
     case {5, 'linear'}
@@ -259,6 +259,9 @@ switch typeAdapt
             initialState.Ib = params.Ib;
         end
         adaptedData  = riekeLinearCone(pRate, initialState);
+        if noiseFlag
+            adaptedData = riekeAddNoise(adaptedData);
+        end
        
     otherwise
         error('unknown adaptation type');

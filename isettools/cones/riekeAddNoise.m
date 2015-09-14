@@ -48,6 +48,8 @@ elseif (ndims(curNF) == 2)
     temporalDimIndex = 2;
 end
 
+sampTime
+
 % Generate the noise according to the noise spectral
 % distribution
 k = ceil((size(curNF, temporalDimIndex)-1)/2);

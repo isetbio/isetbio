@@ -9,6 +9,8 @@ if isfield(p, 'timeInterval'), dt = p.timeInterval; else dt = 0.001; end
 
 if isfield(p, 'Ib'), Ib = p.Ib; else Ib = mean(pRate(:)); end
 
+if isfield(p, 'Compress'), CompressFlag = p.Compress; else CompressFlag = 0; end
+
 %% cone IRF
 
 
@@ -47,17 +49,17 @@ if (ndims(pRate) == 3)
     adaptedData = zeros(size(pRate,1), size(pRate, 2), timeBins); 
     
     for x = 1:size(pRate, 1)
-    for y = 1:size(pRate, 2)
-        tempData = conv(squeeze(pRate(x, y, :)), Filter);
-%        tempData = real(ifft(conj(fft(squeeze(pRate(x, y, :))) .* FilterFFT)));
-        if (p.Compress)
-            tempData = tempData / maxCur;
-            tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-        else
-            tempData = tempData - meanCur;
+        for y = 1:size(pRate, 2)
+            tempData = conv(squeeze(pRate(x, y, :)), Filter);
+    %        tempData = real(ifft(conj(fft(squeeze(pRate(x, y, :))) .* FilterFFT)));
+            if (CompressFlag)
+                tempData = tempData / maxCur;
+                tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
+            else
+                tempData = tempData - meanCur;
+            end
+            adaptedData(x, y, :) = tempData(1:timeBins);
         end
-        adaptedData(x, y, :) = tempData(1:timeBins);
-    end
     end
     
 elseif (ndims(pRate) == 2)
