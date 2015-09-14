@@ -44,7 +44,7 @@ function [oi,val] = oiCreate(oiType,val,optics,addObject,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if notDefined('oiType'),  oiType = 'default'; end
+if notDefined('oiType'),  oiType = 'human'; end
 if notDefined('val'),     val = vcNewObjectValue('OPTICALIMAGE'); end
 if notDefined('optics'),  optics = opticsCreate('default'); end
 
@@ -59,34 +59,13 @@ oi = oiSet(oi, 'bit depth', 32);  % Single precision.
 
 oiType = ieParamFormat(oiType);
 switch oiType 
-    case {'default'}
-        % Default optics is f# = 4, diffraction limited
-        oi = oiSet(oi,'optics',optics);
-        
-        % Set up the default glass diffuser with a 2 micron blur circle,
-        % but skipped
-        oi = oiSet(oi, 'diffuserMethod','skip');
-        oi = oiSet(oi, 'diffuserBlur', 2*10^-6);
-        oi = oiSet(oi, 'consistency', 1);
-        
-    case {'uniformd65'}
-        % Uniform, D65 optical image.  No cos4th falloff, huge field of
-        % view (120 deg). Used in lux-sec SNR testing and scripting
-        oi = oiCreateUniformD65;
-        
-    case {'uniformee', 'uniformeespecify'}
-        % Uniform, equal energy optical image. No cos4th falloff. Might be used in
-        % lux-sec SNR testing or scripting.  Not really used now
-        % (5.3.2005).
-        wave = 400:10:700; sz = 32;
-        if length(varargin) >= 1, sz = varargin{1}; end
-        if length(varargin) >= 2, wave = varargin{2}; end
-        oi = oiCreateUniformEE(sz,wave);
-       
-    case {'human', 'mwhuman'}
-        % Marimont and Wandell optics
+    case {'default','human', 'mwhuman'}
+        % Marimont and Wandell optics, which is a simple shift-invariant
+        % but wavelength-dependent model.  This is a little faster than the
+        % wvf human, so we made it the default.  They differ a little.
+        %
         % oi = oiCreate('human');
-        oi = oiCreate('default');
+        oi = oiCreate('diffraction limited');
         oi = oiSet(oi, 'diffuserMethod','skip');
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('human'));
@@ -114,28 +93,30 @@ switch oiType
         oi = wvf2oi(wvfP,'human');
         oi = oiSet(oi,'name',sprintf('Human WVF %.1f mm',pupilMM));
         
-        % We used to have this. We could again.  Leave it here for now
-        % until we put it back in.
-        %     case {'mouse'}
-        %         % Similar to the human optics, but with different parameters.
-        %         oi = oiCreate('default');
-        %         oi = oiSet(oi,'diffuserMethod','skip');
-        %         oi = oiSet(oi,'consistency',1);
-        %         % get wavelengths from current scene
-        %         scene = vcGetObject('scene');
-        %         if isempty(scene)
-        %             wave = (325:5:635)';
-        %         else
-        %             spect = scene.spectrum.wave;
-        %             if isempty(spect)
-        %                 wave = (325:5:635)';
-        %             else
-        %                 wave = spect;
-        %             end
-        %         end
-        %         oi = oiSet(oi, 'wave',wave);
-        %         oi = oiSet(oi,'optics',opticsCreate('mouse'));
+    case {'diffractionlimited'}
+        % Default optics is f# = 4, diffraction limited
+        oi = oiSet(oi,'optics',optics);
         
+        % Set up the default glass diffuser with a 2 micron blur circle,
+        % but skipped
+        oi = oiSet(oi, 'diffuserMethod','skip');
+        oi = oiSet(oi, 'diffuserBlur', 2*10^-6);
+        oi = oiSet(oi, 'consistency', 1);
+        
+    case {'uniformd65'}
+        % Uniform, D65 optical image.  No cos4th falloff, huge field of
+        % view (120 deg). Used in lux-sec SNR testing and scripting
+        oi = oiCreateUniformD65;
+        
+    case {'uniformee', 'uniformeespecify'}
+        % Uniform, equal energy optical image. No cos4th falloff. Might be used in
+        % lux-sec SNR testing or scripting.  Not really used now
+        % (5.3.2005).
+        wave = 400:10:700; sz = 32;
+        if length(varargin) >= 1, sz = varargin{1}; end
+        if length(varargin) >= 2, wave = varargin{2}; end
+        oi = oiCreateUniformEE(sz,wave);
+               
     otherwise
         error('Unknown oiType');
 end

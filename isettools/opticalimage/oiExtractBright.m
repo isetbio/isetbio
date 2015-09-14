@@ -13,7 +13,7 @@ function OImax = oiExtractBright(oi)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if notDefined('OI'), oi = vcGetObject('OI'); end
+if notDefined('oi'), oi = vcGetObject('OI'); end
 
 % Find the brightest part of the scene
 sz = oiGet(oi,'size');

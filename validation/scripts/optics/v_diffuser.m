@@ -28,7 +28,7 @@ function ValidationFunction(runTimeParams)
 
     %% Build a Macbeth color checker.
     scene = sceneCreate;  scene = sceneSet(scene,'fov',1);
-    oi = oiCreate;
+    oi = oiCreate('diffraction limited');
 
     %% Example of setting up the multi-dimensional diffusion calculation.
     %

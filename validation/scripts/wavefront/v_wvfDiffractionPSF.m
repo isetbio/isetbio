@@ -101,7 +101,7 @@ UnitTest.validationData('ptbPSF', ptbPSF);
 
 %% Do the same thing using isetbio functions
 thisWave = 550;
-oi = oiCreate;
+oi = oiCreate('diffraction limited');
 optics = oiGet(oi,'optics');
 fLength = 0.017;              % Human focal length is about 17 mm
 fNumber = 17/calcPupilMM;     % Set f-number which fixes pupil diameter

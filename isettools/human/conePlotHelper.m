@@ -38,8 +38,8 @@ function [xySubMosaic, coneSubMosaic, support, spread, delta] = ...
 
 % We should be able to multiply this image by the cone absorptions to
 % produce a nice colored image.
-if ieNotDefined('sensor'), error('sensor structure required.'); end
-if ieNotDefined('conesToPlot'), conesToPlot = sensorGet(sensor,'size'); end
+if notDefined('sensor'), error('sensor structure required.'); end
+if notDefined('conesToPlot'), conesToPlot = sensorGet(sensor,'size'); end
 if isscalar(conesToPlot), conesToPlot(2) = conesToPlot(1); end
 if notDefined('coneSize'), coneSize = 10; end
 

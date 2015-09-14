@@ -24,7 +24,8 @@ function RGB = imageSPD(SPD,wList,gam,row,col,displayFlag,xcoords,ycoords)
 %     Absolute value used to guide the type of rendering.  Thus,
 %     if abs(displayFlag) = 
 %              1:  Typical visible band to RGB
-%              2:  
+%              2:  Gray scale image, used for SWIR, NIR
+%
 % x and y:  Coords (spatial positions) of the image points.
 %   
 % Examples:
