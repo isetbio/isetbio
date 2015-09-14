@@ -380,7 +380,7 @@ ylabel('dec/inc');
 
 %  set up parameters for stimulus
 nSamples = 10000;        % 2000 samples
-timeStep = 1e-4;        % time step
+timeStep = 1e-3;        % time step
 
 %  create human sensor
 sensor = sensorCreate('human');
@@ -410,5 +410,7 @@ modelSPD = real(fft(adaptedCur(:)) .* conj(fft(adaptedCur(:))));
 modelSPD = 2 * modelSPD * timeStep / nSamples;
 figure(2); clf;
 loglog(freq, modelSPD, freq, fitSPD);
-
+xlim([min(freq) max(freq)/2]);
+xlabel('Hz');
+ylabel('pA^2/Hz');
 
