@@ -1,11 +1,11 @@
-function p = riekeAdaptSteadyState(bgR, p, varargin)
+function p = osAdaptSteadyState(bgR, p, varargin)
 % Steady-state background current calculated from the background rates.
 %
-%    initialState = riekeAdaptSteadyState(bgR,p,sz)
+%    initialState = osAdaptSteadyState(bgR,p,sz)
 %
 % Inputs:
 %  bgR:  Vector (or matrix) of background isomerization rates
-%  p:    Parameter list (from riekeInit)
+%  p:    Parameter list (from osInit)
 %
 %  varargin{1}: sz - sensor array size, (e.g., sensorGet(sensor,'size')),
 %                    this parameter is only useful when input bgR is a
@@ -13,10 +13,10 @@ function p = riekeAdaptSteadyState(bgR, p, varargin)
 %
 % Output:
 %  initialState:  The parameters in p augmented by additional terms needed
-%                 for the dynamic calculation in riekeAdaptTemporal
+%                 for the dynamic calculation in osAdaptTemporal
 %
 % Example:
-%   riekeAdaptSteadyState(1000,[],[1 1])
+%   osAdaptSteadyState(1000,[],[1 1])
 %
 % The derivation for the formula can be found from:
 %   
@@ -32,7 +32,7 @@ function p = riekeAdaptSteadyState(bgR, p, varargin)
 %% Parameters
 if notDefined('bgR'), error('Background isomerization rate required.'); end
 if isscalar(bgR) && ~isempty(varargin), bgR = bgR*ones(varargin{1});  end
-if notDefined('p'),  p = riekeInit; end
+if notDefined('p'),  p = osInit; end
 
 %% Calculation
 %  In most cases, the input bgR matrix will only contain only a small

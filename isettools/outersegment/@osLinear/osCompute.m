@@ -24,16 +24,16 @@ obj.filterKernel(sensor);
 cone_mosaic = sensorGet(sensor,'cone type');
 
 % Get isomerization array to convert to current (pA).
-isomerizations = sensorGet(sensor, 'photon rate');
+isomerizations = sensorGet(sensor, 'photons');
 
 % Get number of time steps.
 nSteps = size(sensor.data.volts,3);
 
 % The next step is to convolve the 1D filters with the 1D isomerization
 % data at each point in the cone mosaic. This code was adapted from the
-% riekeLinearCone.m file by FR and NC.
+% osLinearCone.m file by FR and NC.
 
-initialState = riekeInit;
+initialState = osInit;
 initialState.timeInterval = sensorGet(sensor, 'time interval');
 initialState.Compress = 0; % ALLOW ADJUST - FIX THIS
 
@@ -121,7 +121,7 @@ end
 % Add noise if the flag is set.
 if obj.noiseFlag == 1
     params.sampTime = sensorGet(sensor, 'time interval');
-    ConeSignalPlusNoiseRS = riekeAddNoise(adaptedDataRS, params); close;
+    ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); close;
     obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
     
     if size(varargin) ~= 0

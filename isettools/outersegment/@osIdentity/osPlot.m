@@ -1,8 +1,7 @@
 function osPlot(obj, sensor)
 % osPlot: a method of @osIdentity to plot the computed results of the 
 % outsergment object.
-% 
-% 
+% % 
 % Inputs: the osIdentity object and the sensor object.
 % 
 % Outputs: no variables, but a figure with two subplots is generated. The

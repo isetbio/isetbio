@@ -1,7 +1,7 @@
- function adaptedData = riekeAdaptTemporal(pRate,p)
+ function adaptedData = osAdaptTemporal(pRate,p)
 % Time varying voltage response from photon rate and initial state
 %
-%    adaptedData = riekeAdaptTemporal(pRate,initialState)
+%    adaptedData = osAdaptTemporal(pRate,initialState)
 % 
 % Inputs:
 %   pRate: Photon absorption rate
@@ -27,7 +27,7 @@
 % Example:
 %   See coneAdapt???  Or some script somewhere that needs to be written.
 %
-% See also:  riekeInit, riekeAdaptSteadyState, coneAdapt
+% See also:  osInit, osAdaptSteadyState, coneAdapt
 %
 % HJ ISETBIO Team, Copyright 2014
 

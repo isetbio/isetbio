@@ -1,4 +1,4 @@
-function adaptedData = riekeLinearCone(pRate,p)
+function adaptedData = osLinearCone(pRate,p)
 
 %%
 if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate required.'); end
@@ -22,7 +22,7 @@ end
 TimeAxis = (1:timeBins)*dt;
 % TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
 
-% move these to riekeInit
+% move these to osInit
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
 TauP = 0.5311;   % Period

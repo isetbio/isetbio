@@ -1,5 +1,5 @@
 function val = osGet(obj, varargin)
-% osBioPhysGet: a method of @osBioPhys that sets isetbio outersegment object 
+% osGet: a method of @osIdentity that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -9,8 +9,7 @@ function val = osGet(obj, varargin)
 % 
 % osGet(adaptedOS, 'noiseFlag')
 % 
-% 8/2015 JRG NC DHB
-
+% 8/2015 JRG 
 
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.

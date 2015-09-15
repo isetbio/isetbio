@@ -1,6 +1,6 @@
-function [adaptedCur, params] = riekeAddNoise(curNF, params)
+function [adaptedCur, params] = osAddNoise(curNF, params)
 %% Add noise to membrane current in cone adaptataion
-%   adaptedCur = riekeAddNoise(curNF, params)
+%   adaptedCur = osAddNoise(curNF, params)
 %
 %  Noise in cone adaptation is independent of cone signal. The noise is
 %  Gaussian additive and the spectral power distribution can be
@@ -8,7 +8,7 @@ function [adaptedCur, params] = riekeAddNoise(curNF, params)
 %
 %  Inputs:
 %    curNF  - noise free cone adapted membrane current, see
-%             riekeAdaptTemporal
+%             osAdaptTemporal
 %    params - parameter structure, could include:
 %      .seed     - noise seed
 %      .sampTime - sample time interval, see sensorGet(s, 'time interval');
@@ -18,14 +18,14 @@ function [adaptedCur, params] = riekeAddNoise(curNF, params)
 %
 %  Example:
 %    params.sampTime = 1/5000;
-%    [noise, params] = riekeAddNoise(zeros(10,10,10000), params);
+%    [noise, params] = osAddNoise(zeros(10,10,10000), params);
 %    noiseF = squeeze(mean(mean(abs(fft(noise, [], 3)).^2)));
 %    vcNewGraphWin; loglog(params.freq, noiseF(1:length(params.freq)));
 %    xlabel('Frequency(Hz)'); ylabel('Power Spectrum (pA^2/Hz)'); 
 %    xlim([1 1e3]); ylim([1e-4 1]);
 %
 %  See also:
-%    coneAdapt, riekeAdaptSteadyState, riekeAdaptTemporal
+%    coneAdapt, osAdaptSteadyState, osAdaptTemporal
 %
 %  (HJ) ISETBIO, 2014
 

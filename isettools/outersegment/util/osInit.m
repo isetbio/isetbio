@@ -1,9 +1,9 @@
-function p = riekeInit
+function p = osInit
 % Initialize parameters in Rieke adaptation model
 %
-%    p = riekeInit
+%    p = osInit
 %
-% See also:  riekeAdaptSteadyState, riekeAdaptTemporal, coneAdapt
+% See also:  osAdaptSteadyState, osAdaptTemporal, coneAdapt
 %  
 % HJ, ISETBIO Team Copyright 2014
 

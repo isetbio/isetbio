@@ -1,5 +1,5 @@
 function obj = osCompute(obj, sensor, varargin)
-% osBioPhysCompute: a method of @osBioPhys that computes the output
+% osCompute: a method of @osBioPhys that computes the output
 % response of the L, M and S cone outer segments. This converts
 % isomerizations (R*) to outer segment current (pA). The difference
 % equation model by Rieke is applied here.
@@ -19,12 +19,12 @@ function obj = osCompute(obj, sensor, varargin)
 % 8/2015 JRG NC DHB
 
     
-    p = riekeInit;
+    p = osInit;
     expTime = sensorGet(sensor,'exposure time');
     sz = sensorGet(sensor,'size');
     
     % absRate = sensorGet(sensor,'absorptions per second');
-    pRate = sensorGet(sensor, 'photon rate');
+    pRate = sensorGet(sensor, 'photons');
     nSteps = size(pRate, 3);
     % Compute background adaptation parameters
 
@@ -40,10 +40,10 @@ function obj = osCompute(obj, sensor, varargin)
     bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
     
    
-    initialState = riekeAdaptSteadyState(bgR, p, sz);
+    initialState = osAdaptSteadyState(bgR, p, sz);
     
     initialState.timeInterval = sensorGet(sensor, 'time interval');
-    obj.ConeCurrentSignal  = riekeAdaptTemporal(pRate, initialState);
+    obj.ConeCurrentSignal  = osAdaptTemporal(pRate, initialState);
     
     
     if size(varargin) ~= 0
@@ -54,8 +54,8 @@ function obj = osCompute(obj, sensor, varargin)
     
     
     if obj.noiseFlag == 1
-        obj.ConeCurrentSignalPlusNoise = riekeAddNoise(obj.ConeCurrentSignal);
-        % obj.ConeCurrentSignalPlusNoise = riekeAddNoise(obj.ConeCurrentSignal, paramsNoise);        
+        obj.ConeCurrentSignalPlusNoise = osAddNoise(obj.ConeCurrentSignal);
+        % obj.ConeCurrentSignalPlusNoise = osAddNoise(obj.ConeCurrentSignal, paramsNoise);        
         close;
         
         if size(varargin) ~= 0

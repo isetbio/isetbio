@@ -1,11 +1,11 @@
-function [cur] = riekeConeAdaptation(stimulus)
+function [cur] = osConeAdaptation(stimulus)
 % Functional form of rieke cone adaptation model based on UW code.
 %
 % This function is temporary and for exploration ... See notes below
 %
 % Example:
 %  stimulus = zeros(1,1000); stimulus(100:105) = 70000;
-%  [cur] = riekeConeAdaptation(stimulus);
+%  [cur] = osConeAdaptation(stimulus);
 %  vcNewGraphWin; plot(cur); grid on
 %
 % See Also:
@@ -38,7 +38,7 @@ function [cur] = riekeConeAdaptation(stimulus)
 % that needs to be sorted out also.
 %
 % The formulae on the slide look like this, and they are implemented in the
-% riekeAdaptTemporal.  See the document uploaded by HJ for the derivation
+% osAdaptTemporal.  See the document uploaded by HJ for the derivation
 % of the formula. There are a couple of differences.  In particular one
 % difference is in how cur2ca is calculated (p.q). HJ says the slides
 % resolve to this formula
@@ -52,7 +52,7 @@ function [cur] = riekeConeAdaptation(stimulus)
 %
 % This function is intended to serve as a basis for discussion as we
 % explore the calculations and resolve the differences.  In the end, we
-% will use this to settle on the implementation in riekeAdaptTemporal.m.
+% will use this to settle on the implementation in osAdaptTemporal.m.
 
 
 %% Initialize parameters
@@ -74,7 +74,7 @@ NumPts = length(stimulus);
 
 clear g s c p cslow;
 
-% This differs from our calculation by a factor of 2, see riekeInit.m
+% This differs from our calculation by a factor of 2, see osInit.m
 % q    = 2 * beta * cdark / (k * gdark^h);
 cur2ca = beta * cdark / (cgmp2cur * gdark^3);				        % get q using steady state
 smax = eta/phi * gdark * (1 + (cdark / hillaffinity)^hillcoef);		% get smax using steady state

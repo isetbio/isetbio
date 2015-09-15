@@ -1,15 +1,12 @@
 classdef osIdentity < outerSegment 
 % @osIdentity: a subclass of @outerSegment object
 % 
-% This subclass implements the cone Identity filters determined by the
-% experiments found in Angueyra and Rieke (2013) to convert cone 
-% isomerizations (R*) to current (pA).
+% This subclass bypass the temporal filtering of the other outer segment
+% subclasses and passes the cone isomerizations without modification. 
+% It is intended to be used for stimulus-referred retinal
+% ganglion cell models initially.
 % 
-% The osIdentity object calculates the outer segment 
-% current by convolving Identity filters for the L, M and S cones with the 
-% isomerization signal.
-% 
-% IdentityOS = osIdentity(); 
+% identityOS = osIdentity(); 
 %
 % 7/2015 JRG
 
@@ -53,7 +50,7 @@ classdef osIdentity < outerSegment
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = compute(obj, sensor, param, varargin)
+        function obj = compute(obj, sensor)
             % see osCompute for details
             obj = osCompute(obj, sensor, varargin); 
         end

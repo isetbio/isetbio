@@ -1,36 +1,24 @@
-function obj = osCompute(obj, sensor, varargin)
-% osLinearCompute: a method of @osLinear that computes the linear filter
-% response of the L, M and S cone outer segments. This converts
-% isomerizations (R*) to outer segment current (pA). If the noiseFlag
-% property of the osLinear object is set to 1, this method will add noise
-% to the current output signal.
+function obj = osCompute(obj, sensor)
+% osCompute: this method of @osIdentity passes on the cone isomerizations
+% (R*) without any temporal filtering. This subclass is intended to be used
+% for stimulus-referred retinal ganglion cell models.
 %
-% adaptedOS = osLinearCompute(adaptedOS, sensor);
-%
-% Inputs: the osLinear object, the sensor object and an optional parameters
-% field. params.offest determines the current offset.
+% Inputs: the osIdentity object and the sensor object.
 % 
-% Outputs: the osLinear object, with the cone outer segment current and
-% optionally a noisy version of the cone outer segment current.
+% Outputs: the osIdentity object, with the cone outer segment current set 
+% to the cone isomerizations and optionally a noisy version of the
+% isomerizations.
 % 
-% 8/2015 JRG NC DHB
-
-
-% Remake filters incorporating the sensor to make them the 
-% correct sampling rate.
-obj.filterKernel(sensor);
-
-% Find coordinates of L, M and S cones, get voltage signals.
-cone_mosaic = sensorGet(sensor,'cone type');
+% 8/2015 JRG
 
 % Get isomerization array to convert to current (pA).
-isomerizations = sensorGet(sensor, 'photon rate');
+isomerizations = sensorGet(sensor, 'photons');
 
 % For the osIdentity object, there is no temporal filtering on the
 % isomerizations.
 
 adaptedData = isomerizations;
-obj.ConeCurrentSignal = adaptedData;
+obj.ConeCurrentSignal = adaptedData./max(adaptedData(:));
 
 % Add noise if the flag is set.
 if obj.noiseFlag == 1
@@ -38,11 +26,11 @@ if obj.noiseFlag == 1
     ConeSignalPlusNoiseRS = riekeAddNoise(adaptedDataRS, params); close;
     obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
     
-    if size(varargin) ~= 0
-        if isfield(varargin{1,1},'offset')
-            obj.ConeCurrentSignalPlusNoise = obj.ConeCurrentSignalPlusNoise - obj.ConeCurrentSignalPlusNoise(:, :, nSteps) - varargin{1,1}.offset;
-        end
-    end
+%     if size(varargin) ~= 0
+%         if isfield(varargin{1,1},'offset')
+%             obj.ConeCurrentSignalPlusNoise = obj.ConeCurrentSignalPlusNoise - obj.ConeCurrentSignalPlusNoise(:, :, nSteps) - varargin{1,1}.offset;
+%         end
+%     end
     
 end
 

@@ -33,7 +33,7 @@ else
     dt = sensorGet(sensor, 'time interval');
     coneSamplingRate = 1/dt;
     [xsz ysz tsz] = size(sensor.data.volts);
-    pRate = sensorGet(sensor, 'photon rate');
+    pRate = sensorGet(sensor, 'photons');
     meanIsomerization = mean(pRate(:));
 end
 
@@ -84,7 +84,7 @@ Ib = [7131 6017 1973];         % R* per sec due to background adapting field (on
 % else
 % %     stimNormCoeff = (max(sensor.data.volts(:,:,1)))./max(Ib);
 %     
-%     pRate = sensorGet(sensor,'photon rate');
+%     pRate = sensorGet(sensor,'photons');
 %     stimNormCoeff = max(pRate(1))./max(Ib);
 % end
 Ib = Ib*stimNormCoeff;
