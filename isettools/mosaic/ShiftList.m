@@ -1,0 +1,1 @@
+function [list] = ShiftList(list,ishift,jshift)% [list] = ShiftList(list,ishift,jshift)% Shift all points in a list by (ishift,jshift)list(:,1) = list(:,1) - ishift*ones(length(list),1);list(:,2) = list(:,2) - jshift*ones(length(list),1);

@@ -1,0 +1,1 @@
+function [T] = Make2DRotateMat(theta)% [T] = Make2DRotateMat(theta)% Produces the 2 by 2 matrix required to rotate% cartesian coodinates by angle theta (in radians)T(1,1) = cos(theta);T(1,2) = -sin(theta);T(2,1) = sin(theta);T(2,2) = cos(theta);
