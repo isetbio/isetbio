@@ -668,7 +668,7 @@ return;
 % --------------------------------------------------------------------
 function menuPlotImageGrid_Callback(hObject, eventdata, handles)
 % Plot
-oiPlot(vcGetObject('oi'),'irradianceimagewithgrid');
+oiPlot(vcGetObject('oi'),'irradiance image grid');
 return;
 
 % --------------------------------------------------------------------

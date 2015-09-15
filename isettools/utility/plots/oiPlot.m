@@ -24,8 +24,8 @@ function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 %     {'irradiance hline'}  - Vertical line spectral irradiance (photons) 
 %                            (space x wavelength)
 %     {'irradiance fft'}    - 2D FFT of radiance at some wavelength
-%     {'irradiance image with grid'} - Show spatial grid on irradiance image
-%     {'irradiance image wave grid'} - Irradiance image within a band
+%     {'irradiance image grid'} - Show spatial grid on irradiance image
+%     {'irradiance waveband image'} - Irradiance image within a band
 %
 %    Illuminance
 %     {'illuminance mesh log'}      - Mesh plot of image log illuminance
@@ -71,8 +71,8 @@ function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 %
 %   uData = oiPlot(oi,'contrast hline',[1,rows])
 %
-%   uData = oiPlot(oi,'irradiance image with grid')
-%   uData = oiPlot(oi,'irradiance image with grid',[],40)
+%   uData = oiPlot(oi,'irradiance image grid')
+%   uData = oiPlot(oi,'irradiance image grid',[],40)
 %   uData = oiPlot(oi,'irradiance image wave',[],500,40);
 %
 %   uData = oiPlot(oi,'irradiance energy roi');
@@ -230,7 +230,7 @@ switch pType
         set(g,'Name',sprintf('Irradiance with grid'));
         colormap(jet)
 
-    case {'irradianceimagewave','irradianceimagewavegrid'}
+    case {'irradiancewavebandimage','irradiancewavebandimagegrid','irradianceimagewave','irradianceimagewavegrid'}
         % oiPlot(oi,'irradianceImageWave',wave,gSpacing);
         if isempty(varargin), wave = 500;
         else wave = varargin{1};
@@ -250,7 +250,8 @@ switch pType
             if isempty(gSpacing), return; end
         end
         
-        imagesc(xCoords,yCoords,irrad); colormap(gray)
+        rgb = imageSPD(irrad,wave);
+        imagesc(xCoords,yCoords,rgb); 
         xlabel('Position (um)'); ylabel('Position (um)');
         
         udata.irrad = irrad;
@@ -282,11 +283,11 @@ switch pType
         end
         
         nWave = oiGet(oi,'nwave');
+        wList = oiGet(oi,'wavelength');
+        [row,col] = size(irrad);
         if nWave > 1
-            imageSPD(irrad,wave,sz(1),sz(2),[],1,xCoords,yCoords);
+            imageSPD(irrad,wave,[],row,col,1,xCoords,yCoords);
         else
-            wList = oiGet(oi,'wavelength');
-            [row,col] = size(irrad);
             imageSPD(irrad,wList,[],row,col,1,xCoords,yCoords);
         end
         xlabel('Position (um)'); ylabel('Position (um)');

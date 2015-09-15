@@ -3,6 +3,10 @@ function [uData, g] = displayPlot(d,param,varargin)
 %
 %   [uData, g] = displayPlot(d,param,varargin)
 %
+% Parameters
+%  spd -
+%  
+% 
 % Example:
 %  d = displayCreate('CRT-Dell');
 %  displayPlot(d,'gamut');
@@ -132,6 +136,16 @@ switch param
         % title
         title('Color Gamut of display in Lab space');
         xlabel('a'); ylabel('b'); zlabel('L');
+        
+    case {'mainimage'}
+        img = displayGet(d,'main image');
+        vcNewGraphWin;
+        imagescRGB(img);
+        
+    case {'pixelimage'}
+        img = displayGet(d,'dixel image');
+        vcNewGraphWin;
+        imagescRGB(img);
         
     otherwise
         error('Unknown parameter %s\n',param);

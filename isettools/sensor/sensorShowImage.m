@@ -1,4 +1,4 @@
-function sensorShowImage(sensor,gam,scaleMax)
+function img = sensorShowImage(sensor,gam,scaleMax)
 % Display the image in a scene structure.
 %
 %    sensorShowImage(sensor,[gam=1],[scaleMax=0])

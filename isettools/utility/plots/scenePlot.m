@@ -15,14 +15,17 @@ function [udata, g] = scenePlot(scene,pType,roiLocs,varargin)
 %    Radiance
 %     {'radiance hline'}          - Horizontal line radiance (photons)
 %     {'radiance vline'}          - Vertical line radiance (photons)
-%     {'radiance fft'}            - Contrast spatial frequency amplitude(single wavelength)
-%     {'radiance image with grid'}  - Render radiance image
-%     {'radiance waveband image'}          - Render waveband range of radiance image
-%     {'radiance energy roi'}        - mean energy radiance of roi
-%     {'radiance photons roi'}        - mean quantal radiance of roi
+%     {'radiance hline image'}    - Horizontal line radiance as a spectrogram image (photons)
+%     {'radiance vline image'}    - Vertical line radiance as a spectogram image (photons)
+%
+%     {'radiance fft'}             - Contrast spatial frequency amplitude(single wavelength)
+%     {'radiance energy roi'}      - mean energy radiance of roi
+%     {'radiance photons roi'}     - mean quantal radiance of roi
+%     {'radiance image grid'}      - Render radiance image
+%     {'radiance waveband image'}  - Render waveband range of radiance image
 %
 %    Reflectance
-%     {'reflectance roi'}            - mean reflectance of roi
+%     {'reflectance roi'}          - mean reflectance of roi
 %
 %    Luminance and chromaticity
 %     {'luminance roi'}           - mean luminance of roi
@@ -199,11 +202,11 @@ switch lower(pType)
         %
         data = sceneGet(scene,'photons');
         if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
-
+        
         wave = sceneGet(scene,'wave');
         data = squeeze(data(:,roiLocs(1),:));
         pos = sceneSpatialSupport(scene,'mm');
-
+        
         if size(data,2) == 1
             % Monochrome image
             plot(pos.y,data');
@@ -217,11 +220,48 @@ switch lower(pType)
             grid on; set(gca,'xtick',ieChooseTickMarks(pos.y,nTicks))
         end
         colormap(mp)
-
+        
         udata.wave = wave; udata.pos = pos.y; udata.data = data';
         udata.cmd = 'mesh(pos,wave,data)';
+        
+    case  {'radiancehlineimage'}
+        % Horizontal line radiance as a spectrogram image (photons)
+        data = sceneGet(scene,'photons');
+        if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
+        
+        wave = sceneGet(scene,'wave');
+        data = squeeze(data(roiLocs(2),:,:));
+        pos = sceneSpatialSupport(scene,'mm');
+        x = pos.x;
+        
+        % Make the spectogram image
+        imagesc(x,wave,data');
+        ylabel('Wavelength (nm)')
+        xlabel('Horizontal position (mm)');
+        colormap(hot);
+        
+        udata.wave = wave; udata.pos = x; udata.data = data';
+        udata.cmd = 'imagesc(x,wave,data'')';
+        
+    case {'radiancevlineimage'}
+        % Vertical line radiance as a spectogram image (photons)
+        data = sceneGet(scene,'photons');
+        if isempty(data), warndlg(sprintf('Photon data are unavailable.')); return; end
 
-    
+        wave = sceneGet(scene,'wave');
+        data = squeeze(data(:,roiLocs(1),:));
+        pos = sceneSpatialSupport(scene,'mm');
+        y= pos.y;
+        
+        % Make the spectogram image
+        imagesc(x,wave,data');
+        ylabel('Wavelength (nm)')
+        xlabel('Vertical Position (mm)');
+        colormap(hot);
+        
+        udata.wave = wave; udata.pos = x; udata.data = data';
+        udata.cmd = 'imagesc(y,wave,data'')';
+
     case {'reflectanceroi','reflectance'}
         % scenePlot(scene,'reflectance roi')
         wave = sceneGet(scene,'wave');
@@ -683,6 +723,7 @@ switch lower(pType)
         else
             imagesc(dmap); colormap(flipud(gray)); % Near dark, far light
             axis off; set(g,'Name','ISET: Depth map (m)');
+            axis image
             % Far is dark, close is light
             colormap(flipud(gray));
         end

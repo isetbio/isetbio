@@ -1,7 +1,10 @@
 function wvf = wvfCreate(varargin)
 % wvf = wvfCreate(varargin)
 %
-% Create the wavefront parameters structure
+% Create the wavefront parameters structure.
+%
+% Default parameters give you diffraction limited PSF
+% for 550 nm light and a 3 mm pupil.
 %
 % varargin:  Structured as param, val pairs
 %   

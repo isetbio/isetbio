@@ -1,12 +1,15 @@
 function [srgb,LMSphotons] = sensorDemosaicCones(sensor, method, nFrames)
-%% Render an image that produces a pattern of cone absorptions
+% Render an image that produces a pattern of cone absorptions
+%
 %    [srgb,LMSphotons] = sensorDemosaicCones(sensor, [method], [nFrames])
 %
-% This function produces an sRGB image that could create the pattern of
-% cone absorptions in the sensor object.  To create this image, the cone
-% absorption matrix is first demosaicked.  It is then converted to an
-% equivalent XYZ representation and then from there an sRGB image that
-% would produce the XYZ (and hence LMS) values.
+% This function produces an sRGB image that creates the pattern of cone
+% absorptions in the sensor object.  To create this image, 
+%
+%  * the cone absorption matrix is demosaicked
+%  * It is then converted to an equivalent XYZ representation and 
+%  * From there an sRGB image is calculated that would produce the XYZ (and
+%    hence LMS) values 
 %
 % This function is helpful in visualizing the image one might infer given a
 % particular set of cone absorptions.  It also includes the option of

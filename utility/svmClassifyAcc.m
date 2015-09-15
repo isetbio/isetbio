@@ -1,4 +1,4 @@
-function acc = svmClassifyAcc(dataMatrix, labels, nFolds, svmType, opts)
+function [acc, w] = svmClassifyAcc(data, labels, nFolds, svmType, opts)
 %% function getSVMAccuracy(dataMatrix, labels, [nFolds], [svmType], [opts])
 %    compute the svm prediction accuracy
 %
@@ -20,8 +20,10 @@ function acc = svmClassifyAcc(dataMatrix, labels, nFolds, svmType, opts)
 %                 'warmstart' - liblinear - warmstart (incremental mode)
 %    opts       - string, options to be supplied to svm packages
 %
-%  Outputs      - 2-by-1 vector, containing average accuray and standard
+%  Outputs:
+%    acc        - 2-by-1 vector, containing average accuray and standard
 %                 deviation
+%    w          - svm coefficients (linear kernel only)
 %
 %  Example:
 %    acc = svmClassifyAcc(dataMatrix, labels, 10, 'linear')
@@ -56,20 +58,21 @@ if nargin < 4, svmType = 'svm'; end
 %  Normalization is important when data values are small, i.e. volts image
 %  If we values are large, i.e. photon absorptions, it's fine to skip this
 %  step
-dataMatrix = (dataMatrix-repmat(min(dataMatrix),[size(dataMatrix, 1) 1])) ...
-    ./ repmat(max(dataMatrix)-min(dataMatrix),[size(dataMatrix,1 ) 1]);
+data = (data-repmat(min(data),[size(data, 1) 1])) ...
+    ./ repmat(max(data)-min(data),[size(data,1 ) 1]);
 
 % The data should not contain any NaN inside
 % If there's any NaN, set it to zero
-dataMatrix(isnan(dataMatrix)) = 0;
+data(isnan(data)) = 0;
 
 %  Random permute the data
-[M, ~] = size(dataMatrix);
+[M, ~] = size(data);
 ind   = randperm(M);
 
 % Train and Test
 accHistory  = zeros(nFolds,1);
 instPerFold = round(M/nFolds);
+w = zeros(size(data, 2), nFolds);
 for i = 1 : nFolds
     if i < nFolds
         trainIndx = [ind(1:(i-1)*instPerFold) ...
@@ -79,8 +82,8 @@ for i = 1 : nFolds
         trainIndx = ind(1:(i-1)*instPerFold);
         testIndx  = ind((i-1)*instPerFold+1:end);
     end
-    trainData = sparse(dataMatrix(trainIndx,:));
-    testData  = sparse(dataMatrix(testIndx,:));
+    trainData = sparse(data(trainIndx,:));
+    testData  = sparse(data(testIndx,:));
     % Train
     switch svmType
         case 'linear'
@@ -88,6 +91,7 @@ for i = 1 : nFolds
             if notDefined('opts'), opts = '-s 2 -q'; end
             svmStruct = train(labels(trainIndx),trainData,opts);
             [~,curAcc,~] = predict(labels(testIndx),testData,svmStruct,'-q');
+            w(:, i) = svmStruct.w;
         case 'svm'
             % LibSVM routine
             % Parameters explaination:

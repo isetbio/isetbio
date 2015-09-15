@@ -19,12 +19,17 @@ if ~isempty(varargin), ha = varargin{1}; end
 wave = displayGet(d, 'wave');
 global vcSESSION;
 
-if isfield(vcSESSION, 'imgData')
-    rgb = vcSESSION.imgData;
-else
-    cla;
-    warning('No image data found');
-    return;
+% Main display image
+rgb = displayGet(d,'main image');
+if isempty(rgb)
+    % HJ did this originally.  But it should go away.
+    if isfield(vcSESSION, 'imgData')
+        rgb = vcSESSION.imgData;
+    else
+        cla;
+        warning('No image data found');
+        return;
+    end
 end
 
 % Compute photon image

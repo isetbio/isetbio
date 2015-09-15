@@ -12,10 +12,10 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    s_initISET;
+    ieInit;
 
     %% Diffraction limited simulation properties
-    oi = oiCreate;
+    oi = oiCreate('diffraction limited');
     if (runTimeParams.generatePlots)
         oiPlot(oi,'otf',[],550);
         oiPlot(oi,'otf',[],450);

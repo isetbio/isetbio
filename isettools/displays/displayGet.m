@@ -7,6 +7,7 @@ function val = displayGet(d, parm, varargin)
 %     {'type'}        - Always 'display'
 %     {'name'}        - Which specific display
 %     {'is emissive'} - true (emissive) or false (reflective)
+%     {'main image'}  - image for main display window
 %
 % Transduction
 %     {'gamma table'}   - nLevels x nPrimaries
@@ -24,10 +25,12 @@ function val = displayGet(d, parm, varargin)
 %     {'nprimaries'}          - number of primaries
 %
 % Color conversion and metric
-%     {'rgb2xyz'}
-%     {'rgb2lms'}
-%     {'white xyz'}
-%     {'black xyz'}
+%     {'rgb2xyz'}              - Linear rgb to CIE (1931) XYZ
+%     {'rgb2lms'}              = Linear rgb to Stockman cones
+%     {'lms2rgb'}              - Stockman cones to linear RGB (for cone
+%                                isolation)
+%     {'white xyz'}            - Display white point in CIE (1931) XYZ
+%     {'black xyz'}            - Includes stray light from backlight
 %     {'white xy'}
 %     {'white lms'}
 %     {'primaries xyz'}
@@ -48,7 +51,7 @@ function val = displayGet(d, parm, varargin)
 %     {'dixel'}              - dixel structure describing repeating unit
 %     {'pixels per dixel'}   - number of pixels in one repeating unit
 %     {'dixel size'}         - number of samples in one dixel
-%     {'dixel intensity map'}
+%     {'dixel image'}        - image in dixel panel
 %     {'dixel control map'}  - control map, describing which regions are
 %                              individually addressable
 %     {'peak spd'}           - peak spd for each primary
@@ -102,6 +105,9 @@ switch parm
     case {'isemissive'}
         val = true;
         if isfield(d, 'isEmissive'), val = d.isEmissive; end
+    case {'mainimage','mainimg'}
+        % Main image in display window
+        val = d.mainimage;
     case {'bits','dacsize'}
         % color bit depths, e.g. 8 bit / 10 bit
         % This is computed from size of gamma table
@@ -204,6 +210,12 @@ switch parm
         %         whiteLMS = sum(val);
         %         val = val*(whiteXYZ(2)/(whiteLMS(1)+whiteLMS(2)));
         
+    case {'lms2rgb'}
+        % Linear rgb to Stockman cone coordinates
+        % [R,G,B] = [L,M,S]*lm2rgb
+        %
+        val = inv(displayGet(d,'rgb2lms'));
+        
      case {'whitexyz','whitepoint'}
         % displayGet(dsp,'white xyz',wave)
         e = displayGet(d, 'white spd');
@@ -292,7 +304,7 @@ switch parm
     case {'dixelsize'}
         % number of samples in one dixel
         % displayGet(d, 'dixel size')
-        dixel_image = displayGet(d, 'dixel intensity map');
+        dixel_image = displayGet(d, 'dixel image');
         val = size(dixel_image);
         val = val(1:2);
     
