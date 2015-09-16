@@ -34,7 +34,7 @@ disp(val)
 ieRdata('file get',[],'cText4.mat');
 
 val = ieRdata('load data',rd,'cText4.mat','scene');
-% disp(val)
+disp(val)
 % if (runTimeParams.generatePlots)
 %     vcAddObject(val.scene); sceneWindow;
 % end

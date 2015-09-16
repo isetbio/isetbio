@@ -220,7 +220,7 @@ switch typeAdapt
         % 
         % Fix this mplay(adaptedData,'I');
         
-        p = osInit;
+        p = riekeInit;
         expTime = sensorGet(sensor,'exposure time');
         sz = sensorGet(sensor,'size');
         
@@ -230,12 +230,12 @@ switch typeAdapt
         % Compute background adaptation parameters
         bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
         
-        initialState = osAdaptSteadyState(bgR, p, sz);
+        initialState = riekeAdaptSteadyState(bgR, p, sz);
         initialState.timeInterval = sensorGet(sensor, 'time interval');
-        adaptedData  = osAdaptTemporal(pRate, initialState);
+        adaptedData  = riekeAdaptTemporal(pRate, initialState);
         
         if noiseFlag
-            adaptedData = osAddNoise(adaptedData, params);
+            adaptedData = riekeAddNoise(adaptedData, params);
         end
   
     case {5, 'linear'}
@@ -244,11 +244,11 @@ switch typeAdapt
         
         % absRate = sensorGet(sensor,'absorptions per second');        
         pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
-%         pRate = sensorGet(sensor, 'photons');
+                
         % Compute background adaptation parameters
         bgR = 0;
         
-        initialState = osInit;
+        initialState = riekeInit;
         initialState.timeInterval = sensorGet(sensor, 'time interval');
         if isfield(params, 'Compress')
             initialState.Compress = params.Compress;
@@ -258,9 +258,9 @@ switch typeAdapt
         if isfield(params, 'Ib')
             initialState.Ib = params.Ib;
         end
-        adaptedData  = osLinearCone(pRate, initialState);
+        adaptedData  = riekeLinearCone(pRate, initialState);
         if noiseFlag
-            adaptedData = osAddNoise(adaptedData);
+            adaptedData = riekeAddNoise(adaptedData);
         end
        
     otherwise
