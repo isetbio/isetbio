@@ -244,7 +244,7 @@ switch typeAdapt
         
         % absRate = sensorGet(sensor,'absorptions per second');        
         pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
-                
+%         pRate = sensorGet(sensor, 'photons');
         % Compute background adaptation parameters
         bgR = 0;
         
