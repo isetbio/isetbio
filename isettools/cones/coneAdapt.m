@@ -76,7 +76,7 @@ function [sensor, adaptedData] = coneAdapt(sensor, typeAdapt, params)
 % (c) Stanford VISTA Lab, 2014
 
 %% Warn of imminent squashing
-warning('coneAdapt will soon be deprecated and replaced by the outersegment class; see t_OuterSegmentClasses.m, v_osLinearObjectTemp.m and v_osBioPhysObjectTemp.m');
+% warning('coneAdapt will soon be deprecated and replaced by the outersegment class; see t_OuterSegmentClasses.m, v_osLinearObjectTemp.m and v_osBioPhysObjectTemp.m');
 
 %% Check inputs and Init
 if notDefined('sensor'),      error('sensor is required'); end

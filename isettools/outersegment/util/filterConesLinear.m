@@ -47,7 +47,7 @@ TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
 
 % only compute filter for 0.3 seconds
 % TimeAxis = (1:timeBins)*dt;
-% TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
+TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
 
 
 % TimeAxis = [1:2000]*dt;
