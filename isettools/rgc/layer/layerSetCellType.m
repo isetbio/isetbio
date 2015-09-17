@@ -30,7 +30,7 @@ end
 if notDefined('type'),  type = 'default'; end
 if notDefined('theta'), theta = 0;        end
 
-type = stringFormat(type);
+type = ieParamFormat(type);
 
 coneSpacing = layer.parent.get('coneSpacing');
 

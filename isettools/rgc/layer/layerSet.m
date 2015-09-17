@@ -21,7 +21,7 @@ if notDefined('layer'),  error('layer object needed'); end
 if notDefined('fieldName'), error('Field name needed'); end
 
 % we map field name to a standard field
-correctfield = rgcMapParameterField(stringFormat(fieldName));
+correctfield = rgcMapParameterField(ieParamFormat(fieldName));
 
 % correctfield is a standard way of calling the field
 switch(correctfield)

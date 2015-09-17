@@ -34,7 +34,7 @@ if notDefined('rgcP'), error('rgcParameter object needed'); end
 if notDefined('fieldName'), error('Field name needed');   end
 
 % Map multiple possible field names to a single standard field
-fieldName = rgcMapParameterField(stringFormat(fieldName));
+fieldName = rgcMapParameterField(ieParamFormat(fieldName));
 
 % correctfield is the standard way of calling the field
 switch(fieldName)

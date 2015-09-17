@@ -101,7 +101,7 @@ switch sensorName
         wave = coneGet(coneP,'wave');
         hPixel = pixelCreate('human',wave);
         
-        % Add the default human pixel with StockmanQuanta filters.
+        % Add the default human pixel with StockmanfQuanta filters.
         sensor.spectrum.wave = wave;
         sensor = sensorSet(sensor,'pixel',hPixel);
         sensor = sensorSet(sensor,'size',[72 88]);

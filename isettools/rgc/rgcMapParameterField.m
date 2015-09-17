@@ -20,7 +20,7 @@ function res = rgcMapParameterField(fieldName)
 %
 % (c) Synapse project IBM/Darpa 2009
 
-fieldName = stringFormat(fieldName);
+fieldName = ieParamFormat(fieldName);
 
 switch(fieldName)
     case {'name','celltype'}
@@ -266,6 +266,7 @@ switch(fieldName)
 end
 
 % Make sure there are no caps in the return, and no spaces
-res = stringFormat(res);
+% res = stringFormat(res);
+res = ieParamFormat(res);
 
 return

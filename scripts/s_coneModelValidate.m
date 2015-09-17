@@ -174,7 +174,7 @@ ylabel('sensitivity');
 tme = (1:length(Transient))*timeStep;
 coef = [1 1 3 12];
 stepcoef = nlinfit(tme', squeeze(Transient), 'dblexponentialnomean', coef);
-fit = dblexponentialnomean(stepcoef, tme);
+fit = dblexponentialnomean(stepcoef,  tme);
 figure(4); clf
 plot(tme, Transient(:), tme, fit);
 xlabel('time');
@@ -282,7 +282,7 @@ ylabel('gain');
 %% saccade-like stimuli
 
 % load experimental data and baseline correct
-load('~/matlab/isetbio/scripts/ConeData/EyeMovementsExample');
+load('ConeData/EyeMovementsExample.mat');
 measuredCur = EyeMovementsExample.Mean - EyeMovementsExample.Mean(length(EyeMovementsExample.Mean));
 
 %  create stimulus

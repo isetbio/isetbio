@@ -66,7 +66,7 @@ for ii = 1:nL  % For each layer
     cellType = thisLayer.get('name');
     fprintf('[%s]: Layer %d (%s)\n',mfilename,ii,cellType);
     
-    switch stringFormat(cellType)
+    switch ieParamFormat(cellType)
         case {'onmidget','offmidget'}
             [spikes, rgcTS] = rgcComputeMidgets(thisLayer);
         case {'onparasol','offparasol'}

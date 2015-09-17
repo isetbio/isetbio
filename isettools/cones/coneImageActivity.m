@@ -1,4 +1,5 @@
 function tmp = coneImageActivity(cones,data,step,dFlag)
+
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
 %   tmp = coneImageActivity(cones,data,step, [displayFlag=false])

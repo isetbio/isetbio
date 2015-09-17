@@ -75,6 +75,9 @@ function [sensor, adaptedData] = coneAdapt(sensor, typeAdapt, params)
 %
 % (c) Stanford VISTA Lab, 2014
 
+%% Warn of imminent squashing
+% warning('coneAdapt will soon be deprecated and replaced by the outersegment class; see t_OuterSegmentClasses.m, v_osLinearObjectTemp.m and v_osBioPhysObjectTemp.m');
+
 %% Check inputs and Init
 if notDefined('sensor'),      error('sensor is required'); end
 if ~sensorCheckHuman(sensor), error('unsupported species'); end
@@ -220,22 +223,23 @@ switch typeAdapt
         % 
         % Fix this mplay(adaptedData,'I');
         
-        p = riekeInit;
+        p = osInit;
         expTime = sensorGet(sensor,'exposure time');
         sz = sensorGet(sensor,'size');
         
         % absRate = sensorGet(sensor,'absorptions per second');        
-        pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
-                
+        % pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
+        pRate = sensorGet(sensor, 'photons');
+        
         % Compute background adaptation parameters
         bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
         
-        initialState = riekeAdaptSteadyState(bgR, p, sz);
+        initialState = osAdaptSteadyState(bgR, p, sz);
         initialState.timeInterval = sensorGet(sensor, 'time interval');
-        adaptedData  = riekeAdaptTemporal(pRate, initialState);
+        adaptedData  = osAdaptTemporal(pRate, initialState);
         
         if noiseFlag
-            adaptedData = riekeAddNoise(adaptedData, params);
+            adaptedData = osAddNoise(adaptedData, params);
         end
   
     case {5, 'linear'}
@@ -243,12 +247,13 @@ switch typeAdapt
         sz = sensorGet(sensor,'size');
         
         % absRate = sensorGet(sensor,'absorptions per second');        
-        pRate = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
-                
+        % pRate2 = sensorGet(sensor, 'volts') / (sensorGet(sensor,'conversion gain')*expTime);
+        pRate = sensorGet(sensor, 'photons');  
+        
         % Compute background adaptation parameters
         bgR = 0;
         
-        initialState = riekeInit;
+        initialState = osInit;
         initialState.timeInterval = sensorGet(sensor, 'time interval');
         if isfield(params, 'Compress')
             initialState.Compress = params.Compress;
@@ -260,7 +265,7 @@ switch typeAdapt
         end
         adaptedData  = riekeLinearCone(pRate, initialState);
         if noiseFlag
-            adaptedData = riekeAddNoise(adaptedData);
+            adaptedData = osAddNoise(adaptedData);
         end
        
     otherwise

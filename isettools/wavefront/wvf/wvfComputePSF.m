@@ -21,7 +21,7 @@ function wvf = wvfComputePSF(wvf, showBar)
 %
 % Copyright Wavefront Toolbox Team 2012
 
-if notDefined('showBar'), showBar = true; end
+if notDefined('showBar'), showBar = false; end
 
 % Only calculate if we need to -- PSF might already be computed and stored
 if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
