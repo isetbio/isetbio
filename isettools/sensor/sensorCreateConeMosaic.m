@@ -52,14 +52,11 @@ density = coneGet(coneP,'spatial density');
 if isfield(coneP,'rSeed'), rSeed = coneP.rSeed;
 else rSeed = []; end
 
-pixel   = sensorGet(sensor,'pixel');
-coneAperture  = pixelGet(pixel,'size');   % This should get added to coneCreate/Set/Get
+coneAperture  = sensorGet(sensor,'pixel size');   % This should get added to coneCreate/Set/Get
 sz      = sensorGet(sensor,'size');
-species = coneGet(coneP,'species');
 
-switch ieParamFormat(species)
+switch ieParamFormat(coneGet(coneP,'species'))
     case 'human'
-        
         % Create a model human sensor array structure.
         sensor = sensorSet(sensor,'name', ...
                         sprintf('human-%.0f',vcCountObjects('ISA')));
@@ -97,7 +94,7 @@ switch ieParamFormat(species)
         sensor = sensorSet(sensor,'rSeed',rSeed);
                
     otherwise
-        error('Unknown species %s\n',species);
+        error('Unknown species.');
 end
 
 return
