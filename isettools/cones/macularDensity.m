@@ -1,10 +1,10 @@
-function density = macularDensity(ecc, varargin)
+function density = macularDensity(eccDeg, varargin)
 % Compute macular pigment optical density as a function of eccentricity
 %    
 %    density = macularDensity(eccentricity)
 %
 % Inputs:
-%   ecc - eccentricity in degrees
+%   eccDeg - eccentricity in degrees
 %
 % Outputs:
 %   density - macular pigment optical density
@@ -13,7 +13,7 @@ function density = macularDensity(ecc, varargin)
 %   1) Macular pigment density is roughly symmetric and thus we approximate
 %      the 2D position by 1D eccentricity
 %   2) The lorentzian function is fitted from data grabbed from figure 2(B)
-%      in the reference paper
+%      in the reference paper. The data is stored in macularDensity.mat
 %
 % Reference:
 %   Putnam, C. M., & Bland, P. J. (2014). Macular pigment optical density
@@ -26,9 +26,11 @@ function density = macularDensity(ecc, varargin)
 % HJ, ISETBIO TEAM, 2015
 
 % Check inputs
-if notDefined('ecc'), error('eccentricity required'); end
+if notDefined('eccDeg'), eccDeg = 0; end
 
 % Compute density with the lorentz function
-density = 1.2594 ./ ((ecc - 0.0338).^2 + 3.5972);
+% Here, we force the model to be symmetric and have 0 density at infinite
+% eccentricity
+density = 1.261 ./ (eccDeg.^2 + 3.6028);
 
 end
