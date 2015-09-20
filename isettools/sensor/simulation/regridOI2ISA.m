@@ -69,7 +69,7 @@ interpolatedCFAN = interpcfaSCDI(newRows, newCols, sensor, spacing);
 
 warning('off','MATLAB:interp1:NaNinY');
 for ii=1:nFilters
-    foo = interp1(theseRows,scdi(:,:,ii),newRows);
+    foo = interp1(theseRows, scdi(:,:,ii), newRows);
     tmp = interp1(theseCols,foo',newCols)';
 
     % In the new world, we just cycle through the filters in order.  The

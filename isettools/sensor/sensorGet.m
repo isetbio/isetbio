@@ -678,7 +678,7 @@ switch param
         
         % Human patterns don't have block sizes.
         if sensorCheckHuman(sensor), val= [1 1];
-        else    val = size(sensorGet(sensor,'pattern'));
+        else val = size(sensorGet(sensor, 'pattern'));
         end
         
     case 'unitblockconfig'
@@ -1025,7 +1025,7 @@ switch param
         % Only applies when the name field has the string 'human' in it.
         if checkfields(sensor,'human'), val = sensor.human; end
     case {'humancone'}
-        if checkfields(sensor,'human')
+        if checkfields(sensor, 'human', 'cone')
             val = sensor.human.cone;
         end
     case {'humanlens', 'lens'}

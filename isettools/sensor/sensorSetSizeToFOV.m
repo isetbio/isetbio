@@ -17,7 +17,7 @@ function [sensor,actualFOV] = sensorSetSizeToFOV(sensor,newFOV,scene,oi)
 %Example:
 %  scene = sceneCreate; oi = oiCreate;
 %  sensor = vcGetObject('sensor');
-%  sensor = sensorSetSizeToFOV(sensor,1,scene,oi);        % Make a 1 deg field of view sensor
+%  sensor = sensorSetSizeToFOV(sensor,1,scene,oi); % 1 deg field of view
 %  [val,sensor] = vcGetSelectedObject('sensor'); 
 %  sensor = sensorSetSizeToFOV(sensor,30,scene,oi); 
 %  vcReplaceObject(sensor,val);
@@ -41,47 +41,31 @@ if isempty(sz)
 end
 
 % To compute the horizontal FOV, we need to know the distance from the
-% sensor to the optics.  Hence, we need to know oi and scene.
+% sensor to the optics. Hence, we need to know oi and scene.
 % If scene and oi are empty, then sensorGet uses the currently selected
 % ones. If none are selected, then it uses some arbitrary default values.
 % See the code in sensorGet.
 currentFOV  = sensorGet(sensor,'fov horizontal',scene,oi);
-
-% FOV formula
-% val = 2*atand(0.5*width/distance);
-% desired width is
-% distance     = opticsGet(oiGet(oi,'optics'),'focallength');
-% desiredWidth = 2*distance*tand(deg/2);
 newSize = round(sz * (newFOV/currentFOV) );
 
 % The new sensor has to have at least the number of pixels in the cfa block
 % pattern, and it has to be a multiple of the number of pixels in the block
-% pattern.  We make it slightly larger than absolutely necessary.
-%
-% This size adjustment can be a problem when the pattern is, say, random
-% and the cfaSize is the whole size of the original array.  The size
-% adjustment  is only good for block sizes that are small compared to the
-% array.
+% pattern. We make it slightly larger than absolutely necessary.
 
 %%
 cfaSize = sensorGet(sensor,'cfaSize');
 if cfaSize ~= sz
-    newSize = ceil(newSize ./ cfaSize).* cfaSize;
-    % If for some reason ceil(sz/cfaSize) is zero, we set size to one pixel
-    % cfa.
+    newSize = ceil(newSize ./ cfaSize) .* cfaSize;
+    % If ceil(sz/cfaSize) is zero, we set size to one pixel cfa
     if newSize(1) == 0, newSize = cfaSize; end
 end
 
-% Set the new sizes.  This call considers the human case.
-sensor = sensorSet(sensor,'size',newSize);
-% sensor = sensorSet(sensor,'cols',newSize(2));
+% Set the new sizes
+% For human case, the cone mosaic will be regenerated
+sensor = sensorSet(sensor, 'size', newSize);
 sensor = sensorClearData(sensor);
 
-%% We should do something about etendue!
-%
-
-%%
 if nargout == 2, actualFOV = sensorGet(sensor,'fov'); end
 
-return;
+end
 

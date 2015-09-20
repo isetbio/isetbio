@@ -65,7 +65,7 @@ params.sz = sz;
 params.rgbDensities = rgbDensities;
 params.coneAperture = coneAperture;
 params.rSeed = rSeed;
-sensor = sensorCreate('human',[],params);
+sensor = sensorCreate('human', params);
 
 % Alternative way to make this call is:
 %
@@ -133,7 +133,7 @@ params.sz =  [200 200];  % A little smaller
 rgbDensities = [0 0 2 1]; 
 rgbDensities = rgbDensities/sum(rgbDensities);
 params.rgbDensities = rgbDensities;
-sensor = sensorCreate('human',[],params);
+sensor = sensorCreate('human', params);
 
 sensorConePlot(sensor); title('Protan cone mosaic');
 

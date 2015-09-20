@@ -42,8 +42,8 @@ function signalCurrentImage = spatialIntegration(scdi,OI,ISA,gridSpacing)
 % INPUT:    scdi [nRows x nCols]   [A/m^2]
 %           OI:  optical image [structure]
 %           ISA:  image sensor array
-%           gridSpacing specifies how finely to interpolate within each
-%           pixel. This value must be of the form 1/N where N is an odd integer.
+%           gridSpacing: specifies how finely to interpolate within each
+%           pixel, which must be of the form 1/N where N is an odd integer
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
@@ -77,20 +77,21 @@ flatSCDI = regridOI2ISA(scdi,OI,ISA,gridSpacing);
 % Calculate the fractional area of the photodetector within each grid
 % region of each pixel.  If we are super-sampling, we use sensorPDArray.
 % Otherwise, we only need the fill factor.
-if nGridSamples == 1, pdArray = pixelGet(sensorGet(ISA,'pixel'),'fillfactor');
+if nGridSamples == 1, pdArray = sensorGet(ISA,'pixel fillfactor');
 else                  pdArray = sensorPDArray(ISA,gridSpacing);
 end
 
 % Array pdArray up to match the number of pixels in the array
-ISAsize = sensorGet(ISA,'size');
+ISAsize = sensorGet(ISA, 'size');
 photoDetectorArray = repmat(pdArray, ISAsize);
 
 % Calculate the signal at each pixel by summing across each pixel within
 % the array.
 signalCurrentImageLarge = flatSCDI .* photoDetectorArray;
+pArea = sensorGet(ISA, 'pixel area');
 
 if nGridSamples == 1, 
-    signalCurrentImage = pixelGet(ISA.pixel,'area')*signalCurrentImageLarge;
+    signalCurrentImage = pArea * signalCurrentImageLarge;
 else
     % If the grid samples are super-sampled, we must collapse this image,
     % summing across the pixel and create an image that has the same size
@@ -100,9 +101,8 @@ else
     % nGridSamples is 2. There can be a problem with the filter in that
     % case. It is OK at nGridSamples=3 and higher.
     % 
-    filt = pixelGet(ISA.pixel,'area')*(ones(nGridSamples,nGridSamples)/(nGridSamples^2));
-    
-    signalCurrentImage = blurSample(signalCurrentImageLarge,filt);
+    filt = pArea * ones(nGridSamples)/nGridSamples^2;
+    signalCurrentImage = blurSample(signalCurrentImageLarge, filt);
 end
 
 end
