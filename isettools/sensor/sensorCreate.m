@@ -11,9 +11,8 @@ function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
 % a model of the human cone mosaic.
 %
 % Human cone mosaic
-%      {'human'} - Uses Stockman Quanta LMS cones
-%                  Default params:  
-%                     params.XXX
+%      {'human'} - human cone mosaic
+%                  e.g. sensorCreate('human', coneP, retinalPos, whichEye);
 %
 %  Bayer RGB combinations - may be deprecated
 %      {'bayer-grbg'}
