@@ -31,6 +31,6 @@ if notDefined('eccDeg'), eccDeg = 0; end
 % Compute density with the lorentz function
 % Here, we force the model to be symmetric and have 0 density at infinite
 % eccentricity
-density = 1.261 ./ (eccDeg.^2 + 3.6028);
+density = 0.35 * 3.6028 ./ (eccDeg.^2 + 3.6028);
 
 end
