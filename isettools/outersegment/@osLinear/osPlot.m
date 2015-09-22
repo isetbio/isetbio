@@ -1,6 +1,8 @@
 function osPlot(obj, sensor)
-% osLinearPlot: a method to plot the input, filters and computed results of 
+% osPlot: a method to plot the input, filters and computed results of 
 % the outsergment object.
+% 
+% osPlot(adaptedOS, sensor);
 % 
 % Inputs: the osLinear object and the sensor object.
 % 

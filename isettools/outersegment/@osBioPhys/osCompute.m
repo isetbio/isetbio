@@ -16,6 +16,8 @@ function obj = osCompute(obj, sensor, varargin)
 % Outputs: the osBioPhys object, with the cone outer segment current and
 % optionally a noisy version of the cone outer segment current.
 % 
+% adaptedOS = osCompute(adaptedOS, sensor);
+% 
 % 8/2015 JRG NC DHB
 
     

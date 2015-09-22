@@ -1,5 +1,5 @@
 function val = osGet(obj, varargin)
-% osBioPhysGet: a method of @osBioPhys that sets isetbio outersegment object 
+% osGet: a method of @osBioPhys that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -7,7 +7,7 @@ function val = osGet(obj, varargin)
 %       {'ConeCurrentSignal'} - cone current as a function of time
 %       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
 % 
-% osBioPhysGet(adaptedOS, 'noiseFlag')
+% osGet(adaptedOS, 'noiseFlag')
 % 
 % 8/2015 JRG NC DHB
 

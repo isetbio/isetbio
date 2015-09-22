@@ -21,7 +21,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag'};
+allowableFieldsToSet = {'noiseflag','rgbdata'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
 
@@ -40,6 +40,10 @@ switch lower(params.what);  % Lower case and remove spaces
     
     case{'noiseflag'}
         obj.noiseFlag = params.value;
+        
+        
+    case{'rgbdata'}
+        obj.rgbData = params.value;
                
 
 end
