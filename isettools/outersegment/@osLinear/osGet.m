@@ -1,5 +1,5 @@
 function val = osGet(obj, varargin)
-% osLinearGet: a method of @osLinear that gets isetbio outersegment object 
+% osGet: a method of @osLinear that gets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -8,7 +8,7 @@ function val = osGet(obj, varargin)
 %       {'mConeFilter'} - the linear filter for M-cone temporal response
 %       {'lConeFilter'} - the linear filter for L-cone temporal response
 % 
-% osLinearGet(adaptedOS, 'noiseFlag')
+% osGet(adaptedOS, 'noiseFlag')
 % 
 % 8/2015 JRG NC DHB
 

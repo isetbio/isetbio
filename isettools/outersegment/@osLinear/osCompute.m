@@ -1,11 +1,11 @@
 function obj = osCompute(obj, sensor, varargin)
-% osLinearCompute: a method of @osLinear that computes the linear filter
+% osCompute: a method of @osLinear that computes the linear filter
 % response of the L, M and S cone outer segments. This converts
 % isomerizations (R*) to outer segment current (pA). If the noiseFlag
 % property of the osLinear object is set to 1, this method will add noise
 % to the current output signal.
 %
-% adaptedOS = osLinearCompute(adaptedOS, sensor);
+% adaptedOS = osCompute(adaptedOS, sensor);
 %
 % Inputs: the osLinear object, the sensor object and an optional parameters
 % field. params.offest determines the current offset.

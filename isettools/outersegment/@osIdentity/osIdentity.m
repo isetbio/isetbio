@@ -10,9 +10,15 @@ classdef osIdentity < outerSegment
 %
 % 7/2015 JRG
 
+    % Public properties.
+    properties (SetAccess = public, GetAccess = public)
+
+    end
+    
+
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        % These are the Identity filters generated below via filterKernel.
+        rgbData
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -38,21 +44,21 @@ classdef osIdentity < outerSegment
         
         % set function, see osIdentitySet for details
         function obj = set(obj, param, val, varargin)
-            osIdentitySet(obj, param, val, varargin);
+            osSet(obj, param, val, varargin);
         end
         
         % get function, see osIdentityGet for details
         function val = get(obj, param, varargin)
-           val = osIdentityGet(obj, param, varargin);
+           val = osGet(obj, param, varargin);
         end
       
     end
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = compute(obj, sensor)
+        function obj = compute(obj, scene)
             % see osCompute for details
-            obj = osCompute(obj, sensor, varargin); 
+            obj = osCompute(obj, scene, varargin); 
         end
         function plot(obj, sensor)
             % see osPlot for details

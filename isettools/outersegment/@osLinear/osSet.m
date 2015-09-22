@@ -1,5 +1,5 @@
 function obj = osSet(obj, varargin)
-% osLinearSet: a method of @osLinear that sets isetbio outersegment object 
+% osSet: a method of @osLinear that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -8,9 +8,7 @@ function obj = osSet(obj, varargin)
 %       {'mConeFilter'} - the linear filter for M-cone temporal response
 %       {'lConeFilter'} - the linear filter for L-cone temporal response
 % 
-% % Example code:
-% noiseFlag = 0;
-% adaptedOS = osLinearSet(adaptedOS, 'noiseFlag', noiseFlag);
+% adaptedOS = osSet(adaptedOS, 'noiseFlag', 0);
 % 
 % 8/2015 JRG NC DHB
 
