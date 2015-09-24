@@ -3,6 +3,8 @@ classdef rgc < handle
 % the responses of retinal gnanglion cells from the isetbio @outerSegment 
 % object. Subclasses of @rgc include @rgcLNP and @rgcGLM and are used to
 % instantiate specific models of RGC processing.
+% 
+% See isetbio/scripts/xNeedsChecking/rgc/s_rgc.m for tutorial
 %     
 % (c) isetbnio
 % 

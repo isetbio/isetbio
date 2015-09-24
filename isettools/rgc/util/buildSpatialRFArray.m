@@ -78,8 +78,8 @@ for icind = 1:length(icarr)
         
         p1 = prod([IJ(:,1) QIJ(1,:)'],2)+prod([IJ(:,2) QIJ(2,:)'],2);
         p2 = prod([IJ(:,1) rQIJ(1,:)'],2)+prod([IJ(:,2) rQIJ(2,:)'],2);
-        so_center = exp(-0.5*p1); so_surround = k*exp(-0.5*p2);
-        so = reshape(so_center - so_surround,size(i2));
+        so_center = reshape(exp(-0.5*p1),size(i2)); so_surround = reshape(k*exp(-0.5*p2),size(i2));
+        so = so_center - so_surround;
 
         % s(floor(ic+(-extent*receptiveFieldDiameter1STD+1:extent*receptiveFieldDiameter1STD)),...
         %     floor(jc+(-extent*receptiveFieldDiameter1STD+1:extent*receptiveFieldDiameter1STD))) = so;
@@ -98,11 +98,11 @@ for icind = 1:length(icarr)
 %         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
 %         spatialRFFill{icind,jcind}  = find(so>magnitude1STD); 
         
-        magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        spatialRFFill{icind,jcind}  = find(sx_cent>magnitude1STD);
+        magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+        spatialRFFill{icind,jcind}  = find(so_center>magnitude1STD);
         
         hold on;
-        [cc,h] = contour(i2,j2,so,[magnitude1STD magnitude1STD]);% close;
+        [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
 %         ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind} = cc;

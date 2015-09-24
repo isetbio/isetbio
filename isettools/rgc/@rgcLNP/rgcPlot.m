@@ -76,7 +76,7 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 
 %                     mosaicall(round(x1(:)),round(y1(1))) = 1;
             
-            k = 1:100;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:10;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             for ix = 1:length(x1)
 %                 for iy = 1%:length(y1)
@@ -92,9 +92,9 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
                     px = ceil(-3*obj.mosaic{cellTypeInd}.receptiveFieldDiameter1STD + (x1(ix)));
                     py = ceil(-3*obj.mosaic{cellTypeInd}.receptiveFieldDiameter1STD + (y1(ix)));
 
-%                     mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;
+                    mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;
                                         
-                    mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));
+%                     mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));
 %                 end
             end
             
@@ -135,7 +135,7 @@ h1 = figure;
 set(gcf,'position',[548   606   893   739]);
 % vObj = VideoWriter('new2.mj2', 'Archival');
 
-vObj = VideoWriter('whiteNew3nl.mp4','MPEG-4');
+vObj = VideoWriter('test.mp4','MPEG-4');
 vObj.FrameRate = 30;
  open(vObj);
 
@@ -148,7 +148,7 @@ vObj.FrameRate = 30;
  plotOrder = [1 4 2 5 3];
 % for k = 10
 
-for k = 1:100%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+for k = 1:10%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 for cellTypeInd = 1:obj.numberCellTypes
         nCells = size(obj.mosaic{cellTypeInd}.spatialRFArray);
 
@@ -177,7 +177,7 @@ for cellTypeInd = 1:obj.numberCellTypes
     axis equal; axis off;
     title(sprintf('%s',obj.mosaic{cellTypeInd}.nameCellType),'fontsize',16);
 
-    subplot(2,3,6); image(squeeze(sceneRGB(:,:,:,k))); axis equal; axis off;
+    subplot(2,3,6); image(squeeze(sceneRGB(:,:,:,1+mod(k,10)))); axis equal; axis off;
     title('Stimulus', 'fontsize', 16);
     
     drawnow

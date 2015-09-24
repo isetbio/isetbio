@@ -18,14 +18,20 @@ nCells = size(mosaic.spatialRFArray);
 
 % rfSize = size(mosaic.spatialRFArray{1,1});
 rfSize = floor(mosaic.receptiveFieldDiameter1STD*ones(2,1));
-tic
+% tic
+fprintf('Spatial Convolution, %s:     \n', mosaic.nameCellType);
+
+for rgbIndex = 1:3
+    tic    
+%     fprintf('RGB = %d     \n', rgbIndex);
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
         for samp = 1:nSamples
             spRF = mosaic.spatialRFArray{xcell,ycell};
             % if stimSize(1) < rfSize(1) && stimSize(2) < rfSize(2)
-                spStim = squeeze(sptempStimulus(:,:,samp));
+
+                spStim = squeeze(sptempStimulus(:,:,rgbIndex,samp));
                 
                 spRFOneDim = mosaic.spatialRFonedim{xcell,ycell};
             % else % need to fix
@@ -38,7 +44,7 @@ for xcell = 1:nCells(1)
             % NEED TO FIX THIS!
             % spResponse{xcell,ycell}(:,:,samp) = conv2(spRF, spStim);
             
-            spResponse{xcell,ycell}(:,:,samp) = conv2(spRF, spStim);
+                spResponse{xcell,ycell}(:,:,rgbIndex,samp) = conv2(spRF, spStim);
             
             
 %             tic
@@ -46,10 +52,10 @@ for xcell = 1:nCells(1)
 %             spOneDim2 = convn(spRFOneDim(2,:), spStim');
 %             
 % %             spResponse{xcell,ycell}(:,:,samp) = reshape(spOneDim1'*spOneDim2,stimSize);
-%             toc
-            
+
         end
     end
 end
 
 toc
+end

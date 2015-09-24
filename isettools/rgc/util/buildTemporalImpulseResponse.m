@@ -1,11 +1,9 @@
-function k = buildTemporalImpulseResponse(sensor, namesCellTypes)
+function k = buildTemporalImpulseResponse(integrationTime)
 % buildTemporalImpulseResponse: a util function of the @rgc parent class,
 % this builds the temporal filter function.
 
 % From code by J. Pillow:
 % Create a default (temporal) stimulus filter
-
-integrationTime = sensor.integrationTime;
 
 % DTsim = .01; % Bin size for simulating model & computing likelihood.
 % nkt = 20;  % Number of time bins in filter;
