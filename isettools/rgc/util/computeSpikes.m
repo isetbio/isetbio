@@ -1,4 +1,4 @@
-function spikeTimes = computeSpikes(nlResponse, sensor, outersegment, varargin)
+function spikeTimes = computeSpikes(nlResponse, ih, sensor, outersegment, varargin)
 % computeSpikes: a util function of the @rgc parent class, this
 % converts the nonlinear response of the generator lookup function to a
 % probabilistic spiking output.
@@ -28,11 +28,16 @@ slen = length(Vstm);
 dt = .01; % sensorGet(sensor,'integration time');
 % rlen = length([.5+dt:dt:slen+.5]');
 rlen = length([.5+dt:dt:slen-1]');
-hlen = rlen;
+hlen = length(ih);
 nbinsPerEval = 100;
 nlfun = @exp;
 RefreshRate = 100;
 
+% ihthi = [dt:dt:max(glmprs.iht)]';  % time points for sampling
+% ihthi = [dt:dt:slen*dt];
+% ihhi = interp1(.001:.01:slen*dt+.01, ih, ihthi, 'linear', 0);
+% hlen = length(ihhi);
+ihhi = ih;
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
@@ -67,9 +72,9 @@ for xcell = 1:nCells(1)
                 mxi = min(rlen, ispk+hlen); % max time affected by post-spike kernel
                 iiPostSpk = ispk+1:mxi; % time bins affected by post-spike kernel
                 if ~isempty(iiPostSpk)
-                    Vmem(iiPostSpk) = Vmem(iiPostSpk);%+ihhi(1:mxi-ispk); POST SPIKE FIX
+                    Vmem(iiPostSpk) = Vmem(iiPostSpk)+ihhi(1:mxi-ispk); %POST SPIKE FIX
                     if nargout == 3  % Record post-spike current
-                        Ispk(iiPostSpk) = Ispk(iiPostSpk);%+ihhi(1:mxi-ispk);
+                        Ispk(iiPostSpk) = Ispk(iiPostSpk)+ihhi(1:mxi-ispk);
                     end
                 end
                 tspnext = exprnd(1);  % draw next spike time

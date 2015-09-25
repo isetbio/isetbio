@@ -1,4 +1,4 @@
-function [spatialRFArray, spatialRFonedim, spatialContours, spatialRFFill, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
+function [spatialRFArray, spatialRFonedim, spatialRFcenter, spatialRFsurround, spatialContours, spatialRFFill, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
 % buildSpatialRF: a util function of the @rgc parent class
 % 
 % 
@@ -67,7 +67,7 @@ for icind = 1:length(icarr)
    
         d1 = 1; d2 = 0.25*randn(1,1);
         Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-
+        % receptiveFieldDiameter1STD == 1/sqrt(norm(Q)); % just to check
 
         [i2 j2] = meshgrid(ic+pts,jc+pts);
         i = i2(:); j = j2(:);
@@ -89,6 +89,8 @@ for icind = 1:length(icarr)
         
         cellCenterLocations{icind,jcind} = [ic jc];
         spatialRFArray{icind,jcind} = so;
+        spatialRFcenter{icind,jcind} = so_center;
+        spatialRFsurround{icind,jcind} = so_surround;
         spatialRFonedim{icind,jcind} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
                 
         xv = rand(1,2);
@@ -105,7 +107,15 @@ for icind = 1:length(icarr)
         [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
 %         ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
-        spatialContours{icind,jcind} = cc;
+        spatialContours{icind,jcind,1} = cc;
+        
+        clear cc h
+        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+        % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
+        [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
+%         ccCell{rfctr} = cc(:,2:end);
+        cc(:,1) = [NaN; NaN];
+        spatialContours{icind,jcind,2} = cc;
         
     end
 end

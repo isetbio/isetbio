@@ -24,6 +24,18 @@ classdef rgc < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
+        
+        animal;
+        eyeLeftOrRight;
+        patchLocationPolarRadiusMicrometers;
+        patchLocationPolarAngleDegrees;
+        temporalEquivEcc;
+        
+        numberCellTypes;
+        namesCellTypes;
+        
+        mosaic;
+        
         noiseFlag;
     end
     
@@ -35,8 +47,8 @@ classdef rgc < handle
     % Public methods
     methods
         
-        function obj = rgc()
-            obj.initialize();
+        function obj = rgc(sensor, outersegment, varargin)
+            obj.initialize(sensor, outersegment, varargin{:});
         end
         
         % set function, see
@@ -49,6 +61,21 @@ classdef rgc < handle
            val = rgcGet(obj, param, varargin);
         end
         
+        % compute function 
+        function compute(obj, sensor, param, varargin)
+            rgcCompute(obj, sensor, param, varargin);
+        end
+        
+        % plot function
+        function plot(obj, varargin)
+            rgcPlot(obj, varargin);
+        end
+        
+        % movie function
+        function movie(obj, outersegment, varargin)
+            rgcMovie(obj, outersegment, varargin);
+        end
+        
     end
     
     % Methods that must only be implemented in the subclasses.
@@ -56,10 +83,6 @@ classdef rgc < handle
     % it cannot instantiate objects.
     
     methods (Abstract, Access=public)
-        % see 
-        compute(obj, sensor, param, varargin);
-        % see 
-        plot(obj, sensor);
     end
     
     % Methods may be called by the subclasses, but are otherwise private 
@@ -73,7 +96,7 @@ classdef rgc < handle
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj);
+        initialize(obj, sensor, outersegment, varargin);
     end
     
 end

@@ -1,4 +1,5 @@
-function rgcPlot(obj, varargin)
+function rgcMovie(obj, outersegment, varargin)
+
 % rgcPlot: a method of @rgcLNP that plots the retinal location of the
 % patch, the 1 standard deviation contours of the RGC RF mosaic and a movie
 % of the RGC response.
@@ -13,4 +14,4 @@ function rgcPlot(obj, varargin)
 % 09/2015 JRG
 
 
-rgcPlot@rgc(obj, varargin);
+rgcMovie@rgc(obj, outersegment, varargin);

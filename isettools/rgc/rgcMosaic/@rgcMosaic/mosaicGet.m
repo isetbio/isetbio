@@ -1,5 +1,5 @@
-function obj = mosaicSet(obj, varargin)
-% rgcMosaicSet: a method of @rgcMosaic that sets rgcMosaic object 
+function val = mosaicGet(obj, varargin)
+% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -10,6 +10,10 @@ function obj = mosaicSet(obj, varargin)
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
 % 
+
+% % % We could do set using the superclass method
+% obj = mosaicSet@rgcMosaic(obj, varargin{:});
+
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
 error(nargchk(0, Inf, nargin));
@@ -22,17 +26,16 @@ allowableFieldsToSet = {...
     'nameCellType',...
     'receptiveFieldDiameter1STD',...
     'spatialRFArray',...
-    'spatialRFonedim',...
+    'spatialRFonedim',...    
     'spatialRFcenter',...
     'spatialRFsurround',...
     'spatialRFcontours',...
     'spatialRFFill',...
     'cellCenterLocations',...
     'temporalImpulseResponse',...
-    'linearResponse'
+    'linearResponse',...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -52,30 +55,31 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
+    
     case{'parent'}
-        obj.parent = params.value;        
+        val = obj.parent;        
     case{'namecelltype'}        
-        obj.nameCellType = params.value;
+        val = obj.nameCellType;
     case{'receptivefielddiameter1std'}
-        obj.receptiveFieldDiameter1STD = params.value;
+        val = obj.receptiveFieldDiameter1STD;
     case{'spatialrfarray'}
-        obj.spatialRFArray = params.value;
+        val = obj.spatialRFArray;
     case{'spatialrfonedim'}
-        obj.spatialRFonedim = params.value;
+        val = obj.spatialRFonedim;        
     case{'spatialrfcenter'}
-        obj.spatialRFcenter = params.value;
+        val = obj.spatialRFcenter;
     case{'spatialrfsurround'}
-        obj.spatialRFsurround = params.value;
+        val = obj.spatialRFsurround;
     case{'spatialrfcontours'}
-        obj.spatialRFcontours = params.value;
+        val = obj.spatialRFcontours;
     case{'spatialrffill'}
-        obj.spatialRFFill = params.value;
+        val = obj.spatialRFFill;
     case{'cellcenterlocations'}
-        obj.cellCenterLocations = params.value;
+        val = obj.cellCenterLocations;
     case{'temporalimpulseresponse'}
-        obj.temporalImpulseResponse = params.value;
+        val = obj.temporalImpulseResponse;
     case{'linearresponse'}
-        obj.linearResponse = params.value;
+        val = obj.linearResponse;
         
 end
 

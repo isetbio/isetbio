@@ -1,37 +1,24 @@
-classdef rgcMosaic < handle
-% @rgcMosaic: a class with a parent @rgc object, each @rgcMosaic stores
-% properties for one type of RGC cell mosaic, e.g., ON midget or small
-% bistratified. The parent @rgc object stores each @rgcMosaic as a cell in
-% rgcObj.mosaic such that the properties of an @rgcMosaic object can be
-% viewed with 'rgcObj.mosaic{1}'. 
+classdef rgcMosaicGLM < rgcMosaic
+% @rgcMosaicGLM: a subclass of @rgcMosaic
 % 
-% cellTypeInd = 1: ON parasol
-% cellTypeInd = 2: OFF parasol
-% cellTypeInd = 3: ON midget
-% cellTypeInd = 4: OFF midget
-% cellTypeInd = 5: small bistratified
-    
+%
 % 9/2015 JRG
+
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
     end
            
     % Protected properties.
-    properties (SetAccess = protected, GetAccess = public)
-        parent;
-        nameCellType;
-        receptiveFieldDiameter1STD;
-        spatialRFArray;
-        spatialRFcenter;
-        spatialRFsurround;
-        spatialRFonedim;
-        spatialRFcontours;
-        spatialRFFill;
-        cellCenterLocations;
-        temporalImpulseResponseCenterRGB;
-        temporalImpulseResponseSurroundRGB;
-        linearResponse;
+    properties (SetAccess = private, GetAccess = public)
+
+        generatorFunction;
+        nlResponse;
+        spikeResponse;
+        
+        postSpikeFilter;
+        couplingFilter;
+        couplingMatrix;
 
     end
     
@@ -43,9 +30,9 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgc, sensor, outersegment, varargin)
-            % Initialize the parent class
-            %
+        function obj = rgcMosaicGLM(rgc, sensor, outersegment, varargin)
+            % Initialize the parent class            
+            obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
 
             % Initialize ourselves
             obj.initialize(rgc, sensor, outersegment, varargin{:});
@@ -57,8 +44,9 @@ classdef rgcMosaic < handle
         end
         
         % set function, see for details
-        function obj = set(obj, param, val, varargin)
-            mosaicSet(obj, param, val, varargin);
+        function obj = set(obj, varargin)
+            % obj = set@rgcMosaic(obj, varargin);
+            mosaicSet(obj, varargin);
         end
         
         % get function, see for details

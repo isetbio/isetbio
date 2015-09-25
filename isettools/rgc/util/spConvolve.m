@@ -12,7 +12,7 @@ function  spResponse = spConvolve(mosaic, sptempStimulus)
 % 09/2015 JRG
 
 stimSize = size(sptempStimulus(:,:,1));
-nSamples = size(sptempStimulus,3);
+nSamples = size(sptempStimulus,4);
 
 nCells = size(mosaic.spatialRFArray);
 
@@ -29,6 +29,8 @@ for xcell = 1:nCells(1)
         
         for samp = 1:nSamples
             spRF = mosaic.spatialRFArray{xcell,ycell};
+            spRFcenter = mosaic.spatialRFcenter{xcell,ycell};
+            spRFsurround = mosaic.spatialRFsurround{xcell,ycell};
             % if stimSize(1) < rfSize(1) && stimSize(2) < rfSize(2)
 
                 spStim = squeeze(sptempStimulus(:,:,rgbIndex,samp));
@@ -44,9 +46,13 @@ for xcell = 1:nCells(1)
             % NEED TO FIX THIS!
             % spResponse{xcell,ycell}(:,:,samp) = conv2(spRF, spStim);
             
+            if 0
+            
                 spResponse{xcell,ycell}(:,:,rgbIndex,samp) = conv2(spRF, spStim);
-            
-            
+            elseif 1 
+                spResponse{xcell,ycell,1}(:,:,rgbIndex,samp) = conv2(spRFcenter, spStim);            
+                spResponse{xcell,ycell,2}(:,:,rgbIndex,samp) = conv2(spRFsurround, spStim);
+            end
 %             tic
 %             spOneDim1 = convn(spRFOneDim(1,:), spStim);
 %             spOneDim2 = convn(spRFOneDim(2,:), spStim');

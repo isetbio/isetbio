@@ -32,9 +32,11 @@ for xcell = 1:nCells(1)
     for ycell = 1:nCells(2) 
         
 for rgbIndex = 1:3
-            spResponseRS = reshape(squeeze(spResponse{xcell,ycell}(:,:,rgbIndex,:)), spResponseSize(1)*spResponseSize(2), nSamples);
-       
+
+
             if 0%mosaic.temporalImpulseResponseCenterRGB == mosaic.temporalImpulseResponseSurroundRGB
+                spResponseRS = reshape(squeeze(spResponse{xcell,ycell}(:,:,rgbIndex,:)), spResponseSize(1)*spResponseSize(2), nSamples);
+            
                 temporalIR = mosaic.temporalImpulseResponseCenterRGB{rgbIndex};
                 
 %                  tic
@@ -43,7 +45,7 @@ for rgbIndex = 1:3
 %                 toc
                 
 %                 tic
-                fullResponseRS = convn(spResponseRS, temporalIR');
+                fullResponseRSRGB(:,:,rgbIndex) = convn(spResponseRS, temporalIR');
 %                 toc
                 
                
@@ -51,11 +53,15 @@ for rgbIndex = 1:3
                 
                 %         tic
                 
+                spResponseCenterRS = reshape(squeeze(spResponse{xcell,ycell,1}(:,:,rgbIndex,:)), spResponseSize(1)*spResponseSize(2), nSamples);
+                spResponseSurroundRS = reshape(squeeze(spResponse{xcell,ycell,2}(:,:,rgbIndex,:)), spResponseSize(1)*spResponseSize(2), nSamples);
+       
+                
                 temporalIRCenter = mosaic.temporalImpulseResponseCenterRGB{rgbIndex};
                 temporalIRSurround = mosaic.temporalImpulseResponseSurroundRGB{rgbIndex};
                 
-                fullResponseRSCenter = convn(spResponseRS, temporalIRCenter');
-                fullResponseRSSurround = convn(spResponseRS, temporalIRSurround');
+                fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter');
+                fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround');
                 
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter - fullResponseRSSurround;
                 
@@ -71,10 +77,20 @@ end
 % fullResponse{xcell,ycell,rgbIndex} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
 % nlResponse{xcell,ycell,rgbIndex} = exp(mean(fullResponseRS,1));
 
-fullResponseRS = mean(fullResponseRSRGB,3);
+% fullResponseRS = mean(fullResponseRSRGB,3);
+fullResponseRS = sum(fullResponseRSRGB,3);
+
 fullResponse{xcell,ycell} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
 
-nlResponse{xcell,ycell} = exp(mean(fullResponseRS,1));
+% nlResponse{xcell,ycell} = exp(mean(fullResponseRS,1));
+
+if ~isa(mosaic, 'rgcMosaicLinear')
+    
+    genFunction = mosaicGet(mosaic, 'generatorFunction');
+    nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
+else
+    nlResponse{xcell,ycell} = [];
+end
 
 end
 toc

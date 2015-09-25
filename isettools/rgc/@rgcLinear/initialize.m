@@ -13,9 +13,6 @@ function initialize(obj, sensor, outersegment, varargin)
 % 09/2015 JRG
 
 
-
-
-
 for cellTypeInd = 1:obj.numberCellTypes
-    obj.mosaic{cellTypeInd} = rgcMosaicLNP(cellTypeInd, obj, sensor, outersegment, varargin{:});
+    obj.mosaic{cellTypeInd} = rgcMosaicLinear(cellTypeInd, obj, sensor, outersegment, varargin{:});
 end

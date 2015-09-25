@@ -10,6 +10,10 @@ function obj = mosaicSet(obj, varargin)
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
 % 
+
+% % % We could do set using the superclass method
+% obj = mosaicSet@rgcMosaic(obj, varargin{:});
+
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
 error(nargchk(0, Inf, nargin));
@@ -29,7 +33,11 @@ allowableFieldsToSet = {...
     'spatialRFFill',...
     'cellCenterLocations',...
     'temporalImpulseResponse',...
-    'linearResponse'
+    'linearResponse',...
+    'generatorFunction',...
+    'nlResponse;',...
+    'spikeResponse'...
+
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -52,6 +60,7 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
+    
     case{'parent'}
         obj.parent = params.value;        
     case{'namecelltype'}        
@@ -76,6 +85,12 @@ switch lower(params.what)
         obj.temporalImpulseResponse = params.value;
     case{'linearresponse'}
         obj.linearResponse = params.value;
+    case{'generatorfunction'}
+        obj.generatorFunction = params.value;        
+    case{'nlresponse'}        
+        obj.nlResponse = params.value;
+    case{'spikeresponse'}
+        obj.spikeResponse = params.value;
         
 end
 

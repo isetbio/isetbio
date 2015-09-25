@@ -1,7 +1,7 @@
-classdef rgcLNP < rgc 
-% @rgcLNP: a subclass of @rgc. This subclass implements retinal
-% ganglion cell computations with the @outerSegment object as input. The
-% LNP (linear-nonlinear-Poisson) model follows the details outlined in
+classdef rgcLinear < rgc 
+% @rgcLinear: a subclass of @rgc. This subclass implements retinal
+% ganglion cell computations with the @outerSegment object as input. 
+% This model follows the details of the linear model outlined in
 % Chichilnisky & Kalmar (2002), and incorporates other anatomical and
 % physiological data from several other sources for parameters like
 % receptive field spacing, spatial/temporal linear filters and
@@ -27,7 +27,7 @@ classdef rgcLNP < rgc
     methods
         
         % Constructor
-        function obj = rgcLNP(sensor, outersegment, varargin)
+        function obj = rgcLinear(sensor, outersegment, varargin)
             % Initialize the parent class
             obj = obj@rgc(sensor, outersegment, varargin{:});
             
