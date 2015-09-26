@@ -38,16 +38,16 @@ identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 % build rgc
 
 % rgc1 = rgcLinear(sensor, osIdentity, 'right', 3.75, 180);
-rgc1 = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
+% rgc1 = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
 
-% rgc1 = rgcGLM(sensor, osIdentity, 'right', 3.75, 180);
+rgc1 = rgcGLM(sensor, osIdentity, 'right', 3.75, 180);
 
 %%
 
 % % % tic
 rgc1 = rgcCompute(rgc1, sensor, identityOS);
 % % % toc
-% % %%
+%
 % % % tic
 rgcPlot(rgc1, sensor, identityOS);
 % % % toc

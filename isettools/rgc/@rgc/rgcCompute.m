@@ -62,7 +62,14 @@ if ~isa(obj, 'rgcLinear')
 %     obj.mosaic{cellTypeInd,1}.spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, sensor, outersegment); 
     fprintf('Spike generation, %s:      \n', obj.mosaic{cellTypeInd}.nameCellType);
     tic
-    spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter, sensor, outersegment); 
+    
+    if 0    
+        spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter, sensor, outersegment);   
+    elseif 0
+        spikeResponse = computeSpikesPSF(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter, sensor, outersegment); 
+    elseif 1       
+        spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1}, sensor, outersegment);       
+    end
 %     obj = rgcMosaicSet(obj, 'spikeResponse', spikeResponse);
     
     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);

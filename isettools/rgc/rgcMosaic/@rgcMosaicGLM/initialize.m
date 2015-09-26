@@ -19,9 +19,9 @@ function initialize(obj, rgc, sensor, outersegment, varargin)
 %     obj.generatorFunction = @erf;
     obj.generatorFunction = @exp;
     
-    
     obj.postSpikeFilter = buildPostSpikeFilter(.01);
-%     obj.couplingFilter = buildCouplingFilter;
-%     obj.couplingMatrix = buildCoupingMatrix;
+    
+    [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
+
 % end
 
