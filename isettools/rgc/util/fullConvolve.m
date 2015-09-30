@@ -63,7 +63,7 @@ for rgbIndex = 1:3
                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter');
                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround');
                 
-                fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter - fullResponseRSSurround;
+                fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,1:nSamples) - fullResponseRSSurround(:,1:nSamples);
                 
                 %         toc
                 
@@ -80,8 +80,8 @@ end
 % fullResponseRS = mean(fullResponseRSRGB,3);
 fullResponseRS = sum(fullResponseRSRGB,3);
 
-fullResponse{xcell,ycell} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
-
+% fullResponse{xcell,ycell} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
+fullResponse{xcell,ycell} = mean(fullResponseRS);
 % nlResponse{xcell,ycell} = exp(mean(fullResponseRS,1));
 
 if ~isa(mosaic, 'rgcMosaicLinear')

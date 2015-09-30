@@ -33,13 +33,15 @@ dt = .01; % sensorGet(sensor,'integration time');
 rlen = length([.5+dt:dt:slen-1]');
 hlen = length(ihcpl{1,1});
 nbinsPerEval = 100;
-nlfun = @exp;
+nlfun = obj.generatorFunction;
 RefreshRate = 100;
 
 % ihthi = [dt:dt:max(glmprs.iht)]';  % time points for sampling
 % ihthi = [dt:dt:slen*dt];
 % ihhi = interp1(.001:.01:slen*dt+.01, ih, ihthi, 'linear', 0);
 % hlen = length(ihhi);
+
+for trial = 1:10
 
 cellCtr = 0;
 for xcell = 1:nCells(1)
@@ -50,24 +52,21 @@ for xcell = 1:nCells(1)
     end
 end
 
-ihhi = reshape(ihhi, hlen, nCellsTotal, nCellsTotal);
-
         %%%%%%%%%%%%%%%%%%
         
 %         Vstm = log(nlResponse{xcell,ycell});
-        Vstm = log(vertcat(obj.nlResponse{:}));
+%         Vstm = (vertcat(obj.nlResponse{:}));
+        Vstm = vertcat(obj.linearResponse{:});
         
         
         Vmem = interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear');
         
+        Ispk = Vmem*0;
         % Set up simulation dynamics variables
         tsp(1,1:nCellsTotal) = {zeros(round(slen/25),1)};  % allocate space for spike times
         nsp = zeros(1,nCellsTotal);
         jbin = 1;
-        
-        tspnext = exprnd(1,1,nCellsTotal);
-        rprev = zeros(1,nCellsTotal);
-        
+                
         tspnext = exprnd(1,1,nCellsTotal);
         rprev = zeros(1,nCellsTotal);
         while jbin <= rlen
@@ -98,13 +97,14 @@ ihhi = reshape(ihhi, hlen, nCellsTotal, nCellsTotal);
                     nsp(icell) = nsp(icell)+1;
                     tsp{icell}(nsp(icell),1) = ispk*dt;
                     if ~isempty(iiPostSpk)
-                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
-                        if nargout == 3  % Record post-spike current
-                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
-                        end
+                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
+%                         if nargout == 3  % Record post-spike current
+                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
+%                         end
                     end
                     rprev(icell) = 0;  % reset this cell's integral
                     tspnext(icell) = exprnd(1); % draw RV for next spike in this cell
+%                     VmemAll(ic,:) = Vmem;
                 end
                 jbin = ispk+1;  % Move to next bin
                 % --  Update # of samples per iter ---
@@ -124,10 +124,13 @@ for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
         cellCtr = cellCtr+1;
-        spikeTimes{xcell,ycell} = tsp{cellCtr}(1:nsp(cellCtr)); % prune extra zeros
+        spikeTimes{xcell,ycell,trial,1} = tsp{cellCtr}(1:nsp(cellCtr)); % prune extra zeros
         
+        spikeTimes{xcell,ycell,trial,2} = Vmem(:,cellCtr); % prune extra zeros
     end
 end
 %     end
 % end
+
+end%trial
         ph = 1;

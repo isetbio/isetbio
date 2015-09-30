@@ -18,6 +18,7 @@ function initialize(obj, rgc, sensor, outersegment, varargin)
 % for cellTypeInd = 1:obj.numberCellTypes
 %     obj.generatorFunction = @erf;
     obj.generatorFunction = @exp;
+%     obj.generatorFunction = @(x) 10*erf(x);
     
     obj.postSpikeFilter = buildPostSpikeFilter(.01);
     

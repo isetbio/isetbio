@@ -21,6 +21,8 @@ rfSize = floor(mosaic.receptiveFieldDiameter1STD*ones(2,1));
 % tic
 fprintf('Spatial Convolution, %s:     \n', mosaic.nameCellType);
 
+% sptempStimulus = sptempStimulus - mean(sptempStimulus(:));
+
 for rgbIndex = 1:3
     tic    
 %     fprintf('RGB = %d     \n', rgbIndex);
@@ -34,6 +36,7 @@ for xcell = 1:nCells(1)
             % if stimSize(1) < rfSize(1) && stimSize(2) < rfSize(2)
 
                 spStim = squeeze(sptempStimulus(:,:,rgbIndex,samp));
+%                 spStim = spStim - mean(spStim(:));
                 
                 spRFOneDim = mosaic.spatialRFonedim{xcell,ycell};
             % else % need to fix

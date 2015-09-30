@@ -44,7 +44,7 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 
 %                     mosaicall(round(x1(:)),round(y1(1))) = 1;
             
-            k = 166:175;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:20;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             for ix = 1:length(x1)
 %                 for iy = 1%:length(y1)
@@ -123,7 +123,7 @@ vObj.FrameRate = 30;
  plotOrder = [1 4 2 5 3];
 % for k = 10
 
-for k = 166:175%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+for k = 1:20%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 for cellTypeInd = 1:obj.numberCellTypes
         nCells = size(obj.mosaic{cellTypeInd}.spatialRFArray);
 
