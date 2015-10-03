@@ -1,4 +1,4 @@
-function spikeTimes = computeSpikes(nlResponse, ih, sensor, outersegment, varargin)
+function spikeTimes = computeSpikesPSF(nlResponse, ih, varargin)
 % computeSpikes: a util function of the @rgc parent class, this
 % converts the nonlinear response of the generator lookup function to a
 % probabilistic spiking output.

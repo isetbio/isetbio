@@ -1,4 +1,4 @@
-function spikeTimes = computeSpikesGLM(obj, sensor, outersegment, varargin)
+function spikeTimes = computeSpikesGLM(obj, varargin)
 % computeSpikes: a util function of the @rgc parent class, this
 % converts the nonlinear response of the generator lookup function to a
 % probabilistic spiking output.
@@ -48,7 +48,6 @@ for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr+1;
         ihhi(cellCtr,:,:) = reshape(obj.couplingFilter{ind2sub([nCells(1),nCells(2)],cellCtr)},nCellsTotal,hlen);
-  
     end
 end
 
@@ -63,7 +62,7 @@ end
         
         Ispk = Vmem*0;
         % Set up simulation dynamics variables
-        tsp(1,1:nCellsTotal) = {zeros(round(slen/25),1)};  % allocate space for spike times
+        tsp(1,1:nCellsTotal) = {zeros(round(slen/5),1)};  % allocate space for spike times
         nsp = zeros(1,nCellsTotal);
         jbin = 1;
                 
@@ -113,10 +112,10 @@ end
             end
         end
         
-%         % Remove any extra bins from cell array of spike times
-%         for j = 1:nCellsTotal
-%             tsp{j} = tsp{j}(1:nsp(j));
-%         end
+        % Remove any extra bins from cell array of spike times
+        for j = 1:nCellsTotal
+            tsp{j} = tsp{j}(1:nsp(j));
+        end
         
         
 cellCtr = 0;

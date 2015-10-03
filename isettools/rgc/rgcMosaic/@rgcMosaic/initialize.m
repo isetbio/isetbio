@@ -1,4 +1,4 @@
-function initialize(obj, type, rgc, sensor, outersegment, varargin)
+function initialize(obj, type, rgc, sensor, outerSegment, varargin)
 % intialize: a method of @rgcLNP that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.
@@ -13,6 +13,10 @@ function initialize(obj, type, rgc, sensor, outersegment, varargin)
 % 09/2015 JRG
 
 %% Spatial RF arrays
+
+obj.parent = 'rgc';
+
+obj.input = rgc.input;
 
 obj.nameCellType = rgc.namesCellTypes{type};
 

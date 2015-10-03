@@ -23,6 +23,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 % values along with key names.
 allowableFieldsToSet = {...
     'parent',...
+    'input',...
     'nameCellType',...
     'receptiveFieldDiameter1STD',...
     'spatialRFArray',...
@@ -39,7 +40,8 @@ allowableFieldsToSet = {...
     'spikeResponse',...    
     'couplingFilter',...
     'couplingMatrix'...
-
+    'rasterResponse',...
+    'psthResponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -63,7 +65,9 @@ p.parse(varargin{:}); params = p.Results;
 switch lower(params.what)
     
     case{'parent'}
-        val = obj.parent;        
+        val = obj.parent;                
+    case{'input'}
+        val = obj.input;
     case{'namecelltype'}        
         val = obj.nameCellType;
     case{'receptivefielddiameter1std'}
@@ -96,6 +100,9 @@ switch lower(params.what)
         val = obj.couplingFilter;
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
-        
+    case{'rasterresponse'}
+        val = obj.rasterResponse;
+    case{'psthresponse'}
+        val = obj.psthResponse;
 end
 

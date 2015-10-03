@@ -16,6 +16,8 @@ classdef rgcMosaicLNP < rgcMosaic
         nlResponse;
         spikeResponse;
 
+        rasterResponse;
+        psthResponse;
     end
     
     % Private properties. Only methods of the parent class can set these

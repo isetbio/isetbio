@@ -20,6 +20,7 @@ classdef rgcMosaic < handle
     % Protected properties.
     properties (SetAccess = protected, GetAccess = public)
         parent;
+        input;
         nameCellType;
         receptiveFieldDiameter1STD;
         spatialRFArray;

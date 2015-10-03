@@ -24,7 +24,7 @@ classdef rgc < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        
+        input;
         animal;
         eyeLeftOrRight;
         patchLocationPolarRadiusMicrometers;
@@ -53,17 +53,17 @@ classdef rgc < handle
         
         % set function, see
         function obj = set(obj, param, val, varargin)
-            rgcSet(obj, param, val, varargin);
+            rgcSet(obj, param, val, varargin{:});
         end
         
         % get function, see 
         function val = get(obj, param, varargin)
-           val = rgcGet(obj, param, varargin);
+           val = rgcGet(obj, param, varargin{:});
         end
         
         % compute function 
-        function compute(obj, sensor, param, varargin)
-            rgcCompute(obj, sensor, param, varargin);
+        function compute(obj, outerSegment, varargin)
+            rgcCompute(obj,  outerSegment, varargin{:});
         end
         
         % plot function

@@ -11,19 +11,22 @@ function  spResponse = spConvolve(mosaic, sptempStimulus)
 % (c) isetbio
 % 09/2015 JRG
 
+nSamples = size(sptempStimulus,3);
+channelSize = size(sptempStimulus,4);
+
 stimSize = size(sptempStimulus(:,:,1));
-nSamples = size(sptempStimulus,4);
 
 nCells = size(mosaic.spatialRFArray);
 
 % rfSize = size(mosaic.spatialRFArray{1,1});
 rfSize = floor(mosaic.receptiveFieldDiameter1STD*ones(2,1));
 % tic
+fprintf('     \n');
 fprintf('Spatial Convolution, %s:     \n', mosaic.nameCellType);
 
 % sptempStimulus = sptempStimulus - mean(sptempStimulus(:));
 
-for rgbIndex = 1:3
+for rgbIndex = 1:channelSize
     tic    
 %     fprintf('RGB = %d     \n', rgbIndex);
 for xcell = 1:nCells(1)
@@ -35,7 +38,7 @@ for xcell = 1:nCells(1)
             spRFsurround = mosaic.spatialRFsurround{xcell,ycell};
             % if stimSize(1) < rfSize(1) && stimSize(2) < rfSize(2)
 
-                spStim = squeeze(sptempStimulus(:,:,rgbIndex,samp));
+                spStim = squeeze(sptempStimulus(:,:,samp,rgbIndex));
 %                 spStim = spStim - mean(spStim(:));
                 
                 spRFOneDim = mosaic.spatialRFonedim{xcell,ycell};
@@ -53,8 +56,8 @@ for xcell = 1:nCells(1)
             
                 spResponse{xcell,ycell}(:,:,rgbIndex,samp) = conv2(spRF, spStim);
             elseif 1 
-                spResponse{xcell,ycell,1}(:,:,rgbIndex,samp) = conv2(spRFcenter, spStim);            
-                spResponse{xcell,ycell,2}(:,:,rgbIndex,samp) = conv2(spRFsurround, spStim);
+                spResponse{xcell,ycell,1}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim);            
+                spResponse{xcell,ycell,2}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim);
             end
 %             tic
 %             spOneDim1 = convn(spRFOneDim(1,:), spStim);

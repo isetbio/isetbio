@@ -1,4 +1,4 @@
-function obj = rgcCompute(obj, sensor, outersegment, varargin)
+function obj = rgcCompute(obj, outersegment, varargin)
 % rgcCompute: a method of @rgcLNP that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus.
 % 
@@ -13,4 +13,4 @@ function obj = rgcCompute(obj, sensor, outersegment, varargin)
 
 
 % % Compute using the superclass method
-obj = rgcCompute@rgc(obj, sensor, outersegment, varargin);
+obj = rgcCompute@rgc(obj, outersegment, varargin);

@@ -21,7 +21,8 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {...   
+allowableFieldsToSet = {...  
+        'input',...
         'animal',...
         'eyeLeftOrRight',...
         'patchLocationPolarRadiusMicrometers',...
@@ -52,7 +53,8 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    
+    case{'input'}
+        val = obj.input;
     case{'animal'}
         val = obj.animal;
     case{'eyeLeftOrRight'}        

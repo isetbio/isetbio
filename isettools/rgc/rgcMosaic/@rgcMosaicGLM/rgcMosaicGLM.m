@@ -19,6 +19,9 @@ classdef rgcMosaicGLM < rgcMosaic
         postSpikeFilter;
         couplingFilter;
         couplingMatrix;
+        
+        rasterResponse;
+        psthResponse;
 
     end
     

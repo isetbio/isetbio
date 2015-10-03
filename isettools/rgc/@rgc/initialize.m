@@ -9,13 +9,20 @@ function initialize(obj, sensor, outersegment, varargin)
 % 
 % 09/2015 JRG
 
+if isa(outersegment,'osIdentity')
+    obj.input = 'rgb';
+else 
+    obj.input = 'cone current';
+end
 
 % mosaic = struct('onParasol',[],'offParasol',[],'onMidget',[],'offMidget',[],'smallBistratified',[]);
 obj.animal = 'macaque';
 obj.numberCellTypes = 5;
 obj.namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
 obj.mosaic = cell(obj.numberCellTypes,1); % populated in initialize()
-        
+
+obj.noiseFlag = 0;
+
 coneSize = sensorGet(sensor, 'pixel size', 'um' );
 patchSizeX = sensorGet(sensor, 'width', 'um');
 patchSizeY = sensorGet(sensor, 'height', 'um');
