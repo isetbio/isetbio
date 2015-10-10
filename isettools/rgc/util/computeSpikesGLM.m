@@ -22,7 +22,7 @@ ihcpl = mosaicGet(obj, 'couplingFilter');
 spResponseSize = size(obj.nlResponse{1,1}(:,:,1));
 nSamples = size(obj.nlResponse{1,1},3);
 
-nCells = size(obj.spatialRFArray);
+nCells = size(obj.cellLocation);
 nCellsTotal = nCells(1)*nCells(2);
 spikeTimes = cell(nCells);
 

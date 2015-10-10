@@ -1,11 +1,35 @@
 function initialize(obj, sensor, outersegment, varargin)
-% initialize: a method of @rgc that initializes the object.
+% initialize: a method of @rgc that initializes the object. The user inputs 
+% the location of the retinal patch with (eye side, reitnal patch radius, 
+% patch angle), and the temporal equivalent eccentricity (TEE) is calculated
+% from Chichilnisky & Kalmar, 2002, J. Neurosci, where 
 % 
-% Inputs:
+% TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text)
 % 
-% Outputs:
+% The TEE is used to cacluate the spatial receptive field (RF) diameter
+% from Fig. 5 of Chichilnisky & Kalmar, 2002. This intiailization procedure
+% calls the rgcMosaic initialization procedure to build the mosaics for
+% five cell types:
+% 
+% 1. ON parasol
+% 2. OFF parasol
+% 3. ON midget
+% 4. OFF midget
+% 5. small bistratified
+% 
+% The mosaic object is initialized with the center and surround RF, the
+% center and surround temporal impulse responses, and for LNP
+% objects, the generator function, and for GLM objects, the post-spike and
+% coupling filters.
+% 
+% Inputs: sensor, outersegment, eye side, retinal patch radius, patch angle.
+% 
+% Outputs: initialized rgc object.
 % 
 % Example:
+% rgc1 = rgcLinear(sensor, osIdentity, 'right', 3.75, 180);
+% rgc2 = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
+% rgc3 = rgcGLM(sensor, osIdentity, 'right', 3.75, 180);
 % 
 % 09/2015 JRG
 
@@ -15,19 +39,14 @@ else
     obj.input = 'cone current';
 end
 
-% mosaic = struct('onParasol',[],'offParasol',[],'onMidget',[],'offMidget',[],'smallBistratified',[]);
-obj.animal = 'macaque';
-obj.numberCellTypes = 5;
-obj.namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.mosaic = cell(obj.numberCellTypes,1); % populated in initialize()
+obj.name = 'macaque RGC';
+obj.mosaic = cell(5,1); % populated in initialize()
 
-obj.noiseFlag = 0;
-
-coneSize = sensorGet(sensor, 'pixel size', 'um' );
-patchSizeX = sensorGet(sensor, 'width', 'um');
-patchSizeY = sensorGet(sensor, 'height', 'um');
-fov = sensorGet(sensor,'fov');
-numCones = sensorGet(sensor, 'size');
+% coneSize = sensorGet(sensor, 'pixel size', 'um' );
+% patchSizeX = sensorGet(sensor, 'width', 'um');
+% patchSizeY = sensorGet(sensor, 'height', 'um');
+% fov = sensorGet(sensor,'fov');
+% numCones = sensorGet(sensor, 'size');
 
 %% Parasol ON or OFF RGCs.
 
@@ -43,9 +62,7 @@ else
 end
 
 % Set these as properties of the object.
-obj.eyeLeftOrRight = leftOrRightEye;
-obj.patchLocationPolarRadiusMicrometers = retinalRadius;
-obj.patchLocationPolarAngleDegrees = retinalTheta;
+% obj.side = leftOrRightEye;
     
 % Get the TEE.
 temporalEquivEcc = retinalLocationToTEE(retinalTheta, retinalRadius, leftOrRightEye);

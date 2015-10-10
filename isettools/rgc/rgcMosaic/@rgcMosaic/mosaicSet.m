@@ -15,22 +15,22 @@ function obj = mosaicSet(obj, varargin)
 error(nargchk(0, Inf, nargin));
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
+% This flag causes the parser not to throw an error here in the superclass
+% call. The subclass call will throw an error.
+p.KeepUnmatched = true;
+
 % Make key properties that can be set required arguments, and require
 % values along with key names.
 allowableFieldsToSet = {...
-    'parent',...
-    'input',...
-    'nameCellType',...
-    'receptiveFieldDiameter1STD',...
-    'spatialRFArray',...
-    'spatialRFonedim',...
-    'spatialRFcenter',...
-    'spatialRFsurround',...
-    'spatialRFcontours',...
-    'spatialRFFill',...
-    'cellCenterLocations',...
-    'temporalImpulseResponse',...
-    'linearResponse'
+        'cellType',...
+        'rfDiameter',...
+        'rfDiaMagnitude',...
+        'cellLocation',...
+        'sRFcenter',...
+        'sRFsurround',...
+        'tCenter',...
+        'tSurround',...
+        'linearResponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -53,32 +53,23 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    case{'parent'}
-        obj.parent = params.value;
-    case{'input'}
-        obj.input = params.value;
-    case{'namecelltype'}        
-        obj.nameCellType = params.value;
-    case{'receptivefielddiameter1std'}
-        obj.receptiveFieldDiameter1STD = params.value;
-    case{'spatialrfarray'}
-        obj.spatialRFArray = params.value;
-    case{'spatialrfonedim'}
-        obj.spatialRFonedim = params.value;
-    case{'spatialrfcenter'}
-        obj.spatialRFcenter = params.value;
-    case{'spatialrfsurround'}
-        obj.spatialRFsurround = params.value;
-    case{'spatialrfcontours'}
-        obj.spatialRFcontours = params.value;
-    case{'spatialrffill'}
-        obj.spatialRFFill = params.value;
-    case{'cellcenterlocations'}
-        obj.cellCenterLocations = params.value;
-    case{'temporalimpulseresponse'}
-        obj.temporalImpulseResponse = params.value;
+    case{'celltype'}
+        obj.cellType = params.value;
+    case{'rfdiameter'}
+        obj.rfDiameter = params.value;
+    case{'rfdiamagnitude'}
+        obj.rfDiaMagnitude = params.value;
+    case{'celllocation'}
+        obj.cellLocation = params.value;
+    case{'srfcenter'}
+        obj.sRFcenter = params.value;
+    case{'srfsurround'}
+        obj.sRFsurround = params.value;
+    case{'tcenter'}
+        obj.tCenter = params.value;
+    case{'tsurround'}
+        obj.tSurround = params.value;
     case{'linearresponse'}
         obj.linearResponse = params.value;
-        
 end
 

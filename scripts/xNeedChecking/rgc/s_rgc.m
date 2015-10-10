@@ -31,6 +31,15 @@ sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
 % sceneRGB = sceneHorwitzHassBarRGB(params);
 % sceneRGB = zeros(params.image_size, params.image_size, params.nsteps);
 
+% for frame = 1:params.nsteps
+%     params.freq =  [5 ]; % spatial frequencies of 1 and 5
+%     params.contrast = [0.6]; % contrast of the two frequencies
+%     params.ang  = [0,]; % orientations
+%     params.ph  = [0 ]; % phase
+%     sharmonic = sceneCreate('harmonic',params);
+%     sceneRGB(:,:,frame,:) = sceneGet(sharmonic,'rgb');
+% end
+
 identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 
 %% build rgc
@@ -46,7 +55,7 @@ rgc1 = rgcCompute(rgc1, identityOS);
 % % toc
 
 % % tic
-rgcPlot(rgc1, sensor, identityOS);
+rgcPlot(rgc1, 'spikeResponse');
 % % % toc
 %% With linear cone response
 

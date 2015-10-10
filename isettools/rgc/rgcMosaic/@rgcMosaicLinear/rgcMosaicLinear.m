@@ -36,13 +36,13 @@ classdef rgcMosaicLinear < rgcMosaic
         end
         
         % set function, see for details
-        function obj = set(obj, param, val, varargin)
-            mosaicSet(obj, param, val, varargin{:});
+        function obj = set(obj, varargin)
+            mosaicSet(obj, varargin{:});
         end
         
         % get function, see for details
-        function val = get(obj, param, varargin)
-           val = mosaicGet(obj, param, varargin{:});
+        function val = get(obj, varargin)
+           val = mosaicGet(obj, varargin{:});
         end
       
     end

@@ -16,12 +16,12 @@ spResponseSize = size(spResponse{1,1}(:,:,1,1));
 nSamples = size(spResponse{1,1},3);
 channelSize = size(spResponse{1,1},4);
 
-nCells = size(mosaic.spatialRFArray);
+nCells = size(mosaic.cellLocation);
 
-rfSize = size(mosaic.spatialRFArray{1,1});
+rfSize = size(mosaic.sRFcenter{1,1});
 
 % fullResponse = cell(nCells); nlResponse = cell(nCells);
-fprintf('Temporal Convolution, %s:     \n', mosaic.nameCellType);
+fprintf('Temporal Convolution, %s:     \n', mosaic.cellType);
 
 
 %         tempIRmatrix = convmtx(temporalIR,size(spResponseRS,2));
@@ -38,7 +38,7 @@ for rgbIndex = 1:channelSize
             if 0%mosaic.temporalImpulseResponseCenterRGB == mosaic.temporalImpulseResponseSurroundRGB
                 spResponseRS = reshape(squeeze(spResponse{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
             
-                temporalIR = mosaic.temporalImpulseResponseCenterRGB{rgbIndex};
+                temporalIR = mosaic.tCenter{rgbIndex};
                 
 %                  tic
 %                 tempIRmatrix = convmtx(temporalIR,size(spResponseRS,2));
@@ -58,21 +58,22 @@ for rgbIndex = 1:channelSize
                 spResponseSurroundRS = reshape(squeeze(spResponse{xcell,ycell,2}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
        
                 
-                temporalIRCenter = mosaic.temporalImpulseResponseCenterRGB{rgbIndex};
-                temporalIRSurround = mosaic.temporalImpulseResponseSurroundRGB{rgbIndex};
+                temporalIRCenter = mosaic.tCenter{rgbIndex};
+                temporalIRSurround = mosaic.tSurround{rgbIndex};
                 
-                if strcmpi(mosaic.input, 'rgb') % assume stimulus referred
+                % if strcmpi(mosaic.input, 'rgb') % assume stimulus referred
                 
-                    fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter');
-                    fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround');
-                else % assume cone current referred, do not do any temporal filtering
+                    fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','same');
+                    fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','same');
+                % else % assume cone current referred, do not do any temporal filtering
                 
-                    fullResponseRSCenter = spResponseCenterRS;
-                    fullResponseRSSurround = spResponseSurroundRS;
+                %     fullResponseRSCenter = spResponseCenterRS;
+                %     fullResponseRSSurround = spResponseSurroundRS;
                 
-                end
+                % end
                 
-                fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,1:nSamples) - fullResponseRSSurround(:,1:nSamples);
+                % fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,1:nSamples) - fullResponseRSSurround(:,1:nSamples);
+                fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter - fullResponseRSSurround;
                 
                 %         toc
                 

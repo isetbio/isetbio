@@ -34,17 +34,17 @@ ihind = 2;
 
 %%%%
 
-otherCenterLocations = vertcat(obj.cellCenterLocations{:});
+otherCenterLocations = vertcat(obj.cellLocation{:});
 
-nCells = size(obj.spatialRFArray);
+nCells = size(obj.cellLocation);
 
 % for mosaic = 1:5
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
-        cellCenterLocation = obj.cellCenterLocations{xcell,ycell};
+        cellCenterLocation = obj.cellLocation{xcell,ycell};
         
-        weightMatrixT = reshape(exp(-(1./(2*obj.receptiveFieldDiameter1STD))*(sum((bsxfun(@minus, cellCenterLocation, otherCenterLocations)).^2,2).^(1/2))),nCells(1),nCells(2));
+        weightMatrixT = reshape(exp(-(1./(2*obj.rfDiameter))*(sum((bsxfun(@minus, cellCenterLocation, otherCenterLocations)).^2,2).^(1/2))),nCells(1),nCells(2));
         weightMatrixT(weightMatrixT==1) = 0; 
         weightMatrixT(weightMatrixT<0.1) = 0;
         

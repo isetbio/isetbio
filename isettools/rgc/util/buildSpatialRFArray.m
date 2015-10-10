@@ -1,4 +1,4 @@
-function [spatialRFArray, spatialRFonedim, spatialRFcenter, spatialRFsurround, spatialContours, spatialRFFill, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
+function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
 % buildSpatialRF: a util function of the @rgc parent class
 % 
 % 
@@ -24,7 +24,7 @@ numberRGCsY = floor (patchSizeY / receptiveFieldDiameter1STD);
 numberConesPerRF = floor (receptiveFieldDiameter1STD / coneSize(1));
 
 
-extent =3;
+extent = 3;
 d1 = 1; d2 = 0;
 % d1 = 1; d2 = 0.25*randn(1,1);
 Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
@@ -65,7 +65,7 @@ for icind = 1:length(icarr)
         jc = jcarr(jcind);
         rfctr = rfctr+1;
    
-        d1 = 1; d2 = 0.25*randn(1,1);
+        d1 = 1; d2 = 0;%0.25*randn(1,1);
         Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
         % receptiveFieldDiameter1STD == 1/sqrt(norm(Q)); % just to check
 
@@ -102,6 +102,7 @@ for icind = 1:length(icarr)
         
         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         spatialRFFill{icind,jcind}  = find(so_center>magnitude1STD);
+        rfDiaMagnitude{icind,jcind,1} = magnitude1STD;
         
         hold on;
         [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
@@ -117,6 +118,7 @@ for icind = 1:length(icarr)
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind,2} = cc;
         
+        rfDiaMagnitude{icind,jcind,2} = magnitude1STD;
     end
 end
 toc

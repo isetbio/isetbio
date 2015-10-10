@@ -1,12 +1,29 @@
 classdef rgc < handle
 % The @rgc parent class is a component of isetbio that is used to compute
-% the responses of retinal gnanglion cells from the isetbio @outerSegment 
-% object. Subclasses of @rgc include @rgcLNP and @rgcGLM and are used to
-% instantiate specific models of RGC processing.
+% the responses of retinal ganglion cells from the isetbio @scene or @outerSegment 
+% objects. Subclasses of @rgc include @rgcLinear, @rgcLNP and @rgcGLM and 
+% are used to instantiate specific models of RGC processing.
 % 
-% See isetbio/scripts/xNeedsChecking/rgc/s_rgc.m for tutorial
-%     
-% (c) isetbnio
+% See isetbio/scripts/xNeedsChecking/rgc/s_rgc.m for a tutorial.
+% 
+% See Pillow, Jonathan W., et al. "Spatio-temporal correlations and visual
+% signalling in a complete neuronal population." Nature 454.7207 (2008)
+% and Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries 
+% in ON and OFF ganglion cells of primate retina." The Journal of 
+% Neuroscience 22.7 (2002).
+% 
+% Properties:
+%         name:  animal, RGC; example: 'macaque RGC'
+%         input: RGB stim or outersegment
+%         temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE        
+%         mosaic: a cell array, where each cell is an rgcMosaic object, 
+%               which is a subclass of the rgc object.
+% 
+% Methods: intialize, set, get, compute, plot, movie
+%       see individual .m files for details.
+%        
+% 
+% (c) isetbio
 % 
 % 9/2015 JRG
 % 
@@ -24,19 +41,10 @@ classdef rgc < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
+        name; 
         input;
-        animal;
-        eyeLeftOrRight;
-        patchLocationPolarRadiusMicrometers;
-        patchLocationPolarAngleDegrees;
-        temporalEquivEcc;
-        
-        numberCellTypes;
-        namesCellTypes;
-        
+        temporalEquivEcc;        
         mosaic;
-        
-        noiseFlag;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -51,29 +59,29 @@ classdef rgc < handle
             obj.initialize(sensor, outersegment, varargin{:});
         end
         
-        % set function, see
+        % set function, see rgcSet
         function obj = set(obj, param, val, varargin)
             rgcSet(obj, param, val, varargin{:});
         end
         
-        % get function, see 
+        % get function, see rgcGet
         function val = get(obj, param, varargin)
            val = rgcGet(obj, param, varargin{:});
         end
         
-        % compute function 
+        % compute function, see rgcCompute
         function compute(obj, outerSegment, varargin)
             rgcCompute(obj,  outerSegment, varargin{:});
         end
         
-        % plot function
+        % plot function, see rgcPlot
         function plot(obj, varargin)
-            rgcPlot(obj, varargin);
+            rgcPlot(obj, varargin{:});
         end
         
-        % movie function
+        % movie function, see rgcMovie
         function movie(obj, outersegment, varargin)
-            rgcMovie(obj, outersegment, varargin);
+            rgcMovie(obj, outersegment, varargin{:});
         end
         
     end

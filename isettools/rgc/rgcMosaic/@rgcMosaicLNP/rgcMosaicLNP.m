@@ -44,12 +44,12 @@ classdef rgcMosaicLNP < rgcMosaic
         % set function, see for details
         function obj = set(obj, varargin)
             % obj = set@rgcMosaic(obj, varargin);
-            mosaicSet(obj, varargin);
+            mosaicSet(obj, varargin{:});
         end
         
         % get function, see for details
-        function val = get(obj, param, varargin)
-           val = mosaicGet(obj, param, varargin);
+        function val = get(obj, varargin)
+           val = mosaicGet(obj, varargin{:});
         end
       
     end

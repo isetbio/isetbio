@@ -13,4 +13,4 @@ function rgcPlot(obj, varargin)
 % 09/2015 JRG
 
 
-rgcPlot@rgc(obj, varargin);
+rgcPlot@rgc(obj, varargin{:});

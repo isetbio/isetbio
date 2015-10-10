@@ -21,17 +21,11 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {...  
+allowableFieldsToSet = {...         
+        'name',...
         'input',...
-        'animal',...
-        'eyeLeftOrRight',...
-        'patchLocationPolarRadiusMicrometers',...
-        'patchLocationPolarAngleDegrees',...
-        'temporalEquivEcc',...        
-        'numberCellTypes',...
-        'namesCellTypes',...        
-        'mosaic',...        
-        'noiseFlag'...
+        'temporalEquivEcc',...       
+        'mosaic'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -52,27 +46,14 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch lower(params.what)    
+    case{'name'}
+        val = obj.name;
     case{'input'}
         val = obj.input;
-    case{'animal'}
-        val = obj.animal;
-    case{'eyeLeftOrRight'}        
-        val = obj.eyeLeftOrRight;
-    case{'patchLocationPolarRadiusMicrometers'}        
-        val = obj.patchLocationPolarRadiusMicrometers;
-    case{'patchLocationPolarAngleDegrees'}        
-        val = obj.patchLocationPolarAngleDegrees;
-    case{'temporalEquivEcc'}        
+    case{'temporalequivecc'}        
         val = obj.temporalEquivEcc;
-    case{'numberCellTypes'}
-        val = obj.numberCellTypes;
-    case{'namesCellTypes'}        
-        val = obj.namesCellTypes;
     case{'mosaic'}        
-        val = obj.mosaic;        
-    case{'noiseFlag'}            
-        val = obj.noiseFlag;
-        
+        val = obj.mosaic;                
 end
 

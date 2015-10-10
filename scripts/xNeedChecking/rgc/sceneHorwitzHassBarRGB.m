@@ -1,25 +1,23 @@
-function [sceneRGB] = sceneHorwitzHassWhiteNoiseRGB(params)
-%Build a scene object following parameters from "Chromatic detection from 
-% cone photoreceptors to V1 neurons to behavior in rhesus monkeys" by 
-% Horwitz, Hass, Angueyra, Lindbloom-Brown & Rieke, J. Neuronscience, 2015
+function [sceneRGB] = sceneHorwitzHassBarRGB(params)
+% Build a scene object that consists of a movie of a block flashing on and
+% off over a gray background. This is used for probing the RGC array.
 %  
-% % build scene
-% % parameters found in Fig. 6 caption
-% params.color_val = 1;         % 1-4, choose color opponent gabor
-% params.contrast_set = 0.8;    % set max contrast of gabor
-% params.image_size = 64;       % scene is image_size x image_size pixels
-% params.disp_movie = 0;        % display movie flag
-% % 
-% fov = 1.2; % degrees, sd = 0.4 deg, truncated at 3 sd
-% params.color_val = cv; % 1 = s_iso
-% params.freq = 3.6; % cyc/image = cyc/1.2 degs; want 3 cyc/deg = x cyc/1.2 degs, x = 3.6
-% params.contrast = cont_mult;
-% t = 0; params.ph  = 2*pi*((t-1)/333);  % vary with time at 3 hz?
-% params.ang = 0;
-% params.row = 128; params.col = 128;
-% params.GaborFlag = 0.1/3.6; % standard deviation of the Gaussian window FIX
+% Inputs: params structure consisting of image_size, meanLuminance,
+% nsteps and fov.
 % 
-% scene = build_scene_horwitz_hass_2015(params);
+% Outputs: sceneRGB is a (image_size, image_size, nframes, 3) array, where
+% the last dimension is RGB index.
+% 
+% Example:
+% 
+% params.image_size = 64;
+% params.meanLuminance = 100;
+% params.nsteps = 30;
+% params.fov = 0.8;
+% [scene, display] = sceneHorwitzHassWhiteNoise(params);
+% oi  = oiCreate('wvf human');
+% sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
+% % sceneRGB = sceneHorwitzHassBarRGB(params);
 % % % % % % % % % % % % % % 
 
 
@@ -39,37 +37,7 @@ dpi   = 96;              % display resolution in pixels per inch
 vd_inMeters = 2.0;       % viewing distance in meters
 
 % Stimulus information
-
-% cv = params.color_val;
-% cont_mult = params.contrast;
-
-% clear sensor oi volts
-clear volts
-
-% % parameters found in Fig. 6 caption of Hass, et al., 2015
-% fov = 1.2; % degrees, sd = 0.4 deg, truncated at 3 sd
-% params.color_val = cv; % 1 = s_iso
-% params.freq = 3.6; % cyc/image = cyc/1.2 degs; want 3 cyc/deg = x cyc/1.2 degs, x = 3.6
-% params.contrast = cont_mult;
-% t = 0; params.ph  = 2*pi*((t-1)/333);  % vary with time at 3 hz?
-% params.ang = 0;
-% % params.row = image_size; params.col = image_size;
-% params.GaborFlag = (128/params.image_size)*0.1/3.6; % standard deviation of the Gaussian window FIX
-
-% Stimulus information
 meanLuminance = params.meanLuminance;
-
-% stimulusRGBdata = rgbGaborColorOpponentNormalized(params);
-stimRGBraw = 0.5+(0.25*randn(params.image_size,params.image_size,3));
-stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
-% figure; hist(sqrt(sum(reshape(stimulusRGBdata.^2,params.row*params.row,3),2)),40)
-
-% if show_movie_flag == 1
-%     playGaborMovie(params.color_val,params);
-%     close;
-% end
-
-% load('monitor_cal.mat');
 
 % Generate a display object to model Horwitz's display
 display = displayCreate;
@@ -93,29 +61,24 @@ display = displaySet(display, 'viewing distance', vd_inMeters);
 
 barwidth = 10;
 
-barMovie = 128*zeros(params.image_size,params.image_size,3);
-
+barMovie = zeros(params.image_size,params.image_size,3);
+sceneRGB = zeros(params.image_size,params.image_size,params.nsteps,3);
 fprintf('Computing RGB scene data    ');
-for step = 1:params.nsteps
-%     fprintf('     \n');
-    fprintf('\b\b\b%02d%%', round(100*step/params.nsteps));
-%     fprintf('     \n');
-    
-%     stimRGBraw = 0.5+(0.25*randn(params.image_size,params.image_size,3));
-%     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:))); 
-   
-    barMovie = 255*zeros(params.image_size,params.image_size,3);
-    barMovie(17+step+1:17+step+barwidth,26:40,:) = 255*ones(barwidth,15,3);% - mod(step,2)*256*ones(barwidth,15,3);
+for fstep = 1:params.nsteps
 
+    fprintf('\b\b\b%02d%%', round(100*fstep/params.nsteps));
+
+    barMovie = 0.5*ones(params.image_size,params.image_size,3);
+    % barMovie(26:40,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(15,barwidth,3) - mod(fstep,2)*0.999*ones(15,barwidth,3);
+    barMovie(:,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3) - mod(fstep,2)*0.999*ones(params.image_size,barwidth,3);
     
+    barMovie(1,1,:) = 1;
+
     % % % % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', meanLuminance, display);
     
-    sceneRGB(:,:,step,:) = sceneGet(scene,'rgb');
-    
+    sceneRGB(:,:,fstep,:) = sceneGet(scene,'rgb');
+    sceneRGB(1,1,fstep,:) = sceneRGB(2,2,fstep,:);
 end
 fprintf('     \n');
-
-% vcAddAndSelectObject(scene);
-% sceneWindow
 

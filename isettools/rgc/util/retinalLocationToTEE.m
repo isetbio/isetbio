@@ -8,6 +8,8 @@ function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, 
 % density are circular in the temporal half but elliptical in the nasal
 % half of the retina" (Chichilnisky & Kalmar, pg. 2738, 2002).
 % 
+% TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text)
+% 
 % Inputs:
 %   locationTheta - the theta value of the location of the patch in polar 
 %       coordinates, in um, normally from 0-15.
@@ -22,7 +24,8 @@ function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, 
 %       nasal half were mapped onto the temporal half according to lines of
 %       constant RGC density. This is used to predict RGC density and RF size.
 % 
-% Example:
+% Example: 
+% temporalEquivEcc = retinalLocationToTEE(90, 3, 'right');
 % 
 % 
 % 9/2015 JRG 

@@ -20,23 +20,28 @@ cmap = parula(8);
 
 
 
-for cellTypeInd = 1:obj.numberCellTypes
+for cellTypeInd = 1:length(obj.mosaic)
     
 mosaicall{cellTypeInd} = zeros(245,215,229);
 
     subplot(3,2,cellTypeInd);
     
-    nCells = size(obj.mosaic{cellTypeInd}.spatialRFArray);
+    fillIndicesMosaic = rfFill(obj.mosaic{cellTypeInd});
+    
+    nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
     for xcell = 1:nCells(1)
         for ycell = 1:nCells(2)
             clear x1 y1
             hold on; 
-            fillIndices = obj.mosaic{cellTypeInd}.spatialRFFill{xcell,ycell};
+            
+            
+%             fillIndices = obj.mosaic{cellTypeInd}.spatialRFFill{xcell,ycell};
+            fillIndices = fillIndicesMosaic{xcell,ycell};
 %             imagesc(obj.mosaic{cellTypeInd}.spatialRFArray{xcell,ycell}(fillIndices));
 % 
-            [x1 y1] = ind2sub(size(obj.mosaic{cellTypeInd}.spatialRFArray{xcell,ycell}),fillIndices);
-            x1 = x1 + obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(1);
-            y1 = y1 + obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(2);
+            [x1 y1] = ind2sub(size(obj.mosaic{cellTypeInd}.sRFcenter{xcell,ycell}),fillIndices);
+            x1 = x1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(1);
+            y1 = y1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(2);
 %             indall = sub2ind([500 500],x1,y1);
 %             mosaicall(round(indall)) = 1;
             indall = ([round(x1(:)) round(y1(:))])';
@@ -46,7 +51,7 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 
 %                     mosaicall(round(x1(:)),round(y1(1))) = 1;
             
-            k = 1:300;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 100:300;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             for ix = 1:length(x1)
 %                 for iy = 1%:length(y1)
@@ -59,8 +64,8 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 % 
 %                     mosaicall{cellTypeInd}(round(x1(ix)),round(y1(ix)),ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                    
 
-                    px = ceil(-3*obj.mosaic{cellTypeInd}.receptiveFieldDiameter1STD + (x1(ix)));
-                    py = ceil(-3*obj.mosaic{cellTypeInd}.receptiveFieldDiameter1STD + (y1(ix)));
+                    px = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
+                    py = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
 
                     
                     if isa(obj,'rgcLinear')
@@ -140,25 +145,35 @@ vObj.Quality = 100;
  plotOrder = [1 4 2 5 3];
 % for k = 10
 
-for k = 1:300%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+
+for cellTypeInd = 1:length(obj.mosaic)
+    spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
+end
+
+for k = 100:289%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
 
-for cellTypeInd = 1:obj.numberCellTypes
-        nCells = size(obj.mosaic{cellTypeInd}.spatialRFArray);
+for cellTypeInd = 1:length(obj.mosaic)
+    nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
 
     
     subplot(2,3,plotOrder(cellTypeInd));
     image(mosaicall{cellTypeInd}(:,:,k)');
     
-    pr4 = horzcat(obj.mosaic{cellTypeInd}.spatialRFcontours{:,:,1});
+    % pr4 = horzcat(obj.mosaic{cellTypeInd}.spatialRFcontours{:,:,1});
+    
+    % spatialRFcontours = plotContours(obj.mosaic{cellTypeInd});
+    spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
+    pr4 = horzcat(spatialRFcontoursMosaic{:,:,1});
+    
     hold on;
     plot(pr4(1,:),pr4(2,:),'r','linewidth',2)
 
     axis equal; axis off;
-    title(sprintf('%s',obj.mosaic{cellTypeInd}.nameCellType),'fontsize',16);
+    title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
 
-    subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor(k/10),:))); axis equal; axis off;
+    subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
     title('Stimulus', 'fontsize', 16);
     
 

@@ -2,7 +2,7 @@ function [raster psth] = computePSTH(obj)
 
 
 dt = .01; % make this a get from sensor
-nCells = size(obj.spatialRFArray);
+nCells = size(obj.cellLocation);
 
 szSpike = size(horzcat(obj.spikeResponse{1,1,:,2}));
 maxTrials = szSpike(2);

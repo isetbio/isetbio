@@ -10,6 +10,20 @@ classdef rgcMosaic < handle
 % cellTypeInd = 3: ON midget
 % cellTypeInd = 4: OFF midget
 % cellTypeInd = 5: small bistratified
+% 
+% Properties:
+%         cellType: one of the above five strings
+%         rfDiameter: the 1 stdev RF diameter of RGCs in micrometers
+%         rfDiaMagnitude: the magnitude of the RF at 1 stdev distance
+%         cellLocation: the spatial location of the center of the RF
+%         sRFcenter: the spatial RF center, where (0,0) is at cellLocation
+%         sRFsurround: the spatial RF surround
+%         tCenter: the temporal impulse response of the center (in RGB)
+%         tSurround: the temporal impulse response of the surround (in RGB)
+%         linearResponse: the result of a linear convolution of the sRF and
+%           the tRF with the RGB stimulus.
+% 
+% Methods: intialize, set, get
     
 % 9/2015 JRG
 
@@ -19,19 +33,14 @@ classdef rgcMosaic < handle
            
     % Protected properties.
     properties (SetAccess = protected, GetAccess = public)
-        parent;
-        input;
-        nameCellType;
-        receptiveFieldDiameter1STD;
-        spatialRFArray;
-        spatialRFcenter;
-        spatialRFsurround;
-        spatialRFonedim;
-        spatialRFcontours;
-        spatialRFFill;
-        cellCenterLocations;
-        temporalImpulseResponseCenterRGB;
-        temporalImpulseResponseSurroundRGB;
+        cellType;
+        rfDiameter;
+        rfDiaMagnitude;
+        cellLocation;
+        sRFcenter;
+        sRFsurround;
+        tCenter;
+        tSurround;
         linearResponse;
 
     end
@@ -51,20 +60,16 @@ classdef rgcMosaic < handle
             % Initialize ourselves
             obj.initialize(rgc, sensor, outersegment, varargin{:});
             
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
         end
         
-        % set function, see for details
+        % set function, see mosaicSet for details
         function obj = set(obj, param, val, varargin)
-            mosaicSet(obj, param, val, varargin);
+            mosaicSet(obj, param, val, varargin{:});
         end
         
-        % get function, see for details
+        % get function, see mosaicGet for details
         function val = get(obj, param, varargin)
-           val = mosaicGet(obj, param, varargin);
+           val = mosaicGet(obj, param, varargin{:});
         end
       
     end

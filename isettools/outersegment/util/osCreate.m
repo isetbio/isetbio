@@ -9,6 +9,10 @@ function obj = osCreate(varargin)
 % See the initialize method for the @osLinear, @osBioPhys and @osIdentity 
 % subclasses for more details of the specific implementations.
 %
+% 
+% Examples:
+% os1 = osCreate();
+% 
 % 7/2015 JRG
 
 

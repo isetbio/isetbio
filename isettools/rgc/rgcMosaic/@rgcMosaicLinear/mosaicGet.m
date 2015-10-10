@@ -22,18 +22,14 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 % Make key properties that can be set required arguments, and require
 % values along with key names.
 allowableFieldsToSet = {...
-    'parent',...
-    'input',...
-    'nameCellType',...
-    'receptiveFieldDiameter1STD',...
-    'spatialRFArray',...
-    'spatialRFonedim',... 
-    'spatialRFcenter',...
-    'spatialRFsurround',...
-    'spatialRFcontours',...
-    'spatialRFFill',...
-    'cellCenterLocations',...
-    'temporalImpulseResponse',...
+    'cellType',...
+    'rfDiameter',...
+    'rfDiaMagnitude',...
+    'cellLocation',...
+    'sRFcenter',...
+    'sRFsurround',...
+    'tCenter',...
+    'tSurround',...
     'linearResponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
@@ -56,31 +52,23 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    
-    case{'parent'}
-        val = obj.parent;     
-    case{'input'}
-        val = obj.input;
-    case{'namecelltype'}        
-        val = obj.nameCellType;
-    case{'receptivefielddiameter1std'}
-        val = obj.receptiveFieldDiameter1STD;
-    case{'spatialrfarray'}
-        val = obj.spatialRFArray;
-    case{'spatialrfonedim'}
-        val = obj.spatialRFonedim;       
-    case{'spatialrfcenter'}
-        val = obj.spatialRFcenter;
-    case{'spatialrfsurround'}
-        val = obj.spatialRFsurround;
-    case{'spatialrfcontours'}
-        val = obj.spatialRFcontours;
-    case{'spatialrffill'}
-        val = obj.spatialRFFill;
-    case{'cellcenterlocations'}
-        val = obj.cellCenterLocations;
-    case{'temporalimpulseresponse'}
-        val = obj.temporalImpulseResponse;
+
+    case{'celltype'}
+        val = obj.cellType;
+    case{'rfdiameter'}
+        val = obj.rfDiameter;
+    case{'rfdiamagnitude'}
+        val = obj.rfDiaMagnitude;
+    case{'celllocation'}
+        val = obj.cellLocation;
+    case{'srfcenter'}
+        val = obj.sRFcenter;
+    case{'srfsurround'}
+        val = obj.sRFsurround;
+    case{'tcenter'}
+        val = obj.tCenter;
+    case{'tsurround'}
+        val = obj.tSurround;
     case{'linearresponse'}
         val = obj.linearResponse;
         
