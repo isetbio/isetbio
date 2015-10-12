@@ -10,8 +10,10 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 
 
 coneSize = sensorGet(sensor, 'pixel size', 'um' );
-patchSizeX = sensorGet(sensor, 'width', 'um');
-patchSizeY = sensorGet(sensor, 'height', 'um');
+% patchSizeX = sensorGet(sensor, 'width', 'um');
+% patchSizeY = sensorGet(sensor, 'height', 'um');
+patchSizeX = sceneGet(scene,'sample size','um');
+patchSizeY = sceneGet(scene,'sample size','um');
 fov = sensorGet(sensor,'fov');
 numCones = sensorGet(sensor, 'size');
 

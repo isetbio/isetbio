@@ -27,8 +27,8 @@ sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
 %% build outersegment
 identityOS = osCreate('identity');
 
-sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
-% sceneRGB = sceneHorwitzHassBarRGB(params);
+% sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
+sceneRGB = sceneHorwitzHassBarRGB(params);
 % sceneRGB = zeros(params.image_size, params.image_size, params.nsteps);
 
 % for frame = 1:params.nsteps

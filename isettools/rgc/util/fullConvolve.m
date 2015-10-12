@@ -88,18 +88,34 @@ end
 % nlResponse{xcell,ycell,rgbIndex} = exp(mean(fullResponseRS,1));
 
 % fullResponseRS = mean(fullResponseRSRGB,3);
-fullResponseRS = sum(fullResponseRSRGB,3);
+
+if ~isa(mosaic,'rgcMosaicSubunit');
+
+    fullResponseRS = sum(fullResponseRSRGB,3);
+    
+else
+    genFunction = mosaicGet(mosaic, 'generatorFunction');
+    fullResponseRS = sum(genFunction(fullResponseRSRGB),3);
+end
 
 % fullResponse{xcell,ycell} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
 fullResponse{xcell,ycell} = mean(fullResponseRS);
 % nlResponse{xcell,ycell} = exp(mean(fullResponseRS,1));
 
-if ~isa(mosaic, 'rgcMosaicLinear')
+if isa(mosaic, 'rgcMosaicLinear')
     
-    genFunction = mosaicGet(mosaic, 'generatorFunction');
-    nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
-else
     nlResponse{xcell,ycell} = [];
+    
+
+else
+    if isa(mosaic,'rgcMosaicSubunit')
+        nlResponse{xcell,ycell} = (mean(fullResponseRS,1));
+    else
+        genFunction = mosaicGet(mosaic, 'generatorFunction');
+        nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
+        
+    end
+    
 end
 
 end
