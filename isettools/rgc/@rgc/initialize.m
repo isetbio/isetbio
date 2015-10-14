@@ -1,4 +1,4 @@
-function initialize(obj, sensor, outersegment, varargin)
+function initialize(obj, scene, sensor, outersegment, varargin)
 % initialize: a method of @rgc that initializes the object. The user inputs 
 % the location of the retinal patch with (eye side, reitnal patch radius, 
 % patch angle), and the temporal equivalent eccentricity (TEE) is calculated

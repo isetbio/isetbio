@@ -31,14 +31,14 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 
 %% 
 
-for cellTypeInd = 1:length(obj.mosaic)
+for cellTypeInd = 4:5%1:length(obj.mosaic)
     
     nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
     
     if isa(outerSegment,'osIdentity')
         spConvolveStimulus = osGet(outerSegment, 'rgbData');
         spConvolveStimulus = spConvolveStimulus - 0.5;%mean(spConvolveStimulus(:));
-        spConvolveStimulus = 5*spConvolveStimulus./max(abs(spConvolveStimulus(:)));
+        spConvolveStimulus = 2*spConvolveStimulus./max(abs(spConvolveStimulus(:)));
     else
         spConvolveStimulus = osGet(outerSegment, 'coneCurrentSignal');
         spConvolveStimulus = spConvolveStimulus - mean(spConvolveStimulus(:));
@@ -49,18 +49,18 @@ for cellTypeInd = 1:length(obj.mosaic)
      
     spResponse = spConvolve(obj.mosaic{cellTypeInd,1}, spConvolveStimulus);
        
-%     if isa(outerSegment,'osIdentity');    
+    if isa(outerSegment,'osIdentity');    
         [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponse);        
-%     else        
-%         
-%         genFunc = obj.mosaic{cellTypeInd}.generatorFunction;
-%         for xcell = 1:nCells(1)
-%             for ycell = 1:nCells(2)
-%                 fullResponse{xcell,ycell} = mean((spResponse{xcell,ycell,1}) - (spResponse{xcell,ycell,2}),3);
-%                 nlResponse{xcell,ycell} = genFunc(fullResponse{xcell,ycell});
-%             end
-%         end
-%     end
+    else        
+        
+        genFunc = obj.mosaic{cellTypeInd}.generatorFunction;
+        for xcell = 1:nCells(1)
+            for ycell = 1:nCells(2)
+                fullResponse{xcell,ycell} = squeeze(mean(mean((spResponse{xcell,ycell,1}) - (spResponse{xcell,ycell,2}),1),2))';
+                nlResponse{xcell,ycell} = genFunc(fullResponse{xcell,ycell});
+            end
+        end
+    end
         
     
     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'linearResponse', fullResponse);
@@ -80,7 +80,7 @@ for cellTypeInd = 1:length(obj.mosaic)
             spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter);
             % elseif 0
             %     spikeResponse = computeSpikesPSF(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter, sensor, outersegment);
-        elseif isa(obj,'rgcGLM')
+        elseif isa(obj,'rgcGLM')|isa(obj,'rgcSubunit')
             spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1});
         end
         % obj = rgcMosaicSet(obj, 'spikeResponse', spikeResponse);
@@ -95,6 +95,6 @@ for cellTypeInd = 1:length(obj.mosaic)
         toc
         
     end
-    ph=1;
+    clear spResponse fullResponse nlResponse spikeResponse raster psth
 end
 close;

@@ -1,4 +1,4 @@
-function initialize(obj, sensor, outersegment, varargin)
+function initialize(obj, scene, sensor, outersegment, varargin)
 % intialize: a method of @rgcLNP that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.
@@ -14,5 +14,5 @@ function initialize(obj, sensor, outersegment, varargin)
 
 
 for cellTypeInd = 1:length(obj.mosaic)
-    obj.mosaic{cellTypeInd} = rgcMosaicLinear(cellTypeInd, obj, sensor, outersegment, varargin{:});
+    obj.mosaic{cellTypeInd} = rgcMosaicLinear(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
 end

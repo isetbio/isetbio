@@ -63,8 +63,8 @@ for rgbIndex = 1:channelSize
                 
                 % if strcmpi(mosaic.input, 'rgb') % assume stimulus referred
                 
-                    fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','same');
-                    fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','same');
+                    fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
+                    fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
                 % else % assume cone current referred, do not do any temporal filtering
                 
                 %     fullResponseRSCenter = spResponseCenterRS;
@@ -98,8 +98,12 @@ else
     fullResponseRS = sum(genFunction(fullResponseRSRGB),3);
 end
 
-% fullResponse{xcell,ycell} = reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
-fullResponse{xcell,ycell} = mean(fullResponseRS);
+fullResponse{xcell,ycell,1} = mean(fullResponseRS);
+
+% % % fullResponse for RGB
+fullResponse{xcell,ycell,2} =  reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
+% % % fullResponse for just G
+% fullResponse{xcell,ycell,2} =  reshape(squeeze(fullResponseRSRGB(:,:,2)), spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
 % nlResponse{xcell,ycell} = exp(mean(fullResponseRS,1));
 
 if isa(mosaic, 'rgcMosaicLinear')

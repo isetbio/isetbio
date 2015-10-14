@@ -13,21 +13,46 @@ function obj = rgcCreate(varargin)
     if nargin == 0
         params.image_size = 64; params.meanLuminance = 100;
         params.nsteps = 30; params.fov = 0.8;
+        fprintf(sprintf('\nGenerating scene, oi and display:\n'));
         [scene, display] = sceneHorwitzHassWhiteNoise(params);
         oi  = oiCreate('wvf human');
         sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
         identityOS = osCreate('identity');
         sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);               
         identityOS = osSet(identityOS, 'rgbData', sceneRGB);
-        obj = rgcGLM(sensor, identityOS, 'right', 3.0, 180);
+        obj = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
+        
+    elseif nargin == 1
+        params.image_size = 64; params.meanLuminance = 100;
+        params.nsteps = 30; params.fov = 0.8;
+        fprintf(sprintf('\nGenerating scene, oi and display:\n'));
+        [scene, display] = sceneHorwitzHassWhiteNoise(params);
+        oi  = oiCreate('wvf human');
+        sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
+        identityOS = osCreate('identity');
+        sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);               
+        identityOS = osSet(identityOS, 'rgbData', sceneRGB);
+        % obj = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
+        
+        if strcmpi(varargin{1},'linear');
+            obj = rgcLinear(scene, sensor, identityOS, 'right', 3.0, 180);
+        elseif strcmpi(varargin{1},'lnp');
+            obj = rgcLNP(scene, sensor, identityOS, 'right', 3.0, 180);
+        elseif strcmpi(varargin{1},'glm');
+            obj = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
+        else strcmpi(varargin{1},'subunit');
+            obj = rgcSubunit(scene, sensor, identityOS, 'right', 3.0, 180);
+        end
         
     elseif nargin == 6
         if strcmpi(varargin{1},'linear');
-            obj = rgcLinear(varargin{2:6});
+            obj = rgcLinear(varargin{2:7});
         elseif strcmpi(varargin{1},'lnp');
-            obj = rgcLNP(varargin{2:6});
-        else strcmpi(varargin{1},'glm');
-            obj = rgcGLM(varargin{2:6});
+            obj = rgcLNP(varargin{2:7});
+        elseif strcmpi(varargin{1},'glm');
+            obj = rgcGLM(varargin{2:7});
+        else strcmpi(varargin{1},'subunit');
+            obj = rgcSubunit(varargin{2:7});
         end
         
     else

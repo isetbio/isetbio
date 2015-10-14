@@ -12,10 +12,10 @@
 clear
 
 %% build scene
-params.image_size = 64;
+params.image_size = 96;
 params.meanLuminance = 100;
 params.nsteps = 30;
-params.fov = 0.8;
+params.fov = 0.6;
 [scene, display] = sceneHorwitzHassWhiteNoise(params);
 % displayClose;
 % % build optical image
@@ -29,7 +29,7 @@ identityOS = osCreate('identity');
 
 % sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
 sceneRGB = sceneHorwitzHassBarRGB(params);
-% sceneRGB = zeros(params.image_size, params.image_size, params.nsteps);
+% sceneRGB = 0.5*ones(params.image_size, params.image_size, params.nsteps, 3);
 
 % for frame = 1:params.nsteps
 %     params.freq =  [5 ]; % spatial frequencies of 1 and 5
@@ -44,26 +44,28 @@ identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 
 %% build rgc
 
-% rgc1 = rgcLinear(sensor, osIdentity, 'right', 3.75, 180);
-% rgc1 = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
-rgc1 = rgcGLM(sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcLinear(scene, sensor, osIdentity, 'right', 3.75, 180);
+% rgc1 = rgcLNP(scene, sensor, osIdentity, 'right', 3.75, 180);
+% rgc1 = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcSubunit(scene, sensor, identityOS, 'right', 3.0, 180);
 
 %% compute rgc
 
-% % % tic
-rgc1 = rgcCompute(rgc1, identityOS);
-% % toc
-
-% % tic
-rgcPlot(rgc1, 'spikeResponse');
+% % % % tic
+% rgc1 = rgcCompute(rgc1, identityOS);
 % % % toc
+% 
+% % % tic
+% rgcPlot(rgc1, 'spikeResponse');
+% rgcPlot(rgc1, 'rasterResponse');
+% % % % toc
 %% With linear cone response
 
-% linearOS = osCreate('linear');
-% linearOS = osCompute(linearOS, sensor);
-% 
-% rgc1 = rgcGLM(sensor, linearOS, 'right', 3.0, 180);
-% rgc1 = rgcCompute(rgc1, linearOS);
+linearOS = osCreate('linear');
+linearOS = osCompute(linearOS, sensor);
+
+rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
+rgc1 = rgcCompute(rgc1, linearOS);
 
 % rgcPlot(rgc1, sensor, linearOS);
 %% build movie

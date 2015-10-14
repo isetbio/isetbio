@@ -55,7 +55,7 @@ end
         
 %         Vstm = log(nlResponse{xcell,ycell});
 %         Vstm = (vertcat(obj.nlResponse{:}));
-        Vstm = vertcat(obj.linearResponse{:});
+        Vstm = vertcat(obj.linearResponse{:,:,1});
         
         
         Vmem = interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear');
@@ -109,6 +109,7 @@ end
                 % --  Update # of samples per iter ---
                 muISI = jbin/(sum(nsp));
                 nbinsPerEval = max(20, round(1.5*muISI));
+                if isempty(nbinsPerEval); nbinsPerEval = 20; end;
             end
         end
         
@@ -124,12 +125,12 @@ for xcell = 1:nCells(1)
         
         cellCtr = cellCtr+1;
         spikeTimes{xcell,ycell,trial,1} = tsp{cellCtr}(1:nsp(cellCtr)); % prune extra zeros
-        
+        if size(Vmem,1) > 0
         spikeTimes{xcell,ycell,trial,2} = Vmem(:,cellCtr); % prune extra zeros
+        end
     end
 end
 %     end
 % end
 
 end%trial
-        ph = 1;

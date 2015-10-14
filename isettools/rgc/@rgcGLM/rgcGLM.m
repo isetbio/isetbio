@@ -28,12 +28,12 @@ classdef rgcGLM < rgc
     methods
         
         % Constructor
-        function obj = rgcGLM(sensor, outersegment, varargin)
+        function obj = rgcGLM(scene, sensor, outersegment, varargin)
             % Initialize the parent class
-            obj = obj@rgc(sensor, outersegment, varargin{:});
+            obj = obj@rgc(scene, sensor, outersegment, varargin{:});
             
             % Initialize ourselves
-            obj.initialize(sensor, outersegment, varargin{:});
+            obj.initialize(scene, sensor, outersegment, varargin{:});
             
             % % parse the varargin
             % for k = 1:2:numel(varargin)

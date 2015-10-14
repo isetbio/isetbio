@@ -55,8 +55,8 @@ classdef rgc < handle
     % Public methods
     methods
         
-        function obj = rgc(sensor, outersegment, varargin)
-            obj.initialize(sensor, outersegment, varargin{:});
+        function obj = rgc(scene, sensor, outersegment, varargin)
+            obj.initialize(scene, sensor, outersegment, varargin{:});
         end
         
         % set function, see rgcSet

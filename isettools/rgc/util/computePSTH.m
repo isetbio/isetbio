@@ -4,6 +4,10 @@ function [raster psth] = computePSTH(obj)
 dt = .01; % make this a get from sensor
 nCells = size(obj.cellLocation);
 
+spikeCheck = (cellfun(@isempty,((obj.spikeResponse))));
+
+if sum(spikeCheck(:)) ~= (length(obj.spikeResponse)*nCells(1)*nCells(2))
+
 szSpike = size(horzcat(obj.spikeResponse{1,1,:,2}));
 maxTrials = szSpike(2);
 
@@ -27,4 +31,9 @@ for xcell = 1:nCells(1)
         [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
         
     end
+end
+
+else 
+    raster = []; psth = [];
+
 end

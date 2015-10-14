@@ -17,5 +17,10 @@ function initialize(obj, rgc, sensor, outersegment, varargin)
 % % Need to make this into Gaussian CDF
 % for cellTypeInd = 1:obj.numberCellTypes
     obj.generatorFunction = @exp;
+    
+    
+    obj.postSpikeFilter = buildPostSpikeFilter(.01);
+    
+    [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
 % end
 

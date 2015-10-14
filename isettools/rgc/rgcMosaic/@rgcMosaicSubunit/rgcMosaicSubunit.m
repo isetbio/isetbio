@@ -1,4 +1,4 @@
-classdef rgcMosaicLNP < rgcMosaic
+classdef rgcMosaicSubunit < rgcMosaic
 % @rgcMosaicLNP: a subclass of @rgcMosaic
 % 
 %
@@ -16,6 +16,10 @@ classdef rgcMosaicLNP < rgcMosaic
         nlResponse;
         spikeResponse;
 
+        postSpikeFilter;
+        couplingFilter;
+        couplingMatrix;
+        
         rasterResponse;
         psthResponse;
     end
@@ -28,7 +32,7 @@ classdef rgcMosaicLNP < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLNP(rgc, sensor, outersegment, varargin)
+        function obj = rgcMosaicSubunit(rgc, sensor, outersegment, varargin)
             % Initialize the parent class            
             obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
 

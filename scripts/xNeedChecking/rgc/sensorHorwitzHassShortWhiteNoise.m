@@ -19,7 +19,9 @@ sensor = sensorCreate('human');
 sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
 sensor = sensorSet(sensor, 'exp time', 0.01); % 1 ms
 sensor = sensorSet(sensor, 'time interval', 0.01); % 1 ms
-    
+sensorSize = [88 88];
+sensor = sensorSet(sensor,'size',sensorSize);
+sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
 % Compute cone absorptions for each ms, for a second.
 % This is very slow.
 % nSteps = 160+346+160;
@@ -57,6 +59,7 @@ for t = 1 % : nSteps
     oi  = oiCreate('wvf human');
     sensor = sensorCreate('human');
     % sensor = sensorSetSizeToFOVEcc(sensor, params.fov, scene, oi);
+    sensor = sensorSet(sensor,'size',sensorSize);
     sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
     sensor = sensorSet(sensor, 'exp time', 0.01); % 1 ms
     sensor = sensorSet(sensor, 'time interval', 0.01); % 1 ms

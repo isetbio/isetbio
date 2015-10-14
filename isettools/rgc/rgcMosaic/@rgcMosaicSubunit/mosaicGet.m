@@ -1,5 +1,5 @@
-function obj = mosaicSet(obj, varargin)
-% rgcMosaicSet: a method of @rgcMosaic that sets rgcMosaic object 
+function val = mosaicGet(obj, varargin)
+% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -33,12 +33,13 @@ allowableFieldsToSet = {...
     'linearResponse',...
     'generatorFunction',...
     'nlResponse;',...
-    'spikeResponse',...    
+    'spikeResponse',...   
+    'couplingFilter',...
+    'couplingMatrix'...   
     'rasterResponse',...
     'psthResponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -58,34 +59,37 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    
     case{'celltype'}
-        obj.cellType = params.value;
+        val = obj.cellType;
     case{'rfdiameter'}
-        obj.rfDiameter = params.value;
+        val = obj.rfDiameter;
     case{'rfdiamagnitude'}
-        obj.rfDiaMagnitude = params.value;
+        val = obj.rfDiaMagnitude;
     case{'celllocation'}
-        obj.cellLocation = params.value;
+        val = obj.cellLocation;
     case{'srfcenter'}
-        obj.sRFcenter = params.value;
+        val = obj.sRFcenter;
     case{'srfsurround'}
-        obj.sRFsurround = params.value;
+        val = obj.sRFsurround;
     case{'tcenter'}
-        obj.tCenter = params.value;
+        val = obj.tCenter;
     case{'tsurround'}
-        obj.tSurround = params.value;
+        val = obj.tSurround;
     case{'linearresponse'}
-        obj.linearResponse = params.value;
+        val = obj.linearResponse;
     case{'generatorfunction'}
-        obj.generatorFunction = params.value;        
-    case{'nlresponse'}        
-        obj.nlResponse = params.value;
+        val = obj.generatorFunction;
+    case{'nlresponse'}
+        val = obj.nlResponse;
     case{'spikeresponse'}
-        obj.spikeResponse = params.value;
+        val = obj.spikeResponse;
+    case{'couplingfilter'}
+        val = obj.couplingFilter;
+    case{'couplingmatrix'}
+        val = obj.couplingMatrix;
     case{'rasterresponse'}
-        obj.rasterResponse = params.value;
+        val = obj.rasterResponse;
     case{'psthresponse'}
-        obj.psthResponse = params.value;
+        val = obj.psthResponse;
 end
 

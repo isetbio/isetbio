@@ -53,12 +53,12 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgc, sensor, outersegment, varargin)
+        function obj = rgcMosaic(rgc, scene, sensor, outersegment, varargin)
             % Initialize the parent class
             %
 
             % Initialize ourselves
-            obj.initialize(rgc, sensor, outersegment, varargin{:});
+            obj.initialize(rgc, scene, sensor, outersegment, varargin{:});
             
         end
         
