@@ -42,13 +42,13 @@ classdef rgcGLM < rgc
         end
         
         % set function, see for details
-        function obj = set(obj, param, val, varargin)
-            rgcSet(obj, param, val, varargin);
+        function obj = set(obj, varargin)
+            rgcSet(obj, varargin{:});
         end
         
         % get function, see for details
-        function val = get(obj, param, varargin)
-           val = rgcGet(obj, param, varargin);
+        function val = get(obj, varargin)
+           val = rgcGet(obj, varargin{:});
         end
       
     end

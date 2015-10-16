@@ -44,14 +44,14 @@ function obj = rgcCreate(varargin)
             obj = rgcSubunit(scene, sensor, identityOS, 'right', 3.0, 180);
         end
         
-    elseif nargin == 6
-        if strcmpi(varargin{1},'linear');
+    elseif nargin == 7
+        if strcmpi(varargin{1},'linear')|strcmpi(varargin{1},'rgclinear');
             obj = rgcLinear(varargin{2:7});
-        elseif strcmpi(varargin{1},'lnp');
+        elseif strcmpi(varargin{1},'lnp')|strcmpi(varargin{1},'rgclnp');
             obj = rgcLNP(varargin{2:7});
-        elseif strcmpi(varargin{1},'glm');
+        elseif strcmpi(varargin{1},'glm')|strcmpi(varargin{1},'rgcglm');
             obj = rgcGLM(varargin{2:7});
-        else strcmpi(varargin{1},'subunit');
+        else strcmpi(varargin{1},'subunit')|strcmpi(varargin{1},'rgcsubunit');
             obj = rgcSubunit(varargin{2:7});
         end
         

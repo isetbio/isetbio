@@ -31,18 +31,18 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 
 %% 
 
-for cellTypeInd = 4:5%1:length(obj.mosaic)
+for cellTypeInd = 1:length(obj.mosaic)
     
     nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
     
     if isa(outerSegment,'osIdentity')
         spConvolveStimulus = osGet(outerSegment, 'rgbData');
         spConvolveStimulus = spConvolveStimulus - 0.5;%mean(spConvolveStimulus(:));
-        spConvolveStimulus = 2*spConvolveStimulus./max(abs(spConvolveStimulus(:)));
+        spConvolveStimulus = 1*spConvolveStimulus./max(abs(spConvolveStimulus(:)));
     else
         spConvolveStimulus = osGet(outerSegment, 'coneCurrentSignal');
         spConvolveStimulus = spConvolveStimulus - mean(spConvolveStimulus(:));
-        spConvolveStimulus = 5*spConvolveStimulus./max(spConvolveStimulus(:));
+        spConvolveStimulus = 10*spConvolveStimulus./max(spConvolveStimulus(:));
     end   
     
     % Given separable STRF, convolve 2D spatial RF then 1D temporal response.
