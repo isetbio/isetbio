@@ -1,8 +1,7 @@
 function osPlot(obj, sensor)
-% osPlot: a method to plot the input, filters and computed results of 
-% the outsergment object.
+% Plot the input, filters and computed results of the linear outsergment object.
 % 
-% osPlot(adaptedOS, sensor);
+%   os.osPlot(sensor);
 % 
 % Inputs: the osLinear object and the sensor object.
 % 
@@ -16,14 +15,14 @@ dt = sensorGet(sensor, 'time interval');
 % fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
 
 % Plot input signal (isomerizations) at a particular (x, y) over time.
-figNum = 1; 
-h = figure();
+h = vcNewGraphWin([],'wide');
 set(h, 'Name', sprintf('Output of %s', class(obj)));
-set(h, 'Position', [10+50*figNum 10+50*figNum, 1024 256]);
-subplot(1,3,1);
+% set(h, 'Position', [10+50*figNum 10+50*figNum, 1024 256]);
+
 % since data is in (x, y, t) format, choose an (x, y) value to observe over
-% time
-isomerizations1 = sensor.data.volts;
+% timesubplot(1,3,1);
+subplot(1,3,1)
+isomerizations1 = sensorGet(sensor,'photons'); 
 [sz1 sz2 sz3] = size(isomerizations1); 
 inputSignal = squeeze(isomerizations1(round(sz1/2),round(sz2/2),:));
 plot((0:numel(inputSignal)-1)*dt, inputSignal, 'k-');
@@ -50,3 +49,5 @@ xlabel('Time (sec)');
 ylabel('pA');
 
 drawnow;
+
+end

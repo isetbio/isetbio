@@ -1,8 +1,9 @@
 function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
-% filterConesLinear: a utility function of @osLinear that generates the linear filters
-% for the L, M and S cones based on data from Angueyra and Rieke (2013).
-% 
+% Generates the linear temporal filters for the L, M and S cones based on
+% data from Angueyra and Rieke (2013). 
 %
+%   [newIRFs, Filter, Ib] = filterConesLinear([sensor])
+% 
 % Set the cone "sampling rate". This rate effectively dictates the rest of
 % the simulation. Even though our monitor refreshed at 75 Hz, the cones
 % were allowed to sample the stimulus more quickly. For convienence, I set
@@ -14,16 +15,23 @@ function [newIRFs, Filter, Ib] = filterConesLinear(varargin)
 % isomerization signal.
 % 
 % Outputs: 
-%  newIRFs: an nx3 matrix with each row the temporal impulse response for
-%  the L, M and S cones, respectively.
+%  newIRFs: nx3 matrix with each row the temporal impulse response for
+%           the L, M and S cones, respectively.
 %  Filter: an nx1 vector that is scaled to generate newIRFs.
-%  Ib: adjusted gain of impulse response.
-% 
+%  Ib:     adjusted gain of impulse response.
+%
+% Examples:
+%
+% See also:
+%
 % Originally by FMR
 % 8/2015 modified by JRG 
 
+%% PROGRAMMING TODO
+%  Clean and comment.  Check the references and put in isetbio format.
+%  Test code to plot the functions.  
 
-if size(varargin)==0
+if isempty(varargin) || isempty(varargin{1})
     dt = 0.001;
     coneSamplingRate = 1/dt;
     tsz = 300;
@@ -51,7 +59,7 @@ TimeAxis = TimeAxis(find(TimeAxis <= 0.3));
 
 
 % TimeAxis = [1:2000]*dt;
-ScFact = 1;%0.6745; % To get amplitude right
+ScFact = 1;      % 0.6745; % To get amplitude right
 TauR = 0.0216;   % Rising Phase Time Constant
 TauD = 0.0299;   % Damping Time Constant
 TauP = 0.5311;   % Period
@@ -91,18 +99,17 @@ Ib = Ib*stimNormCoeff;
 gain_dark = 0.22;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
 gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
 
-
-
 % scale IRF to reflect amplitude at chosen background
 % using Weber adaptation equation above and gainRatio derived from it
 newGain = gainRatio .* gain_dark ;
 oldGain = max(Filter);
 IRFScaleFactor = newGain * dt ./ oldGain;
 
-
 % plot the original IRF, and the IRFs that have been adjusted to reflect
 % their particular adaptation state
 newIRFs = Filter(:) * IRFScaleFactor;
+
+end
 
 % 
 % figure(1); clf
@@ -114,12 +121,13 @@ newIRFs = Filter(:) * IRFScaleFactor;
 % title('Cone IRFs at specified background')
 % xlim([0 0.2]);
 
-%%
-% convolve with sinusoidal stimulus to generate signal
+%% convolve with sinusoidal stimulus to generate signal
 
-Frequency = 20;          % Hz
-Contrast = 0.1;         
-Ib = 7131;              % L cone
+% Frequency = 20;          % Hz
+% Contrast = 0.1;         
+% Ib = 7131;               % L cone
+
+%%
 % Filt = newIRFs(:, 1)';
 % TaperLength = round(length(Filt) / 4);
 % 

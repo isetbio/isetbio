@@ -1,17 +1,21 @@
 classdef osLinear < outerSegment 
-% @osLinear: a subclass of @outerSegment object
-% 
-% This subclass implements the cone linear filters determined by the
-% experiments found in Angueyra and Rieke (2013) to convert cone 
-% isomerizations (R*) to current (pA).
-% 
-% The osLinear object calculates the outer segment 
-% current by convolving linear filters for the L, M and S cones with the 
-% isomerization signal.
-% 
-% linearOS = osLinear(); 
+% Linear subclass of the outersegment object
 %
-% 7/2015 JRG
+%   os = osLinear;
+% 
+% Implements isomerizations (R*) to photocurrent (pA) using only cone
+% linear temporal filters.  The default values are those determined by the
+% Angueyra and Rieke (2013, Nature Neuroscience).
+% 
+% The current is calculated simply by convolving separate temporal filters
+% for the L, M and S cones with the isomerization time course.
+%
+% The time base of the temporal filters is established using parameters
+% from ????
+% 
+% See also:
+%
+% JRG Copyright ISETBIO Team, 2015
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
@@ -36,10 +40,10 @@ classdef osLinear < outerSegment
             % Initialize ourselves
             obj.initialize();
             
-            % parse the varargin
-            for k = 1:2:numel(varargin)
-                obj.(varargin{k}) = varargin{k+1};
-            end
+            % Possible inputs are ????
+            %             for k = 1:2:numel(varargin)
+            %                 obj.(varargin{k}) = varargin{k+1};
+            %             end
         end
         
         % set function, see osLinearSet for details
@@ -56,10 +60,12 @@ classdef osLinear < outerSegment
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
+        
         function obj = compute(obj, sensor, param, varargin)
             % see osCompute for details
             obj = osCompute(obj, sensor, varargin); 
         end
+        
         function plot(obj, sensor)
             % see osPlot for details
             osPlot(obj, sensor);
