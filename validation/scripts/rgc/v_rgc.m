@@ -22,18 +22,18 @@ params.image_size = 63;
 params.meanLuminance = 100;
 params.nsteps = 1;
 params.fov = 0.8;
-[scene, display] = sceneHorwitzHassWhiteNoise(params);
+% [scene, display] = sceneHorwitzHassWhiteNoise(params);
 
 % sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
 % sceneRGB = sceneHorwitzHassBarRGB(params);
 sceneRGB = zeros(params.image_size, params.image_size, params.nsteps, 3);
-sceneRGB(23,23,1,:) = [1 1 1];
+sceneRGB(32,32,1,:) = [1 1 1];
 % sceneRGB(38,38,1,:) = [1 1 1];
+scene = sceneFromFile(zeros(params.image_size,params.image_size), 'rgb', params.meanLuminance);
 
 oi  = oiCreate('wvf human');
-%%% build sensor for white noise
-sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
-%%% build outersegment
+sensor = sensorCreate('human');
+
 identityOS = osCreate('identity');
 identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 
@@ -48,7 +48,7 @@ rgc1 = rgcCompute(rgc1, identityOS);
 
 rf1 = (rgc1.mosaic{1}.sRFcenter{1,1} - rgc1.mosaic{1}.sRFsurround{1,1}); rf1 = rf1./max(abs(rf1(:)));
 rf2 = (rgc1.mosaic{1}.linearResponse{1,1,2}(:,:,1)); rf2 = rf2./max(abs(rf2(:)));
-diff1 = rf1 + rf2;  
+diff1 = rf1 + rf2(1:62,1:62);  
 max(abs(diff1(:)));
 
 ir1 = (rgc1.mosaic{1}.tCenter{1,1}); ir1 = ir1./max(abs(ir1(:)));

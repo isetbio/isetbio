@@ -70,12 +70,13 @@ os = osCompute(os, sensor);
 
 %% Build rgc
 
-rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
+rgc1 = rgcCreate('linear', scene, sensor, os, 'right', 3.0, 180);
 
 rgc1 = rgcCompute(rgc1, os);
 
 rgcPlot(rgc1, 'mosaic');
+rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 %% Build rgc response movie
  
-% rgcMovie(rgc1, identityOS);
+% rgcMovie(rgc1, os);

@@ -61,7 +61,7 @@ classdef rgc < handle
         
         % set function, see rgcSet
         function obj = set(obj, param, val, varargin)
-            rgcSet(obj, param, val, varargin{:});
+            obj = rgcSet(obj, param, val, varargin{:});
         end
         
         % get function, see rgcGet
@@ -70,8 +70,8 @@ classdef rgc < handle
         end
         
         % compute function, see rgcCompute
-        function compute(obj, outerSegment, varargin)
-            rgcCompute(obj,  outerSegment, varargin{:});
+        function obj = compute(obj, outerSegment, varargin)
+            obj = rgcCompute(obj,  outerSegment, varargin{:});
         end
         
         % plot function, see rgcPlot

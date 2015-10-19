@@ -31,39 +31,36 @@ classdef rgcLNP < rgc
             % Initialize the parent class
             obj = obj@rgc(scene, sensor, outersegment, varargin{:});
             
-            % Initialize ourselves
-            obj.initialize(scene, sensor, outersegment, varargin{:});
-            
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
+            % Initialize ourselves by building LNP mosaic objects
+            for cellTypeInd = 1:length(obj.mosaic)
+                obj.mosaic{cellTypeInd} = rgcMosaicLNP(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+            end
         end
         
         % set function, see for details
-        function obj = set(obj, param, val, varargin)
-            rgcSet(obj, param, val, varargin);
+        function obj = rgcSet(obj, param, val, varargin)
+            rgcSet@rgc(obj, param, val, varargin{:});
         end
         
         % get function, see for details
-        function val = get(obj, param, varargin)
-           val = rgcGet(obj, param, varargin);
+        function val = rgcGet(obj, param, varargin)
+           val = rgcGet@rgc(obj, param, varargin{:});
         end
       
     end
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = compute(obj, sensor, outersegment, varargin)
+        function obj = rgcCompute(obj, outersegment, varargin)
             % see for details
-            obj = rgcCompute(obj, sensor, outersegment, varargin); 
+            obj = rgcCompute@rgc(obj,  outersegment, varargin{:}); 
         end
-        function plot(obj, varargin)
+        function rgcPlot(obj, varargin)
             % see for details
-            rgcPlot(obj, varargin);
+            rgcPlot@rgc(obj, varargin{:});
         end
-        function movie(obj, outersegment, varargin)
-            rgcMovie(obj, outersegment, varargin)
+        function rgcMovie(obj, outersegment, varargin)
+            rgcMovie@rgc(obj, outersegment, varargin{:})
         end
     end    
     

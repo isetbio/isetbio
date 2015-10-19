@@ -32,39 +32,36 @@ classdef rgcGLM < rgc
             % Initialize the parent class
             obj = obj@rgc(scene, sensor, outersegment, varargin{:});
             
-            % Initialize ourselves
-            obj.initialize(scene, sensor, outersegment, varargin{:});
+            % Initialize ourselves by building GLM mosaic objects
+            for cellTypeInd = 1:length(obj.mosaic)
+                obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+            end
             
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
         end
         
-        % set function, see for details
-        function obj = set(obj, varargin)
-            rgcSet(obj, varargin{:});
+        % set function, see superclass method in @rgc for details
+        function obj = rgcSet(obj, varargin)
+            rgcSet@rgc(obj,varargin{:});
         end
         
-        % get function, see for details
-        function val = get(obj, varargin)
-           val = rgcGet(obj, varargin{:});
+        % get function, see superclass method in @rgc for details
+        function val = rgcGet(obj, varargin)
+           % val = rgcGet(obj, varargin{:});
+           val = rgcGet@rgc(obj,varargin{:});
         end
       
     end
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = compute(obj, sensor, outersegment, varargin)
-            % see for details
-            obj = rgcCompute(obj, sensor, outersegment, varargin); 
+        function obj = rgcCompute(obj, outersegment, varargin)
+            obj = rgcCompute@rgc(obj, outersegment, varargin{:});
         end
-        function plot(obj, varargin)
-            % see for details
-            rgcPlot(obj, varargin);
+        function rgcPlot(obj, varargin)
+            rgcPlot@rgc(obj, varargin{:});
         end
-        function movie(obj, outersegment, varargin)
-            rgcMovie(obj, outersegment, varargin)
+        function rgcMovie(obj, outersegment, varargin)
+            rgcMovie@rgc(obj, outersegment, varargin{:});
         end
     end    
     

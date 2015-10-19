@@ -38,9 +38,10 @@ RefreshRate = 100;
 % ihhi = interp1(.001:.01:slen*dt+.01, ih, ihthi, 'linear', 0);
 % hlen = length(ihhi);
 ihhi = ih;
+cellCtr = 0;
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
-        
+        cellCtr = cellCtr + 1;
         Vstm = nlResponse{xcell,ycell};
         
         nsp = 0;
@@ -86,7 +87,9 @@ for xcell = 1:nCells(1)
             end
         end
         spikeTimes{xcell,ycell} = tsp(1:nsp); % prune extra zeros
-        
+        if size(Vmem,1) > 0
+        spikeTimes{xcell,ycell,1,2} = Vmem'; % prune extra zeros
+        end
         % obj.spkResponse =
         
         ph = 1;

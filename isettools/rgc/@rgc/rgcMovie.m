@@ -131,7 +131,7 @@ h1 = figure;
 set(gcf,'position',[548   606   993   839]);
 % vObj = VideoWriter('new2.mj2', 'Archival');
 
-vObj = VideoWriter('testB2.mp4','MPEG-4');
+vObj = VideoWriter('testB3.mp4','MPEG-4');
 vObj.FrameRate = 30;
 vObj.Quality = 100;
  open(vObj);
