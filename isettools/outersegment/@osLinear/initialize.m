@@ -1,4 +1,4 @@
-function initialize(obj)
+function obj = initialize(obj,varargin)
 % initialize: a method of @osLinear, initializes the osLinear object.
 % 
 % Inputs: the osLinear object.
@@ -10,8 +10,15 @@ function initialize(obj)
 % 
 % 7/2015 JRG
 
+if ~isempty(varargin)
+    sensor = varargin{1};
+    newIRFs = filterConesLinear(sensor);
+else
+    newIRFs = filterConesLinear();
+end
+obj = osSet(obj, 'lconefilter', newIRFs(:,1));
+obj = osSet(obj, 'mconefilter', newIRFs(:,2));
+obj = osSet(obj, 'sconefilter', newIRFs(:,3));
 
-filterKernel(obj); % builds the L, M and S-cone linear temporal filters
-    
 end
 

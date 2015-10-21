@@ -1,4 +1,4 @@
-function val = outersegmentGet(obj, varargin)
+function val = osGet(obj, varargin)
 % outersegmentGet: a method of @outerSegment that sets 
 % object  parameters using the input parser structure.
 % 

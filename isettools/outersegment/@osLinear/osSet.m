@@ -1,6 +1,5 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osLinear that sets isetbio outersegment object 
-% parameters using the input parser structure.
+% Sets isetbio outersegment object parameters using the input parser structure.
 % 
 % Parameters:
 %       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')

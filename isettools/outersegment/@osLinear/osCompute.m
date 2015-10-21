@@ -1,9 +1,8 @@
 function obj = osCompute(obj, sensor, varargin)
-% osCompute: a method of @osLinear that computes the linear filter
-% response of the L, M and S cone outer segments. This converts
-% isomerizations (R*) to outer segment current (pA). If the noiseFlag
-% property of the osLinear object is set to 1, this method will add noise
-% to the current output signal.
+% Computes the linear filter response of the L, M and S cone outer 
+% segments. This converts isomerizations (R*) to outer segment 
+% current (pA). If the noiseFlag property of the osLinear object is 
+% set to 1, this method will add noise to the current output signal.
 %
 % adaptedOS = osCompute(adaptedOS, sensor);
 %
@@ -18,7 +17,7 @@ function obj = osCompute(obj, sensor, varargin)
 
 % Remake filters incorporating the sensor to make them the 
 % correct sampling rate.
-obj.filterKernel(sensor);
+obj.initialize(sensor);
 
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
@@ -64,47 +63,25 @@ for cone_type = 2:4
     
     isomerizationsSingleType = isomerizationsRS(cone_locations,:);
     
-    if (ndims(isomerizations) == 3)
-        
-        % pre-allocate memory
-        adaptedDataSingleType = zeros(size(isomerizationsSingleType));
-        
-        for y = 1:size(isomerizationsSingleType, 1)
-            
-            tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
-            %        tempData = real(ifft(conj(fft(squeeze(isomerizations(x, y, :))) .* FilterFFT)));
-            if (initialState.Compress)
-                tempData = tempData / maxCur;
-                tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-            else
-                tempData = tempData - meanCur;
-            end
-            % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
-            adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
-            
-        end
-        
-        %     elseif (ndims(isomerizations) == 2)
-        %
-        %         % pre-allocate memory
-        %         adaptedData = zeros(size(isomerizations,1),timeBins);
-        %
-        %         for xy = 1:size(isomerizations, 1)
-        %             tempData = conv(squeeze(isomerizations(xy, :)), Filter);
-        %             if (initialState.Compress)
-        %                 tempData = tempData / maxCur;
-        %                 tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-        %             else
-        %                 tempData = tempData - meanCur;
-        %             end
-        %             adaptedData(xy, :) = tempData(1:timeBins);
-        %         end
-        %     end
-        
-        adaptedDataRS(cone_locations,:) = adaptedDataSingleType;
-        
-    end
+    % pre-allocate memory
+    adaptedDataSingleType = zeros(size(isomerizationsSingleType));
     
+    for y = 1:size(isomerizationsSingleType, 1)
+        
+        tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
+        %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
+        if (initialState.Compress)
+            tempData = tempData / maxCur;
+            tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
+        else
+            tempData = tempData - meanCur;
+        end
+        % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
+        adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
+        
+    end    
+    
+    adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
     
 end
 

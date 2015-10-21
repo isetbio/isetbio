@@ -4,9 +4,11 @@ function obj = osCreate(varargin)
 %   os = osCreate([osType = 'linear'],[sensor = null]);
 %
 % There are three osTypes (sublcasses of outer segment objects).  These are
-%    @osLinear   -  Comment me.
-%    @osBioPhys  -
-%    @osIdentity - 
+%    @osLinear   -  uses linear impulse response to calculate cone current.
+%    @osBioPhys  - uses biophysical model by FMR to calculate cone current.
+%    @osIdentity - stores raw RGB data, used for stimulus-referred RGC
+%    models.
+% See sublcass definitions, e.g. @osLinear/osLinear.m, for more details.
 % 
 % Inputs:  Subclass type ('linear','biophys','identity')
 %
@@ -27,20 +29,19 @@ function obj = osCreate(varargin)
 %% Set up the defaults
 
 % We want to use the parser structure if possible (BW)
-osType = 'linear'; sensor = [];      % Default values
+osType = 'linear';    % Default values
 if ~isempty(varargin),   osType = ieParamFormat(varargin{1}); end
-if length(varargin) > 1, sensor = varargin{2}; end
 
 %% Create the proper object
 switch osType
-    case 'linear'
-        obj = osLinear(sensor);
-    case {'biophys','rieke'}
-        obj = osBioPhys(sensor);
-    case 'identity'
-        obj = osIdentity(sensor);
+    case {'linear','oslinear'}
+        obj = osLinear();
+    case {'biophys','osbiophys','rieke','osrieke'}
+        obj = osBioPhys();
+    case {'identity','osidentity'}
+        obj = osIdentity();
     otherwise
-        obj = osLinear(sensor);
+        obj = osLinear();
 end
 
 end

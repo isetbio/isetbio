@@ -1,4 +1,4 @@
-function obj = outersegmentSet(obj, varargin)
+function obj = osSet(obj, varargin)
 % outersegmentSet: a method of @outersegment that sets  outersegment object 
 % parameters using the input parser structure.
 % 

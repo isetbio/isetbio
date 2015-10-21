@@ -68,7 +68,7 @@ for t = 1 : params.nSteps
     scene = sceneSet(scene, 'h fov', fov);
     
     % Get scene RGB data    
-    % sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
     
     % Compute optical image
     oi = oiCompute(oi, scene);    
@@ -102,7 +102,7 @@ sensor = sensorSet(sensor, 'volts', volts);
 % Input = cone current
 os = osCreate('linear');
 os = osCompute(os, sensor);
-os.osPlot(sensor);
+osPlot(os,sensor);
 
 % % Input = RGB
 % os = osCreate('identity');
@@ -110,7 +110,7 @@ os.osPlot(sensor);
 
 %% Build rgc
 
-rgc1 = rgcCreate('linear', scene, sensor, os, 'right', 3.0, 180);
+rgc1 = rgcCreate('glm', scene, sensor, os, 'right', 3.0, 180);
 
 rgc1 = rgcCompute(rgc1, os);
 

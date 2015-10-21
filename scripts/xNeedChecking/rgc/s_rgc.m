@@ -31,8 +31,8 @@ sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
 %% build outersegment
 identityOS = osCreate('identity');
 
-sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
-% sceneRGB = sceneHorwitzHassBarRGB(params);
+% sceneRGB = sceneHorwitzHassWhiteNoiseRGB(params);
+sceneRGB = sceneHorwitzHassBarRGB(params);
 % sceneRGB = 0.5*ones(params.image_size, params.image_size, params.nsteps, 3);
 
 % for frame = 1:params.nsteps
@@ -65,15 +65,15 @@ rgcPlot(rgc1, 'rasterResponse');
 % % % toc
 %% With linear cone response
 
-linearOS = osCreate('linear');
-linearOS = osCompute(linearOS, sensor);
-
-rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
-% rgc1 = rgcCreate('rgcGLM',scene, sensor, linearOS, 'right', 3.0, 180);
-
-rgc1 = rgcCompute(rgc1, linearOS);
-
-rgcPlot(rgc1, sensor, linearOS);
+% linearOS = osCreate('linear');
+% linearOS = osCompute(linearOS, sensor);
+% 
+% rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
+% % rgc1 = rgcCreate('rgcGLM',scene, sensor, linearOS, 'right', 3.0, 180);
+% 
+% rgc1 = rgcCompute(rgc1, linearOS);
+% 
+% rgcPlot(rgc1, sensor, linearOS);
 %% build movie
 % 
-rgcMovie(rgc1, identityOS);
+% rgcMovie(rgc1, identityOS);

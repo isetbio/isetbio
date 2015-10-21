@@ -17,9 +17,8 @@ dt = sensorGet(sensor, 'time interval');
 
 % Plot input signal (isomerizations) at a particular (x, y) over time.
 figNum = 1; 
-h = figure();
-set(h, 'Name', sprintf('Output of %s', class(obj)));
-set(h, 'Position', [10+50*figNum 10+50*figNum, 1024 256]);
+h = vcNewGraphWin([],'wide');
+set(h, 'Name', sprintf('Output of %s', class(obj)));]);
 subplot(1,2,1);
 [sz1 sz2 sz3] = size(sensor.data.volts); 
 inputSignal(1,:) = sensor.data.volts(round(sz1/2),round(sz2/2),:);
