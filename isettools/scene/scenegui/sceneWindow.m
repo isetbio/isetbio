@@ -20,7 +20,7 @@ function varargout = sceneWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-% Last Modified by GUIDE v2.5 28-Sep-2013 23:13:35
+% Last Modified by GUIDE v2.5 22-Oct-2015 22:05:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1199,5 +1199,3 @@ function menuHelpProgGuide_Callback(hObject, eventdata, handles)
 % Help | Iset Programmers (online)
 ieManualViewer('manual');
 return
-
-
