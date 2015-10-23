@@ -2,7 +2,7 @@ function contourCell = plotContours(obj)
 
 nCells = size(obj.sRFcenter);
 
-extent = 3;
+extent = .5*round(size(obj.sRFcenter{1,1},1)/obj.rfDiameter);
 
 figure;
 for xcell = 1:nCells(1)

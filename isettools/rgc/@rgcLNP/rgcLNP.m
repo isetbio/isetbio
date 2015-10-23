@@ -51,9 +51,9 @@ classdef rgcLNP < rgc
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = rgcCompute(obj, outersegment, varargin)
-            % see for details
-            obj = rgcCompute@rgc(obj,  outersegment, varargin{:}); 
+        function obj = compute(obj, outersegment, varargin)
+            % see for details 
+            obj = rgcCompute(obj,  outersegment, varargin{:}); 
         end
         function rgcPlot(obj, varargin)
             % see for details

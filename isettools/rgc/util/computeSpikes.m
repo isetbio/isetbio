@@ -39,6 +39,9 @@ RefreshRate = 100;
 % hlen = length(ihhi);
 ihhi = ih;
 cellCtr = 0;
+
+for trial = 1:10
+
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr + 1;
@@ -86,10 +89,10 @@ for xcell = 1:nCells(1)
                 nbinsPerEval = max(20, round(1.5*muISI));
             end
         end
-        spikeTimes{xcell,ycell} = tsp(1:nsp); % prune extra zeros
-        if size(Vmem,1) > 0
-        spikeTimes{xcell,ycell,1,2} = Vmem'; % prune extra zeros
-        end
+        spikeTimes{xcell,ycell,trial} = tsp(1:nsp); % prune extra zeros
+%         if size(Vmem,1) > 0
+        spikeTimes{xcell,ycell,trial,2} = Vmem; % prune extra zeros
+%         end
         % obj.spkResponse =
         
         ph = 1;
@@ -97,3 +100,6 @@ for xcell = 1:nCells(1)
     end
 end
         ph = 1;
+        
+end
+

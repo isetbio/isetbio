@@ -22,13 +22,16 @@ cmap = parula(8);
 
 for cellTypeInd = 1:length(obj.mosaic)
     
-mosaicall{cellTypeInd} = zeros(245,215,229);
+mosaicall{cellTypeInd} = zeros(100,100,300);
 
     subplot(3,2,cellTypeInd);
     
     fillIndicesMosaic = rfFill(obj.mosaic{cellTypeInd});
     
     nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+        
+    extent = .5*round(size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1)/obj.mosaic{cellTypeInd}.rfDiameter);
+                
     for xcell = 1:nCells(1)
         for ycell = 1:nCells(2)
             clear x1 y1
@@ -51,7 +54,7 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 
 %                     mosaicall(round(x1(:)),round(y1(1))) = 1;
             
-            k = 100:300;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:300;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             for ix = 1:length(x1)
 %                 for iy = 1%:length(y1)
@@ -64,8 +67,8 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 % 
 %                     mosaicall{cellTypeInd}(round(x1(ix)),round(y1(ix)),ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                    
 
-                    px = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
-                    py = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
+                    px = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
+                    py = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
 
                     
                     if isa(obj,'rgcLinear')
@@ -78,6 +81,9 @@ mosaicall{cellTypeInd} = zeros(245,215,229);
 %                     mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));
 
                         mosaicall{cellTypeInd}(px,py,k) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+%                         m1 = mosaicall{cellTypeInd}(px,py,k); m2 = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+%                         mosaicall{cellTypeInd}(px,py,k) = max([m1(:)'; m2(:)'  ]);
+%                         clear m1 m2
                     end
 %                 end
             end
@@ -150,7 +156,10 @@ for cellTypeInd = 1:length(obj.mosaic)
     spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
 end
 
-for k = 100:289%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+xAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),1);
+yAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),2);
+
+for k = 1:189%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
 
@@ -170,7 +179,7 @@ for cellTypeInd = 1:length(obj.mosaic)
     hold on;
     plot(pr4(1,:),pr4(2,:),'r','linewidth',2)
 
-    axis equal; axis off;
+    axis equal; axis off; axis([0 xAxisLimit 0 yAxisLimit]);
     title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
 
     subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;

@@ -8,8 +8,7 @@ spikeCheck = (cellfun(@isempty,((obj.spikeResponse))));
 
 if sum(spikeCheck(:)) ~= (length(obj.spikeResponse)*nCells(1)*nCells(2))
 
-szSpike = size(horzcat(obj.spikeResponse{1,1,:,2}));
-maxTrials = szSpike(2);
+maxTrials = size(obj.spikeResponse,3);
 
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)

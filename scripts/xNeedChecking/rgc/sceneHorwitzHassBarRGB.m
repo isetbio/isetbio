@@ -59,7 +59,7 @@ display = displaySet(display, 'dpi', dpi);
 % Set the display's viewing distance
 display = displaySet(display, 'viewing distance', vd_inMeters);
 
-barwidth = 10;
+barwidth = 5;
 
 barMovie = zeros(params.image_size,params.image_size,3);
 sceneRGB = zeros(params.image_size,params.image_size,params.nsteps,3);
@@ -69,7 +69,9 @@ for fstep = 1:params.nsteps
     fprintf('\b\b\b%02d%%', round(100*fstep/params.nsteps));
 
     barMovie = 0.5*ones(params.image_size,params.image_size,3);
-    barMovie(26:40,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(15,barwidth,3) - mod(fstep,2)*0.999*ones(15,barwidth,3);
+    barMovie(26:30,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(5,barwidth,3);% - mod(fstep,8)*0.999*ones(15,barwidth,3);
+%     barMovie(:,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3);%
+%     barMovie(17+1*fstep+1:17+1*fstep+barwidth,:,:) = 0.5 + 0.499*ones(barwidth,params.image_size,3);%
 %     barMovie(:,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3) - mod(fstep,2)*0.999*ones(params.image_size,barwidth,3);
     
     barMovie(1,1,:) = 1;
@@ -77,7 +79,8 @@ for fstep = 1:params.nsteps
     % % % % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', meanLuminance, display);
     
-    sceneRGB(:,:,fstep,:) = sceneGet(scene,'rgb');
+    % sceneRGB(:,:,fstep,:) = sceneGet(scene,'rgb');
+    sceneRGB(:,:,fstep,:) = barMovie;
     sceneRGB(1,1,fstep,:) = sceneRGB(2,2,fstep,:);
 end
 fprintf('     \n');

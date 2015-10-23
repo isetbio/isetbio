@@ -36,7 +36,7 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Create stimulus - impulse.
 stimulus = zeros(nSamples, 1);
-stimulus(1) = flashIntens;
+stimulus(100:1000) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photons.

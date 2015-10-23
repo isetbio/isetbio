@@ -62,7 +62,9 @@ for xcell = 1:nCells(1)
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
             % rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
             
-            rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
+            % rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
+            
+            rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
             rrcum = cumsum(rrnxt)+rprev; % integrated cond intensity
             if (tspnext >= rrcum(end)) % No spike in this window
                 jbin = iinxt(end)+1;
