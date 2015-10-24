@@ -37,7 +37,8 @@ if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
     nWave = wvfGet(wvf,'calc nwave');
     pupilfunc = cell(nWave,1);
 
-    % Make sure pupil function is computed.  
+    % Make sure pupil function is computed.  This function incorporates the
+    % chromatic aberration of the human eye.
     wvf = wvfComputePupilFunction(wvf, showBar);
     
     % wave = wvfGet(wvf,'wave');
