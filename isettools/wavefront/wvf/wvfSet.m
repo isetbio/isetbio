@@ -1,5 +1,4 @@
 function wvf = wvfSet(wvf,parm,val,varargin)
-% wvf = wvfSet(wvf,parm,val,varargin)
 % Set wavefront parameters to use for calculations
 %
 %     wvf = wvfSet(wvf,parm,val,varargin)
@@ -174,15 +173,20 @@ switch parm
         % standards
     case {'zcoeffs', 'zcoeff','zcoef'}
         % wvfSet(wvf,'zcoeffs',val,jIndex);
-        % idx is optional, and can be a vector of j values
-        % or a string array of coefficient names (see wvfOSAIndexToVectorIndex).
-        % Note that j values start at 0, and that is the convention followed
-        % here.
+        % jIndex is optional, and can be a vector of j values
+        % or a string array of coefficient names that are converted to
+        % indices using wvfOSAIndexToVectorIndex. 
         %
-        % The length of jIndex must match that of val, if it is passed. If
-        % the current vector of zcoeffs is shorter than required by jIndex,
-        % the vector is padded out with zeros prior to the insertion of the
-        % passed coefficients.
+        % Note that j indices start at 0, and that is the convention followed
+        % here.  We add 1 in the routine to be compliant with Matlab
+        % indexing.
+        %
+        % The length of jIndex must match that of val. The assignment is
+        %   zcoeffs(jIndices) = val;
+        %
+        % For this method to work properly, when the stored vector of
+        % zcoeffs is shorter than required by jIndex, the vector is padded
+        % with zeros prior to the insertion of the passed coefficients.
         if (isempty(varargin))
             wvf.zcoeffs = val;
         else
