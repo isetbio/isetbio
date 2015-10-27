@@ -323,7 +323,7 @@ switch parm
     case {'calcpupilsize', 'calcpupildiameter', 'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
         if (val > wvf.measpupilMM)
-            error('Pupil diamter used for calculation must be smaller than that used for measurements');
+            error('Pupil diameter used for calculation. Must be smaller diameter used for measurement');
         end
         wvf.calcpupilMM = val;
         wvf.PUPILFUNCTION_STALE = true;
