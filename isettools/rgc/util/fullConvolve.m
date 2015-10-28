@@ -26,7 +26,7 @@ for xcell = 1:nCells(1)
         
         for rgbIndex = 1:channelSize
             
-            fullResponseRSRGB = zeros(size(spResponseCenter{1,1}));
+            % fullResponseRSRGB = zeros(size(spResponseCenter{1,1}));
             
             temporalIRCenter = mosaic.tCenter{rgbIndex};
             temporalIRSurround = mosaic.tSurround{rgbIndex};
@@ -34,7 +34,7 @@ for xcell = 1:nCells(1)
             spResponseCenterRS = reshape(squeeze(spResponseCenter{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
             spResponseSurroundRS = reshape(squeeze(spResponseSurround{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
     
-            if (sum(temporalIRCenter-temporalIRSurroud) == 0) 
+            if (sum(temporalIRCenter-temporalIRSurround) == 0) 
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
                 

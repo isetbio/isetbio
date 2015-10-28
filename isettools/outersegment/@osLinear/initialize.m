@@ -5,16 +5,16 @@ function obj = initialize(obj,varargin)
 % Outputs: the osLinear object sConeFilter, mConeFilter and lConeFilter
 % properties store the filter impulse response functions.
 % 
-% See the utility filterConeLinear for details of the generation of the
+% See the utility osFilterConesLinear for details of the generation of the
 % impulse responses.
 % 
 % 7/2015 JRG
 
 if ~isempty(varargin)
     sensor = varargin{1};
-    newIRFs = filterConesLinear(sensor);
+    newIRFs = osFilterConesLinear(sensor);
 else
-    newIRFs = filterConesLinear();
+    newIRFs = osFilterConesLinear();
 end
 obj = osSet(obj, 'lconefilter', newIRFs(:,1));
 obj = osSet(obj, 'mconefilter', newIRFs(:,2));

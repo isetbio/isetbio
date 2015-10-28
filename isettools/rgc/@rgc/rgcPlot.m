@@ -1,11 +1,36 @@
-function val = rgcPlot(obj, varargin)
-% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
-% parameters using the input parser structure.
+function rgcPlot(obj, varargin)
+% rgcPlot: a method of @rgc that plots rgcMosaic object 
+% properties using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+% Inputs: rgc object, property to be plotted
 % 
-% 9/2015 JRG 
+% Outputs: plot(s)
+% 
+% Properties that can be plotted:
+%         'rf',...              - (center - surround) spatial RF surfaces
+%         'rfImage',...         - a (center - surround) spatial RF image
+%         'mosaic',...          - the 1 STD spatial RF mosaic of each type
+%         'sRFcenter',...       - center spatial RF surfaces
+%         'sRFsurround',...     - surround spatial RF surfaces
+%         'ir',...              - (center - surround) temporal impulse responses
+%         'tCenter',...         - center temporal impulse response
+%         'tSurround',...       - surround temopral impulse response
+%         'postSpikeFilter',... - post-spike filter time course
+%         'couplingFilter',...  - coupling filters time course
+%         'linearResponse',...  - linear response of all cells
+%         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
+%         'spikeResponse',...   - average waveform over N trials including
+%                                   post-spike and coupling filter effects
+%         'rasterResponse',...  - spike rasters of all cells from N trials
+%         'psthResponse'...     - peristimulus time histogram responses of all cells 
+% 
+% Examples:
+%   rgcPlot(rgc1,'rf');
+%   rgcPlot(rgc1,'mosaic');
+%   rgcPlot(rgc1,'psthResponse');
+% 
+% (c) isetbio
+% 09/2015 JRG
 
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
@@ -49,12 +74,6 @@ p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
-
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
 switch lower(params.what)
@@ -306,12 +325,12 @@ switch lower(params.what)
             
             vcNewGraphWin([],'upperleftbig');
              % set(gcf,'position',[1000  540 893  798]);
-            cellCtr = 0;
+            cellCtr = 0; cellCtr2 = 0;
             clear psth tsp mtsp
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
             maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
-            rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
@@ -324,7 +343,14 @@ switch lower(params.what)
                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
                     end
                     
-                    subplot(nCells(1),nCells(2),cellCtr);
+                    
+                    % The indices are reversed to match up with the imagesc 
+                    % command used in rgcMovie.
+                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
+                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    subplot(nCells(2),nCells(1),cellCtr2);
+                    % subplot(nCells(1),nCells(2),cellCtr);
                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
                     
                     if sum(cellfun(@isempty,tsp))~=maxTrials
@@ -374,7 +400,7 @@ switch lower(params.what)
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
             szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
             maxTrials = szSpike(2);
-            rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
@@ -387,8 +413,15 @@ switch lower(params.what)
                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
                     end
                     
-                    subplot(nCells(1),nCells(2),cellCtr);
+                    % The indices are reversed to match up with the imagesc 
+                    % command used in rgcMovie.
+                    % subplot(nCells(2),nCells(1),cellCtr);
                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
+                    
+                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
+                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    subplot(nCells(2),nCells(1),cellCtr2);
                     
                     if sum(cellfun(@isempty,tsp))~=maxTrials
                         
@@ -402,12 +435,10 @@ switch lower(params.what)
                     [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % axis([0 30 0 maxTrials]);
                     
-                    
-                    % subplot(nCells(1),nCells(2),cellCtr);
-                                plot(tt/.01,psth{xcell,ycell});
-                                if ~isnan(psth{xcell,ycell})
-                                    axis([0 30 0 max(psth{xcell,ycell})]);
-                                end
+                    plot(tt/.01,psth{xcell,ycell});
+                    if ~isnan(psth{xcell,ycell})
+                        axis([0 30 0 max(psth{xcell,ycell})]);
+                    end
                     
                     % hold on;
                     % gf = obj.mosaic{1}.generatorFunction;
@@ -416,6 +447,13 @@ switch lower(params.what)
                     
                 end
             end
+            
+            maxVal = max(vertcat(psth{:}));
+            axesHandles = get(gcf,'children');
+            if isnan(maxVal), maxVal = 0.00001; end;
+            axis(axesHandles,[0 30 0 maxVal])
+            clear axesHandles;
+            
             % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
             % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
             suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));

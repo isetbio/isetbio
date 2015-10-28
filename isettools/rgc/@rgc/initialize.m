@@ -70,7 +70,7 @@ temporalEquivEcc = retinalLocationToTEE(retinalTheta, retinalRadius, leftOrRight
 obj.temporalEquivEcc = temporalEquivEcc;
     
 % Plot the TEE and the location of the retinal patch.
-plotPatchEccentricity(retinalTheta, retinalRadius, leftOrRightEye, temporalEquivEcc)
+% plotPatchEccentricity(retinalTheta, retinalRadius, leftOrRightEye, temporalEquivEcc)
 
 %%
 

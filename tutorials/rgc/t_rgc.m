@@ -100,13 +100,14 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Build outer segment
 
 % Input = cone current
-os = osCreate('linear');
-os = osCompute(os, sensor);
-osPlot(os,sensor);
+% os = osCreate('linear');
+% os = osCompute(os, sensor);
+
+% osPlot(os,sensor);
 
 % % Input = RGB
-% os = osCreate('identity');
-% os = osSet(os, 'rgbData', sceneRGB);
+os = osCreate('identity');
+os = osSet(os, 'rgbData', sceneRGB);
 
 %% Build rgc
 

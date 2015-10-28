@@ -25,7 +25,7 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 %       - spatial convolution
 %       - temporal convolution
 % 3. Compute nonlinear response
-% 4. Compute spiking response
+% [spiking responses are calculated by subclass versions of rgcCompute]
 % 
 % Inputs: outersegment.
 % 
@@ -45,8 +45,9 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 if isa(outerSegment,'osIdentity')
     spTempStim = osGet(outerSegment, 'rgbData');
     spTempStim = spTempStim - 0.5;%1/sqrt(2);
-    spTempStim = 10*spTempStim./max(abs(spTempStim(:)));
+    spTempStim = 5*spTempStim./max(abs(spTempStim(:)));
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
+    % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    
     spTempStim = spTempStim - mean(spTempStim(:));%0.5;%1/sqrt(2);
     spTempStim = 1*spTempStim./max(abs(spTempStim(:)));
@@ -66,8 +67,11 @@ for cellTypeInd = 1:length(obj.mosaic)
         [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponseCenter, spResponseSurround);
     elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
         % Unless the os object has already applied temporal processing,
-        % then take output of spatial convolution as full output
+        % then take output of spatial convolution as full output.
+        % Take difference between center and surround outputs of spatial
+        % convolution:
         strfResponse = cellfun(@minus, spResponseCenter, spResponseSurround,'un',0);
+        % Find the mean over the strf response for each temporal frame:
         strfResponseRS = cellfun(@(x) reshape(x,rfSize(1)*rfSize(2),nSamples),strfResponse,'un',0);
         fullResponse = cellfun(@mean, strfResponseRS,'un',0);
         if ~isa(obj, 'rgcLinear'); nlResponse = cellfun(obj.mosaic{cellTypeInd}.generatorFunction,fullResponse,'un',0); end;
@@ -82,4 +86,3 @@ for cellTypeInd = 1:length(obj.mosaic)
             
     clear spResponseCenter spResponseSurround fullResponse nlResponse 
 end
-close;

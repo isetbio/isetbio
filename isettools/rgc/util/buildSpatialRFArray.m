@@ -34,7 +34,7 @@ numberRGCsY = floor ((patchSizeY/umPerScenePx) / receptiveFieldDiameter1STD);
 % numberConesPerRF = floor (receptiveFieldDiameter1STD / coneSize(1));
 
 % whene extent gets to 5, the sum of the RF is ~0
-extent = 3;
+extent = 2;
 d1 = 1; d2 = 0;
 % d1 = 1; d2 = 0.25*randn(1,1);
 Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);

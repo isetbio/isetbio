@@ -11,13 +11,6 @@
 % objects, compute the current signal, add noise to the current signal
 % (according to another model developed by Fred Rieke), and plot results.
 %
-% Additionally, a new version of coneAdapt is implemented by the
-% outerSegment class that allows for backward comptability with the
-% previous coneAdapt function. A call of coneAdapt will now return the same
-% value as the previous version, but also returns an osLinear or osBioPhys
-% object as well. The new coneAdapt stores properties and calls methods
-% using the outerSegment object methods.
-%
 % In order to have the names of the public properties and methods of each
 % subclass printed in the command window, set 'verbosity' equal to 1 below.
 %
@@ -36,7 +29,7 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Create stimulus - impulse.
 stimulus = zeros(nSamples, 1);
-stimulus(100:1000) = flashIntens;
+stimulus(1) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photons.
@@ -51,19 +44,6 @@ linearOS = osSet(linearOS,'noiseFlag',1);
 adaptedOS = osCreate('biophys');
 % adaptedOS = osBioPhys(); % osBioPhys
 adaptedOS = osSet(adaptedOS, 'noiseFlag', 1);
-
-%% Print methods and properties (when verbosity > 0).
-verbosity = 1;
-if (verbosity > 0)
-    fprintf('<strong>\n\nPublic methods of %s:</strong>', class(linearOS));
-    methods(linearOS)    
-    fprintf('<strong>\n\nPublic properties of %s:</strong>', class(linearOS));
-    properties(linearOS)    
-    fprintf('<strong>\n\nPublic methods of %s:</strong>', class(adaptedOS));
-    methods(adaptedOS)    
-    fprintf('<strong>\n\nPublic properties of %s:</strong>', class(adaptedOS));
-    properties(adaptedOS)
-end
 
 %% Compute linear outer segment response.
 linearOS = osCompute(linearOS, sensor);
@@ -80,3 +60,16 @@ osGet(adaptedOS, 'noiseFlag');
 %% Plot results.
 osPlot(linearOS, sensor);
 osPlot(adaptedOS, sensor);
+
+%% Print methods and properties (when verbosity > 0).
+verbosity = 1;
+if (verbosity > 0)
+    fprintf('<strong>\n\nPublic methods of %s:</strong>', class(linearOS));
+    methods(linearOS)    
+    fprintf('<strong>\n\nPublic properties of %s:</strong>', class(linearOS));
+    properties(linearOS)    
+    fprintf('<strong>\n\nPublic methods of %s:</strong>', class(adaptedOS));
+    methods(adaptedOS)    
+    fprintf('<strong>\n\nPublic properties of %s:</strong>', class(adaptedOS));
+    properties(adaptedOS)
+end

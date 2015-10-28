@@ -65,22 +65,22 @@ rgc1 = rgcCompute(rgc1, identityOS);
 % % toc
 
 % % tic
-% rgcPlot(rgc1, 'spikeResponse');
+rgcPlot(rgc1, 'spikeResponse');
 % rgcPlot(rgc1, 'rasterResponse');
 % % % toc
 %% With linear cone response
 
-linearOS = osCreate('linear');
-linearOS = osCompute(linearOS, sensor);
+% linearOS = osCreate('linear');
+% linearOS = osCompute(linearOS, sensor);
+% % 
+% % rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
+% rgc2 = rgcCreate('glm',scene, sensor, linearOS, 'right', 3.0, 180);
+% % 
+% rgc2 = rgcCompute(rgc2, linearOS);
+% % 
 % 
-% rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
-rgc2 = rgcCreate('glm',scene, sensor, linearOS, 'right', 3.0, 180);
-% 
-rgc2 = rgcCompute(rgc2, linearOS);
-% 
-
-rgcPlot(rgc2, 'linearResponse');
-rgcPlot(rgc2, 'spikeResponse');
+% rgcPlot(rgc2, 'linearResponse');
+% rgcPlot(rgc2, 'spikeResponse');
 %% build movie
 % 
 % rgcMovie(rgc1, identityOS);

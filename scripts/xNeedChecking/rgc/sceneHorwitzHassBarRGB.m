@@ -69,7 +69,8 @@ for fstep = 1:params.nsteps
     fprintf('\b\b\b%02d%%', round(100*fstep/params.nsteps));
 
     barMovie = 0.5*ones(params.image_size,params.image_size,3);
-    barMovie(26:30,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(5,barwidth,3);% - mod(fstep,8)*0.999*ones(15,barwidth,3);
+%     barMovie(26:30,1+3*fstep+1:1+3*fstep+barwidth,:) = 0.5 + 0.499*ones(5,barwidth,3);% - mod(fstep,8)*0.999*ones(15,barwidth,3);
+    barMovie(:,1+3*fstep+1:1+3*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3);% - mod(fstep,8)*0.999*ones(15,barwidth,3);
 %     barMovie(:,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3);%
 %     barMovie(17+1*fstep+1:17+1*fstep+barwidth,:,:) = 0.5 + 0.499*ones(barwidth,params.image_size,3);%
 %     barMovie(:,17+1*fstep+1:17+1*fstep+barwidth,:) = 0.5 + 0.499*ones(params.image_size,barwidth,3) - mod(fstep,2)*0.999*ones(params.image_size,barwidth,3);
