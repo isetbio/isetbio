@@ -26,7 +26,7 @@ function varargout = sensorImageWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 26-Sep-2013 20:00:39
+% Last Modified by GUIDE v2.5 22-Oct-2015 22:02:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1846,6 +1846,3 @@ end
 %#ok<*DEFNU>
 %#ok<*INUSD>
 return;
-
-
-
