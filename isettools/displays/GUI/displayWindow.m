@@ -101,8 +101,13 @@ function menuFileLoadImage_Callback(hObject, eventdata, handles)
 if fname == 0, return; end
 I = im2double(imread(fullfile(p,fname)));
 
-global vcSESSION;
-vcSESSION.imgData = I;
+ind = vcGetSelectedObject('display');
+if isempty(ind), disp('No display selected'); return; end
+d = vcGetObject('display', ind);
+d = displaySet(d, 'main image', I);
+d_list = vcGetObjects('display');
+d_list{ind} = d;
+vcSetObjects('display', d_list);
 
 % Refresh other components
 displayRefresh(hObject, eventdata, handles);
