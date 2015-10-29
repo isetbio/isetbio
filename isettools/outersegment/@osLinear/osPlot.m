@@ -1,5 +1,7 @@
 function osPlot(obj, sensor)
-% Plot the input, filters and computed results of the linear outsergment object.
+% Gateway plotting routine for the os linear object
+%
+% the input, filters and computed results of the linear outsergment object.
 % 
 %   os.osPlot(sensor);
 % 

@@ -12,8 +12,8 @@ function t_wvfPupilSize
 %
 % (BW) (c) Wavefront Toolbox Team, 2014
 
-%% Initialize
-close all; ieInit;
+% Initialize
+ieInit;
 
 %% Load the Thibos data for one of the pupil diameter sizes 
 pupilMM = 7.5;   % Could be 6, 4.5, or 3

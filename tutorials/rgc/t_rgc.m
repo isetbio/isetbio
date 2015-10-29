@@ -92,16 +92,20 @@ sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
 % Show the movie of volts
-% vcNewGraphWin;
-% for ii=1:params.nSteps
-%     imagesc(volts(:,:,ii)); pause(1); axis image
-% end
+vcNewGraphWin;axis image
+for ii=1:params.nSteps
+    imagesc(volts(:,:,ii)); pause(1); 
+end
 
-%% Build outer segment
+%% Outer segment calculation
 
 % Input = cone current
 os = osCreate('linear');
+
+% Compute the photocurrent
 os = osCompute(os, sensor);
+
+% Plot the photocurrent for a pixel
 osPlot(os,sensor);
 
 % % Input = RGB

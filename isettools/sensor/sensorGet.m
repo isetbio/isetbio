@@ -1,7 +1,19 @@
 function val = sensorGet(sensor,param,varargin)
-%Get data from ISET image sensor array
+%Get data from the image sensor array
 %
 %     val = sensorGet(sensor,param,varargin)
+%
+% This object is designed to calculate the isomerization rate of the
+% photons absorbed in the outer segment. These calculations include the
+% inert pigments, photopigments, and geometric properties of the cone.
+%
+% The related os (outer segment) object converts the photon absorptions
+% into photocurrent (or volts).  Hence, the two objects work together as
+% part of the full characterization of the photoreceptor from
+% isomerizations (this structure) to photocurrent (os object).
+% 
+% We are now experimenting with allowing the isomerization matrix to
+% include a time dimension (row,col,time).
 %
 % The (very long) sensor parameter list is described below.  The image
 % sensory array is often referred to as sensor, or sensor in the code. The
@@ -183,7 +195,7 @@ function val = sensorGet(sensor,param,varargin)
 %         checks whether the parameters and the displayed image are
 %         consistent/updated.
 %
-% Human sensor special case
+% Human retinal properties
 %    {'human'} - The structure with all human parameters.  Applies only
 %                when the name contains the string 'human' in it
 %    {'human lens'}                  - underlying lens structure
@@ -203,8 +215,12 @@ function val = sensorGet(sensor,param,varargin)
 %    {'adaptation offset'}           - cone adaptation volts
 %    {'adapted data'}                - adapted volts, will have negatives
 %    
-%    {'time interval'}          - human eye sampling time interval
+% Time parameters
+%    {'time interval'}          - temporal step size
 %    {'total time'}             - total time of eye movement sequence
+%    {'n time frames'}
+%
+% Eye movement parameters
 %    {'em type'}                - eye movement type vector
 %    {'em tremor'}              - eye movement tremor structure
 %    {'em drift'}               - eye movement drift structure
@@ -1102,11 +1118,6 @@ switch param
             val = sensorDemosaicCones(sensor);
         end
         
-    case {'sampletimeinterval', 'timeinterval'}
-        if checkfields(sensor, 'human', 'timeInterval')
-            val = sensor.human.timeInterval;
-        end
-        
     case {'adaptationgain'}
         % Adaptation gain
         if checkfields(sensor,'human','adaptGain')
@@ -1149,26 +1160,41 @@ switch param
             val = sensor.movement.pos(:,2);
         else val = 0;
         end
-    case {'framesperposition','exposuretimesperposition','etimeperpos'}
-        % Exposure frames for each (x,y) position
-        % This is a vector with some number of exposures for each x,y
-        % position (deg)
-        warning('This field might be removed in the future');
-        disp(['For a general eyemovement sequence '...
-            'set sensor positions to the sensor.']);
         
-        if checkfields(sensor,'movement','framesPerPosition')
-            val = sensor.movement.framesPerPosition;
-        else
-            val = 1;
+        %     case {'framesperposition','exposuretimesperposition','etimeperpos'}
+        %         % Exposure frames for each (x,y) position
+        %         % This is a vector with some number of exposures for each x,y
+        %         % position (deg)
+        %         warning('This field might be removed in the future');
+        %         disp(['For a general eyemovement sequence '...
+        %             'set sensor positions to the sensor.']);
+        %
+        %         if checkfields(sensor,'movement','framesPerPosition')
+        %             val = sensor.movement.framesPerPosition;
+        %         else
+        %             val = 1;
+        %         end
+        
+        
+        % Tempmoral variables, getting ready for dynamic scenes and already
+        % used for eye movements
+    case {'timeinterval', 'sampletimeinterval'}
+        if checkfields(sensor, 'human', 'timeInterval')
+            val = sensor.human.timeInterval;
         end
         
-    case {'tottime', 'totaltime'}
+    case {'totaltime', 'tottime'}
         % total time of exposure
         sampTime = sensorGet(sensor, 'time interval');
         seqLen = size(sensorGet(sensor, 'sensor positions'), 1);
         val = seqLen * sampTime;
-        
+    
+    case {'ntimeframes'}
+        % nFrames = sensorGet(sensor,'n time frames');
+        %
+        % Number of temporal samples
+        % The third dimension is time.
+        val = size(sensor.data.volts,3);
     otherwise
         error('Unknown sensor parameter.');
 end

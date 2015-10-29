@@ -1,5 +1,6 @@
 function val = lorentzSum(params, x)
-%% Compute sum of Lorentzian components
+% Compute sum of Lorentzian components
+%
 %    val = lorentzSum(params, x)
 %
 %  This function computes sum of output of multiple lorentzian components.

@@ -1,19 +1,23 @@
 function obj = osCompute(obj, sensor, varargin)
-% Computes the linear filter response of the L, M and S cone outer 
-% segments. This converts isomerizations (R*) to outer segment 
-% current (pA). If the noiseFlag property of the osLinear object is 
-% set to 1, this method will add noise to the current output signal.
+% Compute the linear filter response of the outer segments. 
 %
-% adaptedOS = osCompute(adaptedOS, sensor);
+%    obj = osCompute(obj, sensor, varargin)
 %
-% Inputs: the osLinear object, the sensor object and an optional parameters
-% field. params.offest determines the current offset.
+% This converts isomerizations (R*) to outer segment current (pA). If the
+% noiseFlag is set to true (1), this method adds noise to the current
+% output signal.
+%
+% Inputs: 
+%  obj: osLinear object
+%  sensor: struct
+%     optional parameters field. params.offest determines the current
+%     offset. 
 % 
-% Outputs: the osLinear object, with the cone outer segment current and
-% optionally a noisy version of the cone outer segment current.
+% Outputs: 
+%  osLinear object which includes the cone outer segment current 
+%  optionally a noisy version of the cone outer segment current (noiseFlag)
 % 
 % 8/2015 JRG NC DHB
-
 
 % Remake filters incorporating the sensor to make them the 
 % correct sampling rate.
@@ -26,7 +30,8 @@ cone_mosaic = sensorGet(sensor,'cone type');
 isomerizations = sensorGet(sensor, 'photons');
 
 % Get number of time steps.
-nSteps = size(sensor.data.volts,3);
+nSteps = sensorGet(sensor,'n time frames');
+% size(sensor.data.volts,3);
 
 % The next step is to convolve the 1D filters with the 1D isomerization
 % data at each point in the cone mosaic. This code was adapted from the
@@ -37,15 +42,20 @@ initialState.timeInterval = sensorGet(sensor, 'time interval');
 initialState.Compress = 0; % ALLOW ADJUST - FIX THIS
 
 % Place limits on the maxCur and prescribe the meanCur.
+% This formula is based on a model from XXXX Rieke with YYYY and so forth
+% Perhaps we should not bury it here but maybe it deserves its own function
+% more because its importance.
+%
 maxCur = initialState.k * initialState.gdark^initialState.h/2;
 meanCur = maxCur * (1 - 1 / (1 + 45000 / mean(isomerizations(:))));
+
 [sz1, sz2, sz3] = size(isomerizations);
 isomerizationsRS = reshape(isomerizations(:,:,1:sz3),[sz1*sz2],nSteps);
 
 adaptedDataRS = zeros(size(isomerizationsRS));
 
 % Do convolutions by cone type.
-for cone_type = 2:4
+for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
     % Pull out the appropriate 1D filter for the cone type.
     % Filter_cone_type = newIRFs(:,cone_type-1);
     switch cone_type
@@ -70,6 +80,7 @@ for cone_type = 2:4
         
         tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
         %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
+        %  WHAT IS THE COMPRESS ABOUT?  Let's ASK NC
         if (initialState.Compress)
             tempData = tempData / maxCur;
             tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
@@ -89,16 +100,18 @@ end
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
 obj.ConeCurrentSignal = adaptedData;
 
+% The user may send in a DC offset in the varargin list.
+% We check for it here.  Is this OK?  Is it part of the referenced model?
 if size(varargin) ~= 0
     if isfield(varargin{1,1},'offset')
         obj.ConeCurrentSignal = obj.ConeCurrentSignal - obj.ConeCurrentSignal(:, :, nSteps) - varargin{1,1}.offset;
     end
 end
 
-% Add noise if the flag is set.
+% Add noise
 if obj.noiseFlag == 1
     params.sampTime = sensorGet(sensor, 'time interval');
-    ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); close;
+    ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
     obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
     
     if size(varargin) ~= 0
