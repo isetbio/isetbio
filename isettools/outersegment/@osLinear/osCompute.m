@@ -56,6 +56,7 @@ adaptedDataRS = zeros(size(isomerizationsRS));
 
 % Do convolutions by cone type.
 for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
+    
     % Pull out the appropriate 1D filter for the cone type.
     % Filter_cone_type = newIRFs(:,cone_type-1);
     switch cone_type

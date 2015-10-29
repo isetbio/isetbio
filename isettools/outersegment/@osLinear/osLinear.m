@@ -1,13 +1,13 @@
 classdef osLinear < outerSegment 
 % Linear subclass of the outersegment object
 %
-%   os = osLinear;
+%   os = osLinear();
 % 
 % Implements isomerizations (R*) to photocurrent (pA) using only cone
 % linear temporal filters.  The default values are those determined by the
 % Angueyra and Rieke (2013, Nature Neuroscience).
 % 
-% The current is calculated simply by convolving separate temporal filters
+% The current is calculated by convolving separate temporal filters
 % for the L, M and S cones with the isomerization time course.
 %
 % The time base of the temporal filters is established using parameters
@@ -38,7 +38,7 @@ classdef osLinear < outerSegment
             obj = obj@outerSegment();
             
             % Initialize ourselves
-            obj.initialize(varargin);
+            obj.initialize(varargin{:});
             
         end
         
@@ -70,9 +70,7 @@ classdef osLinear < outerSegment
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-        % Generates the linear filters for L, M and S cones using data from
-        % physiology by Angueyra and Rieke (2013)
-        filterKernel(obj, varargin);
+
     end
     
     % Methods that are totally private (subclasses cannot call these)

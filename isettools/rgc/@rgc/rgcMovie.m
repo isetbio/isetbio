@@ -1,18 +1,26 @@
 function rgcMovie(obj, outersegment, varargin)
-
-% rgcPlot: a method of @rgcLNP that plots the retinal location of the
-% patch, the 1 standard deviation contours of the RGC RF mosaic and a movie
-% of the RGC response.
 % 
-% Inputs:
+% rgcMovie: a method of @rgc that generates a movie of the stimulus and the
+% responses of the rgc mosaics. The type of response shown in the movie is
+% determined by user input; the default is the PSTH, which represents
+% the output of the neurons with a continuous value over time. 
 % 
-% Outputs:
+% Inputs: the rgc object, the outersegment object (to show the stimulus)
+% TO DO: make flexible for osLinear input
+% 
+% Outputs: a *.mp4 file containing the movie of the output responses.
+% TO DO: allow the user to input a name for the movie file.
 % 
 % Example:
+%   rgcMovie(rgc1, os);
 % 
 % (c) isetbio
 % 09/2015 JRG
-%% Movie of RGC response
+
+%% Build movies for each mosaic
+% Since the rgc object contains at least 5 mosaics, the movie for each
+% mosaic must be made before they can be integrated into the same figure.
+% Alternatively, this could be done with something like ffmpeg.
 
 figure;
 set(gcf,'position',[1000  540 893  798]);
@@ -21,163 +29,121 @@ cmap = parula(8);
 
 
 for cellTypeInd = 1:length(obj.mosaic)
-    
-mosaicall{cellTypeInd} = zeros(245,215,229);
-
+        
     subplot(3,2,cellTypeInd);
     
+    mosaicall{cellTypeInd} = zeros(100,100,300);
+    
+    % rfFill is a utility function that colors in cells in the mosaic
     fillIndicesMosaic = rfFill(obj.mosaic{cellTypeInd});
     
     nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+        
+    extent = .5*round(size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1)/obj.mosaic{cellTypeInd}.rfDiameter);
+                
     for xcell = 1:nCells(1)
         for ycell = 1:nCells(2)
             clear x1 y1
             hold on; 
             
-            
-%             fillIndices = obj.mosaic{cellTypeInd}.spatialRFFill{xcell,ycell};
             fillIndices = fillIndicesMosaic{xcell,ycell};
-%             imagesc(obj.mosaic{cellTypeInd}.spatialRFArray{xcell,ycell}(fillIndices));
-% 
+ 
+            % Shift fill indices to cell center coordinate
             [x1 y1] = ind2sub(size(obj.mosaic{cellTypeInd}.sRFcenter{xcell,ycell}),fillIndices);
             x1 = x1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(1);
             y1 = y1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(2);
-%             indall = sub2ind([500 500],x1,y1);
-%             mosaicall(round(indall)) = 1;
-            indall = ([round(x1(:)) round(y1(:))])';
-%             mosaicall(indall(:,1:100)) = 1;
-%             mosaicall(fillIndices) = 1;
-
-
-%                     mosaicall(round(x1(:)),round(y1(1))) = 1;
             
-            k = 100:300;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:30;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
+            % Color fill indices by magntidue of response
+            % Need to loop instead of vectorize for some unknown reason
             for ix = 1:length(x1)
-%                 for iy = 1%:length(y1)
-%                     mosaicall(round(x1(ix)),round(y1(ix)),k) = 1;
 
-                    
-%                     mosaicall{cellTypeInd}(round(x1(ix)),round(y1(ix)),k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));
-
-%                     mosaicall{cellTypeInd}(round(x1(ix)),round(y1(ix)),k) = obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k);
-% 
-%                     mosaicall{cellTypeInd}(round(x1(ix)),round(y1(ix)),ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                    
-
-                    px = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
-                    py = ceil(-3*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
-
-                    
-                    if isa(obj,'rgcLinear')
-                        
+                px = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
+                py = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
+                               
+                if isa(obj,'rgcLinear')                 
                     mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}(k));
-                    else
-                        
-%                     mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;
-                                        
-%                     mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));
-
-                        mosaicall{cellTypeInd}(px,py,k) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
-                    end
-%                 end
+                else
+                    
+                    % mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                   
+                    % mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));                  
+                    mosaicall{cellTypeInd}(px,py,k) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+                    
+                    % Bring max values to front
+                    % m1 = mosaicall{cellTypeInd}(px,py,k); m2 = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+                    % mosaicall{cellTypeInd}(px,py,k) = max([m1(:)'; m2(:)'  ]);
+                    % clear m1 m2
+                end
             end
             
-%             xc = obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(1);
-%             yc = obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(2);
-%             mosaicall(fillIndices+sub2ind([500 500],round(xc),round(yc))) = 1;
-            
-%             [x1 y1] = ind2sub(size(obj.mosaic{cellTypeInd}.spatialRFArray{xcell,ycell}),fillIndices);
-%             scatter(x1 + obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(1),y1 + obj.mosaic{cellTypeInd}.cellCenterLocations{xcell,ycell}(2));
         end
     end
-%     colormap gray
-%     figure;
-%     imagesc(mosaicall{3}(:,:,140)); drawnow
-%     axis equal
-%     title(sprintf('%s',obj.mosaic{cellTypeInd}.nameCellType),'fontsize',16);
-%     xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
-%     ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
 end
 close;
 
-%%
-% h1 = figure;
-% set(gcf,'position',[548   606   893   739]);
-% vObj = VideoWriter('test.mp4','MPEG-4');
-% vObj.FrameRate = 30;
-% open(vObj);
-% for j = 150:200
-%     image(mosaicall{cellTypeInd}(:,:,j)');
-% 
-%     pr4 = horzcat(obj.mosaic{cellTypeInd}.spatialRFcontours{:,:,1});
-%     hold on;
-%     plot(pr4(1,:),pr4(2,:),'r','linewidth',2)
-% 
-%     drawnow
-%     F = getframe(h1);
-%     writeVideo(vObj,F);
-% end
-% 
-% close(vObj);
-% ph=1;
-%%
+
+%% Build figure with RF contours and subplot and capture using gcf
+
 % figure;
 tic
 h1 = figure;
 % set(h1,'position',[0.1 0.1 0.4 0.7])
 % set(gcf,'position',[1000  540 893  798]);
-
-
 set(gcf,'position',[548   606   993   839]);
-% vObj = VideoWriter('new2.mj2', 'Archival');
 
-vObj = VideoWriter('testB3.mp4','MPEG-4');
+% Initialize video file
+vObj = VideoWriter('barLongOct27.mp4','MPEG-4');
 vObj.FrameRate = 30;
 vObj.Quality = 100;
- open(vObj);
+open(vObj);
 
-
- sceneRGB = (osGet(outersegment,'rgbData'));
+if isa(outersegment, 'osIdentity')
+    sceneRGB = (osGet(outersegment,'rgbData'));
+elseif strcmpi(outersegment.type, 'sensor')
+    sceneRGB = sensorGet(outersegment,'volts');
+end
  
-%  for cellTypeInd = 1:obj.numberCellTypes
-%     pr4 = horzcat(rgc1.mosaic{cellTypeInd}.spatialRFcontours{:});
+% Rearrange mosaic types for movie display
+plotOrder = [1 4 2 5 3];
 
- plotOrder = [1 4 2 5 3];
-% for k = 10
-
-
+% Generate spatial RF contours
 for cellTypeInd = 1:length(obj.mosaic)
     spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
 end
 
-for k = 100:289%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+% Set axes limits
+xAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),1);
+yAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),2);
+
+% Build each frame and gcf
+for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
-
-for cellTypeInd = 1:length(obj.mosaic)
-    nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-
     
-    subplot(2,3,plotOrder(cellTypeInd));
-    image(mosaicall{cellTypeInd}(:,:,k)');
-    
-    % pr4 = horzcat(obj.mosaic{cellTypeInd}.spatialRFcontours{:,:,1});
-    
-    % spatialRFcontours = plotContours(obj.mosaic{cellTypeInd});
-    spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
-    pr4 = horzcat(spatialRFcontoursMosaic{:,:,1});
-    
-    hold on;
-    plot(pr4(1,:),pr4(2,:),'r','linewidth',2)
-
-    axis equal; axis off;
-    title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
-
-    subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
-    title('Stimulus', 'fontsize', 16);
-    
-
-end
+    for cellTypeInd = 1:length(obj.mosaic)
+        nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+               
+        subplot(2,3,plotOrder(cellTypeInd));
+        
+        % Draw fill using image
+        image(mosaicall{cellTypeInd}(:,:,k)');
+        
+        % Draw RF contours on same image
+        spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
+        spatialRFcontoursMosaicArr = horzcat(spatialRFcontoursMosaic{:,:,1});
+        
+        hold on;
+        plot(spatialRFcontoursMosaicArr(1,:),spatialRFcontoursMosaicArr(2,:),'r','linewidth',2)
+        
+        axis equal; axis off; axis([0 xAxisLimit 0 yAxisLimit]);
+        title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
+        
+        % Draw frame from stimulus movie
+        subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
+        title('Stimulus', 'fontsize', 16);
+             
+    end
 
     drawnow
     F = getframe(h1);

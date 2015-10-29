@@ -23,13 +23,11 @@ classdef outerSegment < handle
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
-    % The noiseFlag determines if the noisy version of the current is
-    % calculated.
-    % The current signal is stored in ConeCurrentSignal in an array the
-    % same size as the cone mosaic, and if the noiseFlag is set to 1, the
-    % noisy version is stored in ConeCurrentSignalPlusNoise.
+    %
     properties (SetAccess = protected)
 
+        % The noiseFlag determines if the noisy version of the current is
+        % calculated.
         noiseFlag;
         ConeCurrentSignal;
         ConeCurrentSignalPlusNoise;

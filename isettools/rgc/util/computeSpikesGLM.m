@@ -95,7 +95,10 @@ end
                     icell = spcells(ic);
                     nsp(icell) = nsp(icell)+1;
                     tsp{icell}(nsp(icell),1) = ispk*dt;
+                    % inhibCell = squeeze(ihhi(:,icell,1:mxi-ispk))';
                     if ~isempty(iiPostSpk)
+                        % need to reshape here for when there are no
+                        % spikes?
                         Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
 %                         if nargout == 3  % Record post-spike current
                             Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';

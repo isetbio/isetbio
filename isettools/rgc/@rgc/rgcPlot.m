@@ -1,11 +1,36 @@
-function val = rgcPlot(obj, varargin)
-% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
-% parameters using the input parser structure.
+function rgcPlot(obj, varargin)
+% rgcPlot: a method of @rgc that plots rgcMosaic object 
+% properties using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+% Inputs: rgc object, property to be plotted
 % 
-% 9/2015 JRG 
+% Outputs: plot(s)
+% 
+% Properties that can be plotted:
+%         'rf',...              - (center - surround) spatial RF surfaces
+%         'rfImage',...         - a (center - surround) spatial RF image
+%         'mosaic',...          - the 1 STD spatial RF mosaic of each type
+%         'sRFcenter',...       - center spatial RF surfaces
+%         'sRFsurround',...     - surround spatial RF surfaces
+%         'ir',...              - (center - surround) temporal impulse responses
+%         'tCenter',...         - center temporal impulse response
+%         'tSurround',...       - surround temopral impulse response
+%         'postSpikeFilter',... - post-spike filter time course
+%         'couplingFilter',...  - coupling filters time course
+%         'linearResponse',...  - linear response of all cells
+%         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
+%         'spikeResponse',...   - average waveform over N trials including
+%                                   post-spike and coupling filter effects
+%         'rasterResponse',...  - spike rasters of all cells from N trials
+%         'psthResponse'...     - peristimulus time histogram responses of all cells 
+% 
+% Examples:
+%   rgcPlot(rgc1,'rf');
+%   rgcPlot(rgc1,'mosaic');
+%   rgcPlot(rgc1,'psthResponse');
+% 
+% (c) isetbio
+% 09/2015 JRG
 
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
@@ -23,6 +48,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 % values along with key names.
 allowableFieldsToSet = {...
         'rf',...
+        'rfImage',...
         'mosaic',...
         'sRFcenter',...
         'sRFsurround',...
@@ -49,20 +75,14 @@ p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
-
 % Set key-value pairs.
 switch lower(params.what)
     
     case{'mosaic'}
         %%% Plot the mosaic of each RGC type
                 
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         cmap = parula(16);
         
         for cellTypeInd = 1:length(obj.mosaic)
@@ -91,11 +111,12 @@ switch lower(params.what)
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
         end
-        
+        % plot the cone mosaic with RGC contours!
+        % [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
     case{'rf'}
-        %%% A surface representing the RF surround
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        %%% A surface representing the RF (center - surround)
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd);
@@ -107,11 +128,27 @@ switch lower(params.what)
             axis([0 size(obj.mosaic{5}.sRFcenter{1,1},1) 0 size(obj.mosaic{5}.sRFcenter{1,1},2) -max(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
         end
         
+    case{'rfimage'}
+        %%% An image representing the RF surround
+        vcNewGraphWin([],'upperleftbig');
+        %  % set(gcf,'position',[1000  540 893  798]);
+        for cellTypeInd = 1% :length(obj.mosaic)
+            
+            % subplot(3,2,cellTypeInd);
+            imagesc(obj.mosaic{cellTypeInd}.sRFcenter{1,1}-obj.mosaic{cellTypeInd}.sRFsurround{1,1}); 
+            title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
+            xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
+            ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
+            h = colorbar; ylabel(h, 'Response (spikes/sec)','fontsize',16);
+            axis([0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1) 0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},2)]);
+        end
+        
+        
     case{'srfcenter'}
         
         %%% A surface representing the RF center
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd); 
@@ -125,8 +162,8 @@ switch lower(params.what)
 
     case{'srfsurround'}
         %%% A surface representing the RF surround
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd); 
@@ -139,8 +176,8 @@ switch lower(params.what)
         end
     case{'ir'}        
         %%% Plot the RGB impulse response of each mosaic
-        figure;     
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');     
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd);
@@ -153,8 +190,8 @@ switch lower(params.what)
     case{'tcenter'}
         
         %%% Plot the RGB impulse response of each mosaic
-        figure;
-        set(gcf,'position',[1000  540 893  798]);        
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);        
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd);
@@ -167,8 +204,8 @@ switch lower(params.what)
     case{'tsurround'}
         
         %%% Plot the RGB impulse response of each mosaic
-        figure;   
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');   
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             subplot(3,2,cellTypeInd);
@@ -182,8 +219,8 @@ switch lower(params.what)
     case{'postspikefilter'}
         
         %%% Plot the post spike filter of each cell type
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             psf = squeeze(obj.mosaic{cellTypeInd}.couplingFilter{1,1}(1,1,:));
             
@@ -198,8 +235,8 @@ switch lower(params.what)
         
         
         %%% Plot the post spike filter of each cell type
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1:length(obj.mosaic)
             
             cplf = (horzcat(obj.mosaic{cellTypeInd}.couplingFilter{:}));
@@ -213,8 +250,8 @@ switch lower(params.what)
         end
         
     case{'linearresponse'}
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+          % set(gcf,'position',[1000  540 893  798]);
         
         for cellTypeInd = 1:length(obj.mosaic)
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
@@ -234,8 +271,8 @@ switch lower(params.what)
         
                 
     case{'nlresponse'}
-        figure;
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');
+         % set(gcf,'position',[1000  540 893  798]);
         
         for cellTypeInd = 1:length(obj.mosaic)
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
@@ -258,8 +295,8 @@ switch lower(params.what)
         
         %%% Plot the membrane voltages for a random trial
         
-        figure;        
-        set(gcf,'position',[1000  540 893  798]);
+        vcNewGraphWin([],'upperleftbig');        
+         % set(gcf,'position',[1000  540 893  798]);
         szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
         
         for cellTypeInd = 1:length(obj.mosaic)
@@ -276,7 +313,7 @@ switch lower(params.what)
             xlabel(sprintf('Time (msec)'),'fontsize',16);
             ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',16);
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
-            
+            clear meanVoltage
         end
         
     case{'rasterresponse'}
@@ -286,15 +323,14 @@ switch lower(params.what)
         
         for cellTypeInd = 1:length(obj.mosaic)
             
-            figure;
-            set(gcf,'position',[1000  540 893  798]);
-            cellCtr = 0;
+            vcNewGraphWin([],'upperleftbig');
+             % set(gcf,'position',[1000  540 893  798]);
+            cellCtr = 0; cellCtr2 = 0;
             clear psth tsp mtsp
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-            szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
-            maxTrials = szSpike(2);
-            rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
+            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
@@ -307,7 +343,14 @@ switch lower(params.what)
                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
                     end
                     
-                    subplot(nCells(1),nCells(2),cellCtr);
+                    
+                    % The indices are reversed to match up with the imagesc 
+                    % command used in rgcMovie.
+                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
+                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    subplot(nCells(2),nCells(1),cellCtr2);
+                    % subplot(nCells(1),nCells(2),cellCtr);
                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
                     
                     if sum(cellfun(@isempty,tsp))~=maxTrials
@@ -349,15 +392,15 @@ switch lower(params.what)
         
         for cellTypeInd = 1:length(obj.mosaic)
             
-            figure;
-            set(gcf,'position',[1000  540 893  798]);
+            vcNewGraphWin([],'upperleftbig');
+             % set(gcf,'position',[1000  540 893  798]);
             cellCtr = 0;
             clear psth tsp mtsp
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
             szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
             maxTrials = szSpike(2);
-            rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
@@ -370,8 +413,15 @@ switch lower(params.what)
                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
                     end
                     
-                    subplot(nCells(1),nCells(2),cellCtr);
+                    % The indices are reversed to match up with the imagesc 
+                    % command used in rgcMovie.
+                    % subplot(nCells(2),nCells(1),cellCtr);
                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
+                    
+                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
+                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    subplot(nCells(2),nCells(1),cellCtr2);
                     
                     if sum(cellfun(@isempty,tsp))~=maxTrials
                         
@@ -385,12 +435,10 @@ switch lower(params.what)
                     [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % axis([0 30 0 maxTrials]);
                     
-                    
-                    % subplot(nCells(1),nCells(2),cellCtr);
-                                plot(tt/.01,psth{xcell,ycell});
-                                if ~isnan(psth{xcell,ycell})
-                                    axis([0 30 0 max(psth{xcell,ycell})]);
-                                end
+                    plot(tt/.01,psth{xcell,ycell});
+                    if ~isnan(psth{xcell,ycell})
+                        axis([0 30 0 max(psth{xcell,ycell})]);
+                    end
                     
                     % hold on;
                     % gf = obj.mosaic{1}.generatorFunction;
@@ -399,6 +447,13 @@ switch lower(params.what)
                     
                 end
             end
+            
+            maxVal = max(vertcat(psth{:}));
+            axesHandles = get(gcf,'children');
+            if isnan(maxVal), maxVal = 0.00001; end;
+            axis(axesHandles,[0 30 0 maxVal])
+            clear axesHandles;
+            
             % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
             % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
             suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));

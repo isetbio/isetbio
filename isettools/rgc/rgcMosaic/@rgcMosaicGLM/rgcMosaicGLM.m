@@ -40,10 +40,6 @@ classdef rgcMosaicGLM < rgcMosaic
             % Initialize ourselves
             obj.initialize(rgc, sensor, outersegment, varargin{:});
             
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
         end
         
         % set function, see for details

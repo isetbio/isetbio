@@ -105,8 +105,12 @@ os = osCreate('linear');
 % Compute the photocurrent
 os = osCompute(os, sensor);
 
+<<<<<<< HEAD
 % Plot the photocurrent for a pixel
 osPlot(os,sensor);
+=======
+% osPlot(os,sensor);
+>>>>>>> f44d481b5a3a780f23ac9d70c6e792ad918324c1
 
 % % Input = RGB
 % os = osCreate('identity');
@@ -118,9 +122,14 @@ rgc1 = rgcCreate('glm', scene, sensor, os, 'right', 3.0, 180);
 
 rgc1 = rgcCompute(rgc1, os);
 
-rgcPlot(rgc1, 'mosaic');
-rgcPlot(rgc1, 'linearResponse');
+% rgcPlot(rgc1, 'mosaic');
+% rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 %% Build rgc response movie
- 
+%  https://youtu.be/R4YQCTZi7s8
+
+% % osLinear
+% rgcMovie(rgc1, sensor);
+
+% % osIdentity
 % rgcMovie(rgc1, os);
