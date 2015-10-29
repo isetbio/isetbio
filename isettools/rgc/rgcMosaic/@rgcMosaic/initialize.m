@@ -65,3 +65,5 @@ for rgbInd = 1:3
     obj.tSurround{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
 
 end
+
+

@@ -1,21 +1,19 @@
-function initialize(obj, rgc, sensor, outersegment, varargin)
-% intialize: a method of @rgcMosaicLNP that initializes the object based on a
-% series of input parameters that can include the location of the
-% retinal patch.
+function initialize(obj, varargin)
+% intialize: a method of @rgcMosaicGLM that initializes the object
+% following initialization by the superclass. This adds the generator
+% function, the post spike filter and the coupling filters.
 % 
-% Inputs:
+% Inputs: the rgcGLM object.
 % 
-% Outputs:
+% Outputs: the object with the generatorFunction, postSpikeFilter and
+% couplingFilter properties set to appropriate values.
 % 
 % Example:
+% rgc1 = rgcCreate('glm', scene, sensor, os, 'right', 3.0, 180);
 % 
 % (c) isetbio
 % 09/2015 JRG
 
-
-% %% Add generator function
-% % Need to make this into Gaussian CDF
-% for cellTypeInd = 1:obj.numberCellTypes
 %     obj.generatorFunction = @erf;
     obj.generatorFunction = @exp;
 %     obj.generatorFunction = @(x) 10*erf(x);
@@ -24,5 +22,5 @@ function initialize(obj, rgc, sensor, outersegment, varargin)
     
     [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
 
-% end
+
 

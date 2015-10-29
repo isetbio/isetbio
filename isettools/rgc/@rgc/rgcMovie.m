@@ -56,6 +56,7 @@ for cellTypeInd = 1:length(obj.mosaic)
             k = 1:30;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             % Color fill indices by magntidue of response
+            % Need to loop instead of vectorize for some unknown reason
             for ix = 1:length(x1)
 
                 px = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
@@ -91,12 +92,17 @@ h1 = figure;
 % set(gcf,'position',[1000  540 893  798]);
 set(gcf,'position',[548   606   993   839]);
 
+% Initialize video file
 vObj = VideoWriter('barLongOct27.mp4','MPEG-4');
 vObj.FrameRate = 30;
 vObj.Quality = 100;
 open(vObj);
 
-sceneRGB = (osGet(outersegment,'rgbData'));
+if isa(outersegment, 'osIdentity')
+    sceneRGB = (osGet(outersegment,'rgbData'));
+elseif strcmpi(outersegment.type, 'sensor')
+    sceneRGB = sensorGet(outersegment,'volts');
+end
  
 % Rearrange mosaic types for movie display
 plotOrder = [1 4 2 5 3];
@@ -106,9 +112,11 @@ for cellTypeInd = 1:length(obj.mosaic)
     spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
 end
 
+% Set axes limits
 xAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),1);
 yAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),2);
 
+% Build each frame and gcf
 for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
@@ -117,8 +125,11 @@ for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
                
         subplot(2,3,plotOrder(cellTypeInd));
+        
+        % Draw fill using image
         image(mosaicall{cellTypeInd}(:,:,k)');
         
+        % Draw RF contours on same image
         spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
         spatialRFcontoursMosaicArr = horzcat(spatialRFcontoursMosaic{:,:,1});
         
@@ -128,6 +139,7 @@ for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         axis equal; axis off; axis([0 xAxisLimit 0 yAxisLimit]);
         title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
         
+        % Draw frame from stimulus movie
         subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
         title('Stimulus', 'fontsize', 16);
              

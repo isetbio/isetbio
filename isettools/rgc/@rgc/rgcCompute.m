@@ -50,7 +50,7 @@ elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    
     spTempStim = spTempStim - mean(spTempStim(:));%0.5;%1/sqrt(2);
-    spTempStim = 1*spTempStim./max(abs(spTempStim(:)));
+    spTempStim = 5*spTempStim./max(abs(spTempStim(:)));
 end
 
 nSamples = size(spTempStim,3);

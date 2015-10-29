@@ -1,10 +1,22 @@
 function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(scene, sensor, receptiveFieldDiameter1STD)
-% buildSpatialRF: a util function of the @rgc parent class
+% buildSpatialRF: a util function of the @rgc parent class that builds the
+% spatial RF center and surround array.
+% 
+% Inputs: scene, sensor, and RF diameter.
+%   
+% Outputs: spatialRFcenter cell array, spatialRFsurround cell array,
+% rfDiaMagnitude at 1 std, cellCenterLocations cell array.
+% 
+% Example:
+% 
+% % Build spatial RFs of all RGCs in this mosaic
+% [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
+%     buildSpatialRFArray(scene, sensor, obj.rfDiameter);
 % 
 % 
 % 
-% 
-% 
+% (c) isetbio
+% 9/2015 JRG
 % 
 % 
 
@@ -88,9 +100,14 @@ for icind = 1:length(icarr)
         sx_surr = exp(-0.5*Q(1,1)*r*(pts)); sy_surr = exp(-0.5*Q(2,2)*r*(pts));       
         
         cellCenterLocations{icind,jcind} = [ic jc];
+%         load('rgc Parameters/OFFPar_1471_s1.mat');
+%         load('rgc Parameters/OFFPar_1471_s2.mat');
+%         so_center = abs(imresize(OFFPar_1471_s1,[length(pts),length(pts)]));
+%         so_surround = abs(imresize(OFFPar_1471_s2,[length(pts),length(pts)]));
         spatialRFArray{icind,jcind} = so;
         spatialRFcenter{icind,jcind} = so_center;
-        spatialRFsurround{icind,jcind} = so_surround;
+        spatialRFsurround{icind,jcind} = so_surround;        
+
         spatialRFonedim{icind,jcind} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
                 
         xv = rand(1,2);
@@ -101,11 +118,11 @@ for icind = 1:length(icarr)
         % magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         
         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        spatialRFFill{icind,jcind}  = find(so_center>magnitude1STD);
+        spatialRFFill{icind,jcind}  = find(abs(so_center)>magnitude1STD);
         rfDiaMagnitude{icind,jcind,1} = magnitude1STD;
         
         hold on;
-        [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
+        [cc,h] = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
 %         ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind,1} = cc;
@@ -113,7 +130,7 @@ for icind = 1:length(icarr)
         clear cc h
         magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
-        [cc,h] = contour(i2,j2,so_center,[magnitude1STD magnitude1STD]);% close;
+        [cc,h] = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
 %         ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind,2} = cc;
