@@ -302,8 +302,8 @@ switch lower(params.what)
         for cellTypeInd = 1:length(obj.mosaic)
             clear meanVoltage
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+            for xcell = 1%:nCells(1)
+                for ycell = 1%:nCells(2)
                     
                     meanVoltage{xcell,ycell} = mean(horzcat(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,:,2}),2);
                 end

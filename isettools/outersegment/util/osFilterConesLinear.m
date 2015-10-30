@@ -59,6 +59,9 @@ end
 % electrophysiological measurements in a representative set of cones.
 
 totalTime = dt * tsz; %length of IRF in seconds 
+
+if totalTime <= 0.3; totalTime = 0.3; end;
+
 TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
 
 

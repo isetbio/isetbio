@@ -1,4 +1,4 @@
-% t_OuterSegmentClasses
+% t_os
 %
 % A tutorial function for the outer segment object. The outer segment
 % object converts cone isomerizations (R*) over time to cone outersegment

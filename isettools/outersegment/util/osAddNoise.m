@@ -5,8 +5,9 @@ function [adaptedCur, params] = osAddNoise(curNF, params)
 %
 %  Cone noise is independent of cone signal (additive). The noise is
 %  Gaussian additive and the spectral power distribution can be
-%  characterized by the sum of two Lorentz function. 
-%  (Based on XXXX paper by Rieke and XXXX)
+%  characterized by the sum of two Lorentz functions. 
+% 
+%   See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
 %  Inputs:
 %    curNF  - noise free cone adapted membrane current, see
