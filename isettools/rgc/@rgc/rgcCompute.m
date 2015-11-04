@@ -45,7 +45,7 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 if isa(outerSegment,'osIdentity')
     spTempStim = osGet(outerSegment, 'rgbData');
     spTempStim = spTempStim - 0.5;%1/sqrt(2);
-    spTempStim = 5*spTempStim./max(abs(spTempStim(:)));
+    spTempStim = 2*spTempStim./max(abs(spTempStim(:)));
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    

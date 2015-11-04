@@ -96,8 +96,8 @@ for icind = 1:length(icarr)
         so_center = reshape(exp(-0.5*p1),size(i2)); so_surround = reshape(k*exp(-0.5*p2),size(i2));
         so = so_center - so_surround;
         
-        sx_cent = exp(-0.5*Q(1,1)*(pts)); sy_cent = exp(-0.5*Q(2,2)*(pts));
-        sx_surr = exp(-0.5*Q(1,1)*r*(pts)); sy_surr = exp(-0.5*Q(2,2)*r*(pts));       
+        sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2); sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
+        sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2); sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);       
         
         cellCenterLocations{icind,jcind} = [ic jc];
 %         load('rgc Parameters/OFFPar_1471_s1.mat');
