@@ -35,7 +35,6 @@ for ii=1:length(wave), psf(:,:,ii) = h; end     % PSF data
 %% Save the data
 ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
 
-oi = oiCreate;
 % Read the custom data and put it into an optics structure.
 oi = oiCreate;
 optics = siSynthetic('custom',oi,'customFile','deleteMe');

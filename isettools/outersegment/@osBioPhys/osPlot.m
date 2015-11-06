@@ -70,15 +70,18 @@ switch lower(params.what)
         ylabel('R*');
 
     case{'output'}
+        % Need to allow passing in which pixel or even an ROI
         
         dt = sensorGet(sensor, 'time interval');
         
         % Plot input signal (isomerizations) at a particular (x, y) over time.
         h = vcNewGraphWin;
         
+        sz= sensorGet(sensor,'size');
+        
         % Plot output signal at a particular (x, y) over time.
         
-        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz1/2),round(sz2/2),:);
+        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz(1)/2),round(sz(2)/2),:);
         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
         title('output signal');
         xlabel('Time (sec)');

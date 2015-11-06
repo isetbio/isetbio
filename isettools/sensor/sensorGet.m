@@ -1189,7 +1189,7 @@ switch param
         seqLen = size(sensorGet(sensor, 'sensor positions'), 1);
         val = seqLen * sampTime;
     
-    case {'ntimeframes'}
+    case {'nframes','ntimeframes'}
         % nFrames = sensorGet(sensor,'n time frames');
         %
         % Number of temporal samples

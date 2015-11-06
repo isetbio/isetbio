@@ -83,8 +83,7 @@ oi = oiCompute(scene,oi);
 oi = oiSet(oi,'name','Pillbox');
 
 % Show the OI window
-vcAddAndSelectObject(oi);
-oiWindow;
+ieAddObject(oi); oiWindow;
 
 % Use Analyze | Optics | XXX to plot various functions in the optics
 % (optical image) window.
