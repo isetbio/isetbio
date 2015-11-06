@@ -73,14 +73,15 @@ jcarr = 1*receptiveFieldDiameter1STD:2*receptiveFieldDiameter1STD:numberRGCsY*re
 pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD);
 
 tic
-
+centerNoise = 1.25; % divide by 2 for mean offset
 for icind = 1:length(icarr)
-    ic = icarr(icind);
+    
     for jcind = 1:length(jcarr)
-        jc = jcarr(jcind);
+        ic = icarr(icind) + centerNoise*(2*rand(1,1)-1);
+        jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
         rfctr = rfctr+1;
    
-        d1 = 1; d2 = 0;%0.25*randn(1,1);
+        d1 = 1; d2 = 0.0675*randn(1,1);
         Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
         % receptiveFieldDiameter1STD == 1/sqrt(norm(Q)); % just to check
 

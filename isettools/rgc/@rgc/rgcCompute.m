@@ -1,6 +1,8 @@
 function obj = rgcCompute(obj, outerSegment, varargin)
 % rgcCompute: a method of @rgc that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus.
+%       
+%           rgc1 = rgcCompute(rgc1, os);
 % 
 % The responses for each mosaic are computed one at a time. For a given
 % mosaic, first the spatial convolution of the center and surround RFs are
@@ -19,6 +21,8 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 
 % http://pillowlab.princeton.edu/code_GLM.html
 % 
+% See @rgcGLM/rgcCompute.m for the implementation.
+% 
 % Outline:
 % 1. Normalize stimulus
 % 2. Compute linear response
@@ -27,7 +31,7 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 3. Compute nonlinear response
 % [spiking responses are calculated by subclass versions of rgcCompute]
 % 
-% Inputs: outersegment.
+% Inputs: rgc object, outersegment object.
 % 
 % Outputs: the rgc object with responses.
 % 
@@ -49,7 +53,7 @@ if isa(outerSegment,'osIdentity')
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    
-    spTempStim = spTempStim - mean(spTempStim(:));%0.5;%1/sqrt(2);
+    spTempStim = spTempStim - mean(spTempStim(:));
     spTempStim = 5*spTempStim./max(abs(spTempStim(:)));
 end
 
@@ -65,6 +69,7 @@ for cellTypeInd = 1:length(obj.mosaic)
     if isa(outerSegment,'osIdentity')
         % Then convolve output of spatial convolution with the temporal impulse response
         [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponseCenter, spResponseSurround);
+    
     elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
         % Unless the os object has already applied temporal processing,
         % then take output of spatial convolution as full output.

@@ -317,6 +317,13 @@ switch lower(params.what)
             clear meanVoltage
         end
         
+        
+%         maxVal = max(abs(horzcat(meanVoltage{:})));
+%         axesHandles = get(gcf,'children');
+%         if isnan(maxVal), maxVal = 0.00001; end;
+%         axis(axesHandles,[0 30 0 maxVal])
+%         clear axesHandles;
+        
     case{'rasterresponse'}
         
         

@@ -3,15 +3,21 @@ function [fullResponse, nlResponse] = fullConvolve(mosaic, spResponseCenter, spR
 % STRF finds the 1D convolution of the temporal impulse response with the
 % output signal of the spatial convolution operation.
 % 
-% Inputs:
+%         [fullResponse, nlResponse] = fullConvolve(mosaic, spResponseCenter, spResponseSurround);
+%     
+% Inputs: the mosaic object, the center and surround spatial resposes for
+%   each temporal stimulus frame, from spConvolve.m.
 % 
-% Outputs:
+% Outputs: the full response for each cell over t frames and the nonlinear
+%   response following the generator lookup function.
 % 
 % Example:
-% 
+%    [fullResponse, nlResponse] = fullConvolve(rgc1.mosaic{1}, spResponseCenter, spResponseSurround);
+%     
 % (c) isetbio
 % 09/2015 JRG
 
+% Find bounds for size of input and output
 spResponseSize = size(spResponseCenter{1,1}(:,:,1,1));
 nSamples = size(spResponseCenter{1,1},3);
 channelSize = size(spResponseCenter{1,1},4);
@@ -28,16 +34,20 @@ for xcell = 1:nCells(1)
             
             % fullResponseRSRGB = zeros(size(spResponseCenter{1,1}));
             
+            % Get temporal impulse response functions
             temporalIRCenter = mosaic.tCenter{rgbIndex};
             temporalIRSurround = mosaic.tSurround{rgbIndex};
             
+            % Reshape the spatial responses from spConvolve to allow for
+            % efficient computation of the convolution with the temp IRF
             spResponseCenterRS = reshape(squeeze(spResponseCenter{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
             spResponseSurroundRS = reshape(squeeze(spResponseSurround{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
     
-            if (sum(temporalIRCenter-temporalIRSurround) == 0) 
+            if (sum(temporalIRCenter(:)-temporalIRSurround(:)) == 0) 
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
                 
+                % Specify starting and ending time coordinates
                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 
@@ -46,19 +56,24 @@ for xcell = 1:nCells(1)
                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
                 
+                % Specify starting and ending time coordinates
                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
+                % Take difference between center and surround response
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,startPoint:endPoint) - fullResponseRSSurround(:,startPoint:endPoint);
                 
             end            
         end      
                         
+        % Take the mean of the spatial response over (x,y) at a particular
+        % time frame t for each cell
         if isa(mosaic,'rgcMosaicSubunit');
-            
+            % For the subunit model, apply the nonlinearity before taking the mean
             genFunction = mosaicGet(mosaic, 'generatorFunction');
             fullResponseRS = sum(genFunction(fullResponseRSRGB),3);            
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
             nlResponse{xcell,ycell} = (mean(fullResponseRS,1));
         else
+            % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
             genFunction = mosaicGet(mosaic, 'generatorFunction');

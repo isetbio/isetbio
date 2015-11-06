@@ -99,22 +99,22 @@ end
 
 %% Outer segment calculation
 
-% % Input = cone current
+% % % Input = cone current
 os = osCreate('linear');
-
-% Compute the photocurrent
+% 
+% % Compute the photocurrent
 os = osCompute(os, sensor);
 % 
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
 
 % Input = RGB
-os = osCreate('identity');
-os = osSet(os, 'rgbData', sceneRGB);
+% os = osCreate('identity');
+% os = osSet(os, 'rgbData', sceneRGB);
 
 %% Build rgc
 
-rgc1 = rgcCreate('glm', scene, sensor, os, 'right', 3.0, 180);
+rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
 
 rgc1 = rgcCompute(rgc1, os);
 

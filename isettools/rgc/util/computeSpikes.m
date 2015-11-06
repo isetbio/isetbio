@@ -45,8 +45,9 @@ for trial = 1:10
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr + 1;
-        Vstm = nlResponse{xcell,ycell};
+%         Vstm = nlResponse{xcell,ycell};
         
+        Vstm = vertcat(obj.linearResponse{xcell,ycell,1});
         nsp = 0;
         tsp = zeros(round(slen/25),1);  % allocate space for spike times
         % Vmem = interp1([0:slen+1]',Vstm,[.5+dt:dt:slen+.5]', 'linear');
@@ -64,7 +65,7 @@ for xcell = 1:nCells(1)
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
             % rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
             
-            rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
+            rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
             rrcum = cumsum(rrnxt)+rprev; % integrated cond intensity
             if (tspnext >= rrcum(end)) % No spike in this window
                 jbin = iinxt(end)+1;

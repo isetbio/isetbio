@@ -65,7 +65,7 @@ for xcell = 1:nCells(1)
         % couplingFilters{xcell,ycell,mosaic} = reshape(hhcpl(:,1)*weightMatrix(:)',nCells(1),nCells(2),length(hhcpl(:,1)));
         couplingFilters{xcell,ycell} = reshape((hhcpl(:,ihind)*weightMatrixT(:)')',nCells(1),nCells(2),length(hhcpl(:,1)));
 
-        couplingFilters{xcell,ycell}(xcell, ycell, :) = psf;
+        couplingFilters{xcell,ycell}(xcell, ycell, :) = psf; % set cell's own coupling filter to PSF
         
     end
 end
