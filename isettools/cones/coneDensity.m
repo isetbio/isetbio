@@ -48,7 +48,7 @@ switch lower(whichEye)
         onAxisD(1) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
         onAxisD(3) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
     case 'right'
-        onAxisD(3) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
+        onAxisD(1) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
         onAxisD(3) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
     otherwise
         error('unknown input for whichEye');
