@@ -100,7 +100,7 @@ end
 %% Outer segment calculation
 
 % % % Input = cone current
-os = osCreate('linear');
+os = osCreate('biophys');
 % 
 % % Compute the photocurrent
 os = osCompute(os, sensor);

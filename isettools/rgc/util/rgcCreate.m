@@ -1,12 +1,37 @@
 function obj = rgcCreate(varargin)
 % rgcCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 % 
-% Inputs: none.
+%       rgc = rgcCreate(model type, scene, sensor, os, eyeSide, patchRadius, patchAngle)
+% 
+% Inputs: 
+%       model type: 
+%               'linear' - 
+%               'LNP'    - linear-nonlinear-Poisson, see Pillow paper as below; only contains post-spike filter
+%               'GLM'    - generalized linear model, see Pillow paper, includes coupling filters  
+%               'Subunit'- cones act as individual subunits
+% 
+%       scene: an isetbio scene structure
+%       sensor: an isetbio sensor structure
+%       os: an isetbio outer segment structure
+%       eyeSide: 'left' or 'right', which eye the retinal patch is from
+%       patchRadius: radius of retinal patch in microns
+%       patchAngle: polar angle of retinal patch
+% 
+% Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
+%       Nature (2008).
+% 
 % Outputs: the rgc object.
 % 
 % See the initialize method for the @rgcLinear, @rgcLNP or @rgcGLM 
 % subclasses for more details of the specific implementations.
 %
+% Example:
+%       eyeAngle = 180; % degrees
+%       eyeRadius = 3; % mm
+%       eyeSide = 'right';
+%       rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
+
+% 
 % 9/2015 JRG
 
 if nargin ~= 7

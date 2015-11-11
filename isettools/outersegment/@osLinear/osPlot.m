@@ -97,6 +97,9 @@ switch lower(params.what)
         
         % Plot output signal at a particular (x, y) over time.
         
+        isomerizations1 = sensorGet(sensor,'photons');
+        [sz1 sz2 sz3] = size(isomerizations1);
+        
         outputSignal(1,:) = obj.ConeCurrentSignal(round(sz1/2),round(sz2/2),:);
         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
         title('output signal');

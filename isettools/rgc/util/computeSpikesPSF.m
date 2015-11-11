@@ -111,9 +111,12 @@ for xcell = 1:nCells(1)
         end
                
         cellCtr = cellCtr+1;
-        spikeTimes{xcell,ycell,trial,1} = tsp(1:nsp); % prune extra zeros
+        % Note: x and y indices flipped from normal to match imagesc 
+        % This does not happen in computeSpikesGLM because of vertcat on
+        % line 58.
+        spikeTimes{ycell,xcell,trial,1} = tsp(1:nsp); % prune extra zeros
         if size(Vmem,1) > 0
-            spikeTimes{xcell,ycell,trial,2} = Vmem; % prune extra zeros
+            spikeTimes{ycell,xcell,trial,2} = Vmem; % prune extra zeros
         end
     end%ycell
 end%xcell

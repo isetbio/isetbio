@@ -11,6 +11,7 @@
 %
 % Init
 ieInit
+ieSessionSet('wait bar', 'off')
 
 %% Compute a scene (to become a function/script)
 
@@ -133,6 +134,21 @@ end
 % Time series at a point
 vcNewGraphWin; plot(squeeze(volts(1,1,:)))
 
+%% Movie of the cone absorptions over cone mosaic
+% from t_VernierCones by HM
+
+step = 1;
+tmp = coneImageActivity(absorptions,[],step,false);
+
+% Show the movie
+vcNewGraphWin;
+tmp = tmp/max(tmp(:));
+for ii=1:size(tmp,4)
+    img = squeeze(tmp(:,:,:,ii));
+    imshow(img.^3); truesize;
+    title('Cone absorptions')
+    drawnow
+end
 
 %% Outer segment calculation
 
@@ -168,7 +184,10 @@ osPlot(os,absorptions,'output')
 
 %% Build rgc
 
-rgc1 = rgcCreate('GLM', scene, absorptions, os, 'right', 3.0, 180);
+eyeAngle = 180; % degrees
+eyeRadius = 3; % mm
+eyeSide = 'right';
+rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
 
 rgc1 = rgcCompute(rgc1, os);
 

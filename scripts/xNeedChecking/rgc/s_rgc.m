@@ -54,9 +54,9 @@ identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 % rgc1 = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
 % rgc1 = rgcSubunit(scene, sensor, identityOS, 'right', 3.0, 180);
 
-% rgc1 = rgcCreate('LNP', scene, sensor, identityOS, 'right', 3.0, 180);
+rgc1 = rgcCreate('LNP', scene, sensor, identityOS, 'right', 3.0, 180);
 % rgc1 = rgcCreate('Linear', scene, sensor, identityOS, 'right', 3.0, 180);
-rgc1 = rgcCreate('GLM', scene, sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcCreate('GLM', scene, sensor, identityOS, 'right', 3.0, 180);
 % rgcPlot(rgc1, 'mosaic');
 %% compute rgc
 
@@ -65,7 +65,7 @@ rgc1 = rgcCompute(rgc1, identityOS);
 % % toc
 
 % % tic
-rgcPlot(rgc1, 'spikeResponse');
+rgcPlot(rgc1, 'psthResponse');
 % rgcPlot(rgc1, 'rasterResponse');
 % % % toc
 %% With linear cone response
