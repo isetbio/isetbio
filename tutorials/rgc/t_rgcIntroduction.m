@@ -194,6 +194,8 @@ rgc1 = rgcCompute(rgc1, os);
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
+
+
 %% Build rgc response movie
 %  https://youtu.be/R4YQCTZi7s8
 

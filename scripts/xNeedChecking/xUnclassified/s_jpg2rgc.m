@@ -96,7 +96,7 @@ radiusMicrons = 3;
 anglePolarDegrees = 180;
 
 rgc1 = rgcCreate('glm', scene, sensor, os, eyeSide, radiusMicrons, anglePolarDegrees);
-
+rgc1 = rgcSet(rgc1,'numberTrials',10);
 rgc1 = rgcCompute(rgc1, os);
 
 rgcPlot(rgc1, 'mosaic');
@@ -111,3 +111,9 @@ for mosaicInd = 1:5
     rasterResponse{mosaicInd} = mosaicGet(rgc1.mosaic{mosaicInd}, 'rasterResponse');
     psthResponse{mosaicInd} = mosaicGet(rgc1.mosaic{mosaicInd}, 'psthResponse');
 end
+
+fv = rgcGet(rgc1, 'featureVector');
+% The feature vector is currently the average number of spikes per trial
+% for each cell. Thus if there are N cells, the feature vector is an
+% N-element vector where each entry is the average number of spikes per
+% presentation.
