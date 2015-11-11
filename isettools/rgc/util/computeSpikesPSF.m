@@ -58,7 +58,9 @@ nbinsPerEval = 100;
 nlfun = mosaic.generatorFunction;
 RefreshRate = 100;
 
-for trial = 1:10
+numberTrials = mosaicGet(mosaic, 'numberTrials');
+
+for trial = 1:numberTrials
     cellCtr = 0;
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)

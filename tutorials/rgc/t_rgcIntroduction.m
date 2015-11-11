@@ -188,7 +188,7 @@ eyeAngle = 180; % degrees
 eyeRadius = 3; % mm
 eyeSide = 'right';
 rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
-
+rgc1 = rgcSet(rgc1,'numberTrials',10);
 rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');

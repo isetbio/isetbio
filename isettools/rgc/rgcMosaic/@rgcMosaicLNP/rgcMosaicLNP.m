@@ -47,6 +47,7 @@ classdef rgcMosaicLNP < rgcMosaic
 
         generatorFunction;
         nlResponse;
+        numberTrials;
         spikeResponse;
 
         rasterResponse;

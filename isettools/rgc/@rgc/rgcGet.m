@@ -42,7 +42,8 @@ allowableFieldsToSet = {...
         'name',...
         'input',...
         'temporalEquivEcc',...       
-        'mosaic'...
+        'mosaic',...
+        'featureVector'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -72,5 +73,25 @@ switch lower(params.what)
         val = obj.temporalEquivEcc;
     case{'mosaic'}        
         val = obj.mosaic;                
+    case{'featurevector'}
+        val = [];
+        cellTypes = length(obj.mosaic);
+        for cellTypeInd = 1:cellTypes
+            numberSpikes = mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            numberTrials = mosaicGet(obj.mosaic{cellTypeInd}, 'numberTrials');
+            % obj.mosaic{1}.rasterResponse{1,1} is an array of NxTrials,
+            % but since some of the array entries are zero, we count the
+            % number of spikes per trial by finding the number of nonzero
+            % array entries and take the mean.
+            
+            % Do this operation for each cell
+            valC = (cellfun(@(x) mean(size(x, 1) - sum(isinf(1./x))),numberSpikes, 'un',0));
+            
+            % put into array
+            valA = cell2mat(valC);
+            val = [val; valA(:)];
+            
+        end
+        
 end
 

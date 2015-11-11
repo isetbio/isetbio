@@ -17,6 +17,7 @@ function obj = rgcSet(obj, varargin)
 %         mosaic: contains rgcMosaic objects for the five most common types
 %           of RGCs: onParasol, offParasol, onMidget, offMidget,
 %           smallBistratified.
+%         numberTrials: the number of trials for spiking models LNP and GLM
 % 
 % Example:
 %   rgc1 = rgcSet(rgc1, 'name', 'macaque RGC')
@@ -42,7 +43,8 @@ allowableFieldsToSet = {...
         'name',...
         'input',...
         'temporalEquivEcc',...       
-        'mosaic'...
+        'mosaic',...
+        'numberTrials'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -74,5 +76,16 @@ switch lower(params.what)
         obj.temporalEquivEcc = params.value;
     case{'mosaic'}        
         obj.mosaic = params.value;      
+    case{'numbertrials'}
+        cellTypes = length(obj.mosaic);
+        if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')
+            
+            for cellTypeInd = 1:cellTypes
+                obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
+            end
+        else
+            warning('The numberTrials property can only be set for rgcLNP and rgcGLM models.');
+        end
+        
 end
 

@@ -40,6 +40,7 @@ classdef rgcMosaicGLM < rgcMosaic
 
         generatorFunction;
         nlResponse;
+        numberTrials;
         spikeResponse;
         
         postSpikeFilter;

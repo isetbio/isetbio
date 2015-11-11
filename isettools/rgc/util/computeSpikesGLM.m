@@ -41,7 +41,8 @@ RefreshRate = 100;
 % ihhi = interp1(.001:.01:slen*dt+.01, ih, ihthi, 'linear', 0);
 % hlen = length(ihhi);
 
-for trial = 1:10
+numberTrials = mosaicGet(obj, 'numberTrials');
+for trial = 1:numberTrials
 
 cellCtr = 0;
 for xcell = 1:nCells(1)

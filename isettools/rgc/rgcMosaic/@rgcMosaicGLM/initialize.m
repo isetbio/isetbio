@@ -25,9 +25,11 @@ function initialize(obj, varargin)
 % (c) isetbio
 % 09/2015 JRG
 
-%     obj.generatorFunction = @erf;
+    % obj.generatorFunction = @erf;
     obj.generatorFunction = @exp;
-%     obj.generatorFunction = @(x) 10*erf(x);
+    % obj.generatorFunction = @(x) 10*erf(x);
+
+    obj.numberTrials = 10;
     
     obj.postSpikeFilter = buildPostSpikeFilter(.01);
     
