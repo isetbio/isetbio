@@ -66,7 +66,7 @@ end
         nsp = zeros(1,nCellsTotal);
         jbin = 1;
                 
-        tspnext = exprnd(1,1,nCellsTotal);
+        tspnext = ieExprnd(1,1,nCellsTotal);  % Changed for ISETBIO to eliminate toolbox call
         rprev = zeros(1,nCellsTotal);
         while jbin <= rlen
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);  nii = length(iinxt);
@@ -105,7 +105,7 @@ end
 %                         end
                     end
                     rprev(icell) = 0;  % reset this cell's integral
-                    tspnext(icell) = exprnd(1); % draw RV for next spike in this cell
+                    tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell, changed for ISETBIO no toolbox case
 %                     VmemAll(ic,:) = Vmem;
                 end
                 jbin = ispk+1;  % Move to next bin
