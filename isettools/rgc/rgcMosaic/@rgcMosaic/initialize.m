@@ -3,19 +3,28 @@ function initialize(obj, type, rgc, scene, sensor, outersegment, varargin)
 % series of input parameters that can include the location of the
 % retinal patch.
 % 
+%             obj.initialize(rgc, scene, sensor, outersegment, varargin{:});
+% 
 % First, the name of the cell type is assigned based on the value passed in
 % the type parameter. Next, spatial receptive fields are generated for the
 % array of RGCs. Finally, the RGB temporal impulse responses for the center
 % and surround are generated.
 % 
-% Inputs: cell type index, rgc, sensor, outersegment.
+% Inputs: 
+%       scene: an isetbio scene structure
+%       sensor: an isetbio sensor structure
+%       os: an isetbio outer segment structure
+%    Optional but recommended:
+%       eyeSide: 'left' or 'right', which eye the retinal patch is from
+%       patchRadius: radius of retinal patch in microns
+%       patchAngle: polar angle of retinal patch
+%     [These inputs determine the size of spatial receptive fields, and are
+%       necessary to accurately model physiological responses.]
 % 
-% Outputs: initialized rgc object.
-% 
-% Example:
-% rgc1 = rgcLinear(sensor, osIdentity, 'right', 3.75, 180);
-% rgc2 = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
-% rgc3 = rgcGLM(sensor, osIdentity, 'right', 3.75, 180);
+% Outputs: the rgc object.
+%  
+% Example: from rgcGLM.m initiailize:
+%        obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
 % 
 % (c) isetbio
 % 09/2015 JRG

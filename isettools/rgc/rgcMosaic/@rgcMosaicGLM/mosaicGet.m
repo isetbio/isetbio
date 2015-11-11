@@ -2,8 +2,36 @@ function val = mosaicGet(obj, varargin)
 % rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
 % parameters using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+%       val = mosaicGet(rgc.mosaic, property)
+% 
+% Inputs: rgc object, property to be gotten
+% 
+% Outputs: val of property
+% 
+% Properties that can be gotten:
+%         'cellType',...        - type of RGC of which mosaic is composed
+%         'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
+%         'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
+%         'cellLocation',...    - coordinates of center of spatial RF
+%         'sRFcenter',...       - center spatial RF surfaces
+%         'sRFsurround',...     - surround spatial RF surfaces
+%         'tCenter',...         - center temporal impulse response
+%         'tSurround',...       - surround temopral impulse response
+%         'postSpikeFilter',... - post-spike filter time course
+%         'couplingFilter',...  - coupling filters time course
+%         'couplingMatrix',...  - weights on coupling filters for other cells
+%         'generatorFunction',..- the nonlinear function
+%         'linearResponse',...  - linear response of all cells
+%         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
+%         'spikeResponse',...   - average waveform over N trials including
+%                                   post-spike and coupling filter effects
+%         'rasterResponse',...  - spike rasters of all cells from N trials
+%         'psthResponse'...     - peristimulus time histogram responses of all cells 
+% 
+% 
+% Examples:
+%   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
+%   val = mosaicGet(rgc1.mosaic{3}, 'psthResponse')
 % 
 % 9/2015 JRG 
 
@@ -33,7 +61,8 @@ allowableFieldsToSet = {...
     'linearResponse',...
     'generatorFunction',...
     'nlResponse;',...
-    'spikeResponse',...    
+    'spikeResponse',... 
+    'postSpikeFilter',...
     'couplingFilter',...
     'couplingMatrix',...
     'rasterResponse',...
@@ -82,7 +111,9 @@ switch lower(params.what)
     case{'nlresponse'}
         val = obj.nlResponse;
     case{'spikeresponse'}
-        val = obj.spikeResponse;
+        val = obj.spikeResponse;        
+    case{'postspikefilter'}
+        val = obj.postSpikeFilter;
     case{'couplingfilter'}
         val = obj.couplingFilter;
     case{'couplingmatrix'}

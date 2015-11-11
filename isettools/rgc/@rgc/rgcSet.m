@@ -2,8 +2,25 @@ function obj = rgcSet(obj, varargin)
 % rgcSet: a method of @rgc that sets rgc object 
 % parameters using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+%       val = rgcSet(rgc, property)
+% 
+% Inputs: rgc object, property to be set, value of property to be set
+% 
+% Outputs: object with property set
+% 
+% Proeprties:
+%         name: type of rgc object, e.g., 'macaque RGC'
+%         input: 'cone current' or 'scene RGB', depends on type of outer
+%           segment object created.
+%         temporalEquivEcc: the temporal equivalent eccentricity, used to 
+%             determine the size of spatial receptive fields.   
+%         mosaic: contains rgcMosaic objects for the five most common types
+%           of RGCs: onParasol, offParasol, onMidget, offMidget,
+%           smallBistratified.
+% 
+% Example:
+%   rgc1 = rgcSet(rgc1, 'name', 'macaque RGC')
+%   rgc1 = rgcSet(rgc1, 'temporalEquivEcc', 5)
 % 
 % 9/2015 JRG 
 

@@ -1,7 +1,35 @@
 classdef rgcMosaicLinear < rgcMosaic
-% @rgcMosaicLinear: a subclass of @rgcMosaic
+% @rgcMosaicLinear: a subclass of @rgcMosaic. This function is only called by
+% rgcLinear to initiailize a mosaic of the rgc object.
 % 
+%        rgc.mosaic{ind} = rgcMosaicLinear(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+% 
+% @rgcLinear: a subclass of @rgc. This subclass implements retinal
+% ganglion cell computations with the @outerSegment object as input. The
+%l inear model follows the details outlined in
+% Chichilnisky & Kalmar (2002), and incorporates other anatomical and
+% physiological data from several other sources for parameters like
+% receptive field spacing, spatial/temporal linear filters and
+% nonlinearities. See comments below for details and references.
 %
+% Inputs: 
+%       scene: an isetbio scene structure
+%       sensor: an isetbio sensor structure
+%       os: an isetbio outer segment structure
+%    Optional but recommended:
+%       eyeSide: 'left' or 'right', which eye the retinal patch is from
+%       patchRadius: radius of retinal patch in microns
+%       patchAngle: polar angle of retinal patch
+%     [These inputs determine the size of spatial receptive fields, and are
+%       necessary to accurately model physiological responses.]
+% 
+% Outputs: the rgc object.
+% 
+% Models found in Chichilnisky & Kalmar, J. Neurosci (2002).
+% 
+% Example: from rgcLinear.m initiailize:
+%        obj.mosaic{cellTypeInd} = rgcMosaicLinear(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+% 
 % 9/2015 JRG
 
 

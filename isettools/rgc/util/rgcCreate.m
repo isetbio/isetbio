@@ -13,19 +13,29 @@ function obj = rgcCreate(varargin)
 %       scene: an isetbio scene structure
 %       sensor: an isetbio sensor structure
 %       os: an isetbio outer segment structure
+%    Optional, but highly recommended:
 %       eyeSide: 'left' or 'right', which eye the retinal patch is from
 %       patchRadius: radius of retinal patch in microns
 %       patchAngle: polar angle of retinal patch
+%     [These inputs determine the size of spatial receptive fields, and are
+%       necessary to accurately model physiological responses.]
+% 
+% Outputs: the rgc object.
 % 
 % Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
 %       Nature (2008).
 % 
-% Outputs: the rgc object.
-% 
+% The LNP and GLM models incorporate code by Pillow available at 
+%       http://pillowlab.princeton.edu/code_GLM.html
+% under the GNU General Public License.
+%  
 % See the initialize method for the @rgcLinear, @rgcLNP or @rgcGLM 
 % subclasses for more details of the specific implementations.
 %
 % Example:
+%       rgc2 = rgcCreate('GLM', scene, sensor, os); % default values
+%               % assumed for eyeSide, eyeRadius, eyeAngle.
+% 
 %       eyeAngle = 180; % degrees
 %       eyeRadius = 3; % mm
 %       eyeSide = 'right';

@@ -1,7 +1,40 @@
 classdef rgcMosaicLNP < rgcMosaic
-% @rgcMosaicLNP: a subclass of @rgcMosaic
+% @rgcMosaicLNP: a subclass of @rgcMosaic. This function is only called by
+% rgcLNP to initiailize a mosaic of the rgc object.
 % 
+%        rgc.mosaic{ind} = rgcMosaicLNP(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+% 
+% @rgcLNP: a subclass of @rgc. This subclass implements retinal
+% ganglion cell computations with the @outerSegment object as input. The
+% LNP (linear-nonlinear-Poisson) model follows the details outlined in
+% Chichilnisky & Kalmar (2002), and incorporates other anatomical and
+% physiological data from several other sources for parameters like
+% receptive field spacing, spatial/temporal linear filters and
+% nonlinearities. See comments below for details and references.
 %
+% Inputs: 
+%       scene: an isetbio scene structure
+%       sensor: an isetbio sensor structure
+%       os: an isetbio outer segment structure
+%    Optional but recommended:
+%       eyeSide: 'left' or 'right', which eye the retinal patch is from
+%       patchRadius: radius of retinal patch in microns
+%       patchAngle: polar angle of retinal patch
+%     [These inputs determine the size of spatial receptive fields, and are
+%       necessary to accurately model physiological responses.]
+% 
+% Outputs: the rgc object.
+% 
+% Models found in Chichilnisky & Kalmar, J. Neurosci (2002) and Pillow, Shlens, 
+%   Paninski, Sher, Litke, Chichilnisky & Simoncelli, Nature (2008).
+% 
+% This model incorporates code by Pillow available at
+%       http://pillowlab.princeton.edu/code_GLM.html
+% under the GNU General Public License.
+% 
+% Example: from rgcLNP.m initiailize:
+%        obj.mosaic{cellTypeInd} = rgcMosaicLNP(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+% 
 % 9/2015 JRG
 
 
