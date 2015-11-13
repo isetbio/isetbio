@@ -45,7 +45,7 @@ psthraw = sum(spRaster, 1)'/nrpts/dt;
 
 % Filter w/ Gaussian
 xfilt = dt*(-ceil(4*sigma/dt):1:ceil(4*sigma/dt))';
-ff = normpdf(xfilt, 0, sigma)*dt;
+ff = ieNormpdf(xfilt, 0, sigma)*dt;
 
 psth = conv2(psthraw, ff, 'same');
 
@@ -64,7 +64,7 @@ if nargout > 2
     if type(1) == 's'
         ff = (xfilt>=-sigma/2) & (xfilt<=sigma/2);
     elseif type(1) == 'g'
-        ff = normpdf(xfilt, 0, sigma)*dt;
+        ff = ieNormpdf(xfilt, 0, sigma)*dt;
     else
         error('compPSTH:  unknown type of bins for PSTV:  %s', type);
     end

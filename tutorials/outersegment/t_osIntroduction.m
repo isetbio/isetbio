@@ -1,6 +1,6 @@
-%% t_rgcIntroduction
+%% t_osIntroduction
 %
-% In which our heroes lay out the basic architecture of the rgc class and
+% In which our heroes lay out the basic architecture of the os class and
 % its specializations.
 %
 % JG/BW ISETBIO Team, Copyright 2015
@@ -121,25 +121,37 @@ if wFlag, delete(wbar); end
 absorptions = sensorSet(absorptions, 'photons', isomerizations);
 % vcAddObject(sensor); sensorWindow;
 
-% %% Movie of the cone absorptions over cone mosaic
-% % from t_VernierCones by HM
-% 
-% step = 1;   % Step is something about time?
-% % Display gamma preference could be sent in here
-% tmp = coneImageActivity(absorptions,[],step,false);
-% 
-% % Show the movie
-% % Aspirational
-% % showMovie(tmp)
-% 
-% vcNewGraphWin;
-% tmp = tmp/max(tmp(:));
-% for ii=1:size(tmp,4)
-%     img = squeeze(tmp(:,:,:,ii));
-%     imshow(img); truesize;
-%     title('Cone absorptions')
-%     drawnow
-% end
+%% Show the movie of isomerizations
+
+% Can we make that movie when we color the cones by type
+
+vcNewGraphWin;axis image; colormap(gray)
+for ii=1:params.nSteps
+    imagesc(isomerizations(:,:,ii)); pause(.2); 
+end
+
+% Time series at a point
+vcNewGraphWin; plot(squeeze(isomerizations(1,1,:)))
+
+%% Movie of the cone absorptions over cone mosaic
+% from t_VernierCones by HM
+
+step = 1;   % Step is something about time?
+% Display gamma preference could be sent in here
+tmp = coneImageActivity(absorptions,[],step,false);
+
+% Show the movie
+% Aspirational
+% showMovie(tmp)
+
+vcNewGraphWin;
+tmp = tmp/max(tmp(:));
+for ii=1:size(tmp,4)
+    img = squeeze(tmp(:,:,:,ii));
+    imshow(img); truesize;
+    title('Cone absorptions')
+    drawnow
+end
 
 %% Outer segment calculation
 
@@ -159,6 +171,23 @@ os = osCompute(os, absorptions);
 % osPlot(os,'photo current','cone position',[r,c])
 osPlot(os,absorptions);
 
+% Input = RGB
+% os = osCreate('identity');
+% os = osSet(os, 'rgbData', sceneRGB);
+
+%% Rieke biophysics case
+
+% Create the outer segment structure
+os = osCreate('biophys');
+ 
+% Compute the photocurrent from the absorptions
+os = osCompute(os, absorptions);
+ 
+% Plot the photocurrent for a pixel
+% Let's JG and BW mess around with various plotting things to check the
+% validity.
+
+osPlot(os,absorptions,'output')
 %% Build rgc
 
 eyeAngle = 180; % degrees
