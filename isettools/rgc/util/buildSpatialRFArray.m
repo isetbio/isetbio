@@ -77,8 +77,8 @@ centerNoise = 1.25; % divide by 2 for mean offset
 for icind = 1:length(icarr)
     
     for jcind = 1:length(jcarr)
-        ic = icarr(icind) + centerNoise*(2*rand(1,1)-1);
-        jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
+        ic = icarr(icind);% + centerNoise*(2*rand(1,1)-1);
+        jc = jcarr(jcind);% + centerNoise*(2*rand(1,1)-1);
         rfctr = rfctr+1;
    
         d1 = 1; d2 = 0.0675*randn(1,1);

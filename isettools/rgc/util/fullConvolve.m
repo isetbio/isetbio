@@ -75,13 +75,14 @@ for xcell = 1:nCells(1)
         else
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
-            fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
+            fullResponse{xcell,ycell,1} = mean(fullResponseRS);       
+            % % fullResponse for RGB
+            fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
             genFunction = mosaicGet(mosaic, 'generatorFunction');
             nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
         end
         
-        % % % fullResponse for RGB
-        % fullResponse{xcell,ycell,2} =  reshape(fullResponseRS, spResponseSize(1), spResponseSize(2), size(fullResponseRS,2));
+       
                                       
     end
 end
