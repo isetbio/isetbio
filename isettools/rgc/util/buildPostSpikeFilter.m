@@ -1,5 +1,17 @@
 function ih = buildPostSpikeFilter(dt)
-
+% builds the post spike filters for the rgcMosaicGLM object.
+% 
+% Inputs: dt for bin fraction of stimulus time step
+% (usually 0.01 or less).
+% 
+% Outputs: the postSpikeFilters as a cell array, where each cell is a time 
+% series filters. Note: these are not "filters" in the convolutional sense;
+% in computeSpikesGLM, they are added to the time series response of the
+% particular neuron.
+% 
+% Example:
+%     obj.postSpikeFilter = buildPostSpikeFilter(.01);
+% 
 %%%% Written by J. Pillow
 
 % dt = .01

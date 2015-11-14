@@ -92,31 +92,40 @@ sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
 % Show the movie of volts
-% vcNewGraphWin;
-% for ii=1:params.nSteps
-%     imagesc(volts(:,:,ii)); pause(1); axis image
-% end
+vcNewGraphWin;axis image
+for ii=1:params.nSteps
+    imagesc(volts(:,:,ii)); pause(1); 
+end
 
-%% Build outer segment
+%% Outer segment calculation
 
-% Input = cone current
-os = osCreate('linear');
+% % % Input = cone current
+os = osCreate('biophys');
+% 
+% % Compute the photocurrent
 os = osCompute(os, sensor);
-osPlot(os,sensor);
+% 
+% % Plot the photocurrent for a pixel
+% osPlot(os,sensor);
 
-% % Input = RGB
+% Input = RGB
 % os = osCreate('identity');
 % os = osSet(os, 'rgbData', sceneRGB);
 
 %% Build rgc
 
-rgc1 = rgcCreate('glm', scene, sensor, os, 'right', 3.0, 180);
+rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
 
 rgc1 = rgcCompute(rgc1, os);
 
-rgcPlot(rgc1, 'mosaic');
-rgcPlot(rgc1, 'linearResponse');
+% rgcPlot(rgc1, 'mosaic');
+% rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 %% Build rgc response movie
- 
+%  https://youtu.be/R4YQCTZi7s8
+
+% % osLinear
+% rgcMovie(rgc1, sensor);
+
+% % osIdentity
 % rgcMovie(rgc1, os);

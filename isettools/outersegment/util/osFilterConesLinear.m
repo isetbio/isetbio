@@ -1,4 +1,4 @@
-function newIRFs = filterConesLinear(varargin)
+function newIRFs = osFilterConesLinear(varargin)
 % Generates the linear temporal filters for the L, M and S cones based on
 % physiological data from Angueyra and Rieke (Nat. Neuro., 2013). 
 %
@@ -13,11 +13,9 @@ function newIRFs = filterConesLinear(varargin)
 %
 % Examples:
 % 
-% newIRFs = filterConesLinear();
-% newIRFs = filterConesLinear(sensor);
+% newIRFs = osFilterConesLinear();
+% newIRFs = osFilterConesLinear(sensor);
 % 
-% See also:
-%
 % Originally by FMR
 % Modified by JRG, isetbio team, 2015 
 
@@ -61,6 +59,9 @@ end
 % electrophysiological measurements in a representative set of cones.
 
 totalTime = dt * tsz; %length of IRF in seconds 
+
+if totalTime <= 0.3; totalTime = 0.3; end;
+
 TimeAxis= (0:ceil(coneSamplingRate.*totalTime)) ./ coneSamplingRate;
 
 

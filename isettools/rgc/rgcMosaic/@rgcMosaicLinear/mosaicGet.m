@@ -2,8 +2,32 @@ function val = mosaicGet(obj, varargin)
 % rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
 % parameters using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+%       val = mosaicGet(rgc.mosaic, property)
+% 
+% Inputs: rgc object, property to be gotten
+% 
+% Outputs: val of property
+% 
+% Properties that can be gotten:
+%         'cellType',...        - type of RGC of which mosaic is composed
+%         'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
+%         'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
+%         'cellLocation',...    - coordinates of center of spatial RF
+%         'sRFcenter',...       - center spatial RF surfaces
+%         'sRFsurround',...     - surround spatial RF surfaces
+%         'tCenter',...         - center temporal impulse response
+%         'tSurround',...       - surround temopral impulse response
+%         'linearResponse',...  - linear response of all cells
+% 
+% 
+% Examples:
+%   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
+%   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
+% 
+% 9/2015 JRG 
+
+% Check for the number of arguments and create parser object.
+% Parse key-value pairs.
 % 
 % 9/2015 JRG 
 

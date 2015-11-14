@@ -1,6 +1,8 @@
 function obj = rgcCompute(obj, outerSegment, varargin)
 % rgcCompute: a method of @rgc that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus.
+%       
+%           rgc1 = rgcCompute(rgc1, os);
 % 
 % The responses for each mosaic are computed one at a time. For a given
 % mosaic, first the spatial convolution of the center and surround RFs are
@@ -19,15 +21,17 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 
 % http://pillowlab.princeton.edu/code_GLM.html
 % 
+% See @rgcGLM/rgcCompute.m for the implementation.
+% 
 % Outline:
 % 1. Normalize stimulus
 % 2. Compute linear response
 %       - spatial convolution
 %       - temporal convolution
 % 3. Compute nonlinear response
-% 4. Compute spiking response
+% [spiking responses are calculated by subclass versions of rgcCompute]
 % 
-% Inputs: outersegment.
+% Inputs: rgc object, outersegment object.
 % 
 % Outputs: the rgc object with responses.
 % 
@@ -37,92 +41,53 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % (c) isetbio
 % 09/2015 JRG
 
-%% 
+
+%%
+
+% Get stimulus from outer segment ojbect
+% Set zero mean and normalize max value of stimulus
+if isa(outerSegment,'osIdentity')
+    spTempStim = osGet(outerSegment, 'rgbData');
+    spTempStim = spTempStim;% - 0.5;%1/sqrt(2);
+    spTempStim = 2*spTempStim./max(abs(spTempStim(:)));
+elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
+    % This is after temporal processing - correct to set zero mean?
+    spTempStim = osGet(outerSegment, 'coneCurrentSignal');    
+    spTempStim = spTempStim - mean(spTempStim(:));
+    spTempStim = 5*spTempStim./max(abs(spTempStim(:)));
+end
+
+nSamples = size(spTempStim,3);
 
 for cellTypeInd = 1:length(obj.mosaic)
     
-    nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+    rfSize = size(obj.mosaic{cellTypeInd}.sRFcenter{1,1});
     
-    % Normalize stimulus
+    % Given separable STRF, convolve 2D spatial RF with each frame     
+    [spResponseCenter, spResponseSurround] = spConvolve(obj.mosaic{cellTypeInd,1}, spTempStim);
     
-%     spConvolveStimulus = osGet(outerSegment, 'coneCurrentSignal');
-%     spConvolveStimulus = spConvolveStimulus - mean(spConvolveStimulus(:));
-%     spConvolveStimulus = 10*spConvolveStimulus./max(spConvolveStimulus(:));
-%     
-%     % Given separable STRF, convolve 2D spatial RF then 1D temporal response.
-%      
-%     spResponse = spConvolve(obj.mosaic{cellTypeInd,1}, spConvolveStimulus);
-%     
-%     [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponse);
-%     
-%     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'linearResponse', fullResponse);
-%         
-%     spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1});
-    
-%     %%%%%%%%%%%%%%%
     if isa(outerSegment,'osIdentity')
-        spConvolveStimulus = osGet(outerSegment, 'rgbData');
-        spConvolveStimulus = spConvolveStimulus - 1/sqrt(2);%mean(spConvolveStimulus(:));
-        spConvolveStimulus = 7*spConvolveStimulus./max(abs(spConvolveStimulus(:)));
-    else
-        spConvolveStimulus = osGet(outerSegment, 'coneCurrentSignal');
-        spConvolveStimulus = spConvolveStimulus - mean(spConvolveStimulus(:));
-        spConvolveStimulus = 10*spConvolveStimulus./max(spConvolveStimulus(:));
-    end   
+        % Then convolve output of spatial convolution with the temporal impulse response
+        [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponseCenter, spResponseSurround);
     
-    % Given separable STRF, convolve 2D spatial RF then 1D temporal response.
-     
-    spResponse = spConvolve(obj.mosaic{cellTypeInd,1}, spConvolveStimulus);
+    elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
+        % Unless the os object has already applied temporal processing,
+        % then take output of spatial convolution as full output.
+        % Take difference between center and surround outputs of spatial
+        % convolution:
+        strfResponse = cellfun(@minus, spResponseCenter, spResponseSurround,'un',0);
+        % Find the mean over the strf response for each temporal frame:
+        strfResponseRS = cellfun(@(x) reshape(x,rfSize(1)*rfSize(2),nSamples),strfResponse,'un',0);
+        fullResponse = cellfun(@mean, strfResponseRS,'un',0);
+        if ~isa(obj, 'rgcLinear'); nlResponse = cellfun(obj.mosaic{cellTypeInd}.generatorFunction,fullResponse,'un',0); end;
+    end
        
-    if isa(outerSegment,'osIdentity');    
-        [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponse);        
-    else        
-        
-        for xcell = 1:nCells(1)
-            for ycell = 1:nCells(2)
-                fullResponse{xcell,ycell} = squeeze(mean(mean((spResponse{xcell,ycell,1}) - (spResponse{xcell,ycell,2}),1),2))';
-                if ~isa(obj, 'rgcLinear')
-                    
-                    genFunc = obj.mosaic{cellTypeInd}.generatorFunction;
-                    nlResponse{xcell,ycell} = genFunc(fullResponse{xcell,ycell});
-                end
-            end
-        end
-    end
-        
-    
     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'linearResponse', fullResponse);
-    
-    if ~isa(obj, 'rgcLinear')
         
+    % Set the nonlinear response for every rgc subclass except rgcLinear
+    if ~isa(obj, 'rgcLinear');
         obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'nlResponse', nlResponse);
-        
-        %%% Compute spikes
-        
-        % for cellTypeInd = 1%:4%obj.numberCellTypes
-        %     obj.mosaic{cellTypeInd,1}.spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, sensor, outersegment);
-        fprintf('Spike generation, %s:      \n', obj.mosaic{cellTypeInd}.cellType);
-        tic
-        
-        if isa(obj,'rgcLNP');
-            spikeResponse = computeSpikes(obj.mosaic{cellTypeInd,1}.nlResponse, 0);
-            % elseif 0
-            %     spikeResponse = computeSpikesPSF(obj.mosaic{cellTypeInd,1}.nlResponse, obj.mosaic{cellTypeInd}.postSpikeFilter, sensor, outersegment);
-        elseif isa(obj,'rgcGLM')|isa(obj,'rgcSubunit')
-            spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1});
-        end
-        % obj = rgcMosaicSet(obj, 'spikeResponse', spikeResponse);
-        
-        obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);
-        
-        [raster psth] = computePSTH(obj.mosaic{cellTypeInd,1});
-        
-        obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
-        obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
-        
-        toc
-        
     end
-    clear spResponse fullResponse nlResponse spikeResponse raster psth
+            
+    clear spResponseCenter spResponseSurround fullResponse nlResponse 
 end
-close;

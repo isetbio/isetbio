@@ -1,5 +1,31 @@
 classdef rgcMosaicGLM < rgcMosaic
-% @rgcMosaicGLM: a subclass of @rgcMosaic
+% @rgcMosaicGLM: a subclass of @rgcMosaic. This function is only called by
+% rgcGLM to initiailize a mosaic of the rgc object.
+% 
+%        rgc.mosaic{ind} = rgcMosaicGLM(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+% 
+% Inputs: 
+%       scene: an isetbio scene structure
+%       sensor: an isetbio sensor structure
+%       os: an isetbio outer segment structure
+%    Optional but recommended:
+%       eyeSide: 'left' or 'right', which eye the retinal patch is from
+%       patchRadius: radius of retinal patch in microns
+%       patchAngle: polar angle of retinal patch
+%     [These inputs determine the size of spatial receptive fields, and are
+%       necessary to accurately model physiological responses.]
+% 
+% Outputs: the rgc object.
+% 
+% Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
+%       Nature (2008).
+% 
+% This model incorporates code by Pillow available at 
+%       http://pillowlab.princeton.edu/code_GLM.html
+% under the GNU General Public License.
+% 
+% Example: from rgcGLM.m initiailize:
+%        obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
 % 
 %
 % 9/2015 JRG
@@ -14,6 +40,7 @@ classdef rgcMosaicGLM < rgcMosaic
 
         generatorFunction;
         nlResponse;
+        numberTrials;
         spikeResponse;
         
         postSpikeFilter;
@@ -40,10 +67,6 @@ classdef rgcMosaicGLM < rgcMosaic
             % Initialize ourselves
             obj.initialize(rgc, sensor, outersegment, varargin{:});
             
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
         end
         
         % set function, see for details

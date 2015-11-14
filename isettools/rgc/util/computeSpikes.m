@@ -39,11 +39,15 @@ RefreshRate = 100;
 % hlen = length(ihhi);
 ihhi = ih;
 cellCtr = 0;
+
+for trial = 1:10
+
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr + 1;
-        Vstm = nlResponse{xcell,ycell};
+%         Vstm = nlResponse{xcell,ycell};
         
+        Vstm = vertcat(obj.linearResponse{xcell,ycell,1});
         nsp = 0;
         tsp = zeros(round(slen/25),1);  % allocate space for spike times
         % Vmem = interp1([0:slen+1]',Vstm,[.5+dt:dt:slen+.5]', 'linear');
@@ -61,7 +65,7 @@ for xcell = 1:nCells(1)
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
             % rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
             
-            rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
+            rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
             rrcum = cumsum(rrnxt)+rprev; % integrated cond intensity
             if (tspnext >= rrcum(end)) % No spike in this window
                 jbin = iinxt(end)+1;
@@ -86,10 +90,10 @@ for xcell = 1:nCells(1)
                 nbinsPerEval = max(20, round(1.5*muISI));
             end
         end
-        spikeTimes{xcell,ycell} = tsp(1:nsp); % prune extra zeros
-        if size(Vmem,1) > 0
-        spikeTimes{xcell,ycell,1,2} = Vmem'; % prune extra zeros
-        end
+        spikeTimes{xcell,ycell,trial} = tsp(1:nsp); % prune extra zeros
+%         if size(Vmem,1) > 0
+        spikeTimes{xcell,ycell,trial,2} = Vmem; % prune extra zeros
+%         end
         % obj.spkResponse =
         
         ph = 1;
@@ -97,3 +101,6 @@ for xcell = 1:nCells(1)
     end
 end
         ph = 1;
+        
+end
+

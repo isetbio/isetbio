@@ -5,6 +5,8 @@ classdef rgcMosaic < handle
 % rgcObj.mosaic such that the properties of an @rgcMosaic object can be
 % viewed with 'rgcObj.mosaic{1}'. 
 % 
+%       rgc.mosaic = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
+% 
 % cellTypeInd = 1: ON parasol
 % cellTypeInd = 2: OFF parasol
 % cellTypeInd = 3: ON midget
@@ -23,8 +25,6 @@ classdef rgcMosaic < handle
 %         linearResponse: the result of a linear convolution of the sRF and
 %           the tRF with the RGB stimulus.
 % 
-% Methods: intialize, set, get
-    
 % 9/2015 JRG
 
     % Public, read-only properties.

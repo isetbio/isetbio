@@ -1,8 +1,25 @@
 function contourCell = plotContours(obj)
+% Plots the contours of a spatial receptive field center and surround at a 
+% particular standard deviation of the response.
+% 
+% Inputs: an rgcMosaic object.
+% 
+% Outputs: contourCell, a cell array containing the RF center coordinates
+% in contourCell{:,:,1} and the RF surround coordinates in contourCell{:,:,2}.
+% 
+% Example:
+% 
+% % Generate spatial RF contours
+% for cellTypeInd = 1:length(obj.mosaic)
+%     spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
+% end
+% 
+% (c) isetbio
+% 09/2015 JRG
 
 nCells = size(obj.sRFcenter);
 
-extent = 3;
+extent = .5*round(size(obj.sRFcenter{1,1},1)/obj.rfDiameter);
 
 figure;
 for xcell = 1:nCells(1)

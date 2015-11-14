@@ -1,10 +1,13 @@
 function [adaptedCur, params] = osAddNoise(curNF, params)
-%% Add noise to membrane current in cone adaptataion
+% Add noise to membrane current in cone adaptataion
+%
 %   adaptedCur = osAddNoise(curNF, params)
 %
-%  Noise in cone adaptation is independent of cone signal. The noise is
+%  Cone noise is independent of cone signal (additive). The noise is
 %  Gaussian additive and the spectral power distribution can be
-%  characterized by the sum of two lorentz function.
+%  characterized by the sum of two Lorentz functions. 
+% 
+%   See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
 %  Inputs:
 %    curNF  - noise free cone adapted membrane current, see
@@ -14,7 +17,7 @@ function [adaptedCur, params] = osAddNoise(curNF, params)
 %      .sampTime - sample time interval, see sensorGet(s, 'time interval');
 %
 %  Outputs:
-%    adaptedCur - membrance current with noise added
+%    adaptedCur - membrane current with noise added
 %
 %  Example:
 %    params.sampTime = 1/5000;
@@ -44,7 +47,7 @@ if isvector(curNF), curNF = reshape(curNF, [1 1 length(curNF)]); end
 
 if (ndims(curNF) == 3)
     temporalDimIndex = 3;
-elseif (ndims(curNF) == 2)
+elseif (ismatrix(curNF))
     temporalDimIndex = 2;
 end
 

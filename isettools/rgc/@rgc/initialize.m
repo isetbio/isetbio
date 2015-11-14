@@ -4,7 +4,7 @@ function initialize(obj, scene, sensor, outersegment, varargin)
 % patch angle), and the temporal equivalent eccentricity (TEE) is calculated
 % from Chichilnisky & Kalmar, 2002, J. Neurosci, where 
 % 
-% TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text)
+% TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text of the paper)
 % 
 % The TEE is used to cacluate the spatial receptive field (RF) diameter
 % from Fig. 5 of Chichilnisky & Kalmar, 2002. This intiailization procedure
@@ -70,7 +70,7 @@ temporalEquivEcc = retinalLocationToTEE(retinalTheta, retinalRadius, leftOrRight
 obj.temporalEquivEcc = temporalEquivEcc;
     
 % Plot the TEE and the location of the retinal patch.
-plotPatchEccentricity(retinalTheta, retinalRadius, leftOrRightEye, temporalEquivEcc)
+% plotPatchEccentricity(retinalTheta, retinalRadius, leftOrRightEye, temporalEquivEcc)
 
 %%
 

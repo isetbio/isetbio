@@ -1,49 +1,72 @@
-function spikeTimes = computeSpikesPSF(nlResponse, ih, varargin)
-% computeSpikes: a util function of the @rgc parent class, this
-% converts the nonlinear response of the generator lookup function to a
-% probabilistic spiking output.
+function spikeTimes = computeSpikesPSF(mosaic, varargin)
+% computeSpikes: a util function of the @rgc parent class.
+% 
+%   spikeResponse = computeSpikesPSF(mosaic);    
+% 
+% interoplates the linear response to a finer time scale, converts this 
+% interpolated signal to the nonlinear output using the generator function,
+% and the nonlinear output to a probabilistic spiking output based on a 
+% Poisson process with a refractory period.
 %
-% Inputs:
+% Inputs: mosaic object
 %
-% Outputs:
+% Outputs: spikeTimes
 %
 % Example:
+%       spikeResponse = computeSpikesPSF(rgc1.mosaic{1}); 
 %
 % (c) isetbio
 % 09/2015 JRG
 
 %%%%%% FROM J PILLOW
+% 
+% http://pillowlab.princeton.edu/code_GLM.html
 % -------------  Static nonlinearity & spiking -------------------
+% 
 
+nkt = 20;    % Number of time bins in filter;
+dt = .01; % Bin size for simulating model & computing likelihood (in units of stimulus frames)
 
+% --- Make basis for post-spike (h) current ------
+ihbasprs.ncols = 5;  % Number of basis vectors for post-spike kernel
+ihbasprs.hpeaks = [.1 2];  % Peak location for first and last vectors
+ihbasprs.b = .5;  % How nonlinear to make spacings
+ihbasprs.absref = .1; % absolute refractory period 
+[iht,ihbas,ihbasis] = makeBasis_PostSpike(ihbasprs,dt);
+psf = ihbasis*[-10 -5 0 2 -2]';  % h current
 
-spResponseSize = size(nlResponse{1,1}(:,:,1));
-nSamples = size(nlResponse{1,1},3);
+% Initialize
+spResponseSize = size(mosaic.linearResponse{1,1}(:,:,1));
+nSamples = size(mosaic.linearResponse{1,1},3);
 
-nCells = size(nlResponse);
+nCells = size(mosaic.linearResponse);
 spikeTimes = cell(nCells);
 
-Vstm = nlResponse{1,1};
+Vstm = mosaic.linearResponse{1,1};
 slen = length(Vstm);
-dt = .01; % sensorGet(sensor,'integration time');
+
+% ihhi = zeros(length(psf),1);
+ihhi = psf;
+
 % rlen = length([.5+dt:dt:slen+.5]');
 rlen = length([.5+dt:dt:slen-1]');
-hlen = length(ih);
+
+% hlen = length(ih);
+hlen = length(psf);
+
 nbinsPerEval = 100;
-nlfun = @exp;
+nlfun = mosaic.generatorFunction;
 RefreshRate = 100;
 
-% NEED TO APPLY NL AFTER INTERPOLATION!!!
+numberTrials = mosaicGet(mosaic, 'numberTrials');
 
-% ihthi = [dt:dt:max(glmprs.iht)]';  % time points for sampling
-% ihthi = [dt:dt:slen*dt];
-% ihhi = interp1(.001:.01:slen*dt+.01, ih, ihthi, 'linear', 0);
-% hlen = length(ihhi);
-ihhi = ih;
+for trial = 1:numberTrials
+    cellCtr = 0;
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
-        Vstm = nlResponse{xcell,ycell};
+        Vstm = (mosaic.linearResponse{xcell,ycell});
+        % Vstm = vertcat(obj.mosaic.linearResponse{xcell,ycell,1});
         
         nsp = 0;
         tsp = zeros(round(slen/25),1);  % allocate space for spike times
@@ -61,8 +84,9 @@ for xcell = 1:nCells(1)
         while jbin <= rlen
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
             % rrnxt = nlfun(Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
-            
-            rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity
+            % rrnxt = (Vmem(iinxt))*dt/RefreshRate; % Cond Intensity            
+            rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
+
             rrcum = cumsum(rrnxt)+rprev; % integrated cond intensity
             if (tspnext >= rrcum(end)) % No spike in this window
                 jbin = iinxt(end)+1;
@@ -87,12 +111,15 @@ for xcell = 1:nCells(1)
                 nbinsPerEval = max(20, round(1.5*muISI));
             end
         end
-        spikeTimes{xcell,ycell} = tsp(1:nsp); % prune extra zeros
-        
-        % obj.spkResponse =
-        
-        ph = 1;
-        
-    end
-end
-        ph = 1;
+               
+        cellCtr = cellCtr+1;
+        % Note: x and y indices flipped from normal to match imagesc 
+        % This does not happen in computeSpikesGLM because of vertcat on
+        % line 58.
+        spikeTimes{ycell,xcell,trial,1} = tsp(1:nsp); % prune extra zeros
+        if size(Vmem,1) > 0
+            spikeTimes{ycell,xcell,trial,2} = Vmem; % prune extra zeros
+        end
+    end%ycell
+end%xcell
+end%trial

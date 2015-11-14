@@ -2,8 +2,26 @@ function obj = rgcSet(obj, varargin)
 % rgcSet: a method of @rgc that sets rgc object 
 % parameters using the input parser structure.
 % 
-% Parameters:
-%       {''} -  
+%       val = rgcSet(rgc, property)
+% 
+% Inputs: rgc object, property to be set, value of property to be set
+% 
+% Outputs: object with property set
+% 
+% Proeprties:
+%         name: type of rgc object, e.g., 'macaque RGC'
+%         input: 'cone current' or 'scene RGB', depends on type of outer
+%           segment object created.
+%         temporalEquivEcc: the temporal equivalent eccentricity, used to 
+%             determine the size of spatial receptive fields.   
+%         mosaic: contains rgcMosaic objects for the five most common types
+%           of RGCs: onParasol, offParasol, onMidget, offMidget,
+%           smallBistratified.
+%         numberTrials: the number of trials for spiking models LNP and GLM
+% 
+% Example:
+%   rgc1 = rgcSet(rgc1, 'name', 'macaque RGC')
+%   rgc1 = rgcSet(rgc1, 'temporalEquivEcc', 5)
 % 
 % 9/2015 JRG 
 
@@ -25,7 +43,8 @@ allowableFieldsToSet = {...
         'name',...
         'input',...
         'temporalEquivEcc',...       
-        'mosaic'...
+        'mosaic',...
+        'numberTrials'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -57,5 +76,16 @@ switch lower(params.what)
         obj.temporalEquivEcc = params.value;
     case{'mosaic'}        
         obj.mosaic = params.value;      
+    case{'numbertrials'}
+        cellTypes = length(obj.mosaic);
+        if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')
+            
+            for cellTypeInd = 1:cellTypes
+                obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
+            end
+        else
+            warning('The numberTrials property can only be set for rgcLNP and rgcGLM models.');
+        end
+        
 end
 

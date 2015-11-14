@@ -60,13 +60,13 @@ classdef rgc < handle
         end
         
         % set function, see rgcSet
-        function obj = set(obj, param, val, varargin)
-            obj = rgcSet(obj, param, val, varargin{:});
+        function obj = set(obj, varargin)
+            obj = rgcSet(obj, varargin{:});
         end
         
         % get function, see rgcGet
-        function val = get(obj, param, varargin)
-           val = rgcGet(obj, param, varargin{:});
+        function val = get(obj, varargin)
+           val = rgcGet(obj, varargin{:});
         end
         
         % compute function, see rgcCompute
@@ -95,9 +95,8 @@ classdef rgc < handle
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-        spConvolve1D
+
         spConvolve
-        tempConvolve
         fullConvolve
        
     end

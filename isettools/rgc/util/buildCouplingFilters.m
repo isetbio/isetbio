@@ -1,6 +1,16 @@
 function [couplingFilters, weightMatrix] = buildCouplingFilters(obj, dt)
-
-
+% builds the coupling filters for the rgcMosaicGLM object.
+% 
+% Inputs: rgcMosaicGLM object, dt for bin fraction of stimulus time step
+% (usually 0.01 or less).
+% 
+% Outputs: the couplingFilters as a cell array, where each cell is itself an
+% array of time series filters. If the mosaic is 3x3, then each coupling
+% filter cell will be 3x3xlength(time series).
+% 
+% Example:
+%     [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
+% 
 %%%% Written by J. Pillow
 
 % DTsim = .01; % Bin size for simulating model & computing likelihood (in units of stimulus frames)
@@ -55,7 +65,7 @@ for xcell = 1:nCells(1)
         % couplingFilters{xcell,ycell,mosaic} = reshape(hhcpl(:,1)*weightMatrix(:)',nCells(1),nCells(2),length(hhcpl(:,1)));
         couplingFilters{xcell,ycell} = reshape((hhcpl(:,ihind)*weightMatrixT(:)')',nCells(1),nCells(2),length(hhcpl(:,1)));
 
-        couplingFilters{xcell,ycell}(xcell, ycell, :) = psf;
+        couplingFilters{xcell,ycell}(xcell, ycell, :) = psf; % set cell's own coupling filter to PSF
         
     end
 end

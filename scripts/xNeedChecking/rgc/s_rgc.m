@@ -26,8 +26,9 @@ params.fov = 0.6;
 oi  = oiCreate('wvf human');
 
 %% build sensor for white noise
+params.nsteps = 1;
 sensor = sensorHorwitzHassShortWhiteNoise(params, scene, oi, display);
-
+params.nsteps = 30;
 %% build outersegment
 identityOS = osCreate('identity');
 
@@ -50,9 +51,13 @@ identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 
 % rgc1 = rgcLinear(scene, sensor, osIdentity, 'right', 3.75, 180);
 % rgc1 = rgcLNP(scene, sensor, osIdentity, 'right', 3.75, 180);
-rgc1 = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcGLM(scene, sensor, identityOS, 'right', 3.0, 180);
 % rgc1 = rgcSubunit(scene, sensor, identityOS, 'right', 3.0, 180);
 
+rgc1 = rgcCreate('LNP', scene, sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcCreate('Linear', scene, sensor, identityOS, 'right', 3.0, 180);
+% rgc1 = rgcCreate('GLM', scene, sensor, identityOS, 'right', 3.0, 180);
+% rgcPlot(rgc1, 'mosaic');
 %% compute rgc
 
 % % % tic
@@ -60,20 +65,22 @@ rgc1 = rgcCompute(rgc1, identityOS);
 % % toc
 
 % % tic
-rgcPlot(rgc1, 'spikeResponse');
-rgcPlot(rgc1, 'rasterResponse');
+rgcPlot(rgc1, 'psthResponse');
+% rgcPlot(rgc1, 'rasterResponse');
 % % % toc
 %% With linear cone response
 
 % linearOS = osCreate('linear');
 % linearOS = osCompute(linearOS, sensor);
+% % 
+% % rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
+% rgc2 = rgcCreate('glm',scene, sensor, linearOS, 'right', 3.0, 180);
+% % 
+% rgc2 = rgcCompute(rgc2, linearOS);
+% % 
 % 
-% rgc1 = rgcGLM(scene, sensor, linearOS, 'right', 3.0, 180);
-% % rgc1 = rgcCreate('rgcGLM',scene, sensor, linearOS, 'right', 3.0, 180);
-% 
-% rgc1 = rgcCompute(rgc1, linearOS);
-% 
-% rgcPlot(rgc1, sensor, linearOS);
+% rgcPlot(rgc2, 'linearResponse');
+% rgcPlot(rgc2, 'spikeResponse');
 %% build movie
 % 
 % rgcMovie(rgc1, identityOS);
