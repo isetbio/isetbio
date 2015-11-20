@@ -1,18 +1,18 @@
 function [img, parms] = imageHarmonic(parms)
-%Create a windowed spatial harmonic image 
+% Creates a sum of harmonic images, potentially windowed by a Gaussian
 %
-%   [img,parms]  = imgHarmonic(parms)
+%   [img,parms]  = imageHarmonic(parms)
 %
-% Creates a windowed, oriented, spatial harmonic
+% Creates a sum of windowed, oriented, spatial harmonics.  The basic
+% function for each of the harmonics is this:
 %
-%      contrast*window.*cos(2*pi*f*([cos(ang)*X + sin(ang)*Y] + ph)) + 1
+%    contrast*window.*cos(2*pi*f*([cos(ang)*X + sin(ang)*Y] + ph)) + 1
 %
-% The parameters are  in the structure parms. See the fields in the
-% example, below. 
+% When key fields are vectors (freq, contrast, ang, phase) then the return
+% produces the sum of these harmonics.  The sum always has a mean of 1.
 %
-% When some of the fields are vectors (freq, contrast, ang, phase) then the
-% return produces the sum of these harmonics.  The sum always has a mean of
-% 1.  
+% The harmonic parameters are in the structure parms. The fields are
+% defined below. 
 %
 % The Gabor Flag is used to set the window values (a Gaussian).
 % When the flag is non-zero, the value specifies the standard deviation
@@ -24,7 +24,7 @@ function [img, parms] = imageHarmonic(parms)
 %
 % Example:
 %   [img,p] = imageHarmonic;
-%   figure; imagesc(img), colormap(gray); axis image
+%   vcNewGraphWin; imagesc(img), colormap(gray); axis image
 %
 %   parms.row = 32; parms.col = 32; parms.contrast = 1; 
 %   parms.ph = pi/2; parms.freq = 2; parms.ang = pi/6;
@@ -33,62 +33,79 @@ function [img, parms] = imageHarmonic(parms)
 %   vcNewGraphWin; imagesc(img), colormap(gray); axis image
 %
 % Now, for a sum of two harmonics
-%   parms.freq(2) = 3; parms.ang(2) = parms.ang(1);
-%   parms.contrast(2) = 1; parms.ph(2) = pi/2;
+%   parms.freq = [1,3]; parms.ang = [0, pi/2];
+%   parms.contrast = [0.5 0.5]; parms.ph = [ 0 0];
 %   [img,p] = imageHarmonic(parms);
 %   vcNewGraphWin; imagesc(img), colormap(gray); axis image
 %   plot(img(16,:))
-% 
+%
+%   parms.GaborFlag = 0; [img,p] = imageHarmonic(parms);
+%   vcNewGraphWin; imagesc(img), colormap(gray); axis image
+%
 % Copyright ImagEval Consultants, LLC, 2003.
 
-
-if ~exist('parms','var'), parms = []; end
-
-try ang = parms.ang; catch, ang = 0; parms.ang = ang; end
-try contrast = parms.contrast; 
-catch, contrast = 1; parms.contrast = contrast; end
-try freq = parms.freq; catch, freq = 1; parms.freq = freq; end
-try ph = parms.ph; catch, ph = pi/2; parms.ph = ph; end
-try row = parms.row; catch, row = 64; parms.row = row; end
-try col = parms.col; catch, col = 64; parms.col = col; end
-
-% The Gabor Flag is a non-zero value that specifies the standard deviation
-% of the Gaussian as a fraction of the image size.  For example, if the
-% image size is 128 and GaborFlag = 0.5, the standard deviation is 64.
-if isfield(parms,'GaborFlag')
-    GaborFlag = parms.GaborFlag; 
+% If no parameters sent, use the default.
+% Otherwise over-write the default with user specified parameters
+if ~exist('parms','var'), parms = harmonicParms;
 else
-    GaborFlag = 0; 
-    parms.GaborFlag = GaborFlag; 
+    
+    % Set up the default parameters
+    dparms = harmonicParms;
+    
+    % Check the user structure and over-write any of the parameters with the
+    % user parameters
+    if isfield(parms,'ang'), dparms.ang = parms.ang; end
+    if isfield(parms,'contrast'), dparms.contrast = parms.contrast; end
+    if isfield(parms,'freq'), dparms.freq = parms.freq; end
+    if isfield(parms,'ph'), dparms.ph = parms.ph; end
+    if isfield(parms,'row'), dparms.row = parms.row; end
+    if isfield(parms,'col'), dparms.col = parms.col; end
+    if isfield(parms,'GaborFlag'), dparms.GaborFlag = parms.GaborFlag; end
+    parms = dparms;
 end
 
-% Calculate the harmonic
-[X,Y] = meshgrid((0:(col-1))/col,(0:(row-1))/row);
+%% Calculate the harmonic
+[X,Y] = meshgrid((0:(parms.col-1))/parms.col,(0:(parms.row-1))/parms.row);
 
 % Calculate the gabor window
-if GaborFlag
+if parms.GaborFlag
     hsize = size(X);
-    sigma = GaborFlag*min(row,col);
+    sigma = parms.GaborFlag*min(parms.row,parms.col);
     g = fspecial('gauss',hsize,sigma);
     g = g/max(g(:));
 else 
     g = ones(size(X));
 end
 
-% harmonics are (1 + sum(cos(2*pi*f*x + ph))
-% with the additional issue that X and Y can be at some angle.
+% Harmonics are (1 + sum(cos(2*pi*f*x + ph))
+% with the additional possibility that X and Y can be oriented at some angle.
 img = zeros(size(X));
-for ii=1:length(freq)
+for ii=1:length(parms.freq)
     img = img + ...
-        contrast(ii)*g.*cos( 2*pi*freq(ii)*(cos(ang(ii))*X + sin(ang(ii))*Y) ...
-        + ph(ii)) + 1;
+        parms.contrast(ii)*g.*cos( 2*pi*parms.freq(ii)* ...
+        (cos(parms.ang(ii))*X + sin(parms.ang(ii))*Y) + parms.ph(ii)) ...
+        + 1;
 end
-img = img / length(freq);
+img = img / length(parms.freq);
 
 if min(img(:) < 0)
     warning('Harmonics have negative sum, not realizable');
 end
 
-% figure; imagesc(img); colormap(gray); axis image
+end
+
+
+%% Default parameters for the harmonic
+function parms = harmonicParms
+
+% Default harmonic parameters for this function
+parms.ang = 0;
+parms.contrast = 1;
+parms.freq = 1; 
+parms.ph = pi/2;
+parms.row = 64; 
+parms.col = 64; 
+parms.GaborFlag = 0;
 
 end
+
