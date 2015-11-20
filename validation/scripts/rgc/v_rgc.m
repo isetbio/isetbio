@@ -37,6 +37,8 @@ scene = sceneFromFile(zeros(params.image_size,params.image_size), 'rgb', params.
 oi  = oiCreate('wvf human');
 sensor = sensorCreate('human');
 
+sensor = sensorSet(sensor, 'integration time', .01);
+
 identityOS = osCreate('identity');
 identityOS = osSet(identityOS, 'rgbData', sceneRGB);
 
@@ -54,14 +56,16 @@ rgc1 = rgcCompute(rgc1, identityOS);
 rf1 = (rgc1.mosaic{1}.sRFcenter{1,1} - rgc1.mosaic{1}.sRFsurround{1,1}); rf1 = rf1./max(abs(rf1(:)));
 rf2 = (rgc1.mosaic{1}.linearResponse{1,1,2}(:,:,1,1)); rf2 = rf2./max(abs(rf2(:)));
 % figure; subplot(121); imagesc(rf1); subplot(122); imagesc(rf2)
-diff1 = rf1 - rf2;  
-max(abs(diff1(:)))
+diff1 = rf1 + rf2;  
+max(abs(diff1(:)));
 
-
-% ir1 = (rgc1.mosaic{1}.tCenter{1,1}); ir1 = ir1./max(abs(ir1(:)));
-% ir2 = (rgc1.mosaic{1}.linearResponse{1,1,1}(:,:,1)); ir2 = ir2./max(abs(ir2(:)));
-% diff2 = ir1(:) - ir2(:);  
-% max(abs(diff2(:)));
+% In order for temporal validation, need to use the full length of the
+% temporal response, not just the center/same. This needs to be adjusted in
+% fullConvolve.m.
+ir1 = (rgc1.mosaic{1}.tCenter{1,1}); ir1 = ir1./max(abs(ir1(:)));
+ir2 = (rgc1.mosaic{1}.linearResponse{1,1,1}(:,:,1)); ir2 = ir2./max(abs(ir2(:)));
+diff2 = ir1(:)' - ir2(1:length(ir1));  
+max(abs(diff2(:)));
 
 %%
 tolerance = 1e-14;
@@ -69,10 +73,10 @@ UnitTest.assertIsZero(max(abs(diff1(:))),'Comparison for spatial RF and spatial 
 UnitTest.validationData('spatial RF',rf1);
 UnitTest.validationData('spatial impulse response',rf2);
 
-% tolerance = 1e-14;
-% UnitTest.assertIsZero(max(abs(diff2(:))),'Comparison for temporal IR and temporal response to impulse',tolerance);
-% UnitTest.validationData('temporal IR',rf1);
-% UnitTest.validationData('temporal response to impulse',rf2);
+tolerance = 1e-14;
+UnitTest.assertIsZero(max(abs(diff2(:))),'Comparison for temporal IR and temporal response to impulse',tolerance);
+UnitTest.validationData('temporal IR',rf1);
+UnitTest.validationData('temporal response to impulse',rf2);
 
 end
 
