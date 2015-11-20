@@ -27,8 +27,9 @@ obj.initialize(sensor);
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
 
-% Get isomerization array to convert to current (pA).
-isomerizations = sensorGet(sensor, 'photon rate');
+% When we just use the number of isomerizations, this is consistent with
+% the old coneAdapt function and validates.  
+isomerizations = sensorGet(sensor,'photons');
 
 % Get number of time steps.
 nSteps = sensorGet(sensor,'n time frames');
@@ -97,17 +98,21 @@ for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
     adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
     
 end
-% 
+
 % % Reshape the output signal matrix.
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
 obj.ConeCurrentSignal = adaptedData;
 
 % Add noise
+% The osAddNoise function expects and input to be isomerization rate.
+% This is handled properly because the params has the time sampling
+% rate included.
 if obj.noiseFlag == 1
     params.sampTime = sensorGet(sensor, 'time interval');
     ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
     obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
-       
+end
+
 end
 
 

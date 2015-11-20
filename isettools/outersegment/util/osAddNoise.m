@@ -1,20 +1,21 @@
 function [adaptedCur, params] = osAddNoise(curNF, params)
-% Add noise to membrane current in cone adaptataion
+% Add noise to noise free membrane current (curNF)
 %
 %   adaptedCur = osAddNoise(curNF, params)
 %
-%  Cone noise is independent of cone signal (additive). The noise is
-%  Gaussian additive and the spectral power distribution can be
-%  characterized by the sum of two Lorentz functions. 
+% Cone noise is additive and independent of cone signal. The noise is
+% Gaussian and the spectral power distribution can be characterized by the
+% sum of two Lorentz functions.  (Discuss this.  The SPD of a Gaussian is a
+% Gaussian, BW thought).
 % 
-%   See Angueyra and Rieke (2013, Nature Neuroscience) for details.
+% See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
-%  Inputs:
-%    curNF  - noise free cone adapted membrane current, see
-%             osAdaptTemporal
+% Inputs:
+%    curNF  - noise free cone adapted membrane photo current.  The units
+%             are pA (picoAmps) (CHECK!).
 %    params - parameter structure, could include:
-%      .seed     - noise seed
-%      .sampTime - sample time interval, see sensorGet(s, 'time interval');
+%      .seed     - noise seed for reproducibility
+%      .sampTime - sample time interval (secs), see sensorGet(s, 'time interval');
 %
 %  Outputs:
 %    adaptedCur - membrane current with noise added
@@ -42,18 +43,16 @@ else sampTime = 0.001; % 1 ms
 end
 
 %% Build model and generate noise
+
 %  Make sure curNF is [row, col, time] 3D matrix
 if isvector(curNF), curNF = reshape(curNF, [1 1 length(curNF)]); end
 
-if (ndims(curNF) == 3)
-    temporalDimIndex = 3;
-elseif (ismatrix(curNF))
-    temporalDimIndex = 2;
+if (ndims(curNF) == 3),     temporalDimIndex = 3;
+elseif (ismatrix(curNF)),   temporalDimIndex = 2;
+else error('unexpected curNF format\n');
 end
 
-
-% Generate the noise according to the noise spectral
-% distribution
+% Generate the noise according to the noise spectral distribution
 k = ceil((size(curNF, temporalDimIndex)-1)/2);
 params.freq = (0:k)/ sampTime / size(curNF, temporalDimIndex);
 
@@ -61,7 +60,7 @@ LorentzCoeffs = [0.16  55  4;
                  0.045 190 2.5];
 noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
 
-% make-up the negative frequency part
+% Make-up the negative frequency part
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];
 
 noiseSPD = noiseSPD(1:size(curNF, temporalDimIndex));
@@ -73,7 +72,7 @@ end
 % Have a look at the noise in the frequency domain
 % vcNewGraphWin;loglog(squeeze(sqrt(noiseSPD)));
 
-% generate white gaussian noise
+% Generate white Gaussian noise
 noise = randn(size(curNF));
 noiseFFT = fft(noise, [], temporalDimIndex); % / sqrt(size(noise, 3));
 
@@ -82,7 +81,7 @@ noiseFFT = bsxfun(@times, noiseFFT, sqrt(noiseSPD));
 
 noise = real(ifft(noiseFFT, [], temporalDimIndex)) / sqrt(2*sampTime); % take real part
 
-%figure(2); plot(squeeze(noise));
+% vcNewGraphWin; plot(squeeze(noise));
 
 % add to noise-free signal
 adaptedCur = curNF + noise;
