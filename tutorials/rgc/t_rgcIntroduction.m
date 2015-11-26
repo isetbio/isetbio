@@ -1,3 +1,4 @@
+
 %% t_rgcIntroduction
 %
 % In which our heroes lay out the basic architecture of the rgc class and

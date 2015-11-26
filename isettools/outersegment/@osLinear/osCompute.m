@@ -27,8 +27,9 @@ obj.initialize(sensor);
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
 
-% Get isomerization array to convert to current (pA).
-isomerizations = sensorGet(sensor, 'photons');
+% When we just use the number of isomerizations, this is consistent with
+% the old coneAdapt function and validates.  
+isomerizations = sensorGet(sensor,'photons');
 
 % Get number of time steps.
 nSteps = sensorGet(sensor,'n time frames');
@@ -43,75 +44,75 @@ initialState.timeInterval = sensorGet(sensor, 'time interval');
 initialState.Compress = 0; % ALLOW ADJUST - FIX THIS
 
 % Place limits on the maxCur and prescribe the meanCur.
-% This formula is based on a model from XXXX Rieke with YYYY and so forth
-% Perhaps we should not bury it here but maybe it deserves its own function
-% more because its importance.
-%
 
-% See Angueyra and Rieke (2013, Nature Neuroscience) for details
+% See Angueyra and Rieke (2013, Nature Neuroscience)
 maxCur = initialState.k * initialState.gdark^initialState.h/2;
 meanCur = maxCur * (1 - 1 / (1 + 45000 / mean(isomerizations(:))));
 
-adaptedDataRS = osConvolve(obj, sensor, isomerizations, varargin);
+% adaptedDataRS = osConvolve(obj, sensor, isomerizations, varargin);
 
 [sz1, sz2, sz3] = size(isomerizations);
-% isomerizationsRS = reshape(isomerizations(:,:,1:sz3),[sz1*sz2],nSteps);
-% 
-% adaptedDataRS = zeros(size(isomerizationsRS));
-% 
-% % Do convolutions by cone type.
-% for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
-%     
-%     % Pull out the appropriate 1D filter for the cone type.
-%     % Filter_cone_type = newIRFs(:,cone_type-1);
-%     switch cone_type
-%         case 4
-%             FilterConeType = obj.sConeFilter;
-%         case 3
-%             FilterConeType = obj.mConeFilter;
-%         case 2
-%             FilterConeType = obj.lConeFilter;
-%     end
-%     
-%     % Only place the output signals corresponding to pixels in the mosaic
-%     % into the final output matrix.
-%     cone_locations = find(cone_mosaic==cone_type);
-%     
-%     isomerizationsSingleType = isomerizationsRS(cone_locations,:);
-%     
-%     % pre-allocate memory
-%     adaptedDataSingleType = zeros(size(isomerizationsSingleType));
-%     
-%     for y = 1:size(isomerizationsSingleType, 1)
-%         
-%         tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
-%         %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
-%         %  WHAT IS THE COMPRESS ABOUT?  Let's ASK NC
-%         if (initialState.Compress)
-%             tempData = tempData / maxCur;
-%             tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-%         else
-%             tempData = tempData - meanCur;
-%         end
-%         % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
-%         adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
-%         
-%     end    
-%     
-%     adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
-%     
-% end
-% 
+isomerizationsRS = reshape(isomerizations(:,:,1:sz3),[sz1*sz2],nSteps);
+
+adaptedDataRS = zeros(size(isomerizationsRS));
+
+% Do convolutions by cone type.
+for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
+    
+    % Pull out the appropriate 1D filter for the cone type.
+    % Filter_cone_type = newIRFs(:,cone_type-1);
+    switch cone_type
+        case 4
+            FilterConeType = obj.sConeFilter;
+        case 3
+            FilterConeType = obj.mConeFilter;
+        case 2
+            FilterConeType = obj.lConeFilter;
+    end
+    
+    % Only place the output signals corresponding to pixels in the mosaic
+    % into the final output matrix.
+    cone_locations = find(cone_mosaic==cone_type);
+    
+    isomerizationsSingleType = isomerizationsRS(cone_locations,:);
+    
+    % pre-allocate memory
+    adaptedDataSingleType = zeros(size(isomerizationsSingleType));
+    
+    for y = 1:size(isomerizationsSingleType, 1)
+        
+        tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
+        %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
+        %  WHAT IS THE COMPRESS ABOUT?  Let's ASK NC
+        if (initialState.Compress)
+            tempData = tempData / maxCur;
+            tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
+        else
+            tempData = tempData - meanCur;
+        end
+        % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
+        adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
+        
+    end    
+    
+    adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
+    
+end
+
 % % Reshape the output signal matrix.
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
 obj.ConeCurrentSignal = adaptedData;
 
 % Add noise
+% The osAddNoise function expects and input to be isomerization rate.
+% This is handled properly because the params has the time sampling
+% rate included.
 if obj.noiseFlag == 1
     params.sampTime = sensorGet(sensor, 'time interval');
     ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
     obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
-       
+end
+
 end
 
 
