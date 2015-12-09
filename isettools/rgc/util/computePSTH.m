@@ -2,7 +2,7 @@ function [raster psth] = computePSTH(obj)
 
 
 dt = .01; % make this a get from sensor
-nCells = size(obj.cellLocation);
+nCells = size(obj.spikeResponse);
 
 spikeCheck = (cellfun(@isempty,((obj.spikeResponse))));
 

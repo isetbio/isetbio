@@ -26,6 +26,15 @@ nCells = size(mosaic.cellLocation);
 
 fprintf('Temporal Convolution, %s:     \n', mosaic.cellType);
 
+% set flag to keep track of whether each cell has its own temporal impulse
+% response function
+if length(mosaic.tCenter) == 3
+    lenflag = 0;
+else 
+    lenflag = 1;
+end
+
+
 tic
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
@@ -35,8 +44,14 @@ for xcell = 1:nCells(1)
             % fullResponseRSRGB = zeros(size(spResponseCenter{1,1}));
             
             % Get temporal impulse response functions
-            temporalIRCenter = mosaic.tCenter{rgbIndex};
-            temporalIRSurround = mosaic.tSurround{rgbIndex};
+            if lenflag == 0
+                temporalIRCenter = mosaic.tCenter{rgbIndex};
+                temporalIRSurround = mosaic.tSurround{rgbIndex};
+            else
+                
+                temporalIRCenter = mosaic.tCenter{xcell};
+                temporalIRSurround = mosaic.tSurround{xcell};
+            end
             
             % Reshape the spatial responses from spConvolve to allow for
             % efficient computation of the convolution with the temp IRF
