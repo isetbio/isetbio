@@ -29,6 +29,8 @@ function d = displayCreate(displayName, varargin)
 
 
 %% Init Parameters
+% Default changed on Nov. 30, 2015.  The original default was far too
+% bright for common practice.
 if notDefined('displayName'), displayName = 'default'; end
 
 % Identify the object type
@@ -82,7 +84,7 @@ function d = displayDefault(d)
 % routine.  See vcReadImage for more notes.  Or move those notes here.
 %
 wave = 400:10:700;
-spd = pinv(colorBlockMatrix(length(wave)));
+spd = pinv(colorBlockMatrix(length(wave)))/700;   % Makes peak about 100 cd/m2
 d = displaySet(d, 'wave', wave);
 d = displaySet(d, 'spd', spd);
 
