@@ -385,6 +385,9 @@ switch param
         if checkfields(sensor,'etendue'), val = sensor.etendue; end
 
 
+    % Data are stored as volts (legacy from digital image sensors). We
+    % convert to either the number of photons (photon count) or the photons
+    % per second (photon rate) in these calls.
     case {'voltage','volts'}
         % sensorGet(sensor,'volts',i) gets the ith sensor data in a vector.
         % sensorGet(sensor,'volts') gets all the sensor data in a plane.
@@ -399,6 +402,31 @@ switch param
         % pRate = sensorGet(sensor,'photon rate');
         % Photons captured per second
         val = sensorGet(sensor,'photons')/sensorGet(sensor,'exposure time');
+        
+    case {'photons','photoncount','electrons'}
+        % sensorGet(sensor,'photons');
+        % sensorGet(sensor,'photons',2);
+        %
+        % In the human case, we are modeling photon absorptions, rather
+        % than electrons in the well.  In ISET this case is 'electrons',
+        % but that will be eliminated and we only use 'photons'.
+        
+        % Remove electrons in the future.  Check for it now and complain
+        if strcmp(param,'electrons'), warning('Use photons, not electrons'); end
+        
+        pixel = sensorGet(sensor,'pixel');
+        val = sensorGet(sensor,'volts')/pixelGet(pixel,'conversionGain');
+        
+        % Pull out a particular color plane
+        if ~isempty(varargin)
+            val = sensorColorData(val,sensor,varargin{1});
+        end
+        
+        % If there is no noise, the mean number of electrons is returned.
+        % Otherwise, we round electrons to be integers
+        if sensorGet(sensor, 'noise flag') > 0
+            val = round(val);
+        end
         
     case{'volts2maxratio','responseratio'}
         v = sensorGet(sensor,'volts');
@@ -420,25 +448,6 @@ switch param
             val = sensorColorData(val,sensor,varargin{1});
         end
 
-    case {'electron', 'electrons', 'photons'}
-        % sensorGet(sensor,'electrons');
-        % sensorGet(sensor,'electrons',2);
-        % This is also used for human case, where we call the data photons,
-        % as in photon absorptions.
-        pixel = sensorGet(sensor,'pixel');
-        val = sensorGet(sensor,'volts')/pixelGet(pixel,'conversionGain');
-
-        % Pull out a particular color plane
-        if ~isempty(varargin)
-            val = sensorColorData(val,sensor,varargin{1});
-        end
-        
-        % If there is no noise, the mean number of electrons is returned. 
-        % Otherwise, we round electrons to be integers
-        if sensorGet(sensor, 'noise flag') > 0
-            val = round(val);
-        end
-
     case {'dvorvolts'}
         val = sensorGet(sensor,'dv');
         if isempty(val), val = sensorGet(sensor,'volts'); end
@@ -453,6 +462,7 @@ switch param
             val = sensor.roi;
             if size(val,2) == 4, val = ieRoi2Locs(val); end
         end
+        
     case {'roirect'}
         % sensorGet(sensor,'roi rect')
         % Return ROI as a rect
