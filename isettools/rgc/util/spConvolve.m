@@ -54,6 +54,7 @@ for rgbIndex = 1:channelSize
                 
                 % Extract 2D image
                 spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
+                % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
                                           
                 % Convolve for a single temporal frame
                 spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');

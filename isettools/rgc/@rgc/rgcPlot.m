@@ -301,7 +301,7 @@ switch lower(params.what)
         
         for cellTypeInd = 1:length(obj.mosaic)
             clear meanVoltage
-            nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
                     % Take mean membrane voltage over N trials
@@ -336,12 +336,14 @@ switch lower(params.what)
             cellCtr = 0; cellCtr2 = 0;
             clear psth tsp mtsp
             
-            nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
+            
+            if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
             maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
             % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+            for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
+                for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
                     
                     cellCtr = cellCtr+1;
                     
@@ -371,7 +373,7 @@ switch lower(params.what)
                     
                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    axis([0 30 0 maxTrials]);
+                    axis([0 250 0 maxTrials]);
                     
                     
                     % subplot(nCells(1),nCells(2),cellCtr);
@@ -396,7 +398,7 @@ switch lower(params.what)
     case{'psthresponse'}
         
         
-        dt = .01; % make this a get from sensor
+        dt = .01; % make this a get from sensors
         
         for cellTypeInd = 1:length(obj.mosaic)
             
@@ -405,13 +407,14 @@ switch lower(params.what)
             cellCtr = 0;
             clear psth tsp mtsp
             
-            nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
+            if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
             szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
             maxTrials = szSpike(2);
             % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
             
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+            for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
+                for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
                     
                     cellCtr = cellCtr+1;
                     

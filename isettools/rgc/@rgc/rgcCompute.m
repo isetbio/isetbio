@@ -48,8 +48,9 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % Set zero mean and normalize max value of stimulus
 if isa(outerSegment,'osIdentity')
     spTempStim = osGet(outerSegment, 'rgbData');
-    spTempStim = spTempStim;% - 0.5;%1/sqrt(2);
-    spTempStim = 2*spTempStim./max(abs(spTempStim(:)));
+%     spTempStim = spTempStim - mean(spTempStim(:));% - 0.5;%1/sqrt(2);
+%     spTempStim = 2*spTempStim./max(abs(spTempStim(:)));    
+%     spTempStim = spTempStim - mean(spTempStim(:));% - 0.5;%1/sqrt(2);
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    

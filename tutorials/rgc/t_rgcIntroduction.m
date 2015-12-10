@@ -72,7 +72,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.01;
 params.timeInterval = 0.01;
-params.nSteps = 60;     % Number of stimulus frames
+params.nSteps = 30;%60;     % Number of stimulus frames
 params.nCycles = 4;
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -167,7 +167,7 @@ eyeRadius = 3; % mm
 eyeSide = 'right';
 rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
 rgc1 = rgcSet(rgc1,'numberTrials',10);
-rgc1 = rgcCompute(rgc1, os);
+% rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'linearResponse');
