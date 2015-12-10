@@ -17,14 +17,16 @@
 %
 % ISETBIO Team, 2015
 
-function setIsetbioUnitTestPreferencesTemplate
+function ieSetUnitTestPreferencesTemplate
 
     % Specify project-specific preferences
     p = struct(...
             'projectName',           'isetbioValidation', ...                                                                         % The project's name (also the preferences group name)
             'validationRootDir',     fullfile(isetbioRootPath, 'validation'), ...                                                     % Directory location where the 'scripts' subdirectory resides.
             'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
-            'alternateFullDataDir',  fullfile(filesep,'Users1', 'Shared', 'Dropbox', 'ISETBIOFullValidationData'), ...                % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
+            'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
+            'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
+            'remoteDataToolboxConfig', 'isetbio', ...                                                                                 % Struct, file path, or project name with Remote Data Toolbox configuration.
             'clonedWikiLocation',    fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_Wiki', 'isetbio.wiki'), ... % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
             'clonedGhPagesLocation', fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_GhPages', 'isetbio'), ...   % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
             'githubRepoURL',         'http://isetbio.github.io/isetbio', ...                                                          % Github URL for the project. This is only used for publishing tutorials.
