@@ -346,8 +346,19 @@ switch parm
     case {'pixelsperdixel'}
         % number of pixels per dixel
         % returns number of pixels in one block (unit repeated pattern)
-        %
         % displayGet(d, 'pixels per dixel')
+        %
+        % The field indicates how many pixels (defined as independent
+        % addressable (R,G,B,etc) tuple) in one repeating pattern. In most
+        % cases, this field is [1 1], meaning that one dixel contains one
+        % pixel. For some displays (say samsung s-strip design), one
+        % repeating pattern could contain four independent addressable
+        % pixels and in that case pixelsperdixel is [2 2]. When HJ built
+        % that structure, he assumed that the area occupied by the R,G,B
+        % are the same (#R = #G = #B). This may be violated in some
+        % displays. Might change this structure when we want to modify it
+        % next time.
+        %
         if checkfields(d, 'dixel', 'nPixels')
             val = d.dixel.nPixels;
         else
