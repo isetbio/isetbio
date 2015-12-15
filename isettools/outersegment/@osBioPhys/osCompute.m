@@ -26,7 +26,7 @@ function obj = osCompute(obj, sensor, varargin)
     sz = sensorGet(sensor,'size');
     
     % absRate = sensorGet(sensor,'absorptions per second');
-    pRate = sensorGet(sensor, 'photons');
+    pRate = sensorGet(sensor, 'photon rate');
     nSteps = size(pRate, 3);
     % Compute background adaptation parameters
 

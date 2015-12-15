@@ -25,7 +25,7 @@
 % data in sensor structure
 %
 % Example:
-%   See coneAdapt???  Or some script somewhere that needs to be written.
+%   t_os, t_osIntroduction
 %
 % See also:  osInit, osAdaptSteadyState, coneAdapt
 %

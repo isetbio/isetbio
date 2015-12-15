@@ -60,7 +60,7 @@ stimulus(1) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photon rates.
-sensor = sensorSet(sensor, 'photons', stimulus);
+sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Compute model current and baseline correct.
 params.bgVolts  = 0;
@@ -75,7 +75,7 @@ adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % paramsOS.dc = 0; % removes dc
 
 % NEED TO FIX - NOT ADAPTATION OFFSET!
-sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+
 adaptedOS = osCompute(adaptedOS, sensor);
 osAdaptedCur = osGet(adaptedOS,'ConeCurrentSignal');
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
@@ -161,7 +161,7 @@ for step = 1:11
     end
     
     % Set photon rates.
-    sensor = sensorSet(sensor, 'photons', stimulus);
+    sensor = sensorSet(sensor, 'photon rate', stimulus);
 
     % Compute adapted current.
     params.bgVolts  = 0;
@@ -171,7 +171,7 @@ for step = 1:11
     noiseFlag = 0;
     adaptedOSStepOnly = osBioPhys('noiseFlag', noiseFlag);
 %     paramsOSStepOnly.bgVolts = params.bgVolts;
-        sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+        
     % paramsOSStepOnly.dc = 0; % removes dc
     adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
     % adaptedOs.plotResults(sensor)
@@ -184,7 +184,7 @@ for step = 1:11
     stimulus = reshape(stimulus, [1 1 nSamples]);
 
     % Set photon rates.
-    sensor = sensorSet(sensor, 'photons', stimulus);
+    sensor = sensorSet(sensor, 'photon rate', stimulus);
 
     % Compute adapted current.
     params.bgVolts  = 0;
@@ -341,7 +341,7 @@ sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', 5e-5);
 
 % Set photon rates.
-sensor = sensorSet(sensor, 'photons', stimulus);
+sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Compute adapted current.
 params.bgVolts  = 0;
@@ -354,7 +354,7 @@ adaptedOS = osBioPhys('noiseFlag', noiseFlag);
 % paramsOS.bgVolts = params.bgVolts;
 % paramsOS.dc = 0; % removes dc
 
-sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+% 
 adaptedOS = osCompute(adaptedOS, sensor);
 % adaptedOs.plotResults(sensor)
 
@@ -422,7 +422,7 @@ for step = 1:7
     stimulus = reshape(stimulusInc, [1 1 nSamples]);
 
     % Set photon rates.
-    sensor = sensorSet(sensor, 'photons', stimulus);
+    sensor = sensorSet(sensor, 'photon rate', stimulus);
 
     % Compute adapted current.
     params.bgVolts  = 0;
@@ -432,7 +432,7 @@ for step = 1:7
     noiseFlag = 0;
     adaptedOSInc = osBioPhys('noiseFlag', noiseFlag);
     
-    sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
+    
     % paramsOSInc.bgVolts = params.bgVolts;
     % paramsOS.dc = 0; % removes dc
     adaptedOSInc = osCompute(adaptedOSInc, sensor);
@@ -449,7 +449,7 @@ for step = 1:7
     stimulus = reshape(stimulusDec, [1 1 nSamples]);
 
     % Set photon rates.
-    sensor = sensorSet(sensor, 'photons', stimulus);
+    sensor = sensorSet(sensor, 'photon rate', stimulus);
 
     % Compute adapted current.
     params.bgVolts  = 0;

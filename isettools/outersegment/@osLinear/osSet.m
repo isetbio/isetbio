@@ -1,6 +1,5 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osLinear that sets isetbio outersegment object 
-% parameters using the input parser structure.
+% Sets isetbio outersegment object parameters using the input parser structure.
 % 
 % Parameters:
 %       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
@@ -27,11 +26,11 @@ p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
 
 % Define what units are allowable.
-allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
+% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
 
 % Set up key value pairs.
 % Defaults units:
-p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % p.addParameter('sconefilter',0,@isnumeric);
 % p.addParameter('mconefilter',0,@isnumeric);
 % p.addParameter('lconefilter',0,@isnumeric);
