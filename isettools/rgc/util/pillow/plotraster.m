@@ -105,7 +105,7 @@ for j = irnge(1):irnge(2)
     sptimes = Mtsp(find((Mtsp(:,j)>trnge(1)) & (Mtsp(:,j) <= trnge(2))),j);
     nsp = length(sptimes);
     ypl = repmat([j-irnge(1); j-irnge(1)+.9], 1,  nsp);   
-    hh(end+1:end+length(ypl)) = plot([sptimes'; sptimes'], ypl, 'k', 'linewidth', lw); hold on;
+    % hh(end+1:end+length(ypl)) = plot([sptimes'; sptimes'], ypl, 'k', 'linewidth', lw); hold on;
         
     MtspPlot(1:nsp,j-irnge(1)+1) = sptimes;
     if nsp > maxnsp
@@ -116,10 +116,10 @@ if ~hldstate
     hold off;
 end
 
-% set(gca, 'xlim', [trnge(1) trnge(2)]); 
-axis([trnge(1) trnge(2) 0 irnge(2)-irnge(1)+1]);  axis ij;
-MtspPlot(maxnsp+1:end,:) = [];  % remove extra rows from MtspPlot
-set(gca, 'tickdir', 'out');
+% % set(gca, 'xlim', [trnge(1) trnge(2)]); 
+% axis([trnge(1) trnge(2) 0 irnge(2)-irnge(1)+1]);  axis ij;
+% MtspPlot(maxnsp+1:end,:) = [];  % remove extra rows from MtspPlot
+% set(gca, 'tickdir', 'out');
 
 %  -------------- Cut text from above ---------------
 % % test non-monotonicity of spike times in first column of Mtsp, to see

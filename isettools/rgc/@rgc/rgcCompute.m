@@ -51,6 +51,10 @@ if isa(outerSegment,'osIdentity')
 %     spTempStim = spTempStim - mean(spTempStim(:));% - 0.5;%1/sqrt(2);
 %     spTempStim = 2*spTempStim./max(abs(spTempStim(:)));    
 %     spTempStim = spTempStim - mean(spTempStim(:));% - 0.5;%1/sqrt(2);
+
+    range = max(spTempStim(:))-min(spTempStim(:));
+    spTempStim = spTempStim./range;
+    
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?
     spTempStim = osGet(outerSegment, 'coneCurrentSignal');    
@@ -60,7 +64,7 @@ end
 
 nSamples = size(spTempStim,3);
 
-for cellTypeInd = 1:length(obj.mosaic)
+for cellTypeInd = 1%:length(obj.mosaic)
     
     rfSize = size(obj.mosaic{cellTypeInd}.sRFcenter{1,1});
     
@@ -69,6 +73,7 @@ for cellTypeInd = 1:length(obj.mosaic)
     
     if isa(outerSegment,'osIdentity')
         % Then convolve output of spatial convolution with the temporal impulse response
+%         spResponseCenter = spTempStim; spResponseSurround = zeros(size(spTempStim));
         [fullResponse, nlResponse] = fullConvolve(obj.mosaic{cellTypeInd,1}, spResponseCenter, spResponseSurround);
     
     elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')

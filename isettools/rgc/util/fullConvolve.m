@@ -49,8 +49,8 @@ for xcell = 1:nCells(1)
                 temporalIRSurround = mosaic.tSurround{rgbIndex};
             else
                 
-                temporalIRCenter = mosaic.tCenter{xcell};
-                temporalIRSurround = mosaic.tSurround{xcell};
+                temporalIRCenter = mosaic.tCenter{xcell,ycell};
+                temporalIRSurround = mosaic.tSurround{xcell,ycell};
             end
             
             % Reshape the spatial responses from spConvolve to allow for
@@ -72,7 +72,8 @@ for xcell = 1:nCells(1)
                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
                 
                 % Specify starting and ending time coordinates
-                startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
+%                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
+                startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
                 % Take difference between center and surround response
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,startPoint:endPoint) - fullResponseRSSurround(:,startPoint:endPoint);
                 
@@ -87,10 +88,20 @@ for xcell = 1:nCells(1)
             fullResponseRS = sum(genFunction(fullResponseRSRGB),3);            
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
             nlResponse{xcell,ycell} = (mean(fullResponseRS,1));
+        elseif isa(mosaic,'rgcMosaicPhys')
+            
+            % For all other models, apply the nonlinearity after
+            fullResponseRS = sum(fullResponseRSRGB,3);                     
+            fullResponse{xcell,ycell,1} = sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};       % mean? sum in ej's code
+            % % fullResponse for RGB
+            fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
+            genFunction = mosaicGet(mosaic, 'generatorFunction');
+            nlResponse{xcell,ycell} = genFunction(sum(fullResponseRS,1) + mosaic.tonicDrive{xcell,ycell});
+            
         else
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
-            fullResponse{xcell,ycell,1} = mean(fullResponseRS);       
+            fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
             genFunction = mosaicGet(mosaic, 'generatorFunction');

@@ -25,7 +25,13 @@ fprintf('Spike Generation:\n');
 tic;
 for cellTypeInd = 1%:length(obj.mosaic)
     % Call Pillow code to compute spiking outputs for N trials
-    spikeResponse = computeSpikesPhys(obj.mosaic{cellTypeInd,1});   
+    % spikeResponse = computeSpikesPhys(obj.mosaic{cellTypeInd,1}); 
+    
+%     spikeResponse = computeSpikesPhysPt(obj.mosaic{cellTypeInd,1});
+    
+%     spikeResponseFull = computeSpikesPhysCoupled(obj.mosaic{cellTypeInd,1},spikeResponse);
+
+    spikeResponseFull = computeSpikesPhysCoupled(obj.mosaic{cellTypeInd,1});
     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);
         
     % Call Pillow code to compute rasters and PSTHs
