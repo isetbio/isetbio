@@ -373,7 +373,7 @@ switch lower(params.what)
                     
                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    axis([0 250 0 maxTrials]);
+                    axis([0 1000 0 maxTrials]);
                     
                     
                     % subplot(nCells(1),nCells(2),cellCtr);

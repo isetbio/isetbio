@@ -58,9 +58,9 @@ end
 % Calcualte spatial RF diameter
 receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(rgc.temporalEquivEcc);
 
-patchSizeX = sensorGet(sensor, 'width', 'um');
-sceneRows = sceneGet(scene,'rows');
-umPerScenePx = patchSizeX/sceneRows;
+% patchSizeX = sensorGet(sensor, 'width', 'um');
+% sceneRows = sceneGet(scene,'rows');
+% umPerScenePx = patchSizeX/sceneRows;
 
 % obj.rfDiameter = rfSizeMult(cellTypeInd)*(receptiveFieldDiameterParasol2STD/2)/umPerScenePx; % in microns; divide by umPerScenePx to get pixels
 
@@ -68,13 +68,14 @@ obj.generatorFunction = @exp;
 
 obj.numberTrials = 10;
 
-matFileNames = dir('/Volumes/Lab/Users/james/isetbio/isettools/rgc/util/ej/data/2012-08-09-3/ON*.mat');
+glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+matFileNames = dir([glmFitPath '/ON*.mat']);
 
 % Loop through mat files and load parameters
 for matFileInd = 1:length(matFileNames)
      
     loadStr = sprintf('matFileNames(%d).name', matFileInd);
-    eval(sprintf('load(%s)',loadStr))
+    eval(sprintf('load([glmFitPath %s])',loadStr))
     
     nameStr = eval(loadStr);
     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
@@ -83,7 +84,7 @@ for matFileInd = 1:length(matFileNames)
 %     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
     obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
     obj.couplingFilter{matFileInd} = fittedGLM.linearfilters.Coupling.Filter;
-%     filterTonicDrive{matFileInd} = fittedGLM.linearfilters.TonicDrive.Filter;
+    obj.tonicDrive{matFileInd} = fittedGLM.linearfilters.TonicDrive.Filter;
     
     obj.sRFcenter{matFileInd} = fittedGLM.linearfilters.Stimulus.space_rk1;
     obj.sRFsurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.space_rk1;
@@ -91,7 +92,10 @@ for matFileInd = 1:length(matFileNames)
     obj.tSurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
     
     couplingMatrixTemp{matFileInd} = fittedGLM.cellinfo.pairs;
-    obj.cellLocation{matFileInd} = [fittedGLM.cellinfo.slave_centercoord.y_coord fittedGLM.cellinfo.slave_centercoord.x_coord];
+    
+    % NEED TO CHECK IF X AND Y ARE BEING SWITCHED INCORRECTLY HERE
+    % figure; for i = 1:39; hold on; scatter(rgc2.mosaic{1}.cellLocation{i}(1), rgc2.mosaic{1}.cellLocation{i}(2)); end
+    obj.cellLocation{matFileInd} = [fittedGLM.cellinfo.slave_centercoord.x_coord fittedGLM.cellinfo.slave_centercoord.y_coord];
     
 %     % figure; imagesc(filterSpatial{matFileInd})
 %     magnitude1STD = max(filterSpatial{matFileInd}(:))*exp(-1);

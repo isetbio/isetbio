@@ -34,7 +34,7 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 vcNewGraphWin; plot(stimulus(:));
 
 %% Load measurement data
-pathNoiseData = '/home/james/Downloads/fred cone model/';
+pathNoiseData = '';%/home/james/Downloads/fred cone model/';
 noiseData = load([pathNoiseData 'NoiseData.mat']);
 % load('NoiseData.mat');
 measuredCur = noiseData.StepsExample.Data{3}; % current in pA

@@ -57,8 +57,8 @@ for rgbIndex = 1:channelSize
                 % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
                                           
                 % Convolve for a single temporal frame
-                spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');
-                spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
+                spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter.*spStim;%conv2(spRFcenter, spStim, 'same');
+                spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 
                 clear  gz
             end

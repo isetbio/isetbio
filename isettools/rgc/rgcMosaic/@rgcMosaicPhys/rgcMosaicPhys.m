@@ -55,6 +55,7 @@ classdef rgcMosaicPhys % < rgcMosaic
         postSpikeFilter;
         couplingFilter;
         couplingMatrix;
+        tonicDrive;
         
         rasterResponse;
         psthResponse;
