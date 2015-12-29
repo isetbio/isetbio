@@ -21,8 +21,9 @@ function ieValidateFullCore(varargin)
 %% Close all figures so that we start with a clean slate
 close all; 
 
-%% We will use preferences for the 'isetbioValidation' project - this is project specific
-UnitTest.usePreferencesForProject('isetbioValidation', 'reset');
+%% We will use preferences for the 'isetbioValidation' project
+thisProject = 'isetbioValidation';
+UnitTest.usePreferencesForProject(thisProject, 'reset');
 
 %% Set preferences for this function
 
