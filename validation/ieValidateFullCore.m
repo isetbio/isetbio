@@ -18,9 +18,8 @@ function ieValidateFullCore(varargin)
 %
 % NC, ISETBIO Team, Copyright 2015
 
-close all;  % Is this necessary?
-% clc - I prefer controlling my command line. I leave stuff in there
-% sometimes.
+%% Close all figures so that we start with a clean slate
+close all; 
 
 %% We will use preferences for the 'isetbioValidation' project - this is project specific
 UnitTest.usePreferencesForProject('isetbioValidation', 'reset');
@@ -40,7 +39,9 @@ UnitTest.setPref('closeFigsOnInit', true);
 UnitTest.setPref('verbosity', 'high');
 
 %% Numeric tolerance for comparison to ground truth data
-UnitTest.setPref('numericTolerance', 500*eps);
+if (~ispref(thisProject, 'numericTolerance'))
+    UnitTest.setPref('numericTolerance', 500*eps);
+end
 
 %% Whether to plot data that do not agree with the ground truth
 UnitTest.setPref('graphMismatchedData', true);

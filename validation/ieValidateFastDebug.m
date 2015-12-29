@@ -4,7 +4,6 @@ function ieValidateFastDebug
 % validation functions.
 
     close all
-    clc
     
     %% We will use preferences for the 'isetbioValidation' project - this is project specific
     UnitTest.usePreferencesForProject('isetbioValidation', 'reset');                
@@ -24,7 +23,9 @@ function ieValidateFastDebug
     UnitTest.setPref('verbosity', 'high');
     
     %% Numeric tolerance for comparison to ground truth data
-    UnitTest.setPref('numericTolerance', 500*eps);
+    if (~ispref(thisProject, 'numericTolerance'))
+        UnitTest.setPref('numericTolerance', 500*eps);
+    end
     
     %% Whether to plot data that do not agree with the ground truth
     UnitTest.setPref('graphMismatchedData', false);

@@ -23,7 +23,9 @@ function ieValidateFullAndPublishAll
     UnitTest.setPref('verbosity', 'med');
     
     %% Numeric tolerance for comparison to ground truth data
-    UnitTest.setPref('numericTolerance', 500*eps);
+    if (~ispref(thisProject, 'numericTolerance'))
+        UnitTest.setPref('numericTolerance', 500*eps);
+    end
     
     %% Whether to plot data that do not agree with the ground truth
     UnitTest.setPref('graphMismatchedData', false);

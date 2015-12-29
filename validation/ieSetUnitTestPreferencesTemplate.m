@@ -8,12 +8,9 @@
 % to that project's specifics.  You will want to change isetbioValidation
 % and isetbioRootPath and so forth.
 %
-% If you just run the distributed (Template) version to accept the
-% defaults, the FAST validation in isetbio will run.  But the FULL forms of
-% validation need the validation data. These can be found here:
-%
-%  http://????? - To be determined.
-%
+% You should be able just to use this template version for both full and
+% fast validations -- it pulls its data off a server we have set up via
+% the RemoteDataToolbox facility.
 %
 % ISETBIO Team, 2015
 
@@ -30,9 +27,10 @@ function ieSetUnitTestPreferencesTemplate
             'clonedWikiLocation',    fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_Wiki', 'isetbio.wiki'), ... % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
             'clonedGhPagesLocation', fullfile(filesep,'Users',  'Shared', 'Matlab', 'Toolboxes', 'ISETBIO_GhPages', 'isetbio'), ...   % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
             'githubRepoURL',         'http://isetbio.github.io/isetbio', ...                                                          % Github URL for the project. This is only used for publishing tutorials.
-            'generateGroundTruthDataIfNotFound',   false, ...  % Flag indicating whether to generate ground truth if one is not found
+            'generateGroundTruthDataIfNotFound',   false, ...                                                                         % Flag indicating whether to generate ground truth if one is not found
             'listingScript',         'ieValidateListAllValidationDirs', ...    
-            'coreListingScript',     'ieValidateListCoreValidationFiles' ...
+            'coreListingScript',     'ieValidateListCoreValidationFiles', ...
+            'numericTolerance',      1e-11 ...                                                                                        % Numeric tolerance for comparisons with validation data.
         );
 
     generatePreferenceGroup(p);
