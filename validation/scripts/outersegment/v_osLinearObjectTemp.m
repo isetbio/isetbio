@@ -6,7 +6,7 @@ function varargout = v_osLinearObjectTemp(varargin)
 % isomerizations to photocurrent transduction process that occurs in the
 % cone outer segments.
 %
-% More specifically, this compares the DEQ based outer segment model output with several key
+% More specifically, this compares the linear based outer segment model output with several key
 % measured properties of the cone photocurrent responses:
 %   - impulse response in the dark
 %   - responses to steps + flashes to measure kinetics of step response and
@@ -35,14 +35,15 @@ end
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
-
 %% Init
 ieInit;
 
+%% Preferences group
+validationPrefs = 'isetbioValidation';
+
 %% Impulse response in dark
 %
-% We'll compare the original code and the outer segment object for this
-% case.
+% We'll compare the original code and the outer segment object for this case.
 %
 % Set up parameters for stimulus.
 nSamples = 2000;        % 2000 samples
@@ -62,10 +63,10 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % Set photon rates.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-% Compute model current and baseline correct.
+% Compute model current and baseline correct, using the old code.
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'linear', params);
-adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes offset
+adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples);
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0; % or can be initialized with noise flag setting
@@ -74,17 +75,19 @@ adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
 sensor = sensorSet(sensor,'cone type', 2); % set L cone
 
 % Compute the linear response.
+%  Get the current and then subtract the offset voltage.
 adaptedOS = osCompute(adaptedOS, sensor);
-% Get the current.
 osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
-% Subtract away the offset voltage.
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
-osPlot(adaptedOS, sensor);
+% Make a plot of what happened using osPlot.
+if (runTimeParams.generatePlots)   
+    osPlot(adaptedOS, sensor);
+end
 
-% Plot a comparison of the two.  These should be identical since we
-% think they are the same code doing the same thing. 
-% if (runTimeParams.generatePlots)
+% Plot a comparison of the two ways of doing it.
+% These should be identical since we think they are the same code doing the same thing. 
+if (runTimeParams.generatePlots)
     figure; clf; hold on
     tme = (1:nSamples)*timeStep;
     plot(tme,squeeze(adaptedCur),'r','LineWidth',4);
@@ -93,16 +96,16 @@ osPlot(adaptedOS, sensor);
     ylabel('pA','FontSize',14);
     title('impulse response in the dark','FontSize',16);
     legend('original code model resp', 'osLinear object resp');
-% end
+end
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
 clear adaptedOS paramsOS
+
 %% Steps + flashes
 
-%  Set up parameters for stimulus.
+% Set up parameters for stimulus.
 stimPeriod = [4000 22000];          % start and end time of step
 nSamples = stimPeriod(2)+4000;      % number of samples
 timeStep = 1e-4;                    % time step
@@ -114,20 +117,23 @@ flashIntens = 10000;                % flash intensity R*/cone/sec
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
-
 sensor = sensorSet(sensor,'cone type', 2); % set s cone
 
-h1 = figure(1); clf; subplot(1, 4, 1); hold on; subplot(1, 4, 2); hold on; subplot(1, 4, 3); hold on
-subplot(1,4,4); hold on;
-
-xlabel('sec');
-ylabel('pA');
-
-clear SSCur stimIntensity FlashAmp
-FlashScFact = 1;                     % scaling of flash to compensate adaptation
+% Set up plot
+if (runTimeParams.generatePlots)   
+    h1 = figure; clf;
+    set(gcf,'Position',[100 100 1500 750]);
+    subplot(1, 4, 1); hold on;
+    subplot(1, 4, 2); hold on;
+    subplot(1, 4, 3); hold on
+    subplot(1, 4, 4); hold on;
+end
 
 % Go through series of step intensities (slow).
-for step = 1:11
+clear SSCur stimIntensity FlashAmp
+FlashScFact = 1;
+nStepIntensities = 11;
+for step = 1:nStepIntensities
     
     % Create stimulus: step alone.
     stimIntensity(step) = 50 * 2^step;          
@@ -135,7 +141,7 @@ for step = 1:11
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
     stimulus = reshape(stimulus, [1 1 nSamples]);
     
-    % Increase flash strength if we are in range where cones adapting.
+    % Increase flash strength if we are in range where cones are adapting.
     if (stimIntensity(step) > 4000);
         FlashScFact = FlashScFact * 2;
     end
@@ -143,19 +149,18 @@ for step = 1:11
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % Compute adapted current.
+    % Compute adapted current via old code.
     params.bgVolts  = 0;
     [~, adaptedCurStepOnly] = coneAdapt(sensor, 'linear', params);
     
-    % Create outersegment object.
+    % Compute using outersegment object.
     noiseFlag = 0;
     adaptedOSStepOnly = osLinear();
     adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);
-    
     sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
     adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
 
-    % Create stimulus: step + flashes.
+    % Create stimulus: step + flash.
     stimulus = zeros(nSamples, 1);
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
     stimulus(flashTime(1):flashTime(1)+flashDur) = stimulus(flashTime(1):flashTime(1)+flashDur) + flashIntens;
@@ -165,127 +170,118 @@ for step = 1:11
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-    % Compute adapted current.
+    % Compute adapted current via old code.
     params.bgVolts  = 0;
     [~, adaptedCur] = coneAdapt(sensor, 'linear', params);
-        
+     
+    % Compute using outersegment object.
     noiseFlag = 0;
- 
     adaptedOS = osLinear();
     adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);   
-    
     sensor = sensorSet(sensor,'adaptation offset',params.bgVolts);
     adaptedOS = osCompute(adaptedOS, sensor);
 
-    % Plot.
-    % if (runTimeParams.generatePlots)
-    subplot(1, 4, 1);
-    plot((1:nSamples)*timeStep, adaptedCur(:), 'k', 'lineWidth', 2);
-    subplot(1, 4, 2);
-    plot((1:nSamples)*timeStep, adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
-    subplot(1, 4, 3);
-    plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
-    temp = adaptedCur(:) - adaptedCurStepOnly(:);
-       
-    subplot(1, 4, 4);
-    plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
-    tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
-    pause(0.1);
-    % end
+    % Plot
+    if (runTimeParams.generatePlots)
+        subplot(1, 4, 1);
+        plot((1:nSamples)*timeStep, adaptedCur(:), 'r', 'lineWidth', 4);
+        plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
+
+        subplot(1, 4, 2);
+        plot((1:nSamples)*timeStep, adaptedCurStepOnly(:), 'r', 'lineWidth', 4);
+        plot((1:nSamples)*timeStep, adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
+
+        subplot(1, 4, 3);
+        plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'r', 'lineWidth', 2);
+        temp = adaptedCur(:) - adaptedCurStepOnly(:);
+        
+        subplot(1, 4, 4);
+        plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
+        tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
+    end
 
     % Summary measures.
     FlashAmp(step) = max(temp(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(temp(flashTime(1):flashTime(1)+1000)));
     SSCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
     [MaxVal, MaxLoc] = max(temp(flashTime(2):flashTime(2)+1000));
     TPeak(step) = MaxLoc*timeStep;
-    
     FlashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
     SSCurOS(step) = -(adaptedOSStepOnly.ConeCurrentSignal(1, 1, stimPeriod(2)) - adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1))/adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1);
     
-    % Fit transient of step response.
-    Transient = adaptedCurStepOnly(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
-    Transient = Transient - Transient(length(Transient));
-    
-    TransientOS = adaptedOSStepOnly.ConeCurrentSignal(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
-    TransientOS = TransientOS - TransientOS(length(Transient));
-    
+    % Get transient of step response, computed both ways.
+    transientTme = stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2);
+    transient{step} = adaptedCurStepOnly(transientTme);
+    transient{step} = transient{step} - transient{step}(end);
+    transientOS{step} = adaptedOSStepOnly.ConeCurrentSignal(transientTme);
+    transientOS{step} = transientOS{step} - transientOS{step}(end);
 end
 
-% if (runTimeParams.generatePlots)
-subplot(1, 4, 3); title('coneAdapt');
-subplot(1, 4, 4); title('osLinear');
+% Label plot
+if (runTimeParams.generatePlots)
+    subplot(1, 4, 1);
+    xlabel('Time (sec)');
+    ylabel('Photocurrent (pA)');
+    title('Adapted Current');
+    legend('original code', 'osLinear object','Location','NorthEast');
 
-% fit sensitivity vs intensity relation
-% half desens around 2500 (Angueyra and Rieke, 2013)
-figure(3);clf;
-% subplot(1,2,1);
-loglog(stimIntensity, FlashAmp, 'ro');
-hold on;
-coef = [2500];
-% wfcoef = nlinfit(stimIntensity, log10(FlashAmp), 'weber_fechner', coef);
-% fit = weber_fechner(wfcoef, stimIntensity);
-% loglog(stimIntensity, 10.^fit);
-xlabel('background');
-ylabel('sensitivity');
-axis tight;
-title('coneAdapt ');
+    subplot(1, 4, 2);
+     xlabel('Time (sec)');
+    ylabel('Photocurrent (pA)');
+    title('Adapted Current Step Only');
+    legend('original code', 'osLinear object','Location','NorthEast');
+    
+    subplot(1, 4, 3); 
+    xlabel('Time (sec)');
+    ylabel('Photocurrent (pA)');
+    title('coneAdapt');
 
-% subplot(1,2,2);
-loglog(stimIntensity, FlashAmpOS, 'kx');
-hold on;
-coef = [2500];
-% wfcoef = nlinfit(stimIntensity, log10(FlashAmpOS), 'weber_fechner', coef);
-% fit = weber_fechner(wfcoef, stimIntensity);
-% loglog(stimIntensity, 10.^fit);
-xlabel('background');
-ylabel('sensitivity');
-axis tight;
-title('osLinear Object ');
-axis([1e2 1e5 0.9 1.1]);
-legend('coneAdapt','osLinear');
+    subplot(1, 4, 4);
+    xlabel('Time (sec)');
+    ylabel('Photocurrent (pA)');
+    title('osLinear object');
+end
 
-% fit current transient - two temporal components which contrast fast and
-% slow Calcium feedback terms
-% 3:1 ratio of amps, rate constants 1 and 12
-tme = (1:length(Transient))*timeStep;
-coef = [1 1 3 12];
-stepcoef = nlinfit(tme', squeeze(Transient), 'dblexponentialnomean', coef);
-fit = dblexponentialnomean(stepcoef,  tme);
-figure(4); clf
-% subplot(1,2,1);
-plot(tme, Transient(:),'r','Linewidth',3);%, tme, fit);
-xlabel('time');
-ylabel('pA');
-title('coneAdapt ');
+% Plot sensitivity vs background intensity relation
+%
+% Half desens around 2500 (Angueyra and Rieke, 2013)
+if (runTimeParams.generatePlots)
+    figure; clf; hold on;
+    loglog(stimIntensity, FlashAmp, 'ro');
+    loglog(stimIntensity, FlashAmpOS, 'kx');
+    xlabel('Background');
+    ylabel('Sensitivity');
+    axis tight;
+    legend('coneAdapt','osLinear');
+end
 
-% subplot(1,2,2);
-hold on;
-plot(tme, TransientOS(:),':k','Linewidth',2);%, tme, fit);
-xlabel('time');
-ylabel('pA');
-title('osLinear Object ');
+% Plot transient from last step simulated
+if (runTimeParams.generatePlots)
+    figure; clf; hold on
+    plot(transientTme, transient{end}(:),'r','Linewidth',4);%, tme, fit);
+    plot(transientTme, transientOS{end}(:),':k','Linewidth',2);%, tme, fit);
+    xlabel('Time (sec)');
+    ylabel('Photocurrent (pA)');
+    title('Transient for largest step');
+    legend('coneAdapt','osLinear');
+end
 
-% end% generatePlots
-
-% fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoef(2), stepcoef(4));
-% fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
-
+% Save validation data
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(FlashAmp(:)-FlashAmpOS(:))),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
-
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 
 %% Saccade-like stimuli
 
-% Load experimental data and baseline correct.
-load('ConeData/EyeMovementsExample.mat');
-measuredCur = EyeMovementsExample.Mean - EyeMovementsExample.Mean(length(EyeMovementsExample.Mean));
+% Load experimental data using RDT.
+client = RdtClient(getpref(validationPrefs,'remoteDataToolboxConfig'));
+client.crp('resources/data/experimental/cones');
+[eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
-% Create stimulus.
-stimulus = EyeMovementsExample.Stim;
+% Get mean subtracted current and stimulus from read data
+measuredCur = eyeMovementExample.data.Mean - eyeMovementExample.data.Mean(length(eyeMovementExample.data.Mean));
+stimulus = eyeMovementExample.data.Stim;
 nSamples = length(stimulus);
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
