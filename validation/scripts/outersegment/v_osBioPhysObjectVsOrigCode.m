@@ -59,7 +59,9 @@ stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
-% Set photon rates.
+% Set photon rates. This is a kluge that appeared
+% just for this test, and that should probably go
+% away again.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Compute model current and baseline correct.
@@ -69,57 +71,34 @@ adaptedCur(:) = adaptedCur(:) - adaptedCur(:, :, nSamples); % removes dc
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
-% adaptedOS = osBioPhys();
-adaptedOS = osBioPhys('noiseFlag', noiseFlag);
-% paramsOS.bgVolts = params.bgVolts;
-% paramsOS.dc = 0; % removes dc
-
-% NEED TO FIX - NOT ADAPTATION OFFSET!
+adaptedOS = osBioPhys();
+adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
 
 adaptedOS = osCompute(adaptedOS, sensor);
 osAdaptedCur = osGet(adaptedOS,'ConeCurrentSignal');
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
-% adaptedOS.plotResults(sensor)
+
+% Make a plot of what happened using osPlot.
+if (runTimeParams.generatePlots)   
+    osPlot(adaptedOS, sensor);
+end
 
 % Plot a comparison of the two.  These should be identical since we
 % think they are the same code doing the same thing.
-% if (runTimeParams.generatePlots)
-vcNewGraphWin; hold on
-tme = (1:nSamples)*timeStep;
-plot(tme,squeeze(adaptedCur),'r','LineWidth',3);
-plot(tme,squeeze(osAdaptedCur),'k:','LineWidth',2);
-xlabel('sec','FontSize',14);
-ylabel('pA','FontSize',14);
-title('impulse response in the dark','FontSize',16);
-legend('original code model resp', 'osBioPhys object resp');
-% end
+if (runTimeParams.generatePlots)
+    vcNewGraphWin; hold on
+    tme = (1:nSamples)*timeStep;
+    plot(tme,squeeze(adaptedCur),'r','LineWidth',3);
+    plot(tme,squeeze(osAdaptedCur),'k:','LineWidth',2);
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Photocurrent (pA)','FontSize',14);
+    title('impulse response in the dark','FontSize',16);
+    legend('original code model resp', 'osBioPhys object resp');
+end
 tolerance = 0;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
-
-% % Compute fit to measured response (Angueyra and Rieke, 2013).
-% coef = [1 0.05 0.1 1 0];
-% tme = (1:nSamples)*timeStep;
-% impcoef = nlinfit(tme', squeeze(adaptedCur), 'ConeEmpiricalDimFlash', coef);
-% fit = ConeEmpiricalDimFlash(impcoef, tme'); % warning('off', 'stats:nlinfit:ModelConstantWRTParam');
-% expcoef = [5 0.02 0.03 0.53 34];            % fit to measured response
-% expfit = ConeEmpiricalDimFlash(expcoef, tme');
-%
-% % Compare model vs empirical fit to data.
-% figure(1); clf;
-% if noiseFlag == 0
-%     plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignal));
-% elseif noiseFlag == 1
-%     plot(tme, fit, tme, squeeze(adaptedCur), tme, expfit, tme, squeeze(adaptedOS.ConeCurrentSignalPlusNoise));
-% end
-% xlabel('sec');
-% ylabel('pA');
-% title('impulse response');
-% legend('model fit', 'model resp', 'exp fit', 'osBioPhys resp');
-
-
 
 clear adaptedOS paramsOS
 %% Steps + flashes
@@ -137,13 +116,18 @@ sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
 
-h1 = vcNewGraphWin;
-subplot(1, 4, 1); hold on; 
-subplot(1, 4, 2); hold on; subplot(1, 4, 3); hold on
-subplot(1,4,4); hold on;
 
-xlabel('sec');
-ylabel('pA');
+% Set up plot
+if (runTimeParams.generatePlots)
+    h1 = vcNewGraphWin;
+    subplot(1, 4, 1); hold on;
+    subplot(1, 4, 2); hold on;
+    subplot(1, 4, 3); hold on
+    subplot(1, 4, 4); hold on;
+    
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Photocurrent (pA)','FontSize',14);
+end
 
 clear SSCur stimIntensity FlashAmp
 FlashScFact = 1;                     % scaling of flash to compensate adaptation
@@ -171,12 +155,10 @@ for step = 1:11
     
     % Create outersegment object.
     noiseFlag = 0;
-    adaptedOSStepOnly = osBioPhys('noiseFlag', noiseFlag);
-    %     paramsOSStepOnly.bgVolts = params.bgVolts;
+    adaptedOSStepOnly = osBioPhys();
+    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);
     
-    % paramsOSStepOnly.dc = 0; % removes dc
     adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
-    % adaptedOs.plotResults(sensor)
     
     % Create stimulus: step + flashes.
     stimulus = zeros(nSamples, 1);
@@ -194,25 +176,26 @@ for step = 1:11
     
     % Create outersegment object.
     noiseFlag = 0;
-    adaptedOS = osBioPhys('noiseFlag', noiseFlag);
+    adaptedOS = osBioPhys();
+    adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
     paramsOS.bgVolts = params.bgVolts;
-    % paramsOS.dc = 0; % removes dc
     adaptedOS = adaptedOS.compute(sensor, paramsOS);
-    % adaptedOs.plotResults(sensor)
     
     % Plot.
-    subplot(1, 4, 1);
-    plot((1:nSamples)*timeStep, adaptedCur(:), 'k', 'lineWidth', 2);
-    subplot(1, 4, 2);
-    plot((1:nSamples)*timeStep, adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
-    subplot(1, 4, 3);
-    plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
-    temp = adaptedCur(:) - adaptedCurStepOnly(:);
-    
-    subplot(1, 4, 4);
-    plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
-    tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
-    pause(0.1);
+    if (runTimeParams.generatePlots)
+        subplot(1, 4, 1);
+        plot((1:nSamples)*timeStep, adaptedCur(:), 'k', 'lineWidth', 2);
+        subplot(1, 4, 2);
+        plot((1:nSamples)*timeStep, adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
+        subplot(1, 4, 3);
+        plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'k', 'lineWidth', 2);
+        temp = adaptedCur(:) - adaptedCurStepOnly(:);
+        
+        subplot(1, 4, 4);
+        plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
+        tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
+        pause(0.1);
+    end
     
     % Summary measures.
     FlashAmp(step) = max(temp(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(temp(flashTime(1):flashTime(1)+1000)));
@@ -232,64 +215,67 @@ for step = 1:11
     
 end
 
-subplot(1, 4, 3); title('coneAdapt');
-subplot(1, 4, 4); title('osBioPhys');
 
-% Fit steady-state stimulus-response relation.
-% half max 45000 (Dunn et al 2007)
-vcNewGraphWin;
-% subplot(1,2,1);
-semilogx(stimIntensity, SSCur, 'ro');
-hold on;
-coef = [45000 1];
-fitcoef = nlinfit(stimIntensity, SSCur, 'hill', coef);
-fit = hill(fitcoef, stimIntensity);
-semilogx(stimIntensity, fit);
-xlabel('background');
-ylabel('steady-state current');
-axis tight;
-title('coneAdapt ');
-
-% subplot(1,2,2);
-semilogx(stimIntensity, SSCurOS, 'kx');
-hold on;
-coef = [45000 1];
-fitcoef = nlinfit(stimIntensity, SSCurOS, 'hill', coef);
-fit = hill(fitcoef, stimIntensity);
-% semilogx(stimIntensity, fit);
-xlabel('background');
-ylabel('steady-state current');
-axis tight;
-title('osBioPhys Object ');
-legend('coneAdapt','fit','osBioPhys','location','northwest');
-
-% Fit sensitivity vs intensity relation.
-% half desens around 2500 (Angueyra and Rieke, 2013)
-vcNewGraphWin;
-% subplot(1,2,1);
-loglog(stimIntensity, FlashAmp, 'ro');
-hold on;
-coef = [2500];
-wfcoef = nlinfit(stimIntensity, log10(FlashAmp), 'weber_fechner', coef);
-fit = weber_fechner(wfcoef, stimIntensity);
-loglog(stimIntensity, 10.^fit);
-xlabel('background');
-ylabel('sensitivity');
-axis tight;
-title('coneAdapt ');
-
-% subplot(1,2,2);
-loglog(stimIntensity, FlashAmpOS, 'kx');
-hold on;
-coef = [2500];
-wfcoef = nlinfit(stimIntensity, log10(FlashAmpOS), 'weber_fechner', coef);
-fit = weber_fechner(wfcoef, stimIntensity);
-% loglog(stimIntensity, 10.^fit);
-xlabel('background');
-ylabel('sensitivity');
-axis tight;
-title('osBioPhys Object ');
-legend('coneAdapt','fit','osBioPhys');
+if (runTimeParams.generatePlots)
+    subplot(1, 4, 3); title('coneAdapt');
+    subplot(1, 4, 4); title('osBioPhys');
+    
+    % Fit steady-state stimulus-response relation.
+    % half max 45000 (Dunn et al 2007)
+    vcNewGraphWin;
+    % subplot(1,2,1);
+    semilogx(stimIntensity, SSCur, 'ro');
+    hold on;
+    coef = [45000 1];
+    fitcoef = nlinfit(stimIntensity, SSCur, 'hill', coef);
+    fit = hill(fitcoef, stimIntensity);
+    semilogx(stimIntensity, fit);
+    xlabel('background');
+    ylabel('steady-state current');
+    axis tight;
+    title('coneAdapt ');
+    
+    % subplot(1,2,2);
+    semilogx(stimIntensity, SSCurOS, 'kx');
+    hold on;
+    coef = [45000 1];
+    fitcoef = nlinfit(stimIntensity, SSCurOS, 'hill', coef);
+    fit = hill(fitcoef, stimIntensity);
+    % semilogx(stimIntensity, fit);
+    xlabel('background');
+    ylabel('steady-state current');
+    axis tight;
+    title('osBioPhys Object ');
+    legend('coneAdapt','fit','osBioPhys','location','northwest');
+    
+    % Fit sensitivity vs intensity relation.
+    % half desens around 2500 (Angueyra and Rieke, 2013)
+    vcNewGraphWin;
+    % subplot(1,2,1);
+    loglog(stimIntensity, FlashAmp, 'ro');
+    hold on;
+    coef = [2500];
+    wfcoef = nlinfit(stimIntensity, log10(FlashAmp), 'weber_fechner', coef);
+    fit = weber_fechner(wfcoef, stimIntensity);
+    loglog(stimIntensity, 10.^fit);
+    xlabel('background');
+    ylabel('sensitivity');
+    axis tight;
+    title('coneAdapt ');
+    
+    % subplot(1,2,2);
+    loglog(stimIntensity, FlashAmpOS, 'kx');
+    hold on;
+    coef = [2500];
+    wfcoef = nlinfit(stimIntensity, log10(FlashAmpOS), 'weber_fechner', coef);
+    fit = weber_fechner(wfcoef, stimIntensity);
+    % loglog(stimIntensity, 10.^fit);
+    xlabel('background');
+    ylabel('sensitivity');
+    axis tight;
+    title('osBioPhys Object ');
+    legend('coneAdapt','fit','osBioPhys');
+end
 
 % Fit current transient - two temporal components which contrast fast and
 % slow Calcium feedback terms.
@@ -299,31 +285,33 @@ coef = [1 1 3 12];
 stepcoef = nlinfit(tme', squeeze(Transient), 'dblexponentialnomean', coef);
 fit = dblexponentialnomean(stepcoef,  tme);
 
-vcNewGraphWin;
-hold on;
-% subplot(1,2,1);
-plot(tme, Transient(:),'r','linewidth',3);%, tme, fit);
-xlabel('time');
-ylabel('pA');
-title('coneAdapt ');
 
-% subplot(1,2,2);
-hold on;
-plot(tme, TransientOS(:),':k','linewidth',2);%, tme, fit);
-xlabel('time');
-ylabel('pA');
-title('osBioPhys Object ');
+if (runTimeParams.generatePlots)
+    vcNewGraphWin;
+    hold on;
+    % subplot(1,2,1);
+    plot(tme, Transient(:),'r','linewidth',3);%, tme, fit);
+
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Photocurrent (pA)','FontSize',14);
+    title('coneAdapt ');
+    
+    % subplot(1,2,2);
+    hold on;
+    plot(tme, TransientOS(:),':k','linewidth',2);%, tme, fit);
+
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Photocurrent (pA)','FontSize',14);
+    title('osBioPhys Object ');
+end
 
 fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoef(2), stepcoef(4));
 fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
-
 
 tolerance = 1e-16;
 UnitTest.assertIsZero(max(abs(SSCur-SSCurOS))+max(abs(FlashAmp-FlashAmpOS)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
-
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 %% Saccade-like stimuli
 
@@ -355,48 +343,43 @@ adaptedCur = adaptedCur - adaptedCur(:, :, length(stimulus));
 
 % Create outersegment object.
 noiseFlag = 0;
-adaptedOS = osBioPhys('noiseFlag', noiseFlag);
-% paramsOS.bgVolts = params.bgVolts;
-% paramsOS.dc = 0; % removes dc
+adaptedOS = osBioPhys();
+adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
 
-%
+% Compute outer segment response.
 adaptedOS = osCompute(adaptedOS, sensor);
-% adaptedOs.plotResults(sensor)
 
 osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
 osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
 
 % Plot against measurement data.
-vcNewGraphWin; 
-% subplot(1,2,1);
-hold on;
-plot((1:nSamples)*5e-5, measuredCur(1,:),'b');
-plot((1:nSamples)*5e-5, adaptedCur(:), 'r', 'LineWidth', 3);
-axis tight
-xlabel('sec');
-ylabel('pA');
-title('coneAdapt');
 
-% subplot(1,2,2);
-hold on;
-plot((1:nSamples)*5e-5, measuredCur(1,:));
-plot((1:nSamples)*5e-5, osAdaptedCur(:), ':k', 'LineWidth', 2);
-axis tight
-xlabel('sec');
-ylabel('pA');
-title('osBioPhys');
-
+if (runTimeParams.generatePlots)
+    vcNewGraphWin;
+    % subplot(1,2,1);
+    hold on;
+    plot((1:nSamples)*5e-5, measuredCur(1,:),'b');
+    plot((1:nSamples)*5e-5, adaptedCur(:), 'r', 'LineWidth', 3);
+    axis tight
+    xlabel('sec');
+    ylabel('pA');
+    title('coneAdapt');
+    
+    % subplot(1,2,2);
+    hold on;
+    plot((1:nSamples)*5e-5, measuredCur(1,:));
+    plot((1:nSamples)*5e-5, osAdaptedCur(:), ':k', 'LineWidth', 2);
+    axis tight
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Photocurrent (pA)','FontSize',14);
+    title('osBioPhys');
+    
+end
 
 tolerance = 0;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
-
-% Check computation in osBioPhys is the same as adaptedCur
-% sum(adaptedCur(:) - adaptedOS.ConeCurrentSignal(:))
-% figure; scatter(adaptedCur(:), adaptedOS.ConeCurrentSignal(:));
-
 clear adaptedOS paramsOS
 %% Increment/decrement asymmetry
 
@@ -411,7 +394,9 @@ sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
 
-vcNewGraphWin; clf;
+if (runTimeParams.generatePlots)  
+    vcNewGraphWin;
+end
 clear MaxInc MaxDec stimIntensity;
 
 % Predict responses to increments and decrements across range of light
@@ -434,18 +419,13 @@ for step = 1:7
     
     % Create outersegment object.
     noiseFlag = 0;
-    adaptedOSInc = osBioPhys('noiseFlag', noiseFlag);
+    adaptedOSInc = osBioPhys();
+    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
     
-    
-    % paramsOSInc.bgVolts = params.bgVolts;
-    % paramsOS.dc = 0; % removes dc
     adaptedOSInc = osCompute(adaptedOSInc, sensor);
-    % adaptedOs.plotResults(sensor)
     
     osAdaptedCur = osGet(adaptedOSInc, 'ConeCurrentSignal');
-    % osAdaptedCur = osAdaptedCur - osAdaptedCur(:, :, nSamples);
-    
-    
+     
     %  create stimulus: step + flashes
     stimulusDec = zeros(nSamples, 1);
     stimulusDec(100:nSamples-100) = stimIntensity(step);
@@ -475,36 +455,38 @@ for step = 1:7
     MaxOSDec(step) = adaptedOSDec.ConeCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSDec.ConeCurrentSignal(1, 1, stimPeriod(1)-1);
     
     % Plot.
-    subplot(1,2,1);
-    plot((1:nSamples)*timeStep, adaptedCurInc(:), (1:nSamples)*timeStep, adaptedCurDec(:));
-    pause(0.1);
     
-    subplot(1,2,2);
-    plot((1:nSamples)*timeStep, adaptedOSInc.ConeCurrentSignal(:), (1:nSamples)*timeStep, adaptedOSDec.ConeCurrentSignal(:));
-    pause(0.1);
+    if (runTimeParams.generatePlots)
+        subplot(1,2,1);
+        plot((1:nSamples)*timeStep, adaptedCurInc(:), (1:nSamples)*timeStep, adaptedCurDec(:));
+        pause(0.1);
+        
+        subplot(1,2,2);
+        plot((1:nSamples)*timeStep, adaptedOSInc.ConeCurrentSignal(:), (1:nSamples)*timeStep, adaptedOSDec.ConeCurrentSignal(:));
+    end
 end
 
-subplot(1,2,1); title('coneAdapt');
-subplot(1,2,2); title('osBioPhys');
 
-vcNewGraphWin; clf
-% subplot(1,2,1);
-semilogx(stimIntensity, -MaxDec ./ MaxInc, 'ro');
-xlabel('background');
-ylabel('dec/inc');
-title('coneAdapt');
-
-% subplot(1,2,2);
-hold on;
-semilogx(stimIntensity, -MaxOSDec ./ MaxOSInc, 'kx');
-xlabel('background');
-ylabel('dec/inc');
-title('osBioPhys');
-legend('coneAdapt','osBioPhys','location','northwest');
-
-%figure; scatter(adaptedCur(:), adaptedOS.ConeCurrentSignal(:));
-
-
+if (runTimeParams.generatePlots)
+    subplot(1,2,1); title('coneAdapt');
+    subplot(1,2,2); title('osBioPhys');
+    
+    vcNewGraphWin; clf
+    % subplot(1,2,1);
+    semilogx(stimIntensity, -MaxDec ./ MaxInc, 'ro');
+    xlabel('background');
+    ylabel('dec/inc');
+    title('coneAdapt');
+    
+    % subplot(1,2,2);
+    hold on;
+    semilogx(stimIntensity, -MaxOSDec ./ MaxOSInc, 'kx');
+    xlabel('background');
+    ylabel('dec/inc');
+    title('osBioPhys');
+    legend('coneAdapt','osBioPhys','location','northwest');
+    
+end
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs((-MaxDec ./ MaxInc)-(-MaxOSDec ./ MaxOSInc))),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);

@@ -76,12 +76,12 @@ end
 % Plot a comparison of the two ways of doing it.
 % These should be identical since we think they are the same code doing the same thing. 
 if (runTimeParams.generatePlots)
-    figure; clf; hold on
+    vcNewGraphWin; hold on
     tme = (1:nSamples)*timeStep;
     plot(tme,squeeze(adaptedCur),'r','LineWidth',4);
     plot(tme,squeeze(osAdaptedCur),'k:','LineWidth',2);
-    xlabel('sec','FontSize',14);
-    ylabel('pA','FontSize',14);
+    xlabel('Time (seconds)','FontSize',14);
+    ylabel('Current (pA)','FontSize',14);
     title('impulse response in the dark','FontSize',16);
     legend('original code model resp', 'osLinear object resp');
 end
@@ -109,7 +109,7 @@ sensor = sensorSet(sensor,'cone type', 2); % set s cone
 
 % Set up plot
 if (runTimeParams.generatePlots)   
-    h1 = figure; clf;
+    h1 = vcNewGraphWin;
     set(gcf,'Position',[100 100 1500 750]);
     subplot(1, 4, 1); hold on;
     subplot(1, 4, 2); hold on;
@@ -211,18 +211,18 @@ if (runTimeParams.generatePlots)
     ylabel('Photocurrent (pA)');
     title('Adapted Current');
     legend('original code', 'osLinear object','Location','NorthEast');
-
+    
     subplot(1, 4, 2);
-     xlabel('Time (sec)');
+    xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
     title('Adapted Current Step Only');
     legend('original code', 'osLinear object','Location','NorthEast');
     
-    subplot(1, 4, 3); 
+    subplot(1, 4, 3);
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
     title('coneAdapt');
-
+    
     subplot(1, 4, 4);
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
@@ -233,7 +233,7 @@ end
 %
 % Half desens around 2500 (Angueyra and Rieke, 2013)
 if (runTimeParams.generatePlots)
-    figure; clf; hold on;
+    vcNewGraphWin; hold on;
     loglog(stimIntensity, FlashAmp, 'ro');
     loglog(stimIntensity, FlashAmpOS, 'kx');
     xlabel('Background');
@@ -244,7 +244,7 @@ end
 
 % Plot transient from last step simulated
 if (runTimeParams.generatePlots)
-    figure; clf; hold on
+    vcNewGraphWin; hold on
     plot(transientTme, transient{end}(:),'r','Linewidth',4);%, tme, fit);
     plot(transientTme, transientOS{end}(:),':k','Linewidth',2);%, tme, fit);
     xlabel('Time (sec)');
@@ -298,7 +298,7 @@ osAdaptedCur = osGet(adaptedOS, 'ConeCurrentSignal');
 
 % Plot the two calculations
 if (runTimeParams.generatePlots)
-    figure;  clf; hold on;
+    vcNewGraphWin; hold on;
     plot((1:nSamples)*5e-5, measuredCur(:)-measuredCur(end), 'b', 'LineWidth', 4);
     plot((1:nSamples)*5e-5, adaptedCur(:)-adaptedCur(end), 'r', 'LineWidth', 3);
     plot((1:nSamples)*5e-5, osAdaptedCur(:)-osAdaptedCur(end), 'k:', 'LineWidth', 2);
@@ -331,7 +331,7 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Start figure for this next bit
 if (runTimeParams.generatePlots)  
-    figure; clf;
+    vcNewGraphWin;
 end
 
 % Predict responses to increments and decrements across range of light
@@ -411,7 +411,7 @@ end
 
 % Plot summary measure computed the two ways
 if (runTimeParams.generatePlots)
-    figure; clf; hold on
+    vcNewGraphWin; hold on
     semilogx(stimIntensity, -maxDec ./ maxInc, 'ro');
     
     semilogx(stimIntensity, -maxOSDec ./ maxOSInc, 'kx');
