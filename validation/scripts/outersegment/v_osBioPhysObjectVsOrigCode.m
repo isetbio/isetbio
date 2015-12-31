@@ -27,7 +27,7 @@ function varargout = v_osBioPhysObjectTemp(varargin)
 %
 % 6/xx/2015    fmr   Created.
 % 7/xx/2015    jrg   Test with ISETBIO outersegment object
-% 12/31/15     dhb   Added local copy of coneAdapt and riekeLinearCone.            
+% 12/31/15     dhb   Added local copy of coneAdapt.            
 
 varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
