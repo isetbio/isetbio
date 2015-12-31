@@ -16,6 +16,7 @@ function varargout = v_osLinearObjectVsOrigCode(varargin)
 % 6/xx/2015    fmr   Created.
 % 7/xx/2015    jrg   Test with ISETBIO outersegment object
 % 12/31/15     dhb   Cleaned up.
+%              dhb   Added local copy of coneAdapt and riekeLinearCone.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -25,9 +26,6 @@ function ValidationFunction(runTimeParams)
 
 %% Init
 ieInit;
-
-%% Preferences group
-validationPrefs = 'isetbioValidation';
 
 %% Impulse response in dark
 %
@@ -183,17 +181,17 @@ for step = 1:nStepIntensities
 
         subplot(1, 4, 3);
         plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'r', 'lineWidth', 2);
-        temp = adaptedCur(:) - adaptedCurStepOnly(:);
         
         subplot(1, 4, 4);
         plot((1:nSamples)*timeStep, adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:), 'k', 'lineWidth', 2);
-        tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
     end
 
     % Summary measures.
-    FlashAmp(step) = max(temp(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(temp(flashTime(1):flashTime(1)+1000)));
+    tempOS = adaptedOS.ConeCurrentSignal(:) - adaptedOSStepOnly.ConeCurrentSignal(:);
+    tempVar = adaptedCur(:) - adaptedCurStepOnly(:);
+    FlashAmp(step) = max(tempVar(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempVar(flashTime(1):flashTime(1)+1000)));
     SSCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
-    [MaxVal, MaxLoc] = max(temp(flashTime(2):flashTime(2)+1000));
+    [MaxVal, MaxLoc] = max(tempVar(flashTime(2):flashTime(2)+1000));
     TPeak(step) = MaxLoc*timeStep;
     FlashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
     SSCurOS(step) = -(adaptedOSStepOnly.ConeCurrentSignal(1, 1, stimPeriod(2)) - adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1))/adaptedOSStepOnly.ConeCurrentSignal(1, 1, 1);
@@ -265,7 +263,7 @@ clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 %% Saccade-like stimuli
 
 % Load experimental data using RDT.
-client = RdtClient(getpref(validationPrefs,'remoteDataToolboxConfig'));
+client = RdtClient(getpref('isetbio','remoteDataToolboxConfig'));
 client.crp('resources/data/experimental/cones');
 [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
@@ -426,9 +424,9 @@ end
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs((-maxDec ./ maxInc)-(-maxOSDec ./ maxOSInc))),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCurInc',adaptedCurInc);
-UnitTest.validationData('osAdaptedCurInc',adaptedOSInc);
+UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.ConeCurrentSignal);
 UnitTest.validationData('adaptedCurDec',adaptedCurDec);
-UnitTest.validationData('osAdaptedCurDec',adaptedOSDec);
+UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.ConeCurrentSignal);
 
 end
 
