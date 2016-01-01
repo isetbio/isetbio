@@ -159,3 +159,5 @@ os = osCompute(os, absorptions);
 %
 % osPlot(os,'photo current','cone position',[r,c])
 osPlot(os,absorptions);
+
+%%
