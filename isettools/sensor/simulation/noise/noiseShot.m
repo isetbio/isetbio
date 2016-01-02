@@ -20,7 +20,11 @@ function [noisyImage, theNoise] = noiseShot(ISA, variableNoise)
 %
 % Inputs:
 %   variableNoise - determines whether or not to set a random seed in the MEX 
-%                   iepoissrnd function.  1 to set a seed, 0 not to
+%                   iepoissrnd function.  1 to set a random seed, 0 not to.
+%                   The variable seed is itself set based on rand, so
+%                   freezing Matlab's rng seed should also freeze the noise
+%                   even in this case.  Not fully tested in this regard,
+%                   however.
 %
 % Outputs:
 %   noisyImage  - noisy version of the image in the ISA in units of VOLTS
