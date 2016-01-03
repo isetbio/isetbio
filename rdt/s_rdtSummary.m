@@ -67,4 +67,12 @@ end
 delete(tmp);
     
 
-%%
+%% Finding all the artifacts
+
+rdt = RdtClient('scien');
+rdt.crp('/L3/Farrell/D200/garden');
+artifacts = rdt.listArtifacts;
+fprintf('%d artifacts returned from L3/Farrell/D200/garden \n',length(artifacts));
+fprintf('But the browser shows more (about 39)\n');
+rdt.openBrowser
+
