@@ -30,7 +30,7 @@ try
     testA = rdt.searchArtifacts('scene6');
     data = rdt.readArtifact(testA.artifactId);
 catch
-    disp('Still not working');
+    disp('readArtifact Still not working');
 end
 
 % Error using gradleFetchArtifact (line 100)
@@ -54,10 +54,17 @@ end
 %          
 
 %% Download via the URL works
-tmp = tempname;
-websave(tmp,testA.url);
-load(tmp,'scene');
-ieAddObject(scene); sceneWindow;
+tmp = [tempname,'.mat'];
+try % websave version for modern Matlab
+    websave(tmp,testA.url);
+    load(tmp,'scene');
+    ieAddObject(scene); sceneWindow;
+catch
+    urlwrite(testA.url,tmp);
+    load(tmp,'scene');
+    ieAddObject(scene); sceneWindow;
+end
 delete(tmp);
+    
 
 %%
