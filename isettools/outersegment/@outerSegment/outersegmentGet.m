@@ -39,8 +39,6 @@ switch lower(params.what);  % Lower case and remove spaces
         
     case{'conecurrentsignal'}
         val = obj.ConeCurrentSignal;
-        
-    case{'conecurrentsignalplusnoise'}        
-        val = obj.ConeCurrentSignalPlusNoise;
+       
 end
 
