@@ -23,35 +23,38 @@ fprintf('ISETBIO repository contains\n %d artifacts in %d remote paths\n',length
 
 % There is a scene6 artifact that is a matlab file.  This is
 % 'City view. Spatial and illuminant data available. Scene was recorded in
-% the Picoto area, Braga, Minho reg?' 
+% the Picoto area, Braga, Minho reg?'
+testA = rdt.searchArtifacts('scene6');
 
 % ** NOT WORKING **
 try
-    testA = rdt.searchArtifacts('scene6');
+    % this doesn't work
+    % because the artifactId alone is not enough information
     data = rdt.readArtifact(testA.artifactId);
 catch
     disp('readArtifact Still not working');
 end
 
-% Error using gradleFetchArtifact (line 100)
-% error status 1 (Starting a new Gradle Daemon for this build (subsequent builds will be faster).
-% :fetchIt FAILED
-% 
-% FAILURE: Build failed with an exception.
-% 
-% * Where:
-% Build file '/Users/wandell/Github/remoteDataToolbox/external/gradle/fetch.gradle' line: 28
-% 
-% * What went wrong:
-% Execution failed for task ':fetchIt'.
-% > Could not resolve all dependencies for configuration ':fetch'.
-%    > Could not find any matches for :scene6:+ as no versions of :scene6 are available.
-%      Searched in the following locations:
-%          http://52.32.77.154/repository/isetbio//scene6/maven-metadata.xml
-%          http://52.32.77.154/repository/isetbio//scene6/
-%      Required by:
-%          :gradle:unspecified
-%          
+% ** WORKING **
+
+% this works
+% because we have the artifactId plus the working remote path
+testA = rdt.searchArtifacts('scene6');
+rdt.crp(testA.remotePath);
+data = rdt.readArtifact(testA.artifactId);
+
+% this also works
+% because we supply an explicit remote path
+data = rdt.readArtifact(testA.artifactId, ...
+    'remotePath', testA.remotePath);
+
+% this also works
+% because we supply the whole artifact metadata struct
+% NOTE: readArtifacts *with an s* also works with metadata struct *arrays*
+% such as returned from searchArtifacts or listArtifacts
+dataCell = rdt.readArtifacts(testA);
+data = dataCell{1};
+
 
 %% Download via the URL works
 tmp = [tempname,'.mat'];
@@ -65,7 +68,7 @@ catch
     ieAddObject(scene); sceneWindow;
 end
 delete(tmp);
-    
+
 
 %% Finding all the artifacts
 
