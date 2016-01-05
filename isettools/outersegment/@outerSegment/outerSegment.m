@@ -23,16 +23,13 @@ classdef outerSegment < handle
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
-    % The noiseFlag determines if the noisy version of the current is
-    % calculated.
-    % The current signal is stored in ConeCurrentSignal in an array the
-    % same size as the cone mosaic, and if the noiseFlag is set to 1, the
-    % noisy version is stored in ConeCurrentSignalPlusNoise.
+    %
     properties (SetAccess = protected)
 
+        % The noiseFlag determines if the noisy version of the current is
+        % calculated.
         noiseFlag;
-        ConeCurrentSignal;
-        ConeCurrentSignalPlusNoise;
+        coneCurrentSignal;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -43,28 +40,23 @@ classdef outerSegment < handle
     % Public methods
     methods
         
-        function obj = outerSegment()
-            obj.initialize();
+        function obj = outerSegment(varargin)
+            % obj.initialize(varargin{:});
+            
+            obj.noiseFlag = 0;            
+            obj.coneCurrentSignal = [];
         end
         
-        % set function, see outersegmentSet for details
-        % see osSet in @osLinear and @osBioPhys
-        function obj = set(obj, param, val, varargin)
-            outersegmentSet(obj, param, val, varargin);
+        % see osSet in @osLinear and @osBioPhys for details
+        function obj = set(obj, varargin)
+            osSet(obj, varargin{:});
         end
         
-        % get function, see outersegmentGet for details
-        % see osGet in @osLinear and @osBioPhys
-        function val = get(obj, param, varargin)
-           val = outersegmentGet(obj, param, varargin);
+        % see osGet in @osLinear and @osBioPhys for details
+        function val = get(obj, varargin)
+           val = osGet(obj, varargin{:});
         end
         
-        % DELETE
-%         % coneAdapt function allows backwards compatibility with the
-%         % deprecated function 'coneAdapt'
-%         function [osCurrent, obj] = adapt(sensor, typeAdapt)
-%             [osCurrent, obj] = coneAdaptAlt(sensor, typeAdapt);
-%         end
     end
     
     % Methods that must only be implemented in the subclasses.
@@ -79,8 +71,7 @@ classdef outerSegment < handle
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-        % called by osLinearCompute
-        filterKernel(obj);
+
     end
     
     % Methods that are totally private (subclasses cannot call these)

@@ -92,7 +92,7 @@ scene = sceneInterpolateW(scene,wave,1);  % Resample, preserve luminance
 % The simplest is method of creating an optical image is to use 
 % the diffraction-limited lens model.  To create a diffraction-limited
 % optics with an f# of 4, you can call these functions
-oi = oiCreate;
+oi = oiCreate('diffraction limited');
 optics = oiGet(oi,'optics');           
 optics = opticsSet(optics,'fnumber',4);
 
@@ -218,7 +218,7 @@ vcAddObject(sensor); sensorImageWindow;
 % fill-factors, infrared blocking filters, adjusting pixel properties,
 % color filter array patterns, and exposure modes. 
 
-%% END
+%% 
 
 
 

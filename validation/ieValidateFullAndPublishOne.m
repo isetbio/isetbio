@@ -1,30 +1,36 @@
 function ieValidateFullAndPublishOne(varargin)
-    
-    %% We will use preferences for the 'isetbioValidation' project - this is project specific
-    UnitTest.usePreferencesForProject('isetbioValidation', 'reset');
 
-    % Run time error behavior
-    % valid options are: 'rethrowExceptionAndAbort', 'catchExceptionAndContinue'
-    UnitTest.setPref('onRunTimeErrorBehavior', 'catchExceptionAndContinue');
+%% Close all figures so that we start with a clean slate
+close all;
 
-    % Plot generation
-    UnitTest.setPref('generatePlots',  true);
-    UnitTest.setPref('closeFigsOnInit', true);
+%% We will use preferences for the 'isetbioValidation' project
+thisProject = 'isetbioValidation';
+UnitTest.usePreferencesForProject(thisProject, 'reset');
 
-    %% Verbosity Level
-    % valid options are: 'none', min', 'low', 'med', 'high', 'max'
-    UnitTest.setPref('verbosity', 'high');
+% Run time error behavior
+% valid options are: 'rethrowExceptionAndAbort', 'catchExceptionAndContinue'
+UnitTest.setPref('onRunTimeErrorBehavior', 'catchExceptionAndContinue');
 
-    %% Numeric tolerance for comparison to ground truth data
+% Plot generation
+UnitTest.setPref('generatePlots',  true);
+UnitTest.setPref('closeFigsOnInit', true);
+
+%% Verbosity Level
+% valid options are: 'none', min', 'low', 'med', 'high', 'max'
+UnitTest.setPref('verbosity', 'high');
+
+%% Numeric tolerance for comparison to ground truth data
+if (~ispref(thisProject, 'numericTolerance'))
     UnitTest.setPref('numericTolerance', 500*eps);
+end
 
-    %% Whether to plot data that do not agree with the ground truth
-    UnitTest.setPref('graphMismatchedData', true);
+%% Whether to plot data that do not agree with the ground truth
+UnitTest.setPref('graphMismatchedData', true);
 
-    %% Print all existing validation scripts and ask the user to select one for validation
-    singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
-    
-    %% Validate
-    UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'PUBLISH');
-    
+%% Print all existing validation scripts and ask the user to select one for validation
+singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
+
+%% Validate
+UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'PUBLISH');
+
 end

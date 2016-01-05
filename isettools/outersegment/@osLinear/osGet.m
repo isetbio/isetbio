@@ -18,20 +18,25 @@ function val = osGet(obj, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter','conecurrentsignal'};
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'sconefilter',...
+    'mconefilter',...
+    'lconefilter',...
+    'conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
 % Define what units are allowable.
-allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
+% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
 
 % Set up key value pairs.
 % Defaults units:
-p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % p.addParameter('sconefilter',0,@isnumeric);
 % p.addParameter('mconefilter',0,@isnumeric);
 % p.addParameter('lconefilter',0,@isnumeric);
@@ -54,7 +59,6 @@ switch lower(params.what)
         val = obj.lConeFilter;
     
     case{'conecurrentsignal'}
-        val = obj.ConeCurrentSignal;
-        
+        val = obj.coneCurrentSignal;        
 end
 

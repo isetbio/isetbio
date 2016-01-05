@@ -5,10 +5,21 @@ function [scene,I] = sceneFromFile(I, imType, meanLuminance, dispCal, ...
 %     [scene, I] = sceneFromFile(imageData, imageType, [meanLuminance], ...
 %                       [display], [wave], [doSub], [ambient], [oSample])
 %
-% imageData:  Usually the filename of an RGB image.  It is allowed to send
-%             in RGB data itself, rather than the file name.
-% imageType:  'multispectral' or 'rgb' or 'monochrome'
+% imageData: Typically, this is the name of an RGB image file.  But, it
+%            may also be 
+%              * RGB data, rather than the file name
+%              * A file that contains a scene structure
+% imageType: 'multispectral' or 'rgb' or 'monochrome'
 %             When 'rgb', the imageData might be RGB format.
+% dispCal:   A display structure used to convert RGB to spectral data.
+%            For the typical case an emissive display the illuminant SPD is
+%            modeled and set to the white point of the display
+%            Unusual cases:
+%            (a) If sub-pixel modeling is required varargin{1} is set to
+%            true, (default is false)
+%            (b) If a reflective display is modeled, the illuminant is
+%            required and passed in as varargin{2} 
+% wList:     The scene wavelength samples
 %
 % The data in the image file are converted into spectral format and placed
 % in an ISET scene data structure. The allowable imageTypes are monochrome,
@@ -24,7 +35,6 @@ function [scene,I] = sceneFromFile(I, imType, meanLuminance, dispCal, ...
 %
 % The default illuminant for an RGB file is the display white point.
 % The mean luminance can be set to over-ride this value.
-%
 %
 % Examples:
 %   scene = sceneFromFile;
@@ -60,6 +70,7 @@ function [scene,I] = sceneFromFile(I, imType, meanLuminance, dispCal, ...
 % Copyright ImagEval Consultants, LLC, 2003.
 
 %% Parameter set up
+
 if notDefined('I')
     % If imageData is not sent in, we ask the user for a filename.
     % The user may or may not have set the imageType.  Sigh.
@@ -69,8 +80,25 @@ if notDefined('I')
     if isempty(I), scene = []; return; end
 end
 
-%% Read the photons and illuminant structure
-% Remove spaces and force lower case.
+if ischar(I)
+    % I is a file name.  We determine whether it is a Matlab file and
+    % contains a scene variable.  If so, we return that and end
+    [p,n,e] = fileparts(I);
+    
+    % No extension, so check whether the mat-file exists
+    if isempty(e), I = fullfile(p,[n,'.mat']); end
+    if exist(I,'file') 
+        if strcmp(I((end-2):end),'mat')
+            if ieVarInFile(I, 'scene'), load(I,'scene'); return; end
+        end
+    else error('No file named %s\n',I);
+    end
+end
+%% Determine the photons and illuminant structure
+
+% We need to know the image type (rgb or multispectral).  Try to figure it
+% out if it is not sent in
+if notDefined('imType'), error('imType required.'); end
 imType = ieParamFormat(imType);
 
 switch lower(imType)
@@ -155,9 +183,7 @@ switch lower(imType)
         % sets the wavelength and interpolates the data.
         % scene.spectrum.wave = basis.wave(:);
         scene = sceneSet(scene,'wave',basis.wave);
-        
-        % Set the illuminant structure
-        
+                
     otherwise
         error('Unknown image type')
 end
@@ -171,10 +197,20 @@ scene = sceneSet(scene, 'filename', I);
 scene = sceneSet(scene, 'photons', photons);
 scene = sceneSet(scene, 'illuminant', il);
 
-% The file name or just announce that we received rgb data
-if ischar(I), [~, n, ~] = fileparts(I);
+% Name the scene with the file name or just announce that we received rgb
+% data.  Also, check whether the file contains 'fov' and 'dist' variables
+% and stick them into the scene if they are there
+if ischar(I), 
+    [~, n, ~] = fileparts(I);  % This will be the name
+    if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'fov')
+        load(I,'fov'); scene = sceneSet(scene,'fov',fov);
+    end
+    if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'dist')
+        load(I,'dist'), scene = sceneSet(scene,'distance',dist);
+    end
 else n = 'rgb image';
 end
+
 if exist('d', 'var'), n = [n ' - ' displayGet(d, 'name')]; end
 scene = sceneSet(scene,'name',n);
 

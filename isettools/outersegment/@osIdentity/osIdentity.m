@@ -34,32 +34,28 @@ classdef osIdentity < outerSegment
             obj = obj@outerSegment();
             
             % Initialize ourselves
-            obj.initialize();
-            
-            % parse the varargin
-            for k = 1:2:numel(varargin)
-                obj.(varargin{k}) = varargin{k+1};
-            end
+            obj.rgbData = [];
         end
         
         % set function, see osIdentitySet for details
-        function obj = set(obj, param, val, varargin)
-            osSet(obj, param, val, varargin);
+        function obj = set(obj, varargin)
+            osSet(obj, varargin{:});
         end
         
         % get function, see osIdentityGet for details
-        function val = get(obj, param, varargin)
-           val = osGet(obj, param, varargin);
+        function val = get(obj, varargin)
+           val = osGet(obj, varargin{:});
         end
       
     end
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = compute(obj, scene)
+        function obj = compute(obj, sceneRGB)
             % see osCompute for details
-            obj = osCompute(obj, scene, varargin); 
+            obj = osCompute(obj, sceneRGB); 
         end
+        
         function plot(obj, sensor)
             % see osPlot for details
             osPlot(obj, sensor);
@@ -73,7 +69,7 @@ classdef osIdentity < outerSegment
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj);
+        
     end
     
 end

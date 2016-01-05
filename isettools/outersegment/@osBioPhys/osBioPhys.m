@@ -28,24 +28,17 @@ classdef osBioPhys < outerSegment
         function obj = osBioPhys(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
-            
-            % Initialize ourselves
-            obj.initialize();
-            
-            % parse the varargin
-            for k = 1:2:numel(varargin)
-                obj.(varargin{k}) = varargin{k+1};
-            end
+                        
         end
         
         % set function, see osBioPhysSet for details
-        function obj = set(obj, param, val, varargin)
-            osSet(obj, param, val, varargin);
+        function obj = set(obj, varargin)
+            osSet(obj, varargin{:});
         end
         
         % get function, see osBioPhysGet for details
-        function val = get(obj, param, varargin)
-           val = osGet(obj, param, varargin);
+        function val = get(obj,  varargin)
+           val = osGet(obj, varargin{:});
         end
       
     end
@@ -64,7 +57,7 @@ classdef osBioPhys < outerSegment
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj);
+        
     end
     
 end
