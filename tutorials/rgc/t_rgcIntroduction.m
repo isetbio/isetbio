@@ -74,6 +74,7 @@ params.expTime = 0.01;
 params.timeInterval = 0.01;
 params.nSteps = 30;%60;     % Number of stimulus frames
 params.nCycles = 4;
+
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
 absorptions = sensorCreate('human');

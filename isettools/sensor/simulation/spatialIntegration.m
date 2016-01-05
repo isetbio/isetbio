@@ -49,12 +49,12 @@ function signalCurrentImage = spatialIntegration(scdi,OI,ISA,gridSpacing)
 
 % We can optionally represent the scdi and imager at a finer resolution
 % than just pixel positions.  This permits us to account for the size and
-% position of the photodetector within the pixel. TO do this, however,
+% position of the photodetector within the pixel. To do this, however,
 % requires that we regrid the signal current density image to a finer
 % scale. To do this, the parameter 'spacing' can be set to a value of, say,
 % .2 = 1/5.  In that case, the super-sampled new grid is 5x in each
 % dimension.  This puts a large demand on memory usage, so we don't
-% normally do not.  Instead, we use a default of 1.
+% normally do it.  We use a default of 1 (no gridding).
 %
 % This is the spacing within a pixel on the sensor array.
 if notDefined('gridSpacing'), gridSpacing = 1;
