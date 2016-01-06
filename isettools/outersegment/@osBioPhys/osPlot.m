@@ -1,41 +1,118 @@
-function osPlot(obj, sensor)
-% osBioPhysPlot: a method of @osBioPhys to plot the computed results of the 
-% outsergment object.
+function osPlot(obj, sensor, varargin)
+% osPlot: a method of @oueterSegment that plots os object 
+% properties using the input parser structure.
 % 
+% Inputs: os object, sensor, property to be plotted
 % 
-% Inputs: the osBioPhys object and the sensor object.
+% Outputs: plot(s)
 % 
-% Outputs: no variables, but a figure with two subplots is generated. The
-% first shows the input signal and the second shows the output signal.
+% Properties that can be plotted:
 % 
-% 8/2015 JRG NC DHB
+% Examples:
+%   osPlot(os, sensor);
+%   osPlot(os, sensor,'input');
+%   osPlot(os, sensor,'output');
+% 
+% (c) isetbio
+% 09/2015 JRG
 
-% fprintf('<strong>\n%s:\n\t%s()\n</strong>', class(obj), mfilename());
+% Check for the number of arguments and create parser object.
+% Parse key-value pairs.
+% 
+% Check key names with a case-insensitive string, errors in this code are
+% attributed to this function and not the parser object.
+error(nargchk(0, Inf, nargin));
+% if there is no argument for the type of plot, set default to all:
+if nargin == 2; varargin{1} = 'all'; end;
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
-dt = sensorGet(sensor, 'time interval');
+% This flag causes the parser not to throw an error here in the superclass
+% call. The subclass call will throw an error.
+% p.KeepUnmatched = true;
 
-% Plot input signal (isomerizations) at a particular (x, y) over time.
-figNum = 1; 
-h = figure();
-set(h, 'Name', sprintf('Output of %s', class(obj)));
-set(h, 'Position', [10+50*figNum 10+50*figNum, 1024 256]);
-subplot(1,2,1);
-[sz1 sz2 sz3] = size(sensor.data.volts); 
-inputSignal(1,:) = sensor.data.volts(round(sz1/2),round(sz2/2),:);
-plot((0:numel(inputSignal)-1)*dt, inputSignal, 'k-');
-title('input signal');
-xlabel('Time (sec)');
-ylabel('R*');
+% Make key properties that can be set required arguments, and require
+% values along with key names.
+allowableFieldsToSet = {...
+        'input'...
+        'output',...
+        'all'...
+    };
+p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
-% Plot output signal at a particular (x, y) over time.
-subplot(1,2,2);
-outputSignal(1,:) = obj.ConeCurrentSignal(round(sz1/2),round(sz2/2),:);
-plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
-% if obj.noiseflag == 1
-%     noisyOutputSignal = obj.ConeCurrentSignalPlusNoise(round(sz1/2),round(sz2/2),:);
-%     plot((0:numel(outputSignal)-1)*dt, outputSignal, 'r-');
-% end
-title('output signal');
-xlabel('Time (sec)');
-ylabel('pA');
-drawnow;
+% % Define what units are allowable.
+% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
+% 
+% % Set up key value pairs.
+% % Defaults units:
+% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+
+% Parse and put results into structure p.
+p.parse(varargin{:}); params = p.Results;
+
+% Set key-value pairs.
+switch lower(params.what)
+    case{'input'}
+    
+        dt = sensorGet(sensor, 'time interval');
+        
+        % Plot input signal (isomerizations) at a particular (x, y) over time.
+        h = vcNewGraphWin;
+        
+        % since data is in (x, y, t) format, choose an (x, y) value to observe over
+        % timesubplot(1,3,1);
+        
+        isomerizations1 = sensorGet(sensor,'photons');
+        [sz1 sz2 sz3] = size(isomerizations1);
+        inputSignal = squeeze(isomerizations1(round(sz1/2),round(sz2/2),:));
+        plot((0:numel(inputSignal)-1)*dt, inputSignal, 'k-');
+        title('input signal');
+        xlabel('Time (sec)');
+        ylabel('R*');
+
+    case{'output'}
+        % Need to allow passing in which pixel or even an ROI
+        
+        dt = sensorGet(sensor, 'time interval');
+        
+        % Plot input signal (isomerizations) at a particular (x, y) over time.
+        h = vcNewGraphWin;
+        
+        sz= sensorGet(sensor,'size');
+        
+        % Plot output signal at a particular (x, y) over time.
+        
+        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz(1)/2),round(sz(2)/2),:);
+        plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+        title('output signal');
+        xlabel('Time (sec)');
+        ylabel('pA');
+        
+    case{'all'}
+        
+        dt = sensorGet(sensor, 'time interval');
+                
+        % Plot input signal (isomerizations) at a particular (x, y) over time.
+        h = vcNewGraphWin([],'wide');
+        set(h, 'Name', sprintf('Output of %s', class(obj)));
+        
+        
+        % Plot input signal (isomerizations) at a particular (x, y) over time.
+        subplot(1,2,1);
+        isomerizations1 = sensorGet(sensor,'photons');
+        [sz1 sz2 sz3] = size(isomerizations1);
+        inputSignal = squeeze(isomerizations1(round(sz1/2),round(sz2/2),:));
+        plot((0:numel(inputSignal)-1)*dt, inputSignal, 'k-');
+        title('input signal');
+        xlabel('Time (sec)');
+        ylabel('R*');
+        
+        % Plot output signal at a particular (x, y) over time.
+        subplot(1,2,2);        
+        outputSignalTemp = osGet(obj,'coneCurrentSignal');
+        outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
+        plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+        title('output signal');
+        xlabel('Time (sec)');
+        ylabel('pA');
+        
+end

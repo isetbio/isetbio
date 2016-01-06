@@ -8,9 +8,13 @@ function wvf = wvfComputePSF(wvf, showBar)
 %
 % The point spread function is computed for each of the wavelengths listed
 % in the input wvf structure. The PSF computation is based on 10 orders of
-% Zernike coefficients specified to the OSA standard.
+% Zernike coefficients specified to the OSA standard.  
 %
-% See also wvfGet, wvfCreate, wvfSet, wvfComputePupilFunction
+% The calculation also assumes that there is chromatic aberration of the
+% human eye, as embedded in the function wvfLCAFromWavelengthDifference,
+% within the code in wvfComputePupilFunction.
+%
+% See also: wvfGet, wvfCreate, wvfSet, wvfComputePupilFunction
 %
 % Based on code provided by Heidi Hofer.
 %
@@ -33,7 +37,8 @@ if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
     nWave = wvfGet(wvf,'calc nwave');
     pupilfunc = cell(nWave,1);
 
-    % Make sure pupil function is computed.  
+    % Make sure pupil function is computed.  This function incorporates the
+    % chromatic aberration of the human eye.
     wvf = wvfComputePupilFunction(wvf, showBar);
     
     % wave = wvfGet(wvf,'wave');

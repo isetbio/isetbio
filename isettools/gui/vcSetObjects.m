@@ -1,4 +1,4 @@
-function vcSetObjects(objType,newObj);
+function vcSetObjects(objType,newObj)
 % Set the cell array of a particular type of object.  
 %
 %  vcSetObjects(objType,newObj);

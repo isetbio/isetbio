@@ -15,7 +15,7 @@ function varExplained = sceneToFile(fname,scene,bType,mType)
 %
 %Inputs
 % fname:  The full name of the output file
-% scene:  ISET scene structure
+% scene:  ISETBIO scene structure
 % mType:  Mean computation
 %         Remove the mean ('meansvd') or not ('canonical', default) before
 %         calculating svd 
@@ -41,8 +41,7 @@ function varExplained = sceneToFile(fname,scene,bType,mType)
 % (c) Imageval Consulting, LLC 2013
 
 % TODO:
-%   Add depth image as potential output
-
+%   Add depth image as potential output, not just dist
 
 if notDefined('fname'), error('Need output file name for now'); end
 if notDefined('scene'), error('scene structure required'); end
@@ -53,11 +52,13 @@ if notDefined('mType'), mType = [];  end  % See hcBasis
 photons    = sceneGet(scene,'photons');
 wave       = sceneGet(scene,'wave');
 illuminant = sceneGet(scene,'illuminant');
+fov        = sceneGet(scene,'fov');
+dist       = sceneGet(scene,'distance');
 comment = sprintf('Scene: %s',sceneGet(scene,'name'));
 
 if isempty(bType)
     % No compression.
-    save(fname,'photons','wave','comment','illuminant');
+    save(fname,'photons','wave','comment','illuminant','fov','dist');
     varExplained = 1;
 else
     % Figure out the basis functions using hypercube computation
@@ -90,7 +91,7 @@ else
     % Save the coefficients and basis
     basis.basis = basisData;
     basis.wave  = wave;
-    ieSaveMultiSpectralImage(fname,coef,basis,comment,imgMean,illuminant);
+    ieSaveMultiSpectralImage(fname,coef,basis,comment,imgMean,illuminant,fov,dist);
     
 end
 

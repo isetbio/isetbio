@@ -90,7 +90,7 @@ switch oiType
         % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);
         % set(gca,'xlim',[-20 20],'ylim',[-20 20]);
         
-        oi = wvf2oi(wvfP,'human');
+        oi = wvf2oi(wvfP);
         oi = oiSet(oi,'name',sprintf('Human WVF %.1f mm',pupilMM));
         
     case {'diffractionlimited'}
