@@ -5,19 +5,6 @@ function varargout = v_osBioPhysObjectVsOrigCode(varargin)
 % isomerizations to photocurrent transduction process that occurs in the
 % cone outer segments.
 %
-% More specifically, this compares the DEQ based outer segment model output with several key
-% measured properties of the cone photocurrent responses:
-%   - impulse response in the dark
-%   - responses to steps + flashes to measure kinetics of step response and
-%     adaptation of step and flash responses
-%   - responses to stimuli designed to mimic those encountered by a cone
-%     during saccades about a natural scene
-%   - responses to light increments and decrements
-%
-% References for original data:
-%       Dunn et al. (2007)
-%       Angueyra and Rieke (2013)
-%
 % At present, what this does is verify that the current outersegment object
 % does the same thing as the routines from which it was built, namely those
 % supplied by Fred.  This is really an interim step, as this just ensures
@@ -34,7 +21,6 @@ end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
-
 
 %% Init
 ieInit;
@@ -61,8 +47,7 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photon rates. This is a kluge that appeared
 % just for this test, and that should probably go
-% away again.
-% This is an artifact of directly specifying the stimulus
+% away again. This is an artifact of directly specifying the stimulus
 % in the sensor, and will not be an issue when the sensor
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
@@ -101,8 +86,8 @@ tolerance = 0;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
-
 clear adaptedOS paramsOS
+
 %% Steps + flashes
 
 % Set up parameters for stimulus.
@@ -118,7 +103,6 @@ sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
 
-
 % Set up plot
 if (runTimeParams.generatePlots)
     vcNewGraphWin;
@@ -126,12 +110,11 @@ if (runTimeParams.generatePlots)
     subplot(1, 3, 2); hold on;
     subplot(1, 3, 3); hold on
 end
-
 clear SSCur stimIntensity FlashAmp
-FlashScFact = 1;                     % scaling of flash to compensate adaptation
 
-nStepIntensities = 11;
 % Go through series of step intensities (slow).
+FlashScFact = 1;                     % scaling of flash to compensate adaptation
+nStepIntensities = 11;
 for step = 1:nStepIntensities
     
     % Create stimulus: step alone.
@@ -237,21 +220,27 @@ if (runTimeParams.generatePlots)
     ylabel('Photocurrent (pA)');
     title('Adaoted Current Steady State');
     legend('original code', 'osBioPhys object','Location','NorthEast');
-  
 end
 
 % Compare to model fit.
 
 % Fit current transient - two temporal components which contrast fast and
-% slow Calcium feedback terms.
-% 3:1 ratio of amps, rate constants 1 and 12
+% slow Calcium feedback terms, 3:1 ratio of amps, rate constants 1 and 12.
+%
+% This fit not currently being used.
 tme = (1:length(transient{step}))*timeStep;
 coef = [1 1 3 12];
 stepcoef = nlinfit(tme', squeeze(transient{step}), 'dblexponentialnomean', coef);
 fit = dblexponentialnomean(stepcoef,  tme);
 
 % Plot steady-state stimulus-response relation.
-% half max 45000 (Dunn et al 2007)
+% Half max 45000 (Dunn et al 2007)
+% Fit steady-state  vs intensity relation for each way of computing
+coef = [45000 1];
+fitcoef = nlinfit(stimIntensity, ssCur, 'hill', coef);
+fit = hill(fitcoef, stimIntensity);
+fitcoefOS = nlinfit(stimIntensity, ssCurOS, 'hill', coef);
+fitOS = hill(fitcoef, stimIntensity);
 if (runTimeParams.generatePlots)
     vcNewGraphWin; 
     semilogx(stimIntensity, ssCur, 'ro');
@@ -263,21 +252,20 @@ if (runTimeParams.generatePlots)
     legend('coneAdapt','osBioPhys');
     title('Steady State Current vs. Background Intensity','fontsize',16);
     
-    % Fit steady-state  vs intensity relation.
-    % half desens around 2500 (Angueyra and Rieke, 2013)
-    % coneAdapt data:
-    coef = [45000 1];
-    fitcoef = nlinfit(stimIntensity, ssCur, 'hill', coef);
-    fit = hill(fitcoef, stimIntensity);
+    % Plot of fit above
     semilogx(stimIntensity, fit,'r');
-    % osBioPhys data:
-    fitcoef = nlinfit(stimIntensity, ssCurOS, 'hill', coef);
-    fit = hill(fitcoef, stimIntensity);
-    semilogx(stimIntensity, fit,':k');
+    semilogx(stimIntensity, fitOS,':k');
 end
 
 % Plot sensitivity vs background intensity relation
 % Half desens around 2500 (Angueyra and Rieke, 2013)
+% Fit sensitivity vs intensity relation computed both ways
+% coneAdapt data:
+coef = [2500];
+wfcoef = nlinfit(stimIntensity, log10(flashAmp), 'weber_fechner', coef);
+fit = weber_fechner(wfcoef, stimIntensity);
+wfcoefOS = nlinfit(stimIntensity, log10(flashAmpOS), 'weber_fechner', coef);
+fitOS = weber_fechner(wfcoefOS, stimIntensity);
 if (runTimeParams.generatePlots)
     vcNewGraphWin; 
     loglog(stimIntensity, flashAmp, 'ro');
@@ -289,17 +277,9 @@ if (runTimeParams.generatePlots)
     legend('coneAdapt','osBioPhys');
     title('Sensitivity vs. Background Intensity','fontsize',16);
    
-    % Fit sensitivity vs intensity relation.
-    % half desens around 2500 (Angueyra and Rieke, 2013)
-    % coneAdapt data:
-    coef = [2500];
-    wfcoef = nlinfit(stimIntensity, log10(flashAmp), 'weber_fechner', coef);
-    fit = weber_fechner(wfcoef, stimIntensity);
+    % Plot fits
     loglog(stimIntensity, 10.^fit,'r');
-    % osBioPhys data:
-    wfcoef = nlinfit(stimIntensity, log10(flashAmpOS), 'weber_fechner', coef);
-    fit = weber_fechner(wfcoef, stimIntensity);
-    loglog(stimIntensity, 10.^fit,':k');
+    loglog(stimIntensity, 10.^fitOS,':k');
 end
 
 % Plot transient from last step simulated
@@ -313,6 +293,9 @@ if (runTimeParams.generatePlots)
     legend('coneAdapt','osBioPhys');
 end
 
+% Report fits.  This printout is a little dangerous because the variable
+% names are pretty generic and might be viewed as temporary somewhere
+% above.
 fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoef(2), stepcoef(4));
 fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
 
@@ -321,12 +304,13 @@ UnitTest.assertIsZero(max(abs(ssCur-ssCurOS))+max(abs(flashAmp-flashAmpOS)),'Com
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
+
 %% Saccade-like stimuli
 
 % Load experimental data using RDT.
 % client = RdtClient(getpref('isetbio','remoteDataToolboxConfig'));
 client = RdtClient('isetbio');
-client.crp('resources/data/experimental/cones');
+client.crp('resources/data/cones');
 [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
 % Get mean subtracted current and stimulus from read data
@@ -371,8 +355,7 @@ if (runTimeParams.generatePlots)
     xlabel('Time (sec)','FontSize',16);
     ylabel('Photocurrent (pA)','FontSize',16);
     title('Comparison for end subtracted eye movement example data','FontSize',14);
-    legend('coneAdapt','osBioPhys');
-    
+    legend('measurements', 'coneAdapt','osBioPhys');
 end
 
 % Save validation data
@@ -381,6 +364,7 @@ UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark imp
 UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS paramsOS
+
 %% Increment/decrement asymmetry
 
 % Set up parameters for stimulus.

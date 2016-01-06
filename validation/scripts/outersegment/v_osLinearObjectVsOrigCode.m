@@ -260,7 +260,7 @@ clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 % Load experimental data using RDT.
 % client = RdtClient(getpref('isetbio','remoteDataToolboxConfig'));
 client = RdtClient('isetbio');
-client.crp('resources/data/experimental/cones');
+client.crp('resources/data/cones');
 [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
 % Get mean subtracted current and stimulus from read data
