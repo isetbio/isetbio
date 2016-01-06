@@ -78,19 +78,19 @@ function pixel = pixelHuman
 %  Wandell's book.  Baylor.  Other people.
 % Elaborate here, and make this better.
 %
-pixel.name = 'humancone';
+pixel.name = 'human cone';
 
-pixel = pixelSet(pixel,'type','pixel');
+pixel = pixelSet(pixel, 'type', 'pixel');
 
 % Human cones are 2 microns, roughly, just outside the foveola
-pixel = pixelSet(pixel,'width',2e-6);
-pixel = pixelSet(pixel,'height',2e-6);
-pixel = pixelSet(pixel,'widthGap',0);
-pixel = pixelSet(pixel,'heightGap',0);
+pixel = pixelSet(pixel, 'width', 2e-6);
+pixel = pixelSet(pixel, 'height', 2e-6);
+pixel = pixelSet(pixel, 'widthGap', 0);
+pixel = pixelSet(pixel, 'heightGap', 0);
 
 % We make it 100 percent fill factor
-pixel = pixelSet(pixel,'pdWidth',2e-6);
-pixel = pixelSet(pixel,'pdHeight',2e-6);
+pixel = pixelSet(pixel, 'pdWidth', 2e-6);
+pixel = pixelSet(pixel, 'pdHeight', 2e-6);
 pixel = pixelPositionPD(pixel,'center');
 
 % Not sure what this should really be.  It specifies the dynamic range,

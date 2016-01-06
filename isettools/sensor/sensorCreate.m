@@ -11,9 +11,8 @@ function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
 % a model of the human cone mosaic.
 %
 % Human cone mosaic
-%      {'human'} - Uses Stockman Quanta LMS cones
-%                  Default params:  
-%                     params.XXX
+%      {'human'} - human cone mosaic
+%                  e.g. sensorCreate('human', coneP, retinalPos, whichEye);
 %
 %  Bayer RGB combinations - may be deprecated
 %      {'bayer-grbg'}
@@ -38,12 +37,11 @@ function [sensor, coneP] = sensorCreate(sensorName,pixel,varargin)
 %   coneP = coneCreate;               % Specify cone properties
 %   sensor = sensorCreate('human');   
 %   sensor = sensorCreate('human',coneP);
-%   sensor = sensorCreate('human',[],coneP);
 %
 %   sensorConePlot(sensor)
 %
 %   coneP = coneSet(coneP,'spatial density',[0.1 0.5 0.2 0.1]);
-%   sensor = sensorCreate('human',coneP);
+%   sensor = sensorCreate('human', coneP);
 %   sensorConePlot(sensor)
 %
 % Copyright ImagEval Consultants, LLC, 2005
@@ -73,10 +71,6 @@ sensor = sensorSet(sensor,'data',[]);
 sensor = sensorSet(sensor,'sigmagainfpn',0);    % [V/A]  This is the slope of the transduction function
 sensor = sensorSet(sensor,'sigmaoffsetfpn',0);  % V      This is the offset from 0 volts after reset
 
-% I wonder if the default spectrum should be hyperspectral, or perhaps it
-% should be inherited from the currently selected optical image?
-% sensor = initDefaultSpectrum(sensor,'hyperspectral');
-
 sensor = sensorSet(sensor,'analogGain',1);
 sensor = sensorSet(sensor,'analogOffset',0);
 sensor = sensorSet(sensor,'offsetFPNimage',[]);
@@ -86,42 +80,54 @@ sensor = sensorSet(sensor,'quantization','analog');
 
 sensorName = ieParamFormat(sensorName);
 switch sensorName
-    case {'default','human'}
-        % s = sensorCreate('human',coneP);
-        %
-        % Uses StockmanQuanta for the cone absorptions
-        % See example in header.
-        
-        % Covers the case of sensorCreate('human',[],coneP)
-        if ~isempty(varargin), coneP = varargin{1}; 
-        elseif ~exist('coneP','var'), coneP = coneCreate;
+    case {'default', 'human'}
+        % s = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+        % retinalPos should be 1x2 vector containing eccentricity (deg) and
+        % polar angle (deg)
+        if notDefined('coneP'), coneP = coneCreate; end
+        if ~isempty(varargin)
+            retPos = varargin{1};
+            if isscalar(retPos), retPos = [retPos, 0]; end
+        else
+            retPos = [0, 0];
         end
-
+        if length(varargin)>1, whichEye = varargin{2};
+        else whichEye = []; end
+        
+        eccMM = 2*tand(retPos(1)/2) * 17; % assuming focal length of 17 mm
+        
         % Assign key fields
         wave = coneGet(coneP,'wave');
-        hPixel = pixelCreate('human',wave);
+        hPixel = pixelCreate('human', wave);
         
-        % Add the default human pixel with StockmanfQuanta filters.
+        % Adjust pixel gap by retinal position
+        coneD = coneDensity(eccMM, retPos(2), whichEye);
+        coneSz = sqrt(1/coneD) * 1e-3; % avg cone size with gap in meters
+        
+        % Adjust pixel gap size according to retinal position
+        wGap = coneSz - pixelGet(hPixel, 'width');
+        hGap = coneSz - pixelGet(hPixel, 'height');
+        assert(wGap>=0 && hGap>=0, 'gap should be non-negative');
+        
+        hPixel = pixelSet(hPixel, 'width gap', wGap);
+        hPixel = pixelSet(hPixel, 'height gap', hGap);
+        
+        % Add the default human pixel to the sensor
         sensor.spectrum.wave = wave;
-        sensor = sensorSet(sensor,'pixel',hPixel);
-        sensor = sensorSet(sensor,'size',[72 88]);
+        sensor = sensorSet(sensor, 'pixel', hPixel);
+        sensor = sensorSet(sensor, 'size', [72 88]);
         
         % Add the default lens structure
         lens = lensCreate([], wave);
         sensor = sensorSet(sensor, 'human lens', lens);
         
         % Add the default macular structure
-        macular = macularCreate([], wave);
+        macular = macularCreate(macularDensity(retPos(1)), wave);
         sensor = sensorSet(sensor, 'human macular', macular);
-             
+        
         % Build up a human cone mosaic.
         sensor = sensorCreateConeMosaic(sensor, coneP);
-
-        
-        % There are no filter spectra in the human case.  We calculate the
-        % spectral qe from the cones, macular, and lens data
-    
-    case {'color','bayer','bayer(grbg)','bayer-grbg','bayergrbg'}
+    case {'color', 'bayer', 'bayer(grbg)', 'bayer-grbg', 'bayergrbg'}
         filterOrder = [2,1;3,2];
         filterFile = 'RGB';
         sensor = sensorBayer(sensor,filterOrder,filterFile);

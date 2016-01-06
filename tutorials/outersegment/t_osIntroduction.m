@@ -69,8 +69,8 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.001;
-params.timeInterval = 0.001;
+params.expTime = 0.005;
+params.timeInterval = 0.005;
 params.nSteps = 30;     % Number of stimulus frames
 params.nCycles = 4;
 %% Initialize the optics and the sensor

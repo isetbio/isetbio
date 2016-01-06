@@ -57,7 +57,7 @@ for ii=1:3
     params.rgbDensities = [0 0 0 0]; % Empty, L,M,S
     params.rgbDensities(ii+1) = 1;   % Fill up with L,M or S.
     
-    sensor{ii} = sensorCreate('human',[],params);
+    sensor{ii} = sensorCreate('human', params);
     
     sensor{ii} = sensorSet(sensor{ii},'exp time',0.2);
     sensor{ii} = sensorCompute(sensor{ii},oi);

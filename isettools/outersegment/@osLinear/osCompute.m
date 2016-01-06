@@ -101,16 +101,21 @@ end
 
 % % Reshape the output signal matrix.
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
-obj.ConeCurrentSignal = adaptedData;
+
+% obj.coneCurrentSignal = adaptedData;
+obj = osSet(obj, 'coneCurrentSignal', adaptedData);
 
 % Add noise
 % The osAddNoise function expects and input to be isomerization rate.
 % This is handled properly because the params has the time sampling
 % rate included.
-if obj.noiseFlag == 1
+if osGet(obj,'noiseFlag') == 1
     params.sampTime = sensorGet(sensor, 'time interval');
     ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
-    obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    % obj.coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    
+    obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignalPlusNoise);
 end
 
 end

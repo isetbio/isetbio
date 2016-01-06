@@ -30,7 +30,7 @@ function sensor = sensorCreateConeMosaic(sensor,coneP)
 % See also:  For an alternative method use:
 %
 %   coneP = coneCreate;  % Then adjust the coneP values using coneSet/Get
-%   sensor = sensorCreate('human',[],coneP);
+%   sensor = sensorCreate('human', coneP);
 %
 % Examples:
 %  sensor = sensorCreate('human');
@@ -48,57 +48,36 @@ function sensor = sensorCreateConeMosaic(sensor,coneP)
 
 if notDefined('sensor'), error('Human sensor required'); end
 
-density = coneGet(coneP,'spatial density');
-if isfield(coneP,'rSeed'), rSeed = coneP.rSeed;
+d = coneGet(coneP,'spatial density');
+if isfield(coneP, 'rSeed'), rSeed = coneP.rSeed;
 else rSeed = []; end
 
-pixel   = sensorGet(sensor,'pixel');
-coneAperture  = pixelGet(pixel,'size');   % This should get added to coneCreate/Set/Get
-sz      = sensorGet(sensor,'size');
-species = coneGet(coneP,'species');
+coneWidth = sensorGet(sensor, 'pixel deltax', 'um');
+sz = sensorGet(sensor, 'size');
 
-switch ieParamFormat(species)
+switch ieParamFormat(coneGet(coneP,'species'))
     case 'human'
-        
-        % Create a model human sensor array structure.
-        sensor = sensorSet(sensor,'name', ...
-                        sprintf('human-%.0f',vcCountObjects('ISA')));
+        % Create a model human sensor array structure
+        name = sprintf('human-%.0f',vcCountObjects('sensor'));
+        sensor = sensorSet(sensor,'name', name);
 
         % Deal with the case of black pixels in here
-        [xy, coneType] = humanConeMosaic(sz,density,coneAperture(1)*1e6,rSeed);
-        coneType = reshape(coneType,sz);
+        [xy, coneType] = humanConeMosaic(sz, d, coneWidth, rSeed);
+        coneType = reshape(coneType, sz);
         
-        % The cone type defines each cone in CFA, so the size must match
-        sensor = sensorSet(sensor,'size',size(coneType));
-
-        % Set the cone pattern (full size)
-        sensor = sensorSet(sensor,'pattern',coneType);
-        
-        % Adjust the spectra so that the first is black and the remaining
-        % three are the Stockman fundamentals.
-        %
-        % The Stockman functions are based on color-matching with the units
-        % of the light in energy. ISET computes the sensor response based
-        % on an irradiance in photons.  So we use the form of the Stockman
-        % filters that is appropriate for photon input.  See the script
-        % stockmanQuanta in the data/human directory.
-        % fname = fullfile(isetRootPath,'data','human','stockmanQuanta.mat');
-        % [fsQuanta,fN] = ieReadColorFilter(wave,fname);
-        
-        % Instead of loading stockman cone quanta fundamentals, we create a
-        % cone structure and compute all ocular transmittance and cone
-        % absorptance
+        % Apply the cone structure to sensor
         sensor = sensorSet(sensor, 'human cone', coneP);
+        
+        % Set filter names
         fN = {'kBlack', 'rLong', 'gMiddle', 'bShort'};
-        sensor = sensorSet(sensor,'filter names',fN);
-              
+        sensor = sensorSet(sensor, 'filter names', fN);
+        
+        % Set cone type and relative positions
         sensor = sensorSet(sensor,'cone locs',xy);
         sensor = sensorSet(sensor,'cone type',coneType);
-        sensor = sensorSet(sensor,'rSeed',rSeed);
-               
+        sensor = sensorSet(sensor,'rSeed',rSeed);            
     otherwise
-        error('Unknown species %s\n',species);
+        error('Unknown species.');
 end
 
-return
-
+end

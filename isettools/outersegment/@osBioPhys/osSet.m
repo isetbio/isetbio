@@ -15,12 +15,14 @@ function obj = osSet(obj, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag'};
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
 
@@ -35,11 +37,11 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 p.parse(varargin{:}); params = p.Results;
 
 switch lower(params.what);  % Lower case and remove spaces
-
     
     case{'noiseflag'}
-        obj.noiseFlag = params.value;
-               
-
+        obj.noiseFlag = params.value;               
+        
+    case{'conecurrentsignal'}
+        obj.coneCurrentSignal = params.value; 
 end
 

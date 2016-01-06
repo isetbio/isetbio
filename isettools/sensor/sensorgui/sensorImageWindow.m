@@ -741,9 +741,8 @@ function humanCones631_Callback(hObject, eventdata, handles)
 % Sensor | Human cones | Cones-631
 params.sz = [128,192];
 params.rgbDensities = [0.0 .6 .3 .1]; % Empty, L,M,S
-params.coneAperture = [2.5 2.5]*1e-6;     % In meters
-pixel = [];
-sensor = sensorCreate('human',pixel,params);
+params.coneAperture = [2 2]*1e-6;     % In meters
+sensor = sensorCreate('human', params);
 vcAddAndSelectObject(sensor);
 sensorRefresh(hObject, eventdata, handles);
 return
@@ -753,9 +752,8 @@ function humanConesKLMS1631_Callback(hObject, eventdata, handles)
 % Sensor | Human cones | Cones-631
 params.sz = [128,192];
 params.rgbDensities = [0.1 .6 .3 .1]; % Empty, L,M,S
-params.coneAperture = [2.5 2.5]*1e-6;     % In meters
-pixel = [];
-sensor = sensorCreate('human',pixel,params);
+params.coneAperture = [2 2]*1e-6;     % In meters
+sensor = sensorCreate('human', params);
 vcAddAndSelectObject(sensor);
 sensorRefresh(hObject, eventdata, handles);
 return

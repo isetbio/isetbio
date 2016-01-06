@@ -61,12 +61,12 @@ vcAddAndSelectObject(oi); oiWindow;
 
 %% Human Sensor
 % initialize cone parameters
-params = coneCreate;
-params.rgbDensities = coneDensity;
-params.coneAperture = coneAperture;
+coneP = coneCreate;
+coneP.rgbDensities = coneDensity;
+coneP.coneAperture = coneAperture;
 
 % Create the sensor
-sensor = sensorCreate('human', [], params);
+sensor = sensorCreate('human', coneP);
 sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 
 % TODO: Set exposure time and eye movement

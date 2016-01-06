@@ -50,7 +50,7 @@ function m = macularCreate(macDensity,wave)
 if notDefined('macDensity'), macDensity = 0.35; end
 if notDefined('wave'), wave = (400:700)'; end
 
-m.name = 'default human macular pigment';
+m.name = 'human macular pigment';
 m.type = 'macular';
 m.wave = wave;
 
