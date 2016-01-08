@@ -7,6 +7,7 @@
 %
 % 1/2016 NC
 %
+
 function t_osHyperSpectralSceneEyeScan
  
     % reset

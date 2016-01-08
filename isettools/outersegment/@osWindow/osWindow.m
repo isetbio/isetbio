@@ -1,3 +1,11 @@
+% Class for dynamic visualization of outer segment currents in response to
+% eye movements scanning hyperspectral images.
+% 
+% For example usage see: t_osHyperSpectralSceneEyeScan
+%
+% 1/2016 NC
+%
+
 classdef osWindow < handle
     
     properties (Dependent)
@@ -6,8 +14,7 @@ classdef osWindow < handle
         os
     end
     
-    properties (Access = private)
-        
+    properties (Access = private) 
         oiPrivate;
         osPrivate;
         sensorPrivate; 
@@ -15,14 +22,15 @@ classdef osWindow < handle
         % figure handle
         hFig;
         
-        lastFigWidth = 0;
-        lastFigHeight = 0;
-        
         % struct containing all the figure axes
         axesStruct;
         
         % the time slider uicontrol
         timeSlider;
+        
+        % the min, max displayed response
+        minDisplayedReponseSlider
+        maxDisplayedReponseSlider
         
         % Optical image - related properties
         % - struct with handles to overlay plots for the optical image
@@ -107,7 +115,9 @@ classdef osWindow < handle
            
             % Displayed current range
             obj.outerSegmentDisplayedCurrentRange = [0 max(obj.outerSegmentXYTCurrent(:))];
-                
+            set(obj.minDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(1));
+            set(obj.maxDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(2));
+            
             obj.outerSegmentResponseTimeData = (0:size(obj.outerSegmentXYTCurrent,3)-1)/size(obj.outerSegmentXYTCurrent,3)*sensorGet(obj.sensorPrivate, 'total time');
             obj.outerSegmentResponseXpositionData = 1:size(obj.outerSegmentXYTCurrent,2);
             obj.outerSegmentResponseYpositionData = 1:size(obj.outerSegmentXYTCurrent,1);
@@ -120,8 +130,7 @@ classdef osWindow < handle
             
             % XY response helper properties
             [obj.outerSegmentResponseX, obj.outerSegmentResponseY] = meshgrid(obj.outerSegmentResponseXpositionData, obj.outerSegmentResponseYpositionData);
-            [obj.outerSegmentResponseHiResX, obj.outerSegmentResponseHiResY] = meshgrid(obj.outerSegmentResponseHiResXpositionData, obj.outerSegmentResponseHiResYpositionData);
-                             
+            [obj.outerSegmentResponseHiResX, obj.outerSegmentResponseHiResY] = meshgrid(obj.outerSegmentResponseHiResXpositionData, obj.outerSegmentResponseHiResYpositionData);                 
         end
         
         function set.sensor(obj, sensor)
@@ -167,7 +176,6 @@ classdef osWindow < handle
             obj.opticalImageYdata = obj.opticalImageYdata(1):k:obj.opticalImageYdata(end);
             obj.opticalImageRGBrendering = obj.opticalImageRGBrenderingFullRes(1:k:end, 1:k:end,:);
         end
-    
     end
         
     methods (Access = private)  
@@ -215,12 +223,11 @@ classdef osWindow < handle
             cla(obj.axesStruct.outerSegmentTracesAxes);
             hold(obj.axesStruct.outerSegmentTracesAxes, 'on');
             
-            [lConeIndex, mConeIndex, sConeIndex] = obj.findStrongestResponsingCone();
-            
-            coneTypes = sensorGet(obj.sensorPrivate, 'cone type');
-            [rowBestLcone, colBestLcone] = ind2sub(size(coneTypes), lConeIndex);
-            [rowBestMcone, colBestMcone] = ind2sub(size(coneTypes), mConeIndex);
-            [rowBestScone, colBestScone] = ind2sub(size(coneTypes), sConeIndex);
+            % find the L,M, and S cone with the strongest response
+            [lConeIndex, mConeIndex, sConeIndex, ...
+             bestLconeSensorRowPosition, bestLconeSensorColPosition, ...
+             bestMconeSensorRowPosition, bestMconeSensorColPosition, ...
+             bestSconeSensorRowPosition, bestSconeSensorColPosition] = obj.findStrongestResponsingCones();
             
             obj.outerSegmentOverlayPlots.p4 = plot(obj.axesStruct.outerSegmentTracesAxes, obj.outerSegmentResponseTimeData, obj.outerSegmentXTCurrent(lConeIndex,:), 'r-', 'Color', [1 0.2 0.4]);
             obj.outerSegmentOverlayPlots.p5 = plot(obj.axesStruct.outerSegmentTracesAxes, obj.outerSegmentResponseTimeData, obj.outerSegmentXTCurrent(mConeIndex,:), 'g-', 'Color', [0.2 1.0 0.5]);
@@ -247,9 +254,9 @@ classdef osWindow < handle
                          'CData', obj.outerSegmentSpatiallyInterpolated2DResponseMap, ...
                          'parent', obj.axesStruct.outerSegmentXYresponseAxes);
             hold(obj.axesStruct.outerSegmentXYresponseAxes, 'on');
-            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(colBestLcone), obj.outerSegmentResponseYpositionData(rowBestLcone), 'ro');
-            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(colBestMcone), obj.outerSegmentResponseYpositionData(rowBestMcone), 'go');
-            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(colBestScone), obj.outerSegmentResponseYpositionData(rowBestScone), 'bo');
+            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(bestLconeSensorColPosition), obj.outerSegmentResponseYpositionData(bestLconeSensorRowPosition), 'ro');
+            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(bestMconeSensorColPosition), obj.outerSegmentResponseYpositionData(bestMconeSensorRowPosition), 'go');
+            plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(bestSconeSensorColPosition), obj.outerSegmentResponseYpositionData(bestSconeSensorRowPosition), 'bo');
             hold(obj.axesStruct.outerSegmentXYresponseAxes, 'off');
             set(obj.axesStruct.outerSegmentXYresponseAxes, ...
                 'XLim', [0 max(obj.outerSegmentResponseHiResXpositionData)], ...
@@ -335,23 +342,38 @@ classdef osWindow < handle
             obj.sensorViewYdata = squeeze(yGridSubset(:,1));
         end
         
-        function [lConeIndex, mConeIndex, sConeIndex] = findStrongestResponsingCone(obj)
+        function [lConeIndex, mConeIndex, sConeIndex, ...
+             bestLconeSensorRowPosition, bestLconeSensorColPosition, ...
+             bestMconeSensorRowPosition, bestMconeSensorColPosition, ...
+             bestSconeSensorRowPosition, bestSconeSensorColPosition] = findStrongestResponsingCones(obj)
+         
+            % get the cone types
             coneTypes = sensorGet(obj.sensorPrivate, 'cone type');
+            % find the L,M, and Scone indices
             lConeIndices = find(coneTypes == 2);
             mConeIndices = find(coneTypes == 3);
             sConeIndices = find(coneTypes == 4);
             
+            % find the strongest responding Lcone
             A = obj.outerSegmentXTCurrent(lConeIndices,:);
-            [m,index] = max(A(:)); [row, col] = ind2sub(size(A),index);
+            [~,index] = max(A(:)); [row, ~] = ind2sub(size(A),index);
             lConeIndex = lConeIndices(row);
             
+            % find the strongest responding Mcone
             A = obj.outerSegmentXTCurrent(mConeIndices,:);
-            [m,index] = max(A(:)); [row, col] = ind2sub(size(A),index);
+            [~,index] = max(A(:)); [row, ~] = ind2sub(size(A),index);
             mConeIndex = mConeIndices(row);
             
+            % find the strongest responding Scone
             A = obj.outerSegmentXTCurrent(sConeIndices,:);
-            [m,index] = max(A(:)); [row, col] = ind2sub(size(A),index);
+            [~,index] = max(A(:)); [row, ~] = ind2sub(size(A),index);
             sConeIndex = sConeIndices(row);
+            
+            % Find the sensor (row,col) position for the strongest responding L,M and S-cones
+            coneTypes = sensorGet(obj.sensorPrivate, 'cone type');
+            [bestLconeSensorRowPosition, bestLconeSensorColPosition] = ind2sub(size(coneTypes), lConeIndex);
+            [bestMconeSensorRowPosition, bestMconeSensorColPosition] = ind2sub(size(coneTypes), mConeIndex);
+            [bestSconeSensorRowPosition, bestSconeSensorColPosition] = ind2sub(size(coneTypes), sConeIndex);
         end
         
         function computeSpatiallyInterpolatedOuterSegment2DResponseMap(obj, kPos)  
@@ -387,6 +409,13 @@ classdef osWindow < handle
             set(obj.opticalImageOverlayPlots.p3, 'XData', sensorPositionHistory(:,1), 'YData', sensorPositionHistory(:,2));
         end
         
+        function updateDisplaysWithNewDisplayedCurrentRange(obj)
+            set(obj.axesStruct.outerSegmentXTresponseAxes, 'CLim', obj.outerSegmentDisplayedCurrentRange);
+            set(obj.axesStruct.outerSegmentXYresponseAxes, 'CLim', obj.outerSegmentDisplayedCurrentRange);
+            set(obj.axesStruct.outerSegmentTracesAxes, 'YLim', obj.outerSegmentDisplayedCurrentRange);
+            set(obj.outerSegmentOverlayPlots.p7, 'YData', obj.outerSegmentDisplayedCurrentRange);
+        end
+
         function generateAxesAndControls(obj)  
             w = 800;
             h = 1000;
@@ -409,25 +438,78 @@ classdef osWindow < handle
             obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
             
             % generate 2D instantaneous response axes
-            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth bottomMargin-1.5*spatiotemporalViewHeight - 10/h spatialViewWidth spatialViewHeight];
+            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth bottomMargin-1.5*spatiotemporalViewHeight-25/h spatialViewWidth spatialViewHeight];
             obj.axesStruct.outerSegmentXYresponseAxes = axes('parent',obj.hFig,'unit','normalized','position', positionVector, 'Color', [0 0 0]);
             
-            % generate time slider
+            % generate the min and max displayed response editboxes
+            displayedResponseRangeColor = [0.4 0.45 0.5]; 
+            positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+12/h 0.09 0.015];
+            uicontrol(...
+                'Parent', obj.hFig,...
+                'String', sprintf('max. uAmps'), ...
+                'Style', 'edit',...
+                'BackgroundColor', [0.1 0.1 0.1], ...
+                'ForegroundColor', displayedResponseRangeColor, ...
+                'HorizontalAlignment', 'right', ...
+                'FontSize', 13,...
+                'Enable', 'inactive', ...
+                'Units', 'normalized',...
+                'Position', positionVector);
+            
+            positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+32/h 0.09 0.015];
+            uicontrol(...
+                'Parent', obj.hFig,...
+                'String', sprintf('min. uAmps'), ...
+                'Style', 'edit',...
+                'BackgroundColor', [0.1 0.1 0.1], ...
+                'ForegroundColor',  displayedResponseRangeColor, ...
+                'HorizontalAlignment', 'right', ...
+                'FontSize', 13,...
+                'Enable', 'inactive', ...
+                'Units', 'normalized',...
+                'Position', positionVector);
+            
+            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+25/h 0.15 0.02];
+            obj.minDisplayedReponseSlider = uicontrol(...
+                'Parent', obj.hFig,...
+                'Style', 'slider',...
+                'BackgroundColor',  displayedResponseRangeColor, ...
+                'Min', -200, 'Max', 300, 'Value', 0,...
+                'Units', 'normalized',...
+                'Position', positionVector);   
+            % set the slider's callback function
+            addlistener(obj.minDisplayedReponseSlider,'ContinuousValueChange', ...
+                                      @(hFigure,eventdata) minDisplayedResponseSliderCallback(obj.minDisplayedReponseSlider,eventdata, obj));
+            
+                                  
+            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+5/h 0.15 0.02];
+            obj.maxDisplayedReponseSlider = uicontrol(...
+                'Parent', obj.hFig,...
+                'Style', 'slider',...
+                'BackgroundColor',  displayedResponseRangeColor, ...
+                'Min', -200, 'Max', 300, 'Value', 100,...
+                'Units', 'normalized',...
+                'Position', positionVector);   
+            % set the slider's callback function
+            addlistener(obj.maxDisplayedReponseSlider,'ContinuousValueChange', ...
+                                      @(hFigure,eventdata) maxDisplayedResponseSliderCallback(obj.maxDisplayedReponseSlider,eventdata, obj));
+            
+
+            % generate the time slider
             timeSliderLeftMargin = leftMargin;
             timeSliderBottom = (5)/h;
-            
+             
             obj.timeSlider = uicontrol(...
                 'Parent', obj.hFig,...
                 'Style', 'slider',...
-                'BackgroundColor', [0.8 0.7 0.2], ...
+                'BackgroundColor', [0.6 0.5 0.1], ...
                 'Min', 1, 'Max', size(obj.sensorPositionsInMicrons,1), 'Value', 1,...
                 'Units', 'normalized',...
                 'Position', [timeSliderLeftMargin, timeSliderBottom 0.99 0.012]);    
-           
-            % set the slider step
+          
             set(obj.timeSlider, 'SliderStep', 1.0/((obj.timeSlider.Max-obj.timeSlider.Min)*10)*[1 1]);
             
-            % set the callbackr
+            % set the slider's callback function
             addlistener(obj.timeSlider,'ContinuousValueChange', ...
                                       @(hFigure,eventdata) timeSliderCallback(obj.timeSlider,eventdata, obj));                          
         end
@@ -451,3 +533,27 @@ function timeSliderCallback(hObject,eventdata, obj)
     obj.updateSensorViewDisplay(currentTimeBin);
     obj.updateOuterSegmentResponseDisplays(currentTimeBin);
 end
+
+% Callback for minDisplayedResponseSlider
+function minDisplayedResponseSliderCallback(hObject,eventdata, obj)
+    newVal = round(get(hObject,'Value'));
+    if (newVal <  obj.outerSegmentDisplayedCurrentRange(2))
+        obj.outerSegmentDisplayedCurrentRange(1) = newVal;
+        obj.updateDisplaysWithNewDisplayedCurrentRange();
+    else
+        fprintf(2, 'min displayed current cannot be larger than max displayed current...\n');
+    end
+end
+
+% Callback for maxDisplayedResponseSlider
+function maxDisplayedResponseSliderCallback(hObject,eventdata, obj)
+    newVal = round(get(hObject,'Value'));
+    if (newVal >  obj.outerSegmentDisplayedCurrentRange(1))
+        obj.outerSegmentDisplayedCurrentRange(2) = newVal;
+        obj.updateDisplaysWithNewDisplayedCurrentRange();
+    else
+        fprintf(2, 'max displayed current cannot be smaller than min displayed current...\n');
+    end
+end
+
+
