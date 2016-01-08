@@ -272,7 +272,7 @@ classdef osWindow < handle
             axis(obj.axesStruct.outerSegmentXYresponseAxes, 'off');
             set(obj.axesStruct.outerSegmentXYresponseAxes, 'FontSize', 12, 'XTick', [], 'YTick', []);
             colormap(obj.axesStruct.outerSegmentXYresponseAxes, 'bone');
-            title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f sec', obj.outerSegmentResponseTimeData(positionIndex)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
+            title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f msec', 1000.0*obj.outerSegmentResponseTimeData(positionIndex)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
         end
         
         
@@ -287,7 +287,7 @@ classdef osWindow < handle
             % update the XY plot
             obj.computeSpatiallyInterpolatedOuterSegment2DResponseMap(kPos);
             set(obj.outerSegmentOverlayPlots.p3, 'CData', obj.outerSegmentSpatiallyInterpolated2DResponseMap); 
-            title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f sec', obj.outerSegmentResponseTimeData(kPos)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
+            title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f msec', 1000.0*obj.outerSegmentResponseTimeData(kPos)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
         end
         
         
