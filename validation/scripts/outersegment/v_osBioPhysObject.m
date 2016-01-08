@@ -288,10 +288,6 @@ sensor = sensorSet(sensor, 'time interval', 5e-5);
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-% Compute adapted current with coneAdapt function.
-params.bgVolts  = 0;
-[~, adaptedCur] = coneAdapt(sensor, 'rieke', params);;
-
 % Create outersegment object.
 noiseFlag = 0;
 adaptedOS = osBioPhys();
@@ -304,19 +300,16 @@ if (runTimeParams.generatePlots)
     vcNewGraphWin; hold on;
     % Correct for DC offset to measuredCur by setting last value to zero.
     plot((1:nSamples)*5e-5, measuredCur(:)-measuredCur(end), 'b', 'LineWidth', 4);
-    plot((1:nSamples)*5e-5, adaptedCur(:)-adaptedCur(end), 'r', 'LineWidth', 3);
-    plot((1:nSamples)*5e-5, osAdaptedCur(:)-osAdaptedCur(end), 'k:', 'LineWidth', 2);
+    plot((1:nSamples)*5e-5, osAdaptedCur(:)-osAdaptedCur(end), 'r', 'LineWidth', 2);
     axis tight
     xlabel('Time (sec)','FontSize',16);
     ylabel('Photocurrent (pA)','FontSize',16);
     title('Comparison for end subtracted eye movement example data','FontSize',14);
-    legend('measurements', 'coneAdapt','osBioPhys');
+    legend('measurements', 'osBioPhys');
 end
 
 % Save validation data
 tolerance = 0;
-UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS paramsOS
 
@@ -356,10 +349,6 @@ for step = 1:stepLevels
     % is the result of a sensorCompute command on a scene and oi.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
     
-    % Compute adapted current using coneAdapt.
-    params.bgVolts  = 0;
-    [~, adaptedCurInc] = coneAdapt(sensor, 'rieke', params);
-    
     % Create outersegment object and compute with it.
     noiseFlag = 0;
     adaptedOSInc = osBioPhys();
@@ -376,29 +365,17 @@ for step = 1:stepLevels
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
     
-    % Compute adapted current with cone adapt.
-    params.bgVolts  = 0;
-    [~, adaptedCurDec] = coneAdapt(sensor, 'rieke', params);
-    
     % And with outersegment object.
     noiseFlag = 0;
     adaptedOSDec = osBioPhys('noiseFlag', noiseFlag);
-    paramsOSDec.bgVolts = params.bgVolts;
+    paramsOSDec.bgVolts = 0;
     adaptedOSDec = adaptedOSDec.compute(sensor, paramsOSDec);
-    
-    % Summary measures.
-    maxInc(step) = adaptedCurInc(1, 1, stimPeriod(2)-1) - adaptedCurInc(1, 1, stimPeriod(1)-1);
-    maxDec(step) = adaptedCurDec(1, 1, stimPeriod(2)-1) - adaptedCurDec(1, 1, stimPeriod(1)-1);
     
     maxOSInc(step) = adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(1)-1);
     maxOSDec(step) = adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(1)-1);
     
     % Add current to the figure.
     if (runTimeParams.generatePlots)
-        subplot(1,2,1); hold on;
-        plot((1:nSamples)*timeStep, adaptedCurInc(:), (1:nSamples)*timeStep, adaptedCurDec(:));
-        pause(0.1);
-        
         subplot(1,2,2); hold on;
         plot((1:nSamples)*timeStep, adaptedOSInc.coneCurrentSignal(:), (1:nSamples)*timeStep, adaptedOSDec.coneCurrentSignal(:));
     end
@@ -406,11 +383,6 @@ end
 
 % Finish off the figure
 if (runTimeParams.generatePlots)
-    subplot(1,2,1);
-    xlabel('Time (sec)');
-    ylabel('Photocurrent (pA)');
-    title('coneAdapt');
-    subplot(1,2,2);
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
     title('osBioPhys');
@@ -418,21 +390,16 @@ end
 
 if (runTimeParams.generatePlots)
     vcNewGraphWin; 
-    semilogx(stimIntensity, -maxDec ./ maxInc, 'ro');
     hold on;
-    semilogx(stimIntensity, -maxOSDec ./ maxOSInc, 'kx');
+    semilogx(stimIntensity, -maxOSDec ./ maxOSInc, 'ro');
     xlabel('Background','fontsize',16);
     ylabel('Dec/Inc Response Ratio','fontsize',16);
-    legend('coneAdapt','osBioPhys','location','northwest');
     title('Dec/Inc Response Ratio vs. Background Intensity','fontsize',14);
 end
 
 % Tuck data away.
 tolerance = 1e-12;
-UnitTest.assertIsZero(max(abs((-maxDec ./ maxInc)-(-maxOSDec ./ maxOSInc))),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCurInc',adaptedCurInc);
 UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.coneCurrentSignal);
-UnitTest.validationData('adaptedCurDec',adaptedCurDec);
 UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.coneCurrentSignal);
 
 end
