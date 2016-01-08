@@ -66,7 +66,7 @@ classdef rgcPhys < rgc
              obj = obj@rgc(scene, sensor, outersegment, varargin{:});
            % obj = [];
             % Initialize ourselves by building GLM mosaic objects
-            for cellTypeInd = 1:length(obj.mosaic)
+            for cellTypeInd = 1%:length(obj.mosaic)
                 obj.mosaic{cellTypeInd} = rgcMosaicPhys(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
             end
             

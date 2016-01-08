@@ -187,7 +187,7 @@ os = osCompute(os, absorptions);
 % Let's JG and BW mess around with various plotting things to check the
 % validity.
 
-osPlot(os,absorptions,'output')
+osPlot(os,absorptions)
 %% Build rgc
 
 eyeAngle = 180; % degrees

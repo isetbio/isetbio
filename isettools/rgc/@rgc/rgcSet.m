@@ -80,7 +80,7 @@ switch lower(params.what)
         cellTypes = length(obj.mosaic);
         if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')| isa(obj.mosaic{1},'rgcMosaicPhys')
             
-            for cellTypeInd = 1:cellTypes
+            for cellTypeInd = 1%:cellTypes
                 obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
             end
         else

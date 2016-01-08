@@ -31,17 +31,18 @@ for cellTypeInd = 1%:length(obj.mosaic)
     
 %     spikeResponseFull = computeSpikesPhysCoupled(obj.mosaic{cellTypeInd,1},spikeResponse);
 
-    spikeResponseFull = computeSpikesPhysCoupled(obj.mosaic{cellTypeInd,1});
-    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);
+%     spikeResponseFull = computeSpikesPhysCoupled(obj.mosaic{cellTypeInd,1});
+
+    [spikeResponseFull, spikeDrive, psthResponse, rollcomp] = computeSpikesPhysLab(obj.mosaic{cellTypeInd,1});
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponseFull);
         
     % Call Pillow code to compute rasters and PSTHs
-    [raster, psth] = computePSTH(obj.mosaic{cellTypeInd,1});
-    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
-    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
+%     [raster, psth] = computePSTH(obj.mosaic{cellTypeInd,1});
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse', spikeResponseFull);
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'psthResponse', psthResponse);
         
-    clear spikeResponse raster psth
+    clear spikeResponseFull spikeDrive psthResponse raster psth
 end
-close;
 toc;
 
 

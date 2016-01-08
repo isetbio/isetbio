@@ -68,18 +68,26 @@ obj.generatorFunction = @exp;
 
 obj.numberTrials = 10;
 
-glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-matFileNames = dir([glmFitPath '/ON*.mat']);
+glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
+
+client = RdtClient('isetbio');
+client.credentialsDialog();
+client.crp('resources/data/rgc')
+[data, artifact] = client.readArtifact('ONPar_1205', 'type', 'mat');
+
+% matFileNames = dir([glmFitPath '/ON*.mat']);
 
 % Loop through mat files and load parameters
-for matFileInd = 1:length(matFileNames)
+for matFileInd = 1%:length(matFileNames)
      
-    loadStr = sprintf('matFileNames(%d).name', matFileInd);
-    eval(sprintf('load([glmFitPath %s])',loadStr))
-    
-    nameStr = eval(loadStr);
-    sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
-    lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
+%     loadStr = sprintf('matFileNames(%d).name', matFileInd);
+%     eval(sprintf('load([glmFitPath %s])',loadStr))
+%     
+%     nameStr = eval(loadStr);
+%     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
+%     lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
+    lookupIndex(matFileInd) = 1205;
+    fittedGLM = data.fittedGLM;
     
 %     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
     obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
@@ -107,13 +115,15 @@ end
 
 obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
 
-for matFileInd = 1:length(matFileNames)
-    for coupledInd = 1:length(couplingMatrixTemp{matFileInd})
-        coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd}(coupledInd)== lookupIndex);
-    end
-    obj.couplingMatrix{matFileInd} = coupledCells;    
-    
-end
+% for matFileInd = 1%:length(matFileNames)
+%     for coupledInd = 1:length(couplingMatrixTemp{matFileInd})
+%         coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd}(coupledInd)== lookupIndex);
+%     end
+%     obj.couplingMatrix{matFileInd} = coupledCells;    
+%     
+% end
+
+obj.couplingMatrix{1} = [17     3    11    34    12     9];
 
 % % g = fittype('a*exp(-0.5*(x^2/Q1 + y^2/Q2)) + b*exp(-0.5*(x^2/Q1 + y^2/Q2))','independent',{'x','y'},'coeff',{'a','b','Q1','Q2'})
 % 
