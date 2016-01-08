@@ -110,7 +110,8 @@
 %                       -   This is for human observers at the cornea, in energy units.  Normalized to peak
 %                       -   of unity.
 %   T_rods              - CIE scotopic luminous efficiency function.
-%   T_stiles2           - Stiles 2-degree color matching functions.
+%   T_stiles2           - Stiles-Burch 2-degree color matching functions.
+%   T_stiles10          - Stiles-Burch 10-degree color matching functions.
 %   T_ss2000_Y2         - Stockman-Sharpe (2000) 2-degree photopic luminance efficiency function.  See CVRL database.
 %   T_vos1978_Y         - Judd-Vos 1978 photopic luminance efficiency function.
 %   T_xyz1931           - CIE 1931 color matching functions.

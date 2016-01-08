@@ -44,6 +44,9 @@ function [cal, cals, fullFilename] = LoadCalFile(filespec, whichCal, dir)
 % 6/2/13   dhb  More robust about whether passed filespec contains the trailing '.mat'.
 % 7/3/13   dhb  Fix buglet for check on trailing .mat when length of filename less than 4 chars.
 % 12/11/14 dhb  Use fullfile rather than straight append to build up full path to cal file.
+% 10/23/15 dhb  Suppress warning about enumeration being converted to
+%               struct on load.  This can happen when the cal struct contains a field
+%               that is an ennumeration, but is, I think, OK.
 
 % Get whichCal
 if nargin < 2 || isempty(whichCal)
@@ -82,7 +85,9 @@ end
 
 % Now read the sucker if it is there.
 if exist(fullFilename, 'file')
+    s = warning('off','MATLAB:class:EnumerationNameMissing');
 	eval(['load ' QuoteString(fullFilename)]);
+    warning(s.state,'MATLAB:class:EnumerationNameMissing');
 	if isempty(cals) %#ok<NODEF>
 		cal = [];
 	else
