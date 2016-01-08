@@ -48,16 +48,10 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
 
-% Compute model current, using the old code..
-params.bgVolts  = 0;
-[~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
-
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
 adaptedOS = osBioPhys();
 adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-
-% Compute the response with the Rieke biophysical model and get the current.
 adaptedOS = osCompute(adaptedOS, sensor);
 osAdaptedCur = osGet(adaptedOS,'coneCurrentSignal');
 
@@ -66,21 +60,18 @@ if (runTimeParams.generatePlots)
     osPlot(adaptedOS, sensor);
 end
 
-% Plot a comparison of the two.  These should be identical since we
-% think they are the same code doing the same thing.
+% Another plot of what happened
 if (runTimeParams.generatePlots)
     vcNewGraphWin; hold on
     tme = (1:nSamples)*timeStep;
-    plot(tme,squeeze(adaptedCur),'r','LineWidth',4);
-    plot(tme,squeeze(osAdaptedCur),'k:','LineWidth',2);
+    plot(tme,squeeze(osAdaptedCur),'r','LineWidth',2);
     xlabel('Time (sec)','FontSize',14);
     ylabel('Photocurrent (pA)','FontSize',14);
-    title('impulse response in the dark','FontSize',16);
-    legend('original code model resp', 'osBioPhys object resp');
+    title('Impulse response in the dark','FontSize',16);
 end
+
+% Save validation data
 tolerance = 0;
-UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur',adaptedCur);
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS paramsOS
 
@@ -106,9 +97,9 @@ if (runTimeParams.generatePlots)
     subplot(1, 3, 2); hold on;
     subplot(1, 3, 3); hold on
 end
-clear SSCur stimIntensity FlashAmp
 
 % Go through series of step intensities (slow).
+clear SSCur stimIntensity FlashAmp
 FlashScFact = 1;                     % scaling of flash to compensate adaptation
 nStepIntensities = 11;
 for step = 1:nStepIntensities
@@ -130,10 +121,6 @@ for step = 1:nStepIntensities
     % is the result of a sensorCompute command on a scene and oi.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
     
-    % Compute adapted current via old code.
-    params.bgVolts  = 0;
-    [~, adaptedCurStepOnly] = coneAdapt(sensor, 'rieke', params);
-    
     % Compute using outersegment object osBioPhys.
     noiseFlag = 0;
     adaptedOSStepOnly = osBioPhys();
@@ -150,48 +137,41 @@ for step = 1:nStepIntensities
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
     
-    % Compute adapted current via old code.
-    params.bgVolts  = 0;
-    [~, adaptedCur] = coneAdapt(sensor, 'rieke', params);
-    
     % Create outersegment object.
     noiseFlag = 0;
+    paramsOS.bgVolts = 0;
     adaptedOS = osBioPhys();
     adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-    paramsOS.bgVolts = params.bgVolts;
     adaptedOS = adaptedOS.compute(sensor, paramsOS);
     
     % Plot.
     if (runTimeParams.generatePlots)
         subplot(1, 3, 1);
-        plot((1:nSamples)*timeStep, adaptedCur(:), 'r', 'lineWidth', 2);
-        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:), ':k', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:), 'r', 'lineWidth', 2);
 
         subplot(1, 3, 2);
-        plot((1:nSamples)*timeStep, adaptedCurStepOnly(:), 'r', 'lineWidth', 2);
-        plot((1:nSamples)*timeStep, adaptedOSStepOnly.coneCurrentSignal(:), ':k', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, adaptedOSStepOnly.coneCurrentSignal(:), 'r', 'lineWidth', 2);
 
         subplot(1, 3, 3);
-        plot((1:nSamples)*timeStep, adaptedCur(:) - adaptedCurStepOnly(:), 'r', 'lineWidth', 2);
-        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:), ':k', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:), 'r', 'lineWidth', 2);
       
     end
     
     % Summary measures.    
-    tempVar = adaptedCur(:) - adaptedCurStepOnly(:);
-    tempOS = adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:);      
-    flashAmp(step) = max(tempVar(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempVar(flashTime(1):flashTime(1)+1000)));
-    ssCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
-    [maxVal, maxLoc] = max(tempVar(flashTime(2):flashTime(2)+1000));
-    tPeak(step) = maxLoc*timeStep;
+    %tempVar = adaptedCur(:) - adaptedCurStepOnly(:);
+    %flashAmp(step) = max(tempVar(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempVar(flashTime(1):flashTime(1)+1000)));
+    %ssCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
+    %[maxVal, maxLoc] = max(tempVar(flashTime(2):flashTime(2)+1000));
+    %tPeak(step) = maxLoc*timeStep;
     
+    tempOS = adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:);
     flashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
     ssCurOS(step) = -(adaptedOSStepOnly.coneCurrentSignal(1, 1, stimPeriod(2)) - adaptedOSStepOnly.coneCurrentSignal(1, 1, 1))/adaptedOSStepOnly.coneCurrentSignal(1, 1, 1);
     
     % Fit transient of step response.
-    transientTime = stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2);
-    transient{step} = adaptedCurStepOnly(transientTime);
-    transient{step} = transient{step} - transient{step}(end);
+    %transientTime = stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2);
+    %transient{step} = adaptedCurStepOnly(transientTime);
+    %transient{step} = transient{step} - transient{step}(end);
     transientOS{step} = adaptedOSStepOnly.coneCurrentSignal(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
     transientOS{step} = transientOS{step} - transientOS{step}(end);
     
@@ -203,19 +183,16 @@ if (runTimeParams.generatePlots)
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
     title('Adapted Current');
-    legend('original code', 'osBioPhys object','Location','NorthEast');
     
     subplot(1, 3, 2);
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
     title('Adapted Current Step Only');
-    legend('original code', 'osBioPhys object','Location','NorthEast');
     
     subplot(1, 3, 3);
     xlabel('Time (sec)');
     ylabel('Photocurrent (pA)');
-    title('Adaoted Current Steady State');
-    legend('original code', 'osBioPhys object','Location','NorthEast');
+    title('Adapted Current Steady State');
 end
 
 % Compare to model fit.
@@ -224,10 +201,10 @@ end
 % slow Calcium feedback terms, 3:1 ratio of amps, rate constants 1 and 12.
 %
 % This fit not currently being used.
-tme = (1:length(transient{step}))*timeStep;
+tme = (1:length(transientOS{step}))*timeStep;
 coef = [1 1 3 12];
-stepcoef = nlinfit(tme', squeeze(transient{step}), 'dblexponentialnomean', coef);
-fit = dblexponentialnomean(stepcoef,  tme);
+stepcoefOS = nlinfit(tme', squeeze(transientOS{step}), 'dblexponentialnomean', coef);
+transientFitOS = dblexponentialnomean(stepcoefOS,  tme);
 
 % Plot steady-state stimulus-response relation.
 % Half max 45000 (Dunn et al 2007)
@@ -281,7 +258,7 @@ end
 % Plot transient from last step simulated
 if (runTimeParams.generatePlots)
     vcNewGraphWin; hold on
-    plot(transientTime, transient{end}(:),'r','Linewidth',4);%, tme, fit);
+    %plot(transientTime, transient{end}(:),'r','Linewidth',4);%, tme, fit);
     plot(transientTime, transientOS{end}(:),':k','Linewidth',2);%, tme, fit);
     xlabel('Time (sec)','fontsize',16);
     ylabel('Photocurrent (pA)','fontsize',16);
@@ -292,7 +269,7 @@ end
 % Report fits.  This printout is a little dangerous because the variable
 % names are pretty generic and might be viewed as temporary somewhere
 % above.
-fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoef(2), stepcoef(4));
+fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoef(1), wfcoef(1), stepcoefOS(2), stepcoefOS(4));
 fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
 
 tolerance = 1e-16;
