@@ -72,7 +72,7 @@ glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
 
 client = RdtClient('isetbio');
 client.credentialsDialog();
-client.crp('resources/data/rgc')
+client.crp('/resources/data/rgc')
 [data, artifact] = client.readArtifact('ONPar_1205', 'type', 'mat');
 
 % matFileNames = dir([glmFitPath '/ON*.mat']);
