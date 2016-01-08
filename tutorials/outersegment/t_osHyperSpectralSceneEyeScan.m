@@ -41,7 +41,7 @@ function t_osHyperSpectralSceneEyeScan
     for imageIndex = 1:numel(imageSources)
         % retrieve scene name
         imsource = imageSources{imageIndex};
-        hProgress = waitbar(0.1, sprintf('Fetching scene named ''%s'' (''%s'') from isetbio repository. Please wait ...', imsource{2}, imsource{1}));
+        hProgress = waitbar(0.1, sprintf('Fetching scene named ''%s'' (''%s'') from isetbio''s remote repository. Please wait ...', imsource{2}, imsource{1}));
 
         % download image
         client.crp(sprintf('/resources/scenes/hyperspectral/%s', imsource{1}));
@@ -49,6 +49,7 @@ function t_osHyperSpectralSceneEyeScan
         scene = artifactData.scene; clear 'artifactData'; clear 'artifactInfo';
 
         % Show scene
+        waitbar(0.25, hProgress,'Displaying scene ...'); figure(hProgress);
         vcAddAndSelectObject(scene); sceneWindow;
 
         % Compute optical image with human optics

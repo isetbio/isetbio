@@ -200,6 +200,7 @@ classdef osWindow < handle
             axis(obj.axesStruct.outerSegmentXTresponseAxes, 'ij');
             c = colorbar(obj.axesStruct.outerSegmentXTresponseAxes, 'northoutside');
             set(c, 'Color', [0.5 0.5 0.5], 'FontSize', 9);
+            ylabel(c,'current (uAmps)');
             colormap(obj.axesStruct.outerSegmentXTresponseAxes, 'bone');
             
             set(obj.axesStruct.outerSegmentXTresponseAxes, ...
@@ -404,7 +405,7 @@ classdef osWindow < handle
             obj.axesStruct.sensorViewAxes   = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin+20/w bottomMargin+20/h sensorViewWidth sensorViewHeight], 'Color', [0 0 0]);
             
             % generate response axes
-            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-spatiotemporalViewHeight+5/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
+            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-spatiotemporalViewHeight-10/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
             obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
             
             % generate 2D instantaneous response axes
@@ -426,7 +427,7 @@ classdef osWindow < handle
             % set the slider step
             set(obj.timeSlider, 'SliderStep', 1.0/((obj.timeSlider.Max-obj.timeSlider.Min)*10)*[1 1]);
             
-            % set the callback
+            % set the callbackr
             addlistener(obj.timeSlider,'ContinuousValueChange', ...
                                       @(hFigure,eventdata) timeSliderCallback(obj.timeSlider,eventdata, obj));                          
         end
