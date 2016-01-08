@@ -114,6 +114,10 @@ classdef osWindow < handle
             obj.outerSegmentXTCurrent  = reshape(obj.outerSegmentXYTCurrent, [size(obj.outerSegmentXYTCurrent,1)*size(obj.outerSegmentXYTCurrent,2), size(obj.outerSegmentXYTCurrent,3)]);
            
             % Displayed current range
+            if isinf(max(obj.outerSegmentXYTCurrent(:)))
+                errordlg('Overflow in computed OSX current. Use smaller time step', 'Fatal Error');
+            end
+            
             obj.outerSegmentDisplayedCurrentRange = [0 max(obj.outerSegmentXYTCurrent(:))];
             set(obj.minDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(1));
             set(obj.maxDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(2));
@@ -498,7 +502,7 @@ classdef osWindow < handle
             % generate the time slider
             timeSliderLeftMargin = leftMargin;
             timeSliderBottom = (5)/h;
-             
+            
             obj.timeSlider = uicontrol(...
                 'Parent', obj.hFig,...
                 'Style', 'slider',...
@@ -506,9 +510,7 @@ classdef osWindow < handle
                 'Min', 1, 'Max', size(obj.sensorPositionsInMicrons,1), 'Value', 1,...
                 'Units', 'normalized',...
                 'Position', [timeSliderLeftMargin, timeSliderBottom 0.99 0.012]);    
-          
-            set(obj.timeSlider, 'SliderStep', 1.0/((obj.timeSlider.Max-obj.timeSlider.Min)*10)*[1 1]);
-            
+           
             % set the slider's callback function
             addlistener(obj.timeSlider,'ContinuousValueChange', ...
                                       @(hFigure,eventdata) timeSliderCallback(obj.timeSlider,eventdata, obj));                          
