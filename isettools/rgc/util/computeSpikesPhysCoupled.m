@@ -17,7 +17,7 @@ function spikeTimes = computeSpikesPhysCoupled(obj, varargin)
 % -------------  Static nonlinearity & spiking -------------------
 
 % ih = mosaicGet(obj, 'postSpikeFilter');
-
+rng(1);
 ihcpl = mosaicGet(obj, 'couplingFilter');
 
 spResponseSize = size(obj.nlResponse{1,1}(:,:,1));
@@ -78,14 +78,16 @@ for xcell = 1:nCells(1)
 %     end
 end
 
-% load('pairspike_1.mat','pairspike');
-load('pairspikeall.mat','pairspike');
+% load('/Users/james/Documents/matlab/rgc Parameters/pairspike_1.mat','pairspike');
+load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
+
+for cellnumall = 1:36
 
 nCellsTotal = 1;
-for xcell = 3%:nCells(1)
+for xcell = cellnumall%:nCells(1)
 for trial = 1:numberTrials
 trial
-tic
+% tic
         %%%%%%%%%%%%%%%%%%
         
 %         Vstm = log(nlResponse{xcell,ycell});
@@ -104,26 +106,34 @@ tic
         jbin = 1;
                 
 %         tspnext = exprnd(1,1,nCellsTotal);  % Changed for ISETBIO to eliminate toolbox call
-        tspnext = rand(1,nCellsTotal);
+%         tspnext = rand(1,nCellsTotal);
         rprev = zeros(1,nCellsTotal);
         while jbin <= rlen-hlen;
             tspnext = rand(1,nCellsTotal);
             iinxt = jbin;%jbin:min(jbin+nbinsPerEval-1,rlen);  
             nii = length(iinxt);
             
-%             rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
+% %             rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
             for couplingIndex = 1:6
 %                 [ispkscpl,jspkscpl] = find(spikeResponse{obj.couplingMatrix{xcell}(couplingIndex),1,trial,1}/dt==jbin);
 %                 if ispkscpl ~= 0
 %                     Vmem(jbin:jbin+hlen-1,:) = ((Vmem(jbin:jbin+hlen-1,:)).*exp(permute(ihhicpl(xcell,obj.couplingMatrix{xcell}(couplingIndex),1:hlen),[3 2 1])));
 %                 end;
                 
-                ispkscpl = (pairspike{xcell,couplingIndex}(trial,jbin)==1);
-                if ispkscpl ~= 0
+%                 ispkscpl = (pairspike{xcell,couplingIndex}(trial,jbin)==1);
+%                 if ispkscpl ~= 0
+                if pairspike{xcell,couplingIndex}(trial,jbin)
                     Vmem(jbin:jbin+hlen-1,:) = ((Vmem(jbin:jbin+hlen-1,:)).*exp(permute(ihhicpl(xcell,obj.couplingMatrix{xcell}(couplingIndex),1:hlen),[3 2 1])));
                 end;
+                
+                
             end                
             
+            
+%             ispkcpl = find(cellfun(@(x)x(trial,jbin), pairspike(xcell,:))==1);
+%             if any(ispkcpl)
+%              Vmem(jbin:jbin+hlen-1,ispkcpl) = ((Vmem(jbin:jbin+hlen-1,:)).*exp(permute(ihhicpl(xcell,obj.couplingMatrix{xcell}(ispkcpl),1:hlen),[3 2 1])));
+%             end
             rrnxt = (Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
             
             rrcum = cumsum(rrnxt+[rprev;zeros(nii-1,nCellsTotal)],1);  % Cumulative intensity
@@ -147,7 +157,7 @@ tic
                 mxi = min(rlen, ispk+hlen); % determine bins for adding h current
                 iiPostSpk = ispk+1:mxi;
 %                 tspnextall = exprnd(1,1,max(spcells));
-                tspnextall = rand(1,max(spcells));
+%                 tspnextall = rand(1,max(spcells));
                 for ic = 1:length(spcells)
                     
 %                     ihhi = reshape(obj.couplingFilter{ind2sub([nCells(1),nCells(2)],ic)},nCellsTotal,hlen);
@@ -181,7 +191,7 @@ tic
                     
                     rprev(icell) = 0;  % reset this cell's integral
 %                     tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell, changed for ISETBIO no toolbox case
-                    tspnext(icell) = tspnextall(icell);
+%                     tspnext(icell) = tspnextall(icell);
 %                     tspnext(icell) = rand(1);
 %                     VmemAll(ic,:) = Vmem;
                 end
@@ -204,7 +214,7 @@ tic
         
         
 cellCtr = 0;
-for xcell =3%:nCells
+for xcell =cellnumall%:nCells
 %     for ycell = 1:nCells(2)
         
         cellCtr = cellCtr+1;
@@ -221,14 +231,21 @@ end%trial
 end%xcell
 % 
 
+%%
+figure; 
+hold on; for ce = 1:36; for tr = 1:numberTrials; 
+      clear yind y  
+subplot(6,6,ce);
+% if ~isempty(spikeTimes{ce,1,tr,1});
+% % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
+% subplot(2,1,1);
+% hold on; line([spikeTimes{ce,1,tr,1},spikeTimes{ce,1,tr,1}],[tr tr-1],'color','k');axis([0 500 0 numberTrials]);
+% 
+% end;
+%     end;
+end;
 
-figure; hold on; for ce = 3; for tr = 1:numberTrials; 
-if ~isempty(spikeTimes{ce,1,tr,1});
-% subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
-subplot(2,1,1);
-hold on; line([spikeTimes{ce,1,tr,1},spikeTimes{ce,1,tr,1}],[tr tr-1],'color','k');axis([0 500 0 numberTrials]);end;end;end;
-
-subplot(2,1,2);
+% subplot(2,1,2);
 convolvewin=gausswin(100);
 for trind = 1:numberTrials
     yind= spikeTimes{ce,1,trind,1};
@@ -239,7 +256,12 @@ end
 PSTH_rec=conv(sum(y),convolvewin,'same');
 plot(dt:dt:dt*length(PSTH_rec),PSTH_rec);        
 axis([0 500 0  max(PSTH_rec)])
+[maxv, maxi] = max(PSTH_rec); title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
+%     end;
 
+end
+end
+%%
 % figure; hold on; for ce = 1:1; for tr = 1:10; 
 % if ~isempty(spikeTimes{ce,1,tr,1});
 % % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
