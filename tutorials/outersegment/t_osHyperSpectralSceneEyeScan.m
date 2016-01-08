@@ -9,95 +9,90 @@
 %
 function t_osHyperSpectralSceneEyeScan
  
-ieInit;
-close all;
+    % reset
+    ieInit; close all;
 
-% Set up remote data toolbox client
-client = RdtClient('isetbio');
-    
-% Spacify images
-imageSources = {...
-        {'manchester_database', 'scene1'} ...
-};
+    % Set up remote data toolbox client
+    client = RdtClient('isetbio');
 
-% simulation time step. same for eye movements and for sensor, outersegment
-timeStepInMilliseconds = 0.1;
+    % Spacify images
+    imageSources = {...
+            {'manchester_database', 'scene1'} ...
+    };
 
-sensorParams = struct(...
-    'coneApertureInMicrons', 3.0, ...        % custom cone aperture
-    'LMSdensities', [0.6 0.4 0.1], ...       % custom percentages of L,M and S cones
-    'spatialGrid', [20 20], ...              % generate mosaic of 20 x 20 cones
-    'samplingIntervalInMilliseconds', timeStepInMilliseconds, ...
-    'integrationTimeInMilliseconds', 50, ...
-    'eyeMovementScanningParams', struct(...
+    % simulation time step. same for eye movements and for sensor, outersegment
+    timeStepInMilliseconds = 0.1;
+
+    sensorParams = struct(...
+        'coneApertureInMicrons', 3.0, ...        % custom cone aperture
+        'LMSdensities', [0.6 0.4 0.1], ...       % custom percentages of L,M and S cones
+        'spatialGrid', [20 20], ...              % generate mosaic of 20 x 20 cones
         'samplingIntervalInMilliseconds', timeStepInMilliseconds, ...
-        'fixationDurationInMilliseconds', 300, ...
-        'numberOfFixations', 20 ...
-    ) ...
-);
-    
-for imageIndex = 1:numel(imageSources)
-    % retrieve scene name
-    imsource = imageSources{imageIndex};
-    hProgress = waitbar(0.1, sprintf('Fetching scene named ''%s'' (''%s'') from isetbio repository. Please wait ...', imsource{2}, imsource{1}), 'WindowStyle', 'modal');
-    
-    % download image
-    client.crp(sprintf('/resources/scenes/hyperspectral/%s', imsource{1}));
-    [artifactData, artifactInfo] = client.readArtifact(imsource{2}, 'type', 'mat');
-    scene = artifactData.scene;
-    clear 'artifactData', 
-    clear 'artifactInfo'
-    
-    % Show scene
-    vcAddAndSelectObject(scene); sceneWindow;
+        'integrationTimeInMilliseconds', 50, ...
+        'randomSeed', 1552784, ...
+        'eyeMovementScanningParams', struct(...
+            'samplingIntervalInMilliseconds', timeStepInMilliseconds, ...
+            'fixationDurationInMilliseconds', 300, ...
+            'numberOfFixations', 20 ...
+        ) ...
+    );
 
-    
-    
-    % Compute optical image with human optics
-    waitbar(0.3, hProgress,'Computing optical image ...');
-    oi = oiCreate('human');
-    oi = oiCompute(oi, scene);
+    % go through all the images
+    for imageIndex = 1:numel(imageSources)
+        % retrieve scene name
+        imsource = imageSources{imageIndex};
+        hProgress = waitbar(0.1, sprintf('Fetching scene named ''%s'' (''%s'') from isetbio repository. Please wait ...', imsource{2}, imsource{1}));
+
+        % download image
+        client.crp(sprintf('/resources/scenes/hyperspectral/%s', imsource{1}));
+        [artifactData, artifactInfo] = client.readArtifact(imsource{2}, 'type', 'mat');
+        scene = artifactData.scene; clear 'artifactData'; clear 'artifactInfo';
+
+        % Show scene
+        vcAddAndSelectObject(scene); sceneWindow;
+
+        % Compute optical image with human optics
+        waitbar(0.3, hProgress,'Computing optical image ...'); figure(hProgress);
+        oi = oiCreate('human');
+        oi = oiCompute(oi, scene);
+
+        % Show optical image
+        vcAddAndSelectObject(oi); oiWindow;
+
+        % create custom human sensor
+        waitbar(0.5, hProgress,'Computing photoreceptor isomerizations ...'); figure(hProgress);
+        sensor = sensorCreate('human');
+        sensor = customizeSensor(sensor, sensorParams, oi);
+
+        % compute rate of isomerized photons
+        sensor = coneAbsorptions(sensor, oi);
+
+        % compute outer segment response using the biophysically-based adaptation model
+        waitbar(0.7, hProgress,'Computing biophysically-based outer segment response ...'); figure(hProgress);
+        osB = osBioPhys();
+        osB = osSet(osB, 'noiseFlag', 1);
+        osB = osCompute(osB, sensor);
+
+        % compute outer segment response using the linear adaptation model
+        waitbar(0.9, hProgress,'Computing linear outer segment response ...'); figure(hProgress);
+        osL = osLinear(); 
+        osL = osSet(osL, 'noiseFlag', 1);
+        osL = osCompute(osL, sensor);
+        close(hProgress);
         
-    % Show optical image
-    vcAddAndSelectObject(oi); oiWindow;
-
-    % create custom human sensor
-    waitbar(0.5, hProgress,'Computing photoreceptor isomerizations ...');
-    sensor = sensorCreate('human');
-    randomSeed = 94586784;
-    sensor = customizeSensor(sensor, sensorParams, oi, randomSeed);
-        
-    % compute rate of isomerized photons
-    sensor = coneAbsorptions(sensor, oi);
-
-    % compute outer segment response using the biophysically-based adaptation model
-    waitbar(0.7, hProgress,'Computing biophysically-based outer segment response ...');
-    os = osBioPhys();
-    os = osSet(os, 'noiseFlag', 1);
-    os = osCompute(os, sensor);
-    
-    % display window for interactive viewing of outer segment responses
-    osWindow(1001, 'biophys-based outer segment', os, sensor, oi);
-
-    % compute outer segment response using the linear adaptation model
-    waitbar(0.9, hProgress,'Computing linear outer segment response ...');
-    os = osLinear(); 
-    os = osSet(os, 'noiseFlag', 1);
-    os = osCompute(os, sensor);
-    
-    % display window for interactive viewing of outer segment responses
-    osWindow(1002, 'linear outer segment', os, sensor, oi);
-    close(hProgress);
-end
+        % display osWindows for interactive viewing of outer segment responses
+        osWindow(1001+imageIndex, 'biophys-based outer segment', osB, sensor, oi);
+        osWindow(1002+imageIndex, 'linear outer segment', osL, sensor, oi);
+    end
 end
 
 
-function sensor = customizeSensor(sensor, sensorParams, opticalImage, randomSeed)
+function sensor = customizeSensor(sensor, sensorParams, opticalImage)
     
-    if (isempty(randomSeed))
+    if (isempty(sensorParams.randomSeed))
        rng('shuffle');   % produce different random numbers
     else
-       rng(randomSeed);
+       rng(sensorParams.randomSeed);
     end
     
     eyeMovementScanningParams = sensorParams.eyeMovementScanningParams;
@@ -147,7 +142,7 @@ function sensor = customizeSensor(sensor, sensorParams, opticalImage, randomSeed
     sensor = emGenSequence(sensor);
     
     % add saccadic targets
-    saccadicTargetPos = generateSaccadicTargets(eyeMovementScanningParams); 
+    saccadicTargetPos = generateSaccadicTargets(eyeMovementScanningParams, 'random'); 
     eyeMovementPositions = sensorGet(sensor,'positions', eyeMovementPositions);
     for eyeMovementIndex = 1:eyeMovementsNum
         kk = 1+floor((eyeMovementIndex-1)/round(eyeMovementScanningParams.fixationDurationInMilliseconds / eyeMovementScanningParams.samplingIntervalInMilliseconds));
@@ -156,21 +151,23 @@ function sensor = customizeSensor(sensor, sensorParams, opticalImage, randomSeed
     sensor = sensorSet(sensor,'positions', eyeMovementPositions);
 end
 
-function saccadicTargetPos = generateSaccadicTargets(eyeMovementScanningParams) 
+function saccadicTargetPos = generateSaccadicTargets(eyeMovementScanningParams, mode) 
 
     saccadicTargetPos = zeros(eyeMovementScanningParams.numberOfFixations,2);
     
-    % random targtes
-    %saccadicTargetPos = round(randn(eyeMovementScanningParams.numberOfFixations,2)*100);
-    
-    % oscillate between three positions of interest
-    for k = 1:eyeMovementScanningParams.numberOfFixations
-        if (mod(k-1,6) < 2)
-            saccadicTargetPos(k,:) = [-850 -390]/3;  
-        elseif (mod(k-1,6) < 4)
-            saccadicTargetPos(k,:) = [-170 515]/3;
-        else
-            saccadicTargetPos(k,:) = [-105 505]/3; 
+    % random targets
+    if (strcmp(mode, 'random'))
+        saccadicTargetPos = round(randn(eyeMovementScanningParams.numberOfFixations,2)*100);
+    else
+        % oscillate between three positions of interest - useful for debuging
+        for k = 1:eyeMovementScanningParams.numberOfFixations
+            if (mod(k-1,6) < 2)
+                saccadicTargetPos(k,:) = [-850 -390]/3;  
+            elseif (mod(k-1,6) < 4)
+                saccadicTargetPos(k,:) = [-170 515]/3;
+            else
+                saccadicTargetPos(k,:) = [-105 505]/3; 
+            end
         end
     end
 end

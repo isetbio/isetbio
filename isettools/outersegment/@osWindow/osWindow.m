@@ -380,7 +380,7 @@ classdef osWindow < handle
         
         function updateOpticalImageDisplay(obj, kPos)
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(kPos,:));
-            sensorPositionHistory = obj.sensorPositionsInMicrons(1:kPos,:);
+            sensorPositionHistory = obj.sensorPositionsInMicrons(max([1 kPos-1000]):kPos,:);
             set(obj.opticalImageOverlayPlots.p1, 'XData', currentSensorPosition(1) + obj.sensorOutlineInMicrons(:,1), 'YData', currentSensorPosition(2) + obj.sensorOutlineInMicrons(:,2));
             set(obj.opticalImageOverlayPlots.p2, 'XData', currentSensorPosition(1) + obj.sensorOutlineInMicrons(:,1), 'YData', currentSensorPosition(2) + obj.sensorOutlineInMicrons(:,2));
             set(obj.opticalImageOverlayPlots.p3, 'XData', sensorPositionHistory(:,1), 'YData', sensorPositionHistory(:,2));
