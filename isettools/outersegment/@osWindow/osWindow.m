@@ -207,7 +207,7 @@ classdef osWindow < handle
                  'YLim', [obj.outerSegmentResponseXYpositionData(1) obj.outerSegmentResponseXYpositionData(end)], ...
                  'CLim', obj.outerSegmentDisplayedCurrentRange, ...
                  'XColor', [1 1 1], 'YColor', [1 1 1]);
-            ylabel(obj.axesStruct.outerSegmentTracesAxes,  'cone #', 'FontSize', 12);
+            ylabel(obj.axesStruct.outerSegmentXTresponseAxes,  'cone #', 'FontSize', 12);
             set(obj.axesStruct.outerSegmentXTresponseAxes, 'FontSize', 12);
 
             % The traces plot
@@ -371,7 +371,7 @@ classdef osWindow < handle
             hold(obj.axesStruct.opticalImageAxes, 'on');
             obj.opticalImageOverlayPlots.p1 = plot(obj.axesStruct.opticalImageAxes, currentSensorPosition(1) + obj.sensorOutlineInMicrons(:,1), currentSensorPosition(2) + obj.sensorOutlineInMicrons(:,2), 'r-', 'LineWidth', 2);
             obj.opticalImageOverlayPlots.p2 = plot(obj.axesStruct.opticalImageAxes, currentSensorPosition(1) + obj.sensorOutlineInMicrons(:,1), currentSensorPosition(2) + obj.sensorOutlineInMicrons(:,2), 'w-', 'LineWidth', 1);
-            obj.opticalImageOverlayPlots.p3 = plot(obj.axesStruct.opticalImageAxes, sensorPositionHistory(:,1), sensorPositionHistory(:,2), 'w-', 'LineWidth', 1);
+            obj.opticalImageOverlayPlots.p3 = plot(obj.axesStruct.opticalImageAxes, sensorPositionHistory(:,1), sensorPositionHistory(:,2), 'k-', 'LineWidth', 1);
             hold(obj.axesStruct.opticalImageAxes, 'off');
             axis(obj.axesStruct.opticalImageAxes,'ij'); axis(obj.axesStruct.opticalImageAxes,'equal');
             set(obj.axesStruct.opticalImageAxes, 'XLim', 0.8*max(abs(obj.opticalImageXdata(:)))*[-1 1], 'YLim', .8*max(abs(obj.opticalImageYdata(:)))*[-1 1])
@@ -404,8 +404,8 @@ classdef osWindow < handle
             obj.axesStruct.sensorViewAxes   = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin+20/w bottomMargin+20/h sensorViewWidth sensorViewHeight], 'Color', [0 0 0]);
             
             % generate response axes
-            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[8*leftMargin bottomMargin-spatiotemporalViewHeight+5/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
-            obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[8*leftMargin bottomMargin-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
+            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-spatiotemporalViewHeight+5/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
+            obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
             
             % generate 2D instantaneous response axes
             positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth bottomMargin-1.5*spatiotemporalViewHeight - 10/h spatialViewWidth spatialViewHeight];
