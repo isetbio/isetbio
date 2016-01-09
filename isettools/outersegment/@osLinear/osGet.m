@@ -23,7 +23,12 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','sconefilter','mconefilter','lconefilter','conecurrentsignal'};
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'sconefilter',...
+    'mconefilter',...
+    'lconefilter',...
+    'conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
 % Define what units are allowable.
@@ -54,7 +59,6 @@ switch lower(params.what)
         val = obj.lConeFilter;
     
     case{'conecurrentsignal'}
-        val = obj.ConeCurrentSignal;
-        
+        val = obj.coneCurrentSignal;        
 end
 

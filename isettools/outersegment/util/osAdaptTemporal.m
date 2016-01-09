@@ -25,7 +25,7 @@
 % data in sensor structure
 %
 % Example:
-%   t_OuterSegmentClasses
+%   t_os, t_osIntroduction
 %
 % See also:  osInit, osAdaptSteadyState, coneAdapt
 %

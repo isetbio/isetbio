@@ -70,11 +70,10 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.01;
-params.timeInterval = 0.01;
+params.expTime = 0.005;
+params.timeInterval = 0.005;
 params.nSteps = 30;%60;     % Number of stimulus frames
 params.nCycles = 4;
-
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
 absorptions = sensorCreate('human');
@@ -161,27 +160,16 @@ os = osCompute(os, absorptions);
 % osPlot(os,'photo current','cone position',[r,c])
 osPlot(os,absorptions);
 
-%% Build rgc
+%%
 
-eyeAngle = 180; % degrees
-eyeRadius = 3; % mm
-eyeSide = 'right';
-rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
-rgc1 = rgcSet(rgc1,'numberTrials',10);
-% rgc1 = rgcCompute(rgc1, os);
-
-% rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'linearResponse');
-rgcPlot(rgc1, 'spikeResponse');
-
-
-%% Build rgc response movie
-%  https://youtu.be/R4YQCTZi7s8
-
-% % osLinear
-% rgcMovie(rgc1, sensor);
-
-% % osIdentity
-% rgcMovie(rgc1, os);
-
-
+os = osCreate('biophys');
+ 
+% Compute the photocurrent
+os = osCompute(os, absorptions);
+ 
+% Plot the photocurrent for a pixel
+% Let's JG and BW mess around with various plotting things to check the
+% validity.
+%
+% osPlot(os,'photo current','cone position',[r,c])
+osPlot(os,absorptions);

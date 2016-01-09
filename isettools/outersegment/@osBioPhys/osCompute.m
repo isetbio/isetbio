@@ -26,7 +26,7 @@ function obj = osCompute(obj, sensor, varargin)
     sz = sensorGet(sensor,'size');
     
     % absRate = sensorGet(sensor,'absorptions per second');
-    pRate = sensorGet(sensor, 'photons');
+    pRate = sensorGet(sensor, 'photon rate');
     nSteps = size(pRate, 3);
     % Compute background adaptation parameters
 
@@ -45,27 +45,19 @@ function obj = osCompute(obj, sensor, varargin)
     initialState = osAdaptSteadyState(bgR, p, sz);
     
     initialState.timeInterval = sensorGet(sensor, 'time interval');
-    obj.ConeCurrentSignal  = osAdaptTemporal(pRate, initialState);
+
+    % obj.coneCurrentSignal  = osAdaptTemporal(pRate, initialState);
+    coneCurrentSignal  = osAdaptTemporal(pRate, initialState);
     
-    
-    if size(varargin) ~= 0
-        if isfield(varargin{1,1},'offset')
-            obj.ConeCurrentSignal = obj.ConeCurrentSignal - obj.ConeCurrentSignal(:, :, nSteps) - varargin{1,1}.offset;
-        end
-    end
-    
-    
-    if obj.noiseFlag == 1
-        obj.ConeCurrentSignalPlusNoise = osAddNoise(obj.ConeCurrentSignal);
-        % obj.ConeCurrentSignalPlusNoise = osAddNoise(obj.ConeCurrentSignal, paramsNoise);        
-        close;
+    obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignal);
+           
+    if osGet(obj,'noiseFlag') == 1
+        % obj.coneCurrentSignalPlusNoise = osAddNoise(obj.coneCurrentSignal);
+        coneCurrentSignalPlusNoise = osAddNoise(coneCurrentSignal);
+        % obj.coneCurrentSignalPlusNoise = osAddNoise(obj.coneCurrentSignal, paramsNoise);  
         
-        if size(varargin) ~= 0
-            if isfield(varargin{1,1},'offset')
-                obj.ConeCurrentSignalPlusNoise = obj.ConeCurrentSignalPlusNoise - obj.ConeCurrentSignalPlusNoise(:, :, nSteps) - varargin{1,1}.offset;
-            end
-        end
-        
+        obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignalPlusNoise);
+               
     end
 end
 

@@ -48,7 +48,7 @@ else
     dt = sensorGet(sensor, 'time interval');
     coneSamplingRate = 1/dt;
     [xsz ysz tsz] = size(sensor.data.volts);
-    pRate = sensorGet(sensor, 'photons');
+    pRate = sensorGet(sensor, 'photon rate');
     meanIsomerization = mean(pRate(:));
     
 end

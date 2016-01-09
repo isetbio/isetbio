@@ -29,8 +29,7 @@ classdef outerSegment < handle
         % The noiseFlag determines if the noisy version of the current is
         % calculated.
         noiseFlag;
-        ConeCurrentSignal;
-        ConeCurrentSignalPlusNoise;
+        coneCurrentSignal;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -45,8 +44,7 @@ classdef outerSegment < handle
             % obj.initialize(varargin{:});
             
             obj.noiseFlag = 0;            
-            obj.ConeCurrentSignal = [];
-            obj.ConeCurrentSignalPlusNoise = [];
+            obj.coneCurrentSignal = [];
         end
         
         % see osSet in @osLinear and @osBioPhys for details

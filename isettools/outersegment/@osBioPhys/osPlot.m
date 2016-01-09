@@ -108,7 +108,8 @@ switch lower(params.what)
         
         % Plot output signal at a particular (x, y) over time.
         subplot(1,2,2);        
-        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz1/2),round(sz2/2),:);
+        outputSignalTemp = osGet(obj,'coneCurrentSignal');
+        outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
         title('output signal');
         xlabel('Time (sec)');

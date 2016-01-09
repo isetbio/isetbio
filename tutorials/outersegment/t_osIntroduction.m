@@ -69,9 +69,9 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.01;
-params.timeInterval = 0.01;
-params.nSteps = 60;     % Number of stimulus frames
+params.expTime = 0.005;
+params.timeInterval = 0.005;
+params.nSteps = 30;     % Number of stimulus frames
 params.nCycles = 4;
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -122,36 +122,36 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 % vcAddObject(sensor); sensorWindow;
 
 %% Show the movie of isomerizations
-
-% Can we make that movie when we color the cones by type
-
-vcNewGraphWin;axis image; colormap(gray)
-for ii=1:params.nSteps
-    imagesc(isomerizations(:,:,ii)); pause(.2); 
-end
-
-% Time series at a point
-vcNewGraphWin; plot(squeeze(isomerizations(1,1,:)))
+% 
+% % Can we make that movie when we color the cones by type
+% 
+% vcNewGraphWin;axis image; colormap(gray)
+% for ii=1:params.nSteps
+%     imagesc(isomerizations(:,:,ii)); pause(.2); 
+% end
+% 
+% % Time series at a point
+% vcNewGraphWin; plot(squeeze(isomerizations(1,1,:)))
 
 %% Movie of the cone absorptions over cone mosaic
-% from t_VernierCones by HM
-
-step = 1;   % Step is something about time?
-% Display gamma preference could be sent in here
-tmp = coneImageActivity(absorptions,[],step,false);
-
-% Show the movie
-% Aspirational
-% showMovie(tmp)
-
-vcNewGraphWin;
-tmp = tmp/max(tmp(:));
-for ii=1:size(tmp,4)
-    img = squeeze(tmp(:,:,:,ii));
-    imshow(img); truesize;
-    title('Cone absorptions')
-    drawnow
-end
+% % from t_VernierCones by HM
+% 
+% step = 1;   % Step is something about time?
+% % Display gamma preference could be sent in here
+% tmp = coneImageActivity(absorptions,[],step,false);
+% 
+% % Show the movie
+% % Aspirational
+% % showMovie(tmp)
+% 
+% vcNewGraphWin;
+% tmp = tmp/max(tmp(:));
+% for ii=1:size(tmp,4)
+%     img = squeeze(tmp(:,:,:,ii));
+%     imshow(img); truesize;
+%     title('Cone absorptions')
+%     drawnow
+% end
 
 %% Outer segment calculation
 
@@ -177,6 +177,18 @@ osPlot(os,absorptions);
 
 %% Rieke biophysics case
 
+% absorptions2 = sensorCreate('human');
+% absorptions2 = sensorSetSizeToFOV(absorptions2, fov, scene, oi);
+% 
+% absorptions2 = sensorSet(absorptions2, 'exp time', params.expTime); 
+% absorptions2 = sensorSet(absorptions2, 'time interval', params.timeInterval);
+% 
+% absorptions2 = sensorSet(absorptions2, 'photons', 1*isomerizations);
+
+
+% absorptions = sensorSet(absorptions, 'photons', 1000*isomerizations);
+
+% sensor = sensorSet(sensor,'integration time', expTime);
 % Create the outer segment structure
 os = osCreate('biophys');
  
@@ -188,27 +200,3 @@ os = osCompute(os, absorptions);
 % validity.
 
 osPlot(os,absorptions)
-%% Build rgc
-
-eyeAngle = 180; % degrees
-eyeRadius = 3; % mm
-eyeSide = 'right';
-rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
-rgc1 = rgcSet(rgc1,'numberTrials',10);
-rgc1 = rgcCompute(rgc1, os);
-
-% rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'linearResponse');
-rgcPlot(rgc1, 'spikeResponse');
-
-
-%% Build rgc response movie
-%  https://youtu.be/R4YQCTZi7s8
-
-% % osLinear
-% rgcMovie(rgc1, sensor);
-
-% % osIdentity
-% rgcMovie(rgc1, os);
-
-

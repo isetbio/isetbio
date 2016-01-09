@@ -29,11 +29,11 @@ cone_mosaic = sensorGet(sensor,'cone type');
 
 % When we just use the number of isomerizations, this is consistent with
 % the old coneAdapt function and validates.  
-isomerizations = sensorGet(sensor,'photons');
+isomerizations = sensorGet(sensor,'photon rate');
 
 % Get number of time steps.
-nSteps = sensorGet(sensor,'n time frames');
-% size(sensor.data.volts,3);
+% nSteps = sensorGet(sensor,'n time frames');
+nSteps = size(sensor.data.volts,3);
 
 % The next step is to convolve the 1D filters with the 1D isomerization
 % data at each point in the cone mosaic. This code was adapted from the
@@ -101,16 +101,21 @@ end
 
 % % Reshape the output signal matrix.
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
-obj.ConeCurrentSignal = adaptedData;
+
+% obj.coneCurrentSignal = adaptedData;
+obj = osSet(obj, 'coneCurrentSignal', adaptedData);
 
 % Add noise
 % The osAddNoise function expects and input to be isomerization rate.
 % This is handled properly because the params has the time sampling
 % rate included.
-if obj.noiseFlag == 1
+if osGet(obj,'noiseFlag') == 1
     params.sampTime = sensorGet(sensor, 'time interval');
     ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
-    obj.ConeCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    % obj.coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
+    
+    obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignalPlusNoise);
 end
 
 end

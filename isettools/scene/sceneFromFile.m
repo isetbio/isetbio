@@ -87,8 +87,10 @@ if ischar(I)
     
     % No extension, so check whether the mat-file exists
     if isempty(e), I = fullfile(p,[n,'.mat']); end
-    if exist(I,'file')
-        if ieVarInFile(I, 'scene'), load(I,'scene'); return; end
+    if exist(I,'file') 
+        if strcmp(I((end-2):end),'mat')
+            if ieVarInFile(I, 'scene'), load(I,'scene'); return; end
+        end
     else error('No file named %s\n',I);
     end
 end
@@ -200,10 +202,10 @@ scene = sceneSet(scene, 'illuminant', il);
 % and stick them into the scene if they are there
 if ischar(I), 
     [~, n, ~] = fileparts(I);  % This will be the name
-    if ieVarInFile(I,'fov')
+    if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'fov')
         load(I,'fov'); scene = sceneSet(scene,'fov',fov);
     end
-    if ieVarInFile(I,'dist')
+    if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'dist')
         load(I,'dist'), scene = sceneSet(scene,'distance',dist);
     end
 else n = 'rgb image';
