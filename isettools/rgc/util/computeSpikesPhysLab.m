@@ -61,7 +61,7 @@ client = RdtClient('isetbio');
 client.credentialsDialog();
 client.crp('resources/data/rgc')
 [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
-pairspikeall = data.pairspikeall;
+pairspike = data.pairspike;
 
 nlfun = obj.generatorFunction;
 tic
