@@ -75,6 +75,7 @@ client.credentialsDialog();
 client.crp('/resources/data/rgc')
 [data, artifact] = client.readArtifact('ONPar_1205', 'type', 'mat');
 
+% glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 % matFileNames = dir([glmFitPath '/ON*.mat']);
 
 % Loop through mat files and load parameters

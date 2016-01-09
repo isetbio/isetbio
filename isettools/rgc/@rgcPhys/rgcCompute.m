@@ -1,5 +1,5 @@
 function obj = rgcCompute(obj, outerSegment, varargin)
-% rgcCompute: a method of @rgc that computes the spiking output of the
+% rgcCompute: a method of @rgcPhys that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus. These computations are carried
 % out using code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
 % Simoncelli, Nature, 2008, licensed for modification, which can be found

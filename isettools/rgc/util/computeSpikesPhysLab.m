@@ -1,14 +1,22 @@
 
 function [spikeTimes spikeDrive psthResponse rollcomp] = computeSpikesPhysLab(obj, varargin)
-% computeSpikes: a util function of the @rgc parent class, this
+% computeSpikesPhysLab
+% 
+% A util function of the @rgc parent class, this function
 % converts the nonlinear response of the generator lookup function to a
-% probabilistic spiking output.
+% probabilistic spiking output. This is called internally from rgcCompute.
 %
-% Inputs:
+% Inputs: the rgc object from rgcCompute.
 %
 % Outputs:
+%       spikeTimes: N trials of spikes computed with the coupled GLM model.
+%       spikeDrive: N trials of the drive to the Poisson spike generator.
+%       psthResponse: the PSTH combining all N trials of spikes.
+%       rollcomp: N trials of the transformed spikeDrive.
 %
-% Example:
+% Example: see @rgcPhys/rgcCompute.m
+%  [spikeResponseFull, spikeDrive, psthResponse, rollcomp] = ...
+%                     computeSpikesPhysLab(obj.mosaic{cellTypeInd,1});
 %
 % (c) isetbio
 % 09/2015 JRG
@@ -46,8 +54,14 @@ spikeTimes = cell(nCells,1,numberTrials,2);
 
 cellCtr = 0;
 
-% load('/Users/james/Documents/matlab/rgc Parameters/pairspike_1.mat','pairspike');
-load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
+% % load('/Users/james/Documents/matlab/rgc Parameters/pairspike_1.mat','pairspike');
+% load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
+
+client = RdtClient('isetbio');
+client.credentialsDialog();
+client.crp('resources/data/rgc')
+[data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
+pairspikeall = data.pairspikeall;
 
 nlfun = obj.generatorFunction;
 tic
