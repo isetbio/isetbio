@@ -190,8 +190,8 @@ classdef osWindow < handle
             screenSize = get(0,'ScreenSize');
             screenSize(4) = screenSize(4)*0.9;
             set(obj.hFig, 'Name', figureTitle, 'Menubar', 'none', 'Toolbar', 'none', 'Color', [0.1 0.1 0.1], ...
-                'Position',[10+rand(1,1)*300 10+rand(1,1)*100 screenSize(4)*aspectRatio screenSize(4)], ...
-                'SizeChangedFcn', {@resizeOSwindow, obj, aspectRatio});
+                'Position',[10+rand(1,1)*300 10+rand(1,1)*100 screenSize(4)*aspectRatio screenSize(4)]);
+            %set(obj.hFig,'SizeChangedFcn', {@resizeOSwindow, obj, aspectRatio});
         end
         
         function initOuterSegmentResponseDisplays(obj)
@@ -524,7 +524,7 @@ function resizeOSwindow(hObject,Event, obj, aspectRatio)
     posVector = get(hObject,'Position');
     width = posVector(3);
     height = width/aspectRatio;
-    %Set(obj.hFig,'Position',[posVector(1:2) width height]);
+    Set(obj.hFig,'Position',[posVector(1:2) width height]);
 end
 
 
