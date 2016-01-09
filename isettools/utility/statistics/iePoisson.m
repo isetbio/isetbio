@@ -1,7 +1,7 @@
 function val = iePoisson(lambda, nSamp, useSeed)
 % Create a matrix of Poisson samples using rate parameters in lambda
 %
-%   val = iePoisson(lambda,nSamp)
+%   val = iePoisson(lambda,nSamp,[useSeed])
 %
 % The rate parameter can be a scalar, requesting multiple samples, or it
 % can be a matrix of rate parameters.

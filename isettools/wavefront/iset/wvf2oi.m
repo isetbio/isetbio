@@ -1,67 +1,99 @@
-function oi = wvf2oi(wvfP, oType, showBar)
-% Convert wavefront data to ISET optical image with optics
+function oi = wvf2oi(wvf)
+% Convert wavefront data to ISETBIO optical image with optics
 %
-%  optics = wvf2oi(wvfP, [oType])
+%    oi = wvf2oi(wvf)
 %
-% Use Zernicke polynomial data in the wvfP structure and create a
-% shift-invariant ISET optics model attached to the optical image
-% structure.
+% Use Zernicke polynomial data in the wvfP structure and create an ISETBIO
+% optical image whose optics match the wavefront data structure.
 %
-% wvfP:  A wavefront parameters structure with a PSF
-% oType: The type of oi structure 
-%     Shift invariant -- Nothing special, default 'oi' and the wvfP data are
-%     placed in the shift-invariant slot.  The optics type is set to shift
-%     invariant 
-%     
-%     Human --  The optics is set up for the pupil size of the
-%     wvfP structure, assuming a 17 mm focal length
+% Before calling this function, compute the PSF of the wvf structure.
 %
-%     Mouse --  Not yet implemented.
+% wvf:  A wavefront parameters structure (with a computed PSF)
 %
 % Examples
-%  pupilMM = 3; zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
-%  wave = [400:10:700]';
-%  wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-%  oi = wvf2oi(wvfP,'human');
-%  oi = oiSet(oi,'name','Human 3mm wvf');
+%   wvf = wvfCreate; wvf = wvfComputePSF(wvf);
+%   oi = wvf2oi(wvf); oiPlot(oi,'psf550');
 %
-% See also: oiCreate('wvf human',pupilSize,zCoefs,wave);
+%   wvf = wvfSet(wvf,'zcoeff',1,'defocus'); wvf = wvfComputePSF(wvf);
+%   oi = wvf2oi(wvf); oiPlot(oi,'psf550');
+%
+% See also: 
+%   oi = oiCreate('wvf human'); 
+%   oiPlot(oi,'psf550'); oiPlot(oi,'psf',[],420);
 %
 % Copyright Wavefront Toolbox Team 2012
 
-%%
-if notDefined('oType'),   oType = 'human'; end
-if notDefined('showBar'), showBar = ieSessionGet('wait bar'); end
+%% Set up parameters
+if notDefined('wvf'), error('Wavefront structure required.'); end
 
-% Create the shift-invariant PSF data structure
-psfData = wvf2PSF(wvfP, showBar);
-pupil  = wvfGet(wvfP,'calculated pupil','m');
+wave = wvfGet(wvf,'calc wave');
 
-%% Create the OI
-oType = ieParamFormat(oType);
-switch oType
-    case 'human'
-        oi = oiCreate(oType);
-        flength = 0.017;         % Human focal length is 17 mm
-    
-    case {'shiftinvariant','diffractionlimited','shift-invariant'}
-        oi = oiCreate;
-        flength = 0.017;         % Human focal length is 17 mm
-
-    case 'mouse'
-        %flength = .003;          % Mouse focal length is 3 mm??
-        error('Mouse not yet implemented');
-        %         oi = oiCreate(oType);
-    otherwise
-        error('Unknown type %s\n',oType);
+% First we figure out the frequency support.
+fMax = 0;
+for ww=1:length(wave)
+    f = wvfGet(wvf,'otf support','mm',wave(ww));
+    if max(f(:)) > fMax
+       fMax = max(f(:)); maxWave = wave(ww);
+    end
 end
 
-% Set up the optics and attach to OI
-optics = siSynthetic('custom', oi, psfData);
-optics = opticsSet(optics, 'model', 'shiftInvariant');
-optics = opticsSet(optics, 'fnumber', flength/pupil);
-optics = opticsSet(optics, 'flength', flength);
-optics = opticsSet(optics, 'name', 'wvf-human');
-oi     = oiSet(oi, 'optics', optics);
+% Make the frequency support in ISET as the same number of samples with the
+% wavelength with the highest frequency support from WVF.
+fx = wvfGet(wvf,'otf support','mm',maxWave);
+fy = fx;
+[X,Y] = meshgrid(fx,fy);
+c0 = find(X(1,:) == 0); r0 = find(Y(:,1) == 0);
+
+%% Set up the OTF variable for use in the ISETBIO representation
+
+nWave = length(wave); nSamps = length(fx);
+otf = zeros(nSamps,nSamps,nWave);
+
+% Interpolate the WVF OTF data into the ISET OTF data for each wavelength.
+for ww=1:length(wave)
+    f = wvfGet(wvf,'otf support','mm',wave(ww));
+    thisOTF = wvfGet(wvf,'otf',wave(ww));
+    est = interp2(f,f',thisOTF,X,Y,'cubic',0);
+    
+    % It is tragic that fftshift does not shift so that the DC term is in
+    % (1,1). Rather, fftshift puts the DC at the the highest position.
+    % So, we don't use this
+    %
+    %   otf(:,:,ww) = fftshift(otf(:,:,ww));
+    %
+    % Rather, we use circshift.  This is also the process followed in the
+    % psf2otf and otf2psf functions in the image processing toolbox.  Makes
+    % me think that Mathworks had the same issue.  Very annoying. (BW)
+    
+    % We identified the (r,c) that represent frequencies of 0 (i.e., DC).
+    % We circularly shift so that that (r,c) is at the (1,1) position.
+    otf(:,:,ww) = circshift(est,-1*[r0-1,c0-1]);
+    
+end
+
+% I sure wish this was real all the time. Sometimes (often?) it is. 
+%  psf = otf2psf(otf(:,:,ww));
+%  if ~isreal(psf), disp('psf not real'); end
+%  vcNewGraphWin; mesh(psf)
+
+%% Place the frequency support and OTF data into an ISET structure.
+
+% Build template
+oi = oiCreate;
+
+% Same wavelengths
+oi = oiSet(oi,'wave',wave);
+
+% Copy the OTF parameters.
+% Note the awful repetition of setting the wave.  Sigh. This should get
+% better. 
+oi = oiSet(oi,'optics OTF fx', fx);
+oi = oiSet(oi,'optics OTF fy', fy);
+oi = oiSet(oi,'optics otfdata', otf);
+oi = oiSet(oi,'optics wave',wave);
+oi = oiSet(oi,'optics OTF wave',wave);
+
+% Z = wvfGet(wvf,'zcoeffs');
+% oi = oiSet(oi,'zernike',Z);
 
 end

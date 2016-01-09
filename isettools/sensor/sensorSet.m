@@ -186,37 +186,24 @@ switch lower(param)
         % mis-match with the block array size
         sensor = sensorClearData(sensor);
     case {'size'}
-        % sensor = sensorSet(sensor,'size',[r c]);
-        %
-        % There are constraints on the possible sizes because of the block
-        % pattern size.  This handles that issue.  Consequently, the actual
-        % size may differ from the set size.
+        % sensor = sensorSet(sensor, 'size', [r c]);
         %
         % There are cases when we want to set a FOV rather than size.  See
-        % sensorSetSizeToFOV for those cases.
-
-        % Not sure why the size checking is needed for human case.  Check.
-        % It's a problem in sensorCompute.
+        % sensorSetSizeToFOV for those cases
+        %
+        % For camera cases where cfa repeating pattern exists, there are
+        % constraints on the possible sizes to be multiple of the block
+        % pattern size. Consequently, the actual size may differ from the
+        % set size
         sensor = sensorSet(sensor,'rows',val(1));
         sensor = sensorSet(sensor,'cols',val(2));
         sensor = sensorClearData(sensor);
 
         % In the case of human, resetting the size requires rebuilding the
         % cone mosaic
-        if sensorCheckHuman(sensor)
-            % disp('Resizing human sensor')
-            if checkfields(sensor,'human','coneType')
-                d = sensorGet(sensor, 'human cone densities');
-                rSeed = sensor.human.rSeed;
-                umConeWidth = sensorGet(sensor, 'pixel width', 'um');
-                [xy,coneType] = humanConeMosaic(val,d,umConeWidth,rSeed);
-                sensor.human.coneType = coneType;
-                sensor.human.xy = xy;
-                % Make sure the pattern field matches coneType.  It is
-                % unfortunate that we have both, though, isn't it?  Maybe
-                % we should only have pattern, not coneType?
-                sensor = sensorSet(sensor,'pattern',coneType);
-            end
+        coneP = sensorGet(sensor, 'human cone');
+        if ~isempty(coneP)
+            sensor = sensorCreateConeMosaic(sensor, coneP);
         end
 
     case {'fov','horizontalfieldofview'}
@@ -229,6 +216,7 @@ switch lower(param)
         if ~isempty(varargin), scene = varargin{1}; end
         if length(varargin) > 1, oi = varargin{2}; end
         sensor = sensorSetSizeToFOV(sensor,val, scene, oi);
+        
     case 'color'
         sensor.color = val;
     case {'filterspectra','colorfilters'}

@@ -190,17 +190,19 @@ end
 
 %---------------------------------------
 function optics = opticsHuman(pupilRadius)
-% We use the shift-invariant method for the human and add the OTF
-% data to the OTF fields.   We return the units in cyc/mm.  We use 300
-% microns/deg as the conversion factor.
-% EC - 300um/deg corresponds to a distance of 17mm (human focal length)
+% We use the shift-invariant method for the human and place the estimated
+% human OTF, using humanOTF from Marimont and Wandell, in the OTF fields.
+% 
+% The frequency support is calculated in cyc/deg but stored in units of
+% cyc/mm. (Sorry for that).  Elsewhere we use 300 microns/deg as the
+% conversion factor. This value corresponds to a distance of 17mm (human
+% focal length).  (Where? BW).
 
-% We place fnumber and focal length values that
-% are approximate for diffraction-limited in those fields, too.  But they
-% are not a good description, just the DL bounds for this type of a system.
+% We place fnumber and focal length values that are approximate for
+% diffraction-limited in those fields, too.  But they are not a good
+% description, just the diffraction limit bounds for this type of a system.
 %
-% The pupilRadius should be specified in meters
-%
+% The pupilRadius should is specified in meters.
 
 if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 fLength = 0.017;  %Human focal length is 17 mm

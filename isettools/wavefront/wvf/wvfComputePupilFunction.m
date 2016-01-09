@@ -12,6 +12,9 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 % The amplitude, A, is calculated entirely based on the assumed properties
 % of the Stiles-Crawford effect.
 %
+% This function assumes the chromatic aberration of the human eye.  That is
+% embedded in the call to wvfLCAFromWavelengthDifference, within this code.
+%
 % The pupil function is related to the PSF by the Fourier transform. See J.
 % Goodman, Intro to Fourier Optics, 3rd ed, p. 131. (MDL)
 %
@@ -151,14 +154,15 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
         end
         
-        % Compute LCA relative to measurement wavelength and then convert
-        % to microns so that we can add this in to the wavefront
-        % aberrations.
-        
-        % wvfLCAFromWavelengthDifference returns the difference in
-        % refractive power for this wavelength relative to the measured
-        % wavelength (and there should only be one, although there may be
-        % multiple calc wavelengths).
+        % Compute longitudinal chromatic aberration (LCA) relative to
+        % measurement wavelength and then convert to microns so that we can
+        % add this in to the wavefront aberrations.  The LCA is the
+        % chromatic aberration of the human eye.  It is encoded in the
+        % function wvfLCAFromWavelengthDifference. 
+        %
+        % That function returns the difference in refractive power for this
+        % wavelength relative to the measured wavelength (and there should
+        % only be one, although there may be multiple calc wavelengths).
         %  
         % We flip the sign to describe change in optical power when we pass
         % this through wvfDefocusDioptersToMicrons.
