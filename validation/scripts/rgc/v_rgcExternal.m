@@ -39,7 +39,7 @@ ieInit;
 
 % % Load stimulus movie using RemoteDataToolbox
 client = RdtClient('isetbio');
-client.credentialsDialog();
+% client.credentialsDialog();
 client.crp('resources/data/rgc')
 [data, artifact] = client.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
@@ -74,7 +74,7 @@ rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
 %% Load validation data
 % Load RDT version of output from the Chichilnisky Lab's code
 client = RdtClient('isetbio');
-client.credentialsDialog();
+% client.credentialsDialog();
 client.crp('resources/data/rgc')
 [data, artifact] = client.readArtifact('xvalall', 'type', 'mat');
 xvalall = data.xvalall;

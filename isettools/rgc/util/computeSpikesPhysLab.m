@@ -58,7 +58,7 @@ cellCtr = 0;
 % load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
 
 client = RdtClient('isetbio');
-client.credentialsDialog();
+% client.credentialsDialog();
 client.crp('resources/data/rgc')
 [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
 pairspike = data.pairspike;

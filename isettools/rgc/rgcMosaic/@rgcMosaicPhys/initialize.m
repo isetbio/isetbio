@@ -71,7 +71,7 @@ obj.numberTrials = 10;
 glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
 
 client = RdtClient('isetbio');
-client.credentialsDialog();
+% client.credentialsDialog();
 client.crp('resources/data/rgc')
 [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
 
