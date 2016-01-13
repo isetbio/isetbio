@@ -6,7 +6,7 @@ function varargout = v_osBioPhysStepResponses(varargin)
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments.
 %
-% 1/12/16      npc   Created this version after separating the relevant 
+% 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneAdaptNoise.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
@@ -44,13 +44,14 @@ function ValidationFunction(runTimeParams)
         % create stimulus temporal profile
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
-        stimulusPhotonRate = reshape(stimulusPhotonRate, [1 1 nSamples]);
 
         % create human sensor with 1 cone and load its photon rate with 
         % the stimulus photon rate time sequence
         sensor = sensorCreate('human');
         sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
         sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+        
+        % set the stimulus photon rate
         sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
 
         % create a biophysically-based outersegment model object
@@ -78,8 +79,10 @@ function ValidationFunction(runTimeParams)
                 h = figure(1); clf;
                 set(h, 'Position', [10 10 900 1200]);
             end
+            
+            % plot stimulus on the left
             subplot(numel(stimulusPhotonRates),2,(stepIndex-1)*2+1);
-            stairs(simulationTime,squeeze(stimulusPhotonRate(1,1,:)), 'r-', 'LineWidth', 2.0);
+            stairs(simulationTime, stimulusPhotonRate, 'r-', 'LineWidth', 2.0);
             set(gca, 'YLim', [0 12e5]);
             if (stepIndex == numel(stimulusPhotonRates))
             	xlabel('time (sec)','FontSize',12);
@@ -90,6 +93,7 @@ function ValidationFunction(runTimeParams)
             ylabel('stimulus (photons/sec)','FontSize',12);
             text(2.4, 9e5, sprintf('%d photons/sec',stimulusPhotonRateAmplitude), 'FontSize',12);
         
+            % plot responses on the right
             subplot(numel(stimulusPhotonRates),2,(stepIndex-1)*2+2);
             hold on;
             trialColors = [...

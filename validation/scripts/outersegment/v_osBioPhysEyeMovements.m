@@ -83,6 +83,8 @@ function ValidationFunction(runTimeParams)
     
     % Save validation data
     UnitTest.validationData('osBiophysCur', osBiophysOuterSegmentCurrent);
+    UnitTest.validationData('time', time);
+    UnitTest.validationData('stimulusPhotonRate', stimulusPhotonRate);
 end
 
 % Helper functions
