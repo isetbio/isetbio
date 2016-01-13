@@ -7,7 +7,7 @@ function varargout = v_osBioPhysStepResponses(varargin)
 % cone outer segments.
 %
 % 1/12/16      npc   Created this version after separating the relevant 
-%                    components from s_coneAdaptNoise
+%                    components from s_coneAdaptNoise.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end

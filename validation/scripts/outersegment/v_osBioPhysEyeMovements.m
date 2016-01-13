@@ -1,6 +1,6 @@
 function varargout = v_osBioPhysEyeMovements(varargin)
 % Validate the biophysical model of the cone outer segments against neural
-% data obtained during to a sequence of saccadic eye movements 
+% data obtained during a sequence of saccadic eye movements.
 %
 % This script tests the biophysically-based outer segment model of 
 % photon isomerizations to photocurrent transduction that occurs in the
@@ -13,7 +13,7 @@ function varargout = v_osBioPhysEyeMovements(varargin)
 %                    Last version with coneAdapt comparison is in tagged
 %                    version OSObjectVsOrigValidation.
 % 1/12/16      npc   Created this version after separating the eye movements 
-%                    component from s_coneModelValidate
+%                    component from s_coneModelValidate.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
