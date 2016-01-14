@@ -83,67 +83,87 @@ function ValidationFunction(runTimeParams)
         % get the computed current
         stepFlashCurrent(stepIndex,:) = osB.osGet('coneCurrentSignal');
         
+        % compute flash responses
+        flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
+        darkFlashResponse = max(flashOnlyCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
+        lightDecrementFlashResponse(stepIndex) = min(flashOnlyCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
+        lightIncrementFlashResponse(stepIndex) = max(flashOnlyCurrent(find(simulationTime>1.5)));
+ 
+        
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
                 set(h, 'Position', [10 10 900 1200]);
             end
+        
+            % plot stimulus on the left
+            subplot(nStepIntensities,3,(stepIndex-1)*3+1); 
+            plot(simulationTime, stepFlashStimulusPhotonRate, 'r-', 'LineWidth', 2.0);
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [0 12e4], 'YTick', []);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('isomer. rate','FontSize',12);
+            title(sprintf('step: %d R*/sec',stepIntensities(stepIndex)), 'FontSize',12);
+        
+            % plot compound response in the middle
+            subplot(nStepIntensities,3,(stepIndex-1)*3+2); 
+            plot(simulationTime, squeeze(stepFlashCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0); hold on
+            plot(simulationTime, squeeze(stepCurrent(stepIndex,:)), 'm:', 'LineWidth', 2.0);
+        
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)]);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('pAmps','FontSize',12);
+            title('compound response', 'FontSize',12);
+        
+            % plot flash-only response on the right
+            subplot(nStepIntensities,3,(stepIndex-1)*3+3); 
+            plot(simulationTime, flashOnlyCurrent, 'k-', 'LineWidth', 2.0);
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [-2.2 2.2]);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('pAmps','FontSize',12);
+            title('flash responses', 'FontSize',12);
+
+            drawnow;
         end
-        
-        % plot stimulus on the left
-        subplot(nStepIntensities,3,(stepIndex-1)*3+1); 
-        plot(simulationTime, stepFlashStimulusPhotonRate, 'r-', 'LineWidth', 2.0);
-        set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [0 12e4], 'YTick', []);
-        if (stepIndex == nStepIntensities)
-            xlabel('time (sec)','FontSize',12);
-        else
-            set(gca, 'XTickLabel', {});
-        end
-        ylabel('isomer. rate','FontSize',12);
-        title(sprintf('step: %d R*/sec',stepIntensities(stepIndex)), 'FontSize',12);
-        
-        % plot compound response in the middle
-        subplot(nStepIntensities,3,(stepIndex-1)*3+2); 
-        plot(simulationTime, squeeze(stepFlashCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0); hold on
-        plot(simulationTime, squeeze(stepCurrent(stepIndex,:)), 'm:', 'LineWidth', 2.0);
-        
-        set(gca, 'XLim', [simulationTime(1) simulationTime(end)]);
-        if (stepIndex == nStepIntensities)
-            xlabel('time (sec)','FontSize',12);
-        else
-            set(gca, 'XTickLabel', {});
-        end
-        ylabel('pAmps','FontSize',12);
-        title('compound response', 'FontSize',12);
-        
-        % plot flash-only response on the right
-        flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
-        lightDecrementFlashAmplitude(stepIndex) = min(flashOnlyCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
-        lightIncrementFlashAmplitude(stepIndex) = max(flashOnlyCurrent(find(simulationTime>1.5)));
-        subplot(nStepIntensities,3,(stepIndex-1)*3+3); 
-        plot(simulationTime, flashOnlyCurrent, 'k-', 'LineWidth', 2.0);
-        set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [-2.2 2.2]);
-        if (stepIndex == nStepIntensities)
-            xlabel('time (sec)','FontSize',12);
-        else
-            set(gca, 'XTickLabel', {});
-        end
-        ylabel('pAmps','FontSize',12);
-        title('flash responses', 'FontSize',12);
-        
-        drawnow;
     end % stepIndex
     
-    if (runTimeParams.generatePlots)  
+    if (runTimeParams.generatePlots)    
+        % compute sensitivity vs background intensity relation for neural data
+        % with half desens around 2500 (Angueyra and Rieke, 2013)
+        coef = [2500];
+        wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashResponse/darkFlashResponse), 'weber_fechner', coef);
+        neuralDataFit = 10.^(weber_fechner(wfcoef, stepIntensities));
+
         h = figure(2); clf;
-        set(h, 'Position', [10 10 500 500]);
+        set(h, 'Position', [10 10 1000 500]);
         hold on
-        plot(stepIntensities, lightDecrementFlashAmplitude, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]);
-        plot(stepIntensities, lightIncrementFlashAmplitude, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);
-        legend('light decrement', 'light increment');
-        set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', max([max(abs(lightDecrementFlashAmplitude)) max(abs(lightIncrementFlashAmplitude))])*[-1 1], 'FontSize', 12);
+        subplot(1,2,1)
+        loglog(stepIntensities, -lightDecrementFlashResponse/darkFlashResponse, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]);
+        title('light decrement flash sensitivity');
+        set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
         xlabel('step intensity (R*/sec)', 'FontSize', 12);
-        ylabel('flash response (pAmps)','FontSize', 12);
+        ylabel('flash response / dark flash response','FontSize', 12);
+        
+        subplot(1,2,2)
+        loglog(stepIntensities, lightIncrementFlashResponse/darkFlashResponse, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);
+        hold on;
+        loglog(stepIntensities, neuralDataFit, 'm-', 'LineWidth', 2.0);
+        title('light increment flash');
+        legend('model', 'neural data');
+        set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
+        xlabel('step intensity (R*/sec)', 'FontSize', 12);
+        ylabel('flash response / dark flash response','FontSize', 12);
     end
     
 end
