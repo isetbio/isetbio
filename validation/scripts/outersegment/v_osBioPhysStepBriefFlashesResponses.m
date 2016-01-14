@@ -166,4 +166,13 @@ function ValidationFunction(runTimeParams)
         ylabel('flash response / dark flash response','FontSize', 12);
     end
     
+    % Save validation data
+    UnitTest.validationData('stepCurrent', stepCurrent);
+    UnitTest.validationData('stepFlashCurrent',stepFlashCurrent);
+    UnitTest.validationData('simulationTime', simulationTime);
+    UnitTest.validationData('stimPeriod', stimPeriod);
+    UnitTest.validationData('flashTime', flashTime);
+    UnitTest.validationData('flashDur', flashDur);
+    UnitTest.validationData('flashIntensity', flashIntensity);
+    UnitTest.validationData('stepIntensities',stepIntensities);
 end
