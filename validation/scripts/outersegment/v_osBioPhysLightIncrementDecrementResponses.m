@@ -32,28 +32,26 @@ function ValidationFunction(runTimeParams)
     stimulusPhotonRateAmplitudes = 500 * 2.^(1:7); % photons/sec
     contrastsExamined = [-1 1];
     
+    % create human sensor with 1 cone
+    sensor = sensorCreate('human');
+    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+
+            
     for stepIndex = 1:numel(stimulusPhotonRateAmplitudes)
         % create stimulus temporal profile
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(100:nSamples-100,1) = stimulusPhotonRateAmplitudes(stepIndex);
         
         for contrastIndex = 1:numel(contrastsExamined)   
-
             fprintf('Running simulation for step #%d, contrast #: %d\n', stepIndex, contrastIndex);
             
             % generate step (decrement/increment)
             stimulusPhotonRateStep(contrastIndex, :) = stimulusPhotonRate;
             stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));
             
-            % create human sensor with 1 cone and load its photon rate with 
-            % the stimulus photon rate time sequence
-            sensor = sensorCreate('human');
-            sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-            sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-            
             % set the stimulus photon rate
             sensor = sensorSet(sensor, 'photon rate', reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]));
-
             
             % create a biophysically-based outersegment model object
             osB = osBioPhys();
@@ -77,16 +75,13 @@ function ValidationFunction(runTimeParams)
             
         end % contrastIndex
 
-    
-    
+
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
                 set(h, 'Position', [10 10 900 1200]);
             end
             
-            % plot every 5-th time sample
-        
             % plot stimulus on the left
             subplot(numel(stimulusPhotonRateAmplitudes),2,(stepIndex-1)*2+1); 
             plot([simulationTime(1) simulationTime(end)], stimulusPhotonRateAmplitudes(stepIndex)*[1 1], 'k-'); hold on;
@@ -100,7 +95,6 @@ function ValidationFunction(runTimeParams)
             end
             ylabel('stimulus (photons/sec)','FontSize',12);
             text(0.1, stimulusPhotonRateAmplitudes(stepIndex)+10000, sprintf('step: %d ph/sec',stimulusPhotonRateAmplitudes(stepIndex)), 'FontSize',12);
-            drawnow;
             
             % plot responses on the right
             subplot(numel(stimulusPhotonRateAmplitudes),2,(stepIndex-1)*2+2); 
@@ -114,7 +108,7 @@ function ValidationFunction(runTimeParams)
             end
             ylabel('current (uAmps)','FontSize',12);
             
-            drawnow
+            drawnow;
         end % if (runTimeParams.generatePlots)
     end % stepIndex
     

@@ -30,6 +30,11 @@ function ValidationFunction(runTimeParams)
     pulseOnset  =  40001;
     pulseOffset = 120000;
     
+    % create human sensor with 1 cone
+    sensor = sensorCreate('human');
+    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+        
     for stepIndex = 1:numel(stimulusPhotonRates)
         
         % retrieve the measured currents
@@ -44,12 +49,6 @@ function ValidationFunction(runTimeParams)
         % create stimulus temporal profile
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
-
-        % create human sensor with 1 cone and load its photon rate with 
-        % the stimulus photon rate time sequence
-        sensor = sensorCreate('human');
-        sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-        sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
         
         % set the stimulus photon rate
         sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
