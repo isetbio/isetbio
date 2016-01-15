@@ -138,10 +138,12 @@ end
 % Helper functions
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
     
+    fprintf('Fetching data. Please wait ...\n');
     % Download neural data from isetbio's repository
     client = RdtClient('isetbio');
     client.crp('resources/data/cones');
     [stepExample, stepExampleArtifact] = client.readArtifact('stepExample', 'type', 'mat');
+    fprintf('Done fetching data.\n');
 
     % stimulus in isomerizations/sec
     stimulusPhotonRates = stepExample.data.lightLevel;

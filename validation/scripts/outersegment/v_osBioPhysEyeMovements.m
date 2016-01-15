@@ -90,11 +90,13 @@ end
 % Helper functions
 function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses()
     
+    fprintf('Fetching data. Please wait ...\n');
     % Download neural data from isetbio's repository
     client = RdtClient('isetbio');
     client.crp('resources/data/cones');
     [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
-
+    fprintf('Done fetching data.\n');
+    
     % Retrieve the baseline corrected outer segment current
     measuredOuterSegmentCurrent = (squeeze(eyeMovementExample.data.Mean))';
     measuredOuterSegmentCurrent = measuredOuterSegmentCurrent - measuredOuterSegmentCurrent(end);
