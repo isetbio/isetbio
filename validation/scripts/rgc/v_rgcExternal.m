@@ -37,33 +37,36 @@ ieInit;
 
 %% Load stimulus movie
 
-% % Load stimulus movie using RemoteDataToolbox
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('resources/data/rgc')
-[data, artifact] = client.readArtifact('testmovieshort', 'type', 'mat');
+% Load stimulus movie using RemoteDataToolbox
+% These are small black and white van hatteren images with eye movements
+% superimposed.
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc')
+data = rdt.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
+% implay(testmovieshort,10);
 
-% % Load movie from local data
-% glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-% movieFiles = dir([glmFitPath 'testmovie*']);
-% load([glmFitPath movieFiles(1).name], 'testmovie');
-% testmovieshort = testmovie.matrix(:,:,1:1+5*120);
-% % testmovieshort = (permute(testmovieshort, [2 1 3]));
 
-%% Generate outersegment object
+%% Generate outer segment object
+
 scene = 0; sensor = 0; % not needed because using osIdentity object
 
-% osIdentity is used for input to the rgcPhys isetbio object
+% In this case, the coupled-GLM calculation converts from the frame buffer
+% values in the movie to the outer segment responses.  That form of the
+% outer segment object is called 'identity'.
 os2 = osCreate('identity');
+
+% Attach the move to the object
 os2 = osSet(os2, 'rgbData', double(testmovieshort));
 
 %% Generate RGC object
+
 % parameters not used because data is loaded from mat files
 eyeAngle = 180; % degrees
 eyeRadius = 10; % mm
 eyeSide = 'right';
 
+rgc2 = rgcCreate(
 rgc2 = rgcPhys(scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
 rgc2 = rgcSet(rgc2,'numberTrials',20);
 rgc2 = rgcCompute(rgc2, os2);
@@ -73,10 +76,10 @@ rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
 
 %% Load validation data
 % Load RDT version of output from the Chichilnisky Lab's code
-client = RdtClient('isetbio');
+rdt = RdtClient('isetbio');
 % client.credentialsDialog();
-client.crp('resources/data/rgc')
-[data, artifact] = client.readArtifact('xvalall', 'type', 'mat');
+rdt.crp('resources/data/rgc')
+[data, artifact] = rdt.readArtifact('xvalall', 'type', 'mat');
 xvalall = data.xvalall;
 
 % % Load local copy
