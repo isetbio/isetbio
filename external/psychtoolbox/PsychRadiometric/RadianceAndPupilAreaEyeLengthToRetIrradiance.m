@@ -20,6 +20,11 @@ function retIrradiance_PowerPerArea = RadianceAndPupilAreaEyeLengthToRetIrradian
 % This conversion does not take absorption in the eye into account,
 % as this is more conveniently foldeded into the spectral absorptance.
 %
+% The wavelength sampling is not needed or used, and the world would be a
+% better place if it were not passed.  But taking it out of the arg list
+% now would probably break a number of calling programs in an irritating
+% manner.
+%
 % See also: PsychRadiometric, RetIrradianceAndPupilAreaEyeLengthToRadiance, PupilAreaFromLum, EyeLength.
 %
 % 3/6/13  dhb  Wrote it.
