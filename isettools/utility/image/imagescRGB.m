@@ -59,7 +59,8 @@ else
     error('Bad image input');
 end
 
-imshow(rgbim);
-axis image;
+% Eliminated imshow and replaced with this so it would work on a Jupyter
+% hub site.
+image(rgbim); axis image; axis off
 
 end
