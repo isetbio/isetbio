@@ -70,22 +70,30 @@ addParameter(p,'eyeRadius',   8,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);
 
 % Parse and put results into structure p.
-p.parse(type, varargin{:}); params = p.Results;
+p.parse(type, varargin{:}); 
+scene        = p.Results.scene;
+sensor       = p.Results.sensor;
+outersegment = p.Results.outersegment;
+
+% Eye parameters
+eyeSide   = p.Results.eyeSide;
+eyeRadius = p.Results.eyeRadius;
+eyeAngle  = p.Results.eyeAngle;
 
 % Set key-value pairs.
 switch lower(p.Results.type)
     case {'linear','rgclinear'}
-        obj = rgcLinear(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcLinear(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     case {'lnp','rgclnp'}
-        obj = rgcLNP(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcLNP(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     case {'glm','rgcglm'}
-        obj = rgcGLM(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcGLM(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     case {'subunit','rgcsubunit'}
-        obj = rgcSubunit(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcSubunit(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     case{'phys','rgcphys'}
-        obj = rgcPhys(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcPhys(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     otherwise
-        obj = rgcLinear(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+        obj = rgcLinear(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
   
 end
 

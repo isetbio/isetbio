@@ -50,17 +50,13 @@ classdef rgcMosaicLinear < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLinear(rgc, sensor, outersegment, varargin)
+        function obj = rgcMosaicLinear(rgc, cellTypeInd, outersegment, sensor, varargin)
             % Initialize the parent class
-            obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
+            obj = obj@rgcMosaic(rgc, cellTypeInd, sensor, outersegment, varargin{:});
 
             % Initialize ourselves
             obj.initialize(rgc, sensor, outersegment, varargin{:});
             
-            % % parse the varargin
-            % for k = 1:2:numel(varargin)
-            %     obj.(varargin{k}) = varargin{k+1};
-            % end
         end
         
         % set function, see for details
