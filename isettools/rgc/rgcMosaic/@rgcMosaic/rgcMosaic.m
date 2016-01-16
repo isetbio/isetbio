@@ -53,11 +53,11 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgc, cellTypeInd, sensor, outersegment, varargin)
+        function obj = rgcMosaic(rgc, cellTypeInd, outersegment, sensor, scene, varargin)
 
             % Maybe move all the initialization into here?  
             % Initialize ourselves
-            obj.initialize(rgc, cellTypeInd, sensor, outersegment, varargin{:});
+            obj.initialize(rgc, cellTypeInd, outersegment, sensor, scene, varargin{:});
             
         end
         

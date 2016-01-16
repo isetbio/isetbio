@@ -1,4 +1,4 @@
-function initialize(obj, type, rgc, scene, sensor, outersegment, varargin)
+function initialize(obj, rgc, type, outersegment, sensor, scene, varargin)
 % intialize: a method of @rgcMosaic that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.

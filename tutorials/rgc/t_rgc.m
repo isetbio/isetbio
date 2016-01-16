@@ -109,8 +109,8 @@ os = osCompute(os, sensor);
 % osPlot(os,sensor);
 
 % Input = RGB
-% os = osCreate('identity');
-% os = osSet(os, 'rgbData', sceneRGB);
+os = osCreate('identity');
+os = osSet(os, 'rgbData', sceneRGB);
 
 %% Build rgc
 
@@ -123,7 +123,7 @@ params.outersegment = os;
 params.eyeSide = 'left'; 
 params.eyeRadius = 9; 
 params.eyeAngle = 90;
-rgc1 = rgcCreate('GLM', params);
+rgc1 = rgcCreate('linear', params);
 
 rgc1 = rgcCompute(rgc1, os);
 

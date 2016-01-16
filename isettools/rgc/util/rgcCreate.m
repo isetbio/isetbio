@@ -83,17 +83,18 @@ eyeAngle  = p.Results.eyeAngle;
 % Set key-value pairs.
 switch lower(p.Results.type)
     case {'linear','rgclinear'}
-        obj = rgcLinear(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
+        obj = rgcLinear(outersegment, sensor, scene, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'lnp','rgclnp'}
-        obj = rgcLNP(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
+        obj = rgcLNP(outersegment, sensor, scene, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'glm','rgcglm'}
-        obj = rgcGLM(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
+        obj = rgcGLM(outersegment, sensor, scene, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'subunit','rgcsubunit'}
-        obj = rgcSubunit(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
+        obj = rgcSubunit(outersegment, sensor, scene, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case{'phys','rgcphys'}
+        % NEED TO SWITCH ORDER HERE!
         obj = rgcPhys(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
     otherwise
-        obj = rgcLinear(scene, sensor, outersegment, eyeSide, eyeRadius, eyeAngle);
+        obj = rgcLinear(outersegment, sensor, scene, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
   
 end
 

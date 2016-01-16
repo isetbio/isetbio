@@ -27,13 +27,13 @@ classdef rgcSubunit < rgc
     methods
         
         % Constructor
-        function obj = rgcSubunit(scene, sensor, outersegment, varargin)
+        function obj = rgcSubunit(outersegment, sensor, scene, varargin)
             % Initialize the parent class
-            obj = obj@rgc(scene, sensor, outersegment, varargin{:});
+            obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building Subunit mosaic objects
             for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicSubunit(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcMosaicSubunit(obj, cellTypeInd, outersegment, sensor, scene, varargin{:});
             end
         end
                 

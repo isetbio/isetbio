@@ -61,13 +61,13 @@ classdef rgcGLM < rgc
     methods
         
         % Constructor
-        function obj = rgcGLM(scene, sensor, outersegment, varargin)
+        function obj = rgcGLM(outersegment, sensor, scene, varargin)
             % Initialize the parent class
-            obj = obj@rgc(scene, sensor, outersegment, varargin{:});
+            obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building GLM mosaic objects
             for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcMosaicGLM(obj, cellTypeInd, outersegment, sensor, scene, varargin{:});
             end
             
         end
