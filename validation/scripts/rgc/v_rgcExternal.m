@@ -66,8 +66,17 @@ eyeAngle = 180; % degrees
 eyeRadius = 10; % mm
 eyeSide = 'right';
 
-rgc2 = rgcCreate(
-rgc2 = rgcPhys(scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
+% rgc2 = rgcCreate('rgcPhys',scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
+
+params.scene = scene; 
+params.sensor = sensor; 
+params.outersegment = os2;
+params.eyeSide = 'left'; 
+params.eyeRadius = 9; 
+params.eyeAngle = 90;
+rgc2 = rgcCreate('rgcPhys', params);
+
+% rgc2 = rgcPhys(scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
 rgc2 = rgcSet(rgc2,'numberTrials',20);
 rgc2 = rgcCompute(rgc2, os2);
 

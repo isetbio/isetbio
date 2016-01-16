@@ -114,7 +114,16 @@ os = osCompute(os, sensor);
 
 %% Build rgc
 
-rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
+% rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
+
+clear params
+params.scene = scene; 
+params.sensor = sensor; 
+params.outersegment = os;
+params.eyeSide = 'left'; 
+params.eyeRadius = 9; 
+params.eyeAngle = 90;
+rgc1 = rgcCreate('GLM', params);
 
 rgc1 = rgcCompute(rgc1, os);
 

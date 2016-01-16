@@ -1,7 +1,15 @@
-function obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patchAngle)
+function obj = rgcCreate(type, varargin)
+% function obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patchAngle)
 % rgcCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 % 
-%   rgc = rgcCreate(model type, scene, sensor, os, eyeSide, patchRadius, patchAngle)
+%   rgc = rgcCreate(model type, params)
+%         where params = [...
+%                 scene, ...
+%                 sensor, ...
+%                 os, ...
+%                 eyeSide, ...
+%                 eyeRadius, ...
+%                 eyeAngle];
 % 
 % Inputs: 
 %       model type: 
@@ -9,6 +17,8 @@ function obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patch
 %            'LNP'    - linear-nonlinear-Poisson, see Pillow paper as below; only contains post-spike filter
 %            'GLM'    - coupled generalized linear model, see Pillow paper, includes coupling filters  
 %            'Subunit'- cones act as individual subunits
+%            'Phys'   - pulls a set of parameters measured in physiology by
+%                           the Chichilnisky lab.
 % 
 %       scene:  a scene structure
 %       sensor: a sensor structure
@@ -46,29 +56,36 @@ function obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patch
 % 
 % JRG 9/2015
 
-p = inputParser;
-p.addParameter('type','
+%%
 
-if nargin ~= 7
-        warning('\nrgcCreate: create an isetbio @rgc object.\n' ...
-            'rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patchAngle)\n'...
-            'rgc1 = rgcCreate(''Linear'', scene, sensor, identityOS, ''right'', 3.0, 180);');
-        return;
-end
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
-rgcType = 'linear';    % Default values
-if ~isempty(varargin),   rgcType = ieParamFormat(varargin{1}); end
+addRequired( p, 'type');
+addParameter(p,'scene',        'sc1');
+addParameter(p,'sensor',       's1');
+addParameter(p,'outersegment', 'os1');
+addParameter(p,'eyeSide',      'side', @ischar);
+addParameter(p,'eyeRadius',   8,     @isnumeric);
+addParameter(p,'eyeAngle',    0,     @isnumeric);
 
-%% Create the proper object
-switch rgcType
+% Parse and put results into structure p.
+p.parse(type, varargin{:}); params = p.Results;
+
+% Set key-value pairs.
+switch lower(p.Results.type)
     case {'linear','rgclinear'}
-        obj = rgcLinear(varargin{2:7});
+        obj = rgcLinear(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
     case {'lnp','rgclnp'}
-        obj = rgcLNP(varargin{2:7});
+        obj = rgcLNP(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
     case {'glm','rgcglm'}
-        obj = rgcGLM(varargin{2:7});
+        obj = rgcGLM(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
     case {'subunit','rgcsubunit'}
-        obj = rgcSubunit(varargin{2:7});
+        obj = rgcSubunit(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+    case{'phys','rgcphys'}
+        obj = rgcPhys(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
     otherwise
-        obj = rgcLinear(varargin{2:7});
+        obj = rgcLinear(p.Results.scene, p.Results.sensor, p.Results.outersegment, p.Results.eyeSide, p.Results.eyeRadius, p.Results.eyeAngle);
+  
 end
+

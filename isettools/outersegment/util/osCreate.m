@@ -1,7 +1,7 @@
-function obj = osCreate(varargin)
+function obj = osCreate(type)
 % Create an outer segment object
 %
-%   os = osCreate([osType = 'linear'],[sensor = null]);
+%   os = osCreate([osType = 'linear']);
 %
 % There are three osTypes (sublcasses of outer segment objects).  These are
 %    @osLinear   -  uses linear impulse response to calculate cone current.
@@ -26,14 +26,16 @@ function obj = osCreate(varargin)
 %
 % JRG ISETBIO Team, Copyright, 2015
 
-%% Set up the defaults
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
-% We want to use the parser structure if possible (BW)
-osType = 'linear';    % Default values
-if ~isempty(varargin),   osType = ieParamFormat(varargin{1}); end
+addRequired( p, 'type');
+
+% Parse and put results into structure p.
+p.parse(type); params = p.Results;
 
 %% Create the proper object
-switch osType
+switch params.type
     case {'linear','oslinear'}
         obj = osLinear();
     case {'biophys','osbiophys','rieke','osrieke'}
