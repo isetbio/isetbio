@@ -1,4 +1,4 @@
-function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(scene, sensor, receptiveFieldDiameter1STD)
+function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
 % buildSpatialRF: a util function of the @rgc parent class that builds the
 % spatial RF center and surround array.
 % 
@@ -22,8 +22,9 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 
 
 patchSizeX = sensorGet(sensor, 'width', 'um');
-sceneRows = sceneGet(scene,'rows');
-umPerScenePx = patchSizeX/sceneRows;
+% sceneRows = sceneGet(scene,'rows');
+sensorRows = sensorGet(sensor,'rows');
+umPerSensorPx = patchSizeX/sensorRows;
 
 % % % NEED TO MAKE THIS DIFFERENT FOR OSLINEAR INITIALIZIATION!!!!
 
@@ -39,8 +40,8 @@ patchSizeY = sensorGet(sensor, 'height', 'um');
 % Determine the number of RGCs in the mosaic
 % numberRGCsX = floor (patchSizeX / receptiveFieldDiameter1STD);
 % numberRGCsY = floor (patchSizeY / receptiveFieldDiameter1STD);
-numberRGCsX = floor ((patchSizeX/umPerScenePx) / receptiveFieldDiameter1STD);
-numberRGCsY = floor ((patchSizeY/umPerScenePx) / receptiveFieldDiameter1STD);
+numberRGCsX = floor ((patchSizeX/umPerSensorPx) / receptiveFieldDiameter1STD);
+numberRGCsY = floor ((patchSizeY/umPerSensorPx) / receptiveFieldDiameter1STD);
 
 % Determine the RGC spacing in terms of number of cones.
 % numberConesPerRF = floor (receptiveFieldDiameter1STD / coneSize(1));

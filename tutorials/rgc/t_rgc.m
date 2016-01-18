@@ -124,6 +124,7 @@ params.eyeSide = 'left';
 params.eyeRadius = 9; 
 params.eyeAngle = 90;
 rgc1 = rgcCreate('linear', params);
+% rgc1 = rgcCreate('linear', 'sensor', sensor, 'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
 rgc1 = rgcCompute(rgc1, os);
 

@@ -62,13 +62,13 @@ classdef rgcLNP < rgc
     methods
         
         % Constructor
-        function obj = rgcLNP(outersegment, sensor, scene, varargin)
+        function obj = rgcLNP(outersegment, sensor, varargin)
             % Initialize the parent class
             obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building LNP mosaic objects
             for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicLNP(obj, cellTypeInd, outersegment, sensor, scene, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcMosaicLNP(obj, cellTypeInd, outersegment, sensor, varargin{:});
             end
         end
         

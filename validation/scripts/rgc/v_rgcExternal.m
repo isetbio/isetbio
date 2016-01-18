@@ -49,8 +49,8 @@ testmovieshort = data.testmovieshort;
 
 %% Generate outer segment object
 
-scene = 0; sensor = 0; % not needed because using osIdentity object
-
+% scene = sceneCreate('harmonic'); sensor = sensorCreate('human'); % not needed because using osIdentity object
+scene = 0; sensor = 0;
 % In this case, the coupled-GLM calculation converts from the frame buffer
 % values in the movie to the outer segment responses.  That form of the
 % outer segment object is called 'identity'.

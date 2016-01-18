@@ -50,9 +50,9 @@ classdef rgcMosaicLinear < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLinear(rgc, cellTypeInd, outersegment, sensor, scene, varargin)
+        function obj = rgcMosaicLinear(rgc, cellTypeInd, outersegment, sensor, varargin)
             % Initialize the parent class
-            obj = obj@rgcMosaic(rgc, cellTypeInd, outersegment, sensor, scene, varargin{:});
+            obj = obj@rgcMosaic(rgc, cellTypeInd, outersegment, sensor, varargin{:});
             
         end
         

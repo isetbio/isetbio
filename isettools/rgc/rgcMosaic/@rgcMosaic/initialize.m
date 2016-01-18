@@ -1,4 +1,4 @@
-function initialize(obj, rgc, type, outersegment, sensor, scene, varargin)
+function initialize(obj, rgc, type, outersegment, sensor, varargin)
 % intialize: a method of @rgcMosaic that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.
@@ -53,17 +53,27 @@ end
 % Calcualte spatial RF diameter
 receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(rgc.temporalEquivEcc);
 
-patchSizeX = sensorGet(sensor, 'width', 'um');
-sceneRows = sceneGet(scene,'rows');
-umPerScenePx = patchSizeX/sceneRows;
+if isa(outersegment,'osIdentity')
+    
+    patchSizeX = sensorGet(sensor, 'width', 'um');
+    sensorRows = sensorGet(sensor,'rows');
+else
+    
+    patchSizeX = sensorGet(sensor, 'width', 'um');
+    % sceneRows = sceneGet(scene,'rows');
+    sensorRows = sensorGet(sensor,'rows');
+   
+end
 
-obj.rfDiameter = rfSizeMult(type)*(receptiveFieldDiameterParasol2STD/2)/umPerScenePx; % in microns; divide by umPerScenePx to get pixels
+umPerSensorPx = patchSizeX/sensorRows;
+
+obj.rfDiameter = rfSizeMult(type)*(receptiveFieldDiameterParasol2STD/2)/umPerSensorPx; % in microns; divide by umPerScenePx to get pixels
 
 
 
 % Build spatial RFs of all RGCs in this mosaic
 [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
-    buildSpatialRFArray(scene, sensor, obj.rfDiameter);
+    buildSpatialRFArray(sensor, obj.rfDiameter);
 
 
 %% Add temporal response function to R, G, B channels

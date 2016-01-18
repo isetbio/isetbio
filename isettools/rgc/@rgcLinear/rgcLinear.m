@@ -27,13 +27,13 @@ classdef rgcLinear < rgc
     methods
         
         % Constructor
-        function obj = rgcLinear(outersegment, sensor, scene, varargin)
+        function obj = rgcLinear(outersegment, sensor, varargin)
             % Initialize with the properties of the parent rgc class
             obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize the specific linear mosaic properties
             for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicLinear(obj, cellTypeInd, outersegment, sensor, scene, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcMosaicLinear(obj, cellTypeInd, outersegment, sensor, varargin{:});
             end
         end
         
