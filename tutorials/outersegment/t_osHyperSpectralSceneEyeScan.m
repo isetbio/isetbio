@@ -83,8 +83,8 @@ function t_osHyperSpectralSceneEyeScan
         close(hProgress);
         
         % display osWindows for interactive viewing of outer segment responses
-        osWindow(1001+imageIndex, 'biophys-based outer segment', osB, sensor, oi);
-        osWindow(1002+imageIndex, 'linear outer segment', osL, sensor, oi);
+        osWindow(1001+imageIndex, 'biophys-based outer segment', osB, sensor, oi, scene);
+        osWindow(1002+imageIndex, 'linear outer segment', osL, sensor, oi, scene);
     end
 end
 
