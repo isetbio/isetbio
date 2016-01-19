@@ -9,15 +9,18 @@
 classdef osWindow < handle
     
     properties (Dependent)
+        scene
         oi
         sensor
-        os
+        os 
     end
     
     properties (Access = private) 
+        scenePrivate;
         oiPrivate;
         osPrivate;
         sensorPrivate; 
+        zoomedInView;
         
         % figure handle
         hFig;
@@ -25,12 +28,27 @@ classdef osWindow < handle
         % struct containing all the figure axes
         axesStruct;
         
+        % the sensor view uicontrols
+        sensorViewText
+        sensorViewSlider
+        
         % the time slider uicontrol
         timeSlider;
         
         % the min, max displayed response
         minDisplayedReponseSlider
         maxDisplayedReponseSlider
+        
+        % Scene - related properties
+        % - RGB rendering of the scene
+        sceneRGBrenderingFullRes;
+        
+        % - X- and Y-axis for scene (in microns)
+        sceneXdata;
+        sceneYdata;
+        sceneXgrid;
+        sceneYgrid;
+        
         
         % Optical image - related properties
         % - struct with handles to overlay plots for the optical image
@@ -56,7 +74,7 @@ classdef osWindow < handle
         sensorViewOverlayPlots;
         sensorViewXdata;
         sensorViewYdata;
-        sensorViewOpticalImage;
+        sensorView;
         sensorXsamplingGrid;
         sensorYsamplingGrid;
         
@@ -85,11 +103,14 @@ classdef osWindow < handle
     % Public API
     methods
         % Constructor
-        function obj = osWindow(figureNo, figureTitle, os, sensor, oi)
+        function obj = osWindow(figureNo, figureTitle, os, sensor, oi, scene)
             
             obj.init(figureNo, figureTitle); 
             
+            obj.zoomedInView = 'optical image';
+            
             obj.oi = oi;
+            obj.scene = scene;
             obj.sensor = sensor;
             obj.os = os;
             
@@ -97,6 +118,7 @@ classdef osWindow < handle
             obj.generateAxesAndControls();
             obj.initOpticalImageDisplay();
             obj.initSensorViewDisplay();
+            obj.initSensorStimulusEncodingDisplay();
             obj.initOuterSegmentResponseDisplays();
         end % constructor
 
@@ -152,7 +174,7 @@ classdef osWindow < handle
             sensorRowsCols = sensorGet(obj.sensorPrivate, 'size');
             dx = sensorRowsCols(2) * sensorSampleSeparationInMicrons(2);
             dy = sensorRowsCols(1) * sensorSampleSeparationInMicrons(1);
-            obj.sensorSizeInMicrons = [dx dy]; 
+            obj.sensorSizeInMicrons = [dx dy];
            
             [R,C] = meshgrid(1:sensorRowsCols(1), 1:sensorRowsCols(2));
             obj.sensorXsamplingGrid = (C(:)-0.5) * sensorSampleSeparationInMicrons(1);
@@ -174,11 +196,42 @@ classdef osWindow < handle
             obj.opticalImageXdata = squeeze(obj.opticalImageXgrid(1,:));  % x-positions from 1st row
             obj.opticalImageYdata = squeeze(obj.opticalImageYgrid(:,1));  % y-positions from 1st col
     
-            % subsample the optical image by a factor of 2 to speed up display
+            % subsample the displayed optical image by a factor of 2 to speed up display
             k = 2;
             obj.opticalImageXdata = obj.opticalImageXdata(1):k:obj.opticalImageXdata(end);
             obj.opticalImageYdata = obj.opticalImageYdata(1):k:obj.opticalImageYdata(end);
             obj.opticalImageRGBrendering = obj.opticalImageRGBrenderingFullRes(1:k:end, 1:k:end,:);
+        end
+        
+        function set.scene(obj, scene)
+            % generate our private copy of the scene
+            obj.scenePrivate = scene;
+            
+            % generate RGB rendering of the optical image
+            obj.sceneRGBrenderingFullRes = sceneGet(obj.scenePrivate, 'rgb image');
+            
+            % compute the retinal microns per degree conversion factor
+            retinalMicronsPerPixel = oiGet(obj.oiPrivate,'wres','microns');
+            degreesPerPixel = oiGet(obj.oiPrivate, 'angularresolution');
+            retinalMicronsPerDegreeX = retinalMicronsPerPixel / degreesPerPixel(1);
+            retinalMicronsPerDegreeY = retinalMicronsPerPixel / degreesPerPixel(2);
+            
+            % we need to create the scene XY grid in retinal microns, not
+            % scene microns, because the sensor is specified in retinal microns
+            sceneSpatialSupportInMicrons = sceneGet(obj.scenePrivate,'spatial support','microns');
+            degreesPerSample = sceneGet(obj.scenePrivate,'deg per samp');
+            micronsPerSample = sceneGet(scene,'distPerSamp','microns');
+            sceneSpatialSupportInDegrees(:,:,1) = sceneSpatialSupportInMicrons(:,:,1) / micronsPerSample(1) * degreesPerSample;
+            sceneSpatialSupportInDegrees(:,:,2) = sceneSpatialSupportInMicrons(:,:,2) / micronsPerSample(2) * degreesPerSample;
+            
+            % spatial support in retinal microns
+            sceneSpatialSupport(:,:,1) = sceneSpatialSupportInDegrees(:,:,1) * retinalMicronsPerDegreeX;
+            sceneSpatialSupport(:,:,2) = sceneSpatialSupportInDegrees(:,:,2) * retinalMicronsPerDegreeY;
+            
+            obj.sceneXgrid = squeeze(sceneSpatialSupport(:,:,1)); 
+            obj.sceneYgrid = squeeze(sceneSpatialSupport(:,:,2));
+            obj.sceneXdata = squeeze(obj.sceneXgrid(1,:));  % x-positions from 1st row
+            obj.sceneYdata = squeeze(obj.sceneYgrid(:,1));  % y-positions from 1st col
         end
     end
         
@@ -186,6 +239,7 @@ classdef osWindow < handle
         
         function init(obj, figureNo, figureTitle)
             obj.hFig = figure(figureNo);
+            clf(obj.hFig);
             aspectRatio = 800/1000;
             screenSize = get(0,'ScreenSize');
             screenSize(4) = screenSize(4)*0.9;
@@ -290,14 +344,26 @@ classdef osWindow < handle
             title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f msec', 1000.0*obj.outerSegmentResponseTimeData(kPos)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
         end
         
+        function initSensorStimulusEncodingDisplay(obj)
+            positionIndex = 10;
+            currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(positionIndex,:));
+            obj.findScenePixelsUnderSensor(currentSensorPosition);
+            
+        end
         
         function initSensorViewDisplay(obj)
             positionIndex = 10;
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(positionIndex,:));
-            obj.findImagePixelsUnderSensor(currentSensorPosition);
             
+            % one or the other
+            if strcmp(obj.zoomedInView, 'optical image')
+                obj.findOpticalImagePixelsUnderSensor(currentSensorPosition);
+            elseif strcmp(obj.zoomedInView, 'scene')
+                obj.findScenePixelsUnderSensor(currentSensorPosition);
+            end
+
             cla(obj.axesStruct.sensorViewAxes);
-            obj.sensorViewOverlayPlots.p1 = image('XData', obj.sensorViewXdata, 'YData', obj.sensorViewYdata, 'CData', obj.sensorViewOpticalImage, 'parent', obj.axesStruct.sensorViewAxes);
+            obj.sensorViewOverlayPlots.p1 = image('XData', obj.sensorViewXdata, 'YData', obj.sensorViewYdata, 'CData', obj.sensorView, 'parent', obj.axesStruct.sensorViewAxes);
             hold(obj.axesStruct.sensorViewAxes, 'on');
             xpos = currentSensorPosition(1) -obj.sensorSizeInMicrons(1)/2 +  obj.sensorXsamplingGrid;
             ypos = currentSensorPosition(2) -obj.sensorSizeInMicrons(2)/2 +  obj.sensorYsamplingGrid;
@@ -318,8 +384,15 @@ classdef osWindow < handle
         
         function updateSensorViewDisplay(obj, kPos)
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(kPos,:));
-            obj.findImagePixelsUnderSensor(currentSensorPosition);
-            set(obj.sensorViewOverlayPlots.p1, 'XData', obj.sensorViewXdata, 'YData', obj.sensorViewYdata, 'CData', obj.sensorViewOpticalImage);  
+           
+            % one or the other
+            if strcmp(obj.zoomedInView, 'optical image')
+                obj.findOpticalImagePixelsUnderSensor(currentSensorPosition);
+            elseif strcmp(obj.zoomedInView, 'scene')
+                obj.findScenePixelsUnderSensor(currentSensorPosition);
+            end
+            
+            set(obj.sensorViewOverlayPlots.p1, 'XData', obj.sensorViewXdata, 'YData', obj.sensorViewYdata, 'CData', obj.sensorView);  
             xpos = currentSensorPosition(1) -obj.sensorSizeInMicrons(1)/2 +  obj.sensorXsamplingGrid;
             ypos = currentSensorPosition(2) -obj.sensorSizeInMicrons(2)/2 +  obj.sensorYsamplingGrid;
             set(obj.sensorViewOverlayPlots.p2, 'XData', xpos, 'YData', ypos); 
@@ -328,8 +401,27 @@ classdef osWindow < handle
                  'YLim', round(currentSensorPosition(2) + obj.sensorSizeInMicrons(2)*0.55*[-1 1]));
         end
         
-        function findImagePixelsUnderSensor(obj,currentSensorPosition)
-            % find image pixels falling within the sensor outline
+        function findScenePixelsUnderSensor(obj, currentSensorPosition)
+            % find scene pixels falling within the sensor outline
+            pixelIndices = find(...
+                (obj.sceneXgrid >= currentSensorPosition(1) - obj.sensorSizeInMicrons(1)*0.6) & ...
+                (obj.sceneXgrid <= currentSensorPosition(1) + obj.sensorSizeInMicrons(1)*0.6) & ...
+                (obj.sceneYgrid >= currentSensorPosition(2) - obj.sensorSizeInMicrons(2)*0.6) & ...
+                (obj.sceneYgrid <= currentSensorPosition(2) + obj.sensorSizeInMicrons(2)*0.6) );
+            [rows, cols] = ind2sub(size(obj.sceneXgrid), pixelIndices);
+            
+            rowRange = min(rows):1:max(rows);
+            colRange = min(cols):1:max(cols);
+            obj.sensorView = obj.sceneRGBrenderingFullRes(rowRange,colRange,:);
+
+            xGridSubset = obj.sceneXgrid(rowRange, colRange);
+            yGridSubset = obj.sceneYgrid(rowRange, colRange);
+            obj.sensorViewXdata = squeeze(xGridSubset(1,:));
+            obj.sensorViewYdata = squeeze(yGridSubset(:,1));
+        end
+        
+        function findOpticalImagePixelsUnderSensor(obj,currentSensorPosition)
+            % find optical image pixels falling within the sensor outline
             pixelIndices = find(...
                 (obj.opticalImageXgrid >= currentSensorPosition(1) - obj.sensorSizeInMicrons(1)*0.6) & ...
                 (obj.opticalImageXgrid <= currentSensorPosition(1) + obj.sensorSizeInMicrons(1)*0.6) & ...
@@ -339,7 +431,7 @@ classdef osWindow < handle
             
             rowRange = min(rows):1:max(rows);
             colRange = min(cols):1:max(cols);
-            obj.sensorViewOpticalImage = obj.opticalImageRGBrenderingFullRes(rowRange,colRange,:);
+            obj.sensorView = obj.opticalImageRGBrenderingFullRes(rowRange,colRange,:);
             xGridSubset = obj.opticalImageXgrid(rowRange, colRange);
             yGridSubset = obj.opticalImageYgrid(rowRange, colRange);
             obj.sensorViewXdata = squeeze(xGridSubset(1,:));
@@ -445,6 +537,33 @@ classdef osWindow < handle
             positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth bottomMargin-1.5*spatiotemporalViewHeight-25/h spatialViewWidth spatialViewHeight];
             obj.axesStruct.outerSegmentXYresponseAxes = axes('parent',obj.hFig,'unit','normalized','position', positionVector, 'Color', [0 0 0]);
             
+            % generate the optical image/scene slider
+            sensorViewColor = [0.7 0.7 0.6];
+            positionVector = [5*leftMargin+55/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+60/h 0.20 0.020];
+            obj.sensorViewText = uicontrol(...
+                'Parent', obj.hFig,...
+                'String', sprintf('sensorView: opt. image'), ...
+                'Style', 'edit',...
+                'BackgroundColor', [0.1 0.1 0.1], ...
+                'ForegroundColor',  sensorViewColor, ...
+                'HorizontalAlignment', 'left', ...
+                'FontSize', 11,...
+                'Enable', 'inactive', ...
+                'Units', 'normalized',...
+                'Position', positionVector);
+            
+            positionVector = [5*leftMargin+108/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+60/h 0.08 0.02];
+            obj.sensorViewSlider = uicontrol(...
+                'Parent', obj.hFig,...
+                'Style', 'slider',...
+                'BackgroundColor',  sensorViewColor, ...
+                'Min', 0, 'Max', 1, 'Value', 0, 'SliderStep', [1.0, 1.0], ...
+                'Units', 'normalized',...
+                'Position', positionVector);   
+            % set the slider's callback function
+            addlistener(obj.sensorViewSlider,'ContinuousValueChange', ...
+                                      @(hFigure,eventdata) sensorViewSliderCallback(obj.sensorViewSlider,eventdata, obj));
+            
             % generate the min and max displayed response editboxes
             displayedResponseRangeColor = [0.4 0.45 0.5]; 
             positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+8/h 0.10 0.020];
@@ -498,7 +617,6 @@ classdef osWindow < handle
             addlistener(obj.maxDisplayedReponseSlider,'ContinuousValueChange', ...
                                       @(hFigure,eventdata) maxDisplayedResponseSliderCallback(obj.maxDisplayedReponseSlider,eventdata, obj));
             
-
             % generate the time slider
             timeSliderLeftMargin = leftMargin;
             timeSliderBottom = (5)/h;
@@ -515,7 +633,6 @@ classdef osWindow < handle
             addlistener(obj.timeSlider,'ContinuousValueChange', ...
                                       @(hFigure,eventdata) timeSliderCallback(obj.timeSlider,eventdata, obj));                          
         end
-        
     end
 end
 
@@ -527,6 +644,18 @@ function resizeOSwindow(hObject,Event, obj, aspectRatio)
     Set(obj.hFig,'Position',[posVector(1:2) width height]);
 end
 
+% Callback for the sensor view slider
+function sensorViewSliderCallback(hObject,eventdata, obj)
+    if (get(hObject,'Value') < 0.5)
+        set(obj.sensorViewText, 'String', 'sensorView: opt. image');
+        obj.zoomedInView = 'optical image';
+    else
+        set(obj.sensorViewText, 'String', 'sensorView: scene');
+        obj.zoomedInView = 'scene';
+    end
+    currentTimeBin = round(get(obj.timeSlider,'Value'));
+    obj.updateSensorViewDisplay(currentTimeBin);
+end
 
 % Callback for time slider
 function timeSliderCallback(hObject,eventdata, obj)
