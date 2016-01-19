@@ -168,7 +168,6 @@ classdef osWindow < handle
             pos = sensorGet(obj.sensorPrivate,'positions');
             obj.sensorPositionsInMicrons(:,1) = -pos(:,1)*sensorSampleSeparationInMicrons(1);
             obj.sensorPositionsInMicrons(:,2) =  pos(:,2)*sensorSampleSeparationInMicrons(2);
-            %obj.sensorPositionsInMicrons = -bsxfun(@times, sensorGet(obj.sensorPrivate,'positions'), sensorSampleSeparationInMicrons);
             
             % compute sensor cone sampling grid
             sensorRowsCols = sensorGet(obj.sensorPrivate, 'size');
@@ -177,6 +176,7 @@ classdef osWindow < handle
             obj.sensorSizeInMicrons = [dx dy];
            
             [R,C] = meshgrid(1:sensorRowsCols(1), 1:sensorRowsCols(2));
+            R = R'; C = C';
             obj.sensorXsamplingGrid = (C(:)-0.5) * sensorSampleSeparationInMicrons(1);
             obj.sensorYsamplingGrid = (R(:)-0.5) * sensorSampleSeparationInMicrons(2);
             obj.sensorOutlineInMicrons(:,1) = [-1 -1 1 1 -1] * dx/2;
@@ -348,14 +348,12 @@ classdef osWindow < handle
             positionIndex = 10;
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(positionIndex,:));
             obj.findScenePixelsUnderSensor(currentSensorPosition);
-            
         end
         
         function initSensorViewDisplay(obj)
             positionIndex = 10;
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(positionIndex,:));
             
-            % one or the other
             if strcmp(obj.zoomedInView, 'optical image')
                 obj.findOpticalImagePixelsUnderSensor(currentSensorPosition);
             elseif strcmp(obj.zoomedInView, 'scene')
@@ -385,7 +383,6 @@ classdef osWindow < handle
         function updateSensorViewDisplay(obj, kPos)
             currentSensorPosition = squeeze(obj.sensorPositionsInMicrons(kPos,:));
            
-            % one or the other
             if strcmp(obj.zoomedInView, 'optical image')
                 obj.findOpticalImagePixelsUnderSensor(currentSensorPosition);
             elseif strcmp(obj.zoomedInView, 'scene')
