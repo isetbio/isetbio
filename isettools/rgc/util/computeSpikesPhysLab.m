@@ -133,6 +133,8 @@ hold on; for ce = 1:nCells;
 % subplot(2,1,2);
 % subplot(6,7,ce);
 convolvewin=gausswin(100);
+
+% convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
 for trind = 1:numberTrials
 %     yind= spikeTimes{ce,1,trind,1};
 %     y(trind,round(yind./dt))=1;

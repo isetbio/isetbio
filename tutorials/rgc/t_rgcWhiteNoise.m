@@ -1,6 +1,6 @@
-% t_rgc
+% t_rgcWhiteNoise
 % 
-% A tutorial for the isetbio RGC object. A drifting Gabor patch is created 
+% A tutorial for the isetbio RGC object. A white noise image is created 
 % in isetbio as a scene, and the sensor, outer segment and RGC objects are
 % computed in response to the scene. 
 
@@ -14,10 +14,16 @@ ieInit;
 
 % Set up Gabor stimulus using sceneCreate('harmonic',params)
 fov = 0.6;
-params.freq = 6; params.contrast = 1;
-params.ph  = 0;  params.ang = 0;
+
+params.meanLuminance = 200;
 params.row = 64; params.col = 64;
-params.GaborFlag = 0.2; % standard deviation of the Gaussian window
+% params.freq = 6; params.contrast = 1;
+% % params.ph  = 0;  params.ang = 0;
+% params.row = 64; params.col = 64;
+% params.GaborFlag = 0.2; % standard deviation of the Gaussian window
+
+% Create display
+display = displayCreate('CRT-Sony-HorwitzLab');
 
 % Set up scene, oi and sensor
 scene = sceneCreate('harmonic', params);
@@ -55,7 +61,7 @@ sensor = sensorSet(sensor, 'time interval', params.timeInterval);
 % sceneRGB = zeros([sceneGet(scene, 'size') params.nSteps 3]); % 3 is for R, G, B
 % sensorPhotons = zeros([sensorGet(sensor, 'size') params.nSteps]);
 % stimulus = zeros(1, params.nSteps);
-fprintf('Computing cone isomerization:    ');
+fprintf('Computing cone isomerization:    \n');
 
 % ieSessionSet('wait bar',true);
 wFlag = ieSessionGet('wait bar');
@@ -65,11 +71,19 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
-    % Update the phase of the Gabor
-    params.ph = 2*pi*(t-1)/params.nSteps; % one period over nSteps
-    scene = sceneCreate('harmonic', params);
+
+    if t == 1 
+        stimulusRGBdata = zeros(params.row,params.col,3);
+    end
+
+    stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
+    stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
+
+    % % % % Generate scene object from stimulus RGB matrix and display object
+    scene = sceneFromFile(stimulusRGBdata, 'rgb', params.meanLuminance, display);
+
     scene = sceneSet(scene, 'h fov', fov);
-    
+
     % Get scene RGB data    
     sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
     
@@ -103,10 +117,10 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Outer segment calculation
 
 % % % Input = cone current
-os = osCreate('biophys');
+% os = osCreate('biophys');
 % 
 % % Compute the photocurrent
-os = osCompute(os, sensor);
+% os = osCompute(os, sensor);
 % 
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);

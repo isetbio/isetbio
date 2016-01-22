@@ -328,8 +328,11 @@ switch lower(params.what)
         
         
         dt = .01; % make this a get from sensor
+        bindur = 1;
         
         for cellTypeInd = 1:length(obj.mosaic)
+            
+            numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
             
             vcNewGraphWin([],'upperleftbig');
              % set(gcf,'position',[1000  540 893  798]);
@@ -347,33 +350,57 @@ switch lower(params.what)
                     
                     cellCtr = cellCtr+1;
                     
-                    %             if ~sum(cellfun(@isempty,tsp))
-                    
-                    for trial = 1:maxTrials
-                        tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
-                    end
-                    
-                    
-                    % The indices are reversed to match up with the imagesc 
-                    % command used in rgcMovie.
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
-                    
-                    subplot(nCells(2),nCells(1),cellCtr2);
-                    % subplot(nCells(1),nCells(2),cellCtr);
-                    % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
-                    
-                    if sum(cellfun(@isempty,tsp))~=maxTrials
+                    for tr = 1:numberTrials;
+                        %       clear yind y
+                        % subplot(6,6,ce);
+                        % if ~isempty(spikeTimes{ce,1,tr,1});
+                        % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
+%                         subplot(2,1,1);
+                        subplot(nCells(2),nCells(1),cellCtr2);
+%                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
-                        mtsp = plotraster(tsp);
-                    else
-                        mtsp = [];
-                    end
-                    raster{xcell,ycell} = mtsp;
+                        spikeTimesP = (obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,tr,1});
+                        if ~isempty(spikeTimesP)
+
+                            hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
+                        end
+%                         axis([0 5000 0 numberTrials]);
+                        
+                        % end;
+                    end%trials;
+                    % end;
+                    
+%                     cellCtr = cellCtr+1;
+%                     
+%                     %             if ~sum(cellfun(@isempty,tsp))
+%                     
+%                     for trial = 1:maxTrials
+%                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
+%                     end
+%                     
+%                     
+%                     % The indices are reversed to match up with the imagesc 
+%                     % command used in rgcMovie.
+%                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
+%                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+%                     
+%                     subplot(nCells(2),nCells(1),cellCtr2);
+%                     % subplot(nCells(1),nCells(2),cellCtr);
+%                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
+%                     
+%                     if sum(cellfun(@isempty,tsp))~=maxTrials
+%                         
+%                         mtsp = plotraster(tsp);
+%                     else
+%                         mtsp = [];
+%                     end
+%                     raster{xcell,ycell} = mtsp;
                     
                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    axis([0 1000 0 maxTrials]);
+                    axis([0 25 0 maxTrials]);
                     
                     
                     % subplot(nCells(1),nCells(2),cellCtr);
@@ -421,8 +448,12 @@ switch lower(params.what)
                     %             if ~sum(cellfun(@isempty,tsp))
                     
                     for trial = 1:maxTrials
-                        tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
+%                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
+                        
+                        yind =  obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
+                            y(trial,round(yind./dt))=1;
                     end
+                    y(:,end) = .01;
                     
                     % The indices are reversed to match up with the imagesc 
                     % command used in rgcMovie.
@@ -434,36 +465,42 @@ switch lower(params.what)
                     
                     subplot(nCells(2),nCells(1),cellCtr2);
                     
-                    if sum(cellfun(@isempty,tsp))~=maxTrials
-                        
-                        mtsp = plotraster(tsp);
-                    else
-                        mtsp = [];
-                    end
-                    raster{xcell,ycell} = mtsp;
+                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
+                    bindur = .01;
                     
-                    % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    % axis([0 30 0 maxTrials]);
-                    
-                    plot(tt/.01,psth{xcell,ycell});
-                    if ~isnan(psth{xcell,ycell})
-                        axis([0 30 0 max(psth{xcell,ycell})]);
-                    end
-                    
-                    % hold on;
-                    % gf = obj.mosaic{1}.generatorFunction;
-                    % plot((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
-                    % axis([0 30 min(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}) max(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell})]);
+                    PSTH_rec=conv(sum(y),convolvewin,'same');
+                    plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);
+%                     
+%                     if sum(cellfun(@isempty,tsp))~=maxTrials
+%                         
+%                         mtsp = plotraster(tsp);
+%                     else
+%                         mtsp = [];
+%                     end
+%                     raster{xcell,ycell} = mtsp;
+%                     
+%                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
+%                     [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
+%                     % axis([0 30 0 maxTrials]);
+%                     
+%                     plot(tt/.01,psth{xcell,ycell});
+%                     if ~isnan(psth{xcell,ycell})
+%                         axis([0 30 0 max(psth{xcell,ycell})]);
+%                     end
+%                     
+%                     % hold on;
+%                     % gf = obj.mosaic{1}.generatorFunction;
+%                     % plot((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
+%                     % axis([0 30 min(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}) max(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell})]);
                     
                 end
             end
             
-            maxVal = max(vertcat(psth{:}));
-            axesHandles = get(gcf,'children');
-            if isnan(maxVal), maxVal = 0.00001; end;
-            axis(axesHandles,[0 30 0 maxVal])
-            clear axesHandles;
+%             maxVal = max(vertcat(psth{:}));
+%             axesHandles = get(gcf,'children');
+%             if isnan(maxVal), maxVal = 0.00001; end;
+%             axis(axesHandles,[0 30 0 maxVal])
+%             clear axesHandles;
             
             % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
             % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);

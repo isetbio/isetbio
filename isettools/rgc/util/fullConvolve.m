@@ -104,8 +104,10 @@ for xcell = 1:nCells(1)
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
-            genFunction = mosaicGet(mosaic, 'generatorFunction');
-            nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
+            if ~isa(mosaic, 'rgcMosaicLinear'); 
+                genFunction = mosaicGet(mosaic, 'generatorFunction');
+                nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
+            end
         end
         
        

@@ -66,8 +66,8 @@ classdef rgcGLM < rgc
             obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building GLM mosaic objects
-            for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicGLM(obj, cellTypeInd, outersegment, sensor, varargin{:});
+            for cellTypeInd = 1:5%length(obj.mosaic)
+                obj.mosaic{cellTypeInd,1} = rgcMosaicGLM(obj, cellTypeInd, outersegment, sensor, varargin{:});
             end
             
         end

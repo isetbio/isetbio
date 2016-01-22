@@ -54,7 +54,7 @@ eyeAngle  = p.Results.eyeAngle;
 obj.name  = p.Results.name;
 
 % Give the object a name and slots for the five cell types
-obj.mosaic = cell(5,1); % populated in initialize()
+obj.mosaic = cell(1); % populated in initialize()
 
 % Use the outersegment type to specify the inputs for the computation 
 if isa(outersegment,'osIdentity'),  obj.input = 'rgb';

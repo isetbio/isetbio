@@ -64,7 +64,7 @@ end
 
 nSamples = size(spTempStim,3);
 
-for cellTypeInd = 1%:length(obj.mosaic)
+for cellTypeInd = 1:length(obj.mosaic)
     
     rfSize = size(obj.mosaic{cellTypeInd}.sRFcenter{1,1});
     

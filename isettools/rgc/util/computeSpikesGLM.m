@@ -100,9 +100,10 @@ end
                     if ~isempty(iiPostSpk)
                         % need to reshape here for when there are no
                         % spikes?
-                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
+                        szrs = size(Vmem(iiPostSpk,:));
+                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
 %                         if nargout == 3  % Record post-spike current
-                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
+                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
 %                         end
                     end
                     rprev(icell) = 0;  % reset this cell's integral
