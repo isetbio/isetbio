@@ -67,8 +67,8 @@ classdef rgcLNP < rgc
             obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building LNP mosaic objects
-            for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicLNP(obj, cellTypeInd, outersegment, sensor, varargin{:});
+            for cellTypeInd = 1:5%length(obj.mosaic)
+                obj.mosaic{cellTypeInd,1} = rgcMosaicLNP(obj, cellTypeInd, outersegment, sensor, varargin{:});
             end
         end
         

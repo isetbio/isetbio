@@ -32,8 +32,8 @@ classdef rgcSubunit < rgc
             obj = obj@rgc(outersegment, varargin{:});
             
             % Initialize ourselves by building Subunit mosaic objects
-            for cellTypeInd = 1:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicSubunit(obj, cellTypeInd, outersegment, sensor, varargin{:});
+            for cellTypeInd = 1:5%length(obj.mosaic)
+                obj.mosaic{cellTypeInd,1} = rgcMosaicSubunit(obj, cellTypeInd, outersegment, sensor, varargin{:});
             end
         end
                 

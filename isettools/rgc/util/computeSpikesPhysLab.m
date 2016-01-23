@@ -59,7 +59,7 @@ cellCtr = 0;
 
 client = RdtClient('isetbio');
 % client.credentialsDialog();
-client.crp('resources/data/rgc')
+client.crp('resources/data/rgc');
 [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
 pairspike = data.pairspike;
 
@@ -111,8 +111,9 @@ ph=1;
 
 %%
 
-figure; 
-hold on; for ce = 1:nCells; 
+% figure; 
+% hold on; 
+for ce = 1:nCells; 
     
 %     for tr = 1:numberTrials;
 %         %       clear yind y
@@ -144,19 +145,19 @@ end
 % yind=sort(vertcat(spikeTimes{ce,1,1:numberTrials,1}),'ascend');
 % y(round(yind./dt))=1;
 PSTH_rec=conv(sum(y),convolvewin,'same');
-plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);        
-axis([0 500 0  max(PSTH_rec)])
-[maxv, maxi] = max(PSTH_rec); title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
-%     end;
+% plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);        
+% axis([0 500 0  max(PSTH_rec)])
+% [maxv, maxi] = max(PSTH_rec); title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
+% %     end;
 
 psthResponse{ce} = PSTH_rec;
 end
 
-maxVal = 100;%max(abs(horzcat(meanVoltage{:})));
-axesHandles = get(gcf,'children');
-if isnan(maxVal), maxVal = 0.00001; end;
-axis(axesHandles,[0 5 0 maxVal])
-clear axesHandles;
+% maxVal = 100;%max(abs(horzcat(meanVoltage{:})));
+% axesHandles = get(gcf,'children');
+% if isnan(maxVal), maxVal = 0.00001; end;
+% axis(axesHandles,[0 5 0 maxVal])
+% clear axesHandles;
 
 end
 

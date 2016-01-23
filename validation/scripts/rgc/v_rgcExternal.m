@@ -41,7 +41,7 @@ ieInit;
 % These are small black and white van hatteren images with eye movements
 % superimposed.
 rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc')
+rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
 % implay(testmovieshort,10);
@@ -87,7 +87,7 @@ rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
 % Load RDT version of output from the Chichilnisky Lab's code
 rdt = RdtClient('isetbio');
 % client.credentialsDialog();
-rdt.crp('resources/data/rgc')
+rdt.crp('resources/data/rgc');
 [data, artifact] = rdt.readArtifact('xvalall', 'type', 'mat');
 xvalall = data.xvalall;
 
