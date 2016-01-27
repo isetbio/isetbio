@@ -53,7 +53,12 @@ if isa(outerSegment,'osIdentity')
 %     spTempStim = spTempStim - mean(spTempStim(:));% - 0.5;%1/sqrt(2);
 
     range = max(spTempStim(:))-min(spTempStim(:));
-    spTempStim = spTempStim./range;
+    
+    if isa(obj,'rgcPhys'); 
+        spTempStim = spTempStim./range; 
+    else
+        spTempStim = 10*spTempStim./range;
+    end;
     
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')
     % This is after temporal processing - correct to set zero mean?

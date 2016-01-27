@@ -117,9 +117,9 @@ switch lower(params.what)
         %%% A surface representing the RF (center - surround)
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+        for cellTypeInd = 1%:length(obj.mosaic)
             
-            subplot(3,2,cellTypeInd);
+%             subplot(3,2,cellTypeInd);
             surface(obj.mosaic{cellTypeInd}.sRFcenter{1,1}-obj.mosaic{cellTypeInd}.sRFsurround{1,1}); shading flat; view(40,40);
             title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
@@ -327,8 +327,8 @@ switch lower(params.what)
     case{'rasterresponse'}
         
         
-        dt = .01; % make this a get from sensor
-        bindur = 1;
+        dt = 1;%.01; % make this a get from sensor
+        bindur = dt*1;
         
         for cellTypeInd = 1:length(obj.mosaic)
             
@@ -353,12 +353,14 @@ switch lower(params.what)
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
                     for tr = 1:numberTrials;
+                        clear spikeTimesP
                         %       clear yind y
                         % subplot(6,6,ce);
                         % if ~isempty(spikeTimes{ce,1,tr,1});
                         % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
 %                         subplot(2,1,1);
-                        subplot(nCells(2),nCells(1),cellCtr2);
+%                         subplot(nCells(2),nCells(1),cellCtr2);
+                        subplot(nCells(2),nCells(1),cellCtr);
 %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
                         spikeTimesP = (obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,tr,1});
@@ -400,7 +402,7 @@ switch lower(params.what)
                     
                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     % [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    axis([0 25 0 maxTrials]);
+                    axis([0 70*dt 0 maxTrials]);
                     
                     
                     % subplot(nCells(1),nCells(2),cellCtr);
@@ -442,7 +444,7 @@ switch lower(params.what)
             
             for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
                 for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
-                    
+                    clear yind y
                     cellCtr = cellCtr+1;
                     
                     %             if ~sum(cellfun(@isempty,tsp))
@@ -463,7 +465,7 @@ switch lower(params.what)
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
                     
-                    subplot(nCells(2),nCells(1),cellCtr2);
+                    subplot(nCells(2),nCells(1),cellCtr);
                     
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     bindur = .01;

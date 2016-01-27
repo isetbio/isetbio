@@ -55,6 +55,9 @@ for xcell = 1:nCells(1)
             
             % Reshape the spatial responses from spConvolve to allow for
             % efficient computation of the convolution with the temp IRF
+            
+            spResponseSize = size(spResponseCenter{xcell,ycell}(:,:,:,rgbIndex));            
+            
             spResponseCenterRS = reshape(squeeze(spResponseCenter{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
             spResponseSurroundRS = reshape(squeeze(spResponseSurround{xcell,ycell}(:,:,:,rgbIndex)), spResponseSize(1)*spResponseSize(2), nSamples);
     
@@ -64,6 +67,7 @@ for xcell = 1:nCells(1)
                 
                 % Specify starting and ending time coordinates
                 startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
+                fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 
             else            
@@ -74,7 +78,8 @@ for xcell = 1:nCells(1)
                 % Specify starting and ending time coordinates
 %                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
                 startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
-                % Take difference between center and surround response
+                % Take difference between center and surround response                
+                fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,startPoint:endPoint) - fullResponseRSSurround(:,startPoint:endPoint);
                 
             end            

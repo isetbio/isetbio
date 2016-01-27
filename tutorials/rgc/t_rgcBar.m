@@ -34,7 +34,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.01;
 params.timeInterval = 0.01;
-params.nSteps = 5;     % Number of stimulus frames
+params.nSteps = 50;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -73,10 +73,10 @@ for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
 
-    if t == 1 
+%     if t == 1 
         barMovie = zeros(params.row,params.col,3);
-    end
-    barMovie(:,1+3*t+1:1+3*t+params.barwidth,:) = 0.5 + 0.499*ones(params.row,params.barwidth,3);
+%     end
+    barMovie(:,1+t:t+params.barwidth,:) = 0.5 + 0.499*ones(params.row,params.barwidth,3);
     barMovie(1,1,:) = 0;
 
     % % % % Generate scene object from stimulus RGB matrix and display object
@@ -138,7 +138,7 @@ params.scene = scene;
 params.sensor = sensor; 
 params.outersegment = os;
 params.eyeSide = 'left'; 
-params.eyeRadius = 5; 
+params.eyeRadius = 4; 
 params.eyeAngle = 90;
 rgc1 = rgcCreate('GLM', params);
 % rgc1 = rgcCreate('linear', 'sensor', sensor, 'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
@@ -149,7 +149,7 @@ rgc1 = rgcCompute(rgc1, os);
 % rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 % rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+% rgcPlot(rgc1, 'psthResponse');
 %% Build rgc response movie
 %  https://youtu.be/R4YQCTZi7s8
 

@@ -106,14 +106,17 @@ for i = 1%:36
     % plot(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen),'b','linewidth',1);
 
     % Plot output of isetbio code
-    plot(rgc2psth{i}(1:minlen),'r ','linewidth',3);
+    plot([1:minlen]./1208,rgc2psth{i}(1:minlen),'r ','linewidth',3);
     hold on;
     % Plot output of Chichilnisky Lab code
-    plot(xvalall{i}.psth(1:minlen),':k','linewidth',2);
+    plot([1:minlen]./1208,xvalall{i}.psth(1:minlen),':k','linewidth',2);
 
-    axis([0 6285 0  100]);%max(rgc2psth{i}(1:minlen))])
+    axis([0 6285./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
-    title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
+    title(sprintf('Validation with Chichilnisky Lab Data\nmaxv = %.1f, maxi = %d',maxv,maxi));
+    xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
+    legend('ISETBIO','Lab');
+    set(gca,'fontsize',14)
 end
 
 % vcNewGraphWin; plot(diffpsth,'x')

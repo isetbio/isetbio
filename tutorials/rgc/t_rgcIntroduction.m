@@ -72,7 +72,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.005;
 params.timeInterval = 0.005;
-params.nSteps = 30;%60;     % Number of stimulus frames
+params.nSteps = 10;%60;     % Number of stimulus frames
 params.nCycles = 4;
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -98,7 +98,7 @@ for t = 1 : params.nSteps
     scene = sceneSet(scene, 'h fov', fov);
     
     % Get scene RGB data    
-    % sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
     
     % Compute optical image
     oi = oiCompute(oi, scene);    
@@ -149,7 +149,8 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 % linear is a standard convolution.  The biophys is based on Rieke's
 % biophysical work.  And identity is a copy operation.
 os = osCreate('linear');
- 
+% os = osCreate('biophys');
+
 % Compute the photocurrent
 os = osCompute(os, absorptions);
  
@@ -160,16 +161,26 @@ os = osCompute(os, absorptions);
 % osPlot(os,'photo current','cone position',[r,c])
 osPlot(os,absorptions);
 
-%%
+%% Outer segment: identity for input to RGC
+% Input = RGB
+osI = osCreate('identity');
+osI = osSet(osI, 'rgbData', sceneRGB);
+%% Build rgc
 
-os = osCreate('biophys');
- 
-% Compute the photocurrent
-os = osCompute(os, absorptions);
- 
-% Plot the photocurrent for a pixel
-% Let's JG and BW mess around with various plotting things to check the
-% validity.
-%
-% osPlot(os,'photo current','cone position',[r,c])
-osPlot(os,absorptions);
+% rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
+
+clear params
+params.scene = scene; 
+params.sensor = absorptions; 
+params.outersegment = osI;
+params.eyeSide = 'left'; 
+params.eyeRadius = 5; 
+params.eyeAngle = 90;
+rgc1 = rgcCreate('GLM', params);
+% rgc1 = rgcCreate('linear', 'sensor', sensor, 'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
+
+rgc1 = rgcCompute(rgc1, osI);
+
+% rgcPlot(rgc1, 'mosaic');
+% rgcPlot(rgc1, 'linearResponse');
+rgcPlot(rgc1, 'spikeResponse');

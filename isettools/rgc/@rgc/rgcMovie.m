@@ -53,7 +53,7 @@ for cellTypeInd = 1:length(obj.mosaic)
             x1 = x1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(1);
             y1 = y1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(2);
             
-            k = 1:30;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:500;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             % Color fill indices by magntidue of response
             % Need to loop instead of vectorize for some unknown reason
@@ -93,7 +93,7 @@ h1 = figure;
 set(gcf,'position',[548   606   993   839]);
 
 % Initialize video file
-vObj = VideoWriter('barLongOct27.mp4','MPEG-4');
+vObj = VideoWriter('barJan27.mp4','MPEG-4');
 vObj.FrameRate = 30;
 vObj.Quality = 100;
 open(vObj);
@@ -113,11 +113,11 @@ for cellTypeInd = 1:length(obj.mosaic)
 end
 
 % Set axes limits
-xAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),1);
-yAxisLimit = size(squeeze(sceneRGB(:,:,1,1)),2);
+xAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),1));
+yAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),2));
 
 % Build each frame and gcf
-for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+for k = 2:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
     
@@ -130,6 +130,9 @@ for k = 2:28%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         image(mosaicall{cellTypeInd}(:,:,k)');
         
         % Draw RF contours on same image
+%         plot(spatialRFcontours{1,1,1}(1,2:end),spatialRFcontours{xcell,ycell,1}(2,2:end))
+%             spatialRFcontours{xcell,ycell,1}(2,2:end),...
+%             'color',cmap(cellTypeInd,:));
         spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
         spatialRFcontoursMosaicArr = horzcat(spatialRFcontoursMosaic{:,:,1});
         

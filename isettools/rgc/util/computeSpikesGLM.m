@@ -101,9 +101,17 @@ end
                         % need to reshape here for when there are no
                         % spikes?
                         szrs = size(Vmem(iiPostSpk,:));
-                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
+%                         Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
+                       
+                        % CANNOT USE RESHAPE - IT MIXES ROWS AND COLS!!
+                        % Spikes lose their shape
+                        Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
 %                         if nargout == 3  % Record post-spike current
-                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
+%                             Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+reshape(squeeze(ihhi(:,icell,1:mxi-ispk)),szrs);
+                        
+                        % CANNOT USE RESHAPE - IT MIXES ROWS AND COLS!!
+                        % Spikes lose their shape
+                            Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+squeeze(ihhi(:,icell,1:mxi-ispk))';
 %                         end
                     end
                     rprev(icell) = 0;  % reset this cell's integral

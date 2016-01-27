@@ -103,11 +103,11 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Outer segment calculation
 
 % % % Input = cone current
-os = osCreate('biophys');
-% 
+% os = osCreate('biophys');
+
 % % Compute the photocurrent
-os = osCompute(os, sensor);
-% 
+% os = osCompute(os, sensor);
+
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
 
@@ -135,7 +135,7 @@ rgc1 = rgcCompute(rgc1, os);
 % rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 % rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+% rgcPlot(rgc1, 'psthResponse');
 %% Build rgc response movie
 %  https://youtu.be/R4YQCTZi7s8
 

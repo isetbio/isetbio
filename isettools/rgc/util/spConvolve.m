@@ -64,6 +64,10 @@ for rgbIndex = 1:channelSize
                 else
                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');
                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
+                    
+                    
+%                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;
+%                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = spRFsurround(gz,gz).*spStim;
 
                 end
                 clear  gz

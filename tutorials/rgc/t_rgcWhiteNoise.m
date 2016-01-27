@@ -149,7 +149,7 @@ rgc1 = rgcCompute(rgc1, os);
 % rgcPlot(rgc1, 'linearResponse');
 rgcPlot(rgc1, 'spikeResponse');
 % rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+% rgcPlot(rgc1, 'psthResponse');
 %% Build rgc response movie
 %  https://youtu.be/R4YQCTZi7s8
 
