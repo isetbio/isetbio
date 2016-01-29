@@ -1,8 +1,9 @@
 classdef rgc < handle
-% The @rgc parent class is a component of isetbio that is used to compute
-% the responses of retinal ganglion cells from the isetbio @scene or @outerSegment 
-% objects. Subclasses of @rgc include @rgcLinear, @rgcLNP and @rgcGLM and 
-% are used to instantiate specific models of RGC processing.
+% The rgc parent class represents the mosaic of cells in the inner retina 
+%
+% from the isetbio @scene or @outerSegment objects. Subclasses of
+% @rgc include @rgcLinear, @rgcLNP and @rgcGLM and are used to
+% instantiate specific models of RGC processing.
 % 
 % See isetbio/scripts/xNeedsChecking/rgc/s_rgc.m for a tutorial.
 % 
@@ -21,12 +22,10 @@ classdef rgc < handle
 % 
 % Methods: intialize, set, get, compute, plot, movie
 %       see individual .m files for details.
-%        
 % 
 % (c) isetbio
 % 
 % 9/2015 JRG
-% 
 % 
 
     % Public read/write properties
@@ -41,25 +40,35 @@ classdef rgc < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        name; 
-        input;
-        eyeSide;
-        eyeRadius;
-        eyeAngle;
-        temporalEquivEcc;        
-        mosaic;
+        % The type of computation is specified by the rgc
+        % subclass
+        % These are the general inner retina parameters
+        name;                  % Name of innerRetina, typically species name
+        
+        % Input spacing and count
+        row;                   % N Stimulus row samples
+        col;                   % N Stimulus col samples
+        spacing;               % Stimulus input spacing (um)
+        timing;                % Stimulus temporal sampling (sec)
+        
+        % Eye properties
+        eyeSide;               % Left or right eye
+        eyeRadius;             % Position of patch in radius
+        eyeAngle;              % and angle (degrees)
+        temporalEquivEcc;      % Temporal equivalent eccentricity
+        
+        % The ganglion cell types as a cell array
+        mosaic;                
     end
     
     % Private properties. Only methods of the parent class can set these
     properties(Access = private)
-        
     end
     
     % Public methods
     methods
-        
-        function obj = rgc(outersegment, varargin)
-            obj.initialize(outersegment, varargin{:});
+        function obj = rgc(params)
+            obj.initialize(params);
         end
         
         % set function, see rgcSet
@@ -99,8 +108,8 @@ classdef rgc < handle
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
 
-        spConvolve
-        fullConvolve
+        spConvolve(obj);
+        fullConvolve(obj);
        
     end
     

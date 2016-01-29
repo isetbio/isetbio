@@ -1,13 +1,22 @@
 classdef rgcLinear < rgc 
-% @rgcLinear: a subclass of @rgc. This subclass implements retinal
-% ganglion cell computations with the @outerSegment object as input. 
-% This model follows the details of the linear model outlined in
-% Chichilnisky & Kalmar (2002), and incorporates other anatomical and
-% physiological data from several other sources for parameters like
-% receptive field spacing, spatial/temporal linear filters and
-% nonlinearities. See comments below for details and references.
+% @rgcLinear: a subclass of @rgc. 
 %
-% 9/2015 JRG
+% This subclass implements retinal ganglion cell computations
+% with the @outerSegment object as input. This model follows the
+% details of the linear model outlined in Chichilnisky & Kalmar
+% (2002), and incorporates other anatomical and physiological
+% data from several other sources for parameters like receptive
+% field spacing, spatial/temporal linear filters and
+% nonlinearities. 
+%
+% This class has no differences from the superclass of rgc.  So,
+% really it is a placeholder for some day when we might decide it
+% needs its own properties.
+%
+% See also:  *rgcCreate* for how to initialize the parameters
+%
+% 9/2015 JRG Copyright ISETBIO Team
+
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
@@ -15,8 +24,6 @@ classdef rgcLinear < rgc
            
     % Protected properties.
     properties (SetAccess = private, GetAccess = public)
-       
-
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -27,14 +34,17 @@ classdef rgcLinear < rgc
     methods
         
         % Constructor
-        function obj = rgcLinear(outersegment, sensor, varargin)
-            % Initialize with the properties of the parent rgc class
-            obj = obj@rgc(outersegment, varargin{:});
+        function obj = rgcLinear(params)
+            % Initialize the parameters of the rgc parent class
+            % The params are checked before we get here in the
+            % rgcCreate() function.
+            obj = obj@rgc(params);
+
+            % We think people should be forced to decide and
+            % choose their mosaics rather than it happening like
+            % this, behind the scenes.  To discuss. Initialize
+            % the specific linear mosaic properties
             
-            % Initialize the specific linear mosaic properties
-            for cellTypeInd = 1:5%length(obj.mosaic)
-                obj.mosaic{cellTypeInd,1} = rgcMosaicLinear(obj, cellTypeInd, outersegment, sensor, varargin{:});
-            end
         end
         
         % set function, see superclass method in @rgc for details

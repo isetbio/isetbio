@@ -1,11 +1,12 @@
 classdef rgcMosaic < handle
-% @rgcMosaic: a class with a parent @rgc object, each @rgcMosaic stores
-% properties for one type of RGC cell mosaic, e.g., ON midget or small
-% bistratified. The parent @rgc object stores each @rgcMosaic as a cell in
-% rgcObj.mosaic such that the properties of an @rgcMosaic object can be
-% viewed with 'rgcObj.mosaic{1}'. 
-% 
-%       rgc.mosaic = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
+% @rgcMosaic: a subclass of the @rgc object
+%
+% Each rgcMosaic stores properties for one type of RGC cell
+% mosaic, e.g., ON midget or small bistratified. 
+%
+% The parent rgc class stores multiple mosaics as a cell array,
+% as well as a few other basic properties about the inner retina
+% position and the stimulus size.
 % 
 % cellTypeInd = 1: ON parasol
 % cellTypeInd = 2: OFF parasol
@@ -33,16 +34,19 @@ classdef rgcMosaic < handle
            
     % Protected properties.
     properties (SetAccess = protected, GetAccess = public)
-        cellType;
-        rfDiameter;
-        rfDiaMagnitude;
-        cellLocation;
-        sRFcenter;
-        sRFsurround;
-        tCenter;
-        tSurround;
-        linearResponse;
-
+        cellType;           % Possible types are ...
+        rfDiameter;         % receptive field center diameter
+        % We should estimate the rf center sigma
+        % rfDiaMagnitude;
+        
+        % Cell array cellLocation{i}{j} = [x,y] position
+        % (microns)
+        cellLocation;       
+        sRFcenter;          % spatial RF of the center on the receptor grid
+        sRFsurround;        % spatial RF of the surround
+        tCenter;            % temporal impulse response of the center
+        tSurround;          %    and of the surround (1 ms timing by default)
+        linearResponse;     % Store the linear response after convolution
     end
     
     % Private properties. Only methods of the parent class can set these

@@ -38,7 +38,9 @@ function rgcPlot(obj, varargin)
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
 error(nargchk(0, Inf, nargin));
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
 
 % This flag causes the parser not to throw an error here in the superclass
 % call. The subclass call will throw an error.
@@ -437,7 +439,7 @@ switch lower(params.what)
         
         
     case{'psthresponse'}
-        
+        % Post-stimulus time histogram
         
         dt = .01; % make this a get from sensors
         

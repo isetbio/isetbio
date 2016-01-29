@@ -1,4 +1,4 @@
-function initialize(obj, outersegment, varargin)
+function initialize(obj, params)
 % iinitializes the rgc object. 
 %
 % Inputs: 
@@ -37,27 +37,30 @@ function initialize(obj, outersegment, varargin)
 %  rgc = rgcLNP(sensor, osIdentity, 'right', 3.75, 180);
 %  rgc = rgcGLM(sensor, osIdentity, 'right', 3.75, 180);
 % 
-% 09/2015 JRG
+% 09/2015 JRG Copyright ISETBIO Team
 
+% p = inputParser;
+% p.addRequired('outersegment');
+% p.addParameter('eyeSide',  'left', @ischar);
+% p.addParameter('eyeRadius', 1.25,  @isnumeric);
+% p.addParameter('eyeAngle',  50,    @isnumeric);
+% p.addParameter('name',     'macaque RGC', @ischar);
 
-p = inputParser;
-p.addRequired('outersegment');
-p.addParameter('eyeSide',  'left', @ischar);
-p.addParameter('eyeRadius', 1.25,  @isnumeric);
-p.addParameter('eyeAngle',  50,    @isnumeric);
-p.addParameter('name',     'macaque RGC', @ischar);
-
-p.parse(outersegment,varargin{:});
-obj.eyeSide   = p.Results.eyeSide;
-obj.eyeRadius = p.Results.eyeRadius;
-obj.eyeAngle  = p.Results.eyeAngle;
-obj.name  = p.Results.name;
+% p.parse(outersegment,varargin{:});
+obj.eyeSide   = params.eyeSide;
+obj.eyeRadius = params.eyeRadius;
+obj.eyeAngle  = params.eyeAngle;
+obj.name      = params.name;
+obj.row       = params.row;
+obj.col       = params.col;
+obj.spacing   = params.spacing;
+obj.timing    = params.timing;
 
 % Give the object a name and slots for the five cell types
 obj.mosaic = cell(1); % populated in initialize()
 
 % Use the outersegment type to specify the inputs for the computation 
-obj.input = class(outersegment);
+% obj.input = class(outersegment);
     
 % Get the TEE.
 obj.temporalEquivEcc = retinalLocationToTEE(obj.eyeAngle, obj.eyeRadius, obj.eyeSide);

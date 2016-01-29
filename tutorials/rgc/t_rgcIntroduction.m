@@ -1,17 +1,17 @@
-
-%% t_rgcIntroduction
+%%
 %
 % In which our heroes lay out the basic architecture of the rgc class and
 % its specializations.
+%
+% Aspirational:
+%    function [scene, sceneRGB, oi, sensor] = movieCreate(varargin)
 %
 % JG/BW ISETBIO Team, Copyright 2015
 % (HJ) ISETBIO TEAM, 2014
 % (JRG) modified 10/2015
 %
-% Aspirational:
-%    function [scene, sceneRGB, oi, sensor] = movieCreate(varargin)
-%
 
+%%
 ieInit
 
 %% Aspirational:
@@ -75,6 +75,7 @@ params.timeInterval = 0.005;
 params.nSteps = 10;%60;     % Number of stimulus frames
 params.nCycles = 4;
 %% Initialize the optics and the sensor
+
 oi  = oiCreate('wvf human');
 absorptions = sensorCreate('human');
 absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
@@ -86,6 +87,10 @@ absorptions = sensorSet(absorptions, 'time interval', params.timeInterval);
 
 wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
+
+% sceneRGB is (x,y,t,c)
+[row,col,w] = size(sceneGet(scene,'rgb'));
+sceneRGB = zeros(row,col,params.nSteps,w);
 
 % Loop through frames to build movie
 for t = 1 : params.nSteps
@@ -123,10 +128,10 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 % vcAddObject(sensor); sensorWindow;
 
 %% Movie of the cone absorptions over cone mosaic
-% from t_VernierCones by HM
 
-step = 1;   % Step is something about time?
 % Display gamma preference could be sent in here
+% from t_VernierCones by HM
+step = 1;   % Step is something about time?
 tmp = coneImageActivity(absorptions,[],step,false);
 
 % Show the movie
@@ -138,7 +143,7 @@ for ii=1:size(tmp,4)
     title('Cone absorptions')
     drawnow
 end
-close;
+% close;
 %% Outer segment calculation
 
 % % The outer segment converts cone absorptions into cone photocurrent.
@@ -157,21 +162,43 @@ close;
 % %
 % osPlot(os,absorptions);
 
-%% Outer segment: identity for input to RGC
-% Input = RGB
+%% This outer segment class uses the stimulus RGB
+
+% Attach the stimulus RGB to the os object
 osI = osCreate('identity');
 osI = osSet(osI, 'rgbData', sceneRGB);
 %% Build rgc
 
 clear params
-params.sensor = absorptions; 
-params.outersegment = osI;
-params.eyeSide = 'left'; 
-params.eyeRadius = 5; 
-params.eyeAngle = 90;
 
-rgc1 = rgcCreate('GLM', params);
+% params = rgcParams('linear');
 
+% params.sensor = absorptions;
+params.name    = 'Macaque inner retina 1'; % This instance
+params.model   = 'linear';    % Computational model
+params.row     = sensorGet(absorptions,'row');  % N row samples
+params.col     = sensorGet(absorptions,'col');  % N col samples
+params.spacing = sensorGet(absorptions,'width','um'); % Cone width
+params.timing  = sensorGet(absorptions,'time interval','sec'); % Temporal sampling
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 5;        % Radium in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
+
+% Coupled GLM model for the rgc (which will become innerRetina
+% Push this naming towards innerR.  
+% We should delete the 'input' because we could run the same rgc
+% object with different inputs
+% We should reduce dependencies on the other objects
+% We should clarify the construction of the different mosaics
+rgc1 = rgcCreate(params);
+
+rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
+
+%  for cellTypeInd = 1:5%length(obj.mosaic)
+%     obj.mosaic{cellTypeInd,1} = rgcMosaicLinear(obj, cellTypeInd, outersegment, sensor, varargin{:});
+%  end
+
+            
 % rgc2 = rgcCreate('linear', params);
 % rgc2 = rgcCreate('linear', 'sensor', sensor, ...
 %   'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
@@ -181,3 +208,6 @@ rgc1 = rgcCompute(rgc1, osI);
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'rasterResponse');
 rgcPlot(rgc1, 'psthResponse');
+
+
+%%
