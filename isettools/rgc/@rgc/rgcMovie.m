@@ -24,9 +24,9 @@ function rgcMovie(obj, outersegment, varargin)
 
 figure;
 set(gcf,'position',[1000  540 893  798]);
-cmap = parula(8);
+% cmap = parula(8);
 
-
+subsamp = 10;
 
 for cellTypeInd = 1:length(obj.mosaic)
         
@@ -53,7 +53,7 @@ for cellTypeInd = 1:length(obj.mosaic)
             x1 = x1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(1);
             y1 = y1 + obj.mosaic{cellTypeInd}.cellLocation{xcell,ycell}(2);
             
-            k = 1:500;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+            k = 1:subsamp:500;%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
 
             % Color fill indices by magntidue of response
             % Need to loop instead of vectorize for some unknown reason
@@ -63,12 +63,12 @@ for cellTypeInd = 1:length(obj.mosaic)
                 py = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
                                
                 if isa(obj,'rgcLinear')                 
-                    mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}(k));
+                    mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = log(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}(k));
                 else
                     
                     % mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                   
                     % mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));                  
-                    mosaicall{cellTypeInd}(px,py,k) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+                    mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
                     
                     % Bring max values to front
                     % m1 = mosaicall{cellTypeInd}(px,py,k); m2 = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
@@ -93,7 +93,7 @@ h1 = figure;
 set(gcf,'position',[548   606   993   839]);
 
 % Initialize video file
-vObj = VideoWriter('barJan27.mp4','MPEG-4');
+vObj = VideoWriter('barJan28.mp4','MPEG-4');
 vObj.FrameRate = 30;
 vObj.Quality = 100;
 open(vObj);
@@ -117,7 +117,7 @@ xAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),1));
 yAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),2));
 
 % Build each frame and gcf
-for k = 2:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
+for k = 1:subsamp:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
     
     fprintf('\b\b\b%02d%%', round(100*k/300));
     
@@ -127,7 +127,7 @@ for k = 2:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         subplot(2,3,plotOrder(cellTypeInd));
         
         % Draw fill using image
-        image(mosaicall{cellTypeInd}(:,:,k)');
+        image(mosaicall{cellTypeInd}(:,:,(k-1)/subsamp+1)');
         
         % Draw RF contours on same image
 %         plot(spatialRFcontours{1,1,1}(1,2:end),spatialRFcontours{xcell,ycell,1}(2,2:end))

@@ -108,26 +108,32 @@ if wFlag, delete(wbar); end
 sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-% % Show the movie of volts
-% vcNewGraphWin;axis image
-% for ii=1:params.nSteps
-%     imagesc(volts(:,:,ii)); pause(1); 
-% end
 
+%% Movie of the cone absorptions over cone mosaic
+% from t_VernierCones by HM
+
+step = 1;   % Step is something about time?
+% Display gamma preference could be sent in here
+tmp = coneImageActivity(sensor,[],step,false);
+
+% Show the movie
+vcNewGraphWin;
+tmp = tmp/max(tmp(:));
+for ii=1:size(tmp,4)
+    img = squeeze(tmp(:,:,:,ii));
+    imshow(img); truesize;
+    title('Cone absorptions')
+    drawnow
+end
+close;
 %% Outer segment calculation
-
-% % % Input = cone current
-% os = osCreate('biophys');
-% 
-% % Compute the photocurrent
-% os = osCompute(os, sensor);
-% 
-% % Plot the photocurrent for a pixel
-% osPlot(os,sensor);
 
 % Input = RGB
 os = osCreate('identity');
 os = osSet(os, 'rgbData', sceneRGB);
+
+% % Plot the photocurrent for a pixel
+% osPlot(os,sensor);
 
 %% Build rgc
 
@@ -147,9 +153,8 @@ rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'linearResponse');
-rgcPlot(rgc1, 'spikeResponse');
 % rgcPlot(rgc1, 'rasterResponse');
-% rgcPlot(rgc1, 'psthResponse');
+rgcPlot(rgc1, 'psthResponse');
 %% Build rgc response movie
 %  https://youtu.be/R4YQCTZi7s8
 

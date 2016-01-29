@@ -43,6 +43,9 @@ classdef rgc < handle
     properties (SetAccess = protected)
         name; 
         input;
+        eyeSide;
+        eyeRadius;
+        eyeAngle;
         temporalEquivEcc;        
         mosaic;
     end

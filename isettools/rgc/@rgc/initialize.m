@@ -48,46 +48,19 @@ p.addParameter('eyeAngle',  50,    @isnumeric);
 p.addParameter('name',     'macaque RGC', @ischar);
 
 p.parse(outersegment,varargin{:});
-eyeSide   = p.Results.eyeSide;
-eyeRadius = p.Results.eyeRadius;
-eyeAngle  = p.Results.eyeAngle;
+obj.eyeSide   = p.Results.eyeSide;
+obj.eyeRadius = p.Results.eyeRadius;
+obj.eyeAngle  = p.Results.eyeAngle;
 obj.name  = p.Results.name;
 
 % Give the object a name and slots for the five cell types
 obj.mosaic = cell(1); % populated in initialize()
 
 % Use the outersegment type to specify the inputs for the computation 
-if isa(outersegment,'osIdentity'),  obj.input = 'rgb';
-else                                obj.input = 'cone current';
-end
-
-% coneSize = sensorGet(sensor, 'pixel size', 'um' );
-% patchSizeX = sensorGet(sensor, 'width', 'um');
-% patchSizeY = sensorGet(sensor, 'height', 'um');
-% fov = sensorGet(sensor,'fov');
-% numCones = sensorGet(sensor, 'size');
-
-%% Parasol ON or OFF RGCs.
-
-% % Specify location of the retinal patch.
-% if nargin < 3 % no user input, set up defaults
-%     eyeSide = 'left';
-%     eyeRadius  = 1.25; % in um
-%     eyeAngle   = 50; % in degrees
-% else    
-%     eyeSide = varargin{1,1};
-%     eyeRadius  = varargin{1,2}; % in um
-%     eyeAngle   = varargin{1,3}; % in degrees
-% end
-
-% Set these as properties of the object.
-% obj.side = leftOrRightEye;
+obj.input = class(outersegment);
     
 % Get the TEE.
-obj.temporalEquivEcc = retinalLocationToTEE(eyeAngle, eyeRadius, eyeSide);
-    
-% Plot the TEE and the location of the retinal patch.
-% plotPatchEccentricity(retinalTheta, retinalRadius, leftOrRightEye, temporalEquivEcc)
+obj.temporalEquivEcc = retinalLocationToTEE(obj.eyeAngle, obj.eyeRadius, obj.eyeSide);
 
 %%
 

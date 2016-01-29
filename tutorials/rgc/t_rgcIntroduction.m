@@ -122,44 +122,40 @@ if wFlag, delete(wbar); end
 absorptions = sensorSet(absorptions, 'photons', isomerizations);
 % vcAddObject(sensor); sensorWindow;
 
-% %% Movie of the cone absorptions over cone mosaic
-% % from t_VernierCones by HM
-% 
-% step = 1;   % Step is something about time?
-% % Display gamma preference could be sent in here
-% tmp = coneImageActivity(absorptions,[],step,false);
-% 
-% % Show the movie
-% % Aspirational
-% % showMovie(tmp)
-% 
-% vcNewGraphWin;
-% tmp = tmp/max(tmp(:));
-% for ii=1:size(tmp,4)
-%     img = squeeze(tmp(:,:,:,ii));
-%     imshow(img); truesize;
-%     title('Cone absorptions')
-%     drawnow
-% end
+%% Movie of the cone absorptions over cone mosaic
+% from t_VernierCones by HM
 
+step = 1;   % Step is something about time?
+% Display gamma preference could be sent in here
+tmp = coneImageActivity(absorptions,[],step,false);
+
+% Show the movie
+vcNewGraphWin;
+tmp = tmp/max(tmp(:));
+for ii=1:size(tmp,4)
+    img = squeeze(tmp(:,:,:,ii));
+    imshow(img); truesize;
+    title('Cone absorptions')
+    drawnow
+end
+close;
 %% Outer segment calculation
 
-% The outer segment converts cone absorptions into cone photocurrent.
-% There are 'linear','biophys' and 'identity' types of conversion.  The
-% linear is a standard convolution.  The biophys is based on Rieke's
-% biophysical work.  And identity is a copy operation.
-os = osCreate('linear');
-% os = osCreate('biophys');
+% % The outer segment converts cone absorptions into cone photocurrent.
+% % There are 'linear','biophys' and 'identity' types of conversion.  The
+% % linear is a standard convolution.  The biophys is based on Rieke's
+% % biophysical work.  And identity is a copy operation.
+% os = osCreate('linear');
+% % os = osCreate('biophys');
 
-% Compute the photocurrent
-os = osCompute(os, absorptions);
+% % Compute the photocurrent
+% os = osCompute(os, absorptions);
  
-% Plot the photocurrent for a pixel
-% Let's JG and BW mess around with various plotting things to check the
-% validity.
-%
-% osPlot(os,'photo current','cone position',[r,c])
-osPlot(os,absorptions);
+% % Plot the photocurrent for a pixel
+% % Let's JG and BW mess around with various plotting things to check the
+% % validity.
+% %
+% osPlot(os,absorptions);
 
 %% Outer segment: identity for input to RGC
 % Input = RGB
@@ -167,20 +163,21 @@ osI = osCreate('identity');
 osI = osSet(osI, 'rgbData', sceneRGB);
 %% Build rgc
 
-% rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
-
 clear params
-params.scene = scene; 
 params.sensor = absorptions; 
 params.outersegment = osI;
 params.eyeSide = 'left'; 
 params.eyeRadius = 5; 
 params.eyeAngle = 90;
+
 rgc1 = rgcCreate('GLM', params);
-% rgc1 = rgcCreate('linear', 'sensor', sensor, 'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
+
+% rgc2 = rgcCreate('linear', params);
+% rgc2 = rgcCreate('linear', 'sensor', sensor, ...
+%   'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
 rgc1 = rgcCompute(rgc1, osI);
 
 % rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'linearResponse');
-rgcPlot(rgc1, 'spikeResponse');
+% rgcPlot(rgc1, 'rasterResponse');
+rgcPlot(rgc1, 'psthResponse');

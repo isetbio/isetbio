@@ -99,7 +99,9 @@ for xcell = 1:nCells
 %         logical_sim(i_trial,:) = binary_simulation ;
 %         drive(i_trial, :) = bindur*cif_ps_cp;
 %         toc
-        spikeTimes{xcell,1,i_trial,1} = binary_simulation; % prune extra zeros
+        binary_simall{xcell,1,i_trial,1} = binary_simulation; % prune extra zeros
+        
+        spikeTimes{xcell,1,i_trial,1} = find(binary_simulation==1)'; % prune extra zeros
         spikeTimes{xcell,1,i_trial,2} = cif0;
         spikeTimes{xcell,1,i_trial,3} = log(cif0);
         spikeDrive{xcell,1,i_trial} = cif_ps_cp; % prune extra zeros
@@ -112,9 +114,9 @@ ph=1;
 %%
 
 % figure; 
-% hold on; 
+% % hold on; 
 for ce = 1:nCells; 
-    
+%     
 %     for tr = 1:numberTrials;
 %         %       clear yind y
 %         % subplot(6,6,ce);
@@ -123,30 +125,32 @@ for ce = 1:nCells;
 %         subplot(2,1,1);
 %         spikeTimesP = find(spikeTimes{ce,1,tr,1} == 1);
 %         hold on; line([spikeTimesP',spikeTimesP'].*bindur,[tr tr-1],'color','k');
-%         axis([0 5000 0 numberTrials]);
+%         axis([0 50 0 numberTrials]);
 %         
 %         % end;
 %     end%trials;
-%     % end;
+    % end;
 
 
 
 % subplot(2,1,2);
-% subplot(6,7,ce);
+% % subplot(6,7,ce);
 convolvewin=gausswin(100);
 
 % convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
 for trind = 1:numberTrials
 %     yind= spikeTimes{ce,1,trind,1};
 %     y(trind,round(yind./dt))=1;
+% 
+%     y(trind,:)= spikeTimes{ce,1,trind,1};
 
-    y(trind,:)= spikeTimes{ce,1,trind,1};
+    y(trind,:)= binary_simall{ce,1,trind,1};
 end
 % yind=sort(vertcat(spikeTimes{ce,1,1:numberTrials,1}),'ascend');
 % y(round(yind./dt))=1;
 PSTH_rec=conv(sum(y),convolvewin,'same');
 % plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);        
-% axis([0 500 0  max(PSTH_rec)])
+% axis([0 5 0  max(PSTH_rec)])
 % [maxv, maxi] = max(PSTH_rec); title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
 % %     end;
 

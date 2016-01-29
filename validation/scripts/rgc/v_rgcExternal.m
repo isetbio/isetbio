@@ -46,11 +46,15 @@ data = rdt.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
 % implay(testmovieshort,10);
 
-
+figure;
+for frame1 = 1:200
+    imagesc(testmovieshort(:,:,frame1));
+    colormap gray; 
+    drawnow;
+end
+close;
 %% Generate outer segment object
 
-% scene = sceneCreate('harmonic'); sensor = sensorCreate('human'); % not needed because using osIdentity object
-scene = 0; sensor = 0;
 % In this case, the coupled-GLM calculation converts from the frame buffer
 % values in the movie to the outer segment responses.  That form of the
 % outer segment object is called 'identity'.
@@ -61,26 +65,17 @@ os2 = osSet(os2, 'rgbData', double(testmovieshort));
 
 %% Generate RGC object
 
-% parameters not used because data is loaded from mat files
-eyeAngle = 180; % degrees
-eyeRadius = 10; % mm
-eyeSide = 'right';
-
-% rgc2 = rgcCreate('rgcPhys',scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
-
-params.scene = scene; 
-params.sensor = sensor; 
 params.outersegment = os2;
 params.eyeSide = 'left'; 
 params.eyeRadius = 9; 
 params.eyeAngle = 90;
 rgc2 = rgcCreate('rgcPhys', params);
 
-% rgc2 = rgcPhys(scene, sensor, os2, eyeSide, eyeRadius, eyeAngle);
 rgc2 = rgcSet(rgc2,'numberTrials',20);
+
+%%
 rgc2 = rgcCompute(rgc2, os2);
 
-rgc2linear = mosaicGet(rgc2.mosaic{1},'linearResponse');
 rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
 
 %% Load validation data

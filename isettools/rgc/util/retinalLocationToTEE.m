@@ -12,7 +12,7 @@ function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, 
 % 
 % Inputs:
 %   locationTheta - the theta value of the location of the patch in polar 
-%       coordinates, in um, normally from 0-15.
+%       coordinates, in mm, normally from 5-15.
 %   locationRadius - the radius value of the location of the patch in polar 
 %       coordinates, in degrees, from 0-360.
 %   leftOrRightEye - the eye is used to determine which angular values are
@@ -20,7 +20,7 @@ function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, 
 %       (left) or '1' (right).
 % 
 % Outputs:
-%   temporalEquivEccentricity - the eccentricity (um) if the location in the
+%   temporalEquivEccentricity - the eccentricity (mm) if the location in the
 %       nasal half were mapped onto the temporal half according to lines of
 %       constant RGC density. This is used to predict RGC density and RF size.
 % 

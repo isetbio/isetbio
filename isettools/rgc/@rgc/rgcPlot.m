@@ -53,6 +53,7 @@ allowableFieldsToSet = {...
         'sRFcenter',...
         'sRFsurround',...
         'ir',...
+        'ecc',...
         'tCenter',...
         'tSurround',...
         'postSpikeFilter',...
@@ -77,7 +78,10 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    
+    case{'ecc'}
+        
+        plotPatchEccentricity(obj.eyeAngle, obj.eyeRadius, obj.eyeSide, obj.temporalEquivEcc)
+        
     case{'mosaic'}
         %%% Plot the mosaic of each RGC type
                 
@@ -310,10 +314,18 @@ switch lower(params.what)
                 end
             end
             subplot(3,2,cellTypeInd);
-            plot(horzcat(meanVoltage{:}));
+            mv = horzcat(meanVoltage{:});
+            plot((1:length(mv))/100,mv);
             xlabel(sprintf('Time (msec)'),'fontsize',16);
             ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',16);
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
+            
+            
+%         maxVal = max(max(abs(horzcat(meanVoltage{:})));
+%         if isnan(maxVal), maxVal = 0.00001; end;
+%         axis([0 30 -1 maxVal])
+        axis([0 50 -1 20]);
+        
             clear meanVoltage
         end
         
@@ -327,7 +339,7 @@ switch lower(params.what)
     case{'rasterresponse'}
         
         
-        dt = 1;%.01; % make this a get from sensor
+        dt = .01; % make this a get from sensor
         bindur = dt*1;
         
         for cellTypeInd = 1:length(obj.mosaic)
@@ -359,8 +371,8 @@ switch lower(params.what)
                         % if ~isempty(spikeTimes{ce,1,tr,1});
                         % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
 %                         subplot(2,1,1);
-%                         subplot(nCells(2),nCells(1),cellCtr2);
-                        subplot(nCells(2),nCells(1),cellCtr);
+                        subplot(nCells(1),nCells(2),cellCtr2);
+%                         subplot(nCells(2),nCells(1),cellCtr);
 %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
                         spikeTimesP = (obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,tr,1});
@@ -465,7 +477,9 @@ switch lower(params.what)
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
                     
-                    subplot(nCells(2),nCells(1),cellCtr);
+%                     subplot(nCells(2),nCells(1),cellCtr);
+                    
+                    subplot(nCells(1),nCells(2),cellCtr2);
                     
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     bindur = .01;
