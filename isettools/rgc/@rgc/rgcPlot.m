@@ -383,7 +383,8 @@ switch lower(params.what)
                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
                         end
 %                         axis([0 5000 0 numberTrials]);
-                        
+                        xlabel('Time (msec)'); ylabel('Trial Number');
+                        set(gca,'fontsize',16);
                         % end;
                     end%trials;
                     % end;
@@ -489,6 +490,8 @@ switch lower(params.what)
                     PSTH_rec=conv(sum(y),convolvewin,'same');
                     plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);
 %                     
+                        xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
+                        set(gca,'fontsize',16);
 %                     if sum(cellfun(@isempty,tsp))~=maxTrials
 %                         
 %                         mtsp = plotraster(tsp);

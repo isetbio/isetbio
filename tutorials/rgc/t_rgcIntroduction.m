@@ -175,7 +175,7 @@ clear params
 
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'linear';    % Computational model
+params.model   = 'glm';    % Computational model
 params.row     = sensorGet(absorptions,'row');  % N row samples
 params.col     = sensorGet(absorptions,'col');  % N col samples
 params.spacing = sensorGet(absorptions,'width','um'); % Cone width
@@ -192,7 +192,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % We should clarify the construction of the different mosaics
 rgc1 = rgcCreate(params);
 
-rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
+% rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
 
 %  for cellTypeInd = 1:5%length(obj.mosaic)
 %     obj.mosaic{cellTypeInd,1} = rgcMosaicLinear(obj, cellTypeInd, outersegment, sensor, varargin{:});
@@ -204,6 +204,9 @@ rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
 %   'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
 rgc1 = rgcCompute(rgc1, osI);
+
+% rgc data object 
+% movies only play signle spikes
 
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'rasterResponse');

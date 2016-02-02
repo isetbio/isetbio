@@ -46,6 +46,7 @@ classdef rgcMosaic < handle
         sRFsurround;        % spatial RF of the surround
         tCenter;            % temporal impulse response of the center
         tSurround;          %    and of the surround (1 ms timing by default)
+        rfDiaMagnitude;     % for making movies of response
         linearResponse;     % Store the linear response after convolution
     end
     
@@ -57,11 +58,11 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgc, cellTypeInd, outersegment, sensor, scene, varargin)
+        function obj = rgcMosaic(rgc, params)
 
             % Maybe move all the initialization into here?  
             % Initialize ourselves
-            obj.initialize(rgc, cellTypeInd, outersegment, sensor, scene, varargin{:});
+            obj.initialize(rgc, params);
             
         end
         

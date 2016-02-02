@@ -113,8 +113,8 @@ for cellTypeInd = 1:length(obj.mosaic)
 end
 
 % Set axes limits
-xAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),1));
-yAxisLimit = round(1.1*size(squeeze(sceneRGB(:,:,1,1)),2));
+xAxisLimit = round(1.5*size(squeeze(sceneRGB(:,:,1,1)),1));
+yAxisLimit = round(1.5*size(squeeze(sceneRGB(:,:,1,1)),2));
 
 % Build each frame and gcf
 for k = 1:subsamp:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});

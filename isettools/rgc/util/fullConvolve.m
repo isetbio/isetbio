@@ -112,6 +112,9 @@ for xcell = 1:nCells(1)
             if ~isa(mosaic, 'rgcMosaicLinear'); 
                 genFunction = mosaicGet(mosaic, 'generatorFunction');
                 nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
+            else
+                
+                nlResponse{xcell,ycell} = 0;
             end
         end
         

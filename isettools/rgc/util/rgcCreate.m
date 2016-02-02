@@ -88,7 +88,8 @@ switch ieParamFormat(p.Results.model)
     case {'lnp','rgclnp'}
         obj = rgcLNP(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'glm','rgcglm'}
-        obj = rgcGLM(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
+        obj = rgcGLM(p.Results);
+        % obj = rgcGLM(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'subunit','rgcsubunit'}
         obj = rgcSubunit(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case{'phys','rgcphys'}

@@ -114,7 +114,7 @@ sensor = sensorSet(sensor, 'volts', volts);
 step = 1;   % Step is something about time?
 % Display gamma preference could be sent in here
 tmp = coneImageActivity(sensor,[],step,false);
-
+% 
 % Show the movie
 vcNewGraphWin;
 tmp = tmp/max(tmp(:));
@@ -135,20 +135,33 @@ os = osSet(os, 'rgbData', sceneRGB);
 % osPlot(os,sensor);
 %% Build rgc
 
-
 clear params
-params.scene = scene; 
-params.sensor = sensor; 
-params.outersegment = os;
-params.eyeSide = 'left'; 
-params.eyeRadius = 4; 
-params.eyeAngle = 90;
-rgc1 = rgcCreate('GLM', params);
 
-% rgc1 = rgcCreate('linear', ...
-%     'sensor', sensor, 'outersegment', os, ...
-%     'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
+% params = rgcParams('linear');
+% Add cone eccentricity
+% Make generic function that pulls these parameters from the previous stage
 
+% params.sensor = absorptions;
+params.name    = 'Macaque inner retina 1'; % This instance
+params.model   = 'glm';    % Computational model
+params.row     = sensorGet(sensor,'row');  % N row samples
+params.col     = sensorGet(sensor,'col');  % N col samples
+params.spacing = sensorGet(sensor,'width','um'); % Cone width
+params.timing  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 4;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
+
+% Coupled GLM model for the rgc (which will become innerRetina
+% Push this naming towards innerR.  
+% We should delete the 'input' because we could run the same rgc
+% object with different inputs
+% We should reduce dependencies on the other objects
+% We should clarify the construction of the different mosaics
+rgc1 = rgcCreate(params);
+%%
+% get rid of number of trials
+% get rid of psth property
 rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');

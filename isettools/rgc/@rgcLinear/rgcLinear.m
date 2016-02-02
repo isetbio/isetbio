@@ -44,7 +44,10 @@ classdef rgcLinear < rgc
             % choose their mosaics rather than it happening like
             % this, behind the scenes.  To discuss. Initialize
             % the specific linear mosaic properties
-            
+            for cellTypeInd = 1:5%length(obj.mosaic)
+                params.cellTypeInd = cellTypeInd;
+                obj.mosaic{cellTypeInd,1} = rgcMosaicLinear(obj, params);
+            end
         end
         
         % set function, see superclass method in @rgc for details

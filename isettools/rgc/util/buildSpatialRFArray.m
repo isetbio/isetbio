@@ -1,4 +1,4 @@
-function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(sensor, receptiveFieldDiameter1STD)
+function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STD)
 % buildSpatialRF: a util function of the @rgc parent class that builds the
 % spatial RF center and surround array.
 % 
@@ -21,16 +21,16 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 % 
 
 
-patchSizeX = sensorGet(sensor, 'width', 'um');
+patchSizeX = spacing; %sensorGet(sensor, 'width', 'um');
 % sceneRows = sceneGet(scene,'rows');
-sensorRows = sensorGet(sensor,'rows');
+sensorRows = row;% sensorGet(sensor,'rows');
 umPerSensorPx = patchSizeX/sensorRows;
 
 % % % NEED TO MAKE THIS DIFFERENT FOR OSLINEAR INITIALIZIATION!!!!
 
-coneSize = sensorGet(sensor, 'pixel size', 'um' );
-patchSizeX = sensorGet(sensor, 'width', 'um');
-patchSizeY = sensorGet(sensor, 'height', 'um');
+% coneSize = sensorGet(sensor, 'pixel size', 'um' );
+patchSizeX = spacing;%sensorGet(sensor, 'width', 'um');
+patchSizeY = spacing;%sensorGet(sensor, 'height', 'um');
 % patchSizeX = sceneGet(scene,'sample size','um');
 % patchSizeY = sceneGet(scene,'sample size','um');
 % fov = sensorGet(sensor,'fov');
