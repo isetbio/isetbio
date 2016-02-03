@@ -93,15 +93,5 @@ switch lower(params.what)
             val = [val; valA(:)];
             
         end
-%     case{'linearresponse'}
-%         for cellTypeInd = 1:length(obj.mosaic)
-%             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-%             for xcell = 1:nCells(1)
-%                 for ycell = 1:nCells(2)
-%                     
-%                     val{xcell,ycell} = ((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
-%                 end
-%             end
-%         end
 end
 

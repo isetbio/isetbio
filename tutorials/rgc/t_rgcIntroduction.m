@@ -193,13 +193,17 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 rgc1 = rgcCreate(params);
 
 % rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
+%  rgc1 = rgcMosaicCreate(rgc1, 'mosaicType', 'onParasol');
+
 %%
 for cellTypeInd = 1:5%length(obj.mosaic)
     % params.cellTypeInd = cellTypeInd;
+    
     % rgcSet(rgc1, 'mosaic', rgcMosaicLinear(rgc1));
-    rgcSet(rgc1, 'mosaic', rgcMosaicGLM(rgc1));
+    % rgcSet(rgc1, 'mosaic', rgcMosaicGLM(rgc1));
+    
+    rgc1 = rgcMosaicCreate(rgc1);
 end
-
             
 % rgc2 = rgcCreate('linear', params);
 % rgc2 = rgcCreate('linear', 'sensor', sensor, ...
