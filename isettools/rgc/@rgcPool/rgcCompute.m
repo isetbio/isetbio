@@ -57,7 +57,7 @@ if isa(outerSegment,'osIdentity')
     if isa(obj,'rgcPhys'); 
         spTempStim = spTempStim./range; 
     else
-        spTempStim = 1*spTempStim./range;
+        spTempStim = 10*spTempStim./range;
     end;
     
 elseif isa(outerSegment,'osLinear')||isa(outerSegment,'osBioPhys')

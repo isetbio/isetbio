@@ -1,4 +1,4 @@
-function initialize(obj, rgc)
+function initialize(obj, rgc, cellTypeInd)
 % intialize: a method of @rgcMosaic that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.
@@ -29,15 +29,6 @@ function initialize(obj, rgc)
 % (c) isetbio
 % 09/2015 JRG
 
-%% Spatial RF arrays
-
-mosaicInd = length(rgc.mosaic);
-if mosaicInd == 1 && isempty(rgc.mosaic{mosaicInd})
-    mosaicInd = 0;
-elseif mosaicInd >= 5
-    mosaicInd = 0;
-end
-cellTypeInd = mosaicInd+1;
 
 namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
 obj.cellType = namesCellTypes{cellTypeInd};

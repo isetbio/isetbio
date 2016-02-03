@@ -60,9 +60,9 @@ classdef rgcMosaicGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicGLM(rgc)
+        function obj = rgcMosaicGLM(rgc, mosaicInd)
             % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc);
+            obj = obj@rgcMosaic(rgc, mosaicInd);
 
             % Initialize ourselves
             obj.initialize(rgc);

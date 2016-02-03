@@ -175,7 +175,7 @@ clear params
 
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'glm';    % Computational model
+params.model   = 'linear';    % Computational model
 params.row     = sensorGet(absorptions,'row');  % N row samples
 params.col     = sensorGet(absorptions,'col');  % N col samples
 params.spacing = sensorGet(absorptions,'width','um'); % Cone width

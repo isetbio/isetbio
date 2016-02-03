@@ -320,7 +320,7 @@ switch lower(params.what)
             plot((1:length(mv))/100,mv);
             xlabel(sprintf('Time (msec)'),'fontsize',16);
             ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',16);
-            title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
+            title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));%,'fontsize',16);
             
             
 %         maxVal = max(max(abs(horzcat(meanVoltage{:})));
@@ -384,7 +384,7 @@ switch lower(params.what)
                         end
 %                         axis([0 5000 0 numberTrials]);
                         xlabel('Time (msec)'); ylabel('Trial Number');
-                        set(gca,'fontsize',16);
+%                         set(gca,'fontsize',16);
                         % end;
                     end%trials;
                     % end;
@@ -491,7 +491,8 @@ switch lower(params.what)
                     plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);
 %                     
                         xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
-                        set(gca,'fontsize',16);
+                        
+%                         set(gca,'fontsize',16);
 %                     if sum(cellfun(@isempty,tsp))~=maxTrials
 %                         
 %                         mtsp = plotraster(tsp);
@@ -506,7 +507,7 @@ switch lower(params.what)
 %                     
 %                     plot(tt/.01,psth{xcell,ycell});
 %                     if ~isnan(psth{xcell,ycell})
-%                         axis([0 30 0 max(psth{xcell,ycell})]);
+                        axis([0 70 0 max(PSTH_rec)]);
 %                     end
 %                     
 %                     % hold on;
