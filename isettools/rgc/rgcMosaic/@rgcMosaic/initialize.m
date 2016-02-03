@@ -1,4 +1,4 @@
-function initialize(obj, rgc, params)
+function initialize(obj, rgc)
 % intialize: a method of @rgcMosaic that initializes the object based on a
 % series of input parameters that can include the location of the
 % retinal patch.
@@ -31,8 +31,16 @@ function initialize(obj, rgc, params)
 
 %% Spatial RF arrays
 
+mosaicInd = length(rgc.mosaic);
+if mosaicInd == 1 && isempty(rgc.mosaic{mosaicInd})
+    mosaicInd = 0;
+elseif mosaicInd >= 5
+    mosaicInd = 0;
+end
+cellTypeInd = mosaicInd+1;
+
 namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.cellType = namesCellTypes{params.cellTypeInd};
+obj.cellType = namesCellTypes{cellTypeInd};
 
 % Assign multipliers for size of spatial RFs and magnitudes of temporal IRs
 % [ON Parasol; OFF Parasol; ON Midget; OFF Midget; Small bistratified];
@@ -53,25 +61,25 @@ end
 % Calcualte spatial RF diameter
 receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(rgc.temporalEquivEcc);
 
-patchSizeX = params.spacing; %sensorGet(sensor, 'width', 'um');
-sensorRows = params.row;% sensorGet(sensor,'rows');
+patchSizeX = rgc.spacing; %sensorGet(sensor, 'width', 'um');
+sensorRows = rgc.row;% sensorGet(sensor,'rows');
 
 
 umPerSensorPx = patchSizeX/sensorRows;
 
-obj.rfDiameter = rfSizeMult(params.cellTypeInd)*(receptiveFieldDiameterParasol2STD/2)/umPerSensorPx; % in microns; divide by umPerScenePx to get pixels
+obj.rfDiameter = rfSizeMult(cellTypeInd)*(receptiveFieldDiameterParasol2STD/2)/umPerSensorPx; % in microns; divide by umPerScenePx to get pixels
 
 
 
 % Build spatial RFs of all RGCs in this mosaic
 [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
-    buildSpatialRFArray(params.spacing, params.row, params.col, obj.rfDiameter);
+    buildSpatialRFArray(rgc.spacing, rgc.row, rgc.col, obj.rfDiameter);
 
 
 %% Add temporal response function to R, G, B channels
-integrationTime = params.timing;%sensorGet(sensor, 'integration time');
+integrationTime = rgc.timing;%sensorGet(sensor, 'integration time');
 for rgbInd = 1:3
-    multFactor = rgbTempMult(rgbInd)*rfTempMult(params.cellTypeInd); % account for RGB channel and ON/OFF channel
+    multFactor = rgbTempMult(rgbInd)*rfTempMult(cellTypeInd); % account for RGB channel and ON/OFF channel
     obj.tCenter{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
     obj.tSurround{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
 

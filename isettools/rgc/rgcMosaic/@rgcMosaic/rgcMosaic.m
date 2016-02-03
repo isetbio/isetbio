@@ -58,11 +58,11 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgc, params)
+        function obj = rgcMosaic(rgc)
 
             % Maybe move all the initialization into here?  
             % Initialize ourselves
-            obj.initialize(rgc, params);
+            obj.initialize(rgc);
             
         end
         

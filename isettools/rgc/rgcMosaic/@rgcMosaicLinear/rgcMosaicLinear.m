@@ -50,9 +50,9 @@ classdef rgcMosaicLinear < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLinear(rgc, params)
+        function obj = rgcMosaicLinear(rgc)
             % Initialize the parent class
-            obj = obj@rgcMosaic(rgc, params);
+            obj = obj@rgcMosaic(rgc);
             
         end
         

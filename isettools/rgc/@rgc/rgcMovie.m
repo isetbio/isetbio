@@ -59,17 +59,19 @@ for cellTypeInd = 1:length(obj.mosaic)
             % Need to loop instead of vectorize for some unknown reason
             for ix = 1:length(x1)
 
-                px = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)));
-                py = ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)));
+                px = max([1,ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (x1(ix)))]);
+                py = max([1,ceil(-extent*obj.mosaic{cellTypeInd}.rfDiameter + (y1(ix)))]);
                                
                 if isa(obj,'rgcLinear')                 
                     mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = log(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}(k));
                 else
                     
                     % mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                   
-                    % mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));                  
-                    mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+                    % mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));              
                     
+                    mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+                         
+%                     mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,1,1})) = 1;
                     % Bring max values to front
                     % m1 = mosaicall{cellTypeInd}(px,py,k); m2 = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
                     % mosaicall{cellTypeInd}(px,py,k) = max([m1(:)'; m2(:)'  ]);

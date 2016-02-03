@@ -74,8 +74,16 @@ switch lower(params.what)
         obj.input = params.value;
     case{'temporalequivecc'}        
         obj.temporalEquivEcc = params.value;
-    case{'mosaic'}        
-        obj.mosaic = params.value;      
+    case{'mosaic'}
+        
+        mosaicInd = length(obj.mosaic);
+        if mosaicInd == 1 && isempty(obj.mosaic{mosaicInd})
+            mosaicInd = 0;
+        elseif mosaicInd >= 5
+            mosaicInd = 0;
+        end
+        obj.mosaic{mosaicInd+1,1} = params.value;   
+        
     case{'numbertrials'}
         cellTypes = length(obj.mosaic);
         if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')| isa(obj.mosaic{1},'rgcMosaicPhys')

@@ -1,9 +1,17 @@
-classdef rgcMosaicGLM < rgcMosaic
-% @rgcMosaicGLM: a subclass of @rgcMosaic. This function is only called by
-% rgcGLM to initiailize a mosaic of the rgc object.
+classdef rgcMosaicPool < rgcMosaic
+% @rgcMosaicPool: a subclass of @rgcMosaic. This function is only called by
+% rgcPool to initiailize a mosaic of the rgc object.
 % 
-%        rgc.mosaic{ind} = rgcMosaicGLM(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+%        rgc.mosaic{ind} = rgcMosaicPool(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
 % 
+% @rgcPool: a subclass of @rgc. This subclass implements retinal
+% ganglion cell computations with the @outerSegment object as input. The
+%l inear model follows the details outlined in
+% Chichilnisky & Kalmar (2002), and incorporates other anatomical and
+% physiological data from several other sources for parameters like
+% receptive field spacing, spatial/temporal linear filters and
+% nonlinearities. See comments below for details and references.
+%
 % Inputs: 
 %       scene: an isetbio scene structure
 %       sensor: an isetbio sensor structure
@@ -17,17 +25,11 @@ classdef rgcMosaicGLM < rgcMosaic
 % 
 % Outputs: the rgc object.
 % 
-% Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
-%       Nature (2008).
+% Models found in Chichilnisky & Kalmar, J. Neurosci (2002).
 % 
-% This model incorporates code by Pillow available at 
-%       http://pillowlab.princeton.edu/code_GLM.html
-% under the GNU General Public License.
+% Example: from rgcPool.m initiailize:
+%        obj.mosaic{cellTypeInd} = rgcMosaicPool(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
 % 
-% Example: from rgcGLM.m initiailize:
-%        obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
-% 
-%
 % 9/2015 JRG
 
 
@@ -37,18 +39,6 @@ classdef rgcMosaicGLM < rgcMosaic
            
     % Protected properties.
     properties (SetAccess = private, GetAccess = public)
-
-        generatorFunction;
-        nlResponse;
-        numberTrials;
-        spikeResponse;
-        
-        postSpikeFilter;
-        couplingFilter;
-        couplingMatrix;
-        
-        rasterResponse;
-        psthResponse;
 
     end
     
@@ -60,18 +50,14 @@ classdef rgcMosaicGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicGLM(rgc)
-            % Initialize the parent class            
+        function obj = rgcMosaicPool(rgc)
+            % Initialize the parent class
             obj = obj@rgcMosaic(rgc);
-
-            % Initialize ourselves
-            obj.initialize(rgc);
             
         end
         
         % set function, see for details
         function obj = set(obj, varargin)
-            % obj = set@rgcMosaic(obj, varargin);
             mosaicSet(obj, varargin{:});
         end
         

@@ -66,10 +66,10 @@ classdef rgcGLM < rgc
             obj = obj@rgc(params);
             
             % Initialize ourselves by building GLM mosaic objects
-            for cellTypeInd = 1:5%length(obj.mosaic)
-                params.cellTypeInd = cellTypeInd;
-                obj.mosaic{cellTypeInd,1} = rgcMosaicGLM(obj, params);
-            end
+%             for cellTypeInd = 1:5%length(obj.mosaic)
+%                 params.cellTypeInd = cellTypeInd;
+%                 obj.mosaic{cellTypeInd,1} = rgcMosaicGLM(obj);
+%             end
             
         end
         

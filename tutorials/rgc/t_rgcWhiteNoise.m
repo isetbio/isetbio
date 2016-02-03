@@ -138,17 +138,32 @@ os = osSet(os, 'rgbData', sceneRGB);
 %% Build rgc
 
 % rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
-
 clear params
-params.scene = scene; 
-params.sensor = sensor; 
-params.outersegment = os;
-params.eyeSide = 'left'; 
-params.eyeRadius = 5; 
-params.eyeAngle = 90;
-rgc1 = rgcCreate('GLM', params);
-% rgc1 = rgcCreate('linear', 'sensor', sensor, 'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
+% params = rgcParams('linear');
+
+% params.sensor = absorptions;
+params.name    = 'Macaque inner retina 1'; % This instance
+params.model   = 'glm';    % Computational model
+params.row     = sensorGet(sensor,'row');  % N row samples
+params.col     = sensorGet(sensor,'col');  % N col samples
+params.spacing = sensorGet(sensor,'width','um'); % Cone width
+params.timing  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 5;        % Radium in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
+
+% Coupled GLM model for the rgc (which will become innerRetina
+% Push this naming towards innerR.  
+% We should delete the 'input' because we could run the same rgc
+% object with different inputs
+% We should reduce dependencies on the other objects
+% We should clarify the construction of the different mosaics
+rgc1 = rgcCreate(params);for cellTypeInd = 1:5%length(obj.mosaic)
+    % params.cellTypeInd = cellTypeInd;
+    % rgcSet(rgc1, 'mosaic', rgcMosaicLinear(rgc1));
+    rgcSet(rgc1, 'mosaic', rgcMosaicGLM(rgc1));
+end
 rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');

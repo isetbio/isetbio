@@ -85,6 +85,10 @@ switch ieParamFormat(p.Results.model)
     case {'linear','rgclinear'}
         obj = rgcLinear(p.Results);
         % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
+    case {'pool','rgcpool'}
+        obj = rgcPool(p.Results);
+        % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
+   
     case {'lnp','rgclnp'}
         obj = rgcLNP(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'glm','rgcglm'}

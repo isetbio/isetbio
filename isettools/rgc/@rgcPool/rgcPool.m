@@ -1,13 +1,13 @@
-classdef rgcLinear < rgc 
-% @rgcLinear: a subclass of @rgc. 
+classdef rgcPool < rgc 
+% @rgcPool: a subclass of @rgc. 
 %
 % This subclass implements retinal ganglion cell computations
 % with the @outerSegment object as input. This model follows the
 % details of the linear model outlined in Chichilnisky & Kalmar
 % (2002), and incorporates other anatomical and physiological
-% data from several other sources for parameters like receptive
-% field spacing, spatial/temporal linear filters and
-% nonlinearities. 
+% data from several other sources for parameters like receptive field
+% spacing for spatial pooling. rgcPool does not perform any temporal
+% filtering.
 %
 % This class has no differences from the superclass of rgc.  So,
 % really it is a placeholder for some day when we might decide it
@@ -34,7 +34,7 @@ classdef rgcLinear < rgc
     methods
         
         % Constructor
-        function obj = rgcLinear(params)
+        function obj = rgcPool(params)
             % Initialize the parameters of the rgc parent class
             % The params are checked before we get here in the
             % rgcCreate() function.
@@ -46,7 +46,7 @@ classdef rgcLinear < rgc
             % the specific linear mosaic properties
 %             for cellTypeInd = 1:5%length(obj.mosaic)
 %                 params.cellTypeInd = cellTypeInd;
-%                 obj.mosaic{cellTypeInd,1} = rgcMosaicLinear(obj, params);
+%                 obj.mosaic{cellTypeInd,1} = rgcMosaicPool(obj, params);
 %             end
         end
         
@@ -64,9 +64,10 @@ classdef rgcLinear < rgc
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        function obj = rgcCompute(obj, outersegment, varargin)
+        function obj = compute(obj, outersegment, varargin)
             % see superclass method in @rgc for details
-            obj = rgcCompute@rgc(obj, outersegment, varargin{:}); 
+            % obj = rgcCompute@rgc(obj, outersegment, varargin{:}); 
+            obj = rgcCompute(obj, outersegment, varargin{:}); 
         end
         function rgcPlot(obj, varargin)
             % see superclass method in @rgc for details
