@@ -36,8 +36,8 @@ os = data.os;
 clear params
 % Set the parameter values
 params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'GLM';    % Computational model
-% Determined by user
+params.model   = 'GLM';    % Computational model % move to mosaic
+% Determined by user % move to sensor
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
