@@ -16,7 +16,7 @@
 
 % Initialize RDT
 rdt = RdtClient('isetbio');
-client.credentialsDialog();
+rdt.credentialsDialog();
 rdt.crp('resources/data/rgc');
 % Load data
 data = rdt.readArtifact('t_rgcData', 'type', 'mat');
@@ -51,16 +51,21 @@ params.timing  = sensorGet(coneMosaic,'time interval','sec'); % Temporal samplin
 rgc1 = rgcCreate(params);
 
 %% Build RGC mosaics
+% 
+% This is now handled internally in rgcCompute with the same call to
+% rgcMosaicCreate. This ensures the mosaics have the correct properties
+% according to those set in the rgc parent object.
+% 
 % The mosiac property of the RGC layer object stores the mosaics of the
 % different types of RGCs. The code currently supports the five most common
 % types: ON parasol, OFF parasol, ON midget, OFF midget and small
 % bistratified. Mosaics can be added individually or all five may be added
 % automatically using the loop structure below.
 
-numberMosaics = 5; % setting to 5 generates all five of the most common types.
-for cellTypeInd = 1:numberMosaics
-    rgc1 = rgcMosaicCreate(rgc1);
-end
+% numberMosaics = 5; % setting to 5 generates all five of the most common types.
+% for cellTypeInd = 1:numberMosaics
+%     rgc1 = rgcMosaicCreate(rgc1);
+% end
 
 % Alternative syntax for creating single layers at a time
 % rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onMidget');

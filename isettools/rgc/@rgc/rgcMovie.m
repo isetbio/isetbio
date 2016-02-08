@@ -26,7 +26,7 @@ figure;
 set(gcf,'position',[1000  540 893  798]);
 % cmap = parula(8);
 
-subsamp = 10;
+subsamp = 1;
 
 for cellTypeInd = 1:length(obj.mosaic)
         
@@ -66,10 +66,10 @@ for cellTypeInd = 1:length(obj.mosaic)
                     mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = log(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}(k));
                 else
                     
-                    % mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 1;                   
+                    mosaicall{cellTypeInd}(px,py,ceil(10*obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell})) = 100;                   
                     % mosaicall{cellTypeInd}(px,py,k) = log(obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}(k));              
                     
-                    mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
+%                     mosaicall{cellTypeInd}(px,py,(k-1)/subsamp+1) = (obj.mosaic{cellTypeInd}.psthResponse{xcell,ycell}(k));
                          
 %                     mosaicall{cellTypeInd}(px,py,ceil(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,1,1})) = 1;
                     % Bring max values to front
@@ -115,8 +115,8 @@ for cellTypeInd = 1:length(obj.mosaic)
 end
 
 % Set axes limits
-xAxisLimit = round(1.5*size(squeeze(sceneRGB(:,:,1,1)),1));
-yAxisLimit = round(1.5*size(squeeze(sceneRGB(:,:,1,1)),2));
+xAxisLimit = round(1.33*size(squeeze(sceneRGB(:,:,1,1)),1));
+yAxisLimit = round(1.33*size(squeeze(sceneRGB(:,:,1,1)),2));
 
 % Build each frame and gcf
 for k = 1:subsamp:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
@@ -129,7 +129,7 @@ for k = 1:subsamp:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         subplot(2,3,plotOrder(cellTypeInd));
         
         % Draw fill using image
-        image(mosaicall{cellTypeInd}(:,:,(k-1)/subsamp+1)');
+        image(mosaicall{cellTypeInd}(:,:,(k-1)/subsamp+1)'); colormap gray
         
         % Draw RF contours on same image
 %         plot(spatialRFcontours{1,1,1}(1,2:end),spatialRFcontours{xcell,ycell,1}(2,2:end))
@@ -145,6 +145,7 @@ for k = 1:subsamp:500%length(obj.mosaic{cellTypeInd}.nlResponse{1,1});
         title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
         
         % Draw frame from stimulus movie
+%         subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
         subplot(2,3,6); image(squeeze(sceneRGB(:,:,1+floor((k-0)/10),:))); axis equal; axis off;
         title('Stimulus', 'fontsize', 16);
              

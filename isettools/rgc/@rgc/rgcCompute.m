@@ -41,7 +41,20 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % (c) isetbio
 % 09/2015 JRG
 
+%%
 
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+
+% addRequired(p,'rgc',@isa();
+addParameter(p,'mosaicType','',@ischar);
+
+p.parse(varargin{:});
+
+
+for cellTypeInd = 1:5%length(obj.mosaic)
+    obj = rgcMosaicCreate(obj, 'mosaicType', p.Results.mosaicType);
+end
 %%
 
 % Get stimulus from outer segment ojbect

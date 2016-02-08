@@ -159,11 +159,10 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(params);for cellTypeInd = 1:5%length(obj.mosaic)
-    % params.cellTypeInd = cellTypeInd;
-    % rgcSet(rgc1, 'mosaic', rgcMosaicLinear(rgc1));
-    rgcSet(rgc1, 'mosaic', rgcMosaicGLM(rgc1));
-end
+rgc1 = rgcCreate(params);
+% for cellTypeInd = 1:5%length(obj.mosaic)    
+%     rgc1 = rgcMosaicCreate(rgc1);
+% end
 rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');
