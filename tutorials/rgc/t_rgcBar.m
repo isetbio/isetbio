@@ -111,25 +111,33 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Movie of the cone absorptions over cone mosaic
 % from t_VernierCones by HM
 
-step = 1;   % Step is something about time?
-% Display gamma preference could be sent in here
-tmp = coneImageActivity(sensor,[],step,false);
+% step = 1;   % Step is something about time?
+% % Display gamma preference could be sent in here
+% tmp = coneImageActivity(sensor,[],step,false);
 % 
 % Show the movie
-vcNewGraphWin;
-tmp = tmp/max(tmp(:));
-for ii=1:size(tmp,4)
-    img = squeeze(tmp(:,:,:,ii));
-    imshow(img); truesize;
-    title('Cone absorptions')
-    drawnow
-end
-close;
+% vcNewGraphWin;
+% tmp = tmp/max(tmp(:));
+% for ii=1:size(tmp,4)
+%     img = squeeze(tmp(:,:,:,ii));
+%     imshow(img); truesize;
+%     title('Cone absorptions')
+%     drawnow
+% end
+% close;
 %% Outer segment calculation
 
 % Input = RGB
 os = osCreate('identity');
+
+coneSpacing = sensorGet(sensor,'width','um');
+os = osSet(os, 'coneSpacing', coneSpacing);
+
+coneSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'coneSampling', coneSampling);
+
 os = osSet(os, 'rgbData', sceneRGB);
+% os = osCompute(
 
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
@@ -144,10 +152,6 @@ clear params
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
 params.model   = 'glm';    % Computational model
-params.row     = sensorGet(sensor,'row');  % N row samples
-params.col     = sensorGet(sensor,'col');  % N col samples
-params.spacing = sensorGet(sensor,'width','um'); % Cone width
-params.timing  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
@@ -158,8 +162,13 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(params);
+rgc1 = rgcCreate(os,params);
 
+% Create just one type of rgc cell mosaic
+% rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onParasol');
+
+% Create all types of rgc cell mosaics manually
+% This step is also carried out automatically in rgcCompute
 % for cellTypeInd = 1:5%length(obj.mosaic)
 %     rgc1 = rgcMosaicCreate(rgc1);
 % end
@@ -170,7 +179,7 @@ rgc1 = rgcCompute(rgc1, os);
 
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'rasterResponse');
-% rgcPlot(rgc1, 'psthResponse');
+rgcPlot(rgc1, 'psthResponse');
 %% Build rgc response movie
 % % osIdentity
 % rgcMovie(rgc1, os);

@@ -19,7 +19,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','conecurrentsignal'};
+allowableFieldsToSet = {'noiseflag','conespacing','conesampling','conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
 % Define what units are allowable.
@@ -37,8 +37,14 @@ switch lower(params.what);  % Lower case and remove spaces
     case {'noiseflag'}        
         val = obj.noiseFlag;
         
+    case{'conespacing'}
+        val = obj.coneSpacing;
+        
+    case{'conesampling'}
+        val = obj.coneSampling;
+        
     case{'conecurrentsignal'}
-        val = obj.ConeCurrentSignal;
+        val = obj.coneCurrentSignal;
        
 end
 

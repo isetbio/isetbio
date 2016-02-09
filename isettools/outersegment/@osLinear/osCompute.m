@@ -24,6 +24,10 @@ function obj = osCompute(obj, sensor, varargin)
 % correct sampling rate.
 obj.initialize(sensor);
 
+obj.coneSpacing = sensorGet(sensor,'width','um'); % Cone width
+
+obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
 

@@ -166,6 +166,13 @@ end
 
 % Attach the stimulus RGB to the os object
 osI = osCreate('identity');
+
+coneSpacing = sensorGet(absorptions,'width','um');
+osI = osSet(osI, 'coneSpacing', coneSpacing);
+
+coneSampling = sensorGet(absorptions,'time interval','sec');
+osI = osSet(osI, 'coneSampling', coneSampling);
+
 osI = osSet(osI, 'rgbData', sceneRGB);
 %% Build rgc
 
@@ -176,10 +183,6 @@ clear params
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
 params.model   = 'linear';    % Computational model
-params.row     = sensorGet(absorptions,'row');  % N row samples
-params.col     = sensorGet(absorptions,'col');  % N col samples
-params.spacing = sensorGet(absorptions,'width','um'); % Cone width
-params.timing  = sensorGet(absorptions,'time interval','sec'); % Temporal sampling
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 5;        % Radium in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
@@ -190,7 +193,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(params);
+rgc1 = rgcCreate(osI, params);
 
 % rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
 %  rgc1 = rgcMosaicCreate(rgc1, 'mosaicType', 'onParasol');
@@ -211,8 +214,9 @@ rgc1 = rgcCompute(rgc1, osI);
 % movies only play signle spikes
 
 % rgcPlot(rgc1, 'mosaic');
+rgcPlot(rgc1, 'linearResponse');
 % rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+% rgcPlot(rgc1, 'psthResponse');
 
 
 %%

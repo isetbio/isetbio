@@ -1,4 +1,4 @@
-function initialize(obj, params)
+function initialize(obj, os, params)
 % iinitializes the rgc object. 
 %
 % Inputs: 
@@ -51,10 +51,20 @@ obj.eyeSide   = params.eyeSide;
 obj.eyeRadius = params.eyeRadius;
 obj.eyeAngle  = params.eyeAngle;
 obj.name      = params.name;
-obj.row       = params.row;
-obj.col       = params.col;
-obj.spacing   = params.spacing;
-obj.timing    = params.timing;
+% obj.row       = params.row;
+% obj.col       = params.col;
+% obj.spacing   = params.spacing;
+% obj.timing    = params.timing;
+
+
+obj.spacing = osGet(os,'coneSpacing'); % Cone width
+obj.timing  = osGet(os,'coneSampling'); % Temporal sampling
+    
+if isa(os,'osLinear')
+    [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));
+elseif isa(os,'osIdentity')
+    [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));
+end
 
 % Give the object a name and slots for the five cell types
 obj.mosaic = cell(1); % populated in initialize()

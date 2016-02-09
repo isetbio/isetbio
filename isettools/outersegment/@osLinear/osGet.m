@@ -28,6 +28,8 @@ allowableFieldsToSet = {...
     'sconefilter',...
     'mconefilter',...
     'lconefilter',...
+    'conespacing',...
+    'conesampling',...
     'conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -57,7 +59,13 @@ switch lower(params.what)
     
     case{'lconefilter'}
         val = obj.lConeFilter;
-    
+        
+    case{'conespacing'}
+        val = obj.coneSpacing;
+        
+    case{'conesampling'}
+        val = obj.coneSampling;
+        
     case{'conecurrentsignal'}
         val = obj.coneCurrentSignal;        
 end

@@ -1,4 +1,4 @@
-function obj = rgcCreate(varargin)
+function obj = rgcCreate(os, varargin)
 % rgcCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 %
 %  obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patchAngle)
@@ -69,10 +69,10 @@ addParameter(p,'name','inner retina',@ischar);
 addParameter(p,'model','linear',@ischar);
 addParameter(p,'species','unknown',@ischar);
 
-addParameter(p,'row',     [], @isnumeric);
-addParameter(p,'col',     [], @isnumeric);
-addParameter(p,'spacing', [], @isnumeric);
-addParameter(p,'timing', [], @isnumeric);
+% addParameter(p,'row',     [], @isnumeric);
+% addParameter(p,'col',     [], @isnumeric);
+% addParameter(p,'spacing', [], @isnumeric);
+% addParameter(p,'timing', [], @isnumeric);
 
 addParameter(p,'eyeSide',      'side', @ischar);
 addParameter(p,'eyeRadius',   8,     @isnumeric);
@@ -83,16 +83,16 @@ p.parse(varargin{:});
 % Set key-value pairs
 switch ieParamFormat(p.Results.model)
     case {'linear','rgclinear'}
-        obj = rgcLinear(p.Results);
+        obj = rgcLinear(os, p.Results);
         % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'pool','rgcpool'}
-        obj = rgcPool(p.Results);
+        obj = rgcPool(os, p.Results);
         % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
    
     case {'lnp','rgclnp'}
         obj = rgcLNP(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'glm','rgcglm'}
-        obj = rgcGLM(p.Results);
+        obj = rgcGLM(os, p.Results);
         % obj = rgcGLM(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'subunit','rgcsubunit'}
         obj = rgcSubunit(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);

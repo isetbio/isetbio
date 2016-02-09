@@ -30,6 +30,7 @@ function initialize(obj, rgc, cellTypeInd)
 % 09/2015 JRG
 
 
+
 namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
 obj.cellType = namesCellTypes{cellTypeInd};
 

@@ -40,7 +40,25 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 
 % (c) isetbio
 % 09/2015 JRG
+%%
 
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+
+% addRequired(p,'rgc',@isa();
+addParameter(p,'mosaicType','',@ischar);
+
+p.parse(varargin{:});
+% 
+% [obj.row, obj.col] = size(osGet(outerSegment,'coneCurrentSignal'));
+% obj.spacing = osGet(outerSegment,'coneSpacing'); % Cone width
+% obj.timing  = osGet(outerSegment,'coneSampling'); % Temporal sampling
+
+if isempty(obj.mosaic{1})
+    for cellTypeInd = 1:5%length(obj.mosaic)
+        obj = rgcMosaicCreate(obj, 'mosaicType', p.Results.mosaicType);
+    end
+end
 
 %%
 

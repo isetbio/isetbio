@@ -34,11 +34,11 @@ classdef rgcPool < rgc
     methods
         
         % Constructor
-        function obj = rgcPool(params)
+        function obj = rgcPool(os, params)
             % Initialize the parameters of the rgc parent class
             % The params are checked before we get here in the
             % rgcCreate() function.
-            obj = obj@rgc(params);
+            obj = obj@rgc(os, params);
 
             % We think people should be forced to decide and
             % choose their mosaics rather than it happening like

@@ -41,16 +41,11 @@ params.model   = 'GLM';    % Computational model % move to mosaic
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
-% Inherited from cone mosaic; may be incorporated into just sensor
-params.row     = sensorGet(coneMosaic,'row');  % N row samples
-params.col     = sensorGet(coneMosaic,'col');  % N col samples
-params.spacing = sensorGet(coneMosaic,'width','um'); % Cone width
-params.timing  = sensorGet(coneMosaic,'time interval','sec'); % Temporal sampling
 
 % Create the rgc layer object
-rgc1 = rgcCreate(params);
+rgc1 = rgcCreate(os, params);
 
-%% Build RGC mosaics
+%% Build RGC mosaics (OPTIONAL)
 % 
 % This is now handled internally in rgcCompute with the same call to
 % rgcMosaicCreate. This ensures the mosaics have the correct properties
@@ -60,7 +55,8 @@ rgc1 = rgcCreate(params);
 % different types of RGCs. The code currently supports the five most common
 % types: ON parasol, OFF parasol, ON midget, OFF midget and small
 % bistratified. Mosaics can be added individually or all five may be added
-% automatically using the loop structure below.
+% automatically using the loop structure below. If no mosaics are added
+% manually, then they are automatically built on the call to rgcCompute.
 
 % numberMosaics = 5; % setting to 5 generates all five of the most common types.
 % for cellTypeInd = 1:numberMosaics

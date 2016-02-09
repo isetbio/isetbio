@@ -61,9 +61,9 @@ classdef rgcGLM < rgc
     methods
         
         % Constructor
-        function obj = rgcGLM(params)
+        function obj = rgcGLM(os, params)
             % Initialize the parent class
-            obj = obj@rgc(params);
+            obj = obj@rgc(os, params);
             
             % Initialize ourselves by building GLM mosaic objects
 %             for cellTypeInd = 1:5%length(obj.mosaic)

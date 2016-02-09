@@ -67,8 +67,8 @@ classdef rgc < handle
     
     % Public methods
     methods
-        function obj = rgc(params)
-            obj.initialize(params);
+        function obj = rgc(os, params)
+            obj.initialize(os, params);
         end
         
         % set function, see rgcSet

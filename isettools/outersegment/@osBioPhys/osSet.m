@@ -22,6 +22,8 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 % values along with key names.
 allowableFieldsToSet = {...
     'noiseflag',...
+    'conespacing',...
+    'conesampling',...
     'conecurrentsignal'};
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -40,6 +42,12 @@ switch lower(params.what);  % Lower case and remove spaces
     
     case{'noiseflag'}
         obj.noiseFlag = params.value;               
+        
+    case{'conespacing'}
+        obj.coneSpacing = params.value;
+        
+    case{'conesampling'}
+        obj.coneSampling = params.value;
         
     case{'conecurrentsignal'}
         obj.coneCurrentSignal = params.value; 

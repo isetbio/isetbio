@@ -51,9 +51,10 @@ addParameter(p,'mosaicType','',@ischar);
 
 p.parse(varargin{:});
 
-
-for cellTypeInd = 1:5%length(obj.mosaic)
-    obj = rgcMosaicCreate(obj, 'mosaicType', p.Results.mosaicType);
+if isempty(obj.mosaic{1})
+    for cellTypeInd = 1:5%length(obj.mosaic)
+        obj = rgcMosaicCreate(obj, 'mosaicType', p.Results.mosaicType);
+    end
 end
 %%
 

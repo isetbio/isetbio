@@ -130,8 +130,14 @@ close;
 
 % Input = RGB
 os = osCreate('identity');
-os = osSet(os, 'rgbData', sceneRGB);
 
+coneSpacing = sensorGet(sensor,'width','um');
+os = osSet(os, 'coneSpacing', coneSpacing);
+
+coneSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'coneSampling', coneSampling);
+
+os = osSet(os, 'rgbData', sceneRGB);
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
 
@@ -145,10 +151,6 @@ clear params
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
 params.model   = 'glm';    % Computational model
-params.row     = sensorGet(sensor,'row');  % N row samples
-params.col     = sensorGet(sensor,'col');  % N col samples
-params.spacing = sensorGet(sensor,'width','um'); % Cone width
-params.timing  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 5;        % Radium in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
@@ -159,7 +161,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(params);
+rgc1 = rgcCreate(os, params);
 % for cellTypeInd = 1:5%length(obj.mosaic)    
 %     rgc1 = rgcMosaicCreate(rgc1);
 % end

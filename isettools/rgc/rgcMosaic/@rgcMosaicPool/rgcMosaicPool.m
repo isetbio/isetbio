@@ -50,9 +50,9 @@ classdef rgcMosaicPool < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicPool(rgc)
+        function obj = rgcMosaicPool(rgc, mosaicInd)
             % Initialize the parent class
-            obj = obj@rgcMosaic(rgc);
+            obj = obj@rgcMosaic(rgc, mosaicInd);
             
         end
         
