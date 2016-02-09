@@ -37,7 +37,7 @@ function ValidationFunction(runTimeParams)
         
     for stepIndex = 1:numel(stimulusPhotonRates)
         
-        % retrieve the measured currents
+        % retrieve the measured currents for the examined step size
         measuredCurrents = measuredOuterSegmentCurrents{stepIndex};
         
         % retrieve the examined stimulus amplitude (photons/sec)
@@ -89,8 +89,8 @@ function ValidationFunction(runTimeParams)
                 set(gca, 'XTickLabel', {});
             end
            
-            ylabel('stimulus (photons/sec)','FontSize',12);
-            text(2.4, 9e5, sprintf('%d photons/sec',stimulusPhotonRateAmplitude), 'FontSize',12);
+            ylabel('stimulus (R*/sec)','FontSize',12);
+            text(2.4, 9e5, sprintf('step=%d R*/sec',stimulusPhotonRateAmplitude), 'FontSize',12);
         
             % plot responses on the right
             subplot(numel(stimulusPhotonRates),2,(stepIndex-1)*2+2);
@@ -101,11 +101,10 @@ function ValidationFunction(runTimeParams)
                 0.3 0.4 1.0; ...
                 0.9 0.2 1.0 ...
                 ];
-            % plot individual trial measured  currents\
+            % plot individual trial measured  currents offset
             for trial = 1:size(measuredCurrents,1)
                 measuredOuterSegmentCurrent = squeeze(measuredCurrents(trial,:));
-                offsetDC = osBiophysOuterSegmentCurrent(stepIndex,1) - measuredOuterSegmentCurrent(1);
-                plot(time, measuredOuterSegmentCurrent + offsetDC, '-', 'Color', squeeze(trialColors(trial,:)), 'LineWidth', 2.0);
+                plot(time, measuredOuterSegmentCurrent, '-', 'Color', squeeze(trialColors(trial,:)), 'LineWidth', 2.0);
             end
             
             % plot computed current
@@ -116,8 +115,8 @@ function ValidationFunction(runTimeParams)
                 set(gca, 'XTickLabel', {});
             end
             
-            set(gca, 'YLim', [-150 180]);
-            ylabel('current (uAmps)','FontSize',12);
+            %set(gca, 'YLim', [-150 0]);
+            ylabel('current (pAmps)','FontSize',12);
             if (size(measuredCurrents,1) == 1)
                 legend('measured (trial-1)', 'osBioPhys model');
             elseif (size(measuredCurrents,1) == 2)
@@ -125,6 +124,10 @@ function ValidationFunction(runTimeParams)
             elseif (size(measuredCurrents,1) == 3)
                 legend('measured (trial-1)', 'measured (trial-2)', 'measured (trial-3)', 'osBioPhys model');
             end
+            
+%             if (stepIndex == numel(stimulusPhotonRates))
+%                 NicePlot.exportFigToPNG('PulseTests2.png', h, 300);
+%             end
         end   
     end % stepIndex
     
@@ -138,20 +141,22 @@ end
 % Helper functions
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
     
-    fprintf('Fetching data. Please wait ...\n');
+    dataSource = {'resources/data/cones', 'stepExample'};
+    fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
     % Download neural data from isetbio's repository
     client = RdtClient('isetbio');
-    client.crp('resources/data/cones');
-    [stepExample, stepExampleArtifact] = client.readArtifact('stepExample', 'type', 'mat');
+    client.crp(dataSource{1});
+    [stepExample, stepExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
     fprintf('Done fetching data.\n');
 
     % stimulus in isomerizations/sec
     stimulusPhotonRates = stepExample.data.lightLevel;
     
+    
     % measured outer segment currents
     measuredOuterSegmentCurrents = stepExample.data.Data;
     
-     % time axis
+    % time axis
     time = (1:size(measuredOuterSegmentCurrents{1},2))*stepExample.data.samplingInterval;
 end
 

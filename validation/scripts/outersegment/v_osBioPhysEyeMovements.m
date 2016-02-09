@@ -53,31 +53,46 @@ function ValidationFunction(runTimeParams)
     % Get the computed current
     osBiophysOuterSegmentCurrent = osB.osGet('coneCurrentSignal');
     osBiophysOuterSegmentCurrent = squeeze(osBiophysOuterSegmentCurrent(1,1,:));
+    
+    offset1Time = 0.35;
+    [~,offset1TimeBin] = min(abs(time - offset1Time ));
 
-    % remove DC offset
-    osBiophysOuterSegmentCurrent = osBiophysOuterSegmentCurrent - osBiophysOuterSegmentCurrent(end);
-
+    offset2Time = 9.1;
+    [~,offset2TimeBin] = min(abs(time - offset2Time ));
+    
+    % Add two different offset to measured current
+    measuredOuterSegmentCurrentOffset1 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset1TimeBin)-measuredOuterSegmentCurrent(offset1TimeBin));
+    measuredOuterSegmentCurrentOffset2 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset2TimeBin)-measuredOuterSegmentCurrent(offset2TimeBin));
+    
     % compute RMS error
-    residual = osBiophysOuterSegmentCurrent-measuredOuterSegmentCurrent;
-    errorRMS = sqrt(mean(residual.^2));
-    errorABS = mean(abs(residual));
+    residual1 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset1(:);
+    residual2 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset2(:);
+    validIndices = find(~isnan(measuredOuterSegmentCurrent));
+    errorRMS1 = sqrt(mean(residual1(validIndices).^2));
+    errorRMS2 = sqrt(mean(residual2(validIndices).^2));
 
     % Plot the two calculations and compare against measured data.
     if (runTimeParams.generatePlots)
-        figure(1);
-        subplot(2,1,1);
+        h = figure(1);
+        set(h, 'Position', [10 1000 1000 1200]);
+        subplot('Position', [0.05 0.54 0.94 0.42]);
         stairs(time,stimulusPhotonRate, 'r-',  'LineWidth', 2.0);
-        set(gca, 'XLim', [time(1) time(end)]);
-        ylabel('Stimulus (photons/sec)','FontSize',14);
+        set(gca, 'XLim', [time(1) time(end)], 'FontSize', 12);
+        ylabel('Stimulus (R*/sec)','FontSize',14);
         
-        subplot(2,1,2);
-        plot(time, measuredOuterSegmentCurrent, 'm-', 'LineWidth', 2.0); hold on;
+        subplot('Position', [0.05 0.03 0.94 0.46]);
+        plot(time, measuredOuterSegmentCurrent, '.-', 'LineWidth', 2.0); hold on;
+        plot(time, measuredOuterSegmentCurrentOffset1, 'm-', 'LineWidth', 2.0);
+        plot(time, measuredOuterSegmentCurrentOffset2, 'b-', 'LineWidth', 2.0);
         plot(time, osBiophysOuterSegmentCurrent, 'k-',  'LineWidth', 2.0);
-        set(gca, 'XLim', [time(1) time(end)]);
+        plot(time(offset1TimeBin)*[1 1], [-100 100], 'm-');
+        plot(time(offset2TimeBin)*[1 1], [-100 100], 'b-');
+        set(gca, 'XLim', [time(1) time(end)], 'FontSize', 12);
         xlabel('Time (sec)','FontSize',14);
         ylabel('Photocurrent (pA)','FontSize',14);
-        legend('measured', 'osBioPhys model');
-        title(sprintf('rms error: %2.2f pA', errorRMS));
+        h = legend('measured (as saved in datafile)', sprintf('measured (adjusted to match model at %2.2f sec)', offset1Time),  sprintf('measured (adjusted to match model at %2.2f msec)',offset2Time) , 'osBioPhys model', 'location', 'NorthWest');
+        set(h, 'FontSize', 12);
+        title(sprintf('rms: %2.2f pA (offset at %2.2f sec)\nrms: %2.2f pA (offset at %2.2f sec)', errorRMS1, offset1Time, errorRMS2, offset2Time), 'FontName', 'Fixed');
         drawnow;
     end
     
@@ -90,24 +105,32 @@ end
 % Helper functions
 function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses()
     
-    fprintf('Fetching data. Please wait ...\n');
+    dataSource = {'resources/data/cones', 'eyeMovementExample'};
+    fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
     % Download neural data from isetbio's repository
     client = RdtClient('isetbio');
-    client.crp('resources/data/cones');
-    [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
+    client.crp(dataSource{1});
+    [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
     fprintf('Done fetching data.\n');
     
-    % Retrieve the baseline corrected outer segment current
-    measuredOuterSegmentCurrent = (squeeze(eyeMovementExample.data.Mean))';
-    measuredOuterSegmentCurrent = measuredOuterSegmentCurrent - measuredOuterSegmentCurrent(end);
+    extraTimeForBaselineComputation = 2.0;
+    
+    % time axis
+    dt = eyeMovementExample.data.TimeAxis(2)-eyeMovementExample.data.TimeAxis(1);
+    postStimulusTime = eyeMovementExample.data.TimeAxis(end) + dt*(1:(round(extraTimeForBaselineComputation/dt)));
+    time = [eyeMovementExample.data.TimeAxis postStimulusTime];
+    
+    measuredOuterSegmentCurrent = nan(size(time));
+    stimulusPhotonRate = time * 0;
+    
+    % Retrieve the (baseline-corrected) outer segment current
+    stimTimeBins = 1:numel(eyeMovementExample.data.TimeAxis);
+    measuredOuterSegmentCurrent(stimTimeBins) = squeeze(eyeMovementExample.data.Mean);
     
     % standard deviation of the current ?
     % measuredOuterSegmentCurrentSD = eyeMovementExample.data.SD;
     
     % stimulus in isomerizations/sec
-    stimulusPhotonRate = eyeMovementExample.data.Stim;
-    
-    % time axis
-    time = eyeMovementExample.data.TimeAxis;
+    stimulusPhotonRate(stimTimeBins) = eyeMovementExample.data.Stim;
 end
 
