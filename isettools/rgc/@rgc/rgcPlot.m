@@ -378,12 +378,15 @@ switch lower(params.what)
 %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
                         spikeTimesP = (obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,tr,1});
+                        if length(spikeTimesP) == 2
+                            spikeTimesP = [spikeTimesP; 0];
+                        end
                         if ~isempty(spikeTimesP)
 
                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
                         end
 %                         axis([0 5000 0 numberTrials]);
-                        xlabel('Time (msec)'); ylabel('Trial Number');
+                        xlabel('Time (sec)'); ylabel('Trial Number');
 %                         set(gca,'fontsize',16);
                         % end;
                     end%trials;
@@ -488,9 +491,9 @@ switch lower(params.what)
                     bindur = .01;
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
-                    plot(bindur:bindur:bindur*length(PSTH_rec),PSTH_rec);
+                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);
 %                     
-                        xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
+                        xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
                         
 %                         set(gca,'fontsize',16);
 %                     if sum(cellfun(@isempty,tsp))~=maxTrials
@@ -507,7 +510,7 @@ switch lower(params.what)
 %                     
 %                     plot(tt/.01,psth{xcell,ycell});
 %                     if ~isnan(psth{xcell,ycell})
-                        axis([0 70 0 max(PSTH_rec)]);
+                        axis([0 .7 0 max(PSTH_rec)]);
 %                     end
 %                     
 %                     % hold on;
