@@ -64,15 +64,23 @@ rgc1 = rgcCreate(os, params);
 % end
 
 % Alternative syntax for creating single layers at a time
-% rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onMidget');
+rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onMidget');
          
 %% Compute the RGC responses
+% Compute linear and nonlinear responses
 rgc1 = rgcCompute(rgc1, os);
 
-% Plot various aspects of the RGC response
+% Compute spiking response
+numberTrials = 5;
+for repititions = 1:numberTrials
+    rgc1 = rgcComputeSpikes(rgc1, os);
+end
+
+%% Plot various aspects of the RGC response
 % rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+rgcPlot(rgc1, 'rasterResponse');
+% rgcPlot(rgc1, 'psthResponse');
 
 % Create a movie of the response
 % rgcMovie(rgc1, os);
+% rgcMovieWave;

@@ -166,7 +166,9 @@ rgc1 = rgcCreate(os, params);
 %     rgc1 = rgcMosaicCreate(rgc1);
 % end
 rgc1 = rgcCompute(rgc1, os);
-
+for numberTrials = 1:10
+    rgc1 = rgcComputeSpikes(rgc1, os);
+end
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'linearResponse');
 % rgcPlot(rgc1, 'rasterResponse');

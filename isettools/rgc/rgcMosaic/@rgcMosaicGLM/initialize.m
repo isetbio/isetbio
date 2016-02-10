@@ -29,7 +29,7 @@ function initialize(obj, varargin)
     obj.generatorFunction = @exp;
     % obj.generatorFunction = @(x) 10*erf(x);
 
-    obj.numberTrials = 10;
+%     obj.numberTrials = 10;
     
     obj.postSpikeFilter = buildPostSpikeFilter(.01);
     

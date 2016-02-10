@@ -18,23 +18,23 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 09/2015 JRG
 
 % The superclass rgcCompute carries out convolution of the linear STRF:
-obj = rgcCompute@rgc(obj, outerSegment, varargin{:});
+% obj = rgcCompute@rgc(obj, outerSegment, varargin{:});
 
 % fprintf('     \n');
 % fprintf('Spike Generation:\n');
 % tic;
-% for cellTypeInd = 1:length(obj.mosaic)
-%     % Call Pillow code to compute spiking outputs for N trials
-%     spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1});   
-%     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);
-%         
-%     % Call Pillow code to compute rasters and PSTHs
+for cellTypeInd = 1:length(obj.mosaic)
+    % Call Pillow code to compute spiking outputs for N trials
+    spikeResponse = computeSpikesGLM(obj.mosaic{cellTypeInd,1});   
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'spikeResponse', spikeResponse);
+        
+    % Call Pillow code to compute rasters and PSTHs
 %     [raster, psth] = computePSTH(obj.mosaic{cellTypeInd,1});
 %     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
 %     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
-%         
-%     clear spikeResponse raster psth
-% end
+        
+    clear spikeResponse raster psth
+end
 % close;
 % toc;
 

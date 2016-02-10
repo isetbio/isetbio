@@ -37,7 +37,7 @@ set(gcf,'position',[160 60 1070 740]);
 hold on;
 nX = 0; nY = 0;
 % for cellTypeInd = 1:5
-cellTypeInd = 3;
+cellTypeInd = 1;
 [nX,nY,~] = size(rgc1.mosaic{cellTypeInd}.linearResponse);
 % nX = nX + nXi;
 % nY = nY = nYi;
@@ -54,7 +54,7 @@ for xc = 1:nX
 %         spPlot=(median(horzcat(rgc1.mosaic{3}.spikeResponse{xc,yc,:,2})'));
 
         t1 = (1:length(spPlot))';
-        plot3(zfac*(xc-ceil(nX/2))*t1+(xc-ceil(nX/2))+zeros(length(spPlot),1),t/10000+1/10000*(1:length(spPlot)),10*(yc-nY/2)+10*(yc-nY/2)*zfac*t1+spPlot,'linewidth',2)
+        plot3(zfac*(xc-ceil(nX/2))*t1+(xc-ceil(nX/2))+zeros(length(spPlot),1),t/10000+1/10000*(1:length(spPlot)),10*(yc-nY/2)+10*(yc-nY/2)*zfac*t1+1*spPlot,'linewidth',2)
         
     end
 end

@@ -91,6 +91,9 @@ classdef rgcGLM < rgc
         function obj = compute(obj, outersegment, varargin)
             obj = rgcCompute(obj, outersegment, varargin{:});
         end
+        function obj = computeSpikes(obj, outersegment, varargin)
+            obj = rgcComputeSpikes(obj, outersegment, varargin{:});
+        end
         function rgcPlot(obj, varargin)
             rgcPlot@rgc(obj, varargin{:});
         end

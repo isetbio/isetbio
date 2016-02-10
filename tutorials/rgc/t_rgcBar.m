@@ -176,7 +176,9 @@ rgc1 = rgcCreate(os,params);
 % get rid of number of trials
 % get rid of psth property
 rgc1 = rgcCompute(rgc1, os);
-
+for numberTrials = 1:10
+    rgc1 = rgcComputeSpikes(rgc1, os);
+end
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'rasterResponse');
 rgcPlot(rgc1, 'psthResponse');

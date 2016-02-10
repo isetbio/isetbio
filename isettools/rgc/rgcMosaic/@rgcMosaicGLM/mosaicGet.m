@@ -113,7 +113,8 @@ switch lower(params.what)
     case{'nlresponse'}
         val = obj.nlResponse;
     case{'numbertrials'}
-        val = obj.numberTrials;
+%         val = obj.numberTrials;
+        val = size(obj.spikeResponse,3);
     case{'spikeresponse'}
         val = obj.spikeResponse;        
     case{'postspikefilter'}

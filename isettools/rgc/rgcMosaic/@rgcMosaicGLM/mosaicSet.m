@@ -119,7 +119,18 @@ switch lower(params.what)
     case{'numbertrials'}
         obj.numberTrials = params.value;
     case{'spikeresponse'}
-        obj.spikeResponse = params.value;                
+%         obj.spikeResponse = params.value; 
+        nT = size(obj.spikeResponse,3);        
+        [sz1,sz2,nTrials,nType] = size(params.value);
+%         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
+        if nT == 1 & isempty(obj.spikeResponse); nT = 0; end; 
+        for xc = 1:sz1
+            for yc = 1:sz2
+                for nTypeI = 1:nType
+                    obj.spikeResponse{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+                end
+            end
+        end
     case{'postspikefilter'}
         obj.postSpikeFilter = params.value;
     case{'couplingfilter'}

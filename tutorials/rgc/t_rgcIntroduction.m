@@ -209,7 +209,9 @@ rgc1 = rgcCreate(osI, params);
 %   'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
 rgc1 = rgcCompute(rgc1, osI);
-
+for numberTrials = 1:10
+    rgc1 = rgcComputeSpikes(rgc1, os);
+end
 % rgc data object 
 % movies only play signle spikes
 

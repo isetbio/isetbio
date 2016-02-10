@@ -40,15 +40,15 @@ classdef rgcMosaicGLM < rgcMosaic
 
         generatorFunction;
         nlResponse;
-        numberTrials;
-        spikeResponse;
+%         numberTrials;
         
         postSpikeFilter;
         couplingFilter;
         couplingMatrix;
         
-        rasterResponse;
-        psthResponse;
+        spikeResponse;
+%         rasterResponse;
+%         psthResponse;
 
     end
     
