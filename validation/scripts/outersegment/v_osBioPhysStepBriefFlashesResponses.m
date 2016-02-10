@@ -1,10 +1,23 @@
 function varargout = v_osBioPhysStepBriefFlashesResponses(varargin)
-% Validate the biophysical model for very brief flashes on different
-% pedestals.
+%
+% Validate the biophysical model for very brief flashes on different pedestals.
 %
 % This script tests the biophysically-based outer segment model of 
 % photon isomerizations to photocurrent transduction that occurs in the
-% cone outer segments.
+% cone outer segments.  It computes responses for brief flashes of fixed
+% amplitude, but presented on step pedestals of different intensities.
+%
+% STATUS as of 2/10/16. We don't have direct outer segment data for this
+% simulated experiment.  What we do have is the parameters for a curve that
+% describes the measured relation between the amplitude of the transient
+% response to the flash on pedestal (that is the incremental response
+% estimated as being due to the flash.  In the model, this is obtained by
+% simulating the response to the pedestal alone and subtracting it out.
+% The model (pedestal intensity versus flash response curve is reasonably close
+% to the one computed from the parametric curve.  It would be nice to have
+% actual time course data to compare as well, since presumably that exists
+% somewhere and was used in the generation of the parametric curve.
+%
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneModelValidate.
@@ -142,8 +155,12 @@ function ValidationFunction(runTimeParams)
         % compute sensitivity vs background intensity relation for neural data
         % with half desens around 2500 (Angueyra and Rieke, 2013)
         coef = [2500];
+        neuralDataFit = 10.^(weberFechner(coef, stepIntensities));
+
+        % can also fit the same model to the simulated data, but we are not
+        % currently plotting this.
         wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashResponse/darkFlashResponse), 'weberFechner', coef);
-        neuralDataFit = 10.^(weberFechner(wfcoef, stepIntensities));
+        modelDataFit = 10.^(weberFechner(wfcoef, stepIntensities));
 
         h = figure(2); clf;
         set(h, 'Position', [10 10 1000 500]);
@@ -158,7 +175,9 @@ function ValidationFunction(runTimeParams)
         subplot(1,2,2)
         loglog(stepIntensities, lightIncrementFlashResponse/darkFlashResponse, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);
         hold on;
+        %loglog(stepIntensities, modelDataFit, 'b-', 'LineWidth', 2.0);
         loglog(stepIntensities, neuralDataFit, 'm-', 'LineWidth', 2.0);
+
         title('light increment flash');
         legend('model', 'neural data');
         set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);

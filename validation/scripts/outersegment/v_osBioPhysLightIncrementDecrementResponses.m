@@ -3,7 +3,10 @@ function varargout = v_osBioPhysLightIncrementDecrementResponses(varargin)
 %
 % This script tests the biophysically-based outer segment model of 
 % photon isomerizations to photocurrent transduction that occurs in the
-% cone outer segments.
+% cone outer segments.  This is for steps (1.5 sec), both incremental and
+% decremental with respect to backgrounds of different intensities.
+%
+% STATUS as of 2/10/16.  We currently have no data to compare against.
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneModelValidate.

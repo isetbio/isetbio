@@ -1,10 +1,23 @@
 function varargout = v_osBioPhysEyeMovements(varargin)
-% Validate the biophysical model of the cone outer segments against neural
-% data obtained during a sequence of saccadic eye movements.
+%
+% Check biophysical model of the cone outer segments against neural data (simulating eye movements)
 %
 % This script tests the biophysically-based outer segment model of 
 % photon isomerizations to photocurrent transduction that occurs in the
-% cone outer segments.
+% cone outer segments.  The comparison is for a recording sesssion that
+% simulated eye movements for a natural image stimulus.
+%
+% STATUS as of 2/10/16.  This fetches using the remote data toolbox the
+% eyeMovementExample file provided by Fred's lab and compares model predictions
+% given input isomerizations with measured photocurrent.  The agreement is
+% good up to a constant current offset, which we understand is due to
+% features of the measurement and/or the way the data were saved.
+% Currently, the validation data are simply shifted to match the model
+% predictions.  Better would be to specify in the eyeMovementExample data file the
+% offset that provides the best estimate of the real measurement offset.
+% Or, if this isn't possible, then things are fine, but we should know that
+% and write it down here and/or in a comment about the eyeMovementExample
+% data file.
 %
 % 6/xx/2015    npc   Created.
 % 7/xx/2015    jrg   Test with ISETBIO outersegment object

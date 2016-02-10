@@ -1,10 +1,22 @@
 function varargout = v_osBioPhysStepResponses(varargin)
-% Validate the biophysical model of the cone outer segments against neural
-% data obtained in response to step stimuli of different amplitudes.
+% 
+% Validate the biophysical model of the cone outer segments against neural data (step stimuli)
 %
 % This script tests the biophysically-based outer segment model of 
 % photon isomerizations to photocurrent transduction that occurs in the
-% cone outer segments.
+% cone outer segments, for recordings of response to light steps of
+% different sizes.
+%
+% STATUS as of 2/10/16: Fetes stepExample data file using
+% RemoteDataToolbox.  The data from the file are at about -300 pA in
+% advance of the stimulus, while the model baseline is (reasonably) at
+% about -85 pA.  The actual sizes of the step responses also diverge from
+% the data, with the size of the data steps getting bigger and bigger, but
+% with the model (reasonably) maxing out when the current reaches 0 pA.  We
+% don't understand the offset in the data, nor the relation between the
+% measured step size and model step sizes. Indeed if the data where shifted to
+% a baseline of about -85 pA then the response (about 200 pA) is too big to
+% be possible.
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneAdaptNoise.
