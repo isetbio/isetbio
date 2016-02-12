@@ -1,5 +1,5 @@
 classdef rgc < handle
-% The rgc parent class represents the mosaic of cells in the inner retina 
+%% The rgc parent class represents the mosaic of cells in the inner retina 
 %
 % from the isetbio @scene or @outerSegment objects. Subclasses of
 % @rgc include @rgcLinear, @rgcLNP and @rgcGLM and are used to
@@ -69,6 +69,10 @@ classdef rgc < handle
     methods
         function obj = rgc(os, params)
             obj.initialize(os, params);
+        end
+        
+        function obj = mosaicCreate(varargin)
+            obj = rgcMosaicCreate(varargin{:});
         end
         
         % set function, see rgcSet

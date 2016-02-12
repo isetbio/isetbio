@@ -91,8 +91,8 @@ classdef rgcGLM < rgc
         function obj = compute(obj, outersegment, varargin)
             obj = rgcCompute(obj, outersegment, varargin{:});
         end
-        function obj = computeSpikes(obj, outersegment, varargin)
-            obj = rgcComputeSpikes(obj, outersegment, varargin{:});
+        function obj = spikeCompute(obj, outersegment, varargin)
+            obj = rgcSpikeCompute(obj, varargin{:});
         end
         function rgcPlot(obj, varargin)
             rgcPlot@rgc(obj, varargin{:});

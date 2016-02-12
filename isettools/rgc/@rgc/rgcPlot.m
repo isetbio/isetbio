@@ -438,7 +438,7 @@ switch lower(params.what)
             end
             % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
             % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
-            suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+            % suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
         end
         
         

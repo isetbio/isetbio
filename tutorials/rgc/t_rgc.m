@@ -64,24 +64,22 @@ innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
 % types: ON parasol, OFF parasol, ON midget, OFF midget and small
 % bistratified. Mosaics can be added individually or all five may be added
 % automatically using the loop structure below. If no mosaics are added
-% manually, then they are automatically built on the call to rgcCompute.
-
-% numberMosaics = 5; % setting to 5 generates all five of the most common types.
-% for cellTypeInd = 1:numberMosaics
-%     rgc1 = rgcMosaicCreate(rgc1);
-% end
+% manually, the single default mosaic added is on parasol.
 
 % Alternative syntax for creating single layers at a time
-innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on midget');
-         
+% innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on parasol');
+
+innerRetina.mosaicCreate('mosaicType','on midget');
 %% Compute the RGC responses
 % Compute linear and nonlinear responses
 innerRetina = rgcCompute(innerRetina, os);
+% innerRetina.compute(os);
 
 % Compute spiking response
 numberTrials = 5;
 for repititions = 1:numberTrials
-    innerRetina = rgcComputeSpikes(innerRetina, os);
+%     innerRetina = rgcSpikeCompute(innerRetina);
+    innerRetina.spikeCompute();
 end
 
 %% Plot various aspects of the RGC response

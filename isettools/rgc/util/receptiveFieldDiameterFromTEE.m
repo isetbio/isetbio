@@ -1,12 +1,21 @@
 function receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(tee)
-% receptiveFieldDiameter2STD converts the temporal equivalent eccentricity
-% (TEE) to a value for the RF diameter in um at the specified TEE. The RF
-% diameter can then be used to bulid RGC RFs for
-
-
-% NEED TO DO ACTUAL REGRESSION
-% VERY ROUGH ESTIMATE FROM CHICHILNISKY & KALMAR (2002) SEE FIG. 5 PAGE 2741
-% ON & OFF PARASOL CELLS 
+%% receptiveFieldDiameter2STD converts the TEE to RF diameter 
+% 
+%           receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(temporalEquivEcc);
+%               [only called internall from @rgcMosaic/initialize.m]
+% 
+% The RF diameter is in um at the specified TEE. The RF
+% diameter can then be used to bulid RFs for the rgc object in
+% buildSpatialRFArray.m.
+% 
+% See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries 
+% in ON and OFF ganglion cells of primate retina." The Journal of 
+% Neuroscience 22.7 (2002), Fig. 5, pg. 2741.
+% 
+% Example:
+%   receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
+% 
+% See also: @rgcMosaic/initialize.m
 
 scaleFactor = 1.57; % DF diameter = 1.57*(DF diameter)
 

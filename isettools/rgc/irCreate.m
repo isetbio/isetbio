@@ -1,7 +1,7 @@
 function obj = irCreate(os, varargin)
-% rgcCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
+%% irCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 %
-%  obj = rgcCreate(outersegment,'name',name,'model',{linear,LNP,GLM,Subunit,phys})
+%  obj = irCreate(outersegment,'name',name,'model',{linear,LNP,GLM,Subunit,phys})
 % 
 % Inputs: 
 %  os:     a outer segment structure
@@ -25,11 +25,10 @@ function obj = irCreate(os, varargin)
 % <http://pillowlab.princeton.edu/code_GLM.html code by Pillow> 
 % under the GNU General Public License.
 %  
-%
 % Example:
 %   os  = osCreate('linear');
-%   rgc = rgcCreate(os,'GLM','name','myRGC','type','LNP'); 
-%   rgc = rgcCreate(os,'type','GLM', 'name','EJ');
+%   rgc = irCreate(os,'GLM','name','myRGC','type','LNP'); 
+%   rgc = irCreate(os,'type','GLM', 'name','EJ');
 % 
 % See also:  The initialize method for the @rgcLinear, @rgcLNP or @rgcGLM
 %            subclasses define the specific implementations.
@@ -39,7 +38,7 @@ function obj = irCreate(os, varargin)
 % JRG 9/2015 Copyright ISETBIO Team
 
 %% Parse inputs
-p = ieInputParser;
+p = inputParser;
 p.addRequired('os');
 addParameter(p,'name','inner retina',@ischar);
 addParameter(p,'model','linear',@ischar);
@@ -48,7 +47,7 @@ addParameter(p,'species','unknown',@ischar);
 % In the future, we will read these from the os object, not here.  JRG is
 % adding these parameters
 addParameter(p,'eyeSide',    'left', @ischar);
-addParameter(p,'eyeRadius',   5,     @isnumeric);
+addParameter(p,'eyeRadius',   4,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 
 p.parse(os,varargin{:});
@@ -57,23 +56,19 @@ p.parse(os,varargin{:});
 switch ieParamFormat(p.Results.model)
     case {'linear','rgclinear'}
         obj = rgcLinear(os, p.Results);
-        % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     case {'pool','rgcpool'}
         obj = rgcPool(os, p.Results);
-        % obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
-   
     case {'lnp','rgclnp'}
-        obj = rgcLNP(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
+        obj = rgcLNP(os, p.Results);
     case {'glm','rgcglm'}
         obj = rgcGLM(os, p.Results);
-        % obj = rgcGLM(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
-    case {'subunit','rgcsubunit'}
-        obj = rgcSubunit(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
+    case {'subunit','rgcsubunit'}        
+        obj = rgcSubunit(os, p.Results);
     case{'phys','rgcphys'}
         % NEED TO SWITCH ORDER HERE!
         obj = rgcPhys(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
     otherwise
-        obj = rgcLinear(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
-  
+        error('Unrecognized model type, please choose from ''linear'', ''LNP'', ''GLM'', etc.');
+        
 end
 
