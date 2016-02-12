@@ -16,7 +16,7 @@
 
 % Initialize RDT
 rdt = RdtClient('isetbio');
-rdt.credentialsDialog();
+% rdt.credentialsDialog();
 rdt.crp('resources/data/rgc');
 % Load data
 data = rdt.readArtifact('t_rgcData', 'type', 'mat');
