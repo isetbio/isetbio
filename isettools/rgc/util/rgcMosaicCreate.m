@@ -1,64 +1,60 @@
-function rgc = rgcMosaicCreate(rgc, varargin)
-% rgcCreate: generate an rgcMosaicLinear, rgcMosaicLNP or rgcMosaicGLM object.
+function ir = rgcMosaicCreate(ir, varargin)
+% Add a specific type of RGC mosaic to an inner retina (ir) object
 %
-%  obj = rgcCreate(rgc, mosaicType)
+%  ir = rgcCreate(ir, mosaicType)
+%
+% We can add these types of mosaics to the inner retina object
+%
+%   on/off parasol
+%   on/off midget
+%   small bistratified
+%
+% Each one of these types will be implemented for the various computational
+% models (e.g., GLM, LNP and so forth).  The model is a parameter in the ir
+% object itself.
 % 
+% Example:
+%
+% See also
+%
+% Copyright ISETBIO Team 2016
 
+%% Parse inputs
 
-narginchk(0, Inf);
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = ieInputParser; 
+p.addRequired('ir');
 
-% addRequired(p,'rgc',@isa();
-addParameter(p,'mosaicType','',@ischar);
+mosaicTypes = {'on parasol','off parasol','on midget','off midget','small bistratified','sbc'};
+p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
+p.parse(ir,varargin{:});
 
-p.parse(varargin{:});
+%% Specify the ganglion cell mosaic type
+mosaicType = p.Results.mosaicType;
 
-%% Spatial RF arrays
+%% Switch on the computational model
 
-
-switch ieParamFormat(p.Results.mosaicType)
-    case{'onparasol'}
-        mosaicInd = 1;
-    case{'offparasol'}
-        mosaicInd = 2;
-    case{'onmidget'}
-        mosaicInd = 3;
-    case{'offmidget'}
-        mosaicInd = 4;
-    case{'smallbistratified','sbc'}
-        mosaicInd = 5;
+% There is a separate class for each ir computational model.  These are
+% rgcglm, rgclinear ...
+switch ieParamFormat(class(ir))
+    case {'rgclinear'}
+        obj = rgcMosaicLinear(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
+    case {'rgcpool'}
+        obj = rgcMosaicPool(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
+    case {'rgclnp'}
+        obj = rgcMosaicLNP(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
+    case {'rgcglm'}
+        obj = rgcMosaicGLM(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
+    case {'rgcsubunit'}
+        obj = rgcMosaicSubunit(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
+    case{'rgcphys'}
+        obj = rgcMosaicPhys(ir, mosaicType);
+        rgcSet(ir, 'mosaic', obj);
     otherwise
-        mosaicInd = length(rgc.mosaic)+1;
-        if mosaicInd == 2 && isempty(rgc.mosaic{1})
-            mosaicInd = 1;
-        elseif mosaicInd > 5
-            mosaicInd = 1;
-        end
-end
-          
-
-% Set key-value pairs
-switch ieParamFormat(class(rgc))
-    case {'linear','rgclinear'}
-        obj = rgcMosaicLinear(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    case {'pool','rgcpool'}
-        obj = rgcMosaicPool(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    case {'lnp','rgclnp'}
-        obj = rgcMosaicLNP(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    case {'glm','rgcglm'}
-        obj = rgcMosaicGLM(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    case {'subunit','rgcsubunit'}
-        obj = rgcMosaicSubunit(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    case{'phys','rgcphys'}
-        obj = rgcMosaicPhys(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);
-    otherwise
-        obj = rgcMosaicLinear(rgc, mosaicInd);
-        rgcSet(rgc, 'mosaic', obj);        
+        error('Unknown inner retina class: %s\n',class(ir));
 end
 

@@ -1,42 +1,22 @@
-function obj = rgcCreate(os, varargin)
+function obj = irCreate(os, varargin)
 % rgcCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 %
-%  obj = rgcCreate(type, sensor, outersegment, eyeSide, patchRadius, patchAngle)
+%  obj = rgcCreate(outersegment,'name',name,'model',{linear,LNP,GLM,Subunit,phys})
 % 
-% The arguments can be sent in as name/value pairs, or the parser
-% allows us to send in the parameters as elements of a structure,
-% say
-%
-%  REDO THESE ARGUMENTS!!!!
-%  params = [...
-%           sensor, ... (TODO:  row,col of cones and spacing)
-%           os, ...
-%           eyeSide, ...
-%           eyeRadius, ...
-%           eyeAngle ...
-%   ];
-% We are still figuring out what is exactly needed here
-%
 % Inputs: 
-%  model type: 
-%       'linear' - 
+%  os:     a outer segment structure
+%  name:   Name for this instance
+%  model:   Computation type for all the rgc mosaics
+%       'linear' - Basic linear filtering as in typical center-surround
 %       'LNP'    - linear-nonlinear-Poisson, see Pillow paper as below; only contains post-spike filter
 %       'GLM'    - coupled generalized linear model, see Pillow paper, includes coupling filters  
 %       'Subunit'- cones act as individual subunits
 %       'Phys'   - pulls a set of parameters measured in physiology by
 %                           the Chichilnisky lab.
-%       sensor: a sensor structure
-%       os:     a outer segment structure
 %
-%  Optional, but highly recommended:
-%       eyeSide: 'left' or 'right', which eye the retinal patch is from
-%       patchRadius: radius of retinal patch in microns
-%       patchAngle: polar angle of retinal patch
-%       [These inputs determine the size of spatial receptive fields, and are
-%       necessary to accurately model physiological responses.]
-% 
 % Outputs: 
-%   rgc object
+%  rgc object: There are several types divided according to the model
+%              implementation.
 % 
 % The coupled-GLM model is described in Pillow, Shlens, Paninski, Sher,
 % Litke, Chichilnisky & Simoncelli, Nature (2008).
@@ -45,42 +25,35 @@ function obj = rgcCreate(os, varargin)
 % <http://pillowlab.princeton.edu/code_GLM.html code by Pillow> 
 % under the GNU General Public License.
 %  
-% See the initialize method for the @rgcLinear, @rgcLNP or @rgcGLM 
-% subclasses for more details of the specific implementations.
 %
 % Example:
-% % default values assumed for eyeSide, eyeRadius, eyeAngle.
-%   rgc2 = rgcCreate('GLM', scene, sensor, os); 
-%
-%   eyeAngle = 180; % degrees
-%   eyeRadius = 3; % mm
-%   eyeSide = 'right';
-%   rgc1 = rgcCreate('GLM', scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
-%
+%   os  = osCreate('linear');
+%   rgc = rgcCreate(os,'GLM','name','myRGC','type','LNP'); 
+%   rgc = rgcCreate(os,'type','GLM', 'name','EJ');
 % 
-% JRG 9/2015
+% See also:  The initialize method for the @rgcLinear, @rgcLNP or @rgcGLM
+%            subclasses define the specific implementations.
+%
+% TODO:  Deal with eye parameter issues (see below).
+%
+% JRG 9/2015 Copyright ISETBIO Team
 
-%%
-
-narginchk(0, Inf);
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
-
+%% Parse inputs
+p = ieInputParser;
+p.addRequired('os');
 addParameter(p,'name','inner retina',@ischar);
 addParameter(p,'model','linear',@ischar);
 addParameter(p,'species','unknown',@ischar);
 
-% addParameter(p,'row',     [], @isnumeric);
-% addParameter(p,'col',     [], @isnumeric);
-% addParameter(p,'spacing', [], @isnumeric);
-% addParameter(p,'timing', [], @isnumeric);
+% In the future, we will read these from the os object, not here.  JRG is
+% adding these parameters
+addParameter(p,'eyeSide',    'left', @ischar);
+addParameter(p,'eyeRadius',   5,     @isnumeric);
+addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 
-addParameter(p,'eyeSide',      'side', @ischar);
-addParameter(p,'eyeRadius',   8,     @isnumeric);
-addParameter(p,'eyeAngle',    0,     @isnumeric);
+p.parse(os,varargin{:});
 
-p.parse(varargin{:});
-
-% Set key-value pairs
+%% Create the object
 switch ieParamFormat(p.Results.model)
     case {'linear','rgclinear'}
         obj = rgcLinear(os, p.Results);

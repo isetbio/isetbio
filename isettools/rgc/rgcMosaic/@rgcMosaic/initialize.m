@@ -1,9 +1,8 @@
-function initialize(obj, rgc, cellTypeInd)
-% intialize: a method of @rgcMosaic that initializes the object based on a
-% series of input parameters that can include the location of the
-% retinal patch.
-% 
-%             obj.initialize(rgc, scene, sensor, outersegment, varargin{:});
+function initialize(obj, innerRetina, cellType)
+% Initialize @rgcMosaic for a particular cell type
+%
+% that initializes the object based on a series of input parameters that
+% can include the location of the retinal patch.
 % 
 % First, the name of the cell type is assigned based on the value passed in
 % the type parameter. Next, spatial receptive fields are generated for the
@@ -31,8 +30,8 @@ function initialize(obj, rgc, cellTypeInd)
 
 
 
-namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.cellType = namesCellTypes{cellTypeInd};
+% namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
+obj.cellType = cellType;
 
 % Assign multipliers for size of spatial RFs and magnitudes of temporal IRs
 % [ON Parasol; OFF Parasol; ON Midget; OFF Midget; Small bistratified];
@@ -51,27 +50,25 @@ switch ieParamFormat(obj.cellType)
 end
         
 % Calcualte spatial RF diameter
-receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(rgc.temporalEquivEcc);
+receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
 
-patchSizeX = rgc.spacing; %sensorGet(sensor, 'width', 'um');
-sensorRows = rgc.row;% sensorGet(sensor,'rows');
+patchSizeX = innerRetina.spacing; %sensorGet(sensor, 'width', 'um');
+sensorRows = innerRetina.row;% sensorGet(sensor,'rows');
 
-
+%
 umPerSensorPx = patchSizeX/sensorRows;
 
-obj.rfDiameter = rfSizeMult(cellTypeInd)*(receptiveFieldDiameterParasol2STD/2)/umPerSensorPx; % in microns; divide by umPerScenePx to get pixels
-
-
+obj.rfDiameter = rfSizeMult(cellType)*(receptiveFieldDiameterParasol2STD/2)/umPerSensorPx; % in microns; divide by umPerScenePx to get pixels
 
 % Build spatial RFs of all RGCs in this mosaic
 [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
-    buildSpatialRFArray(rgc.spacing, rgc.row, rgc.col, obj.rfDiameter);
+    buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 
 
 %% Add temporal response function to R, G, B channels
-integrationTime = rgc.timing;%sensorGet(sensor, 'integration time');
+integrationTime = innerRetina.timing;%sensorGet(sensor, 'integration time');
 for rgbInd = 1:3
-    multFactor = rgbTempMult(rgbInd)*rfTempMult(cellTypeInd); % account for RGB channel and ON/OFF channel
+    multFactor = rgbTempMult(rgbInd)*rfTempMult(cellType); % account for RGB channel and ON/OFF channel
     obj.tCenter{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
     obj.tSurround{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
 

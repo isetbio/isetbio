@@ -131,18 +131,8 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 
 % Display gamma preference could be sent in here
 % from t_VernierCones by HM
-step = 1;   % Step is something about time?
-tmp = coneImageActivity(absorptions,[],step,false);
+tmp = coneImageActivity(absorptions,'step',1,'dFlag',true);
 
-% Show the movie
-vcNewGraphWin;
-tmp = tmp/max(tmp(:));
-for ii=1:size(tmp,4)
-    img = squeeze(tmp(:,:,:,ii));
-    imshow(img); truesize;
-    title('Cone absorptions')
-    drawnow
-end
 % close;
 %% Outer segment calculation
 
