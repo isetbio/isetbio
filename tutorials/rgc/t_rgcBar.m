@@ -162,7 +162,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(os,params);
+rgc1 = irCreate(os,params);
 
 % Create just one type of rgc cell mosaic
 % rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onParasol');
@@ -172,12 +172,14 @@ rgc1 = rgcCreate(os,params);
 % for cellTypeInd = 1:5%length(obj.mosaic)
 %     rgc1 = rgcMosaicCreate(rgc1);
 % end
+
+rgc1.mosaicCreate('mosaicType','on midget');
 %%
 % get rid of number of trials
 % get rid of psth property
 rgc1 = rgcCompute(rgc1, os);
 for numberTrials = 1:10
-    rgc1 = rgcComputeSpikes(rgc1, os);
+    rgc1 = rgcSpikeCompute(rgc1, os);
 end
 % rgcPlot(rgc1, 'mosaic');
 % rgcPlot(rgc1, 'rasterResponse');

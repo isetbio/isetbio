@@ -172,7 +172,7 @@ clear params
 
 % params.sensor = absorptions;
 params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'linear';    % Computational model
+params.model   = 'GLM';    % Computational model
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 5;        % Radium in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
@@ -183,11 +183,12 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 % object with different inputs
 % We should reduce dependencies on the other objects
 % We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(osI, params);
+rgc1 = irCreate(osI, params);
 
 % rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
 %  rgc1 = rgcMosaicCreate(rgc1, 'mosaicType', 'onParasol');
 
+rgc1.mosaicCreate('mosaicType','on midget');
 %% Compute RGC response
 % Manually create mosaics; also handled internally by rgcCompute
 % for cellTypeInd = 1:5%length(obj.mosaic)
@@ -200,7 +201,7 @@ rgc1 = rgcCreate(osI, params);
 
 rgc1 = rgcCompute(rgc1, osI);
 for numberTrials = 1:10
-    rgc1 = rgcComputeSpikes(rgc1, os);
+    rgc1 = rgcSpikeCompute(rgc1, os);
 end
 % rgc data object 
 % movies only play signle spikes

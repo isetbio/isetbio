@@ -1,6 +1,6 @@
 classdef rgcGLM < rgc 
-% @rgcGLM: a subclass of @rgc. This subclass implements retinal
-% ganglion cell computations with the @outerSegment object as input. 
+%% A subclass of RGC that implements retinal ganglion cell computations 
+% with the @outerSegment object as input. 
 % This function is typically called by rgcCreate, but may also be called
 % as an alternative to that.
 % 

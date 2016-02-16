@@ -1,5 +1,5 @@
 function obj = rgcCompute(obj, outerSegment, varargin)
-%% Generate the linear and nonlinear responses for an rgc object 
+%% rgcCompute generates the linear and nonlinear responses for an rgc object 
 % Computes the linear and nonlinear output of the rgc mosaic to an
 % arbitrary stimulus. These computations are carried out using code from
 % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky, Simoncelli, Nature,
@@ -7,15 +7,18 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 
 % http://pillowlab.princeton.edu/code_GLM.html
 % 
-% Inputs: the outersegment object.
+% The rgc and rgcMosaic objects are generated at the beginning of each
+% computation to ensure their properties are tied to the outer segment
+% object.
+% 
+% Inputs: the rgc and outersegment objects.
 % 
 % Outputs: the rgc object with linear and nonlinear responses.
 % 
 % Example:
 % rgc1 = rgcCompute(rgc1, identityOS);
 % 
-% (c) isetbio
-% 09/2015 JRG
+% 09/2015 JRG (c) isetbio team
 
 %% The superclass rgcCompute carries out convolution of the linear STRF:
 obj = rgcCompute@rgc(obj, outerSegment, varargin{:});
