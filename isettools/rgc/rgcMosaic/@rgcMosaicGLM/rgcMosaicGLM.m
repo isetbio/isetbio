@@ -1,12 +1,14 @@
 classdef rgcMosaicGLM < rgcMosaic
-% @rgcMosaicGLM: a subclass of @rgcMosaic. This function is only called by
-% rgcGLM to initiailize a mosaic of the rgc object.
-% 
-%        rgc.mosaic{ind} = rgcMosaicGLM(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+% Define a rgc mosaic whose computation is GLM and whose cell type is
+% passed as an argument.
+%
+% This class (@rgcMosaicGLM) is a subclass of @rgcMosaic. It is called when
+% creating a new rgcMosaic from an inner retina object.  Typically we get
+% here from
+%
+%    innerRetina.mosaicCreate(<>)
 % 
 % Inputs: 
-%       scene: an isetbio scene structure
-%       sensor: an isetbio sensor structure
 %       os: an isetbio outer segment structure
 %    Optional but recommended:
 %       eyeSide: 'left' or 'right', which eye the retinal patch is from
@@ -60,12 +62,15 @@ classdef rgcMosaicGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicGLM(rgc, mosaicInd)
-            % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc, mosaicInd);
+        function obj = rgcMosaicGLM(rgc, mosaicType)
+            
+            % Initialize for the cell type            
+            obj = obj@rgcMosaic(rgc, mosaicType);
 
-            % Initialize ourselves
-            obj.initialize(rgc);
+            % Initialize for the computationa type, which in this case is
+            % always GLM
+            % obj.initialize(rgc);
+            obj.rgcGLM(rgc);
             
         end
         

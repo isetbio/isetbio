@@ -1,26 +1,17 @@
 function ir = rgcMosaicCreate(ir, varargin)
-%% Add a specific type of RGC mosaic to an inner retina (IR) object
+% Add a specific type of RGC mosaic to a specific type of computation 
 %
 %  ir = rgcMosaicCreate(ir, mosaicType)
 %
-% We can add these types of mosaics to the inner retina object:
+% The computation (e.g, GLM,Linear,LNP) is specified by the class of the
+% inner retina (ir)
 %
-%       ON Parasol
-%       OFF Parasol
-%       ON Midget
-%       OFF Midget
-%       Small Bistratified
+% The implemented mosaic types are
 %
-% Each one of these types will be implemented for the various computational
-% models (e.g., GLM, LNP and so forth).  The model is defined before the
-% creation of the IR object, and the class of the IR object is dependent on
-% the model.
-% 
-% This function can alternatively be called using the object.method()
-% syntax.
-% 
+% {'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small
+% Bistratified' }
+%
 % Examples:
-%
 %       innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on parasol');
 %       innerRetina.mosaicCreate('mosaicType','on midget');
 % 

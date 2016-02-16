@@ -24,9 +24,9 @@ rdt.crp('resources/data/rgc');
 % Read the artifact containing a description of the cone mosaic
 % (coneMosaic) and the biophysical properties of the outer segment (os).
 % Because these are stored in a matlab file, the data are returned.
-data = rdt.readArtifact('t_rgcData', 'type', 'mat');
+data       = rdt.readArtifact('t_rgcData', 'type', 'mat');
 coneMosaic = data.coneMosaic;
-os   = data.os;
+os         = data.os;
 
 %% Visualize the cone mosaic absoprtion pattern
 %
@@ -51,7 +51,7 @@ os   = data.os;
 % temporal impulse responses with the appropriate sampling rate.
 
 % Create the inner retina that holds the rgc mosaics
-innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
+irGLM = irCreate(os, 'name','Macaque inner retina','model','GLM');
 
 %% Build RGC mosaics (OPTIONAL)
 % 
@@ -59,7 +59,7 @@ innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
 % rgcMosaicCreate. This ensures the mosaics have the correct properties
 % according to those set in the rgc parent object.
 % 
-% The mosiac property of the RGC layer object stores the mosaics of the
+% The mosaic property of the RGC layer object stores the mosaics of the
 % different types of RGCs. The code currently supports the five most common
 % types: ON parasol, OFF parasol, ON midget, OFF midget and small
 % bistratified. Mosaics can be added individually or all five may be added
@@ -69,8 +69,10 @@ innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
 % Alternative syntax for creating single layers at a time
 % innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on parasol');
 
-innerRetina.mosaicCreate('mosaicType','on midget');
+irGLM.mosaicCreate('mosaicType','on midget');
+
 %% Compute the RGC responses
+
 % Compute linear and nonlinear responses
 innerRetina = rgcCompute(innerRetina, os);
 % innerRetina.compute(os);
