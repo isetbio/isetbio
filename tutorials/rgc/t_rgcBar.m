@@ -1,10 +1,9 @@
-% t_rgcBar
+%% t_rgcBar
 % 
 % A tutorial for the isetbio RGC object. A moving bar is created 
 % in isetbio as a scene, and the sensor, outer segment and RGC objects are
 % computed in response to the scene. 
-
-% (HJ) ISETBIO TEAM, 2014
+% 
 % (JRG) modified 10/2015
 
 %% Init
@@ -109,35 +108,23 @@ sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
 %% Movie of the cone absorptions over cone mosaic
-% from t_VernierCones by HM
 
-% step = 1;   % Step is something about time?
-% % Display gamma preference could be sent in here
-% tmp = coneImageActivity(sensor,[],step,false);
-% 
-% Show the movie
-% vcNewGraphWin;
-% tmp = tmp/max(tmp(:));
-% for ii=1:size(tmp,4)
-%     img = squeeze(tmp(:,:,:,ii));
-%     imshow(img); truesize;
-%     title('Cone absorptions')
-%     drawnow
-% end
-% close;
+% coneImageActivity(sensor,'step',1,'dFlag',true);
 %% Outer segment calculation
 
 % Input = RGB
 os = osCreate('identity');
 
 coneSpacing = sensorGet(sensor,'width','um');
+coneSpacing = scene.wAngular*300
+% coneSpacing = sensorGet(sensor,'dimension','um');
 os = osSet(os, 'coneSpacing', coneSpacing);
 
 coneSampling = sensorGet(sensor,'time interval','sec');
 os = osSet(os, 'coneSampling', coneSampling);
 
 os = osSet(os, 'rgbData', sceneRGB);
-% os = osCompute(
+% os = osCompute(sensor);
 
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
@@ -145,46 +132,27 @@ os = osSet(os, 'rgbData', sceneRGB);
 
 clear params
 
-% params = rgcParams('linear');
-% Add cone eccentricity
-% Make generic function that pulls these parameters from the previous stage
-
-% params.sensor = absorptions;
-params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'glm';    % Computational model
+params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
+params.eyeRadius = 12;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-% Coupled GLM model for the rgc (which will become innerRetina
-% Push this naming towards innerR.  
-% We should delete the 'input' because we could run the same rgc
-% object with different inputs
-% We should reduce dependencies on the other objects
-% We should clarify the construction of the different mosaics
-rgc1 = irCreate(os,params);
+innerRetina = irCreate(os, params);
 
-% Create just one type of rgc cell mosaic
-% rgc1 = rgcMosaicCreate(rgc1,'mosaicType','onParasol');
+innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
+%% Compute RGC response
 
-% Create all types of rgc cell mosaics manually
-% This step is also carried out automatically in rgcCompute
-% for cellTypeInd = 1:5%length(obj.mosaic)
-%     rgc1 = rgcMosaicCreate(rgc1);
-% end
-
-rgc1.mosaicCreate('mosaicType','on midget');
-%%
-% get rid of number of trials
-% get rid of psth property
-rgc1 = rgcCompute(rgc1, os);
+innerRetina = irCompute(innerRetina, os);
 for numberTrials = 1:10
-    rgc1 = rgcSpikeCompute(rgc1, os);
+    innerRetina.spikeCompute(innerRetina, os);
 end
-% rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+
+%%
+% irPlot(innerRetina, 'mosaic');
+% irPlot(innerRetina, 'linearResponse');
+irPlot(innerRetina, 'rasterResponse');
+% irPlot(innerRetina, 'psthResponse');
+
 %% Build rgc response movie
-% % osIdentity
-% rgcMovie(rgc1, os);
+% irMovie(rgc1, os);
 %  https://youtu.be/R4YQCTZi7s8

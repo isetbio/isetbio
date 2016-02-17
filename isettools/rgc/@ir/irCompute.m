@@ -1,4 +1,4 @@
-function obj = rgcCompute(obj, outerSegment, varargin)
+function obj = irCompute(obj, outerSegment, varargin)
 % rgcCompute: a method of @rgc that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus.
 %       
@@ -110,7 +110,7 @@ for cellTypeInd = 1:length(obj.mosaic)
     obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'linearResponse', fullResponse);
         
     % Set the nonlinear response for every rgc subclass except rgcLinear
-    if ~isa(obj, 'rgcLinear');
+    if ~isa(obj.mosaic{cellTypeInd}, 'rgcMosaicLinear');
         obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'nlResponse', nlResponse);
     end
             

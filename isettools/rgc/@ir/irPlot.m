@@ -1,8 +1,8 @@
-function rgcPlot(obj, varargin)
-% rgcPlot: a method of @rgc that plots rgcMosaic object 
+function irPlot(obj, varargin)
+% irPlot: a method of @ir that plots rgcMosaic object 
 % properties using the input parser structure.
 % 
-% Inputs: rgc object, property to be plotted
+% Inputs: ir object, property to be plotted
 % 
 % Outputs: plot(s)
 % 
@@ -25,9 +25,9 @@ function rgcPlot(obj, varargin)
 %         'psthResponse'...     - peristimulus time histogram responses of all cells 
 % 
 % Examples:
-%   rgcPlot(rgc1,'rf');
-%   rgcPlot(rgc1,'mosaic');
-%   rgcPlot(rgc1,'psthResponse');
+%   irPlot(ir1,'rf');
+%   irPlot(ir1,'mosaic');
+%   irPlot(ir1,'psthResponse');
 % 
 % (c) isetbio
 % 09/2015 JRG
@@ -402,7 +402,7 @@ switch lower(params.what)
 %                     
 %                     
 %                     % The indices are reversed to match up with the imagesc 
-%                     % command used in rgcMovie.
+%                     % command used in irMovie.
 %                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
 %                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
 %                     
@@ -476,7 +476,7 @@ switch lower(params.what)
                     y(:,end) = .01;
                     
                     % The indices are reversed to match up with the imagesc 
-                    % command used in rgcMovie.
+                    % command used in irMovie.
                     % subplot(nCells(2),nCells(1),cellCtr);
                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
                     

@@ -1,4 +1,4 @@
-% t_rgcWhiteNoise
+%% t_rgcWhiteNoise
 % 
 % A tutorial for the isetbio RGC object. A white noise image is created 
 % in isetbio as a scene, and the sensor, outer segment and RGC objects are
@@ -110,22 +110,8 @@ sensor = sensorSet(sensor, 'volts', volts);
 
 
 %% Movie of the cone absorptions over cone mosaic
-% from t_VernierCones by HM
 
-step = 1;   % Step is something about time?
-% Display gamma preference could be sent in here
-tmp = coneImageActivity(sensor,[],step,false);
-
-% Show the movie
-vcNewGraphWin;
-tmp = tmp/max(tmp(:));
-for ii=1:size(tmp,4)
-    img = squeeze(tmp(:,:,:,ii));
-    imshow(img); truesize;
-    title('Cone absorptions')
-    drawnow
-end
-close;
+% coneImageActivity(sensor,'step',1,'dFlag',true);
 %% Outer segment calculation
 
 % Input = RGB
@@ -143,42 +129,28 @@ os = osSet(os, 'rgbData', sceneRGB);
 
 %% Build rgc
 
-% rgc1 = rgcCreate('GLM', scene, sensor, os, 'right', 3.0, 180);
 clear params
 
-% params = rgcParams('linear');
-
-% params.sensor = absorptions;
-params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'glm';    % Computational model
+params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 5;        % Radium in mm
+params.eyeRadius = 12;        % Radium in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-% Coupled GLM model for the rgc (which will become innerRetina
-% Push this naming towards innerR.  
-% We should delete the 'input' because we could run the same rgc
-% object with different inputs
-% We should reduce dependencies on the other objects
-% We should clarify the construction of the different mosaics
-rgc1 = rgcCreate(os, params);
-rgc1.mosaicCreate('mosaicType','on midget');
-% for cellTypeInd = 1:5%length(obj.mosaic)    
-%     rgc1 = rgcMosaicCreate(rgc1);
-% end
-rgc1 = rgcCompute(rgc1, os);
+innerRetina = irCreate(os, params);
+
+innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
+%% Compute RGC response
+
+innerRetina = irCompute(innerRetina, os);
 for numberTrials = 1:10
-    rgc1 = rgcSpikeCompute(rgc1, os);
+    innerRetina.spikeCompute(innerRetina, os);
 end
-% rgcPlot(rgc1, 'mosaic');
-% rgcPlot(rgc1, 'linearResponse');
-% rgcPlot(rgc1, 'rasterResponse');
-rgcPlot(rgc1, 'psthResponse');
+
+%%
+% irPlot(innerRetina, 'mosaic');
+% irPlot(innerRetina, 'linearResponse');
+irPlot(innerRetina, 'rasterResponse');
+% irPlot(innerRetina, 'psthResponse');
+
 %% Build rgc response movie
-%  https://youtu.be/R4YQCTZi7s8
-
-% % osLinear
-% rgcMovie(rgc1, sensor);
-
-% % osIdentity
-% rgcMovie(rgc1, os);
+% irMovie(rgc1, os);

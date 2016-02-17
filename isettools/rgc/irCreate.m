@@ -1,7 +1,7 @@
 function obj = irCreate(os, varargin)
 %% irCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
 %
-%  obj = irCreate(outersegment,'name',name,'model',{linear,LNP,GLM,Subunit,phys})
+%  obj = irCreate(outersegment,'name',name,'eyeSide',{'left','right'},'eyeRadius',eyeRadius,'eyeAngle',eyeAngle)
 % 
 % Inputs: 
 %  os:     a outer segment structure
@@ -28,12 +28,10 @@ function obj = irCreate(os, varargin)
 % Example:
 %   os  = osCreate('linear');
 %   rgc = irCreate(os,'GLM','name','myRGC','type','LNP'); 
-%   rgc = irCreate(os,'type','GLM', 'name','EJ');
+%   rgc = irCreate(os,'type','GLM', 'name','EJ',...
+%             'eyeSide','left','eyeRadius',12,'eyeAngle',90));
 % 
-% See also:  The initialize method for the @rgcLinear, @rgcLNP or @rgcGLM
-%            subclasses define the specific implementations.
-%
-% TODO:  Deal with eye parameter issues (see below).
+% See also:  t_rgc.m
 %
 % JRG 9/2015 Copyright ISETBIO Team
 
@@ -47,28 +45,12 @@ addParameter(p,'species','unknown',@ischar);
 % In the future, we will read these from the os object, not here.  JRG is
 % adding these parameters
 addParameter(p,'eyeSide',    'left', @ischar);
-addParameter(p,'eyeRadius',   4,     @isnumeric);
+addParameter(p,'eyeRadius',   12,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 
 p.parse(os,varargin{:});
 
 %% Create the object
-switch ieParamFormat(p.Results.model)
-    case {'linear','rgclinear'}
-        obj = rgcLinear(os, p.Results);
-    case {'pool','rgcpool'}
-        obj = rgcPool(os, p.Results);
-    case {'lnp','rgclnp'}
-        obj = rgcLNP(os, p.Results);
-    case {'glm','rgcglm'}
-        obj = rgcGLM(os, p.Results);
-    case {'subunit','rgcsubunit'}        
-        obj = rgcSubunit(os, p.Results);
-    case{'phys','rgcphys'}
-        % NEED TO SWITCH ORDER HERE!
-        obj = rgcPhys(outersegment, sensor, 'eyeSide', eyeSide, 'eyeRadius', eyeRadius, 'eyeAngle', eyeAngle);
-    otherwise
-        error('Unrecognized model type, please choose from ''linear'', ''LNP'', ''GLM'', etc.');
-        
-end
+obj = ir(os, p.Results);
+
 

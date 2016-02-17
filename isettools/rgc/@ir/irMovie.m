@@ -1,4 +1,4 @@
-function rgcMovie(obj, outersegment, varargin)
+function irMovie(obj, outersegment, varargin)
 % 
 % rgcMovie: a method of @rgc that generates a movie of the stimulus and the
 % responses of the rgc mosaics. The type of response shown in the movie is

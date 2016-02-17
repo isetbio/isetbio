@@ -15,7 +15,7 @@ function obj = osCompute(obj, sceneRGB)
 
 obj = osSet(obj, 'rgbData', sceneRGB);
 
-% obj.coneSpacing = sensorGet(sensor,'width','um'); % Cone width
+% obj.coneSpacing = sensorGet(sensor,'dimension','um'); % Cone width
 % 
 % obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 

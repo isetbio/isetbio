@@ -51,9 +51,9 @@ os         = data.os;
 % temporal impulse responses with the appropriate sampling rate.
 
 % Create the inner retina that holds the rgc mosaics
-irGLM = irCreate(os, 'name','Macaque inner retina','model','GLM');
+innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
 
-%% Build RGC mosaics (OPTIONAL)
+%% Build RGC mosaics 
 % 
 % This is now handled internally in rgcCompute with the same call to
 % rgcMosaicCreate. This ensures the mosaics have the correct properties
@@ -67,27 +67,30 @@ irGLM = irCreate(os, 'name','Macaque inner retina','model','GLM');
 % manually, the single default mosaic added is on parasol.
 
 % Alternative syntax for creating single layers at a time
-% innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on parasol');
+% innerRetina = rgcMosaicCreate(innerRetina,'model','glm','mosaicType','on parasol');
 
-irGLM.mosaicCreate('mosaicType','on midget');
+innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','mosaicType','on midget');
 
+innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
+
+% innerRetina.mosaicCreate('model','linear','mosaicType','on midget');
 %% Compute the RGC responses
 
 % Compute linear and nonlinear responses
-innerRetina = rgcCompute(innerRetina, os);
+innerRetina = irCompute(innerRetina, os);
 % innerRetina.compute(os);
 
 % Compute spiking response
 numberTrials = 5;
 for repititions = 1:numberTrials
-%     innerRetina = rgcSpikeCompute(innerRetina);
+%     innerRetina = irSpikeCompute(innerRetina);
     innerRetina.spikeCompute();
 end
 
 %% Plot various aspects of the RGC response
-% rgcPlot(rgc1, 'mosaic');
-rgcPlot(innerRetina, 'rasterResponse');
-% rgcPlot(rgc1, 'psthResponse');
+% irPlot(innerRetina, 'mosaic');
+irPlot(innerRetina, 'rasterResponse');
+% irPlot(innerRetina, 'psthResponse');
 
 % Create a movie of the response
 % rgcMovie(rgc1, os);

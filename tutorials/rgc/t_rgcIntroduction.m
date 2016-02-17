@@ -1,7 +1,4 @@
-%%
-%
-% In which our heroes lay out the basic architecture of the rgc class and
-% its specializations.
+%% In which our heroes lay out the basic architecture of the ir class
 %
 % Aspirational:
 %    function [scene, sceneRGB, oi, sensor] = movieCreate(varargin)
@@ -129,11 +126,8 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 
 %% Movie of the cone absorptions over cone mosaic
 
-% Display gamma preference could be sent in here
-% from t_VernierCones by HM
-tmp = coneImageActivity(absorptions,'step',1,'dFlag',true);
+% coneImageActivity(absorptions,'step',1,'dFlag',true);
 
-% close;
 %% Outer segment calculation
 
 % % The outer segment converts cone absorptions into cone photocurrent.
@@ -168,48 +162,28 @@ osI = osSet(osI, 'rgbData', sceneRGB);
 
 clear params
 
-% params = rgcParams('linear');
-
-% params.sensor = absorptions;
-params.name    = 'Macaque inner retina 1'; % This instance
-params.model   = 'GLM';    % Computational model
+params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 5;        % Radium in mm
+params.eyeRadius = 12;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-% Coupled GLM model for the rgc (which will become innerRetina
-% Push this naming towards innerR.  
-% We should delete the 'input' because we could run the same rgc
-% object with different inputs
-% We should reduce dependencies on the other objects
-% We should clarify the construction of the different mosaics
-rgc1 = irCreate(osI, params);
+innerRetina = irCreate(osI, params);
 
-% rgc1 = rgc1.addMosaic(cellTypeInd, outersegment, sensor, varargin{:});
-%  rgc1 = rgcMosaicCreate(rgc1, 'mosaicType', 'onParasol');
-
-rgc1.mosaicCreate('mosaicType','on midget');
+innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 %% Compute RGC response
-% Manually create mosaics; also handled internally by rgcCompute
-% for cellTypeInd = 1:5%length(obj.mosaic)
-%     rgc1 = rgcMosaicCreate(rgc1);
-% end
-            
-% rgc2 = rgcCreate('linear', params);
-% rgc2 = rgcCreate('linear', 'sensor', sensor, ...
-%   'outersegment', os, 'eyeSide','left', 'eyeRadius', 9, 'eyeAngle', 90);
 
-rgc1 = rgcCompute(rgc1, osI);
+innerRetina = irCompute(innerRetina, osI);
 for numberTrials = 1:10
-    rgc1 = rgcSpikeCompute(rgc1, os);
+    innerRetina.spikeCompute(innerRetina, os);
 end
 % rgc data object 
 % movies only play signle spikes
 
-% rgcPlot(rgc1, 'mosaic');
-rgcPlot(rgc1, 'linearResponse');
-% rgcPlot(rgc1, 'rasterResponse');
-% rgcPlot(rgc1, 'psthResponse');
+%%
+% irPlot(innerRetina, 'mosaic');
+% irPlot(innerRetina, 'linearResponse');
+irPlot(innerRetina, 'rasterResponse');
+% irPlot(innerRetina, 'psthResponse');
 
 
 %%

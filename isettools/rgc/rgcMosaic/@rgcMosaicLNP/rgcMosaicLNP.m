@@ -62,12 +62,12 @@ classdef rgcMosaicLNP < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLNP(rgc, cellTypeInd, outersegment, sensor, varargin)
+        function obj = rgcMosaicLNP(rgc, mosaicType)
             % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc, cellTypeInd, outersegment, sensor, varargin{:});
+            obj = obj@rgcMosaic(rgc, mosaicType);
 
             % Initialize ourselves
-            obj.initialize(rgc, sensor, outersegment, varargin{:});
+            obj.initialize;
             
             % % parse the varargin
             % for k = 1:2:numel(varargin)
@@ -106,7 +106,7 @@ classdef rgcMosaicLNP < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, sensor, outersegment, varargin);
+        initialize(obj);
     end
     
 end

@@ -33,6 +33,10 @@ end
 
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
+    
+    % The type of computational model for the RGC spikes
+    % model; 
+    
     cellType;           % Possible types are ...
     rfDiameter;         % receptive field center diameter
     % We should estimate the rf center sigma

@@ -1,12 +1,12 @@
-function obj = rgcSet(obj, varargin)
-% rgcSet: a method of @rgc that sets rgc object 
+function val = irGet(obj, varargin)
+% rgcGet: a method of @rgc that gets rgc object 
 % parameters using the input parser structure.
 % 
-%       val = rgcSet(rgc, property)
+%       val = rgcGet(rgc, property)
 % 
-% Inputs: rgc object, property to be set, value of property to be set
+% Inputs: rgc object, property to be gotten
 % 
-% Outputs: object with property set
+% Outputs: val of property
 % 
 % Proeprties:
 %         name: type of rgc object, e.g., 'macaque RGC'
@@ -17,11 +17,10 @@ function obj = rgcSet(obj, varargin)
 %         mosaic: contains rgcMosaic objects for the five most common types
 %           of RGCs: onParasol, offParasol, onMidget, offMidget,
 %           smallBistratified.
-%         numberTrials: the number of trials for spiking models LNP and GLM
 % 
 % Example:
-%   rgc1 = rgcSet(rgc1, 'name', 'macaque RGC')
-%   rgc1 = rgcSet(rgc1, 'temporalEquivEcc', 5)
+%   val = rgcGet(rgc1, 'name')
+%   val = rgcGet(rgc1, 'input')
 % 
 % 9/2015 JRG 
 
@@ -39,15 +38,15 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {...   
+allowableFieldsToSet = {...         
         'name',...
         'input',...
         'temporalEquivEcc',...       
         'mosaic',...
-        'numberTrials'...
+        'featureVector'...
+%         'linearResponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -66,34 +65,33 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
-        
+switch lower(params.what)    
     case{'name'}
-        obj.name = params.value;
+        val = obj.name;
     case{'input'}
-        obj.input = params.value;
+        val = obj.input;
     case{'temporalequivecc'}        
-        obj.temporalEquivEcc = params.value;
-    case{'mosaic'}
-        
-        mosaicInd = length(obj.mosaic);
-        if mosaicInd == 1 && isempty(obj.mosaic{mosaicInd})
-            mosaicInd = 0;
-        elseif mosaicInd >= 5
-            mosaicInd = 0;
-        end
-        obj.mosaic{mosaicInd+1,1} = params.value;   
-        
-    case{'numbertrials'}
+        val = obj.temporalEquivEcc;
+    case{'mosaic'}        
+        val = obj.mosaic;                
+    case{'featurevector'}
+        val = [];
         cellTypes = length(obj.mosaic);
-        if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')| isa(obj.mosaic{1},'rgcMosaicPhys')
+        for cellTypeInd = 1:cellTypes
+            numberSpikes = mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+            numberTrials = mosaicGet(obj.mosaic{cellTypeInd}, 'numberTrials');
+            % obj.mosaic{1}.rasterResponse{1,1} is an array of NxTrials,
+            % but since some of the array entries are zero, we count the
+            % number of spikes per trial by finding the number of nonzero
+            % array entries and take the mean.
             
-            for cellTypeInd = 1%:cellTypes
-                obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
-            end
-        else
-            warning('The numberTrials property can only be set for rgcLNP and rgcGLM models.');
+            % Do this operation for each cell
+            valC = (cellfun(@(x) mean(size(x, 1) - sum(isinf(1./x))),numberSpikes, 'un',0));
+            
+            % put into array
+            valA = cell2mat(valC);
+            val = [val; valA(:)];
+            
         end
-        
 end
 

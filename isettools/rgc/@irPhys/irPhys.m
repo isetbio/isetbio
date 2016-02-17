@@ -1,10 +1,10 @@
-classdef rgcGLM < rgc 
-%% A subclass of RGC that implements retinal ganglion cell computations 
-% with the @outerSegment object as input. 
-% This function is typically called by rgcCreate, but may also be called
+classdef irPhys < ir 
+% @irPhys: a subclass of @ir. This subclass implements retinal
+% ganglion cell computations with the @outerSegment object as input. 
+% This function is typically called by irCreate, but may also be called
 % as an alternative to that.
 % 
-%       rgc = rgcGLM(scene, sensor, outersegment, varargin)
+%       ir = irPhys(scene, sensor, outersegment, varargin)
 % 
 % The GLM (generalized linear model) follows the details outlined in
 % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
@@ -24,7 +24,7 @@ classdef rgcGLM < rgc
 %     [These inputs determine the size of spatial receptive fields, and are
 %       necessary to accurately model physiological responses.]
 % 
-% Outputs: the rgc object.
+% Outputs: the ir object.
 % 
 % Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
 %       Nature (2008).
@@ -34,12 +34,6 @@ classdef rgcGLM < rgc
 % under the GNU General Public License.
 % 
 % Example:
-%       rgc1 = rgcGLM(scene, sensor, outersegment);
-% 
-%       eyeAngle = 180; % degrees
-%       eyeRadius = 3; % mm
-%       eyeSide = 'right';
-%       rgc2 = rgcGLM(scene, absorptions, os, eyeSide, eyeRadius, eyeAngle);
 % 
 % 9/2015 JRG
 
@@ -61,27 +55,26 @@ classdef rgcGLM < rgc
     methods
         
         % Constructor
-        function obj = rgcGLM(os, params)
+        function obj = irPhys(outersegment, sensor, varargin)
             % Initialize the parent class
-            obj = obj@rgc(os, params);
-            
+             obj = obj@ir(outersegment, varargin{:});
+           % obj = [];
             % Initialize ourselves by building GLM mosaic objects
-%             for cellTypeInd = 1:5%length(obj.mosaic)
-%                 params.cellTypeInd = cellTypeInd;
-%                 obj.mosaic{cellTypeInd,1} = rgcMosaicGLM(obj);
-%             end
+            for cellTypeInd = 1%:length(obj.mosaic)
+                obj.mosaic{cellTypeInd} = rgcMosaicPhys(obj, cellTypeInd, outersegment, sensor, varargin{:});
+            end
             
         end
         
-        % set function, see superclass method in @rgc for details
-        function obj = rgcSet(obj, varargin)
-            rgcSet@rgc(obj,varargin{:});
+        % set function, see superclass method in @ir for details
+        function obj = irSet(obj, varargin)
+            irSet@ir(obj,varargin{:});
         end
         
-        % get function, see superclass method in @rgc for details
-        function val = rgcGet(obj, varargin)
-           % val = rgcGet(obj, varargin{:});
-           val = rgcGet@rgc(obj,varargin{:});
+        % get function, see superclass method in @ir for details
+        function val = irGet(obj, varargin)
+           % val = irGet(obj, varargin{:});
+           val = irGet@ir(obj,varargin{:});
         end
       
     end
@@ -89,16 +82,13 @@ classdef rgcGLM < rgc
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function obj = compute(obj, outersegment, varargin)
-            obj = rgcCompute(obj, outersegment, varargin{:});
+            obj = irCompute(obj, outersegment, varargin{:});
         end
-        function obj = spikeCompute(obj, outersegment, varargin)
-            obj = rgcSpikeCompute(obj, varargin{:});
+        function irPlot(obj, varargin)
+            irPlot@ir(obj, varargin{:});
         end
-        function rgcPlot(obj, varargin)
-            rgcPlot@rgc(obj, varargin{:});
-        end
-        function rgcMovie(obj, outersegment, varargin)
-            rgcMovie@rgc(obj, outersegment, varargin{:});
+        function irMovie(obj, outersegment, varargin)
+            irMovie@ir(obj, outersegment, varargin{:});
         end
     end    
     
@@ -108,7 +98,7 @@ classdef rgcGLM < rgc
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, sensor, outersegment, varargin);
+        % initialize(obj, sensor, outersegment, varargin);
     end
     
 end

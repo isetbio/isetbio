@@ -1,4 +1,4 @@
-function initialize(obj, rgc, sensor, outersegment, varargin)
+function initialize(obj)
 % intialize: a method of @rgcMosaicLNP that initializes the object
 % following initialization by the superclass. This adds the generator
 % function, the post spike filter and the coupling filters. This function

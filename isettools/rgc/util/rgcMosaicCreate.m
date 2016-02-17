@@ -27,34 +27,38 @@ p.addRequired('ir');
 
 mosaicTypes = {'on parasol','off parasol','on midget','off midget','small bistratified','sbc'};
 p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
+
+modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
+p.addParameter('model','linear',@(x) any(validatestring(x,modelTypes)));
+
 p.parse(ir,varargin{:});
 
 %% Specify the ganglion cell mosaic type
 mosaicType = p.Results.mosaicType;
-
+model = p.Results.model;
 %% Switch on the computational model
 
 % There is a separate class for each ir computational model.  These are
 % rgcglm, rgclinear ...
-switch ieParamFormat(class(ir))
-    case {'rgclinear'}
+switch ieParamFormat(model)
+    case {'linear','rgclinear'}
         obj = rgcMosaicLinear(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
-    case {'rgcpool'}
+        irSet(ir, 'mosaic', obj);
+    case {'pool', 'rgcpool'}
         obj = rgcMosaicPool(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
-    case {'rgclnp'}
+        irSet(ir, 'mosaic', obj);
+    case {'lnp', 'rgclnp'}
         obj = rgcMosaicLNP(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
-    case {'rgcglm'}
+        irSet(ir, 'mosaic', obj);
+    case {'glm','rgcglm'}
         obj = rgcMosaicGLM(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
-    case {'rgcsubunit'}
+        irSet(ir, 'mosaic', obj);
+    case {'subunit','rgcsubunit'}
         obj = rgcMosaicSubunit(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
-    case{'rgcphys'}
+        irSet(ir, 'mosaic', obj);
+    case{'phys','rgcphys'}
         obj = rgcMosaicPhys(ir, mosaicType);
-        rgcSet(ir, 'mosaic', obj);
+        irSet(ir, 'mosaic', obj);
     otherwise
         error('Unknown inner retina class: %s\n',class(ir));
 end

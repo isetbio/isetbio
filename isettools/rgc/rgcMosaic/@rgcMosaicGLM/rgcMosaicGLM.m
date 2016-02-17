@@ -69,8 +69,8 @@ classdef rgcMosaicGLM < rgcMosaic
 
             % Initialize for the computationa type, which in this case is
             % always GLM
-            % obj.initialize(rgc);
-            obj.rgcGLM(rgc);
+            obj.initialize(rgc);
+%             obj.rgcGLM(rgc);
             
         end
         
