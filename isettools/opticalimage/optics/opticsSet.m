@@ -16,7 +16,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 % See oiCompute for a discussion of the different optics models and how
 % they are used.  
 %
-%Example:
+% Example:
 %   optics = opticsSet(optics,'fnumber',2.8);
 %   optics = opticsSet(optics,'model','diffractionLimited');
 %
@@ -26,8 +26,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 % Optics parameters are:
 %
 % Optics model  - 
-%      {'model'}  -  DiffractionLimited, ShiftInvariant, RayTrace,
-%                    UserSupplied.
+%      {'model'}  -  DiffractionLimited, ShiftInvariant, Pinhole
 %
 % Diffraction limited optics specifications.
 %      {'name'}    - This optics name
@@ -39,31 +38,30 @@ function optics = opticsSet(optics,parm,val,varargin)
 %
 % Wavelength information
 %      {'spectrum'}  - Wavelength information structure
-%        {'wave'}   - Wavelength samples
+%        {'wave'}    - Wavelength samples
 %
 % OTF Information for shift-invariant optics model
-%      {'otfmethod'}   - diffractionlimited, shiftinvariant, raytrace, {'usersupplied','custom'}, skipotf, or ...
-%      {'otfdata'}     - Used to store custom data.  Row x Col x Wave
-%      {'otffx'}       - frequency samples across col of otfdata (cyc/mm)
-%      {'otffy'}       - frequency samples down rows of otfdata  (cyc/mm)
-%      {'otfwave'}     - otf wavelengths
+%      {'otfdata'}   - Used to store custom data.  Row x Col x Wave
+%      {'otffx'}     - frequency samples across col of otfdata (cyc/mm)
+%      {'otffy'}     - frequency samples down rows of otfdata  (cyc/mm)
+%      {'otfwave'}   - otf wavelengths
 %
 % Relative illumination data
-%      {'relillummethod'}- 
+%      {'relillummethod'}   - 
 %      {'off axis method'}  - Set to 'Skip' to turn off or 'cos4th'
 %      {'cos4thdata'}       - Cached cos4th data
 %
 % Ray trace optics specifications
-%     {'raytrace'}     - The entire ray trace structure
-%      {'rtopticsprogram'}     - Optics program used (Zemax or Code V)
-%      {'rtlensfile'}          - Lens file name
-%      {'rteffectivefnumber'}  - Effective f-number
-%      {'rtfnumber'}           - F-number
-%      {'rtmagnification'}     - Magnification
+%     {'raytrace'}            - The entire ray trace structure
+%      {'rtopticsprogram'}    - Optics program used (Zemax or Code V)
+%      {'rtlensfile'}         - Lens file name
+%      {'rteffectivefnumber'} - Effective f-number
+%      {'rtfnumber'}          - F-number
+%      {'rtmagnification'}    - Magnification
 %      {'rtreferencewavelength'}  - Lens design reference wavelength
 %      {'rtobjectdistance'}       - Lens design object distance
 %         % Distance to object plane in mm.  NOTE bad unit!
-%      {'rtfieldofview'}          - Maximum horizontal field of view
+%      {'rtfieldofview'}       - Maximum horizontal field of view
 %         % Maximum field of view for the ray trace calculation (not the
 %         % computed image).  This is horizontal field of view.  DB Wants us
 %         % to change to diagonal.
@@ -113,9 +111,14 @@ switch parm
         optics.type = val;
         
     case {'model','opticsmodel'}
-        % Valid choices are diffractionLimited, shiftInvariant, rayTrace,
-        % skip, or userSupplied.  The case and spaces do not matter.
-        optics.model = ieParamFormat(val);
+        % Valid choices are 
+        % The case and spaces do not matter.
+        valid = {'diffractionlimited', 'shiftinvariant', 'pinhole'};
+        if validatestring(ieParamFormat(val), valid)
+            optics.model = ieParamFormat(val);
+        else
+            error('Invalid model %s\n',val);
+        end
         
     case {'fnumber','f#'}
         optics.fNumber = val;

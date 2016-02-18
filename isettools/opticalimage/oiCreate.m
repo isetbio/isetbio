@@ -71,9 +71,10 @@ switch oiType
         oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
         
-    case {'wvfhuman'}
+    case {'wvfhuman','shiftinvariant'}
         % A human lens specified using the WVF toolbox method
         % oi = oiCreate('wvf human',pupilMM,zCoefs)
+        % This is in the class of shift invariant models
         
         % Defaults and then adjust for varargin
         wave = 400:10:700; wave = wave(:);
