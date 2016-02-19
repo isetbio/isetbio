@@ -1,25 +1,32 @@
 function ir = rgcMosaicCreate(ir, varargin)
-%% Add a specific type of RGC cell mosaic with a specific type of computation 
+% Add a type of RGC mosaic with a specific computational model
 %
-%  ir = rgcMosaicCreate(ir, 'model', ['linear','GLM',etc.], 'mosaicType', ['on parasol', 'sbc', etc.])
+% The rgc mosaics are stored as a cell array within the inner retina (ir)
+% class.  The RGC mosaics are the main computational engine for producing
+% retinal spike outputs.
 %
-% The implemented computational models are
-%       linear, 
-%       LNP, 
-%       GLM
+% The implemented computational models are 'linear', 'LNP', or 'GLM'
 %
 % The implemented mosaic types are
-%       'ON Parasol', 
-%       'OFF Parasol', 
-%       'ON Midget', 
-%       'OFF Midget', 
-%       'Small Bistratified' 
+%   'ON Parasol', 
+%   'OFF Parasol', 
+%   'ON Midget', 
+%   'OFF Midget', 
+%   'Small Bistratified' 
 %
 % Examples:
-%       innerRetina = rgcMosaicCreate(innerRetina,'model','linear','mosaicType','on parasol');
-%       innerRetina.mosaicCreate('model','GLM','mosaicType','on midget');
-% 
-% See also: rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m, rgcMosaicGLM.m,
+%  This function can be called as:
+%
+%   ir = rgcMosaicCreate(ir, 'model', ['linear','GLM',etc.], 'mosaicType', ['on parasol', 'sbc', etc.])
+%
+%  Often, we call it as a method of the inner retina class. In that case,
+%  the call looks like:
+%
+%   ir = irCreate(osCreate('identity'));
+%   ir.mosaicCreate('model','linear','mosaicType','on parasol');
+%   ir.mosaicCreate('model','GLM','mosaicType','on midget');
+%
+% See also: irCreate, rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m, rgcMosaicGLM.m,
 %               t_rgc.m, t_rgcIntroduction.
 %
 % Copyright ISETBIO Team 2016
@@ -29,6 +36,7 @@ function ir = rgcMosaicCreate(ir, varargin)
 p = inputParser; 
 p.addRequired('ir');
 
+% Experiment ... thinking about input parsing more generally (JRG/BW)
 mosaicTypes = {'on parasol','off parasol','on midget','off midget','small bistratified','sbc'};
 p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
 

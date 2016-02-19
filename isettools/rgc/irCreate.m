@@ -39,7 +39,6 @@ function obj = irCreate(os, varargin)
 p = inputParser;
 p.addRequired('os');
 addParameter(p,'name','inner retina',@ischar);
-addParameter(p,'model','linear',@ischar);
 addParameter(p,'species','unknown',@ischar);
 
 % In the future, we will read these from the os object, not here.  JRG is

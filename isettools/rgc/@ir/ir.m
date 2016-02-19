@@ -1,8 +1,7 @@
 classdef ir < handle
 %% The inner retina class represents the mosaic of cells in the inner retina 
 %
-%           obj = ir(os, params);
-%               [usually called internally from irCreate]
+%   obj = ir(os, params);    %[usually called internally from irCreate]
 % 
 % An ir object is created from the isetbio @outerSegment object. The ir
 % (inner retina) object stores basic properties about the species and the
@@ -15,10 +14,10 @@ classdef ir < handle
 % Neuroscience 22.7 (2002).
 % 
 % Properties:
-%         name:  animal, ir; example: 'macaque ir'
-%         input: RGB stim or outersegment
-%         temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE        
-%         mosaic: a cell array, where each cell is an rgcMosaic object, 
+%    name:  animal, ir; example: 'macaque ir'
+%    input: RGB stim or outersegment
+%    temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE        
+%    mosaic: a cell array, where each cell is an rgcMosaic object, 
 %               which is a subclass of the ir object.
 % 
 % Methods: intialize, set, get, compute, plot, movie
@@ -96,14 +95,20 @@ methods
         val = irGet(obj, varargin{:});
     end
     
-    % compute function, see irCompute
+    % IR Compute functions, that loop over the rgc mosaics
     function obj = compute(obj, outerSegment, varargin)
+        % Calls computeContinuous and then computeSpikes
         obj = irCompute(obj,  outerSegment, varargin{:});
     end
     
-    function obj = spikeCompute(obj, varargin)
-        obj = irSpikeCompute(obj,  varargin{:});
+    function obj = computeContinuous(obj,varargin)
+        obj = irComputeContinuous(obj,varargin{:});
     end
+    
+    function obj = computeSpikes(obj, varargin)
+        obj = irComputeSpikes(obj,  varargin{:});
+    end
+    
     % plot function, see irPlot
     function plot(obj, varargin)
         irPlot(obj, varargin{:});

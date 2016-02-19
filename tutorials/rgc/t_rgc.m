@@ -51,7 +51,7 @@ os         = data.os;
 % temporal impulse responses with the appropriate sampling rate.
 
 % Create the inner retina that holds the rgc mosaics
-innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
+innerRetina = irCreate(os, 'name','Macaque inner retina');
 
 %% Build RGC mosaics 
 % 
@@ -77,14 +77,20 @@ innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 %% Compute the RGC responses
 
 % Compute linear and nonlinear responses
-innerRetina = irCompute(innerRetina, os);
+% innerRetina = irCompute(innerRetina, os);
 % innerRetina.compute(os);
+
+% irCompute()
+%    irComputeContinuous
+%    irComputeSpikes;
+
+innerRetina = innerRetina.computeContinuous(os);
 
 % Compute spiking response
 numberTrials = 5;
 for repititions = 1:numberTrials
 %     innerRetina = irSpikeCompute(innerRetina);
-    innerRetina.spikeCompute();
+    innerRetina.computeSpikes();
 end
 
 %% Plot various aspects of the RGC response

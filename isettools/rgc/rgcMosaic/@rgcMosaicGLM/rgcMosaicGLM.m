@@ -1,32 +1,24 @@
 classdef rgcMosaicGLM < rgcMosaic
-%% Define an rgcMosaic cell type whose computation is GLM
+% rgcMosaic cell type with a GLM (coupled-nonlinear)computational model
 %
-% This class (@rgcMosaicGLM) is a subclass of @rgcMosaic. It is called when
-% creating a new rgcMosaic from an inner retina object.  Typically we get
-% here from rgcMosaicCreate with the call:
+% The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
+% Litke, Chichilnisky & Simoncelli, Nature (2008).% The computational model
+% implemented here relies on code by
+% <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
+% distributed under the GNU General Public License.
+%
+% rgcMosaicGLM is a subclass of rgcMosaic. It is called when creating a new
+% rgcMosaic from an inner retina object.  Typically we get here from the
+% inner retina object via a call
+%
+%   ir.mosaicCreate( ... )
 % 
-%      mosaicGLM = rgcMosaicGLM(ir, mosaicType);
-%  
-% Inputs: 
-%       os: an isetbio outer segment structure
-%       mosaicType: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified' 
-% 
-% Outputs: the rgcMosaicGLM object; rgcMosaicCreate attaches the
-%       rgcMosaicGLM object to an innerRetina object.
-% 
-% The coupled GLM model implemented here is found in Pillow, Shlens,
-% Paninski, Sher, Litke, Chichilnisky & Simoncelli, Nature (2008).
-% 
-% This model incorporates code by Pillow available at 
-%       http://pillowlab.princeton.edu/code_GLM.html
-% under the GNU General Public License.
-% 
-% Example: from rgcGLM.m initiailize:
-%        
-%       os  = osCreate('identity');
-%       innerRetina = irCreate(os,'GLM','name','myRGC'); 
-%       innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
-% 
+% See also:
+%
+% Example:
+%   os = osCreate('identity');        % A pass through from the stimulus
+%   ir = irCreate(os,'name','myRGC'); % An inner retina container
+%   ir.mosaicCreate('model','glm','mosaicType','on midget'); % This  mosaic
 %
 % 9/2015 JRG
 
@@ -40,7 +32,7 @@ classdef rgcMosaicGLM < rgcMosaic
 
         generatorFunction;
         nlResponse;
-%         numberTrials;
+        numberTrials = 1;
         
         postSpikeFilter;
         couplingFilter;
