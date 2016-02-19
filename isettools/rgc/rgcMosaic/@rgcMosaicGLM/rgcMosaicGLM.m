@@ -1,38 +1,36 @@
 classdef rgcMosaicGLM < rgcMosaic
-% Define a rgc mosaic whose computation is GLM and whose cell type is
-% passed as an argument.
+%% Define an rgcMosaic cell type whose computation is GLM
 %
 % This class (@rgcMosaicGLM) is a subclass of @rgcMosaic. It is called when
 % creating a new rgcMosaic from an inner retina object.  Typically we get
-% here from
-%
-%    innerRetina.mosaicCreate(<>)
+% here from rgcMosaicCreate with the call:
 % 
+%      mosaicGLM = rgcMosaicGLM(ir, mosaicType);
+%  
 % Inputs: 
 %       os: an isetbio outer segment structure
-%    Optional but recommended:
-%       eyeSide: 'left' or 'right', which eye the retinal patch is from
-%       patchRadius: radius of retinal patch in microns
-%       patchAngle: polar angle of retinal patch
-%     [These inputs determine the size of spatial receptive fields, and are
-%       necessary to accurately model physiological responses.]
+%       mosaicType: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified' 
 % 
-% Outputs: the rgc object.
+% Outputs: the rgcMosaicGLM object; rgcMosaicCreate attaches the
+%       rgcMosaicGLM object to an innerRetina object.
 % 
-% Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
-%       Nature (2008).
+% The coupled GLM model implemented here is found in Pillow, Shlens,
+% Paninski, Sher, Litke, Chichilnisky & Simoncelli, Nature (2008).
 % 
 % This model incorporates code by Pillow available at 
 %       http://pillowlab.princeton.edu/code_GLM.html
 % under the GNU General Public License.
 % 
 % Example: from rgcGLM.m initiailize:
-%        obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
+%        
+%       os  = osCreate('identity');
+%       innerRetina = irCreate(os,'GLM','name','myRGC'); 
+%       innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 % 
 %
 % 9/2015 JRG
 
-
+%% Properties 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
     end
@@ -57,7 +55,8 @@ classdef rgcMosaicGLM < rgcMosaic
     % Private properties. Only methods of the parent class can set these
     properties(Access = private)
     end
-    
+  
+%% Methods
     % Public methods
     methods
         
@@ -89,14 +88,6 @@ classdef rgcMosaicGLM < rgcMosaic
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-%         function obj = compute(obj, sensor, outersegment, varargin)
-%             % see for details
-%             % obj = mosaicCompute(obj, sensor, outersegment, varargin); 
-%         end
-%         function plot(obj, sensor)
-%             % see for details
-%             % mosaicPlot(obj, sensor);
-%         end
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 
@@ -105,7 +96,7 @@ classdef rgcMosaicGLM < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, sensor, outersegment, varargin);
+        initialize(obj, varargin);
     end
     
 end

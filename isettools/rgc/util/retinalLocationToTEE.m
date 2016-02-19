@@ -1,5 +1,5 @@
 function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, locationRadius, leftOrRightEyeIn)
-% 
+%% Find the temporal equivalent eccentricity. 
 % retinalLocationToTEE converts the coordinates of a location on the retina
 % given in polar coordinates (theta, r) to temporalEquivEccentricity (TEE).
 % The TEE is used to calculate the diameter of the receptive field size at
@@ -32,7 +32,8 @@ function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, 
 % (c) isetbio
 
 
-
+%% Calculate TEE based on eye side, radius and angle
+% Get eye side
 if strcmp(leftOrRightEyeIn,'right')
     leftOrRightEye = 0;
 elseif strcmp(leftOrRightEyeIn,'left')
@@ -43,9 +44,10 @@ elseif strcmp(leftOrRightEyeIn,'left')
     %         error('Third input to retinalLocationToTEE must be 0, 1, or ''left''/''right''');
 end
 
-
+% Get angle
 locationTheta = (pi/180)*locationThetaDegrees;
 
+% Apply formula for TEE
 if ( (locationTheta > (pi/2) && locationTheta < (3*pi/2)) && leftOrRightEye==1 ) || ...
     ( (locationTheta < (pi/2) || locationTheta > (3*pi/2)) && leftOrRightEye==0 ) 
     

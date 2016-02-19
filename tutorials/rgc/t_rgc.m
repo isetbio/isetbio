@@ -69,7 +69,7 @@ innerRetina = irCreate(os, 'name','Macaque inner retina','model','GLM');
 % Alternative syntax for creating single layers at a time
 % innerRetina = rgcMosaicCreate(innerRetina,'model','glm','mosaicType','on parasol');
 
-innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','mosaicType','on midget');
+% innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','mosaicType','on midget');
 
 innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 

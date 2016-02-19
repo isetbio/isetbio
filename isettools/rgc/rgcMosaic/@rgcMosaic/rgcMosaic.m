@@ -1,30 +1,33 @@
 classdef rgcMosaic < handle
-%% rgcMosaic stores properties for one type of RGC cell mosaic
-% e.g., ON midget or small bistratified. 
+%% Define the rgcMosaic parent class to store a mosaic of cells with a type and model
+%
+% This parent class is called when creating a new rgcMosaic from an inner
+% retina object.  Typically we get here from rgcMosaicCreate with the call:
 % 
-% The RGC class stores multiple mosaics as a cell array,
-% as well as a few other basic properties about the inner retina
-% position and the stimulus size.
+%      mosaicLinear = rgcMosaicLinear(ir, mosaicType);
+%      mosaicGLM    = rgcMosaicGLM(ir, mosaicType);
+%  
+% Inputs: 
+%       os: an isetbio outer segment structure
+%       mosaicType: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified' 
 % 
-% cellTypeInd = 1: ON parasol
-% cellTypeInd = 2: OFF parasol
-% cellTypeInd = 3: ON midget
-% cellTypeInd = 4: OFF midget
-% cellTypeInd = 5: small bistratified
+% Outputs: the rgcMosaic object; rgcMosaicCreate attaches the
+%       rgcMosaic object to an innerRetina object.
 % 
-% Properties:
-%         cellType: one of the above five strings
-%         rfDiameter: the 1 stdev RF diameter of RGCs in micrometers
-%         rfDiaMagnitude: the magnitude of the RF at 1 stdev distance
-%         cellLocation: the spatial location of the center of the RF
-%         sRFcenter: the spatial RF center, where (0,0) is at cellLocation
-%         sRFsurround: the spatial RF surround
-%         tCenter: the temporal impulse response of the center (in RGB)
-%         tSurround: the temporal impulse response of the surround (in RGB)
-%         linearResponse: the result of a linear convolution of the sRF and
-%           the tRF with the RGB stimulus.
+% The center and surround spatial receptive fields and the temporal impulse
+% responses are initialized in @rgcMosaic/initialize. The rgcMosaic
+% class is only initialized by the parent class rgcMosaic; it does not have
+% its own initialize function. The model implemented here is described in
+% Chichilnisky & Kalmar, J. Neurosci (2002).
 % 
-% 9/2015 JRG (c) isetbio team
+% Example: from t_rgc.m:
+%        
+%       os  = osCreate('identity');
+%       innerRetina = irCreate(os,'linear','name','myRGC'); 
+%       innerRetina.mosaicCreate('model','linear','mosaicType','on midget');
+% 
+% (c) isetbio team
+% 9/2015 JRG
 
 %% Define object
 % Public, read-only properties.
@@ -83,14 +86,6 @@ end
 
 % Methods that must only be implemented (Abstract in parent class).
 methods (Access=public)
-    %         function obj = compute(obj, sensor, outersegment, varargin)
-    %             % see for details
-    %             % obj = mosaicCompute(obj, sensor, outersegment, varargin);
-    %         end
-    %         function plot(obj, sensor)
-    %             % see for details
-    %             % mosaicPlot(obj, sensor);
-    %         end
 end
 
 % Methods may be called by the subclasses, but are otherwise private
@@ -99,7 +94,7 @@ end
 
 % Methods that are totally private (subclasses cannot call these)
 methods (Access = private)
-    initialize(obj, sensor, outersegment, varargin);
+    initialize(obj, varargin);
 end
 
 end

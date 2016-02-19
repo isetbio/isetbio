@@ -1,6 +1,9 @@
 classdef ir < handle
-%% The inner retina parent class represents the mosaic of cells in the inner retina 
+%% The inner retina class represents the mosaic of cells in the inner retina 
 %
+%           obj = ir(os, params);
+%               [usually called internally from irCreate]
+% 
 % An ir object is created from the isetbio @outerSegment object. The ir
 % (inner retina) object stores basic properties about the species and the
 % position of the simulated retinal patch. 
@@ -21,11 +24,21 @@ classdef ir < handle
 % Methods: intialize, set, get, compute, plot, movie
 %       see individual .m files for details.
 % 
+% 
+% Examples: 
+% 
+%   os  = osCreate('identity');
+%   innerRetina1 = irCreate(os,'GLM','name','myRGC'); 
+% 
+%   params.name = 'Macaque inner retina 1'; % 
+%   innerRetina2 = ir(os, params);
+% 
 % (c) isetbio
 % 
 % 9/2015 JRG
 % 
 
+%%
 % Public read/write properties
 properties
 end

@@ -95,20 +95,29 @@ switch lower(params.what)
             
             spatialRFcontours = plotContours(obj.mosaic{cellTypeInd});
             
-            subplot(3,2,cellTypeInd);
+            if length(obj.mosaic)>1
+                subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
+            end
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+            
+            
+            patchSizeX = obj.spacing;
+            sensorRows = obj.row;
+            
+            umPerSensorPx = patchSizeX/sensorRows;
+            
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
                     hold on;
                     % center
-                    plot(spatialRFcontours{xcell,ycell,1}(1,2:end),...
-                        spatialRFcontours{xcell,ycell,1}(2,2:end),...
+                    plot(umPerSensorPx*spatialRFcontours{xcell,ycell,1}(1,2:end),...
+                         umPerSensorPx*spatialRFcontours{xcell,ycell,1}(2,2:end),...
                         'color',cmap(cellTypeInd,:));
                     hold on;
                     % surround
-                    plot(spatialRFcontours{xcell,ycell,2}(1,2:end),...
-                        spatialRFcontours{xcell,ycell,2}(2,2:end),...
+                    plot(umPerSensorPx*spatialRFcontours{xcell,ycell,2}(1,2:end),...
+                         umPerSensorPx*spatialRFcontours{xcell,ycell,2}(2,2:end),...
                         'color',cmap(cellTypeInd+8,:));
                 end
             end

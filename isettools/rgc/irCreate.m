@@ -26,9 +26,9 @@ function obj = irCreate(os, varargin)
 % under the GNU General Public License.
 %  
 % Example:
-%   os  = osCreate('linear');
-%   rgc = irCreate(os,'GLM','name','myRGC','type','LNP'); 
-%   rgc = irCreate(os,'type','GLM', 'name','EJ',...
+%   os  = osCreate('identity');
+%   innerRetina = irCreate(os,'GLM','name','myRGC'); 
+%   innerRetina = irCreate(os,'name','EJ',...
 %             'eyeSide','left','eyeRadius',12,'eyeAngle',90));
 % 
 % See also:  t_rgc.m
@@ -45,7 +45,7 @@ addParameter(p,'species','unknown',@ischar);
 % In the future, we will read these from the os object, not here.  JRG is
 % adding these parameters
 addParameter(p,'eyeSide',    'left', @ischar);
-addParameter(p,'eyeRadius',   12,     @isnumeric);
+addParameter(p,'eyeRadius',   4,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 
 p.parse(os,varargin{:});

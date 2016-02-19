@@ -1,19 +1,23 @@
 function ir = rgcMosaicCreate(ir, varargin)
-% Add a specific type of RGC mosaic to a specific type of computation 
+%% Add a specific type of RGC cell mosaic with a specific type of computation 
 %
-%  ir = rgcMosaicCreate(ir, mosaicType)
+%  ir = rgcMosaicCreate(ir, 'model', ['linear','GLM',etc.], 'mosaicType', ['on parasol', 'sbc', etc.])
 %
-% The computation (e.g, GLM,Linear,LNP) is specified by the class of the
-% inner retina (ir)
+% The implemented computational models are
+%       linear, 
+%       LNP, 
+%       GLM
 %
 % The implemented mosaic types are
-%
-% {'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small
-% Bistratified' }
+%       'ON Parasol', 
+%       'OFF Parasol', 
+%       'ON Midget', 
+%       'OFF Midget', 
+%       'Small Bistratified' 
 %
 % Examples:
-%       innerRetina = rgcMosaicCreate(innerRetina,'mosaicType','on parasol');
-%       innerRetina.mosaicCreate('mosaicType','on midget');
+%       innerRetina = rgcMosaicCreate(innerRetina,'model','linear','mosaicType','on parasol');
+%       innerRetina.mosaicCreate('model','GLM','mosaicType','on midget');
 % 
 % See also: rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m, rgcMosaicGLM.m,
 %               t_rgc.m, t_rgcIntroduction.
@@ -38,8 +42,8 @@ mosaicType = p.Results.mosaicType;
 model = p.Results.model;
 %% Switch on the computational model
 
-% There is a separate class for each ir computational model.  These are
-% rgcglm, rgclinear ...
+% There is a separate mosaic class for each ir computational model.  
+% These are rgcMosaicLinear, rgcMosaicLNP, rgcMosaicGLM,...
 switch ieParamFormat(model)
     case {'linear','rgclinear'}
         obj = rgcMosaicLinear(ir, mosaicType);

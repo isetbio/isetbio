@@ -4,38 +4,47 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 % inputs, their spacing (in microns) and the diameter of the RF as
 % determined by the TEE of the retial patch.
 % 
-% Inputs: scene, sensor, and RF diameter.
+%   [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = 
+%             buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STDmicrons)
+% 
+%          %  [only called internally from @rgcMosaic/initalize.m]
+% 
+% Inputs: 
+%       spacing, 
+%       row, 
+%       col, 
+%       receptiveFieldDiameter1STDmicrons.
 %   
-% Outputs: spatialRFcenter cell array, spatialRFsurround cell array,
-% rfDiaMagnitude at 1 std, cellCenterLocations cell array.
+% Outputs: 
+%       spatialRFcenter cell array, 
+%       spatialRFsurround cell array,
+%       rfDiaMagnitude at 1 std, 
+%       cellCenterLocations cell array.
 % 
 % Example:
 % 
-% % Build spatial RFs of all RGCs in this mosaic
+% See @rgcMosaic/initialize.m
+% Build spatial RFs of all RGCs in this mosaic
 % [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
-%     buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STD);
+%     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 % 
 % 9/2015 JRG (c) isetbio
 
 %% Find number of pixels/cones per RGC spatial RF
 % Calculate microns/pixels or microns/cone
-patchSizeX = spacing; % um %sensorGet(sensor, 'width', 'um');
-sensorRows = row;     % % sensorGet(sensor,'rows');
+patchSizeX = spacing; % um 
+patchSizeY = spacing; % um 
+sensorRows = row;     % 
 umPerSensorPx = patchSizeX/sensorRows;
+
+%% Determine the number of RGCs in the mosaic
+numberRGCsX = floor (patchSizeX / receptiveFieldDiameter1STDmicrons);
+numberRGCsY = floor (patchSizeY / receptiveFieldDiameter1STDmicrons);
+% numberRGCsX = floor ((patchSizeX/umPerSensorPx) / receptiveFieldDiameter1STD);
+% numberRGCsY = floor ((patchSizeY/umPerSensorPx) / receptiveFieldDiameter1STD);
 
 % Convert rf diameter in microns to rf diameter in pixels or cones
 receptiveFieldDiameter1STD = receptiveFieldDiameter1STDmicrons/umPerSensorPx;
-
-% coneSize = sensorGet(sensor, 'pixel size', 'um' );
-patchSizeX = spacing;%sensorGet(sensor, 'width', 'um');
-patchSizeY = spacing;%sensorGet(sensor, 'height', 'um');
-
-
-%% Determine the number of RGCs in the mosaic
-% numberRGCsX = floor (patchSizeX / receptiveFieldDiameter1STD);
-% numberRGCsY = floor (patchSizeY / receptiveFieldDiameter1STD);
-numberRGCsX = floor ((patchSizeX/umPerSensorPx) / receptiveFieldDiameter1STD);
-numberRGCsY = floor ((patchSizeY/umPerSensorPx) / receptiveFieldDiameter1STD);
 
 % Determine the RGC spacing in terms of number of cones.
 % numberConesPerRF = floor (receptiveFieldDiameter1STD / coneSize(1));
