@@ -46,20 +46,12 @@ radiance = sceneGet(scene, 'photons');
 model = opticsGet(optics, 'model');
 model = ieParamFormat(model);
 switch model
-    case 'raytrace'
-        % I am not sure we identify the ray trace case properly. If we are
-        % in the ray trace case, we get the object distance from the ray
-        % trace structure.
-        fN    = opticsGet(optics, 'rtEffectivefNumber');
-        m     = opticsGet(optics, 'rtmagnification');
-    case {'skip'}
-        m  = opticsGet(optics, 'magnification');  % Always 1
-        fN = opticsGet(optics, 'fNumber');        % What should this be?
     case {'diffractionlimited', 'shiftinvariant'}
         sDist = sceneGet(scene, 'distance');
         fN    = opticsGet(optics, 'fNumber');     % What should this be?
         m     = opticsGet(optics, 'magnification', sDist);
     otherwise
+        % In ISET there is a ray trace model.  But not here.
         error('Unknown optics model');
 end
 

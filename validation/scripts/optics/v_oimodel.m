@@ -30,17 +30,6 @@ function ValidationFunction(runTimeParams)
     end
     UnitTest.validationData('humanOI', oi);
 
-    %% Set model to skip 
-    oi = oiSet(oi,'optics model','pinhole');
-    scene = sceneCreate;
-    oi = oiCompute(oi,scene);
-    if (runTimeParams.generatePlots)
-        oiPlot(oi,'illuminance mesh linear');
-    end
-    UnitTest.validationData('theScene',scene);
-    UnitTest.validationData('humanOIFromScene', oi);
-
-
     %% Check GUI control
     if (runTimeParams.generatePlots)
         vcAddAndSelectObject(oi);

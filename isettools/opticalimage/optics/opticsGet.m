@@ -177,32 +177,21 @@ if ~exist('parm','var')   || isempty(parm),
     error('No parameter specified.');
 end
 
-% We return different parameters depending on whether the user has a
-% shift-invariant lens model (e.g., diffraction-limited) or a general ray
-% trace model.
-rt = 0;
-if checkfields(optics,'rayTrace') && ~isempty(optics.rayTrace)
-    % If there are ray trace data, and the current model is ray trace, 
-    % set rt to 1.
-    if strcmpi(optics.model,'raytrace'), rt = 1; end
-end
+% We should get rid of this and eliminate all the ray trace checks below 
+rt = 0;  
 
 parm = ieParamFormat(parm);
 switch parm
     case 'name'
         val = optics.name;
     case 'type'
-        val = optics.type;  % Should always be 'optics'
-        
+        val = optics.type;  % Should always be 'optics'        
     case {'fnumber','f#'}
         % This is the f# assuming an object is infinitely far away.
-        if rt
-            if checkfields(optics,'rayTrace','fNumber'), val = optics.rayTrace.fNumber; end
-        else val = optics.fNumber;
-        end
+        val = optics.fNumber;
     case {'model','opticsmodel'}
         if checkfields(optics,'model'), val = optics.model;
-        else val = 'diffractionLimited';
+        else val = 'diffraction limited';
         end
         
         % The user can set 'Diffraction limited' but have
@@ -220,21 +209,7 @@ switch parm
         end
     case {'focallength','flength'}
         % opticsGet(optics,'flength',units);
-        if rt,  val = opticsGet(optics, 'RTeffectiveFocalLength');
-        elseif strcmpi(opticsGet(optics,'model'),'skip')
- 
-            % If you choose 'skip' because you want to treat the
-            % optics/lens as a pinhole, you must have a scene and in that
-            % case we use the proper distance (half the scene distance). 
-            % When you are just skipping to save time, you may not have a
-            % scene. In that case, use the optics focal length.
-            scene = vcGetObject('scene');
-            if isempty(scene), val = optics.focalLength;
-            else               val = sceneGet(scene,'distance')/2;
-            end
-            
-        else   val = optics.focalLength;
-        end
+        val = optics.focalLength;
         if ~isempty(varargin)
             val = val*ieUnitScaleFactor(varargin{1});
         end
@@ -434,8 +409,8 @@ switch parm
         % cycles/distance
         % Cutoff spatial frequency for a diffraction limited lens.  See
         % formulae in dlCore.m
-        apertureDiameter = opticsGet(optics,'aperturediameter');
-        imageDistance    = opticsGet(optics,'focalplanedistance');
+        apertureDiameter = opticsGet(optics,'aperture diameter');
+        imageDistance    = opticsGet(optics,'focal plane distance');
         wavelength       = opticsGet(optics,'wavelength','meters');
 
         % Sometimes the optics wavelength have not been assigned because

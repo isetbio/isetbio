@@ -26,7 +26,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 % Optics parameters are:
 %
 % Optics model  - 
-%      {'model'}  -  DiffractionLimited, ShiftInvariant, Pinhole
+%      {'model'}  -  DiffractionLimited, ShiftInvariant
 %
 % Diffraction limited optics specifications.
 %      {'name'}    - This optics name
@@ -113,7 +113,7 @@ switch parm
     case {'model','opticsmodel'}
         % Valid choices are 
         % The case and spaces do not matter.
-        valid = {'diffractionlimited', 'shiftinvariant', 'pinhole'};
+        valid = {'diffractionlimited', 'shiftinvariant'};
         if validatestring(ieParamFormat(val), valid)
             optics.model = ieParamFormat(val);
         else

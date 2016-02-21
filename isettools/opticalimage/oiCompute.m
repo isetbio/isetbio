@@ -68,13 +68,11 @@ oi = oiSet(oi, 'distance', sceneGet(scene, 'distance'));
 
 % Compute according to the selected model
 switch ieParamFormat(opticsModel)
-    case {'diffractionlimited','dlmtf','skip'}
+    case {'diffractionlimited','dlmtf'}
         % The skip case is handled by the DL case
         oi = opticsDLCompute(scene,oi);
     case 'shiftinvariant'
         oi = opticsSICompute(scene,oi);
-    case 'raytrace'
-        oi = opticsRayTrace(scene,oi);
     otherwise
         error('Unknown optics model')
 end

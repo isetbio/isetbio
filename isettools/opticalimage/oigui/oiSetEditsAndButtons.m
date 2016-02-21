@@ -33,13 +33,7 @@ if length(names) > 1, val = val+1; end
 set(handles.SelectOptImg,'String',names,'Value',val);
 % We use a slightly different logic in sceneSetEditsAndButtons.
 
-% Set the custom compute button.  Now obsolete.
-% customCompute = oiGet(oi,'customCompute');
-% set(handles.btnCustom,'Value',customCompute);
-% set(handles.btnCustom,'Visible','off');
-
-% Buttons
-% Check the custom compute
+% Set up the buttons for different optics models.
 switch lower(opticsModel)
     
     case {'diffractionlimited','dlmtf'}
@@ -48,12 +42,12 @@ switch lower(opticsModel)
         
         % Set the diffraction limited optics parameters
         optics = oiGet(oi,'optics');
-        str = sprintf('%2.2f',opticsGet(optics,'focalLength','mm'));
+        str = sprintf('%2.2f',opticsGet(optics,'focal Length','mm'));
         set(handles.editFocalLength,'String',str);
         str = sprintf('%1.2f',opticsGet(optics,'fnumber'));
         set(handles.editFnumber,'String',str);
         
-        val = opticsGet(optics,'offaxismethod');
+        val = opticsGet(optics,'off axis method');
         if strcmpi(val,'skip'), set(handles.btnOffAxis, 'Value',0);
         else set(handles.btnOffAxis, 'Value',1);
         end
@@ -61,15 +55,7 @@ switch lower(opticsModel)
     case 'shiftinvariant'
         set(handles.popOpticsModel,'Value',2);
         switchControlVisibility(handles,'off');
-        
-    case 'raytrace'
-        set(handles.popOpticsModel,'Value',3);
-        switchControlVisibility(handles,'off');
-        
-    case 'skip'
-        set(handles.popOpticsModel,'Value',4);
-        switchControlVisibility(handles,'off');
-        
+
     otherwise
         error('Unknown optics model')
 end

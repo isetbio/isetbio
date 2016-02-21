@@ -25,13 +25,12 @@ showWaitBar = ieSessionGet('waitbar');
 optics = oiGet(oi,'optics');
 opticsModel = opticsGet(optics,'model');
 if ~(strcmpi(opticsModel,'dlmtf') || ...
-        strcmpi(opticsModel,'diffractionlimited') || ...
-        strcmpi(opticsModel,'skip'))
+        strcmpi(opticsModel,'diffractionlimited'))
     error('Bad DL optics model %s',opticsModel);
 elseif strcmpi(opticsModel,'dlmtf') ||  strcmpi(opticsModel,'diffractionlimited')
     if showWaitBar, wStr = 'OI-DL: '; end
 else
-    if showWaitBar,wStr = 'Skip OTF: '; end
+    if showWaitBar,wStr='Unknown'; end
 end
 
 % Compute the basic parameters of the oi from the scene parameters.
@@ -78,14 +77,8 @@ switch lower(offaxismethod)
 end
 
 % We apply the MTF here.
-switch lower(opticsGet(optics,'model'))
-    case 'skip'
-    case {'dlmtf','diffractionlimited'}
-        if showWaitBar, waitbar(0.6,wBar,[wStr,' Applying OTF']); end
-        oi = opticsOTF(oi,scene);
-    otherwise
-        error('Unknown optics model %',opticsGet(optics,'model'))
-end
+if showWaitBar, waitbar(0.6,wBar,[wStr,' Applying OTF']); end
+oi = opticsOTF(oi,scene);
 
 % Diffuser and illuminance, or just illuminance.  Diffuser always resets
 % the illuminance, which seems proper.
@@ -98,7 +91,8 @@ switch lower(oiGet(oi,'diffuserMethod'))
         if showWaitBar, waitbar(0.75,wBar,[wStr,' Birefringent Diffuser']); end
         oi = oiBirefringentDiffuser(oi);
     case 'skip'
-        
+    otherwise
+        error('Unknown diffuser method %s\n',oiGet(oi,'diffuser method'));
 end
 
 % Compute image illuminance (in lux)
