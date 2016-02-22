@@ -1,4 +1,4 @@
-function obj = rgcCompute(obj, outerSegment, varargin)
+function obj = irCompute(obj, outerSegment, varargin)
 % rgcCompute: a method of @rgcPhys that computes the spiking output of the
 % rgc mosaic to an arbitrary stimulus. These computations are carried
 % out using code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
@@ -18,7 +18,7 @@ function obj = rgcCompute(obj, outerSegment, varargin)
 % 09/2015 JRG
 
 % The superclass rgcCompute carries out convolution of the linear STRF:
-obj = rgcCompute@rgc(obj, outerSegment, varargin{:});
+obj = irCompute@ir(obj, outerSegment, varargin{:});
 
 fprintf('     \n');
 fprintf('Spike Generation:\n');

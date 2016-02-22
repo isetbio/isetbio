@@ -70,12 +70,12 @@ classdef rgcMosaicPhys % < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicPhys(rgc, cellTypeInd, outersegment, sensor, varargin)
+        function obj = rgcMosaicPhys(rgc, cellTypeInd, varargin)
             % Initialize the parent class            
             % obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
 
             % Initialize ourselves
-            obj = obj.initialize(rgc, cellTypeInd, outersegment, sensor, varargin{:});
+            obj = obj.initialize(rgc, cellTypeInd, varargin{:});
             
         end
         

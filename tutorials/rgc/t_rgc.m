@@ -78,12 +78,9 @@ innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 
 % Compute linear and nonlinear responses
 % innerRetina = irCompute(innerRetina, os);
-% innerRetina.compute(os);
+innerRetina.compute(os);
 
-% irCompute()
-%    irComputeContinuous
-%    irComputeSpikes;
-
+%%
 innerRetina = innerRetina.computeContinuous(os);
 
 % Compute spiking response

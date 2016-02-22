@@ -42,7 +42,7 @@ function ir = irCompute(ir, outerSegment, varargin)
 p = inputParser;
 p.CaseSensitive = false;
 
-p.addRequired('ir',@(x) isequal(class(x),'ir'));
+p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
 % validatestring(class(outerSegment),{'osIdentity','osLinear','osBioPhys'})
 p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osIdentity','osLinear','osBioPhys'})));
 p.parse(ir,outerSegment,varargin{:});
@@ -60,7 +60,7 @@ switch osType
         % But in general, this is not the case.
         % There is a scientific question about this 10.  We need JRG and EJ
         % to resolve the spiking rate.
-        if isa(ir,'rgcPhys'),   spTempStim = spTempStim./range;
+        if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range;
         else                    spTempStim = 10*spTempStim./range;
         end
         
@@ -84,6 +84,9 @@ switch osType
                     % No nonlinear response
                 otherwise
                     ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
+                    for itrial = 1:10
+                        ir = irComputeSpikes(ir);
+                    end
             end
         end
         

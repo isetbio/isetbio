@@ -1,4 +1,4 @@
-function obj = initialize(obj, rgc, cellTypeInd, outersegment, sensor, varargin)
+function obj = initialize(obj, rgc, cellTypeInd, varargin)
 % intialize: a method of @rgcPhys that initializes the object
 % following initialization by the superclass. This adds the generator
 % function, the post spike filter and the coupling filters. This function

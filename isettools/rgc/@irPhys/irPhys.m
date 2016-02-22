@@ -55,13 +55,13 @@ classdef irPhys < ir
     methods
         
         % Constructor
-        function obj = irPhys(outersegment, sensor, varargin)
+        function obj = irPhys(outersegment, varargin)
             % Initialize the parent class
              obj = obj@ir(outersegment, varargin{:});
            % obj = [];
             % Initialize ourselves by building GLM mosaic objects
             for cellTypeInd = 1%:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicPhys(obj, cellTypeInd, outersegment, sensor, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcMosaicPhys(obj, cellTypeInd, varargin{:});
             end
             
         end

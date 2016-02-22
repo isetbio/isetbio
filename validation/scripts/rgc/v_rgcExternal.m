@@ -64,17 +64,17 @@ os2 = osCreate('identity');
 os2 = osSet(os2, 'rgbData', double(testmovieshort));
 
 %% Generate RGC object
-
+params.name = 'macaque phys'
 params.outersegment = os2;
 params.eyeSide = 'left'; 
 params.eyeRadius = 9; 
 params.eyeAngle = 90;
-rgc2 = rgcCreate('rgcPhys', params);
-
-rgc2 = rgcSet(rgc2,'numberTrials',20);
+% rgc2 = rgcCreate('rgcPhys', params);
+rgc2 = irPhys(os2, params);
+rgc2 = irSet(rgc2,'numberTrials',20);
 
 %%
-rgc2 = rgcCompute(rgc2, os2);
+rgc2 = irCompute(rgc2, os2);
 
 rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
 
