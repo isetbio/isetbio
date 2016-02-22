@@ -46,22 +46,22 @@ function val = opticsGet(optics,parm,varargin)
 %  below and above zero.
 %
 % Example:
-%   oi = oiCreate; optics = oiGet(oi,'optics'); 
+%  These examples illustrate calls to opticsGet via oiGet, the usual way.
+%  Notice that the parameter names start with 'optics'
+%   oi = oiCreate; 
 %   oi = oiSet(oi,'wave',400:10:700);
-%
-%   NA = opticsGet(optics,'na');             % Numerical aperture
-%   rt = opticsGet(optics,'ray Trace');
-%   psf = opticsGet(optics,'rtPSF',500);     % Shift-variant ray trace
-%   psf = opticsGet(optics,'psf Data',600);  % Shift invariant data
-%   vcNewGraphWin; mesh(sSupport(:,:,1),sSupport(:,:,2),psf);
-%
-%   otf = opticsGet(optics,'otf data',oi, 'mm',450); 
+%   NA  = oiGet(oi,'optics na');             % Numerical aperture
+%   psf = oiGet(oi,'optics psf data',600);  % Shift invariant data
+%   sSupport = oiGet(oi,'optics psf support');
+%   vcNewGraphWin; mesh(sSupport{1},sSupport{2},psf);
+%   otf = oiGet(oi,'optics otf data',450); 
 %   vcNewGraphWin; mesh(fftshift(abs(otf)));
 %         
-%   otfAll = opticsGet(optics,'otf data',oi);
-%
-%   otfSupport = oiGet(oi,'fsupport','mm');  % Cycles/mm
-%   vcNewGraphWin; mesh(otfSupport(:,:,1),otfSupport(:,:,2),fftshift(abs(otf)))
+%  The direct calld using opticsGet are:
+%   optics     = oiGet(oi,'optics');
+%   otf450     = opticsGet(optics,'otf data',450);
+%   otfSupport = opticsGet(optics,'otf support');  % Cycles/mm
+%   vcNewGraphWin; mesh(otfSupport{1},otfSupport{2},fftshift(abs(otf450)))
 %
 % Optics parameters
 %
@@ -119,25 +119,13 @@ function val = opticsGet(optics,parm,varargin)
 % Copyright ImagEval Consultants, LLC, 2005.
 
 
-% Programming TODO:
-%   Many of the rt spatial variables are stored in mm by the rtImportData
-% function.  So, we are always dividing them by 1000 for return in meters.
-% We should probably just store them in meters properly inside of
-% rtImportData.
-%
-% The OTF support functions are in bad shape.  Fix.
-%
 val = [];
-
 if ~exist('optics','var') || isempty(optics), 
     error('No optics specified.'); 
 end
 if ~exist('parm','var')   || isempty(parm), 
     error('No parameter specified.');
 end
-
-% We should get rid of this and eliminate all the ray trace checks below 
-rt = 0;  
 
 parm = ieParamFormat(parm);
 switch parm
@@ -159,13 +147,8 @@ switch parm
         
     case {'effectivefnumber','efffnumber','efff#'}
         % The f# if the object is not at infinity.
-        if rt
-            if checkfields(optics,'rayTrace','effectiveFNumber'),
-                val = optics.rayTrace.effectiveFNumber;
-            end
-        else
-            val = opticsGet(optics,'fNumber')*(1 - opticsGet(optics,'mag'));
-        end
+        val = opticsGet(optics,'fNumber')*(1 - opticsGet(optics,'mag'));
+        
     case {'focallength','flength'}
         % opticsGet(optics,'flength',units);
         val = optics.focalLength;
@@ -190,9 +173,6 @@ switch parm
         % opticsGet(optics,'focalplane',sDist); -- sDist is sourceDistance
         % opticsGet(optics,'focalplanedistance');  -- Infinite source dist
 
-        % No need to check rt because focalLength parameter does
-        % What about 'skip' case?  Should 'focalLength' call set this to
-        % 1/2 the scene distance, which preserves the geometry?
         fL = opticsGet(optics,'focal Length');
         if isempty(varargin), sDist = Inf;
         else                  sDist = varargin{1};
@@ -244,7 +224,6 @@ switch parm
         % Should this be a call to effective f#?
         val=1/(2*opticsGet(optics,'fnumber'));
     case {'aperturediameter','diameter','pupildiameter'}
-        %These already check the rt condition, so no need to do it again
         val = opticsGet(optics,'focalLength')/opticsGet(optics,'fnumber');
         if ~isempty(varargin), val = ieUnitScaleFactor(varargin{1})*val; end
     case {'apertureradius','radius','pupilradius'}
@@ -260,10 +239,6 @@ switch parm
         % length (via lensmaker equation).
         % opticsGet(optics,'mag',sDist) -- specify source distance
         % opticsGet(optics,'mag')       -- current source distance
-        if rt
-            val = opticsGet(optics,'rtmagnification');
-            return;
-        end
         
         % Skip model has unit magnification, but still negative
         if strcmpi(opticsGet(optics,'model'),'skip')
@@ -291,13 +266,7 @@ switch parm
     case {'pupilmagnification','pupmag'}
         % Pupil magnification is the ratio of the exit pupil to the input
         % pupil (diameters)
-        if rt
-            % Needs to be checked more thoroughly!  Based on PC.
-            efn = opticsGet(optics,'rteffectiveFnumber');
-            fn = opticsGet(optics,'fnumber');
-            val = (1/(1 - (efn/fn)))*opticsGet(optics,'rtmagnification');
-        else val = 1;
-        end
+        val = 1;
 
     case {'wave','wavelength','wavelengthvalues'}
         % Wavelength related
