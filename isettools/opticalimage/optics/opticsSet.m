@@ -3,18 +3,23 @@ function optics = opticsSet(optics,parm,val,varargin)
 %
 %   optics = opticsSet(optics,parm,val,varargin)
 %
-% The optics structure contains the basic optics parameters used to control image formation.
-% The parameters define parameters used in the diffraction-limited,
-% shift-invariant, or ray trace optics models.  See opticsGet for further
-% information about these models.
+% The optics structure contains the basic optics parameters used to control
+% image formation. The parameters define parameters used in the
+% diffraction-limited or shift-invariant optics models.  See opticsGet for
+% further information about these models.
 %
 % The optics structure is normally part of the optical image and can be
 % retrieved using
 %
 %   oi = vcGetObject('OI'); optics = oiGet(oi,'optics');
 %
-% See oiCompute for a discussion of the different optics models and how
-% they are used.  
+% Often, we get and set optics properties from the oiSet/Get commands
+% as in 
+%
+%      fnumber = oiGet(oi,'optics fnumber')
+%      oi = oiSet(oi,'optics fnumber',2.8);
+%
+% Those calls act via opticsGet and opticsSet 
 %
 % Example:
 %   optics = opticsSet(optics,'fnumber',2.8);
@@ -26,7 +31,7 @@ function optics = opticsSet(optics,parm,val,varargin)
 % Optics parameters are:
 %
 % Optics model  - 
-%      {'model'}  -  DiffractionLimited, ShiftInvariant
+%      {'model'}  -  DiffractionLimited or ShiftInvariant
 %
 % Diffraction limited optics specifications.
 %      {'name'}    - This optics name
@@ -50,46 +55,6 @@ function optics = opticsSet(optics,parm,val,varargin)
 %      {'relillummethod'}   - 
 %      {'off axis method'}  - Set to 'Skip' to turn off or 'cos4th'
 %      {'cos4thdata'}       - Cached cos4th data
-%
-% Ray trace optics specifications
-%     {'raytrace'}            - The entire ray trace structure
-%      {'rtopticsprogram'}    - Optics program used (Zemax or Code V)
-%      {'rtlensfile'}         - Lens file name
-%      {'rteffectivefnumber'} - Effective f-number
-%      {'rtfnumber'}          - F-number
-%      {'rtmagnification'}    - Magnification
-%      {'rtreferencewavelength'}  - Lens design reference wavelength
-%      {'rtobjectdistance'}       - Lens design object distance
-%         % Distance to object plane in mm.  NOTE bad unit!
-%      {'rtfieldofview'}       - Maximum horizontal field of view
-%         % Maximum field of view for the ray trace calculation (not the
-%         % computed image).  This is horizontal field of view.  DB Wants us
-%         % to change to diagonal.
-%      {'rteffectivefocallength'}  - Effective focal length (units?)
-%         % Effective focal length computed by the ray trace program.
-%      {'rtpsf'} - PSF structure
-%      {'rtpsfdata'}
-%         % Data are stored as 4D (row,col,fieldHeight,wavelength) images
-%         You can set opticsSet(.,.,fieldHeight,wavelength);
-%        {'rtpsfwavelength'}    - Sample wavelengths
-%        {'rtpsffieldheight'}   - Sample image field heights
-%        {'rtpsfsamplespacing','rtpsfspacing'}  - Spacing of PSF samples
-%         % These are stored in mm
-%      {'rtrelillum'}  - Relative illumination structure
-%        {'rtrifunction'}
-%        {'rtriwavelength'}
-%        {'rtrifieldheight'}
-%      {'rtgeometry'}  - Geometrical distortion function
-%      {'rtgeomfunction','rtgeometryfunction','rtdistortionfunction','rtgeomdistortion'}
-%         % opticsGet(optics,'rtdistortionfunction',wavelength);
-%         % Either return the whole thing or just the one at the called
-%         % wavelength, which is specified by an index into the function.
-%         % Maybe this should really be wavelength and we look it up.
-%      {'rtgeometrywavelength'}
-%      {'rtgeometryfieldheight'}
-%
-% Computational parameters
-%      {'rtPSFSpacing'} - Wedge size for PSF calculation (meters)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
@@ -185,106 +150,7 @@ switch parm
         % - otf wavelengths (nm)
         optics.OTF.wave = val;
 
-    %---- Ray trace parameters used in non shift-invariant calculations
-    case {'raytrace','rt',}
-        optics.rayTrace = val;
-    case {'rtname'}
-        optics.rayTrace.name = val; 
-
-    case {'opticsprogram','rtopticsprogram'}
-        optics.rayTrace.program = val;
-    case {'lensfile','rtlensfile'}
-        optics.rayTrace.lensFile = val;
-
-    case {'rteffectivefnumber','rtefff#'}
-        optics.rayTrace.effectiveFNumber = val;
-
-    case {'rtfnumber'}
-        optics.rayTrace.fNumber = val;
-    case {'rtmagnification','rtmag'}
-        optics.rayTrace.mag = val;
-    case {'rtreferencewavelength','rtrefwave'}
-        % Nanometers
-        optics.rayTrace.referenceWavelength = val;
-    case {'rtobjectdistance','rtobjdist','rtrefobjdist','rtreferenceobjectdistance'}
-        % Distance to object plane in (meters, typical is infinite)
-        optics.rayTrace.objectDistance = val;
-    case {'rtfieldofview','rtfov','rthorizontalfov','rtmaximumfieldofview','rtmaxfov'}
-        % Maximum field of view for the ray trace calculation (not the
-        % computed image).  This is horizontal field of view.  
-        % Specified in degrees
-        % Dimitry Bakin wants us to change to diagonal.
-        optics.rayTrace.maxfov = val;
-    case {'rteffectivefocallength','rtefl','rteffectivefl'}
-        % Effective focal length computed by the ray trace program.
-        optics.rayTrace.effectiveFocalLength = val;
-
-    case {'rtpsf'}
-        % Structure with psf information
-        optics.rayTrace.psf =val;
-    case {'rtpsffunction','rtpsfdata'}
-        % Data are stored as 4D (row,col,fieldHeight,wavelength) images
-        % field height  units:  meters
-        % wavelength units:     nanometers
-        % s = opticsGet(optics,'rtPSFData',1e-3,450); mesh(s)
-        % s = opticsGet(optics,'rtPSFData',0,450); mesh(s)
-        % s = opticsGet(optics,'rtPSFData',1e-3,550); mesh(s)
-        % s = opticsGet(optics,'rtPSFData',0,550); mesh(s)
-        if checkfields(optics,'rayTrace','psf','function'),
-            if ~isempty(varargin)
-                % Return the psf at a particular field height and wavelength
-                % psf = opticsGet(optics,'rtpsfdata',fieldHeight,wavelength);
-                fhIdx   = ieFieldHeight2Index(opticsGet(optics,'rtPSFfieldHeight'),varargin{1});
-                waveIdx = ieWave2Index(opticsGet(optics,'rtpsfwavelength'),varargin{2});
-                optics.rayTrace.psf.function(:,:,fhIdx,waveIdx) = val;
-            else
-                % Set the entire psf data matrix
-                % psfFunction = opticsGet(optics,'rtpsfdata');
-                optics.rayTrace.psf.function = val;
-            end
-        end
-
-    case {'rtpsfwavelength'}
-        % PSF wavelengths (nanometers)
-        optics.rayTrace.psf.wavelength = val;
-
-    % What are the spatial units by default? 
-    case {'rtpsffieldheight'}
-        % Stored in millimeters. Typical value is 0.1 millimeter
-        optics.rayTrace.psf.fieldHeight = val;
-    case {'rtpsfsamplespacing','rtpsfspacing'}
-        % Stored in millimeters. Typical value is .25 microns (0.00025)
-        optics.rayTrace.psf.sampleSpacing = val;
-    case {'rtrelillum'}
-        % Relative units
-        optics.rayTrace.relIllum = val;
-    case {'rtrifunction','rtrelativeilluminationfunction','rtrelillumfunction'}
-        optics.rayTrace.relIllum.function = val;
-    case {'rtriwavelength','rtrelativeilluminationwavelength'}
-        optics.rayTrace.relIllum.wavelength = val;
-
-    case {'rtrifieldheight','rtrelativeilluminationfieldheight'}
-        % Stored in millimeters. Typical value 0.1
-        optics.rayTrace.relIllum.fieldHeight = val;
-    case {'rtgeometry'}
-        % Structure
-        optics.rayTrace.geometry = val;
-    case {'rtgeomfunction','rtgeometryfunction','rtdistortionfunction','rtgeomdistortion'}
-        % Matrix storing field height at several wavelength values
-        if isempty(varargin), optics.rayTrace.geometry.function = val;
-        else
-            idx = ieWave2Index(opticsGet(optics,'rtGeomWavelength'),varargin{1});
-            optics.rayTrace.geometry.function(:,idx) = val;
-        end
-    case {'rtgeomwavelength','rtgeometrywavelength'}
-        % Vector storing wavelengths of geometric functions
-        optics.rayTrace.geometry.wavelength = val;
-    case {'rtgeomfieldheight','rtgeometryfieldheight'}
-        % These are stored in millimeters.
-        optics.rayTrace.geometry.fieldHeight = val;
-    case {'rtcomputespacing'}
-        % Doesn't seem to exist any more
-        optics.rayTrace.computation.psfSpacing = val;
+   
     otherwise
         error('Unknown parameter')
 end

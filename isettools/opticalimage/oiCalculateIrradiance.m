@@ -3,9 +3,9 @@ function irradiance = oiCalculateIrradiance(scene,optics)
 %
 %  irradiance = oiCalculateIrradiance(scene,optics)
 %
-%  The scene spectral radiance (photons/s/m2/sr/nm) is turned into optical
-%  image irradiance (photons/s/m2/nm) based on information in the optics.
-%  The formula for converting radiance to irradiance is
+% The scene spectral radiance (photons/s/m2/sr/nm) is turned into optical
+% image irradiance (photons/s/m2/nm) based on information in the optics.
+% The formula for converting radiance to irradiance is
 %
 %     irradiance = pi /(1 + 4*fN^2*(1+abs(m))^2)*radiance;
 %
@@ -36,8 +36,6 @@ function irradiance = oiCalculateIrradiance(scene,optics)
 %    William L. Wolfe, Introduction to Radiometry, SPIE Press, 1998.
 %
 % Copyright ImagEval Consultants, LLC, 2005.
-
-% TODO:  What should the fnumber be when we are in SKIP mode for the model?
 
 % Scene data are in radiance units
 radiance = sceneGet(scene, 'photons');

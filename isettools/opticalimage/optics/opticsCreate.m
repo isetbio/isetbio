@@ -3,34 +3,40 @@ function optics = opticsCreate(opticsType,varargin)
 %
 %   optics = opticsCreate(opticsType,varargin)
 %
-% The optics structure contains a variety of parameters,
-% such as f-number  and focal length.
+% This function is typically called through oiCreate.  The optics structure
+% is attached to the oi and manipulated by oiSet and oiGet.
 %
-% Optics structures do not contain a spectrum structure.  Rather this is
-% stored in the optical image that also holds the optics information.
+% The optics structure contains a variety of parameters, such as f-number
+% and focal length.  There are two types of optics models:  diffraction
+% limited and shift-invariant.  See the discussion in opticsGet for more
+% detail.
 %
-% For diffraction-limited optics, the only parameter that matters really is
-% the f-number.  The names of the standard types end up producing a variety
-% of sizes that are only loosely connected to the names.
+% Optics structures do not start out with a wavelength spectrum structure.
+% This information is stored in the optical image.
 %
-%      {'default', 'standard (1/4-inch)'}
-%      {'standard (1/3-inch)'}
-%      {'standard (1/2-inch)'}
-%      {'standard (2/3-inch)'}
-%      {'standard (1-inch)'}
+% For diffraction-limited optics, the key parameter is the f-number.
 %         
-% There is one special case, human optics.  This creates an optics
-% structure with human OTF data.
+% Specifying human optics  creates a shift-invariant optics structure with
+% human OTF data.
 %
-%      {'human'}            % Uses Marimont and Wandell (Hopkins) method
-%      {'Ijspeert'}         % Ijspeert OTF (Not yet implemented)
+%      {'human'}     - Uses Marimont and Wandell (Hopkins) method (DEFAULT)
+%      {'wvf human'} - Uses Wavefront toolbox and Thibos data
+%         opticsCreate('wvf human',[wave=400:10:700],
+%                                  [pupilMM=3],
+%                                  [zCoefs=wvfLoadThibosVirtualEyes]);
+%      {'diffraction'} - Typically f/4 optics
+%
+% Human and general shift-invariant models can also be created by
+% specifying wavefront aberrations using Zernike polynomials.  There is a
+% collection of wavefront methods to help with this (see wvfCreate,
+% wvf<TAB>).  That is the method used here for 'wvf human'.
 %
 % Example:
-%   optics = opticsCreate('standard (1/4-inch)');
-%   optics = opticsCreate('standard (1-inch)');
+%   optics = opticsCreate('diffraction');
+%   optics = opticsCreate('human');     % Marimont and Wandell
+%   optics = opticsCreate('wvf human'); % Thibos Zernike
 %
-%   optics = opticsCreate('human');        % 3mm diameter is default
-%   optics = opticsCreate('human',0.002);  % 4 mm diameter
+% See also: oiCreate, opticsSet, opticsGet
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
@@ -39,9 +45,11 @@ if notDefined('opticsType'), opticsType = 'default'; end
 opticsType = ieParamFormat(opticsType);
 
 switch lower(opticsType)
-    case {'default', 'standard(1/4-inch)', 'quarterinch'}
-        optics = opticsQuarterInch;
-    case 'human'
+    case {'diffraction','diffractionlimited'}
+        % Standard camera (cell phone) optics
+        optics = opticsDiffraction;
+    case {'default','human','humanmw'}
+        % Optics for the Marimont and Wandell human eye
         % Pupil radius in meters.  Default is 3 mm
         pupilRadius = 0.0015; % 3mm diameter default
         if ~isempty(varargin), pupilRadius = varargin{1}; end
@@ -49,8 +57,34 @@ switch lower(opticsType)
         % This creates a shift-invariant optics. The other standard forms
         % are diffraction limited.
         optics = opticsHuman(pupilRadius);
-        optics = opticsSet(optics, 'model', 'shiftInvariant');
+        optics = opticsSet(optics, 'model', 'shift invariant');
         optics = opticsSet(optics, 'name', 'human-MW');
+        
+    case {'wvfhuman'}
+        % Optics based on Zernike polynomial wavefront model estimated by
+        % Thibos.
+        % 
+        % opticsCreate('wvf human',pupilMM,zCoefs,wave);
+        
+        % Defaults
+        pupilMM = 3;
+        zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
+        wave = 400:10:700; wave = wave(:);
+
+        if ~isempty(varargin), pupilMM = varargin{1}; end
+        if length(varargin)>1, zCoefs = varargin{2};  end
+        if length(varargin)>2, wave = varargin{3}; wave = wave(:); end 
+        
+        % Create wavefront parameters
+        wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
+        wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
+        wvfP = wvfComputePSF(wvfP);
+        % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);
+        % set(gca,'xlim',[-20 20],'ylim',[-20 20]);
+        
+        optics = oiGet(wvf2oi(wvfP),'optics');        
+        optics = opticsSet(optics, 'model', 'shiftInvariant');
+        optics = opticsSet(optics, 'name', 'human-wvf');        
 
     case 'mouse'
         % Pupil radius in meters.  
@@ -60,30 +94,27 @@ switch lower(opticsType)
         % rhodopsin bleaching in situ and the light-rearing dependence of 
         % the major components of the mouse ERG, Pugh, 2004)
         % We use a default value, in between : 0.59 mm.
-        if ~isempty(varargin)
-            pupilRadius = varargin{1};
-            if pupilRadius > 0.001009 || pupilRadius < 0.000178
-                warning('Poor pupil size for the  mouse eye.')
-            end
-        else
-            pupilRadius = 0.00059;   % default : 0.59 mm
-        end
-        % This creates a shift-invariant optics.  The other standard forms
-        % are diffraction limited.
-        optics = opticsMouse(pupilRadius);
-        optics = opticsSet(optics,'model','shiftInvariant');
-        
-    case 'ijspeert'
-        disp('Ijspeert optics not yet implemented')
-        return;
-    case {'standard(1/3-inch)','thirdinch'}
-        optics = opticsThirdInch;
-    case {'standard(1/2-inch)','halfinch'}
-        optics = opticsHalfInch;
-    case {'standard(2/3-inch)','twothirdinch'}
-        optics = opticsTwoThirdInch;
-    case {'standard(1-inch)','oneinch'}
-        optics = opticsOneInch;
+        %         if ~isempty(varargin)
+        %             pupilRadius = varargin{1};
+        %             if pupilRadius > 0.001009 || pupilRadius < 0.000178
+        %                 warning('Poor pupil size for the  mouse eye.')
+        %             end
+        %         else
+        %             pupilRadius = 0.00059;   % default : 0.59 mm
+        %         end
+        %         % This creates a shift-invariant optics.  The other standard forms
+        %         % are diffraction limited.
+        %         optics = opticsMouse(pupilRadius);
+        %         optics = opticsSet(optics,'model','shiftInvariant');
+        %
+        %     case {'standard(1/3-inch)','thirdinch'}
+        %         optics = opticsThirdInch;
+        %     case {'standard(1/2-inch)','halfinch'}
+        %         optics = opticsHalfInch;
+        %     case {'standard(2/3-inch)','twothirdinch'}
+        %         optics = opticsTwoThirdInch;
+        %     case {'standard(1-inch)','oneinch'}
+        %         optics = opticsOneInch;
     otherwise
         error('Unknown optics type.');
 end
@@ -95,11 +126,12 @@ optics.vignetting =    0;   % Pixel vignetting is off
 end
 
 %---------------------------------------
-function optics = opticsQuarterInch
-% Standard optics have a 46-deg field of view degrees
+function optics = opticsDiffraction
+% Standard diffraction limited optics with a 46-deg field of view and
+% fnumber of 4.  Simple digital camera optics are like this.
 
 optics.type = 'optics';
-optics = opticsSet(optics,'name','standard (1/4-inch)');
+optics = opticsSet(optics,'name','ideal (small)');
 optics = opticsSet(optics,'model','diffractionLimited');
 
 % Standard 1/4-inch sensor parameters
@@ -111,81 +143,6 @@ optics = opticsSet(optics,'fnumber',4);  % focal length / diameter
 optics = opticsSet(optics,'focalLength', fLength);  
 optics = opticsSet(optics,'otfMethod','dlmtf');
 
-end
-
-%---------------------------------------
-function optics = opticsThirdInch
-% Standard 1/3-inch sensor has a diagonal of 6 mm
-%
-optics.type = 'optics';
-optics = opticsSet(optics,'name','standard (1/3-inch)');
-optics = opticsSet(optics,'model','diffractionLimited');
-
-optics = opticsSet(optics,'fnumber',4);
-
-% Standard optics have a 46-deg field of view degrees
-FOV = 46;
-sensorDiagonal = 0.006;
-fLength = inv(tan(FOV/180*pi)/2/sensorDiagonal)/2;
-
-optics = opticsSet(optics,'focalLength', fLength);  
-optics = opticsSet(optics,'otfMethod','dlmtf');
-
-end
-
-%---------------------------------------
-function optics = opticsHalfInch
-optics.type = 'optics';
-optics = opticsSet(optics,'name','standard (1/2-inch)');
-optics = opticsSet(optics,'model','diffractionLimited');
-
-optics = opticsSet(optics,'fnumber',4);  % focal length / diameter
-
-% Standard optics have a 46-deg field of view degrees
-FOV = 46;
-sensorDiagonal = 0.008;
-fLength = inv(tand(FOV)/2/sensorDiagonal)/2;
-
-% Standard 1/2-inch sensor has a diagonal of 8 mm
-optics = opticsSet(optics,'focalLength', fLength);  
-optics = opticsSet(optics,'otfMethod','dlmtf');
-
-end
-
-%---------------------------------------
-function optics = opticsTwoThirdInch
-%
-
-optics.type = 'optics';
-optics = opticsSet(optics,'name','standard (2/3-inch)');
-optics = opticsSet(optics,'model','diffractionLimited');
-
-FOV = 46;
-sensorDiagonal = 0.011;
-fLength = inv(tan(FOV/180*pi)/2/sensorDiagonal)/2;
-
-optics = opticsSet(optics,'fnumber',4);
-optics = opticsSet(optics,'focalLength', fLength);  
-optics = opticsSet(optics,'otfMethod','dlmtf');
-
-end
-
-%---------------------------------------
-function optics = opticsOneInch
-% Standard 1-inch sensor has a diagonal of 16 mm
-
-optics.type = 'optics';
-optics = opticsSet(optics,'name','standard (1-inch)');
-optics = opticsSet(optics,'model','diffractionLimited');
-
-FOV = 46;
-sensorDiagonal = 0.016;
-fLength = inv(tan(FOV/180*pi)/2/sensorDiagonal)/2;
-
-optics = opticsSet(optics,'fnumber',4);
-optics = opticsSet(optics,'focalLength', fLength);  
-optics = opticsSet(optics,'otfMethod','dlmtf');
-        
 end
 
 %---------------------------------------
