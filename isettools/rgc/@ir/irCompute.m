@@ -51,7 +51,17 @@ osType = class(outerSegment);
 % Switch on type of os object
 switch osType
     case 'osIdentity'
-        %% Identity means straight from the frame buffer to brain
+        %% Identity means straight from the frame buffer to brain                
+        if isempty(osGet(outerSegment,'rgbData'))
+            outerSegment = osSet(outerSegment, 'rgbData', rand(64,64,5));
+        end        
+        if isempty(osGet(outerSegment,'coneSpacing'))
+            outerSegment = osSet(outerSegment, 'coneSpacing', 180);
+        end        
+        if isempty(osGet(outerSegment,'coneSampling'))
+            outerSegment = osSet(outerSegment,'coneSampling',.01);
+        end
+        
         spTempStim = osGet(outerSegment, 'rgbData');
         
         range = max(spTempStim(:)) - min(spTempStim(:));
@@ -84,10 +94,11 @@ switch osType
                     % No nonlinear response
                 otherwise
                     ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
-                    for itrial = 1:10
-                        ir = irComputeSpikes(ir);
-                    end
             end
+            clear fullResponse nlResponse spResponseCenter spResponseSurround
+        end
+        for itrial = 1:10
+            ir = irComputeSpikes(ir);
         end
         
     case {'osLinear'}

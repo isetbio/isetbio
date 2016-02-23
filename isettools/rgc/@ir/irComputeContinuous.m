@@ -52,6 +52,19 @@ osType = class(outerSegment);
 switch osType
     case 'osIdentity'
         %% Identity means straight from the frame buffer to brain
+        
+        if isempty(osGet(outerSegment,'rgbData'))
+            outerSegment = osSet(outerSegment, 'rgbData', rand(64,64,5));
+        end
+        
+        if isempty(osGet(outerSegment,'coneSpacing'))
+            outerSegment = osSet(outerSegment, 'coneSpacing', 180);
+        end
+        
+        if isempty(osGet(outerSegment,'coneSampling'))
+            outerSegment = osSet(outerSegment,'coneSampling',.01);
+        end
+        
         spTempStim = osGet(outerSegment, 'rgbData');
         
         range = max(spTempStim(:)) - min(spTempStim(:));

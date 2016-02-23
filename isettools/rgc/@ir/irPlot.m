@@ -1,8 +1,7 @@
 function irPlot(obj, varargin)
-% irPlot: a method of @ir that plots rgcMosaic object 
-% properties using the input parser structure.
+% Plots properties of the inner retina object
 % 
-% Inputs: ir object, property to be plotted
+% Inputs: ir object, name of property to be plotted
 % 
 % Outputs: plot(s)
 % 
@@ -25,26 +24,23 @@ function irPlot(obj, varargin)
 %         'psthResponse'...     - peristimulus time histogram responses of all cells 
 % 
 % Examples:
-%   irPlot(ir1,'rf');
-%   irPlot(ir1,'mosaic');
-%   irPlot(ir1,'psthResponse');
+% 
+%   osI = osCreate('identity');
+%   innerRetina = irCreate(osI);
+%   innerRetina.mosaicCreate('model','glm','mosaicType', 'on parasol');
+%   innerRetina.compute(osI);
+% 
+%   irPlot(innerRetina,'mosaic');
+%   irPlot(innerRetina,'psth');
+%   irPlot(innerRetina,'psth','mosaicType','onParasol');
+%   irPlot(innerRetina,'psth','cell',[1 1]);
+%   irPlot(innerRetina,'psth','mosaicType','onParasol','cell',[1 1]);
 % 
 % (c) isetbio
 % 09/2015 JRG
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
 p = inputParser; 
 p.CaseSensitive = false; 
-p.FunctionName = mfilename;
-
-% This flag causes the parser not to throw an error here in the superclass
-% call. The subclass call will throw an error.
-% p.KeepUnmatched = true;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
@@ -54,32 +50,44 @@ allowableFieldsToSet = {...
         'mosaic',...
         'sRFcenter',...
         'sRFsurround',...
-        'ir',...
+        'ir','impulseResponse',...
         'ecc',...
         'tCenter',...
         'tSurround',...
         'postSpikeFilter',...
         'couplingFilter',...
-        'linearResponse',...
-        'nlResponse',...
-        'spikeResponse',...
-        'rasterResponse',...
-        'psthResponse'...
+        'linearResponse','linear',...
+        'nlResponse','nl','nonlinear',...
+        'spikeResponse','spike','voltage',...
+        'rasterResponse','raster',...
+        'psthResponse','psth'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+p.addOptional('mosaicType',[]);
+p.addOptional('cell',[]);
 
-% Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
+mosaicType = params.mosaicType;
+
+if ~isempty(mosaicType) && ischar(mosaicType)
+    for cellTypeInd = 1:length(obj.mosaic)
+        if strcmp(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),ieParamFormat(mosaicType))
+            mosaicTypeInd = cellTypeInd;
+            
+        end
+    end
+elseif ~isempty(mosaicType) && isnumeric(mosaicType)
+    mosaicTypeInd = mosaicType;
+else
+    mosaicTypeInd = [];
+end
+
+cell = params.cell;
+
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.what)
     case{'ecc'}
         
         plotPatchEccentricity(obj.eyeAngle, obj.eyeRadius, obj.eyeSide, obj.temporalEquivEcc)
@@ -189,7 +197,7 @@ switch lower(params.what)
             zlabel(sprintf('Response (spikes/sec)'),'fontsize',16);
             axis([0 size(obj.mosaic{5}.sRFsurround{1,1},1) 0 size(obj.mosaic{5}.sRFsurround{1,1},2) 0 max(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) ]);
         end
-    case{'ir'}        
+    case{'ir','impulseresponse'}        
         %%% Plot the RGB impulse response of each mosaic
         vcNewGraphWin([],'upperleftbig');     
          % set(gcf,'position',[1000  540 893  798]);
@@ -264,19 +272,34 @@ switch lower(params.what)
             axis([0 0.6 -0.8 0.8]);
         end
         
-    case{'linearresponse'}
+    case{'linearresponse','linear'}
         vcNewGraphWin([],'upperleftbig');
           % set(gcf,'position',[1000  540 893  798]);
-        
-        for cellTypeInd = 1:length(obj.mosaic)
-            nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+          if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
+            if ~isempty(cell)
+                nCells = cell;
+                xcellstart = cell(1); ycellstart = cell(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
                     
                     meanVoltage{xcell,ycell} = ((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
                 end
             end
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
+            
             plot(vertcat(meanVoltage{:})');
             xlabel(sprintf('Time (msec)'),'fontsize',16);
             ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',16);
@@ -285,19 +308,34 @@ switch lower(params.what)
         end
         
                 
-    case{'nlresponse'}
+    case{'nlresponse','nl','nonlinear'}
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
         
-        for cellTypeInd = 1:length(obj.mosaic)
-            nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+       if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
+            if ~isempty(cell)
+                nCells = cell;
+                xcellstart = cell(1); ycellstart = cell(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
                     
                     meanVoltage{xcell,ycell} = ((obj.mosaic{cellTypeInd}.nlResponse{xcell,ycell}));
                 end
             end
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             plot(vertcat(meanVoltage{:})');
             % set(gca,'yscale','log');
             xlabel(sprintf('Time (msec)'),'fontsize',16);
@@ -306,7 +344,7 @@ switch lower(params.what)
             
         end
         
-    case{'spikeresponse'}
+    case{'spikeresponse','spike','voltage'}
         
         %%% Plot the membrane voltages for a random trial
         
@@ -314,28 +352,43 @@ switch lower(params.what)
          % set(gcf,'position',[1000  540 893  798]);
         szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
         
-        for cellTypeInd = 1:length(obj.mosaic)
+        if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             clear meanVoltage
-            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
+            if ~isempty(cell)
+                nCells = cell;
+                xcellstart = cell(1); ycellstart = cell(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
                     % Take mean membrane voltage over N trials
                     % meanVoltage{xcell,ycell} = mean(horzcat(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,:,2}),2);
                     meanVoltage{xcell,ycell} = mean(horzcat(obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,1,2}),2);
                 end
             end
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             mv = horzcat(meanVoltage{:});
             plot((1:length(mv))/100,mv);
             xlabel(sprintf('Time (msec)'),'fontsize',16);
-            ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',16);
+            ylabel(sprintf('exp(Membrane Voltage (\\muV))'),'fontsize',16);
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));%,'fontsize',16);
             
             
 %         maxVal = max(max(abs(horzcat(meanVoltage{:})));
 %         if isnan(maxVal), maxVal = 0.00001; end;
 %         axis([0 30 -1 maxVal])
-        axis([0 50 -1 20]);
+%         axis([0 50 -1 20]);
         
             clear meanVoltage
         end
@@ -347,29 +400,47 @@ switch lower(params.what)
 %         axis(axesHandles,[0 30 0 maxVal])
 %         clear axesHandles;
         
-    case{'rasterresponse'}
+    case{'rasterresponse','raster'}
         
         
         dt = .01; % make this a get from sensor
         bindur = dt*1;
         
-        for cellTypeInd = 1:length(obj.mosaic)
+      if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
             numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
             
             vcNewGraphWin([],'upperleftbig');
-             % set(gcf,'position',[1000  540 893  798]);
+            % set(gcf,'position',[1000  540 893  798]);
             cellCtr = 0; cellCtr2 = 0;
             clear psth tsp mtsp
             
-            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
-            
-            if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
-            maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
-            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
-            
-            for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
-                for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
+            clear meanVoltage
+            if ~isempty(cell)
+                nCells = cell;
+                xcellstart = cell(1); ycellstart = cell(2);
+                maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
+                
+                if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
+                maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
+                % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+                xcellstart = 1; ycellstart = 1;
+            end
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
+                    
+%             
+%             for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
+%                 for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
                     
                     cellCtr = cellCtr+1;
                     
@@ -382,7 +453,7 @@ switch lower(params.what)
                         % if ~isempty(spikeTimes{ce,1,tr,1});
                         % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
 %                         subplot(2,1,1);
-                        subplot(nCells(1),nCells(2),cellCtr2);
+                        subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
 %                         subplot(nCells(2),nCells(1),cellCtr);
 %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
@@ -401,84 +472,55 @@ switch lower(params.what)
                     end%trials;
                     % end;
                     
-%                     cellCtr = cellCtr+1;
-%                     
-%                     %             if ~sum(cellfun(@isempty,tsp))
-%                     
-%                     for trial = 1:maxTrials
-%                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
-%                     end
-%                     
-%                     
-%                     % The indices are reversed to match up with the imagesc 
-%                     % command used in irMovie.
-%                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr); 
-%                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
-%                     
-%                     subplot(nCells(2),nCells(1),cellCtr2);
-%                     % subplot(nCells(1),nCells(2),cellCtr);
-%                     % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
-%                     
-%                     if sum(cellfun(@isempty,tsp))~=maxTrials
-%                         
-%                         mtsp = plotraster(tsp);
-%                     else
-%                         mtsp = [];
-%                     end
-%                     raster{xcell,ycell} = mtsp;
-                    
-                    % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-                    % [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
                     axis([0 70*dt 0 maxTrials]);
                     
-                    
-                    % subplot(nCells(1),nCells(2),cellCtr);
-                    %             plot(tt/.01,psth{xcell,ycell});
-                    %             if ~isnan(psth{xcell,ycell})
-                    %                 axis([0 30 0 max(psth{xcell,ycell})]);
-                    %             end
-                    
-                    % hold on;
-                    % gf = obj.mosaic{1}.generatorFunction;
-                    % plot((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
-                    % axis([0 30 min(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}) max(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell})]);
-                    
+
                 end
             end
-            % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
-            % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
             % suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
         end
         
         
-    case{'psthresponse'}
+    case{'psthresponse','psth'}
         % Post-stimulus time histogram
         
         dt = .01; % make this a get from sensors
         
-        for cellTypeInd = 1:length(obj.mosaic)
+       if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
             vcNewGraphWin([],'upperleftbig');
+            
              % set(gcf,'position',[1000  540 893  798]);
             cellCtr = 0;
             clear psth tsp mtsp
             
-            nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
-            if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
-            szSpike = size(horzcat(obj.mosaic{1}.spikeResponse{1,1,:,2}));
-            maxTrials = szSpike(2);
-            % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
-            
-            for xcell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,1)
-                for ycell = 1:size(obj.mosaic{cellTypeInd}.spikeResponse,2)
+
+            if ~isempty(cell)
+                nCells = cell;
+                xcellstart = cell(1); ycellstart = cell(2);
+                maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.spikeResponse);
+                
+                if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
+                maxTrials = size(obj.mosaic{cellTypeInd}.spikeResponse,3);
+                % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+                xcellstart = 1; ycellstart = 1;
+            end
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
                     clear yind y
                     cellCtr = cellCtr+1;
-                    
-                    %             if ~sum(cellfun(@isempty,tsp))
-                    
+                                       
                     for trial = 1:maxTrials
-%                         tsp{trial} = obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
-                        
+               
                         yind =  obj.mosaic{cellTypeInd}.spikeResponse{xcell,ycell,trial,1};
                             y(trial,round(yind./dt))=1;
                     end
@@ -494,39 +536,22 @@ switch lower(params.what)
                     
 %                     subplot(nCells(2),nCells(1),cellCtr);
                     
-                    subplot(nCells(1),nCells(2),cellCtr2);
-                    
+                     subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
+%                     
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     bindur = .01;
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
                     plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);
-%                     
-                        xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
-                        
-%                         set(gca,'fontsize',16);
-%                     if sum(cellfun(@isempty,tsp))~=maxTrials
-%                         
-%                         mtsp = plotraster(tsp);
-%                     else
-%                         mtsp = [];
-%                     end
-%                     raster{xcell,ycell} = mtsp;
-%                     
-%                     % [psth{cellCtr},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-%                     [psth{xcell,ycell},tt,pstv,spr] = compPSTH(mtsp*dt, .001, .002, [0 1], .005);
-%                     % axis([0 30 0 maxTrials]);
-%                     
+                     
+                    xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
+          
 %                     plot(tt/.01,psth{xcell,ycell});
 %                     if ~isnan(psth{xcell,ycell})
                         axis([0 .7 0 max(PSTH_rec)]);
 %                     end
 %                     
-%                     % hold on;
-%                     % gf = obj.mosaic{1}.generatorFunction;
-%                     % plot((obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}));
-%                     % axis([0 30 min(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell}) max(obj.mosaic{cellTypeInd}.linearResponse{xcell,ycell})]);
-                    
+
                 end
             end
             
@@ -535,10 +560,11 @@ switch lower(params.what)
 %             if isnan(maxVal), maxVal = 0.00001; end;
 %             axis(axesHandles,[0 30 0 maxVal])
 %             clear axesHandles;
-            
-            % mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse',raster);
-            % mosaicSet(obj.mosaic{cellTypeInd},'psthResponse',psth);
-            suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+            if exist('suptitle','file')
+                suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+            else
+                title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+            end
         end
 end
 

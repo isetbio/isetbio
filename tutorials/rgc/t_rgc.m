@@ -71,8 +71,9 @@ innerRetina = irCreate(os, 'name','Macaque inner retina');
 
 % innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','mosaicType','on midget');
 
+% innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
 innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
-
+innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
 % innerRetina.mosaicCreate('model','linear','mosaicType','on midget');
 %% Compute the RGC responses
 
@@ -81,14 +82,14 @@ innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
 innerRetina.compute(os);
 
 %%
-innerRetina = innerRetina.computeContinuous(os);
-
-% Compute spiking response
-numberTrials = 5;
-for repititions = 1:numberTrials
-%     innerRetina = irSpikeCompute(innerRetina);
-    innerRetina.computeSpikes();
-end
+% innerRetina = innerRetina.computeContinuous(os);
+% 
+% % Compute spiking response
+% numberTrials = 5;
+% for repititions = 1:numberTrials
+% %     innerRetina = irSpikeCompute(innerRetina);
+%     innerRetina.computeSpikes();
+% end
 
 %% Plot various aspects of the RGC response
 % irPlot(innerRetina, 'mosaic');

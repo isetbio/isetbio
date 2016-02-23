@@ -49,6 +49,18 @@ addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 
 
 p.parse(os,varargin{:});
 
+if isempty(osGet(os,'rgbData'))
+    os = osSet(os, 'rgbData', rand(64));
+end
+
+if isempty(osGet(os,'coneSpacing'))
+    os = osSet(os, 'coneSpacing', 180);
+end
+
+if isempty(osGet(os,'coneSampling'))
+    os = osSet(os,'coneSampling',.01);
+end
+
 %% Create the object
 obj = ir(os, p.Results);
 
