@@ -60,7 +60,7 @@ switch ieParamFormat(model)
         obj = rgcPool(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'lnp', 'rgclnp'}
-        obj = rgcNP(ir, mosaicType);
+        obj = rgcLNP(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'glm','rgcglm'}
         obj = rgcGLM(ir, mosaicType);

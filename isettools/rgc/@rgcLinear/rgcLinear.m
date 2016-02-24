@@ -1,4 +1,4 @@
-classdef rgcMosaicLinear < rgcMosaic
+classdef rgcLinear < rgcMosaic
 %% Define an rgcMosaic cell type whose computation is linear
 %
 % This class (@rgcMosaicLinear) is a subclass of @rgcMosaic. It is called when
@@ -47,7 +47,7 @@ classdef rgcMosaicLinear < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLinear(rgc, mosaicInd)
+        function obj = rgcLinear(rgc, mosaicInd)
             % Initialize the parent class
             obj = obj@rgcMosaic(rgc, mosaicInd);
             

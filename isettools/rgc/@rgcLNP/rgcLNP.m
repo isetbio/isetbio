@@ -1,8 +1,8 @@
-classdef rgcMosaicLNP < rgcMosaic
-% @rgcMosaicLNP: a subclass of @rgcMosaic. This function is only called by
+classdef rgcLNP < rgcMosaic
+% @rgcLNP: a subclass of @rgcMosaic. This function is only called by
 % rgcLNP to initiailize a mosaic of the rgc object.
 % 
-%        rgc.mosaic{ind} = rgcMosaicLNP(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
+%        rgc.mosaic{ind} = rgcLNP(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
 % 
 % @rgcLNP: a subclass of @rgc. This subclass implements retinal
 % ganglion cell computations with the @outerSegment object as input. The
@@ -62,7 +62,7 @@ classdef rgcMosaicLNP < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicLNP(rgc, mosaicType)
+        function obj = rgcLNP(rgc, mosaicType)
             % Initialize the parent class            
             obj = obj@rgcMosaic(rgc, mosaicType);
 

@@ -1,4 +1,4 @@
-classdef rgcMosaicGLM < rgcMosaic
+classdef rgcGLM < rgcMosaic
 % rgcMosaic cell type with a GLM (coupled-nonlinear)computational model
 %
 % The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
@@ -53,7 +53,7 @@ classdef rgcMosaicGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicGLM(rgc, mosaicType)
+        function obj = rgcGLM(rgc, mosaicType)
             
             % Initialize for the cell type            
             obj = obj@rgcMosaic(rgc, mosaicType);
