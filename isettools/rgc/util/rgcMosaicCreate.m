@@ -54,22 +54,22 @@ model = p.Results.model;
 % These are rgcMosaicLinear, rgcMosaicLNP, rgcMosaicGLM,...
 switch ieParamFormat(model)
     case {'linear','rgclinear'}
-        obj = rgcMosaicLinear(ir, mosaicType);
+        obj = rgcLinear(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'pool', 'rgcpool'}
-        obj = rgcMosaicPool(ir, mosaicType);
+        obj = rgcPool(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'lnp', 'rgclnp'}
-        obj = rgcMosaicLNP(ir, mosaicType);
+        obj = rgcNP(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'glm','rgcglm'}
-        obj = rgcMosaicGLM(ir, mosaicType);
+        obj = rgcGLM(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'subunit','rgcsubunit'}
-        obj = rgcMosaicSubunit(ir, mosaicType);
+        obj = rgcSubunit(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case{'phys','rgcphys'}
-        obj = rgcMosaicPhys(ir, mosaicType);
+        obj = rgcPhys(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     otherwise
         error('Unknown inner retina class: %s\n',class(ir));
