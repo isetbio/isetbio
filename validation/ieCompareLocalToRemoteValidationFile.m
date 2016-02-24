@@ -1,12 +1,12 @@
-% Utility to remove one validation ground truth data set (both fast and full)
+% Utility to compare local to remote validationd data
 %
-% Usage: ieDeleteValidationFile('osBiophysObject')
+% Usage: ieCompareLocalToRemoteValidationFile('oi')
 %
 
 function ieCompareLocalToRemoteValidationFile(validationFile)
 
     list = rdtListLocalArtifacts(...
-        getpref('isetbioValidation', 'remoteDataToolboxConfig'), ...
+        getpref('isetbio', 'remoteDataToolboxConfig'), ...
         'validation/full', 'artifactId', validationFile, 'type', 'mat');
 
     if isempty(list)
@@ -17,33 +17,21 @@ function ieCompareLocalToRemoteValidationFile(validationFile)
             fprintf('[%02d].  ''%s''  remotePath:%s   localPath: %s  \n', k, list(k).artifactId, list(k).remotePath, list(k).localPath);
         end
         
-        fprintf('Local file contents\n')
+        fprintf('Local file contents (file: %s)\n', list(1).localPath)
         load(list(1).localPath)
-        whos
         validationData
         hostInfo
-%         validationData.diffractionOI
-%         validationData.diffractionOI.data
-%         validationData.diffractionOI.optics
-%         validationData.diffractionOI.diffuser
-        
-        whos
+        fprintf('Hit enter to fetch remote data \n');
         pause
+        
         client = RdtClient('isetbio');
         client.crp(list(k).remotePath);
-        %client.openBrowser();
+        client.openBrowser();
         [artifactData, artifactInfo] = client.readArtifact(validationFile, 'type', 'mat');
         artifactData.validationData
         artifactData.hostInfo
+        pause
         
-        clear all
-        load('/Users/nicolas/Downloads/test.mat')
-        whos
-        validationData
-        hostInfo
-%         validationData.diffractionOI
-%         validationData.diffractionOI.data
-%         validationData.diffractionOI.optics
-%         validationData.diffractionOI.diffuser
+      
     end
 end
