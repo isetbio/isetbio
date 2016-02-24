@@ -67,14 +67,14 @@ innerRetina = irCreate(os, 'name','Macaque inner retina');
 % manually, the single default mosaic added is on parasol.
 
 % Alternative syntax for creating single layers at a time
-% innerRetina = rgcMosaicCreate(innerRetina,'model','glm','mosaicType','on parasol');
+% innerRetina = rgcMosaicCreate(innerRetina,'model','glm','type','on parasol');
 
-% innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','mosaicType','on midget');
+% innerRetina = rgcMosaicCreate(innerRetina,'model','lnp','type','on midget');
 
-% innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
-innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
-innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
-% innerRetina.mosaicCreate('model','linear','mosaicType','on midget');
+% innerRetina.mosaicCreate('model','glm','type','on parasol');
+innerRetina.mosaicCreate('model','glm','type','on midget');
+innerRetina.mosaicCreate('model','glm','type','on parasol');
+% innerRetina.mosaicCreate('model','linear','type','on midget');
 %% Compute the RGC responses
 
 % Compute linear and nonlinear responses
@@ -93,9 +93,13 @@ innerRetina.compute(os);
 
 %% Plot various aspects of the RGC response
 % irPlot(innerRetina, 'mosaic');
-irPlot(innerRetina, 'rasterResponse');
+irPlot(innerRetina, 'raster');
 % irPlot(innerRetina, 'psthResponse');
 
+% irPlot(innerRetina,'psth','type','onParasol');
+% irPlot(innerRetina,'psth','cell',[1 1]);
+% irPlot(innerRetina,'psth','type','onParasol','cell',[1 1]);
+% 
 % Create a movie of the response
 % rgcMovie(rgc1, os);
 % rgcMovieWave;

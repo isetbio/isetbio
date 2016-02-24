@@ -138,7 +138,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina = irCreate(os, params);
 
-innerRetina.mosaicCreate('model','glm','mosaicType','on midget');
+innerRetina.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);

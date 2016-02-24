@@ -38,15 +38,15 @@ p.addRequired('ir');
 
 % Experiment ... thinking about input parsing more generally (JRG/BW)
 mosaicTypes = {'on parasol','off parasol','on midget','off midget','small bistratified','sbc'};
-p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
-
+% p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
+p.addParameter('type','on parasol',@(x) any(validatestring(x,mosaicTypes)));
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
 p.addParameter('model','linear',@(x) any(validatestring(x,modelTypes)));
 
 p.parse(ir,varargin{:});
 
 %% Specify the ganglion cell mosaic type
-mosaicType = p.Results.mosaicType;
+mosaicType = p.Results.type;
 model = p.Results.model;
 %% Switch on the computational model
 

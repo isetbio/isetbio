@@ -54,7 +54,7 @@ for xcell = 1:nCells(1)
         
         cellCenterLocation = obj.cellLocation{xcell,ycell};
         
-        weightMatrixT = reshape(exp(-(1./(2*obj.rfDiameter))*(sum((bsxfun(@minus, cellCenterLocation, otherCenterLocations)).^2,2).^(1/2))),nCells(1),nCells(2));
+        weightMatrixT = reshape(exp(-(2./(1*obj.rfDiameter))*(sum((bsxfun(@minus, cellCenterLocation, otherCenterLocations)).^2,2).^(1/2))),nCells(1),nCells(2));
         weightMatrixT(weightMatrixT==1) = 0; 
         weightMatrixT(weightMatrixT<0.1) = 0;
         

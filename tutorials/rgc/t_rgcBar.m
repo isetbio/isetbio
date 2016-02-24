@@ -139,7 +139,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina = irCreate(os, params);
 
-innerRetina.mosaicCreate('model','glm','mosaicType','on parasol');
+innerRetina.mosaicCreate('model','glm','type','on parasol');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);

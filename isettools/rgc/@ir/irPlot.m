@@ -11,7 +11,7 @@ function irPlot(obj, varargin)
 %         'mosaic',...          - the 1 STD spatial RF mosaic of each type
 %         'sRFcenter',...       - center spatial RF surfaces
 %         'sRFsurround',...     - surround spatial RF surfaces
-%         'ir',...              - (center - surround) temporal impulse responses
+%         'temporal',...        - (center - surround) temporal impulse responses
 %         'tCenter',...         - center temporal impulse response
 %         'tSurround',...       - surround temopral impulse response
 %         'postSpikeFilter',... - post-spike filter time course
@@ -27,18 +27,18 @@ function irPlot(obj, varargin)
 % 
 %   osI = osCreate('identity');
 %   innerRetina = irCreate(osI);
-%   innerRetina.mosaicCreate('model','glm','mosaicType', 'on parasol');
+%   innerRetina.mosaicCreate('model','glm','type', 'on parasol');
 %   innerRetina.compute(osI);
 % 
 %   irPlot(innerRetina,'mosaic');
 %   irPlot(innerRetina,'psth');
-%   irPlot(innerRetina,'psth','mosaicType','onParasol');
+%   irPlot(innerRetina,'psth','type','onParasol');
 %   irPlot(innerRetina,'psth','cell',[1 1]);
-%   irPlot(innerRetina,'psth','mosaicType','onParasol','cell',[1 1]);
+%   irPlot(innerRetina,'psth','type','onParasol','cell',[1 1]);
 % 
 % (c) isetbio
 % 09/2015 JRG
-
+%% Parse input
 p = inputParser; 
 p.CaseSensitive = false; 
 
@@ -50,7 +50,7 @@ allowableFieldsToSet = {...
         'mosaic',...
         'sRFcenter',...
         'sRFsurround',...
-        'ir','impulseResponse',...
+        'temporal','temporalFilter',...
         'ecc',...
         'tCenter',...
         'tSurround',...
@@ -64,12 +64,12 @@ allowableFieldsToSet = {...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
-p.addOptional('mosaicType',[]);
+p.addOptional('type',[]);
 p.addOptional('cell',[]);
 
 p.parse(varargin{:}); params = p.Results;
 
-mosaicType = params.mosaicType;
+mosaicType = params.type;
 
 if ~isempty(mosaicType) && ischar(mosaicType)
     for cellTypeInd = 1:length(obj.mosaic)
@@ -86,7 +86,7 @@ end
 
 cell = params.cell;
 
-% Set key-value pairs.
+%% Set key-value pairs
 switch ieParamFormat(params.what)
     case{'ecc'}
         
@@ -148,16 +148,25 @@ switch ieParamFormat(params.what)
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
             zlabel(sprintf('Response (spikes/sec)'),'fontsize',16);
-            axis([0 size(obj.mosaic{5}.sRFcenter{1,1},1) 0 size(obj.mosaic{5}.sRFcenter{1,1},2) -max(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
+            axis([0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1) 0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},2) -max(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
         end
         
     case{'rfimage'}
         %%% An image representing the RF surround
         vcNewGraphWin([],'upperleftbig');
         %  % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1% :length(obj.mosaic)
+        if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            % subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             imagesc(obj.mosaic{cellTypeInd}.sRFcenter{1,1}-obj.mosaic{cellTypeInd}.sRFsurround{1,1}); 
             title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
@@ -172,42 +181,76 @@ switch ieParamFormat(params.what)
         %%% A surface representing the RF center
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+       if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            subplot(3,2,cellTypeInd); 
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             surface(obj.mosaic{cellTypeInd}.sRFcenter{1,1}); shading flat; view(40,40);
             title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
             zlabel(sprintf('Response (spikes/sec)'),'fontsize',16);
-            axis([0 size(obj.mosaic{5}.sRFcenter{1,1},1) 0 size(obj.mosaic{5}.sRFcenter{1,1},2) 0 max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
+            axis([0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1) 0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},2) min(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
         end
 
     case{'srfsurround'}
         %%% A surface representing the RF surround
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+        if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            subplot(3,2,cellTypeInd); 
-            surface(obj.mosaic{cellTypeInd}.sRFsurround{1,1}); shading flat; view(40,40);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
+            surface(-obj.mosaic{cellTypeInd}.sRFsurround{1,1}); shading flat; view(40,40);
             title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
             zlabel(sprintf('Response (spikes/sec)'),'fontsize',16);
-            axis([0 size(obj.mosaic{5}.sRFsurround{1,1},1) 0 size(obj.mosaic{5}.sRFsurround{1,1},2) 0 max(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) ]);
+            axis([0 size(obj.mosaic{cellTypeInd}.sRFsurround{1,1},1) 0 size(obj.mosaic{cellTypeInd}.sRFsurround{1,1},2) min(-obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(-obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) ]);
         end
-    case{'ir','impulseresponse'}        
+    case{'temporal','temporalfilter'}        
         %%% Plot the RGB impulse response of each mosaic
         vcNewGraphWin([],'upperleftbig');     
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+        if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            subplot(3,2,cellTypeInd);
-            plot(.01:.01:.2,bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
-            title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
+%             plot((.01:.01:.2)-.2,bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
+            cind = 'bgr';
+            offset = [0 0 .01];
+            hold on;
+            for rgbInd = 1:3
+                plot((.01:.01:.2)-.2,((obj.mosaic{cellTypeInd}.tCenter{rgbInd})+offset(rgbInd)),cind(rgbInd))
+            end
+            title(sprintf('Temporal Filter, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
             ylabel(sprintf('Response (spikes/sec)'),'fontsize',16);
+            legend('B','G','R','location','northwest');
         end
         
     case{'tcenter'}
@@ -215,9 +258,18 @@ switch ieParamFormat(params.what)
         %%% Plot the RGB impulse response of each mosaic
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);        
-        for cellTypeInd = 1:length(obj.mosaic)
+         if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             plot(.01:.01:.2,bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
@@ -229,9 +281,18 @@ switch ieParamFormat(params.what)
         %%% Plot the RGB impulse response of each mosaic
         vcNewGraphWin([],'upperleftbig');   
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+         if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             plot(.01:.01:.2,bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tSurround{:}),[0 0 0.01]))
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
@@ -244,10 +305,19 @@ switch ieParamFormat(params.what)
         %%% Plot the post spike filter of each cell type
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+         if ~isempty(mosaicTypeInd)
+              cellTypeStart = mosaicTypeInd;
+              cellTypeEnd = mosaicTypeInd;
+          else
+              cellTypeStart = 1;
+              cellTypeEnd = length(obj.mosaic);
+          end
+        for cellTypeInd = cellTypeStart:cellTypeEnd
             psf = squeeze(obj.mosaic{cellTypeInd}.couplingFilter{1,1}(1,1,:));
             
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             plot((1:length(psf))./1000, psf);
             title(sprintf('Exponentiated Post-Spike Filter, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
@@ -260,11 +330,20 @@ switch ieParamFormat(params.what)
         %%% Plot the post spike filter of each cell type
         vcNewGraphWin([],'upperleftbig');
          % set(gcf,'position',[1000  540 893  798]);
-        for cellTypeInd = 1:length(obj.mosaic)
+         if ~isempty(mosaicTypeInd)
+             cellTypeStart = mosaicTypeInd;
+             cellTypeEnd = mosaicTypeInd;
+         else
+             cellTypeStart = 1;
+             cellTypeEnd = length(obj.mosaic);
+         end
+         for cellTypeInd = cellTypeStart:cellTypeEnd
             
             cplf = (horzcat(obj.mosaic{cellTypeInd}.couplingFilter{:}));
             
-            subplot(3,2,cellTypeInd);
+            if length(cellTypeStart:cellTypeEnd)>1
+                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
+            end
             plot((1:length(cplf))./1000, squeeze(cplf(1,:,:)));
             title(sprintf('Exponentiated Coupling Filters, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
