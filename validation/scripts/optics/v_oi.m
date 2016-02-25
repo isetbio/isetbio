@@ -44,10 +44,11 @@ function ValidationFunction(runTimeParams)
         oiPlot(oi,'psf',[],420);
         oiPlot(oi,'psf',[],550);
     end
-    UnitTest.validationData('humanOI', oi);
+    UnitTest.validationData('EEoi', oi);
     
     %% Make a scene and show some oiGets and oiCompute work
     scene = sceneCreate;
+    oi = oiCreate('human');
     oi = oiCompute(oi,scene);
     if (runTimeParams.generatePlots)
         oiPlot(oi,'illuminance mesh linear');
