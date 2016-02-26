@@ -90,16 +90,23 @@ switch osType
             
             % Set the nonlinear response for every rgc subclass except rgcLinear
             switch class(ir.mosaic{rgcType})
-                case 'rgcMosaicLinear'
+                case 'rgcLinear'
                     % No nonlinear response
                 otherwise
                     ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
             end
             clear fullResponse nlResponse spResponseCenter spResponseSurround
         end
-        for itrial = 1:10
-            ir = irComputeSpikes(ir);
-        end
+        
+        % Compute spikes
+        switch class(ir.mosaic{rgcType})
+            case {'rgcLinear','rgcPhys'};
+                % No nonlinear response
+            otherwise
+                for itrial = 1:10
+                    ir = irComputeSpikes(ir);
+                end
+        end       
         
     case {'osLinear'}
         %% Linear OS

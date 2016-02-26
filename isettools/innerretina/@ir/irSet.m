@@ -86,13 +86,13 @@ switch lower(params.what)
         
     case{'numbertrials'}
         cellTypes = length(obj.mosaic);
-        if isa(obj.mosaic{1},'rgcMosaicLNP') | isa(obj.mosaic{1},'rgcMosaicGLM')| isa(obj.mosaic{1},'rgcMosaicPhys')
+        if isa(obj.mosaic{1},'rgcLNP') | isa(obj.mosaic{1},'rgcGLM')| isa(obj.mosaic{1},'rgcPhys')
             
             for cellTypeInd = 1%:cellTypes
                 obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
             end
         else
-            warning('The numberTrials property can only be set for rgcLNP and rgcGLM models.');
+            warning('The numberTrials property can only be set for rgcLNP, rgcGLM and rgcPhys models.');
         end
         
 end

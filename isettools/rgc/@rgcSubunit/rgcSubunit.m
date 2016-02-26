@@ -1,4 +1,4 @@
-classdef rgcMosaicSubunit < rgcMosaic
+classdef rgcSubunit < rgcMosaic
 % @rgcMosaicLNP: a subclass of @rgcMosaic
 % 
 %
@@ -32,12 +32,12 @@ classdef rgcMosaicSubunit < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicSubunit(rgc, cellTypeInd, outersegment, sensor, varargin)
+        function obj = rgcSubunit(rgc, mosaicType)
             % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc, cellTypeInd, outersegment, sensor, varargin{:});
+            obj = obj@rgcMosaic(rgc, mosaicType);
 
             % Initialize ourselves
-            obj.initialize(rgc, sensor, outersegment, varargin{:});
+            obj.initialize(rgc, mosaicType);
             
             % % parse the varargin
             % for k = 1:2:numel(varargin)

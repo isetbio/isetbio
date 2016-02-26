@@ -1,4 +1,4 @@
-classdef rgcMosaicPool < rgcMosaic
+classdef rgcPool < rgcMosaic
 % @rgcMosaicPool: a subclass of @rgcMosaic. This function is only called by
 % rgcPool to initiailize a mosaic of the rgc object.
 % 
@@ -50,7 +50,7 @@ classdef rgcMosaicPool < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicPool(rgc, mosaicInd)
+        function obj = rgcPool(rgc, mosaicInd)
             % Initialize the parent class
             obj = obj@rgcMosaic(rgc, mosaicInd);
             

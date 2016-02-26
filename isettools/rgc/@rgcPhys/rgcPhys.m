@@ -1,4 +1,4 @@
-classdef rgcMosaicPhys % < rgcMosaic
+classdef rgcPhys % < rgcMosaic
 % @rgcMosaicGLM: a subclass of @rgcMosaic. This function is only called by
 % rgcGLM to initiailize a mosaic of the rgc object.
 % 
@@ -70,7 +70,7 @@ classdef rgcMosaicPhys % < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaicPhys(rgc, cellTypeInd, varargin)
+        function obj = rgcPhys(rgc, cellTypeInd, varargin)
             % Initialize the parent class            
             % obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
 

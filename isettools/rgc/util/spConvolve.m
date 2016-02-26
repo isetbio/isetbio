@@ -58,7 +58,7 @@ for rgbIndex = 1:channelSize
                                           
                 % Convolve for a single temporal frame
                 
-                if isa(mosaic, 'rgcMosaicPhys')
+                if isa(mosaic, 'rgcPhys')
                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter.*spStim;%conv2(spRFcenter, spStim, 'same');
                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 else

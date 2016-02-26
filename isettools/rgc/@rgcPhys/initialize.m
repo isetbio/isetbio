@@ -37,32 +37,7 @@ function obj = initialize(obj, rgc, cellTypeInd, varargin)
 
 
 namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.cellType = namesCellTypes{cellTypeInd};
-
-% Assign multipliers for size of spatial RFs and magnitudes of temporal IRs
-% [ON Parasol; OFF Parasol; ON Midget; OFF Midget; Small bistratified];
-rfSizeMult = [1 1 0.5 0.5 1.2];   % account for size differences between types
-rfTempMult = [1 -1 1 -1 1];       % invert IR for OFF paraosl and midget
-% rgbTempMult = [0.4 1 0.4];        % weight RGB components of temporal IR
-
-% see "Spatial Properties and Functional Organization of Small
-% Bistratified Ganglion Cells in Primate Retina", Field, et al.,
-% J. Neuroscience, 2007, Fig. 1.
-switch ieParamFormat(obj.cellType)
-    case{'smallbistratified'}
-        rgbTempMult = [-0.4 -0.4 1];
-    otherwise
-        rgbTempMult = [0.4 1 0.4];
-end
-        
-% Calcualte spatial RF diameter
-receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(rgc.temporalEquivEcc);
-
-% patchSizeX = sensorGet(sensor, 'width', 'um');
-% sceneRows = sceneGet(scene,'rows');
-% umPerScenePx = patchSizeX/sceneRows;
-
-% obj.rfDiameter = rfSizeMult(cellTypeInd)*(receptiveFieldDiameterParasol2STD/2)/umPerScenePx; % in microns; divide by umPerScenePx to get pixels
+obj.cellType = namesCellTypes{1};
 
 obj.generatorFunction = @exp;
 

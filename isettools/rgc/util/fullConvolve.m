@@ -87,13 +87,13 @@ for xcell = 1:nCells(1)
                         
         % Take the mean of the spatial response over (x,y) at a particular
         % time frame t for each cell
-        if isa(mosaic,'rgcMosaicSubunit');
+        if isa(mosaic,'rgcSubunit');
             % For the subunit model, apply the nonlinearity before taking the mean
             genFunction = mosaicGet(mosaic, 'generatorFunction');
             fullResponseRS = sum(genFunction(fullResponseRSRGB),3);            
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
             nlResponse{xcell,ycell} = (mean(fullResponseRS,1));
-        elseif isa(mosaic,'rgcMosaicPhys')
+        elseif isa(mosaic,'rgcPhys')
             
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
@@ -109,7 +109,7 @@ for xcell = 1:nCells(1)
             fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
-            if ~isa(mosaic, 'rgcMosaicLinear'); 
+            if ~isa(mosaic, 'rgcLinear'); 
                 genFunction = mosaicGet(mosaic, 'generatorFunction');
                 nlResponse{xcell,ycell} = genFunction(mean(fullResponseRS,1));
             else

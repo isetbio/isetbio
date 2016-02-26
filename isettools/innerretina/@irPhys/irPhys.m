@@ -61,7 +61,7 @@ classdef irPhys < ir
            % obj = [];
             % Initialize ourselves by building GLM mosaic objects
             for cellTypeInd = 1%:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcMosaicPhys(obj, cellTypeInd, varargin{:});
+                obj.mosaic{cellTypeInd} = rgcPhys(obj, cellTypeInd, varargin{:});
             end
             
         end
