@@ -20,7 +20,7 @@ function ieDeleteLocalValidationFile(validationFileToBeDeleted)
         pause;
         client = RdtClient('isetbio');
         % Log into archiva
-        client.credentialsDialog();
+        %client.credentialsDialog();
         for k = 1:numel(list)
             fprintf('Deleting local %s/%s\n', list(k).remotePath, list(k).artifactId);
             deleted = rdtDeleteLocalArtifacts(client.configuration, list(k));
