@@ -3,9 +3,9 @@ function irradiance = oiCalculateIrradiance(scene,optics)
 %
 %  irradiance = oiCalculateIrradiance(scene,optics)
 %
-%  The scene spectral radiance (photons/s/m2/sr/nm) is turned into optical
-%  image irradiance (photons/s/m2/nm) based on information in the optics.
-%  The formula for converting radiance to irradiance is
+% The scene spectral radiance (photons/s/m2/sr/nm) is turned into optical
+% image irradiance (photons/s/m2/nm) based on information in the optics.
+% The formula for converting radiance to irradiance is
 %
 %     irradiance = pi /(1 + 4*fN^2*(1+abs(m))^2)*radiance;
 %
@@ -37,8 +37,6 @@ function irradiance = oiCalculateIrradiance(scene,optics)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% TODO:  What should the fnumber be when we are in SKIP mode for the model?
-
 % Scene data are in radiance units
 radiance = sceneGet(scene, 'photons');
 
@@ -46,20 +44,12 @@ radiance = sceneGet(scene, 'photons');
 model = opticsGet(optics, 'model');
 model = ieParamFormat(model);
 switch model
-    case 'raytrace'
-        % I am not sure we identify the ray trace case properly. If we are
-        % in the ray trace case, we get the object distance from the ray
-        % trace structure.
-        fN    = opticsGet(optics, 'rtEffectivefNumber');
-        m     = opticsGet(optics, 'rtmagnification');
-    case {'skip'}
-        m  = opticsGet(optics, 'magnification');  % Always 1
-        fN = opticsGet(optics, 'fNumber');        % What should this be?
     case {'diffractionlimited', 'shiftinvariant'}
         sDist = sceneGet(scene, 'distance');
         fN    = opticsGet(optics, 'fNumber');     % What should this be?
         m     = opticsGet(optics, 'magnification', sDist);
     otherwise
+        % In ISET there is a ray trace model.  But not here.
         error('Unknown optics model');
 end
 

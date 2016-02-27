@@ -159,15 +159,13 @@ return;
 
 %---------------------------------
 function editFnumber_Callback(hObject, eventdata, handles)
-
-fNumber = str2double(get(hObject,'String'));
-
+% F-number text edit call back (fnumber)
+%
+% The f-number is the ratio of the focal length divided by the aperture.
 [val,oi] = vcGetSelectedObject('OPTICALIMAGE');
+fNumber = str2double(get(hObject,'String'));
+oi = oiSet(oi,'optics fnumber',fNumber);
 
-optics = oiGet(oi,'optics');
-optics.fNumber = fNumber;
-
-oi.optics = optics;
 vcReplaceObject(oi,val);
 oiRefresh(hObject, eventdata, handles);
 return;
@@ -181,20 +179,16 @@ end
 return;
 
 function editFocalLength_Callback(hObject, eventdata, handles)
+% Focal length text edit
+%
 
 % Read the edit box
 focalLength = str2double(get(hObject,'String'))/1000;
 
-% Get the current OI, or create one.
+% Set the optics focal length
 [val,oi] = vcGetSelectedObject('OPTICALIMAGE');
+oi = oiSet(oi,'optics focal length',focalLength);
 
-% Get the optics from the OI and set the focal length
-% Focal length is displayed in millimeters but stored in meters
-optics = oiGet(oi,'optics');
-optics.focalLength = focalLength;
-
-% Put the OI back in the global structure.
-oi.optics = optics;
 vcReplaceObject(oi,val);
 oiRefresh(hObject, eventdata, handles);
 
@@ -518,14 +512,16 @@ return;
 
 % --------------------------------------------------------------------
 function menuOpticsHuman_Callback(hObject, eventdata, handles)
+% Optics | Human Formats | Human optics
 
 [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 
 oi = oiClearData(oi);
+
 optics = opticsCreate('human');
 optics = opticsSet(optics,'otfMethod','humanOTF');
-
 oi = oiSet(oi,'optics',optics);
+
 vcReplaceObject(oi,val);
 oiRefresh(hObject, eventdata, handles);
 return;
@@ -559,34 +555,6 @@ vcReplaceObject(oi);
 oiRefresh(hObject, eventdata, handles);
 return;
 
-% --------------------------------------------------------------------
-function menuOpticsRayTraceParam_Callback(hObject, eventdata, handles)
-% Optics | Ray Trace Params
-
-disp('Not yet implemented')
-
-%  This is the old code.  In the future, we may use this for setting the
-%  eccentricity and angle sample spacing for the PSF interpolation
-%
-% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% optics = oiGet(oi,'optics');
-%
-% spacingMM = opticsGet(optics,'rtComputeSpacing','mm');
-% if isempty(spacingMM), spacingMM = 0.2; end
-%
-% spacingMM = ieReadNumber('Wedge size for PSF computation (mm)',spacingMM,' %.3f');
-% if isempty(spacingMM) return; end
-%
-% % Data are stored in meters
-% optics = opticsSet(optics,'rtComputeSpacing',spacingMM/1000);
-% oi = oiSet(oi,'optics',optics);
-% vcReplaceObject(oi,val);
-%
-% oiRefresh(hObject,eventdata,handles);
-%
-% return;
-return;
-
 
 % --------------------------------------------------------------------
 function menuOpticsExports_Callback(hObject, eventdata, handles)
@@ -606,44 +574,6 @@ optics = siSynthetic('custom',oi);
 oi     = oiSet(oi,'optics',optics);
 vcReplaceObject(oi,val);
 
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsConvertCV_Callback(hObject, eventdata, handles)
-% Optics | Convert Code V
-
-if isempty(which('rtRootPath')), warndlg('Optics toolbox not installed. Contact ImagEval'); return; end
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-optics = oiGet(oi,'OPTICS');
-optics = rtImportData(optics,'Code V');
-
-% Replace the optics.
-oi = oiSet(oi,'optics',optics);
-vcReplaceObject(oi,val);
-oiRefresh(hObject, eventdata, handles);
-
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsConvertZM_Callback(hObject, eventdata, handles)
-%
-% Optics | Convert Zemax
-
-if isempty(which('rtRootPath'))
-    warndlg('Optics toolbox not installed. Contact ImagEval'); 
-    return; 
-end
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-optics = oiGet(oi,'OPTICS');
-optics = rtImportData(optics,'Zemax');
-
-% Replace the optics.
-oi = oiSet(oi,'optics',optics);
-
-vcReplaceObject(oi,val);
-oiRefresh(hObject, eventdata, handles);
 return;
 
 % --------------------------------------------------------------------
@@ -779,14 +709,7 @@ function menuPlotPS550_Callback(hObject, eventdata, handles)
 % Analyze | Optics | PSF Mesh (550)
 
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'psf',550);
-    otherwise
-        oiPlot(oi,'psf 550');
-end
+oiPlot(oi,'psf 550');
 return;
 
 % --------------------------------------------------------------------
@@ -794,15 +717,7 @@ function menuPlotLSWave_Callback(hObject, eventdata, handles)
 % Analyze | Optics | LS by Wavelength
 
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        ieInWindowMessage('Ray trace: ls wavelength not yet implemented.',handles);
-        disp('Not yet implemented')
-    otherwise
-        oiPlot(oi,'ls Wavelength');
-end
+oiPlot(oi,'ls Wavelength');
 
 return;
 
@@ -811,14 +726,7 @@ function menuPlOTFWave_Callback(hObject, eventdata, handles)
 % Analyze | Optics | OTF 1d by wave
 
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'otf');
-    otherwise
-        oiPlot(oi,'otf Wavelength');
-end
+oiPlot(oi,'otf Wavelength');
 
 return;
 
@@ -828,14 +736,7 @@ function menuOTFAnyWave_Callback(hObject, eventdata, handles)
 % User selects wavelength and plots OTF
 
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'otf');
-    otherwise
-        oiPlot(oi,'otf');
-end
+oiPlot(oi,'otf');
 
 return;
 
@@ -843,16 +744,8 @@ return;
 function plotOTF_Callback(hObject, eventdata, handles)
 % Analyze | Optics | OTF (550)
 %
-
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'otf 550');
-    otherwise
-        oiPlot(oi,'otf 550');
-end
+oiPlot(oi,'otf 550');
 
 return;
 
@@ -861,14 +754,7 @@ function menuPlotOffAxis_Callback(hObject, eventdata, handles)
 % Analyze | Optics | Off-Axis fall-off
 
 oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(vcGetObject('OI'),'relativeIllumination');
-    otherwise
-        opticsPlotOffAxis(vcGetObject('OI'));    % If  no ray trace, cos4th.
-end
+opticsPlotOffAxis(oi);    % If  no ray trace, cos4th.
 
 return;
 
@@ -881,35 +767,11 @@ function menuAn_Callback(hObject, eventdata, handles)
 return;
 
 % --------------------------------------------------------------------
-function menuAnOpImFieldAndWave_Callback(hObject, eventdata, handles)
-% Analyze | Optics | PSF images (rt)
-
-oi = vcGetObject('OPTICALIMAGE');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'psfimages');
-    otherwise
-        ieInWindowMessage('No psf images for SI and diffraction.',handles);
-        disp('Not yet implemented')
-end
-
-return;
-
-% --------------------------------------------------------------------
 function menuAnOpticsPSF_Callback(hObject, eventdata, handles)
 % Analyze | Optics | PSF
 
 oi          = vcGetObject('OPTICALIMAGE');
-optics      = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'psf');
-    otherwise
-        oiPlot(oi,'psf');
-end
+oiPlot(oi,'psf');
 
 return;
 
@@ -962,24 +824,6 @@ return;
 
 % --------------------------------------------------------------------
 function menuROISummaries_Callback(hObject, eventdata, handles)
-return;
-
-% --------------------------------------------------------------------
-function menuAnalyzeOptFieldD_Callback(hObject, eventdata, handles)
-
-if isempty(which('rtRootPath')), warndlg('Optics toolbox not installed. Contact ImagEval'); return; end
-
-oi     = vcGetObject('OI');
-optics = oiGet(oi,'optics');
-opticsModel = opticsGet(optics,'model');
-switch lower(opticsModel)
-    case 'raytrace'
-        rtPlot(oi,'distortion');
-    otherwise
-        ieInWindowMessage('No geometric distortion with diffraction limited optics',handles);
-        disp('Not yet implemented')
-end
-
 return;
 
 % --------------------------------------------------------------------
@@ -1075,17 +919,7 @@ switch lower(method)
             % Warn the user
             ieInWindowMessage('Shift-invariant OTF data not loaded.',handles,2);
             disp('Shift-invariant data not loaded')
-        end
-    case 'ray trace'
-        if isempty(opticsGet(optics,'rayTrace'))
-            % Warn the user
-            ieInWindowMessage('Ray trace data not loaded.',handles,2);
-            disp('Ray trace data not loaded')
-        end
-        optics = opticsSet(optics,'model','rayTrace');
-    case 'skip otf'
-        optics = opticsSet(optics,'model','skip');
-        
+        end        
     otherwise
         error('Unknown optics method');
 end

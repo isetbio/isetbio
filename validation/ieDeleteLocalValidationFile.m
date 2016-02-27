@@ -1,9 +1,9 @@
-% Utility to remove one validation ground truth data set (both fast and full)
+% Utility to remove one local validation ground truth data set (both fast and full)
 %
 % Usage: ieDeleteValidationFile('osBiophysObject')
 %        ieDeleteValidationFile('oi')
 
-function ieDeleteValidationFile(validationFileToBeDeleted)
+function ieDeleteLocalValidationFile(validationFileToBeDeleted)
 
     list = rdtListLocalArtifacts(...
         getpref('isetbio', 'remoteDataToolboxConfig'), ...
@@ -20,11 +20,11 @@ function ieDeleteValidationFile(validationFileToBeDeleted)
         pause;
         client = RdtClient('isetbio');
         % Log into archiva
-        client.credentialsDialog();
+        %client.credentialsDialog();
         for k = 1:numel(list)
             fprintf('Deleting local %s/%s\n', list(k).remotePath, list(k).artifactId);
             deleted = rdtDeleteLocalArtifacts(client.configuration, list(k));
-            deleted = rdtDeleteArtifacts(client.configuration, list(k));
+            %deleted = rdtDeleteArtifacts(client.configuration, list(k));
         end
     end
 end
