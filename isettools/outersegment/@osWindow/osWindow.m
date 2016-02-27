@@ -3,8 +3,8 @@
 % 
 % For example usage see: t_osHyperSpectralSceneEyeScan
 %
-% 1/2016 NC
-%
+% 1/2016        NPC     Created.
+% 2/24/2016     NPC     Added method for video generation, window resizing
 
 classdef osWindow < handle
     
@@ -24,6 +24,12 @@ classdef osWindow < handle
         
         % figure handle
         hFig;
+        
+        % figure layout. Either 'horizontalLayout' or 'verticalLayout'
+        figOrientation;
+        
+        % figure width to height aspect ratio
+        aspectRatio;
         
         % struct containing all the figure axes
         axesStruct;
@@ -103,9 +109,9 @@ classdef osWindow < handle
     % Public API
     methods
         % Constructor
-        function obj = osWindow(figureNo, figureTitle, os, sensor, oi, scene)
+        function obj = osWindow(figureNo, figureTitle, figOrientation, os, sensor, oi, scene)
             
-            obj.init(figureNo, figureTitle); 
+            obj.init(figureNo, figureTitle, figOrientation); 
             
             obj.zoomedInView = 'optical image';
             
@@ -115,7 +121,7 @@ classdef osWindow < handle
             obj.os = os;
             
             % whenever we set a new oi, sensor, we re-generate the different figure handles
-            obj.generateAxesAndControls();
+            obj.generateAxesAndControls(figOrientation);
             obj.initOpticalImageDisplay();
             obj.initSensorViewDisplay();
             obj.initSensorStimulusEncodingDisplay();
@@ -130,7 +136,7 @@ classdef osWindow < handle
             obj.outerSegmentXYTCurrent = osGet(obj.osPrivate, 'ConeCurrentSignal');
             
             % subtract baseline response at t = 0;
-            obj.outerSegmentXYTCurrent = bsxfun(@minus, obj.outerSegmentXYTCurrent, squeeze(obj.outerSegmentXYTCurrent(:,:,1)));
+            %obj.outerSegmentXYTCurrent = bsxfun(@minus, obj.outerSegmentXYTCurrent, squeeze(obj.outerSegmentXYTCurrent(:,:,1)));
             
             % XT response
             obj.outerSegmentXTCurrent  = reshape(obj.outerSegmentXYTCurrent, [size(obj.outerSegmentXYTCurrent,1)*size(obj.outerSegmentXYTCurrent,2), size(obj.outerSegmentXYTCurrent,3)]);
@@ -140,23 +146,32 @@ classdef osWindow < handle
                 errordlg('Overflow in computed OSX current. Use smaller time step', 'Fatal Error');
             end
             
-            obj.outerSegmentDisplayedCurrentRange = [0 max(obj.outerSegmentXYTCurrent(:))];
-            set(obj.minDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(1));
-            set(obj.maxDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(2));
             
             obj.outerSegmentResponseTimeData = (0:size(obj.outerSegmentXYTCurrent,3)-1)/size(obj.outerSegmentXYTCurrent,3)*sensorGet(obj.sensorPrivate, 'total time');
             obj.outerSegmentResponseXpositionData = 1:size(obj.outerSegmentXYTCurrent,2);
             obj.outerSegmentResponseYpositionData = 1:size(obj.outerSegmentXYTCurrent,1);
-            delta = 0.10; sigma = 4.0*delta;
+            delta = 0.05; sigma = 0.21;
             obj.outerSegmentResponseHiResXpositionData = 0:delta:(obj.outerSegmentResponseXpositionData(end)+1);
             obj.outerSegmentResponseHiResYpositionData = 0:delta:(obj.outerSegmentResponseYpositionData(end)+1);
             [X,Y] = meshgrid(delta*(-10:10), delta*(-10:10)); 
-            obj.outerSegmentXYResponseInterpolatingKernel = (exp(-(X/sigma).^2) .* exp(-(Y/sigma).^2)).^0.99;
+            obj.outerSegmentXYResponseInterpolatingKernel = (exp(-(X/sigma).^2) .* exp(-(Y/sigma).^2));
+            obj.outerSegmentXYResponseInterpolatingKernel = obj.outerSegmentXYResponseInterpolatingKernel / max(obj.outerSegmentXYResponseInterpolatingKernel(:));
+            obj.outerSegmentXYResponseInterpolatingKernel(obj.outerSegmentXYResponseInterpolatingKernel < 0.01) = 0;
+            obj.outerSegmentXYResponseInterpolatingKernel = obj.outerSegmentXYResponseInterpolatingKernel.^0.5;
+            
+            
             obj.outerSegmentResponseXYpositionData = 1:size(obj.outerSegmentXYTCurrent,1)*size(obj.outerSegmentXYTCurrent,2);
             
             % XY response helper properties
             [obj.outerSegmentResponseX, obj.outerSegmentResponseY] = meshgrid(obj.outerSegmentResponseXpositionData, obj.outerSegmentResponseYpositionData);
             [obj.outerSegmentResponseHiResX, obj.outerSegmentResponseHiResY] = meshgrid(obj.outerSegmentResponseHiResXpositionData, obj.outerSegmentResponseHiResYpositionData);                 
+        
+            t = find(obj.outerSegmentResponseTimeData > 0.5);
+            minTimIndex = t(1); 
+            obj.outerSegmentDisplayedCurrentRange = [min(min(min(obj.outerSegmentXYTCurrent(:,:,minTimIndex:end)))) max(obj.outerSegmentXYTCurrent(:))];
+            set(obj.minDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(1));
+            set(obj.maxDisplayedReponseSlider, 'Value', obj.outerSegmentDisplayedCurrentRange(2));
+            
         end
         
         function set.sensor(obj, sensor)
@@ -233,18 +248,70 @@ classdef osWindow < handle
             obj.sceneXdata = squeeze(obj.sceneXgrid(1,:));  % x-positions from 1st row
             obj.sceneYdata = squeeze(obj.sceneYgrid(:,1));  % y-positions from 1st col
         end
+        
+        function setCurrentTimeBin(obj, currentTimeBin)
+            set(obj.timeSlider, 'value', currentTimeBin);
+            obj.updateOpticalImageDisplay(currentTimeBin);
+            obj.updateSensorViewDisplay(currentTimeBin);
+            obj.updateOuterSegmentResponseDisplays(currentTimeBin);
+        end
+        
+        function generateVideo(obj, frameStepInMilliseconds, videoFilename)
+            writerObj = VideoWriter(videoFilename, 'MPEG-4'); % H264 format
+            writerObj.FrameRate = 60; 
+            writerObj.Quality = 100;
+            writerObj.open();
+            timeStepInSeconds = obj.outerSegmentResponseTimeData(2)-obj.outerSegmentResponseTimeData(1);
+            step = round(frameStepInMilliseconds/(timeStepInSeconds*1000));
+            for currentTimeBin = 1:step:numel(obj.outerSegmentResponseTimeData)
+                obj.setCurrentTimeBin(currentTimeBin);
+                writerObj.writeVideo(getframe(obj.hFig));
+            end
+            % close video stream and save movie
+            writerObj.close();
+            fprintf('Video exported in %s/%s.\n', pwd,videoFilename);
+        end
+        
+        function resizeWidow(obj, desiredSize)
+            
+            oldPosition = get(obj.hFig,'Position')
+            
+            if (strcmp(obj.figOrientation, 'horizontalLayout'))
+                width = desiredSize;
+                height = width/obj.aspectRatio;
+            else
+                height = desiredSize;
+                width = height*obj.aspectRatio;
+            end
+            
+            set(obj.hFig,'Position',[oldPosition(1) oldPosition(2) width height]);
+        end
     end
         
     methods (Access = private)  
         
-        function init(obj, figureNo, figureTitle)
+        function init(obj, figureNo, figureTitle, figOrientation)
             obj.hFig = figure(figureNo);
+            obj.figOrientation = figOrientation;
             clf(obj.hFig);
-            aspectRatio = 800/1000;
-            screenSize = get(0,'ScreenSize');
-            screenSize(4) = screenSize(4)*0.9;
-            set(obj.hFig, 'Name', figureTitle, 'Menubar', 'none', 'Toolbar', 'none', 'Color', [0.1 0.1 0.1], ...
-                'Position',[10+rand(1,1)*300 10+rand(1,1)*100 screenSize(4)*aspectRatio screenSize(4)]);
+            if (strcmp(obj.figOrientation, 'horizontalLayout'))
+                obj.aspectRatio = 1024/500;
+                screenSize = get(0,'ScreenSize');
+                screenSize(3) = screenSize(3)*0.65;
+            elseif (strcmp(obj.figOrientation, 'verticalLayout'))
+                obj.aspectRatio = 800/1000;
+                screenSize = get(0,'ScreenSize');
+                screenSize(4) = screenSize(4)*0.9;
+            else
+                error('Unknown figure orientation: ''%s''.', figOrientation);
+            end
+            if (strcmp(obj.figOrientation, 'horizontalLayout'))
+                set(obj.hFig, 'Name', figureTitle, 'Menubar', 'none', 'Toolbar', 'none', 'Color', [0.1 0.1 0.1], ...
+                    'Position',[10+rand(1,1)*300 10+rand(1,1)*100 screenSize(3) screenSize(3)/obj.aspectRatio]);
+            else
+                set(obj.hFig, 'Name', figureTitle, 'Menubar', 'none', 'Toolbar', 'none', 'Color', [0.1 0.1 0.1], ...
+                    'Position',[10+rand(1,1)*300 10+rand(1,1)*100 screenSize(4)*obj.aspectRatio screenSize(4)]);
+            end
             %set(obj.hFig,'SizeChangedFcn', {@resizeOSwindow, obj, aspectRatio});
         end
         
@@ -266,7 +333,7 @@ classdef osWindow < handle
             axis(obj.axesStruct.outerSegmentXTresponseAxes, 'ij');
             c = colorbar(obj.axesStruct.outerSegmentXTresponseAxes, 'northoutside');
             set(c, 'Color', [0.5 0.5 0.5], 'FontSize', 9);
-            ylabel(c,'current (uAmps)');
+            ylabel(c,'current (pAmps)');
             colormap(obj.axesStruct.outerSegmentXTresponseAxes, 'bone');
             
             set(obj.axesStruct.outerSegmentXTresponseAxes, ...
@@ -299,7 +366,7 @@ classdef osWindow < handle
                  'XColor', [1 1 1], 'YColor', [1 1 1], 'Color', [0 0 0] ...
                  );
             xlabel(obj.axesStruct.outerSegmentTracesAxes, 'time (seconds)', 'FontSize', 10);
-            ylabel(obj.axesStruct.outerSegmentTracesAxes, 'current (uAmps)', 'FontSize', 10);
+            ylabel(obj.axesStruct.outerSegmentTracesAxes, 'current (pAmps)', 'FontSize', 10);
             set(obj.axesStruct.outerSegmentTracesAxes, 'FontSize', 10);
             
             % The XY plot
@@ -311,6 +378,7 @@ classdef osWindow < handle
                          'YData', obj.outerSegmentResponseHiResYpositionData, ..., 
                          'CData', obj.outerSegmentSpatiallyInterpolated2DResponseMap, ...
                          'parent', obj.axesStruct.outerSegmentXYresponseAxes);
+
             hold(obj.axesStruct.outerSegmentXYresponseAxes, 'on');
             plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(bestLconeSensorColPosition), obj.outerSegmentResponseYpositionData(bestLconeSensorRowPosition), 'ro');
             plot(obj.axesStruct.outerSegmentXYresponseAxes, obj.outerSegmentResponseXpositionData(bestMconeSensorColPosition), obj.outerSegmentResponseYpositionData(bestMconeSensorRowPosition), 'go');
@@ -325,7 +393,7 @@ classdef osWindow < handle
             axis(obj.axesStruct.outerSegmentXYresponseAxes,'ij'); axis(obj.axesStruct.outerSegmentXYresponseAxes,'equal');
             axis(obj.axesStruct.outerSegmentXYresponseAxes, 'off');
             set(obj.axesStruct.outerSegmentXYresponseAxes, 'FontSize', 10, 'XTick', [], 'YTick', []);
-            colormap(obj.axesStruct.outerSegmentXYresponseAxes, 'bone');
+            colormap(obj.axesStruct.outerSegmentXYresponseAxes, bone(1024));
             title(obj.axesStruct.outerSegmentXYresponseAxes, sprintf('t = %2.3f msec', 1000.0*obj.outerSegmentResponseTimeData(positionIndex)), 'Color', [0.9 0.7 0.1], 'FontSize', 12);
         end
         
@@ -469,11 +537,23 @@ classdef osWindow < handle
             [bestSconeSensorRowPosition, bestSconeSensorColPosition] = ind2sub(size(coneTypes), sConeIndex);
         end
         
-        function computeSpatiallyInterpolatedOuterSegment2DResponseMap(obj, kPos)  
+        function computeSpatiallyInterpolatedOuterSegment2DResponseMap(obj, kPos)
+            
+            delta = obj.outerSegmentResponseHiResXpositionData(2)-obj.outerSegmentResponseHiResXpositionData(1); stepSize = round(1.0/delta);
+            % get instant XY slice
+            instantActivation = squeeze(obj.outerSegmentXYTCurrent(:,:,kPos));
+            % normalize to [0 .. 1]
+            minActivation = min(instantActivation(:))+0.01; maxActivation = max(instantActivation(:));
+            instantActivation = (instantActivation-minActivation)/(maxActivation-minActivation);
+            % fill zero padded array
             obj.outerSegmentSpatiallyInterpolated2DResponseMap = zeros(numel(obj.outerSegmentResponseHiResYpositionData), numel(obj.outerSegmentResponseHiResXpositionData));
-            delta = obj.outerSegmentResponseHiResXpositionData(2)-obj.outerSegmentResponseHiResXpositionData(1); step = round(1.0/delta);
-            obj.outerSegmentSpatiallyInterpolated2DResponseMap(1+(1:size(obj.outerSegmentXYTCurrent,1))*step, 1+(1:size(obj.outerSegmentXYTCurrent,2))*step) = squeeze(obj.outerSegmentXYTCurrent(:,:,kPos));
+            obj.outerSegmentSpatiallyInterpolated2DResponseMap(1 + (1:size(obj.outerSegmentXYTCurrent,1))*stepSize, 1+(1:size(obj.outerSegmentXYTCurrent,2))*stepSize) = instantActivation;
+            % interpolate via convolution
             obj.outerSegmentSpatiallyInterpolated2DResponseMap = conv2(obj.outerSegmentSpatiallyInterpolated2DResponseMap, obj.outerSegmentXYResponseInterpolatingKernel, 'same');
+            indices = find(abs(obj.outerSegmentSpatiallyInterpolated2DResponseMap - obj.outerSegmentSpatiallyInterpolated2DResponseMap(1,1))< 100*eps);
+            % scale back to original scale
+            obj.outerSegmentSpatiallyInterpolated2DResponseMap = obj.outerSegmentSpatiallyInterpolated2DResponseMap * (maxActivation-minActivation) + minActivation;
+            obj.outerSegmentSpatiallyInterpolated2DResponseMap(indices) = obj.outerSegmentDisplayedCurrentRange(1)-1;
         end
         
         function initOpticalImageDisplay(obj)  
@@ -509,35 +589,68 @@ classdef osWindow < handle
             set(obj.outerSegmentOverlayPlots.p7, 'YData', obj.outerSegmentDisplayedCurrentRange);
         end
 
-        function generateAxesAndControls(obj)  
-            w = 800;
-            h = 1000;
+        function generateAxesAndControls(obj, figOrientation) 
+            if (strcmp(figOrientation, 'horizontalLayout'))
+                w = 1024;
+                h = 500;
+            else
+                w = 800;
+                h = 1000;
+            end
             imageWidthToHeightRatio = size(obj.opticalImageRGBrendering,2) / size(obj.opticalImageRGBrendering,1);
             
             leftMargin = 5/w;
-            opticalImageWidth  = (w-10)/w;
-            opticalImageHeight = (w-10)/imageWidthToHeightRatio/h;
-            bottomMargin = (h-10)/h - opticalImageHeight + 5/h;
-    
+            
+            
+            if (strcmp(figOrientation, 'horizontalLayout'))
+                opticalImageWidth  = (w*0.6-10)/w;
+                opticalImageHeight = (w*0.6-10)/imageWidthToHeightRatio/h;
+                
+                sensorViewWidth = 150/w; sensorViewHeight = 150/h; 
+                spatiotemporalViewWidth = 380/w; spatiotemporalViewHeight = 150/h;
+                spatialViewWidth  = 150/w; spatialViewHeight = 150/h; 
+                
+                xLeft = 7*leftMargin + opticalImageWidth;
+                xLeft2 = xLeft;
+                xLeft3 = xLeft2 + 130/w;
+                bottomMargin1 = (h-10)/h - opticalImageHeight + 5/h;
+                bottomMargin2 = (h-0)/h;
+                bottomMargin3 = (h-10)/h - opticalImageHeight/2 -1.5*spatiotemporalViewHeight+120/h;
+                bottomMargin4 = (h-10)/h - opticalImageHeight/2 -1.5*spatiotemporalViewHeight+15/h;
+            else
+                opticalImageWidth  = (w-10)/w;
+                opticalImageHeight = (w-10)/imageWidthToHeightRatio/h;
+                
+                sensorViewWidth = 200/w; sensorViewHeight = 200/h; 
+                spatiotemporalViewWidth = 500/w; spatiotemporalViewHeight = 200/h;
+                spatialViewWidth  = 200/w; spatialViewHeight = 200/h; 
+                
+                xLeft = 9*leftMargin;
+                xLeft2 = xLeft + 30/w + spatiotemporalViewWidth;
+                xLeft3 = xLeft2;
+                bottomMargin1 = (h-10)/h - opticalImageHeight + 5/h;
+                bottomMargin2 = bottomMargin1;
+                bottomMargin3 = bottomMargin1;
+                bottomMargin4 = bottomMargin3-1.5*spatiotemporalViewHeight-25/h;
+            end
+            
             % generate plot axes
-            sensorViewWidth = 200/w; sensorViewHeight = 200/h; 
-            spatiotemporalViewWidth = 500/w; spatiotemporalViewHeight = 200/h;
-            spatialViewWidth  = 200/w; spatialViewHeight = 200/h;
-            obj.axesStruct.opticalImageAxes = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin bottomMargin opticalImageWidth opticalImageHeight], 'Color', [0 0 0]);
-            obj.axesStruct.sensorViewAxes   = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin+20/w bottomMargin+20/h sensorViewWidth sensorViewHeight], 'Color', [0 0 0]);
+            obj.axesStruct.opticalImageAxes = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin bottomMargin1 opticalImageWidth opticalImageHeight], 'Color', [0 0 0]);
+            obj.axesStruct.sensorViewAxes   = axes('parent',obj.hFig,'unit','normalized','position',[leftMargin+20/w bottomMargin1+20/h sensorViewWidth sensorViewHeight], 'Color', [0 0 0]);
+
             
             % generate response axes
-            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-spatiotemporalViewHeight-10/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
-            obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[9*leftMargin bottomMargin-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
+            obj.axesStruct.outerSegmentXTresponseAxes = axes('parent',obj.hFig, 'unit','normalized','position',[xLeft bottomMargin2-spatiotemporalViewHeight-10/h     spatiotemporalViewWidth spatiotemporalViewHeight], 'Color', [0 0 0]);
+            obj.axesStruct.outerSegmentTracesAxes = axes('parent',    obj.hFig, 'unit','normalized','position',[xLeft bottomMargin2-1.5*spatiotemporalViewHeight-25/h spatiotemporalViewWidth spatiotemporalViewHeight/2], 'Color', [0 0 0]);
             
             % generate 2D instantaneous response axes
-            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth bottomMargin-1.5*spatiotemporalViewHeight-25/h spatialViewWidth spatialViewHeight];
+            positionVector = [xLeft2 bottomMargin4 spatialViewWidth spatialViewHeight];
             obj.axesStruct.outerSegmentXYresponseAxes = axes('parent',obj.hFig,'unit','normalized','position', positionVector, 'Color', [0 0 0]);
             
             % generate the optical image/scene textedit
             sensorViewColor = [0.7 0.7 0.6];
             %positionVector = [5*leftMargin+67/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+60/h 0.20 0.020];
-            positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+59/h 0.17 0.020];
+            positionVector = [xLeft3+50/w bottomMargin3-0.5*spatialViewHeight+59/h 80/w 0.020];
             obj.sensorViewText = uicontrol(...
                 'Parent', obj.hFig,...
                 'String', sprintf('sensorView: opt.image'), ...
@@ -551,7 +664,7 @@ classdef osWindow < handle
                 'Position', positionVector);
             
             % generate the optical image/scene slider
-            positionVector = [5*leftMargin+106/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+(60-3)/h 0.08 0.02];
+            positionVector = [xLeft3+135/w bottomMargin3-0.5*spatialViewHeight+57/h w/10000 0.02];
             obj.sensorViewSlider = uicontrol(...
                 'Parent', obj.hFig,...
                 'Style', 'slider',...
@@ -565,10 +678,10 @@ classdef osWindow < handle
             
             % generate the min and max displayed response editboxes
             displayedResponseRangeColor = [0.4 0.45 0.5]; 
-            positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+8/h 0.10 0.020];
+            positionVector = [xLeft3+50/w bottomMargin3-0.5*spatialViewHeight+8/1000 80/w 0.020];
             uicontrol(...
                 'Parent', obj.hFig,...
-                'String', sprintf('max. uAmps'), ...
+                'String', sprintf('max. pAmps'), ...
                 'Style', 'edit',...
                 'BackgroundColor', [0.1 0.1 0.1], ...
                 'ForegroundColor', displayedResponseRangeColor, ...
@@ -578,10 +691,10 @@ classdef osWindow < handle
                 'Units', 'normalized',...
                 'Position', positionVector);
             
-            positionVector = [5*leftMargin+45/w+spatiotemporalViewWidth bottomMargin-0.5*spatialViewHeight+28/h 0.10 0.020];
+            positionVector = [xLeft3+50/w bottomMargin3-0.5*spatialViewHeight+28/1000 80/w 0.020];
             uicontrol(...
                 'Parent', obj.hFig,...
-                'String', sprintf('min. uAmps'), ...
+                'String', sprintf('min. pAmps'), ...
                 'Style', 'edit',...
                 'BackgroundColor', [0.1 0.1 0.1], ...
                 'ForegroundColor',  displayedResponseRangeColor, ...
@@ -591,12 +704,12 @@ classdef osWindow < handle
                 'Units', 'normalized',...
                 'Position', positionVector);
             
-            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+25/h 0.15 0.02];
+            positionVector = [xLeft3+135/w bottomMargin3-0.5*spatialViewHeight+25/1000 w/10000 0.02];
             obj.minDisplayedReponseSlider = uicontrol(...
                 'Parent', obj.hFig,...
                 'Style', 'slider',...
                 'BackgroundColor',  displayedResponseRangeColor, ...
-                'Min', -200, 'Max', 300, 'Value', 0,...
+                'Min', -300, 'Max', 0, 'Value', -100,...
                 'Units', 'normalized',...
                 'Position', positionVector);   
             % set the slider's callback function
@@ -604,12 +717,12 @@ classdef osWindow < handle
                                       @(hFigure,eventdata) minDisplayedResponseSliderCallback(obj.minDisplayedReponseSlider,eventdata, obj));
             
                                   
-            positionVector = [5*leftMargin+50/w+spatiotemporalViewWidth+0.1 bottomMargin-0.5*spatialViewHeight+5/h 0.15 0.02];
+            positionVector = [xLeft3+135/w bottomMargin3-0.5*spatialViewHeight+5/1000 w/10000 0.02];
             obj.maxDisplayedReponseSlider = uicontrol(...
                 'Parent', obj.hFig,...
                 'Style', 'slider',...
                 'BackgroundColor',  displayedResponseRangeColor, ...
-                'Min', -200, 'Max', 300, 'Value', 100,...
+                'Min', -80, 'Max', 100, 'Value', 0,...
                 'Units', 'normalized',...
                 'Position', positionVector);   
             % set the slider's callback function
@@ -663,6 +776,7 @@ function timeSliderCallback(hObject,eventdata, obj)
     obj.updateSensorViewDisplay(currentTimeBin);
     obj.updateOuterSegmentResponseDisplays(currentTimeBin);
 end
+
 
 % Callback for minDisplayedResponseSlider
 function minDisplayedResponseSliderCallback(hObject,eventdata, obj)
