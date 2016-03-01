@@ -4,26 +4,29 @@ function scene = sceneSpatialResample(scene,dx,units,method)
 %   scene = spatialResample(scene,dx,'units','method')
 %
 % scene:   ISET scene
-% dx:      New sample distance.  Default is meters, but you can specify units
+% dx:      New sample spacing
+% units:   Sample spatial units (e.g., 'um','mm', default = 'm')
 % method:  linear, cubic or spline interpolation (default = 'linear')
 %
 % Example:
-%  scene = sceneCreate; scene = sceneSet(scene,'fov',1);
+%  scene = sceneCreate; scene = sceneSet(scene,'fov',3);
 %  ieAddObject(scene); sceneWindow;
 %
-%  scene = sceneSpatialResample(scene,1e-4);
+%  scene = sceneSpatialResample(scene,100,'um');
 %  ieAddObject(scene); sceneWindow;
 %
 % See also: sceneSpatialSupport, oiSpatialResample
 %
-% Copyright Imageval Consulting, LLC 2016
+% BW Copyright ISETBIO Team, 2016
 
 %% Set up parameters
-if ieNotDefined('scene'),  error('scene required'); end
-if ieNotDefined('units'),  units  = 'm'; end
-if ieNotDefined('method'), method = 'linear'; end
+if notDefined('scene'),  error('scene required'); end
+if notDefined('units'),  units  = 'm'; end
+if notDefined('method'), method = 'linear'; end
 % Always work in meters
 dx = dx/ieUnitScaleFactor(units);
+
+mLum = sceneGet(scene,'mean luminance');
 
 % Find the spatial support of the current scene, and its max/min
 ss = sceneSpatialSupport(scene,'meters');   % x and y spatial support
@@ -67,6 +70,9 @@ scene = sceneSet(scene,'name',sprintf('%s-%s',n,method));
 sr    = sceneGet(scene,'spatial resolution');
 fov   = sceneGet(scene,'fov');
 scene = sceneSet(scene,'fov',fov*dx/sr(2));
+
+% The spatial resampling can have a small effect
+scene = sceneSet(scene,'mean luminance',mLum);
 
 end
     
