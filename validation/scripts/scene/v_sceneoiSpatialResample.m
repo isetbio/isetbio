@@ -24,19 +24,19 @@ function ValidationFunction(runTimeParams)
     
     % Get the luminance map of the original scene
     originalResolution = sceneGet(scene, 'spatial resolution', 'um');
-    fprintf('Original scene resolution: [%2.2f, %2.2f] microns\n', originalResolution(1), originalResolution(2));
+    %fprintf('Original scene resolution: [%2.2f, %2.2f] microns\n', originalResolution(1), originalResolution(2));
     
     %% Resample scene
     dx = 50;
     sceneResampled = sceneSpatialResample(scene,dx,'um');
     resampledResolution = sceneGet(sceneResampled , 'spatial resolution', 'um');
-    fprintf('Resampled scene resolution: [%2.2f, %2.2f] microns\n', resampledResolution(1), resampledResolution(2));
+    %fprintf('Resampled scene resolution: [%2.2f, %2.2f] microns\n', resampledResolution(1), resampledResolution(2));
     
 
     %% Internal validation #1 - deviation in resolution
     tolerance = 1E-4;
     quantityOfInterest = max(abs(resampledResolution - dx*[1 1]));
-    UnitTest.assertIsZero(quantityOfInterest,'Resampled scene resolution matches desired resolution',tolerance);
+    UnitTest.assertIsZero(quantityOfInterest,'Resampled scene resolution - desired resolution',tolerance);
     
         
     %% Internal validation #2 - deviation in luminance
@@ -93,7 +93,7 @@ function ValidationFunction(runTimeParams)
     %% Internal validation #3 - deviation in resolution (optical image)
     tolerance = 1E-3;
     quantityOfInterest = max(abs(resampledResolution - dx*[1 1]));
-    UnitTest.assertIsZero(quantityOfInterest,'Resampled optical image resolution matches desired resolution',tolerance);
+    UnitTest.assertIsZero(quantityOfInterest,'Resampled optical image - desired resolution',tolerance);
    
     %% Internal validation #4 - deviation in luminance (optical image)
     [xPositionsOriginal, illuminanceProfileOriginal] = getProfile(oi, 0.75, 'oi', 'illuminance');
