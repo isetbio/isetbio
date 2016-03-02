@@ -1,4 +1,4 @@
-function rgcMovieWave(obj)
+function irMovieWave(obj)
 % 
 % Generates a movie of the spikes in a mosaic of an inner retina object.
 % 
@@ -38,6 +38,18 @@ zfac = .002;
 % Find max positions
 allpos = vertcat(obj.mosaic{cellTypeInd}.cellLocation{:});
 maxx = max(allpos(:,1))/1; maxy = max(allpos(:,2))/10;
+
+    
+spatialRFcontours= plotContours(obj.mosaic{cellTypeInd});
+
+
+% spatialRFcontoursMosaic = spatialRFcontours{:,:,1,cellTypeInd};
+% spatialRFcontoursMosaicArr = horzcat(spatialRFcontoursMosaic{:,:,1});
+
+% hold on;
+% plot3(spatialRFcontoursMosaicArr(1,:)-maxx/2,(t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontoursMosaicArr(1,:))), spatialRFcontoursMosaicArr(2,:)-10*maxy/2,'r','linewidth',2)
+    
+
 
 % Set frame subsampling number
 frameskip= 20;
@@ -109,10 +121,12 @@ for t = 1:frameskip:5750
                 end%xc2
                 
             end%if length
+            plot3((spatialRFcontours{xc,yc,1}(1,2:end))-maxx/2,...
+                (t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontours{xc,yc,1}(1,2:end))),...
+                (spatialRFcontours{xc,yc,1}(2,2:end))-10*maxy/2,'color',colorval);%,...
             
         end%yc
     end%xc
-    
     % Label axes
     xlabel(sprintf('x position (\\mum)')); ylabel('time (sec)'); zlabel(sprintf('y position (\\mum)'));
     set(gca,'fontsize',18);
