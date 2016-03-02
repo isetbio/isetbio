@@ -71,6 +71,7 @@ p.parse(varargin{:}); params = p.Results;
 
 mosaicType = params.type;
 
+% Parse mosaic type to allow for entering a number or a string
 if ~isempty(mosaicType) && ischar(mosaicType)
     for cellTypeInd = 1:length(obj.mosaic)
         if strcmp(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),ieParamFormat(mosaicType))
@@ -89,7 +90,7 @@ cell = params.cell;
 %% Set key-value pairs
 switch ieParamFormat(params.what)
     case{'ecc'}
-        
+        %%% The temporal equivalent eccentricity of the retinal patch
         plotPatchEccentricity(obj.eyeAngle, obj.eyeRadius, obj.eyeSide, obj.temporalEquivEcc)
         
     case{'mosaic'}
@@ -497,7 +498,8 @@ switch ieParamFormat(params.what)
             numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
             
             vcNewGraphWin([],'upperleftbig');
-            % set(gcf,'position',[1000  540 893  798]);
+            % set(gcf,'position',[1000  540 893  798]);            
+            set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
             cellCtr = 0; cellCtr2 = 0;
             clear psth tsp mtsp
             
@@ -545,7 +547,7 @@ switch ieParamFormat(params.what)
                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
                         end
                         %                         axis([0 5000 0 numberTrials]);
-                        xlabel('Time (sec)'); ylabel('Trial Number');
+                        xlabel('Time (sec)'); ylabel('Trial');
                         %                         set(gca,'fontsize',16);
                         % end;
                     end%trials;
@@ -554,8 +556,10 @@ switch ieParamFormat(params.what)
                     axis([0 70*dt 0 maxTrials]);
                     
                     
+                    title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
                 end
             end
+            
             % suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
         end
         
@@ -582,6 +586,7 @@ switch ieParamFormat(params.what)
             vcNewGraphWin([],'upperleftbig');
             
             % set(gcf,'position',[1000  540 893  798]);
+            set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
             cellCtr = 0;
             clear psth tsp mtsp
             
@@ -629,27 +634,29 @@ switch ieParamFormat(params.what)
                     
                     xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
                     
+                    
+                    
+                    
+                    
                     %                     plot(tt/.01,psth{xcell,ycell});
                     %                     if ~isnan(psth{xcell,ycell})
                     axis([0 .7 0 max(PSTH_rec)]);
                     %                     end
                     %
-                    
+                    title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
                 end
             end
-            
-            %             maxVal = max(vertcat(psth{:}));
-            %             axesHandles = get(gcf,'children');
-            %             if isnan(maxVal), maxVal = 0.00001; end;
-            %             axis(axesHandles,[0 30 0 maxVal])
-            %             clear axesHandles;
-            if exist('suptitle','file')
-                suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
-            else
-                title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
-            end
         end
+        
+%             maxVal = max(vertcat(psth{:}));
+%             axesHandles = get(gcf,'children');
+%             if isnan(maxVal), maxVal = 0.00001; end;
+%             axis(axesHandles,[0 30 0 maxVal])
+%             clear axesHandles;
+%             if exist('suptitle','file')
+%                 suptitle(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+%             else
+%                 title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType));
+%             end
 end
-
-return;
 

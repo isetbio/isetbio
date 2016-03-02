@@ -67,7 +67,7 @@ for xc = 1:nX
         strf = repmat(sRF,[1 1 nFramesRF]).*repmat(tRF, [nPixX, nPixY, 1]);
         
         % Get the appropriate spike data
-        spPlot=innerRetina.mosaic{cellTypeInd}.spikeResponse{xc,yc,1,1};
+        spPlot=innerRetina.mosaic{cellTypeInd}.spikeResponse{xc,yc,5,1};
         % spPlot=(median(horzcat(innerRetina.mosaic{3}.spikeResponse{xc,yc,:,2})'));
         
         % Add the STRF to the stimulus reconstruction for each spike
@@ -85,9 +85,14 @@ case{'otherwise'}
     error('Model does not exist');
 end
 
+maxR = max(stimulusReconstruction(:));
+minR = min(stimulusReconstruction(:));
+
 % Play the movie
 for iFrame = 1:size(stimulusReconstruction,3)
     imagesc(stimulusReconstruction(:,:,iFrame));
+    colormap gray
+    caxis([minR maxR]);
     pause(0.1);
 end
 
