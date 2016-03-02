@@ -19,7 +19,7 @@ ieInit
 
 % Initialize RDT
 rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
+rdt.crp('/resources/data/rgc');
 
 % Read the artifact containing a description of the cone mosaic
 % (coneMosaic) and the biophysical properties of the outer segment (os).
@@ -108,7 +108,8 @@ irPlot(innerRetina, 'raster');
 % irPlot(innerRetina,'psth','type','onParasol','cell',[1 1]);
 % 
 % Create a movie of the response
-% rgcMovie(rgc1, os);
-% rgcMovieWave;
+% irMovieWave(innerRetina);
+%
+% In progress:  irMovie(rgc1, os);
 
 %%

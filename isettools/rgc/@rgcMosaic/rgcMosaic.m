@@ -1,7 +1,7 @@
 classdef rgcMosaic < handle
 %% Define the rgcMosaic parent class to store a mosaic of cells with a type and model
 %
-% This parent class is called when creating a new rgcMosaic from an inner
+% This class is called when creating a new rgcMosaic from an inner
 % retina object.  Typically we get here from rgcMosaicCreate with the call:
 % 
 %      mosaicLinear = rgcMosaicLinear(ir, mosaicType);
