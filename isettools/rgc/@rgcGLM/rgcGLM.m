@@ -1,5 +1,5 @@
 classdef rgcGLM < rgcMosaic
-% rgcMosaic cell type with a GLM (coupled-nonlinear)computational model
+% rgcMosaic cell type with a GLM (coupled-nonlinear) computational model
 %
 % The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
 % Litke, Chichilnisky & Simoncelli, Nature (2008).% The computational model

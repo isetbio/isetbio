@@ -22,14 +22,11 @@ function obj = mosaicSet(obj, varargin)
 %         'couplingFilter',...  - coupling filters time course
 %         'couplingMatrix',...  - weights on coupling filters for other cells
 %         'generatorFunction',..- the nonlinear function
-%         'linearResponse',...  - linear response of all cells
-%         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
+%         'responseLinear',...  - linear response of all cells
 %         'numberTrials',...    - number of trials for spike response
-%         'spikeResponse',...   - average waveform over N trials including
+%         'responseSpikes',...   - average waveform over N trials including
 %                                   post-spike and coupling filter effects
-%         'rasterResponse',...  - spike rasters of all cells from N trials
-%         'psthResponse'...     - peristimulus time histogram responses of all cells 
-% 
+%         'responseVoltage',... - the voltage waveform used for coupling 
 % 
 % Examples:
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
@@ -47,7 +44,7 @@ function obj = mosaicSet(obj, varargin)
 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
@@ -61,16 +58,15 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
-    'linearResponse',...
+    'responseLinear',...
     'generatorFunction',...
     'nlResponse',...
     'numberTrials',...
-    'spikeResponse',...  
+    'responseSpikes',...     
+    'responseVoltage',...
     'postSpikeFilter',...
     'couplingFilter',...
-    'couplingMatrix',...
-    'rasterResponse',...
-    'psthResponse'...
+    'couplingMatrix'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -110,36 +106,34 @@ switch lower(params.what)
         obj.tCenter = params.value;
     case{'tsurround'}
         obj.tSurround = params.value;
-    case{'linearresponse'}
-        obj.linearResponse = params.value;
+    case{'responselinear'}
+        obj.responseLinear = params.value;
     case{'generatorfunction'}
         obj.generatorFunction = params.value;        
-    case{'nlresponse'}        
-        obj.nlResponse = params.value;
+%     case{'nlresponse'}        
+%         obj.nlResponse = params.value;
     case{'numbertrials'}
         obj.numberTrials = params.value;
-    case{'spikeresponse'}
+    case{'responsespikes'}
 %         obj.spikeResponse = params.value; 
-        nT = size(obj.spikeResponse,3);        
+        nT = size(obj.responseSpikes,3);        
         [sz1,sz2,nTrials,nType] = size(params.value);
 %         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
-        if nT == 1 & isempty(obj.spikeResponse); nT = 0; end; 
+        if nT == 1 & isempty(obj.responseSpikes); nT = 0; end; 
         for xc = 1:sz1
             for yc = 1:sz2
                 for nTypeI = 1:nType
-                    obj.spikeResponse{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+                    obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
                 end
             end
         end
+    case{'responsevoltage'}
+        obj.responseVoltage = params.value;
     case{'postspikefilter'}
         obj.postSpikeFilter = params.value;
     case{'couplingfilter'}
         obj.couplingFilter = params.value;
     case{'couplingmatrix'}
         obj.couplingMatrix = params.value;
-    case{'rasterresponse'}
-        obj.rasterResponse = params.value;
-    case{'psthresponse'}
-        obj.psthResponse = params.value;
 end
 

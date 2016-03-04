@@ -53,7 +53,7 @@ properties (SetAccess = protected, GetAccess = public)
     tCenter;            % temporal impulse response of the center
     tSurround;          %    and of the surround (1 ms timing by default)
     rfDiaMagnitude;     % for making movies of response
-    linearResponse;     % Store the linear response after convolution
+    responseLinear;     % Store the linear response after convolution
 end
 
 % Private properties. Only methods of the parent class can set these

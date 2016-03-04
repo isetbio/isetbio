@@ -20,14 +20,11 @@ function obj = mosaicSet(obj, varargin)
 %         'tSurround',...       - surround temopral impulse response
 %         'postSpikeFilter',... - post-spike filter time course
 %         'generatorFunction',..- the nonlinear function
-%         'linearResponse',...  - linear response of all cells
-%         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
+%         'responseLinear',...  - linear response of all cells
 %         'numberTrials',...    - number of trials for spike response
-%         'spikeResponse',...   - average waveform over N trials including
+%         'responseSpikes',...  - average waveform over N trials including
 %                                   post-spike and coupling filter effects
-%         'rasterResponse',...  - spike rasters of all cells from N trials
-%         'psthResponse'...     - peristimulus time histogram responses of all cells 
-% 
+%         'responseVoltage',... - the voltage waveform used for coupling 
 % 
 % Examples:
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
@@ -37,16 +34,12 @@ function obj = mosaicSet(obj, varargin)
 % 
 % 9/2015 JRG 
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-
 % % % We could do set using the superclass method
 % obj = mosaicSet@rgcMosaic(obj, varargin{:});
 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
@@ -60,11 +53,12 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
-    'linearResponse',...
+    'responseLinear',...
     'generatorFunction',...
     'nlResponse',...
     'numberTrials'...
-    'spikeResponse',...    
+    'responseSpikes',...  
+    'responseVoltage',...
     'rasterResponse',...
     'psthResponse'...
     };
@@ -106,19 +100,26 @@ switch lower(params.what)
         obj.tCenter = params.value;
     case{'tsurround'}
         obj.tSurround = params.value;
-    case{'linearresponse'}
-        obj.linearResponse = params.value;
+    case{'responselinear'}
+        obj.responseLinear = params.value;
     case{'generatorfunction'}
-        obj.generatorFunction = params.value;        
-    case{'nlresponse'}        
-        obj.nlResponse = params.value;
+        obj.generatorFunction = params.value;       
     case{'numbertrials'}
         obj.numberTrials = params.value;
-    case{'spikeresponse'}
-        obj.spikeResponse = params.value;
-    case{'rasterresponse'}
-        obj.rasterResponse = params.value;
-    case{'psthresponse'}
-        obj.psthResponse = params.value;
+    case{'responsespikes'}
+%         obj.spikeResponse = params.value; 
+        nT = size(obj.responseSpikes,3);        
+        [sz1,sz2,nTrials,nType] = size(params.value);
+%         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
+        if nT == 1 & isempty(obj.responseSpikes); nT = 0; end; 
+        for xc = 1:sz1
+            for yc = 1:sz2
+                for nTypeI = 1:nType
+                    obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+                end
+            end
+        end      
+    case{'responsevoltage'}
+        obj.responseSpikes = params.value;
 end
 

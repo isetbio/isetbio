@@ -50,7 +50,7 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
-    'linearResponse'...
+    'responseLinear'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -90,8 +90,8 @@ switch lower(params.what)
         obj.tCenter = params.value;
     case{'tsurround'}
         obj.tSurround = params.value;
-    case{'linearresponse'}
-        obj.linearResponse = params.value;
+    case{'responselinear'}
+        obj.responseLinear = params.value;
         
 end
 

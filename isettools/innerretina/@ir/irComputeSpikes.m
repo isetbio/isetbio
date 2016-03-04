@@ -25,16 +25,16 @@ function ir = irComputeSpikes(ir, varargin)
 for ii = 1:length(ir.mosaic)
     
     switch class(ir.mosaic{ii})
-        case 'rgcGLM'
+        case {'rgcGLM','rgcSubunit'}
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
-            spikeResponse = computeSpikesGLM(ir.mosaic{ii,1});
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'spikeResponse', spikeResponse);
+            responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             
         case 'rgcLNP'
             % Call another version of the Pillow code for spike response
-            spikeResponse = computeSpikesPSF(ir.mosaic{ii});
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'spikeResponse', spikeResponse);
+            responseSpikes = computeSpikesPSF(ir.mosaic{ii});
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             
         otherwise
             error('The rgcMosaic object is a model without a spike response; choose LNP or GLM for spikes.');

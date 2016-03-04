@@ -59,7 +59,7 @@ figure; set(gcf,'position',[160 60 1070 740]);
 hold on;
 
 % Gets the size of the cell mosaic
-[nX,nY,~] = size(ir.mosaic{whichMosaic}.linearResponse);
+[nX,nY,~] = size(ir.mosaic{whichMosaic}.responseLinear);
 % nX = nX + nXi;
 % nY = nY = nYi;
 
@@ -91,8 +91,8 @@ for t = 1:frameskip:5750
             % Get the appropriate spike data
             trial = 1;     % Which of the repeated trials ...
             sigType = 2;   % 1 is spikes, 2 is voltage
-            spPlot=ir.mosaic{whichMosaic}.spikeResponse{xc,yc,trial,sigType}(t:t+1000);
-            % spPlot=(median(horzcat(obj.mosaic{3}.spikeResponse{xc,yc,:,2})'));
+            spPlot=ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,sigType}(t:t+1000);
+            % spPlot=(median(horzcat(obj.mosaic{3}.responseSpikes{xc,yc,:,2})'));
             
             % Get the time values
             t1 = flipud((1:length(spPlot))');
@@ -116,12 +116,12 @@ for t = 1:frameskip:5750
             % Plot the spike activity transmitted by lateral connections
             % Find spikes in this temporal window
             % Get spike times for this cell
-            spTimes = 100*ir.mosaic{whichMosaic}.spikeResponse{xc,yc,1,1};
+            spTimes = 100*ir.mosaic{whichMosaic}.responseSpikes{xc,yc,1,1};
             % Check if any fall in the temporal window
             spFind = find(spTimes >= t+1000 & spTimes < t+1000+frameskip, 1);
             
             % If there are spikes, plot them on lateral connections
-            if ~isempty(spFind)
+            if ~isempty(spFind) %&& isa(ir,'rgcGLM')
                 % Check which other cells are connected to the cell of
                 % interest
                 for xc2 = 1:nX

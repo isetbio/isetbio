@@ -51,7 +51,8 @@ osType = class(outerSegment);
 % Switch on type of os object
 switch osType
     case 'osIdentity'
-        %% Identity means straight from the frame buffer to brain                
+        %% Identity means straight from the frame buffer to brain   
+        % Find properties that haven't been set and set them
         if isempty(osGet(outerSegment,'rgbData'))
             outerSegment = osSet(outerSegment, 'rgbData', rand(64,64,5));
         end        
@@ -61,6 +62,8 @@ switch osType
         if isempty(osGet(outerSegment,'coneSampling'))
             outerSegment = osSet(outerSegment,'coneSampling',.01);
         end
+        
+        % Run irCreate again?
         
         spTempStim = osGet(outerSegment, 'rgbData');
         
@@ -82,19 +85,38 @@ switch osType
             % Space.
             [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);
             
+            % For the subunit model, put each pixel "subunit" of spatial RF
+            % through nonlinearity at this point
+%             if isa(ir.mosaic{rgcType},'rgcSubunit')
+%                 % Change this to get generator function
+% %                 spResponseCenter = exp(spResponseCenter);
+%                  %                 spResponseSurround = exp(spResponseSurround);
+%                  
+%                  [sz1,sz2] = size(ir.mosaic{rgcType});
+%                  %         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
+%                  
+%                  for xc = 1:sz1
+%                      for yc = 1:sz2
+%                          for nTypeI = 1:nType
+%                              obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+%                          end
+%                      end
+%                  end
+%             end
+            
             % Time. Convolve with the temporal impulse response
             [fullResponse, nlResponse] = ...
                 fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
 
-            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'linearResponse', fullResponse);
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', fullResponse);
             
             % Set the nonlinear response for every rgc subclass except rgcLinear
-            switch class(ir.mosaic{rgcType})
-                case 'rgcLinear'
-                    % No nonlinear response
-                otherwise
-                    ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
-            end
+%             switch class(ir.mosaic{rgcType})
+%                 case 'rgcLinear'
+%                     % No nonlinear response
+%                 otherwise
+%                     ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
+%             end
             clear fullResponse nlResponse spResponseCenter spResponseSurround
         end
         

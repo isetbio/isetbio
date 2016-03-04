@@ -17,7 +17,7 @@ function val = mosaicGet(obj, varargin)
 %         'sRFsurround',...     - surround spatial RF surfaces
 %         'tCenter',...         - center temporal impulse response
 %         'tSurround',...       - surround temopral impulse response
-%         'linearResponse',...  - linear response of all cells
+%         'responseLinear',...  - linear response of all cells
 % 
 % 
 % Examples:
@@ -54,7 +54,7 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
-    'linearResponse'...
+    'responseLinear'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -93,7 +93,7 @@ switch lower(params.what)
         val = obj.tCenter;
     case{'tsurround'}
         val = obj.tSurround;
-    case{'linearresponse'}
+    case{'responselinear'}
         val = obj.linearResponse;
         
 end

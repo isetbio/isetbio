@@ -74,13 +74,13 @@ innerRetina = irCreate(os, 'name','Macaque inner retina');
 % innerRetina.mosaicCreate('model','glm','type','on parasol');
 
 %% Make a little validation script for these as we go
-innerRetina.mosaicCreate('model','glm','type','on midget');
-innerRetina.mosaicCreate('model','glm','type','on parasol');
+% innerRetina.mosaicCreate('model','lnp','type','on midget');
+% innerRetina.mosaicCreate('model','glm','type','on parasol');
 % innerRetina.mosaicCreate('model','linear','type','on midget');
 % innerRetina.mosaicCreate('model','pool','type','on midget');
 % innerRetina.mosaicCreate('model','lnp','type','on midget');
 % innerRetina.mosaicCreate('model','phys','type','on midget');
-% innerRetina.mosaicCreate('model','subunit','type','on midget');
+innerRetina.mosaicCreate('model','subunit','type','on midget');
 
 %% Compute the RGC responses
 

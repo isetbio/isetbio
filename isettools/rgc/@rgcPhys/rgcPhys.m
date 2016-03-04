@@ -1,36 +1,30 @@
 classdef rgcPhys % < rgcMosaic
-% @rgcMosaicGLM: a subclass of @rgcMosaic. This function is only called by
-% rgcGLM to initiailize a mosaic of the rgc object.
-% 
-%        rgc.mosaic{ind} = rgcMosaicGLM(cellTypeInd, rgc, scene, sensor, outersegment, varargin{:});
-% 
-% Inputs: 
-%       scene: an isetbio scene structure
-%       sensor: an isetbio sensor structure
-%       os: an isetbio outer segment structure
-%    Optional but recommended:
-%       eyeSide: 'left' or 'right', which eye the retinal patch is from
-%       patchRadius: radius of retinal patch in microns
-%       patchAngle: polar angle of retinal patch
-%     [These inputs determine the size of spatial receptive fields, and are
-%       necessary to accurately model physiological responses.]
-% 
-% Outputs: the rgc object.
-% 
-% Models found in Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
-%       Nature (2008).
-% 
-% This model incorporates code by Pillow available at 
-%       http://pillowlab.princeton.edu/code_GLM.html
-% under the GNU General Public License.
-% 
-% Example: from rgcGLM.m initiailize:
-%        obj.mosaic{cellTypeInd} = rgcMosaicGLM(cellTypeInd, obj, scene, sensor, outersegment, varargin{:});
-% 
+% rgcMosaic cell type used for unit testing with a GLM (coupled-nonlinear) 
+% computational model that loads parameters from a physiology experiment in
+% the Chichilnisky Lab.
 %
-% 9/2015 JRG
-
-
+% The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
+% Litke, Chichilnisky & Simoncelli, Nature (2008).% The computational model
+% implemented here relies on code by
+% <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
+% distributed under the GNU General Public License.
+%
+% rgcPhys is not a subclass of rgcMosaic, but is similar to rgcGLM in many
+% respects. It is called when creating a new Phys model rgcMosaic for an
+% inner retina object.  Typically we get here from the inner retina object
+% via a call
+%
+%   ir.mosaicCreate('model','phys','type','your type goes here')
+% 
+% See also: v_rgcExternal
+%
+% Example:
+%   os = osCreate('identity');        % A pass through from the stimulus
+%   ir = irCreate(os,'name','myRGC'); % An inner retina container
+%   ir.mosaicCreate('model','phys'); % This  mosaic
+%
+% 9/2015 JRG    
+    
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
     end
@@ -45,7 +39,7 @@ classdef rgcPhys % < rgcMosaic
         sRFsurround;
         tCenter;
         tSurround;
-        linearResponse;
+        responseLinear;
         
         generatorFunction;
         nlResponse;
@@ -71,10 +65,7 @@ classdef rgcPhys % < rgcMosaic
         
         % Constructor
         function obj = rgcPhys(rgc, cellTypeInd, varargin)
-            % Initialize the parent class            
-            % obj = obj@rgcMosaic(rgc, sensor, outersegment, varargin{:});
 
-            % Initialize ourselves
             obj = obj.initialize(rgc, cellTypeInd, varargin{:});
             
         end
@@ -94,14 +85,6 @@ classdef rgcPhys % < rgcMosaic
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-%         function obj = compute(obj, sensor, outersegment, varargin)
-%             % see for details
-%             % obj = mosaicCompute(obj, sensor, outersegment, varargin); 
-%         end
-%         function plot(obj, sensor)
-%             % see for details
-%             % mosaicPlot(obj, sensor);
-%         end
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 

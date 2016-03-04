@@ -1,32 +1,34 @@
 function spikeTimes = computeSpikesGLM(obj, varargin)
-% computeSpikes: a util function of the @rgc parent class, this
-% converts the nonlinear response of the generator lookup function to a
-% probabilistic spiking output.
+% Converts the linear response to probabilistic spiking output and 
+% incorporates coupled spiking.
 %
-% Inputs:
+% Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky, Simoncelli, Nature,
+% 2008, licensed for modification, which can be found at
 %
-% Outputs:
+% http://pillowlab.princeton.edu/code_GLM.html
+% 
+% Inputs: the inner retina object with a precomputed linear response
+%
+% Outputs: the inner retina object with a spiking response
 %
 % Example:
-%
+%   responseSpikes = computeSpikesPSF(ir.mosaic{ii});
+% 
 % (c) isetbio
 % 09/2015 JRG
 
-%%%%%% FROM J PILLOW
+%%%%%% WRITTEN BY J PILLOW
 % -------------  Static nonlinearity & spiking -------------------
 
 % ih = mosaicGet(obj, 'postSpikeFilter');
 
 ihcpl = mosaicGet(obj, 'couplingFilter');
 
-spResponseSize = size(obj.nlResponse{1,1}(:,:,1));
-nSamples = size(obj.nlResponse{1,1},3);
-
 nCells = size(obj.cellLocation);
 nCellsTotal = nCells(1)*nCells(2);
 spikeTimes = cell(nCells);
 
-Vstm = obj.nlResponse{1,1};
+Vstm = obj.responseLinear{1,1};
 slen = length(Vstm);
 dt = .01; % sensorGet(sensor,'integration time');
 % rlen = length([.5+dt:dt:slen+.5]');
@@ -56,7 +58,7 @@ end
         
 %         Vstm = log(nlResponse{xcell,ycell});
 %         Vstm = (vertcat(obj.nlResponse{:}));
-        Vstm = vertcat(obj.linearResponse{:,:,1});
+        Vstm = vertcat(obj.responseLinear{:,:,1});
         
         
         Vmem = interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear');

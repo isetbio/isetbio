@@ -1,26 +1,29 @@
 function spikeTimes = computeSpikesPSF(mosaic, varargin)
-% computeSpikes: a util function of the @rgc parent class.
+% Converts the linear response to % probabilistic spiking output and 
+% incorporates a post-spike filter.
+%
+% Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky, Simoncelli, Nature,
+% 2008, licensed for modification, which can be found at
+%
+% http://pillowlab.princeton.edu/code_GLM.html
 % 
-%   spikeResponse = computeSpikesPSF(mosaic);    
-% 
-% interoplates the linear response to a finer time scale, converts this 
+% Interoplates the linear response to a finer time scale, converts this 
 % interpolated signal to the nonlinear output using the generator function,
 % and the nonlinear output to a probabilistic spiking output based on a 
 % Poisson process with a refractory period.
+% 
+% Inputs: the inner retina object with a precomputed linear response
 %
-% Inputs: mosaic object
-%
-% Outputs: spikeTimes
+% Outputs: the inner retina object with a spiking response
 %
 % Example:
-%       spikeResponse = computeSpikesPSF(rgc1.mosaic{1}); 
-%
+%   responseSpikes = computeSpikesPSF(ir.mosaic{ii});
+% 
 % (c) isetbio
 % 09/2015 JRG
 
-%%%%%% FROM J PILLOW
-% 
-% http://pillowlab.princeton.edu/code_GLM.html
+%%%%%% WRITTEN BY J PILLOW
+
 % -------------  Static nonlinearity & spiking -------------------
 % 
 
@@ -36,13 +39,13 @@ ihbasprs.absref = .1; % absolute refractory period
 psf = ihbasis*[-10 -5 0 2 -2]';  % h current
 
 % Initialize
-spResponseSize = size(mosaic.linearResponse{1,1}(:,:,1));
-nSamples = size(mosaic.linearResponse{1,1},3);
+spResponseSize = size(mosaic.responseLinear{1,1}(:,:,1));
+nSamples = size(mosaic.responseLinear{1,1},3);
 
-nCells = size(mosaic.linearResponse);
+nCells = size(mosaic.responseLinear);
 spikeTimes = cell(nCells);
 
-Vstm = mosaic.linearResponse{1,1};
+Vstm = mosaic.responseLinear{1,1};
 slen = length(Vstm);
 
 % ihhi = zeros(length(psf),1);
@@ -65,8 +68,8 @@ for trial = 1:numberTrials
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         
-        Vstm = (mosaic.linearResponse{xcell,ycell});
-        % Vstm = vertcat(obj.mosaic.linearResponse{xcell,ycell,1});
+        Vstm = (mosaic.responseLinear{xcell,ycell});
+        % Vstm = vertcat(obj.mosaic.responseLinear{xcell,ycell,1});
         
         nsp = 0;
         tsp = zeros(round(slen/25),1);  % allocate space for spike times
@@ -79,7 +82,7 @@ for xcell = 1:nCells(1)
         
         jbin = 1; % current time bin
         nsp = 0; % number of spikes
-        tspnext = exprnd(1);  % time of next spike (in rescaled time)
+        tspnext = ieExprnd(1,1);  % time of next spike (in rescaled time)
         rprev = 0;  % Integrated rescaled time up to current point
         while jbin <= rlen
             iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
@@ -103,7 +106,7 @@ for xcell = 1:nCells(1)
                         Ispk(iiPostSpk) = Ispk(iiPostSpk)+ihhi(1:mxi-ispk);
                     end
                 end
-                tspnext = exprnd(1);  % draw next spike time
+                tspnext = ieExprnd(1,1);  % draw next spike time
                 rprev = 0; % reset integrated intensity
                 jbin = ispk+1;  % Move to next bin
                 % --  Update # of samples per iter ---
