@@ -62,7 +62,7 @@ classdef rgcSubunit < rgcMosaic
         % nlResponse;   Delete me
         
         % We typically run a single trial
-        numberTrials = 1;
+        numberTrials = 10;
         
         % These hold the parameters used in the computation.
         % This is the response after a spike
@@ -114,23 +114,31 @@ classdef rgcSubunit < rgcMosaic
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-%         function obj = compute(obj, sensor, outersegment, varargin)
-%             % see for details
-%             % obj = mosaicCompute(obj, sensor, outersegment, varargin); 
-%         end
-%         function plot(obj, sensor)
-%             % see for details
-%             % mosaicPlot(obj, sensor);
-%         end
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
+
+        % Make sure commented at top
+        % Probably get rid of rfDiameter or derive it from sRF variables
+        % Probably derive rfDiaMagnitude from variables
+        
+        % Orders the display variables
+        function propgrp = getPropertyGroups(obj)
+            % See http://www.mathworks.com/help/matlab/matlab_oop/use-cases.html
+            if ~isscalar(obj)
+                propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);
+            else
+                % Could make this display more elaborate, say with units
+                proplist = {'responseSpikes','responseVoltage', ...
+                    'responseLinear', 'cellType','cellLocation', ...
+                    'rfDiameter','rfDiaMagnitude','sRFcenter','sRFsurround', ...
+                    'tCenter','tSurround', ...
+                    'numberTrials','dt',...
+                    'couplingFilter','couplingMatrix','postSpikeFilter'};
+                propgrp = matlab.mixin.util.PropertyGroup(proplist);
+            end
+        end
     end
-    
-    % Methods that are totally private (subclasses cannot call these)
-    methods (Access = private)
-        initialize(obj, sensor, outersegment, varargin);
-    end
-    
+
 end
