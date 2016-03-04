@@ -47,57 +47,23 @@ p.addRequired('ir',@(x) isequal(class(x),'ir'));
 p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osIdentity','osLinear','osBioPhys'})));
 % p.parse(ir,outerSegment,varargin{:});
 osType = class(outerSegment);
+%% Get the input data
 
-% Switch on type of os object
+% Possible osTypes are osIdentity, osLinear, and osBiophys
+% Only osIdentity is implemented now.
+osType = class(outerSegment);
 switch osType
     case 'osIdentity'
-        %% Identity means straight from the frame buffer to brain
-        
+        %% Identity means straight from the frame buffer to brain   
+        % Find properties that haven't been set and set them
         if isempty(osGet(outerSegment,'rgbData'))
             outerSegment = osSet(outerSegment, 'rgbData', rand(64,64,5));
-        end
-        
+        end        
         if isempty(osGet(outerSegment,'coneSpacing'))
             outerSegment = osSet(outerSegment, 'coneSpacing', 180);
-        end
-        
+        end        
         if isempty(osGet(outerSegment,'coneSampling'))
             outerSegment = osSet(outerSegment,'coneSampling',.01);
-        end
-        
-        spTempStim = osGet(outerSegment, 'rgbData');
-        
-        range = max(spTempStim(:)) - min(spTempStim(:));
-        
-        % Sometimes the ir class is rgcPhys, which we use for validation.
-        % But in general, this is not the case.
-        % There is a scientific question about this 10.  We need JRG and EJ
-        % to resolve the spiking rate.
-        if isa(ir,'rgcPhys'),   spTempStim = spTempStim./range;
-        else                    spTempStim = 10*spTempStim./range;
-        end
-        
-        % Looping over the rgc mosaics
-        for rgcType = 1:length(ir.mosaic)
-                        
-            % We assume a separable space-time receptive field.  This
-            % allows us to compute for space first and then time.
-            % Space.
-            [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);
-            
-            % Time. Convolve with the temporal impulse response
-            [fullResponse, nlResponse] = ...
-                fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
-
-            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'linearResponse', fullResponse);
-            
-            % Set the nonlinear response for every rgc subclass except rgcLinear
-            switch class(ir.mosaic{rgcType})
-                case 'rgcMosaicLinear'
-                    % No nonlinear response
-                otherwise
-                    ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'nlResponse', nlResponse);
-            end
         end
         
     case {'osLinear'}
@@ -106,9 +72,52 @@ switch osType
     case {'osBioPhys'}
         %% Full biophysical os
         error('Not yet implemented');
-        
     otherwise
         error('Unknown os type %s\n',osType);
+end
+
+
+%% Linear computation
+
+% This will end up begin a call toe irComputeContinuous
+
+% Determine the range of the rgb input data
+spTempStim = osGet(outerSegment, 'rgbData');
+range = max(spTempStim(:)) - min(spTempStim(:));
+
+% Special case. If the ir class is rgcPhys, which we use for
+% validation. But in general, this is not the case. There is a
+% scientific question about this 10.  We need JRG and EJ to resolve
+% the spiking rate.
+% James needs to change the spatial RF and temporal weights in order to
+% make these models have the right spike rate, and the 10 is a hack to
+% approximate that.
+if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range;
+else                    spTempStim = 10*spTempStim./range;
+end
+
+% Looping over the rgc mosaics
+for rgcType = 1:length(ir.mosaic)
+    
+    % We use a separable space-time receptive field.  This allows
+    % us to compute for space first and then time. Space.
+    [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);
+    
+    % For the subunit model, put each pixel "subunit" of spatial RF
+    % through nonlinearity at this point
+    if isa(ir.mosaic{rgcType},'rgcSubunit')
+        % Change this to get generator function
+        spResponseCenter = cellfun(@exp,spResponseCenter,'uniformoutput',false);
+        spResponseSurround = cellfun(@exp,spResponseSurround,'uniformoutput',false);
+    end
+    
+    % Convolve with the temporal impulse response
+    responseLinear = ...
+        fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
+    
+    % Store the linear response
+    ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
+    
 end
 
 

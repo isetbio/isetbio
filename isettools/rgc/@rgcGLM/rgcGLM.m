@@ -55,7 +55,7 @@ classdef rgcGLM < rgcMosaic
         % nlResponse;   Delete me
         
         % We typically run a single trial
-        numberTrials = 1;
+        numberTrials = 10;
         
         % These hold the parameters used in the computation.
         % This is the response after a spike
