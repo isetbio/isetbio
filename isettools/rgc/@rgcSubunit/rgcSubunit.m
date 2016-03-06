@@ -114,6 +114,32 @@ classdef rgcSubunit < rgcMosaic
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
+        
+        % Overloaded display function to order properties as we want to
+        function disp(obj)
+            
+            % Get the string from the builtin disp and then rearrange
+            s1 =evalc('builtin(''disp'', obj'')');
+            
+            % Find newline character locations
+            newlineChars = strfind(s1,sprintf('\n'));
+            
+            % Pull out lines with properties and values
+            for nlInd = 2:length(newlineChars)
+                propertystr{nlInd} = s1(newlineChars(nlInd-1)+1:newlineChars(nlInd)-1);
+            end
+            
+            % Display the reordered property list
+            % Display the first line with class type
+            disp(sprintf('\n'));
+            disp(s1(1:newlineChars(1)))
+            % Order determined through trial and error
+            propertyOrder = [11:20 3:4 7:10 5:6];
+            for nlInd = propertyOrder
+                disp(propertystr{nlInd});
+            end
+        end
+        
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 
@@ -123,22 +149,6 @@ classdef rgcSubunit < rgcMosaic
         % Probably get rid of rfDiameter or derive it from sRF variables
         % Probably derive rfDiaMagnitude from variables
         
-        % Orders the display variables
-        function propgrp = getPropertyGroups(obj)
-            % See http://www.mathworks.com/help/matlab/matlab_oop/use-cases.html
-            if ~isscalar(obj)
-                propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);
-            else
-                % Could make this display more elaborate, say with units
-                proplist = {'responseSpikes','responseVoltage', ...
-                    'responseLinear', 'cellType','cellLocation', ...
-                    'rfDiameter','rfDiaMagnitude','sRFcenter','sRFsurround', ...
-                    'tCenter','tSurround', ...
-                    'numberTrials','dt',...
-                    'couplingFilter','couplingMatrix','postSpikeFilter'};
-                propgrp = matlab.mixin.util.PropertyGroup(proplist);
-            end
-        end
     end
 
 end
