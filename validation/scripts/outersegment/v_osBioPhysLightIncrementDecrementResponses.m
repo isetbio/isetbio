@@ -53,7 +53,6 @@ function ValidationFunction(runTimeParams)
         stimulusPhotonRate(100:nSamples-100,1) = stimulusPhotonRateAmplitudes(stepIndex);
         
         for contrastIndex = 1:numel(contrastsExamined)   
-            fprintf('Running simulation for step #%d, contrast #: %d\n', stepIndex, contrastIndex);
             
             % generate step (decrement/increment)
             stimulusPhotonRateStep(contrastIndex, :) = stimulusPhotonRate;
