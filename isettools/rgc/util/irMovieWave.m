@@ -78,6 +78,8 @@ spatialRFcontours= plotContours(ir.mosaic{whichMosaic});
 % hold on;
 % plot3(spatialRFcontoursMosaicArr(1,:)-maxx/2,(t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontoursMosaicArr(1,:))), spatialRFcontoursMosaicArr(2,:)-10*maxy/2,'r','linewidth',2)
     
+colorval = rand(nX,nY,3);
+
 % Set frame subsampling number
 frameskip= 20;
 for t = 1:frameskip:5750
@@ -91,7 +93,9 @@ for t = 1:frameskip:5750
             % Get the appropriate spike data
             trial = 1;     % Which of the repeated trials ...
             sigType = 2;   % 1 is spikes, 2 is voltage
-            spPlot=ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,sigType}(t:t+1000);
+%             spPlot=ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,sigType}(t:t+1000);
+            spPlotSpikes = ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,1};
+            spPlot = zeros(7000,1); spPlot(round(100*spPlotSpikes)) = 10; spPlot = spPlot(t:t+1000);
             % spPlot=(median(horzcat(obj.mosaic{3}.responseSpikes{xc,yc,:,2})'));
             
             % Get the time values
@@ -110,8 +114,11 @@ for t = 1:frameskip:5750
             zv = 10*(ypos-maxy/2)+10*(ypos-maxy/2)*zfac*t1+spScale*spPlot;
             
             % Plot the waveform for this cell
-            h1=plot3(xv, yv, zv,'linewidth',2);
-            colorval = get(h1,'color');
+%             h1=plot3(xv, yv, zv,'linewidth',2);
+            h1=plot3(xv, yv, zv,'linewidth',2,'color',(colorval(xc,yc,:)));
+%             if t ==1 
+%                 colorval(xc,yc,:) = get(h1,'color');
+%             end
             
             % Plot the spike activity transmitted by lateral connections
             % Find spikes in this temporal window
@@ -124,6 +131,11 @@ for t = 1:frameskip:5750
             if ~isempty(spFind) %&& isa(ir,'rgcGLM')
                 % Check which other cells are connected to the cell of
                 % interest
+%                 hold on;
+                fill3((spatialRFcontours{xc,yc,1}(1,2:end))-maxx/2,...
+                    (t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontours{xc,yc,1}(1,2:end))),...
+                    (spatialRFcontours{xc,yc,1}(2,2:end))-10*maxy/2,(colorval(xc,yc,:)));
+                hold on;
                 for xc2 = 1:nX
                     for yc2 = 1:nY
                         % If the coupling weight is > 0 and there is a
@@ -143,8 +155,8 @@ for t = 1:frameskip:5750
                             % plot the line representing the lateral
                             % connection
 %                             line(1+zfac*1000*[x0 xf ],[t  t]/10000,1+zfac*1000*10*[z0 zf],'color',colorval,'linewidth',4);
-                            line([x0 xf ],[t+1000 t+1000]/10000,10*[z0 zf],'color',colorval,'linewidth',4);
-                            
+                            line([x0 xf ],[t+1000 t+1000]/10000,10*[z0 zf],'color',(colorval(xc,yc,:)),'linewidth',4);
+
                         end%if
                     end%yc2
                 end%xc2
@@ -152,7 +164,8 @@ for t = 1:frameskip:5750
             end%if length
             plot3((spatialRFcontours{xc,yc,1}(1,2:end))-maxx/2,...
                 (t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontours{xc,yc,1}(1,2:end))),...
-                (spatialRFcontours{xc,yc,1}(2,2:end))-10*maxy/2,'color',colorval);%,...
+                (spatialRFcontours{xc,yc,1}(2,2:end))-10*maxy/2,'color',(colorval(xc,yc,:)));%,...
+
             
         end
     end

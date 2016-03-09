@@ -20,7 +20,9 @@ function ir = irComputeSpikes(ir, varargin)
 %
 % JRG (c) isetbio
 
-
+% Required for Pillow code
+global RefreshRate
+RefreshRate = 100;    
 %% Loop on the mosaics in the inner retina
 for ii = 1:length(ir.mosaic)
     
@@ -28,7 +30,25 @@ for ii = 1:length(ir.mosaic)
         case {'rgcGLM','rgcSubunit'}
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
+            
+            % Modified
             responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
+            
+%             % Wrappers for adapting isetbio mosaic properties to Pillow code
+%             glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
+%             glmprs = setGLMprs(ir.mosaic{ii});
+%             % Run Pillow code
+%             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+%             cellCtr = 0;
+%             for xc = 1:5
+%                 for yc = 1:5
+%                     cellCtr = cellCtr+1;
+%                     responseSpikes{xc,yc} = responseSpikesVec{1,cellCtr};
+%                 end
+%             end
+%             ir.mosaic{ii}.responseSpikes = responseSpikes;
+
+            % Set mosaic property
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             
         case 'rgcLNP'
