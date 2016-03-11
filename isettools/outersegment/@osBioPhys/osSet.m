@@ -16,7 +16,11 @@ function obj = osSet(obj, varargin)
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
 narginchk(0, Inf);
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; p.FunctionName = mfilename;
+
+% Force to lower case and eliminate spaces
+for ii=1:2:length(varargin), varargin{ii} = ieParamFormat(varargin{ii}); end
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.

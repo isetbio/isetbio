@@ -9,6 +9,8 @@ function [tsp,Vmem,Ispk] = simGLMcpl(glmprs,Stim);
 % Dynamics:  Filters the Stimulus with glmprs.k, passes this through a
 % nonlinearity to obtain the point-process conditional intensity.  Add a
 % post-spike current to the linear input after every spike.
+%
+% exprnd - Changed to ieExprnd to reduce toolbox dependence /JRG/BW
 
 % --------------- Check Inputs ----------------------------------
 global RefreshRate;
@@ -67,7 +69,8 @@ tsp(1,1:ncells) = {zeros(round(slen/25),1)};  % allocate space for spike times
 nsp = zeros(1,ncells);
 jbin = 1;
 
-tspnext = exprnd(1,1,ncells);
+% CHANGED FOR ISETBIO to reduce toolbox dependence
+tspnext = ieExprnd(1,1,ncells);
 rprev = zeros(1,ncells);
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);  nii = length(iinxt);
@@ -96,7 +99,8 @@ while jbin <= rlen
                 end
             end
             rprev(icell) = 0;  % reset this cell's integral
-            tspnext(icell) = exprnd(1); % draw RV for next spike in this cell
+            % CHANGED FOR ISETBIO to reduce toolbox dependence
+            tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell
         end
         jbin = ispk+1;  % Move to next bin
         % --  Update # of samples per iter ---

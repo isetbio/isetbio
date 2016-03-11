@@ -1,6 +1,8 @@
 function initialize(obj, innerRetina, cellType)
 %% Initialize an rgcMosaic for a particular cell type
 %
+%  DEPRECATED for rgcInitSpace/rgcInitTime
+%
 %       initialize(obj, innerRetina, cellType) 
 %           [only called internally from rgcMosaic.m]
 % 

@@ -134,24 +134,28 @@ sensor = sensorSet(sensor, 'volts', volts);
 % Input = RGB
 os = osCreate('linear');
 
-coneSpacing = sensorGet(sensor,'width','um');
-coneSpacing = scene.wAngular*300
-% coneSpacing = sensorGet(sensor,'dimension','um');
-os = osSet(os, 'coneSpacing', coneSpacing);
+% Set cone spacing so that 
+coneSpacing = sensorGet(sensor,'width');
+os = osSet(os, 'cone spacing', coneSpacing);
 
-coneSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'coneSampling', coneSampling);
+% The size of the whole mosaic
+% I think there is a function that gets this value, maybe in oiGet.
+%  umPerDeg = 300;
+%  coneSpacing = scene.wAngular*umPerDeg;
+
+tSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'cone sampling', tSampling);
 
 % os = osSet(os, 'rgbData', sceneRGB);
 os = osCompute(os, sensor);
 
-% % Plot the photocurrent for a pixel
+% Plot the photocurrent for a pixel
 % osPlot(os,sensor);
 %% Build rgc
 
 clear params
-
 params.name      = 'Macaque inner retina 1'; % This instance
+
 % params.eyeSide   = 'left';   % Which eye
 % params.eyeRadius = 4;        % Radius in mm
 % params.eyeAngle  = 90;       % Polar angle in degrees
@@ -162,9 +166,6 @@ innerRetina.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);
-% for numberTrials = 1:10
-%     innerRetina.spikeCompute(innerRetina, os);
-% end
 
 %%
 % irPlot(innerRetina, 'mosaic');
@@ -175,3 +176,46 @@ irPlot(innerRetina, 'raster');
 %% Build rgc response movie
 % irMovie(rgc1, os);
 %  https://youtu.be/R4YQCTZi7s8
+
+%% Outer segment calculation - linear
+
+os = osCreate('biophys');
+
+% Set cone spacing so that 
+coneSpacing = sensorGet(sensor,'width');
+os = osSet(os, 'cone spacing', coneSpacing);
+
+% The size of the whole mosaic
+% I think there is a function that gets this value, maybe in oiGet.
+%  umPerDeg = 300;
+%  coneSpacing = scene.wAngular*umPerDeg;
+
+tSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'cone sampling', tSampling);
+
+% os = osSet(os, 'rgbData', sceneRGB);
+os = osCompute(os, sensor);
+
+% Plot the photocurrent for a pixel
+% osPlot(os,sensor);
+%% Build rgc
+
+clear params
+params.name      = 'Macaque inner retina 1'; % This instance
+
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 4;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
+
+innerRetina = irCreate(os, params);
+
+innerRetina.mosaicCreate('model','glm','type','on midget');
+%% Compute RGC response
+
+innerRetina = irCompute(innerRetina, os);
+
+%%
+% irPlot(innerRetina, 'mosaic');
+% irPlot(innerRetina, 'linear');
+irPlot(innerRetina, 'raster');
+% irPlot(innerRetina, 'psth');
