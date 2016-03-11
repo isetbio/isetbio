@@ -1,5 +1,14 @@
 function glminput = setGLMinput(response)
+% Converts the mosaic object's linear response into a format that can be
+% passed to simGLM or simGLMcpl.
+% 
+% % \pillow_code_GLM_v1_Feb2010, available at 
+% http://pillowlab.princeton.edu/code_GLM.html.
+% 
+% 
+% 3/2016 JRG (c) isetbio
 
+%% Set glminput to linear response
 nCells = size(response);
 nCellsTotal = nCells(1)*nCells(2);
 cellCtr = 0;

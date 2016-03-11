@@ -49,8 +49,14 @@ addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 
 
 p.parse(os,varargin{:});
 
-if isempty(osGet(os,'rgbData'))
-    os = osSet(os, 'rgbData', rand(64));
+switch class(os)
+    
+    case{'osIdentity'}
+        
+        if isempty(osGet(os,'rgbData'))
+            os = osSet(os, 'rgbData', rand(64));
+        end
+        
 end
 
 if isempty(osGet(os,'coneSpacing'))

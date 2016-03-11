@@ -111,9 +111,28 @@ sensor = sensorSet(sensor, 'volts', volts);
 
 % coneImageActivity(sensor,'step',1,'dFlag',true);
 %% Outer segment calculation
+% 
+% % Input = RGB
+% os = osCreate('identity');
+% 
+% coneSpacing = sensorGet(sensor,'width','um');
+% coneSpacing = scene.wAngular*300
+% % coneSpacing = sensorGet(sensor,'dimension','um');
+% os = osSet(os, 'coneSpacing', coneSpacing);
+% 
+% coneSampling = sensorGet(sensor,'time interval','sec');
+% os = osSet(os, 'coneSampling', coneSampling);
+% 
+% os = osSet(os, 'rgbData', sceneRGB);
+% % os = osCompute(sensor);
+% 
+% % % Plot the photocurrent for a pixel
+% % osPlot(os,sensor);
+
+%% Outer segment calculation - linear
 
 % Input = RGB
-os = osCreate('identity');
+os = osCreate('linear');
 
 coneSpacing = sensorGet(sensor,'width','um');
 coneSpacing = scene.wAngular*300
@@ -123,8 +142,8 @@ os = osSet(os, 'coneSpacing', coneSpacing);
 coneSampling = sensorGet(sensor,'time interval','sec');
 os = osSet(os, 'coneSampling', coneSampling);
 
-os = osSet(os, 'rgbData', sceneRGB);
-% os = osCompute(sensor);
+% os = osSet(os, 'rgbData', sceneRGB);
+os = osCompute(os, sensor);
 
 % % Plot the photocurrent for a pixel
 % osPlot(os,sensor);
@@ -133,25 +152,25 @@ os = osSet(os, 'rgbData', sceneRGB);
 clear params
 
 params.name      = 'Macaque inner retina 1'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 4;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina = irCreate(os, params);
 
-innerRetina.mosaicCreate('model','glm','type','on parasol');
+innerRetina.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);
-for numberTrials = 1:10
-    innerRetina.spikeCompute(innerRetina, os);
-end
+% for numberTrials = 1:10
+%     innerRetina.spikeCompute(innerRetina, os);
+% end
 
 %%
 % irPlot(innerRetina, 'mosaic');
-% irPlot(innerRetina, 'linearResponse');
-irPlot(innerRetina, 'rasterResponse');
-% irPlot(innerRetina, 'psthResponse');
+% irPlot(innerRetina, 'linear');
+irPlot(innerRetina, 'raster');
+% irPlot(innerRetina, 'psth');
 
 %% Build rgc response movie
 % irMovie(rgc1, os);

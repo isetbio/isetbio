@@ -171,6 +171,7 @@ for t = 1:frameskip:5750
     end
     % Label axes
     xlabel(sprintf('x position (\\mum)')); ylabel('time (sec)'); zlabel(sprintf('y position (\\mum)'));
+    title('RGC Mosaic Response');
     set(gca,'fontsize',18);
     
     % Set view angle

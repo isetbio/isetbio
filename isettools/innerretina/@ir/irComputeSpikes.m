@@ -32,21 +32,21 @@ for ii = 1:length(ir.mosaic)
             % using the coupled GLM
             
             % Modified
-            responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
+            % responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
             
-%             % Wrappers for adapting isetbio mosaic properties to Pillow code
-%             glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
-%             glmprs = setGLMprs(ir.mosaic{ii});
-%             % Run Pillow code
-%             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
-%             cellCtr = 0;
-%             for xc = 1:5
-%                 for yc = 1:5
-%                     cellCtr = cellCtr+1;
-%                     responseSpikes{xc,yc} = responseSpikesVec{1,cellCtr};
-%                 end
-%             end
-%             ir.mosaic{ii}.responseSpikes = responseSpikes;
+            % Wrappers for adapting isetbio mosaic properties to Pillow code
+            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
+            glmprs = setGLMprs(ir.mosaic{ii});
+            % Run Pillow code
+            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            cellCtr = 0;
+            nCells = size(ir.mosaic{ii}.responseLinear);
+            for xc = 1:nCells(1)
+                for yc = 1:nCells(2)
+                    cellCtr = cellCtr+1;
+                    responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
+                end
+            end
 
             % Set mosaic property
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
