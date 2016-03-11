@@ -153,7 +153,7 @@ absorptions = sensorSet(absorptions, 'photons', isomerizations);
 %     drawnow
 % end
 
-%% Outer segment calculation
+%% Outer segment calculation for the linear model
 
 % The outer segment converts cone absorptions into cone photocurrent.
 % There are 'linear','biophys' and 'identity' types of conversion.  The
@@ -171,32 +171,102 @@ os = osCompute(os, absorptions);
 % osPlot(os,'photo current','cone position',[r,c])
 osPlot(os,absorptions);
 
-% Input = RGB
-% os = osCreate('identity');
-% os = osSet(os, 'rgbData', sceneRGB);
+%% Examine isomerizations with movies and plots
+% Show an image of the cone mosaic
+figure; 
+imagesc(5-cone_mosaic);
+colormap(jet(4));
+title('cone mosaic','fontsize',14)
+
+% Show isomerizations movie
+% Note black pixels which are S cones that do not absorb many photons
+% in comparison to L and M cones
+isomerizations = sensorGet(absorptions,'photons');
+figure;
+for frame1 = 1:30
+    
+    imagesc(isomerizations(:,:,frame1));
+    colormap gray; 
+    drawnow;
+end
+title('t\_osIntroduction isomerizations');
+
+% Plot isomerizations over time
+% Find coordinates of L, M and S cones, get photon signals.
+cone_mosaic = sensorGet(absorptions,'cone type');
+figure; cind = 'rgb';
+for cone_type = 2:4
+    [cone_locations_x cone_locations_y] = find(cone_mosaic==cone_type);
+    
+    for cone_number = 1:10%length(cone_locations_x)
+        % figure;
+        hold on;
+        plot(2*rand+squeeze(isomerizations(cone_locations_x(cone_number), cone_locations_y(cone_number),:)),cind(cone_type-1));
+    end
+end
+title('L, M and S cone photons');
+ xlabel('Frame number'); ylabel('Photons');
+%% Examine linear response with movies and plots
+% Show photocurrents movie
+coneCurrentSignal = osGet(os,'coneCurrentSignal');
+figure;
+% cone_type = 4;
+% clear cone_locations_x cone_locations_y
+% [cone_locations_x cone_locations_y] = find(cone_mosaic==cone_type);
+for frame1 = 1:30
+   
+    imagesc(coneCurrentSignal(:,:,frame1));
+%     coneFrame = zeros(size(coneCurrentSignal,1),size(coneCurrentSignal,2));
+%     coneFrame(cone_locations_x, cone_locations_y,frame1) = coneCurrentSignal(cone_locations_x,cone_locations_y,frame1);
+%     imagesc(coneFrame(:,:,frame1));
+    colormap gray; 
+%     caxis([-70 -40]);
+    drawnow;
+end
+title('t\_osIntroduction linear photocurrent');
+% close;
+
+
+% Plot photocurrents over time
+% Find coordinates of L, M and S cones, get current signals.
+figure; cind = 'rgb';
+for cone_type = 2:4
+[cone_locations_x cone_locations_y] = find(cone_mosaic==cone_type);
+
+for cone_number = 1:10%length(cone_locations_x)
+    % figure;
+    hold on;
+    plot(2*rand+squeeze(coneCurrentSignal(cone_locations_x(cone_number), cone_locations_y(cone_number),:)),cind(cone_type-1));
+end
+end
+xlabel('Frame number'); ylabel('Current (pA)');
+title('L, M and S cone currents');
 
 %% Rieke biophysics case
 
-% absorptions2 = sensorCreate('human');
-% absorptions2 = sensorSetSizeToFOV(absorptions2, fov, scene, oi);
-% 
-% absorptions2 = sensorSet(absorptions2, 'exp time', params.expTime); 
-% absorptions2 = sensorSet(absorptions2, 'time interval', params.timeInterval);
-% 
-% absorptions2 = sensorSet(absorptions2, 'photons', 1*isomerizations);
-
-
-% absorptions = sensorSet(absorptions, 'photons', 1000*isomerizations);
-
-% sensor = sensorSet(sensor,'integration time', expTime);
 % Create the outer segment structure
-os = osCreate('biophys');
+osB = osCreate('biophys');
  
 % Compute the photocurrent from the absorptions
-os = osCompute(os, absorptions);
+osB = osCompute(osB, absorptions);
  
 % Plot the photocurrent for a pixel
 % Let's JG and BW mess around with various plotting things to check the
 % validity.
 
-osPlot(os,absorptions)
+osPlot(osB,absorptions)
+
+%% Examine biophysical response with a movie
+
+coneCurrentSignalB = osGet(osB,'coneCurrentSignal');
+figure;
+cone_type = 2;
+for frame1 = 1:30
+   
+    imagesc(coneCurrentSignalB(:,:,frame1));
+    colormap gray;
+%     caxis([-70 0]);
+    drawnow;
+end
+% close;
+title('t\_osIntroduction biophys photocurrent');

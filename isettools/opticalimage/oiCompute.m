@@ -1,7 +1,7 @@
 function oi = oiCompute(scene,oi,opticsModel)
 % Gateway routine for optical image irradiance calculation
 %
-%    oi = oiCompute(scene,oi,[opticsModel])
+%    oi = oiCompute(oi,scene,[opticsModel])
 %
 % The spectral irradiance image, on the sensor plane, just before sensor
 % capture is the optical image.  This spectral irradiance distribution
@@ -19,24 +19,19 @@ function oi = oiCompute(scene,oi,opticsModel)
 % opticsDLCompute. This computation depends on the diffraction limited
 % parameters (f/#) but little else.
 %
-% The second model is shift-invariant optics.  This depends on having a
-% wavelength-dependent OTF defined and included in the optics structure. 
+% The second model is shift-invariant optics.  This depends on the user
+% setting up a wavelength-dependent OTF defined and included in the optics
+% structure.
 %
-% The third model is a full ray trace model that allows shift-varying 
-% wavelength-dependent point spread functions.  This depends on having the
-% ray trace information included in the optics model.  The geometric
-% information, relative illumination, and blurring calculations are usually
-% imported from a full ray trace program, such as Zemax.
+% You may specify the shift-invariant optics model to be 'human'.  In that
+% case, this program calls the routine humanOI, which uses the human OTF
+% calculations in a shift-invariant fashion.
 %
-% It is possible to specify the model in the argument. If it is not
-% specified, then the optics data in the oi determines the model.
+% You can also build shift invariant optics models specifying wavefront
+% aberrations using Zernike polynomials and the wavefront (wvf<TAB>)
+% methods.
 %
-% Finally, there is a special case for computing the human optical image.
-% You may specify the optics model to be 'human'.  In that case, this
-% program calls the routine humanOI, which uses the human OTF calculations
-% in a shift-invariant fashion.
-%
-% See also: opticsGet for a description of the optics models.
+% See also: opticsGet, opticsSet, wvfCreate, opticsCreate
 %
 % Use ieSessionSet('waitbar',0) to turn off waitbar displays
 % Use ieSessionSet('waitbar',1) to turn on waitbar displays
@@ -48,11 +43,7 @@ function oi = oiCompute(scene,oi,opticsModel)
 %   load siZemaxExample00
 %   optics = opticsSet(optics,'model','shiftinvariant');
 %   oi = oiSet(oi,'optics',optics);
-%   oi = oiCompute(scene,oi);
-% 
-% Programming note:  I should have written this as oiCompute(oi,scene, ..)
-% I now allow this ordering (rather than oiCompute(scene,oi, ...)) by a
-% type check at the front that will flip the arguments.
+%   oi = oiCompute(oi,scene);
 %
 % Copyright ImagEval Consultants, LLC, 2005
 
@@ -68,13 +59,11 @@ oi = oiSet(oi, 'distance', sceneGet(scene, 'distance'));
 
 % Compute according to the selected model
 switch ieParamFormat(opticsModel)
-    case {'diffractionlimited','dlmtf','skip'}
+    case {'diffractionlimited','dlmtf'}
         % The skip case is handled by the DL case
         oi = opticsDLCompute(scene,oi);
     case 'shiftinvariant'
         oi = opticsSICompute(scene,oi);
-    case 'raytrace'
-        oi = opticsRayTrace(scene,oi);
     otherwise
         error('Unknown optics model')
 end
@@ -82,7 +71,7 @@ end
 % Indicate scene it is derived from
 oi = oiSet(oi,'name',sceneGet(scene,'name'));
 
-% Pad the scene dpeth map and attach it to the oi.   The padded values are
+% Pad the scene depth map and attach it to the oi.   The padded values are
 % set to 0, though perhaps we should pad them with the mean distance.
 oi = oiSet(oi,'depth map',oiPadDepthMap(scene));
 

@@ -398,7 +398,7 @@ figNumSave = vcSelectFigure('GRAPHWIN',noNewGraphWin);
 
 % Create a new figure for the truesize image
 figNumTRUESIZE = figure;
-imshow(RGB);
+image(RGB);
 truesize
 % Turn off the menu and so forth
 set(figNumTRUESIZE,'menubar','none','name','ISET');

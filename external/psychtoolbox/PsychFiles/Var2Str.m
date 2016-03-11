@@ -112,6 +112,9 @@ elseif isempty(input) || ndims(input)<=2
         str = mat2str(input,17,'class');
     end
     str = regexprep(str,'\s+',' ');
+    % check for "Infi" which is an infinity imaginary component.
+    % to recreate that, we need to replace it with: complex(0, inf)
+    str = strrep(str,'Infi','complex(0, inf)');
 else
     psychassert(nargin==2,'input argument name must be defined if processing 2D+ matrix');
     str = mat2strhd(input,name);

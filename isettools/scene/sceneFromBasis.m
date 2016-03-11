@@ -13,9 +13,13 @@ function scene = sceneFromBasis(sceneS)
 % Matlab scene formatted as a set of basis functions and coefficients.
 %
 % Example:
-%   
+%   rd = RdtClient('isetbio');
+%   rd.crp('/resources/scenes/multiband/scien/2004');
+%   data = rd.readArtifact('AsianFemale_2','type','mat');
+%   scene = sceneFromBasis(data);
+%   ieAddObject(scene); sceneWindow;
 %
-% Copyright Imageval Consulting, LLC 2015
+% BW ISETBIO Team
 
 %%
 if ~isfield(sceneS,'mcCOEF') error('mcCOEF required'); end
@@ -47,6 +51,7 @@ scene = sceneSet(scene,'wavelength',sceneS.basis.wave);
 scene = sceneSet(scene,'photons',photons);
 
 % Deal with the illuminant
-scene = sceneSet(scene,'illuminant',sceneS.illuminant);
+illuminant = illuminantModernize(sceneS.illuminant);
+scene = sceneSet(scene,'illuminant',illuminant);
 
 end

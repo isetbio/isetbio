@@ -5,8 +5,8 @@
 %
 % Dependencies: RemoteDataToolbox for fetching hyperspectral scenes
 %
-% 1/2016 NC
-%
+% 1/2016        NPC   Created.
+% 2/24/2016     NPC   Added option to generate video (good for presentations)
 
 function t_osHyperSpectralSceneEyeScan
  
@@ -22,7 +22,7 @@ function t_osHyperSpectralSceneEyeScan
     };
 
     % simulation time step. same for eye movements and for sensor, outersegment
-    timeStepInMilliseconds = 0.1;
+    timeStepInMilliseconds = 0.02;
 
     sensorParams = struct(...
         'coneApertureInMicrons', 3.0, ...        % custom cone aperture
@@ -34,7 +34,7 @@ function t_osHyperSpectralSceneEyeScan
         'eyeMovementScanningParams', struct(...
             'samplingIntervalInMilliseconds', timeStepInMilliseconds, ...
             'fixationDurationInMilliseconds', 300, ...
-            'numberOfFixations', 20 ...
+            'numberOfFixations', 3 ...
         ) ...
     );
 
@@ -49,9 +49,13 @@ function t_osHyperSpectralSceneEyeScan
         [artifactData, artifactInfo] = client.readArtifact(imsource{2}, 'type', 'mat');
         scene = artifactData.scene; clear 'artifactData'; clear 'artifactInfo';
 
+        % adjust mean luminance to avoid outer segment photocurrent saturation
+        forcedMeanLuminanceInCdPerM2 = min([sceneGet(scene, 'mean luminance') 600]);
+        scene = sceneAdjustLuminance(scene, forcedMeanLuminanceInCdPerM2);
+        
         % Show scene
         waitbar(0.25, hProgress,'Displaying scene ...'); figure(hProgress);
-        vcAddAndSelectObject(scene); sceneWindow;
+        %vcAddAndSelectObject(scene); sceneWindow;
 
         % Compute optical image with human optics
         waitbar(0.3, hProgress,'Computing optical image ...'); figure(hProgress);
@@ -59,7 +63,7 @@ function t_osHyperSpectralSceneEyeScan
         oi = oiCompute(oi, scene);
 
         % Show optical image
-        vcAddAndSelectObject(oi); oiWindow;
+        %vcAddAndSelectObject(oi); oiWindow;
 
         % create custom human sensor
         waitbar(0.5, hProgress,'Computing photoreceptor isomerizations ...'); figure(hProgress);
@@ -69,22 +73,50 @@ function t_osHyperSpectralSceneEyeScan
         % compute rate of isomerized photons
         sensor = coneAbsorptions(sensor, oi);
 
-        % compute outer segment response using the biophysically-based adaptation model
-        waitbar(0.7, hProgress,'Computing biophysically-based outer segment response ...'); figure(hProgress);
-        osB = osBioPhys();
-        osB = osSet(osB, 'noiseFlag', 1);
-        osB = osCompute(osB, sensor);
-
         % compute outer segment response using the linear adaptation model
-        waitbar(0.9, hProgress,'Computing linear outer segment response ...'); figure(hProgress);
+        waitbar(0.7, hProgress,'Computing linear outer segment response ...'); figure(hProgress);
         osL = osLinear(); 
         osL = osSet(osL, 'noiseFlag', 1);
         osL = osCompute(osL, sensor);
-        close(hProgress);
+        % display osWindow for interactive viewing of outer segment responses
+        osLwindow = osWindow(1001+imageIndex, 'linear outer segment', 'horizontalLayout', osL, sensor, oi, scene);
+
+        % compute outer segment response using the biophysically-based adaptation model
+        waitbar(0.9, hProgress,'Computing biophysically-based outer segment response ...'); figure(hProgress);
+        osB = osBioPhys();
+        osB = osSet(osB, 'noiseFlag', 1);
+        osB = osCompute(osB, sensor);
         
-        % display osWindows for interactive viewing of outer segment responses
-        osWindow(1001+imageIndex, 'biophys-based outer segment', osB, sensor, oi);
-        osWindow(1002+imageIndex, 'linear outer segment', osL, sensor, oi);
+        % display osWindow for interactive viewing of outer segment responses
+        osBwindow = osWindow(1002+imageIndex, 'biophys-based outer segment', 'horizontalLayout', osB, sensor, oi, scene);
+        close(hProgress);
+         
+        % video generation: good for presentations
+        genVideo = input('Generate video of the linear outer segment simulation ? [y/n] : ', 's');
+        if (strcmp(genVideo, 'y'))
+            % Generate video stream, one frame/msec of simulation
+            videoFrameStepInMilliseconds = 1.0;
+            videoFilename = sprintf('LinearOSSimulation_%s.m4v', imsource{2});
+            osLwindow.generateVideo(videoFrameStepInMilliseconds, videoFilename);
+        end
+        
+        genVideo = input('Generate video of the biophys-based outer segment simulation ? [y/n] : ', 's');
+        if (strcmp(genVideo, 'y'))
+            % Generate video stream, one frame/msec of simulation
+            videoFrameStepInMilliseconds = 1.0;
+            videoFilename = sprintf('BiophysOSSimulation_%s.m4v', imsource{2});
+            osBwindow.generateVideo(videoFrameStepInMilliseconds, videoFilename);
+        end
+        
+        % test resizing
+        testFigureResize = false;
+        if (testFigureResize)
+            while(1)
+                desiredWindowSize = input('Enter new figure size in pixels: ');
+                osLwindow.resizeWidow(desiredWindowSize);
+            end
+        end
+        
     end
 end
 

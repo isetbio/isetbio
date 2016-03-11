@@ -1,61 +1,45 @@
-function [oi,val] = oiCreate(oiType,val,optics,addObject,varargin)
-%Create an optical image structure.
+function oi = oiCreate(oiType,varargin)
+%Create an optical image structure
 %
-%   [oi,val] = oiCreate(oiType,val,optics,addObject,varargin)
+%   oi = oiCreate(oiType,varargin)
 %
-% If val is passed in, the optical image is set to be the number val.
-% Otherwise, a new number is selected.
+% The optical image represents the spectral irradiance at the sensor. The
+% irradiance is computed from the scene radiance, using the information in
+% the optics structure that is attached to this oi.
 %
-% If optics is passed in, this is  attached to the optical image. Otherwise
-% the default optics (diffraction limited) are used.
-%
-% By default, the new optical image is not added to the set of optical
-% image objects stored in vcSESSION.  If you want it added, addObject = 1.
-% Normally we add it when ready with a vcAddAndSelectObject
-%
-% OI types include: default, uniformD65, uniformEE.  The latter two are
-% used only for lux-snr testing and related.  Almost always we simply
-% create a default optical image with a diffraction-limited lens attached.
-%
-% The spectrum is not set in this call because it is normally inherited
-% from the scene.  To specify a spectrum for the optical image use
+% The oi spectrum is normally inherited from the scene.  To specify a
+% spectrum for the optical image use
 %      oi = oiCreate('default');
 %      oi = initDefaultSpectrum('hyperspectral');
 %
-% Types of OI:
-%  {'default'}    - Diffraction limited optics,f/4, no diffuser or data
-%  {'uniformd65'} - Turns off offaxis to make uniform D65 image
-%  {'uniformee'}  - Turns off offaxis and creates uniform equal energy image
-%
-%  {'human'}      - Human shift-invariant optics based on Marimont
+% Types of OI structures
+%  {'human','default'}  - Human shift-invariant optics based on Marimont
 %                   and Wandell (1994, JOSA)
-%  {'wvf human'}  - Human shift-invariant optics based on mean wavefront
-%                   abberration from Thibos et al. (2009, Ophthalmic & Physiological
-%                   Optics)
-% Example:
-%   oi = oiCreate('default');
-%   oi = oiCreate('uniform d65');          % Used for lux-sec vs. snr measurements.
-%   oi = oiCreate('uniform EE',[],[],0);   % Create an object but don't put it in the vcSESSION
-%   oi = oiCreate('uniformEE',[],[],0,(380:4:1068));
-%   oi = oiCreate('human');
-%   oi = oiCreate('wvf human');
+%  {'wvf human'}    - Human shift-invariant optics based on mean
+%                   wavefront abberration from Thibos et al. (2009,
+%                   Ophthalmic & Physiological Optics)
+%  {'diffraction'}  - Diffraction limited optics,f/4, no diffuser or data
+%  {'uniformd65'}   - Turns off offaxis to make uniform D65 image
+%  {'uniformee'}    - Turns off offaxis to make uniform equal energy image
 %
-% See also:  sceneCreate
+% Example:
+%   oi = oiCreate('human');
+%   oi = oiCreate('uniform d65');  % Used for lux-sec vs. snr measurements.
+%   oi = oiCreate('uniform EE');   %
+%   oi = oiCreate('diffraction');
+%   oi = oiCreate('wvf human');
+%   pupilMM = 4; oi = oiCreate('wvf human',pupilMM)
+%
+% See also:  sceneCreate, opticsCreate
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
 if notDefined('oiType'),  oiType = 'human'; end
-if notDefined('val'),     val = vcNewObjectValue('OPTICALIMAGE'); end
-if notDefined('optics'),  optics = opticsCreate('default'); end
-
-% We used to automatically add created OI objects to the list.  Stopped
-% doing this July, 2012
-if notDefined('addObject'), addObject = 0; end
 
 % Default is to use the diffraction limited calculation
 oi.type = 'opticalimage';
-oi.name = vcNewObjectName('opticalimage');
-oi = oiSet(oi, 'bit depth', 32);  % Single precision.
+oi.name = vcNewObjectName('opticalimage');  % Get a fresh name
+oi = oiSet(oi, 'bit depth', 32);            % Single precision.  Perhaps no longer needed
 
 oiType = ieParamFormat(oiType);
 switch oiType 
@@ -66,67 +50,63 @@ switch oiType
         %
         % oi = oiCreate('human');
         oi = oiCreate('diffraction limited');
-        oi = oiSet(oi, 'diffuserMethod','skip');
+        oi = oiSet(oi, 'diffuser method','skip');
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
         
-    case {'wvfhuman'}
+    case {'wvfhuman','shiftinvariant'}
         % A human lens specified using the WVF toolbox method
-        % oi = oiCreate('wvf human',pupilMM,zCoefs)
+        % oi = oiCreate('wvf human',pupilMM,zCoefs,wave)
+        
+        oi = oiCreate('diffraction limited');
+        oi = oiSet(oi, 'diffuser method','skip');
+        oi = oiSet(oi, 'consistency',1);
+        oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
+        oi = oiSet(oi, 'name','human-WVF');
+        
         
         % Defaults and then adjust for varargin
-        wave = 400:10:700; wave = wave(:);
-        pupilMM = 3;
-        zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
-        if ~isempty(varargin), pupilMM = varargin{1}; end
-        if length(varargin) > 1, zCoefs = varargin{2}; end
-        if length(varargin) > 2, wave = varargin{3}; end
-        
-        % Create wavefront parameters
-        wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-        wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
-        wvfP = wvfComputePSF(wvfP);
-        % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);
-        % set(gca,'xlim',[-20 20],'ylim',[-20 20]);
-        
-        oi = wvf2oi(wvfP);
-        oi = oiSet(oi,'name',sprintf('Human WVF %.1f mm',pupilMM));
-        
-    case {'diffractionlimited'}
+        %         wave = 400:10:700; wave = wave(:);
+        %         pupilMM = 3;
+        %         zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
+        %         if ~isempty(varargin), pupilMM = varargin{1}; end
+        %         if length(varargin) > 1, zCoefs = varargin{2}; end
+        %         if length(varargin) > 2, wave = varargin{3}; end
+        %
+        %         % Create wavefront parameters
+        %         wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
+        %         wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
+        %         wvfP = wvfComputePSF(wvfP);
+        %         % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);
+        %         % set(gca,'xlim',[-20 20],'ylim',[-20 20]);
+        %
+        %         oi = wvf2oi(wvfP);
+        %         oi = oiSet(oi,'name',sprintf('Human WVF %.1f mm',pupilMM));
+        %
+    case {'diffractionlimited','diffraction'}
         % Default optics is f# = 4, diffraction limited
+        optics = opticsCreate('diffraction limited');
         oi = oiSet(oi,'optics',optics);
         
         % Set up the default glass diffuser with a 2 micron blur circle,
         % but skipped
-        oi = oiSet(oi, 'diffuserMethod','skip');
-        oi = oiSet(oi, 'diffuserBlur', 2*10^-6);
+        oi = oiSet(oi, 'diffuser method','skip');
+        oi = oiSet(oi, 'diffuser blur', 2*10^-6);
         oi = oiSet(oi, 'consistency', 1);
         
     case {'uniformd65'}
         % Uniform, D65 optical image.  No cos4th falloff, huge field of
         % view (120 deg). Used in lux-sec SNR testing and scripting
         oi = oiCreateUniformD65;
-        
-    case {'uniformee', 'uniformeespecify'}
-        % Uniform, equal energy optical image. No cos4th falloff. Might be used in
-        % lux-sec SNR testing or scripting.  Not really used now
-        % (5.3.2005).
-        wave = 400:10:700; sz = 32;
-        if length(varargin) >= 1, sz = varargin{1}; end
-        if length(varargin) >= 2, wave = varargin{2}; end
-        oi = oiCreateUniformEE(sz,wave);
                
+    case {'uniformee'}
+        % Uniform, equal energy optical image.  No cos4th falloff, huge
+        % field of view (120 deg). 
+        oi = oiCreateUniformEE;
+        
     otherwise
         error('Unknown oiType');
-end
-
-% We may store an sRGB image of the irradiance here
-% oi.sRGB = [];
-
-if addObject
-    if length(vcGetObjects('OPTICALIMAGE')) < val, vcAddAndSelectObject('OPTICALIMAGE',oi);
-    else vcReplaceAndSelectObject(oi,val); end
 end
 
 end
@@ -141,40 +121,34 @@ function oi = oiCreateUniformD65
 
 % This does not yet extend in the IR, but it should.  See notes in
 % sceneCreate.
-scene = sceneCreate('uniformd65');
+% This does not yet extend in the IR, but it should.  See notes in
+% sceneCreate.
+scene = sceneCreate('uniform d65');
 scene = sceneSet(scene,'hfov',120);
-vcAddAndSelectObject(scene);
 
-oi = oiCreate('default',[],[],0);
-optics = oiGet(oi,'optics');
-optics = opticsSet(optics,'offaxismethod','skip');
-optics = opticsSet(optics,'otfmethod','skip');
-oi = oiSet(oi,'optics',optics);
-
+oi = oiCreate('diffraction');
+oi = oiSet(oi,'optics fnumber',1e-3);   % Basically perfect optics
 oi = oiCompute(scene,oi);
-
+% vcAddObject(oi); oiWindow;
 
 end
 
-%---------------------------------------------
-function oi = oiCreateUniformEE(sz,wave)
+%--------------------------------------------
+function oi = oiCreateUniformEE
 %
 %  Create a uniform, equal energy image with a very large field of view.
 %  The optical image is created without any cos4th fall off so it can be
 %  used for lux-sec SNR testing.
 %
 
-scene = sceneCreate('uniformEESpecify',sz,wave);
+% This does not yet extend in the IR, but it should.  See notes in
+% sceneCreate.
+scene = sceneCreate('uniform ee');
 scene = sceneSet(scene,'hfov',120);
-vcAddAndSelectObject(scene);
 
-oi = oiCreate('default',[],[],0);
-optics = oiGet(oi,'optics');
-optics = opticsSet(optics,'offaxismethod','skip');
-optics = opticsSet(optics,'opticsModel','skip');
-optics = opticsSet(optics,'otfmethod','skip');
-oi = oiSet(oi,'optics',optics);
-
+oi = oiCreate('diffraction');
+oi = oiSet(oi,'optics fnumber',1e-3);   % Basically perfect optics
 oi = oiCompute(scene,oi);
+% vcAddObject(oi); oiWindow;
 
 end
