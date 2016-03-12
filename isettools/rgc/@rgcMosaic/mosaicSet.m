@@ -32,7 +32,7 @@ function obj = mosaicSet(obj, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % This flag causes the parser not to throw an error here in the superclass
@@ -50,10 +50,13 @@ allowableFieldsToSet = {...
         'sRFsurround',...
         'tCenter',...
         'tSurround',...
-        'linearResponse'...
+        'responseLinear'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
+% p.addOptional('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+% p.addOptional('value');
+
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -89,7 +92,7 @@ switch lower(params.what)
         obj.tCenter = params.value;
     case{'tsurround'}
         obj.tSurround = params.value;
-    case{'linearresponse'}
-        obj.linearResponse = params.value;
+    case{'responselinear'}
+        obj.responseLinear = params.value;
 end
 

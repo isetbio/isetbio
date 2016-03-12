@@ -64,7 +64,7 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(mosaicInd)
+        function obj = rgcMosaic(ir, mosaicInd)
              %% Initialize an rgcMosaic for a particular cell type
             %
             %       initialize(obj, innerRetina, cellType)
@@ -123,19 +123,19 @@ classdef rgcMosaic < handle
             end
             
             % Generate spatial RFs of the approrpiate size for the cell type and TEE
-            obj.rgcInitSpace(mosaicInd);
-            obj.rgcInitTime(mosaicInd);
+            obj.rgcInitSpace(ir, mosaicInd);
+            obj.rgcInitTime(ir, mosaicInd);
             
         end
         
         % set function, see mosaicSet for details
-        function obj = set(obj, param, val, varargin)
-            mosaicSet(obj, param, val, varargin{:});
+        function obj = set(obj, varargin)
+            mosaicSet(obj, varargin{:});
         end
         
         % get function, see mosaicGet for details
-        function val = get(obj, param, varargin)
-            val = mosaicGet(obj, param, varargin{:});
+        function val = get(obj, varargin)
+            val = mosaicGet(obj, varargin{:});
         end
         
     end

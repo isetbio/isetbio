@@ -1,9 +1,9 @@
-function rgcInitTime(rgcM)
+function rgcInitTime(rgcM, innerRetina, mosaicInd)
 % Generate temporal impulse response functions for R, G, B channels
 
 
 %%
-ir = rgcM.parent;
+% ir = rgcM.parent;
 
 
 %%  Do we allow other parameters?
@@ -31,7 +31,7 @@ end
 integrationTime = innerRetina.timing;
 for rgbInd = 1:3
     % scale for differences in RGB channel and ON/OFF type
-    multFactor = rgbTempMult(rgbInd)*rfTempMult(cellTypeInd);
+    multFactor = rgbTempMult(rgbInd)*rfTempMult(mosaicInd);
     % Build the separate impulse responses for center and surround; usually
     % the same.
     rgcM.tCenter{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);

@@ -62,7 +62,8 @@ classdef rgcLinear < rgcMosaic
         function val = get(obj, varargin)
            val = mosaicGet(obj, varargin{:});
         end
-      
+            
+        initialize(obj, varargin);
     end
 %% Methods
     % Methods that must only be implemented (Abstract in parent class).
@@ -76,7 +77,6 @@ classdef rgcLinear < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, varargin);
     end
     
 end

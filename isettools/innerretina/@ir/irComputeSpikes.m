@@ -53,7 +53,23 @@ for ii = 1:length(ir.mosaic)
             
         case 'rgcLNP'
             % Call another version of the Pillow code for spike response
-            responseSpikes = computeSpikesPSF(ir.mosaic{ii});
+            % responseSpikes = computeSpikesPSF(ir.mosaic{ii});
+            
+            % Wrappers for adapting isetbio mosaic properties to Pillow code
+            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
+            glmprs = setPSFprs(ir.mosaic{ii});
+            % glmprs = setLNPprs(ir.mosaic{ii});
+            % Run Pillow code
+            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            cellCtr = 0;
+            nCells = size(ir.mosaic{ii}.responseLinear);
+            for xc = 1:nCells(1)
+                for yc = 1:nCells(2)
+                    cellCtr = cellCtr+1;
+                    responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
+                end
+            end
+            
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             
         otherwise

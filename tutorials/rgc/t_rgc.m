@@ -100,8 +100,8 @@ innerRetina.compute(os);
 
 %% Plot various aspects of the RGC response
 % irPlot(innerRetina, 'mosaic');
-irPlot(innerRetina, 'raster');
-% irPlot(innerRetina, 'psth');
+% irPlot(innerRetina, 'raster');
+irPlot(innerRetina, 'psth');
 
 % irPlot(innerRetina,'psth','type','onParasol');
 % irPlot(innerRetina,'psth','cell',[1 1]);

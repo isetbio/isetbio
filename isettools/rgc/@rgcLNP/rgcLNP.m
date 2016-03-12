@@ -55,7 +55,7 @@ classdef rgcLNP < rgcMosaic
         % nlResponse;   Delete me
         
         % We typically run a single trial
-        numberTrials = 1;
+        numberTrials = 10;
         
         % These hold the parameters used in the computation.
         % This is the response after a spike
@@ -95,6 +95,9 @@ classdef rgcLNP < rgcMosaic
 
             % Effect of a spike on output voltages
             obj.generatorFunction = @exp;
+            
+            % Post spike filter
+            obj.postSpikeFilter = buildPostSpikeFilter(obj.dt);
             
         end
         
@@ -139,6 +142,7 @@ classdef rgcLNP < rgcMosaic
             end
         end
         
+        initialize(obj);
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 
@@ -147,7 +151,7 @@ classdef rgcLNP < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj);
+
     end
     
 end

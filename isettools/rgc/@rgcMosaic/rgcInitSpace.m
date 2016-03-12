@@ -1,4 +1,4 @@
-function rgcInitSpace(rgcM,cellType)
+function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 % Initialize the spatial rf properties of a rgc mosaic given a cell type
 %
 % RF size scale parameters: Parasol RFs are the largest, while Midget RFs
@@ -10,7 +10,7 @@ function rgcInitSpace(rgcM,cellType)
 % [ON Parasol; OFF Parasol; ON Midget; OFF Midget; Small bistratified];
 
 %% We need to know many properties of the inner retina
-ir = rgcM.parent;
+% ir = rgcM.parent;
 
 %% Set up defaults for the sizes and weights.
 
@@ -21,7 +21,7 @@ rfSizeMult = [1 1 0.5 0.5 1.2];
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
 % in ON and OFF ganglion cells of primate retina." The Journal of
 % Neuroscience 22.7 (2002), Fig. 5, pg. 2741.
-receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(ir.temporalEquivEcc);
+receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
 
 % If os is osIdentity, determine number of pixels per spatial RF diameter.
 % If os is osLinear or osBioPhys, determine the number of cones per spatial
