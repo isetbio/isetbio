@@ -26,8 +26,8 @@ function obj = osCreate(type)
 %
 % JRG ISETBIO Team, Copyright, 2015
 
-narginchk(0, Inf);
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; p.FunctionName = mfilename;
 
 addRequired( p, 'type');
 

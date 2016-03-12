@@ -39,8 +39,8 @@ obj.eyeAngle  = params.eyeAngle;
 obj.name      = params.name;
 
 % Set properties dependent on os object.
-obj.spacing = osGet(os,'coneSpacing'); % Cone width
-obj.timing  = osGet(os,'coneSampling'); % Temporal sampling
+obj.spacing = osGet(os,'patch size'); % Cone width
+obj.timing  = osGet(os,'time step'); % Temporal sampling
     
 if isa(os,'osLinear')
     [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));

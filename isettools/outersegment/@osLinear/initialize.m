@@ -1,7 +1,9 @@
-function obj = initialize(obj,varargin)
-% initialize: a method of @osLinear, initializes the osLinear object.
-% 
+function obj = matchSensor(obj,varargin)
+% Matches the size of the osLinear object to the sensor data
+%
+%
 % Inputs: the osLinear object.
+%
 % Outputs: the osLinear object sConeFilter, mConeFilter and lConeFilter
 % properties store the filter impulse response functions.
 % 

@@ -1,59 +1,26 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osBioPhys that sets isetbio outersegment object 
-% parameters using the input parser structure.
-% 
-% Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
-% 
-% adaptedOS = osSet(adaptedOS, 'noiseFlag', 0);
+% Sets isetbio outersegment object for biophys model
+%
+%
+%
+% Example:
+%   adaptedOS = osSet(adaptedOS, 'noise flag', 0);
 % 
 % 8/2015 JRG NC DHB
 
+%% Loop through param/value pairs
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-narginchk(0, Inf);
-p = inputParser; 
-p.CaseSensitive = false; p.FunctionName = mfilename;
+for ii=1:2:length(varargin)
 
-% Force to lower case and eliminate spaces
-for ii=1:2:length(varargin), varargin{ii} = ieParamFormat(varargin{ii}); end
-
-% Make key properties that can be set required arguments, and require
-% values along with key names.
-allowableFieldsToSet = {...
-    'noiseflag',...
-    'conespacing',...
-    'conesampling',...
-    'conecurrentsignal'};
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
-
-% Define what units are allowable.
-allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-
-% Set up key value pairs.
-% Defaults units:
-p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
-
-% Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
-
-switch lower(params.what);  % Lower case and remove spaces
+    param = ieParamFormat(varargin{ii});
+    value = varargin{ii+1};
     
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;               
+    switch param
         
-    case{'conespacing'}
-        obj.coneSpacing = params.value;
-        
-    case{'conesampling'}
-        obj.coneSampling = params.value;
-        
-    case{'conecurrentsignal'}
-        obj.coneCurrentSignal = params.value; 
+        otherwise
+            % If not part of this class, check, the parent class.
+            obj = osSet@outerSegment(obj,param,value);
+    end
+    
 end
 

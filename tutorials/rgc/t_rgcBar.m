@@ -135,8 +135,8 @@ sensor = sensorSet(sensor, 'volts', volts);
 os = osCreate('linear');
 
 % Set cone spacing so that 
-coneSpacing = sensorGet(sensor,'width');
-os = osSet(os, 'cone spacing', coneSpacing);
+arrayWidth = sensorGet(sensor,'width');
+os = osSet(os, 'patch size', arrayWidth);
 
 % The size of the whole mosaic
 % I think there is a function that gets this value, maybe in oiGet.
@@ -144,7 +144,7 @@ os = osSet(os, 'cone spacing', coneSpacing);
 %  coneSpacing = scene.wAngular*umPerDeg;
 
 tSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'cone sampling', tSampling);
+os = osSet(os, 'time step', tSampling);
 
 % os = osSet(os, 'rgbData', sceneRGB);
 os = osCompute(os, sensor);
@@ -182,8 +182,8 @@ irPlot(innerRetina, 'raster');
 os = osCreate('biophys');
 
 % Set cone spacing so that 
-coneSpacing = sensorGet(sensor,'width');
-os = osSet(os, 'cone spacing', coneSpacing);
+arrayWidth = sensorGet(sensor,'width');
+os = osSet(os, 'patch size', arrayWidth);
 
 % The size of the whole mosaic
 % I think there is a function that gets this value, maybe in oiGet.
@@ -191,7 +191,7 @@ os = osSet(os, 'cone spacing', coneSpacing);
 %  coneSpacing = scene.wAngular*umPerDeg;
 
 tSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'cone sampling', tSampling);
+os = osSet(os, 'time step', tSampling);
 
 % os = osSet(os, 'rgbData', sceneRGB);
 os = osCompute(os, sensor);

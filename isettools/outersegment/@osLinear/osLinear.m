@@ -38,7 +38,7 @@ classdef osLinear < outerSegment
             obj = obj@outerSegment();
             
             % Initialize ourselves
-            obj.initialize(varargin{:});
+            obj.matchSensor(varargin{:});
             
         end
         
@@ -56,7 +56,9 @@ classdef osLinear < outerSegment
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        
+                
+        matchSensor(obj, varargin);
+
         function obj = compute(obj, sensor, varargin)
             % see osCompute for details
             obj = osCompute(obj, sensor, varargin); 
@@ -75,7 +77,6 @@ classdef osLinear < outerSegment
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, varargin);
     end
     
 end

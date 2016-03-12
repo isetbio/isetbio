@@ -20,13 +20,13 @@ function obj = osCompute(obj, sensor, varargin)
 % 
 % 8/2015 JRG NC DHB
 
-% Remake filters incorporating the sensor to make them the 
-% correct sampling rate.
-obj.initialize(sensor);
+% Remake filters incorporating the sensor to make them the correct sampling
+% rate.
+obj.matchSensor(sensor);
 
-obj.coneSpacing = sensorGet(sensor,'width','um'); % Cone width
+obj.patchSize = sensorGet(sensor,'width','meters'); % Patch of cone size
 
-obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
@@ -56,7 +56,7 @@ meanCur = maxCur * (1 - 1 / (1 + 45000 / mean(isomerizations(:))));
 % adaptedDataRS = osConvolve(obj, sensor, isomerizations, varargin);
 
 [sz1, sz2, sz3] = size(isomerizations);
-isomerizationsRS = reshape(isomerizations(:,:,1:sz3),[sz1*sz2],nSteps);
+isomerizationsRS = reshape(isomerizations(:,:,1:sz3),sz1*sz2,nSteps);
 
 adaptedDataRS = zeros(size(isomerizationsRS));
 
@@ -107,7 +107,7 @@ end
 adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
 
 % obj.coneCurrentSignal = adaptedData;
-obj = osSet(obj, 'coneCurrentSignal', adaptedData);
+obj = osSet(obj, 'cone current signal', adaptedData);
 
 % Add noise
 % The osAddNoise function expects and input to be isomerization rate.

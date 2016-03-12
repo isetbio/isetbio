@@ -28,10 +28,10 @@ classdef outerSegment < handle
 
         % The noiseFlag determines if the noisy version of the current is
         % calculated.
-        noiseFlag;              % determines whether noise is added to coneCurrentSignal
-        coneCurrentSignal;      % output signal in pA
-        coneSpacing;            % spacing between cones (width) in um, inherited from sensor in osCompute
-        coneSampling;           % sampling interval in sec, inherited from sensor in osCompute
+        noiseFlag;            % determines whether noise is added to coneCurrentSignal
+        coneCurrentSignal;    % output signal in pA
+        patchSize;            % spacing between cones (width) in um, inherited from sensor in osCompute
+        timeStep;             % sampling interval in sec, inherited from sensor in osCompute
     end
     
     % Private properties. Only methods of the parent class can set these

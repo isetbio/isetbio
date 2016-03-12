@@ -49,22 +49,23 @@ addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 
 
 p.parse(os,varargin{:});
 
+% Maybe delete?? BW/JRG
 switch class(os)
-    
     case{'osIdentity'}
-        
+        % For fast testing.  Creates a random image
         if isempty(osGet(os,'rgbData'))
             os = osSet(os, 'rgbData', rand(64));
         end
-        
+    otherwise
+        % Don't worry, carry on
 end
 
-if isempty(osGet(os,'coneSpacing'))
-    os = osSet(os, 'coneSpacing', 180);
+if isempty(osGet(os,'patch size'))
+    os = osSet(os, 'patch size', 180);
 end
 
-if isempty(osGet(os,'coneSampling'))
-    os = osSet(os,'coneSampling',.01);
+if isempty(osGet(os,'time step'))
+    os = osSet(os,'time step',.01);
 end
 
 %% Create the object

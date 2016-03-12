@@ -21,3 +21,5 @@ parser.StructExpand = false;
 if ~verLessThan('matlab', '8.2')
     parser.PartialMatching = false;
 end
+
+end
