@@ -272,9 +272,13 @@ classdef osWindow < handle
             fprintf('Video exported in %s/%s.\n', pwd,videoFilename);
         end
         
-        function resizeWidow(obj, desiredSize)
+        function resizeWindow(obj, desiredSize)   
+            oldPosition = get(obj.hFig,'Position');
             
-            oldPosition = get(obj.hFig,'Position')
+            if (numel(desiredSize) == 2)
+                set(obj.hFig,'Position',[oldPosition(1) oldPosition(2) desiredSize(1) desiredSize(2)]);
+                return;
+            end
             
             if (strcmp(obj.figOrientation, 'horizontalLayout'))
                 width = desiredSize;
