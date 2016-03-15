@@ -24,10 +24,10 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 % values along with key names.
 allowableFieldsToSet = {...
     'noiseflag',...
-    'conespacing',...
-    'conesampling',...
+    'patchsize',...
+    'timestep',...
     'conecurrentsignal'};
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
 % Define what units are allowable.
 allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -39,16 +39,16 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-switch lower(params.what);  % Lower case and remove spaces
+switch ieParamFormat(params.what);  % Lower case and remove spaces
 
     case {'noiseflag'}        
         val = obj.noiseFlag;
         
-    case{'conespacing'}
-        val = obj.coneSpacing;
+    case{'patchsize'}
+        val = obj.patchSize;
         
-    case{'conesampling'}
-        val = obj.coneSampling;
+    case{'timestep'}
+        val = obj.timeStep;
         
     case{'conecurrentsignal'}
         val = obj.coneCurrentSignal;

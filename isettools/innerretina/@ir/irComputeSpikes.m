@@ -57,8 +57,12 @@ for ii = 1:length(ir.mosaic)
             
             % Wrappers for adapting isetbio mosaic properties to Pillow code
             glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
+            
+            % Uses post spike filter
             glmprs = setPSFprs(ir.mosaic{ii});
+            % No post spike filter - break into different subclass?
             % glmprs = setLNPprs(ir.mosaic{ii});
+            
             % Run Pillow code
             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
             cellCtr = 0;

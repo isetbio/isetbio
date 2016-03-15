@@ -38,8 +38,8 @@ for cellTypeInd = 1%:length(obj.mosaic)
         
     % Call Pillow code to compute rasters and PSTHs
 %     [raster, psth] = computePSTH(obj.mosaic{cellTypeInd,1});
-    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'rasterResponse', spikeResponseFull);
-    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'psthResponse', psthResponse);
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'responseRaster', spikeResponseFull);
+    obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd},'responsePsth', psthResponse);
         
     clear spikeResponseFull spikeDrive psthResponse raster psth
 end

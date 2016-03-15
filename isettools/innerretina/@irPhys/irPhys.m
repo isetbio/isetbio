@@ -39,6 +39,7 @@ classdef irPhys < ir
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
+
     end
            
     % Protected properties.

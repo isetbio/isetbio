@@ -28,13 +28,13 @@ function [spikeTimes spikeDrive psthResponse rollcomp] = computeSpikesPhysLab(ob
 % rng(1); % move this?
 ihcpl = mosaicGet(obj, 'couplingFilter');
 
-spResponseSize = size(obj.nlResponse{1,1}(:,:,1));
-nSamples = size(obj.nlResponse{1,1},3);
+% spResponseSize = size(obj.nlResponse{1,1}(:,:,1));
+% nSamples = size(obj.nlResponse{1,1},3);
 
 nCells = length(obj.cellLocation);
 nCellsTotal = nCells;%nCells(1)*nCells(2);
 
-Vstm = obj.nlResponse{1,1};
+Vstm = obj.responseLinear{1,1};
 slen = length(Vstm);
 dt = .1; % sensorGet(sensor,'integration time');
 % rlen = length([.5+dt:dt:slen+.5]');
@@ -74,7 +74,7 @@ for xcell = 1:nCells
     ps_bins     = length(cif_psgain);
     cp_bins     = length(cif_cpgain{1});
     
-    Vstm = vertcat(obj.linearResponse{:,xcell,1});
+    Vstm = vertcat(obj.responseLinear{:,xcell,1});
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
     cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , 6300)');

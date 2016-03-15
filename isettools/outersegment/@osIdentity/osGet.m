@@ -21,8 +21,8 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','rgbdata','conespacing','conesampling'};
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+allowableFieldsToSet = {'noiseflag','rgbdata','patchsize','timestep','size'};
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
 % Define what units are allowable.
 allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -34,19 +34,22 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-switch lower(params.what);  % Lower case and remove spaces
+switch ieParamFormat(params.what);  % Lower case and remove spaces
 
     case {'noiseflag'}        
         val = obj.noiseFlag;
                 
-    case{'conespacing'}
-        val = obj.coneSpacing;
+    case{'patchsize'}
+        val = obj.patchSize;
         
-    case{'conesampling'}
-        val = obj.coneSampling;
+    case{'timestep'}
+        val = obj.timeStep;
         
     case{'rgbdata'}
         val = obj.rgbData;
+        
+    case{'size'}
+        val = size(obj.rgbData);
         
 end
 

@@ -45,7 +45,7 @@ function val = mosaicGet(obj, varargin)
 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 p.KeepUnmatched = true;
 % Make key properties that can be set required arguments, and require
@@ -67,8 +67,8 @@ allowableFieldsToSet = {...
     'postSpikeFilter',...
     'couplingFilter',...
     'couplingMatrix',...
-    'rasterResponse',...
-    'psthResponse'...
+    'responseRaster',...
+    'responsePsth'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -122,9 +122,9 @@ switch lower(params.what)
         val = obj.couplingFilter;
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
-    case{'rasterresponse'}
-        val = obj.rasterResponse;
-    case{'psthresponse'}
-        val = obj.psthResponse;
+    case{'responseraster'}
+        val = obj.responseRaster;
+    case{'responsepsth'}
+        val = obj.responsePsth;
 end
 

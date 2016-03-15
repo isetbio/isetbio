@@ -21,9 +21,9 @@ function obj = osCompute(obj, sensor, varargin)
 % 8/2015 JRG NC DHB
 
 
-obj.coneSpacing = sensorGet(sensor,'width','um'); % Cone width
+obj.patchSize = sensorGet(sensor,'width','um'); % Cone width
 
-obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 
 p = osInit;
 expTime = sensorGet(sensor,'exposure time');

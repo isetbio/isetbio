@@ -48,9 +48,11 @@ for rgcType = 1:length(ir.mosaic)
     
     % Compute spikes for each trial
     switch class(ir.mosaic{rgcType})
-        case {'rgcLinear','rgcPhys'};
+        case {'rgcLinear'};
             % No nonlinear response
-            error('Not yet implemented');s
+            error('Not yet implemented');
+        case{'rgcPhys'}
+            
         otherwise
             nTrials = ir.mosaic{rgcType}.numberTrials;
             for itrial = 1:nTrials

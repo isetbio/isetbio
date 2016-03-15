@@ -70,6 +70,8 @@ classdef rgcPool < rgcMosaic
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
+        
+        initialize(obj, sensor, outersegment, varargin);
 %         function obj = compute(obj, sensor, outersegment, varargin)
 %             % see for details
 %             % obj = mosaicCompute(obj, sensor, outersegment, varargin); 
@@ -86,7 +88,6 @@ classdef rgcPool < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        initialize(obj, sensor, outersegment, varargin);
     end
     
 end

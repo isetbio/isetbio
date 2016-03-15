@@ -32,6 +32,12 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 
 %% Find number of pixels/cones per RGC spatial RF
 % Calculate microns/pixels or microns/cone
+
+% Check spacing is in meters
+if spacing < 1e-3
+    spacing = spacing*1e6;
+end
+
 patchSizeX = spacing; % um 
 patchSizeY = spacing; % um 
 sensorRows = row;     % 

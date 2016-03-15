@@ -42,10 +42,11 @@ obj.name      = params.name;
 obj.spacing = osGet(os,'patch size'); % Cone width
 obj.timing  = osGet(os,'time step'); % Temporal sampling
     
-if isa(os,'osLinear')
-    [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));
-elseif isa(os,'osIdentity')
-    [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));
+switch class(os)
+    case{'osIdentity'}
+        [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));
+    otherwise    
+        [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));
 end
 
 % Initialize the mosaic property but do not generate any mosaics

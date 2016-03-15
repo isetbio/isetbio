@@ -50,9 +50,8 @@ classdef rgcPhys % < rgcMosaic
         couplingFilter;
         couplingMatrix;
         tonicDrive;
-        
-        rasterResponse;
-        psthResponse;
+        responseRaster;
+        responsePsth;
 
     end
     

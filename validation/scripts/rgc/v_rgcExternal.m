@@ -46,13 +46,13 @@ data = rdt.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
 % implay(testmovieshort,10);
 
-figure;
-for frame1 = 1:200
-    imagesc(testmovieshort(:,:,frame1));
-    colormap gray; 
-    drawnow;
-end
-close;
+% figure;
+% for frame1 = 1:200
+%     imagesc(testmovieshort(:,:,frame1));
+%     colormap gray; 
+%     drawnow;
+% end
+% close;
 %% Generate outer segment object
 
 % In this case, the coupled-GLM calculation converts from the frame buffer
@@ -76,7 +76,7 @@ rgc2 = irSet(rgc2,'numberTrials',20);
 %%
 rgc2 = irCompute(rgc2, os2);
 
-rgc2psth = mosaicGet(rgc2.mosaic{1},'psthResponse');
+rgc2psth = mosaicGet(rgc2.mosaic{1},'responsePsth');
 
 %% Load validation data
 % Load RDT version of output from the Chichilnisky Lab's code

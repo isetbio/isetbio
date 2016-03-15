@@ -31,8 +31,8 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.01;
-params.timeInterval = 0.01;
+params.expTime = 0.0025;
+params.timeInterval = 0.0025;
 params.nSteps = 50;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
@@ -150,7 +150,7 @@ os = osSet(os, 'time step', tSampling);
 os = osCompute(os, sensor);
 
 % Plot the photocurrent for a pixel
-% osPlot(os,sensor);
+osPlot(os,sensor);
 %% Build rgc
 
 clear params
@@ -170,14 +170,10 @@ innerRetina = irCompute(innerRetina, os);
 %%
 % irPlot(innerRetina, 'mosaic');
 % irPlot(innerRetina, 'linear');
-irPlot(innerRetina, 'raster');
-% irPlot(innerRetina, 'psth');
+% irPlot(innerRetina, 'raster');
+irPlot(innerRetina, 'psth');
 
-%% Build rgc response movie
-% irMovie(rgc1, os);
-%  https://youtu.be/R4YQCTZi7s8
-
-%% Outer segment calculation - linear
+%% Outer segment calculation - biophysical
 
 os = osCreate('biophys');
 
@@ -190,6 +186,7 @@ os = osSet(os, 'patch size', arrayWidth);
 %  umPerDeg = 300;
 %  coneSpacing = scene.wAngular*umPerDeg;
 
+% Change this to .001 for stability
 tSampling = sensorGet(sensor,'time interval','sec');
 os = osSet(os, 'time step', tSampling);
 
@@ -197,7 +194,7 @@ os = osSet(os, 'time step', tSampling);
 os = osCompute(os, sensor);
 
 % Plot the photocurrent for a pixel
-% osPlot(os,sensor);
+osPlot(os,sensor);
 %% Build rgc
 
 clear params
@@ -217,5 +214,5 @@ innerRetina = irCompute(innerRetina, os);
 %%
 % irPlot(innerRetina, 'mosaic');
 % irPlot(innerRetina, 'linear');
-irPlot(innerRetina, 'raster');
-% irPlot(innerRetina, 'psth');
+% irPlot(innerRetina, 'raster');
+irPlot(innerRetina, 'psth');

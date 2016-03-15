@@ -37,9 +37,9 @@ p = inputParser;
 p.addRequired('ir');
 
 % Experiment ... thinking about input parsing more generally (JRG/BW)
-mosaicTypes = {'on parasol','off parasol','on midget','off midget','small bistratified','sbc'};
+mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratified','sbc'};
 % p.addParameter('mosaicType','on parasol',@(x) any(validatestring(x,mosaicTypes)));
-p.addParameter('type','on parasol',@(x) any(validatestring(x,mosaicTypes)));
+p.addParameter('type','on parasol',@(x) any(validatestring(ieParamFormat(x),mosaicTypes)));
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
 p.addParameter('model','linear',@(x) any(validatestring(x,modelTypes)));
 

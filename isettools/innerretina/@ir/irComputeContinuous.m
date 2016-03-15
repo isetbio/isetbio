@@ -59,11 +59,11 @@ switch osType
         if isempty(osGet(outerSegment,'rgbData'))
             outerSegment = osSet(outerSegment, 'rgbData', rand(64,64,5));
         end
-        if isempty(osGet(outerSegment,'coneSpacing'))
-            outerSegment = osSet(outerSegment, 'coneSpacing', 180);
+        if isempty(osGet(outerSegment,'patchSize'))
+            outerSegment = osSet(outerSegment, 'patchSize', 180);
         end
-        if isempty(osGet(outerSegment,'coneSampling'))
-            outerSegment = osSet(outerSegment,'coneSampling',.01);
+        if isempty(osGet(outerSegment,'timeStep'))
+            outerSegment = osSet(outerSegment,'timeStep',.01);
         end
         
         
@@ -128,6 +128,7 @@ switch osType
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
         spTempStim = spTempStim./range;
+        spTempStim = spTempStim - mean(spTempStim(:));
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)

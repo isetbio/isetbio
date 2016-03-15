@@ -28,6 +28,9 @@ data       = rdt.readArtifact('t_rgcData', 'type', 'mat');
 coneMosaic = data.coneMosaic;
 os         = data.os;
 
+% ieStimulusBar is an alternative to RDT that builds the stimulus locally
+% iStim = ieStimulusBar();
+% % Still need to build os...
 %% Visualize the cone mosaic absoprtion pattern
 %
 % cMosaic25 = coneMosaic;
