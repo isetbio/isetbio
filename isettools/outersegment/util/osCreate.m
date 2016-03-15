@@ -35,7 +35,7 @@ addRequired( p, 'type');
 p.parse(type); params = p.Results;
 
 %% Create the proper object
-switch params.type
+switch ieParamFormat(params.type)
     case {'linear','oslinear'}
         obj = osLinear();
     case {'biophys','osbiophys','rieke','osrieke'}

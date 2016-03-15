@@ -47,29 +47,47 @@ params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina = irCreate(osL, params);
+innerRetina1 = irCreate(osL, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina.mosaicCreate('model','glm','type','on midget');
+innerRetina1.mosaicCreate('model','glm','type','on midget');
 
-%% Here is the layout of the RGC receptive fields on retinal surface
-
-irPlot(innerRetina, 'mosaic');
 
 %% Compute RGC mosaic responses
 
-innerRetina = irCompute(innerRetina, osL);
-
-%% Look at the linear inputs to the cells before spiking
-
-irPlot(innerRetina, 'response linear');
-
-%% Show me the raster plots for all the cells in the mosaic
-
-irPlot(innerRetina, 'raster response');
+innerRetina1 = irCompute(innerRetina1, osL);
+irPlot(innerRetina1, 'psth response');
 
 %% Show me the PSTH for one particular cell
 
-irPlot(innerRetina, 'psth response');
+irPlot(innerRetina1, 'psth response','cell',[2 2]);
+title('OS Linear and Coupled GLM');
+
+%% Compute the outer segment response
+
+% In this case we use a linear model.  Below we use a more complex model
+osB = osCreate('bioPhys');
+
+% Set up the 
+patchSize = sensorGet(absorptions,'width','um');
+osB = osSet(osB, 'patch size', patchSize);
+
+timeStep = sensorGet(absorptions,'time interval','sec');
+osB = osSet(osB, 'time step', timeStep);
+
+osB = osCompute(osB, absorptions);
+
+%% Compute RGC mosaic responses
+
+innerRetina2 = irCreate(osB, params);
+innerRetina2.mosaicCreate('model','glm','type','on midget');
+
+innerRetina2 = irCompute(innerRetina2, osB);
+irPlot(innerRetina2, 'psth response');
+
+%% Show me the PSTH for one particular cell
+
+irPlot(innerRetina2, 'psth response','cell',[2 2]);
+title('OS Biophys and Coupled GLM');
 
 %%

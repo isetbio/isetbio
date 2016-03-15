@@ -9,7 +9,7 @@
 params.freq = 6;
 params.nSteps = 50;
 params.GaborFlag = 0.2;
-iStim = ieStimulusGabor(params);
+iStim = ieStimulusGabor(params); %#ok<NASGU>
 
 fname = fullfile(isetbioRootPath,'local','gaborMovie.mat');
 save(fname,'iStim');
@@ -25,7 +25,9 @@ rd.publishArtifact(fname);
 %% Create the file with the bar iStim
 
 clear params
-params.barWidth = 10; params.fov=0.6;
+params.barWidth = 10; 
+params.fov=0.4;
+params.timeInterval = 0.002;  % Two ms time interval
 iStim = ieStimulusBar(params);
 
 fname = fullfile(isetbioRootPath,'local','barMovie.mat');
