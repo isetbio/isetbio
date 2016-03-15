@@ -8,52 +8,63 @@ function iStim = ieStimulusGabor(varargin)
 %   optical image and the sensor.
 % 
 % Example:
-%   params.nSteps = 20;
-%   iStim = ieStimulusWhiteNoise(params);
+%  Default Gabor, a few steps on
+%   nSteps = 20;
+%   iStim = ieStimulusGabor('nSteps',nSteps);
+%   coneImageActivity(iStim.absorptions,'dFlag',true);
+%
+%  Higher spatial frequency, more steps
+%   params.freq = 6; params.nSteps = 50; params.GaborFlag = 0.2;
+%   iStim = ieStimulusGabor(params);
+%   coneImageActivity(iStim.absorptions,'dFlag',true);
+%
 %   vcAddObject(iStim.scene); sceneWindow;
-% 
+%
 % 3/2016 JRG (c) isetbio team
 
 %% Parse inputs
 p = inputParser;
+
 addParameter(p,'meanLuminance',  200,   @isnumeric);
 addParameter(p,'nSteps',         50,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
+addParameter(p,'freq',            6,    @isnumeric);  
+addParameter(p,'contrast',        1,    @isnumeric);  
+addParameter(p,'ph',              0,    @isnumeric);  
+addParameter(p,'ang',             0,    @isnumeric);  
+addParameter(p,'GaborFlag',       1,    @isnumeric);  
+addParameter(p,'fov',            0.6, @isnumeric);
+addParameter(p,'expTime',        0.005, @isnumeric);
+addParameter(p,'timeInterval',   0.005, @isnumeric);
+addParameter(p,'nCycles',        4, @isnumeric);
 
+% Field of view
 p.parse(varargin{:});
-
 params = p.Results;
+fov = params.fov;
 %% Compute a scene
 
-% Set up Gabor stimulus using sceneCreate('harmonic',params)
-% 
-fov = 0.6;
-params.freq = 6; params.contrast = 1;
-params.ph  = 0;  params.ang = 0;
-% params.row = 64; params.col = 64;
-params.GaborFlag = 0.2; % standard deviation of the Gaussian window
-
 % Set up scene, oi and sensor
+% Default Garbor parameters
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.005;
-params.timeInterval = 0.005;
-params.nSteps = 10;%60;     % Number of stimulus frames
-params.nCycles = 4;
+% params.expTime = 0.005;
+% params.timeInterval = 0.005;
+% params.nSteps = 10;  %60;     % Number of stimulus frames
+% params.nCycles = 4;
 
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-sensor = sensorCreate('human');
-sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+absorptions = sensorCreate('human');
+absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
 
-sensor = sensorSet(sensor, 'exp time', params.expTime); 
-sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
-
+absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
+absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
 %% Compute a dynamic set of cone absorptions
 %
@@ -86,7 +97,9 @@ for t = 1 : params.nSteps
         
     params.ph = (2*pi)*params.nCycles*(t-1)/params.nSteps; % one period over nSteps
     scene = sceneCreate('harmonic', params);
-    scene = sceneSet(scene, 'h fov', fov);
+    if t ==1
+        sceneRGB = zeros([sceneGet(scene, 'size'), params.nSteps, 3]);
+    end
     scene = sceneSet(scene, 'h fov', fov);
 
     % Get scene RGB data    
@@ -96,13 +109,13 @@ for t = 1 : params.nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    sensor = sensorCompute(sensor, oi);
+    absorptions = sensorCompute(absorptions, oi);
 
     if t == 1
-        volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
+        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
     end
     
-    volts(:,:,t) = sensorGet(sensor, 'volts');
+    volts(:,:,t) = sensorGet(absorptions, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end
@@ -110,18 +123,13 @@ end
 if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
-sensor = sensorSet(sensor, 'volts', volts);
+absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-% These are both the results and the objects needed to recreate this
-% script. So calling isomerizationBar(iStim) should produce the same
-% results.
-
-iStim.params  = params;
-
-% iStim.display = display;
-iStim.scene   = scene;
-iStim.sceneRGB = sceneRGB;
-iStim.oi      = oi;
-iStim.sensor  = sensor;
+% Save all the inputs to rerun 
+iStim.params   = params;     % Parameters to rerun this function
+iStim.scene    = scene;      % Base scene
+iStim.sceneRGB = sceneRGB;   % Used for identity case.
+iStim.oi       = oi;         % 
+iStim.absorptions   = absorptions;
 end

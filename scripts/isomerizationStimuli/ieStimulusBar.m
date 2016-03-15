@@ -8,125 +8,77 @@ function iStim = ieStimulusBar(varargin)
 %   optical image and the sensor.
 % 
 % Example:
-%   params.barWidth = 10;
-%   params.nSteps = 20;
+%   clear params; params.barWidth = 10; params.fov=0.6;
 %   iStim = ieStimulusBar(params);
-%   vcAddObject(iStim.scene); sceneWindow;
+%   coneImageActivity(iStim.absorptions,'dFlag',true);
+%   vcAddObject(iStim.absorptions); sensorWindow;
 % 
 % 3/2016 JRG (c) isetbio team
 
 %% Parse inputs
+
 p = inputParser;
 addParameter(p,'barWidth',       5,     @isnumeric);
 addParameter(p,'meanLuminance',  200,   @isnumeric);
-addParameter(p,'nSteps',         50,    @isnumeric);
+addParameter(p,'nSteps',         [],    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,    @isnumeric);  
-addParameter(p,'vfov',            0.4988,    @isnumeric);  
+addParameter(p,'expTime',        0.005, @isnumeric);
+addParameter(p,'timeInterval',   0.005, @isnumeric);
 
 p.parse(varargin{:});
-
 params = p.Results;
-%% Compute a Gabor patch scene as a placeholder for the bar image
-
-% Set up Gabor stimulus using sceneCreate('harmonic',params)
 fov = params.fov;
-vfov = params.vfov;
-% % Bar width in pixels
-% params.barWidth = 5;
-% % Mean luminance
-% params.meanLuminance = 200;
-% % Size of image in (row,col)
-% params.row = 64; params.col = 64;
 
-% params.freq = 6; params.contrast = 1;
-% % params.ph  = 0;  params.ang = 0;
-% params.row = 64; params.col = 64;
-% params.GaborFlag = 0.2; % standard deviation of the Gaussian window
+wFlag = ieSessionGet('wait bar');
+
+%% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
 display = displayCreate('CRT-Sony-HorwitzLab');
 
 % Set up scene, oi and sensor
-scene = sceneCreate('harmonic', params);
+scene = sceneCreate();
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
-% These parameters are for other stuff.
-params.expTime = 0.01;
-params.timeInterval = 0.01;
-% params.nSteps = 50;     % Number of stimulus frames
-
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-sensor = sensorCreate('human');
-sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+absorptions = sensorCreate('human');
+absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
 
-sensor = sensorSet(sensor, 'exp time', params.expTime); 
-sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
+absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
+absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
-%% Compute a dynamic set of cone absorptions
-
-% We want to produce a scene video that translates into an oi video that
-% becomes a cone absorption video.  At present coneAbsorptions ONLY does
-% this using eye movements, not by creating a series of images.  This code
-% represents our first effort to produce dynamic scenes.
-
-% We are literally going to recreate a set of scenes with different phase
-% positions and produce the scenes, ois, and cone absorptions by the loop.
-% The result will be a time series of the cone photon absorptions.
-%
-% We are reluctant to make scene(:,:,:,t) because we are frightened about
-% the size.  But it still might be the right thing to do.  So the code here
-% is an experiment and we aren't sure how it will go.
-
-% sceneRGB = zeros([sceneGet(scene, 'size') params.nSteps 3]); % 3 is for R, G, B
-% sensorPhotons = zeros([sensorGet(sensor, 'size') params.nSteps]);
-% stimulus = zeros(1, params.nSteps);
 %% Compute a dynamic set of cone absorptions for moving bar
-%
-%
-% We want to produce a scene video that translates into an oi video that
-% becomes a cone absorption video.  At present coneAbsorptions ONLY does
-% this using eye movements, not by creating a series of images.  This code
-% represents our first effort to produce dynamic scenes.
-%
-% We are literally going to recreate a set of scenes with different phase
-% positions and produce the scenes, ois, and cone absorptions by the loop.
-% The result will be a time series of the cone photon absorptions.
-%
-% We are reluctant to make scene(:,:,:,t) because we are frightened about
-% the size.  But it still might be the right thing to do.  So the code here
-% is an experiment and we aren't sure how it will go.
 
-% sceneRGB = zeros([sceneGet(scene, 'size') params.nSteps 3]); % 3 is for R, G, B
-% sensorPhotons = zeros([sensorGet(sensor, 'size') params.nSteps]);
-% stimulus = zeros(1, params.nSteps);
-fprintf('Computing cone isomerization:    \n');
+fprintf('Computing cone isomerizations:    \n');
 
 % ieSessionSet('wait bar',true);
-wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
 % Loop through frames to build movie
-for t = 1 : params.nSteps
-    if wFlag, waitbar(t/params.nSteps,wbar); end
+% The number of steps must be smaller than the width of the scene
+nSteps = params.nSteps;
+if isempty(nSteps), 
+    nSteps = sceneGet(scene,'cols') - params.barWidth; 
+end
+nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
+
+for t = 1 : nSteps
+    if wFlag, waitbar(t/nSteps,wbar); end
         
+    barMovie = ones([sceneGet(scene, 'size'), 3])*0.1;  % Gray background
+    barMovie(:,t:(t+params.barWidth-1),:) = 1;          % White bar
 
-%     if t == 1 
-        barMovie = zeros(params.row,params.col,3);
-%     end
-    barMovie(:,1+t:t+params.barWidth,:) = 0.5 + 0.499*ones(params.row,params.barWidth,3);
-    barMovie(1,1,:) = 0;
-
-    % % % % Generate scene object from stimulus RGB matrix and display object
+    % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
-    
-    % scene = sceneSet(scene, 'v fov', vfov);
-    % sensor = sensorSet(sensor,'v fov', vfov);
+    if t ==1
+        sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+    end
     
     % Get scene RGB data    
     sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
@@ -135,13 +87,13 @@ for t = 1 : params.nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    sensor = sensorCompute(sensor, oi);
+    absorptions = sensorCompute(absorptions, oi);
 
     if t == 1
-        volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
+        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
     end
     
-    volts(:,:,t) = sensorGet(sensor, 'volts');
+    volts(:,:,t) = sensorGet(absorptions, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end
@@ -149,7 +101,7 @@ end
 if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
-sensor = sensorSet(sensor, 'volts', volts);
+absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
 % These are both the results and the objects needed to recreate this
@@ -157,10 +109,9 @@ sensor = sensorSet(sensor, 'volts', volts);
 % results.
 
 iStim.params  = params;
-
 iStim.display = display;
 iStim.scene   = scene;
 iStim.sceneRGB = sceneRGB;
 iStim.oi      = oi;
-iStim.sensor  = sensor;
+iStim.absorptions  = absorptions;
 end
