@@ -82,7 +82,7 @@ end
 oi = oiCreate;
 
 % Same wavelengths
-oi = oiSet(oi,'wave',wave);
+% oi = oiSet(oi,'wave',wave);
 
 % Copy the OTF parameters.
 % Note the awful repetition of setting the wave.  Sigh. This should get
@@ -90,7 +90,7 @@ oi = oiSet(oi,'wave',wave);
 oi = oiSet(oi,'optics OTF fx', fx);
 oi = oiSet(oi,'optics OTF fy', fy);
 oi = oiSet(oi,'optics otfdata', otf);
-oi = oiSet(oi,'optics wave',wave);
+% oi = oiSet(oi,'optics wave',wave);
 oi = oiSet(oi,'optics OTF wave',wave);
 
 % Z = wvfGet(wvf,'zcoeffs');

@@ -65,25 +65,6 @@ switch oiType
         oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
         oi = oiSet(oi, 'name','human-WVF');
         
-        
-        % Defaults and then adjust for varargin
-        %         wave = 400:10:700; wave = wave(:);
-        %         pupilMM = 3;
-        %         zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
-        %         if ~isempty(varargin), pupilMM = varargin{1}; end
-        %         if length(varargin) > 1, zCoefs = varargin{2}; end
-        %         if length(varargin) > 2, wave = varargin{3}; end
-        %
-        %         % Create wavefront parameters
-        %         wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-        %         wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
-        %         wvfP = wvfComputePSF(wvfP);
-        %         % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);
-        %         % set(gca,'xlim',[-20 20],'ylim',[-20 20]);
-        %
-        %         oi = wvf2oi(wvfP);
-        %         oi = oiSet(oi,'name',sprintf('Human WVF %.1f mm',pupilMM));
-        %
     case {'diffractionlimited','diffraction'}
         % Default optics is f# = 4, diffraction limited
         optics = opticsCreate('diffraction limited');
