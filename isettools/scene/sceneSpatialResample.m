@@ -1,12 +1,13 @@
-function scene = sceneSpatialResample(scene,dx,units,method)
+function scene = sceneSpatialResample(scene,dx,units,method, promptUser)
 % Spatial resample all wavebands of a scene
 %
 %   scene = spatialResample(scene,dx,'units','method')
 %
-% scene:   ISET scene
-% dx:      New sample spacing
-% units:   Sample spatial units (e.g., 'um','mm', default = 'm')
-% method:  linear, cubic or spline interpolation (default = 'linear')
+% scene:        ISET scene
+% dx:           New sample spacing
+% units:        Sample spatial units (e.g., 'um','mm', default = 'm')
+% method:       linear, cubic or spline interpolation (default = 'linear')
+% promptUser:   Set to false to avoid the routine waiting for user to enter a keypress
 %
 % Example:
 %  scene = sceneCreate; scene = sceneSet(scene,'fov',3);
@@ -23,6 +24,7 @@ function scene = sceneSpatialResample(scene,dx,units,method)
 if notDefined('scene'),  error('scene required'); end
 if notDefined('units'),  units  = 'm'; end
 if notDefined('method'), method = 'linear'; end
+if notDefined('promptUser'), promptUser = true; end
 % Always work in meters
 dx = dx/ieUnitScaleFactor(units);
 
@@ -43,8 +45,10 @@ yN = ymin:dx:ymax;
 % fprintf('Proposed dx = %f meters\n',dx);
 % fprintf('New scene size %d (rows) %d (cols)\n',length(yN),length(xN));
 if length(xN) > 1000 || length(yN) > 1000
-    fprintf('Very large scene.  Any key to continue\n');
-    pause
+    if (promptUser)
+        fprintf('Very large scene.  Any key to continue\n');
+        pause
+    end
 end
 
 %% Interpolate the image for each waveband
