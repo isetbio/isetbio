@@ -123,6 +123,6 @@ switch lower(params.what)
             end
         end      
     case{'responsevoltage'}
-        obj.responseSpikes = params.value;
+        obj.responseVoltage = params.value;
 end
 

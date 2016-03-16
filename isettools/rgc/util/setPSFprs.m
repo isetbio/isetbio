@@ -66,11 +66,14 @@ ih = zeros(nCellsTotal,nCellsTotal,598);
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr+1;
-        if xcell == ycell
-            ih(cellCtr,cellCtr,:) = postSpikeFilter;%reshape(postSpikeFilter,nCellsTotal,hlen);
-        else
-            ih(cellCtr,:,:) = zeros(nCellsTotal,598);
-        end
+%         if xcell == ycell
+%             for ctrind = 1:nCellsTotal
+                ih(cellCtr,cellCtr,:) = postSpikeFilter;%reshape(postSpikeFilter,nCellsTotal,hlen);
+%             end
+%             ih(:,cellCtr,:) = (repmat(postSpikeFilter',[nCellsTotal 1 1]));
+%         else
+%             ih(cellCtr,:,:) = zeros(nCellsTotal,598);
+%         end
 
     end
 end

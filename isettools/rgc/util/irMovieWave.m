@@ -116,6 +116,7 @@ for t = 1:frameskip:5750
             % Plot the waveform for this cell
 %             h1=plot3(xv, yv, zv,'linewidth',2);
             h1=plot3(xv, yv, zv,'linewidth',2,'color',(colorval(xc,yc,:)));
+            plot3(xv, yv, zv,':','linewidth',1,'color','k');
 %             if t ==1 
 %                 colorval(xc,yc,:) = get(h1,'color');
 %             end
@@ -155,7 +156,7 @@ for t = 1:frameskip:5750
                             % plot the line representing the lateral
                             % connection
 %                             line(1+zfac*1000*[x0 xf ],[t  t]/10000,1+zfac*1000*10*[z0 zf],'color',colorval,'linewidth',4);
-                            line([x0 xf ],[t+1000 t+1000]/10000,10*[z0 zf],'color',(colorval(xc,yc,:)),'linewidth',4);
+                            line([x0 xf ],[t+1000 t+1000]/10000,10*[z0 zf],'color',(colorval(xc,yc,:)),'linewidth',4);                           
 
                         end%if
                     end%yc2
@@ -165,8 +166,7 @@ for t = 1:frameskip:5750
             plot3((spatialRFcontours{xc,yc,1}(1,2:end))-maxx/2,...
                 (t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontours{xc,yc,1}(1,2:end))),...
                 (spatialRFcontours{xc,yc,1}(2,2:end))-10*maxy/2,'color',(colorval(xc,yc,:)));%,...
-
-            
+           
         end
     end
     % Label axes

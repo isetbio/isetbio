@@ -45,12 +45,13 @@ for ii = 1:length(ir.mosaic)
                 for yc = 1:nCells(2)
                     cellCtr = cellCtr+1;
                     responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
+                    responseVoltage{yc,xc} = Vmem(:,cellCtr);
                 end
             end
 
             % Set mosaic property
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
-            
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
         case 'rgcLNP'
             % Call another version of the Pillow code for spike response
             % responseSpikes = computeSpikesPSF(ir.mosaic{ii});
@@ -71,11 +72,12 @@ for ii = 1:length(ir.mosaic)
                 for yc = 1:nCells(2)
                     cellCtr = cellCtr+1;
                     responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
+                    responseVoltage{yc,xc} = Vmem(:,cellCtr);
                 end
             end
             
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
-            
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);            
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
         otherwise
             error('The rgcMosaic object is a model without a spike response; choose LNP or GLM for spikes.');
     end

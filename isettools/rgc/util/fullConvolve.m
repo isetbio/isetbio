@@ -66,7 +66,7 @@ for xcell = 1:nCells(1)
                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
                 
                 % Specify starting and ending time coordinates
-                startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
+                startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 

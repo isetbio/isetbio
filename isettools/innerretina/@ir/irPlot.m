@@ -57,10 +57,10 @@ allowableFieldsToSet = {...
     'postSpikeFilter',...
     'couplingFilter',...
     'responselinear','linear',...
-    'nlResponse','nl','nonlinear',...
-    'responseSpikes','spike','voltage',...
-    'rasterResponse','raster',...
-    'psthResponse','psth'...
+    'nlResponse','nl','nonlinear','responsenl',...
+    'responseSpikes','spike','voltage','responseVoltage',...
+    'rasterResponse','raster','responseraster',...
+    'psthResponse','psth','responsepsth'...
     };
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
@@ -136,6 +136,7 @@ switch ieParamFormat(params.what)
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
+            hl=legend('center','surround','location','ne'); set(hl,'fontsize',14);
         end
         % plot the cone mosaic with RGC contours!
         % [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
@@ -273,7 +274,7 @@ switch ieParamFormat(params.what)
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
-            plot(.01:.01:.2,bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
+            plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{1}),bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
             ylabel(sprintf('Response (spikes/sec)'),'fontsize',16);
@@ -390,7 +391,7 @@ switch ieParamFormat(params.what)
         end
         
         
-    case{'nlresponse','nl','nonlinear'}
+    case{'nlresponse','nl','nonlinear','responsenl'}
         vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         
@@ -426,7 +427,7 @@ switch ieParamFormat(params.what)
             
         end
         
-    case{'responseSpikes','spike','voltage'}
+    case{'responseSpikes','responsevoltage','spike','voltage'}
         
         %%% Plot the membrane voltages for a random trial
         
@@ -482,7 +483,7 @@ switch ieParamFormat(params.what)
         %         axis(axesHandles,[0 30 0 maxVal])
         %         clear axesHandles;
         
-    case{'rasterresponse','raster'}
+    case{'rasterresponse','responseraster','raster'}
         
         
         dt = .01; % make this a get from sensor
@@ -555,7 +556,8 @@ switch ieParamFormat(params.what)
                     end%trials;
                     % end;
                     
-                    axis([0 70*dt 0 maxTrials]);
+                    maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
+                    axis([0 .01*bindur*maxt 0 maxTrials]);
                     
                     
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
@@ -566,7 +568,7 @@ switch ieParamFormat(params.what)
         end
         
         
-    case{'psthresponse','psth'}
+    case{'psthresponse','responsepsth','psth'}
         % Post-stimulus time histogram
         % Example:
         %   irPlot(innerRetina,'psth','type','onParasol');
@@ -612,7 +614,7 @@ switch ieParamFormat(params.what)
                     for trial = 1:maxTrials
                         
                         yind =  obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,trial,1};
-                        y(trial,round(yind./dt))=1;
+                        y(trial,ceil(yind./dt))=1;
                     end
                     % y(:,end) = .01;
                     
@@ -642,7 +644,9 @@ switch ieParamFormat(params.what)
                     
                     %                     plot(tt/.01,psth{xcell,ycell});
                     %                     if ~isnan(psth{xcell,ycell})
-                    axis([0 .7 0 max([1 max(PSTH_rec)])]);
+                    
+                    maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
+                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec)])]);
                     %                     end
                     %
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
