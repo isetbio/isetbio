@@ -40,7 +40,6 @@ hold on;
 
 % TODO: Loop over all mosaics
 nX = 0; nY = 0;
-% for cellTypeInd = 1:5
 cellTypeInd = 1;
 
 [nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
@@ -49,8 +48,10 @@ nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear{1,1});
 % nY = nY = nYi;
 
 % Find max positions
-allpos = vertcat(innerRetina.mosaic{cellTypeInd}.cellLocation{:});
-maxx = max(allpos(:,1))/1; maxy = max(allpos(:,2));
+% allpos = vertcat(innerRetina.mosaic{cellTypeInd}.cellLocation{:});
+% maxx = max(allpos(:,1))/1; maxy = max(allpos(:,2));
+
+% metersPerPixel = 
 
 % Find spatial RF size
 [nPixX, nPixY] = size(innerRetina.mosaic{cellTypeInd}.sRFcenter{1,1});
@@ -58,9 +59,18 @@ nFramesRF = length(innerRetina.mosaic{cellTypeInd}.tCenter{1});
 
 stimulusReconstruction = zeros(nPixX*nX, nPixY*nY, nFrames + nFramesRF);
 
+for cellTypeInd = 1:length(innerRetina.mosaic)
+    
+    
+[nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
+
 % Loop through each cell and plot spikes over time
 for xc = 1:nX
     for yc = 1:nY
+        
+        [nPixX, nPixY] = size(innerRetina.mosaic{cellTypeInd}.sRFcenter{1,1});
+        nFramesRF = length(innerRetina.mosaic{cellTypeInd}.tCenter{1});
+        
         % Build the STRF of the cell
         sRF = innerRetina.mosaic{cellTypeInd}.sRFcenter{xc,yc} - innerRetina.mosaic{cellTypeInd}.sRFsurround{xc,yc};
         tRF(1,1,:) = innerRetina.mosaic{cellTypeInd}.tCenter{1};
@@ -72,14 +82,25 @@ for xc = 1:nX
         
         % Add the STRF to the stimulus reconstruction for each spike
         for iFrame = 1:length(spPlot)
-        stimulusReconstruction((yc-1)*nPixY + 1 : yc*nPixY, (xc-1)*nPixX + 1 : xc*nPixX, round(1*spPlot(iFrame)) : round(1*spPlot(iFrame))+nFramesRF-1) = ...
-            stimulusReconstruction((yc-1)*nPixY + 1 : yc*nPixY, (xc-1)*nPixX + 1 : xc*nPixX, round(1*spPlot(iFrame)) : round(1*spPlot(iFrame))+nFramesRF-1) + ...
-            strf;
+            
+            % ycoords = (yc-1)*nPixY + 1 : yc*nPixY;
+            % xcoords = (xc-1)*nPixX + 1 : xc*nPixX;
+            
+            centerCoords = innerRetina.mosaic{cellTypeInd}.cellLocation{xc,yc};            
+            ycoords = 6 + (ceil(centerCoords(1) - (nPixY/2)) : floor(centerCoords(1) + (nPixY/2))); 
+            xcoords = 6 + (ceil(centerCoords(2) - (nPixX/2)) : floor(centerCoords(2) + (nPixX/2))); 
+            
+            tcoords = ceil(1*spPlot(iFrame)) : ceil(1*spPlot(iFrame))+nFramesRF-1;
+            
+            stimulusReconstruction(xcoords, ycoords, tcoords) = ...
+                stimulusReconstruction(xcoords, ycoords, tcoords) + ...
+                strf;
         end%iFrame
         
         
     end%nX
 end%nY
+end
 
 case{'otherwise'}
     error('Model does not exist');

@@ -30,7 +30,7 @@ for ii = 1:length(ir.mosaic)
         case {'rgcGLM','rgcSubunit'}
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
-            
+            clear responseSpikes responseVoltage
             % Modified
             % responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
             

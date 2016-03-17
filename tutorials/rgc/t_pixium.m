@@ -78,19 +78,27 @@ clear;
 ieInit;
  
 % Set the size of implant pixels
-electrodeArray.width = 70e-6; % meters
+electrodeArray.width = 20e-6; % meters
 % electrodeArray.width = 140-6; % meters
 
 %% Load image
 
 % One frame of a moving bar stimulus
 % Set parameters for size
-params.nSteps = 20;
+params.nSteps = 90;
 params.row = 100;
 params.col = 100;
 params.fov = 0.7;
 % params.vfov = 0.7;
 movingBar = ieStimulusBar(params);
+
+%% Show raw stimulus for osIdentity
+figure;
+for frame1 = 1:size(movingBar.sceneRGB,3)
+    imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+    colormap gray; drawnow;
+end
+close;
 
 %% Outer segment calculation
 % There is no simulated outer segment, this identity outer segment acts as
@@ -99,8 +107,11 @@ movingBar = ieStimulusBar(params);
 % Input = RGB
 os = osCreate('identity');
 
+sceneSize = sceneGet(movingBar.scene,'size');
 retinalPatchWidth = sensorGet(movingBar.absorptions,'width','m');
-retinalPatchHeight = sensorGet(movingBar.absorptions,'height','m');
+% retinalPatchHeight = sensorGet(movingBar.absorptions,'height','m');
+retinalPatchHeight = (sceneSize(1)/sceneSize(2))*retinalPatchWidth;
+
 % % % coneSpacing = scene.wAngular*300
 % coneSpacing = sensorGet(sensor,'dimension','um');
 os = osSet(os, 'patchSize', retinalPatchWidth);
@@ -128,13 +139,13 @@ electrodeArray.size = [numberElectrodesX numberElectrodesY];
 % electrodeArray.center(xPos,yPos,:) = [xCoord yCoord];
 for xPos = 1:numberElectrodesX
     for yPos = 1:numberElectrodesY
-        electrodeArray.center(xPos,yPos,:) = [(retinalPatchWidth/2)*(xPos-1) + retinalPatchWidth, (retinalPatchWidth/2)*(yPos-1) + retinalPatchWidth];
+        electrodeArray.center(xPos,yPos,:) = [(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, (electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
     end
 end
 
 % Build the current stimulation activation window
 % Gaussian activation from center of electrode
-activationWindow = round(retinalPatchSize(2)/numberElectrodesX);
+activationWindow = floor(retinalPatchSize(2)/numberElectrodesX);
 electrodeArray.spatialWeight = fspecial('Gaussian', activationWindow, activationWindow/8);
 
 % Visualize Gaussian activation
@@ -162,6 +173,7 @@ for frame = 1:params.nSteps
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
+            % imagesc(electrodeStimulus); title(sprintf('%2.2f',mean(electrodeStimulus(:))));
         end
     end
 end
@@ -179,7 +191,8 @@ paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 model   = 'GLM';    % Computational model
 innerRetina = irCreate(os,paramsIR);
 innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
@@ -202,7 +215,7 @@ for frame = 1:params.nSteps
                 % Electrode centers
                 electrodeCenter = reshape(electrodeArray.center,[numberElectrodes,2]);
                 % RGC center
-                rgcCenter = innerRetina.mosaic{1}.cellLocation{xind,yind}*metersPerPixel;
+                rgcCenter = innerRetina.mosaic{mosaicInd}.cellLocation{xind,yind}*metersPerPixel;
                 % Find distance
                 centerDistanceCoords = repmat(rgcCenter,[numberElectrodes,1]) - electrodeCenter;
                 % Weight electrode activation by Gaussian according to distance
@@ -210,7 +223,7 @@ for frame = 1:params.nSteps
                 [minDistance, minDistanceInd] = min(centerDistance);
                 [xmin,ymin] = ind2sub([numberElectrodesX,numberElectrodesY],minDistanceInd);
                 
-                innerRetinaInput(xind,yind,frame,mosaicInd) = electrodeArray.activation(xmin,xmin,frame)*exp(-minDistance/2e-4);
+                innerRetinaInput(yind,xind,frame,mosaicInd) = electrodeArray.activation(xmin,ymin,frame)*exp(-minDistance/2e-4);
             end
         end
     end
@@ -229,7 +242,7 @@ for mosaicInd = 1:length(innerRetina.mosaic)
     [xc yc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
     for xind = 1:xc
         for yind = 1:yc
-            thr = 5;%20*rand(1,1);
+            thr = 20*rand(1,1);
             i0 = -.5*rand(1,1);
             % innerRetinaFunction{xind,yind,mosaicInd}= @(iElectrode) 1./(1+exp(-thr*(i0+iElectrode)));
             innerRetinaThreshold{xind,yind,mosaicInd} = [thr i0];
@@ -240,7 +253,7 @@ end
 
 %% Compute RGC activations
 for mosaicInd = 1:length(innerRetina.mosaic)
-    clear innerRetinaActivation
+    clear innerRetinaActivation 
     [xc yc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
     for xind = 1:xc
         for yind = 1:yc
@@ -249,12 +262,12 @@ for mosaicInd = 1:length(innerRetina.mosaic)
                 % innerRetinaActivation{xind,yind,mosaicInd} = innerRetinaFunction{xind,yind,mosaicInd}(innerRetinaInput(xind,yind,mosaicInd));
                 funcParams = innerRetinaThreshold{xind,yind,mosaicInd};
                 thr = funcParams(1); i0 = funcParams(2);
-                % innerRetinaFunction = @(iElectrode) 1./(1+exp(-thr*(i0+iElectrode)));
-                innerRetinaFunction = @(iElectrode) log(1./(1+exp(-thr*(i0+iElectrode))));
-%                 innerRetinaFunction = @(iElectrode) (iElectrode);
+                % innerRetinaFunction = @(iElectrode) 10./(1+exp(-thr*(i0+iElectrode)));
+                % innerRetinaFunction = @(iElectrode) log(1./(1+exp(-thr*(i0+iElectrode))));
+                innerRetinaFunction = @(iElectrode) (5*iElectrode);
                 % innerRetinaActivation{xind,yind,mosaicInd} = innerRetinaFunction(innerRetinaInput(xind,yind,mosaicInd));
                 
-                innerRetinaActivation{xind,yind}(frame) = innerRetinaFunction(innerRetinaInput(xind,yind,mosaicInd));
+                innerRetinaActivation{xind,yind}(frame) = 10*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
             end
             mosaicSet(innerRetina.mosaic{mosaicInd},'responseLinear', innerRetinaActivation);
             
@@ -262,7 +275,11 @@ for mosaicInd = 1:length(innerRetina.mosaic)
     end
 end
 
-innerRetina = irComputeSpikes(innerRetina);
+%% Compute RGC spiking
+numberTrials = 10;
+for tr = 1:numberTrials
+    innerRetina = irComputeSpikes(innerRetina);
+end
 %% Invert representation to form image/movie
 
 irReconstruct(innerRetina);

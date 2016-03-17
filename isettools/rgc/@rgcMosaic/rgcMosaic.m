@@ -116,7 +116,7 @@ classdef rgcMosaic < handle
                     mosaicInd = 3;
                 case{'offmidget'}
                     mosaicInd = 4;
-                case{'smallbistratified'}
+                case{'smallbistratified','sbc'}
                     mosaicInd = 5;
                 otherwise
                     error('Unknown cell type');
