@@ -43,8 +43,8 @@ nX = 0; nY = 0;
 % for cellTypeInd = 1:5
 cellTypeInd = 1;
 
-[nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.linearResponse);
-nFrames = length(innerRetina.mosaic{cellTypeInd}.linearResponse{1,1});
+[nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
+nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear{1,1});
 % nX = nX + nXi;
 % nY = nY = nYi;
 
@@ -67,7 +67,7 @@ for xc = 1:nX
         strf = repmat(sRF,[1 1 nFramesRF]).*repmat(tRF, [nPixX, nPixY, 1]);
         
         % Get the appropriate spike data
-        spPlot=innerRetina.mosaic{cellTypeInd}.spikeResponse{xc,yc,5,1};
+        spPlot=innerRetina.mosaic{cellTypeInd}.responseSpikes{xc,yc,1,1};
         % spPlot=(median(horzcat(innerRetina.mosaic{3}.spikeResponse{xc,yc,:,2})'));
         
         % Add the STRF to the stimulus reconstruction for each spike

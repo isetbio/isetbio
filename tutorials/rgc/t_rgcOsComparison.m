@@ -71,9 +71,9 @@ irPlot(innerRetina0,'mosaic');
 innerRetina0 = irCompute(innerRetina0, osI);
 irPlot(innerRetina0, 'psth');
 % irPlot(innerRetina0, 'linear');
+% irPlot(innerRetina0, 'raster');
 
-%%
-% Show stimulus over cone mosaic
+%% Show stimulus over cone mosaic for osLinear, osBioPhys
 figure;
 coneImageActivity(absorptions,'step',1,'dFlag',true);
 %% Compute the outer segment response

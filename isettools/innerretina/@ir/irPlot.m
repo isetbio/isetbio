@@ -433,7 +433,7 @@ switch ieParamFormat(params.what)
         
         vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
-        szSpike = size(horzcat(obj.mosaic{1}.responseSpikes{1,1,:,2}));
+        szSpike = size(horzcat(obj.mosaic{1}.responseVoltage{1,1,:}));
         
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -455,7 +455,7 @@ switch ieParamFormat(params.what)
                 for ycell = ycellstart:nCells(2)
                     % Take mean membrane voltage over N trials
                     % meanVoltage{xcell,ycell} = mean(horzcat(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,:,2}),2);
-                    meanVoltage{xcell,ycell} = mean(horzcat(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,1,2}),2);
+                    meanVoltage{xcell,ycell} = ((obj.mosaic{cellTypeInd}.responseVoltage{xcell,ycell}));
                 end
             end
             if length(cellTypeStart:cellTypeEnd)>1
