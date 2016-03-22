@@ -1,15 +1,16 @@
-function oi = oiSpatialResample(oi,dx,units,method)
+function oi = oiSpatialResample(oi,dx,units,method, promptUser)
 % Spatial resample all wavebands of a scene
 %
 %   oi = oiSpatialResample(oi,dx,'units','method')
 %
 % The current oi spatial sampling can be measured 
 %
-% oi:      Optical image
-% dx:      New spatial sampling difference
-% units:   Spatial units (default is meters)
-% method:  Interpolation method (default is linear)
-% 
+% oi:           Optical image
+% dx:           New spatial sampling difference
+% units:        Spatial units (default is meters)
+% method:       Interpolation method (default is linear)
+% promptUser:   Set to false to avoid the routine waiting for user to enter a keypress
+%
 % See also:  v_sceneSpatialResample (tests oi, too)
 %
 % Example:
@@ -28,6 +29,8 @@ if notDefined('oi'),     error('oi required'); end
 if notDefined('dx'),     error('dx required'); end
 if notDefined('units'),  units  = 'm'; end
 if notDefined('method'), method = 'linear'; end
+if notDefined('promptUser'), promptUser = true; end
+%
 % Always work in meters
 dx = dx/ieUnitScaleFactor(units);
 
@@ -44,8 +47,10 @@ yN = ymin:dx:ymax;
 % fprintf('Proposed dx = %f meters\n',dx);
 % fprintf('New scene size %d (rows) %d (cols)\n',length(yN),length(xN));
 if length(xN) > 1000 || length(yN) > 1000
-    fprintf('Very large scene.  Any key to continue\n');
-    pause
+    if (promptUser)
+        fprintf('Very large scene.  Any key to continue\n');
+        pause
+    end
 end
 
 %% Interpolate the image for each waveband
