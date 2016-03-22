@@ -9,11 +9,21 @@
 % 
 % Outline of computation:
 % 1. Load image/movie
+% - Moving bar stimulus sweeping left to right
+% 
 % 2. Outer segment calculation
+% - The osIdentity object does no computation and stores the stimulus RGB
+% data.
+%  CHECK IESTIMULUSBAR FOR SIZE CHANGE
+% 
 % 3. Build electrode array
-% 4. Compute electrode activations from image
+% - The electrode array is simulated as a square array of a certain size
+% with Gaussian weights on their activations. The activation of each
+% electrode is the mean of the CHANGE TO HEX
+% 
+% 4. Compute electrode activations from image/movie
 % 5. Build RGC array
-% 6. Calculate RGC input
+% 6. Calculate RGC input - only one, change to input from multiple
 % 7. Build RGC activation functions
 % 8. Compute RGC activations/spikes
 % 9. Invert representation to form image/movie
@@ -72,7 +82,8 @@
 % ej
 % 
 % 1.5 orders of magnitude variance in threshold of RGC activation
-
+% 
+% Add 5 Hz stimulation pulses
 %% Initialize
 clear;
 ieInit;
@@ -126,7 +137,7 @@ os = osSet(os, 'rgbData', movingBar.sceneRGB);
 % osPlot(os,absorptions);
 
 retinalPatchSize = osGet(os,'size');
-numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width);
+numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+2;
 numberElectrodesY = floor(retinalPatchHeight/electrodeArray.width);
 numberElectrodes = numberElectrodesX*numberElectrodesY;
 %% Build electrode array
@@ -135,11 +146,20 @@ numberElectrodes = numberElectrodesX*numberElectrodesY;
 % Size stores the size of the array of electrodes
 electrodeArray.size = [numberElectrodesX numberElectrodesY];
 
-% Builds the matrix of center coordinates for each electrode
+% Build the matrix of center coordinates for each electrode
 % electrodeArray.center(xPos,yPos,:) = [xCoord yCoord];
 for xPos = 1:numberElectrodesX
     for yPos = 1:numberElectrodesY
         electrodeArray.center(xPos,yPos,:) = [(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, (electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
+    end
+end
+
+eaSize = size(electrodeArray.center);
+figure;
+hold on;
+for i = 1:eaSize(1)
+    for j = 1:eaSize(2)
+        scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
     end
 end
 
@@ -178,6 +198,8 @@ for frame = 1:params.nSteps
     end
 end
 
+% Show plot
+
 % Apply Gaussian
 
 %% Build RGC array
@@ -201,6 +223,14 @@ metersPerPixel = retinalPatchWidth/retinalPatchSize(2);
 
 % innerRetina = irCompute(innerRetina, os);
 
+% Plot the electrode array over spatial receptive fields
+% eaSize = size(electrodeArray.center);
+% hold on;
+% for i = 1:eaSize(1)
+%     for j = 1:eaSize(2)
+%         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
+%     end
+% end
 %% Calculate RGC input
 % Weight electrode activation by Gaussian as a function of distance between
 % centers
@@ -251,6 +281,7 @@ for mosaicInd = 1:length(innerRetina.mosaic)
     end
 end
 
+% Plot something
 %% Compute RGC activations
 for mosaicInd = 1:length(innerRetina.mosaic)
     clear innerRetinaActivation 

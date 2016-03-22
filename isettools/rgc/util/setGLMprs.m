@@ -57,9 +57,17 @@ cellCtr = 0;
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
         cellCtr = cellCtr+1;
+        
+        if strcmp(class(mosaic),'rgcPhys')
+            % NEED TO ADD PSF
+            hlen = length(ihcpl{1,1}{1,1});
+            coupledCells = mosaic.couplingMatrix{xcell,ycell};
+            ih(cellCtr,coupledCells,:) = (horzcat(mosaic.couplingFilter{1,cellCtr}{:}))';
+            ih(cellCtr,cellCtr,:) = ((mosaic.postSpikeFilter{1,cellCtr}))';
+        else
         ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{ind2sub([nCells(1),nCells(2)],cellCtr)},nCellsTotal,hlen);
 %         ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{ind2sub([nCells(1),nCells(2)],cellCtr)},nCellsTotal,hlen);
-
+        end
     end
 end
 
@@ -71,11 +79,15 @@ ih = permute(ih,[3 2 1]); % flip 2nd & 3rd dimensions
 glmprs.ih = ih;
 
 %% Set time samples
+if~(isfield(mosaic,'dt'))
+    glmprs.iht = .01*(1:length(ih(:,1,1)));
+    glmprs.dt = .01;
+else
 glmprs.iht = mosaic.dt*(1:length(ih(:,1,1)));
 
 %% Set interpolation
 glmprs.dt = mosaic.dt;
-
+end
 %% Set nonlinearity
 glmprs.nlfun = mosaic.generatorFunction;
 

@@ -75,7 +75,7 @@ rgc2 = irSet(rgc2,'numberTrials',20);
 
 %%
 rgc2 = irCompute(rgc2, os2);
-
+% rgc2 = irComputeSpikes(rgc2, os2);
 rgc2psth = mosaicGet(rgc2.mosaic{1},'responsePsth');
 
 %% Load validation data
@@ -115,7 +115,30 @@ for i = 1%:36
 end
 
 % vcNewGraphWin; plot(diffpsth,'x')
+%%
+figure;
+for i = 1:length(rgc2.mosaic{1}.cellLocation)
+    % Measure difference between outputs
+    minlen = min([length(rgc2psth{i}) length(xvalall{i}.psth)]);
+    diffpsth(i) = sum(abs(rgc2psth{i}(1:minlen) - xvalall{i}.psth(1:minlen)))./sum(.5*(rgc2psth{i}(1:minlen) + xvalall{i}.psth(1:minlen)));
+    
+    % % Plot difference
+    subplot(6,7,i); hold on;
+    % plot(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen),'b','linewidth',1);
 
+    % Plot output of isetbio code
+    plot([1:minlen]./1208,rgc2psth{i}(1:minlen),'r ','linewidth',3);
+    hold on;
+    % Plot output of Chichilnisky Lab code
+    plot([1:minlen]./1208,xvalall{i}.psth(1:minlen),':k','linewidth',2);
+
+%     axis([0 6285./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
+    [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
+    title(sprintf('maxv = %.1f, maxi = %d',maxv,maxi));
+%     xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
+%     legend('ISETBIO','Lab');
+%     set(gca,'fontsize',14)
+end
 %% Compare linear outputs
 % figure;
 % for i = 1:39

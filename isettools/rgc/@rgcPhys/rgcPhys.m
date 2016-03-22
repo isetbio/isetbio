@@ -52,7 +52,8 @@ classdef rgcPhys % < rgcMosaic
         tonicDrive;
         responseRaster;
         responsePsth;
-
+        responseVoltage;
+        responseSpikes;
     end
     
     % Private properties. Only methods of the parent class can set these

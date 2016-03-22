@@ -27,7 +27,7 @@ RefreshRate = 100;
 for ii = 1:length(ir.mosaic)
     
     switch class(ir.mosaic{ii})
-        case {'rgcGLM','rgcSubunit'}
+        case {'rgcGLM','rgcSubunit','rgcPhys'}
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
             clear responseSpikes responseVoltage

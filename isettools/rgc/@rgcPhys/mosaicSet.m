@@ -70,9 +70,11 @@ allowableFieldsToSet = {...
     'couplingFilter',...
     'couplingMatrix',...
     'responseRaster',...
-    'responsePsth'...
+    'responsePsth',...
+    'responseVoltage',...
+    'responseSpikes'...
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 p.addRequired('value');
 
 % % Define what units are allowable.
@@ -92,7 +94,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.what)
     
     case{'celltype'}
         obj.cellType = params.value;
@@ -130,5 +132,20 @@ switch lower(params.what)
         obj.responseRaster = params.value;
     case{'responsepsth'}
         obj.responsePsth = params.value;
+    case{'responsevoltage'}
+        obj.responseVoltage = params.value;
+    case{'responsespikes'}
+%         obj.spikeResponse = params.value; 
+        nT = size(obj.responseSpikes,3);        
+        [sz1,sz2,nTrials,nType] = size(params.value);
+%         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
+        if nT == 1 & isempty(obj.responseSpikes); nT = 0; end; 
+        for xc = 1:sz1
+            for yc = 1:sz2
+                for nTypeI = 1:nType
+                    obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+                end
+            end
+        end   
 end
 

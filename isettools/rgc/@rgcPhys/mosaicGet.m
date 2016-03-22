@@ -68,9 +68,11 @@ allowableFieldsToSet = {...
     'couplingFilter',...
     'couplingMatrix',...
     'responseRaster',...
-    'responsePsth'...
+    'responsePsth',...
+    'responseVoltage',...
+    'responseSpikes'...
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -89,7 +91,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.what)
     case{'celltype'}
         val = obj.cellType;
     case{'rfdiameter'}
@@ -125,6 +127,8 @@ switch lower(params.what)
     case{'responseraster'}
         val = obj.responseRaster;
     case{'responsepsth'}
-        val = obj.responsePsth;
+        val = obj.responsePsth;        
+    case{'responsevoltage'}
+        val = obj.responseVoltage;
 end
 

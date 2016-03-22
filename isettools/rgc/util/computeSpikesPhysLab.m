@@ -106,7 +106,7 @@ for xcell = 1:nCells
         spikeTimes{xcell,1,i_trial,3} = log(cif0);
         spikeDrive{xcell,1,i_trial} = cif_ps_cp; % prune extra zeros
     end
-    toc
+%     toc
 end
 toc
 ph=1;
