@@ -91,7 +91,7 @@ for t = 1 : nSteps
     stimDimensions = sceneGet(scene, 'size'); stimSize = stimDimensions(1);
     % eHeight = 13; eWidth = 3;
     eMovie = zeros(stimSize,stimSize,3);
-    jitter = round((stimSize/4)*(randn(1,2)-0.5));
+    jitter = round((stimSize/4)*(rand(1,2)-0.5));
     
     %        eVert = 10;
     %     eMovie = zeros(stimSize,stimSize,3);
