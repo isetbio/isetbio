@@ -50,7 +50,7 @@ params.nSteps = 10;
 params.row = 64;
 params.col = 64;
 % Field of view
-params.fov = 0.7;
+params.fov = 0.25;
 
 % Build stimulus
 fixationalE = ieFixationalLetterE(params);
@@ -89,8 +89,8 @@ os = osSet(os, 'rgbData', fixationalE.sceneRGB);
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
+params.eyeRadius = 1;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees, 3 pm is 0, noon is 90
 
 innerRetina0 = irCreate(os, params);
 
