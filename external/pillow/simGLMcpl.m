@@ -1,4 +1,4 @@
-function [tsp,Vmem,Ispk] = simGLMcpl(glmprs,Stim);
+function [tsp,Vmem,Ispk] = simGLMcpl(glmprs,Stim)
 % [tsp, Vmem,Ispk] = simGLMcpl(glmprs,Stim);
 % 
 % Compute response of (multi-cell) coupled-glm to stimulus Stim.
