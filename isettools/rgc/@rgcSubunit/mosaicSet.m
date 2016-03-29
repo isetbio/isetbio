@@ -118,6 +118,9 @@ switch lower(params.what)
                 end
             end
         end
+        
+    case{'responsevoltage'}
+        obj.responseVoltage = params.value;
     case{'couplingfilter'}
         obj.couplingFilter = params.value;
     case{'couplingmatrix'}

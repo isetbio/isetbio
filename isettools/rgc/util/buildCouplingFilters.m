@@ -44,9 +44,16 @@ ihind = 2;
 
 %%%%
 
+nCells = size(obj.cellLocation);
+
 otherCenterLocations = vertcat(obj.cellLocation{:});
 
-nCells = size(obj.cellLocation);
+for xcell = 1:nCells(1)
+    for ycell = 1:nCells(2)
+        otherCenterIndX(xcell,ycell) = xcell;
+        otherCenterIndY(xcell,ycell) = ycell;
+    end
+end
 
 % for mosaic = 1:5
 for xcell = 1:nCells(1)
@@ -55,8 +62,15 @@ for xcell = 1:nCells(1)
         cellCenterLocation = obj.cellLocation{xcell,ycell};
         
         weightMatrixT = reshape(exp(-(2./(1*obj.rfDiameter))*(sum((bsxfun(@minus, cellCenterLocation, otherCenterLocations)).^2,2).^(1/2))),nCells(1),nCells(2));
+       
+        distMatrixX = reshape((bsxfun(@minus, xcell, otherCenterIndX)),nCells(1),nCells(2));
+        distMatrixY = reshape((bsxfun(@minus, ycell, otherCenterIndY)),nCells(1),nCells(2));
+        distMatrix = sqrt(distMatrixX.^2+distMatrixY.^2);
+        
         weightMatrixT(weightMatrixT==1) = 0; 
         weightMatrixT(weightMatrixT<0.1) = 0;
+        
+%         weightMatrixT(distMatrix>sqrt(2)) = 0;
         
         
         % weightMatrix{xcell,ycell,mosaic} = weightMatrixT;

@@ -15,7 +15,7 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 %% Set up defaults for the sizes and weights.
 
 % More comments on these numbers
-rfSizeMult = [1 1 0.5 0.5 1.2]; 
+rfSizeMult = [1 .85*1 0.5 .85*0.5 1.2]; 
 
 % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries

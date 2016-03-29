@@ -95,8 +95,12 @@ switch osType
             % through nonlinearity at this point
             if isa(ir.mosaic{rgcType},'rgcSubunit')
                 % Change this to get generator function
-                spResponseCenter   = cellfun(@(x) exp(.014*x), spResponseCenter,'uniformoutput',false);
-                spResponseSurround = cellfun(@(x) exp(.014*x), spResponseSurround,'uniformoutput',false);
+                
+                % modeltype = 'pixel';
+                modeltype = 'surround';
+                [spResponseCenter, spResponseSurround] = ...
+                    subunitPooling(spResponseCenter, spResponseSurround, 'model', modeltype);
+                
             end
             
             % Convolve with the temporal impulse response

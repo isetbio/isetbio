@@ -46,13 +46,13 @@ data = rdt.readArtifact('testmovieshort', 'type', 'mat');
 testmovieshort = data.testmovieshort;
 % implay(testmovieshort,10);
 
-% figure;
-% for frame1 = 1:200
-%     imagesc(testmovieshort(:,:,frame1));
-%     colormap gray; 
-%     drawnow;
-% end
-% close;
+figure;
+for frame1 = 1:200
+    imagesc(testmovieshort(:,:,frame1));
+    colormap gray; 
+    drawnow;
+end
+close;
 %% Generate outer segment object
 
 % In this case, the coupled-GLM calculation converts from the frame buffer
@@ -71,6 +71,7 @@ params.eyeRadius = 9;
 params.eyeAngle = 90;
 % rgc2 = rgcCreate('rgcPhys', params);
 rgc2 = irPhys(os2, params);
+% remove number of trials!
 rgc2 = irSet(rgc2,'numberTrials',20);
 
 %%
@@ -87,10 +88,10 @@ rdt.crp('resources/data/rgc');
 xvalall = data.xvalall;
 
 % % Load local copy
-% load('xvalall.mat');
-
+% load('xvalall2.mat');
+load('psth_rec_all.mat');
 %% Compare isetbio output and Chichilnisky Lab output
-vcNewGraphWin;
+vcNewGraphWin([],'upperleftbig');
 for i = 1%:36
     % Measure difference between outputs
     minlen = min([length(rgc2psth{i}) length(xvalall{i}.psth)]);
@@ -100,37 +101,56 @@ for i = 1%:36
     % subplot(6,7,i); hold on;
     % plot(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen),'b','linewidth',1);
 
-    % Plot output of isetbio code
-    plot([1:minlen]./1208,rgc2psth{i}(1:minlen),'r ','linewidth',3);
     hold on;
+    % Plot recorded response to natural scene
+    plot([1:minlen-1200]./1208,(20/57)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
+    
+    % Plot output of isetbio code
+    % plot([1:minlen]./1208,rgc2psth{i}((1:minlen)),'r ','linewidth',3);
+    plot([1:minlen-1200]./1208,rgc2psth{i}(1200+(1:minlen-1200)),'r ','linewidth',3);
+    
     % Plot output of Chichilnisky Lab code
-    plot([1:minlen]./1208,xvalall{i}.psth(1:minlen),':k','linewidth',2);
+    plot([1:minlen-1200]./1208,xvalall{i}.psth(1200+(1:minlen-1200)),':k','linewidth',2);
 
-    axis([0 6285./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
+    
+    axis([0 (6285-1200)./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
     title(sprintf('Validation with Chichilnisky Lab Data\nmaxv = %.1f, maxi = %d',maxv,maxi));
     xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
-    legend('ISETBIO','Lab');
+    legend('Recorded','ISETBIO','Lab Code');
     set(gca,'fontsize',14)
 end
 
 % vcNewGraphWin; plot(diffpsth,'x')
 %%
-figure;
+% figure; % set(gcf,'position',[0    0.0711    1.0000    0.8222]);
+vcNewGraphWin([],'upperleftbig');
 for i = 1:length(rgc2.mosaic{1}.cellLocation)
     % Measure difference between outputs
     minlen = min([length(rgc2psth{i}) length(xvalall{i}.psth)]);
     diffpsth(i) = sum(abs(rgc2psth{i}(1:minlen) - xvalall{i}.psth(1:minlen)))./sum(.5*(rgc2psth{i}(1:minlen) + xvalall{i}.psth(1:minlen)));
     
-    % % Plot difference
+%     % % Plot difference
     subplot(6,7,i); hold on;
-    % plot(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen),'b','linewidth',1);
-
-    % Plot output of isetbio code
-    plot([1:minlen]./1208,rgc2psth{i}(1:minlen),'r ','linewidth',3);
+%     % plot(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen),'b','linewidth',1);
+% 
+%     % Plot output of isetbio code
+%     plot([1:minlen]./1208,rgc2psth{i}(1:minlen),'r ','linewidth',3);
+%     hold on;
+%     % Plot output of Chichilnisky Lab code
+%     plot([1:minlen]./1208,xvalall{i}.psth(1:minlen),':k','linewidth',2);
     hold on;
+    % Plot recorded response to natural scene
+    plot([1:minlen-1200]./1208,(20/57)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
+    
+    % Plot output of isetbio code
+    % plot([1:minlen]./1208,rgc2psth{i}((1:minlen)),'r ','linewidth',3);
+    plot([1:minlen-1200]./1208,rgc2psth{i}(1200+(1:minlen-1200)),'r ','linewidth',3);
+    
     % Plot output of Chichilnisky Lab code
-    plot([1:minlen]./1208,xvalall{i}.psth(1:minlen),':k','linewidth',2);
+    plot([1:minlen-1200]./1208,xvalall{i}.psth(1200+(1:minlen-1200)),':k','linewidth',2);
+
+    
 
 %     axis([0 6285./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 

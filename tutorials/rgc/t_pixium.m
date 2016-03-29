@@ -89,8 +89,11 @@ clear;
 ieInit;
  
 % Set the size of implant pixels
-electrodeArray.width = 20e-6; % meters
+electrodeArray.width = 70e-6; % meters
 % electrodeArray.width = 140-6; % meters
+
+% Set horizontal field of view
+params.fov = 2.7;
 
 %% Load image
 
@@ -99,7 +102,7 @@ electrodeArray.width = 20e-6; % meters
 params.nSteps = 90;
 params.row = 100;
 params.col = 100;
-params.fov = 0.7;
+% params.fov = 2.7;
 % params.vfov = 0.7;
 movingBar = ieStimulusBar(params);
 
@@ -207,14 +210,15 @@ end
 clear paramsIR
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 4;        % Radius in mm
+paramsIR.eyeRadius = 12;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
-model   = 'GLM';    % Computational model
+model   = 'LNP';    % Computational model
 innerRetina = irCreate(os,paramsIR);
 innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
@@ -250,10 +254,20 @@ for frame = 1:params.nSteps
                 centerDistanceCoords = repmat(rgcCenter,[numberElectrodes,1]) - electrodeCenter;
                 % Weight electrode activation by Gaussian according to distance
                 centerDistance = bsxfun(@(x,y)sqrt(x.^2+y.^2),centerDistanceCoords(:,1),centerDistanceCoords(:,2));
-                [minDistance, minDistanceInd] = min(centerDistance);
-                [xmin,ymin] = ind2sub([numberElectrodesX,numberElectrodesY],minDistanceInd);
+                centerDistanceRS = reshape(centerDistance,[numberElectrodesX,numberElectrodesY]);
                 
+                [minDistance, minDistanceInd] = min(centerDistance);
+                [xmin,ymin] = ind2sub([numberElectrodesX,numberElectrodesY],minDistanceInd);                
                 innerRetinaInput(yind,xind,frame,mosaicInd) = electrodeArray.activation(xmin,ymin,frame)*exp(-minDistance/2e-4);
+                
+%                 for xind2 = 1:numberElectrodesX
+%                     for yind2 = 1:numberElectrodesY
+%                         innerRetinaInput(yind,xind,frame,mosaicInd) = ...
+%                             innerRetinaInput(yind,xind,frame,mosaicInd) + ...
+%                             electrodeArray.activation(xind2,yind2,frame)*exp(-centerDistanceRS(xind2,yind2)/2e-4);
+%                     end
+%                 end
+                
             end
         end
     end

@@ -57,13 +57,21 @@ nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear{1,1});
 [nPixX, nPixY] = size(innerRetina.mosaic{cellTypeInd}.sRFcenter{1,1});
 nFramesRF = length(innerRetina.mosaic{cellTypeInd}.tCenter{1});
 
-stimulusReconstruction = zeros(nPixX*nX, nPixY*nY, nFrames + nFramesRF);
+
+for cellTypeInd = 1:length(innerRetina.mosaic)
+    centerCoords = innerRetina.mosaic{cellTypeInd}.cellLocation{1,1};
+    mincoordmosaic(cellTypeInd) = abs(ceil(centerCoords(1) - (nPixY/2)));
+
+end
+mincoord = max(mincoordmosaic);
+
+stimulusReconstruction = zeros(nPixX*nX +mincoord, nPixY*nY +mincoord, nFrames + nFramesRF);
 
 for cellTypeInd = 1:length(innerRetina.mosaic)
     
     
 [nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
-
+maxx = 0; maxy = 0;
 % Loop through each cell and plot spikes over time
 for xc = 1:nX
     for yc = 1:nY
@@ -87,16 +95,17 @@ for xc = 1:nX
             % xcoords = (xc-1)*nPixX + 1 : xc*nPixX;
             
             centerCoords = innerRetina.mosaic{cellTypeInd}.cellLocation{xc,yc};            
-            ycoords = 6 + (ceil(centerCoords(1) - (nPixY/2)) : floor(centerCoords(1) + (nPixY/2))); 
-            xcoords = 6 + (ceil(centerCoords(2) - (nPixX/2)) : floor(centerCoords(2) + (nPixX/2))); 
+            ycoords1 = mincoord + (ceil(centerCoords(1) - (nPixY/2)) : floor(centerCoords(1) + (nPixY/2))); 
+            xcoords1 = mincoord + (ceil(centerCoords(2) - (nPixX/2)) : floor(centerCoords(2) + (nPixX/2))); 
             
             tcoords = ceil(1*spPlot(iFrame)) : ceil(1*spPlot(iFrame))+nFramesRF-1;
-            
+            xcgoodind = xcoords1>0; ycgoodind = ycoords1>0;
+            xcoords = xcoords1(xcgoodind); ycoords = ycoords1(ycgoodind);
             stimulusReconstruction(xcoords, ycoords, tcoords) = ...
                 stimulusReconstruction(xcoords, ycoords, tcoords) + ...
-                strf;
+                strf(xcgoodind,ycgoodind,:);
         end%iFrame
-        
+        maxx = max([maxx xcoords]); maxy = max([maxy ycoords]);
         
     end%nX
 end%nY
@@ -111,7 +120,7 @@ minR = min(stimulusReconstruction(:));
 
 % Play the movie
 for iFrame = 1:size(stimulusReconstruction,3)
-    imagesc(stimulusReconstruction(:,:,iFrame));
+    imagesc(stimulusReconstruction(1:maxx,1:maxy,iFrame));
     colormap gray
     caxis([minR maxR]);
     pause(0.1);

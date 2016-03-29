@@ -57,7 +57,7 @@ receptiveFieldDiameter1STD = receptiveFieldDiameter1STDmicrons/umPerSensorPx;
 
 %% Set parameters for spatial RF difference of gaussians
 % whene extent gets to 5, the sum of the RF is ~0
-extent = 1.5;
+extent = 2.5;
 
 % Ellipse parameter
 d1 = 1; d2 = 0;
@@ -90,13 +90,13 @@ pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD)
 
 %% Create spatial RFs for each cell
 tic
-centerNoise = 1.25; % divide by 2 for mean offset
+centerNoise = 0;%1.25; % divide by 2 for mean offset
 for icind = 1:length(icarr)
     
     for jcind = 1:length(jcarr)
         % Specify centers, offset even rows for hexagonal packing
-        ic = icarr(icind) - (mod(jcind,2)-1)*receptiveFieldDiameter1STD;% + centerNoise*(2*rand(1,1)-1);
-        jc = jcarr(jcind);% + centerNoise*(2*rand(1,1)-1);
+        ic = icarr(icind) - (mod(jcind,2)-1)*receptiveFieldDiameter1STD + centerNoise*(2*rand(1,1)-1);
+        jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
         rfctr = rfctr+1;
    
         % Add some noise to deviate from circularity

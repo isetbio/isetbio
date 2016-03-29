@@ -54,21 +54,24 @@ osI = osSet(osI, 'rgbData', iStim.sceneRGB);
 % osPlot(osI,absorptions);
 %% Build the inner retina object
 
-clear params
-params.name      = 'Macaque inner retina 1'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
+params.name = 'macaque phys'
+params.outersegment = osI;
+params.eyeSide = 'left'; 
+params.eyeRadius = 9; 
+params.eyeAngle = 90;
+% rgc2 = rgcCreate('rgcPhys', params);
+innerRetina0 = irPhys(osI, params);
+innerRetina0 = irSet(innerRetina0,'numberTrials',20);
 
-innerRetina0 = irCreate(osI, params);
-
-% Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','glm','type','on midget');
-irPlot(innerRetina0,'mosaic');
+% irPlot(innerRetina0,'mosaic');
 
 %% Compute RGC mosaic responses
 
 innerRetina0 = irCompute(innerRetina0, osI);
+innerRetina0 = irComputeSpikes(innerRetina0, osI);
+
+psth = mosaicGet(innerRetina0.mosaic{1},'responsePsth');
+
 irPlot(innerRetina0, 'psth');
 % irPlot(innerRetina0, 'linear');
 % irPlot(innerRetina0, 'raster');
