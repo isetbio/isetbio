@@ -183,7 +183,7 @@ switch parm
             % Make it a row vector
             tmp = val(:,:,ii); tmp = tmp(:)';
             % Convert the rwo vector from energy to photons
-            tmp = Energy2Quanta(wave(w),tmp);
+            tmp = Energy2Quanta(wave(ii),tmp);
             % Reshape it and place it in the photon hypercube
             photons(:,:,ii) = reshape(tmp,r,c);
         end
