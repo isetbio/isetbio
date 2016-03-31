@@ -93,15 +93,15 @@ switch osType
             
             % For the subunit model, put each pixel "subunit" of spatial RF
             % through nonlinearity at this point
-            if isa(ir.mosaic{rgcType},'rgcSubunit')
-                % Change this to get generator function
-                
-                % modeltype = 'pixel';
-                modeltype = 'surround';
-                [spResponseCenter, spResponseSurround] = ...
-                    subunitPooling(spResponseCenter, spResponseSurround, 'model', modeltype);
-                
-            end
+%             if isa(ir.mosaic{rgcType},'rgcSubunit')
+%                 % Change this to get generator function
+%                 
+%                 modeltype = 'pixel';
+%                 % modeltype = 'surround';
+%                 [spResponseCenter, spResponseSurround] = ...
+%                     subunitPooling(spResponseCenter, spResponseSurround, 'model', modeltype);
+%                 
+%             end
             
             % Convolve with the temporal impulse response
             responseLinear = ...
