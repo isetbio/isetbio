@@ -48,6 +48,7 @@ classdef rgcSubunit < rgcMosaic
         % is an exponential.
         generatorFunction;
         
+        rectifyFunction;
         % Parameter to specify the time bins Pillow uses for coupling and
         % post spike filters (10 ms default)
         dt = 0.01;
@@ -74,6 +75,8 @@ classdef rgcSubunit < rgcMosaic
         
         % This is the matrix of connections between nearby neurons
         couplingMatrix;
+        
+        numberSubunits;
 
     end
     
@@ -90,9 +93,11 @@ classdef rgcSubunit < rgcMosaic
             obj = obj@rgcMosaic(rgc, mosaicType);
 
             % Initialize ourselves
+            obj.numberSubunits = size(obj.sRFcenter{1,1});
             
-            obj.generatorFunction = @(x) 1*x; %@exp;
+            obj.generatorFunction = @(x) exp(x); %@exp;
             
+            obj.rectifyFunction = @(x) x.*(x>0); % used to implement subunit nonlinearity
             
             obj.postSpikeFilter = buildPostSpikeFilter(.01);
             
