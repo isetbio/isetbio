@@ -11,10 +11,10 @@
 % 1. Load image/movie
 % - Moving bar stimulus sweeping left to right
 % 
-% 2. Outer segment calculation
+% 2. Outer segment representation
 % - The osIdentity object does no computation and stores the stimulus RGB
 % data.
-%  CHECK IESTIMULUSBAR FOR SIZE CHANGE
+%  Check iestimulusbar for size change
 % 
 % 3. Build electrode array
 % - The electrode array is simulated as a square array of a certain size
@@ -84,6 +84,18 @@
 % 1.5 orders of magnitude variance in threshold of RGC activation
 % 
 % Add 5 Hz stimulation pulses
+
+
+%% Parameters to alter
+
+% Electrode size
+% Retinal eccentricity
+% Field of view/stimulus size
+% Stimulus length
+% Activation curve
+% Spatial activation of electrode
+% Electrode PWM
+
 %% Initialize
 clear;
 ieInit;
@@ -140,8 +152,8 @@ os = osSet(os, 'rgbData', movingBar.sceneRGB);
 % osPlot(os,absorptions);
 
 retinalPatchSize = osGet(os,'size');
-numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+2;
-numberElectrodesY = floor(retinalPatchHeight/electrodeArray.width);
+numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+4;
+numberElectrodesY = floor(retinalPatchWidth/electrodeArray.width)+0;
 numberElectrodes = numberElectrodesX*numberElectrodesY;
 %% Build electrode array
 % Define the electrode array structure/object
@@ -151,20 +163,31 @@ electrodeArray.size = [numberElectrodesX numberElectrodesY];
 
 % Build the matrix of center coordinates for each electrode
 % electrodeArray.center(xPos,yPos,:) = [xCoord yCoord];
+x0 = .5e-4; y0 = .5e-4;
 for xPos = 1:numberElectrodesX
     for yPos = 1:numberElectrodesY
-        electrodeArray.center(xPos,yPos,:) = [(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, (electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
+        electrodeArray.center(xPos,yPos,:) = [x0+(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, y0+(electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
     end
 end
 
+
+th = (0:1/6:1)'*2*pi;
+xh = electrodeArray.width/4*cos(th);
+yh = electrodeArray.width/4*sin(th);
+figure
+fill(x,y,'r')
+axis square
+
+% % Plot electrode array
 eaSize = size(electrodeArray.center);
-figure;
-hold on;
-for i = 1:eaSize(1)
-    for j = 1:eaSize(2)
-        scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
-    end
-end
+% figure;
+% hold on;
+% for i = 1:eaSize(1)
+%     for j = 1:eaSize(2)
+% %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
+%         plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+%     end
+% end
 
 % Build the current stimulation activation window
 % Gaussian activation from center of electrode
@@ -193,6 +216,8 @@ for frame = 1:params.nSteps
             imageCoordY1 = (activationWindow)*(yPos-1)+1;
             imageCoordY2 = (activationWindow)*(yPos);
             
+            if imageCoordX2 > size(fullStimulus,2); imageCoordY2 = size(fullStimulus,2); end;
+            if imageCoordY2 > size(fullStimulus,1); imageCoordY2 = size(fullStimulus,1); end;
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
@@ -204,6 +229,8 @@ end
 % Show plot
 
 % Apply Gaussian
+
+%% Add 5 Hz spiking of stimulus
 
 %% Build RGC array
 
@@ -222,6 +249,18 @@ innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
+% % figure;
+% hold on;
+% for spInd = 1:length(innerRetina.mosaic)
+% for i = 1:eaSize(1)
+%     for j = 1:eaSize(2)
+%         subplot(floor(sqrt(length(innerRetina.mosaic))),floor(sqrt(length(innerRetina.mosaic))),spInd); 
+%         hold on;
+% %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
+%         plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+%     end
+% end
+% end
 
 metersPerPixel = retinalPatchWidth/retinalPatchSize(2);
 
@@ -252,12 +291,13 @@ for frame = 1:params.nSteps
                 rgcCenter = innerRetina.mosaic{mosaicInd}.cellLocation{xind,yind}*metersPerPixel;
                 % Find distance
                 centerDistanceCoords = repmat(rgcCenter,[numberElectrodes,1]) - electrodeCenter;
-                % Weight electrode activation by Gaussian according to distance
+                % Weight electrode activation by Gaussian according to distancej
                 centerDistance = bsxfun(@(x,y)sqrt(x.^2+y.^2),centerDistanceCoords(:,1),centerDistanceCoords(:,2));
                 centerDistanceRS = reshape(centerDistance,[numberElectrodesX,numberElectrodesY]);
                 
                 [minDistance, minDistanceInd] = min(centerDistance);
-                [xmin,ymin] = ind2sub([numberElectrodesX,numberElectrodesY],minDistanceInd);                
+                [xmin,ymin] = ind2sub([numberElectrodesX,numberElectrodesY],minDistanceInd);
+                minXY(yind,xind,frame,mosaicInd,:) = [xmin ymin];
                 innerRetinaInput(yind,xind,frame,mosaicInd) = electrodeArray.activation(xmin,ymin,frame)*exp(-minDistance/2e-4);
                 
 %                 for xind2 = 1:numberElectrodesX
@@ -267,18 +307,23 @@ for frame = 1:params.nSteps
 %                             electrodeArray.activation(xind2,yind2,frame)*exp(-centerDistanceRS(xind2,yind2)/2e-4);
 %                     end
 %                 end
-                
+%                 
             end
         end
     end
 end
+
+
+% figure; imagesc(squeeze(minXY(:,:,10,1,1)))
+% figure; imagesc(squeeze(minXY(:,:,10,1,2)))
 %% Build RGC activation functions
 
 % figure; hold on;
 % for i = 1:10
 % x0 = -.5*rand(1,1); thr = 10*rand(1,1);
 % % figure; 
-% plot(-x0+(-1:.01:1),1./(1+exp(-thr*(x0+(-1:.01:1)))));
+% xp = -1:.01:3;
+% plot(-x0+(xp),1./(1+exp(-thr*(x0+(xp)))));
 % end
 
 % figure; hold on;
