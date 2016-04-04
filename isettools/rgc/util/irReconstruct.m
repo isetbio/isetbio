@@ -69,6 +69,11 @@ stimulusReconstruction = zeros(nPixX*nX +mincoord, nPixY*nY +mincoord, nFrames +
 
 for cellTypeInd = 1:length(innerRetina.mosaic)
     
+    if cellTypeInd == 2 || cellTypeInd == 4
+        tuningWeight = 0.01;
+    else 
+        tuningWeight = 1;
+    end
     
 [nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
 maxx = 0; maxy = 0;
@@ -103,7 +108,7 @@ for xc = 1:nX
             xcoords = xcoords1(xcgoodind); ycoords = ycoords1(ycgoodind);
             stimulusReconstruction(xcoords, ycoords, tcoords) = ...
                 stimulusReconstruction(xcoords, ycoords, tcoords) + ...
-                strf(xcgoodind,ycgoodind,:);
+                tuningWeight*strf(xcgoodind,ycgoodind,:);
         end%iFrame
         maxx = max([maxx xcoords]); maxy = max([maxy ycoords]);
         

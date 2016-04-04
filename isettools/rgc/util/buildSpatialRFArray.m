@@ -57,7 +57,7 @@ receptiveFieldDiameter1STD = receptiveFieldDiameter1STDmicrons/umPerSensorPx;
 
 %% Set parameters for spatial RF difference of gaussians
 % whene extent gets to 5, the sum of the RF is ~0
-extent = 1.5;
+extent = 2.5;
 
 % Ellipse parameter
 d1 = 1; d2 = 0;
@@ -90,7 +90,9 @@ pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD)
 
 %% Create spatial RFs for each cell
 tic
-centerNoise = 0;%1.25; % divide by 2 for mean offset
+centerNoise = 1.25; % divide by 2 for mean offset
+
+centerCorrect = 0;%numberRGCsX*receptiveFieldDiameter1STD;
 for icind = 1:length(icarr)
     
     for jcind = 1:length(jcarr)
@@ -124,7 +126,7 @@ for icind = 1:length(icarr)
         sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2); sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);       
         
         % Store calculated parameters
-        cellCenterLocations{icind,jcind} = [ic jc];
+        cellCenterLocations{icind,jcind} = [ic jc] - centerCorrect;
         
         spatialRFArray{icind,jcind} = so;
         spatialRFcenter{icind,jcind} = so_center;
@@ -146,7 +148,7 @@ for icind = 1:length(icarr)
         
         hold on;
         % Get contours at 1STD
-        [cc,h] = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
+        [cc,h] = contour(i2-centerCorrect,j2-centerCorrect,abs(so_center),[magnitude1STD magnitude1STD]);% close;
         % ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind,1} = cc;
@@ -154,7 +156,7 @@ for icind = 1:length(icarr)
         clear cc h
         magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
-        [cc,h] = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
+        [cc,h] = contour(i2-centerCorrect,j2-centerCorrect,abs(so_center),[magnitude1STD magnitude1STD]);% close;
         % ccCell{rfctr} = cc(:,2:end);
         cc(:,1) = [NaN; NaN];
         spatialContours{icind,jcind,2} = cc;
