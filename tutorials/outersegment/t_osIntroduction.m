@@ -173,6 +173,8 @@ osPlot(os,absorptions);
 
 %% Examine isomerizations with movies and plots
 % Show an image of the cone mosaic
+cone_mosaic = sensorGet(absorptions,'cone type');
+
 figure; 
 imagesc(5-cone_mosaic);
 colormap(jet(4));
@@ -193,7 +195,6 @@ title('t\_osIntroduction isomerizations');
 
 % Plot isomerizations over time
 % Find coordinates of L, M and S cones, get photon signals.
-cone_mosaic = sensorGet(absorptions,'cone type');
 figure; cind = 'rgb';
 for cone_type = 2:4
     [cone_locations_x cone_locations_y] = find(cone_mosaic==cone_type);
