@@ -18,9 +18,9 @@ function iStim = ieStimulusGratingSubunit(varargin)
 %% Parse inputs
 
 p = inputParser;
-addParameter(p,'barWidth',       5,     @isnumeric);
+addParameter(p,'barWidth',       3,     @isnumeric);
 addParameter(p,'meanLuminance',  200,   @isnumeric);
-addParameter(p,'nSteps',         10,    @isnumeric);
+addParameter(p,'nSteps',         40,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,    @isnumeric);  
@@ -69,16 +69,24 @@ for t = 1 : nSteps
     barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.01;  % Gray background
     
     nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
-    randWalk = (round(.25*params.barWidth*randn(1)));
-    if randWalk > params.barWidth
-        randWalk = params.barWidth;
-    elseif randWalk < -params.barWidth + 1
-        randWalk = -params.barWidth+1;
-    end
-    for stripeInd = 1:2:nStripes
-        barMovie(randWalk+(stripeInd-1)*params.barWidth+params.barWidth:randWalk+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+%     randWalk = (round(.25*params.barWidth*randn(1)));
+    if t > 1
+        % randWalk(t) = sum(randWalk(1:t-1)) + round(.25*params.barWidth);
+        randWalk(t) = sum(randWalk(1:t-1)) + (round(.25*params.barWidth*randn(1)));
+    else
+        randWalk(t) = round(.25*params.barWidth);
     end
     
+%     if randWalk(t) > params.barWidth
+%         randWalk(t) = params.barWidth;
+%     elseif randWalk(t) < -params.barWidth + 1
+%         randWalk(t) = -params.barWidth+1;
+%     end
+    for stripeInd = 1:2:nStripes+2
+        % barMovie(randWalk(t)+(stripeInd-1)*params.barWidth+params.barWidth:randWalk(t)+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+        barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+    end
+    barMovie = circshift(barMovie,randWalk(t));
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     
     % Generate scene object from stimulus RGB matrix and display object

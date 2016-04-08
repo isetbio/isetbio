@@ -24,7 +24,7 @@ function ir = irComputeSpikes(ir, varargin)
 
 % To be eliminated
 global RefreshRate
-RefreshRate = 100;    
+RefreshRate = 500;    
 
 
 %% Loop on the mosaics in the inner retina
@@ -85,16 +85,16 @@ for ii = 1:length(ir.mosaic)
             
             % Reformat the linear response so we can invoke the Pillow
             % function simGLMcpl
-            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
+            spikeInput = setSpikeInput(ir.mosaic{ii}.responseLinear);
             
             % Set the post spike filter to enforce the refractory period.
-            glmprs = setPSFprs(ir.mosaic{ii});
+            spikePrs = setSpikePrs(ir.mosaic{ii});
             
             % No post spike filter - break into different subclass?
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            [responseSpikesVec, Vmem] = simSpike(spikePrs, spikeInput');
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);

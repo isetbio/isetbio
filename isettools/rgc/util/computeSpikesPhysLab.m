@@ -102,7 +102,7 @@ for xcell = 1:nCells
         binary_simall{xcell,1,i_trial,1} = binary_simulation; % prune extra zeros
         
         spikeTimes{xcell,1,i_trial,1} = find(binary_simulation==1)'; % prune extra zeros
-        spikeTimes{xcell,1,i_trial,2} = cif0;
+        spikeTimes{xcell,1,i_trial,2} = cif_ps_cp;
         spikeTimes{xcell,1,i_trial,3} = log(cif0);
         spikeDrive{xcell,1,i_trial} = cif_ps_cp; % prune extra zeros
     end
