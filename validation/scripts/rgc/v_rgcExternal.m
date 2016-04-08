@@ -58,7 +58,7 @@ close;
 % In this case, the coupled-GLM calculation converts from the frame buffer
 % values in the movie to the outer segment responses.  That form of the
 % outer segment object is called 'identity'.
-os2 = osCreate('identity');
+os2 = osCreate('displayrgb');
 
 % Attach the move to the object
 os2 = osSet(os2, 'rgbData', double(testmovieshort));
@@ -89,7 +89,7 @@ xvalall = data.xvalall;
 
 % % Load local copy
 % load('xvalall2.mat');
-load('psth_rec_all.mat');
+% load('psth_rec_all.mat');
 %% Compare isetbio output and Chichilnisky Lab output
 vcNewGraphWin([],'upperleftbig');
 for i = 1%:36
@@ -103,7 +103,7 @@ for i = 1%:36
 
     hold on;
     % Plot recorded response to natural scene
-    plot([1:minlen-1200]./1208,(20/57)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
+%     plot([1:minlen-1200]./1208,(20/57)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
     
     % Plot output of isetbio code
     % plot([1:minlen]./1208,rgc2psth{i}((1:minlen)),'r ','linewidth',3);
@@ -117,7 +117,8 @@ for i = 1%:36
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
     title(sprintf('Validation with Chichilnisky Lab Data\nmaxv = %.1f, maxi = %d',maxv,maxi));
     xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
-    legend('Recorded','ISETBIO','Lab Code');
+%     legend('Recorded','ISETBIO','Lab Code');
+    legend('ISETBIO','Lab Code');
     set(gca,'fontsize',14)
 end
 

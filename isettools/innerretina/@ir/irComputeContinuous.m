@@ -53,7 +53,7 @@ osType = class(outerSegment);
 % Only osIdentity is implemented now.
 osType = class(outerSegment);
 switch osType
-    case 'osIdentity'
+    case 'osDisplayRGB'
         %% Identity means straight from the frame buffer to brain
         % Find properties that haven't been set and set them
         if isempty(osGet(outerSegment,'rgbData'))

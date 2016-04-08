@@ -12,16 +12,17 @@
 ieInit
 
 %% Movie of the cone absorptions 
-% Get data from isetbio archiva server
-rd = RdtClient('isetbio');
-rd.crp('/resources/data/istim');
-a = rd.listArtifacts;
-
-% Pull out .mat data from artifact
-whichA =1 ;
-data = rd.readArtifact(a(whichA).artifactId);
-% iStim stores the scene, oi and cone absorptions
-iStim = data.iStim;
+% % Get data from isetbio archiva server
+% rd = RdtClient('isetbio');
+% rd.crp('/resources/data/istim');
+% a = rd.listArtifacts;
+% 
+% % Pull out .mat data from artifact
+% whichA =1 ;
+% data = rd.readArtifact(a(whichA).artifactId);
+% % iStim stores the scene, oi and cone absorptions
+% iStim = data.iStim;
+iStim=ieStimulusBar();
 absorptions = iStim.absorptions;
 
 
@@ -36,7 +37,7 @@ close;
 %% Outer segment calculation
 % 
 % Input = RGB
-osI = osCreate('identity');
+osI = osCreate('displayRGB');
 
 % Set size of retinal patch
 patchSize = sensorGet(absorptions,'width','um');

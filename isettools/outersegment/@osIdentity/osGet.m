@@ -21,7 +21,7 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','rgbdata','patchsize','timestep','size'};
+allowableFieldsToSet = {'noiseflag','photonrate','patchsize','timestep','size'};
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
 % Define what units are allowable.
@@ -45,11 +45,11 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
     case{'timestep'}
         val = obj.timeStep;
         
-    case{'rgbdata'}
-        val = obj.rgbData;
+    case{'photonrate'}
+        val = obj.photonRate;
         
     case{'size'}
-        val = size(obj.rgbData);
+        val = size(obj.photonRate);
         
 end
 

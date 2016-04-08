@@ -42,6 +42,8 @@ switch ieParamFormat(params.type)
         obj = osBioPhys();
     case {'identity','osidentity'}
         obj = osIdentity();
+    case {'displayrgb','osdisplayrgb'}
+        obj = osDisplayRGB();
     otherwise
         obj = osLinear();
 end

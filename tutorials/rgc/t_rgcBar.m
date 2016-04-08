@@ -113,7 +113,7 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Outer segment calculation
 % 
 % % Input = RGB
-% os = osCreate('identity');
+% os = osCreate('displayrgb');
 % 
 % coneSpacing = sensorGet(sensor,'width','um');
 % coneSpacing = scene.wAngular*300
