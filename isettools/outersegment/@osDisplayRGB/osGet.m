@@ -1,15 +1,15 @@
-function obj = osSet(obj, varargin)
-% osSet: a method of @osIdentity that sets isetbio outersegment object 
+function val = osGet(obj, varargin)
+% osGet: a method of @osIdentity that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'noiseFlag'} -  gets noise flag, noise-free ('0') or noisy ('1')
+%       {'ConeCurrentSignal'} - cone current as a function of time
+%       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
 % 
-% noiseFlag = 0;
-% adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
+% osGet(adaptedOS, 'noiseFlag')
 % 
-% 8/2015 JRG NC DHB
-
+% 8/2015 JRG 
 
 % Check for the number of arguments and create parser object.
 % Parse key-value pairs.
@@ -21,9 +21,8 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','photonrate','patchsize','timestep'};
+allowableFieldsToSet = {'noiseflag','rgbdata','patchsize','timestep','size'};
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
-p.addRequired('value');
 
 % Define what units are allowable.
 allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -37,19 +36,20 @@ p.parse(varargin{:}); params = p.Results;
 
 switch ieParamFormat(params.what);  % Lower case and remove spaces
 
-    
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;
-        
+    case {'noiseflag'}        
+        val = obj.noiseFlag;
+                
     case{'patchsize'}
-        obj.patchSize = params.value;
+        val = obj.patchSize;
         
     case{'timestep'}
-        obj.timeStep = params.value;
+        val = obj.timeStep;
         
-    case{'photonrate'}
-        obj.rgbData = params.value;
-               
-
+    case{'rgbdata'}
+        val = obj.rgbData;
+        
+    case{'size'}
+        val = size(obj.rgbData);
+        
 end
 

@@ -24,6 +24,7 @@ thisStimulus = a(whichA).artifactId;
 data = rd.readArtifact(a(whichA).artifactId);
 % iStim stores the scene, oi and cone absorptions
 iStim = data.iStim;
+
 absorptions = iStim.absorptions;
 absorptions = sensorSet(absorptions,'name',thisStimulus);
 
@@ -38,7 +39,7 @@ close;
 %% Outer segment calculation
 % 
 % Input = RGB
-osI = osCreate('identity');
+osI = osCreate('displayRGB');
 
 % Set size of retinal patch
 patchSize = sensorGet(absorptions,'width','um');

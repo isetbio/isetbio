@@ -43,8 +43,10 @@ obj.spacing = osGet(os,'patch size'); % Cone width
 obj.timing  = osGet(os,'time step'); % Temporal sampling
     
 switch class(os)
+    case{'osDisplayRGB'}
+        [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));        
     case{'osIdentity'}
-        [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));
+        [obj.row, obj.col, ~, ~] = size(osGet(os,'photonRate'));
     otherwise    
         [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));
 end

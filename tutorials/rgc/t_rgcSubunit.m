@@ -31,8 +31,9 @@ ieInit
 % absorptions = iStim.absorptions;
 
 %% Grating subunit stimulus
-params.barWidth = 24;
+% params.barWidth = 24;
 iStim = ieStimulusGratingSubunit;
+absorptions = iStim.absorptions;
 
 %% White noise
 % iStim = ieStimulusWhiteNoise;
@@ -45,10 +46,12 @@ for frame1 = 1:size(iStim.sceneRGB,3)
 end
 close;
 
+% coneImageActivity(iStim.absorptions,'dFlag',true);
+
 %% Outer segment calculation
 % 
 % Input = RGB
-osI = osCreate('identity');
+osI = osCreate('displayRGB');
 
 % Set size of retinal patch
 patchSize = sensorGet(absorptions,'width','um');

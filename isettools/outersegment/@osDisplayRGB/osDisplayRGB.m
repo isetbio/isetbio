@@ -1,4 +1,4 @@
-classdef osIdentity < outerSegment 
+classdef osDisplayRGB < outerSegment 
 % @osIdentity: a subclass of @outerSegment object
 % 
 % This subclass bypass the temporal filtering of the other outer segment
@@ -18,7 +18,7 @@ classdef osIdentity < outerSegment
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        photonRate
+        rgbData
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -29,12 +29,12 @@ classdef osIdentity < outerSegment
     methods
         
         % Constructor
-        function obj = osIdentity(varargin)
+        function obj = osDisplayRGB(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
             
             % Initialize ourselves
-            obj.photonRate = [];
+            obj.rgbData = [];
         end
         
         % set function, see osIdentitySet for details
