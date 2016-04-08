@@ -85,7 +85,7 @@ else
     mosaicTypeInd = [];
 end
 
-cell = params.cell;
+cellID = params.cell;
 
 %% Set key-value pairs
 switch ieParamFormat(params.what)
@@ -102,7 +102,7 @@ switch ieParamFormat(params.what)
         
         for cellTypeInd = 1:length(obj.mosaic)
             
-            spatialRFcontours = plotContours(obj.mosaic{cellTypeInd});
+            spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.spacing, obj.col);
             
             if length(obj.mosaic)>1
                 subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
@@ -112,7 +112,7 @@ switch ieParamFormat(params.what)
             
             
             patchSizeX = obj.spacing;
-            sensorRows = obj.row;
+            sensorRows = obj.col;
             
             umPerSensorPx = patchSizeX/sensorRows;
             
@@ -134,9 +134,9 @@ switch ieParamFormat(params.what)
             end
             axis equal
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
-            xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
-            ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
-            hl=legend('center','surround','location','ne'); set(hl,'fontsize',14);
+%             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
+%             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
+%             hl=legend('center','surround','location','ne'); set(hl,'fontsize',14);
         end
         % plot the cone mosaic with RGC contours!
         % [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
@@ -366,9 +366,9 @@ switch ieParamFormat(params.what)
             cellTypeEnd = length(obj.mosaic);
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
-            if ~isempty(cell)
-                nCells = cell;
-                xcellstart = cell(1); ycellstart = cell(2);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
                 xcellstart = 1; ycellstart = 1;
@@ -403,9 +403,9 @@ switch ieParamFormat(params.what)
             cellTypeEnd = length(obj.mosaic);
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
-            if ~isempty(cell)
-                nCells = cell;
-                xcellstart = cell(1); ycellstart = cell(2);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
                 xcellstart = 1; ycellstart = 1;
@@ -444,9 +444,9 @@ switch ieParamFormat(params.what)
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
             clear meanVoltage
-            if ~isempty(cell)
-                nCells = cell;
-                xcellstart = cell(1); ycellstart = cell(2);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
                 xcellstart = 1; ycellstart = 1;
@@ -507,9 +507,9 @@ switch ieParamFormat(params.what)
             clear psth tsp mtsp
             
             clear meanVoltage
-            if ~isempty(cell)
-                nCells = cell;
-                xcellstart = cell(1); ycellstart = cell(2);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
                 maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.responseSpikes);
@@ -594,9 +594,9 @@ switch ieParamFormat(params.what)
             cellCtr = 0;
             clear psth tsp mtsp
             
-            if ~isempty(cell)
-                nCells = cell;
-                xcellstart = cell(1); ycellstart = cell(2);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
                 maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.responseSpikes);

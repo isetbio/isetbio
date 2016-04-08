@@ -70,12 +70,12 @@ stimulusReconstruction = zeros(nPixX*nX +mincoord, nPixY*nY +mincoord, nFrames +
 for cellTypeInd = 1:length(innerRetina.mosaic)
     
     if cellTypeInd == 2 || cellTypeInd == 4
-        tuningWeight = 0.01;
+        tuningWeight = .1;%0.01;
     else 
         tuningWeight = 1;
     end
     
-[nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
+[nY,nX,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
 maxx = 0; maxy = 0;
 % Loop through each cell and plot spikes over time
 for xc = 1:nX

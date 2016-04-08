@@ -76,7 +76,12 @@ rgc2 = irSet(rgc2,'numberTrials',20);
 
 %%
 rgc2 = irCompute(rgc2, os2);
-% rgc2 = irComputeSpikes(rgc2, os2);
+
+nTrials = 20;
+for tr = 1:nTrials
+    rgc2 = irComputeSpikes(rgc2, os2);
+end
+
 rgc2psth = mosaicGet(rgc2.mosaic{1},'responsePsth');
 
 %% Load validation data
@@ -121,6 +126,12 @@ for i = 1%:36
     legend('ISETBIO','Lab Code');
     set(gca,'fontsize',14)
 end
+
+% irPlot(rgc2, 'psth','cell',[1 1]);
+
+% irPlot(rgc2, 'raster','cell',[1 1]);
+
+% figure; plot(horzcat(rgc2.mosaic{1}.spikeResponse{:,1,1,3}))
 
 % vcNewGraphWin; plot(diffpsth,'x')
 %%

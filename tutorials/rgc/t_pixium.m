@@ -163,31 +163,35 @@ electrodeArray.size = [numberElectrodesX numberElectrodesY];
 
 % Build the matrix of center coordinates for each electrode
 % electrodeArray.center(xPos,yPos,:) = [xCoord yCoord];
-x0 = .5e-4; y0 = .5e-4;
+x0 = -(numberElectrodesX-1)*electrodeArray.width/2;
+y0 = -(numberElectrodesY-1)*electrodeArray.width/2;
 for xPos = 1:numberElectrodesX
     for yPos = 1:numberElectrodesY
-        electrodeArray.center(xPos,yPos,:) = [x0+(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, y0+(electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
+        % electrodeArray.center(xPos,yPos,:) = [x0+(electrodeArray.width/2)*(xPos-1) + electrodeArray.width, y0+(electrodeArray.width/2)*(yPos-1) + electrodeArray.width];
+        electrodeArray.center(xPos,yPos,:) = [x0+(electrodeArray.width/1)*(xPos-1) + 0, y0+(electrodeArray.width/1)*(yPos-1) + 0 + (mod(xPos,2)-.5)*(electrodeArray.width/2)];
     end
 end
-
+% xe = electrodeArray.center(:,:,1); ye = electrodeArray.center(:,:,2);
+% figure; scatter(xe(:),ye(:));
 
 th = (0:1/6:1)'*2*pi;
-xh = electrodeArray.width/4*cos(th);
-yh = electrodeArray.width/4*sin(th);
-figure
-fill(x,y,'r')
-axis square
+xh = electrodeArray.width/2*cos(th);
+yh = electrodeArray.width/2*sin(th);
+% figure
+% fill(x,y,'r')
+% axis square
 
 % % Plot electrode array
 eaSize = size(electrodeArray.center);
-% figure;
-% hold on;
-% for i = 1:eaSize(1)
-%     for j = 1:eaSize(2)
-% %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
-%         plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
-%     end
-% end
+figure;
+hold on;
+for i = 1:eaSize(1)
+    for j = 1:eaSize(2)
+%         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
+        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+    end
+end
+axis equal
 
 % Build the current stimulation activation window
 % Gaussian activation from center of electrode
@@ -196,9 +200,9 @@ electrodeArray.spatialWeight = fspecial('Gaussian', activationWindow, activation
 
 % Visualize Gaussian activation
 % figure; imagesc(electrodeArray.spatialWeight); 
-figure; surf(electrodeArray.spatialWeight); 
-xlabel(sprintf('Distance (\\mum)')); ylabel(sprintf('Distance (\\mum)'));
-title('Gaussian Activation for a Single Electrode'); set(gca,'fontsize',16);
+% figure; surf(electrodeArray.spatialWeight); 
+% xlabel(sprintf('Distance (\\mum)')); ylabel(sprintf('Distance (\\mum)'));
+% title('Gaussian Activation for a Single Electrode'); set(gca,'fontsize',16);
 %% Compute electrode activations from image
 
 % Get the full image/movie from the identity outersegment
@@ -250,17 +254,17 @@ innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 
 irPlot(innerRetina,'mosaic');
 % % figure;
-% hold on;
-% for spInd = 1:length(innerRetina.mosaic)
-% for i = 1:eaSize(1)
-%     for j = 1:eaSize(2)
-%         subplot(floor(sqrt(length(innerRetina.mosaic))),floor(sqrt(length(innerRetina.mosaic))),spInd); 
-%         hold on;
-% %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
-%         plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
-%     end
-% end
-% end
+hold on;
+for spInd = 1:length(innerRetina.mosaic)
+for i = 1:eaSize(1)
+    for j = 1:eaSize(2)
+        subplot(floor(sqrt(length(innerRetina.mosaic))),ceil(sqrt(length(innerRetina.mosaic))),spInd); 
+        hold on;
+%         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
+        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+    end
+end
+end
 
 metersPerPixel = retinalPatchWidth/retinalPatchSize(2);
 
@@ -307,15 +311,15 @@ for frame = 1:params.nSteps
 %                             electrodeArray.activation(xind2,yind2,frame)*exp(-centerDistanceRS(xind2,yind2)/2e-4);
 %                     end
 %                 end
-%                 
             end
         end
     end
 end
 
+% innerRetinaInput = innerRetinaInput./10;%(numberElectrodesX*numberElectrodesY);
 
 % figure; imagesc(squeeze(minXY(:,:,10,1,1)))
-% figure; imagesc(squeeze(minXY(:,:,10,1,2)))
+% figure; imagesc(squeeze(minXY(:,:,10,2,2)))
 %% Build RGC activation functions
 
 % figure; hold on;
@@ -328,7 +332,7 @@ end
 
 % figure; hold on;
 for mosaicInd = 1:length(innerRetina.mosaic)
-    [xc yc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
+    [yc xc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
     for xind = 1:xc
         for yind = 1:yc
             thr = 20*rand(1,1);
@@ -344,7 +348,7 @@ end
 %% Compute RGC activations
 for mosaicInd = 1:length(innerRetina.mosaic)
     clear innerRetinaActivation 
-    [xc yc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
+    [yc xc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
     for xind = 1:xc
         for yind = 1:yc
             
