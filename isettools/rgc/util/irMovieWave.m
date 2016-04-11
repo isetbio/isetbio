@@ -55,8 +55,14 @@ figRect = p.Results.figRect;
 
 %% Initialize figure
 % vcNewGraphWin([],'upperleftbig');
-figure; set(gcf,'position',[160 60 1070 740]);
+h=figure; set(gcf,'position',[160 60 1070 740]);
 hold on;
+
+% Initialize video file
+vObj = VideoWriter('rgc3d.mp4','MPEG-4');
+vObj.FrameRate = 30;
+vObj.Quality = 100;
+open(vObj);
 
 % Gets the size of the cell mosaic
 [nX,nY,~] = size(ir.mosaic{whichMosaic}.responseLinear);
@@ -78,7 +84,12 @@ spatialRFcontours= plotContours(ir.mosaic{whichMosaic});
 % hold on;
 % plot3(spatialRFcontoursMosaicArr(1,:)-maxx/2,(t/10000+1/10000*(length(spPlot)-1))*ones(size(spatialRFcontoursMosaicArr(1,:))), spatialRFcontoursMosaicArr(2,:)-10*maxy/2,'r','linewidth',2)
     
-colorval = rand(nX,nY,3);
+% colorval = rand(nX,nY,3);
+colorval = reshape(jet(nX*nY),[nX,nY,3]);
+
+th = (0:.05:1)'*2*pi;
+xcirc = 5e-1*cos(th);
+ycirc = 5e-1*sin(th);
 
 % Set frame subsampling number
 frameskip= 20;
@@ -95,7 +106,8 @@ for t = 1:frameskip:5750
             sigType = 2;   % 1 is spikes, 2 is voltage
 %             spPlot=ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,sigType}(t:t+1000);
             spPlotSpikes = ir.mosaic{whichMosaic}.responseSpikes{xc,yc,trial,1};
-            spPlot = zeros(7000,1); spPlot(round(100*spPlotSpikes)) = 10; spPlot = spPlot(t:t+1000);
+            spInd = round(100*spPlotSpikes);
+            spPlot = zeros(7000,1); spPlot(spInd) = 10; spPlot = spPlot(t:t+1000);
             % spPlot=(median(horzcat(obj.mosaic{3}.responseSpikes{xc,yc,:,2})'));
             
             % Get the time values
@@ -115,8 +127,24 @@ for t = 1:frameskip:5750
             
             % Plot the waveform for this cell
 %             h1=plot3(xv, yv, zv,'linewidth',2);
+
             h1=plot3(xv, yv, zv,'linewidth',2,'color',(colorval(xc,yc,:)));
             plot3(xv, yv, zv,':','linewidth',1,'color','k');
+
+%             spInd = spPlot>0;
+%             h2=scatter3(xv(spInd), yv(spInd), zv(spInd)-10,200,squeeze(colorval(xc,yc,:))','o','linewidth',1);
+            
+%             h2=scatter3(xv(spInd), yv(spInd), zv(spInd)-10,200,'k','o','linewidth',1);
+%             plot3(xv, yv, zv,':','linewidth',1,'color','k');
+            
+%             spikePosInd = (spInd(spInd>=t)&spInd<(t+1000));
+%             hold on;
+%             for spii = 1:sum(spikePosInd)
+%                 
+%                 h1=fill3((xv(spikePosInd(spii))+xcirc(:)'), (yv(spikePosInd(spii))*ones(length(xcirc(:)))), zv(spikePosInd(spii))+ycirc(:)','r');
+% %             fill3(xv+xcirc, yv+ycirc, zv,':','linewidth',1,'color','k');
+%             end
+
 %             if t ==1 
 %                 colorval(xc,yc,:) = get(h1,'color');
 %             end
@@ -157,7 +185,7 @@ for t = 1:frameskip:5750
                             % connection
 %                             line(1+zfac*1000*[x0 xf ],[t  t]/10000,1+zfac*1000*10*[z0 zf],'color',colorval,'linewidth',4);
                             line([x0 xf ],[t+1000 t+1000]/10000,10*[z0 zf],'color',(colorval(xc,yc,:)),'linewidth',4);                           
-
+                  
                         end%if
                     end%yc2
                 end%xc2
@@ -178,7 +206,7 @@ for t = 1:frameskip:5750
     % view(-19,18);
 %     view(-2,2)
     view(1,4);
-    
+%     view(-25 + 50*(t/5750),4);
     % Shift axis
 %     axis([0 70 t/10000 (t+1000)/10000 60 60+70]);
     axis([-100 100 t/10000 (t+1000)/10000 -60 60]);
@@ -188,8 +216,10 @@ for t = 1:frameskip:5750
     % hold off;
     % clf
     
+    F = getframe(h);
+    writeVideo(vObj,F);
 end
-
+close(vObj);
 % Alternate method, plot whole waveform and shift axis
 % for t = 1:10:6250
 %     
