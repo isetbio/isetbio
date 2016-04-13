@@ -79,10 +79,11 @@ for ii=theseFrames
 end
 close(wbar);
 
-% Scale and gamma correct tmp
+% Scale and gamma correct mov
+% mov = ieScale(mov,0,1);
 mov = mov/max(mov(:));
 mov = mov .^ 0.3;
-% vcNewGraphWin; imagescRGB(tmp);
+% vcNewGraphWin; imagescRGB(mov);
 
 %% Produce the movie
 
