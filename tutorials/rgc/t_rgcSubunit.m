@@ -31,8 +31,10 @@ ieInit
 % absorptions = iStim.absorptions;
 
 %% Grating subunit stimulus
-params.barWidth = 24;
-iStim = ieStimulusGratingSubunit;
+clear params
+params.barWidth = 1;
+iStim = ieStimulusGratingSubunit(params);
+absorptions = iStim.absorptions;
 
 %% White noise
 % iStim = ieStimulusWhiteNoise;
@@ -59,7 +61,7 @@ timeStep = sensorGet(absorptions,'time interval','sec');
 osI = osSet(osI, 'time step', timeStep);
 
 % Set osI data to raw pixel intensities of stimulus
-osI = osSet(osI, 'rgbData', iStim.sceneRGB);
+osI = osSet(osI, 'rgbData', 0.6-iStim.sceneRGB);
 % os = osCompute(sensor);
 
 % % Plot the photocurrent for a pixel
@@ -84,10 +86,10 @@ irPlot(innerRetina0,'mosaic');
 % When numberSubunits is set to the RF size, every pixel is a subunit
 % This is the default, after Gollisch & Meister, 2008
 sRFcenter = mosaicGet(innerRetina0.mosaic{1},'sRFcenter');
-mosaicSet(innerRetina0.mosaic{1},'numberSubunits',size(sRFcenter));
+% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',size(sRFcenter));
 
 % Alternatively, have 2x2 subunits for each RGC
-% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',[2 2]);
+mosaicSet(innerRetina0.mosaic{1},'numberSubunits',[2 2]);
 %% Compute RGC mosaic responses
 
 innerRetina0 = irCompute(innerRetina0, osI);
