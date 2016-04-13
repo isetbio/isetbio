@@ -81,20 +81,32 @@ os = osCompute(os,absorptions);
 %
 %   out = hwRect(data,val);
 %
-val = -50;
-hwrCurrent = max(os.coneCurrentSignal,val);
-
+eZero = -50;
+hwrCurrent = ieHwrect(os.coneCurrentSignal,eZero);
 
 %% Then we need a little spatial summation over the cones
 
 % This is like a bipolar cell, but actually it could be the same code as in
 % the spatial summation of the RGC
 %
-%  out = spatialSummation(os.coneCurrentsignal,params);
+%  bipolar = spatialSummation(hwr,params);
 %
 %  spatialTemporalSummation()
 %
 
+kernel = fspecial('gaussian',[9,9],3);
+
+bipolar = ieSpaceTimeFilter(hwrCurrent,kernel);
+
+% For visualization, set the bipolar current to positive
+% Not working correctly!  Try to understand how to visualize positive and
+% negative numbers.  Maybe voltImageActivity ... that is thought through
+% correctly for positive and negative numbers.
+bmosaic = sensorSet(absorptions,'photons',bipolar);
+coneImageActivity(bmosaic,'dFlag',true);
+
+
+%%
 osSize = size(hwrCurrent)
 
 % Set subunit size
