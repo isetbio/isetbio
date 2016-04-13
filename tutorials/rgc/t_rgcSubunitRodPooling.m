@@ -84,6 +84,7 @@ os = osCompute(os,absorptions);
 val = -50;
 hwrCurrent = max(os.coneCurrentSignal,val);
 
+
 %% Then we need a little spatial summation over the cones
 
 % This is like a bipolar cell, but actually it could be the same code as in
@@ -93,6 +94,37 @@ hwrCurrent = max(os.coneCurrentSignal,val);
 %
 %  spatialTemporalSummation()
 %
+
+osSize = size(hwrCurrent)
+
+% Set subunit size
+% When numberSubunits is set to the RF size, every pixel is a subunit
+% This is the default, after Gollisch & Meister, 2008
+% sRFcenter = mosaicGet(innerRetina0.mosaic{1},'sRFcenter');
+% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',size(sRFcenter));
+
+% Alternatively, have 2x2 subunits for each RGC
+% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',[2 2]);
+
+numberSubunits = [2 2];%mosaic.numberSubunits;
+suSize1 = floor(osSize(1)/numberSubunits(1));
+suSize2 = floor(osSize(2)/numberSubunits(2));
+suCtr = 0;
+for suInd1 = 1:numberSubunits(1)
+    for suInd2 = 1:numberSubunits(2)
+        suCtr = suCtr+1;
+        xsm = (suInd1-1)*suSize1 + 1: (suInd1)*suSize1;
+        ysm = (suInd2-1)*suSize2 + 1: (suInd2)*suSize2;
+        
+        subunitResponseTemp = hwrCurrent(xsm,ysm,:);
+        subunitResponseRS = reshape(subunitResponseTemp,[length(xsm)*length(ysm),osSize(3)]);
+        fullResponseSmall(suCtr,:) = mean(subunitResponseRS,1);
+    end
+end
+
+% fullResponse{xcell,ycell,1} = mean(mosaic.rectifyFunction(fullResponseSmall));
+
+
 
 
 

@@ -24,8 +24,8 @@ addParameter(p,'nSteps',         40,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,    @isnumeric);  
-addParameter(p,'expTime',        0.005, @isnumeric);
-addParameter(p,'timeInterval',   0.005, @isnumeric);
+addParameter(p,'expTime',        0.01, @isnumeric);
+addParameter(p,'timeInterval',   0.01, @isnumeric);
 
 p.parse(varargin{:});
 params = p.Results;
@@ -66,7 +66,7 @@ for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
     sceneSize = sceneGet(scene, 'size');
-    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.01;  % Gray background
+    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.25;  % Gray background
     
     nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
 %     randWalk = (round(.25*params.barWidth*randn(1)));
@@ -82,9 +82,10 @@ for t = 1 : nSteps
 %     elseif randWalk(t) < -params.barWidth + 1
 %         randWalk(t) = -params.barWidth+1;
 %     end
+    randWalk(t)=t;
     for stripeInd = 1:2:nStripes+2
         % barMovie(randWalk(t)+(stripeInd-1)*params.barWidth+params.barWidth:randWalk(t)+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
-        barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+        barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
     end
     barMovie = circshift(barMovie,randWalk(t));
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
