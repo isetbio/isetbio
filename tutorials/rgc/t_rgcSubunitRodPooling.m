@@ -102,9 +102,16 @@ bipolar = ieSpaceTimeFilter(hwrCurrent,kernel);
 % Not working correctly!  Try to understand how to visualize positive and
 % negative numbers.  Maybe voltImageActivity ... that is thought through
 % correctly for positive and negative numbers.
-bmosaic = sensorSet(absorptions,'photons',bipolar);
-coneImageActivity(bmosaic,'dFlag',true);
+% bmosaic = sensorSet(absorptions,'photons',bipolar);
+% coneImageActivity(bmosaic,'dFlag',true);
 
+%% Show bipolar activity
+figure;
+for frame1 = 1:size(bipolar,3)
+    imagesc(squeeze(bipolar(:,:,frame1)));
+    colormap gray; drawnow;
+end
+close;
 
 %%
 osSize = size(hwrCurrent)

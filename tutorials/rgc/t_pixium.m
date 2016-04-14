@@ -117,15 +117,22 @@ nSteps = 90;
 
 
 %% Load image
-
+clear params
 % One frame of a moving bar stimulus
 % Set parameters for size
 params.nSteps = nSteps;
 params.row = 100;
 params.col = 100;
-% params.fov = 2.7;
-% params.vfov = 0.7;
+params.fov = 2.7;
+% % params.vfov = 0.7;
 movingBar = ieStimulusBar(params);
+
+
+%%% Grating subunit stimulus
+
+% params.barWidth = 1;
+% iStim = ieStimulusGratingSubunit(params);
+% absorptions = iStim.absorptions;
 
 %% Show raw stimulus for osIdentity
 figure;
@@ -243,14 +250,22 @@ end
 
 % Apply Gaussian
 
+%% Just electrode activation
+% With < 20 uC/electrode there was no perception, Zrenner paper
+electrodeArray.activation(:) = 0;
+electrodeArray.activation(4,:,4:8) = 0.1;
+electrodeArray.activation(4,:,24:28) = 0.5;
+electrodeArray.activation(4,:,34:38) = 0.75;
+electrodeArray.activation(4,:,44:48) = 1;
+
 %% Add 5 Hz spiking of stimulus
 
 %% Build RGC array
 
-clear paramsIR
+clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = patchEccentricity;        % Radius in mm
+paramsIR.eyeRadius = 8;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -313,13 +328,13 @@ for frame = 1:params.nSteps
                 minXY(yind,xind,frame,mosaicInd,:) = [xmin ymin];
                 innerRetinaInput(yind,xind,frame,mosaicInd) = electrodeArray.activation(xmin,ymin,frame)*exp(-minDistance/2e-4);
                 
-                for xind2 = 1:numberElectrodesX
-                    for yind2 = 1:numberElectrodesY
-                        innerRetinaInput(yind,xind,frame,mosaicInd) = ...
-                            innerRetinaInput(yind,xind,frame,mosaicInd) + ...
-                            electrodeArray.activation(xind2,yind2,frame)*exp(-centerDistanceRS(xind2,yind2)/2e-4);
-                    end
-                end
+%                 for xind2 = 1:numberElectrodesX
+%                     for yind2 = 1:numberElectrodesY
+%                         innerRetinaInput(yind,xind,frame,mosaicInd) = ...
+%                             innerRetinaInput(yind,xind,frame,mosaicInd) + ...
+%                             electrodeArray.activation(xind2,yind2,frame)*exp(-centerDistanceRS(xind2,yind2)/2e-4);
+%                     end
+%                 end
 
             end
         end
@@ -362,27 +377,27 @@ end
 
 
 for mosaicInd = 1:length(innerRetina.mosaic)
-    clear innerRetinaActivation  
+    clear innerRetinaActivation  i0all xc yc
     [yc xc] = size(innerRetina.mosaic{mosaicInd}.cellLocation);
-    i0all{mosaicInd} = -.05 - .45*rand(xc,yc);
+    i0all{mosaicInd} = .5*median(innerRetinaInput(:))*ones(xc,yc);% -.05 - .45*rand(xc,yc);
     for xind = 1:xc
         for yind = 1:yc
             
             for frame = 1:params.nSteps
                 % innerRetinaActivation{xind,yind,mosaicInd} = innerRetinaFunction{xind,yind,mosaicInd}(innerRetinaInput(xind,yind,mosaicInd));
                 funcParams = innerRetinaThreshold{xind,yind,mosaicInd};
-                thr = 10;%funcParams(1); 
-                i0 = i0all{mosaicInd}(xc,yc);
+                thr = 80;%funcParams(1); 
+                i0 = i0all{mosaicInd}(xind,yind);
                 % innerRetinaFunction = @(iElectrode) 10./(1+exp(-thr*(i0+iElectrode)));
                 % innerRetinaFunction = @(iElectrode) log(1./(1+exp(-thr*(i0+iElectrode))));
                 
                 % innerRetinaActivation{xind,yind,mosaicInd} = innerRetinaFunction(innerRetinaInput(xind,yind,mosaicInd));
                 
-                innerRetinaFunction =  @(iElectrode) (50*(1./(1+exp(-thr*(i0+iElectrode)))));
-                innerRetinaActivation{xind,yind}(frame) = innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
+%                 innerRetinaFunction =  @(iElectrode) (50*(1./(1+exp(-thr*(i0+iElectrode)))));
+%                 innerRetinaActivation{xind,yind}(frame) = innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
                 
-%                 innerRetinaFunction = @(iElectrode) (5*iElectrode);
-%                 innerRetinaActivation{xind,yind}(frame) = 10*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
+                innerRetinaFunction = @(iElectrode) (5*iElectrode);
+                innerRetinaActivation{xind,yind}(frame) = 50*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
             end
             mosaicSet(innerRetina.mosaic{mosaicInd},'responseLinear', innerRetinaActivation);
         end
@@ -404,5 +419,63 @@ for tr = 1:numberTrials
     innerRetina = irComputeSpikes(innerRetina);
 end
 %% Invert representation to form image/movie
+clear stimulusReconstruction
+[stimulusReconstruction, paramsRec] = irReconstruct(innerRetina);
 
-irReconstruct(innerRetina);
+%%
+% Play the movie
+% % 
+% figure; set(gcf,'position',[160 60 1070 740]);
+% hold on;
+% for iFrame = 1:size(stimulusReconstruction,3)
+%     imagesc(stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,iFrame));
+% %     imagesc(stimulusReconstruction(:,:,iFrame));
+%     colormap gray
+%     caxis([paramsRec.minR paramsRec.maxR]);
+%     pause(0.1);
+% %     drawnow
+% end
+
+% Play the movie with the stimulus
+for loopv = 1%:10
+figure; set(gcf,'position',[160 60 1070 740]);
+hold on;
+for frame1 = 1:size(movingBar.sceneRGB,3)
+    subplot(121);
+    imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+    colormap gray; 
+    subplot(122);    
+    imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+     colormap gray
+    caxis([paramsRec.minR paramsRec.maxR]);
+%     pause(0.1);
+drawnow
+end
+end
+
+%%
+% Play the movie with the stimulus
+for loopv = 1%:10
+figure; set(gcf,'position',[160 60 1070 740]);
+hold on;
+for frame1 = 1:size(movingBar.sceneRGB,3)
+%     subplot(131);
+%     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+%     colormap gray; 
+    
+    subplot(121);
+    for xPos = 1:numberElectrodesX
+        for yPos = 1:numberElectrodesY
+            hold on;
+            fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
+        end
+    end
+    caxis([0 1]);
+    subplot(122);    
+    imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+     colormap gray
+    caxis([paramsRec.minR paramsRec.maxR]);
+%     pause(0.1);
+drawnow
+end
+end

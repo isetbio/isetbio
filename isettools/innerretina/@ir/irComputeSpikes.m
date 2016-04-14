@@ -59,6 +59,8 @@ for ii = 1:length(ir.mosaic)
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
         case {'rgcSubunit'}  
+            
+            clear responseSpikes responseVoltage
             % This is the computation based on Meister's paper:
             %
             % Eye Smarter than Scientists Believed: Neural Computations in Circuits of the Retina
@@ -110,6 +112,8 @@ for ii = 1:length(ir.mosaic)
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
             
         case {'rgcLNP'}
+            
+            clear responseSpikes responseVoltage
             % This is a place holder for linear, nonlinear, poisson spiking
             % model.  The reference and computations will be explained
             % mainly here.
@@ -125,6 +129,9 @@ for ii = 1:length(ir.mosaic)
             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
             cellCtr = 0;
             
+            nCells = size(ir.mosaic{ii}.responseLinear);
+            responseSpikes = cell(nCells(2),nCells(1));
+            responseVoltage = cell(nCells(2),nCells(1));
             nCells = size(ir.mosaic{ii}.responseLinear);
             for xc = 1:nCells(1)
                 for yc = 1:nCells(2)

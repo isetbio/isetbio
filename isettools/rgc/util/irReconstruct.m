@@ -1,4 +1,4 @@
-function irReconstruct(innerRetina, varargin)
+function [stimulusReconstruction, params] = irReconstruct(innerRetina, varargin)
 % Reconstructs the stimulus according to the inner retina representation by
 % retinal ganglion cell mosaics.
 % 
@@ -34,9 +34,9 @@ switch model
 case{'linear'}
 
 % Initialize figure
-% vcNewGraphWin([],'upperleftbig');
-figure; set(gcf,'position',[160 60 1070 740]);
-hold on;
+% % vcNewGraphWin([],'upperleftbig');
+% figure; set(gcf,'position',[160 60 1070 740]);
+% hold on;
 
 % TODO: Loop over all mosaics
 nX = 0; nY = 0;
@@ -70,7 +70,7 @@ stimulusReconstruction = zeros(nPixX*nX +mincoord, nPixY*nY +mincoord, nFrames +
 for cellTypeInd = 1:length(innerRetina.mosaic)
     
     if cellTypeInd == 2 || cellTypeInd == 4
-        tuningWeight = .1;%0.01;
+        tuningWeight = 1;%0.01;
     else 
         tuningWeight = 1;
     end
@@ -92,7 +92,7 @@ for xc = 1:nX
         % Get the appropriate spike data
         spPlot=innerRetina.mosaic{cellTypeInd}.responseSpikes{xc,yc,1,1};
         % spPlot=(median(horzcat(innerRetina.mosaic{3}.spikeResponse{xc,yc,:,2})'));
-        
+        if length(spPlot)>0
         % Add the STRF to the stimulus reconstruction for each spike
         for iFrame = 1:length(spPlot)
             
@@ -111,7 +111,7 @@ for xc = 1:nX
                 tuningWeight*strf(xcgoodind,ycgoodind,:);
         end%iFrame
         maxx = max([maxx xcoords]); maxy = max([maxy ycoords]);
-        
+        end
     end%nX
 end%nY
 end
@@ -123,11 +123,16 @@ end
 maxR = max(stimulusReconstruction(:));
 minR = min(stimulusReconstruction(:));
 
-% Play the movie
-for iFrame = 1:size(stimulusReconstruction,3)
-    imagesc(stimulusReconstruction(1:maxx,1:maxy,iFrame));
-    colormap gray
-    caxis([minR maxR]);
-    pause(0.1);
-end
+params.maxx = maxx;
+params.maxy = maxy;
+params.minR = minR;
+params.maxR = maxR;
+
+% % Play the movie
+% for iFrame = 1:size(stimulusReconstruction,3)
+%     imagesc(stimulusReconstruction(1:maxx,1:maxy,iFrame));
+%     colormap gray
+%     caxis([minR maxR]);
+%     pause(0.1);
+% end
 
