@@ -17,16 +17,16 @@ p.parse(image,stride,varargin{:});
 image = p.Results.image;
 stride = p.Results.stride;
 
-%%
+%%  Set up the sub sampled image for output
 
-imageFrames= size(image,3);
+sz = size(image);
+rSamps = 1:stride:sz(1);
+cSamps = 1:stride:sz(2);
+imageSubsample = zeros(length(rSamps),length(cSamps),sz(3));
 
-switch imageFrames
-    case 1        
-        imageSubsample = image(1:stride:end,1:stride:end);        
-    otherwise        
-        for k = 1:imageFrames        
-            imageSubsample(:,:,k) = image(1:stride:end,1:stride:end,k);           
-        end
+%
+for k = 1:sz(3)
+    imageSubsample(:,:,k) = image(rSamps,cSamps,k);
 end
 
+end
