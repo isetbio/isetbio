@@ -38,6 +38,8 @@ data = rd.readArtifact(a(whichA).artifactId);
 iStim = data.iStim;
 absorptions = iStim.absorptions;
 
+iStim = movingBar;
+
 % Grating subunit stimulus
 % params.barWidth = 24;
 % iStim = ieStimulusGratingSubunit;
@@ -105,6 +107,10 @@ bipolar = ieSpaceTimeFilter(hwrCurrent,kernel);
 % bmosaic = sensorSet(absorptions,'photons',bipolar);
 % coneImageActivity(bmosaic,'dFlag',true);
 
+% Not sure if this is detailed enough; not used after this point.
+strideSubsample = 4;
+bipolarSubsample = ieImageSubsample(bipolar, strideSubsample);
+
 %% Show bipolar activity
 figure;
 for frame1 = 1:size(bipolar,3)
@@ -113,65 +119,70 @@ for frame1 = 1:size(bipolar,3)
 end
 close;
 
-%%
-osSize = size(hwrCurrent)
-
-% Set subunit size
-% When numberSubunits is set to the RF size, every pixel is a subunit
-% This is the default, after Gollisch & Meister, 2008
-% sRFcenter = mosaicGet(innerRetina0.mosaic{1},'sRFcenter');
-% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',size(sRFcenter));
-
-% Alternatively, have 2x2 subunits for each RGC
-% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',[2 2]);
-
-numberSubunits = [2 2];%mosaic.numberSubunits;
-suSize1 = floor(osSize(1)/numberSubunits(1));
-suSize2 = floor(osSize(2)/numberSubunits(2));
-suCtr = 0;
-for suInd1 = 1:numberSubunits(1)
-    for suInd2 = 1:numberSubunits(2)
-        suCtr = suCtr+1;
-        xsm = (suInd1-1)*suSize1 + 1: (suInd1)*suSize1;
-        ysm = (suInd2-1)*suSize2 + 1: (suInd2)*suSize2;
-        
-        subunitResponseTemp = hwrCurrent(xsm,ysm,:);
-        subunitResponseRS = reshape(subunitResponseTemp,[length(xsm)*length(ysm),osSize(3)]);
-        fullResponseSmall(suCtr,:) = mean(subunitResponseRS,1);
-    end
-end
-
-% fullResponse{xcell,ycell,1} = mean(mosaic.rectifyFunction(fullResponseSmall));
-
-
-
-
-
-
 %% Build the inner retina object
+% Still working on bipolar processing
+% Need to determine how many bipolars per RGC in order to subsample
 
-clear params
+clear params innerRetina0
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
+params.eyeRadius = 10;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina0 = irCreate(os, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','subunit','type','on midget');
 innerRetina0.mosaicCreate('model','lnp','type','on midget');
 
-irPlot(innerRetina0,'mosaic');
 
-% Set subunit size
-% When numberSubunits is set to the RF size, every pixel is a subunit
-% This is the default, after Gollisch & Meister, 2008
-sRFcenter = mosaicGet(innerRetina0.mosaic{1},'sRFcenter');
-mosaicSet(innerRetina0.mosaic{1},'numberSubunits',size(sRFcenter));
+%% Calculate bipolar inputs by subsampling full bipolar response
 
-% Alternatively, have 2x2 subunits for each RGC
-% mosaicSet(innerRetina0.mosaic{1},'numberSubunits',[2 2]);
+% Half-wave rectify
+eZero = -50;
+hwrBipolar = ieHwrect(bipolar,eZero);
+
+bipolarSize = size(hwrBipolar);
+
+% Assume 2x2 bipolars for each RF
+% See Freeman, Field, Sher, Litke, Simoncelli, Chichilnisky, eLife 2016
+% http://elifesciences.org/content/4/e05241v1
+
+numberSubunits = [2 2];%mosaic.numberSubunits;
+
+numberRGCs = size(innerRetina0.mosaic{1}.cellLocation);
+
+bipolarRFsize = floor(bipolarSize(1:2)./numberRGCs);
+
+% The size of each bipolar spatial input 
+suSize1 = floor(bipolarRFsize(1)/numberSubunits(1));
+suSize2 = floor(bipolarRFsize(2)/numberSubunits(2));
+
+% Do subsampling
+for rgcInd1 = 1:numberRGCs(1)
+    for rgcInd2 = 1:numberRGCs(2)
+        rgcBipolarSum{rgcInd1,rgcInd2} = 0;      
+        
+        for suInd1 = 1:numberSubunits(1)
+            for suInd2 = 1:numberSubunits(2)               
+                
+                % Find center of subunit and sample value from there
+                xCenter = (rgcInd1-1)*bipolarRFsize(1) + (suInd1)*round(suSize1/2);
+                yCenter = (rgcInd2-1)*bipolarRFsize(2) + (suInd2)*round(suSize2/2);
+                
+                bipolarCenter{rgcInd1,rgcInd2}(suInd1,suInd2,:) = hwrBipolar(xCenter,yCenter,:);
+                
+                % Add to RGC input
+                rgcBipolarSum{rgcInd1,rgcInd2} = rgcBipolarSum{rgcInd1,rgcInd2} + squeeze(bipolarCenter{rgcInd1,rgcInd2}(suInd1,suInd2,:))';
+            end
+        end
+        
+        
+    end
+end
+
+% Set bipolar output to rgc linear input
+mosaicSet(innerRetina0.mosaic{1},'responseLinear', rgcBipolarSum);
+irPlot(innerRetina0,'linear');
 %% Compute RGC mosaic responses
 
 innerRetina0 = irCompute(innerRetina0, os);
