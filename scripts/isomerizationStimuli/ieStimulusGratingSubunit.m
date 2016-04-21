@@ -66,9 +66,12 @@ for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
     sceneSize = sceneGet(scene, 'size');
-    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.25;  % Gray background
+    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.001;  % Gray background
     
-    nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
+    %horz
+%     nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
+    % vert
+    nStripes = floor((sceneSize(2)+params.barWidth)/params.barWidth);
 %     randWalk = (round(.25*params.barWidth*randn(1)));
     if t > 1
         % randWalk(t) = sum(randWalk(1:t-1)) + round(.25*params.barWidth);
@@ -82,12 +85,17 @@ for t = 1 : nSteps
 %     elseif randWalk(t) < -params.barWidth + 1
 %         randWalk(t) = -params.barWidth+1;
 %     end
-    randWalk(t)=t;
+    randWalk(t)=floor(t/2);
     for stripeInd = 1:2:nStripes+2
         % barMovie(randWalk(t)+(stripeInd-1)*params.barWidth+params.barWidth:randWalk(t)+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
-        barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
+        
+        % horizontal stripes
+%         barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
+        
+        % vertical stripes
+        barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
     end
-    barMovie = circshift(barMovie,randWalk(t));
+    barMovie = circshift(barMovie,randWalk(t),2);
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     
     % Generate scene object from stimulus RGB matrix and display object

@@ -87,7 +87,7 @@ switch lower(params.what)
         plot((0:numel(obj.lConeFilter)-1)*dt, obj.lConeFilter,'r');
         title('L, M, S cone filter kernels');
         xlabel('Time (sec)');
-        ylabel('pA');
+        ylabel('pA / (R*/sec)');
         
     case{'output'}
         
@@ -133,8 +133,8 @@ switch lower(params.what)
         plot((0:numel(obj.mConeFilter)-1)*dt, obj.mConeFilter,'g');
         plot((0:numel(obj.lConeFilter)-1)*dt, obj.lConeFilter,'r');
         title('L, M, S cone filter kernels');
-        xlabel('Time (sec)');
-        ylabel('pA');
+        xlabel('Time (sec)');        
+        ylabel('pA / (R*/sec)');
         
         % Plot output signal at a particular (x, y) over time.
         subplot(1,3,3);
