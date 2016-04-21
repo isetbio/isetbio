@@ -104,7 +104,7 @@ patchEccentricity = 12; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-params.fov = 2.7;
+fov = 2.7;
 
 % Stimulus length
 nSteps = 90;
@@ -123,17 +123,17 @@ clear params
 params.nSteps = nSteps;
 params.row = 100;
 params.col = 100;
-params.fov = 2.7;
+params.fov = fov;
 % % params.vfov = 0.7;
-movingBar = ieStimulusBar(params);
+% movingBar = ieStimulusBar(params);
 
 
 %%% Grating subunit stimulus
 
-% params.barWidth = 1;
-% iStim = ieStimulusGratingSubunit(params);
-% absorptions = iStim.absorptions;
-
+params.barWidth = 20;
+iStim = ieStimulusGratingSubunit(params);
+absorptions = iStim.absorptions;
+movingBar = iStim;
 %% Show raw stimulus for osIdentity
 figure;
 for frame1 = 1:size(movingBar.sceneRGB,3)
@@ -208,6 +208,8 @@ for i = 1:eaSize(1)
     end
 end
 axis equal
+xlabel('Distance (m)'); ylabel('Distance (m)');
+set(gca,'fontsize',14);
 
 % Build the current stimulation activation window
 % Gaussian activation from center of electrode
@@ -252,12 +254,59 @@ end
 
 %% Just electrode activation
 % With < 20 uC/electrode there was no perception, Zrenner paper
-electrodeArray.activation(:) = 0;
-electrodeArray.activation(4,:,4:8) = 0.1;
-electrodeArray.activation(4,:,24:28) = 0.5;
-electrodeArray.activation(4,:,34:38) = 0.75;
-electrodeArray.activation(4,:,44:48) = 1;
 
+% % Col activation
+% electrodeArray.activation(:) = 0;
+% electrodeArray.activation(4,:,4:8) = 0.1;
+% electrodeArray.activation(4,:,24:28) = 0.5;
+% electrodeArray.activation(4,:,44:48) = 0.75;
+% electrodeArray.activation(4,:,64:68) = 1;
+
+% name_str = 'col_electrode_10fps_lowOFF.mp4';
+% electrodeArray.activation(:) = 0;
+% frame = 20;
+%     for xPos = 2:2:numberElectrodesX-2
+% %         for yPos = 2:2:numberElectrodesY
+%             frame = frame + 20;
+%             electrodeArray.activation(xPos,:,frame:frame+4) = 1;
+%             
+% %         end
+%     end
+%     electrodeArray.activation(xPos,yPos,frame+20) = 0;
+% params.nSteps = frame+20;
+
+%%% Single electrode activation
+% name_str = 'single_electrode_10fps_lowOFF.mp4';
+% electrodeArray.activation(:) = 0;
+% frame = 20;
+%     for xPos = 2:2:numberElectrodesX
+%         for yPos = 2:2:numberElectrodesY
+%             frame = frame + 20;
+%             electrodeArray.activation(xPos,yPos,frame:frame+4) = 1;
+%             
+%         end
+%     end
+%     electrodeArray.activation(xPos,yPos,frame+20) = 0;
+% params.nSteps = frame+20;
+
+
+% % % U activation
+% name_str = 'U_10fps.mp4';
+% electrodeArray.activation(:) = 0;
+% frame = 20;
+% for rep = 1:3
+%     electrodeArray.activation(3,1:4,frame+1:frame+4) = 1;
+%     electrodeArray.activation(6,1:4,frame+1:frame+4) = 1;
+%     electrodeArray.activation(3:6,4,frame+1:frame+4) = 1;
+%     frame = frame+30;
+% end
+
+
+%%%%%%
+% electrodeArray.activation(4,:,4:8) = 0.1;
+% electrodeArray.activation(4,:,24:28) = 0.5;
+% electrodeArray.activation(4,:,44:48) = 0.75;
+% electrodeArray.activation(4,:,64:68) = 1;
 %% Add 5 Hz spiking of stimulus
 
 %% Build RGC array
@@ -437,45 +486,64 @@ clear stimulusReconstruction
 % end
 
 % Play the movie with the stimulus
-for loopv = 1%:10
-figure; set(gcf,'position',[160 60 1070 740]);
-hold on;
-for frame1 = 1:size(movingBar.sceneRGB,3)
-    subplot(121);
-    imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
-    colormap gray; 
-    subplot(122);    
-    imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
-     colormap gray
-    caxis([paramsRec.minR paramsRec.maxR]);
-%     pause(0.1);
-drawnow
-end
-end
+% for loopv = 1%:10
+% figure; set(gcf,'position',[160 60 1070 740]);
+% hold on;
+% for frame1 = 1:size(movingBar.sceneRGB,3)
+%     subplot(121);
+%     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+%     colormap gray; 
+%     subplot(122);    
+%     imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+%      colormap gray
+%     caxis([paramsRec.minR paramsRec.maxR]);
+% %     pause(0.1);
+% drawnow
+% end
+% end
 
-%%
+%
+
+
+% Initialize video file
+name_str = 'big_slow_grating2_20.mp4';
+path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/';
+vObj = VideoWriter([path_str name_str],'MPEG-4');
+vObj.FrameRate = 10;
+vObj.Quality = 100;
+open(vObj);
+
 % Play the movie with the stimulus
 for loopv = 1%:10
-figure; set(gcf,'position',[160 60 1070 740]);
+h1=figure; set(gcf,'position',[160 60 1070 740]);
 hold on;
-for frame1 = 1:size(movingBar.sceneRGB,3)
+for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 %     subplot(131);
 %     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
 %     colormap gray; 
     
-    subplot(121);
-    for xPos = 1:numberElectrodesX
-        for yPos = 1:numberElectrodesY
-            hold on;
-            fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
-        end
-    end
-    caxis([0 1]);
-    subplot(122);    
+%     subplot(132);
+%     for xPos = 1:numberElectrodesX
+%         for yPos = 1:numberElectrodesY
+%             hold on;
+%             fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
+%         end
+%     end
+%     caxis([0 1]);
+    
+%     subplot(133);    
     imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
      colormap gray
     caxis([paramsRec.minR paramsRec.maxR]);
 %     pause(0.1);
 drawnow
+
+    F = getframe(h1);
+    writeVideo(vObj,F);
 end
 end
+
+
+close(vObj)
+
+% save('ws_bar_electrode.mat');

@@ -96,7 +96,7 @@ switch ieParamFormat(params.what)
     case{'mosaic'}
         %%% Plot the mosaic of each RGC type
         
-        vcNewGraphWin([],'upperleftbig');
+%         vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         cmap = parula(16);
         
@@ -104,9 +104,9 @@ switch ieParamFormat(params.what)
             
             spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.spacing, obj.col);
             
-            if length(obj.mosaic)>1
-                subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
-            end
+%             if length(obj.mosaic)>1
+%                 subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
+%             end
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
             
@@ -114,32 +114,43 @@ switch ieParamFormat(params.what)
             patchSizeX = obj.spacing;
             sensorRows = obj.col;
             
-            umPerSensorPx = patchSizeX/sensorRows;
+            umPerSensorPx = 1;%patchSizeX/sensorRows;
             
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
                     hold on;
                     % center
+%                     plot(umPerSensorPx*spatialRFcontours{xcell,ycell,1}(1,2:end),...
+%                         umPerSensorPx*spatialRFcontours{xcell,ycell,1}(2,2:end),...
+%                         'color',cmap(cellTypeInd,:));
                     plot(umPerSensorPx*spatialRFcontours{xcell,ycell,1}(1,2:end),...
                         umPerSensorPx*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-                        'color',cmap(cellTypeInd,:));
+                        'color','r','linewidth',5);
+
 %                     fill(umPerSensorPx*spatialRFcontours{xcell,ycell,1}(1,2:end),...
 %                         umPerSensorPx*spatialRFcontours{xcell,ycell,1}(2,2:end),cmap(cellTypeInd,:));
                     hold on;
                     % surround
-                    plot(umPerSensorPx*spatialRFcontours{xcell,ycell,2}(1,2:end),...
-                        umPerSensorPx*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-                        'color',cmap(cellTypeInd+8,:));
+%                     plot(umPerSensorPx*spatialRFcontours{xcell,ycell,2}(1,2:end),...
+%                         umPerSensorPx*spatialRFcontours{xcell,ycell,2}(2,2:end),...
+%                         'color',cmap(cellTypeInd+8,:));
                 end
             end
             axis equal
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
 %             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
 %             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
+            xlabel('Distance (m)'); ylabel('Distance (m)'); set(gca,'fontsize',14);
 %             hl=legend('center','surround','location','ne'); set(hl,'fontsize',14);
         end
         % plot the cone mosaic with RGC contours!
-        % [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+%         cone_mosaic = absorptions.human.coneType;
+%         [xg yg] = meshgrid([1:123,1:150]); 
+%         xg2 = xg(1:123,1:150); yg2 = yg(1:123,1:150);
+%         
+%         figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+%         
+%         [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
     case{'rf'}
         %%% A surface representing the RF (center - surround)
         vcNewGraphWin([],'upperleftbig');

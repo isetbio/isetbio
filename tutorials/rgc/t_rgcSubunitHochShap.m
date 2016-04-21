@@ -1,18 +1,10 @@
-% t_rgcSubunitRodPooling
+% t_rgcSubunitHochShap
 % 
 % Demonstrates the inner retina object calculation for the subunit RGC
-% model (from Gollisch & Meister, 2008, Science; Golisch & Meister, 2010,
-% Neuron). 
+% model (from Hochstein & Shapley, 1976)
 % 
-% Figure 2A of the 2010 Neuron paper shows a simple model of spatial
-% pooling for detection sensitivity.  We implement that model here, which
-% is only isomerizations, temporal filtering, half wave rectification,
-% summation (bipolar).
-%
-% We explore the properties of that model for different receptor models,
-% parameters of the models, simple stimuli, and so forth.  The point of
-% this is to get us into the mode of implementing models in the literature
-% to try to replicate what is in the papers.
+% Nonlinear spatial subunits within RGC RF. After the spatial convolution,
+% the signal is put through a rectifying linearity (at zero).
 % 
 % 3/2016 BW JRG HJ (c) isetbio team
 
