@@ -1,19 +1,14 @@
-% t_rgcSubunit
+% t_rgcSubunitBipolar
 % 
 % Demonstrates the inner retina object calculation for the subunit RGC
-% model (from Gollisch & Meister, 2008, Science).
+% model. This is an attempt to explicitly model the temporal response of
+% the bipolar cells that take as input the cone outer segment current. The
+% temporal response of the bipolar cell is I(t) + 0.5*I'(t), where I(t) is
+% the impulse response of the linear cone outer segment. The subunit model
+% as a front end to the spike generating code by Pillow et al., Nature,
+% 2008.
 % 
-% This is a simplistic implementation of a bipolar-like subunit model for
-% RGC computation. The receptive field is broken up into a number of
-% subunit fields; at each time step, the input to each subunit is
-% summed linearly, and the subunits activations are half-wave rectified and
-% summed. The original Gollisch & Meister model is meant to account for
-% latencies of spikes after a grating presentation, and the implementation
-% here attaches the subunit model as a front end to the spike generating
-% code by Pillow et al., Nature, 2008.
-% 
-% 3/2016 BW JRG HJ (c) isetbio team
-
+% 4/2016 BW JRG HJ (c) isetbio team
 %%
 clear
 ieInit
@@ -80,23 +75,23 @@ figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; s
 %         
 %% Build the inner retina object
 
-clear params
-params.name      = 'Macaque inner retina 1'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 7;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
-
-innerRetina1 = irCreate(osLinear, params);
-
-% Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina1.mosaicCreate('model','lnp','type','off parasol');
-irPlot(innerRetina1,'mosaic');
-
-params.eyeRadius = 3;        % Radius in mm
-innerRetina2 = irCreate(osLinear, params);
-innerRetina2.mosaicCreate('model','lnp','type','off midget');
-hold on;
-irPlot(innerRetina2,'mosaic');
+% clear params
+% params.name      = 'Macaque inner retina 1'; % This instance
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 7;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
+% 
+% innerRetina1 = irCreate(osLinear, params);
+% 
+% % Create a coupled GLM model for the on midget ganglion cell parameters
+% innerRetina1.mosaicCreate('model','lnp','type','off parasol');
+% irPlot(innerRetina1,'mosaic');
+% 
+% params.eyeRadius = 3;        % Radius in mm
+% innerRetina2 = irCreate(osLinear, params);
+% innerRetina2.mosaicCreate('model','lnp','type','off midget');
+% hold on;
+% irPlot(innerRetina2,'mosaic');
 
 %% Build the bipolar cell filter
 
@@ -138,7 +133,7 @@ bipolarOutputRS = convn(bipolarSubsampleRS,bipolarFilter','full');
 bipolarOutput = reshape(bipolarOutputRS,szBS(1),szBS(2),size(bipolarOutputRS,2));
 
 
-%% Create outer segment identity in order to pass bipolarOutput to innerRetina
+%% Create outer segment displayRGB in order to pass bipolarOutput to innerRetina
 
 % Input = RGB
 osI = osCreate('displayRGB');
@@ -165,7 +160,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 innerRetina0 = irCreate(osI, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','lnp','type','off parasol');
+innerRetina0.mosaicCreate('model','lnp','type','on parasol');
 
 irPlot(innerRetina0,'mosaic');
 
