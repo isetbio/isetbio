@@ -135,7 +135,7 @@ close;
 clear params innerRetina0
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 10;        % Radius in mm
+params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina0 = irCreate(os, params);
