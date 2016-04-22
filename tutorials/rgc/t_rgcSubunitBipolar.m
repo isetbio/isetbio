@@ -138,7 +138,7 @@ bipolarOutputRS = convn(bipolarSubsampleRS,bipolarFilter','full');
 bipolarOutput = reshape(bipolarOutputRS,szBS(1),szBS(2),size(bipolarOutputRS,2));
 
 
-%%
+%% Create outer segment identity in order to pass bipolarOutput to innerRetina
 
 % Input = RGB
 osI = osCreate('displayRGB');
