@@ -41,13 +41,13 @@ testmovieshort = data.testmovieshort;
 % testmovieshort = testmovie.matrix(:,:,1:601); 
 
 %% Show test movie
-vcNewGraphWin; 
-for frame1 = 1:200
-    imagesc(testmovieshort(:,:,frame1));
-    colormap gray; 
-    drawnow;
-end
-close;
+% vcNewGraphWin; 
+% for frame1 = 1:200
+%     imagesc(testmovieshort(:,:,frame1));
+%     colormap gray; 
+%     drawnow;
+% end
+% close;
 %% Generate outer segment object
 
 % In this case, the coupled-GLM calculation converts from the frame buffer
@@ -77,15 +77,15 @@ innerRetina = irSet(innerRetina,'numberTrials',nTrials);
 %% Plot a few simple properties of the rgcs in the mosaic
 
 % Spatial RF
-irPlot(innerRetina,'sRFcenter','cell',[1 38]);
+irPlot(innerRetina,'sRFcenter','cell',[1 1]);
 axis([0 13 0 13 -1.5 1.5]); view(0,90);
 colormap gray; shading flat
 
 % Temporal impulse response
-irPlot(innerRetina,'tCenter','cell',[1 18]);
+irPlot(innerRetina,'tCenter','cell',[1 1]);
 
 % Post spike filter
-irPlot(innerRetina,'postSpikeFilter','cell',[1 2]);
+irPlot(innerRetina,'postSpikeFilter','cell',[1 1]);
 
 %% Compute the inner retina response
 
@@ -114,9 +114,11 @@ set(gcf,'position',[  0.0965    0.6144    0.8757    0.2622]);
 % load('isetbio misc/scratch/xvalall_59_trials2.mat');
 % load('isetbio misc/scratch/psth_rec_all.mat');
 
+rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('xvalall_59_trials2', 'type', 'mat');
 xvalall = data.xvalall;
 
+rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('psth_rec_all', 'type', 'mat');
 psth_rec_all = data.psth_rec_all;
 
@@ -151,12 +153,16 @@ set(gca,'fontsize',14)
 
 %% Plot the responses as computed from EJ's lab code
 
-expdate = '2012-08-09-3';
-fitname = 'rk2_MU_PS_CP_p8IDp8'; type = 'NSEM';
-glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-matFileNames = dir([glmFitPath '/ON*.mat']);
-cell = matFileNames(i).name(1:end-4);
-load([glmFitPath '/' cell '.mat']);
+% expdate = '2012-08-09-3';
+% fitname = 'rk2_MU_PS_CP_p8IDp8'; type = 'NSEM';
+% glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+% matFileNames = dir([glmFitPath '/ON*.mat']);
+% cell = matFileNames(i).name(1:end-4);
+% load([glmFitPath '/' cell '.mat']);
+
+client = RdtClient('isetbio'); client.crp('/resources/data/rgc');
+[data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
+fittedGLM = data.fittedGLM;
 [psth_sim, psth_rec] = plotrasters(fittedGLM.xvalperformance, fittedGLM);
 subplot(211); axis([0 4 0 2*57]); subplot(212); axis([0 4 0 max(psth_sim)]);
  set(gcf,'position',[138          86        1264         500]);

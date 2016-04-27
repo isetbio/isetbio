@@ -63,7 +63,11 @@ cellCtr = 0;
 % [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
 % pairspike = data.pairspike;
 
-load('isetbio misc/scratch/pairspikecomp.mat');
+% load('isetbio misc/scratch/pairspikecomp.mat');
+
+rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
+data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
+pairspikecomp = data.pairspikecomp;
 
 nlfun = obj.generatorFunction;
 tic
