@@ -150,8 +150,9 @@ for ce = 1:nCells;
 
 % subplot(2,1,2);
 % % subplot(6,7,ce);
-convolvewin=gausswin(100);
-
+% convolvewin=gausswin(100);
+convolvewin2D = fspecial('gaussian',100,20);
+convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
 % convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
 for trind = 1:numberTrials
 %     yind= spikeTimes{ce,1,trind,1};

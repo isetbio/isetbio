@@ -53,7 +53,7 @@ testmovieshort = data.testmovieshort;
 % In this case, the coupled-GLM calculation converts from the frame buffer
 % values in the movie to the outer segment responses.  That form of the
 % outer segment object is called 'displayRGB'.
-os1 = osCreate('displayRGB'); ntrials = 0;
+os1 = osCreate('displayRGB'); 
 
 % Attach the movie to the object
 os1 = osSet(os1, 'rgbData', double(testmovieshort));
@@ -92,10 +92,10 @@ irPlot(innerRetina,'postSpikeFilter','cell',[1 1]);
 % Lienar convolution
 innerRetina = irCompute(innerRetina, os1);
 
-% Spike coputation
-for tr = 1:ntrials
-    innerRetina = irComputeSpikes(innerRetina, os1);
-end
+% % Spike computation
+% for tr = 1:nTrials
+%     innerRetina = irComputeSpikes(innerRetina, os1);
+% end
 
 %% Plot the raster and PSTH responses of an RGC 
 
@@ -114,10 +114,12 @@ set(gcf,'position',[  0.0965    0.6144    0.8757    0.2622]);
 % load('isetbio misc/scratch/xvalall_59_trials2.mat');
 % load('isetbio misc/scratch/psth_rec_all.mat');
 
+% Load simulated PSTHs from EJ's code
 rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('xvalall_59_trials2', 'type', 'mat');
 xvalall = data.xvalall;
 
+% Load recorded PSTHs from EJ's code
 rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('psth_rec_all', 'type', 'mat');
 psth_rec_all = data.psth_rec_all;
@@ -152,17 +154,19 @@ legend('ISETBIO','Lab Code','Recorded');
 set(gca,'fontsize',14)
 
 %% Plot the responses as computed from EJ's lab code
-
+% % Load results locally
 % expdate = '2012-08-09-3';
 % fitname = 'rk2_MU_PS_CP_p8IDp8'; type = 'NSEM';
 % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 % matFileNames = dir([glmFitPath '/ON*.mat']);
 % cell = matFileNames(i).name(1:end-4);
 % load([glmFitPath '/' cell '.mat']);
-
-client = RdtClient('isetbio'); client.crp('/resources/data/rgc');
-[data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
-fittedGLM = data.fittedGLM;
-[psth_sim, psth_rec] = plotrasters(fittedGLM.xvalperformance, fittedGLM);
-subplot(211); axis([0 4 0 2*57]); subplot(212); axis([0 4 0 max(psth_sim)]);
- set(gcf,'position',[138          86        1264         500]);
+% 
+% % % Load results with RDT
+% % client = RdtClient('isetbio'); client.crp('/resources/data/rgc');
+% % [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
+% % fittedGLM = data.fittedGLM;
+% 
+% [psth_sim, psth_rec] = plotrasters(fittedGLM.xvalperformance, fittedGLM);
+% subplot(211); axis([0 4 0 2*57]); subplot(212); axis([0 4 0 max(psth_sim)]);
+%  set(gcf,'position',[138          86        1264         500]);

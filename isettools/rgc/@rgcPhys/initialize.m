@@ -50,7 +50,7 @@ client = RdtClient('isetbio');
 client.crp('/resources/data/rgc');
 [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
 
-glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+% glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 % 
 % expdate = '2012-08-09-3/';
 % glmFitPath = ['/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/' expdate];
@@ -60,18 +60,18 @@ matFileNames = dir([glmFitPath '/ON*.mat']);
 % Loop through mat files and load parameters
 for matFileInd = 1%:length(matFileNames)
      
-    loadStr = sprintf('matFileNames(%d).name', matFileInd);
-%     eval(sprintf('load([glmFitPath %s])',loadStr))
+%     loadStr = sprintf('matFileNames(%d).name', matFileInd);
+% %     eval(sprintf('load([glmFitPath %s])',loadStr))
     fittedGLM = data.fittedGLM;
-    
-    nameStr = eval(loadStr);
-    sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
-    if isfield(fittedGLM.linearfilters,'Coupling')
-
-        lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
-    end
-%     lookupIndex(matFileInd) = 1205;
-%     fittedGLM = data.fittedGLM;
+%     
+%     nameStr = eval(loadStr);
+%     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
+%     if isfield(fittedGLM.linearfilters,'Coupling')
+% 
+%         lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
+%     end
+% %     lookupIndex(matFileInd) = 1205;
+% %     fittedGLM = data.fittedGLM;
     
 %     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
     obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
