@@ -525,7 +525,9 @@ switch ieParamFormat(params.what)
             else
                 nCells = size(obj.mosaic{cellTypeInd}.responseSpikes);
                 
-                if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
+                
+                
+                if ~strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys') && nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
                 maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
                 % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
                 xcellstart = 1; ycellstart = 1;
@@ -552,13 +554,18 @@ switch ieParamFormat(params.what)
                         %                         subplot(nCells(2),nCells(1),cellCtr);
                         %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
-                        spikeTimesP = (obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});
+                        if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
+                            spikeTimesP = .01*(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});                            
+                        else                            
+                            spikeTimesP = (obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});
+                        end
                         if length(spikeTimesP) == 2
                             spikeTimesP = [spikeTimesP; 0];
                         end
                         if ~isempty(spikeTimesP)
                             
-                            hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
+%                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
+                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],'or','filled');
                         end
                         %                         axis([0 5000 0 numberTrials]);
                         xlabel('Time (sec)'); ylabel('Trial');
@@ -625,6 +632,7 @@ switch ieParamFormat(params.what)
                     for trial = 1:maxTrials
                         
                         yind =  obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,trial,1};
+                        if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys'); yind = .01*yind; end;
                         y(trial,ceil(yind./dt))=1;
                     end
                     % y(:,end) = .01;
@@ -643,6 +651,7 @@ switch ieParamFormat(params.what)
                     %
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     bindur = .01;
+                    
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
                     plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);

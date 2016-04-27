@@ -31,12 +31,9 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-% params.expTime = 0.0025;
-% params.timeInterval = 0.0025;
-
-params.expTime = 0.01;
-params.timeInterval = 0.01;
-params.nSteps = 50;     % Number of stimulus frames
+params.expTime = 0.0025;
+params.timeInterval = 0.0025;
+params.nSteps = 5;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -118,8 +115,8 @@ sensor = sensorSet(sensor, 'volts', volts);
 % Input = RGB
 os = osCreate('displayrgb');
 
-coneSpacing = sensorGet(sensor,'width','um');
-coneSpacing = scene.wAngular*300
+% coneSpacing = sensorGet(sensor,'width','um');
+coneSpacing = scene.wAngular*300;
 % coneSpacing = sensorGet(sensor,'dimension','um');
 os = osSet(os, 'patch size', coneSpacing);
 

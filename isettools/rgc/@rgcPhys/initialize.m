@@ -45,10 +45,10 @@ obj.numberTrials = 10;
 
 glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
 
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('resources/data/rgc');
-[data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
+% client = RdtClient('isetbio');
+% % client.credentialsDialog();
+% client.crp('resources/data/rgc');
+% [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
 
 glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 matFileNames = dir([glmFitPath '/ON*.mat']);
