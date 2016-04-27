@@ -51,6 +51,10 @@ glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
 % [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
 
 glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+% 
+% expdate = '2012-08-09-3/';
+% glmFitPath = ['/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/' expdate];
+
 matFileNames = dir([glmFitPath '/ON*.mat']);
 
 % Loop through mat files and load parameters
@@ -61,13 +65,20 @@ for matFileInd = 1:length(matFileNames)
     
     nameStr = eval(loadStr);
     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
-    lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
+    if isfield(fittedGLM.linearfilters,'Coupling')
+
+        lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
+    end
 %     lookupIndex(matFileInd) = 1205;
 %     fittedGLM = data.fittedGLM;
     
 %     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
     obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
-    obj.couplingFilter{matFileInd} = fittedGLM.linearfilters.Coupling.Filter;
+    if isfield(fittedGLM.linearfilters,'Coupling')
+
+        obj.couplingFilter{matFileInd} = fittedGLM.linearfilters.Coupling.Filter;
+    end
+    
     obj.tonicDrive{matFileInd} = fittedGLM.linearfilters.TonicDrive.Filter;
     
     obj.sRFcenter{matFileInd} = fittedGLM.linearfilters.Stimulus.space_rk1;
@@ -75,7 +86,10 @@ for matFileInd = 1:length(matFileNames)
     obj.tCenter{matFileInd} = fittedGLM.linearfilters.Stimulus.time_rk1;
     obj.tSurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
     
-    couplingMatrixTemp{matFileInd} = fittedGLM.cellinfo.pairs;
+    if isfield(fittedGLM.linearfilters,'Coupling')
+
+        couplingMatrixTemp{matFileInd} = fittedGLM.cellinfo.pairs;
+    end
     
     % NEED TO CHECK IF X AND Y ARE BEING SWITCHED INCORRECTLY HERE
     % figure; for i = 1:39; hold on; scatter(rgc2.mosaic{1}.cellLocation{i}(1), rgc2.mosaic{1}.cellLocation{i}(2)); end
@@ -90,15 +104,17 @@ for matFileInd = 1:length(matFileNames)
 end
 
 obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
+if isfield(fittedGLM.linearfilters,'Coupling')
 
 for matFileInd = 1:length(matFileNames)
+%     coupledCells = zeros(6,1);
     for coupledInd = 1:length(couplingMatrixTemp{matFileInd})
         coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd}(coupledInd)== lookupIndex);
     end
     obj.couplingMatrix{matFileInd} = coupledCells;    
     
 end
-
+end
 % obj.couplingMatrix{1} = [17     3    11    34    12     9];
 
 % % g = fittype('a*exp(-0.5*(x^2/Q1 + y^2/Q2)) + b*exp(-0.5*(x^2/Q1 + y^2/Q2))','independent',{'x','y'},'coeff',{'a','b','Q1','Q2'})
