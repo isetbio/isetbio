@@ -208,12 +208,26 @@ switch ieParamFormat(params.what)
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
-            surface(obj.mosaic{cellTypeInd}.sRFcenter{1,1}); shading flat; view(40,40);
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
+                    
+            surface(obj.mosaic{cellTypeInd}.sRFcenter{xcell,ycell}); shading flat; view(40,40);
             title(sprintf('Spatial Receptive Field, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Distance (\\mum)'),'fontsize',16);
             ylabel(sprintf('Distance (\\mum)'),'fontsize',16);
             zlabel(sprintf('Response (spikes/sec)'),'fontsize',16);
             axis([0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},1) 0 size(obj.mosaic{cellTypeInd}.sRFcenter{1,1},2) min(obj.mosaic{cellTypeInd}.sRFsurround{1,1}(:)) max(obj.mosaic{cellTypeInd}.sRFcenter{1,1}(:)) ]);
+            
+                end
+            end
         end
         
     case{'srfsurround'}
@@ -229,6 +243,7 @@ switch ieParamFormat(params.what)
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
             
+
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
@@ -285,10 +300,27 @@ switch ieParamFormat(params.what)
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
-            plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{1}),bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
+            
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
+            if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys')
+                plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell}),((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})))
+            else
+                plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{1}),bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
+            end
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
             ylabel(sprintf('Response (spikes/sec)'),'fontsize',16);
+                end
+            end
         end
         
     case{'tsurround'}
@@ -328,7 +360,22 @@ switch ieParamFormat(params.what)
             cellTypeEnd = length(obj.mosaic);
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
-            psf = squeeze(obj.mosaic{cellTypeInd}.couplingFilter{1,1}(1,1,:));
+            
+            if ~isempty(cellID)
+                nCells = cellID;
+                xcellstart = cellID(1); ycellstart = cellID(2);
+            else
+                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
+                xcellstart = 1; ycellstart = 1;
+            end
+            
+            for xcell = xcellstart:nCells(1)
+                for ycell = ycellstart:nCells(2)
+            if  strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys')
+                psf =exp( squeeze(obj.mosaic{cellTypeInd}.postSpikeFilter{xcell,ycell}));
+            else
+                psf = squeeze(obj.mosaic{cellTypeInd}.couplingFilter{1,1}(1,1,:));
+            end
             
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
@@ -337,6 +384,8 @@ switch ieParamFormat(params.what)
             title(sprintf('Exponentiated Post-Spike Filter, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
             ylabel(sprintf('Response (spikes/sec)'),'fontsize',16);
+                end
+            end
         end
         
     case{'couplingfilter'}
@@ -509,6 +558,12 @@ switch ieParamFormat(params.what)
         end
         for cellTypeInd = cellTypeStart:cellTypeEnd
             
+            if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
+                bindur = .01/1.208;
+            else
+                bindur = .01;
+            end
+                    
             numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
             
             vcNewGraphWin([],'upperleftbig');
@@ -555,7 +610,7 @@ switch ieParamFormat(params.what)
                         %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
                         if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
-                            spikeTimesP = .01*(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});                            
+                            spikeTimesP = .1*(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});                            
                         else                            
                             spikeTimesP = (obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});
                         end
@@ -575,7 +630,7 @@ switch ieParamFormat(params.what)
                     % end;
                     
                     maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .01*bindur*maxt 0 maxTrials]);
+                    axis([0 .1*bindur*maxt 0 maxTrials]);
                     
                     
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
@@ -650,11 +705,17 @@ switch ieParamFormat(params.what)
                     subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
                     %
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
-                    bindur = .01;
+                    
+                    
+                    if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
+                        bindur = .01/1.208;
+                    else
+                        bindur = .01;
+                    end
                     
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
-                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);
+                    plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
                     
                     xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
                     
@@ -666,7 +727,7 @@ switch ieParamFormat(params.what)
                     %                     if ~isnan(psth{xcell,ycell})
                     
                     maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec)])]);
+                    axis([0 .1*bindur*maxt 0 max([1 max(PSTH_rec)])]);
                     %                     end
                     %
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));

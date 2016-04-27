@@ -46,8 +46,9 @@ ieInit;
 % testmovieshort = data.testmovieshort;
 % % implay(testmovieshort,10);
 
-load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-120-3_0-3600/testmovie_schemeA_8pix_Identity_8pix.mat');
-testmovieshort = testmovie.matrix(:,:,1:601);
+% load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-120-3_0-3600/testmovie_schemeA_8pix_Identity_8pix.mat');
+load('isetbio misc/scratch/testmovieshort.mat');
+% testmovieshort = testmovie.matrix(:,:,1:601);
 
 
 % figure;
@@ -109,7 +110,7 @@ load('isetbio misc/scratch/psth_rec_all.mat');
 % load('isetbio misc/scratch/psth_rec_all_20_trials.mat');
 %% Compare isetbio output and Chichilnisky Lab output
 vcNewGraphWin([],'upperleftbig');
-for i = 12%:36
+for i = 1%:36
     % Measure difference between outputs
     minlen = min([length(rgc2psth{i}) length(xvalall{i}.psth)]);
     diffpsth(i) = sum(abs(rgc2psth{i}(1:minlen) - xvalall{i}.psth(1:minlen)))./sum(.5*(rgc2psth{i}(1:minlen) + xvalall{i}.psth(1:minlen)));
@@ -120,7 +121,7 @@ for i = 12%:36
 
     hold on;
     % Plot recorded response to natural scene
-    plot([1:minlen-1200]./1208,(1)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
+    plot([1:minlen-1200]./1208,(20/59)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
     
     % Plot output of isetbio code
     % plot([1:minlen]./1208,rgc2psth{i}((1:minlen)),'r ','linewidth',3);
@@ -131,7 +132,7 @@ for i = 12%:36
 %     plot([1:minlen-1200]./1208,(20/59)*xvalall{i}.psth(00+(1:minlen-1200)),':k','linewidth',2);
 
     
-    axis([0 (6285-1200)./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
+    axis([0 (6285-1200)./1208 0  1500]);%max(rgc2psth{i}(1:minlen))])
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
     title(sprintf('Validation with Chichilnisky Lab Data\nCell %d, maxv = %.1f, maxi = %d',i,maxv,maxi));
     xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
