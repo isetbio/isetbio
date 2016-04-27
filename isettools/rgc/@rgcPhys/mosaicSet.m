@@ -140,12 +140,25 @@ switch ieParamFormat(params.what)
         [sz1,sz2,nTrials,nType] = size(params.value);
 %         obj.spikeResponse{1:sz1,1:sz2,nT,1:nType} = params.value;
         if nT == 1 & isempty(obj.responseSpikes); nT = 0; end; 
-        for xc = 1:sz1
-            for yc = 1:sz2
-                for nTypeI = 1:nType
-                    obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+        
+        if nTrials == 1
+            for xc = 1:sz1
+                for yc = 1:sz2
+                    for nTypeI = 1:nType
+                        obj.responseSpikes{xc,yc,nT+1,nTypeI} = params.value{xc,yc,1,nTypeI};
+                    end
                 end
             end
-        end   
+        else
+            for xc = 1:sz1
+                for yc = 1:sz2
+                    for iTrial = 1:nTrials
+                        for nTypeI = 1:nType
+                            obj.responseSpikes{xc,yc,iTrial,nTypeI} = params.value{xc,yc,iTrial,nTypeI};
+                        end
+                    end
+                end
+            end
+        end
 end
 

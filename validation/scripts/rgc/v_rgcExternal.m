@@ -40,19 +40,23 @@ ieInit;
 % Load stimulus movie using RemoteDataToolbox
 % These are small black and white van hatteren images with eye movements
 % superimposed.
-rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
-data = rdt.readArtifact('testmovieshort', 'type', 'mat');
-testmovieshort = data.testmovieshort;
-% implay(testmovieshort,10);
+% rdt = RdtClient('isetbio');
+% rdt.crp('resources/data/rgc');
+% data = rdt.readArtifact('testmovieshort', 'type', 'mat');
+% testmovieshort = data.testmovieshort;
+% % implay(testmovieshort,10);
 
-figure;
-for frame1 = 1:200
-    imagesc(testmovieshort(:,:,frame1));
-    colormap gray; 
-    drawnow;
-end
-close;
+load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-120-3_0-3600/testmovie_schemeA_8pix_Identity_8pix.mat');
+testmovieshort = testmovie.matrix(:,:,1:601);
+
+
+% figure;
+% for frame1 = 1:200
+%     imagesc(testmovieshort(:,:,frame1));
+%     colormap gray; 
+%     drawnow;
+% end
+% close;
 %% Generate outer segment object
 
 % In this case, the coupled-GLM calculation converts from the frame buffer
@@ -72,32 +76,40 @@ params.eyeAngle = 90;
 % rgc2 = rgcCreate('rgcPhys', params);
 rgc2 = irPhys(os2, params);
 % remove number of trials!
-rgc2 = irSet(rgc2,'numberTrials',20);
+
+nTrials = 59;
+rgc2 = irSet(rgc2,'numberTrials',nTrials);
 
 %%
 rgc2 = irCompute(rgc2, os2);
 
-nTrials = 20;
-for tr = 1:nTrials
-    rgc2 = irComputeSpikes(rgc2, os2);
-end
+% for tr = 1:nTrials
+%     rgc2 = irComputeSpikes(rgc2, os2);
+% end
 
+% rgc2Linear = mosaicGet(rgc2.mosaic{1},'responseLinear');
 rgc2psth = mosaicGet(rgc2.mosaic{1},'responsePsth');
 
 %% Load validation data
-% Load RDT version of output from the Chichilnisky Lab's code
-rdt = RdtClient('isetbio');
-% client.credentialsDialog();
-rdt.crp('resources/data/rgc');
-[data, artifact] = rdt.readArtifact('xvalall', 'type', 'mat');
-xvalall = data.xvalall;
+% % % Load RDT version of output from the Chichilnisky Lab's code
+% rdt = RdtClient('isetbio');
+% % client.credentialsDialog();
+% rdt.crp('resources/data/rgc');
+% [data, artifact] = rdt.readArtifact('xvalall', 'type', 'mat');
+% xvalall = data.xvalall;
+
+load('isetbio misc/scratch/xvalall_59_trials2.mat');
+
+% load('isetbio misc/scratch/xvalall_20_trials.mat');
 
 % % Load local copy
 % load('xvalall2.mat');
-% load('psth_rec_all.mat');
+load('isetbio misc/scratch/psth_rec_all.mat');
+% load('isetbio misc/scratch/psth_rec_all_59_trials.mat');
+% load('isetbio misc/scratch/psth_rec_all_20_trials.mat');
 %% Compare isetbio output and Chichilnisky Lab output
 vcNewGraphWin([],'upperleftbig');
-for i = 1%:36
+for i = 12%:36
     % Measure difference between outputs
     minlen = min([length(rgc2psth{i}) length(xvalall{i}.psth)]);
     diffpsth(i) = sum(abs(rgc2psth{i}(1:minlen) - xvalall{i}.psth(1:minlen)))./sum(.5*(rgc2psth{i}(1:minlen) + xvalall{i}.psth(1:minlen)));
@@ -108,7 +120,7 @@ for i = 1%:36
 
     hold on;
     % Plot recorded response to natural scene
-%     plot([1:minlen-1200]./1208,(20/57)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
+    plot([1:minlen-1200]./1208,(1)*psth_rec_all{i}(1:end-1200),'b','linewidth',2);
     
     % Plot output of isetbio code
     % plot([1:minlen]./1208,rgc2psth{i}((1:minlen)),'r ','linewidth',3);
@@ -116,14 +128,15 @@ for i = 1%:36
     
     % Plot output of Chichilnisky Lab code
     plot([1:minlen-1200]./1208,xvalall{i}.psth(1200+(1:minlen-1200)),':k','linewidth',2);
+%     plot([1:minlen-1200]./1208,(20/59)*xvalall{i}.psth(00+(1:minlen-1200)),':k','linewidth',2);
 
     
     axis([0 (6285-1200)./1208 0  100]);%max(rgc2psth{i}(1:minlen))])
     [maxv, maxi] = max(rgc2psth{i}(1:minlen)-xvalall{i}.psth(1:minlen)); 
-    title(sprintf('Validation with Chichilnisky Lab Data\nmaxv = %.1f, maxi = %d',maxv,maxi));
+    title(sprintf('Validation with Chichilnisky Lab Data\nCell %d, maxv = %.1f, maxi = %d',i,maxv,maxi));
     xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
 %     legend('Recorded','ISETBIO','Lab Code');
-    legend('ISETBIO','Lab Code');
+%     legend('ISETBIO','Lab Code');
     set(gca,'fontsize',14)
 end
 
@@ -172,15 +185,15 @@ for i = 1:length(rgc2.mosaic{1}.cellLocation)
 %     set(gca,'fontsize',14)
 end
 %% Compare linear outputs
-% figure;
-% for i = 1:39
+figure;
+for i = 1%:39
 %     subplot(6,7,i);
-% %     plot(rgc2psth{i});
-% %     hold on;
-% %     plot(xvalall{i}.psth);
-%     
-%     plot(rgc2linear{i}(1:minlen/10)-xvalall{i}.lcif_const(1:10:minlen),'b','linewidth',2);
+%     plot(rgc2psth{i});
 %     hold on;
-% %     plot(xvalall{i}.cif0);
-%     
-% end
+%     plot(xvalall{i}.psth);
+    
+    plot(rgc2linear{i}(1:minlen/10)-xvalall{i}.lcif_const(1:10:minlen),'b','linewidth',2);
+    hold on;
+%     plot(xvalall{i}.cif0);
+    
+end

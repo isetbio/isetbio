@@ -33,7 +33,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.0025;
 params.timeInterval = 0.0025;
-params.nSteps = 50;     % Number of stimulus frames
+params.nSteps = 5;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');

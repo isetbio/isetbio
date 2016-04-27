@@ -57,11 +57,13 @@ cellCtr = 0;
 % % load('/Users/james/Documents/matlab/rgc Parameters/pairspike_1.mat','pairspike');
 % load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
 
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('resources/data/rgc');
-[data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
-pairspike = data.pairspike;
+% client = RdtClient('isetbio');
+% % client.credentialsDialog();
+% client.crp('resources/data/rgc');
+% [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
+% pairspike = data.pairspike;
+
+load('isetbio misc/scratch/pairspikecomp.mat');
 
 nlfun = obj.generatorFunction;
 tic
@@ -83,6 +85,11 @@ for xcell = 1:nCells
 %         tic    
         cif_ps_cp       = cif0;
         binary_simulation = zeros(1,rlen);
+        
+        pairspike = zeros(6010,6) ;
+        for pair=1:6
+        pairspike(pairspikecomp{xcell,pair,i_trial},pair) = 1;
+        end
         for i = 1 : 6010%params.bins- max(cp_bins, ps_bins);
             roll = rand(1);
             rollcomp(i_trial,i) = exp(-bindur*cif_ps_cp(i));
@@ -91,7 +98,11 @@ for xcell = 1:nCells
                 binary_simulation(i)= 1;
             end
             for pair=1:6%fittedGLM.GLMPars.spikefilters.cp.n_couplings
-                if pairspike{xcell,pair}(i_trial,i)
+                
+%                 pairspike = pairspikecomp{xcell,pair,i_trial}
+%                 if pairspike{xcell,pair}(i_trial,i)
+                if pairspike(i,pair) > 0
+%                 if any(pairspikecomp{xcell,pair,i_trial}==i)
                     cif_ps_cp(i+1: i + cp_bins) =  cif_ps_cp(i+1: i + cp_bins) .* (cif_cpgain{pair});
                 end
             end
