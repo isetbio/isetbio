@@ -152,7 +152,7 @@ bipolarOutputRGB = repmat(1*ieScale(bipolarOutput)./3,[1 1 1 3]);
 osI = osSet(osI, 'rgbData', bipolarOutputRGB);
 %% Build the inner retina object
 
-clear params
+clear params innerRetina0
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 7;        % Radius in mm
@@ -161,7 +161,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 innerRetina0 = irCreate(osI, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','GLM','type','on midget');
+innerRetina0.mosaicCreate('model','LNP','type','on midget');
 
 irPlot(innerRetina0,'mosaic');
 
