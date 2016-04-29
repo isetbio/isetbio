@@ -29,57 +29,6 @@
 % 9. Invert representation to form image/movie
 % 
 % 3/2016 JRG (c) isetbio
-
-% % % % % % % % % 
-% folks,
-% 
-% My summary and suggestion about next steps regarding phosphene modeling.
-% 
-% Our goal is to understand whether a phosphene model based on primate
-% retina can be valuable. We want to have a sense of this before investing
-% huge effort.
-% 
-% From Georges, we know that temporal properties of retinal activation are
-% very tricky and are the subject of study in the Palanker lab now. This
-% will take time. I suggest the following in the meantime. A simplistic
-% phosphene simulator consists of two parts:
-% 
-% 1) The forward transformation array->RGCs is a spatial spread function
-% (Gaussian) for each electrode, that randomly covers an interspersed
-% collection of cell bodies of different RGC types, and activates each one
-% with a sigmoidal probability as a function of current from the electrode.
-% The spatial spread of every electrode, and the magnitude of its output,
-% vary from one electrode to the next. From Georges we will get a rough
-% number for the inter-electrode variability of this spatial spread and
-% magnitude. This is sufficient to produce an estimated mapping
-% array->RGCs.
-% 
-% 2) The reconstruction RGCs->perception is done as follows. James uses the
-% RF models he has in ISETBIO to do a simplistic static image
-% reconstruction (no dynamics) from RGC spikes. This is done by placing a
-% copy of the STA in the reconstruction for every RGC spike.  Again, no
-% temporal stuff at all.
-% 
-% From the above, we have array->RGCs and RGCs->perception.   Finally, let
-% us assume that we take an image and activate the array in proportion to
-% image intensity (in other words, no pre-processing of the image, so
-% image->array is the identity transformation).  With the above items, we
-% have image->perception.
-% 
-% I think James and Cordelia should work together on this and start looking
-% at the resulting images, varying these parameters:
-% 
-% - inter-electrode variability of spatial spread/magnitude of current -
-% RGC density (i.e. eccentricity) - relative sensitivity of different RGC
-% types to electrical stimulation
-% 
-% This should be pretty easy and seems to me the first tool we would need
-% to build intuitions about potential for spatial processing. It will not
-% be hard to build temporal properties on top of this. We will save the big
-% guns on reconstruction (Nishal) for when we outgrow this first-pass
-% approach.
-% 
-% ej
 % 
 % 1.5 orders of magnitude variance in threshold of RGC activation
 % 
@@ -107,7 +56,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 90;
+nSteps = 80;
 
 % Activation curve
 
@@ -130,7 +79,7 @@ params.fov = fov;
 
 %%% Grating subunit stimulus
 
-params.barWidth = 20;
+params.barWidth = 35;
 iStim = ieStimulusGratingSubunit(params);
 absorptions = iStim.absorptions;
 movingBar = iStim;
@@ -243,6 +192,10 @@ for frame = 1:params.nSteps
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
+            
+%             sizeES = size(electrodeStimulus);
+%             electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
+
             % imagesc(electrodeStimulus); title(sprintf('%2.2f',mean(electrodeStimulus(:))));
         end
     end
@@ -314,7 +267,7 @@ end
 clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 8;        % Radius in mm
+paramsIR.eyeRadius = 6;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -454,6 +407,7 @@ for mosaicInd = 1:length(innerRetina.mosaic)
 end
 irPlot(innerRetina, 'linear');
 
+irPlot(innerRetina,'mosaic');
 % Visualize thresholds
 % figure; hold on;
 % for ii = 1:xc
@@ -471,42 +425,37 @@ end
 clear stimulusReconstruction
 [stimulusReconstruction, paramsRec] = irReconstruct(innerRetina);
 
+
+%% Build RGC array for healthy retina
+
+clear paramsIR innerRetinaHealthy
+paramsIR.name    = 'Macaque inner retina 1'; % This instance
+paramsIR.eyeSide   = 'left';   % Which eye
+paramsIR.eyeRadius = 5;        % Radius in mm
+paramsIR.eyeAngle  = 90;       % Polar angle in degrees
+
+model   = 'LNP';    % Computational model
+innerRetinaHealthy = irCreate(os,paramsIR);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
+
 %%
-% Play the movie
-% % 
-% figure; set(gcf,'position',[160 60 1070 740]);
-% hold on;
-% for iFrame = 1:size(stimulusReconstruction,3)
-%     imagesc(stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,iFrame));
-% %     imagesc(stimulusReconstruction(:,:,iFrame));
-%     colormap gray
-%     caxis([paramsRec.minR paramsRec.maxR]);
-%     pause(0.1);
-% %     drawnow
-% end
+innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,os);
+numberTrials = 1;
+for tr = 1:numberTrials
+    innerRetinaHealthy = irComputeSpikes(innerRetinaHealthy);
+end
 
-% Play the movie with the stimulus
-% for loopv = 1%:10
-% figure; set(gcf,'position',[160 60 1070 740]);
-% hold on;
-% for frame1 = 1:size(movingBar.sceneRGB,3)
-%     subplot(121);
-%     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
-%     colormap gray; 
-%     subplot(122);    
-%     imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
-%      colormap gray
-%     caxis([paramsRec.minR paramsRec.maxR]);
-% %     pause(0.1);
-% drawnow
-% end
-% end
+irPlot(innerRetinaHealthy, 'linear');
+% irPlot(innerRetinaHealthy, 'mosaic');
+%% Invert representation to form image/movie
+clear stimulusReconstructionHealthy
+[stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
 
-%
-
-
-% Initialize video file
-name_str = 'big_slow_grating2_20.mp4';
+%%
+name_str = 'big_slow_grating2_20_withHealthy_OnMidget.mp4';
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
@@ -517,33 +466,41 @@ open(vObj);
 for loopv = 1%:10
 h1=figure; set(gcf,'position',[160 60 1070 740]);
 hold on;
-for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
-%     subplot(131);
-%     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
-%     colormap gray; 
+for frame1 = 12:params.nSteps%size(movingBar.sceneRGB,3)
+    subplot(221);
+    imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+    colormap gray; 
     
-%     subplot(132);
-%     for xPos = 1:numberElectrodesX
-%         for yPos = 1:numberElectrodesY
-%             hold on;
-%             fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
-%         end
-%     end
-%     caxis([0 1]);
+    subplot(222);
+    for xPos = 1:numberElectrodesX
+        for yPos = 1:numberElectrodesY
+            hold on;
+            fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
+        end
+    end
+    caxis([0 1]);
     
-%     subplot(133);    
-    imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+    
+    subplot(223);    
+    imagesc((stimulusReconstructionHealthy(1:paramsRecHealthy.maxx,1:paramsRecHealthy.maxy,frame1)));
      colormap gray
-    caxis([paramsRec.minR paramsRec.maxR]);
+    caxis([.5*paramsRecHealthy.minR .5*paramsRecHealthy.maxR]);
+%     caxis([0 .5*paramsRecHealthy.maxR]);
+    title('Healthy');
+    
+    subplot(224);    
+    imagesc(flipud(stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+     colormap gray
+%     caxis([.5*paramsRec.minR .5*paramsRec.maxR]);
+    caxis([0 .5*paramsRec.maxR]);
+    title('Prosthetic');
 %     pause(0.1);
 drawnow
 
     F = getframe(h1);
-    writeVideo(vObj,F);
+%     writeVideo(vObj,F);
 end
 end
 
 
 close(vObj)
-
-% save('ws_bar_electrode.mat');

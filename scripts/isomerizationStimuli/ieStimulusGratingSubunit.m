@@ -96,7 +96,15 @@ for t = 1 : nSteps
         barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
     end
     barMovie = circshift(barMovie,randWalk(t),2);
+%     if mod(floor(t/4),2) == 0
+%         barMovie = 1-barMovie;
+%     end
+      
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
+%     if t < 6
+%         barMovieResize = ones(size(barMovieResize))*0.5;
+%         barMovieResize(1,1,:) = ones(1,1,3);
+%     end
     
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovieResize, 'rgb', params.meanLuminance, display);

@@ -42,7 +42,7 @@ for rgbIndex = 1:channelSize
                 stimCenterCoords = mosaic.cellLocation{xcell,ycell};
                 
                 % Find the spatial extent of the RF in terms of multiples of rfDiameter
-                extent = round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                extent = 1.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                 
                 % Extract x and y coordinates within spatial extent offset by the center coordinate
                 % make non-rectangular? follow exact RF contours?
@@ -50,10 +50,12 @@ for rgbIndex = 1:channelSize
                 stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                 
                 % Ensure indices are within size of stimulus
-                gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
+                % gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
+                offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                gz = find((stimX-offset(1))>=1 & (stimY-offset(2))>=1 & (stimX-offset(1))<=size(sptempStimulus,1) & (stimY-offset(2))<=size(sptempStimulus,2) );
                 
                 % Extract 2D image
-                spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
+                spStim = squeeze(sptempStimulus(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
                 % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
                                           
                 % Convolve for a single temporal frame
@@ -62,9 +64,14 @@ for rgbIndex = 1:channelSize
                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter.*spStim;%conv2(spRFcenter, spStim, 'same');
                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 else
+                    
+%                     if xcell == 5
                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');
                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
-                    
+%                     else
+%                              spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(conv2(spRFcenter, spStim, 'same')));
+%                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) =zeros(size(conv2(spRFsurround, spStim, 'same')));
+%                     end
                     
 %                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;
 %                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = spRFsurround(gz,gz).*spStim;

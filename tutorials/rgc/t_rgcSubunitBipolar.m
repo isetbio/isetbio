@@ -67,11 +67,11 @@ osLinear = osCompute(osLinear,absorptions);
 osPlot(osLinear,absorptions);
 
 %% Plot cones
-cone_mosaic = absorptions.human.coneType;
-[xg yg] = meshgrid([1:123,1:150]);
-xg2 = xg(1:123,1:150); yg2 = yg(1:123,1:150);
-
-figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+% cone_mosaic = absorptions.human.coneType;
+% [xg yg] = meshgrid([1:123,1:150]);
+% xg2 = xg(1:123,1:150); yg2 = yg(1:123,1:150);
+% 
+% figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
 %         
 %% Build the inner retina object
 
@@ -99,7 +99,8 @@ figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; s
 osFilter = osLinear.mConeFilter;
 
 osFilterDerivativeShort = diff(osFilter);
-osFilterDerivative = interp1(1:length(osFilterDerivativeShort),osFilterDerivativeShort,1:length(osFilter))';
+% osFilterDerivative = interp1(1:length(osFilterDerivativeShort),osFilterDerivativeShort,1:length(osFilter))';
+osFilterDerivative = [osFilterDerivativeShort; osFilterDerivativeShort(end)];
 
 bipolarFilter = osFilter + .5*osFilterDerivative;
 
@@ -147,7 +148,7 @@ timeStep = sensorGet(absorptions,'time interval','sec');
 osI = osSet(osI, 'time step', timeStep);
 
 % Set osI data to raw pixel intensities of stimulus
-bipolarOutputRGB = repmat(bipolarOutput./3,[1 1 1 3]);
+bipolarOutputRGB = repmat(1*ieScale(bipolarOutput)./3,[1 1 1 3]);
 osI = osSet(osI, 'rgbData', bipolarOutputRGB);
 %% Build the inner retina object
 
@@ -160,7 +161,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 innerRetina0 = irCreate(osI, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','lnp','type','on parasol');
+innerRetina0.mosaicCreate('model','GLM','type','on midget');
 
 irPlot(innerRetina0,'mosaic');
 
