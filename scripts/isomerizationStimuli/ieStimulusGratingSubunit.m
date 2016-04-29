@@ -95,7 +95,7 @@ for t = 1 : nSteps
         % vertical stripes
         barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
     end
-    barMovie = circshift(barMovie,randWalk(t),2);
+    barMovie = circshift(barMovie,randWalk(t));
 %     if mod(floor(t/4),2) == 0
 %         barMovie = 1-barMovie;
 %     end
