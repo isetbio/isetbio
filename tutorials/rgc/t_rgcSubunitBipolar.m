@@ -28,9 +28,10 @@ ieInit
 
 %% Grating subunit stimulus
 clear params
-params.fov = 1; % degrees
-params.barWidth = 1;
-iStim = ieStimulusGratingSubunit(params);
+stimP.fov      = 1; % degrees
+stimP.barWidth = 6;
+stimP.nSteps   = 150;
+iStim = ieStimulusGratingSubunit(stimP);
 absorptions = iStim.absorptions;
 
 %% White noise
@@ -40,6 +41,8 @@ absorptions = iStim.absorptions;
 figure;
 for frame1 = 1:size(iStim.sceneRGB,3)
     imagesc(squeeze(iStim.sceneRGB(:,:,frame1,:)));
+    axis image
+    pause(0.15)
     colormap gray; drawnow;
 end
 close;
@@ -148,8 +151,13 @@ timeStep = sensorGet(absorptions,'time interval','sec');
 osI = osSet(osI, 'time step', timeStep);
 
 % Set osI data to raw pixel intensities of stimulus
-bipolarOutputRGB = repmat(1*ieScale(bipolarOutput)./3,[1 1 1 3]);
+% bipolarOutputRGB = repmat(1*ieScale(bipolarOutput)./3,[1 1 1 3]);
+bipolarOutputRGB = ieScale(bipolarOutput)./3;
+
 osI = osSet(osI, 'rgbData', bipolarOutputRGB);
+
+% osPlot(osI,iStim.absorptions);
+
 %% Build the inner retina object
 
 clear params innerRetina0
