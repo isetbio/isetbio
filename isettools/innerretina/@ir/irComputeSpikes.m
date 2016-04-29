@@ -121,12 +121,12 @@ for ii = 1:length(ir.mosaic)
             
             % Set the post spike filter to enforce the refractory period.
             glmprs = setPSFprs(ir.mosaic{ii});
-            
+%             glmprs.ih=[]; glmprs.iht=[];
             % No post spike filter - break into different subclass?
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            [responseSpikesVec, Vmem] = simGLM(glmprs, glminput');
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);

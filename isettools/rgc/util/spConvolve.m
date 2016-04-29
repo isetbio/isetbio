@@ -42,7 +42,13 @@ for rgbIndex = 1:channelSize
                 stimCenterCoords = mosaic.cellLocation{xcell,ycell};
                 
                 % Find the spatial extent of the RF in terms of multiples of rfDiameter
-                extent = 1.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                if isa(mosaic, 'rgcPhys')
+                    extent = round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    offset = [0 0];%mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                else
+                    extent = 2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                end
                 
                 % Extract x and y coordinates within spatial extent offset by the center coordinate
                 % make non-rectangular? follow exact RF contours?
@@ -51,7 +57,7 @@ for rgbIndex = 1:channelSize
                 
                 % Ensure indices are within size of stimulus
                 % gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
-                offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                
                 gz = find((stimX-offset(1))>=1 & (stimY-offset(2))>=1 & (stimX-offset(1))<=size(sptempStimulus,1) & (stimY-offset(2))<=size(sptempStimulus,2) );
                 
                 % Extract 2D image
