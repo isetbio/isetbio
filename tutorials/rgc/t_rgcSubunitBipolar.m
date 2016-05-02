@@ -76,25 +76,6 @@ osPlot(osLinear,absorptions);
 % 
 % figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
 %         
-%% Build the inner retina object
-
-% clear params
-% params.name      = 'Macaque inner retina 1'; % This instance
-% params.eyeSide   = 'left';   % Which eye
-% params.eyeRadius = 7;        % Radius in mm
-% params.eyeAngle  = 90;       % Polar angle in degrees
-% 
-% innerRetina1 = irCreate(osLinear, params);
-% 
-% % Create a coupled GLM model for the on midget ganglion cell parameters
-% innerRetina1.mosaicCreate('model','lnp','type','off parasol');
-% irPlot(innerRetina1,'mosaic');
-% 
-% params.eyeRadius = 3;        % Radius in mm
-% innerRetina2 = irCreate(osLinear, params);
-% innerRetina2.mosaicCreate('model','lnp','type','off midget');
-% hold on;
-% irPlot(innerRetina2,'mosaic');
 
 %% Build the bipolar cell filter
 
@@ -112,7 +93,7 @@ plot(bipolarFilter);
 hold on;
 plot(osFilter,'g');
 plot(osFilterDerivative,'r');
-xlabel('Time (sec)'); ylabel('pA / (R*/sec)');
+xlabel('Time (msec)'); ylabel('pA / (R*/sec)');
 set(gca,'fontsize',16);
 
 legend('bipolar f(t)','os f(t)','os f''(t)');
@@ -192,3 +173,40 @@ irPlot(innerRetina0, 'linear');
 
 % irPlot(innerRetina0, 'psth response','cell',[2 2]);
 % irPlot(innerRetina0, 'raster','cell',[1 1]);
+
+%% Build the os and inner retina object
+
+% Input = RGB
+osI = osCreate('displayRGB');
+
+% Set size of retinal patch
+patchSize = sensorGet(absorptions,'width','um');
+osI = osSet(osI, 'patch size', patchSize);
+
+% Set time step of simulation equal to absorptions
+timeStep = sensorGet(absorptions,'time interval','sec');
+osI = osSet(osI, 'time step', timeStep);
+
+osI = osSet(osI, 'rgbData', 2*(iStim.sceneRGB-0.5));
+
+
+clear params
+params.name      = 'Macaque inner retina 1'; % This instance
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 7;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
+
+innerRetina1 = irCreate(osLinear, params);
+
+% Create a coupled GLM model for the on midget ganglion cell parameters
+innerRetina1.mosaicCreate('model','lnp','type','on midget');
+irPlot(innerRetina1,'mosaic');
+
+innerRetina1 = irCompute(innerRetina1, osI);
+irPlot(innerRetina0, 'linear');
+
+% params.eyeRadius = 3;        % Radius in mm
+% innerRetina2 = irCreate(osLinear, params);
+% innerRetina2.mosaicCreate('model','lnp','type','off midget');
+% hold on;
+% irPlot(innerRetina2,'mosaic');

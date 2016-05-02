@@ -65,21 +65,27 @@ cellCtr = 0;
 
 % load('isetbio misc/scratch/pairspikecomp.mat');
 
-rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
-data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
-pairspikecomp = data.pairspikecomp;
+% rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
+% data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
+% pairspikecomp = data.pairspikecomp;
+pairspikecomp = cell(1,6,numberTrials);
 
 nlfun = obj.generatorFunction;
 tic
 for xcell = 1:nCells
     rng(1);
+%     if isfield(obj,'couplingFilter')
     for couplingFilterInd=1:6
-        cif_cpgain{couplingFilterInd} = exp(obj.couplingFilter{xcell}{couplingFilterInd});
+%         cif_cpgain{couplingFilterInd} = exp(obj.couplingFilter{xcell}{couplingFilterInd});
+        cif_cpgain{couplingFilterInd} = zeros(size((obj.postSpikeFilter{xcell})));
     end
+%     end
     cif_psgain = exp(obj.postSpikeFilter{xcell});
     ps_bins     = length(cif_psgain);
-    cp_bins     = length(cif_cpgain{1});
     
+%     if isfield(obj,'couplingFilter')
+    cp_bins     = length(cif_cpgain{1});
+%     end
     Vstm = vertcat(obj.responseLinear{:,xcell,1});
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
@@ -91,9 +97,12 @@ for xcell = 1:nCells
         binary_simulation = zeros(1,rlen);
         
         pairspike = zeros(6010,6) ;
+        
+%     if isfield(obj,'couplingFilter')
         for pair=1:6
         pairspike(pairspikecomp{xcell,pair,i_trial},pair) = 1;
         end
+%     end
         for i = 1 : 6010%params.bins- max(cp_bins, ps_bins);
             roll = rand(1);
             rollcomp(i_trial,i) = exp(-bindur*cif_ps_cp(i));

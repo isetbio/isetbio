@@ -104,9 +104,9 @@ switch ieParamFormat(params.what)
             
             spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.spacing, obj.col);
             
-%             if length(obj.mosaic)>1
-%                 subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
-%             end
+            if length(obj.mosaic)>1
+                subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd);
+            end
             
             nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
             
@@ -312,7 +312,7 @@ switch ieParamFormat(params.what)
             for xcell = xcellstart:nCells(1)
                 for ycell = ycellstart:nCells(2)
             if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys')
-                plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell}),((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})))
+                plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell}),((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),'r','linewidth',4)
             else
                 plot(.01:.01:.01*length(obj.mosaic{cellTypeInd}.tCenter{1}),bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
             end
@@ -380,7 +380,7 @@ switch ieParamFormat(params.what)
             if length(cellTypeStart:cellTypeEnd)>1
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
-            plot((1:length(psf))./1000, psf);
+            plot((1:length(psf))./1000, psf,'r','linewidth',4);
             title(sprintf('Exponentiated Post-Spike Filter, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',16);
             xlabel(sprintf('Time (sec)'),'fontsize',16);
             ylabel(sprintf('Response (spikes/sec)'),'fontsize',16);
@@ -620,7 +620,7 @@ switch ieParamFormat(params.what)
                         if ~isempty(spikeTimesP)
                             
 %                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
-                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],'or','filled');
+                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],12,'or','filled');
                         end
                         %                         axis([0 5000 0 numberTrials]);
                         xlabel('Time (sec)'); ylabel('Trial');
