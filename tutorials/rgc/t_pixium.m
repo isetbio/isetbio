@@ -21,7 +21,7 @@
 % with Gaussian weights on their activations. The activation of each
 % electrode is the mean of the CHANGE TO HEX
 % 
-% 4. Compute electrode activations from image/movie
+% 4. Compute electrode activations from image/movief
 % 5. Build RGC array
 % 6. Calculate RGC input - only one, change to input from multiple
 % 7. Build RGC activation functions
@@ -56,7 +56,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 80;
+nSteps = 120;
 
 % Activation curve
 
@@ -79,7 +79,7 @@ params.fov = fov;
 
 %%% Grating subunit stimulus
 
-params.barWidth = 35;
+params.barWidth = 12;
 iStim = ieStimulusGratingSubunit(params);
 absorptions = iStim.absorptions;
 movingBar = iStim;
@@ -267,7 +267,7 @@ end
 szAct = size(electrodeArray.activation);
 electrodeArray.activationDS = zeros(szAct);
 for iSample = 1:szAct(3)
-    if mod(iSample,5)==0
+    if mod(iSample,20)==0
     electrodeArray.activationDS(:,:,iSample) = electrodeArray.activation(:,:,iSample);
     end
 end
@@ -284,15 +284,15 @@ plot(eaDSRS');
 clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 8;        % Radius in mm
+paramsIR.eyeRadius = 6;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
 innerRetina = irCreate(os,paramsIR);
 innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
@@ -455,9 +455,9 @@ paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 model   = 'LNP';    % Computational model
 innerRetinaHealthy = irCreate(os,paramsIR);
 innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
 
 %%
 innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,os);
@@ -473,8 +473,8 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
 
 %%
-name_str = 'big_slow_grating2_20_PulsedBig2.mp4';
-path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/';
+name_str = 'gratingH_20Hz_Width12_ONM_ONP_OFFM_OFFP_NoSub.mp4';
+path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_april29/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
 vObj.Quality = 100;
@@ -505,17 +505,18 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 %     imagesc((stimulusReconstructionHealthy(1:paramsRecHealthy.maxx,1:paramsRecHealthy.maxy,frame1)));
     imagesc((stimulusReconstructionHealthy(1:sizeScene(1),1:sizeScene(2),frame1)));
      colormap gray
+%      caxis([1*paramsRecHealthy.minR 1*paramsRecHealthy.maxR]);
     caxis([.5*paramsRecHealthy.minR .5*paramsRecHealthy.maxR]);
 %     caxis([0 .5*paramsRecHealthy.maxR]);
     title('Healthy');
     
     subplot(224);    
-%     imagesc(flipud(stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
-    imagesc(flipud(stimulusReconstruction(1:sizeScene(1),1:sizeScene(2),frame1)));
+%     imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
+    imagesc((stimulusReconstruction(1:sizeScene(1),1:sizeScene(2),frame1)));
 
      colormap gray
-%     caxis([.5*paramsRec.minR .5*paramsRec.maxR]);
-    caxis([0 .5*paramsRec.maxR]);
+% %     caxis([.5*paramsRec.minR .5*paramsRec.maxR]);
+    caxis([0 1*paramsRec.maxR]);
     title('Prosthetic');
 %     pause(0.1);
 drawnow

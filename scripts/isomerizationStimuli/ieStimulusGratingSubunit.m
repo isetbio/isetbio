@@ -90,15 +90,15 @@ for t = 1 : nSteps
         % barMovie(randWalk(t)+(stripeInd-1)*params.barWidth+params.barWidth:randWalk(t)+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
         
         % horizontal stripes
-        barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
+%         barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
         
         % vertical stripes
-%         barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
+        barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
     end
-    barMovie = circshift(barMovie,randWalk(t));
-%     if mod(floor(t/4),2) == 0
-%         barMovie = 1-barMovie;
-%     end
+%     barMovie = circshift(barMovie,randWalk(t),2);
+    if mod(floor(t/20),2) == 0
+        barMovie = 1-barMovie;
+    end
       
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
 %     if t < 6

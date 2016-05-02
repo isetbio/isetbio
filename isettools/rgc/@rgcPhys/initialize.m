@@ -1,40 +1,23 @@
-function obj = initialize(obj, rgc, cellTypeInd, varargin)
-% intialize: a method of @rgcPhys that initializes the object
-% following initialization by the superclass. This adds the generator
-% function, the post spike filter and the coupling filters. This function
-% is only called by rgcMosaicGLM, which itself is only called by rgcGLM or
-% rgcCreate.
+function obj = initialize(obj, varargin)
+% Initializes the rgcPhys object by loading a mosaic of GLM fits from an
+% experiment in the Chichilnisky lab.
 % 
-%       rgcMosaicGLM.initialize(rgc, sensor, outersegment, varargin{:});
+% This function is only called by rgcPhys, which itself is only called by irPhys.
 % 
+%             rgcPhys = rgcPhys.initialize(rgc, varargin{:});   
 % Inputs: 
-%       rgc: an isetbio rgcGLM object
-%       scene: an isetbio scene structure
-%       sensor: an isetbio sensor structure
-%       os: an isetbio outer segment structure
+%       rgc: an isetbio rgcPhys object
 % 
-% Outputs: the mosaic object with the generatorFunction, postSpikeFilter and
-% couplingFilter properties set to appropriate values.
+% Outputs: the mosaic object, where each cell has a location, linear spatial
+% and temporal receptive fields, a DC offest, a generator function, a
+% post-spike filter, coupling filters if necessary, and empty fields for
+% the linear, voltage and spiking responses.
 % 
-% Example:
 % 
-%       obj.initialize(rgc, sensor, outersegment, varargin{:});
-% 
-% See also rgcCreate, rgcGLM, rgcMosaicGLM.
+% See also rgcPhys, irPhys.
 % 
 % (c) isetbio
 % 09/2015 JRG
- 
-%     % obj.generatorFunction = @erf;
-%     obj.generatorFunction = @exp;
-%     % obj.generatorFunction = @(x) 10*erf(x);
-% 
-%     obj.numberTrials = 10;
-%     
-%     obj.postSpikeFilter = buildPostSpikeFilter(.01);
-%     
-%     [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
-
 
 namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
 obj.cellType = namesCellTypes{1};
@@ -45,24 +28,54 @@ obj.numberTrials = 10;
 
 glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
 
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('/resources/data/rgc');
-[data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
+% % % % % % % % % % 
+% 
+% client = RdtClient('isetbio');
+% % client.credentialsDialog();
+% client.crp('/resources/data/rgc');
+% [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
+% 
+% % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+% % 
+% % expdate = '2012-08-09-3/';
+% % glmFitPath = ['/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/' expdate];
+% 
+% matFileNames = dir([glmFitPath '/ON*.mat']);
+
+
+% % % % % % 
+
+expdate = '2013-08-19-6';
+% 1205 121 1276
+% cell = 'ONPar_1276';%1276';%1';%841';
+fitname = 'rk2_MU_PS_CP_p8IDp8';
+% type = 'NSEM';
+% type = 'WN';
+
 
 % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-% 
-% expdate = '2012-08-09-3/';
-% glmFitPath = ['/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/' expdate];
+% matFileNames = dir([glmFitPath '/ON*.mat']);
 
-matFileNames = dir([glmFitPath '/ON*.mat']);
+% glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
+% glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
 
+glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
+matFileNames = dir([glmFitPath expdate '/ON*.mat']);
+
+
+% % % % % % 
 % Loop through mat files and load parameters
 for matFileInd = 1%:length(matFileNames)
      
 %     loadStr = sprintf('matFileNames(%d).name', matFileInd);
 % %     eval(sprintf('load([glmFitPath %s])',loadStr))
-    fittedGLM = data.fittedGLM;
+
+%     fittedGLM = data.fittedGLM;
+
+    cell = matFileNames(2).name(1:end-4);
+
+    load([glmFitPath expdate '/' cell '.mat']);
+    
 %     
 %     nameStr = eval(loadStr);
 %     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');

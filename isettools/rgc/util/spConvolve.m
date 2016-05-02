@@ -56,11 +56,12 @@ for rgbIndex = 1:channelSize
                 stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                 
                 % Ensure indices are within size of stimulus
-                % gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
+%                 gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
                 
                 gz = find((stimX-offset(1))>=1 & (stimY-offset(2))>=1 & (stimX-offset(1))<=size(sptempStimulus,1) & (stimY-offset(2))<=size(sptempStimulus,2) );
                 
                 % Extract 2D image
+%                 spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
                 spStim = squeeze(sptempStimulus(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
                 % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
                                           
@@ -72,6 +73,32 @@ for rgbIndex = 1:channelSize
                 else
                     
 %                     if xcell == 5
+
+%                     convCenter = conv2(spRFcenter, spStim, 'full');
+%                     convSurround = conv2(spRFsurround, spStim, 'full');
+%                     sizeCC = size(convCenter); sizeStim = size(spStim);
+                    
+%                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(sizeStim);
+%                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = zeros(sizeStim);
+                    
+                    
+                    
+%                     spResponseCenter{xcell,ycell}(ceil(sizeCC(1)/2)-ceil(sizeStim(1)/2):floor(sizeCC(1)/2)+floor(sizeStim(1)/2),ceil(sizeCC(2)/2)-ceil(sizeStim(2)/2):floor(sizeCC(2)/2)+floor(sizeStim(2)/2),samp,rgbIndex) = convCenter(...
+%                         ceil(sizeCC(1)/2)-ceil(sizeStim(1)/2):floor(sizeCC(1)/2)+floor(sizeStim(1)/2),...
+%                         ceil(sizeCC(2)/2)-ceil(sizeStim(2)/2):floor(sizeCC(2)/2)+floor(sizeStim(2)/2));
+%                     
+%                     spResponseSurround{xcell,ycell}(ceil(sizeCC(1)/2)-ceil(sizeStim(1)/2):floor(sizeCC(1)/2)+floor(sizeStim(1)/2),ceil(sizeCC(2)/2)-ceil(sizeStim(2)/2):floor(sizeCC(2)/2)+floor(sizeStim(2)/2),samp,rgbIndex) = convSurround(...
+%                         ceil(sizeCC(1)/2)-ceil(sizeStim(1)/2):floor(sizeCC(1)/2)+floor(sizeStim(1)/2),...
+%                         ceil(sizeCC(2)/2)-ceil(sizeStim(2)/2):floor(sizeCC(2)/2)+floor(sizeStim(2)/2));
+                    
+                    
+%                     sizeResp = size(spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) );
+%                     
+%                     if (sizeResp(1) ~= sizeStim(1)) && (sizeResp(2) ~= sizeStim(2))
+                        
+                    
+%                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
+
                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');
                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
 %                     else
