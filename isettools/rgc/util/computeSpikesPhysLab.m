@@ -68,7 +68,7 @@ cellCtr = 0;
 % rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
 % data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
 % pairspikecomp = data.pairspikecomp;
-pairspikecomp = cell(1,6,numberTrials);
+pairspikecomp = cell(nCells,6,numberTrials);
 
 nlfun = obj.generatorFunction;
 tic
@@ -86,7 +86,7 @@ for xcell = 1:nCells
 %     if isfield(obj,'couplingFilter')
     cp_bins     = length(cif_cpgain{1});
 %     end
-    Vstm = vertcat(obj.responseLinear{:,xcell,1});
+    Vstm = horzcat(obj.responseLinear{xcell,:,1});
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
     cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');

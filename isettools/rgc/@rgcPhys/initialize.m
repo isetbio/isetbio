@@ -81,15 +81,15 @@ end
 
 % % % % % % 
 % Loop through mat files and load parameters
-for matFileInd = 1%:length(matFileNames)
+for matFileInd = 1:2%118%length(matFileNames)
      
 %     loadStr = sprintf('matFileNames(%d).name', matFileInd);
 % %     eval(sprintf('load([glmFitPath %s])',loadStr))
 
 %     fittedGLM = data.fittedGLM;
 
-    cell = matFileNames(2).name(1:end-4);
-    obj.cellID{matFileInd} = cell;
+    cell = matFileNames(matFileInd).name(1:end-4);
+    obj.cellID{matFileInd,1} = cell;
     load([glmFitPath experimentID '/' cell '.mat']);
     
 %     
@@ -102,35 +102,35 @@ for matFileInd = 1%:length(matFileNames)
 % %     lookupIndex(matFileInd) = 1205;
 % %     fittedGLM = data.fittedGLM;
     
-%     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
-    obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
+%     filterStimulus{matFileInd,1} = fittedGLM.linearfilters.Stimulus.Filter;
+    obj.postSpikeFilter{matFileInd,1} = fittedGLM.linearfilters.PostSpike.Filter;
     if isfield(fittedGLM.linearfilters,'Coupling')
 
-        obj.couplingFilter{matFileInd} = fittedGLM.linearfilters.Coupling.Filter;
+        obj.couplingFilter{matFileInd,1} = fittedGLM.linearfilters.Coupling.Filter;
     end
     
-    obj.tonicDrive{matFileInd} = fittedGLM.linearfilters.TonicDrive.Filter;
+    obj.tonicDrive{matFileInd,1} = fittedGLM.linearfilters.TonicDrive.Filter;
     
-    obj.sRFcenter{matFileInd} = fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.sRFsurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.tCenter{matFileInd} = fittedGLM.linearfilters.Stimulus.time_rk1;
-    obj.tSurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
+    obj.sRFcenter{matFileInd,1} = fittedGLM.linearfilters.Stimulus.space_rk1;
+    obj.sRFsurround{matFileInd,1} = 0*fittedGLM.linearfilters.Stimulus.space_rk1;
+    obj.tCenter{matFileInd,1} = fittedGLM.linearfilters.Stimulus.time_rk1;
+    obj.tSurround{matFileInd,1} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
     
     if isfield(fittedGLM.linearfilters,'Coupling')
 
-        couplingMatrixTemp{matFileInd} = fittedGLM.cellinfo.pairs;
+        couplingMatrixTemp{matFileInd,1} = fittedGLM.cellinfo.pairs;
     end
     
     % NEED TO CHECK IF X AND Y ARE BEING SWITCHED INCORRECTLY HERE
     % figure; for i = 1:39; hold on; scatter(rgc2.mosaic{1}.cellLocation{i}(1), rgc2.mosaic{1}.cellLocation{i}(2)); end
-    obj.cellLocation{matFileInd} = [fittedGLM.cellinfo.slave_centercoord.x_coord fittedGLM.cellinfo.slave_centercoord.y_coord];
+    obj.cellLocation{matFileInd,1} = [fittedGLM.cellinfo.slave_centercoord.x_coord fittedGLM.cellinfo.slave_centercoord.y_coord];
     
-%     % figure; imagesc(filterSpatial{matFileInd})
-%     magnitude1STD = max(filterSpatial{matFileInd}(:))*exp(-1);
-%     [cc,h] = contour(filterSpatial{matFileInd},[magnitude1STD magnitude1STD]);% close;
+%     % figure; imagesc(filterSpatial{matFileInd,1})
+%     magnitude1STD = max(filterSpatial{matFileInd,1}(:))*exp(-1);
+%     [cc,h] = contour(filterSpatial{matFileInd,1},[magnitude1STD magnitude1STD]);% close;
 %     %         ccCell{rfctr} = cc(:,2:end);
 %     cc(:,1) = [NaN; NaN];
-%     spatialContours{matFileInd} = cc;
+%     spatialContours{matFileInd,1} = cc;
 end
 
 obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
@@ -138,10 +138,10 @@ obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
 % 
 % for matFileInd = 1:length(matFileNames)
 % %     coupledCells = zeros(6,1);
-%     for coupledInd = 1:length(couplingMatrixTemp{matFileInd})
-%         coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd}(coupledInd)== lookupIndex);
+%     for coupledInd = 1:length(couplingMatrixTemp{matFileInd,1})
+%         coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd,1}(coupledInd)== lookupIndex);
 %     end
-%     obj.couplingMatrix{matFileInd} = coupledCells;    
+%     obj.couplingMatrix{matFileInd,1} = coupledCells;    
 %     
 % end
 % end
@@ -165,6 +165,6 @@ obj.couplingMatrix{1} = [17     3    11    34    12     9];
 % % Loop through mat files and plot contours
 % figure; hold on;
 % for matFileInd = 1:length(matFileNames)
-%     plot(filterCenter{matFileInd}(1) + spatialContours{matFileInd}(1,2:end), filterCenter{matFileInd}(2) + spatialContours{matFileInd}(2,2:end))
+%     plot(filterCenter{matFileInd,1}(1) + spatialContours{matFileInd,1}(1,2:end), filterCenter{matFileInd,1}(2) + spatialContours{matFileInd,1}(2,2:end))
 %     
 % end
