@@ -31,7 +31,9 @@ for rgbIndex = 1:channelSize
     
     for xcell = 1:nCells(1)
         for ycell = 1:nCells(2)
-            
+            spResponseCenter{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
+            spResponseSurround{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
+            ycell
             for samp = 1:nSamples
                 
                 % Get RF 2D images
@@ -68,8 +70,9 @@ for rgbIndex = 1:channelSize
                 % Convolve for a single temporal frame
                 
                 if isa(mosaic, 'rgcPhys')
-                    spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = spRFcenter.*spStim;%conv2(spRFcenter, spStim, 'same');
-                    spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
+%                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFcenter, spStim, 'same');
+                    spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;%conv2(spRFcenter, spStim, 'same');
+%                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 else
                     
 %                     if xcell == 5
