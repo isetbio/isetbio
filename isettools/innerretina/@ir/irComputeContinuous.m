@@ -80,7 +80,7 @@ switch osType
         % James needs to change the spatial RF and temporal weights in order to
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
-        if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range;
+        if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range - mean(spTempStim(:))/range;
         else                    spTempStim = 10*spTempStim./range;
         end
         

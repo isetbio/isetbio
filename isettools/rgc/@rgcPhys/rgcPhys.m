@@ -33,9 +33,10 @@ classdef rgcPhys % < rgcMosaic
     % Protected properties.
     properties (SetAccess = private, GetAccess = public)
         experimentID;
+        cellType;
+        cellID;
         stimulusFit;
         stimulusTest;
-        cellType;
         rfDiameter;
         rfDiaMagnitude;
         cellLocation;

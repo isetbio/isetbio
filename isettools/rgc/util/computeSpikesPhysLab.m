@@ -77,7 +77,7 @@ for xcell = 1:nCells
 %     if isfield(obj,'couplingFilter')
     for couplingFilterInd=1:6
 %         cif_cpgain{couplingFilterInd} = exp(obj.couplingFilter{xcell}{couplingFilterInd});
-        cif_cpgain{couplingFilterInd} = zeros(size((obj.postSpikeFilter{xcell})));
+        cif_cpgain{couplingFilterInd} = exp(zeros(size((obj.postSpikeFilter{xcell}))));
     end
 %     end
     cif_psgain = exp(obj.postSpikeFilter{xcell});
@@ -89,21 +89,21 @@ for xcell = 1:nCells
     Vstm = vertcat(obj.responseLinear{:,xcell,1});
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
-    cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , 6300)');
+    cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
     % lcif_kx0 = reshape( repmat(lcif_kx_frame, bpf, 1) , 1 , params.bins);
     for i_trial = 1 : numberTrials
 %         tic    
         cif_ps_cp       = cif0;
         binary_simulation = zeros(1,rlen);
         
-        pairspike = zeros(6010,6) ;
+        pairspike = zeros(slen*10-190,6) ;
         
 %     if isfield(obj,'couplingFilter')
         for pair=1:6
         pairspike(pairspikecomp{xcell,pair,i_trial},pair) = 1;
         end
 %     end
-        for i = 1 : 6010%params.bins- max(cp_bins, ps_bins);
+        for i = 1 : slen*10-190%params.bins- max(cp_bins, ps_bins);
             roll = rand(1);
             rollcomp(i_trial,i) = exp(-bindur*cif_ps_cp(i));
             if roll >  exp(-bindur*cif_ps_cp(i));

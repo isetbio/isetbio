@@ -65,7 +65,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)    
+switch ieParamFormat(params.what)    
     case{'name'}
         val = obj.name;
     case{'input'}

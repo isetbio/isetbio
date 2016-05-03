@@ -63,8 +63,8 @@ for xcell = 1:nCells(1)
     
             if (sum(temporalIRCenter(:)-temporalIRSurround(:)) == 0) 
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
-                fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
-                
+%                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
+                fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
                 % Specify starting and ending time coordinates
                 startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
@@ -72,12 +72,41 @@ for xcell = 1:nCells(1)
                                 
             else            
                 % if the temporal impulse responses for center and surround are different, convolve both               
+% 
+%                 K  = fittedGLM.linearfilters.Stimulus.Filter;
+%                 
+%                 K  = reshape(K, [ROI_pixels, length(frame_shifts)]);
+                
+%                 KX = zeros(13*13, length(spResponseCenterRS));
+%                 for i_pixel = 1:13*13
+%                     X_frame_shift = prep_timeshift(X_frame(i_pixel,:),0:29);
+%                     tfilt = K(i_pixel,:);
+% %                     KX(i_pixel,:) = tfilt * X_frame_shift;
+%                     KX(i_pixel,:) = tfilt * temporalIRCenter;
+%                 end
+%                 lcif_kx_frame = sum(KX,1);
+% % % % % %  Works with conv                
                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
+
+%                 fullResponseRSCenter = ifft(fft(spResponseCenterRS).*repmat(fft(temporalIRCenter,169),1,1101));
+%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRS).*repmat(fft(temporalIRSurround,169),1,1101));
+                
+% % % % % Works with fft
+%                 spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+%                 temporalIRCenterp = repmat([temporalIRCenter' zeros([size(temporalIRCenter,2) size(spResponseCenterRS,2)])],169,1);
+%                 
+%                 fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
+%                 
+%                 spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1) size(temporalIRSurround,1)])];
+%                 temporalIRSurroundp = repmat([temporalIRSurround' zeros([size(temporalIRSurround,2) size(spResponseSurroundRS,2)])],169,1);
+%                 
+%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRSp).*fft(temporalIRSurroundp));
+% % % % % % %                
                 
                 % Specify starting and ending time coordinates
 %                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
-                startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
+                startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 % Take difference between center and surround response                
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,startPoint:endPoint) - fullResponseRSSurround(:,startPoint:endPoint);

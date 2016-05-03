@@ -1,4 +1,4 @@
-function obj = initialize(obj, varargin)
+function obj = initialize(obj, ir, varargin)
 % Initializes the rgcPhys object by loading a mosaic of GLM fits from an
 % experiment in the Chichilnisky lab.
 % 
@@ -17,50 +17,66 @@ function obj = initialize(obj, varargin)
 % See also rgcPhys, irPhys.
 % 
 % (c) isetbio
-% 09/2015 JRG
+% 09/2015 JRG%
 
-namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.cellType = namesCellTypes{1};
 
+%% Parse inputs
+p = inputParser;
+p.addRequired('obj');
+p.addRequired('ir');
+addParameter(p,'experimentID','2013-08-19-6',@ischar);
+addParameter(p,'stimulusFit','WN',@ischar);
+addParameter(p,'stimulusTest','NSEM',@ischar);
+addParameter(p,'cellType','OnParasol',@ischar);
+
+
+addParameter(p,'name','inner retina',@ischar);
+addParameter(p,'species','unknown',@ischar);
+% addParameter(p,'outersegment','os',@ischar);
+addParameter(p,'eyeSide',    'left', @ischar);
+addParameter(p,'eyeRadius',   4,     @isnumeric);
+addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
+
+p.parse(obj,ir,varargin{:});
+
+experimentID = p.Results.experimentID;
+stimulusFit = p.Results.stimulusFit;
+stimulusTest = p.Results.stimulusTest;
+cellType =  p.Results.cellType;
+
+obj.experimentID = experimentID;
+obj.stimulusFit = stimulusFit;
+obj.stimulusTest = stimulusTest;
+obj.cellType = cellType;
+
+%% Set defaults
 obj.generatorFunction = @exp;
-
 obj.numberTrials = 10;
 
-glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
-
-% % % % % % % % % % 
-% 
-% client = RdtClient('isetbio');
-% % client.credentialsDialog();
-% client.crp('/resources/data/rgc');
-% [data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
-% 
-% % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-% % 
-% % expdate = '2012-08-09-3/';
-% % glmFitPath = ['/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/' expdate];
-% 
-% matFileNames = dir([glmFitPath '/ON*.mat']);
-
-
-% % % % % % 
-
-expdate = '2013-08-19-6';
-% 1205 121 1276
-% cell = 'ONPar_1276';%1276';%1';%841';
-fitname = 'rk2_MU_PS_CP_p8IDp8';
-% type = 'NSEM';
-% type = 'WN';
-
-
+% % Coupled experiment
 % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 % matFileNames = dir([glmFitPath '/ON*.mat']);
 
-% glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
-% glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
+switch ieParamFormat(stimulusFit)
+    case 'wn'        
+        
+        switch ieParamFormat(stimulusTest)
+            case 'wn'
+                glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
+            case 'nsem'
+                glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
+        end
+        
+    otherwise % case 'NSEM'
+        glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
+end
 
-glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
-matFileNames = dir([glmFitPath expdate '/ON*.mat']);
+switch ieParamFormat(cellType)
+    case 'offparasol'
+        matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
+    otherwise % case 'onparasol'
+        matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
+end
 
 
 % % % % % % 
@@ -73,8 +89,8 @@ for matFileInd = 1%:length(matFileNames)
 %     fittedGLM = data.fittedGLM;
 
     cell = matFileNames(2).name(1:end-4);
-
-    load([glmFitPath expdate '/' cell '.mat']);
+    obj.cellID{matFileInd} = cell;
+    load([glmFitPath experimentID '/' cell '.mat']);
     
 %     
 %     nameStr = eval(loadStr);
