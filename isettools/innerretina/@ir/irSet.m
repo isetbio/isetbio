@@ -44,7 +44,8 @@ allowableFieldsToSet = {...
         'input',...
         'temporalEquivEcc',...       
         'mosaic',...
-        'numberTrials'...
+        'numberTrials',...
+        'recordedSpikes'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -66,7 +67,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.what)
         
     case{'name'}
         obj.name = params.value;
@@ -95,5 +96,9 @@ switch lower(params.what)
             warning('The numberTrials property can only be set for rgcLNP, rgcGLM and rgcPhys models.');
         end
         
+    case{'recordedspikes'}
+        if isa(obj.mosaic{1},'rgcPhys')
+            obj.mosaic{1} = mosaicSet(obj.mosaic{1},'responseSpikes',params.value);
+        end
 end
 

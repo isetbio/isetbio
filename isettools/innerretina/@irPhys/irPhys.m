@@ -56,8 +56,8 @@ classdef irPhys < ir
             % Initialize the parent class
             obj = obj@ir(outersegment, varargin{:});
             
-            % Initialize ourselves by building GLM mosaic objects
-            obj.mosaic{cellTypeInd} = rgcPhys(obj, cellTypeInd, varargin{:});
+            % Initialize ourselves by building rgcPhys mosaic objects
+            obj.mosaic{1} = rgcPhys(obj, varargin{:});
             
         end
         
