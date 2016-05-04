@@ -57,114 +57,67 @@ obj.numberTrials = 10;
 % glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
 % matFileNames = dir([glmFitPath '/ON*.mat']);
 
-switch ieParamFormat(stimulusFit)
-    case 'wn'        
-        
-        switch ieParamFormat(stimulusTest)
-            case 'wn'
-                glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
-            case 'nsem'
-                glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
-        end
-        
-    otherwise % case 'NSEM'
-        glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
-end
+% switch ieParamFormat(stimulusFit)
+%     case 'wn'        
+%         
+%         switch ieParamFormat(stimulusTest)
+%             case 'wn'
+%                 glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
+%             case 'nsem'
+%                 glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
+%         end
+%         
+%     otherwise % case 'NSEM'
+%         glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
+% end
+
+
+
+% RDT initialization
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc');
 
 switch ieParamFormat(cellType)
     case 'offparasol'
-        matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
+%         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
+        data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
     otherwise % case 'onparasol'
-        matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
+%         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
+        data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
 end
 
-
+mosaicGLM = data.mosaicGLM;
+                        
 % % % % % % 
 % Loop through mat files and load parameters
-for matFileInd = 1:2%118%length(matFileNames)
-     
-%     loadStr = sprintf('matFileNames(%d).name', matFileInd);
-% %     eval(sprintf('load([glmFitPath %s])',loadStr))
+for matFileInd = 1:length(mosaicGLM)
 
-%     fittedGLM = data.fittedGLM;
+%     cell = matFileNames(matFileInd).name(1:end-4);
+%     obj.cellID{matFileInd,1} = cell;
+%     load([glmFitPath experimentID '/' cell '.mat']);
 
-    cell = matFileNames(matFileInd).name(1:end-4);
-    obj.cellID{matFileInd,1} = cell;
-    load([glmFitPath experimentID '/' cell '.mat']);
+    obj.cellID{matFileInd,1} = mosaicGLM{matFileInd}.cell_savename;
     
-%     
-%     nameStr = eval(loadStr);
-%     sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
-%     if isfield(fittedGLM.linearfilters,'Coupling')
-% 
-%         lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
-%     end
-% %     lookupIndex(matFileInd) = 1205;
-% %     fittedGLM = data.fittedGLM;
-    
-%     filterStimulus{matFileInd,1} = fittedGLM.linearfilters.Stimulus.Filter;
-    obj.postSpikeFilter{matFileInd,1} = fittedGLM.linearfilters.PostSpike.Filter;
-    if isfield(fittedGLM.linearfilters,'Coupling')
+    obj.postSpikeFilter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.PostSpike.Filter;
+    if isfield(mosaicGLM{matFileInd}.linearfilters,'Coupling')
 
-        obj.couplingFilter{matFileInd,1} = fittedGLM.linearfilters.Coupling.Filter;
+        obj.couplingFilter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Coupling.Filter;
     end
     
-    obj.tonicDrive{matFileInd,1} = fittedGLM.linearfilters.TonicDrive.Filter;
+    obj.tonicDrive{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.TonicDrive.Filter;
     
-    obj.sRFcenter{matFileInd,1} = fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.sRFsurround{matFileInd,1} = 0*fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.tCenter{matFileInd,1} = fittedGLM.linearfilters.Stimulus.time_rk1;
-    obj.tSurround{matFileInd,1} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
+    obj.sRFcenter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Stimulus.space_rk1;
+    obj.sRFsurround{matFileInd,1} = 0*mosaicGLM{matFileInd}.linearfilters.Stimulus.space_rk1;
+    obj.tCenter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Stimulus.time_rk1;
+    obj.tSurround{matFileInd,1} = 0*mosaicGLM{matFileInd}.linearfilters.Stimulus.time_rk1;
     
-    if isfield(fittedGLM.linearfilters,'Coupling')
+    if isfield(mosaicGLM{matFileInd}.linearfilters,'Coupling')
 
-        couplingMatrixTemp{matFileInd,1} = fittedGLM.cellinfo.pairs;
+        couplingMatrixTemp{matFileInd,1} = mosaicGLM{matFileInd}.cellinfo.pairs;
     end
     
-    % NEED TO CHECK IF X AND Y ARE BEING SWITCHED INCORRECTLY HERE
-    % figure; for i = 1:39; hold on; scatter(rgc2.mosaic{1}.cellLocation{i}(1), rgc2.mosaic{1}.cellLocation{i}(2)); end
-    obj.cellLocation{matFileInd,1} = [fittedGLM.cellinfo.slave_centercoord.x_coord fittedGLM.cellinfo.slave_centercoord.y_coord];
+  obj.cellLocation{matFileInd,1} = [mosaicGLM{matFileInd}.cellinfo.slave_centercoord.x_coord mosaicGLM{matFileInd}.cellinfo.slave_centercoord.y_coord];
     
-%     % figure; imagesc(filterSpatial{matFileInd,1})
-%     magnitude1STD = max(filterSpatial{matFileInd,1}(:))*exp(-1);
-%     [cc,h] = contour(filterSpatial{matFileInd,1},[magnitude1STD magnitude1STD]);% close;
-%     %         ccCell{rfctr} = cc(:,2:end);
-%     cc(:,1) = [NaN; NaN];
-%     spatialContours{matFileInd,1} = cc;
 end
 
-obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
-% if isfield(fittedGLM.linearfilters,'Coupling')
-% 
-% for matFileInd = 1:length(matFileNames)
-% %     coupledCells = zeros(6,1);
-%     for coupledInd = 1:length(couplingMatrixTemp{matFileInd,1})
-%         coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd,1}(coupledInd)== lookupIndex);
-%     end
-%     obj.couplingMatrix{matFileInd,1} = coupledCells;    
-%     
-% end
-% end
-obj.couplingMatrix{1} = [17     3    11    34    12     9];
-
-% % g = fittype('a*exp(-0.5*(x^2/Q1 + y^2/Q2)) + b*exp(-0.5*(x^2/Q1 + y^2/Q2))','independent',{'x','y'},'coeff',{'a','b','Q1','Q2'})
-% 
-%     ft = fittype( 'a*exp(-0.5*((x - x0)^2/Q1 + (y - y0)^2/Q2)) + b*exp(-0.5*((x - x0)^2/Q1 + (y - y0)^2/Q2)) + c0','independent',{'x','y'}, 'dependent', 'z', 'coeff',{'a','b','Q1','Q2','x0','y0','c0'});
-%         opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-%     opts.Display = 'Off';
-%     opts.StartPoint = [0.323369521886293 0.976303691832645];
-%     
-%     % Fit a curve between contrast level (x) and probability of correction
-%     % detection.
-%     % bootWeibullFit(stimLevels, nCorrect, nTrials, varargin)
-%     % in computationaleyebrain/simulations/Pixel Visibility/ ...
-%     [xsz,ysz] = size(srf1); 
-%    [xc,yc] = meshgrid(1:xsz,1:ysz);
-%     [fitresult, gof] = fit([xc(:),yc(:)], srf1(:), ft);, opts );
-% 
-% % Loop through mat files and plot contours
-% figure; hold on;
-% for matFileInd = 1:length(matFileNames)
-%     plot(filterCenter{matFileInd,1}(1) + spatialContours{matFileInd,1}(1,2:end), filterCenter{matFileInd,1}(2) + spatialContours{matFileInd,1}(2,2:end))
-%     
-% end
+obj.rfDiameter = size(mosaicGLM{matFileInd}.linearfilters.Stimulus.Filter,1);

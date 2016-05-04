@@ -279,7 +279,7 @@ switch ieParamFormat(params.what)
             end
             title(sprintf('Temporal Filter, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
             xlabel(sprintf('Time (sec)'),'fontsize',14);
-            ylabel(sprintf('Response (spikes/sec)'),'fontsize',14);
+            ylabel(sprintf('Sensitivity (AU)'),'fontsize',14);
             legend('B','G','R','location','northwest');
         end
         
@@ -323,7 +323,7 @@ switch ieParamFormat(params.what)
             end
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
             xlabel(sprintf('Time (sec)'),'fontsize',14);
-            ylabel(sprintf('Response (spikes/sec)'),'fontsize',14);
+            ylabel(sprintf('Sensitivity (AU)'),'fontsize',14);
                 end
             end
         end
@@ -365,7 +365,7 @@ switch ieParamFormat(params.what)
             end
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
             xlabel(sprintf('Time (sec)'),'fontsize',14);
-            ylabel(sprintf('Response (spikes/sec)'),'fontsize',14);
+            ylabel(sprintf('Sensitivity (AU)'),'fontsize',14);
                 end
             end
         end
@@ -410,7 +410,7 @@ switch ieParamFormat(params.what)
             line([0 (-1+length(psf)).*timeStep],[ 1 1]);
             title(sprintf('Exponentiated Post-Spike Filter, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
             xlabel(sprintf('Time (sec)'),'fontsize',14);
-            ylabel(sprintf('Response (spikes/sec)'),'fontsize',14);
+            ylabel(sprintf('Gain (AU)'),'fontsize',14);
                 end
             end
         end
@@ -647,7 +647,7 @@ switch ieParamFormat(params.what)
                         if ~isempty(spikeTimesP)
                             
 %                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
-                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],16,'o',color,'filled');
+                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],18,'o',color,'filled');
                         end
                         %                         axis([0 5000 0 numberTrials]);
                         xlabel('Time (sec)'); ylabel('Trial');
