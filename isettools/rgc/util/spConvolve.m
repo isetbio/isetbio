@@ -33,7 +33,6 @@ for rgbIndex = 1:channelSize
         for ycell = 1:nCells(2)
             spResponseCenter{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
             spResponseSurround{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
-            ycell
             for samp = 1:nSamples
                 
                 % Get RF 2D images

@@ -97,8 +97,15 @@ switch ieParamFormat(params.what)
         end
         
     case{'recordedspikes'}
+        
+        for cellind = 1:length(params.value)
+            for iTrial = 1:length(params.value{1}.rasters.recorded)
+                recorded_spiketimes{cellind,1,iTrial} = (params.value{cellind}.rasters.recorded{iTrial});
+            end
+        end
+        
         if isa(obj.mosaic{1},'rgcPhys')
-            obj.mosaic{1} = mosaicSet(obj.mosaic{1},'responseSpikes',params.value);
+            obj.mosaic{1} = mosaicSet(obj.mosaic{1},'responseSpikes',recorded_spiketimes);
         end
 end
 
