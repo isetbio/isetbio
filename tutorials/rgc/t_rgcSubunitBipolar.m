@@ -29,7 +29,7 @@ ieInit
 %% Grating subunit stimulus
 clear params
 stimP.fov      = 1; % degrees
-stimP.barWidth = 6;
+stimP.barWidth = 2;
 stimP.nSteps   = 150;
 iStim = ieStimulusGratingSubunit(stimP);
 absorptions = iStim.absorptions;
@@ -133,8 +133,9 @@ osI = osSet(osI, 'time step', timeStep);
 
 % Set osI data to raw pixel intensities of stimulus
 % bipolarOutputRGB = repmat(1*ieScale(bipolarOutput)./3,[1 1 1 3]);
-bipolarOutputRGB = ieScale(bipolarOutput)./3;
-
+bipolarOutputRGB = 1000*ieScale(bipolarOutput);
+% bipolarOutputRGB = (bipolarOutput);
+% figure; plot(reshape(ieScale(bipolarOutput),31*38,180)')
 osI = osSet(osI, 'rgbData', bipolarOutputRGB);
 
 % osPlot(osI,iStim.absorptions);
@@ -203,7 +204,8 @@ innerRetina1.mosaicCreate('model','lnp','type','on midget');
 irPlot(innerRetina1,'mosaic');
 
 innerRetina1 = irCompute(innerRetina1, osI);
-irPlot(innerRetina0, 'linear');
+irPlot(innerRetina1, 'linear');
+irPlot(innerRetina1, 'psth');
 
 % params.eyeRadius = 3;        % Radius in mm
 % innerRetina2 = irCreate(osLinear, params);
