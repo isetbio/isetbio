@@ -63,8 +63,8 @@ for xcell = 1:nCells(1)
     
             if (sum(temporalIRCenter(:)-temporalIRSurround(:)) == 0) 
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
-%                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
-                fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
+                fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
+%                 fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
                 % Specify starting and ending time coordinates
                 startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));

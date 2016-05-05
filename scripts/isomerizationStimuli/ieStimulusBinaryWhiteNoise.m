@@ -1,22 +1,44 @@
-%% t_rgcWhiteNoise
+function iStim = ieStimulusBinaryWhiteNoise(varargin)
+% Creates a movie/dynamic scene stimulus in isetbio where each frame is a
+% new white noise image.
 % 
-% A tutorial for the isetbio RGC object. A white noise image is created 
-% in isetbio as a scene, and the sensor, outer segment and RGC objects are
-% computed in response to the scene. 
+% Inputs: a structure that defines the parameters of the white noise.
+% 
+% Outputs: iStim is a structure that contains the display, the scene, the
+%   optical image and the sensor.
+% 
+% Example:
+%   params.nSteps = 20;
+%   iStim = ieStimulusWhiteNoise(params);
+%   vcAddObject(iStim.scene); sceneWindow;
+% 
+% 3/2016 JRG (c) isetbio team
 
-% (HJ) ISETBIO TEAM, 2014
-% (JRG) modified 10/2015
+%% Parse inputs
+p = inputParser;
+addParameter(p,'meanLuminance',  200,   @isnumeric);
+addParameter(p,'nSteps',         50,    @isnumeric);
+addParameter(p,'row',            64,    @isnumeric);  
+addParameter(p,'col',            64,    @isnumeric);  
+addParameter(p,'fov',            0.6,    @isnumeric);  
+addParameter(p,'expTime',        0.01, @isnumeric);
+addParameter(p,'timeInterval',   0.01, @isnumeric);
 
-%% Init
-ieInit;
+p.parse(varargin{:});
 
-%% Compute a Gabor patch scene
+fov = p.Results.fov;
+params = p.Results;
+%% Compute a Gabor patch scene as a placeholder for the white noise image
 
 % Set up Gabor stimulus using sceneCreate('harmonic',params)
-fov = 0.6;
 
-params.meanLuminance = 200;
-params.row = 64; params.col = 64;
+% % Bar width in pixels
+% params.barWidth = 5;
+% % Mean luminance
+% params.meanLuminance = 200;
+% % Size of image in (row,col)
+% params.row = 64; params.col = 64;
+
 % params.freq = 6; params.contrast = 1;
 % % params.ph  = 0;  params.ang = 0;
 % params.row = 64; params.col = 64;
@@ -33,7 +55,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.01;
 params.timeInterval = 0.01;
-params.nSteps = 100;     % Number of stimulus frames
+% params.nSteps = 50;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -43,13 +65,14 @@ sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 sensor = sensorSet(sensor, 'exp time', params.expTime); 
 sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
 
-%% Compute a dynamic set of cone absorptions
-
+%% Compute a dynamic set of cone absorptions for white noise
+%
+%
 % We want to produce a scene video that translates into an oi video that
 % becomes a cone absorption video.  At present coneAbsorptions ONLY does
 % this using eye movements, not by creating a series of images.  This code
 % represents our first effort to produce dynamic scenes.
-
+%
 % We are literally going to recreate a set of scenes with different phase
 % positions and produce the scenes, ois, and cone absorptions by the loop.
 % The result will be a time series of the cone photon absorptions.
@@ -71,21 +94,28 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
-
-    if t == 1 
-        stimulusRGBdata = zeros(params.row,params.col,3);
+%     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
+    %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
+    dsfactor = 16;    
+    stimRGBraw = rand(params.row/dsfactor,params.col/dsfactor);    
+    stimRGBthresh = zeros(params.row/dsfactor,params.col/dsfactor);    
+    stimRGBthresh(stimRGBraw>0.5) = 1;    
+    szraw = size(stimRGBraw);    
+    for i1 = 1:szraw(1)
+        for j1 = 1:szraw(2)
+            stimRGBbig(dsfactor*(i1-1)+1:dsfactor*i1,dsfactor*(j1-1)+1:dsfactor*j1) = stimRGBthresh(i1,j1);
+        end
     end
-
-    stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
-    stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
-
+    stimulusRGBdata = repmat(stimRGBbig,[1 1 3]);
+    
     % % % % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(stimulusRGBdata, 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
 
     % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+    % sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+    sceneRGB(:,:,t,:) = stimulusRGBdata;
     
     % Compute optical image
     oi = oiCompute(oi, scene);    
@@ -108,49 +138,15 @@ if wFlag, delete(wbar); end
 sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
+% These are both the results and the objects needed to recreate this
+% script. So calling isomerizationBar(iStim) should produce the same
+% results.
 
-%% Movie of the cone absorptions over cone mosaic
+iStim.params  = params;
 
-% coneImageActivity(sensor,'step',1,'dFlag',true);
-%% Outer segment calculation
-
-% Input = RGB
-os = osCreate('displayRGB');
-
-coneSpacing = sensorGet(sensor,'width','um');
-os = osSet(os, 'patchsize', coneSpacing);
-
-coneSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'timestep', coneSampling);
-
-os = osSet(os, 'rgbData', sceneRGB);
-% % Plot the photocurrent for a pixel
-% osPlot(os,sensor);
-
-%% Build rgc
-
-clear params
-
-params.name      = 'Macaque inner retina 1'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 4;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
-
-innerRetina = irCreate(os, params);
-
-innerRetina.mosaicCreate('model','glm','type','on midget');
-%% Compute RGC response
-
-innerRetina = irCompute(innerRetina, os);
-% for numberTrials = 1:10
-%     innerRetina.spikeCompute(innerRetina, os);
-% end
-
-%%
-% irPlot(innerRetina, 'mosaic');
-% irPlot(innerRetina, 'linearResponse');
-irPlot(innerRetina, 'rasterResponse');
-% irPlot(innerRetina, 'psthResponse');
-
-%% Build rgc response movie
-% irMovie(rgc1, os);
+iStim.display = display;
+iStim.scene   = scene;
+iStim.sceneRGB = sceneRGB;
+iStim.oi      = oi;
+iStim.sensor  = sensor;
+end
