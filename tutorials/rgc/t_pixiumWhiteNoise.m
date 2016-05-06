@@ -130,6 +130,10 @@ psthM;
 % Stimulus here:
 whiteNoise.sceneRGB;
 
+whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
+responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
+
+% save('WNstim_response_OnParasol.mat','whiteNoiseSmall','responseSpikes');
 
 % 
 % rf = zeros(96,96);

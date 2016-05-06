@@ -1,13 +1,25 @@
 % t_rgcNaturalScenesFigure2
 % 
 % Reproduce Fig. 2 of Heitman, Brackbill, Greschner, Litke, Sher &
-% Chichilnisky, 2016 with Isetbio.
+% Chichilnisky, 2016 with isetbio.
 % 
 % http://biorxiv.org/content/early/2016/03/24/045336
 % 
 % Load a movie stimulus, generate an os object for the movie, generate an
 % inner retina object, load parameters from a physiology experiment in the
-% Chichilnisky Lab and compute the response of the RGC mosaic.
+% Chichilnisky Lab into the IR object and compute the response of the RGC
+% mosaic.
+% 
+% Selected rasters and PSTHs for particular cells are shown which match the
+% cells in the figure. The fractional variance explained is computed for
+% each cell for a white noise test movie and a natural scenes test movie.
+% These values are plotted against each other to show the failure of the
+% GLM model to predict the cells' responses to natural scene stimuli.
+% 
+% Currently, only the dataset from the first experiment is available on the
+% Remote Data Toolbox. This dataset includes parameters for GLM fits to
+% cells in the On Parasol and Off Parasol mosaics as well as the recorded
+% spikes from the experiment. 
 % 
 % 4/2016
 % (c) isetbio team
@@ -25,9 +37,9 @@ ieInit;
 
 plotFracFlag = 0;
 
-for experimentI   = 1%:4
-for cellTypeI     = 2%:2
-for stimulusTestI = 1:2
+for experimentI   = 1       % Choose dataset to load parameters and spikes
+for cellTypeI     = 1%:2    % Choose On Parasol (1) or Off Parasol (2)
+for stimulusTestI = 1:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 switch experimentI
     case 1; experimentID = '2013-08-19-6';
@@ -53,8 +65,8 @@ nFrames = 1200; % Length of WN movie is 1200, take nFrames to limit natural movi
 testmovieshort = testmovie.matrix(:,:,1:nFrames); 
 
 %% Show test movie
-% showFrames = 50;
-% ieMovie(testmovieshort(:,:,1:showFrames));
+showFrames = 50;
+ieMovie(testmovieshort(:,:,1:showFrames));
 
 %% Generate outer segment object
 
@@ -87,16 +99,14 @@ params.stimulusTest = stimulusTest; % WN or NSEM, from above
 
 % Create object
 innerRetina = irPhys(os1, params);
-
-nTrials = 57;
-innerRetina = irSet(innerRetina,'numberTrials',nTrials);
+nTrials = 57; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
 
 %% Plot a few simple properties
 switch cellTypeI
     case 1; cellInd = 2;
     case 2; cellInd = 31;
 end
-irPlotFig2Linear(innerRetina,cellInd)
+irPlotFig2Linear(innerRetina,cellInd);
 %% Compute the inner retina response
 
 % Lienar convolution
@@ -126,9 +136,13 @@ irPlotFig2PSTH(innerRetina, innerRetinaPSTH, innerRetinaRecordedPSTH,cellInd,sti
 
 %% Calculate fractional variance predicted
 
-fractionalVariance{experimentI,stimulusTestI,cellTypeI} = calculateFractionalVariance(innerRetinaPSTH, innerRetinaRecordedPSTH, stimulusTestI);
+fractionalVariance{experimentI,stimulusTestI,cellTypeI} = ...
+    calculateFractionalVariance(innerRetinaPSTH, innerRetinaRecordedPSTH, stimulusTestI);
 
-if (stimulusTestI == 2) && (plotFracFlag == 1); irPlotFig2FracVar(experimentI,cellTypeI,fractionalVariance); end;
+if (stimulusTestI == 2) && (plotFracFlag == 1); 
+    irPlotFig2FracVar(experimentI,cellTypeI,fractionalVariance); 
+end;
+
 plotFracFlag = 1;
 %%%
 end%stimulusTestI

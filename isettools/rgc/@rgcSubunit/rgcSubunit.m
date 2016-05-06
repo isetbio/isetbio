@@ -65,6 +65,9 @@ classdef rgcSubunit < rgcMosaic
         % We typically run a single trial
         numberTrials = 10;
         
+        % Subunit threshold
+        subunitThreshold = 0;
+        
         % These hold the parameters used in the computation.
         % This is the response after a spike
         postSpikeFilter;

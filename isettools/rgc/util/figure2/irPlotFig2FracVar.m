@@ -1,6 +1,6 @@
 function irPlotFig2FracVar(experimentI,cellTypeI,fractionalVariance)
 
-vcNewGraphWin([],'upperleftbig'); 
+% vcNewGraphWin([],'upperleftbig'); 
 hold on;
 
 badInds = fractionalVariance{experimentI,2,cellTypeI}<0;
@@ -20,3 +20,5 @@ axis([0 1 0 1]);
 xlabel('WN Score (AU)'); ylabel('NSEM Score (AU)');
 title('Fractional Variance');
 set(gca,'fontsize',16);
+
+drawnow;

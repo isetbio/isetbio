@@ -31,3 +31,5 @@ title(sprintf('Simulated Spikes %s Type %s Fit %s Test %s Cell %s', ...
     innerRetina.mosaic{1}.stimulusTest, strrep(innerRetina.mosaic{1}.cellID{i},'_','\_')));
 set(gca,'fontsize',16');
 axis off
+
+drawnow;

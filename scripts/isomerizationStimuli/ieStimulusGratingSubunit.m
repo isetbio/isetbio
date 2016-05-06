@@ -96,26 +96,34 @@ for t = 1 : nSteps
         barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
     end
 %     barMovie = circshift(barMovie,randWalk(t),2);
-    if mod(floor(t/20),2) == 0
-        barMovie = 1-barMovie;
-    end
+%     if mod(floor(t/20),2) == 0
+%         barMovie = 1-barMovie;
+%     end
+    
+    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
       
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
 %     if t < 6
 %         barMovieResize = ones(size(barMovieResize))*0.5;
 %         barMovieResize(1,1,:) = ones(1,1,3);
 %     end
-    
+    barMovieResize(1,1,:) = ones(1,1,3);
+    barMovieResize(1,2,:) = zeros(1,1,3);
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovieResize, 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
     if t ==1
-        sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+        % sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+        sceneRGB = zeros([size(barMovie,1) size(barMovie,2) nSteps, 3]);
     end
     
     % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+%     sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+%     sceneRGB(1,1,t,:) = sceneRGB(2,1,t,:);
+%     sceneRGB(1,2,t,:) = sceneRGB(2,2,t,:);
+    
+    sceneRGB(:,:,t,:) = barMovie;
     
     % Compute optical image
     oi = oiCompute(oi, scene);    

@@ -81,7 +81,7 @@ switch osType
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
         if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range - mean(spTempStim(:))/range;
-        else                    spTempStim = 10*spTempStim./range;
+        else                    spTempStim = 300*(spTempStim./range - mean(spTempStim(:))/range);
         end
         
         % Looping over the rgc mosaics
@@ -173,6 +173,32 @@ switch osType
 %     case {'osBioPhys'}
 %         %% Full biophysical os
 %         error('Not yet implemented');
+
+    case {'bipolar'}
+
+        %% Linear computation       
+        
+        % Determine the range of the rgb input data
+        spTempStim = bipolarGet(outerSegment, 'response');
+        range = max(spTempStim(:)) - min(spTempStim(:));
+        
+        spTempStim = spTempStim./range - mean(spTempStim(:))/range;
+        
+        % Looping over the rgc mosaics
+        for rgcType = 1:length(ir.mosaic)
+            
+            % We use a separable space-time receptive field.  This allows
+            % us to compute for space first and then time. Space.
+            [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);           
+            
+            % Convolve with the temporal impulse response
+            responseLinear = ...
+                fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
+            
+            % Store the linear response
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
+            
+        end
     otherwise
         error('Unknown os type %s\n',osType);
 end

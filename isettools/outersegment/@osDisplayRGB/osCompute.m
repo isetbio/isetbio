@@ -1,5 +1,5 @@
 function obj = osCompute(obj, sceneRGB)
-% osCompute: this method of @osIdentity passes on the cone isomerizations
+% osCompute: this method of @osDisplayRGB passes on the cone isomerizations
 % (R*) without any temporal filtering. This subclass is intended to be used
 % for stimulus-referred retinal ganglion cell models.
 %

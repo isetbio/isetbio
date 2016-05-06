@@ -72,6 +72,15 @@ for rgbIndex = 1:channelSize
 %                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFcenter, spStim, 'same');
                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;%conv2(spRFcenter, spStim, 'same');
 %                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
+                
+                elseif isa(mosaic, 'rgcSubunit')
+                    
+                    spRC = conv2(spRFcenter, spStim-1*mean(spStim(:)), 'same');
+                    spRS = conv2(spRFsurround, spStim-1*mean(spStim(:)), 'same');
+                    
+                    spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = mosaic.rectifyFunction(spRC);
+                    spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = mosaic.rectifyFunction(spRS);
+
                 else
                     
 %                     if xcell == 5
@@ -101,8 +110,8 @@ for rgbIndex = 1:channelSize
                     
 %                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
 
-                    spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim, 'same');
-                    spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim, 'same');
+                    spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFcenter, spStim-1*mean(spStim(:)), 'same');
+                    spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = conv2(spRFsurround, spStim-1*mean(spStim(:)), 'same');
 %                     else
 %                              spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(conv2(spRFcenter, spStim, 'same')));
 %                     spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) =zeros(size(conv2(spRFsurround, spStim, 'same')));
