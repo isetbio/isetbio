@@ -163,7 +163,9 @@ switch lower(params.what)
 %                     plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
                 end
             end
+            
+            val = PSTH_out;
+            
         end
-val = PSTH_out;
 end
 

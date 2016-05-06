@@ -312,13 +312,19 @@ switch ieParamFormat(params.what)
                 xcellstart = 1; ycellstart = 1;
             end
             
+            if strcmpi(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),'offparasol')
+                offMult = -1;
+            else 
+                offMult = 1;
+            end
+            
             for xcell = xcellstart:nCells(1)
                 for ycell = ycellstart:nCells(2)
             if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys')
-                plot(0:timeStep:timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),'r','linewidth',4)
+                plot(0:timeStep:timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),offMult*((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),'r','linewidth',4)
                 line([0 timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell}))], [0 0]);
             else
-                plot(0:timeStep:timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{1})),bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
+                plot(0:timeStep:timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{1})),offMult*bsxfun(@plus,horzcat(obj.mosaic{cellTypeInd}.tCenter{:}),[0 0 0.01]))
                 line([0 timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{1}))], [0 0]);
             end
             title(sprintf('Temporal Impulse Response, RGB, %s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);

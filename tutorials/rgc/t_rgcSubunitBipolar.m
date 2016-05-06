@@ -30,7 +30,7 @@ ieInit
 clear params
 stimP.fov      = 1; % degrees
 stimP.barWidth = 2;
-stimP.nSteps   = 150;
+stimP.nSteps   = 40;
 iStim = ieStimulusGratingSubunit(stimP);
 absorptions = iStim.absorptions;
 

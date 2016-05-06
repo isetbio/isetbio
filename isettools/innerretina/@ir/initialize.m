@@ -38,16 +38,22 @@ obj.eyeRadius = params.eyeRadius;
 obj.eyeAngle  = params.eyeAngle;
 obj.name      = params.name;
 
-% Set properties dependent on os object.
-obj.spacing = osGet(os,'patch size'); % Cone width
-obj.timing  = osGet(os,'time step'); % Temporal sampling
-    
 switch class(os)
-    case{'osDisplayRGB'}
+    case{'osDisplayRGB'}        
+        obj.spacing = osGet(os,'patch size'); % Cone width
+        obj.timing  = osGet(os,'time step'); % Temporal sampling
         [obj.row, obj.col, ~, ~] = size(osGet(os,'rgbData'));        
-    case{'osIdentity'}
+    case{'osIdentity'}        
+        obj.spacing = osGet(os,'patch size'); % Cone width
+        obj.timing  = osGet(os,'time step'); % Temporal sampling
         [obj.row, obj.col, ~, ~] = size(osGet(os,'photonRate'));
-    otherwise    
+    case{'bipolar'}        
+        obj.spacing = bipolarGet(os,'patch size'); % Bipolar width
+        obj.timing  = bipolarGet(os,'time step'); % Temporal sampling
+        [obj.row, obj.col, ~, ~] = size(bipolarGet(os,'bipolarResponse'));
+    otherwise            
+        obj.spacing = osGet(os,'patch size'); % Cone width
+        obj.timing  = osGet(os,'time step'); % Temporal sampling
         [obj.row, obj.col, ~] = size(osGet(os,'coneCurrentSignal'));
 end
 

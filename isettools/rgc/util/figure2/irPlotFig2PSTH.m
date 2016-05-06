@@ -14,14 +14,17 @@ minlen = min([length(psthSim{i}) length(psthRecorded{i}) ]);
 
 switch stimulusTestI
     case 1
-        plot((00+[1:minlen-1200])./1208, psthSim{i}(600+(1:minlen-1200)),'r','linewidth',3);
+        plot((00+[1:minlen-1200])./1208, psthSim{i}(1200+(1:minlen-1200)),'r','linewidth',3);
+        
+        hold on;
+        plot([1:minlen-1200]./1208,psthRecorded{i}((600+(1:minlen-1200))),':k','linewidth',2);
     case 2
         plot((00+[1:minlen-1200])./1208, psthSim{i}(1200+(1:minlen-1200)),'r','linewidth',3);
+        
+        hold on;
+        plot([1:minlen-1200]./1208,psthRecorded{i}((1:minlen-1200)),':k','linewidth',2);
 end
 
-hold on;
-% plot(psth_rec_all{i}(1:minlen-1200),'r')
-plot([1:minlen-1200]./1208,psthRecorded{i}((1:minlen-1200)),':k','linewidth',2);
 
 
 % Set display properties
@@ -37,4 +40,6 @@ title(sprintf('PSTH %s %s, %s Fit, %s Test, Cell %s', ...
 xlabel('Time (sec)'); ylabel('PSTH (spikes/sec)');
 % legend('ISETBIO','Lab Code','Recorded');
 legend('ISETBIO','Recorded');
-set(gca,'fontsize',14)
+set(gca,'fontsize',14);
+
+drawnow;

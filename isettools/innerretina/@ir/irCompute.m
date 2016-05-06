@@ -38,7 +38,7 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys'})));
+p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'})));
 
 p.parse(ir,outerSegment,varargin{:});
 

@@ -1,5 +1,5 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osIdentity that sets isetbio outersegment object 
+% osSet: a method of @osDisplayRGB that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
@@ -16,7 +16,7 @@ function obj = osSet(obj, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require

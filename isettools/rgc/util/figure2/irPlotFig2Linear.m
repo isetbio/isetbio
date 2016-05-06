@@ -22,7 +22,12 @@ set(gcf,'position',[ 0.0292    0.5433    0.2951    0.3500])
 
 % Temporal impulse response
 irPlot(innerRetina,'tCenter','cell',[cellInd 1]);
-if offSwitch; view(0,-90); end;
+% if offSwitch; view(0,-90); end;
+if offSwitch
+    axis([0    0.2500   -1.4000    0.4000]);
+else
+    axis([0    0.2500   -0.4000    1.4000]);
+end
 axis square;
 % set(gca,'fontsize',12);
 set(gcf,'position',[    0.3417    0.5422    0.2931    0.3511])
@@ -34,3 +39,5 @@ irPlot(innerRetina,'postSpikeFilter','cell',[cellInd 1]);
 axis square;
 set(gcf,'position',[ 0.6590    0.5367    0.2931    0.3544])
 % set(gcf,'position',[   0.6583    0.6856    0.1319    0.2056])
+
+drawnow;
