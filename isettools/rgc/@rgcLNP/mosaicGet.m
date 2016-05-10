@@ -139,6 +139,7 @@ switch lower(params.what)
         cellCtr=0; dt = .01;
         maxTrials = obj.numberTrials;
         nCells = size(obj.responseSpikes);
+        yout = [];
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
                     clear yind y
@@ -159,12 +160,14 @@ switch lower(params.what)
                     %
                     convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);                                       
                     convolvewin= convolvewin./max(convolvewin);
+                    yout(cellCtr,1:length(y)) = y;%sum(y);
                     PSTH_out{xcell,ycell}=conv(sum(y),convolvewin,'same');
 %                     plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
                 end
             end
             
-            val = PSTH_out;
+            val.psth = PSTH_out;
+            val.spikes = yout;
             
         end
 end

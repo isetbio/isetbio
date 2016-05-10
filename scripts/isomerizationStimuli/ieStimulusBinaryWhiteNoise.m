@@ -44,13 +44,13 @@ params = p.Results;
 % params.row = 64; params.col = 64;
 % params.GaborFlag = 0.2; % standard deviation of the Gaussian window
 
-% Create display
+% % Create display
 display = displayCreate('CRT-Sony-HorwitzLab');
-
-% Set up scene, oi and sensor
+% 
+% % Set up scene, oi and sensor
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
-% vcAddObject(scene); sceneWindow;
+% % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
 params.expTime = 0.01;
@@ -91,7 +91,7 @@ wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
 % Loop through frames to build movie
-for t = 1 : params.nSteps
+for t = 1 : 2 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
@@ -106,36 +106,46 @@ for t = 1 : params.nSteps
             stimRGBbig(dsfactor*(i1-1)+1:dsfactor*i1,dsfactor*(j1-1)+1:dsfactor*j1) = stimRGBthresh(i1,j1);
         end
     end
-    stimulusRGBdata = repmat(stimRGBbig,[1 1 3]);
+    stimulusRGBdata = stimRGBbig;%repmat(stimRGBbig,[1 1 3]);
     
     % % % % Generate scene object from stimulus RGB matrix and display object
-    scene = sceneFromFile(stimulusRGBdata, 'rgb', params.meanLuminance, display);
-
-    scene = sceneSet(scene, 'h fov', fov);
+%     scene = sceneFromFile(stimulusRGBdata, 'rgb', params.meanLuminance, display);
+% 
+%     scene = sceneSet(scene, 'h fov', fov);
 
     % Get scene RGB data    
     % sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
-    sceneRGB(:,:,t,:) = stimulusRGBdata;
-    
+    sceneRGB(:,:,t) = stimulusRGBdata;
+    sceneRGB(:,:,t+1) = stimulusRGBdata;
     % Compute optical image
-    oi = oiCompute(oi, scene);    
+%     oi = oiCompute(oi, scene);    
     
-    % Compute absorptions
-    sensor = sensorCompute(sensor, oi);
-
-    if t == 1
-        volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
-    end
-    
-    volts(:,:,t) = sensorGet(sensor, 'volts');
-    
-    % vcAddObject(scene); sceneWindow
+%     % Compute absorptions
+%     sensor = sensorCompute(sensor, oi);
+% 
+%     if t == 1
+%         volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
+%     end
+%     
+%     volts(:,:,t) = sensorGet(sensor, 'volts');
+%     
+%     % vcAddObject(scene); sceneWindow
 end
+
+scene = sceneFromFile(stimulusRGBdata, 'rgb', params.meanLuminance, display);
+
+scene = sceneSet(scene, 'h fov', fov);
+
+% Compute optical image
+oi = oiCompute(oi, scene);
+
+% Compute absorptions
+sensor = sensorCompute(sensor, oi);
 
 if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
-sensor = sensorSet(sensor, 'volts', volts);
+% sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
 % These are both the results and the objects needed to recreate this

@@ -37,19 +37,23 @@ params.col = 96;
 params.fov = fov;
 % % params.vfov = 0.7;
 
+for blockNum = 201:300
 
+clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions
+
+blockNum
 %%% Grating subunit stimulus
 
 iStim = ieStimulusBinaryWhiteNoise(params);
 absorptions = iStim.sensor;
 whiteNoise = iStim;
 %% Show raw stimulus for osIdentity
-figure;
-for frame1 = 1:size(whiteNoise.sceneRGB,3)
-    imagesc(squeeze(whiteNoise.sceneRGB(:,:,frame1,:)));
-    colormap gray; drawnow;
-end
-% close;
+% % figure;
+% % for frame1 = 1:size(whiteNoise.sceneRGB,3)
+% %     imagesc(squeeze(whiteNoise.sceneRGB(:,:,frame1,:)));
+% %     colormap gray; drawnow;
+% % end
+% % % close;
 
 %% Outer segment calculation
 % There is no simulated outer segment, this identity outer segment acts as
@@ -67,7 +71,8 @@ retinalPatchHeight = (sceneSize(1)/sceneSize(2))*retinalPatchWidth;
 % coneSpacing = sensorGet(sensor,'dimension','um');
 os = osSet(os, 'patchSize', retinalPatchWidth);
 
-timeStep = sensorGet(whiteNoise.sensor,'time interval','sec');
+% timeStep = sensorGet(whiteNoise.sensor,'time interval','sec');
+timeStep = 1/120;
 os = osSet(os, 'timeStep', timeStep);
 
 os = osSet(os, 'rgbData', whiteNoise.sceneRGB);
@@ -97,14 +102,19 @@ innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
 irPlot(innerRetina,'mosaic');
 % % figure;
 
+innerRetina = irSet(innerRetina,'numberTrials',1);
+
 innerRetina = irCompute(innerRetina,os);
 
-irPlot(innerRetina, 'linear');
+% irPlot(innerRetina, 'linear');
 % irPlot(innerRetina, 'psth');
 
 %% Look at covariance matrix
+% load('/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/ws_pixiumWhiteNoise_May4.mat')
+psthstruct = mosaicGet(innerRetina.mosaic{1},'responsePsth');
 
-psth1 = mosaicGet(innerRetina.mosaic{1},'responsePsth');
+psth1 = psthstruct.psth;
+spikesout = psthstruct.spikes;
 
 szCells = size(psth1);
 cellCtr = 0;
@@ -117,12 +127,32 @@ for i2 = 1:szCells(1)
     end
 end
 
-psthNorm=psthM'*diag(1./sqrt(sum(psthM'.*psthM')));
+for i2 = 1:szCells(1)*szCells(2)
+psthM(i2,:) = psthM(i2,:) - mean(psthM(i2,:));
+end
 
+psthNorm=psthM'*diag(1./sqrt(sum(psthM'.*psthM')));
+% psthNorm = psthNorm - mean(psthNorm(:));
 psthCov = psthNorm'*psthNorm;
-figure; imagesc(psthCov)
-xlabel('Cell number'); ylabel('Cell number');
-title('Covariance matrix');
+% figure; imagesc(psthCov)
+% xlabel('Cell number'); ylabel('Cell number');
+% title('Covariance matrix');
+
+
+%%%%%
+% load('/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_spikes.mat')
+for i2 = 1:szCells(1)*szCells(2)
+    spikesoutM(i2,:) = spikesout(i2,:) - mean(spikesout(i2,:));
+end
+
+psthNorm=spikesoutM'*diag(1./sqrt(sum(spikesoutM'.*spikesoutM')));
+% psthNorm = psthNorm - mean(psthNorm(:));
+psthCov = psthNorm'*psthNorm;
+% figure; imagesc(psthCov)
+% xlabel('Cell number'); ylabel('Cell number');
+% title('Covariance matrix');
+
+%%%%%
 
 % PSTHs are here:
 psthM;
@@ -131,7 +161,13 @@ psthM;
 whiteNoise.sceneRGB;
 
 whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
-responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
+% responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
+
+spikesoutsm = uint8(spikesout);
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_block' num2str(blockNum) '.mat'];
+save(filename1, 'whiteNoiseSmall','spikesoutsm');
+
+end
 
 % save('WNstim_response_OnParasol.mat','whiteNoiseSmall','responseSpikes');
 

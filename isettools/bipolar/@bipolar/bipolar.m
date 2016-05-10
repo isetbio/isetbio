@@ -24,10 +24,12 @@ properties (SetAccess = protected, GetAccess = public)
     cellLocation;
     patchSize;
     timeStep;
-    sRF;           % spatial RF of the center on the receptor grid
-    tIR;            % temporal impulse response of the center
-    threshold;     % threshold for nonlinear output
-    response;      % Store the linear response after convolution
+    sRFcenter;               % spatial RF of the center on the receptor grid
+    sRFsurround;             % spatial RF of the surround on the receptor grid
+    tIR;                     % temporal impulse response of the center
+    temporalDifferentiator;    % differentiator function
+    responseCenter;          % Store the linear response of the center after convolution
+    responseSurround;        % Store the linear response of the surround after convolution
 end
 
 % Private properties. Only methods of the parent class can set these
@@ -42,7 +44,10 @@ methods
         obj.patchSize = osGet(os,'patchSize');
         obj.timeStep = osGet(os,'timeStep');
         % Build spatial receptive field
-        obj.sRF = fspecial('gaussian',[7,7],1); % convolutional for now
+        obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
+        obj.sRFsurround = fspecial('gaussian',[2,2],1.1); % convolutional for now
+        
+        
         
         % Build temporal impulse response from M cone filter
         % bipolar temopral response = M cone filter + 0.5 * d/dt (M cone filter)

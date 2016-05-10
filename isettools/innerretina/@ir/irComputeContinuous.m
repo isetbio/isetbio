@@ -179,17 +179,30 @@ switch osType
         %% Linear computation       
         
         % Determine the range of the rgb input data
-        spTempStim = bipolarGet(outerSegment, 'response');
-        range = max(spTempStim(:)) - min(spTempStim(:));
+        spTempStimCenter = bipolarGet(outerSegment, 'responseCenter');        
+        spTempStimSurround = bipolarGet(outerSegment, 'responseSurround');
         
-        spTempStim = spTempStim./range - mean(spTempStim(:))/range;
+        rangeCenter = max(spTempStimCenter(:)) - min(spTempStimCenter(:));
+        rangeSurround = max(spTempStimSurround(:)) - min(spTempStimSurround(:));
+        
+        spTempStimCenter = spTempStimCenter./rangeCenter - mean(spTempStimCenter(:))/rangeCenter;
+        spTempStimSurround = spTempStimSurround./rangeSurround - mean(spTempStimSurround(:))/rangeSurround;
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
             
             % We use a separable space-time receptive field.  This allows
             % us to compute for space first and then time. Space.
-            [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);           
+            [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);           
+            
+            
+            szCenter = size(spResponseCenter);
+            for s1 = 1:szCenter(1)
+                for s2 = 1:szCenter(2)
+                    spResponseCenter{s1,s1} = 1*spResponseCenter{s1,s1};
+                    spResponseSurround{s1,s1} = 1*spResponseSurround{s1,s1};
+                end
+            end
             
             % Convolve with the temporal impulse response
             responseLinear = ...
@@ -197,7 +210,28 @@ switch osType
             
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
+
+            figure;
+            hold on;
+            for s1 = 1:szCenter(1)
+                for s2 = 1:szCenter(2)
+%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                    plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                end
+            end
+            figure; 
+            hold on;
+            for s1 = 1:szCenter(1)
+                for s2 = 1:szCenter(2)
+%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                        plot(squeeze(responseLinear{s1,s2,2}(1,1,:)));
+                end
+            end
             
+            xlabel('time (msec)','fontsize',14); ylabel('Activation','fontsize',14);
+            title('Linear Activation before temporal filtering');
         end
     otherwise
         error('Unknown os type %s\n',osType);

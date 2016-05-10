@@ -50,7 +50,7 @@ switch class(os)
     case{'bipolar'}        
         obj.spacing = bipolarGet(os,'patch size'); % Bipolar width
         obj.timing  = bipolarGet(os,'time step'); % Temporal sampling
-        [obj.row, obj.col, ~, ~] = size(bipolarGet(os,'bipolarResponse'));
+        [obj.row, obj.col, ~, ~] = size(bipolarGet(os,'bipolarResponseCenter'));
     otherwise            
         obj.spacing = osGet(os,'patch size'); % Cone width
         obj.timing  = osGet(os,'time step'); % Temporal sampling

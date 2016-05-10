@@ -15,10 +15,13 @@ allowableFieldsToSet = {...
     'cellLocation',...
     'patchSize',...
     'timeStep',...
-    'sRF',...
+    'sRFcenter',...
+    'sRFsurround',...
     'tIR',...
+    'temporalDifferentiator',...
     'threshold',...
-    'response','bipolarresponse'...
+    'responseCenter','bipolarresponsecenter',...
+    'responseSurround','bipolarresponsesurround'...
     };
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
@@ -39,17 +42,25 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
     case{'rgbdata'}
         val = obj.rgbData;
         
-    case{'srf'}
-        val = obj.sRF;
+    case{'srfcenter'}
+        val = obj.sRFcenter;
+        
+    case{'srfsurround'}
+        val = obj.sRFsurround;
         
     case{'tIR'}
         val = obj.tIR;
         
+    case{'temporaldifferentiator'}
+        val = obj.temporalDifferentiator;
+        
     case{'threshold'}
         val = obj.threshold;
         
-    case{'response','bipolarresponse'}
-        val = obj.response;
+    case{'responsecenter','bipolarresponsecenter'}
+        val = obj.responseCenter;
         
+    case{'responsesurround','bipolarresponsesurround'}
+        val = obj.responseCenter;
 end
 

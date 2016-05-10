@@ -9,6 +9,7 @@ vcNewGraphWin([],'upperleftbig');
 
 for frame1 = 1:szMovie(3)
     imagesc(movieMatrix(:,:,frame1));
+%     caxis([0 1]);
     colormap gray; 
     drawnow;
 end
