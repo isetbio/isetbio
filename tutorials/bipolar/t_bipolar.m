@@ -14,7 +14,7 @@ ieInit
 %% Load image sequence
 
 stimulusSelect = 1;
-nSteps = 400;
+nSteps = 500;
 barWidth = 2;
 
 switch stimulusSelect
@@ -27,6 +27,10 @@ switch stimulusSelect
         stimP.expTime = 0.001; % sec
         stimP.timeInterval = 0.001; % sec
         iStim = ieStimulusGratingSubunit(stimP);
+
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/iStim_subunitGrating.mat');
+%        load('/Users/james/Documents/MATLAB/isetbio misc/iStim_subunitGratingLong.mat')
+ 
         absorptions = iStim.absorptions; % cone isomerizations
         ieMovie(iStim.sceneRGB);
     case 2
@@ -37,6 +41,9 @@ switch stimulusSelect
         testmovie = data.testmovie;
         absorptions = ieStimulusMovie(testmovie(:,:,1:nSteps)); 
 end
+
+figure; plot(squeeze(iStim.sceneRGB(40,40,:,1)))
+xlabel('Time (msec)','fontsize',14); ylabel('Stimulus Intensity','fontsize',14)
 
 %% Outer segment calculation - linear model
 
@@ -89,52 +96,77 @@ bipolarPlot(bp);
 
 %% Find RGC responses
 
-clear params innerRetina0
-params.name      = 'Macaque inner retina 1'; % This instance
+clear params innerRetinaBpSu
+params.name      = 'Bipolar with nonlinear subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 7;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina0 = irCreate(bp, params);
+innerRetinaBpSu = irCreate(bp, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','Subunit','type','on midget');
+innerRetinaBpSu.mosaicCreate('model','Subunit','type','on midget');
 
-irPlot(innerRetina0,'mosaic');
+irPlot(innerRetinaBpSu,'mosaic');
 % Compute RGC mosaic responses
 
-innerRetina0 = irCompute(innerRetina0, bp);
-% irPlot(innerRetina0, 'psth');
-irPlot(innerRetina0, 'linear');
-% irPlot(innerRetina0, 'raster');
+innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
+% irPlot(innerRetinaBpSu, 'psth');
+irPlot(innerRetinaBpSu, 'linear');
+
+% irPlot(innerRetinaBpSu, 'linear','cell',[4 3]);
+% irPlot(innerRetinaBpSu, 'raster','cell',[4 3]);
+
+%% Bipolar object with no convolutional subunits, just impulse function
+bp2 = bipolar(osL);
+
+% bipolarThreshold = -40;
+% bp = bipolarSet(bp,'threshold',bipolarThreshold);
+
+bipolarRF = bipolarGet(bp2,'sRFcenter');
+
+bipolarRFnew = zeros(size(bipolarRF));
+bipolarRFnew(4,4) = 1;
+
+bp2 = bipolarSet(bp2,'sRFcenter',bipolarRFnew);
+
+bp2 = bipolarSet(bp2,'sRFsurround',bipolarRFnew);
+
+bp2 = bipolarCompute(bp2, osL);
+
+bipolarPlot(bp2);
 
 %% Bipolar input with linear subunits
 
-clear params innerRetina0
-params.name      = 'Macaque inner retina 1'; % This instance
+clear params innerRetinaBpImpSu
+params.name      = 'Bipolar impulse with no subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 7;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina0 = irCreate(bp, params);
+innerRetinaBpImpNoSu = irCreate(bp2, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina0.mosaicCreate('model','LNP','type','on midget');
+innerRetinaBpImpNoSu.mosaicCreate('model','LNP','type','on midget');
 
-irPlot(innerRetina0,'mosaic');
+irPlot(innerRetinaBpImpNoSu,'mosaic');
 % Compute RGC mosaic responses
 
-innerRetina0 = irCompute(innerRetina0, bp);
-% irPlot(innerRetina0, 'psth');
-irPlot(innerRetina0, 'linear');
-% irPlot(innerRetina0, 'raster');
+innerRetinaBpImpNoSu = irCompute(innerRetinaBpImpNoSu, bp);
+% irPlot(innerRetinaBpImpNoSu, 'psth');
+irPlot(innerRetinaBpImpNoSu, 'linear');
+% irPlot(innerRetinaBpImpNoSu, 'raster');
+
+%%
+% % % % % % % % % % % % 
+% % % % % % % % % % % % 
 
 %% Compute RGC without subunits
 % Input = RGB
 osI = osCreate('displayRGB');
 
 % Set size of retinal patch
-patchSize = sensorGet(absorptions,'width','um');
+patchSize = sensorGet(absorptions,'width','m');
 osI = osSet(osI, 'patch size', patchSize);
 
 % Set time step of simulation equal to absorptions
@@ -144,28 +176,28 @@ osI = osSet(osI, 'time step', timeStep);
 osI = osSet(osI, 'rgbData', 2*(iStim.sceneRGB-0.5));
 
 
-clear params
-params.name      = 'Macaque inner retina 1'; % This instance
+clear params innerRetinaNoBpNoSU
+params.name      = 'No SU no bipolar'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 7;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina1 = irCreate(osI, params);
+innerRetinaNoBpNoSU = irCreate(osI, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina1.mosaicCreate('model','lnp','type','on midget');
-irPlot(innerRetina1,'mosaic');
+innerRetinaNoBpNoSU.mosaicCreate('model','lnp','type','on midget');
+irPlot(innerRetinaNoBpNoSU,'mosaic');
 
-innerRetina1 = irCompute(innerRetina1, osI);
-irPlot(innerRetina1, 'linear');
-% irPlot(innerRetina1, 'psth');
+innerRetinaNoBpNoSU = irCompute(innerRetinaNoBpNoSU, osI);
+irPlot(innerRetinaNoBpNoSU, 'linear');
+% irPlot(innerRetinaNoBpNoSU, 'psth');
 
 %% Compute RGC with subunits
 % Input = RGB
 osI = osCreate('displayRGB');
 
 % Set size of retinal patch
-patchSize = sensorGet(absorptions,'width','um');
+patchSize = sensorGet(absorptions,'width','m');
 osI = osSet(osI, 'patch size', patchSize);
 
 % Set time step of simulation equal to absorptions
@@ -175,18 +207,18 @@ osI = osSet(osI, 'time step', timeStep);
 osI = osSet(osI, 'rgbData', 2*(iStim.sceneRGB-0.5));
 
 
-clear params
-params.name      = 'Macaque inner retina 1'; % This instance
+clear params innerRetinaNoBPSU
+params.name      = 'Nonlinear SU no bipolar'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 7;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina2 = irCreate(osI, params);
+innerRetinaNoBPSU = irCreate(osI, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetina2.mosaicCreate('model','subunit','type','on midget');
-% irPlot(innerRetina2,'mosaic');
+innerRetinaNoBPSU.mosaicCreate('model','subunit','type','on midget');
+% irPlot(innerRetinaNoBPSU,'mosaic');
 
-innerRetina2 = irCompute(innerRetina2, osI);
-irPlot(innerRetina2, 'linear');
-% irPlot(innerRetina1, 'psth');
+innerRetinaNoBPSU = irCompute(innerRetinaNoBPSU, osI);
+irPlot(innerRetinaNoBPSU, 'linear');
+irPlot(innerRetinaNoBPSU, 'psth');%,'cell',[3 3]);

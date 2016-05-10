@@ -1,5 +1,7 @@
 % t_rgcNaturalScenesFigure2
 % 
+% CHECK WITH BRIAN ABOUT LOCATION OF BRANCH
+% 
 % Reproduce Fig. 2 of Heitman, Brackbill, Greschner, Litke, Sher &
 % Chichilnisky, 2016 with isetbio.
 % 
@@ -33,19 +35,19 @@ ieInit;
 
 % experimentI   = 1;
 % cellTypeI     = 1;
-% stimulusTestI = 1;
+% stimulusTestI = 2;
 
-plotFracFlag = 0;
+plotFracFlag = 1;
 
 for experimentI   = 1       % Choose dataset to load parameters and spikes
-for cellTypeI     = 1%:2    % Choose On Parasol (1) or Off Parasol (2)
+for cellTypeI     = 2%:2    % Choose On Parasol (1) or Off Parasol (2)
 for stimulusTestI = 1:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 switch experimentI
     case 1; experimentID = '2013-08-19-6';
-    case 2; experimentID = '2012-08-09-3';
-    case 3; experimentID = '2013-10-10-0';
-    case 4; experimentID = '2012-09-27-3';
+%     case 2; experimentID = '2012-08-09-3'; %NOTE HERE
+%     case 3; experimentID = '2013-10-10-0';
+%     case 4; experimentID = '2012-09-27-3';
 end
 
 switch stimulusTestI
@@ -109,7 +111,7 @@ end
 irPlotFig2Linear(innerRetina,cellInd);
 %% Compute the inner retina response
 
-% Lienar convolution
+% Linear convolution
 innerRetina = irCompute(innerRetina, os1);
 
 % % % Spike computation
@@ -120,13 +122,14 @@ end
 innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
 
 %% Create a new inner retina object and attach the recorded spikes
-innerRetinaRecorded = irPhys(os1, params);
+innerRetinaRecorded = irPhys(os1, params);  % ADD NOTE 
 innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
 
 innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
 innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth');
 
 %% Compare Rasters and PSTHs for a particular cell
+% ADD ALEX'S LIST OF GOOD CELLS HERE FOR PLOTTING
 switch cellTypeI
     case 1; cellInd = 2;
     case 2; cellInd = 31;

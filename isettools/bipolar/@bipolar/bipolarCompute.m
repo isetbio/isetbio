@@ -8,26 +8,40 @@ function obj = bipolarCompute(obj, os)
 % 5/2016 JRG (c) isetbio team
 
 % Spatial convolution
-spatialResponse = ieSpaceTimeFilter(os.coneCurrentSignal, obj.sRF);
+spatialResponseCenter = ieSpaceTimeFilter(os.coneCurrentSignal, obj.sRFcenter);
+spatialResponseSurround = ieSpaceTimeFilter(os.coneCurrentSignal, obj.sRFsurround);
 
 % Subsample to pull out individual bipolars
-strideSubsample = size(obj.sRF,1);
-spatialSubsample = ieImageSubsample(spatialResponse, strideSubsample);
+strideSubsample = size(obj.sRFcenter,1);
+spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, strideSubsample);
+spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, strideSubsample);
 
 % Reshape for temporal convolution
-szSubSample = size(spatialSubsample);
-spatialSubsampleRS = reshape(spatialSubsample,szSubSample(1)*szSubSample(2),szSubSample(3));
+szSubSample = size(spatialSubsampleCenter);
+spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
+spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
+
+% Apply differentiator
+%     obj.temporalDifferentiator;    % differentiator function
 
 % Temporal convolution
-bipolarOutputRS = convn(spatialSubsampleRS,obj.tIR','full');
+bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,obj.tIR','full');
+bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,obj.tIR','full');
 % figure; plot(conv(spatialSubsampleRS(50,:),obj.tIR'))
+
 % Back to original shape
-bipolarOutputLinear = reshape(bipolarOutputRS,szSubSample(1),szSubSample(2),size(bipolarOutputRS,2));
+bipolarOutputLinearCenter = reshape(bipolarOutputCenterRS,szSubSample(1),szSubSample(2),size(bipolarOutputCenterRS,2));
+bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRS,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
 % figure; plot(squeeze(bipolarOutputLinear(20,20,:)));
-% Threshold
-if ~isempty(obj.threshold)
-    eZero = obj.threshold;
-    obj.response = ieHwrect(bipolarOutputLinear,eZero);
-else
-    obj.response = bipolarOutputLinear;
-end
+
+obj.responseCenter = bipolarOutputLinearCenter;
+obj.responseSurround = bipolarOutputLinearSurround;
+
+% % No - nonlinearity occurs in RGC computation after dot product with RGC RF
+% % % Threshold
+% % if ~isempty(obj.threshold)
+% %     eZero = obj.threshold;
+% %     obj.response = ieHwrect(bipolarOutputLinear,eZero);
+% % else
+% %     obj.response = bipolarOutputLinear;
+% % end

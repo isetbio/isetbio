@@ -1,4 +1,4 @@
-function  [spResponseCenter, spResponseSurround] = spConvolve(mosaic, sptempStimulus)
+function  [spResponseCenter, spResponseSurround] = spConvolve(mosaic, sptempStimulus, sptempStimulusSurround)
 % spConvolve: a util function of the @rgc parent class, for a separable
 % STRF finds the 2D convolution of the spatial RF for every time frame.
 % 
@@ -46,16 +46,45 @@ for rgbIndex = 1:channelSize
                 if isa(mosaic, 'rgcPhys')
                     extent = round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                     offset = [0 0];%mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                    
+                    %%%% Should rfDimater be size RF center? Yes!
+                    stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+                    stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+                
+                
+                elseif isa(mosaic, 'rgcSubunit')
+                    
+                    extent = 1;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    %                     offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                    if mosaic.cellLocation{1,1}(1) >0
+                        offset(1) = ceil(mosaic.cellLocation{1,1}(1));
+                    else
+                        offset(1) = floor(mosaic.cellLocation{1,1}(1));
+                    end
+                    
+                    if mosaic.cellLocation{1,1}(2) >0
+                        offset(2) = ceil(mosaic.cellLocation{1,1}(2));
+                    else
+                        offset(2) = floor(mosaic.cellLocation{1,1}(2));
+                    end
+                    %%%% Should rfDimater be size RF center? Yes!
+                    stimX =  floor((stimCenterCoords(1) - floor((extent/2)*size(mosaic.sRFcenter{1,1},1)))/1):floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) ))/1);%
+                    stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
+                    
                 else
                     extent = 2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                     offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                    
+                    %%%% Should rfDimater be size RF center? Yes!
+                    stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+                    stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+                
                 end
                 
                 % Extract x and y coordinates within spatial extent offset by the center coordinate
                 % make non-rectangular? follow exact RF contours?
-                stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
-                stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                 
+
                 % Ensure indices are within size of stimulus
 %                 gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
                 
@@ -65,7 +94,12 @@ for rgbIndex = 1:channelSize
 %                 spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
                 spStim = squeeze(sptempStimulus(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
                 % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
-                                          
+                            
+                if isa(mosaic, 'rgcSubunit') && exist('spStimSurr','var')
+                    
+                    spStimSurr = squeeze(sptempStimulusSurround(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
+                end
+                
                 % Convolve for a single temporal frame
                 
                 if isa(mosaic, 'rgcPhys')
@@ -74,12 +108,28 @@ for rgbIndex = 1:channelSize
 %                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 
                 elseif isa(mosaic, 'rgcSubunit')
+%                     
+%                     spRC = conv2(spRFcenter, spStim-1*mean(spStim(:)), 'same');
+%                     spRS = conv2(spRFsurround, spStim-1*mean(spStim(:)), 'same');
+
+%                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRC(:)));
+%                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)));
+
+                    spRC = (spRFcenter(gz,gz).*(spStim-1*mean(spStim(:))));
                     
-                    spRC = conv2(spRFcenter, spStim-1*mean(spStim(:)), 'same');
-                    spRS = conv2(spRFsurround, spStim-1*mean(spStim(:)), 'same');
+                    if exist('spStimSurr','var')
+                        spRS = (spRFsurround(gz,gz).*-(spStimSurr-1*mean(spStimSurr(:))));
+                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRC(:)))./1;%length(gz)^2;
+                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)))./1;%length(gz)^2;
+
+                    else 
+                        spRS = (spRFsurround(gz,gz).*-(spStim-1*mean(spStim(:))));
+                        
+                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRC(:)))./1;%length(gz)^2;
+                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRS(:)))./1;%length(gz)^2;
+
+                    end
                     
-                    spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = mosaic.rectifyFunction(spRC);
-                    spResponseSurround{xcell,ycell}(:,:,samp,rgbIndex) = mosaic.rectifyFunction(spRS);
 
                 else
                     
