@@ -26,9 +26,9 @@ switch stimulusSelect
         stimP.nSteps   = nSteps;
         stimP.expTime = 0.001; % sec
         stimP.timeInterval = 0.001; % sec
-        iStim = ieStimulusGratingSubunit(stimP);
+%         iStim = ieStimulusGratingSubunit(stimP);
 
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/iStim_subunitGrating.mat');
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/iStim_subunitGrating.mat');
 %        load('/Users/james/Documents/MATLAB/isetbio misc/iStim_subunitGratingLong.mat')
  
         absorptions = iStim.absorptions; % cone isomerizations

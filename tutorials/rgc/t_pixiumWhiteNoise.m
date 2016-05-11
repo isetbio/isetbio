@@ -18,7 +18,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 1200;
+nSteps = 120;
 
 % Activation curve
 
@@ -37,11 +37,6 @@ params.col = 96;
 params.fov = fov;
 % % params.vfov = 0.7;
 
-for blockNum = 201:300
-
-clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions
-
-blockNum
 %%% Grating subunit stimulus
 
 iStim = ieStimulusBinaryWhiteNoise(params);
@@ -104,6 +99,23 @@ irPlot(innerRetina,'mosaic');
 
 innerRetina = irSet(innerRetina,'numberTrials',1);
 
+filenameRGC = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_RGC_may10.mat'];
+save(filenameRGC, 'innerRetina');
+
+
+for blockNum = 1:2
+
+clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions
+
+blockNum
+%%% Grating subunit stimulus
+
+iStim = ieStimulusBinaryWhiteNoise(params);
+absorptions = iStim.sensor;
+whiteNoise = iStim;
+
+os = osSet(os, 'rgbData', whiteNoise.sceneRGB);
+
 innerRetina = irCompute(innerRetina,os);
 
 % irPlot(innerRetina, 'linear');
@@ -164,7 +176,7 @@ whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
 % responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
 
 spikesoutsm = uint8(spikesout);
-filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_block' num2str(blockNum) '.mat'];
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_block_may10_' num2str(blockNum) '.mat'];
 save(filename1, 'whiteNoiseSmall','spikesoutsm');
 
 end
