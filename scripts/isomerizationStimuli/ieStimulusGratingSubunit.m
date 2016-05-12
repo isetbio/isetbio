@@ -100,7 +100,8 @@ for t = 1 : nSteps
 %         barMovie = 1-barMovie;
 %     end
     
-    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
+%     barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
+    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/20));
       
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
 %     if t < 6
