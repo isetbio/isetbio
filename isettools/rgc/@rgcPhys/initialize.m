@@ -81,43 +81,52 @@ switch ieParamFormat(cellType)
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
         data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
+        
+        data2 = rdt.readArtifact('goodind_2013_08_19_6_OFFParasol', 'type', 'mat');
+        goodind = data2.goodind;
     otherwise % case 'onparasol'
 %         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
         data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;        
+        
+        data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
+        goodind = data2.goodind;
 end
 
-mosaicGLM = data.mosaicGLM;
+goodind = 1:length(mosaicGLM);
                         
 % % % % % % 
 % Loop through mat files and load parameters
-for matFileInd = 1:length(mosaicGLM)
-
+% for matFileInd = 1:length(mosaicGLM)
+for matFileInd = 1:length(goodind)
 %     cell = matFileNames(matFileInd).name(1:end-4);
 %     obj.cellID{matFileInd,1} = cell;
 %     load([glmFitPath experimentID '/' cell '.mat']);
 
-    obj.cellID{matFileInd,1} = mosaicGLM{matFileInd}.cell_savename;
+%     obj.cellID{matFileInd,1} = mosaicGLM{matFileInd}.cell_savename;
+    obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
     
-    obj.postSpikeFilter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.PostSpike.Filter;
-    if isfield(mosaicGLM{matFileInd}.linearfilters,'Coupling')
+    obj.postSpikeFilter{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
 
-        obj.couplingFilter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Coupling.Filter;
+        obj.couplingFilter{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Coupling.Filter;
     end
     
-    obj.tonicDrive{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.TonicDrive.Filter;
+    obj.tonicDrive{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
     
-    obj.sRFcenter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Stimulus.space_rk1;
-    obj.sRFsurround{matFileInd,1} = 0*mosaicGLM{matFileInd}.linearfilters.Stimulus.space_rk1;
-    obj.tCenter{matFileInd,1} = mosaicGLM{matFileInd}.linearfilters.Stimulus.time_rk1;
-    obj.tSurround{matFileInd,1} = 0*mosaicGLM{matFileInd}.linearfilters.Stimulus.time_rk1;
+    obj.sRFcenter{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+    obj.sRFsurround{matFileInd,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+    obj.tCenter{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
+    obj.tSurround{matFileInd,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
     
-    if isfield(mosaicGLM{matFileInd}.linearfilters,'Coupling')
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
 
-        couplingMatrixTemp{matFileInd,1} = mosaicGLM{matFileInd}.cellinfo.pairs;
+        couplingMatrixTemp{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cellinfo.pairs;
     end
     
-  obj.cellLocation{matFileInd,1} = [mosaicGLM{matFileInd}.cellinfo.slave_centercoord.x_coord mosaicGLM{matFileInd}.cellinfo.slave_centercoord.y_coord];
+  obj.cellLocation{matFileInd,1} = [mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.x_coord mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.y_coord];
     
 end
 
-obj.rfDiameter = size(mosaicGLM{matFileInd}.linearfilters.Stimulus.Filter,1);
+obj.rfDiameter = size(mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.Filter,1);

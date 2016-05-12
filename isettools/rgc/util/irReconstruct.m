@@ -100,6 +100,7 @@ for xc = 1:nX
             % xcoords = (xc-1)*nPixX + 1 : xc*nPixX;
             
             centerCoords = innerRetina.mosaic{cellTypeInd}.cellLocation{xc,yc};            
+            centerCoordsOut(xc,yc,:) = centerCoords;
             ycoords1 = mincoord + (ceil(centerCoords(1) - (nPixY/2)) : floor(centerCoords(1) + (nPixY/2))); 
             xcoords1 = mincoord + (ceil(centerCoords(2) - (nPixX/2)) : floor(centerCoords(2) + (nPixX/2))); 
             

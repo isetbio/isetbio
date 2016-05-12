@@ -82,6 +82,7 @@ switch osType
         % approximate that.
         if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range - mean(spTempStim(:))/range;
         else                    spTempStim = 300*(spTempStim./range - mean(spTempStim(:))/range);
+%             else                    spTempStim = 10*(spTempStim./range);
         end
         
         % Looping over the rgc mosaics

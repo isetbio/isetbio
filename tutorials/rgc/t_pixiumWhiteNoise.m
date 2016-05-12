@@ -18,7 +18,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 120;
+nSteps = 1200;
 
 % Activation curve
 
@@ -80,30 +80,31 @@ retinalPatchSize = osGet(os,'size');
 
 %% Build RGC array
 
-clear paramsIR innerRetina
-paramsIR.name    = 'Macaque inner retina 1'; % This instance
-paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 6;        % Radius in mm
-paramsIR.eyeAngle  = 90;       % Polar angle in degrees
+% clear paramsIR innerRetina
+% paramsIR.name    = 'Macaque inner retina 1'; % This instance
+% paramsIR.eyeSide   = 'left';   % Which eye
+% paramsIR.eyeRadius = 6;        % Radius in mm
+% paramsIR.eyeAngle  = 90;       % Polar angle in degrees
+% 
+% model   = 'LNP';    % Computational model
+% innerRetina = irCreate(os,paramsIR);
+% % innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
+% % innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+% % innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+% % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
+% 
+% irPlot(innerRetina,'mosaic');
+% % % figure;
 
-model   = 'LNP';    % Computational model
-innerRetina = irCreate(os,paramsIR);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
+% innerRetina = irSet(innerRetina,'numberTrials',1);
 
-irPlot(innerRetina,'mosaic');
-% % figure;
+% filenameRGC = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_RGC_may10.mat'];
+% save(filenameRGC, 'innerRetina');
 
-innerRetina = irSet(innerRetina,'numberTrials',1);
+load('/Users/james/documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_RGC_may10.mat');
 
-filenameRGC = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_RGC_may10.mat'];
-save(filenameRGC, 'innerRetina');
-
-
-for blockNum = 1:2
+for blockNum = 58:150
 
 clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions
 
@@ -176,7 +177,7 @@ whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
 % responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
 
 spikesoutsm = uint8(spikesout);
-filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_block_may10_' num2str(blockNum) '.mat'];
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_block_may11_' num2str(blockNum) '.mat'];
 save(filename1, 'whiteNoiseSmall','spikesoutsm');
 
 end

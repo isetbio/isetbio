@@ -56,7 +56,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 120;
+nSteps = 40;
 
 % Activation curve
 
@@ -284,15 +284,15 @@ plot(eaDSRS');
 clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 6;        % Radius in mm
+paramsIR.eyeRadius = 8;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
 innerRetina = irCreate(os,paramsIR);
 innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
@@ -449,15 +449,15 @@ clear stimulusReconstruction
 clear paramsIR innerRetinaHealthy
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 6;        % Radius in mm
+paramsIR.eyeRadius = 8;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
 innerRetinaHealthy = irCreate(os,paramsIR);
 innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
-innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
-innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
-innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
+% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
 
 %%
 innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,os);
@@ -489,6 +489,7 @@ hold on;
 for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
     subplot(221);
     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+    caxis([0 1]);
     colormap gray; 
     
     subplot(222);
@@ -522,7 +523,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-    writeVideo(vObj,F);
+%     writeVideo(vObj,F);
 end
 end
 
