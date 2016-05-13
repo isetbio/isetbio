@@ -36,17 +36,18 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 %% Instantiate an osLinear object.
 linearOS = osCreate('linear');%,'noiseFlag', 1);
-linearOS = osSet(linearOS, 'noiseFlag', 0);
+linearOS = osSet(linearOS, 'noise flag', 0);
 % linearOS = osLinear('noiseFlag', 1); %osLinear
+
+%% Compute linear outer segment response.
+linearOS = osCompute(linearOS, sensor);
+osGet(linearOS, 'noise flag');
+linearOS.plot('input');
 
 %% Instantiate an osBioPhys object.
 adaptedOS = osCreate('biophys');
 % adaptedOS = osBioPhys(); % osBioPhys
 adaptedOS = osSet(adaptedOS, 'noiseFlag', 0);
-
-%% Compute linear outer segment response.
-linearOS = osCompute(linearOS, sensor);
-osGet(linearOS, 'noiseFlag');
 
 %% Compute nonlinear outer segment response.
 adaptedOS = osCompute(adaptedOS, sensor);
