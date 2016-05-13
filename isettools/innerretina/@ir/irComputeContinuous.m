@@ -200,10 +200,28 @@ switch osType
             szCenter = size(spResponseCenter);
             for s1 = 1:szCenter(1)
                 for s2 = 1:szCenter(2)
-                    spResponseCenter{s1,s1} = 1*spResponseCenter{s1,s1};
-                    spResponseSurround{s1,s1} = 1*spResponseSurround{s1,s1};
+%                     spResponseCenter{s1,s2}(isnan(spResponseCenter{s1,s2})) = 0;
+%                     spResponseSurround{s1,s2}(isnan(spResponseSurround{s1,s2})) = 0;
+                    spResponseCenter{s1,s2} = 40*spResponseCenter{s1,s2};
+                    spResponseSurround{s1,s2} = 40*spResponseSurround{s1,s2};
                 end
             end
+%             
+%             figure;
+%             hold on;
+%             for s1 = 1:szCenter(1)
+%                 for s2 =1:szCenter(2)
+% %                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+% %                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                     mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)))./mx(s1,s2));
+% %                     spResponseCenter{s1,s2} = 10000*spResponseCenter{s1,s2}./mx(s1,s2);
+% %                     spResponseSurround{s1,s2} = 10000*spResponseSurround{s1,s2}./mx(s1,s2);
+%                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))) + squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))));
+% %                     hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                 end
+%             end
             
             % Convolve with the temporal impulse response
             responseLinear = ...
@@ -212,24 +230,16 @@ switch osType
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
 
-            figure;
-            hold on;
-            for s1 = 1:szCenter(1)
-                for s2 = 1:szCenter(2)
-%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
-%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-                    plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-                end
-            end
-            figure; 
-            hold on;
-            for s1 = 1:szCenter(1)
-                for s2 = 1:szCenter(2)
-%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
-%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-                        plot(squeeze(responseLinear{s1,s2,2}(1,1,:)));
-                end
-            end
+
+%             figure; 
+%             hold on;
+%             for s1 = 1:szCenter(1)
+%                 for s2 = 1:szCenter(2)
+% %                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+% %                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                         plot(squeeze(responseLinear{s1,s2,2}(1,1,:)));
+%                 end
+%             end
             
             xlabel('time (msec)','fontsize',14); ylabel('Activation','fontsize',14);
             title('Linear Activation before temporal filtering');

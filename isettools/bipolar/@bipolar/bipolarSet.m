@@ -20,7 +20,8 @@ allowableFieldsToSet = {...
     'tIR',...
     'temporalDifferentiator',...
     'threshold',...
-    'response'...
+    'responseCenter','bipolarresponsecenter',...    
+    'responseSurround','bipolarresponsesurround'...
     };
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 p.addRequired('value');
@@ -48,14 +49,14 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
     case{'srfsurround'}
         obj.sRFsurround = params.value;
         
-    case{'tIR'}
-        obj.tIR = params.value;
-        
     case{'threshold'}
         obj.threshold = params.value;
         
-    case{'response'}
-        obj.response = params.value;
+    case{'responsecenter'}
+        obj.responseCenter = params.value;
+        
+    case{'responsesurround'}
+        obj.responseSurround = params.value;
         
 end
 
