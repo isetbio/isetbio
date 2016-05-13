@@ -95,13 +95,13 @@ pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD)
 
 %% Create spatial RFs for each cell
 tic
-centerNoise = 1.25; % divide by 2 for mean offset
+centerNoise = 0;%1.25; % divide by 2 for mean offset
 
 % centerCorrectY = 0+( 0+(jcarr(end) + pts(end) - (jcarr(1) + pts(1)))/2 )% - receptiveFieldDiameter1STD/4;
 % centerCorrectX = 0+(0+ (icarr(end) + pts(end) - (icarr(1) + pts(1)))/2 )
 
-centerCorrectY = 0+( 0+(jcarr(end) + 0 - (jcarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
-centerCorrectX = 0+(0+ (icarr(end) + 0 - (icarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
+centerCorrectY = 0;%+( 0+(jcarr(end) + 0 - (jcarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
+centerCorrectX = 0;%+(0+ (icarr(end) + 0 - (icarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
 
 
 figure;

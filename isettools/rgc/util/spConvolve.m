@@ -25,7 +25,7 @@ nCells = size(mosaic.cellLocation);
 
 fprintf('     \n');
 fprintf('Spatial Convolution, %s:     \n', mosaic.cellType);
-
+% figure;
 for rgbIndex = 1:channelSize 
     tic
     
@@ -67,6 +67,7 @@ for rgbIndex = 1:channelSize
                     else
                         offset(2) = floor(mosaic.cellLocation{1,1}(2));
                     end
+%                     offset = offset+2*(rand(1,2)-1);
                     %%%% Should rfDimater be size RF center? Yes!
                     stimX =  floor((stimCenterCoords(1) - floor((extent/2)*size(mosaic.sRFcenter{1,1},1)))/1):floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) ))/1);%
                     stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
@@ -89,7 +90,7 @@ for rgbIndex = 1:channelSize
 %                 gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
                 
                 gz = find((stimX-offset(1))>=1 & (stimY-offset(2))>=1 & (stimX-offset(1))<=size(sptempStimulus,1) & (stimY-offset(2))<=size(sptempStimulus,2) );
-                
+                gzout(xcell,ycell,1:length(gz(:))) = gz(:);
                 % Extract 2D image
 %                 spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
                 spStim = squeeze(sptempStimulus(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
@@ -100,6 +101,8 @@ for rgbIndex = 1:channelSize
                     spStimSurr = squeeze(sptempStimulusSurround(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
                 end
                 
+%                 [m1,m2] = meshgrid(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)));
+%                 hold on; scatter(m1(:)+2*(rand-.5),m2(:)+2*(rand-.5),'x');
                 % Convolve for a single temporal frame
                 
                 if isa(mosaic, 'rgcPhys')
@@ -118,15 +121,17 @@ for rgbIndex = 1:channelSize
                     spRC = (spRFcenter(gz,gz).*(spStim-1*mean(spStim(:))));
                     
                     if exist('spStimSurr','var')
-                        spRS = (spRFsurround(gz,gz).*-(spStimSurr-1*mean(spStimSurr(:))));
-                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRC(:)))./1;%length(gz)^2;
-                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)))./1;%length(gz)^2;
+                        spRS = (spRFsurround(gz,gz).*-0*(spStimSurr-1*mean(spStimSurr(:))));
+                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRC(:)))./length(gz)^2;
+                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)))./length(gz)^2;
 
                     else 
                         spRS = (spRFsurround(gz,gz).*-(spStim-1*mean(spStim(:))));
                         
-                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRC(:)))./1;%length(gz)^2;
-                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRS(:)))./1;%length(gz)^2;
+%                         spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRC(:)))./1;%length(gz)^2;
+%                         spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRS(:)))./1;%length(gz)^2;
+                      spResponseCenter{xcell,ycell}(1,1,samp,rgbIndex) = 10*sum(mosaic.rectifyFunction(spRC(:)))./length(gz)^2;
+                        spResponseSurround{xcell,ycell}(1,1,samp,rgbIndex) = 10.*sum(mosaic.rectifyFunction(spRS(:)))./length(gz)^2;
 
                     end
                     
@@ -178,3 +183,10 @@ for rgbIndex = 1:channelSize
     
     toc
 end
+% figure; hold on
+% for i1 = 1:5
+%     for j1=1:5
+%         [m1,m2] = meshgrid(gzout(i1,j1,:) + mosaic.cellLocation{i1,j1}(1),gzout(i1,j1,:)+ mosaic.cellLocation{i1,j1}(2));
+%         scatter(m1(:),m2(:),'x');
+%     end
+% end

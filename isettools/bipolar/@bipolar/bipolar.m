@@ -26,7 +26,6 @@ properties (SetAccess = protected, GetAccess = public)
     timeStep;
     sRFcenter;               % spatial RF of the center on the receptor grid
     sRFsurround;             % spatial RF of the surround on the receptor grid
-    tIR;                     % temporal impulse response of the center
     temporalDifferentiator;    % differentiator function
     responseCenter;          % Store the linear response of the center after convolution
     responseSurround;        % Store the linear response of the surround after convolution
@@ -45,20 +44,16 @@ methods
         obj.timeStep = osGet(os,'timeStep');
         % Build spatial receptive field
         obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
-        obj.sRFsurround = fspecial('gaussian',[2,2],1.1); % convolutional for now
+        obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
         
+        switch class(os)
+            case{'osLinear'}
+                coneW = -0.048515736811122e4; coneDiffW = -3.912753277547210e4;
+            otherwise
+                coneW = -0.1373; coneDiffW = -9.5355;
+        end
+        obj.temporalDifferentiator = @(x) coneW*x(:,2:end) + coneDiffW*diff(x,1,2);
         
-        
-        % Build temporal impulse response from M cone filter
-        % bipolar temopral response = M cone filter + 0.5 * d/dt (M cone filter)
-        osFilter = os.mConeFilter;        
-        osFilterDerivativeShort = diff(osFilter);
-        % osFilterDerivative = interp1(1:length(osFilterDerivativeShort),osFilterDerivativeShort,1:length(osFilter))';
-        osFilterDerivative = [osFilterDerivativeShort; osFilterDerivativeShort(end)];
-        % obj.tIR = osFilter + .5*osFilterDerivative;
-        obj.tIR = 1;
-        % Set threshold
-        % obj.threshold = 0;
     end
     
     % set function, see bipolarSet for details

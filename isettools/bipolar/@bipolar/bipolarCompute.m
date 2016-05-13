@@ -21,21 +21,21 @@ szSubSample = size(spatialSubsampleCenter);
 spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
 spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
 
-% Apply differentiator
-%     obj.temporalDifferentiator;    % differentiator function
+bipolarOutputCenterRS = obj.temporalDifferentiator(spatialSubsampleCenterRS);
+bipolarOutputSurroundRS = obj.temporalDifferentiator(spatialSubsampleSurroundRS);
 
-% Temporal convolution
-bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,obj.tIR','full');
-bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,obj.tIR','full');
+% Rezero
+bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
+bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));
 % figure; plot(conv(spatialSubsampleRS(50,:),obj.tIR'))
 
 % Back to original shape
-bipolarOutputLinearCenter = reshape(bipolarOutputCenterRS,szSubSample(1),szSubSample(2),size(bipolarOutputCenterRS,2));
-bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRS,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
+bipolarOutputLinearCenter = reshape(bipolarOutputCenterRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputCenterRS,2));
+bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
 % figure; plot(squeeze(bipolarOutputLinear(20,20,:)));
 
-obj.responseCenter = bipolarOutputLinearCenter;
-obj.responseSurround = bipolarOutputLinearSurround;
+obj.responseCenter = abs(bipolarOutputLinearCenter);
+obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 
 % % No - nonlinearity occurs in RGC computation after dot product with RGC RF
 % % % Threshold

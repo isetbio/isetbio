@@ -8,6 +8,8 @@ vcNewGraphWin([],'upperLeftBig');
 responseSize = size(obj.responseCenter);
 
 responseRS = reshape(obj.responseCenter,responseSize(1)*responseSize(2),responseSize(3));
+% responseRS = reshape(obj.responseSurround,responseSize(1)*responseSize(2),responseSize(3));
+% responseRS = reshape(obj.responseCenter-obj.responseSurround,responseSize(1)*responseSize(2),responseSize(3));
 
 plot(.001*(1:responseSize(3)),responseRS);
 xlabel('Time (sec)'); 
