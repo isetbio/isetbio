@@ -1,8 +1,11 @@
-function osPlot(obj, sensor, varargin)
-% osPlot: a method of @oueterSegment that plots os object 
-% properties using the input parser structure.
-% 
-% Inputs: os object, sensor, property to be plotted
+function h = osPlot(obj, pType, varargin)
+% Plots for the os object 
+%
+% Inputs: 
+%   absorptions - input absorptions
+%   filters     - impulse response filters
+%   output
+%   all
 % 
 % Outputs: plot(s)
 % 
@@ -16,19 +19,11 @@ function osPlot(obj, sensor, varargin)
 % (c) isetbio
 % 09/2015 JRG
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-narginchk(0, Inf);
-% if there is no argument for the type of plot, set default to all:
-if nargin == 2; varargin{1} = 'all'; end;
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+%% Check for the number of arguments and create parser object.
 
-% This flag causes the parser not to throw an error here in the superclass
-% call. The subclass call will throw an error.
-% p.KeepUnmatched = true;
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
@@ -40,7 +35,9 @@ allowableFieldsToSet = {...
         'cell',...
         'all'...
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
+
+% vFunc = @(x)(isstruct(x) && ....)
+p.addParameter('absorptions',[],@isstruct)
 p.addOptional('value',@isnumeric);
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -54,20 +51,21 @@ p.parse(varargin{:}); params = p.Results;
 
 % Set key-value pairs.
 switch lower(params.what)
-    case{'input'}
+    case{'input','absorptions'}
     
-        dt = sensorGet(sensor, 'time interval');
         
         % Plot input signal (isomerizations) at a particular (x, y) over time.
         h = vcNewGraphWin;
+        dt = obj.get('time interval');
         
         % since data is in (x, y, t) format, choose an (x, y) value to observe over
         % timesubplot(1,3,1);
         
-        isomerizations1 = sensorGet(sensor,'photons');
-        [sz1 sz2 sz3] = size(isomerizations1);
-        inputSignal = squeeze(isomerizations1(round(sz1/2),round(sz2/2),:));
-        plot((0:numel(inputSignal)-1)*dt, inputSignal, 'k-');
+        sz = os.get('array size');
+        isomerizations = os.get('isomerizations');
+        isomerizations = squeeze(isomerizations(round(sz(1)/2),round(sz(2)/2),:));
+        
+        plot((0:numel(isomerizations)-1)*dt, isomerizations, 'k-');
         title('input signal');
         xlabel('Time (sec)');
         ylabel('R*');
@@ -90,24 +88,24 @@ switch lower(params.what)
         ylabel('pA / (R*/sec)');
         
     case{'output'}
+        % Cone output current
+
         
-        dt = sensorGet(sensor, 'time interval');
-        
-        % Plot input signal (isomerizations) at a particular (x, y) over time.
         h = vcNewGraphWin;
         
-        % Plot output signal at a particular (x, y) over time.
+        dt = obj.get('time interval');
+
+        % Plot current signal at a particular (x, y) over time
+        sz = os.get('array size');
+        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz(1)/2),round(sz(2)/2),:);
         
-        isomerizations1 = sensorGet(sensor,'photons');
-        [sz1 sz2 sz3] = size(isomerizations1);
-        
-        outputSignal(1,:) = obj.ConeCurrentSignal(round(sz1/2),round(sz2/2),:);
         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
         title('output signal');
         xlabel('Time (sec)');
         ylabel('pA');
         
     case{'all'}
+        % Recommend writing this as three calls to the stuff above
         
         dt = sensorGet(sensor, 'time interval');
                 

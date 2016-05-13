@@ -1,27 +1,34 @@
 classdef bipolar < handle
-% Define the bipolar cell class.
+% Define the bipolar cell class
 % 
-% The bipolar class allows the simulation of retinal processing from the
-% cone outer segment current to the retinal ganglion cell spike response.
-% Although we do not yet have a fully validated model of this architecture,
-% this represents a first attempt at simulating RGC responses from the cone
-% photocurrent. 
+% The bipolar class simulates processing from the cone outer segment
+% current to the voltage output of the bipolar.
+%
+% Bipolar computation starts with the outer segment photocurrent, applies a
+% linear temporal impulse response, and then weights over space.
 % 
-% In order to achieve this, the bipolar temporal impulse response (IR)
-% ought to be the result of deconvolution of the cone IR from the RGC IR.
-% However, we also want to simulate the nonlinear outer segment model, so
-% we approximate this bipolar temporal filter with a weighted
-% differentiator, such that responseBipolar(t) = w1*responseCone(t) +
-% w2*responseCone'(t), where w1 is close to zero and w2 is a large negative
-% number.
-
-% The bipolar object also allows for the simulation of nonlinear subunits
-% within retinal ganglion cell spatial receptive fields.
+% The bipolar temporal impulse response (IR) is modeled using a widely used
+% approximation from the literature (WHO?)
+%
+%   irBipolar(t) = w1*irCone(t) + w2 * (d/dt (irCone))
+%
+% where w1 is close to zero and w2 is a large negative number.  These
+% values are stored in the bipolar object. We have default values for
+% biophys and otherwise.
+%
+% The bipolar object sums over space using nonlinear subunits. 
 % 
-% Input: the cone response over time from an outer segment object.
+% Input: 
+%   Cone outer segment object.  If none is passed in, we use the
+%   osCreate('linear') object by default.
 % 
-% Output: the bipolar response over time, which can be fed into an inner
-% retina object.
+% Output:
+%  A bipolar object
+%
+% Example:
+%   bp = bipolar;
+%   bp = bipolar(osCreate('linear'));
+%   bp = bipolar(osCreate('biophys'));
 % 
 % 5/2016 JRG (c) isetbio team
 
@@ -33,15 +40,24 @@ end
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
     
-    cellLocation;                    % location of bipolar RF center
-    patchSize;                       % size of retinal patch from sensor
-    timeStep;                        % time step of simulation from sensor
+    % We are going to work on cellLocation.  At the moment, there is a
+    % bipolar centered at every third cone in the os mosaic.  This is
+    % implemented in the compute function.  We plan on specifying the
+    % locations here, though.
+    cellLocation;                    % location of bipolar RF centers
     sRFcenter;                       % spatial RF of the center on the receptor grid
     sRFsurround;                     % spatial RF of the surround on the receptor grid
-    temporalDifferentiator;          % differentiator function
+    
+    patchSize;                       % size of cone mosaic (os)
+    timeStep;                        % time step of simulation from os
+  
     responseCenter;                  % Store the linear response of the center after convolution
     responseSurround;                % Store the linear response of the surround after convolution
 
+    temporalDifferentiator;          % differentiator function
+    coneW;                           % Default weights for linear os case
+    coneDiffW;
+    
 end
 
 % Private properties. Only methods of the parent class can set these
@@ -54,6 +70,8 @@ methods
     % Constructor
     function obj = bipolar(os)
         
+        if ~exist('os','var'), os = osCreate('linear'); end
+        
         obj.patchSize = osGet(os,'patchSize');
         obj.timeStep = osGet(os,'timeStep');
         
@@ -61,16 +79,19 @@ methods
         obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
         obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
         
+        switch class(os)
+            case 'osBiophys'
+                obj.coneW = -0.1373; obj.coneDiffW = -9.5355;
+            otherwise
+                % Use linear values
+                obj.coneW     = -0.0485e4; 
+                obj.coneDiffW = -3.912e4;
+        end
+        
         % Weight are caclulated offline by optimizing for the minimum error
         % between the differentiator signal and the bipolar output
         % calculated with filter from the deconvolution operation.        
-        switch class(os)
-            case{'osLinear'}
-                coneW = -0.048515736811122e4; coneDiffW = -3.912753277547210e4;
-            otherwise
-                coneW = -0.1373; coneDiffW = -9.5355;
-        end
-        obj.temporalDifferentiator = @(x) coneW*x(:,2:end) + coneDiffW*diff(x,1,2);
+        obj.temporalDifferentiator = @(x) obj.coneW*x(:,2:end) + obj.coneDiffW*diff(x,1,2);
         
     end
     
@@ -86,6 +107,8 @@ methods
     
     % compute function, see bipolarCompute for details
     function val = compute(obj, varargin)
+        % Requires an outer segment with a time series
+        % Returns the voltage over time for each cell in the bipolar mosaic
         val = bipolarCompute(obj, varargin{:});
     end
     
