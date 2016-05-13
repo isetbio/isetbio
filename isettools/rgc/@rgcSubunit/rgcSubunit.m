@@ -105,6 +105,25 @@ classdef rgcSubunit < rgcMosaic
             obj.postSpikeFilter = buildPostSpikeFilter(.01);
             
             [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
+            
+            % Make temporal IR just an impulse
+            tCenterOrig = obj.mosaicGet('tCenter');
+            
+            tCenterNew{1} = zeros(size(tCenterOrig));
+            tCenterNew{2} = zeros(size(tCenterOrig));
+            tCenterNew{3} = zeros(size(tCenterOrig));
+            
+            tImpulse = 1000;
+            tCenterNew{1}(1) = tImpulse; tCenterNew{2}(1) = tImpulse; tCenterNew{3}(1) = tImpulse;
+            obj.mosaicSet('tCenter',tCenterNew);
+            
+            tSurroundNew{1} = zeros(size(tCenterOrig));
+            tSurroundNew{2} = zeros(size(tCenterOrig));
+            tSurroundNew{3} = zeros(size(tCenterOrig));
+            tSurroundNew{1} = -tImpulse; tSurroundNew{2} = -tImpulse; tSurroundNew{3} = -tImpulse;
+            obj.mosaicSet('tSurround',tSurroundNew);
+
+            
         end
         
         % set function, see for details

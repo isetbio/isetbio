@@ -3,7 +3,8 @@
 % Implement full retinal pathway with sequential computations of the cone,
 % bipolar and RGC responses.
 % 
-% This is the first implementation of the bioplar object.
+% The stimulus is an impulse. The goal is to examine the impulse repsonse
+% of the bipolar object with the differentiator 
 % 
 % 5/2016 JRG (c) isetbio team
 
@@ -38,8 +39,8 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
-os = osBioPhys();
-% os = osLinear()
+% os = osBioPhys();
+os = osLinear()
 os = osSet(os, 'noiseFlag', noiseFlag);
 os = osCompute(os, sensor);
 
@@ -67,7 +68,7 @@ bp = bipolarCompute(bp, os);
 % bipolarPlot(bp);
 
 bpResponse = bipolarGet(bp,'responseCenter');
-figure; plot(.1:.1:.1*length(bpResponse),squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end)))));
+figure; plot(.1:.1:.1*length(bpResponse),-squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end)))));
 
 load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/OnParasolExcFilters.mat')
 % figure; 
@@ -85,22 +86,3 @@ title('On Parsol Synaptic Input Impulse Response','fontsize',16);
 legend('Bipolar IR','RGC Synaptic IR');
 set(gca,'fontsize',16);
 grid on;
-%% Find RGC responses
-
-% clear params innerRetinaBpSu
-% params.name      = 'Bipolar with nonlinear subunits'; % This instance
-% params.eyeSide   = 'left';   % Which eye
-% params.eyeRadius = 7;        % Radius in mm
-% params.eyeAngle  = 90;       % Polar angle in degrees
-% 
-% innerRetinaBpSu = irCreate(bp, params);
-% 
-% % Create a coupled GLM model for the on midget ganglion cell parameters
-% innerRetinaBpSu.mosaicCreate('model','Subunit','type','on midget');
-% 
-% irPlot(innerRetinaBpSu,'mosaic');
-% % Compute RGC mosaic responses
-% 
-% innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
-% % irPlot(innerRetinaBpSu, 'psth');
-% irPlot(innerRetinaBpSu, 'linear');

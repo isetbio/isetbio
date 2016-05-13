@@ -21,7 +21,7 @@ function osPlot(obj, sensor, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 % if there is no argument for the type of plot, set default to all:
 if nargin == 2; varargin{1} = 'all'; end;
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
@@ -37,10 +37,11 @@ allowableFieldsToSet = {...
         'filter',...
         'filters',...
         'output',...
+        'cell',...
         'all'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-
+p.addOptional('value',@isnumeric);
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
 % 
@@ -138,8 +139,13 @@ switch lower(params.what)
         % Plot output signal at a particular (x, y) over time.
         subplot(1,3,3);
         outputSignalTemp = osGet(obj,'coneCurrentSignal');
-        outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
-        plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+        if isfield(params, 'cell');
+            outputSignal(1,:) = outputSignalTemp(params.cell(1),params.cell(2),:);
+        else
+            % outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
+            outputSignal = reshape(outputSignalTemp,sz1*sz2,sz3);
+        end
+        plot((0:size(outputSignal,2)-1)*dt, outputSignal(1+floor((sz1*sz2/100)*rand(200,1)),:));
         title('output signal');
         xlabel('Time (sec)');
         ylabel('pA');

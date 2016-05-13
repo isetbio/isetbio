@@ -107,12 +107,27 @@ switch lower(params.what)
         ylabel('R*');
         
         % Plot output signal at a particular (x, y) over time.
-        subplot(1,2,2);        
+%         subplot(1,2,2);        
+%         outputSignalTemp = osGet(obj,'coneCurrentSignal');
+%         outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
+%         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+%         title('output signal');
+%         xlabel('Time (sec)');
+%         ylabel('pA');
+        
+        % Plot output signal at a particular (x, y) over time.
+        subplot(1,2,2);
         outputSignalTemp = osGet(obj,'coneCurrentSignal');
-        outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
-        plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+        if isfield(params, 'cell');
+            outputSignal(1,:) = outputSignalTemp(params.cell(1),params.cell(2),:);
+        else
+            % outputSignal(1,:) = outputSignalTemp(round(sz1/2),round(sz2/2),:);
+            outputSignal = reshape(outputSignalTemp,sz1*sz2,sz3);
+        end
+        plot((0:size(outputSignal,2)-1)*dt, outputSignal(1+floor((sz1*sz2/100)*rand(200,1)),:));
         title('output signal');
         xlabel('Time (sec)');
         ylabel('pA');
+
         
 end
