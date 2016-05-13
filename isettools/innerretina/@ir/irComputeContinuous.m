@@ -241,8 +241,8 @@ switch osType
 %                 end
 %             end
             
-            xlabel('time (msec)','fontsize',14); ylabel('Activation','fontsize',14);
-            title('Linear Activation before temporal filtering');
+%             xlabel('time (msec)','fontsize',14); ylabel('Activation','fontsize',14);
+%             title('Linear Activation before temporal filtering');
         end
     otherwise
         error('Unknown os type %s\n',osType);

@@ -1,71 +1,92 @@
 % t_bipolar
 % 
 % Implement full retinal pathway with sequential computations of the cone,
-% bipolar and RGC responses.
+% bipolar and RGC responses. 
+% 
+% The stimulus is a contrast reversing grating with high spatial frequency.
+% This implements the classic Hochstein & Shapley (1976) experiment which
+% reveals the nonlinear spatial responses of RGCs. If RGCs had purely
+% linear spatial processing, they would not fire in response to
+% high-frequency gratings, because the linear response over the receptive
+% field would average out to zero. However, if there were rectifying
+% spatial subunits with the receptive field, this would lead to RGC firing,
+% as the Hochstein & Shapley paper definitively demonstrated.
+% 
+% A contrast-reversing grating is either generated or loaded from the RDT.
+% The scene, the oi, the sensor and the cone outer segment responses are
+% computed. The cone outer segment responses are passed to the isetbio
+% bipolar object, which can have nonlinear spatial subunits and has a
+% temporal response that reproduces the appropriate RGC IR downstream. The
+% bipolar responses are fed into the RGC object, which only carries out
+% spatial processing at this point.
 % 
 % This is the first implementation of the bioplar object.
 % 
 % 5/2016 JRG (c) isetbio team
 
 %% Initialize
-clear
-ieInit
+clear;
+ieInit;
 
-%% Load image sequence
+%% Load contrast-reversing grating movie
+% Grating subunit stimulus
 
-stimulusSelect = 1;
-nSteps = 500;
-barWidth = 2;
+clear params
+stimP.fov      = 1; % degrees
+stimP.barWidth = 2;
+stimP.nSteps   = 400;
+stimP.expTime = 0.001; % sec
+stimP.timeInterval = 0.001; % sec
+% % Select stimulus generation method
+% % Uncomment here to change parameters. Warning: slow!
+% iStim = ieStimulusGratingSubunit(stimP);
 
-switch stimulusSelect
-    case 1
-        % Grating subunit stimulus
-        clear params
-        stimP.fov      = 1; % degrees
-        stimP.barWidth = barWidth;
-        stimP.nSteps   = nSteps;
-        stimP.expTime = 0.001; % sec
-        stimP.timeInterval = 0.001; % sec
-%         iStim = ieStimulusGratingSubunit(stimP);
+% % Uncomment here to grab a precomputed scene and sensor for the grating
+% % subunit from the RDT.
+rdt = RdtClient('isetbio');
+rdt.credentialsDialog();
+rdt.crp('resources/data/istim');
+data = rdt.readArtifact('iStim_subunitGrating', 'type', 'mat');
+iStim = data.iStim;
 
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/iStim_subunitGrating.mat');
-%        load('/Users/james/Documents/MATLAB/isetbio misc/iStim_subunitGratingLong.mat')
- 
-        absorptions = iStim.absorptions; % cone isomerizations
-%         ieMovie(iStim.sceneRGB);
-    case 2
-        % Natural scene with eye movements stimulus
-        rdt = RdtClient('isetbio');
-        rdt.crp('resources/data/rgc');
-        data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
-        testmovie = data.testmovie;
-        absorptions = ieStimulusMovie(testmovie(:,:,1:nSteps)); 
-end
+absorptions = iStim.absorptions; % cone isomerizations
 
-figure; plot(squeeze(iStim.sceneRGB(40,40,:,1)))
-xlabel('Time (msec)','fontsize',14); ylabel('Stimulus Intensity','fontsize',14)
+% Show movie. Hold mouse over a bar to check that contrast reverses.
+ieMovie(iStim.sceneRGB);
 
+% Plot one pixel from stimulus movie
+vcNewGraphWin([],'upperleftbig'); 
+plot(squeeze(iStim.sceneRGB(40,40,:,1)))
+xlabel('Time (msec)','fontsize',14); 
+ylabel('Stimulus contrast','fontsize',14)
+title('Stimulus contrast for reversing grating at 5 Hz');
+set(gca,'fontsize',16);
 %% Outer segment calculation - linear model
+% The iStim structure generates the movie, the scene, the oi and the
+% cone absorptions. The next step is to get the outer segment current. The
+% linear outer segment model is employed here.
 
+% Initialize
 osL = osCreate('linear');
 
-% Set size of retinal patch
+% Set size of retinal patch based on absorptions sensor object
 patchSize = sensorGet(absorptions,'width','m');
 osL = osSet(osL, 'patch size', patchSize);
 
-% Set time step of simulation equal to absorptions
+% Set time step of simulation equal to absorptions sensor object
 timeStep = sensorGet(absorptions,'time interval','sec');
 osL = osSet(osL, 'time step', timeStep);
 
-% Set osI data to raw pixel intensities of stimulus
-% osI = osSet(osI, 'rgbData', 0.6-iStim.sceneRGB);
+% Compute the outer segment response to the absorptions with the linear
+% model.
 osL = osCompute(osL,absorptions);
 
-% % Plot the photocurrent for a pixel
+% % Plot the photocurrent for a pixel.
 osPlot(osL,absorptions);
-% os= osL;
-%% Outer segment calculation - biophysical model
 
+%% Outer segment calculation - biophysical model
+% As an alternative to the linear model, we can employ Fred's biophysical
+% model that captures properties of temporal adaptation.
 osBp = osCreate('BioPhys');
 
 % Set size of retinal patch
@@ -76,165 +97,52 @@ osBp = osSet(osBp, 'patch size', patchSize);
 timeStep = sensorGet(absorptions,'time interval','sec');
 osBp = osSet(osBp, 'time step', timeStep);
 
-% Set osI data to raw pixel intensities of stimulus
-% osI = osSet(osI, 'rgbData', 0.6-iStim.sceneRGB);
+% Compute the outer segment response to the absorptions with the
+% biophysical model.
 osBp = osCompute(osBp,absorptions);
 
-% % Plot the photocurrent for a pixel
+% % Plot the photocurrent for a pixel.
 osPlot(osBp,absorptions);
-% os = osBp;
+
 %% Find bipolar responses
+% The bipolar object takes as input the outer segment current. Bipolar
+% processing consists of a spatial convolution and a temporal
+% differentiator that matches the IR of the measured RGC output.
+
+% Choose which outer segment to use for input.
 os = osL;
+% os = osBp;
+
+% Create the bipolar object
 bp = bipolar(os);
 
-% bipolarThreshold = -40;
-% bp = bipolarSet(bp,'threshold',bipolarThreshold);
-
+% Compute the bipolar response
 bp = bipolarCompute(bp, os);
 
-bipolarPlot(bp);
+% Plot the response of every bipolar cell.
+bipolarPlot(bp,'response');
 
 %% Find RGC responses
+% Build and IR object that takes as input the bipolar mosaic.
 
+% Initialize.
 clear params innerRetinaBpSu
 params.name      = 'Bipolar with nonlinear subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 6;        % Radius in mm
+params.eyeRadius = 9;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetinaBpSu = irCreate(bp, params);
 
-% Create a coupled GLM model for the on midget ganglion cell parameters
+% Create a subunit model for the on midget ganglion cell parameters
 innerRetinaBpSu.mosaicCreate('model','Subunit','type','on midget');
 
-tCenterOrig = innerRetinaBpSu.mosaic{1}.mosaicGet('tCenter');
-
-tCenterNew{1} = zeros(size(tCenterOrig)); 
-tCenterNew{2} = zeros(size(tCenterOrig)); 
-tCenterNew{3} = zeros(size(tCenterOrig));
-
-tImpulse = 1000;
-tCenterNew{1}(1) = tImpulse; tCenterNew{2}(1) = tImpulse; tCenterNew{3}(1) = tImpulse;
-innerRetinaBpSu.mosaic{1}.mosaicSet('tCenter',tCenterNew);
-
-tSurroundNew{1} = zeros(size(tCenterOrig)); 
-tSurroundNew{2} = zeros(size(tCenterOrig)); 
-tSurroundNew{3} = zeros(size(tCenterOrig));
-tSurroundNew{1} = -tImpulse; tSurroundNew{2} = -tImpulse; tSurroundNew{3} = -tImpulse;
-innerRetinaBpSu.mosaic{1}.mosaicSet('tSurround',tSurroundNew);
+% % Uncomment to get rid of spatial nonlinearity
+% newRectifyFunction = @(x) x;
+% innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 
 % irPlot(innerRetinaBpSu,'mosaic');
-% Compute RGC mosaic responses
 
+% Compute RGC mosaic responses
 innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
-irPlot(innerRetinaBpSu, 'psth');%,'cell',[4 4]);
-% irPlot(innerRetinaBpSu, 'linear');
-
-% irPlot(innerRetinaBpSu, 'linear','cell',[4 3]);
-% irPlot(innerRetinaBpSu, 'raster','cell',[4 4]);
-
-%% Bipolar object with no convolutional subunits, just impulse function
-bp2 = bipolar(osL);
-
-% bipolarThreshold = -40;
-% bp = bipolarSet(bp,'threshold',bipolarThreshold);
-
-bipolarRF = bipolarGet(bp2,'sRFcenter');
-
-bipolarRFnew = zeros(size(bipolarRF));
-bipolarRFnew(4,4) = 1;
-
-bp2 = bipolarSet(bp2,'sRFcenter',bipolarRFnew);
-
-bp2 = bipolarSet(bp2,'sRFsurround',bipolarRFnew);
-
-bp2 = bipolarCompute(bp2, osL);
-
-bipolarPlot(bp2);
-
-%% Bipolar input with linear subunits
-
-clear params innerRetinaBpImpSu
-params.name      = 'Bipolar impulse with no subunits'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 7;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
-
-innerRetinaBpImpNoSu = irCreate(bp2, params);
-
-% Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetinaBpImpNoSu.mosaicCreate('model','LNP','type','on midget');
-
-irPlot(innerRetinaBpImpNoSu,'mosaic');
-% Compute RGC mosaic responses
-
-innerRetinaBpImpNoSu = irCompute(innerRetinaBpImpNoSu, bp);
-% irPlot(innerRetinaBpImpNoSu, 'psth');
-irPlot(innerRetinaBpImpNoSu, 'linear');
-% irPlot(innerRetinaBpImpNoSu, 'raster');
-
-%%
-% % % % % % % % % % % % 
-% % % % % % % % % % % % 
-
-%% Compute RGC without subunits
-% Input = RGB
-osI = osCreate('displayRGB');
-
-% Set size of retinal patch
-patchSize = sensorGet(absorptions,'width','m');
-osI = osSet(osI, 'patch size', patchSize);
-
-% Set time step of simulation equal to absorptions
-timeStep = sensorGet(absorptions,'time interval','sec');
-osI = osSet(osI, 'time step', timeStep);
-
-osI = osSet(osI, 'rgbData', 2*(iStim.sceneRGB-0.5));
-
-
-clear params innerRetinaNoBpNoSU
-params.name      = 'No SU no bipolar'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 7;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
-
-innerRetinaNoBpNoSU = irCreate(osI, params);
-
-% Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetinaNoBpNoSU.mosaicCreate('model','lnp','type','on midget');
-irPlot(innerRetinaNoBpNoSU,'mosaic');
-
-innerRetinaNoBpNoSU = irCompute(innerRetinaNoBpNoSU, osI);
-irPlot(innerRetinaNoBpNoSU, 'linear');
-% irPlot(innerRetinaNoBpNoSU, 'psth');
-
-%% Compute RGC with subunits
-% Input = RGB
-osI = osCreate('displayRGB');
-
-% Set size of retinal patch
-patchSize = sensorGet(absorptions,'width','m');
-osI = osSet(osI, 'patch size', patchSize);
-
-% Set time step of simulation equal to absorptions
-timeStep = sensorGet(absorptions,'time interval','sec');
-osI = osSet(osI, 'time step', timeStep);
-
-osI = osSet(osI, 'rgbData', 2*(iStim.sceneRGB-0.5));
-
-
-clear params innerRetinaNoBPSU
-params.name      = 'Nonlinear SU no bipolar'; % This instance
-params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 7;        % Radius in mm
-params.eyeAngle  = 90;       % Polar angle in degrees
-
-innerRetinaNoBPSU = irCreate(osI, params);
-
-% Create a coupled GLM model for the on midget ganglion cell parameters
-innerRetinaNoBPSU.mosaicCreate('model','subunit','type','on midget');
-% irPlot(innerRetinaNoBPSU,'mosaic');
-
-innerRetinaNoBPSU = irCompute(innerRetinaNoBPSU, osI);
-irPlot(innerRetinaNoBPSU, 'linear');
-irPlot(innerRetinaNoBPSU, 'psth');%,'cell',[3 3]);
+irPlot(innerRetinaBpSu, 'psth');
