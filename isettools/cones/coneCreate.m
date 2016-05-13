@@ -1,5 +1,6 @@
 function cone = coneCreate(species, varargin)
 % Create a cone structure
+%
 %   cone = coneCreate(species, varargin)
 %
 % create a default cone structure, which includes cone absorptance, spatial
@@ -56,6 +57,8 @@ switch species
         cone.peakEfficiency = [2 2 2]/3;
 
         cone.spatialDensity = [0 .6 .3 .1];  % No blanks, L,M,S
+        
+        cone.size = [2,2]*1e-6;      % Human foveal cone size around 2 microns
         
     otherwise
         error('Unknown type encountered');
