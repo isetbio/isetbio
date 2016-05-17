@@ -52,6 +52,7 @@ classdef rgcMosaic < handle
         sRFsurround;        % spatial RF of the surround
         tCenter;            % temporal impulse response of the center
         tSurround;          %    and of the surround (1 ms timing by default)
+        tonicDrive;        % DC term for linear response
         rfDiaMagnitude;     % for making movies of response
         responseLinear;     % Store the linear response after convolution
     end

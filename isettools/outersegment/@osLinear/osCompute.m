@@ -20,6 +20,16 @@ function obj = osCompute(obj, sensor, varargin)
 % 
 % 8/2015 JRG NC DHB
 
+if size(varargin) ~= 0
+    if isfield(varargin{1,1},'convolutionType')
+        cType = varargin{1,1}.convolutionType; % need to make this an input parameter!
+    else
+        cType = 0;
+    end
+else
+    cType = 0;
+end
+
 % Remake filters incorporating the sensor to make them the correct sampling
 % rate.
 obj.matchSensor(sensor);
@@ -85,7 +95,15 @@ for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
     
     for y = 1:size(isomerizationsSingleType, 1)
         
-        tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
+        if ~cType     % Do full convolution with onset and offset transients
+            tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
+        
+        else % Do min length circular convolution in Fourier domain for steady state response only
+            isoZP = [isomerizationsSingleType(y, :) zeros(1,-size(isomerizationsSingleType(y, :),2) + size(FilterConeType,1))];
+            FilterConeTypeZP = [FilterConeType' zeros(1,size(isomerizationsSingleType(y, :),2)- size(FilterConeType,1))];
+            tempData = ifft(fft(isoZP).*fft(FilterConeTypeZP));
+        end 
+        
         %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
         %  WHAT IS THE COMPRESS ABOUT?  Let's ASK NC
         if (initialState.Compress)
@@ -95,11 +113,17 @@ for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
             tempData = tempData - meanCur;
         end
         % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
-        adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
-        
+
+        if ~cType
+            adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
+        else
+            
+            adaptedDataSingleType(y, 1:length(tempData)-1) = tempData([2:end]);
+            adaptedDataSingleType(y, length(tempData):end) = tempData(end);
+        end
     end    
     
-    adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
+    adaptedDataRS(cone_locations,:) = adaptedDataSingleType(:,1:length(isomerizationsSingleType(y, :)));  
     
 end
 

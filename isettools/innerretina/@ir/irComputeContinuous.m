@@ -81,7 +81,7 @@ switch osType
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
         if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range - mean(spTempStim(:))/range;
-        else                    spTempStim = 300*(spTempStim./range - mean(spTempStim(:))/range);
+        else                    spTempStim = 1*(spTempStim./range - mean(spTempStim(:))/range);
 %             else                    spTempStim = 10*(spTempStim./range);
         end
         
@@ -202,26 +202,26 @@ switch osType
                 for s2 = 1:szCenter(2)
 %                     spResponseCenter{s1,s2}(isnan(spResponseCenter{s1,s2})) = 0;
 %                     spResponseSurround{s1,s2}(isnan(spResponseSurround{s1,s2})) = 0;
-                    spResponseCenter{s1,s2} = 40*spResponseCenter{s1,s2};
-                    spResponseSurround{s1,s2} = 40*spResponseSurround{s1,s2};
+                    spResponseCenter{s1,s2} = 1*spResponseCenter{s1,s2};
+                    spResponseSurround{s1,s2} = 1*spResponseSurround{s1,s2};
                 end
             end
 %             
-%             figure;
-%             hold on;
-%             for s1 = 1:szCenter(1)
-%                 for s2 =1:szCenter(2)
-% %                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
-% %                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-%                     mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)))./mx(s1,s2));
-% %                     spResponseCenter{s1,s2} = 10000*spResponseCenter{s1,s2}./mx(s1,s2);
-% %                     spResponseSurround{s1,s2} = 10000*spResponseSurround{s1,s2}./mx(s1,s2);
+            figure;
+            hold on;
+            for s1 = 1:szCenter(1)
+                for s2 =1:szCenter(2)
+%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                    mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)))./mx(s1,s2));
+%                     spResponseCenter{s1,s2} = 10000*spResponseCenter{s1,s2}./mx(s1,s2);
+%                     spResponseSurround{s1,s2} = 10000*spResponseSurround{s1,s2}./mx(s1,s2);
 %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))) + squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))));
-% %                     hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-%                 end
-%             end
+                    plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))),'b');
+                    hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)),'r');
+                end
+            end
             
             % Convolve with the temporal impulse response
             responseLinear = ...

@@ -38,6 +38,9 @@ properties (SetAccess = protected, GetAccess = public)
     timeStep;                        % time step of simulation from sensor
     sRFcenter;                       % spatial RF of the center on the receptor grid
     sRFsurround;                     % spatial RF of the surround on the receptor grid
+    temporalDelay;                   % delay on inputs to differentiator
+    temporalConeW;                   % weight on cone signal input to differentiator
+    temporalConeDiffW;               % weight on cone derivative signal input to differentiator
     temporalDifferentiator;          % differentiator function
     responseCenter;                  % Store the linear response of the center after convolution
     responseSurround;                % Store the linear response of the surround after convolution
@@ -65,12 +68,18 @@ methods
         % between the differentiator signal and the bipolar output
         % calculated with filter from the deconvolution operation.        
         switch class(os)
-            case{'osLinear'}
-                coneW = -0.048515736811122e4; coneDiffW = -3.912753277547210e4;
-            otherwise
-                coneW = -0.1373; coneDiffW = -9.5355;
+            
+            % See s_bipolarDeconvolveDelay for calculation
+            case{'osLinear'}               
+                % R^2 = 0.89 for matching RGC IR
+                obj.temporalConeW = -0.0976e4; obj.temporalConeDiffW = -5.7893e4;
+                obj.temporalDelay = 23; % ms
+            otherwise % osBioPhys
+                % R^2 = 0.91 for matching RGC IR
+                obj.temporalConeW = -0.2834;  obj.temporalConeDiffW = -17.4539;
+                obj.temporalDelay = 24;
         end
-        obj.temporalDifferentiator = @(x) coneW*x(:,2:end) + coneDiffW*diff(x,1,2);
+        obj.temporalDifferentiator = @(x) obj.temporalConeW*x(:,2+obj.temporalDelay:end) + obj.temporalConeDiffW*diff(x(:,1+obj.temporalDelay:end),1,2);
         
     end
     

@@ -39,10 +39,10 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
-% os = osBioPhys();
-os = osLinear()
+% os = osBioPhys(sensor); paramsOS.bgVolts = 10*mean(vectorize(sensorGet(sensor,'volts')));
+os = osLinear(sensor); paramsOS.convolutionType = 1; 
 os = osSet(os, 'noiseFlag', noiseFlag);
-os = osCompute(os, sensor);
+os = osCompute(os, sensor, paramsOS);
 
 % Set size of retinal patch
 patchSize = sensorGet(sensor,'width','m');
@@ -65,9 +65,9 @@ bp = bipolar(os);
 
 bp = bipolarCompute(bp, os);
 
-% bipolarPlot(bp);
+bipolarPlot(bp,'response');
 
-bpResponse = bipolarGet(bp,'responseCenter');
+bpResponse = -bipolarGet(bp,'response');
 figure; plot(.1:.1:.1*length(bpResponse),-squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end)))));
 
 load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/OnParasolExcFilters.mat')

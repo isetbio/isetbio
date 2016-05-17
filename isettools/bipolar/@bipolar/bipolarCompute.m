@@ -36,10 +36,16 @@ szSubSample = size(spatialSubsampleCenter);
 spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
 spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
 
-% Apply the differentiator function.
-bipolarOutputCenterRS = obj.temporalDifferentiator(spatialSubsampleCenterRS);
-bipolarOutputSurroundRS = obj.temporalDifferentiator(spatialSubsampleSurroundRS);
+% Zero pad to allow for delay
+spatialSubsampleCenterRS = [zeros(size(spatialSubsampleCenterRS,1),obj.temporalDelay + 1) spatialSubsampleCenterRS];
+spatialSubsampleSurroundRS = [zeros(size(spatialSubsampleSurroundRS,1),obj.temporalDelay + 1) spatialSubsampleSurroundRS];    
 
+% Apply the differentiator function.
+bipolarOutputCenterRSLong = obj.temporalDifferentiator(spatialSubsampleCenterRS);
+bipolarOutputSurroundRSLong = obj.temporalDifferentiator(spatialSubsampleSurroundRS);
+
+bipolarOutputCenterRS = bipolarOutputCenterRSLong(:,obj.temporalDelay+1:end);
+bipolarOutputSurroundRS = bipolarOutputSurroundRSLong(:,obj.temporalDelay+1:end);
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
 bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));
@@ -50,9 +56,15 @@ bipolarOutputLinearCenter = reshape(bipolarOutputCenterRSRZ,szSubSample(1),szSub
 bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
 % figure; plot(squeeze(bipolarOutputLinear(20,20,:)));
 
+
 %% Attach output to object
-% Bipolar rectification 
-obj.responseCenter = (bipolarOutputLinearCenter);
-obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
+% % Bipolar rectification 
+% obj.responseCenter = (bipolarOutputLinearCenter);
+% obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 
+bipolarOutputRectifiedCenter = bipolarOutputLinearCenter.*(bipolarOutputLinearCenter>0);
+bipolarOutputRectifiedSurround = -bipolarOutputLinearSurround.*(bipolarOutputLinearSurround<0);
+% bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround.*(bipolarOutputLinearSurround>0)));
 
+obj.responseCenter = bipolarOutputRectifiedCenter;
+obj.responseSurround = bipolarOutputRectifiedSurround;

@@ -33,3 +33,4 @@ b1 = nkt/32; b2 = nkt/16;
 k1 = 1/(gamma(6)*b1)*(tk/b1).^5 .* exp(-tk/b1);  % Gamma pdfn
 k2 = 1/(gamma(6)*b2)*(tk/b2).^5 .* exp(-tk/b2);  % Gamma pdf
 k = (k1-k2./1.5);
+k = 1.2*(k./max(k));

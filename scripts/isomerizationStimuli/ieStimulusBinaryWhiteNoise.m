@@ -96,7 +96,7 @@ for t = 1 : 2 : params.nSteps
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
     %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
-    dsfactor = 16;    
+    dsfactor = 24;    
     stimRGBraw = rand(params.row/dsfactor,params.col/dsfactor);    
     stimRGBthresh = zeros(params.row/dsfactor,params.col/dsfactor);    
     stimRGBthresh(stimRGBraw>0.5) = 1;    
