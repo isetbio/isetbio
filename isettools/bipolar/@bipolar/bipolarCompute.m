@@ -18,9 +18,18 @@ function obj = bipolarCompute(obj, os)
 % Convolve spatial RFs over whole image, subsample to get evenly spaced
 % mosaic.
 
+% Get zero mean cone current signal
+osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
+osSigRSZM = osSigRS - repmat(mean(osSigRS,1),size(osSigRS,1),1);
+osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
+
+% osSigZM(abs(osSigZM)>100) = 0;
+
 % Spatial convolution
-spatialResponseCenter = ieSpaceTimeFilter(os.coneCurrentSignal, obj.sRFcenter);
-spatialResponseSurround = ieSpaceTimeFilter(os.coneCurrentSignal, obj.sRFsurround);
+% spatialResponseCenter = ieSpaceTimeFilter(os.coneCurrentSignal-os.coneCurrentSignal(1,1,end), obj.sRFcenter);
+% spatialResponseSurround = ieSpaceTimeFilter(os.coneCurrentSignal-os.coneCurrentSignal(1,1,end), obj.sRFsurround);
+spatialResponseCenter = ieSpaceTimeFilter(osSigZM, obj.sRFcenter);
+spatialResponseSurround = ieSpaceTimeFilter(osSigZM, obj.sRFsurround);
 
 % Subsample to pull out individual bipolars
 strideSubsample = size(obj.sRFcenter,1);
@@ -37,15 +46,23 @@ spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSa
 spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
 
 % Zero pad to allow for delay
-spatialSubsampleCenterRS = [zeros(size(spatialSubsampleCenterRS,1),obj.temporalDelay + 1) spatialSubsampleCenterRS];
-spatialSubsampleSurroundRS = [zeros(size(spatialSubsampleSurroundRS,1),obj.temporalDelay + 1) spatialSubsampleSurroundRS];    
+spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,(1e-3/os.timeStep)*obj.temporalDelay + 1).*ones(size(spatialSubsampleCenterRS,1),(1e-3/os.timeStep)*obj.temporalDelay + 1) spatialSubsampleCenterRS];
+spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.timeStep)*obj.temporalDelay + 1).*ones(size(spatialSubsampleSurroundRS,1),(1e-3/os.timeStep)*obj.temporalDelay + 1) spatialSubsampleSurroundRS];    
 
 % Apply the differentiator function.
+% x = spatialSubsampleCenterRS;%-spatialSubsampleCenterRS(1);
+% coneSig = obj.temporalConeW*x(:,2+obj.temporalDelay:end);
+% coneDiff = obj.temporalConeDiffW*diff(x(:,1+obj.temporalDelay:end),1,2);
+% figure; plot(coneSig+coneDiff); 
+% hold on; plot(coneSig)
+% figure; plot(x(:,2+obj.temporalDelay:end));
+% figure; plot(diff(x(:,1+obj.temporalDelay:end),1,2));
+% plot(coneDiff);
 bipolarOutputCenterRSLong = obj.temporalDifferentiator(spatialSubsampleCenterRS);
 bipolarOutputSurroundRSLong = obj.temporalDifferentiator(spatialSubsampleSurroundRS);
 
-bipolarOutputCenterRS = bipolarOutputCenterRSLong(:,obj.temporalDelay+1:end);
-bipolarOutputSurroundRS = bipolarOutputSurroundRSLong(:,obj.temporalDelay+1:end);
+bipolarOutputCenterRS = bipolarOutputCenterRSLong(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
+bipolarOutputSurroundRS = bipolarOutputSurroundRSLong(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
 bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));

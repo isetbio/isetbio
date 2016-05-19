@@ -10,14 +10,17 @@
 
 %% Initialize
 clear
-ieInit
+% ieInit
 
 %% Load image sequence
 % Fred's code for examining impulse response
+osModelType = 'linear';
+% osModelType = 'biophys';
 
 % Set up parameters for stimulus.
-nSamples = 4000;        % 2000 samples
-timeStep = 1e-4;        % time step
+timeStep = 1e-5;        % time step
+nSamples = .4/timeStep;        % 2000 samples
+
 flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
 % Create human sensor.
@@ -27,7 +30,11 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Create stimulus.
 stimulus = zeros(nSamples, 1);
-stimulus(1) = flashIntens;
+if strcmp(osModelType,'linear')
+    stimulus(round(23*.001/timeStep)) = flashIntens;
+else
+    stimulus(round(24*.001/timeStep)) = flashIntens;
+end
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photon rates. This is a kluge that appeared
@@ -39,8 +46,14 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
-% os = osBioPhys(sensor); paramsOS.bgVolts = 10*mean(vectorize(sensorGet(sensor,'volts')));
-os = osLinear(sensor); paramsOS.convolutionType = 1; 
+if strcmp(osModelType,'linear')
+    os = osLinear(sensor); 
+    paramsOS.convolutionType = 0; 
+else
+    os = osBioPhys(sensor); 
+    paramsOS.bgVolts = 10*mean(vectorize(sensorGet(sensor,'volts')));
+end
+
 os = osSet(os, 'noiseFlag', noiseFlag);
 os = osCompute(os, sensor, paramsOS);
 
@@ -67,8 +80,11 @@ bp = bipolarCompute(bp, os);
 
 bipolarPlot(bp,'response');
 
-bpResponse = -bipolarGet(bp,'response');
-figure; plot(.1:.1:.1*length(bpResponse),-squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end)))));
+bpResponse = bipolarGet(bp,'response');
+
+tBin = osGet(os, 'timeStep');
+figure; plot(tBin/.001:tBin/.001:(tBin/.001)*length(bpResponse),squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end)))));
+% figure; plot(tBin/.001:tBin/.001:(tBin/.001)*length(bpResponse),squeeze(bpResponse - bpResponse(end)));
 
 load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/OnParasolExcFilters.mat')
 % figure; 
@@ -79,10 +95,18 @@ meanLinFilt = mean(LinFilt);
 % Downsample to appropriate time course
 dsrate = length(tme)/max(tme);
 rgcFilt = meanLinFilt(1:2*dsrate:end);
-plot(rgcFilt);
+% plot(tme(1:dsrate:length(meanLinFilt)),meanLinFilt(1:dsrate:end));
+bpComp = squeeze(bpResponse - bpResponse(end))./max(abs(squeeze(bpResponse - bpResponse(end))));
+plot(tme,meanLinFilt);
 xlabel('Time (msec)','fontsize',16);
 ylabel('Normalized Amplitude','fontsize',16);
-title('On Parsol Synaptic Input Impulse Response','fontsize',16);
+
+% figure; plot((bpComp(1:1*dsrate:1*1880))); hold on; plot(18+(1:189),rgcFilt(1:189))
+% corrcoef((bpComp(1:1*dsrate:1*1880)),[zeros(1,18) rgcFilt(1:189-19)]')
+dsrate2 = .001/timeStep;
+cM = corrcoef((bpComp(1:2*dsrate2:2*188*dsrate2)),rgcFilt(1:188));
+
+title(sprintf('On Parsol Synaptic Input Impulse Response\nR^2 = %0.2f',cM(2,1)),'fontsize',16);
 legend('Bipolar IR','RGC Synaptic IR');
 set(gca,'fontsize',16);
 grid on;

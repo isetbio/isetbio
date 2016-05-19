@@ -88,6 +88,7 @@ for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
     % into the final output matrix.
     cone_locations = find(cone_mosaic==cone_type);
     
+    if ~isempty(cone_locations)
     isomerizationsSingleType = isomerizationsRS(cone_locations,:);
     
     % pre-allocate memory
@@ -122,9 +123,9 @@ for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
             adaptedDataSingleType(y, length(tempData):end) = tempData(end);
         end
     end    
-    
-    adaptedDataRS(cone_locations,:) = adaptedDataSingleType(:,1:length(isomerizationsSingleType(y, :)));  
-    
+    % Check this size(isoRS,2) is right for circ conv
+    adaptedDataRS(cone_locations,:) = adaptedDataSingleType(:,1:size(isomerizationsRS,2));  
+    end
 end
 
 % % Reshape the output signal matrix.

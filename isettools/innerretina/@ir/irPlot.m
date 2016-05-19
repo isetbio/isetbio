@@ -661,13 +661,14 @@ switch ieParamFormat(params.what)
                         % end;
                     end%trials;
                     % end;
-                    if ~isempty(obj.mosaic{cellTypeInd}.responseVoltage)
+                    if isempty(obj.mosaic{cellTypeInd}.responseSpikes)
                         maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                        
+                        axis([0 .00001*maxt 0 maxTrials]);
                     else
-                        maxt = max(horzcat(obj.mosaic{cellTypeInd}.responseSpikes{:}));
+                        maxt = max(vertcat(obj.mosaic{cellTypeInd}.responseSpikes{:}));
+                        axis([0 .001*maxt 0 maxTrials]);
                     end
-                    axis([0 .1*bindur*maxt 0 maxTrials]);
+                    
                     
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
                 end

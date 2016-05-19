@@ -23,6 +23,7 @@ addParameter(p,'row',            64,    @isnumeric);
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'timeInterval',   .01,    @isnumeric);  
 addParameter(p,'expTime',        .01,    @isnumeric);  
+addParameter(p,'fov',            1.5,    @isnumeric);  
 
 p.parse(movieInput,varargin{:});
 
@@ -30,7 +31,7 @@ params = p.Results;
 %% Compute a Gabor patch scene as a placeholder for the white noise image
 
 % Set up Gabor stimulus using sceneCreate('harmonic',params)
-fov = 0.6;
+fov = params.fov;
 
 % % Bar width in pixels
 % params.barWidth = 5;
@@ -90,6 +91,9 @@ fprintf('Computing cone isomerization:    \n');
 wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
+frameRate = 1/125; % 125 FPS
+nFramesPerTimeStep = frameRate/params.timeInterval;
+
 % Loop through frames to build movie
 for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
@@ -98,7 +102,8 @@ for t = 1 : params.nSteps
 %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
 
     % % % % Generate scene object from stimulus RGB matrix and display object
-    scene = sceneFromFile(movieInput(:,:,t), 'rgb', params.meanLuminance, display);
+    tsamp = ceil((t-.01)/nFramesPerTimeStep);
+    scene = sceneFromFile(movieInput(:,:,tsamp), 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
 

@@ -67,19 +67,19 @@ methods
         % Weight are caclulated offline by optimizing for the minimum error
         % between the differentiator signal and the bipolar output
         % calculated with filter from the deconvolution operation.        
-        switch class(os)
-            
+%         switch class(os)
+%             
             % See s_bipolarDeconvolveDelay for calculation
-            case{'osLinear'}               
-                % R^2 = 0.89 for matching RGC IR
-                obj.temporalConeW = -0.0976e4; obj.temporalConeDiffW = -5.7893e4;
-                obj.temporalDelay = 23; % ms
-            otherwise % osBioPhys
+%             case{'osLinear'}               
+%                 % R^2 = 0.89 for matching RGC IR
+%                 obj.temporalConeW = -0.0976e4; obj.temporalConeDiffW = -5.7893e4;
+%                 obj.temporalDelay = 23; % ms
+%             otherwise % osBioPhys
                 % R^2 = 0.91 for matching RGC IR
                 obj.temporalConeW = -0.2834;  obj.temporalConeDiffW = -17.4539;
                 obj.temporalDelay = 24;
-        end
-        obj.temporalDifferentiator = @(x) obj.temporalConeW*x(:,2+obj.temporalDelay:end) + obj.temporalConeDiffW*diff(x(:,1+obj.temporalDelay:end),1,2);
+%         end
+        obj.temporalDifferentiator = @(x) obj.temporalConeW*x(:,2+(1e-3/obj.timeStep)*obj.temporalDelay:end) + (1e-3/obj.timeStep)*obj.temporalConeDiffW*diff(x(:,1+(1e-3/obj.timeStep)*obj.temporalDelay:end),1,2);
         
     end
     

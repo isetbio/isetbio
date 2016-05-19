@@ -13,7 +13,7 @@ ieInit
 
 %% Load image sequence
 
-nSteps = 240;
+nSteps = 8*100;%;
 
 % Natural scene with eye movements stimulus
 rdt = RdtClient('isetbio');
@@ -21,13 +21,14 @@ rdt.crp('resources/data/rgc');
 data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
 testmovie = data.testmovie.matrix;
 paramsMovie.nSteps = nSteps;
-paramsMovie.timeInterval = .0005;
-paramsMovie.expTime = .0005;
-iStim = ieStimulusMovie(testmovie(:,:,1:nSteps),paramsMovie);
+paramsMovie.timeInterval = .00025;
+paramsMovie.expTime = .00025;
+paramsMovie.fov = 1;
+iStim = ieStimulusMovie(testmovie(:,:,119+[1:nSteps]),paramsMovie);
 % ieMovie(iStim.sceneRGB(:,:,1:nSteps))
 absorptions = iStim.sensor; % cone isomerizations
 
-figure; plot(squeeze(iStim.sceneRGB(40,40,:,1)))
+figure; plot(squeeze(iStim.sceneRGB(4,10,:,1)))
 xlabel('Time (msec)','fontsize',14); ylabel('Stimulus Intensity','fontsize',14)
 
 %% Outer segment calculation - linear model
@@ -78,7 +79,6 @@ osBp = osCompute(osBp,absorptions,paramsOS);
 
 % % Plot the photocurrent for a pixel.
 osPlot(osBp,absorptions);
-
 %% Find bipolar responses
 % The bipolar object takes as input the outer segment current. Bipolar
 % processing consists of a spatial convolution and a temporal
@@ -104,14 +104,14 @@ bipolarPlot(bp,'response');
 clear params innerRetinaBpSu
 params.name      = 'Bipolar with nonlinear subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 5;        % Radius in mm
+params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetinaBpSu = irCreate(bp, params);
 
 % Create a subunit model for the on midget ganglion cell parameters
 innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
-
+innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',60);
 % % Uncomment to get rid of spatial nonlinearity
 newRectifyFunction = @(x) x;
 innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
@@ -121,3 +121,4 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 % Compute RGC mosaic responses
 innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
 irPlot(innerRetinaBpSu, 'psth');
+% irPlot(innerRetinaBpSu, 'raster','cell',[2 2]);

@@ -52,7 +52,7 @@ iStim = data.iStim;
 absorptions = iStim.absorptions; % cone isomerizations
 
 % Show movie. Hold mouse over a bar to check that contrast reverses.
-ieMovie(iStim.sceneRGB);
+% ieMovie(iStim.sceneRGB);
 
 % Plot one pixel from stimulus movie
 vcNewGraphWin([],'upperleftbig'); 
