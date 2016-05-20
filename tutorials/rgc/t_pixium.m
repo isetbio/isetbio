@@ -192,10 +192,10 @@ for frame = 1:params.nSteps
             if imageCoordY2 > size(fullStimulus,1); imageCoordY2 = size(fullStimulus,1); end;
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
-            electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
+%             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
             
-%             sizeES = size(electrodeStimulus);
-%             electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
+            sizeES = size(electrodeStimulus);
+            electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
 
             % imagesc(electrodeStimulus); title(sprintf('%2.2f',mean(electrodeStimulus(:))));
         end
@@ -276,7 +276,7 @@ end
 eaRS = reshape(electrodeArray.activation,[szAct(1)*szAct(2),szAct(3)]);
 eaDSRS = reshape(electrodeArray.activationDS,[szAct(1)*szAct(2),szAct(3)]);
 figure; 
-plot(eaRS'); 
+% plot(eaRS'); 
 hold on; 
 plot(eaDSRS');
 
@@ -427,7 +427,7 @@ end
 irPlot(innerRetina, 'linear');
 
 irPlot(innerRetina,'mosaic');
-% Visualize thresholds
+% % Visualize thresholds
 % figure; hold on;
 % for ii = 1:xc
 %     for ji = 1:yc
@@ -435,6 +435,16 @@ irPlot(innerRetina,'mosaic');
 %         plot((xp),1./(1+exp(-thr*(i0all{mosaicInd}(ii,ji)+(xp)))));
 %     end
 % end
+
+% xpn = -.5:.01:4;
+% figure;
+% plot((xpn),1./(1+exp(-2*(-0.6 + (xpn)))));
+% 
+% % plot(eaDSRS');
+% % figure; plot(1./(1+exp(-2*(-0.6 + (eaDSRS)))));
+% 
+% figure; plot(1./(1+exp(-2*(-0.6 + (innerRetina.mosaic{1}.responseLinear{1,1})))));
+
 %% Compute RGC spiking
 numberTrials = 1;
 for tr = 1:numberTrials
@@ -526,7 +536,9 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-    writeVideo(vObj,F);
+% % % % % % % % % %     CHANGE BACK TO ELEC SPIKING
+%     writeVideo(vObj,F);
+% % % % % % % % % % % % % % % % % % % % % % % % 
 end
 end
 

@@ -74,7 +74,8 @@ for ii = 1:length(ir.mosaic)
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLM(glmprs, glminput');
+            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+%             [responseSpikesVec, Vmem] = simGLMcpl_ElecStim(glmprs, glminput');
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);
