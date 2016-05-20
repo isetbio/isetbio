@@ -70,6 +70,7 @@ clear params
 % One frame of a moving bar stimulus
 % Set parameters for size
 params.nSteps = nSteps;
+params.contrast = 1;
 params.row = 100;
 params.col = 100;
 params.fov = fov;
@@ -110,6 +111,7 @@ os = osSet(os, 'patchSize', retinalPatchWidth);
 timeStep = sensorGet(movingBar.absorptions,'time interval','sec');
 os = osSet(os, 'timeStep', timeStep);
 
+movingBar.sceneRGB = (params.contrast)*(movingBar.sceneRGB - 0.5)+0.5;
 os = osSet(os, 'rgbData', movingBar.sceneRGB);
 % os = osCompute(absorptions);
 
