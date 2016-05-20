@@ -74,8 +74,12 @@ for ii = 1:length(ir.mosaic)
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
-%             [responseSpikesVec, Vmem] = simGLMcpl_ElecStim(glmprs, glminput');
+            if strcmpi(ieParamFormat(ir.name),'Macaque inner retina pixum 1')
+                
+                [responseSpikesVec, Vmem] = simGLMcpl_ElecStim(glmprs, glminput');
+            else
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            end
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);

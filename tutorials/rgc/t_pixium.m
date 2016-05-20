@@ -76,7 +76,10 @@ params.fov = fov;
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
-contrast = 1;
+pulseFreq = 25; % Hz
+
+contrastHealthy = 1;
+contrastElectrode = 1;
 %%% Grating subunit stimulus
 
 params.barWidth = 36;
@@ -110,8 +113,13 @@ os = osSet(os, 'patchSize', retinalPatchWidth);
 timeStep = sensorGet(movingBar.absorptions,'time interval','sec');
 os = osSet(os, 'timeStep', timeStep);
 
-movingBar.sceneRGB = (contrast)*(movingBar.sceneRGB - 0.5)+0.5;
+movingBar.sceneRGB = (contrastElectrode)*(movingBar.sceneRGB - 0.5)+0.5;
 os = osSet(os, 'rgbData', movingBar.sceneRGB);
+
+sceneRGB_Healthy = (contrastHealthy)*(movingBar.sceneRGB - 0.5)+0.5;
+osHealthy = os;
+osHealthy = osSet(osHealthy, 'rgbData', sceneRGB_Healthy);
+
 % os = osCompute(absorptions);
 
 % % Plot the photocurrent for a pixel
@@ -268,7 +276,7 @@ end
 szAct = size(electrodeArray.activation);
 electrodeArray.activationDS = zeros(szAct);
 for iSample = 1:szAct(3)
-    if mod(iSample,4)==0
+    if mod(iSample,100/pulseFreq)==0
     electrodeArray.activationDS(:,:,iSample) = electrodeArray.activation(:,:,iSample);
     end
 end
@@ -283,7 +291,7 @@ plot(eaDSRS');
 %% Build RGC array
 
 clear paramsIR innerRetina
-paramsIR.name    = 'Macaque inner retina 1'; % This instance
+paramsIR.name    = 'Macaque inner retina pixium 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
 paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
@@ -466,14 +474,14 @@ paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
-innerRetinaHealthy = irCreate(os,paramsIR);
+innerRetinaHealthy = irCreate(osHealthy,paramsIR);
 innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
 
 %%
-innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,os);
+innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,osHealthy);
 numberTrials = 1;
 for tr = 1:numberTrials
     innerRetinaHealthy = irComputeSpikes(innerRetinaHealthy);
@@ -536,9 +544,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-% % % % % % % % % %     CHANGE BACK TO ELEC SPIKING
-%     writeVideo(vObj,F);
-% % % % % % % % % % % % % % % % % % % % % % % % 
+    writeVideo(vObj,F);
 end
 end
 
