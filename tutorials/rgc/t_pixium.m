@@ -38,8 +38,8 @@
 
 
 %% Initialize
-clear;
-ieInit;
+% clear;
+% ieInit;
 
 %% Parameters to alter
 
@@ -86,7 +86,7 @@ contrastElectrode = 1;
 %%% Grating subunit stimulus
 
 params.barWidth = 36;
-iStim = ieStimulusGratingSubunit(params);
+% iStim = ieStimulusGratingSubunit(params);
 absorptions = iStim.absorptions;
 movingBar = iStim;
 %% Show raw stimulus for osIdentity
@@ -129,7 +129,7 @@ osHealthy = osSet(osHealthy, 'rgbData', sceneRGB_Healthy);
 % osPlot(os,absorptions);
 
 retinalPatchSize = osGet(os,'size');
-numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+2;
+numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+4;
 numberElectrodesY = floor(retinalPatchWidth/electrodeArray.width)+0;
 numberElectrodes = numberElectrodesX*numberElectrodesY;
 %% Build electrode array
@@ -203,10 +203,10 @@ for frame = 1:params.nSteps
             if imageCoordY2 > size(fullStimulus,1); imageCoordY2 = size(fullStimulus,1); end;
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
-%             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
+            electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
             
-            sizeES = size(electrodeStimulus);
-            electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
+%             sizeES = size(electrodeStimulus);
+%             electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
 
             % imagesc(electrodeStimulus); title(sprintf('%2.2f',mean(electrodeStimulus(:))));
         end
@@ -311,7 +311,7 @@ irPlot(innerRetina,'mosaic');
 % % figure;
 hold on;
 for spInd = 1:length(innerRetina.mosaic)
-for i = 1:eaSize(1)
+for i = 3:eaSize(1)-2
     for j = 1:eaSize(2)
         subplot(floor(sqrt(length(innerRetina.mosaic))),ceil(sqrt(length(innerRetina.mosaic))),spInd); 
         hold on;
@@ -497,7 +497,7 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_ONOFF.mp4'];
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_ON_old.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
@@ -517,7 +517,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
     colormap gray; 
     
     subplot(222);
-    for xPos = 1:numberElectrodesX
+    for xPos = 3:numberElectrodesX-2
         for yPos = 1:numberElectrodesY
             hold on;
             fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
@@ -547,7 +547,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-    writeVideo(vObj,F);
+%     writeVideo(vObj,F);
 end
 end
 
