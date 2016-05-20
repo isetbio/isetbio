@@ -73,13 +73,14 @@ params.nSteps = nSteps;
 params.row = 100;
 params.col = 100;
 params.fov = fov;
+params.freq = 5; % Hz grating frequency
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
 tuningWoffElec = 0.4;
 tuningWoffHealthy = 1;
 
-pulseFreq = 25; % Hz
+pulseFreq = 25; % Hz, electrode pulse frequency
 
 contrastHealthy = 1;
 contrastElectrode = 1;
