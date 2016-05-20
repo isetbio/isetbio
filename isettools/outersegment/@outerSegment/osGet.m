@@ -20,6 +20,9 @@ switch ieParamFormat(param);  % Lower case and remove spaces
     case{'timestep'}
         val = obj.timeStep;
         
+    case{'size'}
+        val = size(obj.coneCurrentSignal);
+        
     case{'conecurrentsignal'}
         val = obj.coneCurrentSignal;
         

@@ -70,14 +70,13 @@ clear params
 % One frame of a moving bar stimulus
 % Set parameters for size
 params.nSteps = nSteps;
-params.contrast = 1;
 params.row = 100;
 params.col = 100;
 params.fov = fov;
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
-
+contrast = 1;
 %%% Grating subunit stimulus
 
 params.barWidth = 36;
@@ -111,7 +110,7 @@ os = osSet(os, 'patchSize', retinalPatchWidth);
 timeStep = sensorGet(movingBar.absorptions,'time interval','sec');
 os = osSet(os, 'timeStep', timeStep);
 
-movingBar.sceneRGB = (params.contrast)*(movingBar.sceneRGB - 0.5)+0.5;
+movingBar.sceneRGB = (contrast)*(movingBar.sceneRGB - 0.5)+0.5;
 os = osSet(os, 'rgbData', movingBar.sceneRGB);
 % os = osCompute(absorptions);
 
@@ -453,7 +452,7 @@ clear stimulusReconstruction
 clear paramsIR innerRetinaHealthy
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 3;        % Radius in mm
+paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -477,7 +476,7 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz.mp4'];
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_fov.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;

@@ -1,54 +1,34 @@
 function osPlot(obj, sensor, varargin)
-% osPlot: a method of @oueterSegment that plots os object 
-% properties using the input parser structure.
-% 
-% Inputs: os object, sensor, property to be plotted
-% 
+% Plots the input (photons/sec), linear filters and output (pA) of the
+% linear outer segment.
+%
+% Inputs: os object, sensor
+%
 % Outputs: plot(s)
-% 
+%
 % Properties that can be plotted:
-% 
+%         Output
+%
 % Examples:
 %   osPlot(os, sensor);
-%   osPlot(os, sensor,'output');
-% 
+%
 % (c) isetbio
 % 09/2015 JRG
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
-% if there is no argument for the type of plot, set default to all:
-if nargin == 2; varargin{1} = 'output'; end;
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+%%
+p = inputParser;
+addRequired(p, 'obj');
+addRequired(p, 'sensor');
+% addParameter(p, 'sensor', 'sensor', @isstruct);
+addParameter(p, 'type', 'all', @isstring);
 
-% This flag causes the parser not to throw an error here in the superclass
-% call. The subclass call will throw an error.
-% p.KeepUnmatched = true;
+p.parse(obj, sensor, varargin{:});
 
-% Make key properties that can be set required arguments, and require
-% values along with key names.
-allowableFieldsToSet = {...
-    'output'...
-       
-    };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
-
-% Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
+params = p.Results;
+sensor = params.sensor;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.type)
 
     case{'output'}
         
