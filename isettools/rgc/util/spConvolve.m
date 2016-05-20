@@ -91,7 +91,6 @@ for rgbIndex = 1:channelSize
                 % Ensure indices are within size of stimulus
 %                 gz = find(stimX>=1 & stimY>=1 & stimX<=size(sptempStimulus,1) & stimY<=size(sptempStimulus,2) );
                 
-% ADD UM PER SENSORPX
                 gz = find((stimX-offset(1))>=1 & (stimY-offset(2))>=1 & (stimX-offset(1))<=size(sptempStimulus,1) & (stimY-offset(2))<=size(sptempStimulus,2) );
                 gzout(xcell,ycell,1:length(gz(:))) = gz(:);
                 % Extract 2D image

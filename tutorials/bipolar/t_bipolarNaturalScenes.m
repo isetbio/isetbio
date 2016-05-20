@@ -12,23 +12,31 @@ clear
 ieInit
 
 %% Load image sequence
-
-nSteps = 8*100;%;
+tic
+nSteps = 3600;%;
 
 % Natural scene with eye movements stimulus
-rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
-data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
-testmovie = data.testmovie.matrix;
+% rdt = RdtClient('isetbio');
+% rdt.crp('resources/data/rgc');
+% data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
+% testmovie = data.testmovie.matrix;
+
+% load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
+
 paramsMovie.nSteps = nSteps;
 paramsMovie.timeInterval = .00025;
 paramsMovie.expTime = .00025;
 paramsMovie.fov = 1;
-iStim = ieStimulusMovie(testmovie(:,:,119+[1:nSteps]),paramsMovie);
+iStim = ieStimulusMovie(testmovie.matrix(:,:,0+[1:3600]),paramsMovie);
+
+% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_800fr.mat')
+% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_3600fr.mat')
+% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_9600fr.mat')
 % ieMovie(iStim.sceneRGB(:,:,1:nSteps))
 absorptions = iStim.sensor; % cone isomerizations
 
 figure; plot(squeeze(iStim.sceneRGB(4,10,:,1)))
+% figure; plot(reshape(iStim.sceneRGB(:,:,:,1),size(iStim.sceneRGB,1)*size(iStim.sceneRGB,2),size(iStim.sceneRGB,3))')
 xlabel('Time (msec)','fontsize',14); ylabel('Stimulus Intensity','fontsize',14)
 
 %% Outer segment calculation - linear model
@@ -111,7 +119,7 @@ innerRetinaBpSu = irCreate(bp, params);
 
 % Create a subunit model for the on midget ganglion cell parameters
 innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
-innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',60);
+innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',1);
 % % Uncomment to get rid of spatial nonlinearity
 newRectifyFunction = @(x) x;
 innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
@@ -120,5 +128,11 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 
 % Compute RGC mosaic responses
 innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
-irPlot(innerRetinaBpSu, 'psth');
+% irPlot(innerRetinaBpSu, 'psth');
 % irPlot(innerRetinaBpSu, 'raster','cell',[2 2]);
+
+irPlot(innerRetinaBpSu, 'raster','cell',[5 1]);
+irPlot(innerRetinaBpSu, 'psth','cell',[5 1]);
+
+
+toc

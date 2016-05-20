@@ -666,7 +666,7 @@ switch ieParamFormat(params.what)
                         axis([0 .00001*maxt 0 maxTrials]);
                     else
                         maxt = max(vertcat(obj.mosaic{cellTypeInd}.responseSpikes{:}));
-                        axis([0 .001*maxt 0 maxTrials]);
+                        axis([0 .01*maxt 0 maxTrials]);
                     end
                     
                     

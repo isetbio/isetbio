@@ -79,7 +79,7 @@ params.fov = fov;
 
 %%% Grating subunit stimulus
 
-params.barWidth = 12;
+params.barWidth = 36;
 iStim = ieStimulusGratingSubunit(params);
 absorptions = iStim.absorptions;
 movingBar = iStim;
@@ -267,7 +267,7 @@ end
 szAct = size(electrodeArray.activation);
 electrodeArray.activationDS = zeros(szAct);
 for iSample = 1:szAct(3)
-    if mod(iSample,20)==0
+    if mod(iSample,4)==0
     electrodeArray.activationDS(:,:,iSample) = electrodeArray.activation(:,:,iSample);
     end
 end
@@ -284,7 +284,7 @@ plot(eaDSRS');
 clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 8;        % Radius in mm
+paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -475,7 +475,7 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
 
 %%
-name_str = 'gratingH_20Hz_width_12_onM.mp4';
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
@@ -519,7 +519,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 
      colormap gray
 % %     caxis([.5*paramsRec.minR .5*paramsRec.maxR]);
-    caxis([0 1*paramsRec.maxR]);
+    caxis([1*paramsRec.minR 1*paramsRec.maxR]);
     title('Prosthetic');
 %     pause(0.1);
 drawnow

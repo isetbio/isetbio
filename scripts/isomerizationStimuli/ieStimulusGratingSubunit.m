@@ -65,7 +65,8 @@ nSteps = params.nSteps;
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
-    sceneSize = sceneGet(scene, 'size');
+%     sceneSize = sceneGet(scene, 'size');
+    sceneSize = [params.row params.col];
     barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.001;  % Gray background
     
     %horz

@@ -23,13 +23,36 @@ osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.con
 osSigRSZM = osSigRS - repmat(mean(osSigRS,1),size(osSigRS,1),1);
 osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
+% % % Spatial averaging over RGC blocks carried out here
+% % % Need to move this before photoreceptors or else it doesn't matter
+% rfSize = 39;
+% numBlocksR = ceil(size(osSigZM,1)/rfSize);
+% numBlocksC = ceil(size(osSigZM,2)/rfSize);
+% for frInd = 1:size(osSigZM,3)
+%     for blockIndR = 1:numBlocksR
+%         for blockIndC = 1:numBlocksC
+%             rindS = (blockIndR-1)*rfSize+1; rindE = (blockIndR)*rfSize; rindA = rindS:rindE;
+%             rindV = rindA(rindA<size(osSigZM,1));
+%             cindS = (blockIndC-1)*rfSize+1; cindE = (blockIndC)*rfSize; cindA = cindS:cindE;
+%             cindV = cindA(cindA<size(osSigZM,2));
+%             osSigSpAvg(rindV,cindV,frInd) = mean(mean(osSigZM(rindV,cindV,frInd)));
+%         end
+%     end
+% end
+            
+
+
 % osSigZM(abs(osSigZM)>100) = 0;
 
 % Spatial convolution
 % spatialResponseCenter = ieSpaceTimeFilter(os.coneCurrentSignal-os.coneCurrentSignal(1,1,end), obj.sRFcenter);
 % spatialResponseSurround = ieSpaceTimeFilter(os.coneCurrentSignal-os.coneCurrentSignal(1,1,end), obj.sRFsurround);
+
 spatialResponseCenter = ieSpaceTimeFilter(osSigZM, obj.sRFcenter);
 spatialResponseSurround = ieSpaceTimeFilter(osSigZM, obj.sRFsurround);
+% spatialResponseCenter = ieSpaceTimeFilter(osSigSpAvg, obj.sRFcenter);
+% spatialResponseSurround = ieSpaceTimeFilter(osSigSpAvg, obj.sRFsurround);
+
 
 % Subsample to pull out individual bipolars
 strideSubsample = size(obj.sRFcenter,1);
@@ -79,9 +102,11 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 % obj.responseCenter = (bipolarOutputLinearCenter);
 % obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 
-bipolarOutputRectifiedCenter = bipolarOutputLinearCenter.*(bipolarOutputLinearCenter>0);
-bipolarOutputRectifiedSurround = -bipolarOutputLinearSurround.*(bipolarOutputLinearSurround<0);
-% bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround.*(bipolarOutputLinearSurround>0)));
+% bipolarOutputRectifiedCenter = bipolarOutputLinearCenter.*(bipolarOutputLinearCenter>0);
+% bipolarOutputRectifiedSurround = -bipolarOutputLinearSurround.*(bipolarOutputLinearSurround<0);
+
+bipolarOutputRectifiedCenter = 10*abs(bipolarOutputLinearCenter);
+bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround));
 
 obj.responseCenter = bipolarOutputRectifiedCenter;
 obj.responseSurround = bipolarOutputRectifiedSurround;
