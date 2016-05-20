@@ -453,7 +453,7 @@ clear stimulusReconstruction
 clear paramsIR innerRetinaHealthy
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 5;        % Radius in mm
+paramsIR.eyeRadius = 3;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model

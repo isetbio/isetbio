@@ -24,7 +24,7 @@ function ir = irComputeSpikes(ir, varargin)
 
 % To be eliminated
 global RefreshRate
-RefreshRate = 500;    
+RefreshRate = 100;    
 
 
 %% Loop on the mosaics in the inner retina
