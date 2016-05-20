@@ -19,13 +19,13 @@ function [stimulusReconstruction, params] = irReconstruct(innerRetina, varargin)
 %% Parse input
 p = inputParser;
 p.addRequired('innerRetina');
-p.addOptional('model', 'linear', @ischar);
-
+p.addParameter('model', 'linear', @ischar);
+p.addParameter('tuningWoff', 1, @isnumeric);
 p.parse(innerRetina, varargin{:});
 
 innerRetina = p.Results.innerRetina;
 model = p.Results.model;
-
+tuningWoff = p.Results.tuningWoff;
 
 %% 
 
@@ -72,7 +72,7 @@ for cellTypeInd = 1:length(innerRetina.mosaic)
     if cellTypeInd == 2 || cellTypeInd == 4
         tuningWeight = 1;%0.01;
     else 
-        tuningWeight = 1;
+        tuningWeight = tuningWoff;
     end
     
 [nY,nX,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);

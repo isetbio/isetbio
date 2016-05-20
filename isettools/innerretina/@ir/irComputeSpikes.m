@@ -74,7 +74,7 @@ for ii = 1:length(ir.mosaic)
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            if strcmpi(ieParamFormat(ir.name),'Macaque inner retina pixum 1')
+            if strcmp((ir.name),'Macaque inner retina pixium 1')
                 
                 [responseSpikesVec, Vmem] = simGLMcpl_ElecStim(glmprs, glminput');
             else

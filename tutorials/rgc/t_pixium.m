@@ -76,6 +76,9 @@ params.fov = fov;
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
+tuningWoffElec = 0.4;
+tuningWoffHealthy = 1;
+
 pulseFreq = 25; % Hz
 
 contrastHealthy = 1;
@@ -126,7 +129,7 @@ osHealthy = osSet(osHealthy, 'rgbData', sceneRGB_Healthy);
 % osPlot(os,absorptions);
 
 retinalPatchSize = osGet(os,'size');
-numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+4;
+numberElectrodesX = floor(retinalPatchWidth/electrodeArray.width)+2;
 numberElectrodesY = floor(retinalPatchWidth/electrodeArray.width)+0;
 numberElectrodes = numberElectrodesX*numberElectrodesY;
 %% Build electrode array
@@ -313,7 +316,7 @@ for i = 1:eaSize(1)
         subplot(floor(sqrt(length(innerRetina.mosaic))),ceil(sqrt(length(innerRetina.mosaic))),spInd); 
         hold on;
 %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
-        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r','linewidth',3)
     end
 end
 end
@@ -462,7 +465,7 @@ end
 irPlot(innerRetina, 'linear');
 %% Invert representation to form image/movie
 clear stimulusReconstruction
-[stimulusReconstruction, paramsRec] = irReconstruct(innerRetina);
+[stimulusReconstruction, paramsRec] = irReconstruct(innerRetina, 'tuningWoff', tuningWoffElec);
 
 
 %% Build RGC array for healthy retina
@@ -491,10 +494,10 @@ irPlot(innerRetinaHealthy, 'linear');
 % irPlot(innerRetinaHealthy, 'mosaic');
 %% Invert representation to form image/movie
 clear stimulusReconstructionHealthy
-[stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
+[stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_fov.mp4'];
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_ONOFF.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
