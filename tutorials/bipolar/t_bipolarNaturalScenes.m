@@ -12,32 +12,21 @@ clear
 ieInit
 
 %% Load image sequence
-tic
-nSteps = 3600;%;
 
-% Natural scene with eye movements stimulus
+% This is how we compute ... there are other routines for creating the
+% iStim data.  We should spend some time moving them up to RDT and then
+% documenting.
 rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
-data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
-testmovie = data.testmovie.matrix;
+rdt.crp('/resources/data/istim');
+data = rdt.readArtifact('iStim_NSEM_800fr','type','mat');
 
-% load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
-
-paramsMovie.nSteps = nSteps;
-paramsMovie.timeInterval = .00025;
-paramsMovie.expTime = .00025;
-paramsMovie.fov = 1;
-iStim = ieStimulusMovie(testmovie.matrix(:,:,0+[1:3600]),paramsMovie);
-
-% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_800fr.mat')
-% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_3600fr.mat')
-% load('/Users/james/Documents/MATLAB/isetbio misc/iStim_NSEM_9600fr.mat')
-ieMovie(iStim.sceneRGB(:,:,1:nSteps))
+iStim = data.iStim;
 absorptions = iStim.sensor; % cone isomerizations
 
-figure; plot(squeeze(iStim.sceneRGB(4,10,:,1)))
-% figure; plot(reshape(iStim.sceneRGB(:,:,:,1),size(iStim.sceneRGB,1)*size(iStim.sceneRGB,2),size(iStim.sceneRGB,3))')
-xlabel('Time (msec)','fontsize',14); ylabel('Stimulus Intensity','fontsize',14)
+vcNewGraphWin; 
+plot(squeeze(iStim.sceneRGB(4,10,:,1)))
+xlabel('Time (msec)','fontsize',18); 
+ylabel('Stimulus intensity','fontsize',18)
 
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
@@ -85,7 +74,11 @@ absorptionsVolts = sensorGet(absorptions,'volts');
 paramsOS.bgVolts = 10*mean(absorptionsVolts(:));
 osBp = osCompute(osBp,absorptions,paramsOS);
 
-% % Plot the photocurrent for a pixel.
+% Plot the photocurrent for a pixel.
+
+% Some changes needed to the biophys plot function ...
+% Let's change the R* to R*/sec.
+% Use isomerizations and current where appropriate
 osPlot(osBp,absorptions);
 %% Find bipolar responses
 % The bipolar object takes as input the outer segment current. Bipolar
@@ -109,7 +102,8 @@ bipolarPlot(bp,'response');
 % Build and IR object that takes as input the bipolar mosaic.
 
 % Initialize.
-clear params innerRetinaBpSu
+clear params 
+clear innerRetinaBpSu
 params.name      = 'Bipolar with nonlinear subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
@@ -134,5 +128,6 @@ innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
 irPlot(innerRetinaBpSu, 'raster','cell',[5 1]);
 irPlot(innerRetinaBpSu, 'psth','cell',[5 1]);
 
-
 toc
+
+%%
