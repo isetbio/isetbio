@@ -45,15 +45,15 @@
 
 % Electrode size
 % Set the size of implant pixels
-% electrodeArray.width = 70e-6; % meters
-electrodeArray.width = 140e-6; % meters
+electrodeArray.width = 70e-6; % meters
+% electrodeArray.width = 140e-6; % meters
 
 % Retinal patch eccentricity
 patchEccentricity = 12; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 2.7;
+fov = 3.7;
 
 % Stimulus length
 nSteps = 100;
@@ -80,7 +80,7 @@ params.freq = 5; % Hz grating frequency
 tuningWoffElec = 0.4;
 tuningWoffHealthy = 1;
 
-pulseFreq = 25; % Hz, electrode pulse frequency
+pulseFreq = 8; % Hz, electrode pulse frequency
 
 contrastHealthy = 1;
 contrastElectrode = 1;
@@ -88,6 +88,7 @@ contrastElectrode = 1;
 
 params.barWidth = 36;
 % iStim = ieStimulusGratingSubunit(params);
+iStim = iStimC;
 absorptions = iStim.absorptions;
 movingBar = iStim;
 %% Show raw stimulus for osIdentity
@@ -297,7 +298,7 @@ plot(eaDSRS');
 clear paramsIR innerRetina
 paramsIR.name    = 'Macaque inner retina pixium 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 5;        % Radius in mm
+paramsIR.eyeRadius = 3;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -474,7 +475,7 @@ clear stimulusReconstruction
 clear paramsIR innerRetinaHealthy
 paramsIR.name    = 'Macaque inner retina 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
-paramsIR.eyeRadius = 5;        % Radius in mm
+paramsIR.eyeRadius = 3;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
@@ -498,7 +499,7 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_ON_old.mp4'];
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
@@ -548,7 +549,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-%     writeVideo(vObj,F);
+    writeVideo(vObj,F);
 end
 end
 
