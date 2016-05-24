@@ -3,16 +3,17 @@ function mov = coneImageActivity(cones,varargin)
 %
 %   mov = coneImageActivity(cones,varargin)
 % 
-% cones:  sensor object (required)
-% step:   How many cone absorptions to step over.  By default, if < 100
-%         cone time steps (step = 1).  In general, try to show about 100
-%         images. 
-% dFlag:  Either a struct or a boolean
-%         If a struct, dFlag contains the movie parameters.  The movie is
-%         saved based on the name field in these parameters. The parameters
-%         are .vname (video file name) and .FrameRate (video frame rate).
-%         If dFLag is a boolean, the value indicates whether to show the
-%         movie (true) or not (false).
+% Inputs:
+%  cones:  sensor object (required)
+%  step:   How many cone absorptions to step over.  By default, if < 100
+%          cone time steps (step = 1).  In general, try to show about 100
+%          images. 
+%  dFlag:  Either a struct or a boolean
+%          If a struct, dFlag contains the movie parameters.  The movie is
+%          saved based on the name field in these parameters. The
+%          parameters are .vname (video file name) and .FrameRate (video
+%          frame rate). If dFLag is a boolean, the value indicates whether
+%          to show the movie (true) or not (false).
 %
 % Example:
 %   cones = sensorCreate; ...

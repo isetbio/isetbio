@@ -2,22 +2,43 @@ function iStim = ieStimulusGabor(varargin)
 % Creates a movie/dynamic scene stimulus in isetbio of a Gabor patch with a
 % drifting phase over time.
 % 
-% Inputs: a structure that defines the parameters of the Gabor stimulus.
+% Inputs: 
+%   pGabor: a structure that defines the Gabor stimulus parameters
+%           The parameters and their defaults are 
+%
+% 'row',            64    image size
+% 'col',            64
+% 'meanLuminance',  200   (cd/m2)
+% 'nSteps',         50    Spatial steps per cycle
+% 'freq',            6    Spatial frequency c/deg
+% 'contrast'         1    Harmonic contrast
+% 'ph',              0    Phase of the harmonic
+% 'ang',             0    Angle (0 = horizontal) of the grating variation
+% 'GaborFlag',       1    Std of Gaussian where 1 means min(row,col) 
+% 'fov',            0.6   Field of view
+% 'expTime',        0.005 Exposure time of the sensor
+% 'timeInterval',   0.005 Time per scene step  
+% 'nCycles',        4     Number of cycles through the
+%
+% Outputs: 
+%   iStim: a structure that contains the 
+%     display
+%     scene
+%     optical image 
+%     human cone absorptions 
 % 
-% Outputs: iStim is a structure that contains the display, the scene, the
-%   optical image and the sensor.
-% 
-% Example:
-%  Default Gabor, a few steps on
-%   nSteps = 20;
-%   iStim = ieStimulusGabor('nSteps',nSteps);
+% Examples:
+% Coarsely stepped, pretty tight Gabor window
+%   nSteps = 20; GaborFlag = 0.2; fov = .5;
+%   iStim = ieStimulusGabor('nSteps',nSteps,'GaborFlag',GaborFlag,'fov',fov);
 %   coneImageActivity(iStim.absorptions,'dFlag',true);
+%   sceneShowImage(iStim.scene);
 %
 %  Higher spatial frequency, more steps
 %   params.freq = 6; params.nSteps = 50; params.GaborFlag = 0.2;
 %   iStim = ieStimulusGabor(params);
 %   coneImageActivity(iStim.absorptions,'dFlag',true);
-%
+%   sceneShowImage(iStim.scene);
 %   vcAddObject(iStim.scene); sceneWindow;
 %
 % 3/2016 JRG (c) isetbio team
@@ -45,18 +66,10 @@ params = p.Results;
 fov = params.fov;
 %% Compute a scene
 
-% Set up scene, oi and sensor
-% Default Garbor parameters
+% Set up scene parameters
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
-
-% These parameters are for other stuff.
-% params.expTime = 0.005;
-% params.timeInterval = 0.005;
-% params.nSteps = 10;  %60;     % Number of stimulus frames
-% params.nCycles = 4;
-
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -68,24 +81,16 @@ absorptions = sensorSet(absorptions, 'time interval', params.timeInterval);
 
 %% Compute a dynamic set of cone absorptions
 %
+% We produce a scene video that translates into an oi video that becomes a
+% cone absorption video.
 %
-% We want to produce a scene video that translates into an oi video that
-% becomes a cone absorption video.  At present coneAbsorptions ONLY does
-% this using eye movements, not by creating a series of images.  This code
-% represents our first effort to produce dynamic scenes.
-%
-% We are literally going to recreate a set of scenes with different phase
-% positions and produce the scenes, ois, and cone absorptions by the loop.
-% The result will be a time series of the cone photon absorptions.
+% We recreate a set of scenes with different phase positions and produce
+% the scenes, ois, and cone absorptions by the loop. The result will be a
+% time series of the cone photon absorptions.
 %
 % We are reluctant to make scene(:,:,:,t) because we are frightened about
 % the size.  But it still might be the right thing to do.  So the code here
 % is an experiment and we aren't sure how it will go.
-
-% sceneRGB = zeros([sceneGet(scene, 'size') params.nSteps 3]); % 3 is for R, G, B
-% sensorPhotons = zeros([sensorGet(sensor, 'size') params.nSteps]);
-% stimulus = zeros(1, params.nSteps);
-fprintf('Computing cone isomerization:    \n');
 
 % ieSessionSet('wait bar',true);
 wFlag = ieSessionGet('wait bar');
