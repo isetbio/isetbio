@@ -23,10 +23,12 @@ data = rdt.readArtifact('iStim_NSEM_800fr','type','mat');
 iStim = data.iStim;
 absorptions = iStim.sensor; % cone isomerizations
 
-vcNewGraphWin; 
+vcNewGraphWin;  axis image
 plot(squeeze(iStim.sceneRGB(4,10,:,1)))
 xlabel('Time (msec)','fontsize',18); 
 ylabel('Stimulus intensity','fontsize',18)
+
+% coneImageActivity(absorptions,'dFlag',true)
 
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the

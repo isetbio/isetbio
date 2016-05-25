@@ -11,9 +11,14 @@ function mov = coneImageActivity(cones,varargin)
 %  dFlag:  Either a struct or a boolean
 %          If a struct, dFlag contains the movie parameters.  The movie is
 %          saved based on the name field in these parameters. The
-%          parameters are .vname (video file name) and .FrameRate (video
-%          frame rate). If dFLag is a boolean, the value indicates whether
-%          to show the movie (true) or not (false).
+%          parameters are 
+%      .vname (video file name)
+%      .FrameRate (video frame rate). 
+%  If dFLag is a boolean, the value indicates whether to show the movie
+%  (true) or not (false).
+% 
+% Output:
+%    mov:  A (row,col,3, nFrames matrix
 %
 % Example:
 %   cones = sensorCreate; ...
@@ -89,7 +94,7 @@ mov = mov .^ 0.3;
 %% Produce the movie
 
 if isstruct(dFlag)
-    % When dFlag is a struct, show the move and save it in a file
+    % When dFlag is a struct, show the movie and save it in a file
     % Normalize tmp for visualization
     vcNewGraphWin;
     nframes = size(mov,4);

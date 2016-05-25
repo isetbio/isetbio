@@ -1,15 +1,13 @@
 function iStim = ieStimulusGabor(varargin)
-% Creates a movie/dynamic scene stimulus in isetbio of a Gabor patch with a
-% drifting phase over time.
+% Creates a movie/dynamic of the cone absorptions of a drifting Gabor patch 
 % 
 % Inputs: 
-%   pGabor: a structure that defines the Gabor stimulus parameters
+%   pGabor: parameter structure that defines the Gabor stimulus parameters
 %           The parameters and their defaults are 
 %
 % 'row',            64    image size
 % 'col',            64
 % 'meanLuminance',  200   (cd/m2)
-% 'nSteps',         50    Spatial steps per cycle
 % 'freq',            6    Spatial frequency c/deg
 % 'contrast'         1    Harmonic contrast
 % 'ph',              0    Phase of the harmonic
@@ -18,28 +16,31 @@ function iStim = ieStimulusGabor(varargin)
 % 'fov',            0.6   Field of view
 % 'expTime',        0.005 Exposure time of the sensor
 % 'timeInterval',   0.005 Time per scene step  
-% 'nCycles',        4     Number of cycles through the
+% 'nCycles',        4     Number of cycles through the harmonic
+% 'nSteps',         15*4    Total number of steps for all the harmonic cycles
+%                         There are nSteps/nCycles per each cycle.
 %
 % Outputs: 
 %   iStim: a structure that contains the 
-%     display
-%     scene
-%     optical image 
-%     human cone absorptions 
+%     display model
+%     scene (first frame)
+%     optical image (first frame)
+%     human cone absorptions (dynamic)
 % 
 % Examples:
 % Coarsely stepped, pretty tight Gabor window
 %   nSteps = 20; GaborFlag = 0.2; fov = .5;
 %   iStim = ieStimulusGabor('nSteps',nSteps,'GaborFlag',GaborFlag,'fov',fov);
-%   coneImageActivity(iStim.absorptions,'dFlag',true);
+%   m = coneImageActivity(iStim.absorptions,'dFlag',true);
 %   sceneShowImage(iStim.scene);
 %
 %  Higher spatial frequency, more steps
 %   params.freq = 6; params.nSteps = 50; params.GaborFlag = 0.2;
 %   iStim = ieStimulusGabor(params);
-%   coneImageActivity(iStim.absorptions,'dFlag',true);
+%   dFlag.vname = 'Gabor_6f';
+%   dFlag.FrameRate = 30;
+%   coneImageActivity(iStim.absorptions,'dFlag',dFlag);
 %   sceneShowImage(iStim.scene);
-%   vcAddObject(iStim.scene); sceneWindow;
 %
 % 3/2016 JRG (c) isetbio team
 
@@ -47,7 +48,7 @@ function iStim = ieStimulusGabor(varargin)
 p = inputParser;
 
 addParameter(p,'meanLuminance',  200,   @isnumeric);
-addParameter(p,'nSteps',         50,    @isnumeric);
+addParameter(p,'nSteps',         60,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'freq',            6,    @isnumeric);  
