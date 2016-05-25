@@ -54,7 +54,7 @@ for rgbIndex = 1:channelSize
                 
                 elseif isa(mosaic, 'rgcSubunit')
                     
-                    extent = 0.5;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    extent = 1;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                     %                     offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     if mosaic.cellLocation{1,1}(1) >0
                         offset(1) = ceil(mosaic.cellLocation{1,1}(1));
@@ -73,7 +73,7 @@ for rgbIndex = 1:channelSize
                     stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
                     
                 else
-                    extent = 0.5;%2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    extent = 1;%2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                     offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     
                     %%%% Should rfDimater be size RF center? Yes!

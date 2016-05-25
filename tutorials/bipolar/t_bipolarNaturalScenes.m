@@ -41,10 +41,12 @@ iStim = ieStimulusMovie(testmovie.matrix(:,:,61:61+nFrames),paramsMovie);
 % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/iStim_NSEM/frames_1.mat')
 absorptions = iStim.sensor; % cone isomerizations
 
-vcNewGraphWin; 
+vcNewGraphWin;  axis image
 plot(squeeze(iStim.sceneRGB(4,10,:,1)))
 xlabel('Time (msec)','fontsize',18); 
 ylabel('Stimulus intensity','fontsize',18)
+
+% coneImageActivity(absorptions,'dFlag',true)
 
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the

@@ -761,9 +761,9 @@ switch ieParamFormat(params.what)
                     
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
-                    plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
+                    plot(1*bindur:1*bindur:1*bindur*length(PSTH_rec),PSTH_rec);
                     
-                    xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
+                    xlabel('Time (msec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
                     
                     
                     
@@ -773,7 +773,7 @@ switch ieParamFormat(params.what)
                     %                     if ~isnan(psth{xcell,ycell})
                     
                     maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .1*bindur*maxt 0 max([1 max(PSTH_rec)])]);
+                    axis([0 1*bindur*maxt 0 max([1 max(PSTH_rec)])]);
                     %                     end
                     %
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));

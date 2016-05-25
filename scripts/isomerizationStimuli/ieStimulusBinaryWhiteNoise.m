@@ -91,12 +91,12 @@ wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
 % Loop through frames to build movie
-for t = 1 : 2 : params.nSteps
+for t = 1 : 16 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
     %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
-    dsfactor = 24;    
+    dsfactor = 6;    
     stimRGBraw = rand(params.row/dsfactor,params.col/dsfactor);    
     stimRGBthresh = zeros(params.row/dsfactor,params.col/dsfactor);    
     stimRGBthresh(stimRGBraw>0.5) = 1;    
@@ -115,8 +115,10 @@ for t = 1 : 2 : params.nSteps
 
     % Get scene RGB data    
     % sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
-    sceneRGB(:,:,t) = stimulusRGBdata;
-    sceneRGB(:,:,t+1) = stimulusRGBdata;
+    for tplus = 0:15
+        sceneRGB(:,:,t+tplus) = stimulusRGBdata;
+%         sceneRGB(:,:,t+1) = stimulusRGBdata;
+    end
     % Compute optical image
 %     oi = oiCompute(oi, scene);    
     

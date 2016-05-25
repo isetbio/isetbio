@@ -111,22 +111,22 @@ switch osType
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
             
-%             szCenter = size(spResponseCenter);
-%             figure;
-%             hold on;
-%             for s1 = 1:szCenter(1)
-%                 for s2 =1:szCenter(2)
-% %                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
-% %                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-%                     mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)))./mx(s1,s2));
-% %                     spResponseCenter{s1,s2} = 10000*spResponseCenter{s1,s2}./mx(s1,s2);
-% %                     spResponseSurround{s1,s2} = 10000*spResponseSurround{s1,s2}./mx(s1,s2);
-% %                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))) + squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
-%                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))),'b');
-%                     hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)),'r');
-%                 end
-%             end
+            szCenter = size(spResponseCenter);
+            figure;
+            hold on;
+            for s1 = 1:szCenter(1)
+                for s2 =1:szCenter(2)
+%                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+%                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                    mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)))./mx(s1,s2));
+%                     spResponseCenter{s1,s2} = 10000*spResponseCenter{s1,s2}./mx(s1,s2);
+%                     spResponseSurround{s1,s2} = 10000*spResponseSurround{s1,s2}./mx(s1,s2);
+%                     plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))) + squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+                    plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))),'b');
+                    hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)),'r');
+                end
+            end
         end
         
     case {'osLinear','osBioPhys'}
@@ -149,7 +149,7 @@ switch osType
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
         spTempStim = spTempStim./range;
-        spTempStim = spTempStim - mean(spTempStim(:));
+        spTempStim = spTempStim - mean(spTempStim(:)/range);
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
@@ -192,7 +192,7 @@ switch osType
 %         error('Not yet implemented');
 
     case {'bipolar'}
-
+    
         %% Linear computation       
         
         % Determine the range of the rgb input data

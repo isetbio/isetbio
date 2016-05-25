@@ -58,10 +58,10 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 % Create stimulus
 % sensor = sensorSet(sensor, 'photon rate', 1+4000*(testmovie.matrix));
 
-randMat = rand(size(testmovie.matrix));
-% randMat = zeros(size(testmovie.matrix));
+% randMat = rand(size(testmovie.matrix));
+randMat = zeros(size(testmovie.matrix));
 % randMat(2,2,1) = 1;
-% randMat(2,2,:) = rand(size(randMat(41,21,:)));
+randMat(2,2,:) = rand(size(randMat(2,2,:)));
 testmovieRand = randMat>0.5; testmovie.matrix = testmovieRand;
 sensor = sensorSet(sensor, 'photon rate', 1+4000*(testmovieRand));
 
@@ -131,7 +131,7 @@ innerRetinaBpSu = irCreate(bp, params);
 
 % Create a subunit model for the on midget ganglion cell parameters
 innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
-innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',10);
+innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',40);
 % % Uncomment to get rid of spatial nonlinearity
 newRectifyFunction = @(x) x;
 innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
@@ -141,9 +141,19 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 % irPlot(innerRetinaBpSu,'mosaic');
 
 % Compute RGC mosaic responses
-innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
+innerRetinaBpSu = irComputeContinuous(innerRetinaBpSu, bp);
 irPlot(innerRetinaBpSu,'linear')
 % irPlot(innerRetinaBpSu,'linear','cell',[4 4])
+
+rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
+
+
+rLinearSU{1,1,1} = rLinSU{1,1}(126+48:end);
+innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
+numberTrials = 40;
+for tr = 1:numberTrials
+    innerRetinaBpSu = irComputeSpikes(innerRetinaBpSu);
+end
 irPlot(innerRetinaBpSu,'psth')
 %% Measure the response for the original GLM model
 % This response can be compared to the above response 
@@ -185,6 +195,32 @@ rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
 % figure;
 hold on;
 plot(24+(1:length(rLin{1,1}(:))),-.15*squeeze(rLin{1,1}(:))+2.7,'r')
-% plot(24+(1:length(rLin{1,1}(:))),squeeze(rLin{1,1}(:))-.05,'r')
+% plot(24+(1:length(rLin{1,1}(:))),-4*(squeeze(rLin{1,1}(:))-2.13)+2.27,'r')
+plot(24+(1:length(rLin{1,1}(:))),squeeze(rLin{1,1}(:))-.05,'r')
 % plot(squeeze(.1*rLin{1,1}(24:end-24))+2,'r')
 
+%%
+mSU = mean(rLinSU{1,1}(100:1200));
+mRGB = mean(rLin{1,1}(100:1200));
+
+zmRGB = (squeeze(rLin{1,1}(:)) - mean(squeeze(rLin{1,1}(1:1200))));
+zmSU = (squeeze(rLinSU{1,1}(:)) - mean(squeeze(rLinSU{1,1}(1:1200))));
+
+scFac = max(zmSU(200:800))/max(zmRGB(200:800));
+figure; plot(24+(1:length(rLin{1,1}(:))),scFac*zmRGB+mSU,'r'); hold on; plot(zmSU+mSU,'b');
+
+%%
+clear rLinear
+rLinear{1,1} = scFac*zmRGB(126+24:end)+mSU;
+innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLinear);
+
+numberTrials = 40;
+for tr = 1:numberTrials
+    innerRetinaRGB = irComputeSpikes(innerRetinaRGB);
+end
+
+irPlot(innerRetinaRGB,'psth');
+% irPlot(innerRetinaRGB,'psth','hold','on');
+
+legend('Cascade Model','Black Box Model')
+set(gca,'fontsize',14)
