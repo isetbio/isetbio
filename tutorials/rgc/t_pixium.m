@@ -38,8 +38,8 @@
 
 
 %% Initialize
-clear;
-ieInit;
+% clear;
+% ieInit;
 
 %% Parameters to alter
 
@@ -73,14 +73,21 @@ params.nSteps = nSteps;
 params.row = 100;
 params.col = 100;
 params.fov = fov;
+params.freq = 5; % Hz grating frequency
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
-contrast = 1;
+tuningWoffElec = 0.4;
+tuningWoffHealthy = 1;
+
+pulseFreq = 25; % Hz, electrode pulse frequency
+
+contrastHealthy = 1;
+contrastElectrode = 1;
 %%% Grating subunit stimulus
 
 params.barWidth = 36;
-iStim = ieStimulusGratingSubunit(params);
+% iStim = ieStimulusGratingSubunit(params);
 absorptions = iStim.absorptions;
 movingBar = iStim;
 %% Show raw stimulus for osIdentity
@@ -110,8 +117,13 @@ os = osSet(os, 'patchSize', retinalPatchWidth);
 timeStep = sensorGet(movingBar.absorptions,'time interval','sec');
 os = osSet(os, 'timeStep', timeStep);
 
-movingBar.sceneRGB = (contrast)*(movingBar.sceneRGB - 0.5)+0.5;
+movingBar.sceneRGB = (contrastElectrode)*(movingBar.sceneRGB - 0.5)+0.5;
 os = osSet(os, 'rgbData', movingBar.sceneRGB);
+
+sceneRGB_Healthy = (contrastHealthy)*(movingBar.sceneRGB - 0.5)+0.5;
+osHealthy = os;
+osHealthy = osSet(osHealthy, 'rgbData', sceneRGB_Healthy);
+
 % os = osCompute(absorptions);
 
 % % Plot the photocurrent for a pixel
@@ -192,10 +204,10 @@ for frame = 1:params.nSteps
             if imageCoordY2 > size(fullStimulus,1); imageCoordY2 = size(fullStimulus,1); end;
             % Pull out piece of stimulus and take mean
             electrodeStimulus = squeeze(fullStimulus(imageCoordY1:imageCoordY2,imageCoordX1:imageCoordX2,frame,:));
-%             electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
+            electrodeArray.activation(xPos,yPos,frame) = mean(electrodeStimulus(:));
             
-            sizeES = size(electrodeStimulus);
-            electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
+%             sizeES = size(electrodeStimulus);
+%             electrodeArray.activation(xPos,yPos,frame) = min([ mean(electrodeStimulus(:,1:floor(sizeES(2)/2))) mean(electrodeStimulus(:,ceil(sizeES(2)/2):sizeES(2)))]);
 
             % imagesc(electrodeStimulus); title(sprintf('%2.2f',mean(electrodeStimulus(:))));
         end
@@ -268,7 +280,7 @@ end
 szAct = size(electrodeArray.activation);
 electrodeArray.activationDS = zeros(szAct);
 for iSample = 1:szAct(3)
-    if mod(iSample,4)==0
+    if mod(iSample,100/pulseFreq)==0
     electrodeArray.activationDS(:,:,iSample) = electrodeArray.activation(:,:,iSample);
     end
 end
@@ -283,7 +295,7 @@ plot(eaDSRS');
 %% Build RGC array
 
 clear paramsIR innerRetina
-paramsIR.name    = 'Macaque inner retina 1'; % This instance
+paramsIR.name    = 'Macaque inner retina pixium 1'; % This instance
 paramsIR.eyeSide   = 'left';   % Which eye
 paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
@@ -300,12 +312,12 @@ irPlot(innerRetina,'mosaic');
 % % figure;
 hold on;
 for spInd = 1:length(innerRetina.mosaic)
-for i = 1:eaSize(1)
+for i = 3:eaSize(1)-2
     for j = 1:eaSize(2)
         subplot(floor(sqrt(length(innerRetina.mosaic))),ceil(sqrt(length(innerRetina.mosaic))),spInd); 
         hold on;
 %         scatter(electrodeArray.center(i,j,1),electrodeArray.center(i,j,2));
-        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r')
+        plot(xh+electrodeArray.center(i,j,1),yh+electrodeArray.center(i,j,2),'r','linewidth',3)
     end
 end
 end
@@ -454,7 +466,7 @@ end
 irPlot(innerRetina, 'linear');
 %% Invert representation to form image/movie
 clear stimulusReconstruction
-[stimulusReconstruction, paramsRec] = irReconstruct(innerRetina);
+[stimulusReconstruction, paramsRec] = irReconstruct(innerRetina, 'tuningWoff', tuningWoffElec);
 
 
 %% Build RGC array for healthy retina
@@ -466,14 +478,14 @@ paramsIR.eyeRadius = 5;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 model   = 'LNP';    % Computational model
-innerRetinaHealthy = irCreate(os,paramsIR);
+innerRetinaHealthy = irCreate(osHealthy,paramsIR);
 innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
 % innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
 
 %%
-innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,os);
+innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,osHealthy);
 numberTrials = 1;
 for tr = 1:numberTrials
     innerRetinaHealthy = irComputeSpikes(innerRetinaHealthy);
@@ -483,10 +495,10 @@ irPlot(innerRetinaHealthy, 'linear');
 % irPlot(innerRetinaHealthy, 'mosaic');
 %% Invert representation to form image/movie
 clear stimulusReconstructionHealthy
-[stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy);
+[stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_fov.mp4'];
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_25_hz_ON_old.mp4'];
 path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
@@ -506,7 +518,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
     colormap gray; 
     
     subplot(222);
-    for xPos = 1:numberElectrodesX
+    for xPos = 3:numberElectrodesX-2
         for yPos = 1:numberElectrodesY
             hold on;
             fill(xh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,1),yh+electrodeArray.center(xPos,numberElectrodesY+1-yPos,2),electrodeArray.activation(xPos,yPos,frame1))
@@ -536,9 +548,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-% % % % % % % % % %     CHANGE BACK TO ELEC SPIKING
 %     writeVideo(vObj,F);
-% % % % % % % % % % % % % % % % % % % % % % % % 
 end
 end
 

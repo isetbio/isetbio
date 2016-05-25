@@ -55,10 +55,31 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(os)
+    function obj = bipolar(varargin)     
         
-        obj.patchSize = osGet(os,'patchSize');
-        obj.timeStep = osGet(os,'timeStep');
+        if ~isempty(varargin)
+            os = varargin{1};
+        
+            %         p = inputParser;
+            %         addRequired(p, 'obj');
+            %         addRequired(p, 'sensor');
+            %         % addParameter(p, 'sensor', 'sensor', @isstruct);
+            %         addParameter(p, 'type', 'all', @isstring);
+            %
+            %         p.parse(obj, sensor, varargin{:});
+            %
+            %         params = p.Results;
+            
+            obj.patchSize = osGet(os,'patchSize');
+            obj.timeStep = osGet(os,'timeStep');
+            
+        else
+            
+            obj.patchSize = 100e-6;
+            obj.timeStep = .001;
+        
+            
+        end
         
         % Build spatial receptive field
         obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now

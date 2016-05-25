@@ -16,7 +16,6 @@ function obj = bipolarCreate(os, varargin)
 % JRG ISETBIO Team, Copyright, 5/2016
 
 p = inputParser; 
-p.CaseSensitive = false; p.FunctionName = mfilename;
 
 addRequired(p, 'os');
 addParameter(p, 'type', 'subunit')

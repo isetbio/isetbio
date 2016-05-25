@@ -26,7 +26,7 @@ addParameter(p,'col',            64,    @isnumeric);
 addParameter(p,'fov',            0.6,    @isnumeric);  
 addParameter(p,'expTime',        0.01, @isnumeric);
 addParameter(p,'timeInterval',   0.01, @isnumeric);
-
+addParameter(p,'freq',          5,  @isnumeric);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -102,8 +102,9 @@ for t = 1 : nSteps
 %     end
     
 %     barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
-    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/20));
+    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/(100/params.freq)));
       
+%     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
 %     if t < 6
 %         barMovieResize = ones(size(barMovieResize))*0.5;
