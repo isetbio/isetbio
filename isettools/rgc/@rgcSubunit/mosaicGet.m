@@ -60,7 +60,8 @@ allowableFieldsToSet = {...
     'couplingFilter',...
     'couplingMatrix',...   
     'postSpikeFilter',...
-    'numberSubunits'...
+    'numberSubunits',...
+    'psth','psthresponse'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -122,6 +123,45 @@ switch lower(params.what)
     case{'rasterresponse'}
         val = obj.rasterResponse;
     case{'psthresponse'}
-        val = obj.psthResponse;
+%         val = obj.psthResponse;
+
+        cellCtr=0; dt = .01;
+        maxTrials = obj.numberTrials;
+        nCells = size(obj.responseSpikes);
+%         yout = [];
+            for xcell = 1:nCells(1)
+                for ycell = 1:nCells(2)
+                    clear yind y
+                    cellCtr = cellCtr+1;
+                    
+                    for trial = 1:maxTrials
+                        
+                        yind =  obj.responseSpikes{xcell,ycell,trial,1};
+                        if strcmpi(class(obj),'rgcphys'); yind = .01*yind; end;
+                        y(trial,ceil(yind./dt))=1;
+                    end
+    
+                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr);
+                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    %                     subplot(nCells(2),nCells(1),cellCtr);
+                    
+                    %
+                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);                                       
+                    convolvewin= convolvewin./max(convolvewin);
+                    if size(y,1) > 1
+                        yout(cellCtr,1:length(y)) = sum(y);
+                    else
+                        yout(cellCtr,1:length(y)) = y;
+                    end
+                    PSTH_out{xcell,ycell}=conv(sum(y),convolvewin,'same');
+%                     plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
+                end
+            end
+            
+            val.psth = PSTH_out;
+            val.spikes = yout;
+            
+        end
 end
 

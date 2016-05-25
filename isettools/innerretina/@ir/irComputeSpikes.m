@@ -23,8 +23,16 @@ function ir = irComputeSpikes(ir, varargin)
 %% Required for Pillow code
 
 % To be eliminated
+
+% fps = 1/125;        % frame rate of 125 fps; usually 121 in lab but 125 for integer steps
+% normalRR = fps;
+% 
+% exptRR = irGet(ir,'timing');
+% exptBinsPerStep = round(normalRR/exptRR);
+
 global RefreshRate
 RefreshRate = 100;    
+% RefreshRate = exptBinsPerStep
 
 
 %% Loop on the mosaics in the inner retina
