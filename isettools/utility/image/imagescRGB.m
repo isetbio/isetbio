@@ -1,7 +1,7 @@
-function rgbim = imagescRGB(rgbim,varargin)
+function [h, rgbim] = imagescRGB(rgbim,varargin)
 % Display a scaled RGB format image.  
 %
-%   imagescRGB(rgbim,[gamma]);
+%   [h, rgbim] = imagescRGB(rgbim,[gamma]);
 %   imagescRGB(rgbim,row,col,[gamma])
 %    
 %  Prior to display negative values are clipped, and the clipped data are
@@ -61,6 +61,6 @@ end
 
 % Eliminated imshow and replaced with this so it would work on a Jupyter
 % hub site.
-image(rgbim); axis image; axis off
+h = image(rgbim); axis image; axis off
 
 end
