@@ -222,22 +222,47 @@ end
 
 % spikesoutB = spikesout;
 
-rf = zeros(96,96);
-
-for blockNum = 1%:200
+% rf = zeros(96,96);
+clear sta
+% spikesoutB = [];
+for blockNum = 1:200
     clear whiteNoiseSmall spikesoutsm
-filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May25_on2/WNstim_response_OnParasol_block_may25_' num2str(blockNum) '.mat'];
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May25_on4/WNstim_response_OnParasol_block_may25_' num2str(blockNum) '.mat'];
+
+for c1 = 14%1:25
+%     for c2 = 1%:szCells(2)
+
+if blockNum == 1
+    sta{c1,c2} = zeros(96,96);
+end
 
 load(filename1)
-for fr = 1:4000-3
+for fr = 1:2400-3
 %     psthMb = (sum(psthM(17,(fr-1)*100+1:fr*100)));
-    rf = rf+sum(spikesoutsm(2,(fr-1)*100+1:fr*100))*(-0.5+double(whiteNoiseSmall(:,:,fr)));
+    sta{c1} = sta{c1}+sum(spikesoutsm(c1,(fr-1)*100+1:fr*100))*(-0.5+double(whiteNoiseSmall(:,:,fr)));
 %     rf = rf+(-0.5+double(whiteNoiseSmall(:,:,fr)));
 %     rf = rf+(1*(iStim.sceneRGB(:,:,fr,1)));
+
+%     spikesoutB = [spikesoutB spikesoutsm];   
+end
+
+%     end
 end
 
 end
 
-figure; imagesc(rf)
+figure; imagesc(sta{c1,c2})
 
 % figure; imagesc(surf(rf)); shading interp
+%%
+
+for i2 = 1:25
+    spikesoutM(i2,:) = spikesoutB(i2,:) - mean(spikesoutB(i2,:));
+end
+
+psthNorm=spikesoutM'*diag(1./sqrt(sum(spikesoutM'.*spikesoutM')));
+% psthNorm = psthNorm - mean(psthNorm(:));
+psthCov = psthNorm'*psthNorm;
+figure; imagesc(psthCov)
+% xlabel('Cell number'); ylabel('Cell number');
+% title('Covariance matrix');

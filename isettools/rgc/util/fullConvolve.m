@@ -65,17 +65,23 @@ for xcell = 1:nCells(1)
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
                 
                 % This line was used before the fft was implemented
-                fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
+%                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
 % %                 fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
 
 %%%% FFT that works
-% % %                 spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
-% % %                 spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
-% % %                 temporalIRCenterp = repmat([temporalIRCenter' zeros([size(temporalIRCenter,2) size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
-% % %                 
-% % %                 fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
+                spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+                spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
                 
-%                 figure; plot(1*fullResponseRSCombined(1328,:),'linewidth',3); hold on; plot(fullResponseRSCenter(1328,:),':r','linewidth',3)
+                fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
+                
+                % MAKE ZERO MEAN, maybe get rid of this
+                fullResponseRSCombined = fullResponseRSCombined - repmat(mean(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2));
+                
+%                 fullResponseRSCombinedRange = repmat(max(fullResponseRSCombined,2)-min(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2))
+%                 fullResponseRSCombined = fullResponseRSCombinedRange.*fullResponseRSCombined;
+                
+                % figure; plot(1*fullResponseRSCombined(1328,:),'linewidth',3); hold on; plot(fullResponseRSCenter(1328,:),':r','linewidth',3)
 
                 % Specify starting and ending time coordinates
                 startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
@@ -139,11 +145,11 @@ for xcell = 1:nCells(1)
         else
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
-%             fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
+            % fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
             
             % Need to normalize by 13x13 RF size in lab physio code
-%             fullResponse{xcell,ycell,1} = (13^2/size(fullResponseRS,1))*sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
-fullResponse{xcell,ycell,1} = sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
+            % fullResponse{xcell,ycell,1} = (13^2/size(fullResponseRS,1))*sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
+            fullResponse{xcell,ycell,1} = sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
             if ~isa(mosaic, 'rgcLinear'); 

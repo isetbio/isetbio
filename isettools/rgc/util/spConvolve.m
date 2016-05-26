@@ -132,8 +132,12 @@ for rgbIndex = 1:channelSize
                         
 %                         spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRC(:)))./1;%length(gz)^2;
 %                         spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRS(:)))./1;%length(gz)^2;
-                      spResponseCenter{xcell,ycell}(1,1,samp,rgbIndex) = 10*sum(mosaic.rectifyFunction(spRC(:)))./length(gz)^2;
-                        spResponseSurround{xcell,ycell}(1,1,samp,rgbIndex) = 10.*sum(mosaic.rectifyFunction(spRS(:)))./length(gz)^2;
+
+%                       spResponseCenter{xcell,ycell}(1,1,samp,rgbIndex) = 10*sum(mosaic.rectifyFunction(spRC(:)))./length(gz)^2;
+%                         spResponseSurround{xcell,ycell}(1,1,samp,rgbIndex) = 10.*sum(mosaic.rectifyFunction(spRS(:)))./length(gz)^2;
+
+                        spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = 10*(mosaic.rectifyFunction(spRC))./length(gz)^2;
+                        spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = 10*(mosaic.rectifyFunction(spRS))./length(gz)^2;
 
                     end
                     

@@ -113,14 +113,14 @@ classdef rgcSubunit < rgcMosaic
             tCenterNew{2} = zeros(size(tCenterOrig));
             tCenterNew{3} = zeros(size(tCenterOrig));
             
-            tImpulse = 1000;
+            tImpulse = 2.75*4;
             tCenterNew{1}(1) = tImpulse; tCenterNew{2}(1) = tImpulse; tCenterNew{3}(1) = tImpulse;
             obj.mosaicSet('tCenter',tCenterNew);
             
             tSurroundNew{1} = zeros(size(tCenterOrig));
             tSurroundNew{2} = zeros(size(tCenterOrig));
             tSurroundNew{3} = zeros(size(tCenterOrig));
-            tSurroundNew{1} = -tImpulse; tSurroundNew{2} = -tImpulse; tSurroundNew{3} = -tImpulse;
+            tSurroundNew{1}(1) = tImpulse; tSurroundNew{2} = tImpulse; tSurroundNew{3} = tImpulse;
             obj.mosaicSet('tSurround',tSurroundNew);
 
             

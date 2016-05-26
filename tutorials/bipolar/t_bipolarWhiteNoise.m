@@ -15,10 +15,16 @@ clear
 %% Load image sequence
 
 % WN
-load('/Users/james/Documents/MATLAB/akheitman/WN_mapPRJ/Stimuli/BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat')
+% load('/Users/james/Documents/MATLAB/akheitman/WN_mapPRJ/Stimuli/BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat')
 % 
 % % NSEM
-% % load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
+load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
+testmovieRand = double(testmovie.matrix(:,:,1:3600));
+clear testmovie.matrix
+testmovie.matrix = testmovieRand;
+
+
+
 % 
 % paramsMovie.timeInterval = .001;
 % paramsMovie.expTime = .001;
@@ -59,10 +65,12 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 % sensor = sensorSet(sensor, 'photon rate', 1+4000*(testmovie.matrix));
 
 % randMat = rand(size(testmovie.matrix));
-randMat = zeros(size(testmovie.matrix));
-% randMat(2,2,1) = 1;
-randMat(2,2,:) = rand(size(randMat(2,2,:)));
-testmovieRand = randMat>0.5; testmovie.matrix = testmovieRand;
+% randMat = rand(80,40,3600);
+% % randMat = zeros(size(testmovie.matrix));
+% % randMat(2,2,1) = 1;
+% % randMat(2,2,:) = rand(size(randMat(2,2,:)));
+% % randMat = repmat(rand(size(randMat(2,2,:))),size(randMat,1),size(randMat,2),1);
+% testmovieRand = randMat>0.5; testmovie.matrix = testmovieRand;
 sensor = sensorSet(sensor, 'photon rate', 1+4000*(testmovieRand));
 
 ct = sensorGet(sensor,'cone type');
@@ -95,7 +103,7 @@ timeStep = sensorGet(sensor,'time interval','sec');
 osL = osSet(osL, 'time step', timeStep);
 
 % Set circular convolution, only steady state
-paramsOSL.convolutionType = 0; 
+paramsOSL.convolutionType = 1; 
 
 % Compute the outer segment response to the absorptions with the linear
 % model.
@@ -104,17 +112,17 @@ osL = osCompute(osL,sensor,paramsOSL);
 % % Plot the photocurrent for a pixel.
 osPlot(osL,sensor);
 %% Find bipolar responses
-
+clear bp
 bp = bipolar(osL);
-bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
-bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
+% bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
+% bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 
 % bipolarThreshold = -40;
 % bp = bipolarSet(bp,'threshold',bipolarThreshold);
 
 bp = bipolarCompute(bp, osL);
 
-bipolarPlot(bp,'response');
+% bipolarPlot(bp,'response');
 
 %% Find RGC responses
 % Build and IR object that takes as input the bipolar mosaic.
@@ -136,7 +144,30 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',40);
 newRectifyFunction = @(x) x;
 innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 
-% innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.01);
+% % % % % 
+% sRFold = innerRetinaBpSu.mosaic{1}.mosaicGet('sRFcenter');
+% for ci1 = 1:size(sRFold,1)
+%     for ci2 = 1:size(sRFold,2)        
+%         sRFnew{ci1,ci2} = -ones(size(sRFold{ci1,ci2}));
+%     end
+% end
+% 
+% innerRetinaBpSu.mosaic{1}.mosaicSet('sRFcenter',sRFnew);
+% % 
+% % 
+% sRFold = innerRetinaBpSu.mosaic{1}.mosaicGet('sRFsurround');
+% for ci1 = 1:size(sRFold,1)
+%     for ci2 = 1:size(sRFold,2)        
+%         sRFnew{ci1,ci2} = 0*ones(size(sRFold{ci1,ci2}));
+%     end
+% end
+% 
+% innerRetinaBpSu.mosaic{1}.mosaicSet('sRFsurround',sRFnew);
+% % % % % % 
+
+tonicDriveOrig = 2.27;
+% tD = innerRetinaBpSu.mosaic{1}.mosaicGet('tonicDrive');
+innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.001);
 
 % irPlot(innerRetinaBpSu,'mosaic');
 
@@ -144,17 +175,32 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 innerRetinaBpSu = irComputeContinuous(innerRetinaBpSu, bp);
 irPlot(innerRetinaBpSu,'linear')
 % irPlot(innerRetinaBpSu,'linear','cell',[4 4])
-
+% axis([0 1200 2 2.5])
+% axis([0 1200 -8 10])
+% axis([0 1200 22.1 22.8])
+% axis([0 1200 -18 20])
+% axis([0 1200 -6.9 -6.5])
 rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
 
 
-rLinearSU{1,1,1} = rLinSU{1,1}(126+48:end);
+rLinearSU{1,1,1} = 5*rLinSU{1,1}./max(rLinSU{1,1}) + tonicDriveOrig;
 innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
 numberTrials = 40;
 for tr = 1:numberTrials
     innerRetinaBpSu = irComputeSpikes(innerRetinaBpSu);
 end
+
+
 irPlot(innerRetinaBpSu,'psth')
+
+% vcNewGraphWin([],'upperleftbig'); 
+% % figure;
+% hold on
+% subplot(2,1,2);
+% irPlot(innerRetinaBpSu,'psth','hold','on')
+% hold off;
+% subplot(212); hold on;
+% irPlot(innerRetinaBpSu,'raster'),'hold','on')
 %% Measure the response for the original GLM model
 % This response can be compared to the above response 
 
@@ -183,6 +229,28 @@ innerRetinaRGB = irCreate(osD, params);
 
 innerRetinaRGB.mosaicCreate('model','LNP','type','off parasol');
 
+innerRetinaRGB.mosaic{1}.mosaicSet('tonicDrive',0.001);
+% % % % % % 
+% sRFold = innerRetinaRGB.mosaic{1}.mosaicGet('sRFcenter');
+% for ci1 = 1:size(sRFold,1)
+%     for ci2 = 1:size(sRFold,2)        
+%         sRFnew{ci1,ci2} = ones(size(sRFold{ci1,ci2}));
+%     end
+% end
+% 
+% innerRetinaRGB.mosaic{1}.mosaicSet('sRFcenter',sRFnew);
+% 
+% 
+% sRFold = innerRetinaRGB.mosaic{1}.mosaicGet('sRFsurround');
+% for ci1 = 1:size(sRFold,1)
+%     for ci2 = 1:size(sRFold,2)        
+%         sRFnew{ci1,ci2} = zeros(size(sRFold{ci1,ci2}));
+%     end
+% end
+% 
+% innerRetinaRGB.mosaic{1}.mosaicSet('sRFsurround',sRFnew);
+% % % % % % % 
+
 % Compute response
 innerRetinaRGB = irComputeContinuous(innerRetinaRGB, osD);
 
@@ -192,35 +260,17 @@ innerRetinaRGB = irComputeContinuous(innerRetinaRGB, osD);
 % irPlot(innerRetinaRGB,'linear','cell',[1 2])
 
 rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
-% figure;
-hold on;
-plot(24+(1:length(rLin{1,1}(:))),-.15*squeeze(rLin{1,1}(:))+2.7,'r')
-% plot(24+(1:length(rLin{1,1}(:))),-4*(squeeze(rLin{1,1}(:))-2.13)+2.27,'r')
-plot(24+(1:length(rLin{1,1}(:))),squeeze(rLin{1,1}(:))-.05,'r')
-% plot(squeeze(.1*rLin{1,1}(24:end-24))+2,'r')
 
-%%
-mSU = mean(rLinSU{1,1}(100:1200));
-mRGB = mean(rLin{1,1}(100:1200));
-
-zmRGB = (squeeze(rLin{1,1}(:)) - mean(squeeze(rLin{1,1}(1:1200))));
-zmSU = (squeeze(rLinSU{1,1}(:)) - mean(squeeze(rLinSU{1,1}(1:1200))));
-
-scFac = max(zmSU(200:800))/max(zmRGB(200:800));
-figure; plot(24+(1:length(rLin{1,1}(:))),scFac*zmRGB+mSU,'r'); hold on; plot(zmSU+mSU,'b');
-
-%%
-clear rLinear
-rLinear{1,1} = scFac*zmRGB(126+24:end)+mSU;
-innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLinear);
-
+rLin{1,1,1} = 5*rLin{1,1}./max(rLin{1,1}) + tonicDriveOrig;
+innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLin);
 numberTrials = 40;
 for tr = 1:numberTrials
     innerRetinaRGB = irComputeSpikes(innerRetinaRGB);
 end
-
-irPlot(innerRetinaRGB,'psth');
-% irPlot(innerRetinaRGB,'psth','hold','on');
+irPlot(innerRetinaRGB,'psth','hold','on');
+% irPlot(innerRetinaRGB,'raster');
 
 legend('Cascade Model','Black Box Model')
+title('NSEM Off Parasol [1 1]');
 set(gca,'fontsize',14)
+axis([0 30 0 30])

@@ -20,7 +20,7 @@ function obj = bipolarCompute(obj, os)
 
 % Get zero mean cone current signal
 osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
-osSigRSZM = osSigRS - repmat(mean(osSigRS,1),size(osSigRS,1),1);
+osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
 osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
 % % % Spatial averaging over RGC blocks carried out here
@@ -55,13 +55,13 @@ spatialResponseSurround = ieSpaceTimeFilter(osSigZM, obj.sRFsurround);
 
 
 % Subsample to pull out individual bipolars
-% strideSubsample = size(obj.sRFcenter,1);
-% spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, strideSubsample);
-% spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, strideSubsample);
+strideSubsample = size(obj.sRFcenter,1);
+spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, strideSubsample);
+spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, strideSubsample);
 
-
-spatialSubsampleCenter = spatialResponseCenter;
-spatialSubsampleSurround = spatialResponseSurround;
+% 
+% spatialSubsampleCenter = spatialResponseCenter;
+% spatialSubsampleSurround = spatialResponseSurround;
 %% Temporal response
 % Apply the weighted differentiator to the output of the spatial
 % computation.
@@ -71,6 +71,8 @@ szSubSample = size(spatialSubsampleCenter);
 spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
 spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
 
+%%%% CHANGE THIS WHEN RUNNING DIFF!
+obj.temporalDelay = 0;
 % Zero pad to allow for delay
 spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,(1e-3/os.timeStep)*obj.temporalDelay + 1).*ones(size(spatialSubsampleCenterRS,1),(1e-3/os.timeStep)*obj.temporalDelay + 1) spatialSubsampleCenterRS];
 spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.timeStep)*obj.temporalDelay + 1).*ones(size(spatialSubsampleSurroundRS,1),(1e-3/os.timeStep)*obj.temporalDelay + 1) spatialSubsampleSurroundRS];    
@@ -92,20 +94,26 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.
 % % Convolve
 % DO THE CIRCULAR CONV
 load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt200_GLM.mat');
-bipolarOutputCenterRSLong = convn(spatialSubsampleCenterRS',-bipolarFilt)';
-bipolarOutputSurroundRSLong =  convn(spatialSubsampleSurroundRS',-bipolarFilt)';
+% bipolarOutputCenterRSLong = convn(spatialSubsampleCenterRS',bipolarFilt)';
+% bipolarOutputSurroundRSLong =  convn(spatialSubsampleSurroundRS',bipolarFilt)';
 
-% bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
-% bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS zeros([size(spatialSubsampleSurroundRS,1) size(bipolarFilt,1)])];
-% bipolarFiltZP = repmat([bipolarFilt' zeros([size(bipolarFilt,2) size(spatialSubsampleCenterRS,2)])],size(spatialSubsampleCenterRS,1) ,1);
+% % % % Full ZP
+bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
+bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS zeros([size(spatialSubsampleSurroundRS,1) size(bipolarFilt,1)])];
+bipolarFiltZP = repmat([bipolarFilt' zeros([size(bipolarFilt,2) size(spatialSubsampleCenterRS,2)])],size(spatialSubsampleCenterRS,1) ,1);
+
+% % % Min ZP
+% bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
+% bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
+% bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
 % 
-% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
-                
-
-
-bipolarOutputCenterRS = bipolarOutputCenterRSLong(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
-bipolarOutputSurroundRS = bipolarOutputSurroundRSLong(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
+bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
+bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+%                 
+% 
+% 
+bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
+bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*obj.temporalDelay);
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
 bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));
@@ -124,9 +132,9 @@ obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 
 % bipolarOutputRectifiedCenter = bipolarOutputLinearCenter.*(bipolarOutputLinearCenter>0);
 % bipolarOutputRectifiedSurround = -bipolarOutputLinearSurround.*(bipolarOutputLinearSurround<0);
-% 
-% % % bipolarOutputRectifiedCenter = 1*abs(bipolarOutputLinearCenter);
-% % bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround));
 % % 
+% bipolarOutputRectifiedCenter = 1*abs(bipolarOutputLinearCenter);
+% bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround));
+% % % 
 % obj.responseCenter = bipolarOutputRectifiedCenter;
 % obj.responseSurround = bipolarOutputRectifiedSurround;

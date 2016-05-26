@@ -50,7 +50,7 @@ switch ieParamFormat(type)
         osPlotIsomerizations(absorptions);
 
         
-    case {'filterkernels'}
+    case {'filterkernels','filter','filters'}
         % Plot linear temporal filters for L, M and S cones.
 
         h = vcNewGraphWin;
