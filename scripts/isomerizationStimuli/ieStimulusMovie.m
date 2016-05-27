@@ -60,6 +60,13 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
+
+% retinalPosDegAz = 5; retinalPosDegEl = -3.5;
+% retinalRadiusDegrees = sqrt(retinalPosDegAz^2+retinalPosDegEl^2);
+% retinalPolarDegrees  = abs(atand(retinalPosDegEl/retinalPosDegAz));
+% retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; whichEye = 'right';
+% sensor = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+
 sensor = sensorCreate('human');
 sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 
@@ -95,20 +102,18 @@ frameRate = 1/125; % 125 FPS
 nFramesPerTimeStep = frameRate/params.timeInterval;
 
 % Loop through frames to build movie
-for t = 1 : params.nSteps
+for t = 1 : round ( params.nSteps / nFramesPerTimeStep )
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
 %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
 
     % % % % Generate scene object from stimulus RGB matrix and display object
-    tsamp = ceil((t-.01)/nFramesPerTimeStep);
-    scene = sceneFromFile(movieInput(:,:,tsamp), 'rgb', params.meanLuminance, display);
+%     tsamp = ceil((t-.01)/nFramesPerTimeStep);
+%     scene = sceneFromFile(movieInput(:,:,tsamp), 'rgb', params.meanLuminance, display);
+    scene = sceneFromFile(movieInput(:,:,t), 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
-
-    % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
     
     % Compute optical image
     oi = oiCompute(oi, scene);    
@@ -120,7 +125,11 @@ for t = 1 : params.nSteps
         volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
     end
     
-    volts(:,:,t) = sensorGet(sensor, 'volts');
+    for tsamp =  1:nFramesPerTimeStep
+        % Get scene RGB data
+        sceneRGB(:,:,(t-1)*nFramesPerTimeStep + tsamp,:) = sceneGet(scene,'rgb');
+        volts(:,:,(t-1)*nFramesPerTimeStep + tsamp) = sensorGet(sensor, 'volts');
+    end
     
     % vcAddObject(scene); sceneWindow
 end

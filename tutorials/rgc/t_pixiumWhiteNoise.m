@@ -18,7 +18,7 @@ patchEccentricity = 12; % mm
 fov = 2.7;
 
 % Stimulus length
-nSteps = 2400;
+nSteps = 4000;
 
 % Activation curve
 
@@ -67,7 +67,7 @@ retinalPatchHeight = (sceneSize(1)/sceneSize(2))*retinalPatchWidth;
 os = osSet(os, 'patchSize', retinalPatchWidth);
 
 % timeStep = sensorGet(whiteNoise.sensor,'time interval','sec');
-timeStep = 1/120;
+timeStep = (1/125)/8;
 os = osSet(os, 'timeStep', timeStep);
 
 os = osSet(os, 'rgbData', whiteNoise.sceneRGB);
@@ -99,7 +99,7 @@ irPlot(innerRetina,'mosaic');
 
 % innerRetina = irSet(innerRetina,'numberTrials',1);
 
-filenameRGC = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May16_off/WNstim_response_OffParasol_RGC_may16.mat'];
+filenameRGC = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May25_on2/WNstim_response_OffParasol_RGC_may16.mat'];
 save(filenameRGC, 'innerRetina');
 
 % load('/Users/james/documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_RGC_may10.mat');
@@ -163,19 +163,19 @@ szEnd = length(psth1{1,1});
 
 % % % % % % % 
 % clear spikesoutB spikesoutM
-% corrfr = 2;
+% corrfr = 1;
 % for fr = corrfr+1:corrfr:1997
 %     spikesoutB(:,fr-1) = sum(spikesout(:,(fr-corrfr)*100+1:fr*100));
 % end
 % 
-% % spikesoutB = spikesout;
-% % rf = zeros(96,96);
-% % for fr = 1:1997
-% % %     psthMb = (sum(psthM(17,(fr-1)*100+1:fr*100)));
-% %     rf = rf+sum(spikesout(13,(fr-1)*100+1:fr*100))*(iStim.sceneRGB(:,:,fr+1,1));
-% % %     rf = rf+(1*(iStim.sceneRGB(:,:,fr,1)));
-% % end
-% % figure; imagesc(rf)
+% spikesoutB = spikesout;
+% rf = zeros(96,96);
+% for fr = 1:1997
+% %     psthMb = (sum(psthM(17,(fr-1)*100+1:fr*100)));
+%     rf = rf+sum(spikesout(43,(fr-1)*100+1:fr*100))*(iStim.sceneRGB(:,:,fr+1,1));
+% %     rf = rf+(1*(iStim.sceneRGB(:,:,fr,1)));
+% end
+% figure; imagesc(rf)
 % %%%%%
 % % load('/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/WNstim_response_OnParasol_spikes.mat')
 % for i2 = 1:szCells(1)*szCells(2)
@@ -201,7 +201,7 @@ whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
 % responseSpikes = mosaicGet(innerRetina.mosaic{1},'responseSpikes');   
 
 spikesoutsm = uint8(spikesout);
-filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May16_off/WNstim_response_OffParasol_block_may16_' num2str(blockNum) '.mat'];
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May25_on2/WNstim_response_OnParasol_block_may25_' num2str(blockNum) '.mat'];
 save(filename1, 'whiteNoiseSmall','spikesoutsm');
 toc
 end
@@ -215,3 +215,54 @@ end
 % %     rf = rf+(1*(iStim.sceneRGB(:,:,fr,1)));
 % end
 % figure; imagesc(rf)
+
+%%
+
+
+
+% spikesoutB = spikesout;
+
+% rf = zeros(96,96);
+clear sta
+% spikesoutB = [];
+for blockNum = 1:200
+    clear whiteNoiseSmall spikesoutsm
+filename1 = ['/Users/james/Documents/MATLAB/isetbio misc/optimal linear decoder/May25_on4/WNstim_response_OnParasol_block_may25_' num2str(blockNum) '.mat'];
+
+for c1 = 14%1:25
+%     for c2 = 1%:szCells(2)
+
+if blockNum == 1
+    sta{c1,c2} = zeros(96,96);
+end
+
+load(filename1)
+for fr = 1:2400-3
+%     psthMb = (sum(psthM(17,(fr-1)*100+1:fr*100)));
+    sta{c1} = sta{c1}+sum(spikesoutsm(c1,(fr-1)*100+1:fr*100))*(-0.5+double(whiteNoiseSmall(:,:,fr)));
+%     rf = rf+(-0.5+double(whiteNoiseSmall(:,:,fr)));
+%     rf = rf+(1*(iStim.sceneRGB(:,:,fr,1)));
+
+%     spikesoutB = [spikesoutB spikesoutsm];   
+end
+
+%     end
+end
+
+end
+
+figure; imagesc(sta{c1,c2})
+
+% figure; imagesc(surf(rf)); shading interp
+%%
+
+for i2 = 1:25
+    spikesoutM(i2,:) = spikesoutB(i2,:) - mean(spikesoutB(i2,:));
+end
+
+psthNorm=spikesoutM'*diag(1./sqrt(sum(spikesoutM'.*spikesoutM')));
+% psthNorm = psthNorm - mean(psthNorm(:));
+psthCov = psthNorm'*psthNorm;
+figure; imagesc(psthCov)
+% xlabel('Cell number'); ylabel('Cell number');
+% title('Covariance matrix');

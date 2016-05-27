@@ -66,11 +66,12 @@ p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToS
 
 p.addOptional('type',[]);
 p.addOptional('cell',[]);
+p.addOptional('hold','off');
 p.addOptional('color','r');
 p.parse(varargin{:}); params = p.Results;
-color = params.color;
-mosaicType = params.type;
-
+color = p.Results.color; % params.color;
+mosaicType = p.Results.type;% params.type;
+holdVal = p.Results.hold;
 % Parse mosaic type to allow for entering a number or a string
 if ~isempty(mosaicType) && ischar(mosaicType)
     for cellTypeInd = 1:length(obj.mosaic)
@@ -87,6 +88,14 @@ end
 
 cellID = params.cell;
 
+
+if strcmpi(holdVal,'off')
+    vcNewGraphWin([],'upperleftbig');
+else
+    hold on;
+end
+
+
 %% Set key-value pairs
 switch ieParamFormat(params.what)
     case{'ecc'}
@@ -96,7 +105,7 @@ switch ieParamFormat(params.what)
     case{'mosaic'}
         %%% Plot the mosaic of each RGC type
         
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         cmap = parula(16);
         
@@ -153,7 +162,7 @@ switch ieParamFormat(params.what)
 %         [xg yg] = meshgrid([1:90]); figure; scatter(xg(:),yg(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
     case{'rf'}
         %%% A surface representing the RF (center - surround)
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         for cellTypeInd = 1%:length(obj.mosaic)
             
@@ -168,7 +177,7 @@ switch ieParamFormat(params.what)
         
     case{'rfimage'}
         %%% An image representing the RF surround
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         %  % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -194,7 +203,7 @@ switch ieParamFormat(params.what)
     case{'srfcenter'}
         
         %%% A surface representing the RF center
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -232,7 +241,7 @@ switch ieParamFormat(params.what)
         
     case{'srfsurround'}
         %%% A surface representing the RF surround
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -256,7 +265,7 @@ switch ieParamFormat(params.what)
         end
     case{'temporal','temporalfilter'}
         %%% Plot the RGB impulse response of each mosaic
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -286,7 +295,7 @@ switch ieParamFormat(params.what)
     case{'tcenter'}
         
         %%% Plot the RGB impulse response of each mosaic
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         
         timeStep = obj.timing;
@@ -338,7 +347,7 @@ switch ieParamFormat(params.what)
         
         timeStep = obj.timing;
         %%% Plot the RGB impulse response of each mosaic
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -382,7 +391,7 @@ switch ieParamFormat(params.what)
         timeStep = .1*obj.timing;
         
         %%% Plot the post spike filter of each cell type
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -425,7 +434,7 @@ switch ieParamFormat(params.what)
         
         
         %%% Plot the post spike filter of each cell type
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -449,7 +458,7 @@ switch ieParamFormat(params.what)
         end
         
     case{'responselinear','linear'}
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -485,7 +494,7 @@ switch ieParamFormat(params.what)
         
         
     case{'nlresponse','nl','nonlinear','responsenl'}
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         
         if ~isempty(mosaicTypeInd)
@@ -524,7 +533,7 @@ switch ieParamFormat(params.what)
         
         %%% Plot the membrane voltages for a random trial
         
-        vcNewGraphWin([],'upperleftbig');
+        % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
         szSpike = size(horzcat(obj.mosaic{1}.responseVoltage{1,1,:}));
         
@@ -599,7 +608,7 @@ switch ieParamFormat(params.what)
                     
             numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
             
-            vcNewGraphWin([],'upperleftbig');
+            % vcNewGraphWin([],'upperleftbig');
             % set(gcf,'position',[1000  540 893  798]);            
             set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
             cellCtr = 0; cellCtr2 = 0;
@@ -697,7 +706,7 @@ switch ieParamFormat(params.what)
         % Which of the cells
         for cellTypeInd = cellTypeStart:cellTypeEnd
             
-            vcNewGraphWin([],'upperleftbig');
+            % vcNewGraphWin([],'upperleftbig');
             
             % set(gcf,'position',[1000  540 893  798]);
             set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
@@ -752,7 +761,7 @@ switch ieParamFormat(params.what)
                     
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
-                    plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
+                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);
                     
                     xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
                     
@@ -764,7 +773,7 @@ switch ieParamFormat(params.what)
                     %                     if ~isnan(psth{xcell,ycell})
                     
                     maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .1*bindur*maxt 0 max([1 max(PSTH_rec)])]);
+                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec)])]);
                     %                     end
                     %
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));

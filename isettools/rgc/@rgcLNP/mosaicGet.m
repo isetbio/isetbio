@@ -51,6 +51,7 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
+    'tonicDrive',...
     'responseLinear',...
     'generatorFunction',...
     'nlResponse',...
@@ -96,6 +97,8 @@ switch lower(params.what)
         val = obj.tCenter;
     case{'tsurround'}
         val = obj.tSurround;
+    case{'tonicdrive'}
+        val = obj.tonicDrive;
     case{'responselinear'}
         val = obj.responseLinear;
     case{'generatorfunction'}
@@ -103,7 +106,7 @@ switch lower(params.what)
     case{'postspikefilter'}
         val = obj.postSpikeFilter;
     case{'numbertrials'}
-        % val = obj.numberTrials;       
+        % val = obj.numberTrials;
         val = size(obj.responseSpikes,3);
     case{'responsespikes'}
         val = obj.responseSpikes;
@@ -112,34 +115,17 @@ switch lower(params.what)
     case{'couplingfilter'}
         val = obj.couplingFilter;
     case{'couplingmatrix'}
-        val = obj.couplingMatrix;        
+        val = obj.couplingMatrix;
     case{'responsepsth', 'psth'}
- 
-% %         if ~isempty(obj.responsePsth)
-% %             val = obj.responsePsth;
-% %         else
-%             nCells = size(obj.responseSpikes,1)*size(obj.responseSpikes,2);
-%             numberTrials = obj.numberTrials;
-%             for ce = 1:nCells
-%                 convolvewin2D = fspecial('gaussian',100,20);
-%                 convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
-% %                 convolvewin=gausswin(100);
-% %                 y = zeros(numberTrials,100000);
-%                 clear y
-%                 for trind = 1:numberTrials
-%                     y(trind,ceil(100*obj.responseSpikes{ce,1,trind}))=1;
-%                 end
-%                 PSTH_rec=conv(sum(y),convolvewin,'same');               
-%                 psthResponse{ce} = PSTH_rec;
-%             end
-%             clear y
-%             val = psthResponse;
-% %         end
-
-        cellCtr=0; dt = .01;
-        maxTrials = obj.numberTrials;
-        nCells = size(obj.responseSpikes);
-%         yout = [];
+        
+        if ~isempty(obj.responsePsth)
+            val = obj.responsePsth;
+        else
+            
+            cellCtr=0; dt = .01;
+            maxTrials = obj.numberTrials;
+            nCells = size(obj.responseSpikes);
+            %         yout = [];
             for xcell = 1:nCells(1)
                 for ycell = 1:nCells(2)
                     clear yind y
@@ -151,14 +137,13 @@ switch lower(params.what)
                         if strcmpi(class(obj),'rgcphys'); yind = .01*yind; end;
                         y(trial,ceil(yind./dt))=1;
                     end
-    
+                    
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr);
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
                     
-                    %                     subplot(nCells(2),nCells(1),cellCtr);
-                    
-                    %
-                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);                                       
+                    %  subplot(nCells(2),nCells(1),cellCtr);
+ 
+                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     convolvewin= convolvewin./max(convolvewin);
                     if size(y,1) > 1
                         yout(cellCtr,1:length(y)) = sum(y);
@@ -166,7 +151,7 @@ switch lower(params.what)
                         yout(cellCtr,1:length(y)) = y;
                     end
                     PSTH_out{xcell,ycell}=conv(sum(y),convolvewin,'same');
-%                     plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
+                    % plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
                 end
             end
             
@@ -174,5 +159,7 @@ switch lower(params.what)
             val.spikes = yout;
             
         end
+        
+end
 end
 
