@@ -547,10 +547,10 @@ switch lower(param)
         sensor = sensorSet(sensor, 'human cone', cone);
         
         % we should update sensor array here
-%         params.sz = sensorGet(sensor, 'size');
-%         params.density = sensorGet(sensor, 'human cone densities');
-%         params.rSeed = sensorGet(sensor, 'human rseed');
-%         params.humanConeDensities = val;
+        %         params.sz = sensorGet(sensor, 'size');
+        %         params.density = sensorGet(sensor, 'human cone densities');
+        %         params.rSeed = sensorGet(sensor, 'human rseed');
+        %         params.humanConeDensities = val;
         
         sensor = sensorCreateConeMosaic(sensor, cone);
         
@@ -562,7 +562,10 @@ switch lower(param)
         sensor.human.rSeed = val;
         
     case {'sampletimeinterval','timeinterval'}
-        % For human eye movement sampling rate, typically 1 ms. 
+        % Used in eye movements and dynamic scene calculations
+        % See ***YOUR NAME GOES HERE, maybe HJ or XD? *** to see how this
+        % is used. Used in t_eyemovementCompute.m  
+        % Not sure where else.
         sensor.human.timeInterval = val;
     % Human adaptation
     case {'adaptationgain'}
