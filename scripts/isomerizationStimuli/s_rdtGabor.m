@@ -45,19 +45,24 @@ for ff=1:length(fList)
             iStim = ieStimulusGabor(pG);
             
             % Save the iStim in the save directory with the right name
-            save(fullfile(sDir,fname),'iStim'); 
+            save(fullfile(sDir,[fname,'.mat']),'iStim'); 
 
             % vcAddObject(iStim.scene); sceneWindow;
+            % vcAddObject(iStim.absorptions); sensorWindow;
+            % coneImageActivity(iStim.absorptions,'dFlag',true);
             % sceneShowImage(iStim.scene);
         end
     end
 end
 
+% load('Gabor-freq-1.26-contrast-0.50-orient-90.mat');
+% coneImageActivity(iStim.absorptions,'dFlag',true);
+
+%% Upload to the RDT
+
+
 %% A few for testing the Rieke biophysical data 
 % These need to be temporally sampled by the sensor at half millisecond.
 % So, we set pG.
 
-save(fname,iStim); 
-
-% m = coneImageActivity(iStim.absorptions,'dFlag',true);
-sceneShowImage(iStim.scene);
+%%
