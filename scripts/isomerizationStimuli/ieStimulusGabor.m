@@ -1,12 +1,18 @@
 function iStim = ieStimulusGabor(varargin)
 % Creates a movie/dynamic of the cone absorptions of a drifting Gabor patch 
 % 
+%    ieStimulusGabor(varargin)
+%
+% The Gabor image is created with an equal photon spectral power
+% distribution.  The parameters of the Gabor are set by the input structure
+% (or key/value parameters) below.
+%
 % Inputs: 
 %   pGabor: parameter structure that defines the Gabor stimulus parameters
 %           The parameters and their defaults are 
 %
-% 'row',            64    image size
-% 'col',            64
+% 'row',              4 x Nyquist   image size
+% 'col',              4 x Nyquist   We multiply 4 times fov times freq
 % 'meanLuminance',  200   (cd/m2)
 % 'freq',            6    Spatial frequency c/deg
 % 'contrast'         1    Harmonic contrast
@@ -15,15 +21,16 @@ function iStim = ieStimulusGabor(varargin)
 % 'GaborFlag',       1    Std of Gaussian where 1 means min(row,col) 
 % 'fov',            0.6   Field of view
 % 'expTime',        0.005 Exposure time of the sensor
-% 'timeInterval',   0.005 Time per scene step  
 % 'nCycles',        4     Number of cycles through the harmonic
 % 'nSteps',         15*4    Total number of steps for all the harmonic cycles
 %                         There are nSteps/nCycles per each cycle.
+% 'distance'        0.3   Meters from the viewing screen
 %
 % Outputs: 
-%   iStim: a structure that contains the 
-%     display model
+%   iStim - a structure that contains
+%     params used to create this
 %     scene (first frame)
+%     sceneRGB
 %     optical image (first frame)
 %     human cone absorptions (dynamic)
 % 
@@ -47,24 +54,33 @@ function iStim = ieStimulusGabor(varargin)
 %% Parse inputs
 p = inputParser;
 
-addParameter(p,'meanLuminance',  200,   @isnumeric);
+addParameter(p,'meanLuminance',  100,   @isnumeric);
 addParameter(p,'nSteps',         60,    @isnumeric);
-addParameter(p,'row',            64,    @isnumeric);  
-addParameter(p,'col',            64,    @isnumeric);  
+addParameter(p,'row',             0,    @isnumeric);  
+addParameter(p,'col',             0,    @isnumeric);  
 addParameter(p,'freq',            6,    @isnumeric);  
 addParameter(p,'contrast',        1,    @isnumeric);  
 addParameter(p,'ph',              0,    @isnumeric);  
 addParameter(p,'ang',             0,    @isnumeric);  
-addParameter(p,'GaborFlag',       0.25,    @isnumeric);  
-addParameter(p,'fov',            0.6, @isnumeric);
+addParameter(p,'GaborFlag',       1,    @isnumeric);  
 addParameter(p,'expTime',        0.005, @isnumeric);
-addParameter(p,'timeInterval',   0.005, @isnumeric);
 addParameter(p,'nCycles',        4, @isnumeric);
+
+% Viewing parameters
+addParameter(p,'fov',            0.6, @isnumeric);
+addParameter(p,'distance',       0.3, @isnumeric);   % Distance to screen
 
 % Field of view
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
+if params.row == 0
+    % Make sure we have enough row and column samples to avoid aliasing the
+    % frequency.  Four is arbitrary, but twice Nyquist.
+   params.row = 4*params.freq*params.fov;
+   params.col = 4*params.freq*params.fov;
+end
+
 %% Compute a scene
 
 % Set up scene parameters
@@ -78,7 +94,7 @@ absorptions = sensorCreate('human');
 absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
 
 absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
-absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
+% absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
 %% Compute a dynamic set of cone absorptions
 %
@@ -101,8 +117,13 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
+    % All we do is update the phase of the Gabor
     params.ph = (2*pi)*params.nCycles*(t-1)/params.nSteps; % one period over nSteps
     scene = sceneCreate('harmonic', params);
+    
+    scene = sceneAdjustLuminance(scene,params.meanLuminance);
+    scene = sceneSet(scene,'distance',params.distance);
+    
     if t ==1
         sceneRGB = zeros([sceneGet(scene, 'size'), params.nSteps, 3]);
     end
