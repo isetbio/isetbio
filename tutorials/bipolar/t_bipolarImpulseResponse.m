@@ -21,7 +21,7 @@ osModelType = 'linear';
 timeStep = 1e-3;        % time step
 nSamples = .4/timeStep;        % 2000 samples
 
-flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
+flashIntens = 5000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
 % Create human sensor.
 sensor = sensorCreate('human');

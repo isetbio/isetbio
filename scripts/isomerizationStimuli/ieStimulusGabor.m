@@ -55,7 +55,7 @@ addParameter(p,'freq',            6,    @isnumeric);
 addParameter(p,'contrast',        1,    @isnumeric);  
 addParameter(p,'ph',              0,    @isnumeric);  
 addParameter(p,'ang',             0,    @isnumeric);  
-addParameter(p,'GaborFlag',       1,    @isnumeric);  
+addParameter(p,'GaborFlag',       0.25,    @isnumeric);  
 addParameter(p,'fov',            0.6, @isnumeric);
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'timeInterval',   0.005, @isnumeric);

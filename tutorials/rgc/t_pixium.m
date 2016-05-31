@@ -40,20 +40,22 @@
 %% Initialize
 % clear;
 % ieInit;
-
+for bwL = 32%[ 32 50] 
+    for freqL = 5%[5 8 2 12]
+    close all;
 %% Parameters to alter
-
+clear electrodeArray
 % Electrode size
 % Set the size of implant pixels
 electrodeArray.width = 70e-6; % meters
 % electrodeArray.width = 140e-6; % meters
-
+ 
 % Retinal patch eccentricity
 patchEccentricity = 12; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 3.7;
+fov = 1.6;
 
 % Stimulus length
 nSteps = 100;
@@ -73,31 +75,31 @@ params.nSteps = nSteps;
 params.row = 100;
 params.col = 100;
 params.fov = fov;
-params.freq = 5; % Hz grating frequency
+params.freq = freqL; % Hz grating frequency
 % % params.vfov = 0.7;
 % movingBar = ieStimulusBar(params);
 
 tuningWoffElec = 0.4;
 tuningWoffHealthy = 1;
 
-pulseFreq = 8; % Hz, electrode pulse frequency
+pulseFreq = 25; % Hz, electrode pulse frequency
 
 contrastHealthy = 1;
 contrastElectrode = 1;
 %%% Grating subunit stimulus
 
-params.barWidth = 36;
-% iStim = ieStimulusGratingSubunit(params);
-iStim = iStimC;
+params.barWidth = bwL;
+iStim = ieStimulusGratingSubunit(params);
+% iStim = iStimC;
 absorptions = iStim.absorptions;
 movingBar = iStim;
 %% Show raw stimulus for osIdentity
-figure;
-for frame1 = 1:size(movingBar.sceneRGB,3)
-    imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
-    colormap gray; drawnow;
-end
-close;
+% figure;
+% for frame1 = 1:size(movingBar.sceneRGB,3)
+%     imagesc(squeeze(movingBar.sceneRGB(:,:,frame1,:)));
+%     colormap gray; drawnow;
+% end
+% close;
 
 %% Outer segment calculation
 % There is no simulated outer segment, this identity outer segment acts as
@@ -304,9 +306,9 @@ paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 model   = 'LNP';    % Computational model
 innerRetina = irCreate(os,paramsIR);
 innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');
@@ -481,9 +483,9 @@ paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 model   = 'LNP';    % Computational model
 innerRetinaHealthy = irCreate(osHealthy,paramsIR);
 innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onMidget','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
-% innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offMidget','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','onParasol','model',model);
+innerRetinaHealthy = rgcMosaicCreate(innerRetinaHealthy,'type','offParasol','model',model);
 
 %%
 innerRetinaHealthy = irComputeContinuous(innerRetinaHealthy,osHealthy);
@@ -499,14 +501,14 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mp4'];
-path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may20/';
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mp4'];
+path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may27/';
 vObj = VideoWriter([path_str name_str],'MPEG-4');
 vObj.FrameRate = 10;
 vObj.Quality = 100;
 open(vObj);
 
-sizeScene = size(movingBar.sceneRGB(:,:,frame1,:));
+sizeScene = size(movingBar.sceneRGB(:,:,1,:));
 
 % Play the movie with the stimulus
 for loopv = 1%:10
@@ -555,3 +557,11 @@ end
 
 
 close(vObj)
+
+
+close all;
+clear stimulusReconstruction stimulusReconstructionHealthy
+name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mat'];
+save([path_str name_str])
+    end
+end

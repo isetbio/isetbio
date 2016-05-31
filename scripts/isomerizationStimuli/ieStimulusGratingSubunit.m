@@ -128,22 +128,31 @@ for t = 1 : nSteps
     
     sceneRGB(:,:,t,:) = barMovie;
     
-    % Compute optical image
-    oi = oiCompute(oi, scene);    
-    
-    % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
+%     % Compute optical image
+%     oi = oiCompute(oi, scene);    
+%     
+%     % Compute absorptions
+%     absorptions = sensorCompute(absorptions, oi);
 
-    if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-    end
+%     if t == 1
+%         volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+%     end
     
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
+    % volts(:,:,t) = sensorGet(absorptions, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end
 
 if wFlag, delete(wbar); end
+
+
+% Compute optical image
+oi = oiCompute(oi, scene);
+
+% Compute absorptions
+absorptions = sensorCompute(absorptions, oi);
+
+volts(:,:,1) = sensorGet(absorptions, 'volts');
 
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);

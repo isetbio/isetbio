@@ -65,21 +65,29 @@ for xcell = 1:nCells(1)
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
                 
                 % This line was used before the fft was implemented
-%                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
+                fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
 % %                 fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
 
 %%%% FFT that works
-                spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
-                spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
-                temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
-                
-                fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
+%                 spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+%                 spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+%                 temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+%                 
+%                 fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
                 
                 % MAKE ZERO MEAN, maybe get rid of this
-                fullResponseRSCombined = fullResponseRSCombined - repmat(mean(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2));
+                % fullResponseRSCombined = fullResponseRSCombined - repmat(mean(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2));
                 
-%                 fullResponseRSCombinedRange = repmat(max(fullResponseRSCombined,2)-min(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2))
-%                 fullResponseRSCombined = fullResponseRSCombinedRange.*fullResponseRSCombined;
+%                 if isa(mosaic,'rgcSubunit');
+%                     arbitraryScaleFactor = 300;
+%                 elseif isa(mosaic,'rgcLNP')
+%                     arbitraryScaleFactor = 0.0147;
+%                 else
+%                     arbitraryScaleFactor = 1;
+%                 end
+%                 
+%                 fullResponseRSCombinedRange = arbitraryScaleFactor*max(fullResponseRSCombined(:) - min(fullResponseRSCombined(:)));
+%                 fullResponseRSCombined = (fullResponseRSCombinedRange/2)*fullResponseRSCombined;
                 
                 % figure; plot(1*fullResponseRSCombined(1328,:),'linewidth',3); hold on; plot(fullResponseRSCenter(1328,:),':r','linewidth',3)
 
@@ -89,6 +97,7 @@ for xcell = 1:nCells(1)
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 
             else            
+                warning('Not circular conv, see fullConvolve.m');
                 % if the temporal impulse responses for center and surround are different, convolve both               
 % 
 %                 K  = fittedGLM.linearfilters.Stimulus.Filter;

@@ -15,13 +15,13 @@ clear
 %% Load image sequence
 
 % WN
-% load('/Users/james/Documents/MATLAB/akheitman/WN_mapPRJ/Stimuli/BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat')
+load('/Users/james/Documents/MATLAB/akheitman/WN_mapPRJ/Stimuli/BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat')
 % 
 % % NSEM
-load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
-testmovieRand = double(testmovie.matrix(:,:,1:3600));
-clear testmovie.matrix
-testmovie.matrix = testmovieRand;
+% load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
+% testmovieRand = double(testmovie.matrix(:,:,1:3600));
+% clear testmovie.matrix
+% testmovie.matrix = testmovieRand;
 
 
 
@@ -66,12 +66,12 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % randMat = rand(size(testmovie.matrix));
 % randMat = rand(80,40,3600);
-% % randMat = zeros(size(testmovie.matrix));
-% % randMat(2,2,1) = 1;
-% % randMat(2,2,:) = rand(size(randMat(2,2,:)));
+randMat = zeros(size(testmovie.matrix));
+randMat(2,2,1) = 1;
+% randMat(2,2,:) = rand(size(randMat(2,2,:)));
 % % randMat = repmat(rand(size(randMat(2,2,:))),size(randMat,1),size(randMat,2),1);
-% testmovieRand = randMat>0.5; testmovie.matrix = testmovieRand;
-sensor = sensorSet(sensor, 'photon rate', 1+4000*(testmovieRand));
+testmovieRand = randMat>0.5; testmovie.matrix = 1*testmovieRand;
+sensor = sensorSet(sensor, 'photon rate', 1+4000*(1*testmovieRand));
 
 ct = sensorGet(sensor,'cone type');
 sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
@@ -122,7 +122,7 @@ bp = bipolar(osL);
 
 bp = bipolarCompute(bp, osL);
 
-% bipolarPlot(bp,'response');
+bipolarPlot(bp,'response');
 
 %% Find RGC responses
 % Build and IR object that takes as input the bipolar mosaic.
@@ -167,7 +167,7 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 
 tonicDriveOrig = 2.27;
 % tD = innerRetinaBpSu.mosaic{1}.mosaicGet('tonicDrive');
-innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.001);
+% innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.001);
 
 % irPlot(innerRetinaBpSu,'mosaic');
 
@@ -180,11 +180,11 @@ irPlot(innerRetinaBpSu,'linear')
 % axis([0 1200 22.1 22.8])
 % axis([0 1200 -18 20])
 % axis([0 1200 -6.9 -6.5])
-rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
 
-
-rLinearSU{1,1,1} = 5*rLinSU{1,1}./max(rLinSU{1,1}) + tonicDriveOrig;
-innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
+% rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
+% rLinearSU{1,1,1} = 5*rLinSU{1,1}./max(rLinSU{1,1}) + tonicDriveOrig;
+% innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
+%%
 numberTrials = 40;
 for tr = 1:numberTrials
     innerRetinaBpSu = irComputeSpikes(innerRetinaBpSu);
@@ -229,7 +229,7 @@ innerRetinaRGB = irCreate(osD, params);
 
 innerRetinaRGB.mosaicCreate('model','LNP','type','off parasol');
 
-innerRetinaRGB.mosaic{1}.mosaicSet('tonicDrive',0.001);
+% innerRetinaRGB.mosaic{1}.mosaicSet('tonicDrive',0.001);
 % % % % % % 
 % sRFold = innerRetinaRGB.mosaic{1}.mosaicGet('sRFcenter');
 % for ci1 = 1:size(sRFold,1)
@@ -255,14 +255,15 @@ innerRetinaRGB.mosaic{1}.mosaicSet('tonicDrive',0.001);
 innerRetinaRGB = irComputeContinuous(innerRetinaRGB, osD);
 
 % Plot response
-%  irPlot(innerRetinaRGB,'linear');
+irPlot(innerRetinaRGB,'linear');
+%%
 % irPlot(innerRetinaRGB,'linear','hold','on');%,'cell',[1 2])
 % irPlot(innerRetinaRGB,'linear','cell',[1 2])
 
-rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
+% rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
+% rLin{1,1,1} = 5*rLin{1,1}./max(rLin{1,1}) + tonicDriveOrig;
+% innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLin);
 
-rLin{1,1,1} = 5*rLin{1,1}./max(rLin{1,1}) + tonicDriveOrig;
-innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLin);
 numberTrials = 40;
 for tr = 1:numberTrials
     innerRetinaRGB = irComputeSpikes(innerRetinaRGB);

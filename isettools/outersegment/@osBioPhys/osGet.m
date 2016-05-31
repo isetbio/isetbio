@@ -26,7 +26,9 @@ allowableFieldsToSet = {...
     'noiseflag',...
     'patchsize',...
     'timestep',...
-    'conecurrentsignal'};
+    'size',...
+    'conecurrentsignal',...
+    'current'};
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 
 % Define what units are allowable.
@@ -50,7 +52,10 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
     case{'timestep'}
         val = obj.timeStep;
         
-    case{'conecurrentsignal'}
+    case{'size'}
+        val = size(obj.coneCurrentSignal);
+        
+    case{'conecurrentsignal','current'}
         val = obj.coneCurrentSignal;
 end
 

@@ -23,6 +23,13 @@ osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.con
 osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
 osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
+% Set symmetric range
+% osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
+% osSigRSrange = max(osSigRS(:))+85;
+% osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
+% osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
+
+
 % % % Spatial averaging over RGC blocks carried out here
 % % % Need to move this before photoreceptors or else it doesn't matter
 % rfSize = 39;
@@ -132,9 +139,9 @@ obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 
 % bipolarOutputRectifiedCenter = bipolarOutputLinearCenter.*(bipolarOutputLinearCenter>0);
 % bipolarOutputRectifiedSurround = -bipolarOutputLinearSurround.*(bipolarOutputLinearSurround<0);
+% 
+% % % bipolarOutputRectifiedCenter = 1*abs(bipolarOutputLinearCenter);
+% % bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround));
 % % 
-% bipolarOutputRectifiedCenter = 1*abs(bipolarOutputLinearCenter);
-% bipolarOutputRectifiedSurround = zeros(size(bipolarOutputLinearSurround));
-% % % 
 % obj.responseCenter = bipolarOutputRectifiedCenter;
 % obj.responseSurround = bipolarOutputRectifiedSurround;

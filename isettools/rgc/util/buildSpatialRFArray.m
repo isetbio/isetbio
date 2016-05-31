@@ -96,7 +96,7 @@ pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD)
 
 %% Create spatial RFs for each cell
 tic
-centerNoise = 1.25; % divide by 2 for mean offset
+centerNoise = 4*1.25; % divide by 2 for mean offset
 
 % centerCorrectY = 0+( 0+(jcarr(end) + pts(end) - (jcarr(1) + pts(1)))/2 )% - receptiveFieldDiameter1STD/4;
 % centerCorrectX = 0+(0+ (icarr(end) + pts(end) - (icarr(1) + pts(1)))/2 )
@@ -116,7 +116,7 @@ for icind = 1:length(icarr)
         rfctr = rfctr+1;
    
         % Add some noise to deviate from circularity
-        d1 = 1; d2 = 0;%0.0675*randn(1,1);
+        d1 = 1; d2 = 12*0.0675*(rand(1,1)-0.5);
         Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
         % receptiveFieldDiameter1STD == 1/sqrt(norm(Q)); % just to check
 

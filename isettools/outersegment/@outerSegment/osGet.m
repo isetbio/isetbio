@@ -23,11 +23,12 @@ switch ieParamFormat(param);  % Lower case and remove spaces
     case{'size'}
         val = size(obj.coneCurrentSignal);
         
-    case{'conecurrentsignal'}
+    case{'conecurrentsignal','current'}
         val = obj.coneCurrentSignal;
         
-    otherwise
-        error('Unknown parameter %s\n',param);
+    otherwise               
+        val = osGet@outerSegment(obj,param);
+        % error('Unknown parameter %s\n',param);
        
 end
 

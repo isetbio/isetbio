@@ -79,8 +79,8 @@ for rgbIndex = 1:channelSize
                     %%%% Should rfDimater be size RF center? Yes!
 %                     stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
 %                     stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
-                    stimX =  floor((stimCenterCoords(1) - floor((extent/2)*size(mosaic.sRFcenter{1,1},1)))/1):floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) ))/1);%
-                    stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
+                    stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*size(mosaic.sRFcenter{1,1},1)))/1):floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) ))/1);%
+                    stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
                 
                 end
                 
