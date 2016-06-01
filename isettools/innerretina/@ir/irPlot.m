@@ -647,7 +647,11 @@ switch ieParamFormat(params.what)
                         % if ~isempty(spikeTimes{ce,1,tr,1});
                         % subplot(6,7,ce); hold on; plot(spikeTimes{ce,1,tr,1},tr,'ok');axis([0 270 0 10]);end;end;end;
                         %                         subplot(2,1,1);
-                        subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
+                        
+                        if strcmpi(holdVal,'off')
+                            subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
+                        end
+                        
                         %                         subplot(nCells(2),nCells(1),cellCtr);
                         %                         spikeTimesP = find(spikeTimes{cellCtr,1,tr,1} == 1);
                         
@@ -748,10 +752,16 @@ switch ieParamFormat(params.what)
                     
                     %                     subplot(nCells(2),nCells(1),cellCtr);
                     
-                    subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
-                    %
-                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
                     
+                    if strcmpi(holdVal,'off')
+                        subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
+                    end
+                    
+                    % subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
+                    %
+                    lenGauss = 399;
+                    convolvewin = lenGauss*.01*exp(-(1/2)*(2.5*((0:lenGauss)-lenGauss/2)/(lenGauss/1)).^2);
+%                     convolvewin = convolvewin./max(convolvewin);
                     
                     if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
                         bindur = .01/1.208;
@@ -761,7 +771,7 @@ switch ieParamFormat(params.what)
                     
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
-                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec);
+                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec/maxTrials);
                     
                     xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
                     
@@ -773,7 +783,7 @@ switch ieParamFormat(params.what)
                     %                     if ~isnan(psth{xcell,ycell})
                     
                     maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec)])]);
+                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec/maxTrials)])]);
                     %                     end
                     %
                     title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));

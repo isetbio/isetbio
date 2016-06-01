@@ -68,10 +68,11 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 % randMat = rand(80,40,3600);
 randMat = zeros(size(testmovie.matrix));
 randMat(2,2,1) = 1;
-% randMat(2,2,:) = rand(size(randMat(2,2,:)));
-% % randMat = repmat(rand(size(randMat(2,2,:))),size(randMat,1),size(randMat,2),1);
+% % randMat(2,2,:) = rand(size(randMat(2,2,:)));
+% % % randMat = repmat(rand(size(randMat(2,2,:))),size(randMat,1),size(randMat,2),1);
 testmovieRand = randMat>0.5; testmovie.matrix = 1*testmovieRand;
 sensor = sensorSet(sensor, 'photon rate', 1+4000*(1*testmovieRand));
+% sensor = sensorSet(sensor, 'photon rate', 1*(20*testmovieRand));
 
 ct = sensorGet(sensor,'cone type');
 sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
@@ -181,9 +182,9 @@ irPlot(innerRetinaBpSu,'linear')
 % axis([0 1200 -18 20])
 % axis([0 1200 -6.9 -6.5])
 
-% rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
-% rLinearSU{1,1,1} = 5*rLinSU{1,1}./max(rLinSU{1,1}) + tonicDriveOrig;
-% innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
+rLinSU = mosaicGet(innerRetinaBpSu.mosaic{1},'responseLinear');
+rLinearSU{1,1,1} = 5*rLinSU{1,1}./max(rLinSU{1,1}) + tonicDriveOrig;
+innerRetinaBpSu.mosaic{1}.mosaicSet('responseLinear', rLinearSU);
 %%
 numberTrials = 40;
 for tr = 1:numberTrials
@@ -191,16 +192,20 @@ for tr = 1:numberTrials
 end
 
 
-irPlot(innerRetinaBpSu,'psth')
+% irPlot(innerRetinaBpSu,'psth')
 
-% vcNewGraphWin([],'upperleftbig'); 
-% % figure;
-% hold on
-% subplot(2,1,2);
-% irPlot(innerRetinaBpSu,'psth','hold','on')
-% hold off;
-% subplot(212); hold on;
-% irPlot(innerRetinaBpSu,'raster'),'hold','on')
+vcNewGraphWin([],'upperleftbig'); 
+subplot(211); hold on;
+irPlot(innerRetinaBpSu,'raster','hold','on','color','b')
+title('Cascade, WN, off parasol cell [1 1]');
+set(gca,'fontsize',14);
+axis([0 35 0 40]);
+subplot(212); 
+irPlot(innerRetinaBpSu,'psth','hold','on')
+ax2 = axis;
+axis([0 35 ax2(3) ax2(4)]);
+set(gca,'fontsize',14);
+set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
 %% Measure the response for the original GLM model
 % This response can be compared to the above response 
 
@@ -260,18 +265,47 @@ irPlot(innerRetinaRGB,'linear');
 % irPlot(innerRetinaRGB,'linear','hold','on');%,'cell',[1 2])
 % irPlot(innerRetinaRGB,'linear','cell',[1 2])
 
-% rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
-% rLin{1,1,1} = 5*rLin{1,1}./max(rLin{1,1}) + tonicDriveOrig;
-% innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLin);
+rLin = mosaicGet(innerRetinaRGB.mosaic{1},'responseLinear');
+rLin{1,1,1} = 5*rLin{1,1}./max(rLin{1,1}) + tonicDriveOrig;
+innerRetinaRGB.mosaic{1}.mosaicSet('responseLinear', rLin);
 
 numberTrials = 40;
 for tr = 1:numberTrials
     innerRetinaRGB = irComputeSpikes(innerRetinaRGB);
 end
-irPlot(innerRetinaRGB,'psth','hold','on');
-% irPlot(innerRetinaRGB,'raster');
+% irPlot(innerRetinaRGB,'psth','hold','on');
+% % irPlot(innerRetinaRGB,'raster');
 
-legend('Cascade Model','Black Box Model')
-title('NSEM Off Parasol [1 1]');
-set(gca,'fontsize',14)
-axis([0 30 0 30])
+% legend('Cascade Model','Black Box Model')
+% title('NSEM Off Parasol [1 1]');
+% set(gca,'fontsize',14)
+% axis([0 30 0 30])
+
+
+vcNewGraphWin([],'upperleftbig'); 
+subplot(211); hold on;
+irPlot(innerRetinaRGB,'raster','hold','on','color','r')
+title('Black Box, WN, off parasol cell [1 1]');
+axis([0 35 0 40]);
+set(gca,'fontsize',14);
+subplot(212); 
+irPlot(innerRetinaRGB,'psth','hold','on')
+ax2 = axis;
+axis([0 35 ax2(3) ax2(4)]);
+set(gca,'fontsize',14);
+set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
+
+
+%% Impulse response
+vcNewGraphWin([],'upperleftbig'); 
+% plot(rLin{1,1,1}(1:400)./max(abs(rLin{1,1,1}(1:400))));
+rLinV = rLin{1,1,1}(1:400);
+plot((rLinV - mean(rLinV))./max(abs((rLinV - mean(rLinV)))),'linewidth',4)
+hold on;
+rLinSUV = rLinSU{1,1,1}(1:400);
+plot((rLinSUV - mean(rLinSUV))./max(abs((rLinSUV - mean(rLinSUV)))),':r','linewidth',4)
+grid on;
+xlabel('Time (msec)'); ylabel('Normalized Response');
+title('Impulse Response for BB and Cascade RGC Models');
+set(gca,'fontsize',14);
+legend('Black Box','Cascade');

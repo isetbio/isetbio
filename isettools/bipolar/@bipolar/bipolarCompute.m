@@ -26,7 +26,7 @@ osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 % Set symmetric range
 % osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
 % osSigRSrange = max(osSigRS(:))+85;
-% osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
+% osSigRSZM = osSigRSrange *( osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2)));
 % osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
 
