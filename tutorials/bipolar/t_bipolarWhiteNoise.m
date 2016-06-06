@@ -16,14 +16,27 @@ clear
 
 % WN
 load('/Users/james/Documents/MATLAB/akheitman/WN_mapPRJ/Stimuli/BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat')
+testmovieRand = double(testmovie.matrix(:,:,1:1200));
 % 
-% % NSEM
+% NSEM
 % load('/Users/james/Documents/MATLAB/akheitman/NSEM_mapPRJ/Stimuli/NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat')
 % testmovieRand = double(testmovie.matrix(:,:,1:3600));
-% clear testmovie.matrix
+% testmovieRand = zeros(size(testmovie.matrix,1),size(testmovie.matrix,2),36000);
+% for frnum = 1:36000-1
+%     testmovieRand(:,:,frnum) = double(testmovie.matrix(:,:,1+floor(frnum/10)));
+% end
+clear testmovie.matrix
+
+testmovie.matrix = testmovieRand;
+
+% testmovieAvg = zeros(size(testmovieRand));
+% for frnum = 1:3600
+%     testmovieRandFr = testmovieRand(:,:,frnum);
+%     testmovieAvg(:,:,frnum) = mean(testmovieRandFr(:));
+% end
+% 
+% testmovieRand = testmovieAvg;
 % testmovie.matrix = testmovieRand;
-
-
 
 % 
 % paramsMovie.timeInterval = .001;
@@ -66,11 +79,11 @@ sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % randMat = rand(size(testmovie.matrix));
 % randMat = rand(80,40,3600);
-randMat = zeros(size(testmovie.matrix));
-randMat(2,2,1) = 1;
+% randMat = zeros(size(testmovie.matrix));
+% randMat(22,22,1) = 1;
 % % randMat(2,2,:) = rand(size(randMat(2,2,:)));
 % % % randMat = repmat(rand(size(randMat(2,2,:))),size(randMat,1),size(randMat,2),1);
-testmovieRand = randMat>0.5; testmovie.matrix = 1*testmovieRand;
+% testmovieRand = randMat>0.5; testmovie.matrix = 1*testmovieRand;
 sensor = sensorSet(sensor, 'photon rate', 1+4000*(1*testmovieRand));
 % sensor = sensorSet(sensor, 'photon rate', 1*(20*testmovieRand));
 
@@ -111,19 +124,63 @@ paramsOSL.convolutionType = 1;
 osL = osCompute(osL,sensor,paramsOSL);
 
 % % Plot the photocurrent for a pixel.
-osPlot(osL,sensor);
+% osPlot(osL,sensor);
+
+%% osBioPhys
+
+% % os = osBioPhys(sensor); 
+% % paramsOS.bgVolts = 10*mean(vectorize(sensorGet(sensor,'volts')));
+% % os = osSet(os, 'noiseFlag', noiseFlag);
+% % os = osCompute(os, sensor, paramsOS);
+% % 
+% % % Set size of retinal patch
+% % patchSize = sensorGet(sensor,'width','m');
+% % os = osSet(os, 'patch size', patchSize);
+% 
+% % Initialize
+osB = osCreate('biophys');
+
+% % % % % Set eccentricity of os patch here
+
+% Set size of retinal patch based on absorptions sensor object
+patchSize = sensorGet(sensor,'width','m');
+osB = osSet(osB, 'patch size', patchSize);
+
+% Set time step of simulation equal to absorptions sensor object
+timeStep = sensorGet(sensor,'time interval','sec');
+osB = osSet(osB, 'time step', timeStep);
+
+sensorVolts = sensorGet(sensor,'volts');
+paramsOS.bgVolts = 10*mean(sensorVolts(:));
+
+osBSub = osB;
+% Compute the outer segment response to the absorptions with the linear
+% model.
+osB = osCompute(osB,sensor,paramsOS);
+
+% % Plot the photocurrent for a pixel.
+% osPlot(osB,sensor);
+
+% osBSub.osSet('coneCurrentSignal',0);
+
+% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:10:end));
 %% Find bipolar responses
-clear bp
-bp = bipolar(osL);
+clear bp os
+os = osL;
+% os = osBSub;
+
+% bp = bipolar(osL);
+
+bp = bipolar(os);
 % bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
 % bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 
 % bipolarThreshold = -40;
 % bp = bipolarSet(bp,'threshold',bipolarThreshold);
 
-bp = bipolarCompute(bp, osL);
+bp = bipolarCompute(bp, os);
 
-bipolarPlot(bp,'response');
+% bipolarPlot(bp,'response');
 
 %% Find RGC responses
 % Build and IR object that takes as input the bipolar mosaic.
@@ -144,27 +201,6 @@ innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',40);
 % % Uncomment to get rid of spatial nonlinearity
 newRectifyFunction = @(x) x;
 innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
-
-% % % % % 
-% sRFold = innerRetinaBpSu.mosaic{1}.mosaicGet('sRFcenter');
-% for ci1 = 1:size(sRFold,1)
-%     for ci2 = 1:size(sRFold,2)        
-%         sRFnew{ci1,ci2} = -ones(size(sRFold{ci1,ci2}));
-%     end
-% end
-% 
-% innerRetinaBpSu.mosaic{1}.mosaicSet('sRFcenter',sRFnew);
-% % 
-% % 
-% sRFold = innerRetinaBpSu.mosaic{1}.mosaicGet('sRFsurround');
-% for ci1 = 1:size(sRFold,1)
-%     for ci2 = 1:size(sRFold,2)        
-%         sRFnew{ci1,ci2} = 0*ones(size(sRFold{ci1,ci2}));
-%     end
-% end
-% 
-% innerRetinaBpSu.mosaic{1}.mosaicSet('sRFsurround',sRFnew);
-% % % % % % 
 
 tonicDriveOrig = 2.27;
 % tD = innerRetinaBpSu.mosaic{1}.mosaicGet('tonicDrive');
@@ -191,21 +227,24 @@ for tr = 1:numberTrials
     innerRetinaBpSu = irComputeSpikes(innerRetinaBpSu);
 end
 
-
 % irPlot(innerRetinaBpSu,'psth')
 
-vcNewGraphWin([],'upperleftbig'); 
-subplot(211); hold on;
-irPlot(innerRetinaBpSu,'raster','hold','on','color','b')
-title('Cascade, WN, off parasol cell [1 1]');
-set(gca,'fontsize',14);
-axis([0 35 0 40]);
-subplot(212); 
-irPlot(innerRetinaBpSu,'psth','hold','on')
-ax2 = axis;
-axis([0 35 ax2(3) ax2(4)]);
-set(gca,'fontsize',14);
-set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
+%%
+% tStart = 0;
+% tEnd = 25;
+% 
+% vcNewGraphWin([],'upperleftbig'); 
+% subplot(211); hold on;
+% irPlot(innerRetinaBpSu,'raster','hold','on','color','b')
+% title('Cascade Diff, WN, off parasol cell [1 1]');
+% set(gca,'fontsize',14);
+% axis([tStart tEnd 0 40]);
+% subplot(212); 
+% irPlot(innerRetinaBpSu,'psth','hold','on')
+% ax2 = axis;
+% axis([tStart tEnd ax2(3) ax2(4)]);
+% set(gca,'fontsize',14);
+% set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
 %% Measure the response for the original GLM model
 % This response can be compared to the above response 
 
@@ -234,28 +273,6 @@ innerRetinaRGB = irCreate(osD, params);
 
 innerRetinaRGB.mosaicCreate('model','LNP','type','off parasol');
 
-% innerRetinaRGB.mosaic{1}.mosaicSet('tonicDrive',0.001);
-% % % % % % 
-% sRFold = innerRetinaRGB.mosaic{1}.mosaicGet('sRFcenter');
-% for ci1 = 1:size(sRFold,1)
-%     for ci2 = 1:size(sRFold,2)        
-%         sRFnew{ci1,ci2} = ones(size(sRFold{ci1,ci2}));
-%     end
-% end
-% 
-% innerRetinaRGB.mosaic{1}.mosaicSet('sRFcenter',sRFnew);
-% 
-% 
-% sRFold = innerRetinaRGB.mosaic{1}.mosaicGet('sRFsurround');
-% for ci1 = 1:size(sRFold,1)
-%     for ci2 = 1:size(sRFold,2)        
-%         sRFnew{ci1,ci2} = zeros(size(sRFold{ci1,ci2}));
-%     end
-% end
-% 
-% innerRetinaRGB.mosaic{1}.mosaicSet('sRFsurround',sRFnew);
-% % % % % % % 
-
 % Compute response
 innerRetinaRGB = irComputeContinuous(innerRetinaRGB, osD);
 
@@ -281,31 +298,97 @@ end
 % set(gca,'fontsize',14)
 % axis([0 30 0 30])
 
+%%
+% vcNewGraphWin([],'upperleftbig'); 
+% subplot(211); hold on;
+% irPlot(innerRetinaRGB,'raster','hold','on','color','r')
+% title('Black Box, WN, off parasol cell [1 1]');
+% axis([tStart tEnd 0 40]);
+% set(gca,'fontsize',14);
+% subplot(212); 
+% irPlot(innerRetinaRGB,'psth','hold','on')
+% ax2 = axis;
+% axis([tStart tEnd ax2(3) ax2(4)]);
+% set(gca,'fontsize',14);
+% set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
+
+
+%%
+tStart = 0;
+tEnd = 35;
 
 vcNewGraphWin([],'upperleftbig'); 
-subplot(211); hold on;
+subplot(311); hold on;
 irPlot(innerRetinaRGB,'raster','hold','on','color','r')
 title('Black Box, WN, off parasol cell [1 1]');
-axis([0 35 0 40]);
 set(gca,'fontsize',14);
-subplot(212); 
-irPlot(innerRetinaRGB,'psth','hold','on')
+axis([tStart tEnd 0 40]);
+subplot(312); hold on;
+irPlot(innerRetinaBpSu,'raster','hold','on','color','b')
+title('Cascade Conv, WN, off parasol cell [1 1]');
+set(gca,'fontsize',14);
+axis([tStart tEnd 0 40]);
+subplot(313); 
+irPlot(innerRetinaBpSu,'psth','hold','on','color','b')
+irPlot(innerRetinaRGB,'psth','hold','on','color','r')
+legend('Cascade Conv','Black Box');
+grid on
 ax2 = axis;
-axis([0 35 ax2(3) ax2(4)]);
+axis([tStart tEnd ax2(3) ax2(4)]);
 set(gca,'fontsize',14);
-set(gcf,'position',[ 0.0063    0.4556    0.9813    0.4378]);
-
+% set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
+set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
 
 %% Impulse response
-vcNewGraphWin([],'upperleftbig'); 
-% plot(rLin{1,1,1}(1:400)./max(abs(rLin{1,1,1}(1:400))));
-rLinV = rLin{1,1,1}(1:400);
-plot((rLinV - mean(rLinV))./max(abs((rLinV - mean(rLinV)))),'linewidth',4)
-hold on;
-rLinSUV = rLinSU{1,1,1}(1:400);
-plot((rLinSUV - mean(rLinSUV))./max(abs((rLinSUV - mean(rLinSUV)))),':r','linewidth',4)
-grid on;
-xlabel('Time (msec)'); ylabel('Normalized Response');
-title('Impulse Response for BB and Cascade RGC Models');
-set(gca,'fontsize',14);
-legend('Black Box','Cascade');
+% vcNewGraphWin([],'upperleftbig'); 
+% % plot(rLin{1,1,1}(1:400)./max(abs(rLin{1,1,1}(1:400))));
+% rLinV = rLin{1,1,1}(1:400);
+% plot(-(rLinV - mean(rLinV))./max(abs((rLinV - mean(rLinV)))),'linewidth',4)
+% hold on;
+% rLinSUV = rLinSU{1,1,1}(1:400);
+% plot(16+[1:length(rLinSUV)],-(rLinSUV - mean(rLinSUV))./max(abs((rLinSUV - mean(rLinSUV)))),':r','linewidth',4)
+% grid on;
+% xlabel('Time (msec)'); ylabel('Normalized Linear Response');
+% title('Impulse Response for BB and Diff Cascade RGC Models');
+% set(gca,'fontsize',14);
+% legend('Black Box','Diff Cascade');
+
+%% PSTHs
+
+psth1 = mosaicGet(innerRetinaRGB.mosaic{1},'responsePsth');
+psth2 = mosaicGet(innerRetinaBpSu.mosaic{1},'responsePsth');
+
+binsize = 100;
+for binval = 1:3500
+    psthSU(binval) = mean(psth2.psth{1}((binval-1)*binsize + 1 :binval*binsize));
+    psthRGB(binval) = mean(psth1.psth{1}((binval-1)*binsize + 1 :binval*binsize));
+    
+end
+% figure; plot(psthRGB); hold on; plot(psthSU);
+
+figure; scatter(psthRGB,psthSU);
+
+%% Plot outer seg current
+
+% figure; plot(mean(reshape(osL.coneCurrentSignal,40*80,3600))')
+% osPlot(osB,sensor);
+% osPlot(osB,sensor);
+% sensor = sensorSet(sensor, 'photon rate', 1*(20*testmovieRand));
+% osPlot(osB,sensor);
+% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:10:end));
+% figure; plot(mean(reshape(osBSub.coneCurrentSignal,40*80,3600))')
+% meanosb =(mean(reshape(osBSub.coneCurrentSignal,40*80,3600))');
+% figure; plot((meanosb - mean(meanosb))./max(abs((meanosb - mean(meanosb)))))
+% meanlin = (mean(reshape(osL.coneCurrentSignal,40*80,3600))');
+% figure; plot((meanlin - mean(meanlin))./max(abs((meanlin - mean(meanlin)))))
+% hold on; plot((meanlin - mean(meanlin))./max(abs((meanlin - mean(meanlin)))))
+% title('Comparison of OS Current averaged over all cones');
+
+xval = ceil(79*rand); yval = ceil(39*rand);
+figure; plot((squeeze( (osBSub.coneCurrentSignal(xval,yval,:) - mean((osBSub.coneCurrentSignal(xval,yval,:))))./max(abs((osBSub.coneCurrentSignal(xval,yval,:) - mean((osBSub.coneCurrentSignal(xval,yval,:))))))) ))
+hold on; plot((squeeze( (osL.coneCurrentSignal(xval,yval,:) - mean((osL.coneCurrentSignal(xval,yval,:))))./max(abs((osL.coneCurrentSignal(xval,yval,:) - mean((osL.coneCurrentSignal(xval,yval,:))))))) ))
+legend('osBioPhys','osLinear')
+xlabel('Time (msec)'); ylabel('Normalized Outer Segment Current');
+title('Comparison of OS Current for a single cone');
+set(gca,'fontsize',14)
+grid on

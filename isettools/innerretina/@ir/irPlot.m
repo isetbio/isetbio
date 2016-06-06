@@ -460,6 +460,9 @@ switch ieParamFormat(params.what)
     case{'responselinear','linear'}
         % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
+        
+        timeStep = obj.timing;
+        
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
             cellTypeEnd = mosaicTypeInd;
@@ -485,7 +488,7 @@ switch ieParamFormat(params.what)
                 subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
             end
             
-            plot(vertcat(meanVoltage{:})');
+            plot(timeStep:timeStep:timeStep*length(vertcat(meanVoltage{:})),vertcat(meanVoltage{:})');
             xlabel(sprintf('Time (msec)'),'fontsize',14);
             ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',14);
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
@@ -678,7 +681,8 @@ switch ieParamFormat(params.what)
                         maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
                         axis([0 .00001*maxt 0 maxTrials]);
                     else
-                        maxt = max(vertcat(obj.mosaic{cellTypeInd}.responseSpikes{:}));
+%                         maxt = max(vertcat(obj.mosaic{cellTypeInd}.responseSpikes{:}));
+                        maxt = max((obj.mosaic{cellTypeInd}.responseSpikes{1}));
                         axis([0 .01*maxt 0 maxTrials]);
                     end
                     
@@ -759,7 +763,7 @@ switch ieParamFormat(params.what)
                     
                     % subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
                     %
-                    lenGauss = 399;
+                    lenGauss = 99;
                     convolvewin = lenGauss*.01*exp(-(1/2)*(2.5*((0:lenGauss)-lenGauss/2)/(lenGauss/1)).^2);
 %                     convolvewin = convolvewin./max(convolvewin);
                     

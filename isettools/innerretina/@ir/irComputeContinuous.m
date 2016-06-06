@@ -186,22 +186,64 @@ switch osType
         rangeCenter = max(spTempStimCenter(:)) - min(spTempStimCenter(:));
         rangeSurround = max(spTempStimSurround(:)) - min(spTempStimSurround(:));
         
-        spTempStimCenter = spTempStimCenter./rangeCenter - mean(spTempStimCenter(:))/rangeCenter;
-        spTempStimSurround = spTempStimSurround./rangeSurround - mean(spTempStimSurround(:))/rangeSurround;
+        if rangeCenter ~= 0
+            spTempStimCenter = spTempStimCenter./rangeCenter - mean(spTempStimCenter(:))/rangeCenter;
+        end
+        if rangeSurround ~= 0 
+            spTempStimSurround = spTempStimSurround./rangeSurround - mean(spTempStimSurround(:))/rangeSurround;
+        end
         
 %         spTempStimCenter = ieScale(spTempStimCenter);
 %         spTempStimSurround = ieScale(spTempStimSurround);
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
+            if isa(ir.mosaic{rgcType},'rgcPhys')
+                
+                for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+                    tCenterNew{cellNum,1} = -1; tSurroundNew{cellNum,1} = 0;
+                end
+%                 ir.mosaic{rgcType,1}.mosaicSet('tCenter',tCenterNew);
+%                 ir.mosaic{rgcType,1}.mosaicSet('tSurround',tSurroundNew);
+                ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tCenter',tCenterNew);
+                ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
+                szRC = size(spTempStimCenter);
+                
+                spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));
+                spTempStimSurroundRS = zeros(80,40,size(spTempStimCenter,3));
+                for frstim = 1:size(spTempStimCenter,3)
+%                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
+%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
+                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
+                    spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40]);
+                end
+                
+                clear spTempStimCenter spTempStimSurround
+                spTempStimCenter = spTempStimCenterRS;
+                spTempStimSurround = spTempStimSurroundRS;
+            end
+            
             
             % We use a separable space-time receptive field.  This allows
             % us to compute for space first and then time. Space.
             [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);           
             
-            
+            % spResponseSurround{1,1} = zeros(size(spResponseCenter{1,1}));
             % Convolve with the temporal impulse response
             responseLinear = ...
                 fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
+            
+            
+            if isa(ir.mosaic{rgcType},'rgcPhys')
+                
+                for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                     rLinearSU{cellNum,1,1} = 3*responseLinear{cellNum,1}./max(responseLinear{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+                    rLinearSUTemp = 6*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+                    % NEED TO SUBSAMPLE TO GET CORRECT SPIKE RATE
+                    rLinearSU{cellNum,1,1} = rLinearSUTemp(1:8:end);
+                end
+                clear responseLinear
+                responseLinear = rLinearSU;
+            end
             
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);

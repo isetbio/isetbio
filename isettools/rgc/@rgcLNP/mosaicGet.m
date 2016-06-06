@@ -118,9 +118,9 @@ switch lower(params.what)
         val = obj.couplingMatrix;
     case{'responsepsth', 'psth'}
         
-        if ~isempty(obj.responsePsth)
-            val = obj.responsePsth;
-        else
+%         if ~isempty(obj.responsePsth)
+%             val = obj.responsePsth;
+%         else
             
             cellCtr=0; dt = .01;
             maxTrials = obj.numberTrials;
@@ -158,7 +158,7 @@ switch lower(params.what)
             val.psth = PSTH_out;
             val.spikes = yout;
             
-        end
+%         end
         
 end
 end

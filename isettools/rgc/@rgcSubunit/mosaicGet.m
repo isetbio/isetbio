@@ -62,7 +62,7 @@ allowableFieldsToSet = {...
     'couplingMatrix',...   
     'postSpikeFilter',...
     'numberSubunits',...
-    'psth','psthresponse'...
+    'psth','psthresponse','responsepsth'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -126,12 +126,12 @@ switch lower(params.what)
         val = obj.numberSubunits;
     case{'rasterresponse'}
         val = obj.rasterResponse;
-    case{'psthresponse'}
+    case{'psth','psthresponse','responsepsth'}
         
         
-        if ~isempty(obj.responsePsth)
-            val = obj.responsePsth;
-        else
+%         if ~isempty(obj.responsePsth)
+%             val = obj.responsePsth;
+%         else
             
             cellCtr=0; dt = .01;
             maxTrials = obj.numberTrials;
@@ -169,7 +169,7 @@ switch lower(params.what)
             
             val.psth = PSTH_out;
             val.spikes = yout;
-        end
+%         end
 end
 end
 

@@ -111,8 +111,10 @@ for icind = 1:length(icarr)
     
     for jcind = 1:length(jcarr)
         % Specify centers, offset even rows for hexagonal packing
-        ic = icarr(icind) + centerNoise*(2*rand(1,1)-1) - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
-        jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
+%         ic = icarr(icind) + centerNoise*(2*rand(1,1)-1) - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
+%         jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
+        ic = icarr(icind) + centerNoise - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
+        jc = jcarr(jcind) - centerNoise;
         rfctr = rfctr+1;
    
         % Add some noise to deviate from circularity

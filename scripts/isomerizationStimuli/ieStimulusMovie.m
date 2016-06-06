@@ -21,9 +21,14 @@ addParameter(p,'meanLuminance',  200,   @isnumeric);
 addParameter(p,'nSteps',         50,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
-addParameter(p,'timeInterval',   .01,    @isnumeric);  
-addParameter(p,'expTime',        .01,    @isnumeric);  
+addParameter(p,'timeInterval',   .008,    @isnumeric);  
+addParameter(p,'expTime',        .008,    @isnumeric);  
 addParameter(p,'fov',            1.5,    @isnumeric);  
+
+% Retinal patch parameters
+addParameter(p,'radius',            0,  @isnumeric);
+addParameter(p,'theta',            0,  @isnumeric);
+addParameter(p,'side',            'left',  @ischar);
 
 p.parse(movieInput,varargin{:});
 
@@ -61,17 +66,37 @@ scene = sceneSet(scene, 'h fov', fov);
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
 
-% retinalPosDegAz = 5; retinalPosDegEl = -3.5;
-% retinalRadiusDegrees = sqrt(retinalPosDegAz^2+retinalPosDegEl^2);
-% retinalPolarDegrees  = abs(atand(retinalPosDegEl/retinalPosDegAz));
-% retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; whichEye = 'right';
-% sensor = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+otfOld = oiGet(oi,'optics otfdata');
+otfNew = zeros(size(otfOld)); 
+otfNew(1,1,:) = ones(1,1,31);
+% waveSpread = (400:10:700);
+% xyRatio = [0.25,0.25];
+% opticsNew = siSynthetic('custom',oi,waveSpread,xyRatio);
+% oi = oiSet(oi,'optics otfdata', otfNew);
 
-sensor = sensorCreate('human');
-sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+if params.radius == 0
+    
+    sensor = sensorCreate('human');
+    sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+else
+    
+    coneP = coneCreate; % The cone properties properties
+    retinalRadiusDegrees = params.radius;
+    retinalPolarDegrees  = params.theta;
+    whichEye             = params.side;
+    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
+    sensor = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+end
 
+sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
+
+% sensor = sensorSet(sensor, 'size', [size(movieInput,1) size(movieInput,2)]);
 sensor = sensorSet(sensor, 'exp time', params.expTime); 
 sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
+
+
+ct = sensorGet(sensor,'cone type');
+sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
 
 %% Compute a dynamic set of cone absorptions for white noise
 %
@@ -102,7 +127,7 @@ frameRate = 1/125; % 125 FPS
 nFramesPerTimeStep = frameRate/params.timeInterval;
 
 % Loop through frames to build movie
-for t = 1 : round ( params.nSteps / nFramesPerTimeStep )
+for t = 1 : round ( params.nSteps / 1 )
     if wFlag, waitbar(t/params.nSteps,wbar); end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
@@ -119,7 +144,7 @@ for t = 1 : round ( params.nSteps / nFramesPerTimeStep )
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    sensor = sensorCompute(sensor, oi);
+    sensor = sensorComputeNoiseFree(sensor, oi);
 
     if t == 1
         volts = zeros([sensorGet(sensor, 'size') params.nSteps]);

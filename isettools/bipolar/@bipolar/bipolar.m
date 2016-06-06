@@ -92,13 +92,18 @@ methods
 %             
             % See s_bipolarDeconvolveDelay for calculation
 %             case{'osLinear'}               
-%                 % R^2 = 0.89 for matching RGC IR
+%                 % R^2 = 0.89 for matching RGC synatpic IR
 %                 obj.temporalConeW = -0.0976e4; obj.temporalConeDiffW = -5.7893e4;
 %                 obj.temporalDelay = 23; % ms
 %             otherwise % osBioPhys
-                % R^2 = 0.91 for matching RGC IR
-                obj.temporalConeW = -0.2834;  obj.temporalConeDiffW = -17.4539;
-                obj.temporalDelay = 24;
+                % R^2 = 0.91 for matching RGC synatpic IR
+%                 obj.temporalConeW = -0.2834;  obj.temporalConeDiffW = -17.4539;
+%                 obj.temporalDelay = 24;
+%           osBioPhys for RGC GLM IR
+%                 R^2 = 0.95
+                obj.temporalConeW = -0.2751;  obj.temporalConeDiffW = -5.8488;
+                obj.temporalDelay = 16;
+
 %         end
         obj.temporalDifferentiator = @(x) obj.temporalConeW*x(:,2+(1e-3/obj.timeStep)*obj.temporalDelay:end) + (1e-3/obj.timeStep)*obj.temporalConeDiffW*diff(x(:,1+(1e-3/obj.timeStep)*obj.temporalDelay:end),1,2);
         

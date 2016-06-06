@@ -51,6 +51,10 @@ for rgbIndex = 1:channelSize
                     stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                     stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                 
+                    
+%                     rowConv = size(sptempStimulus,1)/80; colConv = size(sptempStimulus,2)/40;
+%                     stimX =  ceil(rowConv*(stimCenterCoords(1) - floor(1*(extent/2)*mosaic.rfDiameter))/1):floor(rowConv*(stimCenterCoords(1) + floor(1*(extent/2)*mosaic.rfDiameter ))/1);%
+%                     stimY =  ceil(colConv*(stimCenterCoords(2) - floor(1*(extent/2)*mosaic.rfDiameter))/1):floor(colConv*(stimCenterCoords(2) + floor(1*(extent/2)*mosaic.rfDiameter ))/1);%
                 
                 elseif isa(mosaic, 'rgcSubunit')
                     
@@ -74,7 +78,7 @@ for rgbIndex = 1:channelSize
                     
                 else
                     extent = 1;%2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
-                    offset = mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
+                    offset = [rowConv colConv].*mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     
                     %%%% Should rfDimater be size RF center? Yes!
 %                     stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
@@ -95,9 +99,17 @@ for rgbIndex = 1:channelSize
                 gzout(xcell,ycell,1:length(gz(:))) = gz(:);
                 % Extract 2D image
 %                 spStim = squeeze(sptempStimulus(stimX(gz),stimY(gz),samp,rgbIndex));
+
                 spStim = squeeze(sptempStimulus(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
                 % spStim = spStim/max(spStim(:)); spStim = spStim - mean(spStim(:));
-                            
+                
+                
+%                 rowConv = size(sptempStimulus,1)/80; colConv = size(sptempStimulus,2)/40;
+%                 xsp = (stimX(gz)-offset(1)); ysp = (stimY(gz)-offset(2));
+%                 xspnew = floor(rowConv*xsp(1)):floor(rowConv*xsp(end));
+%                 yspnew = floor(colConv*ysp(1)):floor(colConv*ysp(end));
+%                 spStim = squeeze(sptempStimulus(xspnew,yspnew,samp,rgbIndex));
+                
                 if isa(mosaic, 'rgcSubunit') && exist('spStimSurr','var')
                     
                     spStimSurr = squeeze(sptempStimulusSurround(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
@@ -120,7 +132,10 @@ for rgbIndex = 1:channelSize
 %                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRC(:)));
 %                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)));
 
-                    spRC = (spRFcenter(gz,gz).*(spStim-0*mean(spStim(:))));
+                    spRC = (spRFcenter(gz,gz).*(spStim-0*mean(spStim(:))));                    
+%                     spRC = (spRFcenter(gz,gz).*(spStim.*(spStim>0)));                    
+%                     spRC = (spRFcenter(gz,gz).* mean(mean(spRFcenter(gz,gz).*spStim)));
+% % %                     spRC = (spRFcenter(gz,gz).* mean(mean(spRFcenter(gz,gz).*spStim.*(spStim>0))));
                     
                     if exist('spStimSurr','var')
                         spRS = (spRFsurround(gz,gz).*-0*(spStimSurr-1*mean(spStimSurr(:))));
@@ -128,7 +143,10 @@ for rgbIndex = 1:channelSize
                         spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = mosaic.rectifyFunction(sum(spRS(:)))./length(gz)^2;
 
                     else 
-                        spRS = (spRFsurround(gz,gz).*(spStim-0*mean(spStim(:))));
+                        spRS = (spRFsurround(gz,gz).*(spStim-0*mean(spStim(:))));                        
+%                         spRS = (spRFsurround(gz,gz).*(spStim.*(spStim>0)));
+%                         spRS = (spRFsurround(gz,gz).* mean(mean(spRFsurround(gz,gz).*spStim)));
+% % %                         spRS = (spRFsurround(gz,gz).* mean(mean(spRFsurround(gz,gz).*spStim.*(spStim>0))));
                         
 %                         spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRC(:)))./1;%length(gz)^2;
 %                         spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = abs(sum(spRS(:)))./1;%length(gz)^2;

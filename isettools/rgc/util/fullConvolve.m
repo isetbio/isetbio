@@ -96,7 +96,7 @@ for xcell = 1:nCells(1)
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 
             else            
-                warning('Not circular conv, see fullConvolve.m');
+%                 warning('Not circular conv, see fullConvolve.m');
                 % if the temporal impulse responses for center and surround are different, convolve both               
 % 
 %                 K  = fittedGLM.linearfilters.Stimulus.Filter;
@@ -114,7 +114,16 @@ for xcell = 1:nCells(1)
 % % % % % %  Works with conv                
                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
-
+                
+%                 spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+%                 spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+%                 temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+%                 temporalIRSurroundp = repmat([temporalIRSurround' zeros(1,[-size(temporalIRSurround,1)+size(spResponseSurroundRS,2)])],size(spResponseSurroundRS,1) ,1);
+%                 
+%                 fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
+%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRSp').*fft(temporalIRSurroundp'))';
+                
+                
 %                 fullResponseRSCenter = ifft(fft(spResponseCenterRS).*repmat(fft(temporalIRCenter,169),1,1101));
 %                 fullResponseRSSurround = ifft(fft(spResponseSurroundRS).*repmat(fft(temporalIRSurround,169),1,1101));
                 
