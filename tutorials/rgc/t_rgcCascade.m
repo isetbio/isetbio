@@ -178,8 +178,8 @@ osBSub = osB;
 % clear osB
 %% Find bipolar responses
 clear bp os
-os = osL;
-% os = osLSub;
+% os = osL;
+os = osLSub;
 % os = osBSub;
 
 % bp = bipolar(osL);
@@ -353,7 +353,7 @@ irPlot(innerRetinaRecorded,'raster','cell',[7 1]);
 %%
 tStart = 0.5;
 tEnd = 29;%1*8.5;
-cellNum = 7;
+cellNum = 2;
 
 vcNewGraphWin([],'upperleftbig'); 
 subplot(411); hold on;

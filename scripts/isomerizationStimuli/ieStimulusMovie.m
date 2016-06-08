@@ -54,6 +54,8 @@ fov = params.fov;
 display = displayCreate('CRT-Sony-HorwitzLab');
 
 % Set up scene, oi and sensor
+params.row = size(movieInput,1);
+params.col = size(movieInput,2);
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
@@ -66,9 +68,11 @@ scene = sceneSet(scene, 'h fov', fov);
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
 
-otfOld = oiGet(oi,'optics otfdata');
-otfNew = zeros(size(otfOld)); 
-otfNew(1,1,:) = ones(1,1,31);
+% otfOld = oiGet(oi,'optics otfdata');
+
+% otfNew = zeros(size(otfOld)); 
+% otfNew(1,1,:) = ones(1,1,31);
+
 % waveSpread = (400:10:700);
 % xyRatio = [0.25,0.25];
 % opticsNew = siSynthetic('custom',oi,waveSpread,xyRatio);
@@ -77,7 +81,7 @@ otfNew(1,1,:) = ones(1,1,31);
 if params.radius == 0
     
     sensor = sensorCreate('human');
-    sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
+
 else
     
     coneP = coneCreate; % The cone properties properties
@@ -89,6 +93,15 @@ else
 end
 
 sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
+
+% Set aspect ratio
+% At this point, we have the right cone density and the right number in
+% cols, now we just need to set the rows to have the same aspect ratio as
+% the input movie.
+sensorSize = sensorGet(sensor,'size');
+aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
+sensor = sensorSet(sensor,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
+
 
 % sensor = sensorSet(sensor, 'size', [size(movieInput,1) size(movieInput,2)]);
 sensor = sensorSet(sensor, 'exp time', params.expTime); 
