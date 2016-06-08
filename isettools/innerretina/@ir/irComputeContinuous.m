@@ -239,7 +239,7 @@ switch osType
 %                     rLinearSU{cellNum,1,1} = 3*responseLinear{cellNum,1}./max(responseLinear{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
                     rLinearSUTemp = 6*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
                     % NEED TO SUBSAMPLE TO GET CORRECT SPIKE RATE
-                    rLinearSU{cellNum,1,1} = rLinearSUTemp(1:8:end);
+                    rLinearSU{cellNum,1,1} = rLinearSUTemp;%(1:8:end);
                 end
                 clear responseLinear
                 responseLinear = rLinearSU;

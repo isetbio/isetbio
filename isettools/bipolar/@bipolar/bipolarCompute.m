@@ -100,7 +100,7 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.
 
 % % Convolve
 % % DO THE CIRCULAR CONV
-load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt200_GLM.mat');
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt200_GLM.mat');
 % bipolarOutputCenterRSLong = convn(spatialSubsampleCenterRS',bipolarFilt)';
 % bipolarOutputSurroundRSLong =  convn(spatialSubsampleSurroundRS',bipolarFilt)';
 
@@ -110,7 +110,24 @@ load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt200_
 % bipolarFiltZP = repmat([bipolarFilt' zeros([size(bipolarFilt,2) size(spatialSubsampleCenterRS,2)])],size(spatialSubsampleCenterRS,1) ,1);
 
 % % % Min ZP
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt200_GLM.mat');
+% if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
+%     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
+%     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
+%     bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
+% else
+% 
+%     bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
+%     
+%     bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
+%     bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
+%     
+% end
 
+
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6.mat'); % only cells 1-10
+load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6.mat');  % only cells 1-10
+bipolarFilt = mean(bipolarFiltMat)';
 if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
@@ -123,6 +140,7 @@ else
     bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
     
 end
+
 % 
 bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
 bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
@@ -148,9 +166,9 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 
 %% Attach output to object
 % % Bipolar rectification 
-% obj.responseCenter = os.coneCurrentSignal;
-% obj.responseSurround = zeros(size(os.coneCurrentSignal));
-
+% % % obj.responseCenter = os.coneCurrentSignal;
+% % % obj.responseSurround = zeros(size(os.coneCurrentSignal));
+% 
 obj.responseCenter = (bipolarOutputLinearCenter);
 obj.responseSurround = zeros(size(bipolarOutputLinearSurround));
 

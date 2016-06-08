@@ -34,7 +34,7 @@ plotFracFlag = 0;
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 2;%:2    % Choose On Parasol (1) or Off Parasol (2)
-stimulusTestI = 1;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
+stimulusTestI = 2;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
 % Experimental dataset
@@ -65,16 +65,24 @@ end
 [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
 
 % Length of WN movie is 1200, take nFrames to limit natural movie to same length
-nFrames = 1200; 
-testmovieshort = testmovie.matrix(:,:,1:nFrames); 
+nFrames = 3600; 
+testmovieshort = double(testmovie.matrix(:,:,1:nFrames)); 
 
 frRS = 8;
 testmovieRS = zeros(size(testmovieshort,1),size(testmovieshort,2),frRS*size(testmovieshort,3));
 for frnum = 1:nFrames
-    for frrep = 1:8
+    for frrep = 1:frRS
         testmovieRS(:,:,(frnum-1)*frRS+frrep) = testmovieshort(:,:,frnum);
     end
 end
+
+
+% range = max(testmovieRS(:)) - min(testmovieRS(:));
+% testmovieRS = 1*(testmovieRS./range - mean(testmovieRS(:))/range);
+% 
+% 
+% range = max(testmovieshort(:)) - min(testmovieshort(:));
+% testmovieRS = 1*(testmovieshort./range - mean(testmovieshort(:))/range);
 
 % testmovieshort = zeros(80,40,10);
 % testmovieshort(:,20:30,:) = 1;
@@ -83,7 +91,7 @@ showFrames = 50;
 % ieMovie(testmovieshort(:,:,1:showFrames));
 
 %% Generate display, scene, oi, sensor
-paramsStim.nsteps = 2;%size(testmovieshort,3);
+paramsStim.nsteps = 1;%size(testmovieshort,3);
 %  Bipolar filter is setfor 0.001 sec, so it needs to be 0.001
 paramsStim.timeInterval = 0.001; % sec
 paramsStim.expTime = 0.001; % sec
@@ -97,9 +105,12 @@ paramsStim.radius = 36;
 paramsStim.theta = 330;
 paramsStim.side = 'left';
 
-iStim = ieStimulusMovie(testmovieshort(:,:,1:2),paramsStim);
+iStim = ieStimulusMovie(testmovieshort(:,:,1),paramsStim);
 sensor = iStim.sensor;
-sensor.data.volts = 5e-4*testmovieRS;
+
+% sensor.data.volts = 5e-4*double(testmovieshort)./255;
+sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
+% clear testmovieRS testmovieshort
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
 % cone absorptions. The next step is to get the outer segment current. The
@@ -123,12 +134,18 @@ osL = osSet(osL, 'time step', timeStep);
 % Set circular convolution, only steady state
 paramsOSL.convolutionType = 1; 
 
+osLSub = osL;
+
 % Compute the outer segment response to the absorptions with the linear
 % model.
 osL = osCompute(osL,sensor,paramsOSL);
 % osL = osSet(osL,'coneCurrentSignal',sensor.data.volts);
 % % Plot the photocurrent for a pixel.
 % osPlot(osL,sensor);
+
+osLSub = osSet(osL, 'time step', 8*timeStep);
+osLSub.osSet('coneCurrentSignal',osLSub.coneCurrentSignal(:,:,1:8:end));
+% osPlot(osLSub,sensor)
 %% osBioPhys
 
 % % Initialize
@@ -150,17 +167,19 @@ paramsOS.bgVolts = 10*mean(sensorVolts(:));
 osBSub = osB;
 % Compute the outer segment response to the absorptions with the linear
 % model.
-osB = osCompute(osB,sensor,paramsOS);
-
-% % Plot the photocurrent for a pixel.
-% osPlot(osB,sensor);
-
-% osBSub.osSet('coneCurrentSignal',0);
-
-% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:10:end));
+% osB = osCompute(osB,sensor,paramsOS);
+% 
+% % % Plot the photocurrent for a pixel.
+% % osPlot(osB,sensor);
+% 
+% % osBSub.osSet('coneCurrentSignal',0);
+% 
+% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:80:end));
+% clear osB
 %% Find bipolar responses
 clear bp os
 os = osL;
+% os = osLSub;
 % os = osBSub;
 
 % bp = bipolar(osL);
@@ -189,7 +208,7 @@ params.eyeAngle = 0; ntrials = 0;
 % Determined at beginning to allow looping
 params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
-params.cellType = cellType;         % ON or OFF Parasol
+params.cellType = cellType;         % ON or OFF Parasol;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
@@ -201,8 +220,9 @@ nTrials = 57; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 % innerRetina.mosaic{1} = mosaicSet(innerRetina.mosaic{1},'tSurround',tSurroundNew);
 
 % Linear convolution
+% NEED TO DO MEAN SCALING AND CENTERING LIKE RGC
 innerRetinaSU = irCompute(innerRetinaSU, bp);
-innerRetinaSU = irSet(innerRetinaSU,'timing',.0083);
+innerRetinaSU = irSet(innerRetinaSU,'timing',.008);
 
 irPlot(innerRetinaSU,'linear','cell',[7 1]);
 irPlot(innerRetinaSU,'raster','cell',[7 1]);
@@ -332,31 +352,38 @@ irPlot(innerRetinaRecorded,'raster','cell',[7 1]);
 
 %%
 tStart = 0.5;
-tEnd = 8.5;
+tEnd = 29;%1*8.5;
 cellNum = 7;
 
 vcNewGraphWin([],'upperleftbig'); 
 subplot(411); hold on;
 irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
-title('Black Box, WN, off parasol cell [1 1]');
+title(sprintf('Black Box, WN, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 57]);
 axis off
 
 subplot(413); hold on;
 irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
-title('Cascade Conv, WN, off parasol cell [1 1]');
+title(sprintf('Cascade Conv, WN, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
-axis([tStart-.04 tEnd-.04 0 57]);
+% axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
+axis([tStart tEnd 0 57]);
 axis off
 
 
 subplot(412); hold on;
 irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title('Recorded, WN, off parasol cell [1 1]');
+title(sprintf('Recorded, WN, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
-axis([tStart-0.5 tEnd-0.5 0 57]);
-axis off
+
+switch stimulusTestI
+    case 1
+        axis([tStart-0.5 tEnd-0.5 0 57]);
+    case 2
+        axis([tStart-1 tEnd-1 0 57]);
+end
+% axis off
 
 % 
 % subplot(414); 
@@ -373,12 +400,12 @@ axis off
 % % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
 % set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
 
-%%
+%
 % figure;
 
 subplot(414)
 minlen = min([length(innerRetinaPSTH{cellNum}) length(innerRetinaRecordedPSTH{cellNum}) length(innerRetinaSUPSTH{cellNum}) ]);
-
+hold off
 switch stimulusTestI
     case 1
         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
@@ -386,16 +413,40 @@ switch stimulusTestI
         hold on;
         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
         
-        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(600-36+(1:minlen-1200)),':b','linewidth',3);
-%     case 2
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(600-0+(1:minlen-1200)),':b','linewidth',3);
+        
+        ax3 = axis;
+        axis([0 8.5 ax3(3) ax3(4)])
+
+    case 2
 %         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
 %         
 %         hold on;
 %         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
-end
 
-ax3 = axis; 
-axis([0 8 ax3(3) ax3(4)])
+%         minlen = minlen - 1000;
+%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+%         
+%         hold on;
+%         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((000+(1:minlen-1200))),':k','linewidth',2);
+%         
+%         plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(000-36+(1:minlen-1200)),':b','linewidth',3);
+
+%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
+        
+        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+        hold on;
+        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
+        hold on;
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)),':b','linewidth',3);
+        
+        
+        ax3 = axis;
+%         axis([tStart-1 tEnd-1 ax3(3) ax3(4)/4])
+        axis([tStart-1 tEnd-1 ax3(3) 100])
+        
+        % axis([0-.5 8-.5 0 100])
+end
 
 legend('Black Box','Recorded','Cascade Conv');
 grid on

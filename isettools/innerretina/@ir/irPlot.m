@@ -669,7 +669,7 @@ switch ieParamFormat(params.what)
                         if ~isempty(spikeTimesP)
                             
 %                             hold on; line([spikeTimesP,spikeTimesP].*bindur,[tr tr-1],'color','k');
-                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],18,'o',color,'filled');
+                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],8,'o',color,'filled');
                         end
                         %                         axis([0 5000 0 numberTrials]);
                         xlabel('Time (sec)'); ylabel('Trial');
