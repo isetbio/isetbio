@@ -15,9 +15,7 @@ function [acc, w] = svmClassifyAcc(data, labels, nFolds, svmType, opts)
 %    nFolds     - number of folds for cross validation
 %    svmType    - string, indicate which svm package to be used:
 %                 'svm'       - libsvm (default)
-%                 'linear'    - liblinear (linear kernal)
-%                 'ranksvm'   - liblinear - ranksvm (fast / scalable mode)
-%                 'warmstart' - liblinear - warmstart (incremental mode)
+%                 'linear'    - liblinear (linear kernal?
 %    opts       - string, options to be supplied to svm packages
 %
 %  Outputs:
@@ -28,26 +26,13 @@ function [acc, w] = svmClassifyAcc(data, labels, nFolds, svmType, opts)
 %  Example:
 %    acc = svmClassifyAcc(dataMatrix, labels, 10, 'linear')
 %
-%  Notes:
-%    For libsvm and liblinear, there are Matlab interfaces. However, for
-%    most other packages, there are only C++ implementation. We might write
-%    Matlab interface some time in the future. At this point, we use
-%    system() command to invoke the compiled files. To run in this mode
-%    successfully, you might need to compile the source code on your own
-%
-%  TODO:
-%    There are other optimized packages for non-linear kernal svm and we
-%    might add them some time in the future. Some packages are listed as
-%    below:
-%      1. Core Vector Machine
-%      2. FaLKM-lib (fast, local kernal svm)
-%
 %  See also:
 %    svmtrain, svmpredict, train, predict
 %
 %  (HJ) ISETBIO Team, 2014
 
 %% Check Inputs
+warning('The cross-validation part is out of date. Should use -v opts');
 if nargin < 1, error('Data matrix required'); end
 if nargin < 2, error('Labels for data required'); end
 if nargin < 3, nFolds  = 5; end
@@ -60,6 +45,9 @@ if nargin < 4, svmType = 'svm'; end
 %  step
 data = (data-repmat(min(data),[size(data, 1) 1])) ...
     ./ repmat(max(data)-min(data),[size(data,1 ) 1]);
+
+% zero mean
+data = 2 * bsxfun(@minus, data, mean(data));
 
 % The data should not contain any NaN inside
 % If there's any NaN, set it to zero
@@ -100,30 +88,6 @@ for i = 1 : nFolds
             svmStruct = svmtrain(labels(trainIndx),trainData,opts);
             [~,curAcc,~] = svmpredict(labels(testIndx), testData, ...
                 svmStruct,'-q');
-        case 'ranksvm'
-            if notDefined('opts'), opts = '-s 2 -q'; end
-            libsvmwrite('ranksvm.train', labels(trainIndx), trainData);
-            libsvmwrite('ranksvm.test', labels(testIndx), testData);
-            cmd = fullfile(ranksvmRootPath, 'train');
-            cmd = sprintf('%s %s %s model', cmd, opts, 'ranksvm.train');
-            system(cmd);
-            
-            % now model is saved to ranksvm.train.model
-            % do prediction
-            cmd = fullfile(ranksvmRootPath, 'predict');
-            cmd = sprintf('%s -q %s %s %s', cmd, 'ranksvm.test', ...
-                            'model', 'pred_labels');
-            system(cmd);
-            
-            % load back
-            pred_labels = importdata('pred_labels');
-            curAcc = sum(pred_labels == labels(testIndx)) / ...
-                            length(pred_labels) * 100;
-                        
-            % clean up
-            delete('ranksvm.train', 'ranksvm.test');
-            delete('model', 'pred_labels');
-        case 'increment'
         otherwise
             error('Unknown svm type');
     end
