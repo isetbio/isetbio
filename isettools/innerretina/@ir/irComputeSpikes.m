@@ -31,7 +31,7 @@ function ir = irComputeSpikes(ir, varargin)
 % exptBinsPerStep = round(normalRR/exptRR);
 
 global RefreshRate
-RefreshRate = 12;    
+RefreshRate = 100;    
 % RefreshRate = exptBinsPerStep
 
 

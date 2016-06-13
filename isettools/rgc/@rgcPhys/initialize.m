@@ -99,13 +99,13 @@ goodind = 1:length(mosaicGLM);
 % % % % % % 
 % Loop through mat files and load parameters
 % for matFileInd = 1:length(mosaicGLM)
-for matFileInd = 1:10%length(goodind)
+for matFileInd = 1:31%length(goodind)
 %     cell = matFileNames(matFileInd).name(1:end-4);
 %     obj.cellID{matFileInd,1} = cell;
 %     load([glmFitPath experimentID '/' cell '.mat']);
 
-%     obj.cellID{matFileInd,1} = mosaicGLM{matFileInd}.cell_savename;
-    obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
+    obj.cellID{matFileInd,1} = mosaicGLM{matFileInd}.cell_savename;
+%     obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
     
     obj.postSpikeFilter{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
     if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')

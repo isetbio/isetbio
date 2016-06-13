@@ -53,6 +53,11 @@ fov = params.fov;
 % Create display
 display = displayCreate('CRT-Sony-HorwitzLab');
 
+% Set linear gamma so sensor absorptions = pixel values
+% This is done to model EJ's experiments
+display = displaySet(display,'gamma','linear');
+
+
 % Set up scene, oi and sensor
 params.row = size(movieInput,1);
 params.col = size(movieInput,2);
@@ -69,13 +74,15 @@ scene = sceneSet(scene, 'h fov', fov);
 oi  = oiCreate('wvf human');
 
 % otfOld = oiGet(oi,'optics otfdata');
-
-% otfNew = zeros(size(otfOld)); 
-% otfNew(1,1,:) = ones(1,1,31);
-
-% waveSpread = (400:10:700);
-% xyRatio = [0.25,0.25];
-% opticsNew = siSynthetic('custom',oi,waveSpread,xyRatio);
+% 
+% otfNew = zeros(size(otfOld));
+% otfNew = ones(size(otfOld));% + sqrt(-1)*ones(size(otfOld)); 
+% % otfNew(101,101,25) = ones(1,1,1);
+% % otfNew(1,1,:) = ones(1,1,31);
+% % otfNew(1,201,:) = ones(1,1,31);
+% % otfNew(201,1,1:31) = ones(1,1,31);
+% % otfNew(201,201,:) = ones(1,1,31);
+% 
 % oi = oiSet(oi,'optics otfdata', otfNew);
 
 if params.radius == 0
@@ -142,6 +149,10 @@ nFramesPerTimeStep = frameRate/params.timeInterval;
 % Loop through frames to build movie
 for t = 1 : round ( params.nSteps / 1 )
     if wFlag, waitbar(t/params.nSteps,wbar); end
+    
+    if mod(t,40) == 0
+        t
+    end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
 %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));

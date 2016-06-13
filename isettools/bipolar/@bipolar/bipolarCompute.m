@@ -126,7 +126,7 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.
 
 
 % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6.mat'); % only cells 1-10
-load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6.mat');  % only cells 1-10
+load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all.mat');  % only cells 1-10
 bipolarFilt = mean(bipolarFiltMat)';
 if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
@@ -166,8 +166,8 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 
 %% Attach output to object
 % % Bipolar rectification 
-% % % obj.responseCenter = os.coneCurrentSignal;
-% % % obj.responseSurround = zeros(size(os.coneCurrentSignal));
+% obj.responseCenter = os.coneCurrentSignal;
+% obj.responseSurround = zeros(size(os.coneCurrentSignal));
 % 
 obj.responseCenter = (bipolarOutputLinearCenter);
 obj.responseSurround = zeros(size(bipolarOutputLinearSurround));

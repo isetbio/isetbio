@@ -1,4 +1,4 @@
-function  [spResponseCenter, spResponseSurround] = spConvolve(mosaic, sptempStimulus, sptempStimulusSurround)
+function  [spResponseCenter, spResponseSurround, linEqDisc] = spConvolve(mosaic, sptempStimulus, sptempStimulusSurround)
 % spConvolve: a util function of the @rgc parent class, for a separable
 % STRF finds the 2D convolution of the spatial RF for every time frame.
 % 
@@ -33,6 +33,7 @@ for rgbIndex = 1:channelSize
         for ycell = 1:nCells(2)
             spResponseCenter{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
             spResponseSurround{xcell,ycell} = zeros([size(mosaic.sRFcenter{xcell,ycell}) nSamples channelSize]);%conv2(spRFcenter, spStim, 'same');
+%             linEqDisc{xcell,ycell} = zeros(size(sptempStimulus));
             for samp = 1:nSamples
                 
                 % Get RF 2D images
@@ -121,8 +122,12 @@ for rgbIndex = 1:channelSize
                 
                 if isa(mosaic, 'rgcPhys')
 %                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFcenter, spStim, 'same');
+                    
+
                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;%conv2(spRFcenter, spStim, 'same');
-%                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
+%                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) =  ones(size((spRFcenter(gz,gz)))).* (mean(mean(spRFcenter(gz,gz).*spStim)));
+%                     linEqDisc{xcell,ycell}(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex) = (ones(size(spRFcenter(gz,gz)))).* (mean(mean(spRFcenter(gz,gz).*spStim)));
+                    %                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
                 
                 elseif isa(mosaic, 'rgcSubunit')
 %                     

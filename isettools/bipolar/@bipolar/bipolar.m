@@ -82,8 +82,8 @@ methods
         end
         
         % Build spatial receptive field
-        obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
-        obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
+        obj.sRFcenter = 1;%fspecial('gaussian',[2,2],1); % convolutional for now
+        obj.sRFsurround = 1;%fspecial('gaussian',[2,2],1); % convolutional for now
         
         % Weight are caclulated offline by optimizing for the minimum error
         % between the differentiator signal and the bipolar output

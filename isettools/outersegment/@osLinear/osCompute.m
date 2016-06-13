@@ -40,7 +40,8 @@ obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 
 % Find coordinates of L, M and S cones, get voltage signals.
 % cone_mosaic = sensorGet(sensor,'cone type');
-cone_mosaic = 3*ones(80,40);
+cone_mosaic = 3*ones(size(sensor.data.volts,1),size(sensor.data.volts,2));
+
 % When we just use the number of isomerizations, this is consistent with
 % the old coneAdapt function and validates.  
 isomerizations = sensorGet(sensor,'photon rate');

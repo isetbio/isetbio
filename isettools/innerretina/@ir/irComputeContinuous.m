@@ -213,7 +213,9 @@ switch osType
                 for frstim = 1:size(spTempStimCenter,3)
 %                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
 %                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
-                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
+%                      spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40],'method','nearest');
+%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40],'method','nearest');
+                    spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40]);
                 end
                 
@@ -227,6 +229,11 @@ switch osType
             % us to compute for space first and then time. Space.
             [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);           
             
+
+%             for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                 linEqDiscBig(:,:,frstim) =    imresize(linEqDisc{cellNum,1}(:,:,frstim),[80 40]);
+%             end
+            
             % spResponseSurround{1,1} = zeros(size(spResponseCenter{1,1}));
             % Convolve with the temporal impulse response
             responseLinear = ...
@@ -237,7 +244,8 @@ switch osType
                 
                 for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
 %                     rLinearSU{cellNum,1,1} = 3*responseLinear{cellNum,1}./max(responseLinear{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
-                    rLinearSUTemp = 6*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+                    rLinearSUTemp = 8.5*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+%                     rLinearSUTemp = 20*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
                     % NEED TO SUBSAMPLE TO GET CORRECT SPIKE RATE
                     rLinearSU{cellNum,1,1} = rLinearSUTemp;%(1:8:end);
                 end
@@ -246,6 +254,8 @@ switch osType
             end
             
             % Store the linear response
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseSpikes', []);
+            % ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', []);
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
 
 
