@@ -34,14 +34,17 @@ end
 properties (SetAccess = protected, GetAccess = public)
     
     cellLocation;                    % location of bipolar RF center
+    cellType;                        % diffuse on or off
     patchSize;                       % size of retinal patch from sensor
     timeStep;                        % time step of simulation from sensor
     sRFcenter;                       % spatial RF of the center on the receptor grid
     sRFsurround;                     % spatial RF of the surround on the receptor grid
-    temporalDelay;                   % delay on inputs to differentiator
-    temporalConeW;                   % weight on cone signal input to differentiator
-    temporalConeDiffW;               % weight on cone derivative signal input to differentiator
-    temporalDifferentiator;          % differentiator function
+    % temporalDelay;                   % delay on inputs to differentiator
+    % temporalConeW;                   % weight on cone signal input to differentiator
+    % temporalConeDiffW;               % weight on cone derivative signal input to differentiator
+    % temporalDifferentiator;          % differentiator function
+    rectificationCenter              % nonlinear function for center
+    rectificationSurround            % nonlinear function for surround
     responseCenter;                  % Store the linear response of the center after convolution
     responseSurround;                % Store the linear response of the surround after convolution
 
@@ -73,39 +76,51 @@ methods
             obj.patchSize = osGet(os,'patchSize');
             obj.timeStep = osGet(os,'timeStep');
             
+            if length(varargin)==2
+                cellType = varargin{2};
+                switch cellType
+                    case 1; obj.cellType = 'onDiffuse';
+                    otherwise; obj.cellType = 'offDiffuse';
+                end
+            else
+                obj.cellType = 'offDiffuse';
+            end
+            
+            
+            if length(varargin)==3
+                rectificationType = varargin{3};
+                switch rectificationType
+                    case 1                        
+                        obj.rectificationCenter = @(x) x;
+                        obj.rectificationSurround = @(x) zeros(size(x));
+                    case 2
+                        obj.rectificationCenter = @(x) x.*(x>0);
+                        obj.rectificationSurround = @(x) zeros(size(x));
+                    case 3
+                        obj.rectificationCenter = @(x) x.*(x>0);
+                        obj.rectificationSurround = @(x) -x.*(x<0);
+                    otherwise
+                        
+                        obj.rectificationCenter = @(x) x;
+                        obj.rectificationSurround = @(x) zeros(size(x));
+                end
+            else
+                
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+                
+            end
         else
             
             obj.patchSize = 100e-6;
             obj.timeStep = .001;
         
-            
+            obj.cellType = 'offDiffuse';
         end
         
         % Build spatial receptive field
-        obj.sRFcenter = 1;%fspecial('gaussian',[2,2],1); % convolutional for now
-        obj.sRFsurround = 1;%fspecial('gaussian',[2,2],1); % convolutional for now
-        
-        % Weight are caclulated offline by optimizing for the minimum error
-        % between the differentiator signal and the bipolar output
-        % calculated with filter from the deconvolution operation.        
-%         switch class(os)
-%             
-            % See s_bipolarDeconvolveDelay for calculation
-%             case{'osLinear'}               
-%                 % R^2 = 0.89 for matching RGC synatpic IR
-%                 obj.temporalConeW = -0.0976e4; obj.temporalConeDiffW = -5.7893e4;
-%                 obj.temporalDelay = 23; % ms
-%             otherwise % osBioPhys
-                % R^2 = 0.91 for matching RGC synatpic IR
-%                 obj.temporalConeW = -0.2834;  obj.temporalConeDiffW = -17.4539;
-%                 obj.temporalDelay = 24;
-%           osBioPhys for RGC GLM IR
-%                 R^2 = 0.95
-                obj.temporalConeW = -0.2751;  obj.temporalConeDiffW = -5.8488;
-                obj.temporalDelay = 16;
-
-%         end
-        obj.temporalDifferentiator = @(x) obj.temporalConeW*x(:,2+(1e-3/obj.timeStep)*obj.temporalDelay:end) + (1e-3/obj.timeStep)*obj.temporalConeDiffW*diff(x(:,1+(1e-3/obj.timeStep)*obj.temporalDelay:end),1,2);
+        obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
+        obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
         
     end
     
