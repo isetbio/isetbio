@@ -68,21 +68,22 @@ switch param
                                   val, 'linear', 0);
         cone.wave = val;
     case {'pods','pod'}
+        
         % Pigment optical densities for the cones
-        if (any(size(cone.PODs)~= size(val)))
+        if (any(size(cone.opticalDensity)~= size(val)))
             error('PODs size mismatch');
         end
-        cone.PODs = val;
+        cone.opticalDensity = val;
         
     case {'lpod'}
         if ~isscalar(val), error('val should be scalar'); end
-        cone.PODS(1) = val;
+        cone.opticalDensity(1) = val;
     case {'mpod'}
         if ~isscalar(val), error('val should be scalar'); end
-        cone.PODS(2) = val;
+        cone.opticalDensity(2) = val;
     case {'spod'}
         if ~isscalar(val), error('val should be scalar'); end
-        cone.PODS(3) = val;
+        cone.opticalDensity(3) = val;
 
     case {'peakefficiency', 'qe', 'quantalefficiency'}
         % Peak absorptance

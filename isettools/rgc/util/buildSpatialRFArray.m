@@ -61,7 +61,7 @@ receptiveFieldDiameter1STD = receptiveFieldDiameter1STDmicrons/umPerSensorPx;
 
 %% Set parameters for spatial RF difference of gaussians
 % whene extent gets to 5, the sum of the RF is ~0
-extent = 2.5;
+extent = 1.5;
 
 % Ellipse parameter
 d1 = 1; d2 = 0;

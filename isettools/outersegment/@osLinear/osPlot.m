@@ -98,7 +98,6 @@ switch lower(params.what)
         % Plot current signal at a particular (x, y) over time
         sz = os.get('array size');
         outputSignal(1,:) = obj.ConeCurrentSignal(round(sz(1)/2),round(sz(2)/2),:);
-        
         plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
         title('output signal');
         xlabel('Time (sec)');
