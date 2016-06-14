@@ -12,6 +12,9 @@
 % prediction of the firing in response to natural scene movies and compare
 % them with the experimental recordings.
 % 
+% There is a dependency on the repository isetbio/EJLFigureReproduction.
+% This must be added to the Matlab path.
+% 
 % See also EJLFigureReproduction/t_rgcNaturalScenesFig2.m
 % 
 % 6/2016 JRG (c) isetbio team
@@ -176,8 +179,8 @@ clear bp os
 os = osLSub;
 % os = osBSub;
 
-% bp = bipolar(os);
-bp = bipolar(os,cellType,2);
+bp = bipolar(os);
+% bp = bipolar(os,cellType,2);
 % bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
 % bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 
@@ -280,11 +283,12 @@ innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth'
 % Set the time and cell number
 tStart = 1.5;% 9%1.5;
 tEnd = 21;%18%21;%1*8.5;
-cellNum = 5;
+cellNum = 10;
 
 % Plot the original GLM prediction
 vcNewGraphWin([],'upperleftbig'); 
-subplot(312); hold on;
+% subplot(312); hold on;
+subplot(211); hold on;
 irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
 title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
@@ -292,7 +296,8 @@ axis([tStart tEnd 0 57]);
 axis off
 
 % Plot the biophys/subunit prediction
-subplot(313); hold on;
+% subplot(313); hold on;
+subplot(212); hold on;
 irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
 title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
@@ -300,16 +305,16 @@ set(gca,'fontsize',14);
 axis([tStart tEnd 0 57]);
 axis off
 
-% Plot the recorded spikes
-subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
-set(gca,'fontsize',14);
-
-switch stimulusTestI
-    case 1
-        axis([tStart-0.5 tEnd-0.5 0 57]);
-    case 2
-        axis([tStart-1 tEnd-1 0 57]);
-end
+% % Plot the recorded spikes
+% subplot(311); hold on;
+% irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
+% title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+% set(gca,'fontsize',14);
+% 
+% switch stimulusTestI
+%     case 1
+%         axis([tStart-0.5 tEnd-0.5 0 57]);
+%     case 2
+%         axis([tStart-1 tEnd-1 0 57]);
+% end
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);

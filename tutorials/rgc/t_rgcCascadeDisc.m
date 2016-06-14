@@ -12,6 +12,9 @@
 % there is a large difference, that indicates the spatial processing is
 % nonlinear, likely due to bipolar subunits.
 % 
+% There is a dependency on the repository isetbio/EJLFigureReproduction.
+% This must be added to the Matlab path.
+% 
 % See also t_rgcCascade.m, EJLFigureReproduction/t_rgcNaturalScenesFig2.m
 % 
 % 6/2016 JRG (c) isetbio team
@@ -193,7 +196,7 @@ innerRetinaDisc = irPhys(bpDisc, params);
 nTrials = 57; innerRetinaDisc = irSet(innerRetinaDisc,'numberTrials',nTrials);
 
 innerRetinaDisc = irCompute(innerRetinaDisc, bpDisc);
-% innerRetinaDisc = irComputeContinous(innerRetinaDisc, bpDisc);
+% innerRetinaDisc = irComputeContinuous(innerRetinaDisc, bpDisc);
 % innerRetinaDisc = irNormalize(innerRetinaDisc, innerRetinaDiscRGB);
 % innerRetinaDisc = irComputeSpikes(innerRetinaDisc, bpDisc);
 innerRetinaDisc = irSet(innerRetinaDisc,'timing',.0083);
@@ -282,14 +285,16 @@ tEnd = 21;%1*8.5;
 cellNum = cellInd;
 
 vcNewGraphWin([],'upperleftbig'); 
-subplot(312); hold on;
+% subplot(312); hold on;
+subplot(211); hold on;
 irPlot(innerRetinaDiscRGB,'raster','cell',[cellNum 1],'hold','on','color','r')
 title(sprintf('Black Box, NSEM Disc, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 57]);
 axis off
 
-subplot(313); hold on;
+% subplot(313); hold on;
+subplot(212); hold on;
 irPlot(innerRetinaDisc,'raster','cell',[cellNum 1],'hold','on','color','b')
 title(sprintf('Cascade Conv, NSEM Disc, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
@@ -298,15 +303,15 @@ axis([tStart tEnd 0 57]);
 axis off
 
 
-subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM Disc, off parasol cell [%d  1]',cellNum));
-set(gca,'fontsize',14);
+% subplot(311); hold on;
+% irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
+% title(sprintf('Recorded, NSEM Disc, off parasol cell [%d  1]',cellNum));
+% set(gca,'fontsize',14);
+% switch stimulusTestI
+%     case 1
+%         axis([tStart-0.5 tEnd-0.5 0 57]);
+%     case 2
+%         axis([tStart-1 tEnd-1 0 57]);
+% end
 
-switch stimulusTestI
-    case 1
-        axis([tStart-0.5 tEnd-0.5 0 57]);
-    case 2
-        axis([tStart-1 tEnd-1 0 57]);
-end
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
