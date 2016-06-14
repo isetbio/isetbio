@@ -98,7 +98,7 @@ methods
                         obj.rectificationSurround = @(x) zeros(size(x));
                     case 3
                         obj.rectificationCenter = @(x) x.*(x>0);
-                        obj.rectificationSurround = @(x) -x.*(x<0);
+                        obj.rectificationSurround = @(x) x.*(x<0);
                     otherwise
                         
                         obj.rectificationCenter = @(x) x;
@@ -119,8 +119,10 @@ methods
         end
         
         % Build spatial receptive field
-        obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
-        obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
+        bpSizeCenter = 2;
+        bpSizeSurround = 2;
+        obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+        obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
         
     end
     

@@ -1,8 +1,22 @@
 
-%  Need to have run t_rgcCascade and keep it in memory to do comparison
-%  plots at end.
+% t_rgcCascadeDisc
+% 
+% A comparison of RGC firing from "black box" GLM simulations and "cascade
+% model" GLM simulations for the linear equivalent disc stimulus. The
+% experimental recordings and the black box simulations are found in
+% Brackbill, Heitman, ..., Chichilnisky, J. Neurophys 2016. 
 
-for cellInd = 5% :10
+% The theory behind the linear equivalent disc stimulus is laid out in
+% Turner & Rieke, 2016. If an RGC has purely linear spatial processing, its
+% response to the natural scene movie and disc movie will be the same. If
+% there is a large difference, that indicates the spatial processing is
+% nonlinear, likely due to bipolar subunits.
+% 
+% See also t_rgcCascade.m, EJLFigureReproduction/t_rgcNaturalScenesFig2.m
+% 
+% 6/2016 JRG (c) isetbio team
+
+for cellInd = 10% :10
 
     
     
@@ -34,7 +48,13 @@ switch cellTypeI
 end
     
 %%
-load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/saved_iStim_linEqDisc/linEqDisc_10_notemp.mat')
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/saved_iStim_linEqDisc/linEqDisc_10_notemp.mat')
+
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc');
+data = rdt.readArtifact('linEqDisc_10_notemp', 'type', 'mat');
+linEqDisc = data.linEqDisc;
+
 
 % Length of WN movie is 1200, take nFrames to limit natural movie to same length
 nFrames = 3600; 
@@ -49,17 +69,8 @@ for frnum = 1:nFrames
 end
 
 
-% range = max(testmovieRS(:)) - min(testmovieRS(:));
-% testmovieRS = 1*(testmovieRS./range - mean(testmovieRS(:))/range);
-% 
-% 
-% range = max(testmovieshort(:)) - min(testmovieshort(:));
-% testmovieRS = 1*(testmovieshort./range - mean(testmovieshort(:))/range);
-
-% testmovieshort = zeros(80,40,10);
-% testmovieshort(:,20:30,:) = 1;
 %% Show test movie
-showFrames = 50;
+showFrames = 200;
 % ieMovie(testmovieshort(:,:,1:showFrames));
 
 %% Generate display, scene, oi, sensor
@@ -83,7 +94,7 @@ sensorDisc = iStimDisc.sensor;
 
 % sensor.data.volts = 5e-4*double(testmovieshort)./255;
 % sensorDisc.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
-sensorDisc.data.volts = 5e-4*ieScale(testmovieRS);
+sensorDisc.data.volts = 5e-4*-1*(testmovieRS);
 % clear testmovieRS testmovieshort
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
@@ -159,20 +170,11 @@ clear bp os
 osDisc = osLSubDisc;
 % osDisc = osBSub;
 
-bpDisc = bipolar(osDisc);
-% bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
-% bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
-
-% bipolarThreshold = -40;
-% bp = bipolarSet(bp,'threshold',bipolarThreshold);
-
-% Need to fix bp compute bc it copies sensor
+% bpDisc = bipolar(osDisc);
+bpDisc = bipolar(osDisc,cellType,2);
 bpDisc = bipolarCompute(bpDisc, osDisc);
 
 % bipolarPlot(bp,'response');
-
-% bp.responseCenter = sensor.data.volts;
-% bp = bpSet(bp,'responseCenter',sensor.data.volts);
 
 %%
 % Set parameters
@@ -190,15 +192,10 @@ params.cellType = cellType;         % ON or OFF Parasol;
 innerRetinaDisc = irPhys(bpDisc, params);
 nTrials = 57; innerRetinaDisc = irSet(innerRetinaDisc,'numberTrials',nTrials);
 
-% Compute the inner retina response
-% 
-% tCenterNew{1,1} = 1; tSurroundNew{1,1} = 0;
-% innerRetina.mosaic{1}.mosaicSet('tCenter',tCenterNew);
-% innerRetina.mosaic{1} = mosaicSet(innerRetina.mosaic{1},'tSurround',tSurroundNew);
-
-% Linear convolution
-% innerRetinaDisc = irComputeContinuous(innerRetinaDisc, bpDisc);
 innerRetinaDisc = irCompute(innerRetinaDisc, bpDisc);
+% innerRetinaDisc = irComputeContinous(innerRetinaDisc, bpDisc);
+% innerRetinaDisc = irNormalize(innerRetinaDisc, innerRetinaDiscRGB);
+% innerRetinaDisc = irComputeSpikes(innerRetinaDisc, bpDisc);
 innerRetinaDisc = irSet(innerRetinaDisc,'timing',.0083);
 
 irPlot(innerRetinaDisc,'linear','cell',[7 1]);
@@ -216,13 +213,7 @@ os1 = osCreate('displayRGB');
 os1 = osSet(os1, 'timeStep', 1/120);
 
 % Attach the movie to the object
-os1 = osSet(os1, 'rgbData', double(testmovieshort));
-
-% 
-% os1 = osSet(os1, 'timeStep', .001);
-% 
-% % Attach the movie to the object
-% os1 = osSet(os1, 'rgbData', double(testmovieshort));
+os1 = osSet(os1, 'rgbData', -1*double(testmovieshort));
 
 %% Generate RGC object for simulated GLM prediction of response
 % Set the parameters for the inner retina RGC mosaic. For the inner retina
@@ -242,45 +233,47 @@ params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
 % Create object
-innerRetina = irPhys(os1, params);
-nTrials = 57; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
+innerRetinaDiscRGB = irPhys(os1, params);
+nTrials = 57; innerRetinaDiscRGB = irSet(innerRetinaDiscRGB,'numberTrials',nTrials);
 
-% Plot a few simple properties
-
-% % Select the cells used in the actual paper
-% switch cellTypeI
-%     case 1; cellInd = 2;
-%     case 2; cellInd = 31;
-% end
-% 
-% % Plot the spatial RF, temporal IR and post-spike filter
-% if plotFracFlag == 0
-%     irPlotFig2Linear(innerRetina,cellInd);
-% end
 %% Compute the inner retina response
 
-% Linear convolution
-% innerRetina = irComputeContinuous(innerRetina, os1);
-
-innerRetina = irCompute(innerRetina, os1);
-% irPlot(innerRetina,'linear','cell',[7 1]);
-% 
-% irPlot(innerRetina,'raster','cell',[7 1]);
-% irPlot(innerRetina,'psth','cell',[7 1]);
-
-% Spike computation
-% for tr = 1:ntrials
-%     innerRetina = irComputeSpikes(innerRetina, os1);
-% end
+innerRetinaDiscRGB = irCompute(innerRetinaDiscRGB, os1);
 
 % Get the PSTH from the object
-innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
-
-
-
-% innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth');
+innerRetinaPSTH = mosaicGet(innerRetinaDiscRGB.mosaic{1},'responsePsth');
 
 end
+
+%% Generate outer segment object for GLM from RGB scene data
+
+% In this case, the RGC GLM calculation converts from the frame buffer
+% values in the movie to the spiking responses.  For this calculation, we
+% store the movie stimulus in the the outer segment object 'displayRGB'.
+
+os1 = osCreate('displayRGB'); 
+os1 = osSet(os1, 'timeStep', 1/120);
+
+% Attach the movie to the object
+os1 = osSet(os1, 'rgbData', double(testmovieshort));
+%% Create a new inner retina object and attach the recorded spikes
+% We also want to compare the spikes recorded in the experiment to those
+% from the simulation. We create a separate inner retina object with
+% isetbio to store these spikes. This makes it easy to use isetbio to plot
+% aspects of the response.
+
+[testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
+
+% Create the object.
+innerRetinaRecorded = irPhys(os1, params);  
+
+% innerRetinaRecorded = irSet(innerRetinaRecorded,'timing',.008);
+innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
+
+% Set the recorded spikes that we got from the RDT into the object.
+innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
+% Get the PSTH using an isetbio routine.
+innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth');
 
 %%
 
@@ -289,25 +282,25 @@ tEnd = 21;%1*8.5;
 cellNum = cellInd;
 
 vcNewGraphWin([],'upperleftbig'); 
-subplot(411); hold on;
-irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
-title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+subplot(312); hold on;
+irPlot(innerRetinaDiscRGB,'raster','cell',[cellNum 1],'hold','on','color','r')
+title(sprintf('Black Box, NSEM Disc, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 57]);
 axis off
 
-subplot(412); hold on;
+subplot(313); hold on;
 irPlot(innerRetinaDisc,'raster','cell',[cellNum 1],'hold','on','color','b')
-title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Cascade Conv, NSEM Disc, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
 % axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
 axis([tStart tEnd 0 57]);
 axis off
 
 
-subplot(413); hold on;
+subplot(311); hold on;
 irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Recorded, NSEM Disc, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
 
 switch stimulusTestI
@@ -316,83 +309,4 @@ switch stimulusTestI
     case 2
         axis([tStart-1 tEnd-1 0 57]);
 end
-% axis off
-
-% 
-% subplot(414); 
-% irPlot(innerRetina,'psth','cell',[cellNum 1],'hold','on','color','r')
-% irPlot(innerRetinaDisc,'psth','cell',[cellNum 1],'hold','on','color','b')
-% irPlot(innerRetinaRecorded,'psth','cell',[cellNum 1],'hold','on','color','g')
-
-% % irPlot(innerRetinaRecorded,'psth','cell',[cellNum 1],'hold','on','color','g')
-% legend('Cascade Conv','Black Box','Recorded');
-% grid on
-% ax2 = axis;
-% axis([tStart/10 tEnd/10 ax2(3) ax2(4)]);
-% set(gca,'fontsize',14);
-% % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
-% set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
-
-%
-% figure;
-
-subplot(414)
-% minlen = min([  length(innerRetinaDiscPSTH{cellNum}) ]);
-minlen = min([length(innerRetinaPSTH{cellNum}) length(innerRetinaRecordedPSTH{cellNum}) length(innerRetinaDiscPSTH{cellNum}) ]);
-hold off
-switch stimulusTestI
-    case 1
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
-        
-        hold on;
-        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
-        
-        plot((00+[1:minlen-1200])./1208, innerRetinaDiscPSTH{cellNum}(600-0+(1:minlen-1200)),':b','linewidth',3);
-        
-        ax3 = axis;
-        axis([0 8.5 ax3(3) ax3(4)])
-
-    case 2
-%         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
-
-%         minlen = minlen - 1000;
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((000+(1:minlen-1200))),':k','linewidth',2);
-%         
-%         plot((00+[1:minlen-1200])./1208, innerRetinaDiscPSTH{cellNum}(000-36+(1:minlen-1200)),':b','linewidth',3);
-
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
-        
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-        hold on;
-        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
-        hold on;
-        plot((00+[1:minlen-1200])./1208, innerRetinaDiscPSTH{cellNum}(1200-0+(1:minlen-1200)),':b','linewidth',3);
-        
-        
-        ax3 = axis;
-        axis([tStart-1 tEnd-1 ax3(3) ax3(4)/2])
-%         axis([tStart-1 tEnd-1 ax3(3) 100])
-        
-        % axis([0-.5 8-.5 0 100])
-end
-
-legend('Black Box','Recorded','Cascade Conv');
-grid on
-set(gca,'fontsize',14);
-xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
-% % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
-% set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
-
-%%
-
-savename1 = 'innerRetinaDiscLinear5';
-save(['/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/innerRetina/' savename1 '.mat'],'innerRetinaDisc');
-
-

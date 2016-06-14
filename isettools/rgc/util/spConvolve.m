@@ -122,9 +122,14 @@ for rgbIndex = 1:channelSize
                 
                 if isa(mosaic, 'rgcPhys')
 %                     spResponseCenter{xcell,ycell}(:,:,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFcenter, spStim, 'same');
+                    if exist('sptempStimulusSurround','var')
+                        spStimSurr = squeeze(sptempStimulusSurround(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex));
+                    else
+                        spStimSurr = 0;
+                    end
                     
-
-                    spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFcenter(gz,gz).*spStim;%conv2(spRFcenter, spStim, 'same');
+                    spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFcenter(gz,gz).*(spStim - spStimSurr);%conv2(spRFcenter, spStim, 'same');
+                    % spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = spRFsurround(gz,gz).*spStimSurr;%conv2(spRFcenter, spStim, 'same');
 %                     spResponseCenter{xcell,ycell}(gz,gz,samp,rgbIndex) =  ones(size((spRFcenter(gz,gz)))).* (mean(mean(spRFcenter(gz,gz).*spStim)));
 %                     linEqDisc{xcell,ycell}(floor(stimX(gz)-offset(1)),floor(stimY(gz)-offset(2)),samp,rgbIndex) = (ones(size(spRFcenter(gz,gz)))).* (mean(mean(spRFcenter(gz,gz).*spStim)));
                     %                     spResponseSurround{xcell,ycell}(gz,gz,samp,rgbIndex) = zeros(size(spStim));%conv2(spRFsurround, spStim, 'same');
