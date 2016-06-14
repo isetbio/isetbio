@@ -1,11 +1,11 @@
 classdef coneMosaic < handle
     % Create a cone mosaic class
     %
-    %   coneM =  coneMosaic('cone',cone,'os','os);
+    %   cMosaic =  coneMosaic('cone',cone,'os','os);
     %
     % The cone mosaic defines an array of cones.  The individual cones have
-    % absorption properties defined by coneM.cone.  The computation from
-    % absorptions to cone voltages are defined by coneM.os
+    % absorption properties defined by cMosaic.cone.  The computation from
+    % absorptions to cone voltages are defined by cMosaic.os
     %
     % JRG/BW ISETBIO Team, 2016
     
@@ -14,16 +14,17 @@ classdef coneMosaic < handle
         % These are the linear filters generated below via filterKernel.
         name = 'human-0';
         absorptions;      % The spatial array of cone absorptions
+        current;          % The current over time across the mosaic
         
-        cone;             % Properties of the individual cones
-        os;
+        cone;             % Cone properties
+        os;               % Outersegment properties (computes the photocurrent)
         
-        wave;
-        pattern;
-        color;
-        cfa;
-        integrationTime;
-        noiseFlag;
+        wave;             % Wavelength samples
+        pattern;          % Pattern of K-LMS cones in the mosaick
+        color;            % Not sure, 
+        cfa;              % Not sure this is needed
+        integrationTime;  % In seconds
+        noiseFlag;        % To control which noise is included
         
     end
     
@@ -37,6 +38,9 @@ classdef coneMosaic < handle
         % Constructor
         function obj = coneMosaic(varargin)
             % Initialize the cone mosaic class
+            %
+            %   cMosaic =  coneMosaic('cone',cone,'os','os);
+            %
             p = inputParser;
             
             p.addParameter('cone',coneCreate,@isstruct);
@@ -58,6 +62,7 @@ classdef coneMosaic < handle
         
         % get function, see osLinearGet for details
         function val = get(obj, varargin)
+            val = obj;  % Place holder for what will happen!
         end
         
     end
@@ -66,6 +71,8 @@ classdef coneMosaic < handle
     methods (Access=public)
                 
         function obj = compute(obj, oi, varargin)
+            % coneMosaic.plot()
+            %
             % Compute the pattern of cone absorptions and typically the
             % photocurrent.  If you don't want the current, say so.
             p = inputParser;
@@ -73,13 +80,18 @@ classdef coneMosaic < handle
             p.parse(varargin{:});
             current = p.Results.current;
             
+            % Places the absorptions in the absorptions slot
             obj.computeAbsorptions(oi);
             
             % If we don't want the current, we can say so
+            % Otherwise, place the current in the current slot
             if current, obj.computeCurrent; end
         end
         
-        function plot(obj, sensor)
+        function plot(obj,varargin)
+            % coneMosaic.plot()
+            p = inputParser;
+            % Do some plotting based on the input arguments.
         end
     end
     
