@@ -6,7 +6,7 @@
 % Copyright ImagEval Consultants, LLC, 2016.
 
 %% Init
-clear all; close all; ieInit;
+ieInit;
 
 %% Define wavelength spacing we will use
 %
@@ -84,5 +84,4 @@ else
     fprintf('Sigh.  There is an illuminant set bug.\n');
 end
 
-
-
+%%
