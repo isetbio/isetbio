@@ -5,27 +5,30 @@ classdef coneMosaic < handle
     %
     % The cone mosaic defines an array of cones.  The individual cones have
     % absorption properties defined by cMosaic.cone.  The computation from
-    % absorptions to cone voltages are defined by cMosaic.os
+    % absorptions to photocurrent is defined by cMosaic.os
     %
     % JRG/BW ISETBIO Team, 2016
-    
-    
+      
     properties (SetAccess = private, GetAccess = public)
-        % These are the linear filters generated below via filterKernel.
         name = 'human-0';
-        absorptions;      % The spatial array of cone absorptions
-        current;          % The current over time across the mosaic
         
         cone;             % Cone properties
-        os;               % Outersegment properties (computes the photocurrent)
-        
+                          % Need to add the macular.  But we will put the
+                          % lens in the optics.
+        absorptions;      % The spatial array of cone absorptions over time
+                 
+        os;               % Outersegment properties (used for computing photocurrent)
+        current;          % The spatial array of photocurrent over time
+                          % It is possible we need to bring in a place that something
+                          % created by "filterKernal" can live. 
+
         wave;             % Wavelength samples
         pattern;          % Pattern of K-LMS cones in the mosaick
-        color;            % Not sure, 
-        cfa;              % Not sure this is needed
-        integrationTime;  % In seconds
+        integrationTime;  % In seconds. We think that in general we want this and
+                          % the sampling time to be the same.  Perhaps we
+                          % should check this condition, if it is possible
+                          % to set the two differently.
         noiseFlag;        % To control which noise is included
-        
     end
     
     % Private properties. Only methods of the parent class can set these
