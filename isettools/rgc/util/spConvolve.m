@@ -79,6 +79,7 @@ for rgbIndex = 1:channelSize
                     
                 else
                     extent = 1;%2.5/2;%round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
+                    rowConv = 1; colConv = 1;
                     offset = [rowConv colConv].*mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     
                     %%%% Should rfDimater be size RF center? Yes!

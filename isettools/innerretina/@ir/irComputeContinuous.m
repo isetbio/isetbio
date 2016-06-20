@@ -208,15 +208,18 @@ switch osType
                 ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
                 szRC = size(spTempStimCenter);
                 
+                
+%                 spTempStimCenterRS = spTempStimCenter;
+%                 spTempStimSurroundRS = spTempStimSurround;
                 spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));
                 spTempStimSurroundRS = zeros(80,40,size(spTempStimCenter,3));
                 for frstim = 1:size(spTempStimCenter,3)
 %                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
 %                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
-%                      spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40],'method','nearest');
-%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40],'method','nearest');
-                    spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
-                    spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40]);
+                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40],'method','nearest');
+                    spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40],'method','nearest');
+% %                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
+%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40]);
                 end
                 
                 clear spTempStimCenter spTempStimSurround

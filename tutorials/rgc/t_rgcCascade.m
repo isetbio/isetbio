@@ -129,7 +129,7 @@ osL = osCompute(osL,sensor,paramsOSL);
 % % Plot the photocurrent for a pixel.
 % osPlot(osL,sensor);
 
-osLSub = osSet(osL, 'time step', 8*timeStep);
+% osLSub = osSet(osL, 'time step', 8*timeStep);
 osLSub.osSet('coneCurrentSignal',osL.coneCurrentSignal(:,:,1:8:end));
 % osLSub.osSet('coneCurrentSignal',sensor.data.volts);
 
@@ -214,7 +214,7 @@ innerRetinaSU = irCompute(innerRetinaSU, bp);
 % innerRetinaSU = irNormalize(innerRetinaSU, innerRetina);
 % innerRetinaSU = irComputeSpikes(innerRetinaSU); 
 
-innerRetinaSU = irSet(innerRetinaSU,'timing',.0083);
+innerRetinaSU = irSet(innerRetinaSU,'timing',1/120);
 
 % Get the PSTH from the object
 innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
@@ -283,12 +283,12 @@ innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth'
 % Set the time and cell number
 tStart = 1.5;% 9%1.5;
 tEnd = 21;%18%21;%1*8.5;
-cellNum = 10;
+cellNum = 1;
 
 % Plot the original GLM prediction
 vcNewGraphWin([],'upperleftbig'); 
-% subplot(312); hold on;
-subplot(211); hold on;
+subplot(312); hold on;
+% subplot(211); hold on;
 irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
 title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
@@ -296,25 +296,134 @@ axis([tStart tEnd 0 57]);
 axis off
 
 % Plot the biophys/subunit prediction
-% subplot(313); hold on;
-subplot(212); hold on;
+subplot(313); hold on;
+% subplot(212); hold on;
 irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
 title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
 % axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
-axis([tStart tEnd 0 57]);
+% axis([tStart tEnd 0 57]);
+% switch stimulusTestI
+%     case 1
+%         axis([tStart+1 tEnd+1 0 57]);
+%     case 2
+        axis([tStart tEnd 0 57]);
+% end
 axis off
 
 % % Plot the recorded spikes
-% subplot(311); hold on;
-% irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-% title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
-% set(gca,'fontsize',14);
-% 
-% switch stimulusTestI
-%     case 1
-%         axis([tStart-0.5 tEnd-0.5 0 57]);
-%     case 2
-%         axis([tStart-1 tEnd-1 0 57]);
-% end
+subplot(311); hold on;
+irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
+title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+set(gca,'fontsize',14);
+
+switch stimulusTestI
+    case 1
+        axis([tStart-0.5 tEnd-0.5 0 57]);
+    case 2
+        axis([tStart-1 tEnd-1 0 57]);
+end
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
+
+ %%
+ 
+%  calculateFractionalVariance(innerRetinaPSTH, innerRetinaRecordedPSTH, stimulusTestI);
+ 
+ %%
+ 
+figure;
+
+% subplot(414)
+minlen = min([length(innerRetinaPSTH{cellNum}) length(innerRetinaRecordedPSTH{cellNum}) length(innerRetinaSUPSTH{cellNum}) ]);
+hold off
+switch stimulusTestI
+    case 1
+        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
+        
+        hold on;
+        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
+        
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(600-0+(1:minlen-1200)),':b','linewidth',3);
+        
+        ax3 = axis;
+        axis([0 8.5 ax3(3) ax3(4)])
+
+    case 2
+%         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+%         
+%         hold on;
+%         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
+
+%         minlen = minlen - 1000;
+%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+%         
+%         hold on;
+%         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((000+(1:minlen-1200))),':k','linewidth',2);
+%         
+%         plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(000-36+(1:minlen-1200)),':b','linewidth',3);
+
+%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
+        
+        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+        hold on;
+        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
+        hold on;
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)),':b','linewidth',3);
+        
+        
+        ax3 = axis;
+        axis([tStart-1 tEnd-1 ax3(3) ax3(4)/2])
+%         axis([tStart-1 tEnd-1 ax3(3) 100])
+        
+        % axis([0-.5 8-.5 0 100])
+end
+
+legend('Black Box','Recorded','Cascade Conv');
+grid on
+set(gca,'fontsize',14);
+xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
+% % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
+% set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
+
+%%
+% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))))
+% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)))
+ 
+for cellNum2 = 1:length(innerRetinaPSTH)
+    minlen = min([length(innerRetinaPSTH{cellNum2}) length(innerRetinaRecordedPSTH{cellNum2}) length(innerRetinaSUPSTH{cellNum2}) ]);
+switch stimulusTestI
+    
+
+    case 1
+        
+        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
+        % rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+        rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
+    case 2
+        rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
+        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
+        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+end
+
+fracVar(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
+switch stimulusTestI
+    case 1
+        
+        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
+        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
+    case 2
+        rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
+        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
+        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+end
+
+fracVar2(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
+
+
+end
+% fracVar
+% fracVar2
+figure; scatter(fracVar, fracVar2); 
+hold on; plot(.01:.01:1,.01:.01:1)
+xlabel('SU'); ylabel('GLM');

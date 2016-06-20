@@ -56,8 +56,12 @@ else
     data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
 end
 bipolarFiltMat = data.bipolarFiltMat;
-
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+% bipolarFiltMat1 = bipolarFiltMat(1,:);
+% clear bipolarFiltMat
+% bipolarFiltMat = bipolarFiltMat1;
 bipolarFilt = mean(bipolarFiltMat)';
+% bipolarFilt = mean(bipolarFiltMat(2,:))';
 if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
@@ -90,6 +94,8 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 
 
 %% Attach output to object
+% obj.responseCenter = os.coneCurrentSignal;
+% obj.responseSurround = zeros(size(os.coneCurrentSignal));
 
 obj.responseCenter = obj.rectificationCenter(bipolarOutputLinearCenter);
 obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);

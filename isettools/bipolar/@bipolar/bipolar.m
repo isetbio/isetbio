@@ -119,10 +119,10 @@ methods
         end
         
         % Build spatial receptive field
-        bpSizeCenter = 5;
-        bpSizeSurround = 5;
-        obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-        obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+        bpSizeCenter = 2;
+        bpSizeSurround = 2;
+        obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+        obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
         
     end
     
