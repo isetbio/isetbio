@@ -110,7 +110,7 @@ if wFlag, delete(wbar); end
 sensor = sensorSet(sensor, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-f%% Movie of the cone absorptions over cone mosaic
+%% Movie of the cone absorptions over cone mosaic
 
 % coneImageActivity(sensor,'step',1,'dFlag',true);
 %% Outer segment calculation
