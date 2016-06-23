@@ -24,7 +24,7 @@ ieInit;
 % This and other simple synthetic scenes are useful for examining simple optical properties
 scene = sceneCreate('pointarray');   % Creates an array of points
 scene = sceneSet(scene,'hfov',1);    % 1 deg field of view
-vcAddAndSelectObject(scene); sceneWindow;
+vcAddObject(scene); sceneWindow;
 
 %% Create and show an optical image
 % ISET has several optics models that you can experiment with. These
@@ -34,7 +34,7 @@ vcAddAndSelectObject(scene); sceneWindow;
 % set of pointspread functions along with a geometric distortion function.
 % The default optical image has diffraction limited optics.  We compute the
 % irradiance field from the scene.
-oi = oiCreate;                        
+oi = oiCreate('diffraction');                        
 oi = oiCompute(scene,oi);
 oi = oiSet(oi,'name','Small f number');
 vcAddAndSelectObject(oi); oiWindow;
@@ -44,14 +44,13 @@ vcAddAndSelectObject(oi); oiWindow;
 % The optics structure is attached to the optical image.  To increase the
 % f-number we get the optics object, set its' f number, and then reattach it
 % to the optical image.
-optics  = oiGet(oi,'optics');
-fnSmall = opticsGet(optics,'f number');
+fnSmall = oiGet(oi,'optics fNumber');
 fnBig   = 3*fnSmall;
-optics  = opticsSet(optics,'fNumber',fnBig);
-oiBigF  = oiSet(oi,'optics',optics);
+oiBigF  = oiSet(oi,'optics fNumber',fnBig);
 oiBigF  = oiCompute(scene,oiBigF);
+
 oiBigF  = oiSet(oiBigF,'name','Big f number');   % Name for the GUI
-vcAddAndSelectObject(oiBigF); oiWindow;
+vcAddObject(oiBigF); oiWindow;
 
 %% Use oiPlot to compare the two different optics 
 % In this case we plot the point spread function at 600 nm.  First for the
