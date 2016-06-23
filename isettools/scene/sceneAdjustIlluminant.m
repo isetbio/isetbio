@@ -33,12 +33,12 @@ function scene = sceneAdjustIlluminant(scene,illEnergy,preserveMean)
 %
 % Copyright ImagEval Consultants, LLC, 2010.
 
-if ieNotDefined('scene'),        scene = vcGetObject('scene'); end
-if ieNotDefined('preserveMean'), preserveMean = true; end
+if notDefined('scene'),        scene = vcGetObject('scene'); end
+if notDefined('preserveMean'), preserveMean = true; end
 
 % Make sure we have the illuminant data in the form of energy
 wave = sceneGet(scene,'wave');
-if ieNotDefined('illEnergy')
+if notDefined('illEnergy')
     % Read from a user-selected file
     fullName = vcSelectDataFile([]);
     illEnergy = ieReadSpectra(fullName,wave);

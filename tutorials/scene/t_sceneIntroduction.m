@@ -49,7 +49,7 @@ scene = sceneCreate('macbeth d65');
 % To put the scene object into a window of the graphical user interface
 % (GUI), first we use the command ISET that adds the scene to the ISET
 % database:
-vcAddAndSelectObject(scene);
+vcAddObject(scene);
 
 % Then we call the function sceneWindow which displays the object This call
 % opens the  graphical interface and displays the current scene
