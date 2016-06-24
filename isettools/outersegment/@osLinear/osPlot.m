@@ -21,8 +21,9 @@ function osPlot(obj, sensor, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
-% if there is no argument for the type of plot, set default to all:
+error(narginchk(0, Inf);
+
+% If there is no argument for the type of plot, set default to all:
 if nargin == 2; varargin{1} = 'all'; end;
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
