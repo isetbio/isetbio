@@ -69,10 +69,18 @@ for xcell = 1:nCells(1)
 % %                 fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
 
 %%%% FFT that works
-                spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
-                spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
-                temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
-                
+
+% Needs if statement for one being longer than other
+                if size(spResponseCenterRS,2) > size(temporalIRCenter,1)
+                    spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                    temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                else
+                    spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1),-size(spResponseCenterRS,2)+size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1),-size(spResponseSurroundRS,2)+size(temporalIRCenter,1)])];
+                    % spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                    temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                end
                 fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
                 
                 if isa(mosaic,'rgcSubunit');
@@ -112,16 +120,19 @@ for xcell = 1:nCells(1)
 %                 end
 %                 lcif_kx_frame = sum(KX,1);
 % % % % % %  Works with conv                
-                fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
-                fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
+%                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
+%                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
                 
 %                 spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
 %                 spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
-%                 temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
-%                 temporalIRSurroundp = repmat([temporalIRSurround' zeros(1,[-size(temporalIRSurround,1)+size(spResponseSurroundRS,2)])],size(spResponseSurroundRS,1) ,1);
-%                 
-%                 fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
-%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRSp').*fft(temporalIRSurroundp'))';
+                 spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1),-size(spResponseCenterRS,2)+size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1),-size(spResponseSurroundRS,2)+size(temporalIRCenter,1)])];
+                 
+                temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                temporalIRSurroundp = repmat([temporalIRSurround' zeros(1,[-size(temporalIRSurround,1)+size(spResponseSurroundRS,2)])],size(spResponseSurroundRS,1) ,1);
+                
+                fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
+                fullResponseRSSurround = ifft(fft(spResponseSurroundRSp').*fft(temporalIRSurroundp'))';
                 
                 
 %                 fullResponseRSCenter = ifft(fft(spResponseCenterRS).*repmat(fft(temporalIRCenter,169),1,1101));

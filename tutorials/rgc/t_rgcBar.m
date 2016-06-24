@@ -7,7 +7,7 @@
 % (JRG) modified 10/2015
 
 %% Init
-ieInit;
+% ieInit;
 
 %% Compute a Gabor patch scene
 
@@ -31,9 +31,9 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-params.expTime = 0.0025;
-params.timeInterval = 0.0025;
-params.nSteps = 50;     % Number of stimulus frames
+params.expTime = 0.001;
+params.timeInterval = 0.001;
+params.nSteps = 100;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -75,7 +75,7 @@ for t = 1 : params.nSteps
 %     if t == 1 
         barMovie = zeros(params.row,params.col,3);
 %     end
-    barMovie(:,1+t:t+params.barwidth,:) = 0.5 + 0.499*ones(params.row,params.barwidth,3);
+    barMovie(:,1+floor(t/1):floor(t/1)+params.barwidth,:) = 0.5 + 0.499*ones(params.row,params.barwidth,3);
     barMovie(1,1,:) = 0;
 
     % % % % Generate scene object from stimulus RGB matrix and display object
@@ -110,33 +110,15 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Movie of the cone absorptions over cone mosaic
 
 % coneImageActivity(sensor,'step',1,'dFlag',true);
-%% Outer segment calculation
-% 
-% % Input = RGB
-% os = osCreate('displayrgb');
-% 
-% coneSpacing = sensorGet(sensor,'width','um');
-% coneSpacing = scene.wAngular*300
-% % coneSpacing = sensorGet(sensor,'dimension','um');
-% os = osSet(os, 'coneSpacing', coneSpacing);
-% 
-% coneSampling = sensorGet(sensor,'time interval','sec');
-% os = osSet(os, 'coneSampling', coneSampling);
-% 
-% os = osSet(os, 'rgbData', sceneRGB);
-% % os = osCompute(sensor);
-% 
-% % % Plot the photocurrent for a pixel
-% % osPlot(os,sensor);
 
 %% Outer segment calculation - linear
 
 % Input = RGB
-os = osCreate('linear');
+osL = osCreate('linear');
 
 % Set cone spacing so that 
 arrayWidth = sensorGet(sensor,'width');
-os = osSet(os, 'patch size', arrayWidth);
+osL = osSet(osL, 'patch size', arrayWidth);
 
 % The size of the whole mosaic
 % I think there is a function that gets this value, maybe in oiGet.
@@ -144,65 +126,94 @@ os = osSet(os, 'patch size', arrayWidth);
 %  coneSpacing = scene.wAngular*umPerDeg;
 
 tSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'time step', tSampling);
+osL = osSet(osL, 'time step', tSampling);
 
 % os = osSet(os, 'rgbData', sceneRGB);
-os = osCompute(os, sensor);
+osL = osCompute(osL, sensor);
 
 % Plot the photocurrent for a pixel
-osPlot(os,sensor);
+osPlot(osL,sensor);
+
+%% Find bipolar responses
+clear bp 
+
+bp = bipolar(osL);
+% bp = bipolar(os,cellType,2);
+
+bp = bipolarCompute(bp, osL);
+
+% bipolarPlot(bp,'response');
 %% Build rgc
 
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 
-% params.eyeSide   = 'left';   % Which eye
-% params.eyeRadius = 4;        % Radius in mm
-% params.eyeAngle  = 90;       % Polar angle in degrees
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 4;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
 
-innerRetina = irCreate(os, params);
+innerRetinaSU = irCreate(bp, params);
 
-innerRetina.mosaicCreate('model','glm','type','on midget');
+innerRetinaSU.mosaicCreate('model','glm','type','off midget');
 %% Compute RGC response
 
-innerRetina = irCompute(innerRetina, os);
+innerRetinaSU = irCompute(innerRetinaSU, bp);
 
 %%
-% irPlot(innerRetina, 'mosaic');
-% irPlot(innerRetina, 'linear');
-% irPlot(innerRetina, 'raster');
-irPlot(innerRetina, 'psth');
+% irPlot(innerRetinaSU, 'mosaic');
+% irPlot(innerRetinaSU, 'linear');
+% irPlot(innerRetinaSU, 'raster');
+irPlot(innerRetinaSU, 'psth');
+
+%% Outer segment calculation
+% 
+% Input = RGB
+os = osCreate('displayrgb');
+
+coneSpacing = sensorGet(sensor,'width','um');
+coneSpacing = scene.wAngular*300
+% coneSpacing = sensorGet(sensor,'dimension','um');
+os = osSet(os, 'patchSize', coneSpacing);
+
+coneSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'timeStep', .008);
+
+os = osSet(os, 'rgbData', sceneRGB);
+% os = osCompute(sensor);
+
+% % Plot the photocurrent for a pixel
+% osPlot(os,sensor);
 
 %% Outer segment calculation - biophysical
 
-os = osCreate('biophys');
-
-% Set cone spacing so that 
-arrayWidth = sensorGet(sensor,'width');
-os = osSet(os, 'patch size', arrayWidth);
-
-% The size of the whole mosaic
-% I think there is a function that gets this value, maybe in oiGet.
-%  umPerDeg = 300;
-%  coneSpacing = scene.wAngular*umPerDeg;
-
-% Change this to .001 for stability
-tSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'time step', tSampling);
-
-% os = osSet(os, 'rgbData', sceneRGB);
-os = osCompute(os, sensor);
-
-% Plot the photocurrent for a pixel
-osPlot(os,sensor);
+% os = osCreate('biophys');
+% 
+% % Set cone spacing so that 
+% arrayWidth = sensorGet(sensor,'width');
+% os = osSet(os, 'patch size', arrayWidth);
+% 
+% % The size of the whole mosaic
+% % I think there is a function that gets this value, maybe in oiGet.
+% %  umPerDeg = 300;
+% %  coneSpacing = scene.wAngular*umPerDeg;
+% 
+% % Change this to .001 for stability
+% tSampling = sensorGet(sensor,'time interval','sec');
+% os = osSet(os, 'time step', tSampling);
+% 
+% % os = osSet(os, 'rgbData', sceneRGB);
+% os = osCompute(os, sensor);
+% 
+% % Plot the photocurrent for a pixel
+% osPlot(os,sensor);
 %% Build rgc
 
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 
-% params.eyeSide   = 'left';   % Which eye
-% params.eyeRadius = 4;        % Radius in mm
-% params.eyeAngle  = 90;       % Polar angle in degrees
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 4;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina = irCreate(os, params);
 

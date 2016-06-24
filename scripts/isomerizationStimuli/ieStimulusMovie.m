@@ -115,8 +115,8 @@ sensor = sensorSet(sensor, 'exp time', params.expTime);
 sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
 
 
-ct = sensorGet(sensor,'cone type');
-sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
+% ct = sensorGet(sensor,'cone type');
+% sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
 
 %% Compute a dynamic set of cone absorptions for white noise
 %

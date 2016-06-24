@@ -775,6 +775,20 @@ switch ieParamFormat(params.what)
                     
                     
                     PSTH_rec=conv(sum(y),convolvewin,'same');
+                    
+                    
+                    
+                    % Compute PSTH]
+                    
+%                     sigma = .02; dt = .1;
+%                     psthraw = sum(y)/size(y,1)/.01;
+%                     % Filter w/ Gaussian
+%                     xfilt = dt*(-ceil(4*sigma/dt):1:ceil(4*sigma/dt))';
+%                     ff = normpdf(xfilt, 0, sigma)*dt;
+%                     
+%                     PSTH_rec = conv2(psthraw, ff, 'same');
+
+                    
                     plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec/maxTrials);
                     
                     xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));

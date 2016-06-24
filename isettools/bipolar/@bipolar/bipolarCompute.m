@@ -47,21 +47,30 @@ temporalDelay = 0;
 spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,(1e-3/os.timeStep)*temporalDelay + 1).*ones(size(spatialSubsampleCenterRS,1),(1e-3/os.timeStep)*temporalDelay + 1) spatialSubsampleCenterRS];
 spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.timeStep)*temporalDelay + 1).*ones(size(spatialSubsampleSurroundRS,1),(1e-3/os.timeStep)*temporalDelay + 1) spatialSubsampleSurroundRS];    
 
+%%%% FILTERS ONLY WORK FOR THE TIME SAMPLE THEY WERE CREATED AT
+
 % RDT initialization
-rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
-if strcmpi(obj.cellType,'offDiffuse')
-    data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
-else
-    data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
-end
-bipolarFiltMat = data.bipolarFiltMat;
-% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+% rdt = RdtClient('isetbio');
+% rdt.crp('resources/data/rgc');
+% if strcmpi(obj.cellType,'offDiffuse')
+%     data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+% else
+%     data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+% end
+% bipolarFiltMat = data.bipolarFiltMat;
+load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+
+% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
+% bipolarFilt = irGLM;
+
 % bipolarFiltMat1 = bipolarFiltMat(1,:);
 % clear bipolarFiltMat
 % bipolarFiltMat = bipolarFiltMat1;
+% bipolarFilt = bipolarFiltMat;
+
 bipolarFilt = mean(bipolarFiltMat)';
-% bipolarFilt = mean(bipolarFiltMat(2,:))';
+
+% bipolarFilt = (bipolarFiltMat(1,:)');
 if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];

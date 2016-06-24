@@ -197,10 +197,17 @@ switch osType
 %         spTempStimSurround = ieScale(spTempStimSurround);
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
-            if isa(ir.mosaic{rgcType},'rgcPhys')
+            if 1%isa(ir.mosaic{rgcType},'rgcPhys')
                 
-                for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
-                    tCenterNew{cellNum,1} = -1; tSurroundNew{cellNum,1} = 0;
+%                 for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                     tCenterNew{cellNum,1} = -1; tSurroundNew{cellNum,1} = 0;
+%                 end
+                xNum = size(ir.mosaic{rgcType}.sRFcenter,1);
+                yNum = size(ir.mosaic{rgcType}.sRFcenter,2);
+                for xcell = 1:xNum
+                    for ycell = 1:yNum
+                        tCenterNew{xcell,ycell} = -1; tSurroundNew{xcell,ycell} = 0;
+                    end
                 end
 %                 ir.mosaic{rgcType,1}.mosaicSet('tCenter',tCenterNew);
 %                 ir.mosaic{rgcType,1}.mosaicSet('tSurround',tSurroundNew);
@@ -208,7 +215,7 @@ switch osType
                 ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
                 szRC = size(spTempStimCenter);
                 
-                
+                if isa(ir.mosaic{rgcType},'rgcPhys')
 %                 spTempStimCenterRS = spTempStimCenter;
 %                 spTempStimSurroundRS = spTempStimSurround;
                 spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));
@@ -223,8 +230,10 @@ switch osType
                 end
                 
                 clear spTempStimCenter spTempStimSurround
+                
                 spTempStimCenter = spTempStimCenterRS;
                 spTempStimSurround = spTempStimSurroundRS;
+                end
             end
             
             

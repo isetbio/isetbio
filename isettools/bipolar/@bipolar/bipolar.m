@@ -37,6 +37,7 @@ properties (SetAccess = protected, GetAccess = public)
     cellType;                        % diffuse on or off
     patchSize;                       % size of retinal patch from sensor
     timeStep;                        % time step of simulation from sensor
+    filterType;                      % bipolar temporal filter type
     sRFcenter;                       % spatial RF of the center on the receptor grid
     sRFsurround;                     % spatial RF of the surround on the receptor grid
     % temporalDelay;                   % delay on inputs to differentiator
@@ -58,65 +59,38 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(varargin)     
+    function obj = bipolar(os, varargin)     
         
-        if ~isempty(varargin)
-            os = varargin{1};
+        p = inputParser;
+        addRequired(p, 'os');
+        addParameter(p, 'cellType', 'offDiffuse', @ischar);
+        addParameter(p, 'rectifyType', 1, @isnumeric);
+        addParameter(p, 'filterType',  1, @isnumeric);
         
-            %         p = inputParser;
-            %         addRequired(p, 'obj');
-            %         addRequired(p, 'sensor');
-            %         % addParameter(p, 'sensor', 'sensor', @isstruct);
-            %         addParameter(p, 'type', 'all', @isstring);
-            %
-            %         p.parse(obj, sensor, varargin{:});
-            %
-            %         params = p.Results;
-            
-            obj.patchSize = osGet(os,'patchSize');
-            obj.timeStep = osGet(os,'timeStep');
-            
-            if length(varargin)==2
-                cellType = varargin{2};
-                switch cellType
-                    case 1; obj.cellType = 'onDiffuse';
-                    otherwise; obj.cellType = 'offDiffuse';
-                end
-            else
-                obj.cellType = 'offDiffuse';
-            end
-            
-            
-            if length(varargin)==3
-                rectificationType = varargin{3};
-                switch rectificationType
-                    case 1                        
-                        obj.rectificationCenter = @(x) x;
-                        obj.rectificationSurround = @(x) zeros(size(x));
-                    case 2
-                        obj.rectificationCenter = @(x) x.*(x>0);
-                        obj.rectificationSurround = @(x) zeros(size(x));
-                    case 3
-                        obj.rectificationCenter = @(x) x.*(x>0);
-                        obj.rectificationSurround = @(x) x.*(x<0);
-                    otherwise
-                        
-                        obj.rectificationCenter = @(x) x;
-                        obj.rectificationSurround = @(x) zeros(size(x));
-                end
-            else
+        p.parse(os, varargin{:});  
+        
+        obj.patchSize = osGet(os,'patchSize');
+        obj.timeStep = osGet(os,'timeStep');
+        
+        obj.cellType = p.Results.cellType;
+        
+        switch p.Results.rectifyType
+            case 1
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+            case 2
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) zeros(size(x));
+            case 3
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) x.*(x<0);
+            otherwise
                 
                 obj.rectificationCenter = @(x) x;
                 obj.rectificationSurround = @(x) zeros(size(x));
-                
-            end
-        else
-            
-            obj.patchSize = 100e-6;
-            obj.timeStep = .001;
-        
-            obj.cellType = 'offDiffuse';
         end
+        
+        obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
         bpSizeCenter = 2;

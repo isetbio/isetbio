@@ -54,19 +54,20 @@ switch cellTypeI
 end
 
 % Load OS from RDT (1) or run from scratch (0)
-loadOS = 0;
+loadOS = 1;
 %% Load stimulus movie and fit/spiking data using RemoteDataToolbox
 
 % Loads the appropriate movie and spiking data for the experimental
 % conditions.
 [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
 
-if ~loadOS 
 
 % Length of WN movie is 1200, take nFrames to limit natural movie to same length
 nFrames = 3600; 
 testmovieshort = double(testmovie.matrix(:,:,1:nFrames)); 
 
+if ~loadOS 
+    
 frRS = 8;
 testmovieRS = zeros(size(testmovieshort,1),size(testmovieshort,2),frRS*size(testmovieshort,3));
 for frnum = 1:nFrames
@@ -81,8 +82,8 @@ showFrames = 50;
 %% Generate display, scene, oi, sensor
 paramsStim.nsteps = 1;%nFrames;%size(testmovieshort,3);
 %  Bipolar filter is setfor 0.001 sec, so it needs to be 0.001
-paramsStim.timeInterval = 0.001; % sec
-paramsStim.expTime = 0.001; % sec
+paramsStim.timeInterval = 1/125;%0.001; % sec
+paramsStim.expTime = 1/125;%0.001; % sec
 
 % % For 2013-08-19-6
 % r = 12 mm = 36 degs;
@@ -97,8 +98,8 @@ paramsStim.side = 'left';
 iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
 sensor = iStim.sensor;
 
-% sensor.data.volts = 5e-4*double(testmovieshort)./255;
-sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
+sensor.data.volts = 5e-4*double(testmovieshort)./255;
+% sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
 clear testmovieRS % testmovieshort
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
@@ -130,16 +131,9 @@ osL = osCompute(osL,sensor,paramsOSL);
 % osPlot(osL,sensor);
 
 % osLSub = osSet(osL, 'time step', 8*timeStep);
-osLSub.osSet('coneCurrentSignal',osL.coneCurrentSignal(:,:,1:8:end));
+% osLSub.osSet('coneCurrentSignal',osL.coneCurrentSignal(:,:,1:8:end));
 % osLSub.osSet('coneCurrentSignal',sensor.data.volts);
 
-else
-    rdt = RdtClient('isetbio');
-    rdt.crp('resources/data/rgc');
-    data = rdt.readArtifact('full_osLSub_sensor_NSEM', 'type', 'mat');
-    osLSub = data.osLSub;
-    
-end
 
 % osPlot(osLSub,sensor)
 %% osBioPhys
@@ -173,14 +167,27 @@ osBSub = osB;
 % 
 % osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:80:end));
 % clear osB
+
+else
+    rdt = RdtClient('isetbio');
+    rdt.crp('resources/data/rgc');
+    data = rdt.readArtifact('full_osLSub_sensor_NSEM', 'type', 'mat');
+    osLSub = data.osLSub;
+    
+end
 %% Find bipolar responses
 clear bp os
 % os = osL;
 os = osLSub;
 % os = osBSub;
 
-bp = bipolar(os);
-% bp = bipolar(os,cellType,2);
+bpParams.cellType = 'offDiffuse';
+% sets filter as theoretical, mean physiology, or individual phys:
+bpParams.filterType = 2; 
+% sets linear, on half-wave rectification, or on and off half-wave rect
+bpParams.rectifyType = 3;
+bp = bipolar(os, bpParams);
+
 % bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
 % bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 
@@ -389,18 +396,18 @@ xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
 % figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))))
 % figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)))
  
-for cellNum2 = 1:length(innerRetinaPSTH)
+for cellNum2 = 1:2%length(innerRetinaPSTH)
     minlen = min([length(innerRetinaPSTH{cellNum2}) length(innerRetinaRecordedPSTH{cellNum2}) length(innerRetinaSUPSTH{cellNum2}) ]);
 switch stimulusTestI
     
 
     case 1
         
-        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-        % rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-        rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
+        rsim = innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200));
+        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
     case 2
-        rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
+        rsim = innerRetinaSUPSTH{cellNum2}(1200+(1:minlen-1200));
         % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
         rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
 end
