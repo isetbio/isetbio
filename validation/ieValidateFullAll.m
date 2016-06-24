@@ -20,7 +20,7 @@ function ieValidateFullAll(varargin)
 close all; 
 
 %% We will use preferences for the 'isetbioValidation' project
-thisProject = 'isetbioValidation';
+thisProject = 'isetbio';
 UnitTest.usePreferencesForProject(thisProject, 'reset');
 
 %% Set preferences for this function
