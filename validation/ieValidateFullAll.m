@@ -3,13 +3,11 @@ function ieValidateFullAll(varargin)
 %
 %    validateFullAll(param,val, ...)
 %
-% Possible parameters are (need full list of options from somewhere ...
-% please indicate here at least with a pointer)
-%
+% Possible parameters are:
 %    'verbosity' -    high, med, low ...
-%    'numeric tolerance'
-%    'graph mismatched data'
-%    'generate plots'
+%    'numeric tolerance' - val
+%    'graph mismatched data' - true/false
+%    'generate plots' - true, false
 %
 % Examples:
 %   validateFullAll('verbosity','high');
