@@ -61,8 +61,13 @@ switch parm
             spd = displayGet(d,'spd');
             wave = displayGet(d,'wave');
             newSPD = interp1(wave, spd, val(:), 'linear');
+            
+            am = displayGet(d, 'ambient spd');
+            newAM = interp1(wave, am, val(:), 'linear', 0);
+            
             d.wave = val(:);
             d = displaySet(d,'spd',newSPD);
+            d = displaySet(d, 'ambient spd', newAM);
         end
 
     case {'spd','spdprimaries'}
