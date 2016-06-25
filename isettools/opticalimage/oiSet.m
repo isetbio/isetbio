@@ -169,6 +169,9 @@ switch parm
 
     case {'data','datastructure'}
         oi.data = val;
+        
+    case {'lens', 'lenspigment'}
+        oi.optics.lens = val;
 
     case {'photons', 'cphotons', 'compressedphotons'}
         % oiSet(oi,'photons',val)
@@ -257,6 +260,9 @@ switch parm
         % Set new wavelegnth samples.  
         if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; end
         oi.spectrum.wave = val(:);
+        if checkfields(oi, 'optics', 'lens')
+            oi.optics.lens.wave = val(:);
+        end
         
         % At this point the photon data might be inconsistent.  
         % One possibility is to ignore this and let the next computation

@@ -187,6 +187,10 @@ switch parm
         end
     case 'size'
         val = [oiGet(oi,'rows'), oiGet(oi,'cols')];
+    case {'lens', 'lenspigment'}
+        if checkfields(oi, 'optics', 'lens')
+            val = oi.optics.lens;
+        end
     case {'samplespacing'}
         % Sample spacing, both height and width
         % oiGet(oi,'sample spacing','mm')
@@ -455,10 +459,12 @@ switch parm
         % wonderful day, I returning the optics spectrum if there is no oi
         % spectrum.
         % Always a column vector, even if people stick it in the wrong way.
-        if isfield(oi,'spectrum'), 
+        if checkfields(oi,'spectrum', 'wave'), 
             val = oi.spectrum.wave(:); 
-        elseif checkfields(oi,'optics','spectrum'), 
+        elseif checkfields(oi,'optics','spectrum', 'wave'), 
             val = oi.optics.spectrum.wave(:);
+        elseif checkfields(oi, 'optics', 'OTF', 'wave')
+            val = oi.optics.OTF.wave(:);
         elseif checkfields(oi,'optics','rayTrace','psf','wavelength')
             val = oi.optics.rayTrace.psf.wavelength(:);
         end
