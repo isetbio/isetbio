@@ -155,6 +155,9 @@ end
 
 end
 
+
+
+
 %% Top level routine
 function signalCurrentImage = signalCurrent(oi,sensor,wBar)
 % Compute the signal current at each pixel position
