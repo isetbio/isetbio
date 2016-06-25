@@ -49,26 +49,48 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,(1e-3/os.
 
 %%%% FILTERS ONLY WORK FOR THE TIME SAMPLE THEY WERE CREATED AT
 
-% RDT initialization
-% rdt = RdtClient('isetbio');
-% rdt.crp('resources/data/rgc');
-% if strcmpi(obj.cellType,'offDiffuse')
-%     data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
-% else
-%     data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
-% end
-% bipolarFiltMat = data.bipolarFiltMat;
-load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
-
-% load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
-% bipolarFilt = irGLM;
+if obj.filterType == 1
+    % RDT initialization
+    rdt = RdtClient('isetbio');
+    rdt.crp('resources/data/rgc');
+    if strcmpi(obj.cellType,'offDiffuse')
+        data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+    else
+        data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+    end
+    bipolarFiltMat = data.bipolarFiltMat;
+    
+    bipolarFilt = mean(bipolarFiltMat)';
+    
+    % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+    
+elseif obj.filterType == 2
+    load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
+    if strcmpi(obj.cellType,'offDiffuse')
+        bipolarFilt = -irGLM;
+    else
+        bipolarFilt = irGLM;
+    end
+    
+elseif obj.filterType == 3
+        % RDT initialization
+    rdt = RdtClient('isetbio');
+    rdt.crp('resources/data/rgc');
+    if strcmpi(obj.cellType,'offDiffuse')
+        data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+    else
+        data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+    end
+    bipolarFiltMat = data.bipolarFiltMat;
+    
+    bipolarFilt = (bipolarFiltMat(obj.cellLocation,:)');
+end
 
 % bipolarFiltMat1 = bipolarFiltMat(1,:);
 % clear bipolarFiltMat
 % bipolarFiltMat = bipolarFiltMat1;
 % bipolarFilt = bipolarFiltMat;
 
-bipolarFilt = mean(bipolarFiltMat)';
 
 % bipolarFilt = (bipolarFiltMat(1,:)');
 if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)

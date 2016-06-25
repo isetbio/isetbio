@@ -175,8 +175,50 @@ else
     osLSub = data.osLSub;
     
 end
+tic
 
-% for cellNumber = 44
+%% Generate outer segment object for GLM from RGB scene data
+
+% In this case, the RGC GLM calculation converts from the frame buffer
+% values in the movie to the spiking responses.  For this calculation, we
+% store the movie stimulus in the the outer segment object 'displayRGB'.
+
+os1 = osCreate('displayRGB'); 
+os1 = osSet(os1, 'timeStep', 1/120);
+
+% Attach the movie to the object
+os1 = osSet(os1, 'rgbData', double(testmovieshort));
+
+%% Set RGC parameters
+params.name = 'macaque phys';
+params.eyeSide = 'left'; 
+params.eyeRadius = 12; 
+params.eyeAngle = 0; ntrials = 0;
+
+% Determined at beginning to allow looping
+params.experimentID = experimentID; % Experimental dataset
+params.stimulusTest = stimulusTest; % WN or NSEM
+params.cellType = cellType;         % ON or OFF Parasol
+
+%% Create a new inner retina object and attach the recorded spikes
+% We also want to compare the spikes recorded in the experiment to those
+% from the simulation. We create a separate inner retina object with
+% isetbio to store these spikes. This makes it easy to use isetbio to plot
+% aspects of the response.
+
+% Create the object.
+innerRetinaRecorded = irPhys(os1, params);  
+nTrials = 57; 
+% innerRetinaRecorded = irSet(innerRetinaRecorded,'timing',.008);
+innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
+
+% Set the recorded spikes that we got from the RDT into the object.
+innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
+% Get the PSTH using an isetbio routine.
+innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth');
+
+
+for cellNumber = 1:40
 
 %% Find bipolar responses
 clear bp os
@@ -186,12 +228,12 @@ os = osLSub;
 
 bpParams.cellType = 'offDiffuse';
 % sets filter as theoretical, mean physiology, or individual phys:
-bpParams.filterType = 1; 
+bpParams.filterType = 3; 
 % sets linear, on half-wave rectification, or on and off half-wave rect
 bpParams.rectifyType = 1;
 % bpParams.rectifyType = 3;
 
-% bpParams.cellLocation = cellNumber;
+bpParams.cellLocation = cellNumber;
 
 bp = bipolar(os, bpParams);
 
@@ -216,7 +258,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
-params.cellIndices = 1:118;
+params.cellIndices = cellNumber;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
@@ -235,17 +277,7 @@ innerRetinaSU = irSet(innerRetinaSU,'timing',1/120);
 % Get the PSTH from the object
 innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
 
-%% Generate outer segment object for GLM from RGB scene data
 
-% In this case, the RGC GLM calculation converts from the frame buffer
-% values in the movie to the spiking responses.  For this calculation, we
-% store the movie stimulus in the the outer segment object 'displayRGB'.
-
-os1 = osCreate('displayRGB'); 
-os1 = osSet(os1, 'timeStep', 1/120);
-
-% Attach the movie to the object
-os1 = osSet(os1, 'rgbData', double(testmovieshort));
 
 %% Generate RGC object for simulated GLM prediction of response
 % Set the parameters for the inner retina RGC mosaic. For the inner retina
@@ -264,7 +296,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
-params.cellIndices = 1:118;
+params.cellIndices = cellNumber;
 
 % Create object
 innerRetina = irPhys(os1, params);
@@ -277,71 +309,53 @@ innerRetina = irCompute(innerRetina, os1);
 % Get the PSTH from the object
 innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
 
-%% Create a new inner retina object and attach the recorded spikes
-% We also want to compare the spikes recorded in the experiment to those
-% from the simulation. We create a separate inner retina object with
-% isetbio to store these spikes. This makes it easy to use isetbio to plot
-% aspects of the response.
-
-% Create the object.
-innerRetinaRecorded = irPhys(os1, params);  
-
-% innerRetinaRecorded = irSet(innerRetinaRecorded,'timing',.008);
-innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
-
-% Set the recorded spikes that we got from the RDT into the object.
-innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
-% Get the PSTH using an isetbio routine.
-innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth');
-
-
 
 %% Plot the rasters
 
-% Set the time and cell number
-tStart = 1.5;% 9%1.5;
-tEnd = 9;%21;%18%21;%1*8.5;
-cellNum = 3;
-
-% Plot the original GLM prediction
-vcNewGraphWin([],'upperleftbig'); 
-subplot(312); hold on;
-% subplot(211); hold on;
-irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
-title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
-set(gca,'fontsize',14);
-axis([tStart tEnd 0 57]);
-axis off
-
-% Plot the biophys/subunit prediction
-subplot(313); hold on;
-% subplot(212); hold on;
-irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
-title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
-set(gca,'fontsize',14);
-% axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
+% % Set the time and cell number
+% tStart = 1.5;% 9%1.5;
+% tEnd = 21;%18%21;%1*8.5;
+% cellNum = 1;
+% 
+% % Plot the original GLM prediction
+% vcNewGraphWin([],'upperleftbig'); 
+% subplot(312); hold on;
+% % subplot(211); hold on;
+% irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
+% title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+% set(gca,'fontsize',14);
 % axis([tStart tEnd 0 57]);
+% axis off
+% 
+% % Plot the biophys/subunit prediction
+% subplot(313); hold on;
+% % subplot(212); hold on;
+% irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
+% title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+% set(gca,'fontsize',14);
+% % axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
+% % axis([tStart tEnd 0 57]);
+% % switch stimulusTestI
+% %     case 1
+% %         axis([tStart+1 tEnd+1 0 57]);
+% %     case 2
+%         axis([tStart tEnd 0 57]);
+% % end
+% axis off
+% 
+% % % Plot the recorded spikes
+% subplot(311); hold on;
+% irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
+% title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+% set(gca,'fontsize',14);
+% 
 % switch stimulusTestI
 %     case 1
-%         axis([tStart+1 tEnd+1 0 57]);
+%         axis([tStart-0.5 tEnd-0.5 0 57]);
 %     case 2
-        axis([tStart tEnd 0 57]);
+%         axis([tStart-1 tEnd-1 0 57]);
 % end
-axis off
-
-% % Plot the recorded spikes
-subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
-set(gca,'fontsize',14);
-
-switch stimulusTestI
-    case 1
-        axis([tStart-0.5 tEnd-0.5 0 57]);
-    case 2
-        axis([tStart-1 tEnd-1 0 57]);
-end
- set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
+%  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
 
  %%
  
@@ -407,8 +421,7 @@ xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
 % figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))))
 % figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)))
  
-for cellNum2 = 1:length(innerRetinaPSTH)
-    cellNumber = cellNum2
+for cellNum2 = 1%length(innerRetinaPSTH)
     minlen = min([length(innerRetinaPSTH{cellNum2}) length(innerRetinaRecordedPSTH{cellNum2}) length(innerRetinaSUPSTH{cellNum2}) ]);
 switch stimulusTestI
     
@@ -421,7 +434,7 @@ switch stimulusTestI
     case 2
         rsim = innerRetinaSUPSTH{cellNum2}(1200+(1:minlen-1200));
         % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+        rrec = innerRetinaRecordedPSTH{cellNumber}((0+(1:minlen-1200)));
 end
 
 fracVar(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
@@ -434,7 +447,7 @@ switch stimulusTestI
     case 2
         rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
         % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
+        rrec = innerRetinaRecordedPSTH{cellNumber}((0+(1:minlen-1200)));
 end
 
 fracVar2(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
@@ -463,9 +476,17 @@ fracVar3(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
 end
 % fracVar
 % fracVar2
-figure; scatter(fracVar, fracVar2); 
-hold on; plot(.01:.01:1,.01:.01:1)
-xlabel('SU'); ylabel('GLM');
+% figure; scatter(fracVar, fracVar2); 
+% hold on; plot(.01:.01:1,.01:.01:1)
+% xlabel('SU'); ylabel('GLM');
 
 
-% end
+fracVar1Cascade(cellNumber) = fracVar(cellNum2);
+
+fracVar2Cascade(cellNumber) = fracVar2(cellNum2);
+fracVarCascade(cellNumber) = fracVar3(cellNum2)
+
+end
+toc
+
+figure; scatter(fracVar1Cascade,fracVar2Cascade);

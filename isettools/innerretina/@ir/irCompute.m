@@ -44,22 +44,23 @@ p.parse(ir,outerSegment,varargin{:});
 
 ir = irComputeContinuous(ir, outerSegment);
 
-for rgcType = 1:length(ir.mosaic)
+% for rgcType = 1:length(ir.mosaic)
     
     % Compute spikes for each trial
-    switch class(ir.mosaic{rgcType})
+    switch class(ir.mosaic{1})
         case {'rgcLinear'};
             % No nonlinear response
             error('Not yet implemented');
         case{'rgcPhys'}
             
         otherwise
-            nTrials = ir.mosaic{rgcType}.numberTrials;
+            nTrials = ir.mosaic{1}.numberTrials;
             for itrial = 1:nTrials
+                itrial
                 ir = irComputeSpikes(ir);
             end
     end
 
-end
+% end
 
 

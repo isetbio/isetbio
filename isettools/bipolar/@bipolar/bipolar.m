@@ -66,6 +66,7 @@ methods
         addParameter(p, 'cellType', 'offDiffuse', @ischar);
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
+        addParameter(p, 'cellLocation',  [], @isnumeric);
         
         p.parse(os, varargin{:});  
         
@@ -98,6 +99,9 @@ methods
         obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
         obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
         
+        if isfield(p.Results,'cellLocation')
+            obj.cellLocation = p.Results.cellLocation;
+        end
     end
     
     % set function, see bipolarSet for details

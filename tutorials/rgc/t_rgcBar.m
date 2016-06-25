@@ -155,6 +155,9 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 innerRetinaSU = irCreate(bp, params);
 
 innerRetinaSU.mosaicCreate('model','glm','type','off midget');
+innerRetinaSU.mosaicCreate('model','glm','type','on midget');
+innerRetinaSU.mosaicCreate('model','glm','type','off parasol');
+innerRetinaSU.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetinaSU = irCompute(innerRetinaSU, bp);
