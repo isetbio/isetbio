@@ -8,10 +8,6 @@ function lens = lensCreate(lensDensity,wave, varargin)
 % The returned structure, t, includes a variety of derived terms. This
 % should help to keep the relationship between entities straight.
 %
-% macDensity is the estimated (average) peak density of the pigment across
-% a variety of observers.  They estimate the average (across observers)
-% peak density to be 0.28, with a range of 0.17 to 0.48.
-%
 % lens.name    'Convenient name'
 % lens.type    'lens'
 % lens.wave    
