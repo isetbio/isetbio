@@ -1,9 +1,9 @@
-function absorptions = compute(obj,oi,varargin)
+function absorptions = compute(obj, oi, varargin)
 %Compute absorptions using cone mosaic parameters and optical image
 %
 %   coneM.compute(oi,'showBar',true)
 %
-%  This  top-level function  combines the parameters of an image sensor
+%  This top-level function  combines the parameters of an image sensor
 %  array (sensor) and an optical image (oi) to produce the sensor volts
 %  (electrons).
 %
@@ -14,20 +14,15 @@ function absorptions = compute(obj,oi,varargin)
 % Return
 %    coneM.absorptions contains the pattern of absorptions
 %
-%  The computation checks a variety of parameters and flags in the sensor
-%  structure to perform the calculation.  These parameters and flags can be
-%  set either through the graphical user interface (sensorImageWindow) or
-%  by scripts.
+%  The computation checks a variety of parameters and flags in the
+%  coneMosaic structure to perform the calculation. These parameters and
+%  flags can be set either through the graphical user interface or by
+%  scripts.
 %
-%  One of the most important sensor parameters is the noise flag.  In
-%  general, the sensorCompute includes photon and electrical noise in the
-%  computation. But it is often useful to run the calculation without any
-%  noise, or with photon noise only.  To set the type of noise calculation,
-%  you must set the value of the sensor noise flag:
-%
-%    sensor = sensorSet(sensor,'noise flag',0);   % No noise
-%    sensor = sensorSet(sensor,'noise flag',1);   % Photon only
-%    sensor = sensorSet(sensor,'noise flag',2);   % Photon and electrical
+%  One of the most important sensor parameters is the noise flag. In
+%  general, the compute routine includes photon noise in the computation.
+%  But it is often useful to run the calculation without any noise. To set
+%  the type of noise calculation, you must set the value of the noiseFlag.
 %
 %
 % COMPUTATIONAL OUTLINE:
@@ -35,52 +30,34 @@ function absorptions = compute(obj,oi,varargin)
 %   This routine provides an overview of the algorithms.  The specific
 %   algorithms are described in the routines themselves.
 %
-%   2. Compute the mean image: sensorComputeImage()
-%   4. Noise, analog gain, clipping, quantization
+%   1. Compute the mean image
+%   2. Add nosie
 %
 %  The value of showBar determines whether the waitbar is displayed to
 %  indicate progress during the computation.
 %
-% See also:  sensorComputeNoise, sensorAddNoise
-%
-% Key computational flags:
-%
-%   Exposure Duration
-%   Noise calculations
-%
-% Examples:
-%   sensor = sensorCompute;   % Use selected sensor and oi
-%   tmp = sensorCompute(vcGetObject('sensor'),vcGetObject('oi'),0);
-%
-%  Or, compute with specific sensors
-%   scene = sceneCreate; scene = sceneSet(scene,'hfov',4);
-%   oi = oiCreate; sensor = sensorCreate;
-%   oi = oiCompute(oi,scene); sensor = sensorCompute(sensor,oi);
-%   vcAddAndSelectObject(sensor); sensorWindow('scale',1);
-%
-% Copyright ImagEval Consultants, LLC, 2011
+% HJ/BW, ISETBIO TEAM, 2016
 
-%% Define and initialize parameters
+%% initialize parameters
+%  parse inputs
+p = inputParser;
+p.addRequired('oi', @isstruct);
+p.addParameter('showBar', false, @isnumeric);
+
+p.parse();
+showBar = p.Results.showBar;
 
 % Determine the exposure model
 integrationTime = obj.integrationTime;
 pattern = obj.pattern;
-if (integrationTime == 0)
-    % This could be auto-exposure.  But for this condition, we probably
-    % shouldn't allow that.  So, let's just set it to 10 ms
-    integrationTime = 0.010;
-end
 
 % Calculate the signal current assuming cur2volt = 1;
 if showBar, unitSigCurrent = signalCurrent(oi,sensor,wBar);
 else        unitSigCurrent = signalCurrent(oi,sensor);
 end
 
-
-%% Convert to volts
 %% Calculate current
-% This factor converts pixel current to volts for this integration time
-% The conversion units are
+% This factor computes the expected photons captured by cones 
 %
 %   sec * (V/e) * (e/charge) = V / (charge / sec) = V / current (amps).
 %
@@ -331,7 +308,7 @@ try
     irradiance = RGB2XWFormat(irradiance);
     
     scdImage =  irradiance * sQE; % (quanta/m2/sec)
-    scdImage = XW2RGBFormat(scdImage,nRows,nCols);
+    scdImage = XW2RGBFormat(scdImage, nRows, nCols);
     % At this point, if we multiply by the photodetector area and the
     % integration time, that gives us the number of electrons at a pixel.
 catch

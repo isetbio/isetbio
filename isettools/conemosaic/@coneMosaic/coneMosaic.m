@@ -1,4 +1,4 @@
-classdef coneMosaic < handle
+classdef coneMosaic < handle & matlab.mixin.Copyable
     % Create a cone mosaic class
     %
     %   cMosaic =  coneMosaic('cone', cone, 'os', os);
@@ -166,6 +166,8 @@ classdef coneMosaic < handle
             p.parse(varargin{:});
             current = p.Results.current;
             
+            absorption = obj.computeSingleFrame(oi);
+            
             % Places the absorptions in the absorptions slot
             obj.computeAbsorptions(oi);
             
@@ -174,19 +176,69 @@ classdef coneMosaic < handle
             if current, obj.computeCurrent; end
         end
         
-        function plot(obj,varargin)
+        function plot(obj, type, varargin)
             % coneMosaic.plot()
-            p = inputParser;
             % Do some plotting based on the input arguments.
         end
     end
     
     % Methods may be called by the subclasses, but are otherwise private
     methods (Access = protected)
+        function cpObj = copyElement(obj)
+            % make a shallow copy of the properties
+            cpObj = copyElement@matlab.mixin.Copyable(obj);
+            
+            % make deep copy of the cone and macular class
+            cpObj.cone = cpObj.cone.copy();
+            cpObj.macular = cpObj.macular.copy();
+        end
     end
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
+        % compute function for single frame
+        function absorptions = computeSingleFrame(obj, oi, varargin)
+            % This function computes the expected photon absorptions for
+            % one frame, without considering the eye movement and noise.
+            
+            % parse inputs
+            p = inputParser();
+            p.addRequired('oi', @isstruct);
+            p.parse(oi, varargin{:});
+            
+            % make a copy of current obj and set cone wavelength samples to
+            % be same as oi
+            obj = obj.copy();
+            obj.wave = oiGet(oi, 'wave');
+            
+            % get scaled spectral qe
+            sQE = obj.qe * oiGet(oi, 'bin width');
+            
+            % compute cone absorption density at oi sampled locations
+            [photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
+            absDensityLMS = XW2RGBFormat(photons * sQE, r, c);
+            
+            % regrid the density from oi sample locations to cone locations
+            [oiR, oiC] = sample2space(0:r-1, 0:c-1, ...
+                oiGet(oi, 'hres'), oiGet(oi, 'wres'));
+            [coneR, coneC] = sample2space(0.5:obj.rows - 0.5, ...
+                0.5:obj.cols - 0.5, obj.cone.height, obj.cone.width);
+            absDensity = 0;
+            
+            warning('off','MATLAB:interp1:NaNinY');
+            for ii = 2 : 4  % loop through L, M and S
+                absDensity = absDensity + (obj.pattern == ii) .* ...
+                    interp1(oiC, interp1(oiR, absDensityLMS(:,:,ii-1), ...
+                    coneR, 'linear', 0)', coneC, 'linear', 0)';
+            end
+            warning('on','MATLAB:interp1:NaNinY');
+            
+            absDensity(isnan(absDensity)) = 0;
+            
+            % compute expected cone absorptions
+            absorptions = absDensity*obj.cone.pdArea*obj.integrationTime;
+        end
+        
         % callback function for listeners
         function setWave(obj, src, ~)
             switch src.DefiningClass.Name
