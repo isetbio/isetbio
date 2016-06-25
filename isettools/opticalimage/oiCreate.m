@@ -54,6 +54,7 @@ switch oiType
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
+        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
         
     case {'wvfhuman','shiftinvariant'}
         % A human lens specified using the WVF toolbox method
@@ -64,6 +65,7 @@ switch oiType
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
         oi = oiSet(oi, 'name','human-WVF');
+        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
         
     case {'diffractionlimited','diffraction'}
         % Default optics is f# = 4, diffraction limited

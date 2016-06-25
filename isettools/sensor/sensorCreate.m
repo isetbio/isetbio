@@ -118,7 +118,10 @@ switch sensorName
         sensor = sensorSet(sensor, 'size', [72 88]);
         
         % Add the default lens structure
+        % lens structure have been moved to oi structure. So, we ignore the
+        % lens here by setting density to 0
         lens = lensCreate([], wave);
+        lens = lensSet(lens, 'density', 0);
         sensor = sensorSet(sensor, 'human lens', lens);
         
         % Add the default macular structure
