@@ -1,4 +1,4 @@
-classdef Macular < handle
+classdef Macular < matlab.mixin.Copyable
     % Class for macular pigment properties
     %
     %     macular = Macular('wave', wave)
