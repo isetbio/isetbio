@@ -50,12 +50,18 @@ switch ieParamFormat(param)
         oType = 'oi'; return;
     case 'optics'
         oType = 'optics'; return;
+    case 'lens'
+        oType = 'lens'; return;
+    case 'macular'
+        oType = 'macular'; return;
+    case 'cone'
+        oType = 'cone'; return
     case 'sensor'
         oType = 'sensor'; return;
     case 'pixel'
         oType = 'pixel'; return;
-    case {'vci','ip'}
-        oType = 'ip'; return;
+        %     case {'vci','ip'}
+        %         oType = 'ip'; return;
     case {'em', 'eyemove', 'eyemovement'}
         oType = 'em'; return;
 end
@@ -71,6 +77,7 @@ c2 = strfind(param,'/');   % Find the '/'
 pos = min([c1,c2]);
 
 % Parse and return the string as oType
+% TODO:  We will need to add 'cone' and 'macular'
 oType = [];
 if ~isempty(pos)
     switch param(1:(pos-1))
@@ -80,12 +87,14 @@ if ~isempty(pos)
             oType = 'oi';
         case 'optics'
             oType = 'optics';
+        case 'lens'
+            oType = 'lens';
         case 'sensor'
             oType = 'sensor';
         case 'pixel'
             oType = 'pixel';
-        case {'vci','ip'}
-            oType = 'ip';
+            %         case {'vci','ip'}
+            %             oType = 'ip';
         case {'em', 'eyemove', 'eyemovement'}
             oType = 'em';
     end
@@ -103,8 +112,20 @@ end
 % I think there is a better way to do this in vistasoft, as per Adrian's
 % coding using hashing.  Not sure we can use it in previous versions of
 % Matlab, though.
+%
+% TODO:
+% Need to decide where the rt/raytrace goes.  Not organized correctly yet.
+% A lot of these should go away because they are related to objects not in
+% ISETBIO, but only in ISET.
 p = param;
 switch ieParamFormat(param)
+    % TODO
+    %     case {''}
+    %         oType = 'lens';
+    %     case {''}
+    %         oType = 'macular';
+    %     case {''}
+    %         oType = 'cone';
     case {'objectdistance','meanluminance','luminance', ...
             'illuminant','illuminantname','illuminantenergy', ...
             'illuminantphotons','illuminantxyz','illuminantwave',...
@@ -135,7 +156,7 @@ switch ieParamFormat(param)
             'rtrifieldheight','rtgeometry','rtgeomfunction','rtgeomwavelength',...
             'rtgeomfieldheight','rtgeommaxfieldheight'}          
         oType= 'optics';
-        
+
     case {'chiefrayangle','chiefrayangledegrees','sensoretendue',...
             'microlens','volts','digitalvalues','electrons',...
             'dvorvolts''roielectrons','roivoltsmean',...
