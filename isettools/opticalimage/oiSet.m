@@ -103,7 +103,7 @@ if ~exist('val','var'), error('Value field required.'); end
 
 [oType,parm] = ieParameterOtype(parm);
 
-% Handling optics setting via oiSet call.
+% Handling special optics and lens setting via oiSet
 if isequal(oType,'optics')
     if isempty(parm)
         % oi = oiSet(oi,'optics',optics);
@@ -111,23 +111,26 @@ if isequal(oType,'optics')
         return;
     else
         % Allows multiple additional arguments
-        if isempty(varargin), oi.optics = opticsSet(oi.optics,parm,val);
-        elseif length(varargin) == 1
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1});
-        elseif length(varargin) == 2
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1},varargin{2});
-        elseif length(varargin) == 3
-            oi.optics = opticsSet(oi.optics,parm,val,varargin{1},varargin{2},varargin{3});
-        end
+        % oiSet(oi,'optics parm',val);
+        oi.optics = opticsSet(oi.optics,parm,val,varargin{:});
+        return;
+    end
+elseif isequal(oType,'lens')
+    if isempty(parm)
+        % oiSet(oi,'lens',val);
+        oi.optics.lens = val;
+        return;
+    else
+        % oiSet(oi,'lens parm',val);
+        oi.optics.lens = lensSet(oi.optics.lens,val,varargin{:});
         return;
     end
 elseif isempty(parm)
     error('oType %s. Empty param.\n',oType);
 end
 
-
+% General oi parameters set here
 parm = ieParamFormat(parm);
-
 switch parm
 
     case {'name','oiname'}

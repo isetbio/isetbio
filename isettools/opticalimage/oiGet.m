@@ -18,11 +18,15 @@ function val = oiGet(oi,parm,varargin)
 %  unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
 %  'um', 'nm'.  Default is meters ('m').
 %
-%  The optics data structure is stored in the oi as oi.optics.  There is a
-%  set of opticsGet/Set/Create calls.  It is possible, however, to retrieve
-%  the optics parameters by a call via oiGet by specifying optics in the
-%  call, as in
+%  The optics data structure is stored in the oi as oi.optics. It is
+%  possible to retrieve the optics parameters as
+%
 %      v = oiGet(oi,'optics fnumber');
+%  
+%  The lens data structure is stored as oi.optics.lens.  You can query the
+%  lens properties using
+%  
+%     v = oiGet(oi,'lens property');
 %
 %  To see the full range of optics parameters, use doc opticsGet.
 %
@@ -36,6 +40,7 @@ function val = oiGet(oi,parm,varargin)
 %    oiGet(oi,'distPerSamp','mm')
 %    oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
 %    oiGet(oi,'optics off axis method')
+%    oiGet(oi,'lens');   % Lens object
 %
 %  General properties
 %      {'name'}           - optical image name
@@ -143,6 +148,12 @@ switch oType
         if isempty(parm), val = optics;
         elseif   isempty(varargin), val = opticsGet(optics,parm);
         else     val = opticsGet(optics,parm,varargin{1});
+        end
+        return;
+    case 'lens'
+        lens = oi.optics.lens;
+        if isempty(parm), val = lens;
+        else val = lensGet(lens,parm,varargin{:});
         end
         return;
     otherwise

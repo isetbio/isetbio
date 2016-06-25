@@ -1,5 +1,7 @@
 function absorptions = compute(obj, oi, varargin)
-%Compute absorptions using cone mosaic parameters and optical image
+% DELETE ME
+%
+% Compute absorptions using cone mosaic parameters and optical image
 %
 %   coneM.compute(oi,'showBar',true)
 %
