@@ -166,7 +166,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             p.parse(varargin{:});
             current = p.Results.current;
             
-            absorption = obj.computeSingleFrame(oi);
+            % absorption = obj.computeSingleFrame(oi);
             
             % Places the absorptions in the absorptions slot
             obj.computeAbsorptions(oi);
@@ -204,7 +204,11 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             % parse inputs
             p = inputParser();
             p.addRequired('oi', @isstruct);
+            p.addParameter('fullLMS', false, @islogical);
+            
             p.parse(oi, varargin{:});
+            
+            fullLMS = p.Results.fullLMS;
             
             % make a copy of current obj and set cone wavelength samples to
             % be same as oi
@@ -223,13 +227,22 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
                 oiGet(oi, 'hres'), oiGet(oi, 'wres'));
             [coneR, coneC] = sample2space(0.5:obj.rows - 0.5, ...
                 0.5:obj.cols - 0.5, obj.cone.height, obj.cone.width);
-            absDensity = 0;
             
+            if fullLMS
+                absDensity = zeros(obj.rows, obj.height, 3);
+            else
+                absDensity = 0;
+            end
             warning('off','MATLAB:interp1:NaNinY');
             for ii = 2 : 4  % loop through L, M and S
-                absDensity = absDensity + (obj.pattern == ii) .* ...
-                    interp1(oiC, interp1(oiR, absDensityLMS(:,:,ii-1), ...
-                    coneR, 'linear', 0)', coneC, 'linear', 0)';
+                curDensity = interp1(oiR, absDensityLMS(:,:,ii-1), ...
+                    coneR, 'linear', 0)';
+                curDensity = interp1(oiC, curDensity, coneC, 'linear', 0)';
+                if fullLMS
+                    absDensity(:, :, ii-1) = curDensity;
+                else
+                    absDensity = absDensity+(obj.pattern==ii).*curDensity;
+                end
             end
             warning('on','MATLAB:interp1:NaNinY');
             
