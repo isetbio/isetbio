@@ -23,8 +23,11 @@ classdef Lens < handle
     % HJ/BW ISETBIO Team 2013.
     
     properties       % public properties
-        wave;        % wavelength samples in nm
         density;     % macular pigment density
+    end
+    
+    properties (SetObservable, AbortSet)
+        wave;        % wavelength samples in nm
     end
     
     properties (Access=private)
