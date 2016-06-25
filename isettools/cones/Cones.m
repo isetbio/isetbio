@@ -1,4 +1,4 @@
-classdef Cones < handle
+classdef Cones < matlab.mixin.Copyable
     % Class for single cone
     %
     %   cone = Cones();
@@ -64,6 +64,8 @@ classdef Cones < handle
             obj.spatialDensity = p.Results.spatialDensity(:);
             obj.width = p.Results.width;
             obj.height = p.Results.height;
+            obj.pdWidth = p.Results.pdWidth;
+            obj.pdHeight = p.Results.pdHeight;
             
             if isempty(p.Results.absorbance)
                 obj.absorbance_ = 10 .^ ...
@@ -114,6 +116,5 @@ classdef Cones < handle
             obj.absorbance_ = interp1(obj.wave,val,obj.wave_,'linear',0);
         end
     end
-    
     
 end
