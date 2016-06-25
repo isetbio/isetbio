@@ -12,8 +12,11 @@ classdef Cones < handle
         opticalDensity;  % photopigment optical densities for L,M,S
         peakEfficiency;  % peak absorptance efficiency
         spatialDensity;  % spatial density (ratio) of the K-LMS cones
-        width;           % cone width in meters
-        height;          % cone height in meters
+        width;           % cone width (include gap) in meters
+        height;          % cone height (include gap) in meters
+        
+        pdWidth;         % photodetector width in meters
+        pdHeight;        % photodetector height in meters
     end
     
     properties (SetObservable, AbortSet)
@@ -26,6 +29,9 @@ classdef Cones < handle
         quantaFundamentals; % normalized cone absorptance
         energyFundamentals; % normalized cone absorption in energy units
         area;               % width * height
+        pdArea;             % pdWidth * pdHeight
+        gapWidth;           % width - pdWidth
+        gapHeight;          % height - pdHeight
     end
     
     properties(Access = private)  % private properties
@@ -45,6 +51,8 @@ classdef Cones < handle
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('width', 2e-6, @isnumeric);
             p.addParameter('height', 2e-6, @isnumeric);
+            p.addParameter('pdWidth', 2e-6, @isnumeric);
+            p.addParameter('pdHeight', 2e-6, @isnumeric);
             
             p.parse(varargin{:});
             
@@ -87,6 +95,18 @@ classdef Cones < handle
         
         function val = get.area(obj)
             val = obj.width * obj.height;
+        end
+        
+        function val = get.gapWidth(obj)
+            val = obj.width - obj.pdWidth;
+        end
+        
+        function val = get.gapHeight(obj)
+            val = obj.height - obj.pdHeight;
+        end
+        
+        function val = get.pdArea(obj)
+            val = obj.pdWidth * obj.pdHeight;
         end
         
         % set method for dependent variable
