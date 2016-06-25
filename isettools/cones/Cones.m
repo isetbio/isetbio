@@ -9,7 +9,6 @@ classdef Cones < handle
     % HJ, ISETBIO Team, 2016
     
     properties  % public properties
-        wave;            % wavelength samples
         opticalDensity;  % photopigment optical densities for L,M,S
         peakEfficiency;  % peak absorptance efficiency
         spatialDensity;  % spatial density (ratio) of the K-LMS cones
@@ -17,7 +16,11 @@ classdef Cones < handle
         height;          % cone height in meters
     end
     
-    properties(Dependent)
+    properties (SetObservable, AbortSet)
+        wave;            % wavelength samples
+    end
+    
+    properties (Dependent)
         absorbance;         % spectral absorbance of the cones
         absorptance;        % cone absorptance without ocular media
         quantaFundamentals; % normalized cone absorptance
