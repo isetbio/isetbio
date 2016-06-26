@@ -15,6 +15,7 @@ function dpi=MeasureDpi(theScreen)
 %             Replaced Chicago font with Arial because it's available on
 %             both Mac and Windows
 % 11/6/06 dgp Updated from PTB-2 to PTB-3.
+% 01/31/16 mk Fix some wrong assumptions for PTB-3. Get rid of GetChar.
 
 if nargin>1 || nargout>1
     error('Usage: dpi=MeasureDpi(screen)');
@@ -30,7 +31,7 @@ try
     if inches
         unitInches=1;
         units='inches'; % e.g. distance in inches
-        unit='inch';	% e.g. 5 inch object
+        unit='inch';    % e.g. 5 inch object
     else
         unitInches=1/2.54;
         units='cm';
@@ -40,13 +41,14 @@ try
     disp('A small correction will be made for your viewing distance and the thickness of');
     disp('the screen''s clear front plate, which separates your object from the screen''s');
     disp('light emitting surface.');
-    if Screen('FrameRate',theScreen)==0
+    isLCD = input('Is your display a flat panel, instead of a CRT? [y/n]: ', 's');
+    if isLCD == 'y'
         thicknessInches=0.1;
-        fprintf('The zero nominal frame rate of your display suggests that it''s an LCD, \n');
+        fprintf('I assume that the display is a flat panel display, \n');
         fprintf('with a thin (%.1f inch) clear front plate.\n',thicknessInches);
     else
         thicknessInches=0.25;
-        fprintf('The nonzero nominal frame rate of your display suggests that it''s a CRT, \n');
+        fprintf('I assume that the display is a CRT, \n');
         fprintf('with a thick (%.1f inch) clear front plate.\n',thicknessInches);
     end
     distanceInches=input(sprintf('What is your viewing distance, roughly, in %s? ',units))*unitInches;
@@ -87,7 +89,6 @@ try
     oldButton=0;
     while 1
         [x,y,button]=GetMouse;
-        FlushEvents('mouseDown');
         if any(button)
             if ~oldButton
                 origin=x;
@@ -164,11 +165,6 @@ try
     end
     Screen('Close',window);
 catch
-    ShowCursor;
-    Screen('CloseAll');
-    FlushEvents('keyDown');
-    while CharAvail
-        GetChar;
-    end
+    sca;
     psychrethrow(psychlasterror);
 end

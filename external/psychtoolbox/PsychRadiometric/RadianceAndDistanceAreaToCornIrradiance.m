@@ -6,12 +6,17 @@ function cornealIrradiance_PowerPerArea = RadianceAndDistanceAreaToCornIrradianc
 % needs to be in units that are the square of your distance units, both for the radiance passed and the stimulus area
 % passed. So, if radiance is in Watts/[cm2-sr] then distance needs to be in cm and irradiance will be in Watts/cm2.
 %
+% This conversion, I believe, is correct for the case where the eye is viewing the surface along its
+% surface normal, if we are thinking about a surface of fixed area.  For off axis viewing there will be
+% a correction for the Lambertian dropoff in light with cos(theta).  This differs from computing retinal
+% irradiance from radiance, where the area of the surface seen by a fixed retinal area increases exactly
+% so as to compensate for that dropoff.
+%
 % See also: RadianceAndDegrees2ToCornIrradiance, CornIrradianceAndDegrees2ToRadiance
 %
 % 2/20/13  dhb  Wrote it.
 
-% Get total power coming off the stimulus.  According to Wyszecki and Stiles,
-% Table 1(1.1), p. 2 this is called the radiant intensity.
+% Get total power coming off the stimulus.
 radiantIntensity_PowerPerSr = radiance_PowerPerSrArea * stimulusArea;
 
 % Figure out how much power per unit area by the time it arrives at the cornea.  To
