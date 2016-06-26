@@ -17,9 +17,12 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
         
         pattern;          % Pattern of K-LMS cones in the mosaick
         integrationTime;  % Cone temporal integration time in secs
+        sampleTime;       % Time step for em and os computation, shall we
+        % set this the same as integrationTime?
+        
         emPositions;      % Eye movement positions in number of cones.
-                          % The length of this property controls number of
-                          % frames to be computed
+        % The length of this property controls number of
+        % frames to be computed
         noiseFlag;        % To control which noise is included
     end
     
@@ -38,6 +41,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
         width;      % width of cone mosaic in meters
         height;     % height of cone mosaic in meters
         
+        coneLocs;   % cone locations in meters
         qe;         % effective absorptance with macular pigment (not lens)
     end
     
@@ -62,6 +66,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             p.addParameter('noiseFlag', 1, @isscalar);
             p.addParameter('pattern', [], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
+            p.addParameter('sampleTime', 0.001, @isscalar);
             p.addParameter('os', osCreate('linear'), ...
                 @(x)(isa(x,'outerSegment')));
             
@@ -74,6 +79,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             obj.wave = p.Results.wave;
             obj.integrationTime = p.Results.integrationTime;
             obj.noiseFlag = p.Results.noiseFlag;
+            obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
             if isempty(p.Results.pattern)
@@ -115,6 +121,13 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             val = obj.rows * obj.cone.height;
         end
         
+        function val = get.coneLocs(obj) % cone locations in meters
+            x = (1:obj.cols) * obj.cone.width; x = x - mean(x);
+            y = (1:obj.rows) * obj.cone.height; y = y - mean(y);
+            [X, Y] = meshgrid(x, y);
+            val = [X(:) Y(:)];
+        end
+        
         function val = get.qe(obj)
             % compute effective absorptance with macular pigments
             val = bsxfun(@times, obj.cone.absorptance, ...
@@ -130,7 +143,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
         function set.mosaicSize(obj, val)
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
-                    obj.cone.spatialDensity, obj.cone.width); 
+                    obj.cone.spatialDensity, obj.cone.width);
             end
         end
         
@@ -156,59 +169,70 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         
-        function obj = compute(obj, oi, varargin)
+        function [absorptions, current] = compute(obj, oi, varargin)
             % coneMosaic.plot()
             %
             % Compute the pattern of cone absorptions and typically the
-            % photocurrent.  If you don't want the current, say so.
+            % photocurrent.
             p = inputParser;
             p.addRequired('oi',@isstruct);
-            p.addParameter('current', false, @islogical); % Flag to compute current
+            p.addParameter('currentFlag', false, @islogical);
             
             % newNoise false means frozen noise, using the seed rng(1)
-            p.addParameter('newNoise',true,@islogical);   % Controls photon noise
+            p.addParameter('newNoise',true,@islogical);
             
             p.parse(oi,varargin{:});
             oi = p.Results.oi;
-            currentFlag = p.Results.current;
+            currentFlag = p.Results.currentFlag;
             newNoise = p.Results.newNoise;
             
             % Deal with eye movements
+            % prepare parameters for eye movement
             if isempty(obj.emPositions), obj.emPositions = [0 0]; end
+            mask = zeros(obj.rows, obj.cols, 3); % locations for cones
+            for ii = 2 : 4 % L, M, S
+                mask(:,:,ii-1) = double(obj.pattern == ii);
+            end
             
-            % First compute a larger frame of the LMS cones that extends as
-            % far as we will need given the eye movement
-            obj.extendConeArray;
+            % extend sensor size
+            xpos = obj.emPositions(:, 1); ypos = obj.emPositions(:, 2);
+            padRows = max(abs(ypos)); padCols = max(abs(xpos));
+            cpObj = obj.copy();
+            cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
             
-            % Noise free frame
-            obj.absorptions = obj.computeSingleFrame(oi);
+            % compute full LMS noise free absorptions
+            LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
+            absorptions = zeros(obj.rows,obj.cols,size(obj.emPositions,1));
             
-            for ii=1:size(obj.emPositions,1)
-                % Select out the subframe given the eye position
-                obj.absorptions = obj.eyeposition;
+            for ii = 1 : size(obj.emPositions, 1)
+                % select out the subframe given the eye position
+                cropLMS = LMS(1+padRows+ypos(ii):end-padRows+ypos(ii), ...
+                    1+padCols-xpos(ii):end-padCols-xpos(ii), :);
+                
+                % sample by conetype
+                absorptions(:, :, ii) = sum(cropLMS .* mask, 3);
             end
             
             % Add photon noise to the whole volume
             if obj.noiseFlag
-                obj.absorptions = obj.photonNoise(obj.absorptions,'newNoise',newNoise);
+                absorptions = obj.photonNoise(absorptions, ...
+                    'newNoise', newNoise);
             end
+            obj.absorptions = absorptions;
             
             % If we want the photo current, use the os model
-            if currentFlag, obj.os.compute; end
-        
+            if currentFlag
+                current = obj.os.compute;
+                obj.current = current;
+            end
         end
-        
-        function plot(obj, type, varargin)
-            % coneMosaic.plot()
-            % Do some plotting based on the input arguments.
-        end
-        
-        function [noisyImage, theNoise] = photonNoise(obj,absorptions,varargin)
+    end
+    
+    methods (Static)
+        function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
             % Photon noise at the absorptions is Poisson.
             % The Poisson variance is equal to the mean
             % For moderate mean levels, Poisson is very close to Normal
-            % Randn is unit normal (N(0,1)).
-            % S*Randn is N(0,S).
             %
             % We multiply each point in the absorption data by the square
             % root of its mean value to create the noise standard
@@ -218,14 +242,16 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             % value, which is slower to compute.
             
             p = inputParser;
-            p.addRequired('absorptions',@isnumeric);  
-            p.addParameter('newNoise',true,@islogical);  % Frozen or new random noise
+            p.addRequired('absorptions',@isnumeric);
+            
+            % Frozen or new random noise
+            p.addParameter('newNoise',true,@islogical);
             
             p.parse(absorptions,varargin{:});
             absorptions  = p.Results.absorptions;
             newNoise = p.Results.newNoise;
             
-            % This is S*N(0,1) = N(0,S)
+            % This is std * N(0,1)
             theNoise = sqrt(absorptions) .* randn(size(absorptions));
             
             % We add the mean electron and noise electrons together.
@@ -235,7 +261,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             % sample. The Poisson algorithm is slow for big numbers, but it
             % is fast enough for small numbers. We can't rely on the Stats
             % toolbox being present, so we use this Poisson sampler from
-            % Knuth. 
+            % Knuth.
             
             % Apply the Poisson when the mean is less than this
             poissonCriterion = 25;
@@ -243,12 +269,6 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             v = absorptions(absorptions < poissonCriterion);
             if ~isempty(v)
                 vn = iePoisson(v, 1, newNoise);  % Poisson samples
-                % for ii=1:length(r)
-                %    theNoise(r(ii),c(ii))   = vn(ii);
-                % For low mean values, we *replace* the mean value with the Poisson
-                % noise; we do not *add* the Poisson noise to the mean
-                %    noisyImage(r(ii),c(ii)) = vn(ii);
-                %end
                 theNoise(idx) = vn - absorptions(idx);
                 noisyImage(idx) = vn;
             end
@@ -264,6 +284,114 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             theNoise(idx)    = noisyImage(idx) - absorptions(idx);
         end
         
+        function pos = emGenSequence(nFrames, varargin)
+            % Generate eye movement path
+            %
+            % Inputs
+            %   nFrames - number of frames to be generated
+            %
+            % Optional inputs (key value pairs in varargin):
+            %   'em'    - eye movement structure, see emCreate for details
+            %   'rSeed' - random seed to be used
+            %
+            % Ouputs
+            %   pos     - nFramesx2 matrix of eye positions in units of
+            %             number of cones
+            %
+            % See also:
+            %   emCreate
+            
+            % parse input
+            p = inputParser;
+            p.addRequired('nFrames', @isscalar);
+            p.addParameter('em', emCreate, @isstruct);
+            p.addParameter('rSeed', [], @isscalar);
+            
+            % set parameters
+            p.parse(nFrames, varargin{:});
+            em = p.Results.em;
+            if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
+            
+            emFlag = emGet(em, 'em flag');
+            pos = zeros(nFrames, 2);
+            sampTime  = emGet(em, 'sample time');
+            
+            
+            % generate eye movement for tremor
+            if emFlag(1)
+                % Load parameters
+                amplitude  = emGet(em, 'tremor amplitude', 'cones/sample');
+                interval   = emGet(em, 'tremor interval');
+                intervalSD = emGet(em, 'tremor interval SD');
+                
+                % Compute time of tremor occurs
+                t = interval + randn(nFrames, 1) * intervalSD;
+                t(t < 0.001) = 0.001; % get rid of negative values
+                tPos = cumsum(t);
+                tPos = round(tPos / sampTime);
+                indx = 1:find(tPos <= nFrames, 1, 'last');
+                tPos = tPos(indx);
+                
+                % Generate random step at the selected times
+                direction = rand(length(tPos),1);
+                
+                % Unit length direction
+                pos(tPos, :) = amplitude * [direction sqrt(1-direction.^2)];
+                
+                pos(tPos, :) = bsxfun(@times, pos(tPos, :), t(indx)/sampTime);
+                pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
+                pos = cumsum(pos, 1);
+            end
+            
+            % generate eye movement for drift
+            if emFlag(2)
+                % Load Parameters
+                speed     = emGet(em, 'drift speed', 'cones/sample');
+                speedSD   = emGet(em, 'drift speed SD', 'cones/sample');
+                
+                % Generate random move at each sample time
+                theta = 360 * randn + 0.1 * (1 : nFrames)';
+                direction = [cosd(theta) sind(theta)];
+                s = speed + speedSD * randn(nFrames, 1);
+                pos = filter(1, [1 -1], bsxfun(@times, direction, s)) + pos;
+            end
+            
+            % generate eye movement for micro-saccade
+            if emFlag(3)
+                % Load parameters
+                interval   = emGet(em, 'msaccade interval');
+                intervalSD = emGet(em, 'msaccade interval SD');
+                dirSD      = emGet(em, 'msaccade dir SD', 'deg');
+                speed      = emGet(em, 'msaccade speed', 'cones/sample');
+                speedSD    = emGet(em, 'msaccade speed SD', 'cones/sample');
+                
+                % compute time of occurance
+                t = interval + randn(nFrames, 1) * intervalSD;
+                t(t < 0.3) = 0.3 + 0.1*rand; % get rid of negative values
+                t = cumsum(t);
+                tPos = round(t / sampTime);
+                tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
+                
+                % Compute positions
+                for ii = 1 : length(tPos)
+                    curPos = pos(tPos(ii), :);
+                    duration = round(sqrt(curPos(1)^2 + curPos(2)^2)/speed);
+                    direction = atand(curPos(2) / curPos(1)) + dirSD * randn;
+                    direction = [cosd(direction) sind(direction)];
+                    direction = abs(direction) .* (2*(curPos < 0) - 1);
+                    
+                    offset = zeros(nFrames, 2);
+                    indx = tPos(ii):min(tPos(ii) + duration - 1, nFrames);
+                    curSpeed = speed + speedSD * randn;
+                    if curSpeed < 0, curSpeed = speed; end
+                    offset(indx, 1) = curSpeed*direction(1);
+                    offset(indx, 2) = curSpeed*direction(2);
+                    
+                    pos = pos + cumsum(offset);
+                end
+            end
+            pos = round(pos);           
+        end
     end
     
     % Methods may be called by the subclasses, but are otherwise private
@@ -288,7 +416,7 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             % parse inputs
             p = inputParser();
             p.addRequired('oi', @isstruct);
-            p.addParameter('fullLMS', false, @islogical);  % No sampling, full LMS images
+            p.addParameter('fullLMS', false, @islogical); % full LMS images
             
             p.parse(oi, varargin{:});
             
@@ -309,12 +437,13 @@ classdef coneMosaic < handle & matlab.mixin.Copyable
             
             % regrid the density from oi sample locations to cone locations
             [oiR, oiC] = sample2space(0:r-1, 0:c-1, ...
-                oiGet(oi, 'height spatial resolution'), oiGet(oi, 'width spatial resolution'));
+                oiGet(oi, 'height spatial resolution'), ...
+                oiGet(oi, 'width spatial resolution'));
             [coneR, coneC] = sample2space(0.5:obj.rows - 0.5, ...
                 0.5:obj.cols - 0.5, obj.cone.height, obj.cone.width);
             
             if fullLMS
-                absDensity = zeros(obj.rows, obj.height, 3);
+                absDensity = zeros(obj.rows, obj.cols, 3);
             else
                 absDensity = 0;
             end
