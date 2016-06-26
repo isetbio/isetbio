@@ -1,4 +1,4 @@
-classdef Lens < matlab.mixin.Copyable
+classdef Lens < hiddenHandle
     % Class for human lens pigment properties
     %
     %     lens = Lens();

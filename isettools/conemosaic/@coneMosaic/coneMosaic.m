@@ -1,4 +1,4 @@
-classdef coneMosaic < handle & matlab.mixin.Copyable
+classdef coneMosaic < hiddenHandle
     % Create a cone mosaic class
     %
     %   cMosaic =  coneMosaic('cone', cone, 'os', os);
