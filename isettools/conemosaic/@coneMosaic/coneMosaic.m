@@ -40,6 +40,8 @@ classdef coneMosaic < hiddenHandle
         
         width;      % width of cone mosaic in meters
         height;     % height of cone mosaic in meters
+        fov;        % horizontal/vertical field of view assuming inf scene 
+                    % distance and 17mm optics focal length
         
         coneLocs;   % cone locations in meters
         qe;         % effective absorptance with macular pigment (not lens)
@@ -99,6 +101,38 @@ classdef coneMosaic < hiddenHandle
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
         end
         
+        % set size to fov
+        function obj = setSizeToFOV(obj, fov, varargin)
+            % set cone mosaic size according to the field of view
+            %
+            % Inputs:
+            %   fov    - 2-element vector for desired horizontal/vertical
+            %            field of view in degrees
+            % 
+            % Outputs:
+            %   obj    - class object with size and mosaic updated
+            %
+            
+            % parse input
+            p = inputParser;
+            p.addRequired('fov', @isnumeric);
+            p.addParameter('sceneDist', inf, @isnumeric);
+            p.addParameter('focalLength', 0.017, @isnumeric);
+            
+            p.parse(fov, varargin{:});
+            sceneDist = p.Results.sceneDist;
+            focalLength = p.Results.focalLength;
+            if isscalar(fov), fov = [fov fov]; end
+            fov = fov([2 1]); % flip the order to be vertical/horizontal
+            
+            % compute current field of view
+            imageDist = 1/(1/focalLength - 1/sceneDist);
+            curFov = 2*atand([obj.height obj.width]/imageDist/2);
+            
+            % set new size to object
+            obj.mosaicSize = ceil(obj.mosaicSize .* fov./curFov);
+        end
+        
         
         % get methods for dependent variables
         function val = get.wave(obj)
@@ -113,12 +147,20 @@ classdef coneMosaic < hiddenHandle
             val = size(obj.pattern, 2);
         end
         
+        function val = get.mosaicSize(obj)
+            val = [obj.rows obj.cols];
+        end
+        
         function val = get.width(obj)  % width of cone mosaic in meters
             val = obj.cols * obj.cone.width;
         end
         
         function val = get.height(obj)  % height of cone mosaic in meters
             val = obj.rows * obj.cone.height;
+        end
+        
+        function val = get.fov(obj)  % horizontal/vertical field of view
+            val = 2 * atand([obj.width obj.height]/2/0.017);
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
@@ -138,6 +180,10 @@ classdef coneMosaic < hiddenHandle
         function set.wave(obj, val)
             obj.cone.wave = val(:);
             obj.macular.wave = val(:);
+        end
+        
+        function set.fov(obj, val) % set field of view
+            obj.setSizeToFOV(val);
         end
         
         function set.mosaicSize(obj, val)
