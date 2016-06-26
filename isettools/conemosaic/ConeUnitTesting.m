@@ -2,23 +2,18 @@
 %
 %
 
-%%
+%% Create scene
 ieInit
 scene = sceneCreate;
 
-%% The new oi has the human lens in it.
-
+%% Create optical image
 oi = oiCreate;
 oi = oiCompute(oi,scene);
 
 vcAddObject(oi); oiWindow;
 
-% TODO:  Make lensGet/lensSet for the new lens class
-%%
-cMosaic     = coneMosaic;
-
-%%
-% absorptions = cMosaic.computeSingleFrame(oi);
+%% Create cone mosaic
+cMosaic = coneMosaic;
 
 %% Comparing with sensor calculation
 sensor = sensorCreate;
@@ -32,11 +27,10 @@ cMosaic.noiseFlag = 0;
 cMosaic.compute(oi);
 vcNewGraphWin; imagesc(cMosaic.absorptions);
 
-vcNewGraphWin; plot(photons(:),absorptions(:),'.');
+vcNewGraphWin; plot(photons(:), cMosaic.absorptions(:),'.');
 identityLine;
 
-%%  This routine adds noise
-
+%% Test noise addition
 cMosaic.noiseFlag = true;
 cMosaic.compute(oi);
 nAbsorptions = cMosaic.absorptions;
@@ -45,9 +39,14 @@ vcNewGraphWin; imagesc(nAbsorptions);
 cMosaic.noiseFlag = false;
 cMosaic.compute(oi);
 mAbsorptions = cMosaic.absorptions;
-vcNewGraphWin; hist(nAbsorptions(:)-mAbsorptions(:),100);
+vcNewGraphWin; hist(nAbsorptions(:)-mAbsorptions(:), 100);
 
 %% Eye movement testing
+cMosaic.emPositions = cMosaic.emGenSequence(5000);
+cMosaic.compute(oi);
 
-cMosaic.emPositions = round(10*rand(10,2));
-
+%% Plot
+cMosaic.plot('cone mosaic');
+cMosaic.plot('cone fundamentals');
+cMosaic.plot('macular transmittance');
+cMosaic.plot('spectral qe');
