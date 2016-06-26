@@ -14,6 +14,8 @@ vcAddObject(oi); oiWindow;
 
 %% Create cone mosaic
 cMosaic = coneMosaic;
+cMosaic.setSizeToFOV([1 0.8],'focalLength',oiGet(oi,'optics focallength'));
+
 
 %% Comparing with sensor calculation
 sensor = sensorCreate;
