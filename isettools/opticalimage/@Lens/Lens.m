@@ -23,6 +23,7 @@ classdef Lens < hiddenHandle
     % HJ/BW ISETBIO Team 2013.
     
     properties       % public properties
+        name;        % Name of this particular lens object
         density;     % macular pigment density
     end
     
@@ -45,13 +46,19 @@ classdef Lens < hiddenHandle
     methods  % public methods
         % constructor
         function obj = Lens(varargin)
+            % thisLens = 
+            %   Lens('wave',400:10:700, 'density',1,'name','my lens');
+            %
             % parse input
             p = inputParser;
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('density', 1, @isscalar);
             p.addParameter('unitDensity', [], @isnumeric);
+            p.addParameter('name','human lens',@isstr);
             
             p.parse(varargin{:});
+            
+            obj.name = p.Results.name;
             
             % set properties
             obj.wave = p.Results.wave(:);

@@ -153,7 +153,7 @@ switch oType
     case 'lens'
         lens = oi.optics.lens;
         if isempty(parm), val = lens;
-        else val = lensGet(lens,parm,varargin{:});
+        else val = lens.get(parm,varargin{:});
         end
         return;
     otherwise

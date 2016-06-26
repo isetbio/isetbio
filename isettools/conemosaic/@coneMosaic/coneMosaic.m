@@ -171,7 +171,15 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.qe(obj)
+            % cMosaic.qe
             % compute effective absorptance with macular pigments
+            %
+            % The cone mosaic quantum efficiency is the product of the cone
+            % photopigment absorptance times the macular pigment
+            % transmittance times the cone photopigment peak absorption.
+            %
+            % The eye quantum efficiency, called in plot, includes the lens
+            % transmittance.
             val = bsxfun(@times, obj.cone.absorptance, ...
                 obj.macular.transmittance) * diag(obj.cone.peakEfficiency);
         end
@@ -334,7 +342,7 @@ classdef coneMosaic < hiddenHandle
             % Generate eye movement path
             %
             % Inputs
-            %   nFrames - number of frames to be generated
+            %   nFrames - number of frames to generate
             %
             % Optional inputs (key value pairs in varargin):
             %   'em'    - eye movement structure, see emCreate for details
@@ -342,7 +350,7 @@ classdef coneMosaic < hiddenHandle
             %
             % Ouputs
             %   pos     - nFramesx2 matrix of eye positions in units of
-            %             number of cones
+            %             cone positions
             %
             % See also:
             %   emCreate
