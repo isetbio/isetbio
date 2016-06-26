@@ -1,4 +1,4 @@
-classdef Cones < matlab.mixin.Copyable
+classdef Cones < hiddenHandle
     % Class for single cone
     %
     %   cone = Cones();
