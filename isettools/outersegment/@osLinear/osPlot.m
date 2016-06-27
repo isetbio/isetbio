@@ -58,9 +58,22 @@ switch ieParamFormat(type)
         
     case {'current'}
         % Plot output signal at a particular (x, y) over time.
+<<<<<<< HEAD
         h = vcNewGraphWin;
         osPlotCurrent(obj,absorptions);
 
+=======
+        
+        isomerizations1 = sensorGet(sensor,'photons');
+        [sz1 sz2 sz3] = size(isomerizations1);
+        
+        outputSignal(1,:) = obj.coneCurrentSignal(round(sz1/2),round(sz2/2),:);
+        plot((0:numel(outputSignal)-1)*dt, outputSignal, 'k-');
+        title('output signal');
+        xlabel('Time (sec)');
+        ylabel('pA');
+        
+>>>>>>> master
     case{'all'}
         % Puts each of the main plots in a subplot within the window
         h = vcNewGraphWin([],'wide');

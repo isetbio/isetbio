@@ -38,6 +38,7 @@
 %   PupilDiameterFromLum      - Estimate pupil diameter from luminance.
 %   RetinalEccentricityMMToDegrees - Convert retinal eccentricities from mm of retina to degrees.
 %   RetinalMMToDegrees        - Convert foveal retinal extents from mm of retina to degrees.
+%   ShiftPhotopigmentAbsorbance - Shift an absorbance along a log wavelength axis.
 %   StockmanSharpeNomogram    - Stockman/Sharpe photopigment nomogram (not finished).
 %   ValetonVanNorrenParams    - Return parameters of the Valeton-Van Norren model.
   

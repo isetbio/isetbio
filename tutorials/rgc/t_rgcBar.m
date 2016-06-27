@@ -31,9 +31,18 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
+<<<<<<< HEAD
 params.expTime = 0.001;
 params.timeInterval = 0.001;
 params.nSteps = 100;     % Number of stimulus frames
+=======
+% params.expTime = 0.0025;
+% params.timeInterval = 0.0025;
+
+params.expTime = 0.01;
+params.timeInterval = 0.01;
+params.nSteps = 50;     % Number of stimulus frames
+>>>>>>> master
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');

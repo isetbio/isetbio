@@ -7,7 +7,7 @@ function sensor = eyemoveInit(sensor, params, varargin)
 %   sensor:  human sensor structure (see sensorCreate)
 %   params:  eye-movement parameters, optional, for default value see
 %            auxilary function emFillParams below
-%     .emType   - 3x1 flag vector, indicating whether or not to include
+%     .emFlag   - 3x1 flag vector, indicating whether or not to include
 %                 tremor, drift and micro-saccade respectively
 %     .sampTime - sampling time in secs, e.g. 0.001 stands for 1ms per
 %                 sample
@@ -66,7 +66,7 @@ function sensor = eyemoveInit(sensor, params, varargin)
 %   sensor = eyemovementInit;
 %   sensor = sensorCreate('human');
 %   sensor = eyemovementInit(sensor);
-%   p.emType = ones(3,1);
+%   p.emFlag = ones(3,1);
 %   p.totTime = 1;
 %   sensor = eyemoveInit(sensor, p);
 %   sensor = eyemoveInit(sensor, p, 'tremor amplitude', 0.1);

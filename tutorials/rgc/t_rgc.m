@@ -25,7 +25,7 @@ rdt.crp('/resources/data/rgc');
 % (coneMosaic) and the biophysical properties of the outer segment (os).
 % Because these are stored in a matlab file, the data are returned.
 data       = rdt.readArtifact('t_rgcData', 'type', 'mat');
-coneMosaic = data.coneMosaic;
+coneMosaic = data.sensor;
 os         = data.os;
 
 % ieStimulusBar is an alternative to RDT that builds the stimulus locally

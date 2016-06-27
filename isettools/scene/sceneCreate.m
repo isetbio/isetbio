@@ -183,6 +183,13 @@ switch sceneName
         % wavelength sampling, by calling with additional arguments, such
         % as scene = sceneCreate('macbethd65',16,spectrum);
         scene = sceneDefault(scene,'d65');
+    case 'empty'
+        % scene = sceneCreate('empty',wave)
+        % Sometimes you just want an empty scene structure with some
+        % wavelength sampling.
+        scene = sceneDefault(scene,'d65');
+        scene = sceneClearData(scene);
+        scene = sceneSet(scene,'name','empty');
     case {'macbeth','macbethd65'}
         % sceneCreate('macbethD65',24);
         scene = sceneDefault(scene,'d65',varargin);

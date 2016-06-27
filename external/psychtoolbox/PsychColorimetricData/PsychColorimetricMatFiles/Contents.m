@@ -114,7 +114,11 @@
 %   T_stiles10          - Stiles-Burch 10-degree color matching functions.
 %   T_ss2000_Y2         - Stockman-Sharpe (2000) 2-degree photopic luminance efficiency function.  See CVRL database.
 %   T_vos1978_Y         - Judd-Vos 1978 photopic luminance efficiency function.
-%   T_xyz1931           - CIE 1931 color matching functions.
-%   T_xyz1964           - CIE 1964 supplemental color matching functions.
+%   T_xyz1931           - CIE 1931 color matching functions (2-degree).
+%   T_xyz1964           - CIE 1964 supplemental color matching functions (10-deg).
+%   T_xyzCIEPhys2       - CIE XYZ CMF's based on CIE 2-deg cone fundamentals.
+%                       -   Obtained in 2016 from CVRL.  At this time, these are proposed.
+%   T_xyzCIEPhys10      - CIE XYZ CMF's based on CIE 10-deg cone fundamentals.
+%                       -   Obtained in 2016 from CVRL.  At this time, these are proposed.
 %   T_xyzJuddVos        - Judd-Vos modified color matching functions.
 
