@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 26-Jun-2016 16:39:48
+% Last Modified by GUIDE v2.5 26-Jun-2016 21:48:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1844,3 +1844,26 @@ end
 %#ok<*DEFNU>
 %#ok<*INUSD>
 return;
+
+
+
+function editKLMS_Callback(hObject, eventdata, handles)
+% hObject    handle to editKLMS (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editKLMS as text
+%        str2double(get(hObject,'String')) returns contents of editKLMS as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function editKLMS_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editKLMS (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
