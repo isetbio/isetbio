@@ -12,7 +12,7 @@
 %% Compute a Gabor patch scene
 
 % Set up Gabor stimulus using sceneCreate('harmonic',params)
-fov = 0.6;
+fov = 1.2;
 
 params.barwidth = 5;
 params.meanLuminance = 200;
@@ -137,7 +137,7 @@ osPlot(osL,sensor);
 %% Find bipolar responses
 clear bp 
 
-bp = bipolar(osL);
+bp = bipolar(osL,'filterType',1);
 % bp = bipolar(os,cellType,2);
 
 bp = bipolarCompute(bp, osL);
@@ -154,10 +154,10 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetinaSU = irCreate(bp, params);
 
-innerRetinaSU.mosaicCreate('model','glm','type','off midget');
+% innerRetinaSU.mosaicCreate('model','glm','type','off midget');
 innerRetinaSU.mosaicCreate('model','glm','type','on midget');
-innerRetinaSU.mosaicCreate('model','glm','type','off parasol');
-innerRetinaSU.mosaicCreate('model','glm','type','on midget');
+% innerRetinaSU.mosaicCreate('model','glm','type','off parasol');
+% innerRetinaSU.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetinaSU = irCompute(innerRetinaSU, bp);
@@ -166,7 +166,7 @@ innerRetinaSU = irCompute(innerRetinaSU, bp);
 % irPlot(innerRetinaSU, 'mosaic');
 % irPlot(innerRetinaSU, 'linear');
 % irPlot(innerRetinaSU, 'raster');
-irPlot(innerRetinaSU, 'psth');
+irPlot(innerRetinaSU, 'psth','type',1);
 
 %% Outer segment calculation
 % 

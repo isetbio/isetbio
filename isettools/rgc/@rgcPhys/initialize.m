@@ -81,11 +81,16 @@ rdt = RdtClient('isetbio');
 rdt.crp('resources/data/rgc');
 
 switch ieParamFormat(cellType)
+    case 'onparasolrpe'
+        load('/Users/james/Documents/MATLAB/mosaicGLM_RPE_onPar.mat')
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
         data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
         
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/goodind_2013_08_19_6_OFFParasol.mat')
+                              
         data2 = rdt.readArtifact('goodind_2013_08_19_6_OFFParasol', 'type', 'mat');
         goodind = data2.goodind;
     otherwise % case 'onparasol'
@@ -115,16 +120,28 @@ for matFileInd = cellIndicesEval%1:length(goodind)
     matFileCtr = matFileCtr+1;
     obj.cellID{matFileCtr,1} = mosaicGLM{matFileInd}.cell_savename;
 %     obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
-    
-    obj.postSpikeFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
+
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'PostSpike')
+        obj.postSpikeFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
+    else
+%         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
+        obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
+    end
     if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
 
         obj.couplingFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Coupling.Filter;
     end
     
-    obj.tonicDrive{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
     
-    obj.sRFcenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+    
+    switch ieParamFormat(cellType)
+        case 'onparasolrpe'
+            obj.tonicDrive{matFileCtr,1} = 0;
+        otherwise
+            obj.tonicDrive{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
+    end
+    
+    obj.sRFcenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1';
     obj.sRFsurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
     obj.tCenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
     obj.tSurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
