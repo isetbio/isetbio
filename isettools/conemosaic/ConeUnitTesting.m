@@ -9,10 +9,12 @@ scene = sceneCreate('slanted bar');
 %% Create optical image
 oi = oiCreate;
 
-% oi = oiSet(oi, 'lens density', 0);
 oi = oiCompute(oi,scene);
+vcAddObject(oi); oiWindow;
 
-% vcAddObject(oi); oiWindow;
+oi = oiSet(oi, 'lens density', 0);
+oi = oiCompute(oi,scene);
+vcAddObject(oi); oiWindow;
 
 %% Create cone mosaic
 cMosaic = coneMosaic;
@@ -62,12 +64,11 @@ cMosaic.plot('macular transmittance');
 cMosaic.plot('eye spectral qe','oi',oi);
 
 %% Show the time series of absorptions as a movie
-[~, uData] = cMosaic.plot('absorptions');
-for ii=1:size(uData.mov,4)
-    imshow(uData.mov(:,:,:,ii));
+[~,uData] = cMosaic.plot('absorptions');
+
+%%
+for ii=1:size(uData, 4)
+    imshow(uData(:,:,:,ii));
     drawnow;
 end
-
-max(uData.mov(:))
-min(uData.mov(:))
 
