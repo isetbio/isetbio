@@ -1,11 +1,12 @@
 function val = osGet(obj, varargin)
-% osGet: a method of @osBioPhys that sets isetbio outersegment object 
-% parameters using the input parser structure.
+% Gets the isetbio outersegment object parameters.
 % 
 % Parameters:
-%       {'noiseFlag'} -  gets noise flag, noise-free ('0') or noisy ('1')
-%       {'ConeCurrentSignal'} - cone current as a function of time
-%       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
+%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'size'} - array size of photon rate
+%       {'coneCurrentSignal'} - cone current as a function of time
 % 
 % osGet(adaptedOS, 'noiseFlag')
 % 

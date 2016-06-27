@@ -1,9 +1,10 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osIdentity that sets isetbio outersegment object 
-% parameters using the input parser structure.
+% Sets isetbio outersegment object parameters.
 % 
 % Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'photonRate'} - photon rate from sensor, copied for osIdentity.
 % 
 % noiseFlag = 0;
 % adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
@@ -37,10 +38,7 @@ p.parse(varargin{:}); params = p.Results;
 
 switch ieParamFormat(params.what);  % Lower case and remove spaces
 
-    
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;
-        
+   
     case{'patchsize'}
         obj.patchSize = params.value;
         

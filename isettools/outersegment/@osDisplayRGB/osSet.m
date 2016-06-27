@@ -3,7 +3,9 @@ function obj = osSet(obj, varargin)
 % parameters using the input parser structure.
 % 
 % Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'rgbData'} - scene RGB data to pass to "black box" RGC GLM model.
 % 
 % noiseFlag = 0;
 % adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
@@ -35,11 +37,7 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-switch ieParamFormat(params.what);  % Lower case and remove spaces
-
-    
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;
+switch ieParamFormat(params.what);  % Lower case and remove space
         
     case{'patchsize'}
         obj.patchSize = params.value;

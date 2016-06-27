@@ -1,13 +1,17 @@
 function obj = osSet(obj, varargin)
-% Sets isetbio outersegment object parameters
-%
-% Multiple parameter/value pairs can be set at a time
+% Sets isetbio outersegment object parameters.
 %
 % Parameters:
-%   sConeFilter - the linear filter for S-cone temporal response
-%   mConeFilter - the linear filter for M-cone temporal response
-%   lConeFilter - the linear filter for L-cone temporal response
-%
+% 
+%       {'sConeFilter'} - the linear filter for S-cone temporal response
+%       {'mConeFilter'} - the linear filter for M-cone temporal response
+%       {'lConeFilter'} - the linear filter for L-cone temporal response
+%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'size'} - array size of photon rate
+%       {'coneCurrentSignal'} - cone current as a function of time
+% 
 % Example:
 %
 %   adaptedOS = osSet(adaptedOS, 'noiseFlag', 0, 'time step',0.001);
@@ -20,7 +24,11 @@ function obj = osSet(obj, varargin)
 for ii=1:2:length(varargin)
     param = ieParamFormat(varargin{ii});
     value = varargin{ii+1};
-    switch param
+    switch param        
+        
+        case {'noiseflag'}
+            obj.noiseFlag = value;
+        
         case {'sconefilter'}
             % Temporal impulse response
             obj.sConeFilter = value;
@@ -32,10 +40,15 @@ for ii=1:2:length(varargin)
         case {'lconefilter'}
             % Temporal impulse response
             obj.lConeFilter = value;            
+                      
+        case{'patchsize'}
+            obj.patchSize = params.value;
             
-        otherwise
-            % If not part of this class, check, the parent class.
-            obj = osSet@outerSegment(obj,param,value);
+        case{'timestep'}
+            obj.timeStep = params.value;            
+        
+        case{'conecurrentsignal'}
+            obj.coneCurrentSignal = value;
     end
     
 end

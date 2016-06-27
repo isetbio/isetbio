@@ -1,12 +1,15 @@
 function val = osGet(obj, param)
-% osGet: a method of @osLinear that gets isetbio outersegment object 
-% parameters using the input parser structure.
+% Gets isetbio outersegment object parameters.
 % 
 % Parameters:
 %       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
 %       {'sConeFilter'} - the linear filter for S-cone temporal response
 %       {'mConeFilter'} - the linear filter for M-cone temporal response
 %       {'lConeFilter'} - the linear filter for L-cone temporal response
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'size'} - array size of photon rate
+%       {'coneCurrentSignal'} - cone current as a function of time
 % 
 % osGet(adaptedOS, 'noiseFlag')
 % 
@@ -55,10 +58,18 @@ switch ieParamFormat(param)
         val = obj.mConeFilter;
     
     case{'lconefilter'}
-        val = obj.lConeFilter;
+        val = obj.lConeFilter;        
         
-    otherwise
-        % Could be a property of the parent class
-        val = osGet@outerSegment(obj,param);
+    case{'patchsize'}
+        val = obj.patchSize;
+        
+    case{'timestep'}
+        val = obj.timeStep;
+        
+    case{'size'}
+        val = size(obj.coneCurrentSignal);
+        
+    case{'conecurrentsignal','current'}
+        val = obj.coneCurrentSignal;
 end
 

@@ -1,11 +1,11 @@
 function val = osGet(obj, varargin)
-% osGet: a method of @osDisplayRGB that gets isetbio outersegment object 
-% parameters using the input parser structure.
+% Gets the isetbio outersegment object parameters.
 % 
 % Parameters:
-%       {'noiseFlag'} -  gets noise flag, noise-free ('0') or noisy ('1')
-%       {'ConeCurrentSignal'} - cone current as a function of time
-%       {'ConeCurrentSignalPlusNoise'} - noisy cone current signal
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'rgbData'} - scene RGB data to pass to "black box" RGC GLM model.
+%       {'size'} - array size of scene RGB data
 % 
 % osGet(adaptedOS, 'noiseFlag')
 % 
@@ -35,9 +35,6 @@ p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 p.parse(varargin{:}); params = p.Results;
 
 switch ieParamFormat(params.what);  % Lower case and remove spaces
-
-    case {'noiseflag'}        
-        val = obj.noiseFlag;
                 
     case{'patchsize'}
         val = obj.patchSize;
