@@ -122,7 +122,7 @@ elseif isequal(oType,'lens')
         return;
     else
         % oiSet(oi,'lens parm',val);
-        oi.optics.lens = lensSet(oi.optics.lens,val,varargin{:});
+        oi.optics.lens.set(parm, val, varargin{:});
         return;
     end
 elseif isempty(parm)
@@ -132,7 +132,6 @@ end
 % General oi parameters set here
 parm = ieParamFormat(parm);
 switch parm
-
     case {'name','oiname'}
         oi.name = val;
     case 'type'
