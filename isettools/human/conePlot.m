@@ -38,17 +38,17 @@ function [support, spread, delta, coneMosaicImage] = ...
 % Copyright ImagEval LLLC, 2009
 
 
-if notDefined('delta'), delta = 0.4; end  % Sampling in microns
+if notDefined('delta'), delta = 0.25; end  % Sampling in microns
 % support and spread are adjusted below, after the grid is built
 
 % Grid the xy cone positions to the delta spacing using a fast method
-fgrid = ffndgrid(xy,coneType,delta);
+fgrid = ffndgrid(xy,coneType, delta);
 fgrid = full(fgrid);
 
 % Grid the cone absorption rates the same way
-if exist('absorptions','var')
+if exist('absorptions', 'var')
     % This is the interpolation of the absorption data
-    dgrid = ffndgrid(xy,absorptions(:),delta);
+    dgrid = ffndgrid(xy,absorptions(:), delta);
     dgrid = fullgrid(dgrid);
 end
 % Could have an else dgrid = ones(size(xy,1),1) here and then eliminate the
@@ -81,16 +81,13 @@ coneImage = reshape(coneImage,size(fgrid,1),size(fgrid,2),3);
 % mp = [0 0 0 ; 1 0 0 ; 0 1 0; 0 0 1]; image(fgrid); colormap(mp)
 
 % Blur the image by a Gaussian - we set blur and support here.
-if notDefined('spread')
-    l = find(fgrid(1,:) > 0);  % Digital image spacing
-    spread = (l(2)-l(1))/3;
-end
-if notDefined('support'), support = round(3*[spread spread]); end
+if notDefined('spread'), spread = 2.1; end
+if notDefined('support'), support = round(spread*[4 4]); end
 
 
 if notDefined('whiteBackground'), whiteBackground = false; end
 if (whiteBackground)
-    g = fspecial('gaussian',support,spread*0.87);
+    g = fspecial('gaussian', support, spread*0.87);
     g = g/max(g(:));
     g(g<0.1) = 0;
     g = 1.5*g.^0.3;
