@@ -18,39 +18,53 @@ function obj = osSet(obj, varargin)
 %
 % 8/2015 JRG NC DHB
 
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+
+% Make key properties that can be set required arguments, and require
+% values along with key names.
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'sconefilter',...
+    'mconefilter',...
+    'lconefilter',...
+    'patchsize',...
+    'timestep',...
+    'size',...
+    'conecurrentsignal'};
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
+p.addRequired('value');
+
+% Parse and put results into structure p.
+p.parse(varargin{:}); params = p.Results;
+
 
 %% Set all the key-value pairs.
 
-for ii=1:2:length(varargin)
-    param = ieParamFormat(varargin{ii});
-    value = varargin{ii+1};
-    switch param        
+    switch ieParamFormat(params.what);  % Lower case and remove spaces
         
         case {'noiseflag'}
-            obj.noiseFlag = value;
-        
+            obj.noiseFlag = params.value;
+            
         case {'sconefilter'}
             % Temporal impulse response
-            obj.sConeFilter = value;
+            obj.sConeFilter = params.value;
             
         case {'mconefilter'}
             % Temporal impulse response
-            obj.mConeFilter = value;
+            obj.mConeFilter = params.value;
             
         case {'lconefilter'}
             % Temporal impulse response
-            obj.lConeFilter = value;            
-                      
+            obj.lConeFilter = params.value;
+            
         case{'patchsize'}
             obj.patchSize = params.value;
             
         case{'timestep'}
-            obj.timeStep = params.value;            
-        
+            obj.timeStep = params.value;
+            
         case{'conecurrentsignal'}
-            obj.coneCurrentSignal = value;
+            obj.coneCurrentSignal = params.value;
     end
     
-end
-
-end

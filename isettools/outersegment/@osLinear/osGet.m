@@ -1,4 +1,4 @@
-function val = osGet(obj, param)
+function val = osGet(obj, varargin)
 % Gets isetbio outersegment object parameters.
 % 
 % Parameters:
@@ -17,39 +17,29 @@ function val = osGet(obj, param)
 
 
 % Check for the number of arguments and create parser object.
-% Parse key-value pairs.
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-% narginchk(0, Inf);
-% p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
-% 
-% % Make key properties that can be set required arguments, and require
-% % values along with key names.
-% allowableFieldsToSet = {...
-%     'noiseflag',...
-%     'sconefilter',...
-%     'mconefilter',...
-%     'lconefilter',...
-%     'conespacing',...
-%     'conesampling',...
-%     'conecurrentsignal'};
-% p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-% 
-% % Define what units are allowable.
-% % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% % p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
-% % p.addParameter('sconefilter',0,@isnumeric);
-% % p.addParameter('mconefilter',0,@isnumeric);
-% % p.addParameter('lconefilter',0,@isnumeric);
-% 
-% % Parse and put results into structure p.
-% p.parse(varargin{:}); params = p.Results;
+narginchk(0, Inf);
+p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
-switch ieParamFormat(param)
+% Make key properties that can be set required arguments.
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'sconefilter',...
+    'mconefilter',...
+    'lconefilter',...
+    'patchsize',...
+    'timestep',...
+    'size',...
+    'conecurrentsignal'};
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
+
+% Parse and put results into structure p.
+p.parse(varargin{:}); 
+params = p.Results;
+
+switch ieParamFormat(params.what)
 
     case{'sconefilter'}
         val = obj.sConeFilter;
@@ -69,7 +59,10 @@ switch ieParamFormat(param)
     case{'size'}
         val = size(obj.coneCurrentSignal);
         
-    case{'conecurrentsignal','current'}
+    case{'noiseflag'}
+        val = obj.noiseFlag;
+        
+    case{'conecurrentsignal'}
         val = obj.coneCurrentSignal;
 end
 
