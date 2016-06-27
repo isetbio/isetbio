@@ -94,7 +94,6 @@ classdef Lens < hiddenHandle
             val = 1 - obj.transmittance;
         end
         
-        
         % set methods for dependent variables
         function set.unitDensity(obj, val)
             % interpolate for wavelength samples
