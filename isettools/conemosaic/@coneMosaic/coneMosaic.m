@@ -11,18 +11,19 @@ classdef coneMosaic < hiddenHandle
     
     properties  % public properties
         
-        cone;             % Cone class object, contain single cone property
+        pigment;          % Cone class object, contain single cone property
         macular;          % Macular class object
         os;               % Outersegment properties
         
         pattern;          % Pattern of K-LMS cones in the mosaick
+        spatialDensity;   % spatial density (ratio) of the K-LMS cones
         integrationTime;  % Cone temporal integration time in secs
         sampleTime;       % Time step for em and os computation, shall we
-        % set this the same as integrationTime?
+                          % set this the same as integrationTime?
         
         emPositions;      % Eye movement positions in number of cones.
-        % The length of this property controls number of
-        % frames to be computed
+                          % The length of this property controls number of
+                          % frames to be computed
         noiseFlag;        % To control which noise is included
     end
     
@@ -60,11 +61,13 @@ classdef coneMosaic < hiddenHandle
             % parse input
             p = inputParser;
             
-            p.addParameter('cone', Cones(),@(x) isa(x, 'Cones'));
+            p.addParameter('pigment', photoPigment(), ...
+                @(x) isa(x, 'photoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
             p.addParameter('emPositions', [0 0], @isnumeric);
+            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('noiseFlag', 1, @isscalar);
             p.addParameter('pattern', [], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
@@ -75,18 +78,19 @@ classdef coneMosaic < hiddenHandle
             p.parse(varargin{:});
             
             % set properties
-            obj.cone = p.Results.cone;
+            obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
             obj.os = p.Results.os;
             obj.wave = p.Results.wave;
             obj.integrationTime = p.Results.integrationTime;
+            obj.spatialDensity = p.Results.spatialDensity(:);
             obj.noiseFlag = p.Results.noiseFlag;
             obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
-                    obj.cone.spatialDensity, obj.cone.width);
+                    obj.spatialDensity, obj.pigment.width);
             else
                 obj.pattern = p.Results.pattern;
             end
@@ -96,8 +100,8 @@ classdef coneMosaic < hiddenHandle
             
             % initialize listener
             % these listeners make sure the wavelength samples
-            % in obj.cone and obj.macular are the same
-            addlistener(obj.cone, 'wave', 'PostSet', @obj.setWave);
+            % in obj.pigment and obj.macular are the same
+            addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
         end
         
@@ -136,7 +140,7 @@ classdef coneMosaic < hiddenHandle
         
         % get methods for dependent variables
         function val = get.wave(obj)
-            val = obj.cone.wave;
+            val = obj.pigment.wave;
         end
         
         function val = get.rows(obj)  % number of rows
@@ -152,11 +156,11 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.width(obj)  % width of cone mosaic in meters
-            val = obj.cols * obj.cone.width;
+            val = obj.cols * obj.pigment.width;
         end
         
         function val = get.height(obj)  % height of cone mosaic in meters
-            val = obj.rows * obj.cone.height;
+            val = obj.rows * obj.pigment.height;
         end
         
         function val = get.fov(obj)  % horizontal/vertical field of view
@@ -164,8 +168,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
-            x = (1:obj.cols) * obj.cone.width; x = x - mean(x);
-            y = (1:obj.rows) * obj.cone.height; y = y - mean(y);
+            x = (1:obj.cols) * obj.pigment.width; x = x - mean(x);
+            y = (1:obj.rows) * obj.pigment.height; y = y - mean(y);
             [X, Y] = meshgrid(x, y);
             val = [X(:) Y(:)];
         end
@@ -180,13 +184,13 @@ classdef coneMosaic < hiddenHandle
             %
             % The eye quantum efficiency, called in plot, includes the lens
             % transmittance.
-            val = bsxfun(@times, obj.cone.absorptance, ...
-                obj.macular.transmittance) * diag(obj.cone.peakEfficiency);
+            val = bsxfun(@times, obj.pigment.absorptance, ...
+               obj.macular.transmittance)*diag(obj.pigment.peakEfficiency);
         end
         
         % set method for dependent variables
         function set.wave(obj, val)
-            obj.cone.wave = val(:);
+            obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
         end
         
@@ -197,7 +201,7 @@ classdef coneMosaic < hiddenHandle
         function set.mosaicSize(obj, val)
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
-                    obj.cone.spatialDensity, obj.cone.width);
+                    obj.spatialDensity, obj.pigment.width);
             end
         end
         
@@ -390,9 +394,9 @@ classdef coneMosaic < hiddenHandle
                 direction = rand(length(tPos),1);
                 
                 % Unit length direction
-                pos(tPos, :) = amplitude * [direction sqrt(1-direction.^2)];
+                pos(tPos, :) = amplitude*[direction sqrt(1-direction.^2)];
                 
-                pos(tPos, :) = bsxfun(@times, pos(tPos, :), t(indx)/sampTime);
+                pos(tPos, :) = bsxfun(@times,pos(tPos,:),t(indx)/sampTime);
                 pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
                 pos = cumsum(pos, 1);
             end
@@ -407,17 +411,17 @@ classdef coneMosaic < hiddenHandle
                 theta = 360 * randn + 0.1 * (1 : nFrames)';
                 direction = [cosd(theta) sind(theta)];
                 s = speed + speedSD * randn(nFrames, 1);
-                pos = filter(1, [1 -1], bsxfun(@times, direction, s)) + pos;
+                pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
             end
             
             % generate eye movement for micro-saccade
             if emFlag(3)
                 % Load parameters
-                interval   = emGet(em, 'msaccade interval');
+                interval = emGet(em, 'msaccade interval');
                 intervalSD = emGet(em, 'msaccade interval SD');
-                dirSD      = emGet(em, 'msaccade dir SD', 'deg');
-                speed      = emGet(em, 'msaccade speed', 'cones/sample');
-                speedSD    = emGet(em, 'msaccade speed SD', 'cones/sample');
+                dirSD = emGet(em, 'msaccade dir SD', 'deg');
+                speed = emGet(em, 'msaccade speed', 'cones/sample');
+                speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
                 
                 % compute time of occurance
                 t = interval + randn(nFrames, 1) * intervalSD;
@@ -429,8 +433,8 @@ classdef coneMosaic < hiddenHandle
                 % Compute positions
                 for ii = 1 : length(tPos)
                     curPos = pos(tPos(ii), :);
-                    duration = round(sqrt(curPos(1)^2 + curPos(2)^2)/speed);
-                    direction = atand(curPos(2) / curPos(1)) + dirSD * randn;
+                    duration = round(sqrt(curPos(1)^2+curPos(2)^2)/speed);
+                    direction = atand(curPos(2)/curPos(1)) + dirSD * randn;
                     direction = [cosd(direction) sind(direction)];
                     direction = abs(direction) .* (2*(curPos < 0) - 1);
                     
@@ -455,7 +459,7 @@ classdef coneMosaic < hiddenHandle
             cpObj = copyElement@matlab.mixin.Copyable(obj);
             
             % make deep copy of the cone and macular class
-            cpObj.cone = cpObj.cone.copy();
+            cpObj.pigment = cpObj.pigment.copy();
             cpObj.macular = cpObj.macular.copy();
         end
     end
@@ -494,7 +498,7 @@ classdef coneMosaic < hiddenHandle
                 oiGet(oi, 'height spatial resolution'), ...
                 oiGet(oi, 'width spatial resolution'));
             [coneR, coneC] = sample2space(0.5:obj.rows - 0.5, ...
-                0.5:obj.cols - 0.5, obj.cone.height, obj.cone.width);
+                0.5:obj.cols - 0.5, obj.pigment.height, obj.pigment.width);
             
             if fullLMS
                 absDensity = zeros(obj.rows, obj.cols, 3);
@@ -520,17 +524,17 @@ classdef coneMosaic < hiddenHandle
             absDensity(isnan(absDensity)) = 0;
             
             % compute expected cone absorptions
-            absorptions = absDensity*obj.cone.pdArea*obj.integrationTime;
+            absorptions=absDensity*obj.pigment.pdArea*obj.integrationTime;
         end
         
         % callback function for listeners
         % When you set the cone, it sets the macular, and vice versa.
         function setWave(obj, src, ~)
             switch src.DefiningClass.Name
-                case 'Cones'
-                    obj.macular.wave = obj.cone.wave;
+                case 'photoPigment'
+                    obj.macular.wave = obj.pigment.wave;
                 case 'Macular'
-                    obj.cone.wave = obj.macular.wave;
+                    obj.pigment.wave = obj.macular.wave;
             end
         end
     end
