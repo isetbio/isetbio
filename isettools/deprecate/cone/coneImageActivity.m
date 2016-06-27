@@ -104,7 +104,8 @@ if isstruct(dFlag)
     end
     close(vObj);
 elseif dFlag
-    % If it is a boolean and true, uust show the movie on the screen
+    vcNewGraphWin;
+    % If it is a boolean and true, must show the movie on the screen
     for ii=1:step:nframes
         imshow(mov(:,:,:,ii)); 
         drawnow;

@@ -59,8 +59,6 @@ switch lower(params.what)
         
         % since data is in (x, y, t) format, choose an (x, y) value to observe over
         % timesubplot(1,3,1);
-        
-
         sz = os.get('array size');
         isomerizations = os.get('isomerizations');
         isomerizations = squeeze(isomerizations(round(sz(1)/2),round(sz(2)/2),:));
