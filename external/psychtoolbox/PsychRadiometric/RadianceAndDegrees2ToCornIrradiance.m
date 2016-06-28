@@ -9,6 +9,13 @@ function cornealIrradiance_PowerPerArea = RadianceAndDegrees2ToCornIrradiance(ra
 %
 % So, if radiance is in Watts/[cm2-sr] then distance needs to be in cm and irradiance will be in Watts/cm2.
 %
+% This conversion, I believe, is correct for the case where the eye is viewing the surface along its
+% surface normal, if we are thinking about a surface of fixed area.  For off axis viewing there will be
+% a correction for the Lambertian dropoff in light with cos(theta).  This differs from computing retinal
+% irradiance from radiance, where the area of the surface seen by a fixed retinal area increases exactly
+% so as to compensate for that dropoff.
+
+%
 % The derivation also assumes the small angle approximation simulusSizeUnits = stimulusSizeRadians*stimulusDistanceUnits,
 % where units are the relavant units of length.  Although we don't have stimulusSizeUnits and stimulusDistanceUnits,
 % these turn out to cancel out under the small angle approximation.

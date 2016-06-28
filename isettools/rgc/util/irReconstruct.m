@@ -1,4 +1,4 @@
-function irReconstruct(innerRetina, varargin)
+function [stimulusReconstruction, params] = irReconstruct(innerRetina, varargin)
 % Reconstructs the stimulus according to the inner retina representation by
 % retinal ganglion cell mosaics.
 % 
@@ -19,13 +19,13 @@ function irReconstruct(innerRetina, varargin)
 %% Parse input
 p = inputParser;
 p.addRequired('innerRetina');
-p.addOptional('model', 'linear', @ischar);
-
+p.addParameter('model', 'linear', @ischar);
+p.addParameter('tuningWoff', 1, @isnumeric);
 p.parse(innerRetina, varargin{:});
 
 innerRetina = p.Results.innerRetina;
 model = p.Results.model;
-
+tuningWoff = p.Results.tuningWoff;
 
 %% 
 
@@ -34,9 +34,9 @@ switch model
 case{'linear'}
 
 % Initialize figure
-% vcNewGraphWin([],'upperleftbig');
-figure; set(gcf,'position',[160 60 1070 740]);
-hold on;
+% % vcNewGraphWin([],'upperleftbig');
+% figure; set(gcf,'position',[160 60 1070 740]);
+% hold on;
 
 % TODO: Loop over all mosaics
 nX = 0; nY = 0;
@@ -69,8 +69,13 @@ stimulusReconstruction = zeros(nPixX*nX +mincoord, nPixY*nY +mincoord, nFrames +
 
 for cellTypeInd = 1:length(innerRetina.mosaic)
     
+    if cellTypeInd == 2 || cellTypeInd == 4
+        tuningWeight = 1;%0.01;
+    else 
+        tuningWeight = tuningWoff;
+    end
     
-[nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
+[nY,nX,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
 maxx = 0; maxy = 0;
 % Loop through each cell and plot spikes over time
 for xc = 1:nX
@@ -87,7 +92,7 @@ for xc = 1:nX
         % Get the appropriate spike data
         spPlot=innerRetina.mosaic{cellTypeInd}.responseSpikes{xc,yc,1,1};
         % spPlot=(median(horzcat(innerRetina.mosaic{3}.spikeResponse{xc,yc,:,2})'));
-        
+        if length(spPlot)>0
         % Add the STRF to the stimulus reconstruction for each spike
         for iFrame = 1:length(spPlot)
             
@@ -95,6 +100,7 @@ for xc = 1:nX
             % xcoords = (xc-1)*nPixX + 1 : xc*nPixX;
             
             centerCoords = innerRetina.mosaic{cellTypeInd}.cellLocation{xc,yc};            
+            centerCoordsOut(xc,yc,:) = centerCoords;
             ycoords1 = mincoord + (ceil(centerCoords(1) - (nPixY/2)) : floor(centerCoords(1) + (nPixY/2))); 
             xcoords1 = mincoord + (ceil(centerCoords(2) - (nPixX/2)) : floor(centerCoords(2) + (nPixX/2))); 
             
@@ -103,10 +109,10 @@ for xc = 1:nX
             xcoords = xcoords1(xcgoodind); ycoords = ycoords1(ycgoodind);
             stimulusReconstruction(xcoords, ycoords, tcoords) = ...
                 stimulusReconstruction(xcoords, ycoords, tcoords) + ...
-                strf(xcgoodind,ycgoodind,:);
+                tuningWeight*strf(xcgoodind,ycgoodind,:);
         end%iFrame
         maxx = max([maxx xcoords]); maxy = max([maxy ycoords]);
-        
+        end
     end%nX
 end%nY
 end
@@ -118,11 +124,16 @@ end
 maxR = max(stimulusReconstruction(:));
 minR = min(stimulusReconstruction(:));
 
-% Play the movie
-for iFrame = 1:size(stimulusReconstruction,3)
-    imagesc(stimulusReconstruction(1:maxx,1:maxy,iFrame));
-    colormap gray
-    caxis([minR maxR]);
-    pause(0.1);
-end
+params.maxx = maxx;
+params.maxy = maxy;
+params.minR = minR;
+params.maxR = maxR;
+
+% % Play the movie
+% for iFrame = 1:size(stimulusReconstruction,3)
+%     imagesc(stimulusReconstruction(1:maxx,1:maxy,iFrame));
+%     colormap gray
+%     caxis([minR maxR]);
+%     pause(0.1);
+% end
 

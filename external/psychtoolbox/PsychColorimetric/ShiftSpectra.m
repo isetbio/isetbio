@@ -24,6 +24,8 @@ if (shift < 0)
 else
 	shifted((1+abs(shift)):S(3)) = nominal(1:(S(3)-abs(shift)));
 end
+
+% For debugging, can print out input and output lambda-max
 index1 = find(nominal == max(nominal));
 index2 = find(shifted == max(shifted));
 wls = SToWls(S);

@@ -57,33 +57,62 @@ cellCtr = 0;
 % % load('/Users/james/Documents/matlab/rgc Parameters/pairspike_1.mat','pairspike');
 % load('/Users/james/Documents/matlab/rgc Parameters/pairspikeall.mat','pairspike');
 
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('resources/data/rgc');
-[data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
-pairspike = data.pairspike;
+% client = RdtClient('isetbio');
+% % client.credentialsDialog();
+% client.crp('resources/data/rgc');
+% [data, artifact] = client.readArtifact('pairspikeall', 'type', 'mat');
+% pairspike = data.pairspike;
+
+% load('isetbio misc/scratch/pairspikecomp.mat');
+
+% rdt = RdtClient('isetbio'); rdt.crp('resources/data/rgc');
+% data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
+% pairspikecomp = data.pairspikecomp;
+pairspikecomp = cell(nCells,6,numberTrials);
 
 nlfun = obj.generatorFunction;
+
+% nlfun = @(xin) -.28838 + 2.9304./(.042235 + exp(-1.6149*xin));
+
 tic
 for xcell = 1:nCells
     rng(1);
+%     if isfield(obj,'couplingFilter')
     for couplingFilterInd=1:6
-        cif_cpgain{couplingFilterInd} = exp(obj.couplingFilter{xcell}{couplingFilterInd});
+%         cif_cpgain{couplingFilterInd} = exp(obj.couplingFilter{xcell}{couplingFilterInd});
+        cif_cpgain{couplingFilterInd} = exp(zeros(size((obj.postSpikeFilter{xcell}))));
     end
+%     end
     cif_psgain = exp(obj.postSpikeFilter{xcell});
+     
     ps_bins     = length(cif_psgain);
-    cp_bins     = length(cif_cpgain{1});
     
-    Vstm = vertcat(obj.responseLinear{:,xcell,1});
+%     if isfield(obj,'couplingFilter')
+    cp_bins     = length(cif_cpgain{1});
+%     end
+    Vstm = horzcat(obj.responseLinear{xcell,:,1});
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
-    cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , 6300)');
+    
+    % cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
+    
+    load('isetbio misc/lnmodel.mat')
+    cif0 = predict(lnmodel, reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
+    
     % lcif_kx0 = reshape( repmat(lcif_kx_frame, bpf, 1) , 1 , params.bins);
     for i_trial = 1 : numberTrials
 %         tic    
         cif_ps_cp       = cif0;
         binary_simulation = zeros(1,rlen);
-        for i = 1 : 6010%params.bins- max(cp_bins, ps_bins);
+        
+        pairspike = zeros(slen*10-190,6) ;
+        
+%     if isfield(obj,'couplingFilter')
+        for pair=1:6
+        pairspike(pairspikecomp{xcell,pair,i_trial},pair) = 1;
+        end
+%     end
+        for i = 1 : slen*10-190%params.bins- max(cp_bins, ps_bins);
             roll = rand(1);
             rollcomp(i_trial,i) = exp(-bindur*cif_ps_cp(i));
             if roll >  exp(-bindur*cif_ps_cp(i));
@@ -91,7 +120,11 @@ for xcell = 1:nCells
                 binary_simulation(i)= 1;
             end
             for pair=1:6%fittedGLM.GLMPars.spikefilters.cp.n_couplings
-                if pairspike{xcell,pair}(i_trial,i)
+                
+%                 pairspike = pairspikecomp{xcell,pair,i_trial}
+%                 if pairspike{xcell,pair}(i_trial,i)
+                if pairspike(i,pair) > 0
+%                 if any(pairspikecomp{xcell,pair,i_trial}==i)
                     cif_ps_cp(i+1: i + cp_bins) =  cif_ps_cp(i+1: i + cp_bins) .* (cif_cpgain{pair});
                 end
             end
@@ -102,7 +135,7 @@ for xcell = 1:nCells
         binary_simall{xcell,1,i_trial,1} = binary_simulation; % prune extra zeros
         
         spikeTimes{xcell,1,i_trial,1} = find(binary_simulation==1)'; % prune extra zeros
-        spikeTimes{xcell,1,i_trial,2} = cif0;
+        spikeTimes{xcell,1,i_trial,2} = cif_ps_cp;
         spikeTimes{xcell,1,i_trial,3} = log(cif0);
         spikeDrive{xcell,1,i_trial} = cif_ps_cp; % prune extra zeros
     end
@@ -135,8 +168,9 @@ for ce = 1:nCells;
 
 % subplot(2,1,2);
 % % subplot(6,7,ce);
-convolvewin=gausswin(100);
-
+% convolvewin=gausswin(100);
+convolvewin2D = fspecial('gaussian',100,20);
+convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
 % convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
 for trind = 1:numberTrials
 %     yind= spikeTimes{ce,1,trind,1};

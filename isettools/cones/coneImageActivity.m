@@ -3,16 +3,22 @@ function mov = coneImageActivity(cones,varargin)
 %
 %   mov = coneImageActivity(cones,varargin)
 % 
-% cones:  sensor object (required)
-% step:   How many cone absorptions to step over.  By default, if < 100
-%         cone time steps (step = 1).  In general, try to show about 100
-%         images. 
-% dFlag:  Either a struct or a boolean
-%         If a struct, dFlag contains the movie parameters.  The movie is
-%         saved based on the name field in these parameters. The parameters
-%         are .vname (video file name) and .FrameRate (video frame rate).
-%         If dFLag is a boolean, the value indicates whether to show the
-%         movie (true) or not (false).
+% Inputs:
+%  cones:  sensor object (required)
+%  step:   How many cone absorptions to step over.  By default, if < 100
+%          cone time steps (step = 1).  In general, try to show about 100
+%          images. 
+%  dFlag:  Either a struct or a boolean
+%          If a struct, dFlag contains the movie parameters.  The movie is
+%          saved based on the name field in these parameters. The
+%          parameters are 
+%      .vname (video file name)
+%      .FrameRate (video frame rate). 
+%  If dFLag is a boolean, the value indicates whether to show the movie
+%  (true) or not (false).
+% 
+% Output:
+%    mov:  A (row,col,3, nFrames matrix
 %
 % Example:
 %   cones = sensorCreate; ...
@@ -79,15 +85,16 @@ for ii=theseFrames
 end
 close(wbar);
 
-% Scale and gamma correct tmp
+% Scale and gamma correct mov
+% mov = ieScale(mov,0,1);
 mov = mov/max(mov(:));
 mov = mov .^ 0.3;
-% vcNewGraphWin; imagescRGB(tmp);
+% vcNewGraphWin; imagescRGB(mov);
 
 %% Produce the movie
 
 if isstruct(dFlag)
-    % When dFlag is a struct, show the move and save it in a file
+    % When dFlag is a struct, show the movie and save it in a file
     % Normalize tmp for visualization
     vcNewGraphWin;
     nframes = size(mov,4);
@@ -103,7 +110,8 @@ if isstruct(dFlag)
     end
     close(vObj);
 elseif dFlag
-    % If it is a boolean and true, uust show the movie on the screen
+    vcNewGraphWin;
+    % If it is a boolean and true, must show the movie on the screen
     for ii=1:step:nframes
         imshow(mov(:,:,:,ii)); 
         drawnow;

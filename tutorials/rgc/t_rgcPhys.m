@@ -67,12 +67,19 @@ innerRetina0 = irSet(innerRetina0,'numberTrials',20);
 
 %% Compute RGC mosaic responses
 
-innerRetina0 = irCompute(innerRetina0, osI);
-innerRetina0 = irComputeSpikes(innerRetina0, osI);
+% innerRetina0 = irCompute(innerRetina0, osI);
+
+innerRetina0 = irComputeContinuous(innerRetina0, osI);
+
+nTrials = 20;
+for tr = 1:nTrials
+    innerRetina0 = irComputeSpikes(innerRetina0, osI);
+end
 
 psth = mosaicGet(innerRetina0.mosaic{1},'responsePsth');
 
 irPlot(innerRetina0, 'psth');
+irPlot(innerRetina0, 'voltage');
 % irPlot(innerRetina0, 'linear');
 % irPlot(innerRetina0, 'raster');
 

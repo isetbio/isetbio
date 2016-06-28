@@ -34,6 +34,7 @@ function directory=CalDataFolder(forceDemo,calFileName,calDir)
 %               if .mat is not postpended.
 % 6/10/13  dhb  Fix buglet introduced 6/2/13 -- need to handle empty calFileName (thanks to MS for
 %               identifying the problem and the fix.
+% 3/29/16  dhb  Allow multiple PsychCalDemo data on path, but issue a warning printout.
 
 % Set forceDemo flag
 if (nargin < 1 || isempty(forceDemo))
@@ -73,13 +74,14 @@ if (nargin < 3 || isempty(calDir))
         error(['Can''t find any ''' name ''' or ''' alternateName '''folders in the Matlab path.']);
     end
     
-    % If we found multiple copies of a calibration folder, we complain.
+    % If we found multiple copies of a calibration folder, we warn.
     % This also should never happen.
     if size(directory,1)>1
         for i=1:size(directory,1)
             disp(['DUPLICATE: ''' deblank(directory(i,:)) '''']);
         end
-        error(['Found more than one ''' duplicateMsgName ''' folder in the Matlab path.']);
+       fprintf(['Warning: found more than one ''' duplicateMsgName ''' folder in the Matlab path.']);
+       directory = deblank(directory(1,:));
     end
 else
     directory = calDir;

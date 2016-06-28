@@ -18,15 +18,15 @@ function iStim = ieStimulusGratingSubunit(varargin)
 %% Parse inputs
 
 p = inputParser;
-addParameter(p,'barWidth',       5,     @isnumeric);
+addParameter(p,'barWidth',       3,     @isnumeric);
 addParameter(p,'meanLuminance',  200,   @isnumeric);
-addParameter(p,'nSteps',         10,    @isnumeric);
+addParameter(p,'nSteps',         40,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,    @isnumeric);  
-addParameter(p,'expTime',        0.005, @isnumeric);
-addParameter(p,'timeInterval',   0.005, @isnumeric);
-
+addParameter(p,'expTime',        0.01, @isnumeric);
+addParameter(p,'timeInterval',   0.01, @isnumeric);
+addParameter(p,'freq',          5,  @isnumeric);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -65,49 +65,94 @@ nSteps = params.nSteps;
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
-    sceneSize = sceneGet(scene, 'size');
-    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.01;  % Gray background
+%     sceneSize = sceneGet(scene, 'size');
+    sceneSize = [params.row params.col];
+    barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.001;  % Gray background
     
-    nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
-    randWalk = (round(.25*params.barWidth*randn(1)));
-    if randWalk > params.barWidth
-        randWalk = params.barWidth;
-    elseif randWalk < -params.barWidth + 1
-        randWalk = -params.barWidth+1;
-    end
-    for stripeInd = 1:2:nStripes
-        barMovie(randWalk+(stripeInd-1)*params.barWidth+params.barWidth:randWalk+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+    %horz
+%     nStripes = floor((sceneSize(1)+params.barWidth)/params.barWidth);
+    % vert
+    nStripes = floor((sceneSize(2)+params.barWidth)/params.barWidth);
+%     randWalk = (round(.25*params.barWidth*randn(1)));
+    if t > 1
+        % randWalk(t) = sum(randWalk(1:t-1)) + round(.25*params.barWidth);
+        randWalk(t) = sum(randWalk(1:t-1)) + (round(.25*params.barWidth*randn(1)));
+    else
+        randWalk(t) = round(.25*params.barWidth);
     end
     
+%     if randWalk(t) > params.barWidth
+%         randWalk(t) = params.barWidth;
+%     elseif randWalk(t) < -params.barWidth + 1
+%         randWalk(t) = -params.barWidth+1;
+%     end
+    randWalk(t)=floor(t/2);
+    for stripeInd = 1:2:nStripes+2
+        % barMovie(randWalk(t)+(stripeInd-1)*params.barWidth+params.barWidth:randWalk(t)+(stripeInd)*params.barWidth+params.barWidth-1,:,:) = 1;          % White bar
+        
+        % horizontal stripes
+%         barMovie((stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:,:) = .75;          % White bar
+        
+        % vertical stripes
+        barMovie(:,(stripeInd-1)*params.barWidth+params.barWidth:(stripeInd)*params.barWidth+params.barWidth-1,:) = 1;          % White bar
+    end
+%     barMovie = circshift(barMovie,randWalk(t),2);
+%     if mod(floor(t/20),2) == 0
+%         barMovie = 1-barMovie;
+%     end
+    
+%     barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
+    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/(100/params.freq)));
+      
+%     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
-    
+%     if t < 6
+%         barMovieResize = ones(size(barMovieResize))*0.5;
+%         barMovieResize(1,1,:) = ones(1,1,3);
+%     end
+    barMovieResize(1,1,:) = ones(1,1,3);
+    barMovieResize(1,2,:) = zeros(1,1,3);
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovieResize, 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
     if t ==1
-        sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+        % sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+        sceneRGB = zeros([size(barMovie,1) size(barMovie,2) nSteps, 3]);
     end
     
     % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+%     sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+%     sceneRGB(1,1,t,:) = sceneRGB(2,1,t,:);
+%     sceneRGB(1,2,t,:) = sceneRGB(2,2,t,:);
     
-    % Compute optical image
-    oi = oiCompute(oi, scene);    
+    sceneRGB(:,:,t,:) = barMovie;
     
-    % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
+%     % Compute optical image
+%     oi = oiCompute(oi, scene);    
+%     
+%     % Compute absorptions
+%     absorptions = sensorCompute(absorptions, oi);
 
-    if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-    end
+%     if t == 1
+%         volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+%     end
     
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
+    % volts(:,:,t) = sensorGet(absorptions, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end
 
 if wFlag, delete(wbar); end
+
+
+% Compute optical image
+oi = oiCompute(oi, scene);
+
+% Compute absorptions
+absorptions = sensorCompute(absorptions, oi);
+
+volts(:,:,1) = sensorGet(absorptions, 'volts');
 
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);

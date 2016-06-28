@@ -1,9 +1,11 @@
 function obj = osSet(obj, varargin)
-% osSet: a method of @osIdentity that sets isetbio outersegment object 
+% osSet: a method of @osDisplayRGB that sets isetbio outersegment object 
 % parameters using the input parser structure.
 % 
 % Parameters:
-%       {'noiseFlag'} -  sets current as noise-free ('0') or noisy ('1')
+%       {'patchSize'} - cone current as a function of time
+%       {'timeStep'} - noisy cone current signal
+%       {'rgbData'} - scene RGB data to pass to "black box" RGC GLM model.
 % 
 % noiseFlag = 0;
 % adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
@@ -16,30 +18,23 @@ function obj = osSet(obj, varargin)
 % 
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
+narginchk(0, Inf);
 p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {'noiseflag','rgbdata','patchsize','timestep'};
+allowableFieldsToSet = {...
+    'noiseflag',...
+    'rgbdata',...
+    'patchsize',...
+    'timestep'};
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
 p.addRequired('value');
-
-% Define what units are allowable.
-allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-
-% Set up key value pairs.
-% Defaults units:
-p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
 
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-switch ieParamFormat(params.what);  % Lower case and remove spaces
-
-    
-    case{'noiseflag'}
-        obj.noiseFlag = params.value;
+switch ieParamFormat(params.what);  % Lower case and remove space
         
     case{'patchsize'}
         obj.patchSize = params.value;
@@ -50,6 +45,5 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
     case{'rgbdata'}
         obj.rgbData = params.value;
                
-
 end
 

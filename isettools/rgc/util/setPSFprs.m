@@ -67,7 +67,7 @@ ih = permute(ih,[3 2 1]); % flip 2nd & 3rd dimensions
 glmprs.ih = ih;
 
 %% Set time samples
-glmprs.iht = mosaic.dt*(1:length(glmprs.ih));
+glmprs.iht = mosaic.dt*(1:size(glmprs.ih,1));
 
 %% Set interpolation
 glmprs.dt = mosaic.dt;

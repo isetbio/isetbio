@@ -28,6 +28,7 @@ end
 % Easiest to cover the whole range covered by the standard,
 % that way we don't have to think.
 S = [200 1 1301];
+S = WlsToS((200:2600)');
 
 %% Read in the spectral functions used by the standard
 [~,weightingR,weightingA,weightingS,wls_R,rawWeightingR,wls_A,rawWeightingA,wls_S,rawWeightingS] = ISO2007MPEGetWeighings(S);

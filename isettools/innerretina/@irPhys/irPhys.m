@@ -4,25 +4,24 @@ classdef irPhys < ir
 % This function is typically called by irCreate, but may also be called
 % as an alternative to that.
 % 
-%       ir = irPhys(scene, sensor, outersegment, varargin)
+%       ir = irPhys(outersegment, params)
 % 
 % The GLM (generalized linear model) follows the details outlined in
 % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli, 
-% Nature (2008), and incorporates other anatomical and
-% physiological data from several other sources for parameters like
-% receptive field spacing, spatial/temporal linear filters and
-% nonlinearities. See comments below for details and references.
+% Nature (2008). irPhys generates a mosaic of RGCs with parameters from GLM
+% fits from an experiment in the Chichilnisky lab.
 %
 % Inputs: 
-%       scene: an isetbio scene structure
-%       sensor: an isetbio sensor structure
 %       os: an isetbio outer segment structure
 %    Optional but recommended:
 %       eyeSide: 'left' or 'right', which eye the retinal patch is from
 %       patchRadius: radius of retinal patch in microns
 %       patchAngle: polar angle of retinal patch
-%     [These inputs determine the size of spatial receptive fields, and are
-%       necessary to accurately model physiological responses.]
+%     [For the irPhys object, these parameters do not have an affect on the
+%       properties of the receptive field s, because the GLM parameters
+%       are loaded from .mat files. The user should assign the properties
+%       according to the values measured for the retinal tissue as recorded
+%       in the experiment.]
 % 
 % Outputs: the ir object.
 % 
@@ -39,13 +38,10 @@ classdef irPhys < ir
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-
     end
            
     % Protected properties.
     properties (SetAccess = private, GetAccess = public)
-       
-
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -58,12 +54,10 @@ classdef irPhys < ir
         % Constructor
         function obj = irPhys(outersegment, varargin)
             % Initialize the parent class
-             obj = obj@ir(outersegment, varargin{:});
-           % obj = [];
-            % Initialize ourselves by building GLM mosaic objects
-            for cellTypeInd = 1%:length(obj.mosaic)
-                obj.mosaic{cellTypeInd} = rgcPhys(obj, cellTypeInd, varargin{:});
-            end
+            obj = obj@ir(outersegment, varargin{:});
+            
+            % Initialize ourselves by building rgcPhys mosaic objects
+            obj.mosaic{1} = rgcPhys(obj, varargin{:});
             
         end
         
@@ -88,9 +82,6 @@ classdef irPhys < ir
         function irPlot(obj, varargin)
             irPlot@ir(obj, varargin{:});
         end
-        function irMovie(obj, outersegment, varargin)
-            irMovie@ir(obj, outersegment, varargin{:});
-        end
     end    
     
     % Methods may be called by the subclasses, but are otherwise private 
@@ -99,7 +90,6 @@ classdef irPhys < ir
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        % initialize(obj, sensor, outersegment, varargin);
     end
     
 end

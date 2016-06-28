@@ -4,7 +4,7 @@ function ieValidateFastOne(varargin)
 close all;
 
 %% We will use preferences for the 'isetbioValidation' project
-thisProject = 'isetbioValidation';
+thisProject = 'isetbio';
 UnitTest.usePreferencesForProject(thisProject, 'reset');
 
 % Run time error behavior

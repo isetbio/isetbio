@@ -88,8 +88,8 @@
 %   T_CIE_Y10           - CIE physiologically relevant 10-degree luminosity function.  See CVRL database.
 %   T_cones_smj         - Stockman-MacLeod-Johnson cone fundamentals.  See CVRL database.
 %   T_cones_smj10       - Stockman-MacLeod-Johnson 10-degree cone fundamentals.  See CVRL database.
-%   T_cones_ss2         - Stockman-Sharpe (2000) 2-degree cone fundamentals.  See CVRL database.
-%   T_cones_ss10        - Stockman-Sharpe (2000) 10-degree cone fundamentals.  See CVRL database.
+%   T_cones_ss2         - Stockman-Sharpe (2000) 2-degree cone fundamentals.  Also the CIE 2006 fundamentals. See CVRL database.
+%   T_cones_ss10        - Stockman-Sharpe (2000) 10-degree cone fundamentals.  Also the CIE 2006 fundamentals. See CVRL database.
 %   T_cones_sp          - Smith-Pokorny cone fundamentals.  Specified between 380 and 780 nm, but non-zero only between 400 and 700 nm.
 %                       -   This is probably because these were typed in by hand long ago from a table that only had data between 400 and 700 nm
 %                       -   and then zero extended to match the wavelength sampling of other data files.
@@ -114,7 +114,11 @@
 %   T_stiles10          - Stiles-Burch 10-degree color matching functions.
 %   T_ss2000_Y2         - Stockman-Sharpe (2000) 2-degree photopic luminance efficiency function.  See CVRL database.
 %   T_vos1978_Y         - Judd-Vos 1978 photopic luminance efficiency function.
-%   T_xyz1931           - CIE 1931 color matching functions.
-%   T_xyz1964           - CIE 1964 supplemental color matching functions.
+%   T_xyz1931           - CIE 1931 color matching functions (2-degree).
+%   T_xyz1964           - CIE 1964 supplemental color matching functions (10-deg).
+%   T_xyzCIEPhys2       - CIE XYZ CMF's based on CIE 2-deg cone fundamentals.
+%                       -   Obtained in 2016 from CVRL.  At this time, these are proposed.
+%   T_xyzCIEPhys10      - CIE XYZ CMF's based on CIE 10-deg cone fundamentals.
+%                       -   Obtained in 2016 from CVRL.  At this time, these are proposed.
 %   T_xyzJuddVos        - Judd-Vos modified color matching functions.
 

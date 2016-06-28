@@ -80,10 +80,10 @@ glmprs.ih = ih;
 
 %% Set time samples
 if~(isfield(mosaic,'dt'))
-    glmprs.iht = .01*(1:length(ih(:,1,1)));
+    glmprs.iht = .01*(1:size(ih,1));
     glmprs.dt = .01;
 else
-glmprs.iht = mosaic.dt*(1:length(ih(:,1,1)));
+glmprs.iht = mosaic.dt*(1:size(ih,1));
 
 %% Set interpolation
 glmprs.dt = mosaic.dt;
