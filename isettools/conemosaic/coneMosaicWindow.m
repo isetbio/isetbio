@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 28-Jun-2016 14:10:11
+% Last Modified by GUIDE v2.5 28-Jun-2016 16:17:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -133,7 +133,7 @@ coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 % Edit box - adjust number of columns
-function editcols_Callback(hObject, eventdata, handles)
+function editCols_Callback(hObject, eventdata, handles)
 handles.cMosaic.cols = str2double(get(hObject, 'String'));
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
@@ -653,7 +653,7 @@ cm = handles.cMosaic;
 
 % set row and cols
 set(handles.editRows, 'string', num2str(cm.rows));
-set(handles.editcols, 'string', num2str(cm.cols));
+set(handles.editCols, 'string', num2str(cm.cols));
 
 % set integration time
 set(handles.editExpTime, 'string', sprintf('%.1f',cm.integrationTime*1e3));
@@ -662,6 +662,26 @@ set(handles.editExpTime, 'string', sprintf('%.1f',cm.integrationTime*1e3));
 str = sprintf('[%.1f, %.1f, %.1f, %.1f]', cm.spatialDensity(1), ...
     cm.spatialDensity(2), cm.spatialDensity(3), cm.spatialDensity(4));
 set(handles.editKLMS, 'string', str);
+
+% set description strings
+str = cm.description('skipMacular', true, 'skipPigment', true);
+set(handles.txtMosaic, 'string', str);
+set(handles.txtConeProperties, 'string', cm.pigment.description);
+
+% set photopigment properties
+set(handles.editConeWidth, 'string', num2str(cm.pigment.width*1e6));
+set(handles.editConeHeight, 'string', num2str(cm.pigment.height*1e6));
+
+str = sprintf('[%.1f, %.1f, %.1f]', cm.pigment.opticalDensity(1), ...
+    cm.pigment.opticalDensity(2), cm.pigment.opticalDensity(3));
+set(handles.editConeOpticalDensity, 'string', str);
+
+str = sprintf('[%.2f, %.2f, %.2f]', cm.pigment.peakEfficiency(1), ...
+    cm.pigment.peakEfficiency(2), cm.pigment.peakEfficiency(3));
+set(handles.editConePeakEfficiency, 'string', str);
+
+% set macular density
+set(handles.editMacularDensity, 'string', num2str(cm.macular.density));
 
 % set image content to axes
 cm.plot('cone mosaic', 'hf', handles.axes2);
@@ -1490,8 +1510,6 @@ end
 %#ok<*INUSD>
 end
 
-
-
 function editKLMS_Callback(hObject, eventdata, handles)
 % hObject    handle to editKLMS (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1513,4 +1531,130 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function txtMosaic_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtMosaic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+end
+
+
+
+function editConeWidth_Callback(hObject, eventdata, handles)
+% hObject    handle to editConeWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.cMosaic.pigment.width = 1e-6 * str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
+
+% --- Executes during object creation, after setting all properties.
+function editConeWidth_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editConeWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function editConeHeight_Callback(hObject, eventdata, handles)
+% hObject    handle to editConeHeight (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.cMosaic.pigment.height = 1e-6 * str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function editConeHeight_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editConeHeight (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function editConeOpticalDensity_Callback(hObject, eventdata, handles)
+% hObject    handle to editConeOpticalDensity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+val = str2double(get(hObject, 'String'));
+assert(numel(val) == 3, 'invalid input for optical density');
+handles.cMosaic.pigment.opticalDensity = val;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function editConeOpticalDensity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editConeOpticalDensity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function editMacularDensity_Callback(hObject, eventdata, handles)
+% hObject    handle to editMacularDensity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.cMosaic.macular.density = str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function editMacularDensity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editMacularDensity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function editConePeakEfficiency_Callback(hObject, eventdata, handles)
+% hObject    handle to editConePeakEfficiency (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+val = str2double(get(hObject, 'String'));
+assert(numel(val) == 3, 'invalid input for peak efficiency');
+handles.cMosaic.pigment.peakEfficiency = val;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function editConePeakEfficiency_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editConePeakEfficiency (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
 end
