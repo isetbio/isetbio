@@ -1,127 +1,64 @@
-function obj = osCompute(obj, sensor, varargin)
+function current = osCompute(obj, pRate, coneType, varargin)
 % Compute the linear filter response of the outer segments. 
 %
 %    obj = osCompute(obj, sensor, varargin)
 %
 % This converts isomerizations (R*) to outer segment current (pA). If the
-% noiseFlag is set to true (1), this method adds noise to the current
-% output signal. See Angueyra and Rieke (2013, Nature Neuroscience) for
-% details.
+% noiseFlag is set to true, this method adds noise to the current output
+% signal. See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
 % Inputs: 
-%  obj: osLinear object
-%  sensor: struct
-%     optional parameters field. params.offest determines the current
-%     offset. 
+%   obj      - osLinear class object
+%   pRate    - photon absorption rate in R*/sec
+%   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
 % 
-% Outputs: 
-%  osLinear object which includes the cone outer segment current 
-%  optionally a noisy version of the cone outer segment current (noiseFlag)
+% Outputs:
+%   current  - outer segment current in pA
 % 
-% 8/2015 JRG NC DHB
+% JRG/HJ/BW, ISETBIO TEAM, 2016
 
-% Remake filters incorporating the sensor to make them the correct sampling
-% rate.
-obj.matchSensor(sensor);
+% parse inputs
+p = inputParser; p.KeepUnmatched = true;
+p.addRequired('obj', @(x) isa(x, 'osLinear'));
+p.addRequired('pRate', @isnumeric);
+p.addRequired('coneType', @ismatrix);
 
-obj.patchSize = sensorGet(sensor,'width','meters'); % Patch of cone size
+p.parse(obj, pRate, coneType, varargin{:});
 
-obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+% init parameters
+lmsFilters = obj.generateLinearFilters(mean(pRate(:))); % linear filters
+nFrames = size(pRate, 3);
 
-% Find coordinates of L, M and S cones, get voltage signals.
-cone_mosaic = sensorGet(sensor,'cone type');
+maxCur = 0.01*20.5^3; % Angueyra & Rieke (2013, Nature)
+meanCur = maxCur * (1 - 1/(1 + 45000/mean(pRate(:))));
 
-% When we just use the number of isomerizations, this is consistent with
-% the old coneAdapt function and validates.  
-isomerizations = sensorGet(sensor,'photon rate');
+[pRate, r, c] = RGB2XWFormat(pRate);
+current = zeros(size(pRate));
 
-% Get number of time steps.
-% nSteps = sensorGet(sensor,'n time frames');
-nSteps = size(sensor.data.volts,3);
-
-% The next step is to convolve the 1D filters with the 1D isomerization
-% data at each point in the cone mosaic. This code was adapted from the
-% osLinearCone.m file by FR and NC.
-
-initialState = osInit;
-initialState.timeInterval = sensorGet(sensor, 'time interval');
-initialState.Compress = 0; % ALLOW ADJUST - FIX THIS
-
-% Place limits on the maxCur and prescribe the meanCur.
-
-% See Angueyra and Rieke (2013, Nature Neuroscience)
-maxCur = initialState.k * initialState.gdark^initialState.h/2;
-meanCur = maxCur * (1 - 1 / (1 + 45000 / mean(isomerizations(:))));
-
-% adaptedDataRS = osConvolve(obj, sensor, isomerizations, varargin);
-
-[sz1, sz2, sz3] = size(isomerizations);
-isomerizationsRS = reshape(isomerizations(:,:,1:sz3),sz1*sz2,nSteps);
-
-adaptedDataRS = zeros(size(isomerizationsRS));
-
-% Do convolutions by cone type.
-for cone_type = 2:4  % Cone type 1 is black (i.e., a hole in mosaic)
+% convolve the filters with the isomerization data
+for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
+    % pull out the linear filter for current cone type.
+    filter = lmsFilters(:, ii-1);
     
-    % Pull out the appropriate 1D filter for the cone type.
-    % Filter_cone_type = newIRFs(:,cone_type-1);
-    switch cone_type
-        case 4
-            FilterConeType = obj.sConeFilter;
-        case 3
-            FilterConeType = obj.mConeFilter;
-        case 2
-            FilterConeType = obj.lConeFilter;
+    % locate cones with specific type and convolve with temporal filter
+    index = find(coneType==ii);
+    if ~isempty(index)
+        curData = conv2(pRate(index, :), filter') - meanCur;
+        current(index, :) = curData(:, 2:nFrames+1);
     end
-    
-    % Only place the output signals corresponding to pixels in the mosaic
-    % into the final output matrix.
-    cone_locations = find(cone_mosaic==cone_type);
-    
-    isomerizationsSingleType = isomerizationsRS(cone_locations,:);
-    
-    % pre-allocate memory
-    adaptedDataSingleType = zeros(size(isomerizationsSingleType));
-    
-    for y = 1:size(isomerizationsSingleType, 1)
-        
-        tempData = conv(isomerizationsSingleType(y, :), FilterConeType);
-        %  tempData = real(ifft(conj(fft(squeeze(isomerizationsSpec(x, y, :))) .* FilterFFT)));
-        %  WHAT IS THE COMPRESS ABOUT?  Let's ASK NC
-        if (initialState.Compress)
-            tempData = tempData / maxCur;
-            tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-        else
-            tempData = tempData - meanCur;
-        end
-        % NEED TO CHECK IF THESE ARE THE RIGHT INDICES
-        adaptedDataSingleType(y, :) = tempData([2:1+nSteps]);
-        
-    end    
-    
-    adaptedDataRS(cone_locations,:) = adaptedDataSingleType;  
-    
 end
 
 % % Reshape the output signal matrix.
-adaptedData = reshape(adaptedDataRS,[sz1,sz2,sz3]);
-
-% obj.coneCurrentSignal = adaptedData;
-obj = osSet(obj, 'cone current signal', adaptedData);
+current = XW2RGBFormat(current, r, c);
 
 % Add noise
 % The osAddNoise function expects and input to be isomerization rate.
 % This is handled properly because the params has the time sampling
 % rate included.
 if osGet(obj,'noiseFlag') == 1
-    params.sampTime = sensorGet(sensor, 'time interval');
-    ConeSignalPlusNoiseRS = osAddNoise(adaptedDataRS, params); 
-    coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
-    % obj.coneCurrentSignalPlusNoise = reshape(ConeSignalPlusNoiseRS,[sz1,sz2,nSteps]);
-    
-    obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignalPlusNoise);
+    params.sampTime = obj.timeStep;
+    current = osAddNoise(current, params);
 end
+obj.osSet('cone current signal', current);
 
 end
-
-

@@ -105,9 +105,9 @@ function osPlotKernels(obj,sensor)
 dt = sensorGet(sensor, 'time interval');
 
 hold on;
-plot((0:numel(obj.sConeFilter)-1)*dt, obj.sConeFilter,'b');
-plot((0:numel(obj.mConeFilter)-1)*dt, obj.mConeFilter,'g');
-plot((0:numel(obj.lConeFilter)-1)*dt, obj.lConeFilter,'r');
+plot((0:numel(obj.lmsConeFilter(:, 3))-1)*dt, obj.lmsConeFilter(:, 3),'b');
+plot((0:numel(obj.lmsConeFilter(:, 2))-1)*dt, obj.lmsConeFilter(:, 2),'g');
+plot((0:numel(obj.lmsConeFilter(:, 1))-1)*dt, obj.lmsConeFilter(:, 1),'r');
 title('L, M, S cone filter kernels');
 xlabel('Time (sec)');
 ylabel('pA / (R*/sec)');

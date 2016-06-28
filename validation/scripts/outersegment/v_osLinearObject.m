@@ -58,10 +58,12 @@ params.bgVolts  = 0;
 noiseFlag = 0; 
 adaptedOS = osLinear();
 adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
+adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
 
 % Compute the linear response and get the current.
-adaptedOS = osCompute(adaptedOS, sensor);
-osAdaptedCur = osGet(adaptedOS, 'coneCurrentSignal');
+pRate = sensorGet(sensor, 'photon rate');
+coneType = sensorGet(sensor, 'cone type');
+osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
 
 % Make a plot of what happened using osPlot.
 if (runTimeParams.generatePlots)   
@@ -141,7 +143,10 @@ for step = 1:nStepIntensities
     noiseFlag = 0;
     adaptedOSStepOnly = osLinear();
     adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);
-    adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
+    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'timeStep', timeStep);
+    
+    coneType = sensorGet(sensor, 'cone type');
+    osCompute(adaptedOSStepOnly, stimulus, coneType);
 
     % Create stimulus: step + flash.
     stimulus = zeros(nSamples, 1);
@@ -160,8 +165,9 @@ for step = 1:nStepIntensities
     % Compute using outersegment object.
     noiseFlag = 0;
     adaptedOS = osLinear();
-    adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);   
-    adaptedOS = osCompute(adaptedOS, sensor);
+    adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
+    adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+    osCompute(adaptedOS, stimulus, coneType);
 
     % Plot.
     if (runTimeParams.generatePlots)
@@ -257,24 +263,27 @@ clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 % client = RdtClient(getpref('isetbio','remoteDataToolboxConfig'));
 client = RdtClient('isetbio');
 client.crp('resources/data/cones');
-[eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
+[eyeMovementExample, ~] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
 % Get mean subtracted current and stimulus from read data
 measuredCur = eyeMovementExample.data.Mean;
 stimulus = eyeMovementExample.data.Stim;
 nSamples = length(stimulus);
 stimulus = reshape(stimulus, [1 1 nSamples]);
+timeStep = 5e-5;
 
 % Create human sensor.
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', 5e-5);
+sensor = sensorSet(sensor, 'time interval', timeStep);
+coneType = sensorGet(sensor, 'coneType');
 
 % Set photon rates.
 % This is an artifact of directly specifying the stimulus
 % in the sensor, and will not be an issue when the sensor
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
+pRate = sensorGet(sensor, 'photon rate'); % can different from stimulus due to rounding...
 
 % Compute adapted current with coneAdapt function
 params.bgVolts  = 0;
@@ -284,8 +293,8 @@ params.bgVolts  = 0;
 noiseFlag = 0;
 adaptedOS = osLinear();
 adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osCompute(adaptedOS, sensor);
-osAdaptedCur = osGet(adaptedOS, 'coneCurrentSignal');
+adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
 
 % Plot the two calculations and compare against measured data.
 if (runTimeParams.generatePlots)
@@ -320,6 +329,7 @@ contrast = 1;
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
 sensor = sensorSet(sensor, 'time interval', timeStep);
+coneType = sensorGet(sensor, 'cone type');
 
 % Start figure for this next bit
 if (runTimeParams.generatePlots)  
@@ -351,8 +361,9 @@ for step = 1:stepLevels
     % Create outersegment object and compute with it.
     noiseFlag = 0;
     adaptedOSInc = osLinear();
-    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);  
-    adaptedOSInc = osCompute(adaptedOSInc, sensor);
+    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
+    adaptedOSInc = osSet(adaptedOSInc, 'timeStep', timeStep); 
+    osCompute(adaptedOSInc, stimulus, coneType);
     
     % Create stimulus: step + flashes.
     stimulusDec = zeros(nSamples, 1);
@@ -370,8 +381,9 @@ for step = 1:stepLevels
     % And with outersegment object.
     noiseFlag = 0;
     adaptedOSDec = osLinear();
-    adaptedOSDec = osSet(adaptedOSDec, 'noiseFlag', noiseFlag);  
-    adaptedOSDec = osCompute(adaptedOSDec, sensor);
+    adaptedOSDec = osSet(adaptedOSDec, 'noiseFlag', noiseFlag);
+    adaptedOSDec = osSet(adaptedOSDec, 'timeStep', timeStep);
+    osCompute(adaptedOSDec, stimulus, coneType);
 
     % Summary measures.
     maxInc(step) = adaptedCurInc(1, 1, stimPeriod(2)-1) - adaptedCurInc(1, 1, stimPeriod(1)-1);

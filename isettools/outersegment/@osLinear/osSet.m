@@ -23,15 +23,15 @@ for ii=1:2:length(varargin)
     switch param
         case {'sconefilter'}
             % Temporal impulse response
-            obj.sConeFilter = value;
+            obj.lmsConeFilter(:, 3) = value;
             
         case {'mconefilter'}
             % Temporal impulse response
-            obj.mConeFilter = value;
+            obj.lmsConeFilter(:, 2) = value;
             
         case {'lconefilter'}
             % Temporal impulse response
-            obj.lConeFilter = value;            
+            obj.lmsConeFilter(:, 1) = value;            
             
         otherwise
             % If not part of this class, check, the parent class.

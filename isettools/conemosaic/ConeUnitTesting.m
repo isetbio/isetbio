@@ -11,9 +11,9 @@ oi = oiCreate;
 oi = oiCompute(oi,scene);
 vcAddObject(oi); oiWindow;
 
-oi = oiSet(oi, 'lens density', 0);
-oi = oiCompute(oi,scene);
-vcAddObject(oi); oiWindow;
+% oi = oiSet(oi, 'lens density', 0);
+% oi = oiCompute(oi,scene);
+% vcAddObject(oi); oiWindow;
 
 %% Create cone mosaic
 cMosaic = coneMosaic;
@@ -48,7 +48,7 @@ mAbsorptions = cMosaic.absorptions;
 vcNewGraphWin; hist(nAbsorptions(:)-mAbsorptions(:), 100);
 
 %% Eye movement testing
-cMosaic.emPositions = cMosaic.emGenSequence(5000);
+cMosaic.emGenSequence(5000);
 cMosaic.compute(oi);
 m = mean(cMosaic.absorptions,3);
 vcNewGraphWin; imagesc(m)
@@ -65,8 +65,5 @@ cMosaic.plot('eye spectral qe','oi',oi);
 %% Show the time series of absorptions as a movie
 [~,uData] = cMosaic.plot('absorptions');
 
-%%
-for ii=1:size(uData, 4)
-    imshow(uData(:,:,:,ii));
-    drawnow;
-end
+%% Compute photocurrent
+[~, current] = cMosaic.compute(oi, 'currentFlag', true);

@@ -109,11 +109,9 @@ switch ieParamFormat(type)
         % Movie of the absorptions
         if isempty(obj.absorptions), error('no absorption data'); end
         uData = coneImageActivity(obj, hf, varargin{:});
-    case 'current'
-        if isempty(obj.current)
-            error('no current data computed');
-        end
-        imagesc(obj.current(:, :, 1)); axis off;
+    case 'meancurrent'
+        if isempty(obj.current), error('no current data computed'); end
+        imagesc(mean(obj.current, 3)); axis off;
     otherwise
         error('unsupported plot type');
 end

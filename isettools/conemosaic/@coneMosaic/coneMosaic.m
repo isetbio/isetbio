@@ -18,13 +18,15 @@ classdef coneMosaic < hiddenHandle
         pattern;          % Pattern of K-LMS cones in the mosaick
         spatialDensity;   % spatial density (ratio) of the K-LMS cones
         integrationTime;  % Cone temporal integration time in secs
-        sampleTime;       % Time step for em and os computation, shall we
-                          % set this the same as integrationTime?
-        
         emPositions;      % Eye movement positions in number of cones.
                           % The length of this property controls number of
                           % frames to be computed
         noiseFlag;        % To control which noise is included
+    end
+    
+    properties (SetObservable, AbortSet)
+        sampleTime;       % Time step for em and os computation, shall we
+                          % set this the same as integrationTime?
     end
     
     properties (GetAccess=public, SetAccess=private)
@@ -54,9 +56,7 @@ classdef coneMosaic < hiddenHandle
         % Constructor
         function obj = coneMosaic(varargin)
             % Initialize the cone mosaic class
-            %
             %   cMosaic =  coneMosaic('cone',cone,'os','os);
-            %
             
             % parse input
             p = inputParser;
@@ -72,8 +72,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('pattern', [], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
             p.addParameter('sampleTime', 0.001, @isscalar);
-            p.addParameter('os', osCreate('linear'), ...
-                @(x)(isa(x,'outerSegment')));
+            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment')));
             
             p.parse(varargin{:});
             
@@ -96,13 +95,16 @@ classdef coneMosaic < hiddenHandle
             end
             
             % Initialize the mosaic properties
-            % obj.matchSensor(varargin{:});
+            obj.os.timeStep = obj.sampleTime;
+            obj.os.patchSize = obj.width;
             
             % initialize listener
             % these listeners make sure the wavelength samples
             % in obj.pigment and obj.macular are the same
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
+            addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
+            addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
         end
         
         % set size to fov
@@ -202,6 +204,7 @@ classdef coneMosaic < hiddenHandle
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
                     obj.spatialDensity, obj.pigment.width);
+                obj.os.patchSize = obj.width;
             end
         end
         
@@ -212,16 +215,6 @@ classdef coneMosaic < hiddenHandle
         function set.cols(obj, val)
             obj.mosaicSize = [obj.rows val];
         end
-        
-        % set function, see osLinearSet for details
-        % function obj = set(obj, varargin)
-        % end
-        
-        % get function, see osLinearGet for details
-        % function val = get(obj, varargin)
-        %    val = obj;  % Place holder for what will happen!
-        % end
-        
     end
     
     % Methods that must only be implemented (Abstract in parent class).
@@ -280,7 +273,8 @@ classdef coneMosaic < hiddenHandle
             
             % If we want the photo current, use the os model
             if currentFlag
-                current = obj.os.compute;
+                pRate = absorptions/obj.integrationTime;
+                current = obj.os.osCompute(pRate, obj.pattern);
                 obj.current = current;
             end
         end
@@ -340,115 +334,6 @@ classdef coneMosaic < hiddenHandle
             idx = (noisyImage < 0);
             noisyImage(idx)  = 0;
             theNoise(idx)    = noisyImage(idx) - absorptions(idx);
-        end
-        
-        function pos = emGenSequence(nFrames, varargin)
-            % Generate eye movement path
-            %
-            % Inputs
-            %   nFrames - number of frames to generate
-            %
-            % Optional inputs (key value pairs in varargin):
-            %   'em'    - eye movement structure, see emCreate for details
-            %   'rSeed' - random seed to be used
-            %
-            % Ouputs
-            %   pos     - nFramesx2 matrix of eye positions in units of
-            %             cone positions
-            %
-            % See also:
-            %   emCreate
-            
-            % parse input
-            p = inputParser;
-            p.addRequired('nFrames', @isscalar);
-            p.addParameter('em', emCreate, @isstruct);
-            p.addParameter('rSeed', [], @isscalar);
-            
-            % set parameters
-            p.parse(nFrames, varargin{:});
-            em = p.Results.em;
-            if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
-            
-            emFlag = emGet(em, 'em flag');
-            pos = zeros(nFrames, 2);
-            sampTime  = emGet(em, 'sample time');
-            
-            
-            % generate eye movement for tremor
-            if emFlag(1)
-                % Load parameters
-                amplitude  = emGet(em, 'tremor amplitude', 'cones/sample');
-                interval   = emGet(em, 'tremor interval');
-                intervalSD = emGet(em, 'tremor interval SD');
-                
-                % Compute time of tremor occurs
-                t = interval + randn(nFrames, 1) * intervalSD;
-                t(t < 0.001) = 0.001; % get rid of negative values
-                tPos = cumsum(t);
-                tPos = round(tPos / sampTime);
-                indx = 1:find(tPos <= nFrames, 1, 'last');
-                tPos = tPos(indx);
-                
-                % Generate random step at the selected times
-                direction = rand(length(tPos),1);
-                
-                % Unit length direction
-                pos(tPos, :) = amplitude*[direction sqrt(1-direction.^2)];
-                
-                pos(tPos, :) = bsxfun(@times,pos(tPos,:),t(indx)/sampTime);
-                pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
-                pos = cumsum(pos, 1);
-            end
-            
-            % generate eye movement for drift
-            if emFlag(2)
-                % Load Parameters
-                speed     = emGet(em, 'drift speed', 'cones/sample');
-                speedSD   = emGet(em, 'drift speed SD', 'cones/sample');
-                
-                % Generate random move at each sample time
-                theta = 360 * randn + 0.1 * (1 : nFrames)';
-                direction = [cosd(theta) sind(theta)];
-                s = speed + speedSD * randn(nFrames, 1);
-                pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
-            end
-            
-            % generate eye movement for micro-saccade
-            if emFlag(3)
-                % Load parameters
-                interval = emGet(em, 'msaccade interval');
-                intervalSD = emGet(em, 'msaccade interval SD');
-                dirSD = emGet(em, 'msaccade dir SD', 'deg');
-                speed = emGet(em, 'msaccade speed', 'cones/sample');
-                speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
-                
-                % compute time of occurance
-                t = interval + randn(nFrames, 1) * intervalSD;
-                t(t < 0.3) = 0.3 + 0.1*rand; % get rid of negative values
-                t = cumsum(t);
-                tPos = round(t / sampTime);
-                tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
-                
-                % Compute positions
-                for ii = 1 : length(tPos)
-                    curPos = pos(tPos(ii), :);
-                    duration = round(sqrt(curPos(1)^2+curPos(2)^2)/speed);
-                    direction = atand(curPos(2)/curPos(1)) + dirSD * randn;
-                    direction = [cosd(direction) sind(direction)];
-                    direction = abs(direction) .* (2*(curPos < 0) - 1);
-                    
-                    offset = zeros(nFrames, 2);
-                    indx = tPos(ii):min(tPos(ii) + duration - 1, nFrames);
-                    curSpeed = speed + speedSD * randn;
-                    if curSpeed < 0, curSpeed = speed; end
-                    offset(indx, 1) = curSpeed*direction(1);
-                    offset(indx, 2) = curSpeed*direction(2);
-                    
-                    pos = pos + cumsum(offset);
-                end
-            end
-            pos = round(pos);           
         end
     end
     
@@ -537,6 +422,15 @@ classdef coneMosaic < hiddenHandle
                     obj.pigment.wave = obj.macular.wave;
             end
         end
+        
+        function setSampleTime(obj, src, ~)
+            warning('Sample time changed...can be bad');
+            switch src.DefiningClass.Name
+                case 'coneMosaic'
+                    obj.os.timeStep = obj.sampleTime;
+                otherwise
+                    obj.sampleTime = obj.os.timeStep;
+            end
+        end
     end
-    
 end

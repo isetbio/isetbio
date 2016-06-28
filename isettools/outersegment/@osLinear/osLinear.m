@@ -1,45 +1,29 @@
-classdef osLinear < outerSegment 
-% Linear subclass of the outersegment object
-%
-%   os = osLinear();
-% 
-% Implements isomerizations (R*) to photocurrent (pA) using only cone
-% linear temporal filters.  The default values are those determined by the
-% Angueyra and Rieke (2013, Nature Neuroscience).
-% 
-% The current is calculated by convolving separate temporal filters
-% for the L, M and S cones with the isomerization time course.
-%
-% The time base of the temporal filters is established using parameters
-% from sensorGet(sensor, 'time interval').
-% 
-% See also:
-%
-% JRG Copyright ISETBIO Team, 2015
-
-    % Public, read-only properties.
-    properties (SetAccess = private, GetAccess = public)
-        % These are the linear filters generated below via filterKernel.
-        sConeFilter;
-        mConeFilter;
-        lConeFilter;
-    end
+classdef osLinear < outerSegment
+    % Linear subclass of the outersegment object
+    %
+    %   os = osLinear();
+    %
+    % Implements isomerizations (R*) to photocurrent (pA) using only cone
+    % linear temporal filters. The default values are those determined by
+    % the Angueyra and Rieke (2013, Nature Neuroscience).
+    %
+    % The current is calculated by convolving separate temporal filters
+    % for the L, M and S cones with the isomerization time course.
+    %
+    % JRG/HJ/BW, ISETBIO Team, 2016
     
-    % Private properties. Only methods of the parent class can set these
-    properties(Access = private)
+    % Public, read-only properties.
+    properties (GetAccess = public, SetAccess = private)
+        % linear filters for LMS cones in columns
+        lmsConeFilter;
     end
     
     % Public methods
     methods
-        
         % Constructor
         function obj = osLinear(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
-            
-            % Initialize ourselves
-            obj.matchSensor(varargin{:});
-            
         end
         
         % set function, see osLinearSet for details
@@ -49,34 +33,87 @@ classdef osLinear < outerSegment
         
         % get function, see osLinearGet for details
         function val = get(obj, varargin)
-           val = osGet(obj, varargin{:});
-        end
-      
-    end
-    
-    % Methods that must only be implemented (Abstract in parent class).
-    methods (Access=public)
-                
-        matchSensor(obj, varargin);
-
-        function obj = compute(obj, sensor, varargin)
-            % see osCompute for details
-            obj = osCompute(obj, sensor, varargin); 
+            val = osGet(obj, varargin{:});
         end
         
-        function plot(obj, sensor)
-            % see osPlot for details
-            osPlot(obj, sensor);
+        matchSensor(obj, varargin);
+        
+        function obj = compute(obj, pRate, coneType, varargin)
+            % see osCompute for details
+            obj = osCompute(obj, pRate, coneType, varargin);
         end
-    end    
-    
-    % Methods may be called by the subclasses, but are otherwise private 
-    methods (Access = protected)
-
+        
+        function plot(obj, cMosaic)
+            % see osPlot for details
+            osPlot(obj, cMosaic);
+        end
     end
     
-    % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
+        function newIRFs = generateLinearFilters(obj, meanRate, varargin)
+            % Generates the linear temporal filters for the L, M and S
+            % cones based on physiological data from Angueyra and Rieke
+            % (Nat. Neuro., 2013).
+            %
+            %   newIRFs = generateLinearFilters([coneMosaic])
+            %
+            % Inputs: 
+            %   obj      - osLinear class object
+            %   meanRate - mean photon isomerization rate
+            %
+            % Outputs:
+            %  newIRFs  - nx3 matrix with each row the temporal impulse
+            %             response for the L, M and S cones, respectively.
+            %
+            % See also:
+            %   osFitlerConesLinear
+            %
+            % JRG/HJ/BW, ISETBIO TEAM, 2016
+            
+            % Handle input
+            p = inputParser;
+            p.addRequired('obj', @(x) isa(x, 'osLinear'));
+            p.addRequired('meanRate', @isscalar);
+            
+            p.parse(obj, meanRate, varargin{:});
+            
+            dt = obj.timeStep;
+            timeAxis = 0 : dt : 0.3;
+            
+            % parameters of cone temporal filters measured in Angueyra and
+            % Rieke (Nat. Neuro., 2013).
+            scFact = 1;      % scale factor
+            tauR = 0.0216;   % rising phase time constant
+            tauD = 0.0299;   % damping time constant
+            tauP = 0.5311;   % period
+            phi = 34.1814;   % phase
+            
+            % generate filter
+            filter = scFact * (timeAxis/tauR).^3 ...
+                ./ (1 + (timeAxis/tauR).^3) .* exp(-(timeAxis./tauD)) ...
+                .* cos(2*pi*timeAxis/tauP+ deg2rad(phi));
+            
+            % Adjust gain of the cone impulse response for L, M, S cones
+            %
+            % Weber-Fechner relation:
+            %  gain/gain_dark = ...
+            %    1/(1+(bgIntensity/halfDesensitizationIntensitity))
+            %            
+            Io = 2250; % half-desensitizing background in R*/cone/sec
+            Ib = [7131 6017 1973]; % R* per sec due to background adapting
+            
+            % Set gain parameters according to Angueyra & Rieke:
+            Ib = Ib * meanRate / max(Ib);
+            gain_dark = 0.22;              % from Juan's paper
+            
+            % scale IRF to reflect amplitude at chosen background
+            % using Weber adaptation equation
+            gain = gain_dark ./ (1 + Ib./Io);
+            
+            % The L, M and S IRFs are created by scaling Filter with the
+            % scale factors
+            newIRFs = filter(:) * gain * dt ./ max(filter);
+            obj.lmsConeFilter = newIRFs;
+        end
     end
-    
 end
