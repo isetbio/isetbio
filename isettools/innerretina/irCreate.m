@@ -56,16 +56,17 @@ switch class(os)
         if isempty(osGet(os,'rgbData'))
             os = osSet(os, 'rgbData', rand(64));
         end
+        
+        if isempty(osGet(os,'patch size'))
+            os = osSet(os, 'patch size', 180);
+        end
+        
+        if isempty(osGet(os,'time step'))
+            os = osSet(os,'time step',.01);
+        end
+
     otherwise
         % Don't worry, carry on
-end
-
-if isempty(osGet(os,'patch size'))
-    os = osSet(os, 'patch size', 180);
-end
-
-if isempty(osGet(os,'time step'))
-    os = osSet(os,'time step',.01);
 end
 
 %% Create the object

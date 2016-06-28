@@ -15,13 +15,21 @@ nCells = size(response);
 nCellsTotal = nCells(1)*nCells(2);
 cellCtr = 0;
 glminput = zeros(nCellsTotal,length(response{1,1,1}));
-
+nanflag = 0;
 for i = 1:nCells(1)
     for j = 1:nCells(2)        
         cellCtr = cellCtr+1;
         %  glminput(cellCtr,:) = (squeeze(sum(sum(response{i,j}(:,:,:,1),1),2)))';
+        
+        if sum(isnan(response{i,j,1}))>0
+            nanflag = 1;
+            response{i,j,1}(isnan(response{i,j,1})) = 0;
+        end
+        
         glminput(cellCtr,:) = response{i,j,1};
     end
 end
-
+% if nanflag;
+%     warning('NaN values in input replaced with zeros.');
+% end
 end

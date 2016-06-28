@@ -1,22 +1,23 @@
 classdef rgcPhys % < rgcMosaic
-% rgcMosaic cell type used for unit testing with a GLM (coupled-nonlinear) 
-% computational model that loads parameters from a physiology experiment in
-% the Chichilnisky Lab.
+% rgcPhys is used for unit testing a GLM computational model for RGC
+% response that loads parameters from a physiology experiment in the
+% Chichilnisky Lab.
 %
 % The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
-% Litke, Chichilnisky & Simoncelli, Nature (2008).% The computational model
-% implemented here relies on code by
+% Litke, Chichilnisky & Simoncelli, Nature (2008).
+% 
+% The computational model implemented here relies on code by
 % <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
 % distributed under the GNU General Public License.
 %
 % rgcPhys is not a subclass of rgcMosaic, but is similar to rgcGLM in many
-% respects. It is called when creating a new Phys model rgcMosaic for an
+% respects. It is called when creating a new Phys model for an
 % inner retina object.  Typically we get here from the inner retina object
 % via a call
 %
 %   ir.mosaicCreate('model','phys','type','your type goes here')
 % 
-% See also: v_rgcExternal
+% See also: irPhys, v_rgcExternal, t_rgcNaturalScenesFigure2
 %
 % Example:
 %   os = osCreate('identity');        % A pass through from the stimulus
@@ -30,8 +31,12 @@ classdef rgcPhys % < rgcMosaic
     end
            
     % Protected properties.
-    properties (SetAccess = private, GetAccess = public)
+    properties (SetAccess = protected, GetAccess = public)
+        experimentID;
         cellType;
+        cellID;
+        stimulusFit;
+        stimulusTest;
         rfDiameter;
         rfDiaMagnitude;
         cellLocation;
@@ -64,10 +69,8 @@ classdef rgcPhys % < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcPhys(rgc, cellTypeInd, varargin)
-
-            obj = obj.initialize(rgc, cellTypeInd, varargin{:});
-            
+        function obj = rgcPhys(rgc, varargin)
+            obj = obj.initialize(rgc, varargin{:});            
         end
         
         % set function, see for details

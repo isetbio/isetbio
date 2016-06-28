@@ -48,6 +48,7 @@ classdef rgcSubunit < rgcMosaic
         % is an exponential.
         generatorFunction;
         
+        rectifyFunction;
         % Parameter to specify the time bins Pillow uses for coupling and
         % post spike filters (10 ms default)
         dt = 0.01;
@@ -64,6 +65,9 @@ classdef rgcSubunit < rgcMosaic
         % We typically run a single trial
         numberTrials = 10;
         
+        % Subunit threshold
+        subunitThreshold = 0;
+        
         % These hold the parameters used in the computation.
         % This is the response after a spike
         postSpikeFilter;
@@ -74,6 +78,8 @@ classdef rgcSubunit < rgcMosaic
         
         % This is the matrix of connections between nearby neurons
         couplingMatrix;
+        
+        numberSubunits;
 
     end
     
@@ -90,13 +96,34 @@ classdef rgcSubunit < rgcMosaic
             obj = obj@rgcMosaic(rgc, mosaicType);
 
             % Initialize ourselves
+            obj.numberSubunits = size(obj.sRFcenter{1,1});
             
-            obj.generatorFunction = @(x) 1*x; %@exp;
+            obj.generatorFunction = @(x) exp(x); %@exp;
             
+            obj.rectifyFunction = @(x) x.*(x>0); % used to implement subunit nonlinearity
             
             obj.postSpikeFilter = buildPostSpikeFilter(.01);
             
             [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
+            
+            % Make temporal IR just an impulse
+            tCenterOrig = obj.mosaicGet('tCenter');
+            
+            tCenterNew{1} = zeros(size(tCenterOrig));
+            tCenterNew{2} = zeros(size(tCenterOrig));
+            tCenterNew{3} = zeros(size(tCenterOrig));
+            
+            tImpulse = 2.75*4;
+            tCenterNew{1}(1) = tImpulse; tCenterNew{2}(1) = tImpulse; tCenterNew{3}(1) = tImpulse;
+            obj.mosaicSet('tCenter',tCenterNew);
+            
+            tSurroundNew{1} = zeros(size(tCenterOrig));
+            tSurroundNew{2} = zeros(size(tCenterOrig));
+            tSurroundNew{3} = zeros(size(tCenterOrig));
+            tSurroundNew{1}(1) = tImpulse; tSurroundNew{2}(1) = tImpulse; tSurroundNew{3}(1) = tImpulse;
+            obj.mosaicSet('tSurround',tSurroundNew);
+
+            
         end
         
         % set function, see for details

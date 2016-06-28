@@ -80,8 +80,9 @@ switch osType
         % James needs to change the spatial RF and temporal weights in order to
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
-        if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range;
-        else                    spTempStim = 10*spTempStim./range;
+        if isequal(class(ir),'irPhys'),   spTempStim = spTempStim./range - mean(spTempStim(:))/range;
+        else                    spTempStim = 1*(spTempStim./range - mean(spTempStim(:))/range);
+%             else                    spTempStim = 10*(spTempStim./range);
         end
         
         % Looping over the rgc mosaics
@@ -93,15 +94,15 @@ switch osType
             
             % For the subunit model, put each pixel "subunit" of spatial RF
             % through nonlinearity at this point
-            if isa(ir.mosaic{rgcType},'rgcSubunit')
-                % Change this to get generator function
-                
-                % modeltype = 'pixel';
-                modeltype = 'surround';
-                [spResponseCenter, spResponseSurround] = ...
-                    subunitPooling(spResponseCenter, spResponseSurround, 'model', modeltype);
-                
-            end
+%             if isa(ir.mosaic{rgcType},'rgcSubunit')
+%                 % Change this to get generator function
+%                 
+%                 modeltype = 'pixel';
+%                 % modeltype = 'surround';
+%                 [spResponseCenter, spResponseSurround] = ...
+%                     subunitPooling(spResponseCenter, spResponseSurround, 'model', modeltype);
+%                 
+%             end
             
             % Convolve with the temporal impulse response
             responseLinear = ...
@@ -132,7 +133,7 @@ switch osType
         % make these models have the right spike rate, and the 10 is a hack to
         % approximate that.
         spTempStim = spTempStim./range;
-        spTempStim = spTempStim - mean(spTempStim(:));
+        spTempStim = spTempStim - mean(spTempStim(:)/range);
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
@@ -173,11 +174,141 @@ switch osType
 %     case {'osBioPhys'}
 %         %% Full biophysical os
 %         error('Not yet implemented');
+
+    case {'bipolar'}
+    
+        %% Linear computation       
+        
+        % Determine the range of the rgb input data
+        spTempStimCenter = bipolarGet(outerSegment, 'responseCenter');        
+        spTempStimSurround = bipolarGet(outerSegment, 'responseSurround');
+        
+        rangeCenter = max(spTempStimCenter(:)) - min(spTempStimCenter(:));
+        rangeSurround = max(spTempStimSurround(:)) - min(spTempStimSurround(:));
+        
+        if rangeCenter ~= 0
+            spTempStimCenter = spTempStimCenter./rangeCenter - mean(spTempStimCenter(:))/rangeCenter;
+        end
+        if rangeSurround ~= 0 
+            spTempStimSurround = spTempStimSurround./rangeSurround - mean(spTempStimSurround(:))/rangeSurround;
+        end
+        
+%         spTempStimCenter = ieScale(spTempStimCenter);
+%         spTempStimSurround = ieScale(spTempStimSurround);
+        % Looping over the rgc mosaics
+        for rgcType = 1:length(ir.mosaic)
+            if 1%isa(ir.mosaic{rgcType},'rgcPhys')
+                
+%                 for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                     tCenterNew{cellNum,1} = -1; tSurroundNew{cellNum,1} = 0;
+%                 end
+                xNum = size(ir.mosaic{rgcType}.sRFcenter,1);
+                yNum = size(ir.mosaic{rgcType}.sRFcenter,2);
+                for xcell = 1:xNum
+                    for ycell = 1:yNum
+                        tCenterNew{xcell,ycell} = -1; tSurroundNew{xcell,ycell} = 0;
+                    end
+                end
+%                 ir.mosaic{rgcType,1}.mosaicSet('tCenter',tCenterNew);
+%                 ir.mosaic{rgcType,1}.mosaicSet('tSurround',tSurroundNew);
+                ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tCenter',tCenterNew);
+                ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
+                szRC = size(spTempStimCenter);
+                
+                if isa(ir.mosaic{rgcType},'rgcPhys')
+%                 spTempStimCenterRS = spTempStimCenter;
+%                 spTempStimSurroundRS = spTempStimSurround;
+                spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));
+                spTempStimSurroundRS = zeros(80,40,size(spTempStimCenter,3));
+                for frstim = 1:size(spTempStimCenter,3)
+%                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
+%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,round(szRC(2)/2-szRC(1)/4):round(szRC(2)/2+szRC(1)/4),frstim),[80 40]);
+                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40],'method','nearest');
+                    spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40],'method','nearest');
+% %                     spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40]);
+%                     spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40]);
+                end
+                
+                clear spTempStimCenter spTempStimSurround
+                
+                spTempStimCenter = spTempStimCenterRS;
+                spTempStimSurround = spTempStimSurroundRS;
+                end
+            end
+            
+            
+            % We use a separable space-time receptive field.  This allows
+            % us to compute for space first and then time. Space.
+            [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);           
+            
+
+%             for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                 linEqDiscBig(:,:,frstim) =    imresize(linEqDisc{cellNum,1}(:,:,frstim),[80 40]);
+%             end
+            
+            % spResponseSurround{1,1} = zeros(size(spResponseCenter{1,1}));
+            % Convolve with the temporal impulse response
+            responseLinear = ...
+                fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
+            
+            
+            if isa(ir.mosaic{rgcType},'rgcPhys')
+                
+                for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
+%                     rLinearSU{cellNum,1,1} = 3*responseLinear{cellNum,1}./max(responseLinear{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+                    rLinearSUTemp = 8.5*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+%                     rLinearSUTemp = 20*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
+                    % NEED TO SUBSAMPLE TO GET CORRECT SPIKE RATE
+                    rLinearSU{cellNum,1,1} = rLinearSUTemp;%(1:8:end);
+                end
+                clear responseLinear
+                responseLinear = rLinearSU;
+            end
+            
+            % Store the linear response
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseSpikes', []);
+            % ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', []);
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
+
+
+%             figure; 
+%             hold on;
+%             for s1 = 1:szCenter(1)
+%                 for s2 = 1:szCenter(2)
+% %                     plot(squeeze(spResponseCenter{s1,s2}(1,1,:,1)));
+% %                     plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%                         plot(squeeze(responseLinear{s1,s2,2}(1,1,:)));
+%                 end
+%             end
+            
+%             xlabel('time (msec)','fontsize',14); ylabel('Activation','fontsize',14);
+%             title('Linear Activation before temporal filtering');
+        end
     otherwise
         error('Unknown os type %s\n',osType);
 end
 
 
+% % Rescale            
+% szCenter = size(spResponseCenter);
+% for s1 = 1:szCenter(1)
+%     for s2 = 1:szCenter(2)
+%         spResponseCenter{s1,s2} = 1*spResponseCenter{s1,s2};
+%         spResponseSurround{s1,s2} = 1*spResponseSurround{s1,s2};
+%     end
+% end
+% 
+% % Plot 
+% figure;
+% hold on;
+% for s1 = 1:szCenter(1)
+%     for s2 =1:szCenter(2)
+%         mx(s1,s2) = max(squeeze(spResponseCenter{s1,s2}(1,1,:,1))+squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%         plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))) + squeeze(spResponseSurround{s1,s2}(1,1,:,1)));
+%         plot((squeeze(spResponseCenter{s1,s2}(1,1,:,1))),'b');
+%         hold on; plot(squeeze(spResponseSurround{s1,s2}(1,1,:,1)),'r');
+%     end
+% end
 
 
 

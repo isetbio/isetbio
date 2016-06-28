@@ -33,7 +33,7 @@ scene = sceneSet(scene, 'h fov', fov);
 % These parameters are for other stuff.
 params.expTime = 0.01;
 params.timeInterval = 0.01;
-params.nSteps = 5;     % Number of stimulus frames
+params.nSteps = 100;     % Number of stimulus frames
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
@@ -115,13 +115,13 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Outer segment calculation
 
 % Input = RGB
-os = osCreate('identity');
+os = osCreate('displayRGB');
 
 coneSpacing = sensorGet(sensor,'width','um');
-os = osSet(os, 'coneSpacing', coneSpacing);
+os = osSet(os, 'patchsize', coneSpacing);
 
 coneSampling = sensorGet(sensor,'time interval','sec');
-os = osSet(os, 'coneSampling', coneSampling);
+os = osSet(os, 'timestep', coneSampling);
 
 os = osSet(os, 'rgbData', sceneRGB);
 % % Plot the photocurrent for a pixel
@@ -142,9 +142,9 @@ innerRetina.mosaicCreate('model','glm','type','on midget');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);
-for numberTrials = 1:10
-    innerRetina.spikeCompute(innerRetina, os);
-end
+% for numberTrials = 1:10
+%     innerRetina.spikeCompute(innerRetina, os);
+% end
 
 %%
 % irPlot(innerRetina, 'mosaic');

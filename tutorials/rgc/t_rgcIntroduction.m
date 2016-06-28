@@ -39,9 +39,22 @@ osL = osSet(osL, 'time step', timeStep);
 
 osL = osCompute(osL, absorptions);
 
+
+%%
+
+osD = osCreate('displayRGB');
+
+% Set up the 
+patchSize = sensorGet(absorptions,'width','um');
+osD = osSet(osD, 'patch size', patchSize);
+
+timeStep = sensorGet(absorptions,'time interval','sec');
+osD = osSet(osD, 'time step', timeStep);
+
+osD = osSet(osD,'rgbData',iStim.sceneRGB);
 %% Build the inner retina object
 
-clear params
+clear params innerRetina
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
@@ -51,14 +64,14 @@ innerRetina = irCreate(osL, params);
 
 % Create a coupled GLM model for the on midget ganglion cell parameters
 innerRetina.mosaicCreate('model','glm','type','on midget');
-
+innerRetina.mosaic{1}.mosaicSet('numberTrials',120);
 %% Here is the layout of the RGC receptive fields on retinal surface
 
 irPlot(innerRetina, 'mosaic');
 
 %% Compute RGC mosaic responses
 
-innerRetina = irCompute(innerRetina, osL);
+innerRetina = irCompute(innerRetina, osD);
 
 %% Look at the linear inputs to the cells before spiking
 

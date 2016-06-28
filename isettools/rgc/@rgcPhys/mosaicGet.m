@@ -60,6 +60,7 @@ allowableFieldsToSet = {...
     'tCenter',...
     'tSurround',...
     'linearResponse',...
+    'responseLinear',...
     'generatorFunction',...
     'nlResponse',...
     'numberTrials',...
@@ -110,6 +111,8 @@ switch ieParamFormat(params.what)
         val = obj.tSurround;
     case{'linearresponse'}
         val = obj.linearResponse;
+    case{'responselinear'}
+        val = obj.responseLinear;
     case{'generatorfunction'}
         val = obj.generatorFunction;
     case{'nlresponse'}
@@ -117,7 +120,7 @@ switch ieParamFormat(params.what)
     case{'numbertrials'}
         val = obj.numberTrials;
     case{'spikeresponse'}
-        val = obj.spikeResponse;        
+        val = obj.spikeResponse;
     case{'postspikefilter'}
         val = obj.postSpikeFilter;
     case{'couplingfilter'}
@@ -127,7 +130,25 @@ switch ieParamFormat(params.what)
     case{'responseraster'}
         val = obj.responseRaster;
     case{'responsepsth'}
-        val = obj.responsePsth;        
+        if ~isempty(obj.responsePsth)
+            val = obj.responsePsth;
+        else
+            nCells = size(obj.responseSpikes,1)*size(obj.responseSpikes,2);
+            numberTrials = obj.numberTrials;
+            for ce = 1:nCells
+                convolvewin2D = fspecial('gaussian',100,20);
+                convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
+%                 convolvewin=gausswin(100);
+                clear y
+                for trind = 1:numberTrials
+                    y(trind,obj.responseSpikes{ce,1,trind})=1;
+                end
+                PSTH_rec=conv(sum(y),convolvewin,'same');               
+                psthResponse{ce} = PSTH_rec;
+            end
+            val = psthResponse;
+        end
+        
     case{'responsevoltage'}
         val = obj.responseVoltage;
 end

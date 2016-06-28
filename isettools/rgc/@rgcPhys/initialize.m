@@ -1,124 +1,158 @@
-function obj = initialize(obj, rgc, cellTypeInd, varargin)
-% intialize: a method of @rgcPhys that initializes the object
-% following initialization by the superclass. This adds the generator
-% function, the post spike filter and the coupling filters. This function
-% is only called by rgcMosaicGLM, which itself is only called by rgcGLM or
-% rgcCreate.
+function obj = initialize(obj, ir, varargin)
+% Initializes the rgcPhys object by loading a mosaic of GLM fits from an
+% experiment in the Chichilnisky lab.
 % 
-%       rgcMosaicGLM.initialize(rgc, sensor, outersegment, varargin{:});
+% This function is only called by rgcPhys, which itself is only called by irPhys.
 % 
+%             rgcPhys = rgcPhys.initialize(rgc, varargin{:});   
 % Inputs: 
-%       rgc: an isetbio rgcGLM object
-%       scene: an isetbio scene structure
-%       sensor: an isetbio sensor structure
-%       os: an isetbio outer segment structure
+%       rgc: an isetbio rgcPhys object
 % 
-% Outputs: the mosaic object with the generatorFunction, postSpikeFilter and
-% couplingFilter properties set to appropriate values.
+% Outputs: the mosaic object, where each cell has a location, linear spatial
+% and temporal receptive fields, a DC offest, a generator function, a
+% post-spike filter, coupling filters if necessary, and empty fields for
+% the linear, voltage and spiking responses.
 % 
-% Example:
 % 
-%       obj.initialize(rgc, sensor, outersegment, varargin{:});
-% 
-% See also rgcCreate, rgcGLM, rgcMosaicGLM.
+% See also rgcPhys, irPhys.
 % 
 % (c) isetbio
-% 09/2015 JRG
- 
-%     % obj.generatorFunction = @erf;
-%     obj.generatorFunction = @exp;
-%     % obj.generatorFunction = @(x) 10*erf(x);
-% 
-%     obj.numberTrials = 10;
-%     
-%     obj.postSpikeFilter = buildPostSpikeFilter(.01);
-%     
-%     [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, .01);
+% 09/2015 JRG%
 
 
-namesCellTypes = {'onParasol';'offParasol';'onMidget';'offMidget';'smallBistratified'};
-obj.cellType = namesCellTypes{1};
+%% Parse inputs
+p = inputParser;
+p.addRequired('obj');
+p.addRequired('ir');
+addParameter(p,'experimentID','2013-08-19-6',@ischar);
+addParameter(p,'stimulusFit','WN',@ischar);
+addParameter(p,'stimulusTest','NSEM',@ischar);
+addParameter(p,'cellType','OnParasol',@ischar);
 
+
+addParameter(p,'name','inner retina',@ischar);
+addParameter(p,'species','unknown',@ischar);
+% addParameter(p,'outersegment','os',@ischar);
+addParameter(p,'eyeSide',    'left', @ischar);
+addParameter(p,'eyeRadius',   4,     @isnumeric);
+addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
+
+addParameter(p,'cellIndices',   0,     @isnumeric);
+
+p.parse(obj,ir,varargin{:});
+
+experimentID = p.Results.experimentID;
+stimulusFit = p.Results.stimulusFit;
+stimulusTest = p.Results.stimulusTest;
+cellType =  p.Results.cellType;
+cellIndices = p.Results.cellIndices;
+
+obj.experimentID = experimentID;
+obj.stimulusFit = stimulusFit;
+obj.stimulusTest = stimulusTest;
+obj.cellType = cellType;
+
+%% Set defaults
 obj.generatorFunction = @exp;
-
 obj.numberTrials = 10;
 
-glmFitPath = pwd;%'/Users/james/Documents/matlab/NSEM_data/';
+% % Coupled experiment
+% glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
+% matFileNames = dir([glmFitPath '/ON*.mat']);
 
-client = RdtClient('isetbio');
-% client.credentialsDialog();
-client.crp('resources/data/rgc');
-[data, artifact] = client.readArtifact('parasol_on_1205', 'type', 'mat');
-
-glmFitPath = '/Users/james/Documents/matlab/NSEM_data/';
-matFileNames = dir([glmFitPath '/ON*.mat']);
-
-% Loop through mat files and load parameters
-for matFileInd = 1:length(matFileNames)
-     
-    loadStr = sprintf('matFileNames(%d).name', matFileInd);
-    eval(sprintf('load([glmFitPath %s])',loadStr))
-    
-    nameStr = eval(loadStr);
-    sind1 = strfind(nameStr,'_'); sind2 = strfind(nameStr,'.');
-    lookupIndex(matFileInd) = str2num(nameStr(sind1+1:sind2-1));
-%     lookupIndex(matFileInd) = 1205;
-%     fittedGLM = data.fittedGLM;
-    
-%     filterStimulus{matFileInd} = fittedGLM.linearfilters.Stimulus.Filter;
-    obj.postSpikeFilter{matFileInd} = fittedGLM.linearfilters.PostSpike.Filter;
-    obj.couplingFilter{matFileInd} = fittedGLM.linearfilters.Coupling.Filter;
-    obj.tonicDrive{matFileInd} = fittedGLM.linearfilters.TonicDrive.Filter;
-    
-    obj.sRFcenter{matFileInd} = fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.sRFsurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.space_rk1;
-    obj.tCenter{matFileInd} = fittedGLM.linearfilters.Stimulus.time_rk1;
-    obj.tSurround{matFileInd} = 0*fittedGLM.linearfilters.Stimulus.time_rk1;
-    
-    couplingMatrixTemp{matFileInd} = fittedGLM.cellinfo.pairs;
-    
-    % NEED TO CHECK IF X AND Y ARE BEING SWITCHED INCORRECTLY HERE
-    % figure; for i = 1:39; hold on; scatter(rgc2.mosaic{1}.cellLocation{i}(1), rgc2.mosaic{1}.cellLocation{i}(2)); end
-    obj.cellLocation{matFileInd} = [fittedGLM.cellinfo.slave_centercoord.x_coord fittedGLM.cellinfo.slave_centercoord.y_coord];
-    
-%     % figure; imagesc(filterSpatial{matFileInd})
-%     magnitude1STD = max(filterSpatial{matFileInd}(:))*exp(-1);
-%     [cc,h] = contour(filterSpatial{matFileInd},[magnitude1STD magnitude1STD]);% close;
-%     %         ccCell{rfctr} = cc(:,2:end);
-%     cc(:,1) = [NaN; NaN];
-%     spatialContours{matFileInd} = cc;
-end
-
-obj.rfDiameter = size(fittedGLM.linearfilters.Stimulus.Filter,1);
-
-for matFileInd = 1:length(matFileNames)
-    for coupledInd = 1:length(couplingMatrixTemp{matFileInd})
-        coupledCells(coupledInd) = find(couplingMatrixTemp{matFileInd}(coupledInd)== lookupIndex);
-    end
-    obj.couplingMatrix{matFileInd} = coupledCells;    
-    
-end
-
-% obj.couplingMatrix{1} = [17     3    11    34    12     9];
-
-% % g = fittype('a*exp(-0.5*(x^2/Q1 + y^2/Q2)) + b*exp(-0.5*(x^2/Q1 + y^2/Q2))','independent',{'x','y'},'coeff',{'a','b','Q1','Q2'})
-% 
-%     ft = fittype( 'a*exp(-0.5*((x - x0)^2/Q1 + (y - y0)^2/Q2)) + b*exp(-0.5*((x - x0)^2/Q1 + (y - y0)^2/Q2)) + c0','independent',{'x','y'}, 'dependent', 'z', 'coeff',{'a','b','Q1','Q2','x0','y0','c0'});
-%         opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-%     opts.Display = 'Off';
-%     opts.StartPoint = [0.323369521886293 0.976303691832645];
-%     
-%     % Fit a curve between contrast level (x) and probability of correction
-%     % detection.
-%     % bootWeibullFit(stimLevels, nCorrect, nTrials, varargin)
-%     % in computationaleyebrain/simulations/Pixel Visibility/ ...
-%     [xsz,ysz] = size(srf1); 
-%    [xc,yc] = meshgrid(1:xsz,1:ysz);
-%     [fitresult, gof] = fit([xc(:),yc(:)], srf1(:), ft);, opts );
-% 
-% % Loop through mat files and plot contours
-% figure; hold on;
-% for matFileInd = 1:length(matFileNames)
-%     plot(filterCenter{matFileInd}(1) + spatialContours{matFileInd}(1,2:end), filterCenter{matFileInd}(2) + spatialContours{matFileInd}(2,2:end))
-%     
+% switch ieParamFormat(stimulusFit)
+%     case 'wn'        
+%         
+%         switch ieParamFormat(stimulusTest)
+%             case 'wn'
+%                 glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/';
+%             case 'nsem'
+%                 glmFitPath = '/Users/james/Documents/matlab/akheitman/WN_mapPRJ/Test_NSEM/';
+%         end
+%         
+%     otherwise % case 'NSEM'
+%         glmFitPath = '/Users/james/Documents/matlab/akheitman/NSEM_mapPRJ/';
 % end
+
+
+
+% RDT initialization
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc');
+
+switch ieParamFormat(cellType)
+    case 'onparasolrpe'
+        load('/Users/james/Documents/MATLAB/mosaicGLM_RPE_onPar.mat')
+    case 'offparasol'
+%         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
+        data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
+        
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/goodind_2013_08_19_6_OFFParasol.mat')
+                              
+        data2 = rdt.readArtifact('goodind_2013_08_19_6_OFFParasol', 'type', 'mat');
+        goodind = data2.goodind;
+    otherwise % case 'onparasol'
+%         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
+        data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;        
+        
+        data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
+        goodind = data2.goodind;
+end
+
+goodind = 1:length(mosaicGLM);
+
+if cellIndices ~= 0
+    cellIndicesEval = cellIndices;
+else
+    cellIndicesEval = [1:length(goodind)];
+end
+matFileCtr = 0;
+% % % % % % 
+% Loop through mat files and load parameters
+% for matFileInd = 1:length(mosaicGLM)
+for matFileInd = cellIndicesEval%1:length(goodind)
+%     cell = matFileNames(matFileInd).name(1:end-4);
+%     obj.cellID{matFileInd,1} = cell;
+%     load([glmFitPath experimentID '/' cell '.mat']);
+    matFileCtr = matFileCtr+1;
+    obj.cellID{matFileCtr,1} = mosaicGLM{matFileInd}.cell_savename;
+%     obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
+
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'PostSpike')
+        obj.postSpikeFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
+    else
+%         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
+        obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
+    end
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
+
+        obj.couplingFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Coupling.Filter;
+    end
+    
+    
+    
+    switch ieParamFormat(cellType)
+        case 'onparasolrpe'
+            obj.tonicDrive{matFileCtr,1} = 0;
+        otherwise
+            obj.tonicDrive{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
+    end
+    
+    obj.sRFcenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1';
+    obj.sRFsurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+    obj.tCenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
+    obj.tSurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
+    
+    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
+
+        couplingMatrixTemp{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.cellinfo.pairs;
+    end
+    
+  obj.cellLocation{matFileCtr,1} = [mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.x_coord mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.y_coord];
+    
+end
+
+obj.rfDiameter = size(mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.Filter,1);

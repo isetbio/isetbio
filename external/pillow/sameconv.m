@@ -1,4 +1,4 @@
-function G = sameconv(A, B);
+function G = sameconv(A, B)
 %  G = sameconv(A, B);
 %   
 %  Causally filters A with B, giving a column vector with same height as
@@ -13,3 +13,5 @@ nn = am+bm-1;
 
 G = ifft(sum(fft(A,nn).*fft(flipud(B),nn),2));
 G = G(1:am,:);
+
+end

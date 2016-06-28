@@ -42,9 +42,12 @@ p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
 allowableFieldsToSet = {...   
         'name',...
         'input',...
-        'temporalEquivEcc',...       
+        'temporalEquivEcc',... 
+        'timing',...
+        'spacing',...
         'mosaic',...
-        'numberTrials'...
+        'numberTrials',...
+        'recordedSpikes'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('value');
@@ -66,7 +69,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(params.what)
         
     case{'name'}
         obj.name = params.value;
@@ -95,5 +98,21 @@ switch lower(params.what)
             warning('The numberTrials property can only be set for rgcLNP, rgcGLM and rgcPhys models.');
         end
         
+    case{'timing'}
+        obj.timing = params.value;
+    case{'spacing'} 
+        obj.spacing = params.value;
+        
+    case{'recordedspikes'}
+        
+        for cellind = 1:length(params.value)
+            for iTrial = 1:length(params.value{1}.rasters.recorded)
+                recorded_spiketimes{cellind,1,iTrial} = (params.value{cellind}.rasters.recorded{iTrial});
+            end
+        end
+        
+        if isa(obj.mosaic{1},'rgcPhys')
+            obj.mosaic{1} = mosaicSet(obj.mosaic{1},'responseSpikes',recorded_spiketimes);
+        end
 end
 

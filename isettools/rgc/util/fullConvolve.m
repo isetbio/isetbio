@@ -63,21 +63,96 @@ for xcell = 1:nCells(1)
     
             if (sum(temporalIRCenter(:)-temporalIRSurround(:)) == 0) 
                 % if the temporal impulse responses for center and surround are the same, combine before convolution for efficiency                                             
-                fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
                 
+                % This line was used before the fft was implemented
+%                 fullResponseRSCombined = convn(spResponseCenterRS-spResponseSurroundRS, temporalIRCenter','full');
+% %                 fullResponseRSCombined = ifft(fft(spResponseCenterRS-spResponseSurroundRS).*fft(temporalIRCenter'));
+
+%%%% FFT that works
+
+% Needs if statement for one being longer than other
+                if size(spResponseCenterRS,2) > size(temporalIRCenter,1)
+                    spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                    temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                else
+                    spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1),-size(spResponseCenterRS,2)+size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1),-size(spResponseSurroundRS,2)+size(temporalIRCenter,1)])];
+                    % spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                    temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                end
+                fullResponseRSCombined = ifft(fft(spResponseCenterRSp'-spResponseSurroundRSp').*fft(temporalIRCenterp'))';
+                
+                if isa(mosaic,'rgcSubunit');
+                    arbitraryScaleFactor = 73.73;
+                else
+                    arbitraryScaleFactor = 1;
+                end
+                
+                % MAKE ZERO MEAN, maybe get rid of this
+                fullResponseRSCombined = arbitraryScaleFactor*(fullResponseRSCombined - repmat(mean(fullResponseRSCombined,2),1,size(fullResponseRSCombined,2)));
+               
+                
+%                 fullResponseRSCombinedRange = arbitraryScaleFactor*max(fullResponseRSCombined(:) - min(fullResponseRSCombined(:)));
+%                 fullResponseRSCombined = (fullResponseRSCombinedRange/2)*fullResponseRSCombined;
+                
+                % figure; plot(1*fullResponseRSCombined(1328,:),'linewidth',3); hold on; plot(fullResponseRSCenter(1328,:),':r','linewidth',3)
+
                 % Specify starting and ending time coordinates
                 startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCombined(:,startPoint:endPoint);
                                 
             else            
+%                 warning('Not circular conv, see fullConvolve.m');
                 % if the temporal impulse responses for center and surround are different, convolve both               
-                fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
-                fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
+% 
+%                 K  = fittedGLM.linearfilters.Stimulus.Filter;
+%                 
+%                 K  = reshape(K, [ROI_pixels, length(frame_shifts)]);
+                
+%                 KX = zeros(13*13, length(spResponseCenterRS));
+%                 for i_pixel = 1:13*13
+%                     X_frame_shift = prep_timeshift(X_frame(i_pixel,:),0:29);
+%                     tfilt = K(i_pixel,:);
+% %                     KX(i_pixel,:) = tfilt * X_frame_shift;
+%                     KX(i_pixel,:) = tfilt * temporalIRCenter;
+%                 end
+%                 lcif_kx_frame = sum(KX,1);
+% % % % % %  Works with conv                
+%                 fullResponseRSCenter = convn(spResponseCenterRS, temporalIRCenter','full');
+%                 fullResponseRSSurround = convn(spResponseSurroundRS, temporalIRSurround','full');
+                
+%                 spResponseCenterRSp = [spResponseCenterRS];% zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+%                 spResponseSurroundRSp = [spResponseSurroundRS];% zeros([size(spResponseSurroundRS,1) size(temporalIRCenter,1)])];
+                 spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1),-size(spResponseCenterRS,2)+size(temporalIRCenter,1)])];
+                    spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1),-size(spResponseSurroundRS,2)+size(temporalIRCenter,1)])];
+                 
+                temporalIRCenterp = repmat([temporalIRCenter' zeros(1,[-size(temporalIRCenter,1)+size(spResponseCenterRS,2)])],size(spResponseCenterRS,1) ,1);
+                temporalIRSurroundp = repmat([temporalIRSurround' zeros(1,[-size(temporalIRSurround,1)+size(spResponseSurroundRS,2)])],size(spResponseSurroundRS,1) ,1);
+                
+                fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
+                fullResponseRSSurround = ifft(fft(spResponseSurroundRSp').*fft(temporalIRSurroundp'))';
+                
+                
+%                 fullResponseRSCenter = ifft(fft(spResponseCenterRS).*repmat(fft(temporalIRCenter,169),1,1101));
+%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRS).*repmat(fft(temporalIRSurround,169),1,1101));
+                
+% % % % % Works with fft
+%                 spResponseCenterRSp = [spResponseCenterRS zeros([size(spResponseCenterRS,1) size(temporalIRCenter,1)])];
+%                 temporalIRCenterp = repmat([temporalIRCenter' zeros([size(temporalIRCenter,2) size(spResponseCenterRS,2)])],169,1);
+%                 
+%                 fullResponseRSCenter = ifft(fft(spResponseCenterRSp').*fft(temporalIRCenterp'))';
+%                 
+%                 spResponseSurroundRSp = [spResponseSurroundRS zeros([size(spResponseSurroundRS,1) size(temporalIRSurround,1)])];
+%                 temporalIRSurroundp = repmat([temporalIRSurround' zeros([size(temporalIRSurround,2) size(spResponseSurroundRS,2)])],169,1);
+%                 
+%                 fullResponseRSSurround = ifft(fft(spResponseSurroundRSp).*fft(temporalIRSurroundp));
+% % % % % % %                
                 
                 % Specify starting and ending time coordinates
 %                 startPoint = length(temporalIRCenter)-1; endPoint = nSamples+length(temporalIRCenter)-1;
-                startPoint = 1; endPoint = nSamples+length(temporalIRCenter)-1;
+                startPoint = 1; endPoint = nSamples;%+length(temporalIRCenter)-1;
                 % Take difference between center and surround response                
                 fullResponseRSRGB = zeros(spResponseSize(1)*spResponseSize(2),length(startPoint:endPoint));
                 fullResponseRSRGB(:,:,rgbIndex) = fullResponseRSCenter(:,startPoint:endPoint) - fullResponseRSSurround(:,startPoint:endPoint);
@@ -85,15 +160,7 @@ for xcell = 1:nCells(1)
             end            
         end      
                         
-        % Take the mean of the spatial response over (x,y) at a particular
-        % time frame t for each cell
-        if isa(mosaic,'rgcSubunit');
-            % For the subunit model, apply the nonlinearity before taking the mean
-            genFunction = mosaicGet(mosaic, 'generatorFunction');
-            fullResponseRS = sum(genFunction(fullResponseRSRGB),3);            
-            fullResponse{xcell,ycell,1} = mean(fullResponseRS);            
-            nlResponse{xcell,ycell} = (mean(fullResponseRS,1));
-        elseif isa(mosaic,'rgcPhys')
+        if isa(mosaic,'rgcPhys')
             
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
@@ -106,7 +173,11 @@ for xcell = 1:nCells(1)
         else
             % For all other models, apply the nonlinearity after
             fullResponseRS = sum(fullResponseRSRGB,3);                     
-            fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
+            % fullResponse{xcell,ycell,1} = mean(fullResponseRS);       % this is the only difference from the elseif block
+            
+            % Need to normalize by 13x13 RF size in lab physio code
+            % fullResponse{xcell,ycell,1} = (13^2/size(fullResponseRS,1))*sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
+            fullResponse{xcell,ycell,1} = sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};   
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
             if ~isa(mosaic, 'rgcLinear'); 

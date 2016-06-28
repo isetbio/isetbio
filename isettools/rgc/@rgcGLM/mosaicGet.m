@@ -68,6 +68,7 @@ allowableFieldsToSet = {...
     'couplingFilter',...
     'couplingMatrix',...
     'responseSpikes','spikes',...
+    'psthResponse','psth'...
     };
 p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
 
@@ -126,7 +127,25 @@ switch lower(params.what)
         val = obj.couplingMatrix;
     case{'responsespikes','spikes'}
         val = obj.responseSpikes;
-%     case{'responsepsth', 'psth'}
-%         val =
+    case{'responsepsth', 'psth'}
+ 
+        if ~isempty(obj.responsePsth)
+            val = obj.responsePsth;
+        else
+            nCells = size(obj.responseSpikes,1)*size(obj.responseSpikes,2);
+            numberTrials = obj.numberTrials;
+            for ce = 1:nCells
+                convolvewin2D = fspecial('gaussian',100,20);
+                convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
+%                 convolvewin=gausswin(100);
+                clear y
+                for trind = 1:numberTrials
+                    y(trind,obj.responseSpikes{ce,1,trind})=1;
+                end
+                PSTH_rec=conv(sum(y),convolvewin,'same');               
+                psthResponse{ce} = PSTH_rec;
+            end
+            val = psthResponse;
+        end
 end
 

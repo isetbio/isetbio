@@ -23,15 +23,23 @@ function ir = irComputeSpikes(ir, varargin)
 %% Required for Pillow code
 
 % To be eliminated
+
+% fps = 1/125;        % frame rate of 125 fps; usually 121 in lab but 125 for integer steps
+% normalRR = fps;
+% 
+% exptRR = irGet(ir,'timing');
+% exptBinsPerStep = round(normalRR/exptRR);
+
 global RefreshRate
 RefreshRate = 100;    
+% RefreshRate = exptBinsPerStep
 
 
 %% Loop on the mosaics in the inner retina
 for ii = 1:length(ir.mosaic)
     
     switch class(ir.mosaic{ii})
-        case {'rgcGLM','rgcPhys'}
+        case {'rgcGLM','rgcPhys','rgcSubunit'}
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
             clear responseSpikes responseVoltage
@@ -58,58 +66,10 @@ for ii = 1:length(ir.mosaic)
             % Set mosaic property
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
-        case {'rgcSubunit'}  
-            % This is the computation based on Meister's paper:
-            %
-            % Eye Smarter than Scientists Believed: Neural Computations in Circuits of the Retina
-            % Gollisch, Meister
-            %  <http://www.sciencedirect.com/science/article/pii/S0896627309009994>
-            % Meister lab:
-            %  <https://sites.google.com/site/markusmeisterlab/home/research>
-            % Baccus et al.
-            %  A Retinal Circuit That Computes Object Motion
-            %  <http://www.jneurosci.org/content/28/27/6807.full> 
-            %
-            % See also:
-            % Pitkow and Meister
-            % <https://drive.google.com/file/d/0B58h-HpFYJeKVlJUTllwZFBXWTA/edit>
-            %
-            % These subunit modules are little building blocks. We want to
-            % separate ourselves from the complexity of the GLM model, but
-            % reuse the appropriate to save coding time when possible.
-            
-            % Where we stand
-            % Wrappers for adapting isetbio mosaic properties to Pillow code
-            % Let's change the name of this function.
-            % Maybe setMosaicInput
-            
-            % Reformat the linear response so we can invoke the Pillow
-            % function simGLMcpl
-            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
-            
-            % Set the post spike filter to enforce the refractory period.
-            glmprs = setPSFprs(ir.mosaic{ii});
-            
-            % No post spike filter - break into different subclass?
-            % glmprs = setLNPprs(ir.mosaic{ii});
-            
-            % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
-            cellCtr = 0;
-            
-            nCells = size(ir.mosaic{ii}.responseLinear);
-            for xc = 1:nCells(1)
-                for yc = 1:nCells(2)
-                    cellCtr = cellCtr+1;
-                    responseSpikes{yc,xc}  = responseSpikesVec{1,cellCtr};
-                    responseVoltage{yc,xc} = Vmem(:,cellCtr);
-                end
-            end
-            
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);            
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
             
         case {'rgcLNP'}
+            
+            clear responseSpikes responseVoltage
             % This is a place holder for linear, nonlinear, poisson spiking
             % model.  The reference and computations will be explained
             % mainly here.
@@ -117,14 +77,22 @@ for ii = 1:length(ir.mosaic)
             
             % Set the post spike filter to enforce the refractory period.
             glmprs = setPSFprs(ir.mosaic{ii});
-            
+%             glmprs.ih=[]; glmprs.iht=[];
             % No post spike filter - break into different subclass?
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            if strcmp((ir.name),'Macaque inner retina pixium 1')
+                
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            else
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            end
             cellCtr = 0;
             
+            nCells = size(ir.mosaic{ii}.responseLinear);
+            responseSpikes = cell(nCells(2),nCells(1));
+            responseVoltage = cell(nCells(2),nCells(1));
             nCells = size(ir.mosaic{ii}.responseLinear);
             for xc = 1:nCells(1)
                 for yc = 1:nCells(2)

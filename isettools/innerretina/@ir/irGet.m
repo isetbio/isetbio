@@ -43,6 +43,8 @@ allowableFieldsToSet = {...
         'input',...
         'temporalEquivEcc',...       
         'mosaic',...
+        'timing',...
+        'spacing',...
         'featureVector'...
 %         'linearResponse'...
     };
@@ -65,7 +67,7 @@ p.parse(varargin{:}); params = p.Results;
 % if ~exist('val','var'),   error('Value field required.'); end;
 
 % Set key-value pairs.
-switch lower(params.what)    
+switch ieParamFormat(params.what)    
     case{'name'}
         val = obj.name;
     case{'input'}
@@ -73,7 +75,11 @@ switch lower(params.what)
     case{'temporalequivecc'}        
         val = obj.temporalEquivEcc;
     case{'mosaic'}        
-        val = obj.mosaic;                
+        val = obj.mosaic;    
+    case{'timing'}
+        val = obj.timing;
+    case{'spacing'}
+        val = obj.spacing;
     case{'featurevector'}
         val = [];
         cellTypes = length(obj.mosaic);
