@@ -39,7 +39,7 @@
 %
 % @details
 % Returns a sensor image representation of the given @a multispectralData,
-% with size [height width nMatchingSpecralSamples].
+% with size [height width nSensorChannels].
 %
 % @details
 % Usage:

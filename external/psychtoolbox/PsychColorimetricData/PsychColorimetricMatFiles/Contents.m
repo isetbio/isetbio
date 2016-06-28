@@ -88,8 +88,8 @@
 %   T_CIE_Y10           - CIE physiologically relevant 10-degree luminosity function.  See CVRL database.
 %   T_cones_smj         - Stockman-MacLeod-Johnson cone fundamentals.  See CVRL database.
 %   T_cones_smj10       - Stockman-MacLeod-Johnson 10-degree cone fundamentals.  See CVRL database.
-%   T_cones_ss2         - Stockman-Sharpe (2000) 2-degree cone fundamentals.  See CVRL database.
-%   T_cones_ss10        - Stockman-Sharpe (2000) 10-degree cone fundamentals.  See CVRL database.
+%   T_cones_ss2         - Stockman-Sharpe (2000) 2-degree cone fundamentals.  Also the CIE 2006 fundamentals. See CVRL database.
+%   T_cones_ss10        - Stockman-Sharpe (2000) 10-degree cone fundamentals.  Also the CIE 2006 fundamentals. See CVRL database.
 %   T_cones_sp          - Smith-Pokorny cone fundamentals.  Specified between 380 and 780 nm, but non-zero only between 400 and 700 nm.
 %                       -   This is probably because these were typed in by hand long ago from a table that only had data between 400 and 700 nm
 %                       -   and then zero extended to match the wavelength sampling of other data files.
