@@ -47,13 +47,15 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % in the sensor, and will not be an issue when the sensor
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
+pRate = sensorGet(sensor, 'photon rate');
+coneType = sensorGet(sensor, 'cone type');
 
 % Create outersegment object and get the adapted response.
 noiseFlag = 0;
 adaptedOS = osBioPhys();
 adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osCompute(adaptedOS, sensor);
-osAdaptedCur = osGet(adaptedOS,'coneCurrentSignal');
+adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
 
 % Make a plot of what happened using osPlot.
 if (runTimeParams.generatePlots)   
@@ -71,7 +73,6 @@ if (runTimeParams.generatePlots)
 end
 
 % Save validation data
-tolerance = 0;
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS paramsOS
 
@@ -100,7 +101,7 @@ end
 
 % Go through series of step intensities (slow).
 clear SSCur stimIntensity FlashAmp
-FlashScFact = 1;                     % scaling of flash to compensate adaptation
+FlashScFact = 1;  % scaling of flash to compensate adaptation
 nStepIntensities = 11;
 for step = 1:nStepIntensities
     
@@ -120,12 +121,15 @@ for step = 1:nStepIntensities
     % in the sensor, and will not be an issue when the sensor
     % is the result of a sensorCompute command on a scene and oi.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
+    pRate = sensorGet(sensor, 'photon rate');
+    coneType = sensorGet(sensor, 'cone type');
     
     % Compute using outersegment object osBioPhys.
     noiseFlag = 0;
     adaptedOSStepOnly = osBioPhys();
-    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);   
-    adaptedOSStepOnly = osCompute(adaptedOSStepOnly, sensor);
+    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);
+    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'timeStep', timeStep);
+    osCompute(adaptedOSStepOnly, pRate, coneType);
     
     % Create stimulus: step + flashes.
     stimulus = zeros(nSamples, 1);
@@ -136,13 +140,15 @@ for step = 1:nStepIntensities
     
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
+    pRate = sensorGet(sensor, 'photon rate');
+    coneType = sensorGet(sensor, 'cone type');
     
     % Create outersegment object.
     noiseFlag = 0;
-    paramsOS.bgVolts = 0;
     adaptedOS = osBioPhys();
     adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-    adaptedOS = adaptedOS.compute(sensor, paramsOS);
+    adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+    adaptedOS.compute(pRate, coneType, 'bgR', 0);
     
     % Plot.
     if (runTimeParams.generatePlots)
@@ -156,13 +162,6 @@ for step = 1:nStepIntensities
         plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:), 'r', 'lineWidth', 2);
       
     end
-    
-    % Summary measures.    
-    %tempVar = adaptedCur(:) - adaptedCurStepOnly(:);
-    %flashAmp(step) = max(tempVar(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempVar(flashTime(1):flashTime(1)+1000)));
-    %ssCur(step) = -(adaptedCurStepOnly(1, 1, stimPeriod(2)) - adaptedCurStepOnly(1, 1, 1))/adaptedCurStepOnly(1, 1, 1);
-    %[maxVal, maxLoc] = max(tempVar(flashTime(2):flashTime(2)+1000));
-    %tPeak(step) = maxLoc*timeStep;
     
     tempOS = adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:);
     flashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
@@ -256,7 +255,6 @@ end
 fprintf(1, 'half max step amp = %d\nhalf desensitizing background = %d\nstep time constants = %d and %d\n', fitcoefOS(1), wfcoefOS(1), stepcoefOS(2), stepcoefOS(4));
 fprintf(1, 'targets: half max step amp = 45000 R*/cone/sec\n\thalf desensitizing background = 2500 R*/cone/sec \n\tstep time constants = 1 and 12 sec\n');
 
-tolerance = 1e-16;
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 
@@ -266,7 +264,7 @@ clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 % client = RdtClient(getpref('isetbio','remoteDataToolboxConfig'));
 client = RdtClient('isetbio');
 client.crp('resources/data/cones');
-[eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact('eyeMovementExample', 'type', 'mat');
+[eyeMovementExample, ~] = client.readArtifact('eyeMovementExample', 'type', 'mat');
 
 % Get mean subtracted current and stimulus from read data
 measuredCur = eyeMovementExample.data.Mean;
@@ -274,8 +272,6 @@ measuredCur = measuredCur - measuredCur(1,end);
 stimulus = eyeMovementExample.data.Stim;
 nSamples = length(stimulus);
 stimulus = reshape(stimulus, [1 1 nSamples]);
-
-% Compute adapted current using DEQ model.
 
 % Create human sensor.
 sensor = sensorCreate('human');
@@ -287,13 +283,15 @@ sensor = sensorSet(sensor, 'time interval', 5e-5);
 % in the sensor, and will not be an issue when the sensor
 % is the result of a sensorCompute command on a scene and oi.
 sensor = sensorSet(sensor, 'photon rate', stimulus);
+pRate = sensorGet(sensor, 'photon rate');
+coneType = sensorGet(sensor, 'cone type');
 
 % Create outersegment object.
 noiseFlag = 0;
 adaptedOS = osBioPhys();
 adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osCompute(adaptedOS, sensor);
-osAdaptedCur = osGet(adaptedOS, 'coneCurrentSignal');
+adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
 
 % Plot the two calculations and compare against measured data.
 if (runTimeParams.generatePlots)
@@ -309,7 +307,6 @@ if (runTimeParams.generatePlots)
 end
 
 % Save validation data
-tolerance = 0;
 UnitTest.validationData('osAdaptedCur',osAdaptedCur);
 clear adaptedOS paramsOS
 
@@ -348,13 +345,15 @@ for step = 1:stepLevels
     % in the sensor, and will not be an issue when the sensor
     % is the result of a sensorCompute command on a scene and oi.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
+    pRate = sensorGet(sensor, 'photon rate');
+    coneType = sensorGet(sensor, 'cone type');
     
     % Create outersegment object and compute with it.
     noiseFlag = 0;
     adaptedOSInc = osBioPhys();
-    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);    
-    adaptedOSInc = osCompute(adaptedOSInc, sensor);    
-    osAdaptedCur = osGet(adaptedOSInc, 'coneCurrentSignal');
+    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
+    adaptedOSInc = osSet(adaptedOSInc, 'timeStep', timeStep);
+    osCompute(adaptedOSInc, pRate, coneType);
      
     %  create stimulus: step + flashes
     stimulusDec = zeros(nSamples, 1);
@@ -368,8 +367,8 @@ for step = 1:stepLevels
     % And with outersegment object.
     noiseFlag = 0;
     adaptedOSDec = osBioPhys('noiseFlag', noiseFlag);
-    paramsOSDec.bgVolts = 0;
-    adaptedOSDec = adaptedOSDec.compute(sensor, paramsOSDec);
+    adaptedOSDec = osSet(adaptedOSDec, 'timeStep', timeStep);
+    adaptedOSDec.compute(pRate, coneType, 'bgR', 0);
     
     maxOSInc(step) = adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(1)-1);
     maxOSDec(step) = adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(1)-1);
@@ -398,7 +397,6 @@ if (runTimeParams.generatePlots)
 end
 
 % Tuck data away.
-tolerance = 1e-12;
 UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.coneCurrentSignal);
 UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.coneCurrentSignal);
 

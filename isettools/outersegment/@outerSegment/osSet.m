@@ -18,17 +18,13 @@ if ~exist('value','var'), error('Value required'); end
 
 %%
 switch ieParamFormat(param)
-    
     case{'noiseflag'}
-        obj.noiseFlag = value;               
-               
+        obj.noiseFlag = value;
     case{'timestep'}
         obj.timeStep = value;
-        
     case{'patchsize'}
         % Spatial sample spacing
         obj.patchSize = value;
-        
     case{'conecurrentsignal'}
         obj.coneCurrentSignal = value; 
 end

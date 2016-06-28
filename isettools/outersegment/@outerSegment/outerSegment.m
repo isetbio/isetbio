@@ -61,9 +61,9 @@ classdef outerSegment < handle
     % it cannot instantiate objects.
     methods (Abstract, Access=public)
         % see osLinearCompute, osBioPhysCompute
-        compute(obj, sensor, param, varargin);
+        compute(obj, pRate, coneType, varargin);
         % see osLinearPlot, osBioPhysPlot
-        plot(obj, sensor);
+        plot(obj, plotType);
     end
     
     % Methods may be called by the subclasses, but are otherwise private 

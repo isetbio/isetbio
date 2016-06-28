@@ -1,67 +1,50 @@
-function obj = osCompute(obj, sensor, varargin)
-% osCompute: a method of @osBioPhys that computes the output
-% response of the L, M and S cone outer segments. This converts
-% isomerizations (R*) to outer segment current (pA). The difference
-% equation model by Rieke is applied here.
-% If the noiseFlag  property of the osLinear object is set to 1, this
-% method will add noise to the current output signal.
+function current = osCompute(obj, pRate, coneType, varargin)
+% Compute the output response of the L, M and S cone outer segments
 %
-% http://isetbio.github.io/isetbio/cones/adaptation%20model%20-%20rieke.pdf
-% and
-% https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
+%   current = osCompute(obj, pRate, coneType, varargin)
+% 
+% This converts isomerizations (R*) to outer segment current (pA). The
+% difference equation model by Rieke is applied here. If the noiseFlag
+% property of the osLinear object is set to 1, this method will add noise
+% to the current output signal.
 %
-% Inputs: the osBioPhys object, the sensor object and an optional parameters
-% field. params.offest determines the current offset.
+% Inputs: 
+%   obj      - the osBioPhys object
+%   pRate    - photon absorption rate in R*/sec
+%   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
+% 
+% Optional paramters (key-value pairs)
+%   'bgR'    - background (initial state) cone isomerization rate
 %
-% Outputs: the osBioPhys object, with the cone outer segment current and
-% optionally a noisy version of the cone outer segment current.
+% Outputs:
+%   current  - outer segment current in pA
 %
-% adaptedOS = osCompute(adaptedOS, sensor);
+% Reference:
+%   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
+%   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 %
-% 8/2015 JRG NC DHB
+% JRG/HJ/BW, ISETBIO TEAM, 2016
 
+% parse inputs
+p = inputParser; p.KeepUnmatched = true;
+p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
+p.addRequired('pRate', @isnumeric);
+p.addRequired('coneType', @ismatrix);
+p.addParameter('bgR', 0, @isscalar);
 
-obj.patchSize = sensorGet(sensor,'width','um'); % Cone width
+p.parse(obj, pRate, coneType, varargin{:});
+bgR = p.Results.bgR;
 
-obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+% init parameters
+p  = osInit;  % default parameters for biophysics model
 
-p = osInit;
-expTime = sensorGet(sensor,'exposure time');
-sz = sensorGet(sensor,'size');
+initialState = osAdaptSteadyState(bgR, p, [size(pRate, 1) size(pRate, 2)]);
+initialState.timeInterval = obj.timeStep;
 
-% absRate = sensorGet(sensor,'absorptions per second');
-pRate = sensorGet(sensor, 'photon rate');
-nSteps = size(pRate, 3);
-% Compute background adaptation parameters
+current  = osAdaptTemporal(pRate, initialState);
 
-if size(varargin) ~= 0
-    if isfield(varargin{1,1},'bgVolts')
-        bgVolts = varargin{1,1}.bgVolts; % need to make this an input parameter!
-    else
-        bgVolts = 0;
-    end
-else
-    bgVolts = 0;
+% add noise
+if obj.noiseFlag, current = osAddNoise(current); end
+obj.osSet('coneCurrentSignal', current);
+
 end
-bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
-
-
-initialState = osAdaptSteadyState(bgR, p, sz);
-
-initialState.timeInterval = sensorGet(sensor, 'time interval');
-
-% obj.coneCurrentSignal  = osAdaptTemporal(pRate, initialState);
-coneCurrentSignal  = osAdaptTemporal(pRate, initialState);
-
-obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignal);
-
-if osGet(obj,'noiseFlag') == 1
-    % obj.coneCurrentSignalPlusNoise = osAddNoise(obj.coneCurrentSignal);
-    coneCurrentSignalPlusNoise = osAddNoise(coneCurrentSignal);
-    % obj.coneCurrentSignalPlusNoise = osAddNoise(obj.coneCurrentSignal, paramsNoise);
-    
-    obj = osSet(obj, 'coneCurrentSignal', coneCurrentSignalPlusNoise);
-    
-end
-end
-

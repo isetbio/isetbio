@@ -1,7 +1,7 @@
 function current = osCompute(obj, pRate, coneType, varargin)
 % Compute the linear filter response of the outer segments. 
 %
-%    obj = osCompute(obj, sensor, varargin)
+%    current = osCompute(obj, pRate, coneType, varargin)
 %
 % This converts isomerizations (R*) to outer segment current (pA). If the
 % noiseFlag is set to true, this method adds noise to the current output

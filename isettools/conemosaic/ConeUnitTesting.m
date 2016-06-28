@@ -16,7 +16,7 @@ vcAddObject(oi); oiWindow;
 % vcAddObject(oi); oiWindow;
 
 %% Create cone mosaic
-cMosaic = coneMosaic;
+cMosaic = coneMosaic('os', osBioPhys);
 
 %% Comparing with sensor calculation
 sensor = sensorCreate;

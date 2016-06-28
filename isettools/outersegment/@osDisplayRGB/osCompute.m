@@ -1,4 +1,4 @@
-function obj = osCompute(obj, sceneRGB)
+function obj = osCompute(obj, sceneRGB, varargin)
 % osCompute: this method of @osDisplayRGB passes on the cone isomerizations
 % (R*) without any temporal filtering. This subclass is intended to be used
 % for stimulus-referred retinal ganglion cell models.
@@ -15,7 +15,5 @@ function obj = osCompute(obj, sceneRGB)
 
 obj = osSet(obj, 'rgbData', sceneRGB);
 
-% obj.coneSpacing = sensorGet(sensor,'dimension','um'); % Cone width
-% 
-% obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+end
 

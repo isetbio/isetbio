@@ -10,24 +10,12 @@ classdef osIdentity < outerSegment
 %
 % 7/2015 JRG
 
-    % Public properties.
-    properties (SetAccess = public, GetAccess = public)
-
-    end
-    
-
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
         photonRate
     end
     
-    % Private properties. Only methods of the parent class can set these
-    properties(Access = private)
-    end
-    
-    % Public methods
-    methods
-        
+    methods    
         % Constructor
         function obj = osIdentity(varargin)
             % Initialize the parent class

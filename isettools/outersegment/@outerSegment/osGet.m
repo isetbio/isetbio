@@ -13,29 +13,22 @@ function val = osGet(obj, param)
 if ~exist('param','var'), error('Parameter required'); end
 
 switch ieParamFormat(param);  % Lower case and remove spaces
-
     case {'noiseflag'}
         % The turn on or off the cone noise
-        val = obj.noiseFlag;
-        
+        val = obj.noiseFlag;    
     case{'patchsize'}
         % Diameter of the cone mosaic patch
         val = obj.patchSize;
-        
     case{'timestep'}
         % Temporal step size
         val = obj.timeStep;
-        
     case{'conecurrentsignal'}
         % Time varying current
         val = obj.coneCurrentSignal;
-       
     case {'arraysize'}
         % Spatial samples
         sz = size(obj.coneCurrentSignal);
         val = sz(1:2);
     otherwise
-        error('Unknown parameter %s\n',param);
-       
+        error('Unknown parameter %s\n',param);    
 end
-
