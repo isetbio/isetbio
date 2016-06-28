@@ -80,6 +80,12 @@ classdef Macular < hiddenHandle
             end
         end
         
+        function str = description(obj, varargin)
+            % generate description string for this object
+            str = sprintf('Macular pigment properties\n');
+            str = [str sprintf('\tpigment density: %.2f\n', obj.density)];
+        end
+        
         % get methods for dependent variables
         function val = get.unitDensity(obj)
             % interpolate for wavelength samples

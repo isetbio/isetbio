@@ -108,6 +108,50 @@ classdef coneMosaic < hiddenHandle
             addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
         end
         
+        function str = description(obj, varargin)
+            % generate description string for coneMosaic object
+            %
+            % Input:
+            %   obj - coneMosaic class object
+            %
+            % Optional parameters (key-value pairs)
+            %   'skipPigment'  - whether to include pigment description
+            %   'skipMacular'  - whether to include macular description
+            %
+            % Output:
+            %   str - description string for coneMosaic object
+            %
+            
+            % parse input
+            p = inputParser;
+            p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+            p.addParameter('skipPigment', false, @islogical);
+            p.addParameter('skipMacular', false, @islogical);
+            p.parse(obj, varargin{:});
+            
+            % cone mosaic properties
+            str = sprintf('Cone mosiac properties\n');
+            str = [str sprintf('\tWidth:%.2f mm\t Height:%.2f mm\n', ...
+                obj.width * 1e3, obj.height * 1e3)];
+            str = [str sprintf('\tFOV (h, v): [%.2f, %.2f] deg\n', ...
+                obj.fov(1), obj.fov(2))];
+            str = [str sprintf('\tSample time step: %.1f\n', ...
+                1e3*obj.sampleTime)];
+            str = [str sprintf('\tNoise flag: %d\n', obj.noiseFlag)];
+            str = [str sprintf('\tOutersegment model: %s\n', ...
+                class(obj.os))];
+            
+            % cone pigment properties
+            if ~p.Results.skipPigment
+                str = [str obj.pigment.description];
+            end
+            
+            % macular pigment properties
+            if ~p.Results.skipMacular
+                str = [str obj.macular.description];
+            end
+        end
+        
         % set size to fov
         function obj = setSizeToFOV(obj, fov, varargin)
             % set cone mosaic size according to the field of view
