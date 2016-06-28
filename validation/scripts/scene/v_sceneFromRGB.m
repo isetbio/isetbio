@@ -97,7 +97,17 @@ function ValidationFunction(runTimeParams)%% s_sceneFromRGB
     if (runTimeParams.generatePlots)   
         vcAddAndSelectObject(scene); sceneWindow;
     end
-    UnitTest.validationData('bb', bb);
-    UnitTest.validationData('scene1', scene);
+    
+    % * OLD * UnitTest.validationData('bb', bb);
+    % * OLD * UnitTest.validationData('scene1', scene);
+    
+    UnitTest.validationData('bb', bb, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'bb', 10e-6);
+    
+    UnitTest.validationData('scene1', scene, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+          'scene1.data.meanL', 10e-7, ...
+        'scene1.data.photons', 2e+10);
 
 end
