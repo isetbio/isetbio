@@ -42,7 +42,7 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
         obj.timeStep = params.value;
         
     case{'photonrate'}
-        obj.rgbData = params.value;
+        obj.photonRate = params.value;
                
 
 end
