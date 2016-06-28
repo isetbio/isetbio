@@ -49,7 +49,10 @@ oi = p.Results.oi;
 uData = [];
 
 % plot
-if isempty(hf), hf = vcNewGraphWin;  elseif ishandle(hf), figure(hf); end
+if isempty(hf), hf = vcNewGraphWin;  
+elseif isgraphics(hf, 'figure'), figure(hf); 
+elseif isgraphics(hf, 'axes'), axes(hf);
+end
 
 % set color order
 if ~isequal(hf, 'none')

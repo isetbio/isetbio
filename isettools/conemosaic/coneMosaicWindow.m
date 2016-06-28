@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 26-Jun-2016 21:48:53
+% Last Modified by GUIDE v2.5 28-Jun-2016 14:10:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,147 +46,44 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
-
+end
 
 % --- Executes just before coneMosaicWindow is made visible.
 function coneMosaicWindow_OpeningFcn(hObject, eventdata, handles, varargin)
+% check inputs
+if isempty(varargin) || ~isa(varargin{1}, 'coneMosaic')
+    error('cone mosaic object required');
+end
 
 % Choose default command line output for coneMosaicWindow
 handles.output = hObject;
+handles.cMosaic = varargin{1};
 
 % Update handles structure
 guidata(hObject, handles);
+handles.cMosaic.window = hObject;
 
-figure(hObject); 
-
-vcSetFigureHandles('ISA',hObject,eventdata,handles);
-
-val = vcGetSelectedObject('ISA');
-if isempty(val)
-    sensor = sensorCreate('default');
-    vcReplaceAndSelectObject(sensor,1);
-end
-
+figure(hObject);
 ieFontInit(hObject);
 
-sensorRefresh(hObject, eventdata, handles); 
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --- Outputs from this function are returned to the command line.
-function varargout = coneMosaicWindow_OutputFcn(hObject, eventdata, handles)
-
-% Get default command line output from handles structure
+function varargout = coneMosaicWindow_OutputFcn(~, ~, handles)
 varargout{1} = handles.output;
-
-return;
-
-% --- Executes on button press in btnCustomCompute.
-% function btnCustomCompute_Callback(hObject, eventdata, handles)
-% % The setting of this button is used to determine (a) the sensorCompute
-% % routine, and (b) whether the popup for choosing the sensorCompute
-% % routines is present.  The actions are taken during the standard refresh
-% % operation, which is called here.
-% sensor = vcGetObject('sensor');
-% sensor = sensorClearData(sensor);
-% vcReplaceObject(sensor);
-% sensorRefresh(hObject, eventdata, handles);
-% 
-% % Hint: get(hObject,'Value') returns toggle state of btnCustomCompute
-% return
-
-% --- Executes during object creation, after setting all properties.
-function popCustomCompute_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
-
-% --- Executes on selection change in popCustomCompute.
-function popCustomCompute_Callback(hObject, eventdata, handles)
-% Handle the list of custom routines chosen for sensorCompute.
-% Add Custom, Delete Custom, ---
-% We add and delete routines from the vcSESSION.CUSTOM.sensorCompute list.
-
-contents = get(handles.popCustomCompute,'String'); 
-method = contents{get(handles.popCustomCompute,'Value')};
-
-[val,isa] = vcGetSelectedObject('ISA');
-
-isa = sensorSet(isa,'sensorComputeMethod',method);
-
-isa = sensorSet(isa,'consistency',0);
-vcReplaceObject(isa,val);
-
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function popISA_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-% Make sure the right name is in the cfa name popup
-[val,isa] = vcGetSelectedObject('ISA');
-set(hObject,'String',sensorCFANameList);
-
-return;
-
-% --- Executes on selection change in popISA.
-function popISA_Callback(hObject, eventdata, handles)
-% Create sensor with one of a set of standard CFA types
-% Called by popup at right that defines the color filter array types.
-%
-% When this change is made, the current data are
-% emptied and the colorOrder, pattern, and unitBlock fields are changed.
-
-% Get the current image sensor array.
-[val,sensor] = vcGetSelectedObject('ISA');
-
-% Read the named CFA choice
-sensorArrayNames = get(hObject,'String');
-thisArrayName = sensorArrayNames{get(hObject,'Value')};
-
-% Depending on the choice, create a default ISA array so you can have the
-% proper fields for copying into the current array.
-switch lower(thisArrayName)
-    case {'bayer-grbg', 'bayer-rggb','bayer-bggr','bayer-gbrg','monochrome','bayer-ycmy','four color'}
-        newSensor = sensorCreate(thisArrayName);
-    otherwise
-        warning('Unknown sensor array type.  Creating default bayer-grbg');
-        newSensor = sensorCreate('default');
-end
-
-% Copy the newSensor fields into the currently selected sensor
-sensor = sensorSet(sensor,'name',newSensor.name);
-sensor = sensorSet(sensor,'color',newSensor.color);
-sensor = sensorSet(sensor,'colorfilterarray',newSensor.cfa);
-
-% Empty the data field.
-sensor = sensorClearData(sensor);
-vcReplaceObject(sensor,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
 
 % --- Executes on button press in btnComputeImage.
 function btnComputeImage_Callback(hObject, eventdata, handles)
 % Button press computes the image from the optics data
-%
-
-[valOI,OI] = vcGetSelectedObject('OI');
-if isempty(oiGet(OI,'photons'))
-    ieInWindowMessage('No optical image photon data.',handles); 
-    return; 
+[~, OI] = vcGetSelectedObject('OI');
+if isempty(oiGet(OI, 'photons'))
+    ieInWindowMessage('No optical image photon data.',handles);
+    return
 else
-    ieInWindowMessage([],handles); 
+    ieInWindowMessage([],handles);
 end
 [val,ISA] = vcGetSelectedObject('ISA');
 
@@ -196,369 +93,91 @@ ISA = sensorCompute(ISA,OI);
 % For the moment, data and ISA are consistent.
 ISA = sensorSet(ISA,'consistency',1);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnComputeFromOI_Callback(hObject, eventdata, handles)
 btnComputeImage_Callback(hObject, eventdata, handles);
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnComputeFromScene_Callback(hObject, eventdata, handles)
 
 % Recompute the sensor data starting all the way back with the current
 % scene and optical image.
-[val,scene] = vcGetSelectedObject('scene');
+[~, scene] = vcGetSelectedObject('scene');
 if isempty(scene)
-    warndlg('Creating default scene'); 
-    scene = sceneCreate; val = 1; 
+    warndlg('Creating default scene');
+    scene = sceneCreate; val = 1;
     vcReplaceAndSelectObject(scene,val);
 end
 
 [val,oi] = vcGetSelectedObject('oi');
-if isempty(oi), 
-    warndlg('Creating default OI'); 
-    oi = oiCreate; val = 1; 
+if isempty(oi),
+    warndlg('Creating default OI');
+    oi = oiCreate; val = 1;
 end
 oi = oiCompute(scene,oi);
 vcReplaceAndSelectObject(oi,val);
 
 btnComputeImage_Callback(hObject, eventdata, handles);
 
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editReadNoise_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
 
-return;
-
-function editReadNoise_Callback(hObject, eventdata, handles)
-
-[val,ISA] = vcGetSelectedObject('ISA');
-pixel = sensorGet(ISA,'pixel');
-
-rn = str2double(get(hObject,'String'));   % Display is mV, stored in Volts.
-pixel = pixelSet(pixel,'readnoisemillivolts',rn);
-ISA = sensorSet(ISA,'pixel',pixel); 
-
-vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editDarkCurrent_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+% Edit box - adjust number of rows
+function editRows_Callback(hObject, eventdata, handles)
+handles.cMosaic.rows = str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-return;
-
-
-function editDarkCurrent_Callback(hObject, eventdata, handles)
-%
-%  The name of this routine should be changed.  We used to specify dark
-%  current, but now we specify dark voltage
-%  This should be editDarkVoltage_Callback().
-%
-% We specify dark voltage (no longer current) in mV/pixel/sec.
-% The parameters darkcurrent, darkcurrentdensity are now derived from this
-% and other sensor properties.
-
-[val,ISA] = vcGetSelectedObject('ISA');
-pixel = sensorGet(ISA,'pixel');
-
-% Value entered is in millivolts.  Value stored is in Volts.
-dk = str2double(get(hObject,'String'))*10^-3;
-pixel =  pixelSet(pixel,'darkvoltage',dk);
-
-ISA = sensorSet(ISA,'pixel',pixel);
-vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editISARows_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-return;
-
-%------------------------------------------------
-function editISARows_Callback(hObject, eventdata, handles)
-% Edit number of sensor rows
-[val,sensor] = vcGetSelectedObject('sensor');
-
-targetSize = str2double(get(hObject,'String'));
-sensor = sensorSet(sensor,'rows',targetSize); 
-str = sprintf('%.0f',sensorGet(sensor,'rows')); 
-set(gcbo,'string',str);
-
-% 
-% unitBlockRows = sensorGet(sensor,'unitblockrows');
-% targetSize = str2double(get(hObject,'String'));
-% sensor.rows = round(targetSize/unitBlockRows)*unitBlockRows;
-
-str = sprintf('%.0f',sensorGet(sensor,'rows')); 
-set(gcbo,'string',str);
-
-sensor = sensorClearData(sensor);
-vcReplaceObject(sensor,val);
-
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editISAcols_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-return;
-
-% -------------------------------------------------------
-function editISAcols_Callback(hObject, eventdata, handles)
 % Edit box - adjust number of columns
-[val,sensor] = vcGetSelectedObject('ISA');
+function editcols_Callback(hObject, eventdata, handles)
+handles.cMosaic.cols = str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
-targetSize = str2double(get(hObject,'String'));
-sensor = sensorSet(sensor,'cols',targetSize); 
-str = sprintf('%.0f',sensorGet(sensor,'cols')); 
-set(gcbo,'string',str);
+% Edit box - adjust integration time
+function editExpTime_Callback(hObject, eventdata, handles)
+handles.cMosaic.integrationTime = 1e-3*str2double(get(hObject, 'String'));
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
-sensor = sensorClearData(sensor);
-vcReplaceObject(sensor,val);
-sensorRefresh(hObject, eventdata, handles);
-return;
-
-
-% --- Executes during object creation, after setting all properties.
-function popScaleSize_CreateFcn(hObject, eventdata, handles)
+% GUI object create functions
+function editRows_CreateFcn(hObject, eventdata, handles)
 if ispc
     set(hObject,'BackgroundColor','white');
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
-
-% --- Executes on selection change in popScaleSize.
-function popScaleSize_Callback(hObject, eventdata, handles)
-
-contents = get(hObject,'String');
-factor   = contents{get(hObject,'Value')};
-
-switch lower(factor)
-    case 'x'
-        return;
-    case 'x 2'
-        s = 2;
-    case 'x 4'
-        s = 4;
-    case 'x 1/2'
-        s = 1/2;
-    case 'x 1/4'
-        s = 1/4;
-    otherwise
 end
 
-% Get the current image sensor array
-[val,sensor] = vcGetSelectedObject('ISA');
-
-% Define target size to be consistent with desired scale and CFA
-cfaSize = sensorGet(sensor,'cfaSize');
-targetSize = ceil(s*sensorGet(sensor,'size') ./ cfaSize).* cfaSize;
-
-% If for some reason ceil(sz/cfaSize) is zero, we set size to one pixel
-% cfa.
-if targetSize(1) == 0, targetSize = cfaSize; end
-
-% Set size
-% Data are cleared
-sensor = sensorSet(sensor,'size',targetSize); 
-
-vcReplaceObject(sensor,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-
-% --- Executes during object creation, after setting all properties.
-function editConvGain_CreateFcn(hObject, eventdata, handles)
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+function editCols_CreateFcn(hObject, eventdata, handles)
 if ispc
     set(hObject,'BackgroundColor','white');
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
+end
 
-return;
-
-
-function editConvGain_Callback(hObject, eventdata, handles)
-
-[val,ISA] = vcGetSelectedObject('ISA');
-
-% Interface is in microvolts per electron, typical value is 10-100 uV/e-
-% We store the value in standard units:  V/e- 
-ISA.pixel.conversionGain = str2double(get(hObject,'String'))*10^(-6);
-vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-return;
-
-
-% --- Executes during object creation, after setting all properties.
 function editExpTime_CreateFcn(hObject, eventdata, handles)
 if ispc
     set(hObject,'BackgroundColor','white');
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
-
-%----------------------------------------------------------------
-function editExpTime_Callback(hObject, eventdata, handles)
-%
-[val,sensor] = vcGetSelectedObject('sensor');
-
-% Interface is in several possible time units
-% We read in the those units, but we always store in seconds.
-str = get(handles.txtExposureUnits,'string');
-switch str
-    case '(sec)'
-        sFactor = 1;
-    case '(us)'
-        sFactor = 1e-6;
-    otherwise
-        sFactor = 1e-3;
 end
-sensor = sensorSet(sensor,'expTime',str2double(get(hObject,'String'))*sFactor);
-
-% If the expTime is in bracketed mode, create the vector
-if isequal(get(handles.popupExpMode,'Val'),2)
-    sensor = sensorAdjustBracketTimes(handles,sensor);
-elseif isequal(get(handles.popupExpMode,'Val'),1)
-    % Do nothing
-else
-    error('expPopup value %f\n',get(handles.popupExpMode,'Val'))
-end
-
-% Turn off auto-exposure
-sensor = sensorSet(sensor,'autoexposure','off');
-vcReplaceObject(sensor,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editVoltageSwing_CreateFcn(hObject, eventdata, handles)
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-return;
-
-%---------------------------------------------------------
-function editVoltageSwing_Callback(hObject, eventdata, handles)
-
-[val,ISA] = vcGetSelectedObject('ISA');
-ISA.pixel.voltageSwing = str2double(get(hObject,'String'));
-vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editOffsetFPN_CreateFcn(hObject, eventdata, handles)
-
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-return;
-
-function editOffsetFPN_Callback(hObject, eventdata, handles)
-% DSNU measurement in mv
-%
-[val,ISA] = vcGetSelectedObject('ISA');
-
-% SD displayed in millivolts, stored in volts
-sd = str2double(get(hObject,'String'))*10^-3;
-ISA = sensorSet(ISA,'offsetsd',sd);
-ISA = sensorSet(ISA,'offsetfpnimage',[]);
-
-vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-
-return;
-
-% --- Executes during object creation, after setting all properties.
-function editGainFPN_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-return;
-
-function editGainFPN_Callback(hObject, eventdata, handles)
-
-[val,sensor] = vcGetSelectedObject('ISA');
-
-% Standard deviation of the slope of the photoresponse function.  
-% These numbers are stored as a percentage, just as in the interface.
-% When we compute the standard deviation of the slope, we calculate
-% gainImage = 1 + randn()*(sigmaGainFPN/100)
-%
-% This produces a normal random variable with a standard deviation equal to
-% the percent in the coneMosaicWindow.
-%
-gainSD = str2double(get(hObject,'String'));
-sensor = sensorSet(sensor,'gainSD',gainSD);
-sensor = sensorSet(sensor,'gainFPNimage',[]);
-
-vcReplaceObject(sensor,val);
-
-sensorRefresh(hObject, eventdata, handles);
-
-return;
 
 % --------------------------------------------------------------------
 function menuFile_Callback(hObject, eventdata, handles)
-return;
+end
 
 function menuFileLoad_Callback(hObject, eventdata, handles, varargin)
-return;
+end
 
 function menuFileSave_Callback(hObject, eventdata, handles, varargin)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFileLoadVoltsMat_Callback(hObject, eventdata, handles)
@@ -573,9 +192,9 @@ isa = vcGetObject('ISA');
 isa = sensorSet(isa,'volts',tmp.volts);
 
 vcReplaceAndSelectObject(isa);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFileSaveVoltsMat_Callback(hObject, eventdata, handles)
@@ -587,7 +206,7 @@ if isempty(volts), errordlg('No voltage data.'); end
 fullName = vcSelectDataFile('stayput','w','mat');
 if ~isempty(fullName), save(fullName,'volts'); end
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSaveImage_Callback(hObject, eventdata, handles)
@@ -602,7 +221,7 @@ scaleMax = get(handles.btnDisplayScale,'Value');
 
 sensorSaveImage(isa,[],'volts',gam,scaleMax);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFileSpecsheet_Callback(hObject, eventdata, handles)
@@ -615,29 +234,29 @@ disp('Spec sheet not yet implemented')
 % The idea is to create a set of sensor spec values and then use
 % xlswrite to printout an Excel spreadsheet summarizing them.
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFileClose_Callback(hObject, eventdata, handles)
 sensorClose
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEdit_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEditName_Callback(hObject, eventdata, handles)
 [val,sensor] = vcGetSelectedObject('ISA');
 
 newName = ieReadString('New sensor name','new-isa');
-if isempty(newName),  return;
-else    sensor = sensorSet(sensor,'name',newName);
+if isempty(newName), return;
+else    sensor = sensorSet(sensor, 'name', newName);
 end
 
 vcReplaceObject(sensor,val);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuCopySensor_Callback(hObject, eventdata, handles)
@@ -645,28 +264,28 @@ function menuCopySensor_Callback(hObject, eventdata, handles)
 sensor = vcGetObject('ISA');
 
 newName = ieReadString('New ISA name','new-isa');
-if isempty(newName),  return;
+if isempty(newName),  return
 else    sensor = sensorSet(sensor,'name',newName);
 end
 
 vcAddAndSelectObject('ISA',sensor);
-sensorRefresh(hObject, eventdata, handles);         
-   
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
 
 % --------------------------------------------------------------------
 function menuEditCreate_Callback(hObject, eventdata, handles)
 
 createNewSensor(hObject, eventdata, handles);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEditDelete_Callback(hObject, eventdata, handles)
 sensorDelete(hObject,eventdata,handles);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuEditResWave_Callback(hObject, eventdata, handles)
@@ -674,7 +293,7 @@ function menuEditResWave_Callback(hObject, eventdata, handles)
 isa = vcGetObject('isa');
 isa = sensorResampleWave(isa);
 vcReplaceObject(isa);
-return;
+end
 
 % --------------------------------------------------------------------
 function sensorEditClearData_Callback(hObject, eventdata, handles)
@@ -682,20 +301,20 @@ function sensorEditClearData_Callback(hObject, eventdata, handles)
 [val,ISA] = vcGetSelectedObject('ISA');
 ISA = sensorClearData(ISA);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);   
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuEditClearMessage_Callback(hObject, eventdata, handles)
 ieInWindowMessage('',ieSessionGet('sensorWindowHandles'),[]);
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEditZoom_Callback(hObject, eventdata, handles)
 % Edit | Zoom
 % Toggle the zoom state.  The zoom state is stored in the status of the
 % checkbox of the zoom menu item.
-if isequal(get(hObject,'checked'),'off'), 
+if isequal(get(hObject,'checked'),'off'),
     zoom('on');
     set(hObject,'checked','on');
 else % Must be on
@@ -703,7 +322,7 @@ else % Must be on
     set(hObject,'checked','off');
 end
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEditViewer_Callback(hObject, eventdata, handles)
@@ -711,7 +330,7 @@ function menuEditViewer_Callback(hObject, eventdata, handles)
 sensor = vcGetObject('ISA');
 img = sensorData2Image(sensor,'volts');
 ieViewer(img);
-return;
+end
 
 % --- Executes on button press in btnAutoExp.
 function btnAutoExp_Callback(hObject, eventdata, handles)
@@ -719,22 +338,22 @@ function btnAutoExp_Callback(hObject, eventdata, handles)
 [val,ISA] = vcGetSelectedObject('ISA');
 ISA.AE = get(hObject,'Value');
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnalyzePOVignetting_Callback(hObject, eventdata, handles)
 % Analyze | Pixel Optics | Relative Illumination
 sensor = vcGetObject('sensor');
 sensorPlot(sensor,'etendue');
-return;
+end
 % --------------------------------------------------------------------
 function menuSensorHumanCones_Callback(hObject, eventdata, handles)
 % hObject    handle to menuSensorHumanCones (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-return;
+end
 
 % --------------------------------------------------------------------
 function humanCones631_Callback(hObject, eventdata, handles)
@@ -744,8 +363,8 @@ params.rgbDensities = [0.0 .6 .3 .1]; % Empty, L,M,S
 params.coneAperture = [2 2]*1e-6;     % In meters
 sensor = sensorCreate('human', params);
 vcAddAndSelectObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function humanConesKLMS1631_Callback(hObject, eventdata, handles)
@@ -755,8 +374,8 @@ params.rgbDensities = [0.1 .6 .3 .1]; % Empty, L,M,S
 params.coneAperture = [2 2]*1e-6;     % In meters
 sensor = sensorCreate('human', params);
 vcAddAndSelectObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorPixelVignetting_Callback(hObject, eventdata, handles)
@@ -776,9 +395,9 @@ ISA = sensorSet(ISA,'pixelvignetting',pvFlag);
 ISA = sensorSet(ISA,'etendue',[]);
 
 vcReplaceObject(ISA);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorMicrolens_Callback(hObject, eventdata, handles)
@@ -789,7 +408,7 @@ else
     microLensWindow;
 end
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorCDS_Callback(hObject, eventdata, handles)
@@ -808,9 +427,9 @@ switch state
         ISA = sensorSet(ISA,'cds',1);
 end
 vcReplaceObject(ISA);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 
 % --------------------------------------------------------------------
@@ -832,23 +451,23 @@ switch state
         
         % Should we pull this out as a separate routine?
         prompt={'Enter column DSNU (sd in millivolts)', ...
-                'Enter column PRNU (sd. around unity gain)'}; 
-        def={'1','0.01'}; 
-        dlgTitle= sprintf('ISET read number'); 
+            'Enter column PRNU (sd. around unity gain)'};
+        def={'1','0.01'};
+        dlgTitle= sprintf('ISET read number');
         answer = inputdlg(prompt,dlgTitle,2,def);
         
         if   isempty(answer),  val = []; return;
-        else                   
+        else
             colOffsetFPN = eval(answer{1})/1000;     % Read in mV, stored in volts
             colGainFPN   = eval(answer{2});          % Store as sd around unity gain
         end
-
+        
         % Create and store the column noise parameters and an instance of
         % the noise itself
         nCol = sensorGet(ISA,'cols');
         colDSNU = randn(1,nCol)*colOffsetFPN;       % Offset noise stored in volts
         colPRNU = randn(1,nCol)*colGainFPN + 1;             % Column gain noise
-
+        
         % Set the parameters.  Could combine the two reads into one.
         ISA = sensorSet(ISA,'columnFPN',[colOffsetFPN,colGainFPN]);
         ISA = sensorSet(ISA,'columnDSNU',colDSNU);
@@ -856,9 +475,9 @@ switch state
         
 end
 vcReplaceObject(ISA);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 
 % --------------------------------------------------------------------
@@ -870,16 +489,16 @@ ISA = vcGetObject('ISA');
 currentPixelSamples = sensorGet(ISA,'nSamplesPerPixel');
 nPixelSamples = ieReadNumber('Enter odd integer specifying number of samples/pixel (default=1)',currentPixelSamples,'%.0f');
 
-if isempty(nPixelSamples), return;
+if isempty(nPixelSamples), return
 elseif nPixelSamples < 1, nPixelSamples = 1;
 elseif ~mod(nPixelSamples,2), nPixelSamples = nPixelSamples+1;
 end
 
 ISA = sensorSet(ISA,'nSamplesPerPixel',nPixelSamples);
 vcReplaceObject(ISA);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --- Executes during object creation, after setting all properties.
 function popupSelect_CreateFcn(hObject, eventdata, handles)
@@ -889,7 +508,7 @@ if ispc
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-
+end
 
 % --- Executes on selection change in popupSelect.
 function popupSelect_Callback(hObject, eventdata, handles)
@@ -906,10 +525,10 @@ switch  (contents{get(hObject,'Value')})
         % therefore, begin with the entry number in the list - 1.
         val = get(hObject,'Value') - 1;
         vcSetSelectedObject('ISA',val);
-        sensorRefresh(hObject, eventdata, handles);
+        coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-return;
+end
 
 
 % --- Executes on selecting new from the popup.
@@ -941,9 +560,9 @@ switch lower(thisArrayName)
 end
 
 vcReplaceAndSelectObject(newISA,newVal);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --- Executes on button press in btnDelete.
 function sensorDelete(hObject, eventdata, handles)
@@ -955,17 +574,17 @@ if isempty(val)
     vcReplaceAndSelectObject(isa,1);
 end
 
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 function editDeleteSome_Callback(hObject, eventdata, handles)
 % Edit delete some sensors
 %
 vcDeleteSomeObjects('sensor');
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --- Executes during object creation, after setting all properties.
 function editGam_CreateFcn(hObject, eventdata, handles)
@@ -974,7 +593,7 @@ if ispc
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
+end
 
 function editGam_Callback(hObject, eventdata, handles)
 % Handle value is read during refresh.
@@ -983,8 +602,8 @@ function editGam_Callback(hObject, eventdata, handles)
 sensor = vcGetObject('sensor');
 sensor = sensorSet(sensor,'consistency',-1);
 vcReplaceObject(sensor);
-sensorRefresh(hObject,eventdata,handles);
-return;
+coneMosaicGUIRefresh(hObject,eventdata,handles);
+end
 
 % --- Executes on button press in btnDisplayScale.
 function btnDisplayScale_Callback(hObject, eventdata, handles)
@@ -995,8 +614,8 @@ sensor = vcGetObject('sensor');
 sensor = sensorSet(sensor,'consistency',-1);
 vcReplaceObject(sensor);
 
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --- Executes during object creation, after setting all properties.
 function popupColor_CreateFcn(hObject, eventdata, handles)
@@ -1005,7 +624,7 @@ if ispc
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
+end
 
 % --- Executes during object creation, after setting all properties.
 function popFormat_CreateFcn(hObject, eventdata, handles)
@@ -1015,15 +634,39 @@ if ispc
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
+end
 
 % --------------------------------------------------------------------
 function menuFileRefresh_Callback(hObject, eventdata, handles)
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
-function sensorRefresh(hObject, eventdata, handles)
-sensorEditsAndButtons(handles);
-return;
+function coneMosaicGUIRefresh(~, ~, handles)
+%Update the cone mosaic gui window interface
+%
+%   coneMosaciGUIRefresh(handles)
+%
+% HJ/BW, ISETBIO TEAM, 2016
+
+% get coneMosaic object
+cm = handles.cMosaic;
+
+% set row and cols
+set(handles.editRows, 'string', num2str(cm.rows));
+set(handles.editcols, 'string', num2str(cm.cols));
+
+% set integration time
+set(handles.editExpTime, 'string', sprintf('%.1f',cm.integrationTime*1e3));
+
+% set KLMS ratio
+str = sprintf('[%.1f, %.1f, %.1f, %.1f]', cm.spatialDensity(1), ...
+    cm.spatialDensity(2), cm.spatialDensity(3), cm.spatialDensity(4));
+set(handles.editKLMS, 'string', str);
+
+% set image content to axes
+cm.plot('cone mosaic', 'hf', handles.axes2);
+
+end
 
 % --- Executes during object creation, after setting all properties.
 function popQuantization_CreateFcn(hObject, eventdata, handles)
@@ -1032,7 +675,7 @@ if ispc
 else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
-return;
+end
 
 % --- Executes on selection change in popQuantization.
 function popQuantization_Callback(hObject, eventdata, handles)
@@ -1046,18 +689,18 @@ isa = sensorSet(isa,'quantization',qMethod);
 isa = sensorClearData(isa);
 vcReplaceObject(isa,val);
 
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensor_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorCIF_Callback(hObject, eventdata, handles)
 
-return;
+end
 % --------------------------------------------------------------------
 function menuSensorQQCIFSixteenthInch_Callback(hObject, eventdata, handles)
 %
@@ -1065,9 +708,9 @@ function menuSensorQQCIFSixteenthInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qqcif'),sensorFormats('sixteenthinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorQQCIFQuartInch_Callback(hObject, eventdata, handles)
@@ -1076,9 +719,9 @@ function menuSensorQQCIFQuartInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qqcif'),sensorFormats('quarterinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);     
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorQCIFQuartInch_Callback(hObject, eventdata, handles)
@@ -1088,9 +731,9 @@ function menuSensorQCIFQuartInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qcif'),sensorFormats('quarterinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);  
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorCIFHalfInch_Callback(hObject, eventdata, handles)
@@ -1098,13 +741,13 @@ function menuSensorCIFHalfInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('cif'),sensorFormats('halfinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);          
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorVGA_Callback(hObject, eventdata, handles)
 % Sensor->VGA
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorQQVGAQuartInch_Callback(hObject, eventdata, handles)
@@ -1112,8 +755,8 @@ function menuSensorQQVGAQuartInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qqvga'),sensorFormats('quarterinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorQVGAQuartInch_Callback(hObject, eventdata, handles)
@@ -1121,16 +764,16 @@ function menuSensorQVGAQuartInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qvga'),sensorFormats('quarterinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorQVGAHalfInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qvga'),sensorFormats('halfinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorVGAHalfInch_Callback(hObject, eventdata, handles)
@@ -1138,8 +781,8 @@ function menuSensorVGAHalfInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('vga'),sensorFormats('halfinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuSensorQQVGASixteenthInch_Callback(hObject, eventdata, handles)
@@ -1147,23 +790,23 @@ function menuSensorQQVGASixteenthInch_Callback(hObject, eventdata, handles)
 [val,isa] = vcGetSelectedObject('ISA');
 isa = sensorRescale(isa,sensorFormats('qqvga'),sensorFormats('sixteenthinch'));
 vcReplaceObject(isa,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuDesignCFA_Callback(hObject, eventdata, handles)
 %      I first use the 'Design CFA' option in the Sensor Menu to design the CFA I desire. I make
 %      sure I position the individual color filters appropriately in the 2x2 square as 'RGGB'.
-%  
+%
 %      Then after I load all the respective transmissivity values for each of the filters, I save
 %      the CFA to a file (say we call this file micronRGGB.mat).
-%  
+%
 %      Now during a simulation run, when I load this CFA using the "Load CFA" option in the Sensor
 %      menu, the "Standard CFA" cell in the upper right hand side of the ISET-Sensor conemosaicwindow
 %      gets automatically updated as "Other" instead of 'bayer-rggb' as I would expect.
-%      
+%
 sensorDesignCFA;
-return;
+end
 
 
 % --------------------------------------------------------------------
@@ -1171,7 +814,7 @@ function menuSensorExport_Callback(hObject, eventdata, handles)
 % File | Save | Save sensor (.mat)
 [val,isa] = vcGetSelectedObject('ISA');
 fullName = vcExportObject(isa);
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorImport_Callback(hObject, eventdata, handles)
@@ -1180,18 +823,18 @@ function menuSensorImport_Callback(hObject, eventdata, handles)
 newVal = vcImportObject('ISA');
 if isempty(newVal), return; end
 vcSetSelectedObject('ISA',newVal);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuAnSNR_Callback(hObject, eventdata, handles)
 % Analyze SNR menu
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnHistogram_Callback(hObject, eventdata, handles)
 % Analyze Histogram Menu
-return;
+end
 
 % --------------------------------------------------------------------
 function menuISOSat_Callback(hObject, eventdata, handles)
@@ -1203,7 +846,7 @@ str = [str,sprintf('Larger means saturates at lower lux-sec level.\n\n')];
 
 msgbox(str);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnExposureValue_Callback(hObject, eventdata, handles)
@@ -1213,7 +856,7 @@ EV = exposureValue(vcGetObject('OPTICS'),vcGetObject('ISA'));
 str = sprintf('Exposure value (log2(f/#^2 / T)):    %.2f',EV);
 ieInWindowMessage(str,ieSessionGet('sensorwindowhandles'));
 
-return;
+end
 
 %-------------Photometric Exposure Value (lux-sec)
 function menuAnPhotExp_Callback(hObject, eventdata, handles)
@@ -1225,46 +868,46 @@ str = sprintf('Photometric exposure (lux-sec): %.2f',...
 % Display in coneMosaicWindow message
 ieInWindowMessage(str,ieSessionGet('sensorwindowhandles'));
 
-return;
+end
 
 % ---------------Plot Menu------------------------
 function menuPlot_Callback(hObject, eventdata, handles)
 % Menu Plot
-return;
+end
 % --------------------------------------------------------------------
 function menuPlotSpectra_Callback(hObject, eventdata, handles)
 % Plot-> SpectralInformation
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPlotPixelSR_Callback(hObject, eventdata, handles)
 sensorPlot([],'pixel spectral sr');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPlotColorFilters_Callback(hObject, eventdata, handles)
 sensorPlot([],'color filters');
-return;
+end
 
 % --------------------------------------------------------------------
 function plotSpecCFApattern_Callback(hObject, eventdata, handles)
 % Plot | Spectral Information | CFA Pattern
 sensorPlot([],'CFA');
-return;
+end
 % --------------------------------------------------------------------
 function menuPlotIR_Callback(hObject, eventdata, handles)
 sensorPlot([],'irfilter');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPlotPDSpectralQE_Callback(hObject, eventdata, handles)
 sensorPlot([],'pixel spectral QE');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPlotSpecResp_Callback(hObject, eventdata, handles)
 sensorPlot([],'sensor spectral qe');
-return;
+end
 
 % --------------------------------------------------------------------
 function menusensorPlotImageTSize_Callback(hObject, eventdata, handles)
@@ -1281,9 +924,9 @@ else
     img      = sensorData2Image(sensor,'dv',gam,scaleMax);
 end
 
-if ndims(img) == 2; 
+if ndims(img) == 2;
     % imtool needs monochrome images scaled between 0 and 1
-    w = vcNewGraphWin; img = img/max(img(:)); 
+    w = vcNewGraphWin; img = img/max(img(:));
     imshow(img); truesize(w);
     set(w,'Name',sensorGet(sensor,'name'));
 else
@@ -1291,7 +934,7 @@ else
 end
 
 
-return;
+end
 
 % --------------------------------------------------------------------
 function plotMccOverlay_Callback(hObject, eventdata, handles)
@@ -1301,9 +944,9 @@ function plotMccOverlay_Callback(hObject, eventdata, handles)
 sensor = vcGetObject('sensor');
 macbethDrawRects(sensor,'off');
 vcReplaceObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPlotHumanCone_Callback(hObject, eventdata, handles)
@@ -1314,122 +957,122 @@ if sensorCheckHuman(sensor), sensorConePlot(sensor)
 else ieInWindowMessage('Not a human cone sensor',handles,3);
 end
 
-return
+end
 
 % --------------------------------------------------------------------
 function menuPlotNewGraphWindow_Callback(hObject, eventdata, handles)
 vcNewGraphWin;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnalyze_Callback(hObject, eventdata, handles)
 % Analyze menu
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnLine_Callback(hObject, eventdata, handles)
 % Analyze->Line menu
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHorizontal_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuVertical_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnLineV_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Electrons
 sensorPlot(vcGetObject('sensor'),'electrons vline');
 %OLD:  sensorPlotLine(vcGetObject('ISA'),'v','volts','space');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnLineH_Callback(hObject, eventdata, handles)
 % Analyze | Line | Horizontal | Volts
 sensorPlot(vcGetObject('sensor'),'volts hline');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHorLineE_Callback(hObject, eventdata, handles)
 % Analyze | Line | Horizontal | Electrons
 sensorPlot(vcGetObject('sensor'),'electrons hline');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuVertLineE_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Electrons
 sensorPlot(vcGetObject('sensor'),'electrons vline');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHorLineDV_Callback(hObject, eventdata, handles)
 % sensorPlotLine(vcGetObject('sensor'),'h','dv','space');
 sensorPlot(vcGetObject('sensor'),'dv hline');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuVertLineDV_Callback(hObject, eventdata, handles)
 % sensorPlotLine(vcGetObject('sensor'),'v','dv','space');
 sensorPlot(vcGetObject('sensor'),'dv vline');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFFThor_Callback(hObject, eventdata, handles)
 sensorPlotLine(vcGetObject('sensor'),'h','volts','fft');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuFFTVert_Callback(hObject, eventdata, handles)
 sensorPlotLine(vcGetObject('sensor'),'v','volts','fft');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnPixHistQ_Callback(hObject, eventdata, handles)
 sensorPlotHistogram('e');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnPixHistV_Callback(hObject, eventdata, handles)
 % Analyze | Line | Vertical | Volts
 sensorPlot(vcGetObject('sensor'),'volts hist');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnPixelSNR_Callback(hObject, eventdata, handles)
 % Graph the pixel SNR as a function of voltage swing
 sensorPlot(vcGetObject('sensor'),'pixel snr');
 % plotPixelSNR;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnSensorSNR_Callback(hObject, eventdata, handles)
 %
 sensorPlotSNR;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnROIStats_Callback(hObject, eventdata, handles)
 % Analysis->ROI statistics
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnBasicV_Callback(hObject, eventdata, handles)
 %
 sensorStats([],'basic','volts');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnBasicE_Callback(hObject, eventdata, handles)
 sensorStats([],'basic','electrons');
-return;
+end
 
 % ----------------------Pixel Optics-------------------
 function menuAnPO_Callback(hObject, eventdata, handles)
 % Analysis->Pixel Optics
-return;
+end
 
 
 % --------------------------------------------------------------------
@@ -1447,7 +1090,7 @@ else
     error('No microlens structure (named ml) in the file.');
 end
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnPixOptSaveUl_Callback(hObject, eventdata, handles)
@@ -1459,23 +1102,23 @@ fullName = vcSelectDataFile('stayPut','w');
 if isempty(fullName), disp('User canceled'); return; end
 save(fullName,'ml');
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnColor_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnColorRB_Callback(hObject, eventdata, handles)
 % Analyze | Color | RB Analysis
 sensorPlotColor(vcGetObject('ISA'),'rb');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnColorRG_Callback(hObject, eventdata, handles)
 % Analyze | Color | RG Analysis
 sensorPlotColor(vcGetObject('ISA'),'rg');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnColCCM_Callback(hObject, eventdata, handles)
@@ -1491,69 +1134,69 @@ disp(L)
 sensor = sensorSet(sensor,'mcc corner points',corners);
 vcReplaceObject(sensor);
 
-return;
+end
 
 % --------------------------------------------------------------------
 function menuEdgeOp_Callback(hObject, eventdata, handles)
-% Start a new process to initiate the edge operator coneMosaicWindow.  
+% Start a new process to initiate the edge operator coneMosaicWindow.
 % This coneMosaicWindow works with monochrome sensor images and investigate how
 % various operators perform with different types of sensors.
 edgeOperatorWindow;
-return;
+end
 
 % ------------------PlotImage------------------------------
 function menuIm_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuImDSNU_Callback(hObject, eventdata, handles)
 sensorPlot([],'dsnu');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuImPRNU_Callback(hObject, eventdata, handles)
 sensorPlot([],'prnu');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuImShotNoise_Callback(hObject, eventdata, handles)
 sensorPlot([],'shotnoise');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuSensorLuxSec_Callback(hObject, eventdata, handles)
 sensorSNRluxsec;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPixelLuxSec_Callback(hObject, eventdata, handles)
 pixelSNRluxsec;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPDSize_Callback(hObject, eventdata, handles)
 pixelGeometryWindow;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuPixelLayers_Callback(hObject, eventdata, handles)
 pixelOEWindow;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuLoadSF_Callback(hObject, eventdata, handles)
 % Load spectral functions heading.
-return;
+end
 
 % --------------------------------------------------------------------
 function menuLoadCFA_Callback(hObject, eventdata, handles)
-% 
+%
 [val,ISA] = vcGetSelectedObject('ISA');
 ISA = sensorReadFilter('cfa',ISA);
 ISA = sensorClearData(ISA);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles); 
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuColorFilters_Callback(hObject, eventdata, handles)
@@ -1562,8 +1205,8 @@ function menuColorFilters_Callback(hObject, eventdata, handles)
 ISA = sensorReadFilter('colorfilters',ISA);
 ISA = sensorClearData(ISA);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuInfraRed_Callback(hObject, eventdata, handles)
@@ -1571,8 +1214,8 @@ function menuInfraRed_Callback(hObject, eventdata, handles)
 ISA = sensorReadFilter('infrared',ISA);
 ISA = sensorClearData(ISA);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);         
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuPDQE_Callback(hObject, eventdata, handles)
@@ -1580,13 +1223,13 @@ function menuPDQE_Callback(hObject, eventdata, handles)
 ISA = sensorReadFilter('pdspectralqe',ISA);
 ISA = sensorClearData(ISA);
 vcReplaceObject(ISA,val);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --------------------------------------------------------------------
 function menuEditFontSize_Callback(hObject, eventdata, handles)
 ieFontChangeSize(handles.coneMosaicWindow);
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnalyzeMicroLens_Callback(hObject, eventdata, handles)
@@ -1599,41 +1242,41 @@ else
 end
 
 microLensWindow;
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAnPOShowUL_Callback(hObject, eventdata, handles)
 ISA = vcGetObject('ISA');
 mlPrint(sensorGet(ISA,'microLens'));
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHelp_Callback(hObject, eventdata, handles)
-return;
+end
 
 % --------------------------------------------------------------------
 function menuAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
 web('http://imageval.com/documentation/','-browser');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHelpSensorOnline_Callback(hObject, eventdata, handles)
 % Help | Sensor (online)
 web('http://www.imageval.com/public/ISET-Functions/ISET/sensor/index.html','-browser');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHelpPixelOnline_Callback(hObject, eventdata, handles)
 % Help | Pixel (online)
 web('http://www.imageval.com/public/ISET-Functions/ISET/sensor/pixel/index.html','-browser');
-return;
+end
 
 % --------------------------------------------------------------------
 function menuHelpISETOnlineManual_Callback(hObject, eventdata, handles)
 % Help | ISET (online)
 web('http://www.imageval.com/public/ISET-Functions/','-browser');
-return;
+end
 
 % --- Executes during object creation, after setting all properties.
 function popupExpMode_CreateFcn(hObject, eventdata, handles)
@@ -1641,7 +1284,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-return;
+end
 % --- Executes on selection change in popupExpMode.
 function popupExpMode_Callback(hObject, eventdata, handles)
 % Exposure popup control
@@ -1665,14 +1308,14 @@ switch contents{get(hObject,'Value')}
         
         eTime  = sensorGet(sensor,'geometricMeanExposureTime');
         sensor = sensorSet(sensor,'expTime',eTime);
-
+        
     case 'Bracketing'
         set(handles.editExpTime,'visible','on');
         set(handles.sliderSelectBracketedExposure,'visible','on');
         set(handles.editNExposures,'visible','on');
         set(handles.editExpFactor,'visible','on');
         set(handles.btnShowCFAExpDurations,'visible','off');
-
+        
         set(handles.btnAutoExp,'visible','off');
         set(handles.txtBracketExposure,'visible','on');
         
@@ -1696,8 +1339,8 @@ end
 
 sensor = sensorClearData(sensor);
 vcReplaceObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --- Executes during object creation, after setting all properties.
 function editNExposures_CreateFcn(hObject, eventdata, handles)
@@ -1706,7 +1349,7 @@ function editNExposures_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-return;
+end
 
 function editNExposures_Callback(hObject, eventdata, handles)
 % Set the number of exposures in the bracketing mode
@@ -1714,15 +1357,15 @@ sensor = vcGetObject('sensor');
 sensor = sensorAdjustBracketTimes(handles,sensor);
 sensor = sensorClearData(sensor);
 vcReplaceObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --- Executes during object creation, after setting all properties.
 function editExpFactor_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-return;
+end
 function editExpFactor_Callback(hObject, eventdata, handles)
 % Set the scale factor between exposures in bracketing mode
 %
@@ -1731,8 +1374,8 @@ function editExpFactor_Callback(hObject, eventdata, handles)
 sensor = sensorAdjustBracketTimes(handles);
 sensor = sensorClearData(sensor);
 vcReplaceObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --- Executes on button press in btnShowCFAExpDurations.
 function btnShowCFAExpDurations_Callback(hObject, eventdata, handles)
@@ -1744,7 +1387,7 @@ sensor = vcGetObject('sensor');
 sensor = sensorAdjustCFATimes(handles,sensor);
 
 % Put the exposureData matrix into the base workspace in ms
-fmt    = '%.1f'; 
+fmt    = '%.1f';
 prompt = 'Time (ms)';
 defMatrix = sensorGet(sensor,'expTime')*1e3;
 saturation = 0.3;
@@ -1752,21 +1395,23 @@ filterRGB = sensorFilterRGB(sensor,saturation);
 ieReadSmallMatrix(size(defMatrix),defMatrix,fmt,prompt,[],'msExposureData',filterRGB);
 
 %Read base space data in seconds
-secExposureData = evalin('base','msExposureData')*1e-3;  
+secExposureData = evalin('base','msExposureData')*1e-3;
 
 % Put the sensor back
 sensor = sensorSet(sensor,'expTime',secExposureData);
 vcReplaceObject(sensor);
 
-return;
+end
 
 % --- Executes during object creation, after setting all properties.
 function sliderSelectBracketedExposure_CreateFcn(hObject, eventdata, handles)
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
-       
+    
 end
+end
+
 % --- Executes on slider movement.
 function sliderSelectBracketedExposure_Callback(hObject, eventdata, handles)
 % Chooses which of the bracketed exposures should be display
@@ -1776,8 +1421,8 @@ exposurePlane = get(handles.sliderSelectBracketedExposure,'value');
 sensor = sensorSet(sensor,'exposurePlane',exposurePlane);
 sensor = sensorSet(sensor,'consistency',-1);  % Don't change the red consistency button
 vcReplaceObject(sensor);
-sensorRefresh(hObject, eventdata, handles);
-return;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 % --- Executes any time we need to update the bracketed exposures.
 function sensor = sensorAdjustBracketTimes(handles,sensor)
@@ -1821,7 +1466,7 @@ sensor = sensorSet(sensor,'Exposure Plane',exposurePlane);
 % else               ss = 0; end
 % set(handles.sliderSelectBracketedExposure,'sliderStep',[ss ss]);
 
-return;
+end
 
 % --- Executes any time we need to update the CFA exposures
 function sensor = sensorAdjustCFATimes(handles,sensor)
@@ -1843,7 +1488,7 @@ end
 
 %#ok<*DEFNU>
 %#ok<*INUSD>
-return;
+end
 
 
 
@@ -1854,7 +1499,7 @@ function editKLMS_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editKLMS as text
 %        str2double(get(hObject,'String')) returns contents of editKLMS as a double
-
+end
 
 % --- Executes during object creation, after setting all properties.
 function editKLMS_CreateFcn(hObject, eventdata, handles)
@@ -1866,4 +1511,6 @@ function editKLMS_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
 end
