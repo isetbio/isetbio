@@ -55,3 +55,20 @@ osGet(adaptedOS, 'noiseFlag');
 %% Plot results.
 osPlot(linearOS, sensor);
 osPlot(adaptedOS, sensor);
+
+%%
+
+
+% Set photons.
+sensor = sensorSet(sensor, 'photon rate', stimulus);
+
+%% Instantiate an osLinear object.
+identityOS = osCreate('identity');%,'noiseFlag', 1);
+identityOS = osSet(identityOS, 'noiseFlag', 0);
+
+%% Compute linear outer segment response.
+identityOS = osCompute(identityOS, sensor);
+osGet(identityOS, 'noiseFlag');
+
+%% Plot results.
+osPlot(identityOS, sensor);

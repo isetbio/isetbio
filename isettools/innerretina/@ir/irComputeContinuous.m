@@ -204,9 +204,15 @@ switch osType
 %                 end
                 xNum = size(ir.mosaic{rgcType}.sRFcenter,1);
                 yNum = size(ir.mosaic{rgcType}.sRFcenter,2);
+                
+%                 if strcmpi(ieParamFormat(ir.mosaic{rgcType}.cellType(1:3)),'off'); 
+                    tCenterBP = -1; 
+%                 else
+%                     tCenterBP = 1;
+%                 end
                 for xcell = 1:xNum
                     for ycell = 1:yNum
-                        tCenterNew{xcell,ycell} = -1; tSurroundNew{xcell,ycell} = 0;
+                        tCenterNew{xcell,ycell} = tCenterBP; tSurroundNew{xcell,ycell} = 0;
                     end
                 end
 %                 ir.mosaic{rgcType,1}.mosaicSet('tCenter',tCenterNew);
@@ -215,7 +221,8 @@ switch osType
                 ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
                 szRC = size(spTempStimCenter);
                 
-                if isa(ir.mosaic{rgcType},'rgcPhys')
+                szspt = size(spTempStimCenter);
+                if isa(ir.mosaic{rgcType},'rgcPhys') && (szspt(1) ~= 80 && szspt(1) ~= 40)
 %                 spTempStimCenterRS = spTempStimCenter;
 %                 spTempStimSurroundRS = spTempStimSurround;
                 spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));

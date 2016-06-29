@@ -36,8 +36,10 @@ addParameter(p,'species','unknown',@ischar);
 addParameter(p,'eyeSide',    'left', @ischar);
 addParameter(p,'eyeRadius',   4,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
-
+addParameter(p,'fov',         8,     @isnumeric);
 addParameter(p,'cellIndices',   0,     @isnumeric);
+
+addParameter(p,'averageMosaic', 0,      @isnumeric);
 
 p.parse(obj,ir,varargin{:});
 
@@ -47,13 +49,18 @@ stimulusTest = p.Results.stimulusTest;
 cellType =  p.Results.cellType;
 cellIndices = p.Results.cellIndices;
 
+fov = p.Results.fov;
+ecc = p.Results.eyeRadius;
+
+averageFlag = p.Results.averageMosaic;
+
 obj.experimentID = experimentID;
 obj.stimulusFit = stimulusFit;
 obj.stimulusTest = stimulusTest;
 obj.cellType = cellType;
 
 %% Set defaults
-obj.generatorFunction = @exp;
+% obj.generatorFunction = @exp;
 obj.numberTrials = 10;
 
 % % Coupled experiment
@@ -81,8 +88,19 @@ rdt = RdtClient('isetbio');
 rdt.crp('resources/data/rgc');
 
 switch ieParamFormat(cellType)
+    
+    % RPE data set - need to put on RDT
     case 'onparasolrpe'
-        load('/Users/james/Documents/MATLAB/mosaicGLM_RPE_onPar.mat')
+        load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_onPar.mat')      
+    case 'offparasolrpe'
+        load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_offPar.mat')
+    case 'onmidgetrpe'
+        load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_onMid.mat')
+    case 'offmidgetrpe'
+        load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_offMid.mat')
+    case 'onsbcrpe'
+        load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_onSBC.mat')
+        
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
@@ -104,55 +122,161 @@ end
 
 goodind = 1:length(mosaicGLM);
 
-if cellIndices ~= 0
-    cellIndicesEval = cellIndices;
-else
-    cellIndicesEval = [1:length(goodind)];
+
+switch(averageFlag)
+    
+    % Load in a mosaic from a physiology experiment
+    case 0
+        
+        if cellIndices ~= 0
+            cellIndicesEval = cellIndices;
+        else
+            cellIndicesEval = [1:length(goodind)];
+        end
+        matFileCtr = 0;
+        % % % % % %
+        % Loop through mat files and load parameters
+        % for matFileInd = 1:length(mosaicGLM)
+        for matFileInd = cellIndicesEval%1:length(goodind)
+            %     cell = matFileNames(matFileInd).name(1:end-4);
+            %     obj.cellID{matFileInd,1} = cell;
+            %     load([glmFitPath experimentID '/' cell '.mat']);
+            matFileCtr = matFileCtr+1;
+            obj.cellID{matFileCtr,1} = mosaicGLM{matFileInd}.cell_savename;
+            %     obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
+            
+            if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'PostSpike')
+                obj.postSpikeFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
+            else
+                %         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
+                obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
+            end
+            if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
+                
+                obj.couplingFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Coupling.Filter;
+            end
+            
+            
+            
+            switch ieParamFormat(cellType)
+                case 'onparasolrpe'
+                    obj.tonicDrive{matFileCtr,1} = 0;
+                    obj.generatorFunction{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.model;
+                otherwise
+                    obj.tonicDrive{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
+                    obj.generatorFunction{matFileCtr,1} = @exp;
+            end
+            
+            obj.sRFcenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+            obj.sRFsurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
+            obj.tCenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
+            obj.tSurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
+            
+            if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
+                
+                couplingMatrixTemp{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.cellinfo.pairs;
+            end
+            
+            obj.cellLocation{matFileCtr,1} = [mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.x_coord mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.y_coord];
+            
+        end
+        
+        obj.rfDiameter = size(mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.Filter,1);
+        
+        
+    % Generate a mosaic that fully tiles the visual field 
+    % with the average properties of an experimental mosaic,
+    % shifted to a specified eccentricity.
+    case 1
+        
+        
+        switch ieParamFormat(cellType)
+            
+            % RPE data set - need to put on RDT
+            
+            case 'onparasolrpe'
+                b = 10.7629; m = 18.9211;
+                ecc0 = 10.9;
+            case 'offparasolrpe'
+                b = 68.3968; m = 0.85*18.9211;
+                ecc0 = 10.9;
+            case 'onmidgetrpe'
+                b = -8.110; m = 10.7629;    
+                ecc0 = 10.9;
+            case 'offmidgetrpe'
+                b = -8.110; m = 0.85*10.7629;   
+                ecc0 = 10.9;
+            case 'onsbcrpe'
+                b = 70.2865; m = 15.8208;
+                ecc0 = 10.9;
+        end
+        y0 = m*ecc0 + b;
+        y1 = m*ecc + b;
+        yratio = y0/y1; 
+        
+        fov0 = 8;
+        fovratio = fov/fov0;
+        
+        mosaicAverageGLM = mosaicAverage(mosaicGLM);
+        
+        cellSpacing = sqrt(mean(mosaicAverageGLM.sd.^2));
+        
+        stimRows = 40; stimCols = 80;
+        
+        numberRows = floor(fovratio*yratio*stimRows/(2*cellSpacing));
+        numberCols = floor(fovratio*yratio*stimCols/(2*cellSpacing));
+        
+%         numberCellsPerDegree = (stimCols/(2*cellSpacing))/fov0;
+%         
+%         numberCells
+        
+        
+        goodind = 1:numberRows*numberCols;
+        
+        matFileCtr = 0;
+        for xi = 1:numberRows
+            for yi = 1:numberCols
+                matFileCtr = matFileCtr+1;
+                
+                obj.cellID{matFileCtr,1} = matFileCtr;
+                
+                if isfield(mosaicAverageGLM.linearfilters,'PostSpike')
+                    obj.postSpikeFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.PostSpike.Filter;
+                else
+                    %         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
+                    obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
+                end
+                if isfield(mosaicAverageGLM.linearfilters,'Coupling')
+                    
+                    obj.couplingFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Coupling.Filter;
+                end
+                
+                
+                
+                switch ieParamFormat(cellType)
+                    case {'onparasolrpe','offparasolrpe','onmidgetrpe','offmidgetrpe','onsbc'}
+                        obj.tonicDrive{matFileCtr,1} = 0;
+                        obj.generatorFunction{matFileCtr,1} = mosaicAverageGLM.model;
+                    otherwise
+                        obj.tonicDrive{matFileCtr,1} = mosaicAverageGLM.linearfilters.TonicDrive.Filter;
+                        obj.generatorFunction{matFileCtr,1} = @exp;
+                end
+                
+                obj.sRFcenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
+                obj.sRFsurround{matFileCtr,1} = 0*mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
+                obj.tCenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.time_rk1;
+                obj.tSurround{matFileCtr,1} = 0*mosaicAverageGLM.linearfilters.Stimulus.time_rk1;
+                
+                if isfield(mosaicAverageGLM.linearfilters,'Coupling')
+                    
+                    couplingMatrixTemp{matFileCtr,1} = mosaicAverageGLM.cellinfo.pairs;
+                end
+                
+                obj.cellLocation{matFileCtr,1} = [(xi*2*cellSpacing + mod(yi,2)*cellSpacing) yi*2*cellSpacing];
+                
+            end
+            
+            obj.rfDiameter = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
+        end
+        
 end
-matFileCtr = 0;
-% % % % % % 
-% Loop through mat files and load parameters
-% for matFileInd = 1:length(mosaicGLM)
-for matFileInd = cellIndicesEval%1:length(goodind)
-%     cell = matFileNames(matFileInd).name(1:end-4);
-%     obj.cellID{matFileInd,1} = cell;
-%     load([glmFitPath experimentID '/' cell '.mat']);
-    matFileCtr = matFileCtr+1;
-    obj.cellID{matFileCtr,1} = mosaicGLM{matFileInd}.cell_savename;
-%     obj.cellID{matFileInd,1} = mosaicGLM{goodind(matFileInd)}.cell_savename;
-
-    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'PostSpike')
-        obj.postSpikeFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.PostSpike.Filter;
-    else
-%         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
-        obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
-    end
-    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
-
-        obj.couplingFilter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Coupling.Filter;
-    end
-    
-    
-    
-    switch ieParamFormat(cellType)
-        case 'onparasolrpe'
-            obj.tonicDrive{matFileCtr,1} = 0;
-        otherwise
-            obj.tonicDrive{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.TonicDrive.Filter;
-    end
-    
-    obj.sRFcenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1';
-    obj.sRFsurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.space_rk1;
-    obj.tCenter{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
-    obj.tSurround{matFileCtr,1} = 0*mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.time_rk1;
-    
-    if isfield(mosaicGLM{goodind(matFileInd)}.linearfilters,'Coupling')
-
-        couplingMatrixTemp{matFileCtr,1} = mosaicGLM{goodind(matFileInd)}.cellinfo.pairs;
-    end
-    
-  obj.cellLocation{matFileCtr,1} = [mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.x_coord mosaicGLM{goodind(matFileInd)}.cellinfo.slave_centercoord.y_coord];
-    
-end
-
-obj.rfDiameter = size(mosaicGLM{goodind(matFileInd)}.linearfilters.Stimulus.Filter,1);

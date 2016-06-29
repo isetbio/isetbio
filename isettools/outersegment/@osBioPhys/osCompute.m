@@ -21,11 +21,23 @@ function obj = osCompute(obj, sensor, varargin)
 % 8/2015 JRG NC DHB
 
 
+p = inputParser;
+p.addRequired('obj');
+p.addRequired('sensor');
+addParameter(p,'bgVolts',0,@isnumeric);
+addParameter(p,'ecc', 20 ,@isnumeric);
+p.parse(obj,sensor,varargin{:});
+
+bgVolts = p.Results.bgVolts;
+ecc = p.Results.ecc;
+
+eccBoundary = 4; % mm; for patches at < 4 mm ecc, use the foveal dynamics.
+
 obj.patchSize = sensorGet(sensor,'width','um'); % Cone width
 
 obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 
-p = osInit;
+p = osInit( 'osType', ecc < eccBoundary);
 expTime = sensorGet(sensor,'exposure time');
 sz = sensorGet(sensor,'size');
 
@@ -34,15 +46,6 @@ pRate = sensorGet(sensor, 'photon rate');
 nSteps = size(pRate, 3);
 % Compute background adaptation parameters
 
-if size(varargin) ~= 0
-    if isfield(varargin{1,1},'bgVolts')
-        bgVolts = varargin{1,1}.bgVolts; % need to make this an input parameter!
-    else
-        bgVolts = 0;
-    end
-else
-    bgVolts = 0;
-end
 bgR = bgVolts / (sensorGet(sensor,'conversion gain')*expTime);
 
 

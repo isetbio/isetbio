@@ -18,12 +18,6 @@
 % 
 % 6/2016 JRG (c) isetbio team
 
-%% TO DO
-% Get the ln_predict accurate
-% Need to permute spatial RF and not switch x and y coords in initialize
-% Fix how mosaicGLM stores those properties
-
-
 %% Initialize 
 clear
 % ieInit;
@@ -32,8 +26,8 @@ clear
 % White noise (WN) or natural scenes with eye movements (NSEM)
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
-cellTypeI     = 1;       % Choose On Parasol (1) or Off Parasol (2)
-stimulusTestI = 1;       % Choose WN test stimulus (1) or NSEM test stimulus (2)
+cellTypeI     = 4;       % Choose On Parasol (1) or Off Parasol (2)
+stimulusTestI = 1;       % Choose WN test stimulus (1) 
     
 % Switch on the conditions indices
 % Experimental dataset
@@ -49,16 +43,28 @@ end
 % Stimulus: white noise or natural scene movie with eye movements
 switch stimulusTestI
     case 1; stimulusTest = 'WN';
-    case 2; stimulusTest = 'NSEM';
+%     case 2; stimulusTest = 'NSEM';
+    otherwise
+        error('NSEM not yet implemented');
 end
 
 % Cell type: ON or OFF Parasol
 switch cellTypeI
-    case 1; cellType = 'On Parasol RPE';
-    case 2; cellType = 'Off Parasol RPE';
-    case 3; cellType = 'On Midget RPE';
-    case 4; cellType = 'Off Midget RPE';
-    case 5; cellType = 'SBC RPE';
+    case 1; 
+        cellType = 'On Parasol RPE'; 
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONParasol_201602171.mat')
+    case 2; 
+        cellType = 'Off Parasol RPE';        
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFParasol_201602171.mat')
+    case 3; 
+        cellType = 'On Midget RPE';
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONMidget_201602171.mat')
+    case 4; 
+        cellType = 'Off Midget RPE';
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFMidget_201602171.mat')
+    case 5; 
+        cellType = 'SBC RPE';
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONSBC_201602171.mat')
 end
 
 % Load OS from RDT (1) or run from scratch (0)
@@ -70,18 +76,13 @@ loadOS = 0;
 % [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
 % Binary white noise test movie
 
+load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/WN_testmovie_lnfit.mat')
 
-rdt = RdtClient('isetbio');
-rdt.crp('resources/data/rgc');
-data = rdt.readArtifact('testmovie_8pix_Identity_8pix', 'type', 'mat');
-testmovie = data.testmovie;
-
-load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONParasol_201602171.mat')
 
 
 % Length of WN movie is 1200, take nFrames to limit natural movie to same length
-nFrames = 1200; 
-testmovieshort = double(testmovie.matrix(:,:,1:nFrames)); 
+nFrames = 1100; 
+testmovieshort = WN_testmovie_lnfit(:,:,1:nFrames); 
 
 if ~loadOS 
     
@@ -112,7 +113,8 @@ paramsStim.theta = 330;
 paramsStim.side = 'left';
 
 % iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
-iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
+% iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
+iStim = ieStimulusMovie(permute(testmovieshort(:,:,1:nFrames), [2 1 3]),paramsStim);
 sensor = iStim.sensor;
 
 sensor.data.volts = 5e-4*double(testmovieshort)./255;
@@ -135,8 +137,11 @@ osL = osSet(osL, 'patch size', patchSize);
 timeStep = sensorGet(sensor,'time interval','sec');
 osL = osSet(osL, 'time step', timeStep);
 
+
 % Set circular convolution, only steady state
 paramsOSL.convolutionType = 1; 
+paramsOSL.ecc = 15; % mm
+paramsOSL.singleType = 1;
 
 osLSub = osL;
 
@@ -201,7 +206,7 @@ clear bp os
 os = osLSub;
 % os = osBSub;
 
-bpParams.cellType = 'offDiffuse';
+bpParams.cellType = 'onDiffuse';
 % sets filter as theoretical, mean physiology, or individual phys:
 bpParams.filterType = 1; 
 % sets linear, on half-wave rectification, or on and off half-wave rect
@@ -233,7 +238,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
-params.cellIndices = 44;
+params.cellIndices = 10;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
@@ -281,7 +286,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
-params.cellIndices = 44;
+params.cellIndices = 10;
 
 % Create object
 innerRetina = irPhys(os1, params);
@@ -328,7 +333,7 @@ irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
 title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 30]);
-axis off
+% axis off
 
 % Plot the biophys/subunit prediction
 subplot(313); hold on;
@@ -344,19 +349,21 @@ set(gca,'fontsize',14);
 %     case 2
         axis([tStart tEnd 0 30]);
 % end
-axis off
+% axis off
 
 % % Plot the recorded spikes
 subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hold','on','color','k')
+title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',params.cellIndices));
 set(gca,'fontsize',14);
 
 switch stimulusTestI
     case 1
-        axis([tStart-0.5 tEnd-0.5 0 30]);
+        axis([tStart tEnd 0 30]);
+%         axis([tStart-0.5 tEnd-0.5 0 30]);
     case 2
-        axis([tStart-1 tEnd-1 0 30]);
+        axis([tStart tEnd 0 30]);
+%         axis([tStart-1 tEnd-1 0 30]);
 end
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
 
@@ -373,12 +380,12 @@ minlen = min([length(innerRetinaPSTH{cellNum}) length(innerRetinaRecordedPSTH{ce
 hold off
 switch stimulusTestI
     case 1
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
+        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(0+(1:minlen-1200)),'r','linewidth',3);
         
         hold on;
         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
         
-        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(600-0+(1:minlen-1200)),':b','linewidth',3);
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(0-0+(1:minlen-1200)),':b','linewidth',3);
         
         ax3 = axis;
         axis([0 8.5 ax3(3) ax3(4)])
@@ -399,11 +406,11 @@ switch stimulusTestI
 
 %         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
         
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(0+(1:minlen-1200)),'r','linewidth',3);
         hold on;
         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
         hold on;
-        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)),':b','linewidth',3);
+        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(0-0+(1:minlen-1200)),':b','linewidth',3);
         
         
         ax3 = axis;

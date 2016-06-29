@@ -70,7 +70,7 @@ cellCtr = 0;
 % pairspikecomp = data.pairspikecomp;
 pairspikecomp = cell(nCells,6,numberTrials);
 
-nlfun = obj.generatorFunction;
+% nlfun = obj.generatorFunction;
 
 % nlfun = @(xin) -.28838 + 2.9304./(.042235 + exp(-1.6149*xin));
 
@@ -94,10 +94,14 @@ for xcell = 1:nCells
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
     
-    % cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
-    
-    load('isetbio misc/lnmodel.mat')
-    cif0 = predict(lnmodel, reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
+    nlfun = obj.generatorFunction{xcell,1};
+    if isa(nlfun,'function_handle')
+        cif0 = nlfun(reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
+    else
+%         load('isetbio misc/lnmodel.mat')
+        lnmodel = obj.generatorFunction{xcell,1};
+        cif0 = predict(lnmodel, reshape( repmat(Vstm, 10, 1) , 1 , slen*10)');
+    end
     
     % lcif_kx0 = reshape( repmat(lcif_kx_frame, bpf, 1) , 1 , params.bins);
     for i_trial = 1 : numberTrials
