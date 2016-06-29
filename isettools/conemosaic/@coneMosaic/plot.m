@@ -24,7 +24,8 @@ function [hf, uData] = plot(obj, type, varargin)
 %   'eye spectral qe'      - Cone pigment with macular and lens
 %   'mean absorptions'     - Image of the mean absorptions
 %   'absorptions'          - Movie of the absorptions
-%   'current'              - Image of the mean current .... NYI
+%   'mean current'         - Image of the mean current
+%   'eye movement path'    - eye movement
 %
 % Example:
 %   cm = coneMosaic;
@@ -84,6 +85,12 @@ switch ieParamFormat(type)
             plot(obj.wave, uData, 'LineWidth', 2); grid on;
             xlabel('Wavelength (nm)'); ylabel('Macular absorptance');
         end
+    case 'macularabsorbance'
+        uData = obj.macular.unitDensity;
+        if ~isequal(hf, 'none')
+            plot(obj.wave, uData, 'LineWidth', 2); grid on;
+            xlabel('Wavelength (nm)'); ylabel('Macular absorbance');
+        end
     case 'conespectralqe'
         % Quantum efficiency of macular pigment and cone photopigments
         uData = obj.qe;
@@ -115,13 +122,16 @@ switch ieParamFormat(type)
     case 'meancurrent'
         if isempty(obj.current), error('no current data computed'); end
         imagesc(mean(obj.current, 3)); axis off;
+    case {'empath', 'eyemovementpath'}
+        plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
+        grid on; xlabel('Horizontal position (cones)');
+        ylabel('Vertical position (cones)');
     otherwise
         error('unsupported plot type');
 end
 
 end
 
-%%
 function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %

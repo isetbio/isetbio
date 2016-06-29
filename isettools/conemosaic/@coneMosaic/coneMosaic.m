@@ -10,6 +10,7 @@ classdef coneMosaic < hiddenHandle
     % HJ/JRG/BW ISETBIO Team, 2016
     
     properties  % public properties
+        name              % the name of the object
         
         pigment;          % Cone class object, contain single cone property
         macular;          % Macular class object
@@ -64,6 +65,7 @@ classdef coneMosaic < hiddenHandle
             
             p.addParameter('pigment', photoPigment(), ...
                 @(x) isa(x, 'photoPigment'));
+            p.addParameter('name', 'cone mosaic', @ischar);
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
@@ -78,6 +80,7 @@ classdef coneMosaic < hiddenHandle
             p.parse(varargin{:});
             
             % set properties
+            obj.name = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
             obj.os = p.Results.os;
@@ -150,6 +153,12 @@ classdef coneMosaic < hiddenHandle
             if ~p.Results.skipMacular
                 str = [str obj.macular.description];
             end
+        end
+        
+        function obj = clearData(obj, varargin)
+            % clear computed data
+            obj.absorptions = [];
+            obj.current = [];
         end
         
         % set size to fov
@@ -276,7 +285,7 @@ classdef coneMosaic < hiddenHandle
             % photocurrent.
             p = inputParser;
             p.addRequired('oi',@isstruct);
-            p.addParameter('currentFlag', false, @islogical);
+            p.addParameter('currentFlag', true, @islogical);
             
             % newNoise false means frozen noise, using the seed rng(1)
             p.addParameter('newNoise',true,@islogical);

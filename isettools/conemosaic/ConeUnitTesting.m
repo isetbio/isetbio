@@ -67,3 +67,6 @@ cMosaic.plot('eye spectral qe','oi',oi);
 
 %% Compute photocurrent
 [~, current] = cMosaic.compute(oi, 'currentFlag', true);
+
+%% GUI
+cMosaic.guiWindow;
