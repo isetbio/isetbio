@@ -222,7 +222,8 @@ switch osType
                 szRC = size(spTempStimCenter);
                 
                 szspt = size(spTempStimCenter);
-                if isa(ir.mosaic{rgcType},'rgcPhys') && (szspt(1) ~= 80 && szspt(1) ~= 40)
+                % MAY NEED TO ALLOW RESIZE FOR t_rgcCascade, t_rgcPeriphery
+                if 0%isa(ir.mosaic{rgcType},'rgcPhys') && (szspt(1) ~= 80 && szspt(1) ~= 40)
 %                 spTempStimCenterRS = spTempStimCenter;
 %                 spTempStimSurroundRS = spTempStimSurround;
                 spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));

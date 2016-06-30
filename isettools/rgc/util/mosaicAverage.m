@@ -48,15 +48,15 @@ end
 
 meanAvg = meanRF./meanCtr;
 meanAvg(meanCtr<4) = 0;
-figure; surf(meanAvg); shading flat; shading interp
+% figure; surf(meanAvg); shading flat; shading interp
 
-sum(meanAvg(:)) ;%  3.8475 
+sum(meanAvg(:));%  3.8475 
 sum(sRF(:))/length(mosaicGLM); % 4.5199
 
-max(meanAvg(:)) % 0.2039
+max(meanAvg(:)); % 0.2039
 mean((max(reshape(sRF,size(sRF,1), size(sRF,2)*size(sRF,3))'))) ;% 0.2738
 
-min(meanAvg(:)) %  -0.0377
+min(meanAvg(:)); %  -0.0377
 mean((min(reshape(sRF,size(sRF,1), size(sRF,2)*size(sRF,3))'))); % -0.0459
 
 
@@ -65,15 +65,15 @@ mean((min(reshape(sRF,size(sRF,1), size(sRF,2)*size(sRF,3))'))); % -0.0459
 % figure; plot(mean(tC));
 
 max(mean(tC)); % 1.119floor(oldSize/2)
-mean(max(tC')) ;% 1.1279
+mean(max(tC'));% 1.1279
 
 mean(tC(:)); % 0.0243
 
-min(mean(tC)) ;% -0.2837
+min(mean(tC));% -0.2837
 
 mean(min(tC')); %  -0.29floor(oldSize/2)3
 
-mean(tonicD) ;% 2.2702
+mean(tonicD);% 2.2702
 
 cv = [(floor(newSize/2)+1) - floor(oldSize/2) : (floor(newSize/2)+1) + floor(oldSize/2)] - 1;
 mosaicAverageGLM.linearfilters.Stimulus.space_rk1 = meanAvg(cv,cv);

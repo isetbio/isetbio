@@ -45,13 +45,15 @@ for rgbIndex = 1:channelSize
                 
                 % Find the spatial extent of the RF in terms of multiples of rfDiameter
                 if isa(mosaic, 'rgcPhys')
+                    
+                    % % % % Works for all rgcphys until 6/29
                     extent = round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
                     offset = [0 0];%mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     
                     %%%% Should rfDimater be size RF center? Yes!
                     stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                     stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
-                
+                    % % % %
                     
 %                     rowConv = size(sptempStimulus,1)/80; colConv = size(sptempStimulus,2)/40;
 %                     stimX =  ceil(rowConv*(stimCenterCoords(1) - floor(1*(extent/2)*mosaic.rfDiameter))/1):floor(rowConv*(stimCenterCoords(1) + floor(1*(extent/2)*mosaic.rfDiameter ))/1);%
