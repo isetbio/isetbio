@@ -167,8 +167,8 @@ for xcell = 1:nCells(1)
             fullResponse{xcell,ycell,1} = sum(fullResponseRS) + mosaic.tonicDrive{xcell,ycell};       % mean? sum in ej's code
             % % fullResponse for RGB
             fullResponse{xcell,ycell,2} =  reshape(fullResponseRSRGB, spResponseSize(1), spResponseSize(2), size(fullResponseRSRGB,2), size(fullResponseRSRGB,3));
-            genFunction = mosaicGet(mosaic, 'generatorFunction');
-            nlResponse{xcell,ycell} = genFunction(sum(fullResponseRS,1) + mosaic.tonicDrive{xcell,ycell});
+            % genFunction = mosaicGet(mosaic, 'generatorFunction');
+            % nlResponse{xcell,ycell} = genFunction(sum(fullResponseRS,1) + mosaic.tonicDrive{xcell,ycell});
             
         else
             % For all other models, apply the nonlinearity after

@@ -20,15 +20,19 @@ function obj = osCompute(obj, sensor, varargin)
 % 
 % 8/2015 JRG NC DHB
 
-if size(varargin) ~= 0
-    if isfield(varargin{1,1},'convolutionType')
-        cType = varargin{1,1}.convolutionType; % need to make this an input parameter!
-    else
-        cType = 0;
-    end
-else
-    cType = 0;
-end
+p = inputParser;
+p.addRequired('obj');
+p.addRequired('sensor');
+addParameter(p,'convolutionType',0,@isnumeric);
+addParameter(p,'ecc', 20 ,@isnumeric);
+addParameter(p,'singleType',0,@isnumeric);
+p.parse(obj,sensor,varargin{:});
+
+cType = p.Results.convolutionType;
+ecc = p.Results.ecc;
+singleType = p.Results.singleType;
+
+eccBoundary = 4; % mm; for patches at < 4 mm ecc, use the foveal dynamics.
 
 % Remake filters incorporating the sensor to make them the correct sampling
 % rate.
@@ -40,7 +44,9 @@ obj.timeStep  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
 
 % Find coordinates of L, M and S cones, get voltage signals.
 cone_mosaic = sensorGet(sensor,'cone type');
-% cone_mosaic = 3*ones(size(sensor.data.volts,1),size(sensor.data.volts,2));
+if singleType
+    cone_mosaic = 3*ones(size(sensor.data.volts,1),size(sensor.data.volts,2));
+end
 
 % When we just use the number of isomerizations, this is consistent with
 % the old coneAdapt function and validates.  
@@ -54,7 +60,7 @@ nSteps = size(sensor.data.volts,3);
 % data at each point in the cone mosaic. This code was adapted from the
 % osLinearCone.m file by FR and NC.
 
-initialState = osInit;
+initialState = osInit( 'osType', ecc < eccBoundary);
 initialState.timeInterval = sensorGet(sensor, 'time interval');
 initialState.Compress = 0; % ALLOW ADJUST - FIX THIS
 

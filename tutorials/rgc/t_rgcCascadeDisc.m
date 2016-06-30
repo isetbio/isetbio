@@ -121,7 +121,8 @@ osLDisc = osSet(osLDisc, 'time step', timeStep);
 
 % Set circular convolution, only steady state
 paramsOSL.convolutionType = 1; 
-
+paramsOSL.ecc = 15; % mm
+paramsOSL.singleType = 1;
 % osLSubDisc = osLDisc;
 % 
 % % Compute the outer segment response to the absorptions with the linear

@@ -8,14 +8,14 @@ ypos = sensorGet(sensor,'positions y');
 nPos = length(xpos);
 
 % Pad to the sensor to max size
-rows = [-min([ypos(:); 0]) max([ypos(:); 0])];
-cols = [max([xpos(:); 0]) -min([xpos(:); 0])];
-rows = [max(rows) max(rows)];
-cols = [max(cols) max(cols)];
+rowsDefault = [-min([ypos(:); 0]) max([ypos(:); 0])];
+colsDefault = [max([xpos(:); 0]) -min([xpos(:); 0])];
+rowsDefault = [max(rowsDefault) max(rowsDefault)];
+colsDefault = [max(colsDefault) max(colsDefault)];
 
 ip = inputParser;
-ip.addOptional('rows', rows);
-ip.addOptional('cols', cols);
+ip.addOptional('rows',rowsDefault);
+ip.addOptional('cols',colsDefault);
 ip.parse(varargin{:});
 
 rows = ip.Results.rows;

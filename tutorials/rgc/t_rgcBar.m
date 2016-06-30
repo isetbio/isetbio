@@ -31,22 +31,36 @@ scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
 % These parameters are for other stuff.
-<<<<<<< HEAD
+
 params.expTime = 0.001;
 params.timeInterval = 0.001;
-params.nSteps = 100;     % Number of stimulus frames
-=======
-% params.expTime = 0.0025;
-% params.timeInterval = 0.0025;
+params.nSteps = 200;     % Number of stimulus frames
 
-params.expTime = 0.01;
-params.timeInterval = 0.01;
-params.nSteps = 50;     % Number of stimulus frames
->>>>>>> master
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
+
 sensor = sensorCreate('human');
+% 
+% % paramsStim.fov = 8;
+% paramsStim.radius = 3.5;
+% paramsStim.theta = 330;
+% paramsStim.side = 'left';
+% 
+% if paramsStim.radius == 0
+%     
+%     sensor = sensorCreate('human');
+% 
+% else
+%     
+%     coneP = coneCreate; % The cone properties properties
+%     retinalRadiusDegrees = paramsStim.radius;
+%     retinalPolarDegrees  = paramsStim.theta;
+%     whichEye             = paramsStim.side;
+%     retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
+%     sensor = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+% end
+
 sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 
 sensor = sensorSet(sensor, 'exp time', params.expTime); 
@@ -123,7 +137,8 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Outer segment calculation - linear
 
 % Input = RGB
-osL = osCreate('linear');
+% osL = osCreate('linear');
+osL = osCreate('biophys');
 
 % Set cone spacing so that 
 arrayWidth = sensorGet(sensor,'width');
@@ -137,8 +152,19 @@ osL = osSet(osL, 'patch size', arrayWidth);
 tSampling = sensorGet(sensor,'time interval','sec');
 osL = osSet(osL, 'time step', tSampling);
 
+clear paramsOSL
+% Set circular convolution, only steady state
+% paramsOSL.convolutionType = 1; 
+paramsOSL.ecc = 20; % mm
+% paramsOSL.singleType = 1;
+
+sensorVolts = sensorGet(sensor,'volts');
+paramsOSL.bgVolts = 1*mean(sensorVolts(:));
+
+% osL = osSet(osL, 'noiseflag',1);
+
 % os = osSet(os, 'rgbData', sceneRGB);
-osL = osCompute(osL, sensor);
+osL = osCompute(osL, sensor, paramsOSL);
 
 % Plot the photocurrent for a pixel
 osPlot(osL,sensor);
@@ -176,7 +202,15 @@ innerRetinaSU = irCompute(innerRetinaSU, bp);
 % irPlot(innerRetinaSU, 'linear');
 % irPlot(innerRetinaSU, 'raster');
 irPlot(innerRetinaSU, 'psth','type',1);
-
+%%
+for i1 = 1:10; 
+    for j1 = 1:10; 
+        hold on;
+        subplot(10,10,(j1-1)*10+i1); 
+        hold on;
+        axis([0 1.1 0 50]); 
+    end; 
+end
 %% Outer segment calculation
 % 
 % Input = RGB

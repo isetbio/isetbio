@@ -27,7 +27,7 @@ clear
 % White noise (WN) or natural scenes with eye movements (NSEM)
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
-cellTypeI     = 2;%:2    % Choose On Parasol (1) or Off Parasol (2)
+cellTypeI     = 1;%:2    % Choose On Parasol (1) or Off Parasol (2)
 stimulusTestI = 1;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
@@ -120,7 +120,8 @@ osL = osSet(osL, 'time step', timeStep);
 
 % Set circular convolution, only steady state
 paramsOSL.convolutionType = 1; 
-
+paramsOSL.ecc = 2; % mm
+paramsOSL.singleType = 1;
 osLSub = osL;
 
 % Compute the outer segment response to the absorptions with the linear
@@ -216,7 +217,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
-params.cellIndices = 1:118;
+params.cellIndices = 1:2%:118;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
@@ -264,7 +265,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
-params.cellIndices = 1:118;
+params.cellIndices = 1:2%:118;
 
 % Create object
 innerRetina = irPhys(os1, params);
@@ -301,7 +302,7 @@ innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth'
 % Set the time and cell number
 tStart = 1.5;% 9%1.5;
 tEnd = 9;%21;%18%21;%1*8.5;
-cellNum = 3;
+cellNum = 2;
 
 % Plot the original GLM prediction
 vcNewGraphWin([],'upperleftbig'); 
