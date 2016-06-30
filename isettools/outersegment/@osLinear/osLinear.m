@@ -40,7 +40,7 @@ classdef osLinear < outerSegment
         
         function obj = compute(obj, pRate, coneType, varargin)
             % see osCompute for details
-            obj = osCompute(obj, pRate, coneType, varargin);
+            obj = osCompute(obj, pRate, coneType, varargin{:});
         end
         
         function plot(obj, cMosaic)

@@ -42,6 +42,7 @@ classdef outerSegment < handle
         function obj = outerSegment(varargin)
             obj.noiseFlag = 0;            
             obj.coneCurrentSignal = [];
+            obj.timeStep = 1e-3;
         end
         
         % see osSet in @osLinear and @osBioPhys for details

@@ -52,6 +52,7 @@ end
 function coneMosaicWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 %#ok<*DEFNU>
 %#ok<*INUSD>
+%#ok<*ST2NM>
 
 % check inputs
 if isempty(varargin) || ~isa(varargin{1}, 'coneMosaic')
@@ -61,7 +62,8 @@ end
 % Choose default command line output for coneMosaicWindow
 handles.output = hObject;
 handles.cMosaic = varargin{1};
-handles.mov = [];
+handles.mov = [];  % absorption movie
+handles.curMov = [];  % photocurrent movie
 
 % Update handles structure
 guidata(hObject, handles);
@@ -146,6 +148,7 @@ end
 function menuEditClearData_Callback(hObject, eventdata, handles)
 handles.cMosaic.clearData();
 handles.mov = [];
+handles.curMov = [];
 guidata(hObject, handles);
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
@@ -156,6 +159,8 @@ set(hObject,'BackgroundColor', get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editGam_Callback(hObject, eventdata, handles)
+handles.mov = [];
+handles.curMov = [];
 coneMosaicGUIRefresh(hObject,eventdata,handles);
 end
 
@@ -253,7 +258,8 @@ switch plotType
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.mov)
             % generate movie
-            [~, handles.mov] = cm.plot('absorptions', 'hf', 'none');
+            [~, handles.mov] = cm.plot('absorptions', 'hf', 'none', ...
+                'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
         end
         
@@ -282,7 +288,11 @@ switch plotType
     case 'Photocurrent movie'
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.sliderMovieProgress, 'Visible', 'on');
-        cm.plot('current', 'hf', handles.axes2);
+        if isempty(handles.curMov) % generate movie for photocurrent
+            [~, handles.curMov] = cm.plot('current', 'hf', 'none', ...
+                'gamma', str2double(get(handles.editGam, 'String')));
+            guidata(hObject, handles);
+        end
         
         % set up right click menu (context menu)
         c = uicontextmenu;
@@ -292,6 +302,9 @@ switch plotType
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+        
+        % play movie
+        btnPlayPause_Callback(hObject, eventdata, handles);
     otherwise
         error('Unknown plot type');
 end
@@ -339,8 +352,8 @@ switch plotType
         end
         
         % map x, y to cone positions
-        x = x / size(handles.mov, 2) * size(data, 2);
-        y = y / size(handles.mov, 1) * size(data, 1);
+        x = x / size(handles.curMov, 2) * size(data, 2);
+        y = y / size(handles.curMov, 1) * size(data, 1);
         yStr = 'Photocurrent (pA)';
 end
 x = ieClip(round(x), 1, size(data, 2));
@@ -411,9 +424,12 @@ function editKLMS_Callback(hObject, eventdata, handles)
 % hObject    handle to editKLMS (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+density = str2num(get(handles.editKLMS, 'String'));
+assert(numel(density) == 4, 'invalid input');
 
-% Hints: get(hObject,'String') returns contents of editKLMS as text
-%        str2double(get(hObject,'String')) returns contents of editKLMS as a double
+density = density / sum(density);
+handles.cMosaic.spatialDensity = density;
+menuEditClearData_Callback(hObject, eventdata, handles);
 end
 
 function editKLMS_CreateFcn(hObject, eventdata, handles)
@@ -441,8 +457,13 @@ function editConeWidth_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.cMosaic.pigment.width = 1e-6 * str2double(get(hObject, 'String'));
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+newWidth = 1e-6 * str2double(get(hObject, 'String'));
+
+if handles.cMosaic.pigment.width ~= newWidth
+    handles.cMosaic.pigment.width = newWidth;
+    menuEditClearData_Callback(hObject, eventdata, handles);
+end
+
 
 end
 
@@ -464,8 +485,11 @@ function editConeHeight_Callback(hObject, eventdata, handles)
 % hObject    handle to editConeHeight (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.cMosaic.pigment.height = 1e-6 * str2double(get(hObject, 'String'));
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+newHeight = 1e-6 * str2double(get(hObject, 'String'));
+if handles.cMosaic.pigment.height ~= newHeight
+    handles.cMosaic.pigment.height = newHeight;
+    menuEditClearData_Callback(hObject, eventdata, handles);
+end
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -486,10 +510,13 @@ function editConeOpticalDensity_Callback(hObject, eventdata, handles)
 % hObject    handle to editConeOpticalDensity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-val = str2double(get(hObject, 'String'));
+val = str2num(get(hObject, 'String'));
 assert(numel(val) == 3, 'invalid input for optical density');
-handles.cMosaic.pigment.opticalDensity = val;
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+if any(handles.cMosaic.pigment.opticalDensity ~= val)
+    handles.cMosaic.pigment.opticalDensity = val;
+    menuEditClearData_Callback(hObject, eventdata, handles);
+end
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -510,8 +537,11 @@ function editMacularDensity_Callback(hObject, eventdata, handles)
 % hObject    handle to editMacularDensity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.cMosaic.macular.density = str2double(get(hObject, 'String'));
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+val = str2double(get(hObject, 'String'));
+if handles.cMosaic.macular.density ~= val
+    handles.cMosaic.macular.density = val;
+    menuEditClearData_Callback(hObject, eventdata, handles);
+end
 end
 
 function editMacularDensity_CreateFcn(hObject, eventdata, handles)
@@ -530,10 +560,12 @@ function editConePeakEfficiency_Callback(hObject, eventdata, handles)
 % hObject    handle to editConePeakEfficiency (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-val = str2double(get(hObject, 'String'));
+val = str2num(get(hObject, 'String'));
 assert(numel(val) == 3, 'invalid input for peak efficiency');
-handles.cMosaic.pigment.peakEfficiency = val;
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+if any(handles.cMosaic.pigment.peakEfficiency ~= val)
+    handles.cMosaic.pigment.peakEfficiency = val;
+    menuEditClearData_Callback(hObject, eventdata, handles);
+end
 end
 
 function editConePeakEfficiency_CreateFcn(hObject, eventdata, handles)
@@ -654,9 +686,6 @@ function popupImageType_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popupImageType (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -666,7 +695,13 @@ function sliderMovieProgress_Callback(~, ~, handles)
 % hObject    handle to sliderMovieProgress (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-mov = handles.mov;
+index = get(handles.popupImageType, 'Value');
+if index == 3  % absorption movie
+    mov = handles.mov;
+elseif index == 5  % photocurrent movie
+    mov = handles.curMov;
+end
+
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
 assert(cnt <= size(mov, 4), 'slider choice out of range');
 axes(handles.axes2); imshow(mov(:, :, :, cnt)); drawnow;
@@ -695,8 +730,13 @@ function btnPlayPause_Callback(~, ~, handles)
 % hObject    handle to btnPlayPause (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+index = get(handles.popupImageType, 'Value');
+if index == 3  % absorption movie
+    mov = handles.mov;
+elseif index == 5  % photocurrent movie
+    mov = handles.curMov;
+end
 
-mov = handles.mov;
 nFrames = size(mov, 4);
 set(handles.sliderMovieProgress, 'Min', 1);
 set(handles.sliderMovieProgress, 'Max', nFrames);

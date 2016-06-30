@@ -17,7 +17,6 @@ classdef coneMosaic < hiddenHandle
         os;               % Outersegment properties
         
         pattern;          % Pattern of K-LMS cones in the mosaick
-        spatialDensity;   % spatial density (ratio) of the K-LMS cones
         integrationTime;  % Cone temporal integration time in secs
         emPositions;      % Eye movement positions in number of cones.
                           % The length of this property controls number of
@@ -50,6 +49,12 @@ classdef coneMosaic < hiddenHandle
         
         coneLocs;   % cone locations in meters
         qe;         % effective absorptance with macular pigment (not lens)
+        
+        spatialDensity; % spatial density (ratio) of the K-LMS cones
+    end
+    
+    properties (Access=private)
+        spatialDensity_;
     end
     
     % Public methods
@@ -86,14 +91,14 @@ classdef coneMosaic < hiddenHandle
             obj.os = p.Results.os;
             obj.wave = p.Results.wave;
             obj.integrationTime = p.Results.integrationTime;
-            obj.spatialDensity = p.Results.spatialDensity(:);
+            obj.spatialDensity_ = p.Results.spatialDensity(:);
             obj.noiseFlag = p.Results.noiseFlag;
             obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
-                    obj.spatialDensity, obj.pigment.width);
+                    obj.spatialDensity_, obj.pigment.width);
             else
                 obj.pattern = p.Results.pattern;
             end
@@ -248,7 +253,18 @@ classdef coneMosaic < hiddenHandle
                obj.macular.transmittance)*diag(obj.pigment.peakEfficiency);
         end
         
-        % set method for dependent variables
+        function val = get.spatialDensity(obj)
+            val = obj.spatialDensity_;
+        end
+        
+        % set method for class properties
+        function set.spatialDensity(obj, val)
+            obj.spatialDensity_ = val;
+            [~, obj.pattern] = humanConeMosaic(obj.mosaicSize, ...
+                    val, obj.pigment.width);
+            obj.clearData();
+        end
+        
         function set.wave(obj, val)
             obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
@@ -261,8 +277,9 @@ classdef coneMosaic < hiddenHandle
         function set.mosaicSize(obj, val)
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
-                    obj.spatialDensity, obj.pigment.width);
+                    obj.spatialDensity_, obj.pigment.width);
                 obj.os.patchSize = obj.width;
+                obj.clearData();
             end
         end
         

@@ -136,7 +136,12 @@ switch ieParamFormat(type)
             title('Mean photocurrent (pA)');
         end
     case {'current', 'photocurrent'}
-        error('Not yet implemented');
+        if isempty(obj.current)
+            if isempty(p.Results.hf), close(hf); end
+            error('no photocurrent data');
+        end
+        uData = coneImageActivity(obj, hf, 'dataType', ...
+            'photocurrent', varargin{:});
     case {'empath', 'eyemovementpath'}
         plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
         grid on; xlabel('Horizontal position (cones)');
@@ -171,6 +176,7 @@ p.addRequired('hf',@(x) (ischar(x) || ishandle(x) || isstruct(x)));
 p.addParameter('step', [], @isnumeric);
 p.addParameter('showBar', true, @islogical);
 p.addParameter('gamma', 0.3, @isnumeric);
+p.addParameter('dataType', 'absorptions', @ischar);
 
 % set parameters
 p.parse(cMosaic, hf, varargin{:});
@@ -178,7 +184,16 @@ step = p.Results.step;
 showBar = p.Results.showBar;
 gamma = p.Results.gamma;
 
-nframes = size(cMosaic.absorptions, 3);
+switch ieParamFormat(p.Results.dataType)
+    case {'absorptions', 'isomerizations', 'photons'}
+        data = cMosaic.absorptions;
+    case {'current', 'photocurrent'}
+        data = cMosaic.current;
+    otherwise
+        error('Unknown data type');
+end
+
+nframes = size(data, 3);
 if isempty(step), step = max(1, nframes/100); end
 
 % create cone mosaic image
@@ -189,7 +204,7 @@ delta = mosaicData.delta;
 % bulid frame by frame
 if showBar, wbar = waitbar(0,'creating cone movie'); end
 mov = zeros([size(coneMosaicImage), length(1:step:nframes)]);
-g = fspecial('gaussian',6,2);
+g = fspecial('gaussian', 6, 2);
 
 for ii = 1 : step : nframes
     if showBar, waitbar(ii/nframes,wbar); end
@@ -206,7 +221,8 @@ for ii = 1 : step : nframes
 end
 
 % Scale and gamma correct mov
-mov = (mov / max(mov(:))) .^ gamma;
+mov = ieScale(mov) .^ gamma;
+
 if showBar, close(wbar); end
 
 % show the movie, or write to file
