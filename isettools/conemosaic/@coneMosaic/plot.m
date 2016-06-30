@@ -55,10 +55,14 @@ elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
-% set color order
+% set color order so that LMS plots as RGB
 if ~isequal(hf, 'none')
     co = get(gca, 'ColorOrder');
-    set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+    if isgraphics(hf,'axes')
+        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
+    else  % Figure
+        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+    end
 end
 
 switch ieParamFormat(type)

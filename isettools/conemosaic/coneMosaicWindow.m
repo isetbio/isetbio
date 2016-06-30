@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 29-Jun-2016 16:13:08
+% Last Modified by GUIDE v2.5 30-Jun-2016 11:37:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -133,7 +133,7 @@ function menuFile_Callback(hObject, eventdata, handles)
 end
 
 function menuFileClose_Callback(~, ~, handles)
-close(handles.coneMosaicWindow);
+delete(handles.coneMosaicWindow);
 end
 
 function menuEdit_Callback(hObject, eventdata, handles)
@@ -766,6 +766,31 @@ else
     uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+end
+
+end
+
+
+
+function editEccentricity_Callback(hObject, eventdata, handles)
+% hObject    handle to editEccentricity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editEccentricity as text
+%        str2double(get(hObject,'String')) returns contents of editEccentricity as a double
+end
+
+% --- Executes during object creation, after setting all properties.
+function editEccentricity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editEccentricity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
 end
