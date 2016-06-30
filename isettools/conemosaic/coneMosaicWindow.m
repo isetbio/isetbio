@@ -189,7 +189,6 @@ set(handles.editKLMS, 'string', str);
 % set description strings
 str = cm.description('skipMacular', true, 'skipPigment', true);
 set(handles.txtMosaic, 'string', str);
-set(handles.txtConeProperties, 'string', cm.pigment.description);
 
 % set photopigment properties
 set(handles.editConeWidth, 'string', num2str(cm.pigment.width*1e6));
