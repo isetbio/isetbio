@@ -308,6 +308,7 @@ switch plotType
         error('Unknown plot type');
 end
 
+
 end
 
 function contextMenuPlot(source, callbackdata)
@@ -408,7 +409,7 @@ function menuPlot_Callback(hObject, eventdata, handles)
 end
 
 function menuEditFontSize_Callback(~, ~, handles)
-ieFontChangeSize(handles.coneMosaicWindow);
+ieFontSizeSet(handles.coneMosaicWindow);
 end
 
 function menuHelp_Callback(hObject, eventdata, handles)
@@ -737,6 +738,12 @@ elseif index == 5  % photocurrent movie
 end
 
 nFrames = size(mov, 4);
+if nFrames == 1, 
+    str = sprintf('Only one frame. No movie to show.'); 
+    ieInWindowMessage(str,handles,3);
+    return; 
+end
+
 set(handles.sliderMovieProgress, 'Min', 1);
 set(handles.sliderMovieProgress, 'Max', nFrames);
 set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
@@ -745,7 +752,8 @@ if get(handles.btnPlayPause, 'Value')
     % play the video
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
-    axes(handles.axes2);
+    % axes(handles.axes2);
+    axes(get(handles.coneMosaicWindow,'CurrentAxes'));
     while get(handles.btnPlayPause, 'Value')
         imshow(mov(:, :, :, cnt));
         set(handles.sliderMovieProgress, 'Value', cnt);

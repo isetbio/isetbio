@@ -31,7 +31,7 @@ function d = displayCreate(displayName, varargin)
 %% Init Parameters
 % Default changed on Nov. 30, 2015.  The original default was far too
 % bright for common practice.
-if notDefined('displayName'), displayName = 'default'; end
+if notDefined('displayName'), displayName = 'LCD-Apple'; end
 
 % Identify the object type
 d.type = 'display';
