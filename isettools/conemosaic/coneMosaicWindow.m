@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 28-Jun-2016 20:20:56
+% Last Modified by GUIDE v2.5 29-Jun-2016 16:13:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,6 +61,7 @@ end
 % Choose default command line output for coneMosaicWindow
 handles.output = hObject;
 handles.cMosaic = varargin{1};
+handles.mov = [];
 
 % Update handles structure
 guidata(hObject, handles);
@@ -85,6 +86,7 @@ if isempty(oi) || isempty(oiGet(oi, 'photons'))
     error('No optical image photon data available');
 end
 handles.cMosaic.compute(oi);
+set(handles.popupImageType, 'Value', 2); % mean absorptions
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -113,27 +115,15 @@ end
 
 % GUI object create functions
 function editRows_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
+set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editCols_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
+set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editExpTime_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
+set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
 
 % menu call back functions
@@ -153,25 +143,23 @@ if ~isempty(str), handles.cMosaic.name = str; end
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-function sensorEditClearData_Callback(hObject, eventdata, handles)
+function menuEditClearData_Callback(hObject, eventdata, handles)
 handles.cMosaic.clearData();
+handles.mov = [];
+guidata(hObject, handles);
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 % --- Executes during object creation, after setting all properties.
 function editGam_CreateFcn(hObject, eventdata, handles)
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
+set(hObject,'BackgroundColor', get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editGam_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject,eventdata,handles);
 end
 
-function coneMosaicGUIRefresh(~, ~, handles)
+function coneMosaicGUIRefresh(hObject, eventdata, handles)
 %Update the cone mosaic gui window interface
 %
 %   coneMosaciGUIRefresh(handles)
@@ -213,9 +201,6 @@ set(handles.editConePeakEfficiency, 'string', str);
 % set macular density
 set(handles.editMacularDensity, 'string', num2str(cm.macular.density));
 
-% set image content to axes
-cm.plot('cone mosaic', 'hf', handles.axes2);
-
 % check if absorptions and current are available
 if isempty(cm.absorptions)
     set(handles.menuPlotMosaicMeanAbsorptions, 'Enable', 'off');
@@ -229,157 +214,191 @@ else
     set(handles.menuPlotMosaicMeanCurrent, 'Enable', 'on');
 end
 
+% popup menu content
+str = {'Cone mosaic'};
+if ~isempty(cm.absorptions)
+    str = [str {'Mean absorptions', 'Absorption movie'}];
 end
 
-% --------------------------------------------------------------------
-function menuAnSNR_Callback(hObject, eventdata, handles)
-% Analyze SNR menu
+if ~isempty(cm.current)
+    str = [str {'Mean photocurrent', 'Photocurrent movie'}];
 end
 
-% --------------------------------------------------------------------
-function menuAnHistogram_Callback(hObject, eventdata, handles)
-% Analyze Histogram Menu
+index = get(handles.popupImageType, 'Value');
+if index > length(str), index = 1; end
+plotType = str{index};
+set(handles.popupImageType, 'Value', index);
+set(handles.popupImageType, 'String', str);
+
+
+switch plotType
+    case 'Cone mosaic'
+        % cone mosaic image
+        resetMovieControl(handles);
+        cm.plot('cone mosaic', 'hf', handles.axes2);
+    case 'Mean absorptions'
+        % mean cone absorptions
+        resetMovieControl(handles);
+        cm.plot('mean absorptions', 'hf', handles.axes2);
+        
+        % set up right click menu (context menu)
+        c = uicontextmenu;
+        handles.axes2.Children.UIContextMenu = c;
+        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+    case 'Absorption movie'
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.sliderMovieProgress, 'Visible', 'on');
+        if isempty(handles.mov)
+            % generate movie
+            [~, handles.mov] = cm.plot('absorptions', 'hf', 'none');
+            guidata(hObject, handles);
+        end
+        
+        % set up right click menu (context menu)
+        c = uicontextmenu;
+        handles.axes2.Children.UIContextMenu = c;
+        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+        
+        % play movie
+        btnPlayPause_Callback(hObject, eventdata, handles);
+    case 'Mean photocurrent'
+        resetMovieControl(handles);
+        cm.plot('mean current', 'hf', handles.axes2);
+        
+        % set up right click menu (context menu)
+        c = uicontextmenu;
+        handles.axes2.Children.UIContextMenu = c;
+        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+    case 'Photocurrent movie'
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.sliderMovieProgress, 'Visible', 'on');
+        cm.plot('current', 'hf', handles.axes2);
+        
+        % set up right click menu (context menu)
+        c = uicontextmenu;
+        handles.axes2.Children.UIContextMenu = c;
+        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+    otherwise
+        error('Unknown plot type');
 end
 
-% --------------------------------------------------------------------
-function menuISOSat_Callback(hObject, eventdata, handles)
-%
-speed = isoSpeed('saturation');
-str = sprintf('ISO speed (saturation):    %.0f\n\n',speed);
-str = [str,sprintf('Measured for a uniform D65 optical image.\n\n')];
-str = [str,sprintf('Larger means saturates at lower lux-sec level.\n\n')];
+end
 
-msgbox(str);
+function contextMenuPlot(source, callbackdata)
+% call back function for context menu
+handles = guidata(source);
+
+% determine which data to use (absorption or current)
+contents = get(handles.popupImageType, 'String');
+index = get(handles.popupImageType, 'Value');
+if index > length(contents), index = 1; end
+plotType = contents{index};
+
+% get a point
+[x, y] = ginput(1);
+
+switch plotType
+    case 'Mean absorptions'
+        data = mean(handles.cMosaic.absorptions, 3);
+        yStr = 'Absorptions';
+    case 'Absorption movie'
+        cnt = round(get(handles.sliderMovieProgress, 'Value'));
+        if strcmp(source.Label, 'time series')
+            data = handles.cMosaic.absorptions;
+        else
+            data = handles.cMosaic.absorptions(:, :, cnt);
+        end
+        
+        % map x, y to cone positions
+        x = x / size(handles.mov, 2) * size(data, 2);
+        y = y / size(handles.mov, 1) * size(data, 1);
+        yStr = 'Absorptions';
+    case 'Mean photocurrent'
+        data = mean(handles.cMosaic.current, 3);
+        yStr = 'Photocurrent (pA)';
+    case 'Photocurrent movie'
+        cnt = round(get(handles.sliderMovieProgress, 'Value'));
+        if strcmp(source.Label, 'time series')
+            data = handles.cMosaic.current;
+        else
+            data = handles.cMosaic.current(:, :, cnt);
+        end
+        
+        % map x, y to cone positions
+        x = x / size(handles.mov, 2) * size(data, 2);
+        y = y / size(handles.mov, 1) * size(data, 1);
+        yStr = 'Photocurrent (pA)';
+end
+x = ieClip(round(x), 1, size(data, 2));
+y = ieClip(round(y), 1, size(data, 1));
+
+switch source.Label
+    case 'hLine response'
+        vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); grid on;
+        xlabel('Horionzal position (cones)'); ylabel(yStr);
+    case 'vLine response'
+        vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); grid on;
+        xlabel('Vertical position (cones)'); ylabel(yStr);
+    case 'hLine LMS'
+        vcNewGraphWin; names = 'LMS';
+        for ii = 2 : 4 % L, M, S
+            subplot(3, 1, ii-1);
+            pos = find(handles.cMosaic.pattern(y, :) == ii);
+            plot(pos, data(y, pos), '.-', 'LineWidth', 2); grid on;
+            xlabel('Horizontal Position (cones');
+            ylabel([names(ii-1) ' ' lower(yStr)]);
+        end
+    case 'vLine LMS'
+        vcNewGraphWin; names = 'LMS';
+        for ii = 2 : 4 % L, M, S
+            subplot(3, 1, ii-1);
+            pos = find(handles.cMosaic.pattern(:, x) == ii);
+            plot(pos, data(pos, x), '.-', 'LineWidth', 2); grid on;
+            xlabel('Vertical Position (cones');
+            ylabel([names(ii-1) ' ' lower(yStr)]);
+        end
+    case 'time series'
+        vcNewGraphWin;
+        t = (1:size(data, 3)) * handles.cMosaic.sampleTime * 1e3;
+        plot(t, squeeze(data(x, y, :)), 'LineWidth', 2);
+        grid on; xlabel('Time (ms)'); ylabel(yStr);
+    otherwise
+        error('Unknown label type');
+end
 
 end
 
-% --------------------------------------------------------------------
-function menuAnExposureValue_Callback(hObject, eventdata, handles)
+function resetMovieControl(handles)
+% reset movie control
+set(handles.btnPlayPause, 'Visible', 'off');
+set(handles.sliderMovieProgress, 'Visible', 'off');
 
-EV = exposureValue(vcGetObject('OPTICS'),vcGetObject('ISA'));
-
-str = sprintf('Exposure value (log2(f/#^2 / T)):    %.2f',EV);
-ieInWindowMessage(str,ieSessionGet('sensorwindowhandles'));
-
-end
-
-%-------------Photometric Exposure Value (lux-sec)
-function menuAnPhotExp_Callback(hObject, eventdata, handles)
-% Analyze | SNR | Photometric Exp
-
-str = sprintf('Photometric exposure (lux-sec): %.2f',...
-    photometricExposure(vcGetObject('OI'),vcGetObject('ISA')));
-
-% Display in coneMosaicWindow message
-ieInWindowMessage(str,ieSessionGet('sensorwindowhandles'));
-
+set(handles.btnPlayPause, 'Value', 1);
+set(handles.sliderMovieProgress, 'Value', 1);
 end
 
 function menuPlot_Callback(hObject, eventdata, handles)
 % Menu Plot
 end
 
-function menuAnalyze_Callback(hObject, eventdata, handles)
-% Analyze menu
-end
-
-function menuAnLine_Callback(hObject, eventdata, handles)
-% Analyze->Line menu
-end
-
-function menuHorizontal_Callback(hObject, eventdata, handles)
-end
-
-% --------------------------------------------------------------------
-function menuVertical_Callback(hObject, eventdata, handles)
-end
-
-% --------------------------------------------------------------------
-function menuAnLineV_Callback(hObject, eventdata, handles)
-% Analyze | Line | Vertical | Electrons
-sensorPlot(vcGetObject('sensor'),'electrons vline');
-%OLD:  sensorPlotLine(vcGetObject('ISA'),'v','volts','space');
-end
-
-% --------------------------------------------------------------------
-function menuAnLineH_Callback(hObject, eventdata, handles)
-% Analyze | Line | Horizontal | Volts
-sensorPlot(vcGetObject('sensor'),'volts hline');
-end
-
-% --------------------------------------------------------------------
-function menuHorLineE_Callback(hObject, eventdata, handles)
-% Analyze | Line | Horizontal | Electrons
-sensorPlot(vcGetObject('sensor'),'electrons hline');
-end
-
-% --------------------------------------------------------------------
-function menuVertLineE_Callback(hObject, eventdata, handles)
-% Analyze | Line | Vertical | Electrons
-sensorPlot(vcGetObject('sensor'),'electrons vline');
-end
-
-% --------------------------------------------------------------------
-function menuHorLineDV_Callback(hObject, eventdata, handles)
-% sensorPlotLine(vcGetObject('sensor'),'h','dv','space');
-sensorPlot(vcGetObject('sensor'),'dv hline');
-end
-
-% --------------------------------------------------------------------
-function menuVertLineDV_Callback(hObject, eventdata, handles)
-% sensorPlotLine(vcGetObject('sensor'),'v','dv','space');
-sensorPlot(vcGetObject('sensor'),'dv vline');
-end
-
-% --------------------------------------------------------------------
-function menuFFThor_Callback(hObject, eventdata, handles)
-sensorPlotLine(vcGetObject('sensor'),'h','volts','fft');
-end
-
-% --------------------------------------------------------------------
-function menuFFTVert_Callback(hObject, eventdata, handles)
-sensorPlotLine(vcGetObject('sensor'),'v','volts','fft');
-end
-
-% --------------------------------------------------------------------
-function menuAnPixHistQ_Callback(hObject, eventdata, handles)
-sensorPlotHistogram('e');
-end
-
-% --------------------------------------------------------------------
-function menuAnPixHistV_Callback(hObject, eventdata, handles)
-% Analyze | Line | Vertical | Volts
-sensorPlot(vcGetObject('sensor'),'volts hist');
-end
-
-% --------------------------------------------------------------------
-function menuAnSensorSNR_Callback(hObject, eventdata, handles)
-%
-sensorPlotSNR;
-end
-
-% --------------------------------------------------------------------
-function menuAnROIStats_Callback(hObject, eventdata, handles)
-% Analysis->ROI statistics
-end
-
-% --------------------------------------------------------------------
-function menuAnBasicV_Callback(hObject, eventdata, handles)
-%
-sensorStats([],'basic','volts');
-end
-
-% --------------------------------------------------------------------
-function menuAnBasicE_Callback(hObject, eventdata, handles)
-sensorStats([],'basic','electrons');
-end
-
-% --------------------------------------------------------------------
 function menuEditFontSize_Callback(~, ~, handles)
 ieFontChangeSize(handles.coneMosaicWindow);
 end
 
-% --------------------------------------------------------------------
 function menuHelp_Callback(hObject, eventdata, handles)
 end
 
@@ -397,7 +416,6 @@ function editKLMS_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of editKLMS as a double
 end
 
-% --- Executes during object creation, after setting all properties.
 function editKLMS_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to editKLMS (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -411,14 +429,11 @@ end
 
 end
 
-
-% --- Executes during object creation, after setting all properties.
 function txtMosaic_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to txtMosaic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 end
-
 
 
 function editConeWidth_Callback(hObject, eventdata, handles)
@@ -499,7 +514,6 @@ handles.cMosaic.macular.density = str2double(get(hObject, 'String'));
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-% --- Executes during object creation, after setting all properties.
 function editMacularDensity_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to editMacularDensity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -512,8 +526,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 end
 
-
-
 function editConePeakEfficiency_Callback(hObject, eventdata, handles)
 % hObject    handle to editConePeakEfficiency (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -524,7 +536,6 @@ handles.cMosaic.pigment.peakEfficiency = val;
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-% --- Executes during object creation, after setting all properties.
 function editConePeakEfficiency_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to editConePeakEfficiency (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -537,7 +548,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 end
 
-% --------------------------------------------------------------------
 function menuPlotMacular_Callback(hObject, eventdata, handles)
 % hObject    handle to menuPlotMacular (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -606,8 +616,6 @@ handles.cMosaic.plot('macular absorbance');
 
 end
 
-
-% --------------------------------------------------------------------
 function menuFileRefresh_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileRefresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -615,8 +623,6 @@ function menuFileRefresh_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
-
-% --------------------------------------------------------------------
 function menuPlotEMPath_Callback(~, ~, handles)
 % hObject    handle to menuPlotEMPath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -624,8 +630,6 @@ function menuPlotEMPath_Callback(~, ~, handles)
 handles.cMosaic.plot('eye movement path');
 end
 
-
-% --------------------------------------------------------------------
 function menuEditGenerateEM_Callback(hObject, eventdata, handles)
 % hObject    handle to menuEditGenerateEM (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -635,6 +639,93 @@ if ~isempty(str)
     handles.cMosaic.emGenSequence(str2double(str));
     handles.cMosaic.clearData();
     coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+end
+
+function popupImageType_Callback(hObject, eventdata, handles)
+% hObject    handle to popupImageType (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+function popupImageType_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupImageType (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+function sliderMovieProgress_Callback(~, ~, handles)
+% hObject    handle to sliderMovieProgress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+mov = handles.mov;
+cnt = round(get(handles.sliderMovieProgress, 'Value'));
+assert(cnt <= size(mov, 4), 'slider choice out of range');
+axes(handles.axes2); imshow(mov(:, :, :, cnt)); drawnow;
+
+% register right click menu
+c = uicontextmenu;
+handles.axes2.Children.UIContextMenu = c;
+uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+
+end
+
+function sliderMovieProgress_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sliderMovieProgress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+end
+
+function btnPlayPause_Callback(~, ~, handles)
+% hObject    handle to btnPlayPause (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+mov = handles.mov;
+nFrames = size(mov, 4);
+set(handles.sliderMovieProgress, 'Min', 1);
+set(handles.sliderMovieProgress, 'Max', nFrames);
+set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
+
+if get(handles.btnPlayPause, 'Value')
+    % play the video
+    set(handles.btnPlayPause, 'String', 'Pause');
+    cnt = round(get(handles.sliderMovieProgress, 'Value'));
+    axes(handles.axes2);
+    while get(handles.btnPlayPause, 'Value')
+        imshow(mov(:, :, :, cnt));
+        set(handles.sliderMovieProgress, 'Value', cnt);
+        
+        drawnow; cnt = cnt + 1;
+        if cnt > nFrames, cnt = 1; end
+    end
+else
+    % pause video
+    set(handles.btnPlayPause, 'String', 'Play');
+    
+    % register right click menu
+    c = uicontextmenu;
+    handles.axes2.Children.UIContextMenu = c;
+    uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
 end
 
 end

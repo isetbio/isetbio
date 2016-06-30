@@ -109,7 +109,10 @@ switch ieParamFormat(type)
             xlabel('Wavelength (nm)'); ylabel('Eye quanta efficiency');
         end
     case 'meanabsorptions'
-        if isempty(obj.absorptions), error('no absorption data'); end
+        if isempty(obj.absorptions)
+            if isempty(p.Results.hf), close(hf); end
+            error('no absorption data');
+        end
         uData = mean(obj.absorptions,3);
         if ~isequal(hf, 'none')
             imagesc(uData); axis off; colorbar; 
@@ -117,11 +120,23 @@ switch ieParamFormat(type)
         end
     case 'absorptions'
         % Movie of the absorptions
-        if isempty(obj.absorptions), error('no absorption data'); end
+        if isempty(obj.absorptions)
+            if isempty(p.Results.hf), close(hf); end
+            error('no absorption data');
+        end
         uData = coneImageActivity(obj, hf, varargin{:});
     case 'meancurrent'
-        if isempty(obj.current), error('no current data computed'); end
-        imagesc(mean(obj.current, 3)); axis off;
+        if isempty(obj.current)
+            if isempty(p.Results.hf), close(hf); end
+            error('no photocurrent data computed');
+        end
+        uData = mean(obj.current, 3);
+        if ~isequal(hf, 'none')
+            imagesc(uData); axis off; colorbar;
+            title('Mean photocurrent (pA)');
+        end
+    case {'current', 'photocurrent'}
+        error('Not yet implemented');
     case {'empath', 'eyemovementpath'}
         plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
         grid on; xlabel('Horizontal position (cones)');
@@ -152,7 +167,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('cMosaic',@(x) (isa(x,'coneMosaic')));
-p.addRequired('hf',@(x) (ishandle(x) || ischar(x) || isstruct(x)));
+p.addRequired('hf',@(x) (ischar(x) || ishandle(x) || isstruct(x)));
 p.addParameter('step', [], @isnumeric);
 p.addParameter('showBar', true, @islogical);
 p.addParameter('gamma', 0.3, @isnumeric);
@@ -189,10 +204,10 @@ for ii = 1 : step : nframes
         mov(:,:,jj,index) = convolvecirc(coneMosaicImage(:,:,jj).*fgrid,g);
     end
 end
-if showBar, close(wbar); end
 
 % Scale and gamma correct mov
 mov = (mov / max(mov(:))) .^ gamma;
+if showBar, close(wbar); end
 
 % show the movie, or write to file
 if isstruct(hf)
@@ -207,7 +222,7 @@ if isstruct(hf)
     close(vObj);
 elseif ~isequal(hf, 'none') && ishandle(hf)
     % If it is a figure handle, show it in that figure
-    for ii=1:size(mov,4), image(mov(:,:,:,ii)); drawnow; end
+    for ii=1:size(mov,4), imshow(mov(:,:,:,ii)); drawnow; end
 end
     
 end
