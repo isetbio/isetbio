@@ -1,10 +1,11 @@
 % Utility to remove one validation ground truth data set (both fast and full)
 %
-% Usage: ieDeleteValidationFile('osBiophysObject')
-%        ieDeleteValidationFile('oi')
+% Usage: ieDeleteValidationFile()
 
-function ieDeleteValidationFile(validationFileToBeDeleted)
+function ieDeleteValidationFile()
 
+    validationFileToBeDeleted =  selectValidationFile();
+    
     list = rdtListLocalArtifacts(...
         getpref('isetbio', 'remoteDataToolboxConfig'), ...
         'validation', 'artifactId', validationFileToBeDeleted);
@@ -27,4 +28,17 @@ function ieDeleteValidationFile(validationFileToBeDeleted)
             deleted = rdtDeleteArtifacts(client.configuration, list(k));
         end
     end
+end
+
+function validationFileToBeDeleted = selectValidationFile()
+
+    % We will use preferences for the 'isetbioValidation' project
+    thisProject = 'isetbio';
+    UnitTest.usePreferencesForProject(thisProject, 'reset');
+    
+    validationFileToBeDeleted = UnitTest.selectScriptFromExistingOnes();
+    idx = strfind(validationFileToBeDeleted,'/');
+    validationFileToBeDeleted = validationFileToBeDeleted(idx(end)+1:end);
+    validationFileToBeDeleted = strrep(validationFileToBeDeleted, 'v_', '');
+    validationFileToBeDeleted = strrep(validationFileToBeDeleted, '.m', '');
 end
