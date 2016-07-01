@@ -17,8 +17,10 @@ for i = 1:length(mosaicGLM)
     
     tonicD(i,:) = 0;% mosaicGLM{i}.linearfilters.tonicDrive{i,1}(:);
     
-    nlcoeffs(i,:) = mosaicGLM{i}.model.Coefficients.Estimate;
-    if isfield(mosaicGLM{i}.stafit,'center_sd_x')
+    if isfield(mosaicGLM{i},'model');
+        nlcoeffs(i,:) = mosaicGLM{i}.model.Coefficients.Estimate;
+    end
+    if isfield(mosaicGLM{i},'stafit')
     sd_x(i,:) = mosaicGLM{i}.stafit.center_sd_x; 
     sd_y(i,:) = mosaicGLM{i}.stafit.center_sd_y;
     end
@@ -78,9 +80,15 @@ mean(tonicD);% 2.2702
 cv = [(floor(newSize/2)+1) - floor(oldSize/2) : (floor(newSize/2)+1) + floor(oldSize/2)] - 1;
 mosaicAverageGLM.linearfilters.Stimulus.space_rk1 = meanAvg(cv,cv);
 mosaicAverageGLM.linearfilters.Stimulus.time_rk1 = mean(tC);
-mosaicAverageGLM.modelavg = mean(nlcoeffs);
 
-% Need to change this
-mosaicAverageGLM.model = mosaicGLM{1}.model;
 
-mosaicAverageGLM.sd = [sqrt(mean(sd_x(find(sd_x~=0)).^2)) sqrt(mean(sd_y(find(sd_y~=0)).^2))];
+if isfield(mosaicGLM{i},'model');
+    mosaicAverageGLM.modelavg = mean(nlcoeffs);
+
+    % Need to change this
+    mosaicAverageGLM.model = mosaicGLM{1}.model;
+end
+
+if isfield(mosaicGLM{i},'stafit')
+    mosaicAverageGLM.sd = [sqrt(mean(sd_x(find(sd_x~=0)).^2)) sqrt(mean(sd_y(find(sd_y~=0)).^2))];
+end

@@ -303,14 +303,14 @@ paramsIR.eyeSide   = 'left';   % Which eye
 paramsIR.eyeRadius = 3;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
-load('/Users/james/Documents/MATLAB/RGC-Reconstruction/WNstim_response_OffParasol_64_grating_june10.mat');
+load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/WNstim_response_OffParasol_64_grating_june10.mat');
 
-model   = 'LNP';    % Computational model
-innerRetina = irCreate(os,paramsIR);
-innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+% model   = 'LNP';    % Computational model
+% innerRetina = irCreate(os,paramsIR);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
 % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 
 irPlot(innerRetina,'mosaic');

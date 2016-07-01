@@ -67,7 +67,6 @@ switch cellTypeI
         cellType = 'SBC RPE';
 %         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/mosaicGLM_RPE_onSBC.mat') 
 end
-
 % mosaicGLMaverage = mosaicAverage(mosaicGLM);
 
 %% Moving bar stimulus
@@ -96,6 +95,51 @@ paramsStim.side = 'left';
 iStim = ieStimulusBar(params);
 sensor = iStim.absorptions;
 
+%% Load stimulus movie and fit/spiking data using RemoteDataToolbox
+% 
+% % Loads the appropriate movie and spiking data for the experimental
+% % conditions.
+% % [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
+% % Binary white noise test movie
+% 
+% load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/WN_testmovie_lnfit.mat')
+% 
+% % Length of WN movie is 1200, take nFrames to limit natural movie to same length
+% nFrames = 1; 
+% testmovieshort = WN_testmovie_lnfit(:,:,1:nFrames); 
+%  
+% upSampleFactor = 10;
+% testmovieRS = zeros(size(testmovieshort,1),size(testmovieshort,2),upSampleFactor*size(testmovieshort,3));
+% for frnum = 1:nFrames
+%     for frrep = 1:upSampleFactor
+%         testmovieRS(:,:,(frnum-1)*upSampleFactor+frrep) = testmovieshort(:,:,frnum);
+%     end
+% end
+% %% Show test movie
+% showFrames = 50;
+% % ieMovie(testmovieshort(:,:,1:showFrames));
+% 
+% %% Generate display, scene, oi, sensor
+% paramsStim.nsteps = nFrames;%size(testmovieshort,3);
+% %  Bipolar filter is setfor 0.001 sec, so it needs to be 0.001
+% % Downsample cone current signal to get to RGC sampling rate
+% 
+% paramsStim.timeInterval = (1/125)/upSampleFactor;%0.001; % sec
+% paramsStim.expTime      = (1/125)/upSampleFactor;%0.001; % sec
+% 
+% paramsStim.fov = fov;
+% paramsStim.radius = ecc;
+% paramsStim.theta = 0;  % 3 oclock on the retina
+% paramsStim.side = 'left';
+% 
+% % iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
+% % iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
+% iStim = ieStimulusMovie(permute(testmovieRS(:,:,1:nFrames), [2 1 3]),paramsStim);
+% sensor = iStim.sensor;
+% 
+% % sensor.data.volts = 5e-4*double(testmovieshort)./255;
+% % sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
+% clear testmovieRS % testmovieshort
 %% Outer segment calculation - biophysical model
 % The iStim structure generates the movie, the scene, the oi and the
 % cone absorptions. The next step is to get the outer segment current. The
@@ -196,3 +240,30 @@ xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
 set(gca,'fontsize',14);
 axis([0 1000 0 130]);
 grid on;
+
+%%
+figure;
+
+cone_mosaic = sensor.human.coneType;
+[xg yg] = meshgrid([1:size(cone_mosaic,1),1:size(cone_mosaic,1)]);
+xg2 = xg(1:size(cone_mosaic,1),1:size(cone_mosaic,2)); yg2 = yg(1:size(cone_mosaic,1),1:size(cone_mosaic,2));
+scale1 = 1;%size(cone_mosaic,1)/80; 
+scale2 = 1;%size(cone_mosaic,2)/40; 
+% figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+% figure; 
+hold on;
+scatter(yg2(:)./scale1,xg2(:)./scale2,40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+
+%
+for i = 1:length(innerRetinaSU.mosaic{1}.cellLocation); loc(i,:) = innerRetinaSU.mosaic{1}.cellLocation{i}; end;
+% figure; scatter(loc(:,1),loc(:,2),100); axis equal
+
+
+c1 = contour(innerRetinaSU.mosaic{1}.sRFcenter{1},[-.2 -.2]);
+% figure; 
+hold on;
+for i = 1:length(innerRetinaSU.mosaic{1}.cellLocation)
+%     plot(loc(i,1)+c1(1,2:end)-6.5,loc(i,2)+c1(2,2:end)-6.5,'m','linewidth',3); axis equal
+    plot(loc(i,2)+c1(2,2:end)-16.5,loc(i,1)+c1(1,2:end)-16.5,'m','linewidth',3); axis equal
+    
+end

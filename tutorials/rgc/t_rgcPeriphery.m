@@ -48,23 +48,44 @@ switch stimulusTestI
         error('NSEM not yet implemented');
 end
 
+rdt = RdtClient('isetbio');
 % Cell type: ON or OFF Parasol
 switch cellTypeI
     case 1; 
         cellType = 'On Parasol RPE'; 
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONParasol_201602171.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONParasol_201602171.mat')        
+        
+        rdt.crp('resources/data/rgc/rpe_dataset');
+        data = rdt.readArtifact('xval_mosaic_WN_ONParasol_201602171', 'type', 'mat');
+        xval_mosaic = data.xval_mosaic;
     case 2; 
         cellType = 'Off Parasol RPE';        
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFParasol_201602171.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFParasol_201602171.mat')
+        
+        rdt.crp('resources/data/rgc/rpe_dataset');
+        data = rdt.readArtifact('xval_mosaic_WN_OFFParasol_201602171', 'type', 'mat');
+        xval_mosaic = data.xval_mosaic;
     case 3; 
         cellType = 'On Midget RPE';
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONMidget_201602171.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONMidget_201602171.mat')
+        
+        rdt.crp('resources/data/rgc/rpe_dataset');
+        data = rdt.readArtifact('xval_mosaic_WN_ONMidget_201602171', 'type', 'mat');
+        xval_mosaic = data.xval_mosaic;
     case 4; 
         cellType = 'Off Midget RPE';
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFMidget_201602171.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFMidget_201602171.mat')
+        
+        rdt.crp('resources/data/rgc/rpe_dataset');
+        data = rdt.readArtifact('xval_mosaic_WN_OFFMidget_201602171', 'type', 'mat');
+        xval_mosaic = data.xval_mosaic;
     case 5; 
         cellType = 'SBC RPE';
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONSBC_201602171.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONSBC_201602171.mat')
+        
+        rdt.crp('resources/data/rgc/rpe_dataset');
+        data = rdt.readArtifact('xval_mosaic_WN_ONSBC_201602171', 'type', 'mat');
+        xval_mosaic = data.xval_mosaic;
 end
 
 % Load OS from RDT (1) or run from scratch (0)
@@ -76,8 +97,12 @@ loadOS = 0;
 % [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
 % Binary white noise test movie
 
-load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/WN_testmovie_lnfit.mat')
+% load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/WN_testmovie_lnfit.mat')
 
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc/rpe_dataset');
+data = rdt.readArtifact('WN_testmovie_lnfit', 'type', 'mat');
+WN_testmovie_lnfit = data.WN_testmovie_lnfit;
 
 
 % Length of WN movie is 1200, take nFrames to limit natural movie to same length

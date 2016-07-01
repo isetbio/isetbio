@@ -130,7 +130,7 @@ switch ieParamFormat(cellType)
         mosaicGLM = data.mosaicGLM;
         
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/goodind_2013_08_19_6_OFFParasol.mat')
-
+        rdt = RdtClient('isetbio');
         rdt.crp('resources/data/rgc');                              
         data2 = rdt.readArtifact('goodind_2013_08_19_6_OFFParasol', 'type', 'mat');
         goodind = data2.goodind;
@@ -141,6 +141,7 @@ switch ieParamFormat(cellType)
         data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;        
         
+        rdt = RdtClient('isetbio');
         data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
         goodind = data2.goodind;
 end
@@ -219,19 +220,19 @@ switch(averageFlag)
             
             % RPE data set - need to put on RDT
             
-            case 'onparasolrpe'
+            case {'onparasol','onparasolrpe'}
                 b = 10.7629; m = 18.9211;
                 ecc0 = 10.9;
-            case 'offparasolrpe'
+            case {'offparasol','offparasolrpe'}
                 b = 68.3968; m = 0.85*18.9211;
                 ecc0 = 10.9;
-            case 'onmidgetrpe'
+            case {'onmidget','onmidgetrpe'}
                 b = -8.110; m = 10.7629;    
                 ecc0 = 10.9;
-            case 'offmidgetrpe'
+            case {'offmidget','offmidgetrpe'}
                 b = -8.110; m = 0.85*10.7629;   
                 ecc0 = 10.9;
-            case {'onsbcrpe','sbcrpe'}
+            case {'sbc','onsbcrpe','sbcrpe'}
                 b = 70.2865; m = 15.8208;
                 ecc0 = 10.9;
         end
