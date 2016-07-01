@@ -1,9 +1,11 @@
 %% t_GenerateConeMosaicImageUsingNativeISETBIOfunctions
 %
-% Show an anterlative way to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses  using native ISETBIO functions.
+% Show an alternative way to make a nice viewable image of a cone mosaic,
+% as well as an image representing the photon responses  using native
+% ISETBIO functions.
 %
-% NOTE: There are ways to produce these images that do not call the ISETBIO functions
-% conePlot and coneSensorPlot (see t_GenerateConeMosaicImage)
+% NOTE: There are ways to produce these images that do not call the ISETBIO
+% functions conePlot and coneSensorPlot (see t_GenerateConeMosaicImage)
 %
 % 6/29/2015  NPC Wrote it.
 %

@@ -26,6 +26,7 @@ function [hf, uData] = plot(obj, type, varargin)
 %   'absorptions'          - Movie of the absorptions
 %   'mean current'         - Image of the mean current
 %   'eye movement path'    - eye movement
+%   'current timeseries'   - Cone photocurrent graphs
 %
 % Example:
 %   cm = coneMosaic;
@@ -146,6 +147,13 @@ switch ieParamFormat(type)
         end
         uData = coneImageActivity(obj, hf, 'dataType', ...
             'photocurrent', varargin{:});
+    case {'currenttimeseries'}
+        if isempty(obj.current)
+            if isempty(p.Results.hf), close(hf); end
+            error('no photocurrent data');
+        end
+        uData = plotCurrentTimeseries(obj,varargin{:});
+        
     case {'empath', 'eyemovementpath'}
         plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
         grid on; xlabel('Horizontal position (cones)');
@@ -245,4 +253,30 @@ elseif ~isequal(hf, 'none') && ishandle(hf)
     for ii=1:size(mov,4), imshow(mov(:,:,:,ii)); drawnow; end
 end
     
+end
+
+
+%%
+function uData = plotCurrentTimeseries(obj,varargin)
+% Pull out the time series of the photo current and plot it
+
+% Temporal samples
+dt = obj.sampleTime;
+
+% The current
+outputSignalTemp = obj.current;
+sz = size(outputSignalTemp);
+
+% Reshape for plotting
+outputSignal = reshape(outputSignalTemp,sz(1)*sz(2),sz(3));
+
+% Plot a random subset ... must handle more explicitly
+uData.time = (0:size(outputSignal,2)-1)*dt;
+uData.current = outputSignal(1+floor((sz(1)*sz(2)/100)*rand(200,1)),:);
+plot(uData.time, uData.current);
+
+title('Output current');
+xlabel('Time (sec)');
+ylabel('pA');
+
 end
