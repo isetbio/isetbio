@@ -105,12 +105,14 @@ end
 % Edit box - adjust number of rows
 function editRows_Callback(hObject, eventdata, handles)
 handles.cMosaic.rows = str2double(get(hObject, 'String'));
+menuEditClearData_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 % Edit box - adjust number of columns
 function editCols_Callback(hObject, eventdata, handles)
 handles.cMosaic.cols = str2double(get(hObject, 'String'));
+menuEditClearData_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
@@ -245,6 +247,7 @@ switch plotType
         % cone mosaic image
         resetMovieControl(handles);
         cm.plot('cone mosaic', 'hf', handles.axes2);
+        axis image
     case 'Mean absorptions'
         % mean cone absorptions
         resetMovieControl(handles);
@@ -257,6 +260,7 @@ switch plotType
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        axis image
     case 'Absorption movie'
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
@@ -290,6 +294,7 @@ switch plotType
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        axis image
     case 'Photocurrent movie'
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
@@ -676,7 +681,7 @@ function menuEditGenerateEM_Callback(hObject, eventdata, handles)
 str = ieReadString('Number of frames', '5000');
 if ~isempty(str)
     handles.cMosaic.emGenSequence(str2double(str));
-    handles.cMosaic.clearData();
+    menuEditClearData_Callback(hObject, eventdata, handles);
     coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 

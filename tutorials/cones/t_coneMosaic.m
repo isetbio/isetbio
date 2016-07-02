@@ -8,9 +8,11 @@ ieInit
 %% Build a scene and oi for computing
 
 % s = sceneCreate('rings rays');
-s = sceneCreate;
+s = sceneCreate('slanted bar');
+% fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+% s = sceneFromFile(fname,'rgb');
 
-s = sceneSet(s,'fov',0.5);
+s = sceneSet(s,'fov',2);
 
 oi = oiCreate;
 oi = oiCompute(oi,s);
@@ -23,10 +25,10 @@ cMosaic.emGenSequence(500);
 cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default anyway
 
 % Show the window
-% cMosaic.guiWindow;                      % Note: Default image should be mean absorptions
+cMosaic.guiWindow;                      % Note: Default image should be mean absorptions
 
 % Examine the outer segment current
-cMosaic.plot('current time series');
+% cMosaic.plot('current time series');
 
 %% To compute the bipolar response
 

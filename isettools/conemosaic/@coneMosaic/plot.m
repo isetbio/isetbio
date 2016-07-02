@@ -70,7 +70,9 @@ switch ieParamFormat(type)
     case 'conemosaic'
         [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
             conePlot(obj.coneLocs * 1e6, obj.pattern);
-        if ~isequal(hf, 'none'), imagesc(uData.mosaicImage); axis off; end
+        if ~isequal(hf, 'none'), 
+            imagesc(uData.mosaicImage); axis off; axis image;
+        end
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
         uData = obj.pigment.absorptance;
@@ -123,6 +125,8 @@ switch ieParamFormat(type)
             imagesc(uData); axis off; colorbar; 
             title('Mean number of absorptions');
         end
+        colormap(gray);  % Shows a numerical value
+        axis image;
     case 'absorptions'
         % Movie of the absorptions
         if isempty(obj.absorptions)
@@ -140,7 +144,10 @@ switch ieParamFormat(type)
             imagesc(uData); axis off; colorbar;
             title('Mean photocurrent (pA)');
         end
+        colormap(gray); % Shows a numerical value
+        axis image;
     case {'current', 'photocurrent'}
+        % Photo current movie
         if isempty(obj.current)
             if isempty(p.Results.hf), close(hf); end
             error('no photocurrent data');
@@ -148,6 +155,8 @@ switch ieParamFormat(type)
         uData = coneImageActivity(obj, hf, 'dataType', ...
             'photocurrent', varargin{:});
     case {'currenttimeseries'}
+        % Photocurrent time series of selected points.
+        % Need a way to choose which points!
         if isempty(obj.current)
             if isempty(p.Results.hf), close(hf); end
             error('no photocurrent data');
