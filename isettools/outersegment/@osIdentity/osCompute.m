@@ -13,5 +13,11 @@ function obj = osCompute(obj, pRate, varargin)
 % 
 % 8/2015 JRG
 
+
+% check pRate type for backward compatibility
+if isstruct(pRate) && isfield(pRate, 'type') ...
+        && strcmp(pRate.type, 'sensor')
+    pRate = sensorGet(pRate, 'photon rate');
+end
 obj = osSet(obj, 'photonRate', pRate);
 

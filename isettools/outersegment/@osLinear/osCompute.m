@@ -17,6 +17,23 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % 
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
+% check pRate type for backward compatibility
+if isstruct(pRate) && isfield(pRate, 'type') && ...
+        strcmp(pRate.type, 'sensor')
+    warning('The input is a sensor, should update to use coneMosaic.');
+    obj.osSet('timestep', sensorGet(pRate, 'time interval'));
+    if notDefined('coneType')
+        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
+            sensorGet(pRate, 'cone type'));
+    else
+        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
+            sensorGet(pRate, 'cone type'), coneType, varargin{:});
+    end
+    % in the old code, we return obj instead of current
+    current = obj.osSet('cone current signal', current);
+    return
+end
+
 % parse inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
