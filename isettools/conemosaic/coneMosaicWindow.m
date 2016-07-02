@@ -73,6 +73,11 @@ figure(hObject);
 ieFontInit(hObject);
 
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+str = get(handles.popupImageType, 'String');
+if iscell(str) && length(str) > 1
+    set(handles.popupImageType, 'Value',2);  % This is mean absorptions
+    coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
 
 end
 
@@ -229,7 +234,7 @@ if ~isempty(cm.current)
 end
 
 index = get(handles.popupImageType, 'Value');
-if index > length(str), index = 1; end
+if index > length(str), index = 1; end  % Mean absorptions
 plotType = str{index};
 set(handles.popupImageType, 'Value', index);
 set(handles.popupImageType, 'String', str);
@@ -254,6 +259,7 @@ switch plotType
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
     case 'Absorption movie'
         set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.mov)
             % generate movie
@@ -286,6 +292,7 @@ switch plotType
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
     case 'Photocurrent movie'
         set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.curMov) % generate movie for photocurrent
             [~, handles.curMov] = cm.plot('current', 'hf', 'none', ...
@@ -400,7 +407,7 @@ function resetMovieControl(handles)
 set(handles.btnPlayPause, 'Visible', 'off');
 set(handles.sliderMovieProgress, 'Visible', 'off');
 
-set(handles.btnPlayPause, 'Value', 1);
+set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
 set(handles.sliderMovieProgress, 'Value', 1);
 end
 
@@ -679,7 +686,13 @@ function popupImageType_Callback(hObject, eventdata, handles)
 % hObject    handle to popupImageType (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Stop any movies.
+set(handles.btnPlayPause,'Value',0);  % Turn off the movie.
+
+% Refresh.
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+
 end
 
 function popupImageType_CreateFcn(hObject, eventdata, handles)
@@ -749,7 +762,7 @@ set(handles.sliderMovieProgress, 'Max', nFrames);
 set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
 if get(handles.btnPlayPause, 'Value')
-    % play the video
+    % play the video when the value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
     % axes(handles.axes2);
@@ -762,7 +775,7 @@ if get(handles.btnPlayPause, 'Value')
         if cnt > nFrames, cnt = 1; end
     end
 else
-    % pause video
+    % pause video when the value is zero
     set(handles.btnPlayPause, 'String', 'Play');
     
     % register right click menu

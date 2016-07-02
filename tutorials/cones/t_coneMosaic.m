@@ -20,7 +20,6 @@ vcAddObject(oi); oiWindow;
 
 cMosaic = coneMosaic;                     % Create the object
 cMosaic.emGenSequence(500);
-
 cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default anyway
 
 % Show the window
