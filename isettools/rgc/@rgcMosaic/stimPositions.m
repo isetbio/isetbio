@@ -18,9 +18,25 @@ if isa(rgcMosaic, 'rgcPhys')
     extent = round(size(rgcMosaic.sRFcenter{1,1},1)/rgcMosaic.rfDiameter);
     
     % Pull out stimulus coordinates of interest
-    % Words needed here to explain
-    stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*rgcMosaic.rfDiameter))):floor((stimCenterCoords(1) + floor((extent/2)*rgcMosaic.rfDiameter )));%
-    stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*rgcMosaic.rfDiameter))):floor((stimCenterCoords(2) + floor((extent/2)*rgcMosaic.rfDiameter )));%
+    
+    % Get midpoint of RF by taking half of size in cols
+    sRFMidPointX = floor((extent/2)*rgcMosaic.rfDiameter);
+    % stimCenterCoords indicates position of RGC on stimulus image
+    % The first x coord of the stimulus of interest is the RGC center minus
+    % the midpoint size of the RF.
+    xStartCoord = (stimCenterCoords(1) - sRFMidPointX);   
+    xEndCoord   = (stimCenterCoords(1) + sRFMidPointX);
+    
+    % Get midpoint of RF by taking half of size in rows
+    sRFMidPointY = floor((extent/2)*rgcMosaic.rfDiameter);
+    % stimCenterCoords indicates position of RGC on stimulus image
+    % The first x coord of the stimulus of interest is the RGC center minus
+    % the midpoint size of the RF.
+    yStartCoord = (stimCenterCoords(2) - sRFMidPointY);
+    yEndCoord   = (stimCenterCoords(2) + sRFMidPointY);
+        
+    stimX =  ceil(xStartCoord):floor(xEndCoord);
+    stimY =  ceil(yStartCoord):floor(yEndCoord);
     
 else  % rgcGLM, rgcLinear
     
@@ -39,11 +55,28 @@ else  % rgcGLM, rgcLinear
     else
         offset(2) = floor(rgcMosaic.cellLocation{1,1}(2));
     end
-    
+     
     % Pull out stimulus coordinates of interest
-    stimX =  floor((stimCenterCoords(1) - floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},1)))):floor((stimCenterCoords(1) + floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},1) )));
-    stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},2)))):floor((stimCenterCoords(2) + floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},2))));
     
+    % Get midpoint of RF by taking half of size in cols
+    sRFMidPointX = floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},1));
+    % stimCenterCoords indicates position of RGC on stimulus image
+    % The first x coord of the stimulus of interest is the RGC center minus
+    % the midpoint size of the RF.
+    xStartCoord = (stimCenterCoords(1) - sRFMidPointX);   
+    xEndCoord   = (stimCenterCoords(1) + sRFMidPointX);
+    
+    % Get midpoint of RF by taking half of size in rows
+    sRFMidPointY = floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},2));
+    % stimCenterCoords indicates position of RGC on stimulus image
+    % The first x coord of the stimulus of interest is the RGC center minus
+    % the midpoint size of the RF.
+    yStartCoord = (stimCenterCoords(2) - sRFMidPointY);
+    yEndCoord   = (stimCenterCoords(2) + sRFMidPointY);
+        
+    stimX =  floor(xStartCoord):floor(xEndCoord);
+    
+    stimY =  floor(yStartCoord):floor(yEndCoord);
 end
 
 end
