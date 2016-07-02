@@ -31,7 +31,7 @@ function fSize = ieFontSizeSet(fig,fSize)
 if notDefined('fig'), error('Figure required.'); end;
 
 % Pull out the current font size preference
-isetP = getpref('ISET');
+isetP = getpref('ISETBIO');
 if checkfields(isetP,'fontSize'),   prefSize = isetP.fontSize;
 else prefSize = 12;  % Default preference
 end
@@ -75,7 +75,7 @@ setFontSize(tHandles,fSize);
 tHandles = findall(t,'Style','pushbutton');
 setFontSize(tHandles,fSize);
 
-setpref('ISET','fontSize',fSize);
+setpref('ISETBIO','fontSize',fSize);
 
 end
 
@@ -84,6 +84,13 @@ function setFontSize(tHandles,fSize)
         
 % Current font sizes
 curSize = get(tHandles,'FontSize');
+
+% Some of the handles are odd objects that we don't need.
+if iscell(curSize)
+    lst = (cell2mat(curSize) > 0);
+    curSize = curSize(lst);
+    tHandles = tHandles(lst);   
+end
 
 if isempty(curSize)
     % No fonts to change.
