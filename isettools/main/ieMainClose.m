@@ -27,19 +27,13 @@ if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
     sensorClose;
 end
 
-if checkfields(vcSESSION.GUI,'vcImageWindow','hObject')
-    vcimageWindow;
-    vcimageClose;
+if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
+    sensorImageWindow;
+    sensorClose;
 end
 
-if checkfields(vcSESSION.GUI,'vcVideoWindow','hObject')
-    videoWindow;
-    videoClose;
-end
-
-if checkfields(vcSESSION.GUI,'metricsWindow','hObject')
-    metricsWindow;
-    metricsClose;
+if checkfields(vcSESSION.GUI,'vcConeImgWindow','hObject')
+    delete(vcSESSION.GUI.vcConeImgWindow.hObject);
 end
 
 vcSESSION.GUI = [];

@@ -1,5 +1,5 @@
 function varargout = coneMosaicWindow(varargin)
-%Sensor image coneMosaicWindow interface
+%Cone image coneMosaicWindow interface
 %
 %   varargout = coneMosaicWindow(varargin)
 %   CONEMOSAICWINDOW M-file for coneMosaicWindow.fig
@@ -68,6 +68,8 @@ handles.curMov = [];  % photocurrent movie
 % Update handles structure
 guidata(hObject, handles);
 handles.cMosaic.window = hObject;
+
+vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
 
 figure(hObject);
 ieFontInit(hObject);

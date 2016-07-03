@@ -26,11 +26,8 @@ switch lower(figType)
     case {'isa','sensor'}
         ieSessionSet('sensorwindow',hObject,eventdata,handles);
         
-    case {'vcimage'}
-        ieSessionSet('vcimagewindow',hObject,eventdata,handles);
-        
-    case {'metrics'}
-        ieSessionSet('metricswindow',hObject,eventdata,handles);
+    case {'conemosaic'}
+        ieSessionSet('conemosaicwindow',hObject,eventdata,handles);
         
     otherwise
         error('Unknown figure type');

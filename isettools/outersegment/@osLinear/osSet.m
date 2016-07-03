@@ -58,6 +58,9 @@ p.parse(varargin{:}); params = p.Results;
             % Temporal impulse response
             obj.lmsConeFilter(:, 1) = value;            
             
+        case{'patchsize'}
+            obj.patchSize = params.value;
+            
         case{'timestep'}
             obj.timeStep = params.value;
             

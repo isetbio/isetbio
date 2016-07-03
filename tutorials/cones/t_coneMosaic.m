@@ -7,8 +7,8 @@ ieInit
 
 %% Build a scene and oi for computing
 
-% s = sceneCreate('rings rays');
-s = sceneCreate('slanted bar');
+s = sceneCreate('rings rays');
+% s = sceneCreate('slanted bar');
 % fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
 % s = sceneFromFile(fname,'rgb');
 
