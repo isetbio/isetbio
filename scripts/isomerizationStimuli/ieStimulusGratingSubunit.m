@@ -26,7 +26,7 @@ addParameter(p,'col',            64,    @isnumeric);
 addParameter(p,'fov',            0.6,    @isnumeric);  
 addParameter(p,'expTime',        0.01, @isnumeric);
 addParameter(p,'timeInterval',   0.01, @isnumeric);
-
+addParameter(p,'freq',          5,  @isnumeric);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -65,7 +65,8 @@ nSteps = params.nSteps;
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
-    sceneSize = sceneGet(scene, 'size');
+%     sceneSize = sceneGet(scene, 'size');
+    sceneSize = [params.row params.col];
     barMovie = ones([sceneSize(1)+2*params.barWidth,sceneSize(2), 3])*0.001;  % Gray background
     
     %horz
@@ -101,8 +102,9 @@ for t = 1 : nSteps
 %     end
     
 %     barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
-    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/20));
+    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/(100/params.freq)));
       
+%     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
 %     if t < 6
 %         barMovieResize = ones(size(barMovieResize))*0.5;
@@ -126,22 +128,31 @@ for t = 1 : nSteps
     
     sceneRGB(:,:,t,:) = barMovie;
     
-    % Compute optical image
-    oi = oiCompute(oi, scene);    
-    
-    % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
+%     % Compute optical image
+%     oi = oiCompute(oi, scene);    
+%     
+%     % Compute absorptions
+%     absorptions = sensorCompute(absorptions, oi);
 
-    if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-    end
+%     if t == 1
+%         volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+%     end
     
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
+    % volts(:,:,t) = sensorGet(absorptions, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end
 
 if wFlag, delete(wbar); end
+
+
+% Compute optical image
+oi = oiCompute(oi, scene);
+
+% Compute absorptions
+absorptions = sensorCompute(absorptions, oi);
+
+volts(:,:,1) = sensorGet(absorptions, 'volts');
 
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);

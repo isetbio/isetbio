@@ -23,8 +23,16 @@ function ir = irComputeSpikes(ir, varargin)
 %% Required for Pillow code
 
 % To be eliminated
+
+% fps = 1/125;        % frame rate of 125 fps; usually 121 in lab but 125 for integer steps
+% normalRR = fps;
+% 
+% exptRR = irGet(ir,'timing');
+% exptBinsPerStep = round(normalRR/exptRR);
+
 global RefreshRate
-RefreshRate = 500;    
+RefreshRate = 100;    
+% RefreshRate = exptBinsPerStep
 
 
 %% Loop on the mosaics in the inner retina
@@ -74,7 +82,12 @@ for ii = 1:length(ir.mosaic)
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
-            [responseSpikesVec, Vmem] = simGLM(glmprs, glminput');
+            if strcmp((ir.name),'Macaque inner retina pixium 1')
+                
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            else
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            end
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);

@@ -40,6 +40,7 @@ end
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
     
+<<<<<<< HEAD
     % We are going to work on cellLocation.  At the moment, there is a
     % bipolar centered at every third cone in the os mosaic.  This is
     % implemented in the compute function.  We plan on specifying the
@@ -51,6 +52,21 @@ properties (SetAccess = protected, GetAccess = public)
     patchSize;                       % size of cone mosaic (os)
     timeStep;                        % time step of simulation from os
   
+=======
+    cellLocation;                    % location of bipolar RF center
+    cellType;                        % diffuse on or off
+    patchSize;                       % size of retinal patch from sensor
+    timeStep;                        % time step of simulation from sensor
+    filterType;                      % bipolar temporal filter type
+    sRFcenter;                       % spatial RF of the center on the receptor grid
+    sRFsurround;                     % spatial RF of the surround on the receptor grid
+    % temporalDelay;                   % delay on inputs to differentiator
+    % temporalConeW;                   % weight on cone signal input to differentiator
+    % temporalConeDiffW;               % weight on cone derivative signal input to differentiator
+    % temporalDifferentiator;          % differentiator function
+    rectificationCenter              % nonlinear function for center
+    rectificationSurround            % nonlinear function for surround
+>>>>>>> master
     responseCenter;                  % Store the linear response of the center after convolution
     responseSurround;                % Store the linear response of the surround after convolution
 
@@ -68,17 +84,25 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(os)
+    function obj = bipolar(os, varargin)     
+        
+        p = inputParser;
+        addRequired(p, 'os');
+        addParameter(p, 'cellType', 'offDiffuse', @ischar);
+        addParameter(p, 'rectifyType', 1, @isnumeric);
+        addParameter(p, 'filterType',  1, @isnumeric);
+        addParameter(p, 'cellLocation',  [], @isnumeric);
+        
+        p.parse(os, varargin{:});  
         
         if ~exist('os','var'), os = osCreate('linear'); end
         
         obj.patchSize = osGet(os,'patchSize');
         obj.timeStep = osGet(os,'timeStep');
         
-        % Build spatial receptive field
-        obj.sRFcenter = fspecial('gaussian',[2,2],1); % convolutional for now
-        obj.sRFsurround = fspecial('gaussian',[2,2],1); % convolutional for now
+        obj.cellType = p.Results.cellType;
         
+<<<<<<< HEAD
         switch class(os)
             case 'osBiophys'
                 obj.coneW = -0.1373; obj.coneDiffW = -9.5355;
@@ -92,7 +116,35 @@ methods
         % between the differentiator signal and the bipolar output
         % calculated with filter from the deconvolution operation.        
         obj.temporalDifferentiator = @(x) obj.coneW*x(:,2:end) + obj.coneDiffW*diff(x,1,2);
+=======
+        switch p.Results.rectifyType
+            case 1
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+            case 2
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) zeros(size(x));
+            case 3
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) x.*(x<0);
+            otherwise
+                
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+        end
+>>>>>>> master
         
+        obj.filterType = p.Results.filterType;
+        
+        % Build spatial receptive field
+        bpSizeCenter = 2;
+        bpSizeSurround = 2;
+        obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+        obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+        
+        if isfield(p.Results,'cellLocation')
+            obj.cellLocation = p.Results.cellLocation;
+        end
     end
     
     % set function, see bipolarSet for details

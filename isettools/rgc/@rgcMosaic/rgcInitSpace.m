@@ -38,7 +38,9 @@ umPerSensorPx = patchSizeX/sensorRows;
 rgcM.rfDiameter = rfSizeMult(cellType)*(receptiveFieldDiameterParasol2STD/2); % in microns; divide by umPerScenePx to get pixels
 
 % Build spatial RFs of all RGCs in this mosaic
-[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation] = ...
+[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive] = ...
     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, rgcM.rfDiameter);
+
+
 
 end

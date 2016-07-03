@@ -1,4 +1,4 @@
-function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STDmicrons)
+function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STDmicrons)
 %% buildSpatialRF builds the spatial RF center and surround arrays for each cell
 % The spatial RFs are generated according to the number of pixel or cone
 % inputs, their spacing (in microns) and the diameter of the RF as
@@ -69,7 +69,8 @@ d1 = 1; d2 = 0;
 Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
 
 % Center has radius = 0.75*(radius of surround)
-r = .75; k = r;
+% r = .75; k = r;
+r = 0.75; k = 1.032*r;
 
 % Calculate coordiantes of 1 STD of center RF
 xv = rand(1,2);
@@ -95,13 +96,13 @@ pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD)
 
 %% Create spatial RFs for each cell
 tic
-centerNoise = 0;%1.25; % divide by 2 for mean offset
+centerNoise = 1.25; % divide by 2 for mean offset
 
 % centerCorrectY = 0+( 0+(jcarr(end) + pts(end) - (jcarr(1) + pts(1)))/2 )% - receptiveFieldDiameter1STD/4;
 % centerCorrectX = 0+(0+ (icarr(end) + pts(end) - (icarr(1) + pts(1)))/2 )
 
-centerCorrectY = 0;%+( 0+(jcarr(end) + 0 - (jcarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
-centerCorrectX = 0;%+(0+ (icarr(end) + 0 - (icarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
+centerCorrectY = 0+( 0+(jcarr(end) + 0 - (jcarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
+centerCorrectX = 0+(0+ (icarr(end) + 0 - (icarr(1) + 0))/2 );% + extent*receptiveFieldDiameter1STD;
 
 
 figure;
@@ -110,8 +111,10 @@ for icind = 1:length(icarr)
     
     for jcind = 1:length(jcarr)
         % Specify centers, offset even rows for hexagonal packing
-        ic = icarr(icind) + centerNoise*(2*rand(1,1)-1) - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
-        jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
+%         ic = icarr(icind) + centerNoise*(2*rand(1,1)-1) - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
+%         jc = jcarr(jcind) + centerNoise*(2*rand(1,1)-1);
+        ic = icarr(icind) + centerNoise - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
+        jc = jcarr(jcind) - centerNoise;
         rfctr = rfctr+1;
    
         % Add some noise to deviate from circularity
@@ -175,6 +178,8 @@ for icind = 1:length(icarr)
         spatialContours{icind,jcind,2} = cc;
         
         rfDiaMagnitude{icind,jcind,2} = magnitude1STD;
+        
+        tonicDrive{icind,jcind} = 2.2702; % from ON Parasol 2013_08_19_6
     end
 end
 toc

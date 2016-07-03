@@ -108,6 +108,7 @@ hold on;
 plot((0:numel(obj.lmsConeFilter(:, 3))-1)*dt, obj.lmsConeFilter(:, 3),'b');
 plot((0:numel(obj.lmsConeFilter(:, 2))-1)*dt, obj.lmsConeFilter(:, 2),'g');
 plot((0:numel(obj.lmsConeFilter(:, 1))-1)*dt, obj.lmsConeFilter(:, 1),'r');
+
 title('L, M, S cone filter kernels');
 xlabel('Time (sec)');
 ylabel('pA / (R*/sec)');

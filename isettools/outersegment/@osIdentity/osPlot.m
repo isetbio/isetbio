@@ -59,7 +59,7 @@ switch lower(params.what)
         
         % Plot output signal at a particular (x, y) over time.
         [sz1 sz2 sz3] = size(obj.photonRate);
-        outputSignal = squeeze(obj.rgbData(round(sz1/2),round(sz2/2),:,:));
+        outputSignal = squeeze(obj.photonRate(round(sz1/2),round(sz2/2),:,:));
         plot((0:numel(outputSignal(:,1))-1)*dt, outputSignal, 'k-');
         
         title('output signal, RGB');

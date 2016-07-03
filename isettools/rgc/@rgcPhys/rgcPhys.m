@@ -31,7 +31,7 @@ classdef rgcPhys % < rgcMosaic
     end
            
     % Protected properties.
-    properties (SetAccess = private, GetAccess = public)
+    properties (SetAccess = protected, GetAccess = public)
         experimentID;
         cellType;
         cellID;

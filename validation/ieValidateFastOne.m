@@ -17,7 +17,7 @@ UnitTest.setPref('closeFigsOnInit', true);
 
 %% Verbosity Level
 % valid options are: 'none', min', 'low', 'med', 'high', 'max'
-UnitTest.setPref('verbosity', 'med');
+UnitTest.setPref('verbosity', 'high');
 
 %% Numeric tolerance for comparison to ground truth data
 if (~ispref(thisProject, 'numericTolerance'))

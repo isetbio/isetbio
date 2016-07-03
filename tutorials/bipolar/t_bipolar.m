@@ -46,13 +46,14 @@ stimP.timeInterval = 0.001; % sec
 rdt = RdtClient('isetbio');
 % rdt.credentialsDialog();
 rdt.crp('/resources/data/istim');
+
 data = rdt.readArtifact('iStim_subunitGrating', 'type', 'mat');
 iStim = data.iStim;
 
 absorptions = iStim.absorptions; % cone isomerizations
 
 % Show movie. Hold mouse over a bar to check that contrast reverses.
-ieMovie(iStim.sceneRGB);
+% ieMovie(iStim.sceneRGB);
 
 %% Plot one pixel from stimulus movie
 vcNewGraphWin([],'upperleftbig'); 
@@ -78,9 +79,12 @@ osL = osSet(osL, 'patch size', patchSize);
 timeStep = sensorGet(absorptions,'time interval','sec');
 osL = osSet(osL, 'time step', timeStep);
 
+% Set circular convolution, only steady state
+paramsOSL.convolutionType = 1; 
+
 % Compute the outer segment response to the absorptions with the linear
 % model.
-osL = osCompute(osL,absorptions);
+osL = osCompute(osL,absorptions,paramsOSL);
 
 % % Plot the photocurrent for a pixel.
 osPlot(osL,absorptions);
@@ -100,7 +104,10 @@ osBp = osSet(osBp, 'time step', timeStep);
 
 % Compute the outer segment response to the absorptions with the
 % biophysical model.
-osBp = osCompute(osBp,absorptions);
+
+absorptionsVolts = sensorGet(absorptions,'volts');
+paramsOS.bgVolts = 10*mean(absorptionsVolts(:));
+osBp = osCompute(osBp,absorptions,paramsOS);
 
 % % Plot the photocurrent for a pixel.
 osPlot(osBp,absorptions);
@@ -130,17 +137,17 @@ bipolarPlot(bp,'response');
 clear params innerRetinaBpSu
 params.name      = 'Bipolar with nonlinear subunits'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 9;        % Radius in mm
+params.eyeRadius = 5;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetinaBpSu = irCreate(bp, params);
 
 % Create a subunit model for the on midget ganglion cell parameters
-innerRetinaBpSu.mosaicCreate('model','Subunit','type','on midget');
+innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
 
 % % Uncomment to get rid of spatial nonlinearity
-% newRectifyFunction = @(x) x;
-% innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
+newRectifyFunction = @(x) x;
+innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
 
 % irPlot(innerRetinaBpSu,'mosaic');
 

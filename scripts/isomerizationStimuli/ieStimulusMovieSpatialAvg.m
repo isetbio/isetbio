@@ -21,14 +21,9 @@ addParameter(p,'meanLuminance',  200,   @isnumeric);
 addParameter(p,'nSteps',         50,    @isnumeric);
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
-addParameter(p,'timeInterval',   .008,    @isnumeric);  
-addParameter(p,'expTime',        .008,    @isnumeric);  
+addParameter(p,'timeInterval',   .01,    @isnumeric);  
+addParameter(p,'expTime',        .01,    @isnumeric);  
 addParameter(p,'fov',            1.5,    @isnumeric);  
-
-% Retinal patch parameters
-addParameter(p,'radius',            0,  @isnumeric);
-addParameter(p,'theta',            0,  @isnumeric);
-addParameter(p,'side',            'left',  @ischar);
 
 p.parse(movieInput,varargin{:});
 
@@ -53,14 +48,7 @@ fov = params.fov;
 % Create display
 display = displayCreate('CRT-Sony-HorwitzLab');
 
-% Set linear gamma so sensor absorptions = pixel values
-% This is done to model EJ's experiments
-display = displaySet(display,'gamma','linear');
-
-
 % Set up scene, oi and sensor
-params.row = size(movieInput,1);
-params.col = size(movieInput,2);
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
@@ -72,51 +60,11 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
+sensor = sensorCreate('human');
+sensor = sensorSetSizeToFOV(sensor, fov, scene, oi);
 
-% otfOld = oiGet(oi,'optics otfdata');
-% 
-% otfNew = zeros(size(otfOld));
-% otfNew = ones(size(otfOld));% + sqrt(-1)*ones(size(otfOld)); 
-% % otfNew(101,101,25) = ones(1,1,1);
-% % otfNew(1,1,:) = ones(1,1,31);
-% % otfNew(1,201,:) = ones(1,1,31);
-% % otfNew(201,1,1:31) = ones(1,1,31);
-% % otfNew(201,201,:) = ones(1,1,31);
-% 
-% oi = oiSet(oi,'optics otfdata', otfNew);
-
-if params.radius == 0
-    
-    sensor = sensorCreate('human');
-
-else
-    
-    coneP = coneCreate; % The cone properties properties
-    retinalRadiusDegrees = params.radius;
-    retinalPolarDegrees  = params.theta;
-    whichEye             = params.side;
-    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
-    sensor = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
-end
-
-sensor = sensorSetSizeToFOV(sensor, params.fov, scene, oi);
-
-% Set aspect ratio
-% At this point, we have the right cone density and the right number in
-% cols, now we just need to set the rows to have the same aspect ratio as
-% the input movie.
-sensorSize = sensorGet(sensor,'size');
-aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
-sensor = sensorSet(sensor,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
-
-
-% sensor = sensorSet(sensor, 'size', [size(movieInput,1) size(movieInput,2)]);
 sensor = sensorSet(sensor, 'exp time', params.expTime); 
 sensor = sensorSet(sensor, 'time interval', params.timeInterval); 
-
-
-% ct = sensorGet(sensor,'cone type');
-% sensor = sensorSet(sensor, 'cone type', 3*ones(size(ct)));
 
 %% Compute a dynamic set of cone absorptions for white noise
 %
@@ -147,38 +95,32 @@ frameRate = 1/125; % 125 FPS
 nFramesPerTimeStep = frameRate/params.timeInterval;
 
 % Loop through frames to build movie
-for t = 1 : round ( params.nSteps / 1 )
+for t = 1 : params.nSteps
     if wFlag, waitbar(t/params.nSteps,wbar); end
-    
-    if mod(t,40) == 0
-        t
-    end
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
 %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
 
     % % % % Generate scene object from stimulus RGB matrix and display object
-%     tsamp = ceil((t-.01)/nFramesPerTimeStep);
-%     scene = sceneFromFile(movieInput(:,:,tsamp), 'rgb', params.meanLuminance, display);
-    scene = sceneFromFile(movieInput(:,:,t), 'rgb', params.meanLuminance, display);
+    tsamp = ceil((t-.01)/nFramesPerTimeStep);
+    scene = sceneFromFile(movieInput(:,:,tsamp), 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
+
+    % Get scene RGB data    
+    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
     
     % Compute optical image
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    sensor = sensorComputeNoiseFree(sensor, oi);
+    sensor = sensorCompute(sensor, oi);
 
     if t == 1
         volts = zeros([sensorGet(sensor, 'size') params.nSteps]);
     end
     
-    for tsamp =  1:nFramesPerTimeStep
-        % Get scene RGB data
-        sceneRGB(:,:,(t-1)*nFramesPerTimeStep + tsamp,:) = sceneGet(scene,'rgb');
-        volts(:,:,(t-1)*nFramesPerTimeStep + tsamp) = sensorGet(sensor, 'volts');
-    end
+    volts(:,:,t) = sensorGet(sensor, 'volts');
     
     % vcAddObject(scene); sceneWindow
 end

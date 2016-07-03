@@ -27,6 +27,11 @@ addParameter(p,'fov',            0.6,    @isnumeric);
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'timeInterval',   0.005, @isnumeric);
 
+% Retinal patch parameters
+addParameter(p,'radius',            0,  @isnumeric);
+addParameter(p,'theta',            0,  @isnumeric);
+addParameter(p,'side',            'left',  @ischar);
+
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -45,11 +50,37 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-absorptions = sensorCreate('human');
-absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
+% absorptions = sensorCreate('human');
+% absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
+% 
+% absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
+% absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
-absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
-absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
+
+if params.radius == 0
+    
+    absorptions = sensorCreate('human');
+
+else
+    
+    coneP = coneCreate; % The cone properties properties
+    retinalRadiusDegrees = params.radius;
+    retinalPolarDegrees  = params.theta;
+    whichEye             = params.side;
+    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
+    absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+end
+
+absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
+
+% Set aspect ratio
+% At this point, we have the right cone density and the right number in
+% cols, now we just need to set the rows to have the same aspect ratio as
+% the input movie.
+% sensorSize = sensorGet(absorptions,'size');
+% aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
+% absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
+
 
 %% Compute a dynamic set of cone absorptions for moving bar
 

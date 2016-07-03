@@ -7,9 +7,12 @@ szMovie = size(movieMatrix);
 
 vcNewGraphWin([],'upperleftbig'); 
 
+cmin = min(movieMatrix(:));
+cmax = max(movieMatrix(:));
+
 for frame1 = 1:szMovie(3)
     imagesc(movieMatrix(:,:,frame1));
-    caxis([0 1]);
+    caxis([cmin cmax]);
     colormap gray; 
     drawnow;
 end

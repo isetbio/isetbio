@@ -114,6 +114,10 @@ methods
         irPlot(obj, varargin{:});
     end
     
+    function obj = normalize(obj,varargin)
+        obj = irNormalize(obj, varargin{:});
+    end
+    
     % movie function, see irMovie
     function movie(obj, outersegment, varargin)
         irMovie(obj, outersegment, varargin{:});

@@ -30,7 +30,7 @@ responseSize = size(obj.responseCenter);
 
 % 
 switch ieParamFormat(params.what);  
-    case{'response'}
+    case{'responseCenter'}
         
         responseRS = reshape(obj.responseCenter,responseSize(1)*responseSize(2),responseSize(3));
 
@@ -45,7 +45,7 @@ switch ieParamFormat(params.what);
         xlabel('Time (sec)');
         ylabel('Response (AU)');
         title('Bipolar Mosaic Response');
-    case{'responseCenter'}
+    case{'response'}
         responseRS = reshape(obj.responseCenter-obj.responseSurround,responseSize(1)*responseSize(2),responseSize(3));
         plot(.001*(1:responseSize(3)),responseRS);
         xlabel('Time (sec)');
