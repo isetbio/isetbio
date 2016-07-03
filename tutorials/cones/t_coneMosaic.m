@@ -39,7 +39,7 @@ bp.compute(cMosaic.os);
 
 bp.plot('response');
 
-params.vname = tempname; param.FrameRate = 10; params.step = 10; params.show = true;
+params.vname = tempname; param.FrameRate = 10; params.step = 5; params.show = true;
 bp.plot('movie response',params);
 
 
