@@ -7,10 +7,10 @@ ieInit
 
 %% Build a scene and oi for computing
 
-s = sceneCreate('rings rays');
+% s = sceneCreate('rings rays');
 % s = sceneCreate('slanted bar');
-% fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
-% s = sceneFromFile(fname,'rgb');
+fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+s = sceneFromFile(fname,'rgb');
 
 s = sceneSet(s,'fov',2);
 
@@ -21,6 +21,7 @@ vcAddObject(oi); oiWindow;
 %% Build a default cone mosaic and compute the OI
 
 cMosaic = coneMosaic;                     % Create the object
+cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(500);
 cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default anyway
 
@@ -37,6 +38,11 @@ bp = bipolar(cMosaic.os);
 bp.compute(cMosaic.os);
 
 bp.plot('response');
+
+params.vname = tempname; param.FrameRate = 10; params.step = 10; params.show = true;
+bp.plot('movie response',params);
+
+
 %% To compute an RGC response
 
 % Build rgc
