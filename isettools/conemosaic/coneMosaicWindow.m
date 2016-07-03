@@ -527,7 +527,7 @@ function editConeOpticalDensity_Callback(hObject, eventdata, handles)
 val = str2num(get(hObject, 'String'));
 assert(numel(val) == 3, 'invalid input for optical density');
 
-if any(handles.cMosaic.pigment.opticalDensity ~= val)
+if any(handles.cMosaic.pigment.opticalDensity(:) ~= val(:))
     handles.cMosaic.pigment.opticalDensity = val;
     menuEditClearData_Callback(hObject, eventdata, handles);
 end
@@ -576,7 +576,7 @@ function editConePeakEfficiency_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 val = str2num(get(hObject, 'String'));
 assert(numel(val) == 3, 'invalid input for peak efficiency');
-if any(handles.cMosaic.pigment.peakEfficiency ~= val)
+if any(handles.cMosaic.pigment.peakEfficiency(:) ~= val(:))
     handles.cMosaic.pigment.peakEfficiency = val;
     menuEditClearData_Callback(hObject, eventdata, handles);
 end
