@@ -22,7 +22,7 @@ function varargout = oiWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-% Last Modified by GUIDE v2.5 24-Mar-2013 15:46:10
+% Last Modified by GUIDE v2.5 03-Jul-2016 23:08:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -300,8 +300,31 @@ return;
 
 
 % --------------------------------------------------------------------
+function menuLens_Callback(hObject, eventdata, handles)
+return;
+
+% --------------------------------------------------------------------
+function menuLensDensity_Callback(hObject, eventdata, handles)
+% Optics | Lens | Density
+% Set the human lens density
+
+oi = vcGetObject('oi');
+
+d = oiGet(oi,'lens density');
+val = ieReadNumber('Enter human lens pigment density',d,'%.2f');
+if isempty(val), disp('Canceled'); return; end
+
+oi = oiSet(oi,'lens density',val);
+vcReplaceObject(oi);
+
+return;
+
+% --------------------------------------------------------------------
 function menuOptTrans_Callback(hObject, eventdata, handles)
-% Read the optical transmittance in wavelength
+% Optics | Lens | Transmittance
+%
+% Read the optical transmittance in wavelength.  Useful for diffraction
+% cases. 
 %
 %  We could use a function that multiplies the transmittance by another
 %  function, such as a lens or macular pigment transmittance.  As things
@@ -314,7 +337,7 @@ wave = opticsGet(oi,'wave');
 
 fullName = vcSelectDataFile('optics');
 if isempty(fullName), return;
-else                  optics = opticsSet(optics,'transmittance',ieReadSpectra(fullName,wave));
+else optics = opticsSet(optics,'transmittance',ieReadSpectra(fullName,wave));
 end
 
 oi = oiSet(oi,'optics',optics);
@@ -421,110 +444,119 @@ function menuOptics_Callback(hObject, eventdata, handles)
 return;
 
 % --------------------------------------------------------------------
-function menuOpticsHalfInch_Callback(hObject, eventdata, handles)
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-oi = oiClearData(oi);
-optics = opticsCreate('standard (1/2-inch)');
-oi  = oiSet(oi,'optics',optics);
-vcReplaceObject(oi,val);
-
-oiRefresh(hObject, eventdata, handles);
-
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsQuarterInch_Callback(hObject, eventdata, handles)
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-oi = oiClearData(oi);
-optics = opticsCreate('standard (1/4-inch)');
-oi  = oiSet(oi,'optics',optics);
-vcReplaceObject(oi,val);
-oiRefresh(hObject, eventdata, handles);
-
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsThird_Callback(hObject, eventdata, handles)
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-
-optics = opticsCreate('standard (1/3-inch)');
-oi.optics = optics;
-oi.data = [];
-oi = sceneClearData(oi);
-vcReplaceObject(oi,val);
-oiRefresh(hObject, eventdata, handles);
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsTwoThirds_Callback(hObject, eventdata, handles)
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-optics = opticsCreate('standard (2/3-inch)');
-oi.optics = optics;
-oi = sceneClearData(oi);
-vcReplaceObject(oi,val);
-oiRefresh(hObject, eventdata, handles);
-return;
-
-% --------------------------------------------------------------------
-function menuOpticsInch_Callback(hObject, eventdata, handles)
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-
-optics = opticsCreate('standard (1-inch)');
-oi.optics = optics;
-oi = sceneClearData(oi);
-vcReplaceObject(oi,val);
-
-oiRefresh(hObject, eventdata, handles);
-return;
-% --------------------------------------------------------------------
-function menuHuman_Callback(hObject, eventdata, handles)
-return;
-
-% --------------------------------------------------------------------
-function menuMacular028_Callback(hObject, eventdata, handles)
-%
-[val,oi] = vcGetSelectedObject('OPTICALIMAGE');
-oi = humanMacularTransmittance(oi,0.28);
-vcReplaceObject(oi,val);
-
-oiRefresh(hObject, eventdata, handles);
-return;
-
-% --------------------------------------------------------------------
-function menuMacular_Callback(hObject, eventdata, handles)
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-
-% Could use ieReadNumber here.
-dens = ieReadNumber('Enter macular density',0.28,' %.2f');
-% prompt={'Enter macular density:'}; def={'0.28'}; dlgTitle='Macular pigment density';
-% lineNo=1; answer=inputdlg(prompt,dlgTitle,lineNo,def);
-% dens = str2num(answer{1});
-oi = humanMacularTransmittance([],dens);
-vcReplaceObject(oi,val);
-
-oiRefresh(hObject, eventdata, handles);
-return;
-
-% --------------------------------------------------------------------
 function menuOpticsHuman_Callback(hObject, eventdata, handles)
-% Optics | Human Formats | Human optics
-
-[val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-
-oi = oiClearData(oi);
-
-optics = opticsCreate('human');
-optics = opticsSet(optics,'otfMethod','humanOTF');
-oi = oiSet(oi,'optics',optics);
-
-vcReplaceObject(oi,val);
+% Optics | Human optics (MW)
+oi = oiCreate('human');
+ieAddObject(oi);
 oiRefresh(hObject, eventdata, handles);
 return;
+
+% --------------------------------------------------------------------
+function menuHumanWVF_Callback(hObject, eventdata, handles)
+% Optics | Human (WVF)
+oi = oiCreate('wvf human');
+ieAddObject(oi);
+oiRefresh(hObject, eventdata, handles);
+return;
+
+% --------------------------------------------------------------------
+function Diffraction_Callback(hObject, eventdata, handles)
+% Optics | Diffraction
+oi = oiCreate('diffraction');
+ieAddObject(oi);
+oiRefresh(hObject, eventdata, handles);
+return;
+
+% % --------------------------------------------------------------------
+% function menuOpticsHalfInch_Callback(hObject, eventdata, handles)
+% 
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% oi = oiClearData(oi);
+% optics = opticsCreate('standard (1/2-inch)');
+% oi  = oiSet(oi,'optics',optics);
+% vcReplaceObject(oi,val);
+% 
+% oiRefresh(hObject, eventdata, handles);
+% 
+% return;
+% 
+% % --------------------------------------------------------------------
+% function menuOpticsQuarterInch_Callback(hObject, eventdata, handles)
+% 
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% oi = oiClearData(oi);
+% optics = opticsCreate('standard (1/4-inch)');
+% oi  = oiSet(oi,'optics',optics);
+% vcReplaceObject(oi,val);
+% oiRefresh(hObject, eventdata, handles);
+% 
+% return;
+% 
+% % --------------------------------------------------------------------
+% function menuOpticsThird_Callback(hObject, eventdata, handles)
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% 
+% optics = opticsCreate('standard (1/3-inch)');
+% oi.optics = optics;
+% oi.data = [];
+% oi = sceneClearData(oi);
+% vcReplaceObject(oi,val);
+% oiRefresh(hObject, eventdata, handles);
+% return;
+% 
+% % --------------------------------------------------------------------
+% function menuOpticsTwoThirds_Callback(hObject, eventdata, handles)
+% 
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% optics = opticsCreate('standard (2/3-inch)');
+% oi.optics = optics;
+% oi = sceneClearData(oi);
+% vcReplaceObject(oi,val);
+% oiRefresh(hObject, eventdata, handles);
+% return;
+% 
+% % --------------------------------------------------------------------
+% function menuOpticsInch_Callback(hObject, eventdata, handles)
+% 
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% 
+% optics = opticsCreate('standard (1-inch)');
+% oi.optics = optics;
+% oi = sceneClearData(oi);
+% vcReplaceObject(oi,val);
+% 
+% oiRefresh(hObject, eventdata, handles);
+% return;
+% --------------------------------------------------------------------
+% function menuHuman_Callback(hObject, eventdata, handles)
+% return;
+
+% % --------------------------------------------------------------------
+% function menuMacular028_Callback(hObject, eventdata, handles)
+% %
+% [val,oi] = vcGetSelectedObject('OPTICALIMAGE');
+% oi = humanMacularTransmittance(oi,0.28);
+% vcReplaceObject(oi,val);
+% 
+% oiRefresh(hObject, eventdata, handles);
+% return;
+% 
+% % --------------------------------------------------------------------
+% function menuMacular_Callback(hObject, eventdata, handles)
+% 
+% [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
+% 
+% % Could use ieReadNumber here.
+% dens = ieReadNumber('Enter macular density',0.28,' %.2f');
+% % prompt={'Enter macular density:'}; def={'0.28'}; dlgTitle='Macular pigment density';
+% % lineNo=1; answer=inputdlg(prompt,dlgTitle,lineNo,def);
+% % dens = str2num(answer{1});
+% oi = humanMacularTransmittance([],dens);
+% vcReplaceObject(oi,val);
+% 
+% oiRefresh(hObject, eventdata, handles);
+% return;
+
 
 % --------------------------------------------------------------------
 function menuOpticsImport_Callback(hObject, eventdata, handles)
@@ -599,6 +631,15 @@ return;
 function menuPlotImageGrid_Callback(hObject, eventdata, handles)
 % Plot
 oiPlot(vcGetObject('oi'),'irradiance image grid');
+return;
+
+
+% --------------------------------------------------------------------
+function menuPlotLens_Callback(hObject, eventdata, handles)
+% Plot | Lens transmittance
+%
+oi = vcGetObject('oi');
+oiPlot(oi,'lens transmittance');
 return;
 
 % --------------------------------------------------------------------
@@ -1088,3 +1129,5 @@ function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 % Help | ISET functions
 web('http://www.imageval.com/public/ISET-Functions/','-browser');
 return;
+
+

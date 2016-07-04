@@ -60,7 +60,7 @@ ir = irCreate(bp, params);
 ir.mosaicCreate('model','lnp','type','on midget');
 
 % Number of repeated trials
-ir.mosaic{1}.numberTrials = 3;
+ir.mosaic{1}.set('numberTrials',3);
 
 fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaicsize'));
 % Compute RGC response
@@ -71,7 +71,7 @@ psth = ir.mosaic{1}.get('psth','dt',1);
 
 clear params
 params.vname = 'vernier'; param.FrameRate = 5; params.step = 2; params.show = true;
-ieMovie(psth,params)
+ieMovie(psth,params);
 
 %%
 % irPlot(ir, 'mosaic');

@@ -376,8 +376,14 @@ switch sceneName
         scene = sceneBar(scene,sz,width);
     case {'vernier'}
         % sceneCreate('vernier', type, params)
-        % The possible types are 
-        %   
+        % Examples:
+        %  N.B. The displayed bar width is one more than specified here.
+        %
+        %   p.sceneSz = 64; p.barWidth = -1; p.offset = 1; p.meanLum = 10;
+        %   p.lineSpace = 1;  p.barColor = [1 0.5 0.5]; p.bgColor = .5;
+        %   s = sceneCreate('vernier','display',p);
+        %   vcAddObject(s); sceneWindow;
+        %
         if ~isempty(varargin), type = varargin{1}; else type = 'object'; end
         if length(varargin) > 1, 
             params = varargin{2};
@@ -1000,6 +1006,11 @@ function scene = sceneVernier(scene, type, params)
 %
 % Any parameters that are not specified in the structure have defaults.
 % See the code below.
+%
+% Examples:
+%     p.sceneSz = 64; p.barWidth = -1; p.offset = 3; p.meanLum = 10;
+%     p.lineSpace = 1;  p.barColor = [1 0.5 0.5]; p.bgColor = [ 0 0 0];
+%     s = sceneCreate('vernier','display',p);
 %
 % HJ
 

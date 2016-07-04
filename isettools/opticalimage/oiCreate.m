@@ -71,7 +71,8 @@ switch oiType
         % Default optics is f# = 4, diffraction limited
         optics = opticsCreate('diffraction limited');
         oi = oiSet(oi,'optics',optics);
-        
+        oi = oiSet(oi, 'name','diffraction');
+
         % Set up the default glass diffuser with a 2 micron blur circle,
         % but skipped
         oi = oiSet(oi, 'diffuser method','skip');

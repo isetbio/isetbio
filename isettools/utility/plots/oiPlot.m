@@ -60,6 +60,9 @@ function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 %         3*incoherent cutoff). Number of spatial samples to plot in the
 %         line spread can be set (default: 40).
 %
+%       {'lens transmittance'} - Spectral lens transmittance.  
+%             Computed from the lens density in the human case.
+%
 % See also:  s_oiPlot, and scenePlot
 %
 % Examples:
@@ -486,6 +489,36 @@ switch pType
         axis off; set(g,'Name',namestr);
         
         % Optics related
+    case {'lenstransmittance'}
+        % oiPlot(oi,'lens transmittance')
+        % If human, uses the lens object attached to oi.
+        
+        w = oiGet(oi,'wavelength');
+        set(g,'Name','ISETBIO:  Lens');
+
+        if checkfields(oi,'optics','lens')
+            % human case
+            t = oiGet(oi,'lens transmittance');
+            
+            plot(w,t); grid on
+            xlabel('Wavelength (nm)');
+            ylabel('Transmittance');
+            d = oiGet(oi,'lens density');
+            title(sprintf('Lens transmittance (density %.2f)',d))
+        else
+            %Diffraction case
+            if isempty(w)
+                % No calculation yet, so put in a dummy wavelength array
+                % just for this plot.  It is not saved.
+                w = 400:10:700;
+                oi = oiSet(oi,'optics wave',w);
+            end
+            t = oiGet(oi,'optics transmittance');
+            plot(w,t); grid on
+            xlabel('Wavelength (nm)');
+            ylabel('Transmittance');                        
+        end
+        
     case {'otf','otfanywave'}
         % User asked to select a wavelength
         % Optical transfer function, units are lines/mm
