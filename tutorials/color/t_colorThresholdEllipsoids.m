@@ -195,7 +195,7 @@ axis('square');
 %
 % Since we're on a roll, let's add those.  One way to do this is to
 % zero out two of the three rows of A, construct the corresponding Q,
-% and proceed as above.  The code takes a while because each of the 
+% and proceed as above.  The code is length because each of the 
 % three cases for each subplot is just hard-coded here.
 conditionStr = 'HT,cc';
 theSf = 0.5;
@@ -203,26 +203,26 @@ theSf = 0.5;
 nThetaEllipse = 200;
 xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
-Amuck = A;
-Amuck(2,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(2,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,1); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'k','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,1); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'g','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(2,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(2,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,1); hold on
@@ -234,26 +234,26 @@ theSf = 2;
 nThetaEllipse = 200;
 xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
-Amuck = A;
-Amuck(2,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(2,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,2); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'k','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,2); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'g','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(2,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(2,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,2); hold on
@@ -265,26 +265,26 @@ theSf = 4;
 nThetaEllipse = 200;
 xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
-Amuck = A;
-Amuck(2,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(2,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,3); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'k','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(3,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(3,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,3); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'g','LineWidth',1);
-Amuck = A;
-Amuck(1,:) = 0;
-Amuck(2,:) = 0;
-Q = Amuck'*Amuck;
+Aadjusted = A;
+Aadjusted(1,:) = 0;
+Aadjusted(2,:) = 0;
+Q = Aadjusted'*Aadjusted;
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,3); hold on
