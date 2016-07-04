@@ -1,29 +1,34 @@
-function ir = irCompute(ir, outerSegment, varargin)
-% Computes the rgc mosaic responses to an arbitrary stimulus.
+function ir = irCompute(ir, input, varargin)
+% Computes the rgc mosaic responses to an input
 %
-% The responses for all the mosaics attached to the ir object.
+%
+% The input can be of several types, for historical reasons.
+%
+% Inputs:
+%   ir: inner retina object,
+%   input - one of
+%      {'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'}
+%
+% Computes the responses for all the mosaics attached to the inner retina
+% object.
 %
 % For each mosaic, the linear response is computed by spatial convolution
 % of the center and surround RFs. Then, the temporal responses for the
 % center and surround is computed, separably. This stage of the computation
-% is stored in responseLinear.  
+% is stored in responseLinear.
 %
-% The linear response is then sent to the irComputeSpikes routine.  Each
-% rgc type will have its own compute method.  For all types the initial
-% linear method is carried out in here.
+% The linear response is sent to the irComputeSpikes routine.  Each rgc
+% type will have its own compute method.  For all types the initial linear
+% method is carried out in here.
 %
-% Inputs: 
-%  ir: inner retina object, 
-%  outersegment: ojbect
-%
-% Outputs: 
-%  ir: the inner retina object with responses attached 
+% Outputs:
+%  ir: the inner retina object with responses attached to each mosaic
 %
 % Example:
 %   ir.compute(identityOS);
 %   irCompute(ir,identityOS);
 %
-% See also: rgcGLM, irComputeSpikes, 
+% See also: rgcGLM, irComputeSpikes,
 %
 % JRG (c) isetbio team
 
@@ -38,29 +43,27 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'})));
+p.addRequired('input',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'})));
 
-p.parse(ir,outerSegment,varargin{:});
+p.parse(ir,input,varargin{:});
 
-ir = irComputeContinuous(ir, outerSegment);
+% Linear stage of the computation
+ir = irComputeContinuous(ir, input);
 
-% for rgcType = 1:length(ir.mosaic)
-    
-    % Compute spikes for each trial
-    switch class(ir.mosaic{1})
-        case {'rgcLinear'};
-            % No nonlinear response
-            error('Not yet implemented');
-        case{'rgcPhys'}
-            
-        otherwise
-            nTrials = ir.mosaic{1}.numberTrials;
-            for itrial = 1:nTrials
-                itrial
-                ir = irComputeSpikes(ir);
-            end
-    end
+% Compute spikes for each trial
+switch class(ir.mosaic{1})
+    case {'rgcLinear'};
+        % No nonlinear response
+        error('Not yet implemented');
+    case{'rgcPhys'}
+        
+    otherwise
+        nTrials = ir.mosaic{1}.numberTrials;
+        for itrial = 1:nTrials
+            itrial
+            ir = irComputeSpikes(ir);
+        end
+end
 
-% end
 
 

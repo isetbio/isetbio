@@ -77,13 +77,12 @@ for ii = 1:length(ir.mosaic)
             
             % Set the post spike filter to enforce the refractory period.
             glmprs = setPSFprs(ir.mosaic{ii});
-%             glmprs.ih=[]; glmprs.iht=[];
+            %  glmprs.ih=[]; glmprs.iht=[];
             % No post spike filter - break into different subclass?
             % glmprs = setLNPprs(ir.mosaic{ii});
             
             % Run Pillow code
             if strcmp((ir.name),'Macaque inner retina pixium 1')
-                
                 [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
             else
                 [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
@@ -104,6 +103,7 @@ for ii = 1:length(ir.mosaic)
             
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
+            
         otherwise
             error('The rgcMosaic object is a model without a spike response; choose LNP or GLM for spikes.');
     end

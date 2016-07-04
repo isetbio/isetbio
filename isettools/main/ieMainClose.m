@@ -33,7 +33,10 @@ if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
 end
 
 if checkfields(vcSESSION.GUI,'vcConeImgWindow','hObject')
-    delete(vcSESSION.GUI.vcConeImgWindow.hObject);
+    try
+        delete(vcSESSION.GUI.vcConeImgWindow.hObject);
+    catch
+    end
     vcSESSION.GUI = rmfield(vcSESSION.GUI,'vcConeImgWindow');
 end
 

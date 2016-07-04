@@ -1,14 +1,18 @@
-function val = mosaicGet(obj, varargin)
-% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
+function val = mosaicGet(obj, param, varargin)
+% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object
 % parameters using the input parser structure.
-% 
-%       val = mosaicGet(rgc.mosaic, property)
-% 
-% Inputs: rgc object, property to be gotten
-% 
-% Outputs: val of property
-% 
-% Properties that can be gotten:
+%
+%   val = mosaicGet(rgc.mosaic, param, varargin)
+%
+% Inputs: 
+%   rgc object
+%   param - to retrieve
+%   vararing depends on parameter
+%
+% Outputs: 
+%  val of parameter
+%
+% Properties:
 %         'cellType',...        - type of RGC of which mosaic is composed
 %         'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
 %         'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
@@ -23,66 +27,58 @@ function val = mosaicGet(obj, varargin)
 %         'numberTrials',...    - number of trials for spike response
 %         'responseSpikes',...   - average waveform over N trials including
 %                                   post-spike and coupling filter effects
-%         'responseVoltage',... - the voltage waveform used for coupling 
-% 
-% 
+%         'responseVoltage',... - the voltage waveform used for coupling
+%         'spikes'
+%         'last spike time'
+%         'psth'
+%
 % Examples:
-%   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
-%   val = mosaicGet(rgc1.mosaic{3}, 'psthResponse')
-% 
-% 9/2015 JRG 
+%   val = mosaicGet(rgc1.mosaic{1}, 'cell type')
+%   val = mosaicGet(rgc1.mosaic{3}, 'psth response')
+%
+% 9/2015 JRG
 
-% % % We could do set using the superclass method
-% obj = mosaicSet@rgcMosaic(obj, varargin{:});
-
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-narginchk(0, Inf);
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {...
-    'cellType',...
-    'rfDiameter',...
-    'rfDiaMagnitude',...
-    'cellLocation',...
-    'sRFcenter',...
-    'sRFsurround',...
-    'tCenter',...
-    'tSurround',...
-    'tonicDrive',...
-    'responseLinear',...
-    'generatorFunction',...
-    'nlResponse',...
-    'postSpikeFilter',...
-    'numberTrials',...
-    'responseSpikes',...    
-    'responseVoltage',...    
-    'responsePsth','psth'...
+allowableFields = {...
+    'celltype',...
+    'rfdiameter',...
+    'rfdiaMagnitude',...
+    'celllocation',...
+    'srfcenter',...
+    'srfsurround',...
+    'tcenter',...
+    'tsurround',...
+    'tonicdrive',...
+    'responselinear',...
+    'generatorfunction',...
+    'nlresponse',...
+    'postspikefilter',...
+    'numbertrials',...
+    'responsespikes',...
+    'responsevoltage',...
+    'responsepsth','psth'...
+    'mosaicsize', ...
+    'spikes',...
+    'lastspiketime'
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+p.addParameter('dt',0.01 , @isnumeric);   % 10 usec
 
 % Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
-
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
+p.parse(param,varargin{:}); 
+param = p.Results.param;
+dt    = p.Results.dt;
 
 % Set key-value pairs.
-switch lower(params.what)
+switch ieParamFormat(param)
     case{'celltype'}
         val = obj.cellType;
+    case {'mosaicsize'}
+        val = size(obj.cellLocation);
     case{'rfdiameter'}
         val = obj.rfDiameter;
     case{'rfdiamagnitude'}
@@ -117,49 +113,87 @@ switch lower(params.what)
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
     case{'responsepsth', 'psth'}
+        % Calculate the PSTH from the response
+        nCells = obj.get('mosaic size');
+        spikes = obj.get('spikes','dt',dt);
+                
+        nSamples = round(1/dt);
+        sigma    = nSamples/5;
+        convolvewin = fspecial('gaussian',[nSamples,1],sigma);
+        convolvewin = convolvewin/max(convolvewin(:));
+        psth = zeros(size(spikes));
         
-%         if ~isempty(obj.responsePsth)
-%             val = obj.responsePsth;
-%         else
-            
-            cellCtr=0; dt = .01;
-            maxTrials = obj.numberTrials;
-            nCells = size(obj.responseSpikes);
-            %         yout = [];
-            for xcell = 1:nCells(1)
-                for ycell = 1:nCells(2)
-                    clear yind y
-                    cellCtr = cellCtr+1;
-                    
-                    for trial = 1:maxTrials
-                        
-                        yind =  obj.responseSpikes{xcell,ycell,trial,1};
-                        if strcmpi(class(obj),'rgcphys'); yind = .01*yind; end;
-                        y(trial,ceil(yind./dt))=1;
-                    end
-                    
-                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr);
-                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
-                    
-                    %  subplot(nCells(2),nCells(1),cellCtr);
- 
-                    convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
-                    convolvewin= convolvewin./max(convolvewin);
-                    if size(y,1) > 1
-                        yout(cellCtr,1:length(y)) = sum(y);
-                    else
-                        yout(cellCtr,1:length(y)) = y;
-                    end
-                    PSTH_out{xcell,ycell}=conv(sum(y),convolvewin,'same');
-                    % plot(.1*bindur:.1*bindur:.1*bindur*length(PSTH_rec),PSTH_rec);
+        for xcell = 1:nCells(1)
+            for ycell = 1:nCells(2)
+                % The PSTH is the convolved spikes.  We adjusted the window
+                % to be sensitive to the selection of dt. Also, we wonder
+                % whether the sigma is small enough.  The end points are
+                % still noticeably above zero.  We also wonder whether we
+                % should normalize, we kind of think not.  BW/HJ.
+                
+                
+                % convolvewin = exp(-(1/2)*(2.5*((0:99)-99/2)/(99/2)).^2);
+                % convolvewin= convolvewin./max(convolvewin);
+                psth(xcell,ycell,:) = conv(squeeze(spikes(xcell,ycell,:)),convolvewin,'same');
+            end
+        end
+        val = psth;
+        
+    case {'lastspiketime'}
+        maxTrials = obj.numberTrials;
+        nCells    = obj.get('mosaic size');
+        val = 0;
+        for ii=1:nCells(1)
+            for jj = nCells(2)
+                for kk = 1:maxTrials
+                    mx = max(obj.responseSpikes{ii,jj,kk});
+                    val = max(val,mx);
                 end
             end
-            
-            val.psth = PSTH_out;
-            val.spikes = yout;
-            
-%         end
+        end
         
-end
+    case {'spikes'}
+        % cellCtr = 0;
+        maxTrials = obj.numberTrials;
+        nCells    = obj.get('mosaic size');
+        lastSpike = obj.get('last spike time');
+        spikes = zeros(nCells(1),nCells(2),ceil(lastSpike));
+        spikesCell = zeros(maxTrials,ceil(lastSpike/dt));
+        
+        for xcell = 1:nCells(1)
+            for ycell = 1:nCells(2)
+                clear spikeTimes spikesCell
+                % cellCtr = cellCtr+1;
+                
+                % Convert the time stamps in response spikes to a vector
+                % that has 0's and 1's at different times.  The number
+                % of times is 1 ms divided by dt, which appears to be 0.01
+                % milliseconds.  So, if there are, say, 500 ms in the
+                % stimulus there are 50,000 indices in y
+                % We need to speed this up and simplify if possible.
+                % 
+                for trial = 1:maxTrials
+                    spikeTimes =  obj.responseSpikes{xcell,ycell,trial};
+                    if strcmpi(class(obj),'rgcphys')
+                        % For the rgc physiology in EJ's experiments, the
+                        % time base is 10 usec, not 1 ms
+                        spikeTimes = .01*spikeTimes;
+                    end;
+                    % Vector on a time base of dt with a 0 or 1 indicating
+                    % a spike or not.
+                    spikesCell(trial,ceil(spikeTimes./dt)) = 1;
+                end                               
+
+                if size(spikesCell,1) > 1
+                    % More than one trial, sum across trials
+                    spikes(xcell,ycell,1:length(spikesCell)) = sum(spikesCell);
+                else
+                    spikes(xcell,ycell,1:length(spikesCell)) = spikesCell;
+                end
+                val = spikes;
+            end
+        end
+        
+
 end
 
