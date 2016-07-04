@@ -32,12 +32,17 @@ if notDefined('displayFlag'), displayFlag = 1; end
 
 % Force to lower case and no spaces
 wList   = oiGet(oi,'wavelength');
-photons = oi.data.photons;  % Not using an oiGet() here saves memory
+photons = [];
+if checkfields(oi,'data','photons')
+    photons = oi.data.photons;  % Not using an oiGet() here saves memory
+end
 sz      = oiGet(oi,'size');
 
 if isempty(photons)
+    handles = ieSessionGet('opticalimagehandle');
+    % axes(get(handles);
     cla
-    sprintf('ISET Warning:  Data are not available');
+    ieInWindowMessage('No spectral irradiance data available',handles,[]);
     return;
 end
     

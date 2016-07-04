@@ -7,10 +7,10 @@ ieInit
 
 %% Build a scene and oi for computing
 
-s = sceneCreate('vernier');
+% s = sceneCreate('vernier');
 s.distance = 1;
 
-% s = sceneCreate('rings rays');
+s = sceneCreate('rings rays');
 % s = sceneCreate('slanted bar');
 % fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
 % s = sceneFromFile(fname,'rgb');
