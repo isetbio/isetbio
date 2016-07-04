@@ -1,97 +1,64 @@
-function obj = mosaicSet(obj, varargin)
-% rgcMosaicSet: a method of @rgcMosaic that sets rgcMosaic object 
-% parameters using the input parser structure.
+function obj = mosaicSet(obj, param, val, varargin)
+% rgcLinear subclass mosaic set.  Superclass is @rgcMosaic
 % 
-%       rgc.mosaic = mosaicSet(rgc.mosaic, property, value)
+%   rgc.mosaic = mosaicSet(rgc.mosaic, property, value, varargin)
 %  
-% Inputs: rgc object, key-value pair of property and value to which it is
-%   being set.
+% Inputs: rgc object, 
+%   property value pair
 % 
-% Outputs: obj with property set appropriately.% 
-% 
-% Properties that can be set:
-%         'cellType',...        - type of RGC of which mosaic is composed
-%         'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
-%         'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
-%         'cellLocation',...    - coordinates of center of spatial RF
-%         'sRFcenter',...       - center spatial RF surfaces
-%         'sRFsurround',...     - surround spatial RF surfaces
-%         'tCenter',...         - center temporal impulse response
-%         'tSurround',...       - surround temopral impulse response
-%         'linearResponse',...  - linear response of all cells
-% 
+% Outputs: 
+%  obj - with property set appropriately
 % 
 % Examples:
-%   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
-%   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'psthResponse', psth)
+%    mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
+%    mosaicSet(rgc1.mosaic{1}, 'psthResponse', psth)
 % 
 % 9/2015 JRG 
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-
-% % % We could do set using the superclass method
-% obj = mosaicSet@rgcMosaic(obj, varargin{:});
-
+%% Parse
 % Check key names with a case-insensitive string, errors in this code are
 % attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
 
-% Make key properties that can be set required arguments, and require
-% values along with key names.
-allowableFieldsToSet = {...
-    'cellType',...
-    'rfDiameter',...
-    'rfDiaMagnitude',...
-    'cellLocation',...
-    'sRFcenter',...
-    'sRFsurround',...
-    'tCenter',...
-    'tSurround',...
-    'responseLinear'...
-    };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
+p.addRequired('param',@ischar);
+p.addRequired('val');
 
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+p.parse(param, val, varargin{:}); 
+param = p.Results.param;
+val   = p.Results.val;
 
-% Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
+%% Set key-value pairs.
 
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
+% @JRG: Please add comments about what these parameters are and their
+% potential values.
+switch ieParamFormat(param)
 
-% Set key-value pairs.
-switch lower(params.what)
-        
-    case{'celltype'}
-        obj.cellType = params.value;
-    case{'rfdiameter'}
-        obj.rfDiameter = params.value;
-    case{'rfdiamagnitude'}
-        obj.rfDiaMagnitude = params.value;
-    case{'celllocation'}
-        obj.cellLocation = params.value;
-    case{'srfcenter'}
-        obj.sRFcenter = params.value;
-    case{'srfsurround'}
-        obj.sRFsurround = params.value;
-    case{'tcenter'}
-        obj.tCenter = params.value;
-    case{'tsurround'}
-        obj.tSurround = params.value;
-    case{'responselinear'}
-        obj.responseLinear = params.value;
-        
+    % Special to this class should be here
+    
+    otherwise
+        mosaicSet@rgcMosaic(obj,param,val,varargin{:});
+
+        % DELETE ME
+%     case{'celltype'}
+%         obj.cellType = val;
+%     case{'rfdiameter'}
+%         obj.rfDiameter = val;
+%     case{'rfdiamagnitude'}
+%         obj.rfDiaMagnitude = val;
+%     case{'celllocation'}
+%         obj.cellLocation = val;
+%     case{'srfcenter'}
+%         obj.sRFcenter = val;
+%     case{'srfsurround'}
+%         obj.sRFsurround = val;
+%     case{'tcenter'}
+%         obj.tCenter = val;
+%     case{'tsurround'}
+%         obj.tSurround = val;
+%     case{'responselinear'}
+%         obj.responseLinear = val;
+ 
 end
 

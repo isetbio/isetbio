@@ -52,17 +52,20 @@ bp.plot('movie response',params);
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 0.5;        % Radius in mm
+params.eyeRadius = 2;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 %
 ir = irCreate(bp, params);
-ir.mosaicCreate('model','lnp','type','on midget');
+ir.mosaicCreate('model','linear','type','on midget');
+c = ir.mosaic{1}.get('cell location')
 
 % Number of repeated trials
-ir.mosaic{1}.set('numberTrials',3);
+% ir.mosaicCreate('model','lnp','type','on midget');
+% ir.mosaic{1}.set('numberTrials',3);
 
-fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaicsize'));
+fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));
+
 % Compute RGC response
 ir = irCompute(ir, bp);
 lastTime = ir.mosaic{1}.get('last spike time');

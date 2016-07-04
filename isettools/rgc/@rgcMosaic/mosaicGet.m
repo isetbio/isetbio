@@ -1,40 +1,41 @@
-function val = mosaicGet(obj, varargin)
-% rgcMosaicGet: a method of @rgcMosaic that gets rgcMosaic object 
-% parameters using the input parser structure.
+function val = mosaicGet(obj, param, varargin)
+% @rgcMosaic super class mosaicGet method
 % 
-%       val = mosaicGet(rgc.mosaic, property)
+%    val = mosaicGet(rgc.mosaic, property)
 % 
-% Inputs: rgc object, property to be gotten
+% The subclasses have special values, and if the request is not for one of
+% those then this call is invoked to get the value
+%
+% Inputs: 
+%   obj    - rgc object
+%   param  - parameter string
+%   varargin - Not used yet, but will be used for units and other things.
 % 
-% Outputs: val of property
+% Outputs: 
+%   val - parameter value
 % 
 % Properties that can be gotten:
-%         'cellType',...        - type of RGC of which mosaic is composed
-%         'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
-%         'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
-%         'cellLocation',...    - coordinates of center of spatial RF
-%         'sRFcenter',...       - center spatial RF surfaces
-%         'sRFsurround',...     - surround spatial RF surfaces
-%         'tCenter',...         - center temporal impulse response
-%         'tSurround',...       - surround temopral impulse response
-%         'linearResponse',...  - linear response of all cells
-% 
+%    'cellType'         - type of RGC of which mosaic is composed
+%    'rfDiameter'       - 1 stdev diameter in pixels of spatial RF
+%    'rfDiaMagnitude'   - magnitude of spatial RF at 1 stdev
+%    'cellLocation'     - coordinates of spatial RF center in ??? frame
+%    'sRFcenter'        - center spatial RF surfaces
+%    'sRFsurround'      - surround spatial RF surfaces
+%    'tCenter'          - center temporal impulse response
+%    'tSurround'        - surround temopral impulse response
+%    'linearResponse'   - linear response of all cells
+%    'mosaic size'      - Row/col for cells
+%
 % Examples:
 %   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
 %   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
 % 
 % 9/2015 JRG 
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+%% Parse
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
 
 % This flag causes the parser not to throw an error here in the superclass
 % call. The subclass call will throw an error.
@@ -42,37 +43,27 @@ p.KeepUnmatched = true;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFieldsToSet = {...
-        'cellType',...
-        'rfDiameter',...
-        'rfDiaMagnitude',...
-        'cellLocation',...
-        'sRFcenter',...
-        'sRFsurround',...
-        'tCenter',...
-        'tSurround',...
-        'linearResponse'...
+allowFields = {...
+        'celltype',...
+        'rfdiameter',...
+        'rfdiamagnitude',...
+        'celllocation',...
+        'srfcenter',...
+        'srfsurround',...
+        'tcenter',...
+        'tsurround',...
+        'linearresponse'...
+        'mosaicsize'
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
 
 % Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
+p.parse(param,varargin{:}); 
+param = p.Results.param;
 
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
-
-% Set key-value pairs.
-switch lower(params.what)
+% @JRG - Please comment on the units
+% Get 
+switch ieParamFormat(param)
     
     case{'celltype'}
         val = obj.cellType;
@@ -81,6 +72,7 @@ switch lower(params.what)
     case{'rfdiamagnitude'}
         val = obj.rfDiaMagnitude;
     case{'celllocation'}
+        % @JRG:  Units are ?
         val = obj.cellLocation;
     case{'srfcenter'}
         val = obj.sRFcenter;
@@ -92,8 +84,8 @@ switch lower(params.what)
         val = obj.tSurround;
     case{'linearresponse'}
         val = obj.linearResponse;
-        
+    case {'mosaicsize'}
+        val = size(obj.cellLocation);
 end
 
-return;
-
+end
