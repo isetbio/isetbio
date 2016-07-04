@@ -70,7 +70,8 @@ lastTime = ir.mosaic{1}.get('last spike time');
 psth = ir.mosaic{1}.get('psth','dt',1);
 
 clear params
-params.vname = 'vernier'; param.FrameRate = 5; params.step = 2; params.show = true;
+params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+param.FrameRate = 5; params.step = 2; params.show = false;
 ieMovie(psth,params);
 
 %%
