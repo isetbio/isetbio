@@ -26,3 +26,4 @@ R = eul2rotm(ellParams(4:6)');
 Ainv = R*D;
 A = inv(Ainv);
 Q = A'*A;
+

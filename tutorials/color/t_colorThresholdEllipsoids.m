@@ -36,6 +36,9 @@
 %% Clear and close
 clear; close all;
 
+%% Turn off an irritating plot warning
+s = warning('off','MATLAB:delaunay:DupPtsDelaunayWarnId');
+
 %% Get the pattern-color model parameters from the tables in the paper
 %
 % The paper gives us (in Tables 2 and 3) the for a matrix A that converts cone
@@ -49,7 +52,8 @@ clear; close all;
 %
 % The figures in the paper are for subject HT, constant cycles condiion.
 % Or at least Figure 3 is.  It is less clear for Figure 8, but we'll assume
-% it is the same subject and condition as Figure 3.
+% it is the same subject and condition as Figure 3.  Our reproduction of
+% that figure looks pretty good, based on this assumption.
 conditionStr = 'HT,cc';
 theSf = 2;
 [A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
@@ -72,7 +76,7 @@ xSphere = UnitSphereGenerate(nThetaEllipsoid,nPhiEllipsoid);
 xEllipsoid = Ainv*xSphere;
 xEllipsoid = bsxfun(@times,xEllipsoid,1./theBgLMS);
 
-% Plot the fit as a nice surface
+% Plot the model ellipsoid as a nice surface
 xCoords = squeeze(xEllipsoid(1,:));
 yCoords = squeeze(xEllipsoid(2,:));
 zCoords = squeeze(xEllipsoid(3,:));
@@ -83,7 +87,7 @@ set(h,'FaceAlpha',0.25)
 set(h,'EdgeColor',[0.5 0.5 0.5])
 set(h,'FaceColor',[0.6 0.6 0.6]);
 lighting phong;
-xlabel('L contrast'); ylabel('M contrast'); zlabel('S contrast'); title('Poirson Wandell Ellipsoid');
+xlabel('L contrast'); ylabel('M contrast'); zlabel('S contrast'); title({'Poirson Wandell Thrshold Ellipsoid' ''});
 xlim([-0.02 0.02]); ylim([-0.02 0.02]); zlim([-0.04 0.04]);
 axis('square');
 
@@ -105,11 +109,13 @@ xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 figure; clf;
+set(gcf,'Position',[100 100 700 350]);
 subplot(1,3,1); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'r','LineWidth',3);
 plot([-0.015 0.015],[0 0],'k:','LineWidth',2);
 plot([0 0],[-0.015 0.015],'k:','LineWidth',2);
-xlabel('L contrast'); ylabel('M contrast'); title('Poirson Wandell Ellipsoid');
+xlabel('L contrast'); ylabel('M contrast');
+title('M versus L');
 xlim([-0.015 0.015]); ylim([-0.015 0.015]);
 set(gca,'XTick',[-0.015 -0.010 -0.005 0 0.005 0.010 0.015]);
 set(gca,'XTickLabel',{'-0.015' '' '' '' '' '' '0.015'});
@@ -125,7 +131,8 @@ subplot(1,3,2); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(3,:),'r','LineWidth',3);
 plot([-0.02 0.02],[0 0],'k:','LineWidth',2);
 plot([0 0],[-0.04 0.04],'k:','LineWidth',2);
-xlabel('L contrast'); ylabel('S contrast'); title('Poirson Wandell Ellipsoid');
+xlabel('L contrast'); ylabel('S contrast');
+title('L versus S');
 xlim([-0.02 0.02]); ylim([-0.04 0.04]);
 axis('square');
 
@@ -136,9 +143,12 @@ subplot(1,3,3); hold on
 plot(xEllipsoidPlane(2,:),xEllipsoidPlane(3,:),'r','LineWidth',3);
 plot([-0.02 0.02],[0 0],'k:','LineWidth',2);
 plot([0 0],[-0.04 0.04],'k:','LineWidth',2);
-xlabel('M contrast'); ylabel('S contrast'); title('Poirson Wandell Ellipsoid');
+xlabel('M contrast'); ylabel('S contrast');
+title('M versus S');
 xlim([-0.02 0.02]); ylim([-0.04 0.04]);
 axis('square');
+
+suplabel('Poirson Wandell Threshold Ellipsoid','t');
 
 %% Reproduce Figure 8.
 %
@@ -153,6 +163,7 @@ xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 figure; clf;
+set(gcf,'Position',[100 100 700 350]);
 subplot(1,3,1); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'r','LineWidth',3);
 plot([-0.05 0.05],[0 0],'k:','LineWidth',2);
@@ -197,6 +208,9 @@ axis('square');
 % zero out two of the three rows of A, construct the corresponding Q,
 % and proceed as above.  The code is length because each of the 
 % three cases for each subplot is just hard-coded here.
+%
+% An enterprising person could also add the single mechanism planes to the
+% figure with the 3D threshold ellipsoid.
 conditionStr = 'HT,cc';
 theSf = 0.5;
 [A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
@@ -289,3 +303,6 @@ xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,3); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'y','LineWidth',1);
+
+%% Put warning back
+warning(s.state,s.identifier);
