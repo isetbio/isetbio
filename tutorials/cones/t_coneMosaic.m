@@ -7,7 +7,10 @@ ieInit
 
 %% Build a scene and oi for computing
 
-s = sceneCreate('rings rays');
+s = sceneCreate('vernier');
+s.distance = 1;
+
+% s = sceneCreate('rings rays');
 % s = sceneCreate('slanted bar');
 % fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
 % s = sceneFromFile(fname,'rgb');
@@ -38,7 +41,7 @@ bp = bipolar(cMosaic.os);
 bp.compute(cMosaic.os);
 
 % bp.plot('response');
-
+clear params
 params.vname = tempname; param.FrameRate = 5; params.step = 2; params.show = true;
 bp.plot('movie response',params);
 
@@ -65,6 +68,10 @@ ir = irCompute(ir, bp);
 lastTime = ir.mosaic{1}.get('last spike time');
 
 psth = ir.mosaic{1}.get('psth','dt',1);
+
+clear params
+params.vname = 'vernier'; param.FrameRate = 5; params.step = 2; params.show = true;
+ieMovie(psth,params)
 
 %%
 % irPlot(ir, 'mosaic');
