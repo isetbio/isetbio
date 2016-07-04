@@ -1,14 +1,17 @@
 function hdl = bipolarPlot(obj, pType,varargin)
 % Plot the values from the bipolar object
 % 
-%    bp.plot(parameter)
+%    hdl = bp.plot(parameter)
 %
-% Options:
+% Plot types
 %   response center
 %   response surround
 %   response
-%   movie response - Time series.  
-%        dFlag parameter contains vname, FrameRate, and window;
+%   movie response 
+%   Time series
+% 
+% Examples:
+%
 % 
 % 5/2016 JRG (c) isetbio team
 
@@ -68,8 +71,14 @@ switch ieParamFormat(pType);
         
     case{'movieresponse'}
         % Pass the varargin along
-        varargin{1}.hf = hdl;
-        ieMovie(obj.get('response'),varargin{:});
+        if ~isempty(varargin) && length(varargin) == 1
+            % Params are coded in a single struct
+            varargin{1}.hf = hdl;
+            ieMovie(obj.get('response'),varargin{:});
+        else
+            % List of params
+            ieMovie(obj.get('response'),'hf',hf,varargin{:});
+        end
 end
 
 % set(gca,'fontsize',16);

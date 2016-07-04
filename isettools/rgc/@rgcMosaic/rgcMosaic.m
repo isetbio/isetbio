@@ -1,18 +1,17 @@
 classdef rgcMosaic < handle
-    %% Define the rgcMosaic parent class to store a mosaic of cells with a type and model
+    %% The rgcMosaic parent class
     %
     % This class is called when creating a new rgcMosaic from an inner
-    % retina object.  Typically we get here from rgcMosaicCreate with the call:
+    % retina object.  Typically we get here from a call like
     %
     %      mosaicLinear = rgcMosaicLinear(ir, mosaicType);
     %      mosaicGLM    = rgcMosaicGLM(ir, mosaicType);
     %
     % Inputs:
-    %       os: an isetbio outer segment structure
-    %       mosaicType: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified'
+    %    mosaicType: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified'
     %
-    % Outputs: the rgcMosaic object; rgcMosaicCreate attaches the
-    %       rgcMosaic object to an innerRetina object.
+    % Outputs: 
+    %   The rgcMosaic object
     %
     % The center and surround spatial receptive fields and the temporal impulse
     % responses are initialized in @rgcMosaic/initialize. The rgcMosaic
@@ -39,9 +38,9 @@ classdef rgcMosaic < handle
         
         % The type of computational model for the RGC spikes
         % model;
-        
         cellType;           % Possible types are ...
         rfDiameter;         % receptive field center diameter
+
         % We should estimate the rf center sigma
         % rfDiaMagnitude;
         
@@ -52,9 +51,13 @@ classdef rgcMosaic < handle
         sRFsurround;        % spatial RF of the surround
         tCenter;            % temporal impulse response of the center
         tSurround;          %    and of the surround (1 ms timing by default)
-        tonicDrive;        % DC term for linear response
+        tonicDrive;         % DC term for linear response
         rfDiaMagnitude;     % for making movies of response
         responseLinear;     % Store the linear response after convolution
+        responseSpikes; 
+        
+        % We typically run a single trial
+        numberTrials = 1;
     end
     
     % Private properties. Only methods of the parent class can set these

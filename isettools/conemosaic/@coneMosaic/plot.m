@@ -23,7 +23,8 @@ function [hf, uData] = plot(obj, type, varargin)
 %   'cone spectral qe'     - Cone pigment and macular
 %   'eye spectral qe'      - Cone pigment with macular and lens
 %   'mean absorptions'     - Image of the mean absorptions
-%   'absorptions'          - Movie of the absorptions
+%   'absorptions'          - Movie of the absorptions on cone mosaic
+%   'movie absorptions'    - Gray scale movie of the absorptions
 %   'mean current'         - Image of the mean current
 %   'eye movement path'    - eye movement
 %   'current timeseries'   - Cone photocurrent graphs
@@ -128,12 +129,21 @@ switch ieParamFormat(type)
         colormap(gray);  % Shows a numerical value
         axis image;
     case 'absorptions'
-        % Movie of the absorptions
+        % Movie of the absorptions on the cone mosaic
         if isempty(obj.absorptions)
             if isempty(p.Results.hf), close(hf); end
             error('no absorption data');
         end
         uData = coneImageActivity(obj, hf, varargin{:});
+    case 'movieabsorptions'
+        % Movie in gray scale
+        if isempty(obj.absorptions)
+            if isempty(p.Results.hf), close(hf); end
+            error('no absorption data');
+        end
+        % Additional arguments may be the video file name, step, and
+        % FrameRate
+        uData = ieMovie(obj.absorptions,'hf',hf,varargin{:});
     case 'meancurrent'
         if isempty(obj.current)
             if isempty(p.Results.hf), close(hf); end

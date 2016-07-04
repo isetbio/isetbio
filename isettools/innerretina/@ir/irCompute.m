@@ -1,6 +1,7 @@
 function ir = irCompute(ir, input, varargin)
 % Computes the rgc mosaic responses to an input
 %
+%    ir = irCompute(ir, input, varargin)
 %
 % The input can be of several types, for historical reasons.
 %
@@ -12,14 +13,16 @@ function ir = irCompute(ir, input, varargin)
 % Computes the responses for all the mosaics attached to the inner retina
 % object.
 %
+% @JRG:  The initial linear method is carried out in irComputeContinuous.  Why
+% isn't this called irComputeLinear?
+%
 % For each mosaic, the linear response is computed by spatial convolution
 % of the center and surround RFs. Then, the temporal responses for the
 % center and surround is computed, separably. This stage of the computation
 % is stored in responseLinear.
 %
-% The linear response is sent to the irComputeSpikes routine.  Each rgc
-% type will have its own compute method.  For all types the initial linear
-% method is carried out in here.
+% The spikes are computed irComputeSpikes routine.  Each rgc type has its
+% own compute method.  
 %
 % Outputs:
 %  ir: the inner retina object with responses attached to each mosaic
@@ -33,6 +36,7 @@ function ir = irCompute(ir, input, varargin)
 % JRG (c) isetbio team
 
 %% PROGRAMMING TODO
+% @JRG
 % We plan to move the linear computation to a separate routine,
 % irComputeContinuous (or Linear) and carry out the first part of this code
 % in that routine, rather than as the switch statement that is here now
@@ -43,26 +47,32 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-p.addRequired('input',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'})));
+
+vFunc = @(x) ~isempty(validatestring(class(x),...
+    {'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'}));
+p.addRequired('input',vFunc);
 
 p.parse(ir,input,varargin{:});
 
-% Linear stage of the computation
+%% Linear stage of the computation
 ir = irComputeContinuous(ir, input);
 
-% Compute spikes for each trial
+%% Compute spikes for each trial
 switch class(ir.mosaic{1})
     case {'rgcLinear'};
-        % No nonlinear response
+        % No linear response implemented yet.
         error('Not yet implemented');
     case{'rgcPhys'}
-        
+        % @JRG:  Comment needed.
     otherwise
+        % Runs for rgcLNP, rgcGLM
         nTrials = ir.mosaic{1}.numberTrials;
         for itrial = 1:nTrials
-            itrial
+            fprintf('Trial %d\n',itrial);
             ir = irComputeSpikes(ir);
         end
+end
+
 end
 
 

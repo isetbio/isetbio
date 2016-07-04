@@ -31,7 +31,7 @@ function ir = irComputeSpikes(ir, varargin)
 % exptBinsPerStep = round(normalRR/exptRR);
 
 global RefreshRate
-RefreshRate = 100;    
+RefreshRate = 100;
 % RefreshRate = exptBinsPerStep
 
 
@@ -40,6 +40,7 @@ for ii = 1:length(ir.mosaic)
     
     switch class(ir.mosaic{ii})
         case {'rgcGLM','rgcPhys','rgcSubunit'}
+            
             % Call the Pillow code to generate spikes for the whole mosaic
             % using the coupled GLM
             clear responseSpikes responseVoltage
@@ -90,8 +91,8 @@ for ii = 1:length(ir.mosaic)
             cellCtr = 0;
             
             nCells = size(ir.mosaic{ii}.responseLinear);
-            responseSpikes = cell(nCells(2),nCells(1));
-            responseVoltage = cell(nCells(2),nCells(1));
+            responseSpikes = cell(nCells(2),nCells(1));  % Needs a trial dimension
+            responseVoltage = cell(nCells(2),nCells(1)); % Needs a trial dimension
             nCells = size(ir.mosaic{ii}.responseLinear);
             for xc = 1:nCells(1)
                 for yc = 1:nCells(2)
@@ -101,8 +102,11 @@ for ii = 1:length(ir.mosaic)
                 end
             end
             
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
+            % Nonlinear voltage
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'response voltage', responseVoltage);
+            
+            % Spikes
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'response spikes', responseSpikes);
             
         otherwise
             error('The rgcMosaic object is a model without a spike response; choose LNP or GLM for spikes.');

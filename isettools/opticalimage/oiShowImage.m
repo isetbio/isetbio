@@ -1,5 +1,5 @@
 function img = oiShowImage(oi,displayFlag,gam)
-%Render an image of the scene data
+% Render an image of the scene data
 %
 %    img = oiShowImage(oi,displayFlag,gam)
 %

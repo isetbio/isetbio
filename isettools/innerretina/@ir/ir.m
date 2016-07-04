@@ -43,8 +43,13 @@ properties
 end
 
 % Public, read-only properties.
-properties (SetAccess = private, GetAccess = public)
+properties (SetAccess = public, GetAccess = public)
     
+    % @JRG:  I need to set mosaic properties from various places, so I
+    % moved this here.  Is this OK?
+    
+    % The ganglion cell types as a cell array
+    mosaic;
 end
 
 % Protected properties; Methods of the parent class and all of its
@@ -67,8 +72,6 @@ properties (SetAccess = protected)
     eyeAngle;              % and angle (degrees)
     temporalEquivEcc;      % Temporal equivalent eccentricity
     
-    % The ganglion cell types as a cell array
-    mosaic;
 end
 
 % Private properties. Only methods of the parent class can set these

@@ -58,7 +58,6 @@ classdef rgcLNP < rgcMosaic
         % The spikes are computed from the response voltage
         responseSpikes;
 
-        
         % These hold the parameters used in the computation.
         % This is the response after a spike
         postSpikeFilter;

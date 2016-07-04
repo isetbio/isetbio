@@ -52,7 +52,8 @@ nFrames = size(data, tDim);
 % Scale and gamma correct mov
 data = ieScale(data,0,1) .^ 0.3;
 
-% show the movie, or write to file
+% A name for writing was passed
+% So write and show the movie and write to file
 if ~isempty(vname)
     if isempty(hf), vcNewGraphWin;
     else figure(hf);
@@ -66,34 +67,32 @@ if ~isempty(vname)
     if isequal(tDim,4)
         % RGB data
         for ii = 1:step:nFrames
-            image(data(:,:,:,ii)); drawnow;
-            F = getframe; writeVideo(vObj,F);
+            imagesc(data(:,:,:,ii));
+            F = getframe; 
+            writeVideo(vObj,F);
         end
-        close(vObj);
     elseif isequal(tDim,3)
+        % Monochrome data
         colormap(gray)
         for ii = 1:step:nFrames
-            imagesc(data(:,:,ii)); drawnow;
-            F = getframe; writeVideo(vObj,F);
+            imagesc(data(:,:,ii));
+            F = getframe;
+            writeVideo(vObj,F);
         end
-        close(vObj);
     end
+    close(vObj);
+
 elseif show
-    % If it is a figure handle, show it in that figure
-    if isempty(hf), vcNewGraphWin;
-    else figure(hf);
-    end
-    axis image
-    
+    % Show, but don't write
     if isequal(tDim,4)
         % RGB data
         for ii=1:size(data,tDim)
-            imshow(data(:,:,:,ii)); drawnow;
+            imagesc(data(:,:,:,ii)); axis image; drawnow; 
         end
     elseif isequal(tDim,3)
         colormap(gray);
         for ii = 1:nFrames
-            imagesc(data(:,:,ii)); drawnow;
+            imagesc(data(:,:,ii)); axis image; drawnow; 
         end
     end
 end

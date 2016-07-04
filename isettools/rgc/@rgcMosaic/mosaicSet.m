@@ -52,6 +52,8 @@ allowFields = {...
         'tcenter',...
         'tsurround',...
         'responselinear'...
+        'responsespikes',...
+        'dt'
     };
 p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
 p.addRequired('val');
@@ -78,8 +80,14 @@ switch lower(param)
         obj.tCenter = val;
     case{'tsurround'}
         obj.tSurround = val;
+    case {'dt'}
+        obj.dt = val;
+        
     case{'responselinear'}
+        % Need to deal with possibility of multiple trials!
         obj.responseLinear = val;
+    case {'responsespikes'}
+        obj.responseSpikes = val;
 end
 
 end
