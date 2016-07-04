@@ -40,6 +40,17 @@ switch (conditionStr)
             26.959 12.302 2.622];
         theBgLMS = [7.67 7.20 6.31]';
         
+    case 'LW,cs'
+        % Subject LW, constant size stimulus as sf varies
+        MConesToOpponent = [0.717 0.677 -0.164 ; -0.670 0.742 -0.029 ; 0.199 -0.682 0.703];
+        theSfs = [0.5 1 2 4 8]';
+        theFactors = [4.981 60.556 6.575 ; ...
+            6.406 53.460 5.390 ; ...
+            11.081 36.944 3.785 ; ...
+            12.354 24.390 2.747 ; ...
+            9.550 19.513 3.706];
+        theBgLMS = [7.67 7.20 6.31]';
+        
     otherwise
         error('Unknown condition string entered')
 end

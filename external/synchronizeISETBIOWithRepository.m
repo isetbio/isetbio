@@ -7,6 +7,9 @@
 %       % Synchronize ISETBIO's external RT-3 routines
 %       synchronizeISETBIOWithRepository('RT3');
 %
+%       % Synchronize ISETBIO's external BrainardLab Toolbox routines
+%       synchronizeISETBIOWithRepository('BLTB');
+%
 % 11/20/2014 npc    Wrote it.
 %  4/27/2015 npc    Modification to support synchronization of any repository with isetbio, not just PTB 
 %
