@@ -67,6 +67,7 @@ methods
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
+        addParameter(p, 'ecc',  1, @isnumeric);
         
         p.parse(os, varargin{:});  
         
@@ -94,11 +95,35 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
-        bpSizeCenter = 2;
-        bpSizeSurround = 2;
-        obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-        obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
         
+        switch obj.cellType
+            case{'onDiffuse','offDiffuse'}
+                % ecc = 0 mm yields 2x2 cone input to bp
+                % ecc = 30 mm yields 5x5 cone input to bp
+                sizeScale = floor(2 + 3/30*(p.Results.ecc)); 
+                
+                bpSizeCenter = sizeScale;
+                bpSizeSurround = sizeScale;
+%                 obj.sRFcenter = ones(sizeScale).*sizeScale^2;
+%                 obj.sRFsurround = ones(sizeScale).*sizeScale^2;
+                obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+        
+            case{'onMidget','offMidget'}
+                
+                % ecc = 0 mm yields 1x1 cone input to bp
+                % ecc = 30 mm yields 3x3 cone input to bp
+                sizeScale = floor(1 + (2/30)*(p.Results.ecc)); 
+                
+                bpSizeCenter = sizeScale;
+                bpSizeSurround = sizeScale;
+                
+%                 obj.sRFcenter = ones(sizeScale)./sizeScale^2;
+%                 obj.sRFsurround = ones(sizeScale)./sizeScale^2;
+                obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+             
+        end
         if isfield(p.Results,'cellLocation')
             obj.cellLocation = p.Results.cellLocation;
         end

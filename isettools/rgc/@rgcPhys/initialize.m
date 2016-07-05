@@ -38,17 +38,19 @@ addParameter(p,'eyeRadius',   4,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 addParameter(p,'fov',         8,     @isnumeric);
 addParameter(p,'cellIndices',   0,     @isnumeric);
-addParameter(p,'inputSize',[],           @isnumeric);
+addParameter(p,'inputSize',80,           @isnumeric);
+addParameter(p,'inputScale',1,           @isnumeric);
 addParameter(p,'averageMosaic', 0,      @isnumeric);
 
 p.parse(obj,ir,varargin{:});
 
 experimentID = p.Results.experimentID;
-stimulusFit = p.Results.stimulusFit;
+stimulusFit  = p.Results.stimulusFit;
 stimulusTest = p.Results.stimulusTest;
-cellType =  p.Results.cellType;
-cellIndices = p.Results.cellIndices;
-inputSize = p.Results.inputSize;
+cellType     =  p.Results.cellType;
+cellIndices  = p.Results.cellIndices;
+inputSize    = p.Results.inputSize;
+inputScale   = p.Results.inputScale;
 
 fov = p.Results.fov;
 ecc = p.Results.eyeRadius;
@@ -56,9 +58,9 @@ ecc = p.Results.eyeRadius;
 averageFlag = p.Results.averageMosaic;
 
 obj.experimentID = experimentID;
-obj.stimulusFit = stimulusFit;
+obj.stimulusFit  = stimulusFit;
 obj.stimulusTest = stimulusTest;
-obj.cellType = cellType;
+obj.cellType     = cellType;
 
 %% Set defaults
 % obj.generatorFunction = @exp;
@@ -124,6 +126,7 @@ switch ieParamFormat(cellType)
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6_fits.mat')
 
         rdt.crp('resources/data/rgc');
         data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
@@ -136,6 +139,7 @@ switch ieParamFormat(cellType)
         goodind = data2.goodind;
     otherwise % case 'onparasol'
 %         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6_fits.mat')
 
         rdt.crp('resources/data/rgc');
         data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
@@ -219,29 +223,37 @@ switch(averageFlag)
         switch ieParamFormat(cellType)
             
             % RPE data set - need to put on RDT
-            
+            % Fit values from Dacey 2000 and Croner & Kaplan 1994
             case {'onparasol','onparasolrpe'}
-                b = 10.7629; m = 18.9211;
+                b = 68.3968; m = 18.9211;
+                b2 = .0218; m2 = .0065;
                 ecc0 = 10.9;
             case {'offparasol','offparasolrpe'}
                 b = 68.3968; m = 0.85*18.9211;
+                b2 = .0218; m2 = 0.85*.0065;
                 ecc0 = 10.9;
             case {'onmidget','onmidgetrpe'}
                 b = -8.110; m = 10.7629;    
+                b2 = .0059; m2 = .0034;
                 ecc0 = 10.9;
             case {'offmidget','offmidgetrpe'}
                 b = -8.110; m = 0.85*10.7629;   
+                b2 = .0059; m2 = 0.85*.0034;
                 ecc0 = 10.9;
             case {'sbc','onsbcrpe','sbcrpe'}
                 b = 70.2865; m = 15.8208;
+                b2 = 70.2865; m2 = 15.8208;
                 ecc0 = 10.9;
         end
         y0 = m*ecc0 + b;
+        y02 = m2*ecc0 + b2;
         
-        DFlimit = 4.5;
+        DFlimit = 1.1*4.5;
         y1 = max([DFlimit (m*ecc + b)]);
+        y12 = max([0 (m2*ecc + b2)]);
         
         yratio = y0/y1; 
+        y2ratio = y02/y12;
         
         fov0 = 8;
         fovratio = fov/fov0;
@@ -257,11 +269,36 @@ switch(averageFlag)
         
         numberCellsPerDegree0 = (stimCols/(2*cellSpacing))/fov0;
         numberCellsPerDegree = yratio*numberCellsPerDegree0;
-        numberBipolarsPerDegree = inputSize(2)/fov;
-        numberBipolarsPerCell = numberBipolarsPerDegree/numberCellsPerDegree;
-        numberRows = floor(inputSize(1)/numberBipolarsPerCell);
-        numberCols = floor(inputSize(2)/numberBipolarsPerCell);
+        numberBipolarsPerDegree = inputScale*inputSize(2)/(fov);
+        numberBipolarsPerCell = (numberBipolarsPerDegree/numberCellsPerDegree);
+        if numberBipolarsPerCell < 1
+            numberBipolarsPerCell = 1;
+        end
+        numberRows = floor(inputScale*inputSize(1)/numberBipolarsPerCell);
+        numberCols = floor(inputScale*inputSize(2)/numberBipolarsPerCell);
         
+        cellSpacingRF = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
+        numberCellsPerDegreeRF0 = (stimCols/(2*cellSpacingRF))/fov0;
+        numberCellsPerDegreeRF = yratio*numberCellsPerDegreeRF0;
+        numberBipolarsPerDegreeRF = inputScale*inputSize(2)/(fov);
+        numberBipolarsPerCellRF = numberBipolarsPerDegreeRF/numberCellsPerDegreeRF;
+      
+        % For midget RGCs, make sure max number is equal to number cones
+%         if numberRows > inputScale*inputSize(1)
+%             numberRows = inputScale*inputSize(1);
+%             
+%             numberBipolarsPerCell = 1;
+%             numberBipolarsPerCellRF = 1;
+%         end
+%         
+%         if numberCols > inputScale*inputSize(2)
+%             numberCols = inputScale*inputSize(2);
+%             
+%             numberBipolarsPerCell = 1;
+%             numberBipolarsPerCellRF = 1;
+%         end
+        
+  
 %         numberPixelsPerCell0 = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
 %         numberPixelsPerDegree0 = numberPixelsPerCell0 * numberCellsPerDegree0;
 %         numberPixelsPerCell = numberPixelsPerDegree0 / numberCellsPerDegree;
@@ -286,7 +323,7 @@ switch(averageFlag)
                     obj.couplingFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Coupling.Filter;
                 end
                 
-                
+                obj.rfDiaMagnitude = numberBipolarsPerCell;
                 
                 switch ieParamFormat(cellType)
                     case {'onparasolrpe','offparasolrpe','onmidgetrpe','offmidgetrpe','onsbcrpe','sbcrpe'}
@@ -297,8 +334,12 @@ switch(averageFlag)
                         obj.generatorFunction{matFileCtr,1} = @exp;
                 end
                 
-                obj.sRFcenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
-                % obj.sRFcenter{matFileCtr,1} = imresize(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,[1+2*floor(numberBipolarsPerCell/2) 1+2*floor(numberBipolarsPerCell/2) ]);
+                rf1 = imresize(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,[1+2*floor(numberBipolarsPerCellRF/2) 1+2*floor(numberBipolarsPerCellRF/2) ]);
+                rf2 = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
+                rf1rs = (rf1.*sum(rf2(:))/sum(rf1(:)));
+                obj.sRFcenter{matFileCtr,1} = rf1rs;
+%                 obj.sRFcenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
+%                 obj.sRFcenter{matFileCtr,1} = imresize(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,[1+2*floor(numberBipolarsPerCellRF/2) 1+2*floor(numberBipolarsPerCellRF/2) ]);
                 
                 obj.sRFsurround{matFileCtr,1} = 0*mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
                 
@@ -311,11 +352,12 @@ switch(averageFlag)
                 end
                 
                 % obj.cellLocation{matFileCtr,1} = [(xi*2*cellSpacing + mod(yi,2)*cellSpacing) yi*2*cellSpacing];
-                obj.cellLocation{matFileCtr,1} = [(xi*1*numberBipolarsPerCell + mod(yi,2)*0.5*numberBipolarsPerCell) yi*1*numberBipolarsPerCell];
+                obj.cellLocation{matFileCtr,1} = (1/inputScale).*[(xi*1*numberBipolarsPerCell + 1*mod(yi,2)*0.5*numberBipolarsPerCell) yi*1*numberBipolarsPerCell];
                 
             end
             
-            obj.rfDiameter = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
+%             obj.rfDiameter = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
+            obj.rfDiameter = size(obj.sRFcenter{matFileCtr,1},1);
         end
         
 end

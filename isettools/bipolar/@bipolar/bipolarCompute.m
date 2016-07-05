@@ -55,14 +55,20 @@ if obj.filterType == 1
     rdt.crp('resources/data/rgc');
     if strcmpi(obj.cellType,'offDiffuse')
         data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+%         load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all.mat')
     else
         data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+%         load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all.mat')
     end
     bipolarFiltMat = data.bipolarFiltMat;
+
     % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
     
-    bipolarFilt = mean(bipolarFiltMat)';
-    
+    if strcmpi(obj.cellType,'offDiffuse') || strcmpi(obj.cellType,'offMidget')
+        bipolarFilt = -mean(bipolarFiltMat)';
+    elseif strcmpi(obj.cellType,'onDiffuse') || strcmpi(obj.cellType,'onMidget')
+        bipolarFilt = mean(bipolarFiltMat)';
+    end
     
 elseif obj.filterType == 2
     load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
@@ -74,15 +80,15 @@ elseif obj.filterType == 2
     
 elseif obj.filterType == 3
         % RDT initialization
-%     rdt = RdtClient('isetbio');
-%     rdt.crp('resources/data/rgc');
-%     if strcmpi(obj.cellType,'offDiffuse')
-%         data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
-%     else
-%         data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
-%     end
-%     bipolarFiltMat = data.bipolarFiltMat;
-    load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+    rdt = RdtClient('isetbio');
+    rdt.crp('resources/data/rgc');
+    if strcmpi(obj.cellType,'offDiffuse')
+        data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+    else
+        data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+    end
+    bipolarFiltMat = data.bipolarFiltMat;
+%     load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
     
     bipolarFilt = (bipolarFiltMat(obj.cellLocation,:)');
 end

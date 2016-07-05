@@ -156,7 +156,7 @@ clear paramsOSL
 % Set circular convolution, only steady state
 % paramsOSL.convolutionType = 1; 
 paramsOSL.ecc = 20; % mm
-% paramsOSL.singleType = 1;
+paramsOSL.singleType = 1;
 
 sensorVolts = sensorGet(sensor,'volts');
 paramsOSL.bgVolts = 1*mean(sensorVolts(:));

@@ -21,8 +21,10 @@ for i = 1:length(mosaicGLM)
         nlcoeffs(i,:) = mosaicGLM{i}.model.Coefficients.Estimate;
     end
     if isfield(mosaicGLM{i},'stafit')
-    sd_x(i,:) = mosaicGLM{i}.stafit.center_sd_x; 
-    sd_y(i,:) = mosaicGLM{i}.stafit.center_sd_y;
+        if isfield(mosaicGLM{i}.stafit,'center_sd_x')
+            sd_x(i,:) = mosaicGLM{i}.stafit.center_sd_x;
+            sd_y(i,:) = mosaicGLM{i}.stafit.center_sd_y;
+        end
     end
 end
 

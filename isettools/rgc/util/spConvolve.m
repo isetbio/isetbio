@@ -51,10 +51,13 @@ for rgbIndex = 1:channelSize
                     offset = [0 0];%mosaic.cellLocation{1,1};% - floor((extent/2)*mosaic.rfDiameter);
                     
                     %%%% Should rfDimater be size RF center? Yes!
-                    stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
-                    stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+%                     stimX =  ceil((stimCenterCoords(1) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter ))/1);%
+%                     stimY =  ceil((stimCenterCoords(2) - floor((extent/2)*mosaic.rfDiameter))/1):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter ))/1);%
                     % % % %
-                    
+             
+                    stimX =  floor((stimCenterCoords(1) - floor((extent/2)*size(mosaic.sRFcenter{1,1},1)))/1):floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) ))/1);%
+                    stimY =  floor((stimCenterCoords(2) - floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1):floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2)))/1);%
+                                    
 %                     rowConv = size(sptempStimulus,1)/80; colConv = size(sptempStimulus,2)/40;
 %                     stimX =  ceil(rowConv*(stimCenterCoords(1) - floor(1*(extent/2)*mosaic.rfDiameter))/1):floor(rowConv*(stimCenterCoords(1) + floor(1*(extent/2)*mosaic.rfDiameter ))/1);%
 %                     stimY =  ceil(colConv*(stimCenterCoords(2) - floor(1*(extent/2)*mosaic.rfDiameter))/1):floor(colConv*(stimCenterCoords(2) + floor(1*(extent/2)*mosaic.rfDiameter ))/1);%
