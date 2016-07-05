@@ -681,7 +681,7 @@ switch ieParamFormat(params.what)
         
     case{'psth'}
         % Post-stimulus time histogram
-        % @JRG.  Broken now.
+        % @JRG.  Broken now for the case of multiple trials.
         %
         % Example:
         %   irPlot(ir,'psth','type','on midget');
