@@ -90,6 +90,7 @@ ieMovie(psth,params);
 % irPlot(ir, 'linear');
 irPlot(ir, 'raster','cell',[5,7]);
 irPlot(ir, 'raster');   % Can be very long and painful.  Fix it in the plot
+irPlot(ir, 'mosaic'); 
 
 % irPlot(ir, 'psth');
 

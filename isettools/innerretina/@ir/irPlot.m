@@ -583,11 +583,10 @@ switch ieParamFormat(params.what)
             clear meanVoltage
         end
         
-    case{'rasterresponse','responseraster','raster'}
-        
-        
-        % dt = .01;       % make this a get from sensor
-        % bindur = dt*1;
+    case{'raster'}
+        % There may be some dt issue to deal with here.
+        % @JRG. This section is way too long and needs to be clarified and
+        % functionalized.
         
         if ~isempty(mosaicTypeInd)
             cellTypeStart = mosaicTypeInd;
@@ -596,6 +595,8 @@ switch ieParamFormat(params.what)
             cellTypeStart = 1;
             cellTypeEnd = length(obj.mosaic);
         end
+        
+        % Let's just do one mosaic.
         for cellTypeInd = cellTypeStart:cellTypeEnd
             
             if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
@@ -604,34 +605,38 @@ switch ieParamFormat(params.what)
                 bindur = .01;
             end
             
-            numberTrials = mosaicGet(obj.mosaic{cellTypeInd},'numberTrials');
+            numberTrials = obj.mosaic{cellTypeInd}.get('numberTrials');
             
-            % vcNewGraphWin([],'upperleftbig');
-            % set(gcf,'position',[1000  540 893  798]);
+            % Why this?
             set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
-            cellCtr = 0; 
-            % cellCtr2 = 0;
-            clear psth tsp mtsp
+            cellCtr = 0;
             
+            clear psth tsp mtsp
             clear meanVoltage
+            maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
+            
             if ~isempty(cellID)
                 nCells = cellID;
                 xcellstart = cellID(1); ycellstart = cellID(2);
-                maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
             else
                 nCells = size(obj.mosaic{cellTypeInd}.responseSpikes);
-                
-                if ~strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys') && nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
-                maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
-                % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
+                % Sometimes @JRG adjusts this.  Some EJ data thing, I
+                % suppose.  Maybe we can get rid of it here.
+                if ~strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys') && ...
+                        nCells(2) == 1;
+                    nCells(1) = ceil(sqrt(nCells(1)));
+                    nCells(2) = nCells(1);
+                end
                 xcellstart = 1; ycellstart = 1;
             end
+            
             for xcell = xcellstart:nCells(1)
                 for ycell = ycellstart:nCells(2)
-                    
                     cellCtr = cellCtr+1;
                     [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr);
                     cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
+                    
+                    % For each trial
                     for tr = 1:numberTrials;
                         clear spikeTimesP
                         
@@ -640,24 +645,28 @@ switch ieParamFormat(params.what)
                         end
                         
                         if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
+                            % @JRG:  Why is there a 0.1 here?
                             spikeTimesP = .1*(obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});
                         else
                             spikeTimesP = (obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr,1});
                         end
                         
-                        % Please allocate spikeTimesP
+                        % @JRG.  ???
                         if length(spikeTimesP) == 2
                             spikeTimesP = [spikeTimesP; 0];
                         end
+                        
                         if ~isempty(spikeTimesP)
-                            hold on; scatter([spikeTimesP].*bindur,[tr*ones(length(spikeTimesP),1)],8,'o',color,'filled');
+                            hold on;
+                            scatter(spikeTimesP.*bindur,tr*ones(length(spikeTimesP),1),8,'o',color,'filled');
                         end
+                        
                         if xcell == 1 && ycell == 1
                             xlabel('Time (sec)'); ylabel('Trial');
                             title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
-                            
                         end
                     end
+                    
                     if isempty(obj.mosaic{cellTypeInd}.responseSpikes)
                         maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
                         axis([0 .00001*maxt 0 maxTrials]);
@@ -665,105 +674,44 @@ switch ieParamFormat(params.what)
                         maxt = max((obj.mosaic{cellTypeInd}.responseSpikes{1}));
                         axis([0 .01*maxt 0 maxTrials]);
                     end
-                    
-                    
                 end
             end
         end
         
         
-    case{'psthresponse','responsepsth','psth'}
+    case{'psth'}
         % Post-stimulus time histogram
+        % @JRG.  Broken now.
+        %
         % Example:
-        %   irPlot(innerRetina,'psth','type','onParasol');
+        %   irPlot(ir,'psth','type','on midget');
         
-        dt = .01; % make this a get from sensors
+        % @JRG:  I am forcing this to 1 for now.  We need to be able to
+        % pass it in.
+        cellTypeInd = 1;
         
-        % Select which of the mosaics we are plotting
-        if ~isempty(mosaicTypeInd)
-            cellTypeStart = mosaicTypeInd;
-            cellTypeEnd   = mosaicTypeInd;
-        else
-            cellTypeStart = 1;
-            cellTypeEnd = length(obj.mosaic);
-        end
-        
-        % Which of the cells
-        for cellTypeInd = cellTypeStart:cellTypeEnd
-            
-            % vcNewGraphWin([],'upperleftbig');
-            
-            % set(gcf,'position',[1000  540 893  798]);
-            set(gcf,'position',[0.0069    0.3933    0.8021    0.5000]);
-            cellCtr = 0;
-            clear psth tsp mtsp
-            
-            if ~isempty(cellID)
-                nCells = cellID;
-                xcellstart = cellID(1); ycellstart = cellID(2);
-                maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
-            else
-                nCells = size(obj.mosaic{cellTypeInd}.responseSpikes);
-                
-                if nCells(2) == 1; nCells(1) = ceil(sqrt(nCells(1))); nCells(2) = nCells(1); end;
-                maxTrials = size(obj.mosaic{cellTypeInd}.responseSpikes,3);
-                % rasterResponse =  mosaicGet(obj.mosaic{cellTypeInd}, 'rasterResponse');
-                xcellstart = 1; ycellstart = 1;
-            end
-            for xcell = xcellstart:nCells(1)
-                for ycell = ycellstart:nCells(2)
-                    clear yind y
-                    cellCtr = cellCtr+1;
-                    
-                    for trial = 1:maxTrials
-                        
-                        yind =  obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,trial,1};
-                        if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys'); yind = .01*yind; end;
-                        y(trial,ceil(yind./dt))=1;
-                    end
-                    % y(:,end) = .01;
-                    
-                    % The indices are reversed to match up with the imagesc
-                    % command used in irMovie.
-                    % subplot(nCells(2),nCells(1),cellCtr);
-                    % subplot(2*nCells(1),nCells(2),nCells(1)+nCells(1)*(2*(xcell-1))+ycell);
-                    
-                    [jv,iv] = ind2sub([nCells(1),nCells(2)],cellCtr);
-                    cellCtr2 = sub2ind([nCells(2),nCells(1)],iv,jv);
-                    
-                    %                     subplot(nCells(2),nCells(1),cellCtr);
-                    
-                    
-                    if strcmpi(holdVal,'off')
-                        subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
-                    end
-                    
-                    % subplot(length(ycellstart:nCells(2)),length(xcellstart:nCells(1)),cellCtr2);
-                    %
-                    lenGauss = 99;
-                    convolvewin = lenGauss*.01*exp(-(1/2)*(2.5*((0:lenGauss)-lenGauss/2)/(lenGauss/1)).^2);
-                    %                     convolvewin = convolvewin./max(convolvewin);
-                    
-                    if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys');
-                        bindur = .01/1.208;
-                    else
-                        bindur = .01;
-                    end
-                    
-                    
-                    PSTH_rec=conv(sum(y),convolvewin,'same');
-                    
-                    plot(.01*bindur:.01*bindur:.01*bindur*length(PSTH_rec),PSTH_rec/maxTrials);
-                    
-                    maxt = length((obj.mosaic{cellTypeInd}.responseVoltage{1,1}));
-                    axis([0 .01*bindur*maxt 0 max([1 max(PSTH_rec/maxTrials)])]);
-                    if xcell == 1 && ycell == 1
-                        xlabel('Time (sec)'); ylabel(sprintf('PSTH\n(spikes/sec)'));
-                        title(sprintf('%s cell [%d %d]',obj.mosaic{cellTypeInd}.cellType,xcell,ycell));
-                        
-                    end
+        nCells = obj.mosaic{cellTypeInd}.get('mosaic size');
+        % Which of the cells.  I think there should only be one class.
+        psth = obj.mosaic{cellTypeInd}.get('psth');
+        thisPlot = 1;
+        t = size(psth,3);
+        hf = vcNewGraphWin;
+        for ii=1:nCells(1)
+            for jj=1:nCells(2)
+                subplot(nCells(1), nCells(2),thisPlot)
+                spikes = squeeze(psth(ii,jj,:));
+                plot(1:t,spikes)
+                if thisPlot == 1
+                    xlabel('Time (sec)','FontSize',14); ylabel(sprintf('PSTH\n(spikes/sec)'),'FontSize',14);
+                    set(hf,'Name',sprintf('%s cell type',obj.mosaic{cellTypeInd}.cellType));
                 end
+                thisPlot = thisPlot + 1;
+                set(gca,'xlim',[0 t],'ylim',[0 max(spikes)],'ytick',[0 max(spikes)],'xtick',[0 t]);
+                set(gca,'fontsize',12)
             end
         end
 end
+
+end
+
 
