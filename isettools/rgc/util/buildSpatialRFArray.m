@@ -1,19 +1,17 @@
-function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STDmicrons)
+function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, row, col, rfDiameter)
 %% buildSpatialRF builds the spatial RF center and surround arrays for each cell
 % The spatial RFs are generated according to the number of pixel or cone
 % inputs, their spacing (in microns) and the diameter of the RF as
 % determined by the TEE of the retial patch.
 % 
-%   [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocations] = 
-%             buildSpatialRFArray(spacing, row, col, receptiveFieldDiameter1STDmicrons)
-% 
-%          %  [only called internally from @rgcMosaic/initalize.m]
+%   [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations] = 
+%      buildSpatialRFArray(spacing, row, col, rfDiameter)
 % 
 % Inputs: 
 %       spacing, 
 %       row, 
 %       col, 
-%       receptiveFieldDiameter1STDmicrons.
+%       rfDiameter - receiptive field of 1 std in microns
 %   
 % Outputs: 
 %       spatialRFcenter cell array, 
@@ -22,105 +20,65 @@ function [spatialRFcenter, spatialRFsurround, rfDiaMagnitude, cellCenterLocation
 %       cellCenterLocations cell array.
 % 
 % Example:
-% 
-% See @rgcMosaic/initialize.m
 % Build spatial RFs of all RGCs in this mosaic
 % [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
 %     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 % 
 % 9/2015 JRG (c) isetbio
 
-%% Find number of pixels/cones per RGC spatial RF
-% Calculate microns/pixels or microns/cone
+%% Init parameters
+% Make sure spacing is in microns
+if spacing < 1e-2, spacing = spacing * 1e6; end
+patchSize = [spacing spacing];  % width / height in um
 
-% Check spacing is in meters
-if spacing < 1e-2, spacing = spacing*1e6; end
+% Determine the number of RGCs in the mosaic
+nRGC = floor(patchSize / rfDiameter); % number of rgc in h, v direction
 
-patchSizeX = spacing;           % um
-patchSizeY = spacing;           %(row/col)*spacing;
-umPerSensorPx = patchSizeX/col; % CHANGE TO COL
+% Convert rf diameter in units of number of cones
+rfDiameter = rfDiameter / (patchSize(1) / col);
 
-%% Determine the number of RGCs in the mosaic
+extent = 2.5;    % ratio between sampling size and sptial RF
+r = 0.75;        % radius ratio between center and surround
+k = 1.032 * r;   % 
 
-numberRGCsX = floor (patchSizeX / receptiveFieldDiameter1STDmicrons);
-numberRGCsY = floor (patchSizeY / receptiveFieldDiameter1STDmicrons);
-
-% Convert rf diameter in microns to rf diameter in pixels or cones
-receptiveFieldDiameter1STD = receptiveFieldDiameter1STDmicrons/umPerSensorPx;
-
-%% Set parameters for spatial RF difference of gaussians
-
-% Modeling the RF shape as an ellipse, I guess?
-
-% when extent gets to 5, the sum of the RF is ~0
-extent = 2.5;
-
-% Ellipse parameter
-d1 = 1; d2 = 0;
-
-% This is the quadratic form?
-% d1 = 1; d2 = 0.25*randn(1,1);
-Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-
-% Center has radius = 0.75*(radius of surround)
-% r = .75; k = r;
-r = 0.75; k = 1.032*r;
-
-% Calculate coordiantes of 1 STD of center RF
-% xv = rand(1,2);
-% xvn = receptiveFieldDiameter1STD*xv./norm(xv);
-% x1 = xvn(1); y1 = xvn(2);
-
-% Need to do this for each RF? How to handle spatial asymmetry?
-% magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-
-%% Specify locations of RFs
-rfctr = 0;
-
-% Centers of RFs
-icarr = 0+(0*receptiveFieldDiameter1STD:2*receptiveFieldDiameter1STD:(numberRGCsX-1)*receptiveFieldDiameter1STD);
-jcarr = 0+(0*receptiveFieldDiameter1STD:2*receptiveFieldDiameter1STD:(numberRGCsY-1)*receptiveFieldDiameter1STD);
-
-% A vector of all points out to the extent of the spatial RF
-pts = (-extent*receptiveFieldDiameter1STD+1:1:extent*receptiveFieldDiameter1STD);
-
-%% Create spatial RFs for each cell
-tic
+% centers of receiptive fields
 centerNoise = 1.25; % divide by 2 for mean offset
+centerX = (0:2:nRGC(2)-1)*rfDiameter + centerNoise; 
+centerY = (0:2:nRGC(1)-1)*rfDiameter - centerNoise;
+rows = length(centerY); cols = length(centerX);
 
-% Comment, please
-centerCorrectY = 0+( 0+(jcarr(end) + 0 - (jcarr(1) + 0))/2 );  % + extent*receptiveFieldDiameter1STD;
-centerCorrectX = 0+(0+ (icarr(end) + 0 - (icarr(1) + 0))/2 );  % + extent*receptiveFieldDiameter1STD;
+% points out to the extent of the spatial RF
+pts = -extent*rfDiameter+1 : extent*rfDiameter;
 
-% figure;   % What is this figure for?
+%% Create spatial RFs
+% offset for zero centering
+centerCorrectY = (centerY(end) - (centerY(1)))/2;
+centerCorrectX = (centerX(end) - (centerX(1)))/2;
 
-iN = length(icarr); jN = length(jcarr);
-cellCenterLocations = cell(iN,jN);
-spatialRFArray    = cell(iN,jN);
-spatialRFcenter   = cell(iN,jN);
-spatialRFsurround = cell(iN,jN);
-spatialRFonedim   = cell(iN,jN);  % One dimension
-spatialRFFill     = cell(iN,jN);
-rfDiaMagnitude    = cell(iN,jN);
-spatialContours   = cell(iN,jN,2);
-tonicDrive        = cell(iN,jN);
+% pre-allocate space
+cellCenterLocations = cell(rows, cols);
+spatialRFArray      = cell(rows, cols);
+sRFcenter           = cell(rows, cols);
+sRFsurround         = cell(rows, cols);
+spatialRFonedim     = cell(rows, cols);
+spatialRFFill       = cell(rows, cols);
+rfDiaMagnitude      = cell(rows, cols);
+% spatialContours     = cell(rows, cols, 2);
+tonicDrive          = cell(rows, cols);
 
-for icind = 1:length(icarr)
-    
-    for jcind = 1:length(jcarr)
-        
+% create spatial RFs for each cell
+for ii = 1 : length(centerX)
+    for jj = 1 : length(centerY)
         % Specify centers, offset even rows for hexagonal packing
-        ic = icarr(icind) + centerNoise - (mod(jcind,2)-.5)*receptiveFieldDiameter1STD;
-        jc = jcarr(jcind) - centerNoise;
-        rfctr = rfctr+1;
+        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter;
+        jc = centerY(jj);
    
         % Add some noise to deviate from circularity
         d1 = 1; d2 = 0;      % 0.0675*randn(1,1);
-        Q = (1/receptiveFieldDiameter1STD^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-        % receptiveFieldDiameter1STD == 1/sqrt(norm(Q)); % just to check
+        Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
 
         % Calculate values for input to DoG function in an efficient way
-        [i2, j2] = meshgrid(ic+pts,jc+pts);
+        [i2, j2] = meshgrid(ic+pts, jc+pts);
         i = i2(:); j = j2(:);
         
         IJ = bsxfun(@minus,[i j],[ic jc]);
@@ -131,53 +89,54 @@ for icind = 1:length(icarr)
         p2 = prod([IJ(:,1) rQIJ(1,:)'],2)+prod([IJ(:,2) rQIJ(2,:)'],2);
         
         % DoG calculation
-        so_center = reshape(exp(-0.5*p1),size(i2)); so_surround = reshape(k*exp(-0.5*p2),size(i2));
+        so_center = reshape(exp(-0.5*p1), size(i2));
+        so_surround = reshape(k*exp(-0.5*p2), size(i2));
         so = so_center - so_surround;
         
         % Vectors instead of matrices
-        sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2); sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
-        sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2); sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);       
+        sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2);
+        sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
+        sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2);
+        sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);       
         
         % Store calculated parameters
-        cellCenterLocations{icind,jcind} = [ic jc] - [centerCorrectX centerCorrectY];
-        
-        spatialRFArray{icind,jcind} = so;
-        spatialRFcenter{icind,jcind} = so_center;
-        spatialRFsurround{icind,jcind} = so_surround;        
+        cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY];
+        spatialRFArray{ii,jj} = so;
+        sRFcenter{ii,jj} = so_center;
+        sRFsurround{ii,jj} = so_surround;        
 
-        spatialRFonedim{icind,jcind} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
+        spatialRFonedim{ii,jj} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
                 
         xv = rand(1,2);
-        xvn = 1*receptiveFieldDiameter1STD*xv./norm(xv);
+        xvn = rfDiameter * xv./norm(xv);
         x1 = xvn(1); y1 = xvn(2);
         
         % magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         
         % Do some calculations to make plots where RFs are filled in
         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        spatialRFFill{icind,jcind}  = find(abs(so_center)>magnitude1STD);
-        rfDiaMagnitude{icind,jcind,1} = magnitude1STD;
+        spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
+        rfDiaMagnitude{ii,jj,1} = magnitude1STD;
         
         % Get contours at 1STD
-        cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
+        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
         % ccCell{rfctr} = cc(:,2:end);
-        cc(:,1) = [NaN; NaN];
-        spatialContours{icind,jcind,1} = cc;
+        % cc(:,1) = [NaN; NaN];
+        % spatialContours{ii,jj,1} = cc;
         
-        clear cc
+        % clear cc
         magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         
         % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
-        cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
+        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
         % ccCell{rfctr} = cc(:,2:end);
-        cc(:,1) = [NaN; NaN];
-        spatialContours{icind,jcind,2} = cc;
+        % cc(:,1) = [NaN; NaN];
+        % spatialContours{ii,jj,2} = cc;
         
-        rfDiaMagnitude{icind,jcind,2} = magnitude1STD;
+        rfDiaMagnitude{ii,jj,2} = magnitude1STD;
         
-        tonicDrive{icind,jcind} = 2.2702; % from ON Parasol 2013_08_19_6
+        tonicDrive{ii,jj} = 2.2702; % from ON Parasol 2013_08_19_6
     end
 end
-toc
 
 end

@@ -77,7 +77,7 @@ switch ieParamFormat(pType);
             ieMovie(obj.get('response'),varargin{:});
         else
             % List of params
-            ieMovie(obj.get('response'),'hf',hf,varargin{:});
+            ieMovie(obj.get('response'),'hf',hdl,varargin{:});
         end
 end
 

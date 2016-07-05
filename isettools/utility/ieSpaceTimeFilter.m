@@ -1,7 +1,7 @@
-function resp = ieSpaceTimeFilter(sig,kernel,varargin)
-% Apply a kernel to the space-time signal
+function resp = ieSpaceTimeFilter(sig, kernel, varargin)
+% Apply a filter kernel to the space-time signal
 %
-%    resp = 
+%    resp = ieSpaceTimeFilter(sig,kernel,varargin)
 %
 % We use this to calculate either just the spatial pooling or
 % spatial-temporal pooling for a signal.  
@@ -20,19 +20,15 @@ function resp = ieSpaceTimeFilter(sig,kernel,varargin)
 
 %% Parse parameters
 p = inputParser;
-p.addRequired('sig',@isnumeric);
-p.addRequired('kernel',@isnumeric);
+p.addRequired('sig', @isnumeric);
+p.addRequired('kernel', @isnumeric);
 
 % Parameter/Value options
-p.addParameter('pad','same',@ischar);
-
-p.parse(sig,kernel,varargin{:});
-sig = p.Results.sig;
-kernel = p.Results.kernel;
+p.addParameter('pad', 'same', @ischar);
+p.parse(sig, kernel, varargin{:});
 pad = p.Results.pad;
 
 %% Apply convn using the 'same' flag 
-
-resp = convn(sig,kernel,pad);
+resp = convn(sig, kernel, pad);
 
 end

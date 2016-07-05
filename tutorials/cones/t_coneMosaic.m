@@ -36,23 +36,18 @@ cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default a
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
 
 %% To compute the bipolar response
-
 bp = bipolar(cMosaic.os);
-
 bp.compute(cMosaic.os);
 
 % bp.plot('response');
-clear params
-params.vname = tempname; param.FrameRate = 5; params.step = 2; params.show = true;
-% bp.plot('movie response',params);
+bp.plot('movie response');
 
 %% To compute an RGC response
-
 % Build rgc
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 2;        % Radius in mm
+params.eyeRadius = 1;      % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 %
