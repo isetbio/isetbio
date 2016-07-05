@@ -1,6 +1,5 @@
 function [spRespCenter, spRespSurround] = spConvolve(mosaic, spCenter, spSurround)
-% This is a util function of the @rgc parent class, for a separable
-% STRF finds the 2D convolution of the spatial RF for every time frame.
+% A separable space-time 2D convolution for center/surround
 % 
 %  [spRespCenter, spRespSurround] = spConvolve(mosaic,spCenter,spSurround)
 %   
@@ -10,8 +9,8 @@ function [spRespCenter, spRespSurround] = spConvolve(mosaic, spCenter, spSurroun
 % 
 % Inputs:
 %   mosaic     - rgcMosaic object
-%   spCenter   - 3D center input in (x, y, t) format
-%   spSurround - 3D surround input in (x, y, t) format
+%   spCenter   - 3D center input in (x, y, time, color channel) format
+%   spSurround - 3D surround input in (x, y, t, color channel) format
 % 
 % Outputs: 
 %   spatial response of the 2D center and surround receptive fields.
@@ -19,24 +18,25 @@ function [spRespCenter, spRespSurround] = spConvolve(mosaic, spCenter, spSurroun
 %
 % JRG, ISETBIO TEAM, 2015
 
-% init parameters
+%% init parameters
 nSamples = size(spCenter, 3);
-channelSize = size(spCenter, 4);
-nCells = size(mosaic.cellLocation);
+nColors  = size(spCenter, 4);
+nCells   = mosaic.get('mosaic size'); 
 
 % pre-allocate space
-spRespCenter = cell(nCells);
+spRespCenter   = cell(nCells);
 spRespSurround = cell(nCells);
 
-for rgbIndex = 1 : channelSize
+%%
+for cc = 1 : nColors
     for ii = 1 : nCells(1)
         for jj = 1 : nCells(2)
             % Get RF 2D images
             spRFcenter = mosaic.sRFcenter{ii, jj};
             spRFsurround = mosaic.sRFsurround{ii, jj};
             
-            spRespCenter{ii,jj} = zeros([size(spRFcenter) nSamples channelSize]);
-            spRespSurround{ii,jj} = zeros([size(spRFsurround) nSamples channelSize]);
+            spRespCenter{ii,jj}   = zeros([size(spRFcenter) nSamples nColors]);
+            spRespSurround{ii,jj} = zeros([size(spRFsurround) nSamples nColors]);
             
             % Get cell location
             stimCenterCoords = mosaic.cellLocation{ii,jj};
@@ -85,26 +85,26 @@ for rgbIndex = 1 : channelSize
                 stimY - offset(2) <= size(spCenter,2) );
             
             spStimCenterV = spCenter(floor(stimX(gz)-offset(1)), ...
-                floor(stimY(gz)-offset(2)), :,rgbIndex);
+                floor(stimY(gz)-offset(2)), :,cc);
             spStimSurrV = spSurround(floor(stimX(gz)-offset(1)), ...
-                floor(stimY(gz)-offset(2)), :, rgbIndex);
+                floor(stimY(gz)-offset(2)), :, cc);
             
             switch class(mosaic)
                 case 'rgcSubunit'
                     spRC = bsxfun(@times,spRFcenter(gz,gz),spStimCenterV);
                     spRS = bsxfun(@times,spRFsurround(gz,gz),spStimCenterV);
-                    spRespCenter{ii,jj}(gz, gz, :, rgbIndex) = ...
+                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
                         10 * mosaic.rectifyFunction(spRC) / length(gz)^2;
-                    spRespSurround{ii,jj}(gz,gz, :,rgbIndex) = ...
+                    spRespSurround{ii,jj}(gz,gz, :,cc) = ...
                         10 * mosaic.rectifyFunction(spRS) / length(gz)^2;
                 case 'rgcPhys'
-                    spRespCenter{ii,jj}(gz, gz, :, rgbIndex) = ...
+                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
                         bsxfun(@times, spRFcenter(gz, gz), ...
                         spStimCenterV-spStimSurrV);
                 otherwise  % other types of rgc, include LNP, etc.
-                    spRespCenter{ii,jj}(gz, gz, :, rgbIndex) = ...
+                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
                         bsxfun(@times, spRFcenter(gz,gz), spStimCenterV);
-                    spRespSurround{ii,jj}(gz, gz, :, rgbIndex) = ...
+                    spRespSurround{ii,jj}(gz, gz, :, cc) = ...
                         bsxfun(@times, spRFsurround(gz,gz), spStimCenterV);
             end
         end

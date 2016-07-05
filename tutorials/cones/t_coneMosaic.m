@@ -75,7 +75,10 @@ ir.mosaicCreate('model','GLM','type','on midget');
 fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));
 
 %% Compute RGC response
+tic;
 ir = irCompute(ir, bp);
+toc
+
 lastTime = ir.mosaic{1}.get('last spike time');
 
 ir.mosaic{1}.set('dt',1);

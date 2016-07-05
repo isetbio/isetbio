@@ -74,7 +74,7 @@ switch osType
         % @JRG:  Test cases are in EJ Figure reproduction
         % Others to be named!
         
-        spTempStim = osGet(input, 'rgbData');
+        spTempStim = osGet(input, 'rgb data');
         if isempty(spTempStim), error('No rgb data'); end
         
         % The Pillow code expects the input to be normalized to the mean of
