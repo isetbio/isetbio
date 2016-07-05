@@ -7,14 +7,16 @@ function ir = irCompute(ir, input, varargin)
 %
 % Inputs:
 %   ir: inner retina object,
-%   input - one of
-%      {'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'}
+%   input - There are various type of possible input objects.
+%
+%      'osDisplayRGB'
+%      'osIdentity'
+%      'osLinear'
+%      'osBioPhys'
+%      'bipolar'
 %
 % Computes the responses for all the mosaics attached to the inner retina
 % object.
-%
-% @JRG:  The initial linear method is carried out in irComputeContinuous.  Why
-% isn't this called irComputeLinear?
 %
 % For each mosaic, the linear response is computed by spatial convolution
 % of the center and surround RFs. Then, the temporal responses for the
@@ -55,7 +57,7 @@ p.addRequired('input',vFunc);
 p.parse(ir,input,varargin{:});
 
 %% Linear stage of the computation
-ir = irComputeContinuous(ir, input);
+ir = irComputeLinearSTSeparable(ir, input);
 
 %% Compute spikes for each trial
 switch class(ir.mosaic{1})

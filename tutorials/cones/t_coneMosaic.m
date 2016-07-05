@@ -29,6 +29,12 @@ cMosaic = coneMosaic;                     % Create the object
 cMosaic.emGenSequence(500);
 cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default anyway
 
+% @BW/@HJ
+% There appears to be a mismatch between the oi field of view and the size
+% of the cone mosaic.  The cone mosaic is smaller than the field of view
+% set in the scene and oi.
+
+
 % Show the window
 % cMosaic.guiWindow;                      % Note: Default image should be mean absorptions
 
@@ -47,7 +53,7 @@ bp.plot('movie response');
 clear params
 params.name      = 'Macaque inner retina 1'; % This instance
 params.eyeSide   = 'left';   % Which eye
-params.eyeRadius = 1;      % Radius in mm
+params.eyeRadius = 1;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
 
 %
@@ -68,7 +74,7 @@ ir.mosaicCreate('model','GLM','type','on midget');
 
 fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));
 
-% Compute RGC response
+%% Compute RGC response
 ir = irCompute(ir, bp);
 lastTime = ir.mosaic{1}.get('last spike time');
 
