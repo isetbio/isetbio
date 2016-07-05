@@ -57,7 +57,7 @@ sSurround = [repmat(sSurround(:,1), 1, padCols) sSurround];
 
 % FILTERS ONLY WORK FOR THE TIME SAMPLE THEY WERE CREATED AT
 % load filters
-if obj.filterType == 1
+if obj.filterType == 1  % average filter from measurement data
     if strcmpi(obj.cellType, 'offDiffuse')
         data = load('bipolarFilt.mat', 'bipolarOFFP');
         bipolarFilt = data.bipolarOFFP(:)';
@@ -65,7 +65,7 @@ if obj.filterType == 1
         data = load('bipolarFilt.mat', 'bipolarONP');
         bipolarFilt = data.bipolarONP(:)';
     end
-elseif obj.filterType == 2
+elseif obj.filterType == 2  % theoretical impulse response from Pillow
     load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
     if strcmpi(obj.cellType, 'offDiffuse')
         bipolarFilt = -irGLM;
@@ -73,7 +73,7 @@ elseif obj.filterType == 2
         bipolarFilt = irGLM;
     end
     
-elseif obj.filterType == 3
+elseif obj.filterType == 3  % each temporal filter from the dataset
     data = load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
     bipolarFilt = (data.bipolarFiltMat(obj.cellLocation,:)');
 end

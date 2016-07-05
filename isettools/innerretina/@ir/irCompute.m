@@ -13,8 +13,8 @@ function ir = irCompute(ir, input, varargin)
 % Computes the responses for all the mosaics attached to the inner retina
 % object.
 %
-% @JRG:  The initial linear method is carried out in irComputeContinuous.  Why
-% isn't this called irComputeLinear?
+% @JRG:  The initial linear method is carried out in irComputeContinuous.
+% Why isn't this called irComputeLinear?
 %
 % For each mosaic, the linear response is computed by spatial convolution
 % of the center and surround RFs. Then, the temporal responses for the

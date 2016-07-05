@@ -24,13 +24,13 @@ vcAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
-cMosaic = coneMosaic;                     % Create the object
+cMosaic = coneMosaic;  % Create the object
 % cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(500);
-cMosaic.compute(oi,'currentFlag',true);   % The current is computed by default anyway
+cMosaic.compute(oi,'currentFlag',true);
 
 % Show the window
-% cMosaic.guiWindow;                      % Note: Default image should be mean absorptions
+% cMosaic.guiWindow;
 
 % Examine the outer segment current
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
