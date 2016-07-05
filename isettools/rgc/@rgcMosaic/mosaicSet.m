@@ -51,6 +51,8 @@ allowFields = {...
         'srfsurround',...
         'tcenter',...
         'tsurround',...
+        'tcenterall',...
+        'tsurroundall',...
         'responselinear'...
         'responsespikes',...
         'dt'
@@ -77,9 +79,29 @@ switch lower(param)
     case{'srfsurround'}
         obj.sRFsurround = val;
     case{'tcenter'}
-        obj.tCenter = val;
+        obj.tCenter = val;                
     case{'tsurround'}
         obj.tSurround = val;
+                
+    case{'tcenterall'}
+        nCells = size(obj.sRFcenter);
+        tCenterNew = cell(nCells(1),nCells(2));
+        for ii = 1:nCells(1)
+            for jj = 1:nCells(2)                               
+                tCenterNew{ii,jj} = val;
+            end
+        end
+        obj.tCenter = tCenterNew;
+        
+    case{'tsurroundall'}
+        nCells = size(obj.sRFsurround);
+        tSurroundNew = cell(nCells(1),nCells(2));
+        for ii = 1:nCells(1)
+            for jj = 1:nCells(2)                               
+                tSurroundNew{ii,jj} = val;
+            end
+        end
+        obj.tSurround = tSurroundNew;
     case {'dt'}
         obj.dt = val;
         

@@ -6,23 +6,27 @@ function ir = irComputeLinearSTSeparable(ir, input, varargin)
 % The linear responses for each mosaic are computed one at a time. The
 % linear computation is always space-time separable in here?
 %
-% See irCompute for a listing of the possible input types.
+% There are two types of possible input objects.
+%
+%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
+%           stored in an outer segment object.
+%      'bipolar' - the bipolar cell object with a signal that has gone
+%           through temporal filtering and possibly spatial subunit
+%           nonlinearities.
 % 
-% For a
-% given mosaic, first the spatial convolution of the center and surround
-% RFs are calculated for each RGB channel, followed by the temporal
-% responses for the center and surround and each RGB channel. This results
-% in the linear response.
+% For a given mosaic, first the spatial convolution of the center and
+% surround RFs are calculated for each RGB channel, followed by the
+% temporal responses for the center and surround and each RGB channel. This
+% results in the linear response.
 %
-% Next, the linear response is put through the generator function. The
-% nonlinear response is the input to a function that computes spikes with
-% Poisson statistics. 
+% The linear response is the input to irComputeSpikes.
 %
-% For the rgcGLM object, the spikes are computed using the recursive
+% For the rgcGLM object, the spikes can be computed using the recursive
 % influence of the post-spike and coupling filters between the nonlinear
-% responses of other cells. These computations are carried out using code
-% from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky, Simoncelli,
-% Nature, 2008, licensed for modification, which can be found at
+% responses of other cells. These computations are carried in
+% irComputeSpikes out using code from Pillow, Shlens, Paninski, Sher,
+% Litke, Chichilnisky, Simoncelli, Nature, 2008, licensed for modification,
+% which can be found at
 %
 % http://pillowlab.princeton.edu/code_GLM.html
 %
@@ -95,48 +99,7 @@ switch osType
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', responseLinear);
             
-        end
-        
-        %     case {'osLinear','osBioPhys'}
-        %         % Linear OS
-        %         % Test scripts for this case could be
-        %         %
-        %
-        %         % Programming TODO: Connect L, M and S cones to RGC centers and
-        %         % surrounds appropriately
-        %
-        %         % Determine the range of the cone current
-        %         spTempStim = osGet(input, 'cone current signal');
-        %
-        %         % Probably need to do this by cone type
-        %         % We should make this a function with a meaningful name
-        %         % We have ieScale.  But maybe there should be ieContrast
-        %         range = max(spTempStim(:)) - min(spTempStim(:));
-        %         spTempStim = (spTempStim - mean(spTempStim(:)))/range;
-        %
-        %         % Looping over the rgc mosaics
-        %         for rgcType = 1:length(ir.mosaic)
-        %
-        %             % We use a separable space-time receptive field.  This allows
-        %             % us to compute for space first and then time. Space.
-        %             [spResponseCenter, spResponseSurround] = spConvolve(ir.mosaic{rgcType,1}, spTempStim);
-        %
-        %             spResponseVec = cell(nCells(1),nCells(2));
-        %             nCells = size(ir.mosaic{rgcType}.cellLocation);
-        %             for xc = 1:nCells(1)
-        %                 for yc = 1:nCells(2)
-        %                     spResponseFull = spResponseCenter{xc,yc} + spResponseSurround{xc,yc};
-        %                     spResponseVec{xc,yc} = squeeze(mean(mean(spResponseFull,1),2))';
-        %                 end
-        %             end
-        %
-        %             % Store the linear response
-        %             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', spResponseVec);
-        %
-        %         end
-        %         %     case {'osBioPhys'}
-        %         %         %% Full biophysical os
-        %         %         error('Not yet implemented');
+        end       
         
     case {'bipolar'}
         % Bipolar test case in t_coneMosaic
@@ -146,97 +109,24 @@ switch osType
         spTempStimCenter   = bipolarGet(input, 'response center');
         spTempStimCenter   = ieContrast(spTempStimCenter);
         spTempStimSurround = bipolarGet(input, 'response surround');
-        spTempStimSurround = ieContrast(spTempStimSurround);
-        
-        %         % This will be the ieContrast command
-        %         rangeCenter = max(spTempStimCenter(:))     - min(spTempStimCenter(:));
-        %         rangeSurround = max(spTempStimSurround(:)) - min(spTempStimSurround(:));
-        %
-        %         if rangeCenter ~= 0
-        %             spTempStimCenter = spTempStimCenter./rangeCenter - mean(spTempStimCenter(:))/rangeCenter;
-        %         end
-        %         if rangeSurround ~= 0
-        %             spTempStimSurround = spTempStimSurround./rangeSurround - mean(spTempStimSurround(:))/rangeSurround;
-        %         end
-        %
+        spTempStimSurround = ieContrast(spTempStimSurround);       
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
                 
             % Set the rgc impulse response to an impulse
-            % The reason for a negative one instead of a positive one is
-            % @JRG to explain
-            ir.mosaic{rgcType}.set('tCenter all', -1);
-            ir.mosaic{rgcType}.set('tSurround all',0);
-            
-            %             xNum = size(ir.mosaic{rgcType}.sRFcenter,1);
-            %             yNum = size(ir.mosaic{rgcType}.sRFcenter,2);
-            %
-            %             tCenterBP    = -1;
-            %             tCenterNew   = cell(xNum,yNum);
-            %             tSurroundNew = cell(xNum,yNum);
-            %             for xcell = 1:xNum
-            %                 for ycell = 1:yNum
-            %                     tCenterNew{xcell,ycell} = tCenterBP;
-            %                     tSurroundNew{xcell,ycell} = 0;
-            %                 end
-            %             end
-            %
-            %             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tCenter',tCenterNew);
-            %             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'tSurround',tSurroundNew);
-            
-            % @JRG may need for the EJ repository
-            %
-            % szspt = size(spTempStimCenter);
-            % MAY NEED TO ALLOW RESIZE FOR t_rgcCascade, t_rgcPeriphery
-            %                 if 0 %isa(ir.mosaic{rgcType},'rgcPhys') && (szspt(1) ~= 80 && szspt(1) ~= 40)
-            %                      %                 spTempStimCenterRS = spTempStimCenter;
-            %                      %                 spTempStimSurroundRS = spTempStimSurround;
-            %                     spTempStimCenterRS = zeros(80,40,size(spTempStimCenter,3));
-            %                     spTempStimSurroundRS = zeros(80,40,size(spTempStimCenter,3));
-            %                     for frstim = 1:size(spTempStimCenter,3)
-            %                         spTempStimCenterRS(:,:,frstim) =    imresize(spTempStimCenter  (:,:,frstim),[80 40],'method','nearest');
-            %                         spTempStimSurroundRS(:,:,frstim) =  imresize(spTempStimSurround(:,:,frstim),[80 40],'method','nearest');
-            %                     end
-            %
-            %                     clear spTempStimCenter spTempStimSurround
-            %
-            %                     spTempStimCenter = spTempStimCenterRS;
-            %                     spTempStimSurround = spTempStimSurroundRS;
-            %                 end
-            
-            
+            ir.mosaic{rgcType}.set('tCenter all', 1);
+            ir.mosaic{rgcType}.set('tSurround all',0);           
             
             % We use a separable space-time receptive field.  This allows
             % us to compute for space first and then time. Space.
             [spResponseCenter, spResponseSurround] = ...
                 spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);
             
-            
-            %             for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
-            %                 linEqDiscBig(:,:,frstim) =    imresize(linEqDisc{cellNum,1}(:,:,frstim),[80 40]);
-            %             end
-            
             % spResponseSurround{1,1} = zeros(size(spResponseCenter{1,1}));
             % Convolve with the temporal impulse response
             responseLinear = ...
                 fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
-            
-            %@JRG to move
-            %             % For the EJ case.
-            %
-            %             if isa(ir.mosaic{rgcType},'rgcPhys')
-            %                 rLinearSU = cell(length(ir.mosaic{rgcType}.sRFcenter));
-            %                 for cellNum = 1:length(ir.mosaic{rgcType}.sRFcenter)
-            %                     %                     rLinearSU{cellNum,1,1} = 3*responseLinear{cellNum,1}./max(responseLinear{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
-            %                     rLinearSUTemp = 8.5*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
-            %                     %                     rLinearSUTemp = 20*(responseLinear{cellNum,1} - ir.mosaic{rgcType}.tonicDrive{cellNum,1}) + ir.mosaic{rgcType}.tonicDrive{cellNum,1};
-            %                     % NEED TO SUBSAMPLE TO GET CORRECT SPIKE RATE
-            %                     rLinearSU{cellNum,1,1} = rLinearSUTemp;%(1:8:end);
-            %                 end
-            %                 clear responseLinear
-            %                 responseLinear = rLinearSU;
-            %             end
             
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);

@@ -49,25 +49,3 @@ switch param
         
 end
 end
-
-
-% Delete me
-%  case{'celltype'}
-%         obj.cellType = val;
-%     case{'rfdiameter'}
-%         obj.rfDiameter = val;
-%     case{'rfdiamagnitude'}
-%         obj.rfDiaMagnitude = val;
-%     case{'celllocation'}
-%         obj.cellLocation = val;
-%     case{'srfcenter'}
-%         obj.sRFcenter = val;
-%     case{'srfsurround'}
-%         obj.sRFsurround = val;
-%     case{'tcenter'}
-%         obj.tCenter = val;
-%     case{'tsurround'}
-%         obj.tSurround = val;
-%     case{'responselinear'}
-%         obj.responseLinear = val;
-%
