@@ -7,13 +7,13 @@ function ir = irCompute(ir, input, varargin)
 %
 % Inputs:
 %   ir: inner retina object,
-%   input - There are various type of possible input objects.
+%   input - There are two types of possible input objects.
 %
-%      'osDisplayRGB'
-%      'osIdentity'
-%      'osLinear'
-%      'osBioPhys'
-%      'bipolar'
+%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
+%           stored in an outer segment object.
+%      'bipolar' - the bipolar cell object with a signal that has gone
+%           through temporal filtering and possibly spatial subunit
+%           nonlinearities.
 %
 % Computes the responses for all the mosaics attached to the inner retina
 % object.
@@ -23,8 +23,7 @@ function ir = irCompute(ir, input, varargin)
 % center and surround is computed, separably. This stage of the computation
 % is stored in responseLinear.
 %
-% The spikes are computed irComputeSpikes routine.  Each rgc type has its
-% own compute method.  
+% The spikes are computed irComputeSpikes routine.  
 %
 % Outputs:
 %  ir: the inner retina object with responses attached to each mosaic
@@ -33,16 +32,9 @@ function ir = irCompute(ir, input, varargin)
 %   ir.compute(identityOS);
 %   irCompute(ir,identityOS);
 %
-% See also: rgcGLM, irComputeSpikes,
+% See also: rgcMosaic, irComputeSpikes, irComputeLinearSTSeparable
 %
 % JRG (c) isetbio team
-
-%% PROGRAMMING TODO
-% @JRG
-% We plan to move the linear computation to a separate routine,
-% irComputeContinuous (or Linear) and carry out the first part of this code
-% in that routine, rather than as the switch statement that is here now
-%
 
 %% Parse inputs
 p = inputParser;
@@ -51,7 +43,7 @@ p.CaseSensitive = false;
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
 
 vFunc = @(x) ~isempty(validatestring(class(x),...
-    {'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'}));
+    {'osDisplayRGB','bipolar'}));
 p.addRequired('input',vFunc);
 
 p.parse(ir,input,varargin{:});
@@ -63,9 +55,7 @@ ir = irComputeLinearSTSeparable(ir, input);
 switch class(ir.mosaic{1})
     case {'rgcLinear'};
         % No linear response implemented yet.
-        error('Not yet implemented');
-    case{'rgcPhys'}
-        % See sublcass routine @irPhys/irCompute.m
+        warning('No spikes computed for linear RGC mosaic');   
     otherwise
         % Runs for rgcLNP, rgcGLM
         nTrials = ir.mosaic{1}.numberTrials;

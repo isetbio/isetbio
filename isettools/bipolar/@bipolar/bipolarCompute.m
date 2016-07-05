@@ -18,11 +18,9 @@ function obj = bipolarCompute(obj, os, varargin)
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'bipolar'));
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
-p.addParameter('timeDelay', 0, @isscalar);
 
 % parse
 p.parse(obj, os, varargin{:});
-timeDelay = p.Results.timeDelay;
 
 %% Spatial filtering and subsampling
 % Convolve spatial RFs over whole image, subsample to get evenly spaced
@@ -50,27 +48,32 @@ sSurround = sSurround(1:stride:size(sSurround, 1), ...
 [sCenter, r, c] = RGB2XWFormat(sCenter);
 sSurround = RGB2XWFormat(sSurround);
 
-% pad spatial input with initial state (first column) to allow for delay
-padCols = round(1e-3 / os.timeStep * timeDelay) + 1;
-sCenter = [repmat(sCenter(:,1), 1, padCols) sCenter];
-sSurround = [repmat(sSurround(:,1), 1, padCols) sSurround];    
+% Repeat input matrix for filtering
+sCenter = [repmat(sCenter(:,1), 1, 1) sCenter];
+sSurround = [repmat(sSurround(:,1), 1, 1) sSurround];    
 
-% FILTERS ONLY WORK FOR THE TIME SAMPLE THEY WERE CREATED AT
 % load filters
 if obj.filterType == 1  % average filter from measurement data
     if strcmpi(obj.cellType, 'offDiffuse')
         data = load('bipolarFilt.mat', 'bipolarOFFP');
-        bipolarFilt = data.bipolarOFFP(:)';
+        bipolarFilt = -data.bipolarOFFP(:)';
     else
         data = load('bipolarFilt.mat', 'bipolarONP');
-        bipolarFilt = data.bipolarONP(:)';
+        bipolarFilt = -data.bipolarONP(:)';
     end
-elseif obj.filterType == 2  % theoretical impulse response from Pillow
+    
+    % Interpolate filter from data to get correct sample rate
+    originalTimeStep = 0.008;
+    bpLength = length(bipolarFilt);
+    bipolarFilt = interp1(originalTimeStep:originalTimeStep:originalTimeStep*bpLength,bipolarFilt,obj.timeStep:obj.timeStep:originalTimeStep*bpLength);
+    bipolarFilt(isnan(bipolarFilt)) = 0;
+    
+elseif obj.filterType == 2
     load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/irGLM.mat');
     if strcmpi(obj.cellType, 'offDiffuse')
-        bipolarFilt = -irGLM;
-    else
         bipolarFilt = irGLM;
+    else
+        bipolarFilt = -irGLM;
     end
     
 elseif obj.filterType == 3  % each temporal filter from the dataset
