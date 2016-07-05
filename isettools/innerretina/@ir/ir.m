@@ -45,9 +45,6 @@ end
 % Public, read-only properties.
 properties (SetAccess = public, GetAccess = public)
     
-    % @JRG:  I need to set mosaic properties from various places, so I
-    % moved this here.  Is this OK?
-    
     % The ganglion cell types as a cell array
     mosaic;
 end

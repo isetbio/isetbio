@@ -68,28 +68,58 @@ param = ieParamFormat(p.Results.param);
 switch ieParamFormat(param)
     
     case{'celltype'}
+        % String that stores cell type name
         val = obj.cellType;
+        
     case{'rfdiameter'}
-        val = obj.rfDiameter;
+        % Spatail RF diameter in micrometers
+        val = obj.rfDiameter; 
+        
     case{'rfdiamagnitude'}
+        % Magnitude of linear spatial RF in units of spikes/sec at which 1
+        % SD contours are computed.
         val = obj.rfDiaMagnitude;
+        
     case{'celllocation'}
-        % @JRG:  Units are ?
+        % Location of RF center in units of zero-centered cone position
+        % The center of the RGC mosaic is at [0 0]
+        % If ir.mosaic{1}.cellLocation{1,1} = [-40 -40], then the mosaic
+        % underlying cone mosaic is about [80x80] depending on RF size 
         val = obj.cellLocation;
+        
     case{'srfcenter'}
+        % Linear spatial center RF in units of conditional intensity,
+        % related by Poisson firing to spikes/sec.
         val = obj.sRFcenter;
+        
     case{'srfsurround'}
+        % Linear spatial surround RF in units of conditional intensity,
+        % related by Poisson firing to spikes/sec.spikes/sec.
         val = obj.sRFsurround;
+        
     case{'tcenter'}
+        % Linear temporal center impulse response in units of conditional
+        % intensity, related by Poisson firing to spikes/sec
         val = obj.tCenter;
+        
     case{'tsurround'}
+        % Linear temporal surround impulse response in units of conditional
+        % intensity, related by Poisson firing to spikes/sec
         val = obj.tSurround;
+        
     case{'linearresponse'}
+        % Linear response in units of conditional intensity, related by
+        % Poisson firing to spikes/sec
         val = obj.linearResponse;
+        
     case {'mosaicsize'}
+        % Mosaic size in units of number of RGCs
         val = size(obj.cellLocation);
     case {'dt'}
-        %@JRG  Notice new dt.
+        % The bin subsampling size. In the original Pillow code, was a
+        % fraction of the sampling rate of the linear response (usually
+        % 0.0083 sec). Now it takes into account the linear sampling rate
+        % and is given in units of microseconds.
         val = obj.dt;   % 10 usec
 
     case {'lastspiketime'}

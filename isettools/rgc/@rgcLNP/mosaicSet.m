@@ -30,15 +30,16 @@ switch param
     
     % LNP subclass parameters
     case{'tonicdrive'}
-        %
+        % The baseline rate of the likelihood of spiking, which creates a
+        % nonzero firing rate in response to no input
         for ci1 = 1:size(obj.tonicDrive,1)
             for ci2 = 1:size(obj.tonicDrive,2)
                 obj.tonicDrive{ci1,ci2} = params.value;
             end
         end
     case{'generatorfunction'}
-        % @JRG:  
-        % Does this convert linear to nonlinear for GLM and also LNP?
+        % Converts the conditional intensity to the likelihood of observing
+        % a spike within a given time bin, used also in GLM case.
         obj.generatorFunction = params.value;   
     case{'postspikefilter'}
         obj.postSpikeFilter = params.value;

@@ -39,9 +39,7 @@ switch ieParamFormat(param)
     case{'postspikefilter'}
         val = obj.postSpikeFilter;
     case{'numbertrials'}
-        % val = obj.numberTrials;
-        % @JRG:  Should be handled better.
-        val = size(obj.responseSpikes,3);
+        val = obj.numberTrials;
     case{'responsevoltage'}
         val = obj.responseVoltage;
     case{'couplingfilter'}

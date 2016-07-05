@@ -63,7 +63,7 @@ switch class(ir.mosaic{1})
         % No linear response implemented yet.
         error('Not yet implemented');
     case{'rgcPhys'}
-        % @JRG:  Comment needed.
+        % See sublcass routine @irPhys/irCompute.m
     otherwise
         % Runs for rgcLNP, rgcGLM
         nTrials = ir.mosaic{1}.numberTrials;

@@ -30,9 +30,7 @@ switch param
     case{'generatorfunction'}
         val = obj.generatorFunction;
     case{'numbertrials'}
-        % Is this in the super class?
-        %  val = obj.numberTrials;
-        val = size(obj.responseSpikes,3);
+        val = obj.numberTrials;        
     case{'responsevoltage'}
         val = obj.responseVoltage;
     case{'postspikefilter'}
