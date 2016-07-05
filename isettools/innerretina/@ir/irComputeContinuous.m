@@ -1,13 +1,18 @@
 function ir = irComputeContinuous(ir, input, varargin)
 % Computes the mosaic's linear response to an input
 %
-% @JRG:  Why is there no mention of the bipolar object?
+%   ir = irComputeContinuous(ir, input, varargin)
 %
-% The responses for each mosaic are computed one at a time. For a given
-% mosaic, first the spatial convolution of the center and surround RFs are
-% calculated for each RGB channel, followed by the temporal responses for
-% the center and surround and each RGB channel. This results in the linear
-% response.
+%  Rename possibility: irComputeLinearSTSeparable
+%
+% The linear responses for each mosaic are computed one at a time. The
+% linear computation is always space-time separable in here?
+%
+% For a
+% given mosaic, first the spatial convolution of the center and surround
+% RFs are calculated for each RGB channel, followed by the temporal
+% responses for the center and surround and each RGB channel. This results
+% in the linear response.
 %
 % Next, the linear response is put through the generator function. The
 % nonlinear response is the input to a function that computes spikes with

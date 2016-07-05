@@ -101,8 +101,8 @@ methods
         obj = irCompute(obj,  outerSegment, varargin{:});
     end
     
-    function obj = computeContinuous(obj,varargin)
-        obj = irComputeContinuous(obj,varargin{:});
+    function obj = computeLinearSTSeparable(obj,varargin)
+        obj = irComputeLinearSTSeparable(obj,varargin{:});
     end
     
     function obj = computeSpikes(obj, varargin)
