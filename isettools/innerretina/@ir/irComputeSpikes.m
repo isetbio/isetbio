@@ -46,7 +46,7 @@ for ii = 1:length(ir.mosaic)
         responseLinear = mosaic.get('response linear');
         nSamples = size(responseLinear,3);
         nCells = mosaic.get('mosaic size');
-
+        
         spikeTimes = cell([nCells,nTrials]);
         respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nTrials);
         
@@ -55,9 +55,13 @@ for ii = 1:length(ir.mosaic)
         glminput = RGB2XWFormat(responseLinear);
         glmprs   = setGLMprs(mosaic);
         
+        if ieSessionGet('wait bar'), wbar = waitbar(0,sprintf('Trial 1  of %d',nTrials)); end
         for tt = 1:nTrials
-    
+
             % Run Pillow code
+            if ieSessionGet('wait bar')
+                wbar = waitbar(0,sprintf('Coupled GLM (Trial %d of %d)',tt,nTrials)); 
+            end
             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
             
             % Put the data in the outputs
@@ -69,8 +73,12 @@ for ii = 1:length(ir.mosaic)
                     respVolts(yc,xc,:,tt)  = Vmem(:,cellCtr);
                 end
             end
+            if ieSessionGet('wait bar')
+                waitbar(tt/nTrials,wbar,sprintf('Finished trial %d of %d',tt,nTrials)); 
+            end
         end
-        
+        if ieSessionGet('wait bar'), delete(wbar); end
+
         % Set mosaic property
         ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
         
