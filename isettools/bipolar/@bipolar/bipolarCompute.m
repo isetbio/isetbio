@@ -65,7 +65,7 @@ if obj.filterType == 1
     % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
     
     if strcmpi(obj.cellType,'offDiffuse') || strcmpi(obj.cellType,'offMidget')
-        bipolarFilt = -mean(bipolarFiltMat)';
+        bipolarFilt = mean(bipolarFiltMat)';
     elseif strcmpi(obj.cellType,'onDiffuse') || strcmpi(obj.cellType,'onMidget')
         bipolarFilt = mean(bipolarFiltMat)';
     end

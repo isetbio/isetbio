@@ -77,9 +77,10 @@ absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
 % At this point, we have the right cone density and the right number in
 % cols, now we just need to set the rows to have the same aspect ratio as
 % the input movie.
-% sensorSize = sensorGet(absorptions,'size');
-% aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
-% absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
+sceneSize = sceneGet(scene,'size');
+sensorSize = sensorGet(absorptions,'size');
+aspectRatioMovie = sceneSize(1)/sceneSize(2);
+absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
 
 
 %% Compute a dynamic set of cone absorptions for moving bar

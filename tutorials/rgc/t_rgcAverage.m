@@ -23,10 +23,10 @@ clear
 
 %% Initialize parameters for RGC mosaic
 
-ecc = 0.9; % in mm, ecc = 0.3 deg
+ecc = 0.3; % in mm, ecc = 1 deg
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
-cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
+cellTypeI     = 3;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
 stimulusTestI = 1;       % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
@@ -47,7 +47,7 @@ end
 switch cellTypeI
     case 1; 
         cellType = 'On Parasol RPE';      
-        fov = 6*0.25;
+        fov = 4*0.25;
     case 2; 
         cellType = 'Off Parasol RPE';              
         fov = 6*0.25;
@@ -70,7 +70,7 @@ paramsStim.row = 64; params.col = 64;
 
 paramsStim.expTime = 0.001;
 paramsStim.timeInterval = 0.001;
-paramsStim.nSteps = 100;     % Number of stimulus frames
+paramsStim.nSteps = 180;     % Number of stimulus frames
 
 upSampleFactor = 10;
 paramsStim.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
@@ -114,7 +114,7 @@ osB = osCompute(osB,sensor,paramsOS);
 osPlot(osB,sensor);
 
 % Subsample outer segment current
-% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:80:end));
+% osB.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:8:end));
 
 
 %% Find bipolar responses
@@ -194,4 +194,4 @@ mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 
 %% Make a movie of the PSTH response
 
-mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params)
+psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);

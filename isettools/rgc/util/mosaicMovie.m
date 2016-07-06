@@ -1,4 +1,4 @@
-function mosaicMovie(irPSTH, ir, params)
+function psthMovie = mosaicMovie(irPSTH, ir, params)
 % Makes a movie of the RGC mosaic according to each cell's PSTH. This is
 % useful for visualizing the spatial as
 
@@ -20,4 +20,4 @@ for i = 1:length(ir.mosaic{1}.cellLocation);
     pRep = repmat( psthMovieCell(1,1,:),[length(xSelStart:xSelEnd),length(ySelStart:ySelEnd), 1]);
     psthMovie(xSelStart:xSelEnd,ySelStart:ySelEnd,:) = pRep;
 end;
-ieMovie(psthMovie(:,:,200:end));
+ieMovie(psthMovie(3:end-2,:,200:end));
