@@ -20,7 +20,7 @@ function glmprs = setGLMprs(mosaic)
 % 3/2016 JRG (c) isetbio
 
 %% Get number of cells
-nCells = size(mosaic.cellLocation);
+nCells = mosaic.get('mosaic size');
 
 %% Set linear temporal filter
 % Because of the construction of simGLM and simGLMcpl, we compute the
@@ -84,6 +84,5 @@ end
 
 %% Set nonlinearity
 glmprs.nlfun = mosaic.generatorFunction;
-
 
 end

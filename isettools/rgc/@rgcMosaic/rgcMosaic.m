@@ -56,8 +56,6 @@ classdef rgcMosaic < handle
         responseLinear;     % Store the linear response after convolution
         responseSpikes; 
         
-        % We typically run a single trial
-        numberTrials = 1;
     end
     
     % Private properties. Only methods of the parent class can set these

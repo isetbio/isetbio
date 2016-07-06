@@ -1,23 +1,23 @@
-function obj = irSet(obj, varargin)
+function obj = irSet(obj, param, val, varargin)
 % rgcSet: a method of @rgc that sets rgc object 
 % parameters using the input parser structure.
 % 
-%       val = rgcSet(rgc, property)
+%       val = irSet(ir, param, value, varargin)
 % 
-% Inputs: rgc object, property to be set, value of property to be set
+% Inputs: Inner retina object, param to be set, value of 
 % 
-% Outputs: object with property set
-% 
-% Proeprties:
-%         name: type of rgc object, e.g., 'macaque RGC'
-%         input: 'cone current' or 'scene RGB', depends on type of outer
+% @JRG - Fix
+%
+% Properties:
+%     name: type of rgc object, e.g., 'macaque RGC'
+%     input: 'cone current' or 'scene RGB', depends on type of outer
 %           segment object created.
-%         temporalEquivEcc: the temporal equivalent eccentricity, used to 
+%     temporalEquivEcc: the temporal equivalent eccentricity, used to 
 %             determine the size of spatial receptive fields.   
-%         mosaic: contains rgcMosaic objects for the five most common types
+%     mosaic: contains rgcMosaic objects for the five most common types
 %           of RGCs: onParasol, offParasol, onMidget, offMidget,
 %           smallBistratified.
-%         numberTrials: the number of trials for spiking models LNP and GLM
+%     numberTrials: the number of trials for spiking models LNP and GLM
 % 
 % Example:
 %   rgc1 = rgcSet(rgc1, 'name', 'macaque RGC')
@@ -25,17 +25,11 @@ function obj = irSet(obj, varargin)
 % 
 % 9/2015 JRG 
 
-% Check for the number of arguments and create parser object.
-% Parse key-value pairs.
-% 
+%% Parse
 
-% % % We could do set using the superclass method
-% obj = mosaicSet@rgcMosaic(obj, varargin{:});
-
-% Check key names with a case-insensitive string, errors in this code are
-% attributed to this function and not the parser object.
-error(nargchk(0, Inf, nargin));
-p = inputParser; p.CaseSensitive = false; p.FunctionName = mfilename;
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
@@ -48,71 +42,59 @@ allowableFieldsToSet = {...
         'mosaic',...
         'numberTrials',...
         'recordedSpikes'...
+        'numbertrials'
     };
-p.addRequired('what',@(x) any(validatestring(x,allowableFieldsToSet)));
-p.addRequired('value');
-
-% % Define what units are allowable.
-% allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
-% 
-% % Set up key value pairs.
-% % Defaults units:
-% p.addParameter('units','pa',@(x) any(validatestring(x,allowableUnitStrings)));
+p.addRequired('param',@(x) any(validatestring(x,allowableFieldsToSet)));
+p.addRequired('val');
 
 % Parse and put results into structure p.
-p.parse(varargin{:}); params = p.Results;
+p.parse(param,val,varargin{:}); 
+param = ieParamFormat(p.Results.param);
+val   = p.Results.val;
 
-% % Old error check on input.
-% if ~exist('params','var') || isempty(params)
-%     error('Parameter field required.');
-% end
-% if ~exist('val','var'),   error('Value field required.'); end;
 
-% Set key-value pairs.
-switch ieParamFormat(params.what)
+%% Set key-value pairs.
+switch param
         
     case{'name'}
-        obj.name = params.value;
+        obj.name = val;
     case{'input'}
-        obj.input = params.value;
+        obj.input = val;
     case{'temporalequivecc'}        
-        obj.temporalEquivEcc = params.value;
+        obj.temporalEquivEcc = val;
     case{'mosaic'}
-        
+        % @JRG simplify, comment
         mosaicInd = length(obj.mosaic);
         if mosaicInd == 1 && isempty(obj.mosaic{mosaicInd})
             mosaicInd = 0;
         elseif mosaicInd >= 5
             mosaicInd = 0;
         end
-        obj.mosaic{mosaicInd+1,1} = params.value;   
+        obj.mosaic{mosaicInd+1,1} = val;   
         
     case{'numbertrials'}
-        cellTypes = length(obj.mosaic);
-        if isa(obj.mosaic{1},'rgcLNP') | isa(obj.mosaic{1},'rgcGLM')| isa(obj.mosaic{1},'rgcPhys')
-            
-            for cellTypeInd = 1%:cellTypes
-                obj.mosaic{cellTypeInd} = mosaicSet(obj.mosaic{cellTypeInd}, 'numberTrials', params.value);
-            end
-        else
-            warning('The numberTrials property can only be set for rgcLNP, rgcGLM and rgcPhys models.');
-        end
+        % Will be a vector some day for number of trials for each mosaic in
+        % the ir.  Now, it is just a plain old number.
+        obj.numberTrials = val;
         
     case{'timing'}
-        obj.timing = params.value;
+        obj.timing = val;
     case{'spacing'} 
-        obj.spacing = params.value;
+        obj.spacing = val;
         
     case{'recordedspikes'}
-        
-        for cellind = 1:length(params.value)
-            for iTrial = 1:length(params.value{1}.rasters.recorded)
-                recorded_spiketimes{cellind,1,iTrial} = (params.value{cellind}.rasters.recorded{iTrial});
+        % For Phys data into ISETBIO
+        % @JRG - Comment.  Preallocate space.
+        for cellind = 1:length(val)
+            for iTrial = 1:length(val{1}.rasters.recorded)
+                recorded_spiketimes{cellind,1,iTrial} = (val{cellind}.rasters.recorded{iTrial});
             end
         end
         
         if isa(obj.mosaic{1},'rgcPhys')
             obj.mosaic{1} = mosaicSet(obj.mosaic{1},'responseSpikes',recorded_spiketimes);
         end
+end
+
 end
 

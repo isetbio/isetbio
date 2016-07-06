@@ -3,10 +3,8 @@ function ir = irCompute(ir, input, varargin)
 %
 %    ir = irCompute(ir, input, varargin)
 %
-% The input can be of several types, for historical reasons.
-%
 % Inputs:
-%   ir: inner retina object,
+%   ir: inner retina object
 %   input - There are two types of possible input objects.
 %
 %      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
@@ -15,15 +13,18 @@ function ir = irCompute(ir, input, varargin)
 %           through temporal filtering and possibly spatial subunit
 %           nonlinearities.
 %
-% Computes the responses for all the mosaics attached to the inner retina
-% object.
+% Computes the linear and spike responses for all the mosaics within the
+% inner retina object.  (Except: There are not spikes for the rgcLinear
+% class).
 % 
-% For each mosaic, the linear response is computed by spatial convolution
-% of the center and surround RFs. Then, the temporal responses for the
-% center and surround is computed, separably. This stage of the computation
-% is stored in responseLinear.
+% For each mosaic, a space-time separable linear response is computed. This
+% stage of the computation is stored in 'responseLinear'.  This is managed
+% in irComputeLinearSTSeparable.  There is no noise added in the linear
+% part.
 %
-% The spikes are computed irComputeSpikes routine.  
+% The spikes are computed irComputeSpikes routine. The spiking can have a
+% random element.  So, we may run the conversion from linear to spikes
+% multiple times, effectively producing spike rasters.
 %
 % Outputs:
 %  ir: the inner retina object with responses attached to each mosaic
@@ -41,28 +42,23 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-
-vFunc = @(x) ~isempty(validatestring(class(x),...
-    {'osDisplayRGB','bipolar'}));
+vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
 p.addRequired('input',vFunc);
 
 p.parse(ir,input,varargin{:});
 
 %% Linear stage of the computation
 ir = irComputeLinearSTSeparable(ir, input);
+% irPlot(ir,'response linear');
 
 %% Compute spikes for each trial
 switch class(ir.mosaic{1})
     case {'rgcLinear'};
         % No linear response implemented yet.
-        warning('No spikes computed for linear RGC mosaic');   
+        disp('No spikes computed for linear RGC mosaic');   
     otherwise
         % Runs for rgcLNP, rgcGLM
-        nTrials = ir.mosaic{1}.numberTrials;
-        for itrial = 1:nTrials
-            fprintf('Trial %d\n',itrial);
-            ir = irComputeSpikes(ir);
-        end
+        ir = irComputeSpikes(ir);
 end
 
 end

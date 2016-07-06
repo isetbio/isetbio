@@ -1,15 +1,16 @@
 function ir = irComputeSpikes(ir, varargin)
-% Generate spikes for certain rgc objects
+% Generate spikes from the linear response 
 %
-% We have models that convert from the continuous response to the spiking
-% output for several types of rgc mosaics.  This is the gateway routine
-% that examines which rgc type we have and invokes the proper continuous to
-% spike response for that type of rgc.
+%   ir = irComputeSpikes(ir, varargin)
 %
-% Inputs: the inner retina object
+% Convert from the linear response to the spiking output for several types
+% of rgc mosaics.  Works for rgcGLM and rgcLNP models.
 %
-% Outputs: the spikes responses are attached to the rgc mosaics in the ir
-% object.
+% Inputs: 
+%   inner retina object
+%
+% Outputs: 
+%  The spikes responses are attached to the rgc mosaics
 %
 % Example:
 %  os = osCreate('identity');
@@ -30,89 +31,56 @@ function ir = irComputeSpikes(ir, varargin)
 % exptRR = irGet(ir,'timing');
 % exptBinsPerStep = round(normalRR/exptRR);
 
+% @JRG - To comment
 global RefreshRate
 RefreshRate = 100;
-% RefreshRate = exptBinsPerStep
 
+% For every IR, this could be a vector in the future
+nTrials = ir.get('number trials');
 
 %% Loop on the mosaics in the inner retina
 for ii = 1:length(ir.mosaic)
+    if ~ismember(class(ir.mosaic{ii}), {'rgcGLM','rgcLNP'})
+    else
+        mosaic = ir.mosaic{ii};
+        responseLinear = mosaic.get('response linear');
+        nSamples = size(responseLinear,3);
+        nCells = mosaic.get('mosaic size');
+
+        spikeTimes = cell([nCells,nTrials]);
+        respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nTrials);
+        
+        % Call the Pillow code to generate spikes for the whole mosaic
+        % using the coupled GLM
+        glminput = RGB2XWFormat(responseLinear);
+        glmprs   = setGLMprs(mosaic);
+        
+        for tt = 1:nTrials
     
-    switch class(ir.mosaic{ii})
-        case {'rgcGLM','rgcPhys','rgcSubunit'}
-            
-            % Call the Pillow code to generate spikes for the whole mosaic
-            % using the coupled GLM
-            clear responseSpikes responseVoltage
-            % Modified
-            % responseSpikes = computeSpikesGLM(ir.mosaic{ii,1});
-            
-            % Wrappers for adapting isetbio mosaic properties to Pillow code
-            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
-            glmprs   = setGLMprs(ir.mosaic{ii});
             % Run Pillow code
             [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+            
+            % Put the data in the outputs
             cellCtr = 0;
-            nCells = size(ir.mosaic{ii}.responseLinear);
-            responseSpikes = cell(nCells(2),nCells(1));
-            responseVoltage = cell(nCells(2),nCells(1));
             for xc = 1:nCells(1)
                 for yc = 1:nCells(2)
                     cellCtr = cellCtr+1;
-                    responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
-                    responseVoltage{yc,xc} = Vmem(:,cellCtr);
+                    spikeTimes{yc,xc,:,tt} = responseSpikesVec{1,cellCtr};
+                    respVolts(yc,xc,:,tt)  = Vmem(:,cellCtr);
                 end
             end
-
-            % Set mosaic property
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', responseSpikes);
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', responseVoltage);
-            
-        case {'rgcLNP'}
-            
-            clear responseSpikes responseVoltage
-            % This is a place holder for linear, nonlinear, poisson spiking
-            % model.  The reference and computations will be explained
-            % mainly here.
-            glminput = setGLMinput(ir.mosaic{ii}.responseLinear);
-            
-            % Set the post spike filter to enforce the refractory period.
-            glmprs = setPSFprs(ir.mosaic{ii});
-            %  glmprs.ih=[]; glmprs.iht=[];
-            % No post spike filter - break into different subclass?
-            % glmprs = setLNPprs(ir.mosaic{ii});
-            
-            % Run Pillow code
-            if strcmp((ir.name),'Macaque inner retina pixium 1')
-                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
-            else
-                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
-            end
-            cellCtr = 0;
-            
-            nCells = size(ir.mosaic{ii}.responseLinear);
-            responseSpikes = cell(nCells(2),nCells(1));  % Needs a trial dimension
-            responseVoltage = cell(nCells(2),nCells(1)); % Needs a trial dimension
-            nCells = size(ir.mosaic{ii}.responseLinear);
-            for xc = 1:nCells(1)
-                for yc = 1:nCells(2)
-                    cellCtr = cellCtr+1;
-                    responseSpikes{yc,xc} = responseSpikesVec{1,cellCtr};
-                    responseVoltage{yc,xc} = Vmem(:,cellCtr);
-                end
-            end
-            
-            % Nonlinear voltage
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'response voltage', responseVoltage);
-            
-            % Spikes
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'response spikes', responseSpikes);
-            
-        otherwise
-            error('The rgcMosaic object is a model without a spike response; choose LNP or GLM for spikes.');
+        end
+        
+        % Set mosaic property
+        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
+        
+        % The nonlinear voltage which is only set in the GLM model
+        if isa(ir.mosaic{ii},'rgcGLM')
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+        end
+        
     end
 end
-
 
 end
 

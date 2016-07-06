@@ -1,112 +1,84 @@
-function [spRespCenter, spRespSurround] = spConvolve(mosaic, spCenter, spSurround)
+function [respCenter, respSurround] = spConvolve(mosaic, input)
 % A separable space-time 2D convolution for center/surround
-% 
-%  [spRespCenter, spRespSurround] = spConvolve(mosaic,spCenter,spSurround)
-%   
-% This function extracts the relevant x and y coordinates of each temporal
-% frame of the stimulus and convolves that 2D image with the spatial center
-% and surround RFs of each cell for all temporal frames.
-% 
-% Inputs:
-%   mosaic     - rgcMosaic object
-%   spCenter   - 3D center input in (x, y, time, color channel) format
-%   spSurround - 3D surround input in (x, y, t, color channel) format
-% 
-% Outputs: 
-%   spatial response of the 2D center and surround receptive fields.
 %
+%  [spRespCenter, spRespSurround] = spConvolve(mosaic,spCenter,spSurround)
+%
+% Compute the inner product of the center and surround of each receptive
+% field with the input, which is typically a bipolar photocurrent image.
+%
+% This function extracts the relevant x and y coordinates of the stimulus
+% at each temporal frame and computes the inner product with the center and
+% surround components of the RF. The final result is a time series for the
+% center and surround of each RGC receptive field.  The sum of these is
+% typically considered the total response, though there may be future
+% models in which the center and surround are not summed.
+%
+% Inputs:
+%   mosaic   - rgcMosaic object
+%   input    - 3D center input in (x, y, time, color channel) format
+%
+% Outputs:
+%  respCenter:     Response over time from the center
+%  respSurround:   Response over time from the surround
+%   
+%
+%   N.B. In some cases, the input has several color channels (don't ask) and so
+%   we do it for every color channel.  This has to do with the need to
+%   handle osDisplayRGB case.
 %
 % JRG, ISETBIO TEAM, 2015
 
 %% init parameters
-nSamples = size(spCenter, 3);
-nColors  = size(spCenter, 4);
-nCells   = mosaic.get('mosaic size'); 
+nSamples = size(input, 3);
+nColors  = size(input, 4);
+nCells   = mosaic.get('mosaic size');
 
 % pre-allocate space
-spRespCenter   = cell(nCells);
-spRespSurround = cell(nCells);
+% @JRG - Could turn this into a matrix, not a cell array
+respCenter   = zeros([nCells(1), nCells(2), nSamples, nColors]);
+respSurround = zeros([nCells(1), nCells(2), nSamples, nColors]);
 
-%%
+%% Do the convolution.
+
+%
+rowConv = 1; colConv = 1;
+
+% The middle cell is at (0,0).  This tells us how far offset the 1st cell
+% is from (0,0).
+offset = [rowConv colConv].*mosaic.cellLocation{1,1};
+
 for cc = 1 : nColors
     for ii = 1 : nCells(1)
         for jj = 1 : nCells(2)
-            % Get RF 2D images
-            spRFcenter = mosaic.sRFcenter{ii, jj};
+            % Get RF of the center and surround of this cell
+            spRFcenter   = mosaic.sRFcenter{ii, jj};
             spRFsurround = mosaic.sRFsurround{ii, jj};
+            % vcNewGraphWin; imagesc(spRFcenter)            
             
-            spRespCenter{ii,jj}   = zeros([size(spRFcenter) nSamples nColors]);
-            spRespSurround{ii,jj} = zeros([size(spRFsurround) nSamples nColors]);
+            % Positions of the stimulus used for the inner product
+            [stimX, stimY] = mosaic.stimPositions(ii,jj);
             
-            % Get cell location
-            stimCenterCoords = mosaic.cellLocation{ii,jj};
-            switch class(mosaic)
-                case 'rgcPhys'
-                    % Find the spatial extent of the RF in numbers of rfDiameter
-                    extent = round(size(mosaic.sRFcenter{1,1},1)/mosaic.rfDiameter);
-                    offset = [0 0];
-                
-                    % Should rfDimater be size RF center? Yes!
-                    stimX =  ceil((stimCenterCoords(1) - floor(extent/2*mosaic.rfDiameter))):floor((stimCenterCoords(1) + floor((extent/2)*mosaic.rfDiameter )));
-                    stimY =  ceil((stimCenterCoords(2) - floor(extent/2*mosaic.rfDiameter))):floor((stimCenterCoords(2) + floor((extent/2)*mosaic.rfDiameter )));
-                case 'rgcSubunit'
-                    extent = 1;
-                    if mosaic.cellLocation{1,1}(1) > 0
-                        offset(1) = ceil(mosaic.cellLocation{1,1}(1));
-                    else
-                        offset(1) = floor(mosaic.cellLocation{1,1}(1));
-                    end
-                
-                    if mosaic.cellLocation{1,1}(2) > 0
-                        offset(2) = ceil(mosaic.cellLocation{1,1}(2));
-                    else
-                        offset(2) = floor(mosaic.cellLocation{1,1}(2));
-                    end
-                    
-                    % Should rfDimater be size RF center? Yes!
-                    stimX =  floor((stimCenterCoords(1) - floor(extent/2*size(mosaic.sRFcenter{1,1},1)))) : floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) )));
-                    stimY =  floor((stimCenterCoords(2) - floor(extent/2*size(mosaic.sRFcenter{1,1},2)))) : floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2))));
-                    
-                otherwise
-                    extent = 1;
-                    rowConv = 1; colConv = 1;
-                    offset = [rowConv colConv].*mosaic.cellLocation{1,1};
-                    
-                    % Should rfDimater be size RF center? Yes!
-                    stimX =  ceil((stimCenterCoords(1) - floor(extent/2*size(mosaic.sRFcenter{1,1},1)))) : floor((stimCenterCoords(1) + floor((extent/2)*size(mosaic.sRFcenter{1,1},1) )));
-                    stimY =  ceil((stimCenterCoords(2) - floor(extent/2*size(mosaic.sRFcenter{1,1},2)))) : floor((stimCenterCoords(2) + floor((extent/2)*size(mosaic.sRFcenter{1,1},2))));
-                    
-            end
-            
-            % Ensure indices are within size of stimulus
+            % Find the RF location indices that are within size of stimulus
             gz = find(stimX - offset(1) >= 1 & ...
                 stimY - offset(2) >= 1 & ...
-                stimX - offset(1) <= size(spCenter,1) & ...
-                stimY - offset(2) <= size(spCenter,2) );
+                stimX - offset(1) <= size(input,1) & ...
+                stimY - offset(2) <= size(input,2) );
             
-            spStimCenterV = spCenter(floor(stimX(gz)-offset(1)), ...
-                floor(stimY(gz)-offset(2)), :,cc);
-            spStimSurrV = spSurround(floor(stimX(gz)-offset(1)), ...
+            % Clip the proper part of the stimulus with respect to the RF
+            % We do all of the time dimension in a single matrix
+            stimV = input(floor(stimX(gz)-offset(1)), ...
                 floor(stimY(gz)-offset(2)), :, cc);
+            % Visualize the stimulus
+            % ieMovie(stimV);
             
-            switch class(mosaic)
-                case 'rgcSubunit'
-                    spRC = bsxfun(@times,spRFcenter(gz,gz),spStimCenterV);
-                    spRS = bsxfun(@times,spRFsurround(gz,gz),spStimCenterV);
-                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
-                        10 * mosaic.rectifyFunction(spRC) / length(gz)^2;
-                    spRespSurround{ii,jj}(gz,gz, :,cc) = ...
-                        10 * mosaic.rectifyFunction(spRS) / length(gz)^2;
-                case 'rgcPhys'
-                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
-                        bsxfun(@times, spRFcenter(gz, gz), ...
-                        spStimCenterV-spStimSurrV);
-                otherwise  % other types of rgc, include LNP, etc.
-                    spRespCenter{ii,jj}(gz, gz, :, cc) = ...
-                        bsxfun(@times, spRFcenter(gz,gz), spStimCenterV);
-                    spRespSurround{ii,jj}(gz, gz, :, cc) = ...
-                        bsxfun(@times, spRFsurround(gz,gz), spStimCenterV);
-            end
+            % Apply the rf weights to the stimulus
+            rfC = RGB2XWFormat(spRFcenter(gz,gz));
+            rfS = RGB2XWFormat(spRFsurround(gz,gz));
+            stimV = RGB2XWFormat(stimV);
+            
+            respCenter(ii,jj,:,cc)   = rfC'* stimV;
+            respSurround(ii,jj,:,cc) = rfS'* stimV;
+            
         end
     end
 end

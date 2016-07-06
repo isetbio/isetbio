@@ -51,7 +51,7 @@ allowFields = {...
         'srfsurround',...
         'tcenter',...
         'tsurround',...
-        'linearresponse'...
+        'responselinear'...
         'mosaicsize', ...
         'dt', ...
         'lastspiketime', ...
@@ -59,10 +59,12 @@ allowFields = {...
         'psth'
     };
 p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
+p.addParameter('cell',[],@(x) (length(x(:)) == 2));
 
 % Parse and put results into structure p.
 p.parse(param,varargin{:}); 
 param = ieParamFormat(p.Results.param);
+cell = p.Results.cell;
 
 % @JRG - Please comment on the units
 switch ieParamFormat(param)
@@ -101,20 +103,27 @@ switch ieParamFormat(param)
         % Linear temporal center impulse response in units of conditional
         % intensity, related by Poisson firing to spikes/sec
         val = obj.tCenter;
+        if ~isempty(cell)
+            val = val{cell(1),cell(2)};
+        end
         
     case{'tsurround'}
         % Linear temporal surround impulse response in units of conditional
         % intensity, related by Poisson firing to spikes/sec
         val = obj.tSurround;
+        if ~isempty(cell)
+            val = val{cell(1),cell(2)};
+        end
         
-    case{'linearresponse'}
+    case{'responselinear'}
         % Linear response in units of conditional intensity, related by
         % Poisson firing to spikes/sec
-        val = obj.linearResponse;
+        val = obj.responseLinear;
         
     case {'mosaicsize'}
         % Mosaic size in units of number of RGCs
         val = size(obj.cellLocation);
+        
     case {'dt'}
         % The bin subsampling size. In the original Pillow code, was a
         % fraction of the sampling rate of the linear response (usually

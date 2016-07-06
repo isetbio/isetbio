@@ -106,10 +106,9 @@ switch osType
         % t_rgcBar, others to be named.
         
         % Determine the range of the rgb input data
-        spTempStimCenter   = bipolarGet(input, 'response center');
-        spTempStimCenter   = ieContrast(spTempStimCenter);
-        spTempStimSurround = bipolarGet(input, 'response surround');
-        spTempStimSurround = ieContrast(spTempStimSurround);       
+        stim   = bipolarGet(input, 'response');
+        stim = ieContrast(stim);       
+        % ieMovie(stim);
         
         % Looping over the rgc mosaics
         for rgcType = 1:length(ir.mosaic)
@@ -120,16 +119,17 @@ switch osType
             
             % We use a separable space-time receptive field.  This allows
             % us to compute for space first and then time. Space.
-            [spResponseCenter, spResponseSurround] = ...
-                spConvolve(ir.mosaic{rgcType,1}, spTempStimCenter, spTempStimSurround);
+            [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
+            % ieMovie(respC);
             
-            % spResponseSurround{1,1} = zeros(size(spResponseCenter{1,1}));
             % Convolve with the temporal impulse response
-            responseLinear = ...
-                fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
+            respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+            respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+            % Delete fullConvolve
+            % ieMovie(respC - respS);
             
             % Store the linear response
-            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'responseLinear', responseLinear);
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
             
         end
     otherwise

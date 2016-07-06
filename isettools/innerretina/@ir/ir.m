@@ -45,6 +45,9 @@ end
 % Public, read-only properties.
 properties (SetAccess = public, GetAccess = public)
     
+    % We typically run a single trial
+    numberTrials = 1;
+    
     % The ganglion cell types as a cell array
     mosaic;
 end
@@ -134,10 +137,8 @@ end
 
 % Methods may be called by the subclasses, but are otherwise private
 methods (Access = protected)
-    
     spConvolve(obj);
-    fullConvolve(obj);
-    
+    timeConvolve(obj);
 end
 
 % Methods that are totally private (subclasses cannot call these)

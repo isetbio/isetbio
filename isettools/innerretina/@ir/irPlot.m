@@ -1,4 +1,4 @@
-function irPlot(obj, varargin)
+function irPlot(obj, param, varargin)
 % Plots properties of the inner retina object
 %
 % Inputs: ir object, name of property to be plotted
@@ -64,43 +64,27 @@ allowableFields = {...
     };
 
 % Special case ... please describe 'what' ...
-p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
-p.addParameter('type',[],@ischar);      % Mosaic type?
 p.addParameter('cell',[],@isnumeric);   % Vector indicating which cell
 p.addParameter('hold','off',@ischar);   % Plotting related
 p.addParameter('color','r',@ischar);
+p.addParameter('mosaicIndex',1,@isnumeric);
 
-p.parse(varargin{:}); params = p.Results;
+p.parse(param,varargin{:}); 
+param      = ieParamFormat(p.Results.param);
 color      = p.Results.color; % params.color;
-mosaicType = p.Results.type;  % params.type;
 holdVal    = p.Results.hold;
+mosaicIndex = p.Results.mosaicIndex;
+cellID      = p.Results.cell;
 
-% Parse mosaic type to allow for entering a number or a string
-if ~isempty(mosaicType) && ischar(mosaicType)
-    for cellTypeInd = 1:length(obj.mosaic)
-        if strcmp(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),ieParamFormat(mosaicType))
-            mosaicTypeInd = cellTypeInd;
-        end
-    end
-elseif ~isempty(mosaicType) && isnumeric(mosaicType)
-    mosaicTypeInd = mosaicType;
-else
-    mosaicTypeInd = [];
-end
-
-cellID = params.cell;
-
-
-if strcmpi(holdVal,'off')
-    vcNewGraphWin([],'upperleftbig');
-else
-    hold on;
+if strcmpi(holdVal,'off'), vcNewGraphWin([],'upperleftbig');
+else       hold on;
 end
 
 
 %% Set key-value pairs
-switch ieParamFormat(params.what)
+switch param
     case{'ecc'}
         %%% The temporal equivalent eccentricity of the retinal patch
         plotPatchEccentricity(obj.eyeAngle, obj.eyeRadius, obj.eyeSide, obj.temporalEquivEcc)
@@ -438,7 +422,6 @@ switch ieParamFormat(params.what)
         
     case{'couplingfilter'}
         
-        
         %%% Plot the post spike filter of each cell type
         % vcNewGraphWin([],'upperleftbig');
         % set(gcf,'position',[1000  540 893  798]);
@@ -464,43 +447,12 @@ switch ieParamFormat(params.what)
         end
         
     case{'responselinear','linear'}
-        % vcNewGraphWin([],'upperleftbig');
-        % set(gcf,'position',[1000  540 893  798]);
-        
-        timeStep = obj.timing;
-        
-        if ~isempty(mosaicTypeInd)
-            cellTypeStart = mosaicTypeInd;
-            cellTypeEnd = mosaicTypeInd;
-        else
-            cellTypeStart = 1;
-            cellTypeEnd = length(obj.mosaic);
-        end
-        for cellTypeInd = cellTypeStart:cellTypeEnd
-            if ~isempty(cellID)
-                nCells = cellID;
-                xcellstart = cellID(1); ycellstart = cellID(2);
-            else
-                nCells = size(obj.mosaic{cellTypeInd}.cellLocation);
-                xcellstart = 1; ycellstart = 1;
-            end
-            for xcell = xcellstart:nCells(1)
-                for ycell = ycellstart:nCells(2)
-                    
-                    meanVoltage{xcell,ycell} = ((obj.mosaic{cellTypeInd}.responseLinear{xcell,ycell}));
-                end
-            end
-            if length(cellTypeStart:cellTypeEnd)>1
-                subplot(ceil(length(cellTypeStart:cellTypeEnd)/2),2,cellTypeInd);
-            end
-            
-            plot(timeStep:timeStep:timeStep*length(vertcat(meanVoltage{:})),vertcat(meanVoltage{:})');
-            xlabel(sprintf('Time (msec)'),'fontsize',14);
-            ylabel(sprintf('Membrane Voltage (\\muV)'),'fontsize',14);
-            title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
-            
-        end
-        
+        % @JRG
+        % Specify this is a move
+        % Or specify an alternative for the time series plots
+
+        resp = obj.mosaic{mosaicIndex}.get('response linear');
+        ieMovie(resp);
         
     case{'nlresponse','nl','nonlinear','responsenl'}
         % vcNewGraphWin([],'upperleftbig');
@@ -691,8 +643,10 @@ switch ieParamFormat(params.what)
         cellTypeInd = 1;
         
         nCells = obj.mosaic{cellTypeInd}.get('mosaic size');
+        
         % Which of the cells.  I think there should only be one class.
         psth = obj.mosaic{cellTypeInd}.get('psth');
+        
         thisPlot = 1;
         t = size(psth,3);
         hf = vcNewGraphWin;
