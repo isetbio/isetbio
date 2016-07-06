@@ -263,6 +263,7 @@ switch(averageFlag)
         cellSpacing = sqrt(mean(mosaicAverageGLM.sd.^2));
         
         stimRows = 40; stimCols = 80;
+        hexFlag = 1;
         
 %         numberRows = floor(fovratio*yratio*stimRows/(2*cellSpacing));
 %         numberCols = floor(fovratio*yratio*stimCols/(2*cellSpacing));
@@ -271,11 +272,12 @@ switch(averageFlag)
         numberCellsPerDegree = yratio*numberCellsPerDegree0;
         numberBipolarsPerDegree = inputScale*inputSize(2)/(fov);
         numberBipolarsPerCell = (numberBipolarsPerDegree/numberCellsPerDegree);
-        if numberBipolarsPerCell < 1
+        if numberBipolarsPerCell < 2
             numberBipolarsPerCell = 1;
+            hexFlag = 0;
         end
-        numberRows = floor(inputScale*inputSize(1)/numberBipolarsPerCell);
-        numberCols = floor(inputScale*inputSize(2)/numberBipolarsPerCell);
+        numberRows = floor(1*inputSize(1)/numberBipolarsPerCell);
+        numberCols = floor(1*inputSize(2)/numberBipolarsPerCell);
         
         cellSpacingRF = size(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,1);
         numberCellsPerDegreeRF0 = (stimCols/(2*cellSpacingRF))/fov0;
@@ -323,7 +325,7 @@ switch(averageFlag)
                     obj.couplingFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Coupling.Filter;
                 end
                 
-                obj.rfDiaMagnitude = numberBipolarsPerCell;
+                obj.rfDiaMagnitude = inputScale*numberBipolarsPerCell;
                 
                 switch ieParamFormat(cellType)
                     case {'onparasolrpe','offparasolrpe','onmidgetrpe','offmidgetrpe','onsbcrpe','sbcrpe'}
@@ -352,7 +354,7 @@ switch(averageFlag)
                 end
                 
                 % obj.cellLocation{matFileCtr,1} = [(xi*2*cellSpacing + mod(yi,2)*cellSpacing) yi*2*cellSpacing];
-                obj.cellLocation{matFileCtr,1} = (1/inputScale).*[(xi*1*numberBipolarsPerCell + 1*mod(yi,2)*0.5*numberBipolarsPerCell) yi*1*numberBipolarsPerCell];
+                obj.cellLocation{matFileCtr,1} = (1/1).*[(xi*1*numberBipolarsPerCell + hexFlag*mod(yi,2)*0.5*numberBipolarsPerCell) yi*1*numberBipolarsPerCell];
                 
             end
             
