@@ -59,7 +59,7 @@ switch class(ir.mosaic{1})
     otherwise
         % Runs for rgcLNP, rgcGLM
         % Check the coupling field to decide on the coupling parameter
-        ir = irComputeSpikes(ir,'coupling',true);
+        ir = irComputeSpikes(ir,'coupling',false);
 end
 
 end

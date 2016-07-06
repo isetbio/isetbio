@@ -41,9 +41,6 @@ if coupling
     % temporal responses to impulses. The convolution of each neuron's
     % linear response with an impulse results in the original linear
     % response.
-    % glmprs.k = zeros(length(mosaic.tCenter{1}),1,2);
-    % glmprs.k(:,1,1) = mosaic.tCenter{1};
-    % glmprs.k(:,1,2) = mosaic.tSurround{1};
     
     % The 20 is the default size for the impulse response
     glmprs.k = zeros(20,nCellsTotal,nCellsTotal);
@@ -102,10 +99,8 @@ else
     % order to not do any temporal filtering internal to simGLM, we set the
     % temporal responses to impulses. The convolution of each neuron's
     % linear response with an impulse results in the original linear
-    % response.
-    % glmprs.k = zeros(length(mosaic.tCenter{1}),1,2);
-    % glmprs.k(:,1,1) = mosaic.tCenter{1};
-    % glmprs.k(:,1,2) = mosaic.tSurround{1};
+    % response. 
+    
     glmprs.k = zeros(20,nCellsTotal,nCellsTotal);
     
     for ii=1:nCellsTotal
@@ -116,28 +111,9 @@ else
     %% Set DC value
     glmprs.dc = zeros(nCells);
     
-    %% Set coupling filters
-    ihcpl = mosaicGet(mosaic, 'couplingFilter');
-    
-    hlen = length(ihcpl{1,1});
-    cellCtr = 0;
-    ih = zeros(nCellsTotal, nCellsTotal, hlen);
-    for xcell = 1:nCells(1)
-        for ycell = 1:nCells(2)
-            cellCtr = cellCtr+1;
-            
-            if isa(mosaic, 'rgcPhys')
-                % @JRG - Move out to EJ repository
-                coupledCells = mosaic.couplingMatrix{xcell,ycell};
-                ih(cellCtr,coupledCells,:) = (horzcat(mosaic.couplingFilter{1,cellCtr}{:}))';
-                ih(cellCtr,cellCtr,:) = ((mosaic.postSpikeFilter{1,cellCtr}))';
-            else
-                ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{cellCtr}, nCellsTotal,hlen);
-            end
-        end
-    end
-    
-    ih = permute(ih,[3 2 1]); % flip 2nd & 3rd dimensions
+    %% Set post spike filters
+
+    ih = ((mosaic.postSpikeFilter));
     glmprs.ih = ih;    
     
     %% Set time samples

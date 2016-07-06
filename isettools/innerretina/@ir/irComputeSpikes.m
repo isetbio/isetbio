@@ -25,22 +25,16 @@ function ir = irComputeSpikes(ir, varargin)
 %% Parse
 p = inputParser;
 p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
-p.addParameter('coupling',true,@logical);
+p.addParameter('coupling',true,@islogical);
 p.parse(ir,varargin{:});
 ir = p.Results.ir;
 coupling = p.Results.coupling;
 
 %% Required for Pillow code
 
-% To be eliminated
-
-% fps = 1/125;        % frame rate of 125 fps; usually 121 in lab but 125 for integer steps
-% normalRR = fps;
-%
-% exptRR = irGet(ir,'timing');
-% exptBinsPerStep = round(normalRR/exptRR);
-
-% @JRG - To comment
+% The refresh rate refers to the subsampling of the linear response. Each
+% sample of the linear response is broken into N bins, where N is the
+% refresh rate. This is used in simGLM.m and simGLMcpl.m from Pillow.
 global RefreshRate
 RefreshRate = 100;
 
@@ -93,14 +87,23 @@ for ii = 1:length(ir.mosaic)
         else
             % Run without the slow coupling component by looping on the
             % simGLM, not simGLMcp
+            
+            cellCtr = 0;
+            
             glmprs   = setGLMprs(mosaic,'coupling',coupling);
             
             for tt = 1:nTrials
-                cellCtr = 1;
                 for xc=1:nCells(1)
                     for yc=1:nCells(2)
+                        
+                        cellCtr = cellCtr+1;
+                        % Pull out linear response of a cell
                         thisCellInput = glminput(cellCtr,:);
-                        [responseSpikesVec, Vmem] = simGLM(glmprs, thisCellInput);
+                        
+                        % Run Pillow code
+                        [responseSpikesVec, Vmem] = simGLM(glmprs, thisCellInput');
+                        
+                        % Put the data in the outputs
                         spikeTimes{yc,xc,:,tt} = responseSpikesVec;
                         respVolts(yc,xc,:,tt)  = Vmem;
                     end

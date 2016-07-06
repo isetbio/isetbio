@@ -25,8 +25,8 @@ vcAddObject(oi); % oiWindow;
 %% Build a default cone mosaic and compute the OI
 
 cMosaic = coneMosaic;  % Create the object
-cMosaic.rows = 100; cMosaic.cols = 120;
-% cMosaic.rows = 144; cMosaic.cols = 176;
+% cMosaic.rows = 100; cMosaic.cols = 120;
+cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(500);
 cMosaic.compute(oi,'currentFlag',true);
 
