@@ -30,7 +30,11 @@ switch param
     case{'generatorfunction'}
         val = obj.generatorFunction;
     case{'numbertrials'}
-        val = obj.numberTrials;        
+        if ~isempty(obj.responseSpikes)
+            val = size(obj.responseSpikes,3);
+        else
+            val = 0;
+        end
     case{'responsevoltage'}
         val = obj.responseVoltage;
     case{'postspikefilter'}

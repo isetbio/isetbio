@@ -131,14 +131,17 @@ switch ieParamFormat(param)
         % and is given in units of microseconds.
         val = obj.dt;   % 10 usec
 
+        
     case {'lastspiketime'}
-        maxTrials = obj.numberTrials;
         nCells    = obj.get('mosaic size');
+        nTrials = obj.get('numbertrials');
+        spikes = obj.responseSpikes;
+
         val = 0;
         for ii=1:nCells(1)
             for jj = nCells(2)
-                for kk = 1:maxTrials
-                    mx = max(obj.responseSpikes{ii,jj,kk});
+                for kk = 1:nTrials
+                    mx = max(spikes{ii,jj,kk});
                     val = max(val,mx);
                 end
             end
@@ -146,8 +149,9 @@ switch ieParamFormat(param)
         
     case {'spikes'}
         % cellCtr = 0;
+        % @JRG - Needs to be updated
         dt = obj.dt;
-        maxTrials = obj.numberTrials;
+        maxTrials = obj.get('number trials');
         nCells    = obj.get('mosaic size');
         lastSpike = obj.get('last spike time');
         spikes = zeros(nCells(1),nCells(2),ceil(lastSpike));
