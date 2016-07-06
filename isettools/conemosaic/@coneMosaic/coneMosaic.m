@@ -293,7 +293,6 @@ classdef coneMosaic < hiddenHandle
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
-        
         function [absorptions, current] = compute(obj, oi, varargin)
             % coneMosaic.plot()
             %
@@ -311,32 +310,18 @@ classdef coneMosaic < hiddenHandle
             currentFlag = p.Results.currentFlag;
             newNoise = p.Results.newNoise;
             
-            % Deal with eye movements
-            % prepare parameters for eye movement
-            if isempty(obj.emPositions), obj.emPositions = [0 0]; end
-            mask = zeros(obj.rows, obj.cols, 3); % locations for cones
-            for ii = 2 : 4 % L, M, S
-                mask(:,:,ii-1) = double(obj.pattern == ii);
-            end
-            
             % extend sensor size
-            xpos = obj.emPositions(:, 1); ypos = obj.emPositions(:, 2);
-            padRows = max(abs(ypos)); padCols = max(abs(xpos));
+            padRows = max(abs(obj.emPositions(:, 2)));
+            padCols = max(abs(obj.emPositions(:, 1)));
+            
             cpObj = obj.copy();
             cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
             
             % compute full LMS noise free absorptions
             LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
-            absorptions = zeros(obj.rows,obj.cols,size(obj.emPositions,1));
             
-            for ii = 1 : size(obj.emPositions, 1)
-                % select out the subframe given the eye position
-                cropLMS = LMS(1+padRows+ypos(ii):end-padRows+ypos(ii), ...
-                    1+padCols-xpos(ii):end-padCols-xpos(ii), :);
-                
-                % sample by conetype
-                absorptions(:, :, ii) = sum(cropLMS .* mask, 3);
-            end
+            % deal with eye movements
+            absorptions = obj.applyEMPath(LMS);
             
             % Add photon noise to the whole volume
             if obj.noiseFlag
@@ -423,8 +408,7 @@ classdef coneMosaic < hiddenHandle
         end
     end
     
-    % Methods that are totally private (subclasses cannot call these)
-    methods (Access = private)
+    methods (Access = public, Hidden)
         % compute function for single frame
         function absorptions = computeSingleFrame(obj, oi, varargin)
             % This function computes mean expected photon absorptions for
@@ -485,6 +469,53 @@ classdef coneMosaic < hiddenHandle
             % compute expected cone absorptions
             absorptions=absDensity*obj.pigment.pdArea*obj.integrationTime;
         end
+        
+        function absorptions = applyEMPath(obj, LMS, varargin)
+            % apply eye movement path and pick out corresponding cone type
+            %    absorptions = applyEMPath(obj, LMS, emPath, varargin)
+            %
+            % Inputs:
+            %   obj     - cone mosaic object
+            %   LMS     - full LMS noise free absorptions
+            %
+            % Outputs:
+            %   absorptions - cone absorptions with eye movements
+            %
+            
+            % parse inputs
+            p = inputParser;
+            p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+            p.addRequired('LMS', @isnumeric);
+            p.addParameter('padRows', [], @isnumeric);
+            p.addParameter('padCols', [], @isnumeric);
+            
+            p.parse(obj, LMS, varargin{:});
+            padRows = p.Results.padRows; padCols = p.Results.padCols;
+            
+            xpos = obj.emPositions(:, 1); ypos = obj.emPositions(:, 2);
+            if isempty(padRows), padRows = max(abs(ypos)); end
+            if isempty(padCols), padCols = max(abs(xpos)); end
+            
+            % prepare parameters for cone type mask
+            mask = zeros(obj.rows, obj.cols, 3); % locations for cones
+            for ii = 2 : 4 % L, M, S
+                mask(:,:,ii-1) = double(obj.pattern == ii);
+            end
+            
+            % select out the subframe given the eye position and cone type
+            absorptions = zeros(obj.rows,obj.cols,size(obj.emPositions,1));
+            for ii = 1 : size(obj.emPositions, 1)
+                % sample by position
+                cropLMS = LMS(1+padRows+ypos(ii):end-padRows+ypos(ii), ...
+                    1+padCols-xpos(ii):end-padCols-xpos(ii), :);
+                
+                % sample by conetype
+                absorptions(:, :, ii) = sum(cropLMS .* mask, 3);
+            end
+        end
+    end
+    
+    methods (Access = private)
         
         % callback function for listeners
         % When you set the cone, it sets the macular, and vice versa.
