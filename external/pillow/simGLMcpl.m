@@ -92,6 +92,8 @@ while jbin <= rlen
             icell = spcells(ic);
             nsp(icell) = nsp(icell)+1;
             tsp{icell}(nsp(icell),1) = ispk*dt;
+            
+            % Post Spike Calculation
             if ~isempty(iiPostSpk)
                 Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
                 if nargout == 3  % Record post-spike current
@@ -99,6 +101,7 @@ while jbin <= rlen
                 end
             end
             rprev(icell) = 0;  % reset this cell's integral
+            
             % CHANGED FOR ISETBIO to reduce toolbox dependence
             tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell
         end

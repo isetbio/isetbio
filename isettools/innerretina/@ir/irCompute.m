@@ -58,7 +58,8 @@ switch class(ir.mosaic{1})
         disp('No spikes computed for linear RGC mosaic');   
     otherwise
         % Runs for rgcLNP, rgcGLM
-        ir = irComputeSpikes(ir);
+        % Check the coupling field to decide on the coupling parameter
+        ir = irComputeSpikes(ir,'coupling',true);
 end
 
 end
