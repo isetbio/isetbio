@@ -25,6 +25,7 @@ function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 %                            (space x wavelength)
 %     {'irradiance fft'}    - 2D FFT of radiance at some wavelength
 %     {'irradiance image grid'} - Show spatial grid on irradiance image
+%     {'irradiance image no grid'} - Show irradiance image without a grid
 %     {'irradiance waveband image'} - Irradiance image within a band
 %
 %    Illuminance
@@ -305,6 +306,32 @@ switch pType
         set(gca,'xcolor',[.5 .5 .5]); set(gca,'ycolor',[.5 .5 .5]);
         set(gca,'xtick',xGrid,'ytick',yGrid); grid on
         set(g,'Name',sprintf('Irradiance with grid'));
+        
+    case {'irradianceimagenogrid'}
+        % oiPlot(oi,'irradianceImage',sampleSpacing-um);
+        irrad   = oiGet(oi,'photons');
+        wave    = oiGet(oi,'wave');
+        sz      = oiGet(oi,'size');
+        spacing = oiGet(oi,'sampleSpacing','um');
+        
+        % This is probably now a spatial support oiGet ...
+        xCoords = spacing(2) * (1:sz(2)); xCoords = xCoords - mean(xCoords);
+        yCoords = spacing(1) * (1:sz(1)); yCoords = yCoords - mean(yCoords);
+        
+        nWave = oiGet(oi,'nwave');
+        wList = oiGet(oi,'wavelength');
+        [row,col] = size(irrad);
+        if nWave > 1
+            imageSPD(irrad,wave,[],row,col,1,xCoords,yCoords);
+        else
+            imageSPD(irrad,wList,[],row,col,1,xCoords,yCoords);
+        end
+        xlabel('Position (um)'); ylabel('Position (um)');
+        grid off
+        
+        udata.irrad = irrad;
+        udata.xCoords = xCoords;
+        udata.yCoords = yCoords;
         
         % Illuminance and chromaticity
     case {'illuminanceroi'}
