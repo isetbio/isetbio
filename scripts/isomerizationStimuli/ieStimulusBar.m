@@ -98,6 +98,8 @@ if isempty(nSteps),
 end
 nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
 
+cMosaic = coneMosaic;
+
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
@@ -119,13 +121,14 @@ for t = 1 : nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
-
+    % absorptions = sensorCompute(absorptions, oi);
+    cMosaic.compute(oi);
+    
     if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+        absorptions = zeros([cMosaic.mosaicSize, params.nSteps]);
     end
     
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
+    absorptions(:,:,t) = cMosaic.absorptions;
     
     % vcAddObject(scene); sceneWindow
 end
@@ -133,7 +136,7 @@ end
 if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
-absorptions = sensorSet(absorptions, 'volts', volts);
+% absorptions = sensorSet(absorptions, 'volts', absorptions);
 % vcAddObject(sensor); sensorWindow;
 
 % These are both the results and the objects needed to recreate this
