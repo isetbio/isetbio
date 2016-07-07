@@ -100,7 +100,7 @@ methods
             case{'onDiffuse','offDiffuse'}
                 % ecc = 0 mm yields 2x2 cone input to bp
                 % ecc = 30 mm yields 5x5 cone input to bp
-                sizeScale = floor(2 + 3/30*(p.Results.ecc)); 
+                sizeScale = floor(2 + 3/10*(p.Results.ecc)); 
                 
                 bpSizeCenter = sizeScale;
                 bpSizeSurround = sizeScale;
@@ -113,7 +113,7 @@ methods
                 
                 % ecc = 0 mm yields 1x1 cone input to bp
                 % ecc = 30 mm yields 3x3 cone input to bp
-                sizeScale = floor(1 + (2/30)*(p.Results.ecc)); 
+                sizeScale = floor(1 + (2/10)*(p.Results.ecc)); 
                 
                 bpSizeCenter = sizeScale;
                 bpSizeSurround = sizeScale;

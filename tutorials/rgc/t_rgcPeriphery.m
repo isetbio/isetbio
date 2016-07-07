@@ -26,7 +26,7 @@ clear
 % White noise (WN) or natural scenes with eye movements (NSEM)
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
-cellTypeI     = 4;       % Choose On Parasol (1) or Off Parasol (2)
+cellTypeI     = 1;       % Choose On Parasol (1) or Off Parasol (2)
 stimulusTestI = 1;       % Choose WN test stimulus (1) 
     
 % Switch on the conditions indices
@@ -133,7 +133,7 @@ paramsStim.expTime = 1/125;%0.001; % sec
 % theta = 330 degs;
 % side = 'left';
 paramsStim.fov = 8;
-paramsStim.radius = 36/3;
+paramsStim.radius = 36*0.3;
 paramsStim.theta = 330;
 paramsStim.side = 'left';
 

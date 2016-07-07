@@ -12,17 +12,21 @@ spacing = irGet(ir,'spacing');
 
 % 
 cone_mosaic = sensor.human.coneType;
-[xg yg] = meshgrid([1:size(cone_mosaic,1),1:size(cone_mosaic,1)]);
-xg2 = xg(1:size(cone_mosaic,1),1:size(cone_mosaic,2)); yg2 = yg(1:size(cone_mosaic,1),1:size(cone_mosaic,2));
-scale1 = size(cone_mosaic,1)/spacing;%1;%size(cone_mosaic,1)/80; 
-scale2 = size(cone_mosaic,2)/spacing;%1;%size(cone_mosaic,2)/40; 
-% figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
-% figure; 
-hold on;
-scatter(yg2(:)./scale1,xg2(:)./scale2,40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+
+scale2 = size(cone_mosaic,2)/spacing;%1;%size(cone_mosaic,2)/40;
+scale1 = scale2;
+  
+% [xg yg] = meshgrid([1:size(cone_mosaic,1),1:size(cone_mosaic,1)]);
+% xg2 = xg(1:size(cone_mosaic,1),1:size(cone_mosaic,2)); yg2 = yg(1:size(cone_mosaic,1),1:size(cone_mosaic,2));
+% 
+% % figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+% % figure; 
+% hold on;
+% scatter(yg2(:)./scale1,xg2(:)./scale2,40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
 
 % figure; 
 % imagesc(4-cone_mosaic); colormap jet;
+imagesc((1:size(cone_mosaic,2))./scale1, (1:size(cone_mosaic,1))./scale1, 4-cone_mosaic); colormap jet;
 
     % circle samples
 bpRad = 1;%size(bp.sRFcenter,1);
