@@ -31,8 +31,8 @@ classdef coneMosaic < hiddenHandle
     end
     
     properties (GetAccess=public, SetAccess=public) % public temporarilly
-        absorptions;      % The spatial array of cone absorptions over time
-        current;          % The spatial array of photocurrent over time
+        absorptions;  % The spatial array of cone absorptions
+        current;      % The spatial array of photocurrent over time
     end
     
     properties (Dependent)
@@ -256,6 +256,14 @@ classdef coneMosaic < hiddenHandle
             val = obj.spatialDensity_;
         end
         
+        function val = get.absorptions(obj)
+            val = double(obj.absorptions);
+        end
+        
+        function val = get.current(obj)
+            val = double(obj.current);
+        end
+        
         % set method for class properties
         function set.spatialDensity(obj, val)
             obj.spatialDensity_ = val;
@@ -267,6 +275,14 @@ classdef coneMosaic < hiddenHandle
         function set.wave(obj, val)
             obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
+        end
+        
+        function set.absorptions(obj, val)
+            obj.absorptions = single(val);
+        end
+        
+        function set.current(obj, val)
+            obj.current = single(val);
         end
         
         function set.fov(obj, val) % set field of view
