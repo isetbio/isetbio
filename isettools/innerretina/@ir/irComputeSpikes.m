@@ -1,15 +1,15 @@
 function ir = irComputeSpikes(ir, varargin)
-% Generate spikes from the linear response 
+% Generate spikes from the linear response
 %
 %   ir = irComputeSpikes(ir, varargin)
 %
 % Convert from the linear response to the spiking output for several types
 % of rgc mosaics.  Works for rgcGLM and rgcLNP models.
 %
-% Inputs: 
+% Inputs:
 %   inner retina object
 %
-% Outputs: 
+% Outputs:
 %  The spikes responses are attached to the rgc mosaics
 %
 % Example:
@@ -21,17 +21,20 @@ function ir = irComputeSpikes(ir, varargin)
 %
 % JRG (c) isetbio
 
+
+%% Parse
+p = inputParser;
+p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
+p.addParameter('coupling',true,@islogical);
+p.parse(ir,varargin{:});
+ir = p.Results.ir;
+coupling = p.Results.coupling;
+
 %% Required for Pillow code
 
-% To be eliminated
-
-% fps = 1/125;        % frame rate of 125 fps; usually 121 in lab but 125 for integer steps
-% normalRR = fps;
-% 
-% exptRR = irGet(ir,'timing');
-% exptBinsPerStep = round(normalRR/exptRR);
-
-% @JRG - To comment
+% The refresh rate refers to the subsampling of the linear response. Each
+% sample of the linear response is broken into N bins, where N is the
+% refresh rate. This is used in simGLM.m and simGLMcpl.m from Pillow.
 global RefreshRate
 RefreshRate = 100;
 
@@ -50,47 +53,77 @@ for ii = 1:length(ir.mosaic)
         spikeTimes = cell([nCells,nTrials]);
         respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nTrials);
         
-        % Call the Pillow code to generate spikes for the whole mosaic
-        % using the coupled GLM
         glminput = RGB2XWFormat(responseLinear);
-        glmprs   = setGLMprs(mosaic);
         
-        if ieSessionGet('wait bar'), wbar = waitbar(0,sprintf('Trial 1  of %d',nTrials)); end
-        for tt = 1:nTrials
-
-            % Run Pillow code
-            if ieSessionGet('wait bar')
-                wbar = waitbar(0,sprintf('Coupled GLM (Trial %d of %d)',tt,nTrials)); 
-            end
-            [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+        if coupling
             
-            % Put the data in the outputs
-            cellCtr = 0;
-            for xc = 1:nCells(1)
-                for yc = 1:nCells(2)
-                    cellCtr = cellCtr+1;
-                    spikeTimes{yc,xc,:,tt} = responseSpikesVec{1,cellCtr};
-                    respVolts(yc,xc,:,tt)  = Vmem(:,cellCtr);
+            % Call the Pillow code to generate spikes for the whole mosaic
+            % using the coupled GLM
+            glmprs   = setGLMprs(mosaic,'coupling',coupling);
+            
+            if ieSessionGet('wait bar'), wbar = waitbar(0,sprintf('Trial 1  of %d',nTrials)); end
+            for tt = 1:nTrials
+                
+                % Run Pillow code
+                if ieSessionGet('wait bar')
+                    wbar = waitbar(0,sprintf('Coupled GLM (Trial %d of %d)',tt,nTrials));
+                end
+                [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
+                
+                % Put the data in the outputs
+                cellCtr = 0;
+                for xc = 1:nCells(1)
+                    for yc = 1:nCells(2)
+                        cellCtr = cellCtr+1;
+                        spikeTimes{yc,xc,:,tt} = responseSpikesVec{1,cellCtr};
+                        respVolts(yc,xc,:,tt)  = Vmem(:,cellCtr);
+                    end
+                end
+                if ieSessionGet('wait bar')
+                    waitbar(tt/nTrials,wbar,sprintf('Finished trial %d of %d',tt,nTrials));
                 end
             end
-            if ieSessionGet('wait bar')
-                waitbar(tt/nTrials,wbar,sprintf('Finished trial %d of %d',tt,nTrials)); 
+            if ieSessionGet('wait bar'), delete(wbar); end
+        else
+            % Run without the slow coupling component by looping on the
+            % simGLM, not simGLMcp
+            
+            cellCtr = 0;
+            
+            glmprs   = setGLMprs(mosaic,'coupling',coupling);
+            
+            for tt = 1:nTrials
+                for xc=1:nCells(1)
+                    for yc=1:nCells(2)
+                        
+                        cellCtr = cellCtr+1;
+                        % Pull out linear response of a cell
+                        thisCellInput = glminput(cellCtr,:);
+                        
+                        % Run Pillow code
+                        [responseSpikesVec, Vmem] = simGLM(glmprs, thisCellInput');
+                        
+                        % Put the data in the outputs
+                        spikeTimes{yc,xc,:,tt} = responseSpikesVec;
+                        respVolts(yc,xc,:,tt)  = Vmem;
+                    end
+                end
             end
         end
-        if ieSessionGet('wait bar'), delete(wbar); end
+    end    
+end
 
-        % Set mosaic property
-        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
-        
-        % The nonlinear voltage which is only set in the GLM model
-        if isa(ir.mosaic{ii},'rgcGLM')
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
-        end
-        
-    end
+% Set mosaic property
+ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
+
+% The nonlinear voltage which is only set in the GLM model
+if isa(ir.mosaic{ii},'rgcGLM')
+    ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
 end
 
 end
+
+
 
 
 
