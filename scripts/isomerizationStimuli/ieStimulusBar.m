@@ -26,6 +26,7 @@ addParameter(p,'col',            64,    @isnumeric);
 addParameter(p,'fov',            0.6,    @isnumeric);  
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'timeInterval',   0.005, @isnumeric);
+addParameter(p,'display',   'LCD-Apple',@ischar);
 
 % Retinal patch parameters
 addParameter(p,'radius',            0,  @isnumeric);
@@ -41,7 +42,7 @@ wFlag = ieSessionGet('wait bar');
 %% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
-display = displayCreate('CRT-Sony-HorwitzLab');
+display = displayCreate(params.display);
 
 % Set up scene, oi and sensor
 scene = sceneCreate();
