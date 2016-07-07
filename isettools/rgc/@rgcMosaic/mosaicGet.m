@@ -139,10 +139,10 @@ switch ieParamFormat(param)
 
         val = 0;
         for ii=1:nCells(1)
-            for jj = nCells(2)
+            for jj = 1:nCells(2)
                 for kk = 1:nTrials
                     mx = max(spikes{ii,jj,kk});
-                    val = max(val,mx);
+                    val = max([val,mx]);
                 end
             end
         end

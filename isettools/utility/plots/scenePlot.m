@@ -22,6 +22,7 @@ function [udata, g] = scenePlot(scene,pType,roiLocs,varargin)
 %     {'radiance energy roi'}      - mean energy radiance of roi
 %     {'radiance photons roi'}     - mean quantal radiance of roi
 %     {'radiance image grid'}      - Render radiance image
+%     {'radiance image nogrid'}    - Render radiance image without the grid
 %     {'radiance waveband image'}  - Render waveband range of radiance image
 %
 %    Reflectance
@@ -326,6 +327,7 @@ switch lower(pType)
         xlabel('Cycles/image'); ylabel('Cycles/image'); zlabel('Amplitude');
         str = sprintf('Amplitude spectrum at %.0f nm', selectedWave);
         title(str);
+        
     case {'radiancefftimage'}
         % Spatial frequency amplitude spectrum at a single wavelength.
         % Axis range could be better.
@@ -384,6 +386,26 @@ switch lower(pType)
 
         set(gca,'xcolor',[.5 .5 .5]); set(gca,'ycolor',[.5 .5 .5]);
         set(gca,'xtick',xGrid,'ytick',yGrid); grid on
+        
+        case {'radianceimagenogrid'}
+        % scene = vcGetObject('SCENE'); 
+        % scenePlot(scene,'radianceimagenogrid')
+        
+        rad  = sceneGet(scene,'photons');
+        wave = sceneGet(scene,'wave');
+        sz   = sceneGet(scene,'size');      % Row and col samples
+        
+        spacing = sceneGet(scene,'sampleSpacing','mm'); % Spacing is mm per samp here
+        xCoords = spacing(2) * (1:sz(2)); xCoords = xCoords - mean(xCoords);
+        yCoords = spacing(1) * (1:sz(1)); yCoords = yCoords - mean(yCoords);
+                     
+        imageSPD(rad,wave,1,sz(1),sz(2),1,xCoords,yCoords);
+        xlabel('Position (mm)'); ylabel('Position (mm)');
+        
+        udata.rad = rad;
+        udata.xCoords = xCoords;
+        udata.yCoords = yCoords;
+        grid off;
 
     case {'radiancewavebandimage'}
         % scene = vcGetObject('SCENE'); scenePlot(scene,'wavebandimage')
