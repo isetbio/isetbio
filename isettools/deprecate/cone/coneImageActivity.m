@@ -1,4 +1,4 @@
-function mov = coneImageActivity(cones,varargin)
+function [mov, vObj] = coneImageActivity(cones,varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
 %   mov = coneImageActivity(cones,varargin)
@@ -18,7 +18,7 @@ function mov = coneImageActivity(cones,varargin)
 %  (true) or not (false).
 % 
 % Output:
-%    mov:  A (row,col,3, nFrames matrix
+%    mov:  A (row,col,3,nFrames) matrix
 %
 % Example:
 %   cones = sensorCreate; ...

@@ -31,7 +31,7 @@ function DAC = ieLUTLinear(RGB, invGammaTable)
 % Example:
 %   d = displayCreate('LCD-Apple');
 %   rgb = rand(10,10,3);
-%   foo = ieLUTLinear(rgb, displayGet(d, 'inverse gamma');
+%   foo = ieLUTLinear(rgb, displayGet(d, 'inverse gamma'));
 %   vcNewGraphWin; plot(foo(:),rgb(:),'.')
 %
 % (c) Imageval Consulting, LLC 2013

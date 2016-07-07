@@ -15,7 +15,7 @@ function [tsp,Vmem,Ispk] = simGLMcpl(glmprs,Stim)
 % --------------- Check Inputs ----------------------------------
 global RefreshRate;
 
-ncells = size(glmprs.k,3);
+ncells = size(glmprs.k, 3);
 nbinsPerEval = 100;  % Default number of bins to update for each spike
 dt = glmprs.dt;
 % Check that dt evenly divides 1
@@ -47,19 +47,19 @@ Vstm = Vstm + repmat(glmprs.dc(:)',slen+2,1);
 % -------------- Compute interpolated h current ----------------------
 ih = glmprs.ih;
 if ~isempty(ih)
-    ihthi = [dt:dt:max(glmprs.iht)]';  % time points for sampling
+    ihthi = (dt:dt:max(glmprs.iht))';  % time points for sampling
     ihhi = interp1(glmprs.iht, ih, ihthi, 'linear', 0);
     hlen = size(ihhi,1);
     ihhi = permute(ihhi,[1 3 2]); % flip 2nd & 3rd dimensions
 else % No ih current
-    hlen=1; ihhi=zeros(1,ncells); ihthi = dt;
+    hlen=1; ihhi=zeros(1,ncells); % ihthi = dt;
     if ~isempty(glmprs.iht) 
         warning('No post-spike kernel supplied but iht nonempty!!\n');
     end
 end
 
 % -------------  Static nonlinearity & spiking -------------------
-Vmem = interp1([0:slen+1]',Vstm,[.5+dt:dt:slen+.5]', 'linear');
+Vmem = interp1((0:slen+1)',Vstm,(.5+dt:dt:slen+.5)', 'linear');
 if nargout > 2
     Ispk = Vmem*0;
 end
@@ -92,6 +92,8 @@ while jbin <= rlen
             icell = spcells(ic);
             nsp(icell) = nsp(icell)+1;
             tsp{icell}(nsp(icell),1) = ispk*dt;
+            
+            % Post Spike Calculation
             if ~isempty(iiPostSpk)
                 Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
                 if nargout == 3  % Record post-spike current
@@ -99,6 +101,7 @@ while jbin <= rlen
                 end
             end
             rprev(icell) = 0;  % reset this cell's integral
+            
             % CHANGED FOR ISETBIO to reduce toolbox dependence
             tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell
         end

@@ -20,17 +20,18 @@ function iStim = ieStimulusBar(varargin)
 p = inputParser;
 addParameter(p,'barWidth',       5,     @isnumeric);
 addParameter(p,'meanLuminance',  200,   @isnumeric);
-addParameter(p,'nSteps',         [],    @isnumeric);
+addParameter(p,'nSteps',         inf,   @isnumeric); % determined by cols
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
-addParameter(p,'fov',            0.6,    @isnumeric);  
+addParameter(p,'fov',            0.6,   @isnumeric);  
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'timeInterval',   0.005, @isnumeric);
+addParameter(p,'display',   'LCD-Apple',@ischar);
 
 % Retinal patch parameters
-addParameter(p,'radius',            0,  @isnumeric);
-addParameter(p,'theta',            0,  @isnumeric);
-addParameter(p,'side',            'left',  @ischar);
+addParameter(p,'radius',         0,  @isnumeric);
+addParameter(p,'theta',          0,  @isnumeric);
+addParameter(p,'side',           'left',  @ischar);
 
 p.parse(varargin{:});
 params = p.Results;
@@ -41,7 +42,7 @@ wFlag = ieSessionGet('wait bar');
 %% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
-display = displayCreate('CRT-Sony-HorwitzLab');
+display = displayCreate(params.display);
 
 % Set up scene, oi and sensor
 scene = sceneCreate();
@@ -56,35 +57,21 @@ oi  = oiCreate('wvf human');
 % absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
 % absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
+% compute cone packing density
+fLength = oiGet(oi, 'focal length');
+eccMM = 2 * tand(params.radius/2) * fLength * 1e3;
+coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
+coneSz = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 
-if params.radius == 0
-    
-    absorptions = sensorCreate('human');
+cm = coneMosaic;
+cm.pigment.width = coneSz(1); cm.pigment.height = coneSz(2);
 
-else
-    
-    coneP = coneCreate; % The cone properties properties
-    retinalRadiusDegrees = params.radius;
-    retinalPolarDegrees  = params.theta;
-    whichEye             = params.side;
-    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
-    absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
-end
-
-absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
-
-% Set aspect ratio
-% At this point, we have the right cone density and the right number in
-% cols, now we just need to set the rows to have the same aspect ratio as
-% the input movie.
-sceneSize = sceneGet(scene,'size');
-sensorSize = sensorGet(absorptions,'size');
-aspectRatioMovie = sceneSize(1)/sceneSize(2);
-absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
-
+% set size to field of view
+sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
+sceneDist = sceneGet(scene, 'distance');
+cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
 %% Compute a dynamic set of cone absorptions for moving bar
-
 fprintf('Computing cone isomerizations:    \n');
 
 % ieSessionSet('wait bar',true);
@@ -92,17 +79,14 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
 % Loop through frames to build movie
 % The number of steps must be smaller than the width of the scene
-nSteps = params.nSteps;
-if isempty(nSteps), 
-    nSteps = sceneGet(scene,'cols') - params.barWidth; 
-end
-nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
+nSteps = min(sceneGet(scene,'cols') - params.barWidth, params.nSteps);
 
+absorptions = zeros([cm.mosaicSize nSteps]);
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
-    barMovie(:,t:(t+params.barWidth-1),:) = 1;          % White bar
+    barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar
 
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
@@ -119,31 +103,22 @@ for t = 1 : nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
-
-    if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-    end
-    
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
-    
-    % vcAddObject(scene); sceneWindow
+    absorptions(:,:,t) = cm.compute(oi, 'currentFlag', false);
 end
 
 if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
-absorptions = sensorSet(absorptions, 'volts', volts);
-% vcAddObject(sensor); sensorWindow;
+cm.emPositions = zeros(nSteps, 2);
+cm.absorptions = absorptions;
 
 % These are both the results and the objects needed to recreate this
 % script. So calling isomerizationBar(iStim) should produce the same
 % results.
-
 iStim.params  = params;
 iStim.display = display;
 iStim.scene   = scene;
 iStim.sceneRGB = sceneRGB;
-iStim.oi      = oi;
-iStim.absorptions  = absorptions;
+iStim.oi       = oi;
+iStim.cMosaic  = cm;
 end

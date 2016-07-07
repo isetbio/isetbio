@@ -1,5 +1,5 @@
 classdef rgcGLM < rgcMosaic
-% rgcMosaic cell type with a GLM (coupled-nonlinear) computational model
+% rgcMosaic using a GLM (coupled-nonlinear) computational model
 %
 % The coupled GLM model is published in Pillow, Shlens, Paninski, Sher,
 % Litke, Chichilnisky & Simoncelli, Nature (2008).% The computational model
@@ -24,10 +24,13 @@ classdef rgcGLM < rgcMosaic
 
 %% Properties 
     % Public, read-only properties.
-    properties (SetAccess = private, GetAccess = public)
+    
+    properties (SetAccess = public, GetAccess = public)
+        % Parameter to specify the time bins Pillow uses for coupling and
+        % post spike filters (10 ms default)
+        dt = 0.01;
     end
-           
-    % Protected properties.
+    
     properties (SetAccess = private, GetAccess = public)
 
         % The linear voltage is computed from the properties of the parent
@@ -41,21 +44,9 @@ classdef rgcGLM < rgcMosaic
         % is an exponential.
         generatorFunction;
         
-        % Parameter to specify the time bins Pillow uses for coupling and
-        % post spike filters (10 ms default)
-        dt = 0.01;
-        
         % The nonlinear voltage response after application of the generator
         % function and the spike coupling responses is represented here
         responseVoltage;
-        
-        % The spikes are computed from the response voltage
-        responseSpikes;
-
-        % nlResponse;   Delete me
-        
-        % We typically run a single trial
-        numberTrials = 10;
         
         % These hold the parameters used in the computation.
         % This is the response after a spike
@@ -127,7 +118,7 @@ classdef rgcGLM < rgcMosaic
     methods (Access = public)
         
         % Overloaded display function to order properties as we want to
-        function disp(obj)
+        function disp(obj) %#ok<MANU>
             
             % Get the string from the builtin disp and then rearrange
             s1 =evalc('builtin(''disp'', obj'')');
@@ -136,13 +127,14 @@ classdef rgcGLM < rgcMosaic
             newlineChars = strfind(s1,sprintf('\n'));
             
             % Pull out lines with properties and values
+            propertystr = cell(length(newlineChars),1);
             for nlInd = 2:length(newlineChars)
                 propertystr{nlInd} = s1(newlineChars(nlInd-1)+1:newlineChars(nlInd)-1);
             end
             
             % Display the reordered property list
             % Display the first line with class type
-            disp(sprintf('\n'));
+            fprintf('\n');
             disp(s1(1:newlineChars(1)))
             % Order determined through trial and error
             propertyOrder = [11:20 3:4 7:10 5:6];

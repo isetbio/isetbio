@@ -75,6 +75,12 @@ switch lower(oiGet(oi,'diffuserMethod'))
         
 end
 
+% Apply lens pigment tranmittance
+lens = oiGet(oi, 'lens');
+p = oiGet(oi, 'photons');
+transmittance = reshape(lens.transmittance, 1, 1, []);
+oi = oiSet(oi, 'photons', bsxfun(@times, p, transmittance));
+
 % Compute image illuminance (in lux)
 if showWbar, waitbar(0.9,wBar,'OI: Calculating illuminance'); end
 oi = oiSet(oi,'illuminance',oiCalculateIlluminance(oi));

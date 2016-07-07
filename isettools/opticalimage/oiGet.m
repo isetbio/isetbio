@@ -18,11 +18,15 @@ function val = oiGet(oi,parm,varargin)
 %  unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
 %  'um', 'nm'.  Default is meters ('m').
 %
-%  The optics data structure is stored in the oi as oi.optics.  There is a
-%  set of opticsGet/Set/Create calls.  It is possible, however, to retrieve
-%  the optics parameters by a call via oiGet by specifying optics in the
-%  call, as in
+%  The optics data structure is stored in the oi as oi.optics. It is
+%  possible to retrieve the optics parameters as
+%
 %      v = oiGet(oi,'optics fnumber');
+%  
+%  The lens data structure is stored as oi.optics.lens.  You can query the
+%  lens properties using
+%  
+%     v = oiGet(oi,'lens property');
 %
 %  To see the full range of optics parameters, use doc opticsGet.
 %
@@ -36,6 +40,7 @@ function val = oiGet(oi,parm,varargin)
 %    oiGet(oi,'distPerSamp','mm')
 %    oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
 %    oiGet(oi,'optics off axis method')
+%    oiGet(oi,'lens');   % Lens object
 %
 %  General properties
 %      {'name'}           - optical image name
@@ -145,6 +150,12 @@ switch oType
         else     val = opticsGet(optics,parm,varargin{1});
         end
         return;
+    case 'lens'
+        lens = oi.optics.lens;
+        if isempty(parm), val = lens;
+        else val = lens.get(parm,varargin{:});
+        end
+        return;
     otherwise
 end
 
@@ -187,6 +198,10 @@ switch parm
         end
     case 'size'
         val = [oiGet(oi,'rows'), oiGet(oi,'cols')];
+    case {'lens', 'lenspigment'}
+        if checkfields(oi, 'optics', 'lens')
+            val = oi.optics.lens;
+        end
     case {'samplespacing'}
         % Sample spacing, both height and width
         % oiGet(oi,'sample spacing','mm')
@@ -455,10 +470,12 @@ switch parm
         % wonderful day, I returning the optics spectrum if there is no oi
         % spectrum.
         % Always a column vector, even if people stick it in the wrong way.
-        if isfield(oi,'spectrum'), 
+        if checkfields(oi,'spectrum', 'wave'), 
             val = oi.spectrum.wave(:); 
-        elseif checkfields(oi,'optics','spectrum'), 
+        elseif checkfields(oi,'optics','spectrum', 'wave'), 
             val = oi.optics.spectrum.wave(:);
+        elseif checkfields(oi, 'optics', 'OTF', 'wave')
+            val = oi.optics.OTF.wave(:);
         elseif checkfields(oi,'optics','rayTrace','psf','wavelength')
             val = oi.optics.rayTrace.psf.wavelength(:);
         end

@@ -43,8 +43,13 @@ properties
 end
 
 % Public, read-only properties.
-properties (SetAccess = private, GetAccess = public)
+properties (SetAccess = public, GetAccess = public)
     
+    % We typically run a single trial
+    numberTrials = 1;
+    
+    % The ganglion cell types as a cell array
+    mosaic;
 end
 
 % Protected properties; Methods of the parent class and all of its
@@ -67,8 +72,6 @@ properties (SetAccess = protected)
     eyeAngle;              % and angle (degrees)
     temporalEquivEcc;      % Temporal equivalent eccentricity
     
-    % The ganglion cell types as a cell array
-    mosaic;
 end
 
 % Private properties. Only methods of the parent class can set these
@@ -101,8 +104,8 @@ methods
         obj = irCompute(obj,  outerSegment, varargin{:});
     end
     
-    function obj = computeContinuous(obj,varargin)
-        obj = irComputeContinuous(obj,varargin{:});
+    function obj = computeLinearSTSeparable(obj,varargin)
+        obj = irComputeLinearSTSeparable(obj,varargin{:});
     end
     
     function obj = computeSpikes(obj, varargin)
@@ -134,10 +137,8 @@ end
 
 % Methods may be called by the subclasses, but are otherwise private
 methods (Access = protected)
-    
     spConvolve(obj);
-    fullConvolve(obj);
-    
+    timeConvolve(obj);
 end
 
 % Methods that are totally private (subclasses cannot call these)

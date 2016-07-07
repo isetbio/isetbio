@@ -56,7 +56,6 @@ scene = sceneSet(scene,'fov',fov);
 vcAddObject(scene);
 sceneWindow;
 
-
 %%  Render the scene through human optics onto the cone photoreceptor mosaic
 %
 % Human optics

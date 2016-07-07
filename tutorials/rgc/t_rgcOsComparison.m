@@ -12,7 +12,6 @@
 ieInit
 
 %% Movie of the cone absorptions 
-
 % Get data from isetbio archiva server
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/istim');

@@ -174,11 +174,8 @@ switch param
     case {'sensorguidata','sensorwindowhandle','sensorimagehandle','sensorhandle','isahandle','sensorhandles','isahandles','sensorwindowhandles'}
         v = ieSessionGet('sensorfigure');
         if ~isempty(v), val = guihandles(v); end
-    case {'ipguidata','vciguidata','vciwindowhandle','vcimagehandle','vcimagehandles','processorwindowhandles','processorhandles','processorhandle','processorimagehandle'}
-        v = ieSessionGet('vcimagefigure');
-        if ~isempty(v), val = guihandles(v); end
-    case {'metricguidata','metricshandle','metricshandles','metricswindowhandles','metricswindowhandle'}
-        v = ieSessionGet('vcimagefigure');
+    case {'conemosaicguidata'}
+        v = ieSessionGet('conemosaicwindow');
         if ~isempty(v), val = guihandles(v); end
         
         % Figure numbers of the various windows.  I am not sure these are
@@ -199,63 +196,9 @@ switch param
         if checkfields(vcSESSION,'GUI','vcSensImgWindow')
             val = vcSESSION.GUI.vcSensImgWindow.hObject;
         end
-        
-    case {'vcimagefigure','vcimagefigures','vcimagewindow'}
-        if checkfields(vcSESSION,'GUI','vcImageWindow')
-            val = vcSESSION.GUI.vcImageWindow.hObject;
-        end
-        
-    case {'metricsfigure','metricswindow','metricsfigures'}
-        if checkfields(vcSESSION,'GUI','metricsWindow')
-            val = vcSESSION.GUI.metricsWindow.hObject;
-        end
-        
-        % I think all this custom routine management from the GUI has not
-        % been used and is not likely to be helpful.  It should go away.
-        % We should allow people to use scripts to set custom routines, but
-        % they should not manage them from the GUI. - BW 2010.
-    case {'custom','customall','customstructure'}
-        val = vcSESSION.CUSTOM;
-        % These are cell arrays of user-defined routines that implement
-        % these various types of operations.
-    case {'demosaiclist','customdesmoaiclist','customdemosaic'}
-        if checkfields(vcSESSION,'CUSTOM','demosaic')
-            val = vcSESSION.CUSTOM.demosaic;
-        end
-    case {'balancelist','colorbalancelist','customcolorbalancelist','customcolorbalance'}
-        if checkfields(vcSESSION,'CUSTOM','colorBalance')
-            val = vcSESSION.CUSTOM.colorBalance;
-        end
-    case {'conversionlist','colorconversionlist','customcolorconversionlist','customcolorconversion'}
-        if checkfields(vcSESSION,'CUSTOM','colorConversion')
-            val = vcSESSION.CUSTOM.colorConversion;
-        end
-    case {'renderlist','processinglist','processingmethods'}
-        % These routines are a complete processing chain that replace the
-        % entire call to vcimageCompute
-        if checkfields(vcSESSION,'CUSTOM','render')
-            val = vcSESSION.CUSTOM.render;
-        end
-    case {'oicomputelist'}
-        % These routines replace the standard oiCompute call.  They
-        % customize the signal processing chain from the optical image to
-        % the OI data.
-        if checkfields(vcSESSION,'CUSTOM','oicompute')
-            val = vcSESSION.CUSTOM.oicompute;
-        end
-    case {'sensorcomputelist'}
-        % These routines replace the standard sensorCompute call.  They
-        % customize the signal processing chain from the optical image to
-        % the ISA data.
-        if checkfields(vcSESSION,'CUSTOM','sensorcompute')
-            val = vcSESSION.CUSTOM.sensorcompute;
-        end
-    case {'edgealgorithmlist'}
-        % These routines replace the standard sensorCompute call.  They
-        % customize the signal processing chain from the optical image to
-        % the ISA data.
-        if checkfields(vcSESSION,'CUSTOM','edgeAlgorithm')
-            val = vcSESSION.CUSTOM.edgeAlgorithm;
+    case {'conemosaicfigure'}
+        if checkfields(vcSESSION,'GUI','vcConeImgWindow')
+            val = vcSESSION.GUI.vcConeImgWindow.hObject;
         end
         
     otherwise

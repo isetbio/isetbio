@@ -5,29 +5,36 @@ function ir = rgcMosaicCreate(ir, varargin)
 % class.  The RGC mosaics are the main computational engine for producing
 % retinal spike outputs.
 %
-% The implemented computational models are 'linear', 'LNP', or 'GLM'
-%
 % The implemented mosaic types are
+%
 %   'ON Parasol', 
 %   'OFF Parasol', 
 %   'ON Midget', 
 %   'OFF Midget', 
 %   'Small Bistratified' 
 %
+% The implemented models are
+%
+%   Linear  - Straight linear convolution, no spikes
+%   GLM     - Pillow et al. coupled generalized linear model
+%   Pool    - Built by Winawer for psychophysics
+%   Subunit - Related to Markus Meister modeling
+%   LNP     - Linear, nonlinear, poisson (EJ 2002 reference)
+%   Phys    - Fitting the physiology data from EJ
+%
 % Examples:
-%  This function can be called as:
 %
 %   ir = rgcMosaicCreate(ir, 'model', ['linear','GLM',etc.], 'mosaicType', ['on parasol', 'sbc', etc.])
 %
-%  Often, we call it as a method of the inner retina class. In that case,
-%  the call looks like:
+% Often, we call it as a method of the inner retina class. In that case,
+% the call looks like: 
 %
 %   ir = irCreate(osCreate('identity'));
 %   ir.mosaicCreate('model','linear','type','on parasol');
 %   ir.mosaicCreate('model','GLM','type','on midget');
 %
-% See also: irCreate, rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m, rgcMosaicGLM.m,
-%               t_rgc.m, t_rgcIntroduction.
+% See also: irCreate, rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m,
+%           rgcMosaicGLM.m, t_rgc.m, t_rgcIntroduction.
 %
 % Copyright ISETBIO Team 2016
 

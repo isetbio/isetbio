@@ -405,17 +405,19 @@ warning('NYI');
 % --------------------------------------------------------------------
 function menuEditChangeFontSize_Callback(~, ~, handles)
 % ctFontChangeSize(handles.figure1);
-answer = inputdlg('New Font Size (7~25)');
-if isempty(answer), return; end
-answer = str2double(answer);
-assert(answer > 6 && answer < 26, 'Front size out of range');
-set(handles.text61, 'FontSize', answer);
-set(handles.uipanelSummary, 'FontSize', answer);
-set(handles.txtSummary, 'FontSize', answer);
-set(handles.txtMaxLum, 'FontSize', answer);
-set(handles.txtPosVar, 'FontSize', answer);
-set(handles.txtAmp, 'FontSize', answer);
-set(handles.uipanel2, 'FontSize', answer);
+ieFontSizeSet(handles.figure1);
+
+% answer = inputdlg('New Font Size (7~25)');
+% if isempty(answer), return; end
+% answer = str2double(answer);
+% assert(answer > 6 && answer < 26, 'Front size out of range');
+% set(handles.text61, 'FontSize', answer);
+% set(handles.uipanelSummary, 'FontSize', answer);
+% set(handles.txtSummary, 'FontSize', answer);
+% set(handles.txtMaxLum, 'FontSize', answer);
+% set(handles.txtPosVar, 'FontSize', answer);
+% set(handles.txtAmp, 'FontSize', answer);
+% set(handles.uipanel2, 'FontSize', answer);
 
 % --- Executes on selection change in popupSelectDisplay.
 function popupSelectDisplay_Callback(hObject, eventdata, handles)

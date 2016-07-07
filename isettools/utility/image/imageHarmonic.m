@@ -8,7 +8,7 @@ function [img, parms] = imageHarmonic(parms)
 %
 %    contrast*window.*cos(2*pi*f*([cos(ang)*X + sin(ang)*Y] + ph)) + 1
 %
-% When key fields are vectors (freq, contrast, ang, phase) then the return
+% When key fields are vectors (freq, contrast, ang, ph) then the return
 % produces the sum of these harmonics.  The sum always has a mean of 1.
 %
 % The harmonic parameters are in the structure parms. The fields are

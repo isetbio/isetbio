@@ -1,6 +1,9 @@
 %% t_GenerateConeMosaicImage
 %
-% Show how to make a nice viewable image of a cone mosaic, as well as an image representing the photon responses.
+% ** Will be deprecated in response to the new coneMosaic object **
+%
+% Show how to make a nice viewable image of a cone mosaic, as well as an
+% image representing the photon responses.
 %
 % See also generateConeMosaicImage, generateConePhotonsImage.
 %
@@ -21,7 +24,7 @@ close all; clear global; ieInit;
 %% Create human sensor to get a cfa
 coneP = coneCreate('human');
 coneP = coneSet(coneP,'spatial density',[0.0 0.625 0.325 .05]);
-sensor = sensorCreate('human',[],coneP);
+sensor = sensorCreate('human',coneP);
 sensor = sensorSet(sensor, 'noise flag', 0);
 sensor = sensorSet(sensor,'exp time',2);
 sensor = sensorSet(sensor,'rows',128);

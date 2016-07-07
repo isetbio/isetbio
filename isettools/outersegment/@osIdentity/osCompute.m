@@ -1,4 +1,4 @@
-function obj = osCompute(obj, sensor)
+function obj = osCompute(obj, pRate, varargin)
 % osCompute: this method of @osIdentity passes on the cone isomerizations
 % (R*) without any temporal filtering. This subclass is intended to be used
 % for stimulus-referred retinal ganglion cell models.
@@ -12,10 +12,12 @@ function obj = osCompute(obj, sensor)
 % subclasses of the @rgc object.
 % 
 % 8/2015 JRG
-photonRate = sensorGet(sensor, 'photon rate');
-obj = osSet(obj, 'photonRate', photonRate);
 
-% obj.coneSpacing = sensorGet(sensor,'dimension','um'); % Cone width
-% 
-% obj.coneSampling  = sensorGet(sensor,'time interval','sec'); % Temporal sampling
+
+% check pRate type for backward compatibility
+if isstruct(pRate) && isfield(pRate, 'type') ...
+        && strcmp(pRate.type, 'sensor')
+    pRate = sensorGet(pRate, 'photon rate');
+end
+obj = osSet(obj, 'photonRate', pRate);
 
