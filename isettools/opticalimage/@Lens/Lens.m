@@ -1,4 +1,4 @@
-classdef Lens < hiddenHandle
+classdef Lens
     % Class for human lens pigment properties
     %
     %     lens = Lens();
@@ -19,15 +19,11 @@ classdef Lens < hiddenHandle
     % Examples:
     %   lens = Lens();
     %
-    %
     % HJ/BW ISETBIO Team 2013.
     
     properties       % public properties
         name;        % Name of this particular lens object
         density;     % macular pigment density
-    end
-    
-    properties (SetObservable, AbortSet)
         wave;        % wavelength samples in nm
     end
     
@@ -95,7 +91,7 @@ classdef Lens < hiddenHandle
         end
         
         % set methods for dependent variables
-        function set.unitDensity(obj, val)
+        function obj = set.unitDensity(obj, val)
             % interpolate for wavelength samples
             obj.unitDensity_ = interp1(obj.wave,val,obj.wave_,'linear',0);
         end

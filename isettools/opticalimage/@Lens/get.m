@@ -29,7 +29,6 @@ p.parse(param,varargin{:});
 wave = p.Results.wave;
 
 % set wavelength
-lens = lens.copy;
 lens.wave = wave;
 
 switch ieParamFormat(param)
