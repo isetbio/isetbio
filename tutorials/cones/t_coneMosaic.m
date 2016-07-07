@@ -77,7 +77,7 @@ fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));
 
 %% Compute RGC response
 tic;
-ir = irCompute(ir, bp);
+ir = irCompute(ir, bp, 'coupling',false);
 toc
 
 lastTime = ir.mosaic{1}.get('last spike time');
