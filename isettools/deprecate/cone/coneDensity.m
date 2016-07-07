@@ -20,6 +20,9 @@ function density = coneDensity(eccMM, angle, whichEye, varargin)
 %      Eccentricity and Age. Investigative Ophthalmology & Visual Science,
 %      52(10), 7376?7384. http://doi.org/10.1167/iovs.11-7199
 %
+% Example:
+%   density = coneDensity(0, 90, 'left');
+%
 % See also:
 %   sensorCreate
 %

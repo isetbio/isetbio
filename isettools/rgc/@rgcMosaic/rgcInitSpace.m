@@ -20,7 +20,7 @@ rfSizeMult = [1 .85*1 0.5 .85*0.5 1.2];
 % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
 % in ON and OFF ganglion cells of primate retina." The Journal of
-% Neuroscience 22.7 (2002), Fig. 5, pg. 2741.
+% Neuroscience 22.7 (2002), Fig. 5, pg. 2741. ** What are the units? **
 receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
 
 % If os is osIdentity, determine number of pixels per spatial RF diameter.
@@ -37,7 +37,7 @@ umPerSensorPx = patchSizeX/sensorRows;
 % the factor determined by the type of mosaic that is being created.
 rgcM.rfDiameter = rfSizeMult(cellType)*(receptiveFieldDiameterParasol2STD/2); % in microns; divide by umPerScenePx to get pixels
 
-% Build spatial RFs of all RGCs in this mosaic
+% Build spatial RFs of all RGCs in this mosaic - Specify units here!
 [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive] = ...
     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, rgcM.rfDiameter);
 

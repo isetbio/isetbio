@@ -48,15 +48,15 @@ p.parse(varargin{:}); params = p.Results;
             
         case {'sconefilter'}
             % Temporal impulse response
-            obj.sConeFilter = params.value;
+            obj.lmsConeFilter(:, 3) = value;
             
         case {'mconefilter'}
             % Temporal impulse response
-            obj.mConeFilter = params.value;
+            obj.lmsConeFilter(:, 2) = value;
             
         case {'lconefilter'}
             % Temporal impulse response
-            obj.lConeFilter = params.value;
+            obj.lmsConeFilter(:, 1) = value;            
             
         case{'patchsize'}
             obj.patchSize = params.value;

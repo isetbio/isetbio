@@ -45,7 +45,8 @@ stimP.timeInterval = 0.001; % sec
 % % subunit from the RDT.
 rdt = RdtClient('isetbio');
 % rdt.credentialsDialog();
-rdt.crp('resources/data/istim');
+rdt.crp('/resources/data/istim');
+
 data = rdt.readArtifact('iStim_subunitGrating', 'type', 'mat');
 iStim = data.iStim;
 
@@ -54,13 +55,14 @@ absorptions = iStim.absorptions; % cone isomerizations
 % Show movie. Hold mouse over a bar to check that contrast reverses.
 % ieMovie(iStim.sceneRGB);
 
-% Plot one pixel from stimulus movie
+%% Plot one pixel from stimulus movie
 vcNewGraphWin([],'upperleftbig'); 
 plot(squeeze(iStim.sceneRGB(40,40,:,1)))
 xlabel('Time (msec)','fontsize',14); 
-ylabel('Stimulus contrast','fontsize',14)
-title('Stimulus contrast for reversing grating at 5 Hz');
-set(gca,'fontsize',16);
+ylabel('Stimulus level','fontsize',14)
+title('Stimulus level for reversing grating at 5 Hz');
+set(gca,'fontsize',16); grid on
+
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
 % cone absorptions. The next step is to get the outer segment current. The

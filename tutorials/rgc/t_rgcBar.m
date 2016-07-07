@@ -30,8 +30,7 @@ scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'h fov', fov);
 % vcAddObject(scene); sceneWindow;
 
-% These parameters are for other stuff.
-
+% These parameters are for other stuff
 params.expTime = 0.001;
 params.timeInterval = 0.001;
 params.nSteps = 200;     % Number of stimulus frames
@@ -133,6 +132,25 @@ sensor = sensorSet(sensor, 'volts', volts);
 %% Movie of the cone absorptions over cone mosaic
 
 % coneImageActivity(sensor,'step',1,'dFlag',true);
+%% Outer segment calculation
+
+% Input = RGB
+os = osCreate('displayrgb');
+
+% coneSpacing = sensorGet(sensor,'width','um');
+coneSpacing = scene.wAngular*300;
+% coneSpacing = sensorGet(sensor,'dimension','um');
+os = osSet(os, 'patch size', coneSpacing);
+
+coneSampling = sensorGet(sensor,'time interval','sec');
+os = osSet(os, 'time step', coneSampling);
+
+os = osSet(os, 'rgbData', sceneRGB);
+% os = osCompute(sensor);
+
+% % Plot the photocurrent for a pixel
+% osPlot(os,sensor);
+
 
 %% Outer segment calculation - linear
 

@@ -16,9 +16,9 @@ function t_osHyperSpectralSceneEyeScan
     % Set up remote data toolbox client
     client = RdtClient('isetbio');
 
-    % Spacify images
+    % Spacify images - Updataed/HJ/BW
     imageSources = {...
-            {'manchester_database', 'scene1'} ...
+            {'manchester_database/2002', 'scene1_2002_iset'} ...
     };
 
     % simulation time step. same for eye movements and for sensor, outersegment
@@ -44,10 +44,12 @@ function t_osHyperSpectralSceneEyeScan
         imsource = imageSources{imageIndex};
         hProgress = waitbar(0.1, sprintf('Fetching scene named ''%s'' (''%s'') from isetbio''s remote repository. Please wait ...', imsource{2}, imsource{1}));
 
-        % download image
+        % download image - Updated HJ/BW
         client.crp(sprintf('/resources/scenes/hyperspectral/%s', imsource{1}));
-        [artifactData, artifactInfo] = client.readArtifact(imsource{2}, 'type', 'mat');
-        scene = artifactData.scene; clear 'artifactData'; clear 'artifactInfo';
+        data = client.readArtifact(imsource{2}, 'type', 'mat');
+        scene = sceneFromBasis(data);
+        clear data;
+        % scene = artifactData.scene; clear 'artifactData'; clear 'artifactInfo';
 
         % adjust mean luminance to avoid outer segment photocurrent saturation
         forcedMeanLuminanceInCdPerM2 = min([sceneGet(scene, 'mean luminance') 600]);

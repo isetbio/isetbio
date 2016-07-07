@@ -28,7 +28,6 @@ classdef osBioPhys < outerSegment
         function obj = osBioPhys(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
-                        
         end
         
         % set function, see osBioPhysSet for details

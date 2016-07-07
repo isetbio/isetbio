@@ -63,17 +63,19 @@ function ValidationFunction(runTimeParams)
         
         % set the stimulus photon rate
         sensor = sensorSet(sensor, 'photon rate', reshape(stepStimulusPhotonRate, [1 1 size(stepStimulusPhotonRate,1)]));
-            
+        pRate = sensorGet(sensor, 'photon rate');
+        coneType = sensorGet(sensor, 'cone type');
+        
         % create a biophysically-based outersegment model object
         osB = osBioPhys();
 
         % specify no noise
         noiseFlag = 0;
         osB.osSet('noiseFlag', noiseFlag);
+        osB.osSet('timeStep', simulationTimeIntervalInSeconds);
 
         % compute the outer segment model's response to the step stimulus
-        params.bgVolts = 0;
-        osB.osCompute(sensor, params);
+        osB.osCompute(pRate, coneType, 'bgR', 0);
             
         % get the computed current
         stepCurrent(stepIndex,:) = osB.osGet('coneCurrentSignal');
@@ -89,9 +91,11 @@ function ValidationFunction(runTimeParams)
     
         % set the stimulus photon rate
         sensor = sensorSet(sensor, 'photon rate', reshape(stepFlashStimulusPhotonRate , [1 1 size(stepFlashStimulusPhotonRate ,1)]));
+        pRate = sensorGet(sensor, 'photon rate');
+        coneType = sensorGet(sensor, 'cone type');
         
         % compute the outer segment model's response to the step + flash stimulus
-        osB.osCompute(sensor, params);
+        osB.osCompute(pRate, coneType, 'bgR', 0);
         
         % get the computed current
         stepFlashCurrent(stepIndex,:) = osB.osGet('coneCurrentSignal');

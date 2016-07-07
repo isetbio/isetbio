@@ -934,7 +934,7 @@ return
 
 % --------------------------------------------------------------------
 function menuEditFontSize_Callback(hObject, eventdata, handles)
-ieFontChangeSize(handles.figure1);
+ieFontSizeSet(handles.figure1);
 return;
 
 % --------------------------------------------------------------------

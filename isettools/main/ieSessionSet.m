@@ -24,9 +24,7 @@ function ieSessionSet(param,val,varargin)
 %      {'scene window'}   - Store handles for scene window
 %      {'oi window'}      - Store handles of optical image window
 %      {'sensor window'}  - Store handles for sensor window
-%      {'vcimage window'} - Store handles for processor
-%                (virtual camera image) window
-%      {'metrics window'} - Store handles for metrics window
+%      {'cone mosaic window'}
 %
 %      {'graphwin val'}    - Number for graphics window
 %      {'graphwin handle'} - Not currently used, in future will be as named
@@ -118,16 +116,11 @@ switch param
         vcSESSION.GUI.vcSensImgWindow.hObject = val;
         vcSESSION.GUI.vcSensImgWindow.eventdata = varargin{1};
         vcSESSION.GUI.vcSensImgWindow.handles = varargin{2};
-    case {'vcimagewindow'}
-        if length(varargin) < 2, error('vcimage window requires hObject,eventdata,handles'); end
-        vcSESSION.GUI.vcImageWindow.hObject = val;
-        vcSESSION.GUI.vcImageWindow.eventdata = varargin{1};
-        vcSESSION.GUI.vcImageWindow.handles = varargin{2};
-    case {'metricswindow'}
-        if length(varargin) < 2, error('metrics window requires hObject,eventdata,handles'); end
-        vcSESSION.GUI.metricsWindow.hObject = val;
-        vcSESSION.GUI.metricsWindow.eventdata = varargin{1};
-        vcSESSION.GUI.metricsWindow.handles = varargin{2};
+    case {'conemosaicwindow'}
+        if length(varargin) < 2, error('sensor window requires hObject,eventdata,handles'); end
+        vcSESSION.GUI.vcConeImgWindow.hObject = val;
+        vcSESSION.GUI.vcConeImgWindow.eventdata = varargin{1};
+        vcSESSION.GUI.vcConeImgWindow.handles = varargin{2};
         
         % This graphics window stuff is a mess
     case {'graphwinstructure','graphwinval'}

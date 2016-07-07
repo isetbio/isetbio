@@ -24,29 +24,25 @@ classdef outerSegment < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     %
-    properties (SetAccess = protected)
-
-        % The noiseFlag determines if the noisy version of the current is
-        % calculated.
-        noiseFlag;            % determines whether noise is added to coneCurrentSignal
-        coneCurrentSignal;    % output signal in pA
-        patchSize;            % spacing between cones (width) in um, inherited from sensor in osCompute
-        timeStep;             % sampling interval in sec, inherited from sensor in osCompute
+    properties
+        noiseFlag;            % determines whether noise is added
+        patchSize;            % spacing between cones (width) in um
     end
     
-    % Private properties. Only methods of the parent class can set these
-    properties(Access = private)
-        
+    properties (SetAccess = protected)
+        coneCurrentSignal;    % output signal in pA
+    end
+    
+    properties (SetObservable, AbortSet)
+        timeStep;             % sampling interval in sec
     end
     
     % Public methods
-    methods
-        
+    methods       
         function obj = outerSegment(varargin)
-            % obj.initialize(varargin{:});
-            
             obj.noiseFlag = 0;            
             obj.coneCurrentSignal = [];
+            obj.timeStep = 1e-3;
         end
         
         % see osSet in @osLinear and @osBioPhys for details
@@ -66,9 +62,9 @@ classdef outerSegment < handle
     % it cannot instantiate objects.
     methods (Abstract, Access=public)
         % see osLinearCompute, osBioPhysCompute
-        compute(obj, sensor, param, varargin);
+        compute(obj, pRate, coneType, varargin);
         % see osLinearPlot, osBioPhysPlot
-        plot(obj, sensor);
+        plot(obj, plotType);
     end
     
     % Methods may be called by the subclasses, but are otherwise private 

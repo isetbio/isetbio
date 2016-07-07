@@ -25,7 +25,13 @@ classdef rgcLNP < rgcMosaic
 % 9/2015 JRG    
 
     % Public, read-only properties.
-    properties (SetAccess = private, GetAccess = public)
+    properties (SetAccess = public, GetAccess = public)
+        
+        % Should this be in rgcMosaic or in each of the special types of
+        % rgcMosaics? (BW)
+        
+        % Number of repeats
+        numberTrials = 10;
     end
            
     % Protected properties.
@@ -52,11 +58,6 @@ classdef rgcLNP < rgcMosaic
         % The spikes are computed from the response voltage
         responseSpikes;
 
-        % nlResponse;   Delete me
-        
-        % We typically run a single trial
-        numberTrials = 10;
-        
         % These hold the parameters used in the computation.
         % This is the response after a spike
         postSpikeFilter;

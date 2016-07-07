@@ -1,66 +1,65 @@
-function ir = irCompute(ir, outerSegment, varargin)
-% Computes the rgc mosaic responses to an arbitrary stimulus.
+function ir = irCompute(ir, input, varargin)
+% Computes the rgc mosaic responses to an input
 %
-% The responses for all the mosaics attached to the ir object.
+%    ir = irCompute(ir, input, varargin)
 %
-% For each mosaic, the linear response is computed by spatial convolution
-% of the center and surround RFs. Then, the temporal responses for the
-% center and surround is computed, separably. This stage of the computation
-% is stored in responseLinear.  
+% Inputs:
+%   ir: inner retina object
+%   input - There are two types of possible input objects.
 %
-% The linear response is then sent to the irComputeSpikes routine.  Each
-% rgc type will have its own compute method.  For all types the initial
-% linear method is carried out in here.
+%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
+%           stored in an outer segment object.
+%      'bipolar' - the bipolar cell object with a signal that has gone
+%           through temporal filtering and possibly spatial subunit
+%           nonlinearities.
 %
-% Inputs: 
-%  ir: inner retina object, 
-%  outersegment: ojbect
+% Computes the linear and spike responses for all the mosaics within the
+% inner retina object.  (Except: There are not spikes for the rgcLinear
+% class).
+% 
+% For each mosaic, a space-time separable linear response is computed. This
+% stage of the computation is stored in 'responseLinear'.  This is managed
+% in irComputeLinearSTSeparable.  There is no noise added in the linear
+% part.
 %
-% Outputs: 
-%  ir: the inner retina object with responses attached 
+% The spikes are computed irComputeSpikes routine. The spiking can have a
+% random element.  So, we may run the conversion from linear to spikes
+% multiple times, effectively producing spike rasters.
+%
+% Outputs:
+%  ir: the inner retina object with responses attached to each mosaic
 %
 % Example:
 %   ir.compute(identityOS);
 %   irCompute(ir,identityOS);
 %
-% See also: rgcGLM, irComputeSpikes, 
+% See also: rgcMosaic, irComputeSpikes, irComputeLinearSTSeparable
 %
 % JRG (c) isetbio team
-
-%% PROGRAMMING TODO
-% We plan to move the linear computation to a separate routine,
-% irComputeContinuous (or Linear) and carry out the first part of this code
-% in that routine, rather than as the switch statement that is here now
-%
 
 %% Parse inputs
 p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-p.addRequired('outerSegment',@(x) ~isempty(validatestring(class(x),{'osDisplayRGB','osIdentity','osLinear','osBioPhys','bipolar'})));
+vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
+p.addRequired('input',vFunc);
 
-p.parse(ir,outerSegment,varargin{:});
+p.parse(ir,input,varargin{:});
 
-ir = irComputeContinuous(ir, outerSegment);
+%% Linear stage of the computation
+ir = irComputeLinearSTSeparable(ir, input);
+% irPlot(ir,'response linear');
 
-% for rgcType = 1:length(ir.mosaic)
-    
-    % Compute spikes for each trial
-    switch class(ir.mosaic{1})
-        case {'rgcLinear'};
-            % No nonlinear response
-            error('Not yet implemented');
-        case{'rgcPhys'}
-            
-        otherwise
-            nTrials = ir.mosaic{1}.numberTrials;
-            for itrial = 1:nTrials
-                itrial
-                ir = irComputeSpikes(ir);
-            end
-    end
+%% Compute spikes for each trial
+switch class(ir.mosaic{1})
+    case {'rgcLinear'};
+        % No linear response implemented yet.
+        disp('No spikes computed for linear RGC mosaic');   
+    otherwise
+        % Runs for rgcLNP, rgcGLM
+        % Check the coupling field to decide on the coupling parameter
+        ir = irComputeSpikes(ir,'coupling',false);
+end
 
-% end
-
-
+end

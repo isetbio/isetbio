@@ -56,12 +56,16 @@ function ValidationFunction(runTimeParams)
     % Create a biophysically-based outersegment model object.
     osB = osBioPhys();
     
+    pRate = sensorGet(sensor, 'photon rate');
+    coneType = sensorGet(sensor, 'cone type');
+    
     % Specify no noise
     noiseFlag = 0;
     osB.osSet('noiseFlag', noiseFlag);
+    osB.osSet('timeStep', simulationTimeIntervalInSeconds);
 
     % Compute the model's response to the stimulus
-    osB.osCompute(sensor);
+    osB.osCompute(pRate, coneType);
 
     % Get the computed current
     osBiophysOuterSegmentCurrent = osB.osGet('coneCurrentSignal');

@@ -54,6 +54,7 @@ switch oiType
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
+        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
         
     case {'wvfhuman','shiftinvariant'}
         % A human lens specified using the WVF toolbox method
@@ -64,12 +65,14 @@ switch oiType
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
         oi = oiSet(oi, 'name','human-WVF');
+        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
         
     case {'diffractionlimited','diffraction'}
         % Default optics is f# = 4, diffraction limited
         optics = opticsCreate('diffraction limited');
         oi = oiSet(oi,'optics',optics);
-        
+        oi = oiSet(oi, 'name','diffraction');
+
         % Set up the default glass diffuser with a 2 micron blur circle,
         % but skipped
         oi = oiSet(oi, 'diffuser method','skip');

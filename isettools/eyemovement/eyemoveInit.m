@@ -63,10 +63,10 @@ function sensor = eyemoveInit(sensor, params, varargin)
 %      2009, Pages 463~475
 %
 % Example:
-%   sensor = eyemovementInit;
+%   sensor = eyemoveInit;
 %   sensor = sensorCreate('human');
-%   sensor = eyemovementInit(sensor);
-%   p.emFlag = ones(3,1);
+%   sensor = eyemoveInit(sensor);
+%   p.emType = ones(3,1);
 %   p.totTime = 1;
 %   sensor = eyemoveInit(sensor, p);
 %   sensor = eyemoveInit(sensor, p, 'tremor amplitude', 0.1);

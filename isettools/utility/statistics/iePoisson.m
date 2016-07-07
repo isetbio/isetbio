@@ -1,13 +1,14 @@
-function val = iePoisson(lambda, nSamp, useSeed)
+function val = iePoisson(lambda, nSamp, newNoise)
 % Create a matrix of Poisson samples using rate parameters in lambda
 %
-%   val = iePoisson(lambda,nSamp,[useSeed])
+%   val = iePoisson(lambda,nSamp,[newNoise])
 %
 % The rate parameter can be a scalar, requesting multiple samples, or it
 % can be a matrix of rate parameters.
 %
-% The useSeed flag determines whether or not to return the same value each
-% time for a given lambda (0), or to return different values (1).
+% The newNoise flag determines whether to generate a new noise seed or to
+% set the noise seed to a fixed value (1).  If newNoise is false, we are
+% using frozen noise with a seed = rng(1);
 %
 % This algorithm is from Knuth.
 %
@@ -47,13 +48,13 @@ function val = iePoisson(lambda, nSamp, useSeed)
 
 if notDefined('lambda'), error('rate parameter lambda required'); end
 if notDefined('nSamp'), nSamp = 1; end
-if notDefined('useSeed'), useSeed = 1; end
+if notDefined('newNoise'), newNoise = true; end
 
 % Check if we have MEX function
 if (exist('iePoissrnd','file')==3)
-    if useSeed
+    if newNoise  % Create a new seed and use it
         val = iePoissrnd(lambda, nSamp, rand * 12345701);
-    else
+    else        % No new noise seed
         val = iePoissrnd(lambda, nSamp);
     end
     return;
@@ -62,10 +63,8 @@ end
 % Check for stats toolbox
 if checkToolbox('Statistics Toolbox')
     
-    if ~useSeed
-        p = rng;
-        rng(1);
-    end
+    % Set the RNG to this seed, reliably
+    if ~newNoise, p = rng; rng(1); end
     
     % Matlab toolbox version is present. Use it.
     if isscalar(lambda)
@@ -74,18 +73,15 @@ if checkToolbox('Statistics Toolbox')
         val = poissrnd(lambda);
     end
     
-    if ~useSeed
-        rng(p);
-    end
+    % Return the RNG to the current state
+    if ~newNoise, rng(p); end
     
     return 
 end
 
 
-if ~useSeed
-    p = rng;
-    rng(1);
-end
+% Frozen noise case.  Use sd = 1;
+if ~newNoise, p = rng; rng(1); end
 
 % Use the local ISET methods
 % Simple implementation, this is slow for large lambda
@@ -119,7 +115,6 @@ else
     end
 end
 
-if ~useSeed
-    rng(p);
-end
+% Put the system back
+if ~newNoise, rng(p); end
 end
