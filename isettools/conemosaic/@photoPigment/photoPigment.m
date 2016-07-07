@@ -56,7 +56,7 @@ classdef photoPigment < hiddenHandle
             
             % set object properties
             obj.wave = p.Results.wave(:);
-            obj.wave_ = (400:10:700)';
+            obj.wave_ = (390:830)';
             obj.opticalDensity = p.Results.opticalDensity(:);
             obj.peakEfficiency = p.Results.peakEfficiency(:);
             

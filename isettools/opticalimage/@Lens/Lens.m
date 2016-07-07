@@ -58,7 +58,7 @@ classdef Lens
             
             % set properties
             obj.wave = p.Results.wave(:);
-            obj.wave_ = (400:10:700)';
+            obj.wave_ = (390:830)';
             obj.density = p.Results.density;
             
             if isempty(p.Results.unitDensity)
