@@ -69,7 +69,7 @@ function [udata, g] = oiPlot(oi,pType,roiLocs,varargin)
 %   oi = vcGetObject('oi');
 %   rows = round(oiGet(oi,'rows')/2);
 %
-%   uData = oiPlot(oi,' irradiance hline',[1,rows])
+%   uData = oiPlot(oi,'irradiance hline',[1,rows])
 %   uData = oiPlot(oi,'illuminance fft hline',[1,rows])
 %
 %   uData = oiPlot(oi,'contrast hline',[1,rows])
@@ -612,7 +612,7 @@ if exist('udata','var'), set(gcf,'userdata',udata); end
 
 return;
 
-% - Brought into this file from a separate function
+% Brought into this file from a separate function
 function udata = oiPlotIrradiance(oi,dataType,roiLocs)
 %Plot mean irradiance within a selected ROI of the optical image window
 %
