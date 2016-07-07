@@ -31,13 +31,13 @@ cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5.
 stimulusTestI = 1;       % Choose 1
 %% Moving bar stimulus
 
-paramsStim.barwidth = 2;
+paramsStim.barWidth = 2;
 paramsStim.meanLuminance = 200;
 paramsStim.row = 64; params.col = 64;
 
 paramsStim.expTime = 0.001;
 paramsStim.timeInterval = 0.001;
-paramsStim.nSteps = 15;     % Number of stimulus frames
+paramsStim.nSteps = 150;     % Number of stimulus frames
 
 upSampleFactor = 10;
 paramsStim.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
@@ -48,9 +48,108 @@ paramsStim.radius = ecc;
 paramsStim.theta = 0;  % 3 oclock on the retina
 paramsStim.side = 'left';
 
-iStim = ieStimulusBar(paramsStim);
-sensor = iStim.absorptions;
+params = paramsStim;
+% iStim = ieStimulusBar(paramsStim);
+% sensor = iStim.absorptions;
 
+%% Compute an empty scene as a placeholder for the bar image
+
+% Create display
+display = displayCreate('CRT-Sony-HorwitzLab');
+
+% Set up scene, oi and sensor
+scene = sceneCreate();
+scene = sceneSet(scene, 'h fov', fov);
+% vcAddObject(scene); sceneWindow;
+
+%% Initialize the optics and the sensor
+oi  = oiCreate('wvf human');
+
+if params.radius == 0
+    
+    absorptions = sensorCreate('human');
+
+else
+    
+    coneP = coneCreate; % The cone properties properties
+    retinalRadiusDegrees = params.radius;
+    retinalPolarDegrees  = params.theta;
+    whichEye             = params.side;
+    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
+    absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+end
+
+absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
+
+% Set aspect ratio
+% At this point, we have the right cone density and the right number in
+% cols, now we just need to set the rows to have the same aspect ratio as
+% the input movie.
+sceneSize = sceneGet(scene,'size');
+sensorSize = sensorGet(absorptions,'size');
+aspectRatioMovie = sceneSize(1)/sceneSize(2);
+absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
+
+
+%% Compute a dynamic set of cone absorptions for moving bar
+
+fprintf('Computing cone isomerizations:    \n');
+
+% Loop through frames to build movie
+% The number of steps must be smaller than the width of the scene
+nSteps = params.nSteps;
+if isempty(nSteps), 
+    nSteps = sceneGet(scene,'cols') - params.barWidth; 
+end
+nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
+
+for t = 1 : nSteps
+        
+    barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
+    barMovie(:,t:(t+params.barWidth-1),:) = 1;          % White bar
+
+    % Generate scene object from stimulus RGB matrix and display object
+    scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
+
+    scene = sceneSet(scene, 'h fov', fov);
+    if t ==1
+        sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+    end
+    
+    % Get scene RGB data    
+    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+    
+    % Compute optical image
+    oi = oiCompute(oi, scene);    
+    
+    % Compute absorptions
+    absorptions = sensorCompute(absorptions, oi);
+
+    if t == 1
+        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+    end
+    
+    volts(:,:,t) = sensorGet(absorptions, 'volts');
+    
+    % vcAddObject(scene); sceneWindow
+end
+
+% Set the stimuls into the sensor object
+absorptions = sensorSet(absorptions, 'volts', volts);
+% vcAddObject(sensor); sensorWindow;
+
+% These are both the results and the objects needed to recreate this
+% script. So calling isomerizationBar(iStim) should produce the same
+% results.
+
+iStim.params  = params;
+iStim.display = display;
+iStim.scene   = scene;
+iStim.sceneRGB = sceneRGB;
+iStim.oi      = oi;
+iStim.absorptions  = absorptions;
+
+sensor = absorptions;
 %% Outer segment calculation - biophysical model
 % The iStim structure generates the movie, the scene, the oi and the
 % cone absorptions. The next step is to get the outer segment current. The
@@ -201,4 +300,4 @@ mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
-ieMovie(psthMovie(3:end-2,:,200:end));
+ieMovie(psthMovie(3:end-2,:,200:end-50));

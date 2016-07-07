@@ -242,8 +242,8 @@ bpParams.rectifyType = 1;
 
 bp = bipolar(os, bpParams);
 
-% bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
-% bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
+bp.bipolarSet('sRFcenter',[1]);
+bp.bipolarSet('sRFsurround',[1]);
 
 % Need to fix bp compute bc it copies sensor
 bp = bipolarCompute(bp, os);
