@@ -225,11 +225,13 @@ switch(averageFlag)
             % RPE data set - need to put on RDT
             % Fit values from Dacey 2000 and Croner & Kaplan 1994
             case {'onparasol','onparasolrpe'}
-                b = 68.3968; m = 18.9211;
+                b = 25;%68.3968/3; 
+                m = 18.9211;
                 b2 = .0218; m2 = .0065;
                 ecc0 = 10.9;
             case {'offparasol','offparasolrpe'}
-                b = 68.3968; m = 0.85*18.9211;
+                b = 25;%68.3968/3; 
+                m = 0.85*18.9211;
                 b2 = .0218; m2 = 0.85*.0065;
                 ecc0 = 10.9;
             case {'onmidget','onmidgetrpe'}
@@ -241,7 +243,7 @@ switch(averageFlag)
                 b2 = .0059; m2 = 0.85*.0034;
                 ecc0 = 10.9;
             case {'sbc','onsbcrpe','sbcrpe'}
-                b = 70.2865; m = 15.8208;
+                b = 70.2865/2.5; m = 15.8208;
                 b2 = 70.2865; m2 = 15.8208;
                 ecc0 = 10.9;
         end
