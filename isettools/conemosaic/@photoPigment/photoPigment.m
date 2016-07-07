@@ -89,7 +89,9 @@ classdef photoPigment < hiddenHandle
         
         % get method for dependent variable
         function val = get.absorbance(obj) % inerpolate for absorbance
-            val = interp1(obj.wave_,obj.absorbance_,obj.wave,'linear',0);
+            val = interp1(obj.wave_, obj.absorbance_, obj.wave, ...
+                'linear', 'extrap');
+            val = ieClip(val, 0, 1);
         end
         
         function val = get.absorptance(obj) % compute absorptance
@@ -125,7 +127,9 @@ classdef photoPigment < hiddenHandle
         
         % set method for dependent variable
         function set.absorbance(obj, val)
-            obj.absorbance_ = interp1(obj.wave,val,obj.wave_,'linear',0);
+            obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
+                'linear', 'extrap');
+            obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
         end
     end
     

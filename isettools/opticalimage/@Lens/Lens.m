@@ -72,7 +72,8 @@ classdef Lens
         % get methods for dependent variables
         function val = get.unitDensity(obj)
             % interpolate for wavelength samples
-            val = interp1(obj.wave_,obj.unitDensity_,obj.wave,'linear',0);
+            val = interp1(obj.wave_, obj.unitDensity_,obj.wave, 'pchip');
+            val = max(val, 0);
         end
         
         function val = get.spectralDensity(obj)
@@ -93,7 +94,8 @@ classdef Lens
         % set methods for dependent variables
         function obj = set.unitDensity(obj, val)
             % interpolate for wavelength samples
-            obj.unitDensity_ = interp1(obj.wave,val,obj.wave_,'linear',0);
+            obj.unitDensity_ = interp1(obj.wave, val, obj.wave_, 'pchip');
+            obj.unitDensity_ = max(obj.unitDensity, 0);
         end
     end
 end
