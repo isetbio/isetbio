@@ -30,7 +30,7 @@ classdef coneMosaic < hiddenHandle
                           % set this the same as integrationTime?
     end
     
-    properties (GetAccess=public, SetAccess=private)
+    properties (GetAccess=public, SetAccess=public) % public temporarilly
         absorptions;      % The spatial array of cone absorptions over time
         current;          % The spatial array of photocurrent over time
     end
