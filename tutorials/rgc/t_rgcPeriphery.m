@@ -2,7 +2,14 @@
 %
 % A comparison of RGC firing from experimental recordings, "black box" GLM
 % simulations and "cascade model" GLM simulations. The experimental
-% recordings are from the dataset RPE 201602171.
+% recordings are from the dataset RPE 2016-02-17-1.
+% 
+% The tutorial begins with the user selecting the RGC type. The fitted
+% parameters and cross validation data are then loaded from the remote data
+% toolbox. The isetbio simulation starts with the movie stimulus, and
+% generates the dynamic scene, optical image, cone isomerizations, bipolar
+% resopnse and RGC spikes for the cascade model. Isetbio also handles the
+% black box model.
 % 
 % This demonstrates that the linear cascade model matches the output of the
 % black box model. The cascade model allows us to turn on nonlinearities in
@@ -20,9 +27,8 @@
 
 %% Initialize 
 clear
-% ieInit;
 
-%% Switch on input type
+% Switch on input type
 % White noise (WN) or natural scenes with eye movements (NSEM)
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
@@ -34,11 +40,8 @@ stimulusTestI = 1;       % Choose WN test stimulus (1)
 switch experimentI
     case 1; experimentID = 'RPE_201602171';
     otherwise; error('Data not yet available');
-%     case 2; experimentID = '2012-08-09-3'; % Data not yet available
-%     case 3; experimentID = '2013-10-10-0';
-%     case 4; experimentID = '2012-09-27-3';
 end
-% The other experimental data will be added to the RDT in the future.
+% Other experimental data will be added to the RDT in the future.
 
 % Stimulus: white noise or natural scene movie with eye movements
 switch stimulusTestI
@@ -48,41 +51,38 @@ switch stimulusTestI
         error('NSEM not yet implemented');
 end
 
+% Initialize the RDT object
 rdt = RdtClient('isetbio');
+
 % Cell type: ON or OFF Parasol
 switch cellTypeI
     case 1; 
-        cellType = 'On Parasol RPE'; 
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONParasol_201602171.mat')        
-        
+        cellType = 'On Parasol RPE';      
+        % Load the cross validation data with the RDT
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_ONParasol_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
     case 2; 
-        cellType = 'Off Parasol RPE';        
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFParasol_201602171.mat')
-        
+        cellType = 'Off Parasol RPE';    
+        % Load the cross validation data with the RDT
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_OFFParasol_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
     case 3; 
         cellType = 'On Midget RPE';
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONMidget_201602171.mat')
-        
+        % Load the cross validation data with the RDT
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_ONMidget_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
     case 4; 
-        cellType = 'Off Midget RPE';
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_OFFMidget_201602171.mat')
-        
+        cellType = 'Off Midget RPE';     
+        % Load the cross validation data with the RDT
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_OFFMidget_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
     case 5; 
-        cellType = 'SBC RPE';
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/xval_mosaic_WN_ONSBC_201602171.mat')
-        
+        cellType = 'SBC RPE';     
+        % Load the cross validation data with the RDT
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_ONSBC_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
@@ -94,23 +94,21 @@ loadOS = 0;
 
 % Loads the appropriate movie and spiking data for the experimental
 % conditions.
-% [testmovie, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,cellTypeI);
-% Binary white noise test movie
-
-% load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/WN_testmovie_lnfit.mat')
 
 rdt = RdtClient('isetbio');
 rdt.crp('resources/data/rgc/rpe_dataset');
 data = rdt.readArtifact('WN_testmovie_lnfit', 'type', 'mat');
 WN_testmovie_lnfit = data.WN_testmovie_lnfit;
 
-
-% Length of WN movie is 1200, take nFrames to limit natural movie to same length
+% Length of WN movie is 1100
 nFrames = 1100; 
 testmovieshort = WN_testmovie_lnfit(:,:,1:nFrames); 
 
+
 if ~loadOS 
     
+% Resample the movie to allow the biophysical outer segment current computation
+% The biophysical model becomes unstable if the temporal step is too large    
 frRS = 8;
 testmovieRS = zeros(size(testmovieshort,1),size(testmovieshort,2),frRS*size(testmovieshort,3));
 for frnum = 1:nFrames
@@ -118,12 +116,14 @@ for frnum = 1:nFrames
         testmovieRS(:,:,(frnum-1)*frRS+frrep) = testmovieshort(:,:,frnum);
     end
 end
+
 %% Show test movie
 showFrames = 50;
-% ieMovie(testmovieshort(:,:,1:showFrames));
+ieMovie(testmovieshort(:,:,1:showFrames));
 
 %% Generate display, scene, oi, sensor
-paramsStim.nsteps = 1;%nFrames;%size(testmovieshort,3);
+paramsStim.nsteps = 1;
+
 %  Bipolar filter is setfor 0.001 sec, so it needs to be 0.001
 paramsStim.timeInterval = 1/125;%0.001; % sec
 paramsStim.expTime = 1/125;%0.001; % sec
@@ -137,14 +137,12 @@ paramsStim.radius = 36*0.3;
 paramsStim.theta = 330;
 paramsStim.side = 'left';
 
-% iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
-% iStim = ieStimulusMovie(testmovieshort(:,:,1:nFrames),paramsStim);
+% Get the cone absorptions for the movie with the ieStimulusMovie function
 iStim = ieStimulusMovie(permute(testmovieshort(:,:,1:nFrames), [2 1 3]),paramsStim);
-sensor = iStim.sensor;
+sensor = iStim.sensor; sensor.data.volts = 5e-4*double(testmovieshort)./255;
 
-sensor.data.volts = 5e-4*double(testmovieshort)./255;
-% sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
 clear testmovieRS % testmovieshort
+
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
 % cone absorptions. The next step is to get the outer segment current. The
@@ -173,16 +171,7 @@ osLSub = osL;
 % Compute the outer segment response to the absorptions with the linear
 % model.
 osL = osCompute(osL,sensor,paramsOSL);
-% osL = osSet(osL,'coneCurrentSignal',sensor.data.volts);
-% % Plot the photocurrent for a pixel.
-% osPlot(osL,sensor);
-
-% osLSub = osSet(osL, 'time step', 8*timeStep);
-% osLSub.osSet('coneCurrentSignal',osL.coneCurrentSignal(:,:,1:8:end));
-% osLSub.osSet('coneCurrentSignal',sensor.data.volts);
-
-
-% osPlot(osLSub,sensor)
+osPlot(osL,sensor);
 %% osBioPhys
 
 % % Initialize
@@ -207,13 +196,8 @@ osBSub = osB;
 % model.
 % osB = osCompute(osB,sensor,paramsOS);
 % 
-% % % Plot the photocurrent for a pixel.
-% % osPlot(osB,sensor);
-% 
-% % osBSub.osSet('coneCurrentSignal',0);
-% 
-% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:80:end));
-% clear osB
+% % Plot the photocurrent for a pixel.
+% osPlot(osB,sensor);
 
 else
     rdt = RdtClient('isetbio');
@@ -223,7 +207,6 @@ else
     
 end
 
-% for cellNumber = 44
 
 %% Find bipolar responses
 clear bp os
@@ -231,6 +214,7 @@ clear bp os
 os = osLSub;
 % os = osBSub;
 
+% Select bipolar filter type
 bpParams.cellType = 'onDiffuse';
 % sets filter as theoretical, mean physiology, or individual phys:
 bpParams.filterType = 1; 
@@ -238,19 +222,15 @@ bpParams.filterType = 1;
 bpParams.rectifyType = 1;
 % bpParams.rectifyType = 3;
 
-% bpParams.cellLocation = cellNumber;
-
 bp = bipolar(os, bpParams);
 
 bp.bipolarSet('sRFcenter',[1]);
 bp.bipolarSet('sRFsurround',[1]);
 
-% Need to fix bp compute bc it copies sensor
 bp = bipolarCompute(bp, os);
 
-% bipolarPlot(bp,'response');
+bipolarPlot(bp,'response');
 
-% bp = bpSet(bp,'responseCenter',sensor.data.volts);
 %%
 % Set parameters
 params.name = 'macaque phys';
@@ -263,6 +243,7 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
+% Choose the cell to plot
 params.cellIndices = 10;
 
 % Create object
@@ -272,10 +253,6 @@ nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 
 % Linear convolution
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
-
-% innerRetinaSU = irComputeContinuous(innerRetinaSU, bp); 
-% innerRetinaSU = irNormalize(innerRetinaSU, innerRetina);
-% innerRetinaSU = irComputeSpikes(innerRetinaSU); 
 
 innerRetinaSU = irSet(innerRetinaSU,'timing',1/120);
 
@@ -366,15 +343,8 @@ subplot(313); hold on;
 irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
 title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
-% axis([tStart-.04 tEnd-.04 0 30]); % when using theoretical irGLM
-% axis([tStart tEnd 0 30]);
-% switch stimulusTestI
-%     case 1
-%         axis([tStart+1 tEnd+1 0 30]);
-%     case 2
-        axis([tStart tEnd 0 30]);
-% end
-% axis off
+
+axis([tStart tEnd 0 30]);
 
 % % Plot the recorded spikes
 subplot(311); hold on;
@@ -385,18 +355,12 @@ set(gca,'fontsize',14);
 switch stimulusTestI
     case 1
         axis([tStart tEnd 0 30]);
-%         axis([tStart-0.5 tEnd-0.5 0 30]);
     case 2
         axis([tStart tEnd 0 30]);
-%         axis([tStart-1 tEnd-1 0 30]);
 end
  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
 
- %%
- 
-%  calculateFractionalVariance(innerRetinaPSTH, innerRetinaRecordedPSTH, stimulusTestI);
- 
- %%
+ %% Plot the PSTHs
  
 figure;
 
@@ -416,21 +380,6 @@ switch stimulusTestI
         axis([0 8.5 ax3(3) ax3(4)])
 
     case 2
-%         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
-
-%         minlen = minlen - 1000;
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((000+(1:minlen-1200))),':k','linewidth',2);
-%         
-%         plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(000-36+(1:minlen-1200)),':b','linewidth',3);
-
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
-        
         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(0+(1:minlen-1200)),'r','linewidth',3);
         hold on;
         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
@@ -440,9 +389,7 @@ switch stimulusTestI
         
         ax3 = axis;
         axis([tStart-1 tEnd-1 ax3(3) ax3(4)/2])
-%         axis([tStart-1 tEnd-1 ax3(3) 100])
-        
-        % axis([0-.5 8-.5 0 100])
+
 end
 
 legend('Black Box','Recorded','Cascade Conv');
@@ -451,70 +398,3 @@ set(gca,'fontsize',14);
 xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
 % % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3308]);
 % set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
-
-%%
-% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))))
-% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)))
- 
-for cellNum2 = 1:length(innerRetinaPSTH)
-    cellNumber = cellNum2
-    minlen = min([length(innerRetinaPSTH{cellNum2}) length(innerRetinaRecordedPSTH{cellNum2}) length(innerRetinaSUPSTH{cellNum2}) ]);
-switch stimulusTestI
-    
-
-    case 1
-        
-        rsim = innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaSUPSTH{cellNum2}(1200+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-fracVar(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-switch stimulusTestI
-    case 1
-        
-        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-fracVar2(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-
-switch stimulusTestI
-    case 1
-        
-        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaSUPSTH{cellNum2}((600+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaPSTH{cellNum2}(0+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaSUPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-rrec = innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200));
-fracVar3(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-
-% figure;scatter(innerRetinaPSTH{cellNum2}(600+(1:minlen-1200)),innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200)))
-% 
-% figure;scatter(innerRetinaRecordedPSTH{cellNum2}(0+(1:minlen-1200)),innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200)))
-
-
-end
-% fracVar
-% fracVar2
-figure; scatter(fracVar, fracVar2); 
-hold on; plot(.01:.01:1,.01:.01:1)
-xlabel('SU'); ylabel('GLM');
-
-
-% end

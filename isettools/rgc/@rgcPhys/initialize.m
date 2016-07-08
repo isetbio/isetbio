@@ -272,6 +272,7 @@ switch(averageFlag)
 %         numberRows = floor(fovratio*yratio*stimRows/(2*cellSpacing));
 %         numberCols = floor(fovratio*yratio*stimCols/(2*cellSpacing));
         
+        % do TEE calculation on fov0
         numberCellsPerDegree0 = (stimCols/(2*cellSpacing))/fov0;
         numberCellsPerDegree = yratio*numberCellsPerDegree0;
         numberBipolarsPerDegree = inputScale*inputSize(2)/(fov);

@@ -1,14 +1,34 @@
-% t_rgcAverage
+% t_rgcAverageFull
+% 
+% Generate a moving bar stimulus and measure the response of a simulated
+% retinal patch from photoreceptors to retinal ganglion cells.
+% 
+% The tutorial begins with the user choosing several parameters, including
+% the eccentricity and field of view of the simulated retinal patch. The
+% isetbio pathway generates a display, a scene, an optical image, a cone
+% absorptions/sensor mosaic, an outer segement mosaic, a bipolar mosaic and
+% a retinal ganglion cell mosaic. 
+% 
+% The moving bar stimulus is generated frame by frame. For each frame, the
+% scene is created using a grayscale image and the loaded display
+% parameters for a particular monitor. The optical image is computed by
+% simulating the cornea and lens. The cone absorptions are computed for a
+% generated cone mosaic at the specified eccentricity using the optical
+% image. This process, from the raw grayscale stimulus to the cone
+% absorptions, is done frame by frame in a loop.
+% 
+% A biophysical model of the cone outer segment from the Rieke Lab is
+% employed to generate the cone photocurrent. This signal is passed on to a
+% bipolar cell mosaic, which implements spatial pooling and temporal
+% filtering.
 % 
 % An experimental dataset that represents an RGC mosaic of a peripheral
 % patch is loaded from Chichilnisky Lab data, and a mosaic of the average
-% RGC is created that completely tiles the space. The cone spacing and RGC
-% size can be scaled to an eccentricity input by the user.
+% RGC is created that completely tiles the space. The RGC sizes are
+% dependent on the eccentricity input by the user.
 % 
-% The experimental recordings used are from the dataset RPE 201602171.
-% 
-% There is a dependency on the repository isetbio/EJLFigureReproduction.
-% This must be added to the Matlab path.
+% The mosaic of cones, bipolar cells and RGCs may be viewed, and a
+% movie of the PSTHs placed spatially on the mosaic can also be constructed.
 % 
 % See also:
 %   EJLFigureReproduction/t_rgcNaturalScenesFig2.m
@@ -17,61 +37,70 @@
 % 
 % 6/2016 JRG (c) isetbio team
 
-%% Initialize 
-clear
-% ieInit;
-
 %% Initialize parameters for RGC mosaic
+clear
 
-ecc = 0.03; % in mm, ecc = 1 deg
-fov = 0.25;
+% Specify retinal patch eccentricity and field of view;
+ecc = 0.03;    % in mm
+fov = 3*0.25;  % in degrees of visual angle
 
-experimentI   = 1;       % Choose dataset to load parameters and spikes
+% Choose the experimental dataset, cell type, and stimulus
+experimentI   = 1;       % Choose 1. RPE 2016-02-17-1, loads parameters and spikes
 cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
-stimulusTestI = 1;       % Choose 1
+stimulusTestI = 1;       % Choose 1. Moving bar
 %% Moving bar stimulus
+% In order to generate an isetbio stimulus, the user must choose a stimulus
+% and specify a set of parameters. For this tutorial, we work with a
+% stimulus that is a movie of a white bar on a background sweeping from
+% left to right.
 
-paramsStim.barWidth = 2;
-paramsStim.meanLuminance = 200;
-paramsStim.row = 64; params.col = 64;
+% Scene parameters
+params.barWidth = 2;
+params.row = 64; params.col = 64;
 
-paramsStim.expTime = 0.001;
-paramsStim.timeInterval = 0.001;
-paramsStim.nSteps = 150;     % Number of stimulus frames
+% Luminance
+params.meanLuminance = 200;
 
+% Temporal parameters
 upSampleFactor = 10;
-paramsStim.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
-paramsStim.expTime      = .001;%(1/125)/upSampleFactor;%0.001; % sec
+params.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
+params.expTime      = .001;%(1/125)/upSampleFactor;%0.001; % sec
+params.nSteps = 150;     % Number of stimulus frames
 
-paramsStim.fov = fov;
-paramsStim.radius = ecc;
-paramsStim.theta = 0;  % 3 oclock on the retina
-paramsStim.side = 'left';
+% Retina patch parameters
+params.fov = fov;       % set at top
+params.radius = ecc;    % set at top
+params.theta = 0;       % 3 oclock on the retina
+params.side = 'left';   % eye side, used for temporal equiv ecc
 
-params = paramsStim;
-% iStim = ieStimulusBar(paramsStim);
-% sensor = iStim.absorptions;
+% As an alternative to the below sections, the user may run this function
+% to get the cone absorptions in one step.
+% iStim = ieStimulusBar(params);
 
 %% Compute an empty scene as a placeholder for the bar image
 
 % Create display
 display = displayCreate('CRT-Sony-HorwitzLab');
 
-% Set up scene, oi and sensor
+% Set up default scene
 scene = sceneCreate();
 scene = sceneSet(scene, 'h fov', fov);
-% vcAddObject(scene); sceneWindow;
 
+% Custom isetbio tools to view the scene in a GUI
+% vcAddObject(scene); sceneWindow;
+ 
 %% Initialize the optics and the sensor
+
+% Generate the default optical image
 oi  = oiCreate('wvf human');
 
 if params.radius == 0
-    
+    % Assume foveal cone density
     absorptions = sensorCreate('human');
 
 else
-    
-    coneP = coneCreate; % The cone properties properties
+    % Generate cone mosaic with density according to eccentricitiy
+    coneP = coneCreate; % The default cone properties
     retinalRadiusDegrees = params.radius;
     retinalPolarDegrees  = params.theta;
     whichEye             = params.side;
@@ -79,6 +108,7 @@ else
     absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
 end
 
+% Scale the size of cone mosaic approrpiately
 absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
 
 % Set aspect ratio
@@ -90,28 +120,34 @@ sensorSize = sensorGet(absorptions,'size');
 aspectRatioMovie = sceneSize(1)/sceneSize(2);
 absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
 
-
+% @JRG: To do
+% Plot the cone mosaic
 %% Compute a dynamic set of cone absorptions for moving bar
 
+% Status of cone absorptions computation
 fprintf('Computing cone isomerizations:    \n');
 
-% Loop through frames to build movie
-% The number of steps must be smaller than the width of the scene
+% The number of steps must be smaller than the width of the scene for the
+% moving bar stimulus.
 nSteps = params.nSteps;
 if isempty(nSteps), 
     nSteps = sceneGet(scene,'cols') - params.barWidth; 
 end
 nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
 
+% Loop through frames to build the oi and absorptions over time
 for t = 1 : nSteps
         
+    % Build bar image with grayscale array
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
-    barMovie(:,t:(t+params.barWidth-1),:) = 1;          % White bar
+    barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar at appropriate position
 
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 
+    % Make sure FOV is correct
     scene = sceneSet(scene, 'h fov', fov);
+    % On first step, initialize the sceneRGB matrix
     if t ==1
         sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
     end
@@ -124,36 +160,33 @@ for t = 1 : nSteps
     
     % Compute absorptions
     absorptions = sensorCompute(absorptions, oi);
-
+    
+    % On first step, initialize the sensor volts matrix
     if t == 1
         volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
     end
     
+    % Store volts over time so they can be set in the sensor
     volts(:,:,t) = sensorGet(absorptions, 'volts');
-    
-    % vcAddObject(scene); sceneWindow
+        
 end
 
+% View scene in GUI
+% vcAddObject(scene); sceneWindow
+    
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-% These are both the results and the objects needed to recreate this
-% script. So calling isomerizationBar(iStim) should produce the same
-% results.
-
-iStim.params  = params;
-iStim.display = display;
-iStim.scene   = scene;
-iStim.sceneRGB = sceneRGB;
-iStim.oi      = oi;
-iStim.absorptions  = absorptions;
-
 sensor = absorptions;
+
+ieMovie(sceneRGB)
+
+% View movie of cone absorptions
+ieMovie(sensor.data.volts);
 %% Outer segment calculation - biophysical model
-% The iStim structure generates the movie, the scene, the oi and the
-% cone absorptions. The next step is to get the outer segment current. The
-% biophysical outer segment model is employed here.
+% The next step is to get the outer segment current. The biophysical outer
+% segment model is employed here.
 
 % % Initialize
 osB = osCreate('biophys');
@@ -166,26 +199,29 @@ osB = osSet(osB, 'patch size', patchSize);
 timeStep = sensorGet(sensor,'time interval','sec');
 osB = osSet(osB, 'time step', timeStep);
 
+% Set mean current of outer segment as boundary condition
 sensorVolts = sensorGet(sensor,'volts');
 paramsOS.bgVolts = 1*mean(sensorVolts(:));
 paramsOS.ecc = ecc; % mm
 clear sensorVolts
 
-osBSub = osB;
 % Compute the outer segment response to the absorptions with the linear
 % model.
 osB = osCompute(osB,sensor,paramsOS);
 
 % % Plot the photocurrent for a pixel.
-osPlot(osB,sensor);
+% osPlot(osB,sensor);
 
 % Subsample outer segment current
 % osB.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:8:end));
 
-
+ieMovie(osB.coneCurrentSignal);
 %% Find bipolar responses
+% Build the bipolar mosaic and compute the response
+
 clear bp
-% os = osBSub;
+
+% Select the correct type of bipolar cell based on the user-specified RGC mosaic.
 switch cellTypeI
     case 1
         bpParams.cellType = 'onDiffuse';
@@ -198,25 +234,29 @@ switch cellTypeI
     case 5
         bpParams.cellType = 'onDiffuse';
 end
-% sets filter as theoretical, mean physiology, or individual phys:
+
+% Sets filter as theoretical, mean physiology, or individual phys:
 bpParams.filterType = 1; 
-% sets linear, on half-wave rectification, or on and off half-wave rect
+
+% Sets linear, on half-wave rectification, or on and off half-wave rect
 bpParams.rectifyType = 1;
 % bpParams.rectifyType = 3;
 
+% Make sure bipolar cells have the right eccentricity
 bpParams.ecc = ecc;
 
+% Initialize the bipolar object
 bp = bipolar(osB, bpParams);
 
+% Compute the bipolar mosaic response
 bp = bipolarCompute(bp, osB);
 
+% Visualize the bipolar mosaic response
 % bipolarPlot(bp,'response');
+ieMovie(bp.responseCenter);
 
-%%
-% experimentI   = 1;       % Choose dataset to load parameters and spikes
-% cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
-% stimulusTestI = 1;       % Choose WN test stimulus (1) or NSEM test stimulus (2)
-    
+%% Set RGC mosaic parameters
+
 % Switch on the conditions indices
 % Experimental dataset
 switch experimentI
@@ -227,31 +267,25 @@ end
 
 % Stimulus: white noise or natural scene movie with eye movements
 switch stimulusTestI
-    case 1; stimulusTest = 'WN';
-    case 2; stimulusTest = 'NSEM';
+    case 1; stimulusTest = 'bar';
 end
 
 % Cell type: ON or OFF Parasol
 switch cellTypeI
     case 1; 
         cellType = 'On Parasol RPE';      
-        fov = 4*0.25;
     case 2; 
-        cellType = 'Off Parasol RPE';              
-        fov = 6*0.25;
+        cellType = 'Off Parasol RPE';        
     case 3; 
         cellType = 'On Midget RPE';        
-        fov = 1*0.25;
     case 4; 
         cellType = 'Off Midget RPE';
-        fov = 1*0.25;
     case 5; 
         cellType = 'SBC RPE';
-        fov = 6*0.25;
 end
 
-%%
-% Set parameters
+%% Set other RGC mosaic parameters
+
 clear params innerRetinaSU
 params.name = 'macaque phys';
 params.eyeSide = 'left'; 
@@ -259,45 +293,41 @@ params.eyeRadius = ecc;
 params.fov = fov;
 params.eyeAngle = 0; ntrials = 0;
 
-% Determined at beginning to allow looping
+% Determined at beginning by user
 params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
-params.cellIndices = 10;
-
+% Set flag for average mosaic
 params.averageMosaic = 1;
 
+% Tell the RGC mosaic about how many bipolars per cone
 params.inputScale = size(bp.sRFcenter,1);
 params.inputSize = size(bp.responseCenter);
 
-% Create object
+% Create RGC object
 innerRetinaSU = irPhys(bp, params);
 nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
-%% Compute the inner retina response
-
-% Linear convolution
-innerRetinaSU = irCompute(innerRetinaSU, bp); 
-
-% innerRetinaSU = irComputeContinuous(innerRetinaSU, bp); 
-% innerRetinaSU = irNormalize(innerRetinaSU, innerRetina);
-% innerRetinaSU = irComputeSpikes(innerRetinaSU); 
-
-% Get the PSTH from the object
-innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
-
-figure; plot(vertcat(innerRetinaSUPSTH{:})')
-title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),fov));
-xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
-set(gca,'fontsize',14);
-axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
-grid on;
 
 %% Plot the cone, bipolar and RGC mosaics
 
 mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 
+%% Compute the inner retina response
+
+innerRetinaSU = irCompute(innerRetinaSU, bp); 
+
+% Get the PSTH from the object
+innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
+
+% Plot all of the PSTHs together
+% figure; plot(vertcat(innerRetinaSUPSTH{:})')
+% title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),fov));
+% xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
+% set(gca,'fontsize',14);
+% axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
+% grid on;
+
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
-ieMovie(psthMovie(3:end-2,:,200:end-50));

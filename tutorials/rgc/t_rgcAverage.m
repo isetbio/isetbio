@@ -24,11 +24,11 @@ clear
 %% Initialize parameters for RGC mosaic
 
 ecc = 0.03; % in mm, ecc = 1 deg
-fov = 0.25;
+fov = 3*0.25;
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
-stimulusTestI = 1;       % Choose 1
+stimulusTestI = 1;       % Choose 1. Moving bar, 
 %% Moving bar stimulus
 
 paramsStim.barwidth = 2;
@@ -37,7 +37,7 @@ paramsStim.row = 64; params.col = 64;
 
 paramsStim.expTime = 0.001;
 paramsStim.timeInterval = 0.001;
-paramsStim.nSteps = 15;     % Number of stimulus frames
+paramsStim.nSteps = 150;     % Number of stimulus frames
 
 upSampleFactor = 10;
 paramsStim.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
@@ -136,19 +136,19 @@ end
 switch cellTypeI
     case 1; 
         cellType = 'On Parasol RPE';      
-        fov = 4*0.25;
+%         fov = 4*0.25;
     case 2; 
         cellType = 'Off Parasol RPE';              
-        fov = 6*0.25;
+%         fov = 6*0.25;
     case 3; 
         cellType = 'On Midget RPE';        
-        fov = 1*0.25;
+%         fov = 1*0.25;
     case 4; 
         cellType = 'Off Midget RPE';
-        fov = 1*0.25;
+%         fov = 1*0.25;
     case 5; 
         cellType = 'SBC RPE';
-        fov = 6*0.25;
+%         fov = 6*0.25;
 end
 
 %%

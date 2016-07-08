@@ -96,6 +96,18 @@ methods
         
         % Build spatial receptive field
         
+        % This plot is based off of this passage from Dacey, Brainard, Lee,
+        % et al., Vision Research, 2000, page 1808 bottom right.
+        % (http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf)
+        %
+        % Also see Boycott & Wassle, 1991,  (European Journal of Neuroscience), Table 1.
+        %
+        % Likely the larger RF sizes measured physiological (Dacey et al.)
+        % vs anatomically (B&W) reflect spread of signals among cones (via direct
+        % gap junctions) and probably more important among cone bipolars
+        % (via gap junctions with AII amacrine cells). - Fred
+        
+        %         @JRG incorporate preferntial cone selection to bipolar rfs
         switch obj.cellType
             case{'onDiffuse','offDiffuse'}
                 % ecc = 0 mm yields 2x2 cone input to bp
