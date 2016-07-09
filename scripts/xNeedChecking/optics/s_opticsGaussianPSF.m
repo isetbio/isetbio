@@ -10,22 +10,22 @@
 %
 % Copyright ImagEval Consultants, LLC, 2006
 
-clear all
+%% ieInit
 
 wave = (450:100:650);
 nWaves = length(wave);
 
-% Create scene
+%% Create scene
 scene = sceneCreate('pointArray',128,32);
 scene = sceneInterpolateW(scene,wave);
 scene = sceneSet(scene,'hfov',1);
 scene = sceneSet(scene,'name','psfPointArray');
 vcAddAndSelectObject('scene',scene); sceneWindow;
 
-% Create optical image
+%% Create optical image
 %
 oi = oiCreate;
-oi = oiSet(oi,'spectrum',sceneGet(scene,'spectrum'));
+% oi = oiSet(oi,'spectrum',sceneGet(scene,'spectrum'));
 
 % Calculate Gaussian PSF
 %
@@ -41,3 +41,5 @@ oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 vcAddAndSelectObject('oi',oi); 
 oiWindow;
+
+%%

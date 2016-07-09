@@ -233,50 +233,48 @@ switch parm
     case {'meanillum', 'meanilluminance'}
         oi.data.meanIll = val;
 
-    case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
-        % Set spectrum structure
-        if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
-        % adjust wavelength sampling
-        if isfield(oi, 'spectrum')
-            oi = oiSet(oi, 'wave', val.wave);
-        else
-            oi.spectrum = val;
-        end
-    case {'wave','wavelength','wavelengthnanometers'}
+        % 
+        %     case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
+        %         % Set spectrum structure
+        %         if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
+        %         % adjust wavelength sampling
+        %         if isfield(oi, 'spectrum')
+        %             oi = oiSet(oi, 'wave', val.wave);
+        %         else
+        %             oi.spectrum = val;
+        %         end
+    case {'datawave','datawavelength','wave','wavelength'}
         % oi = oiSet(oi,'wave',val)
-        % Set sampling wavelength if new sampling is not the same as
-        % existing wavelength sampling
+        % The units are always nanometers.
+        %
+        % Set wavelength samples.  This only acts if the new data
+        % wavelength samples differ from the existing wavelength sampling
         if isequal(oiGet(oi, 'wave'), val(:)), return; end
         
-        % Interpolate photons because the wavelength is changed
-        % Not sure we need to do this, so for now I am commenting it out.
-        % Maybe we should clear the data since it is no longer consistent.
-        %         p = oiGet(oi, 'photons');
-        %         if ~isempty(p)
-        %             [p, r, c] = RGB2XWFormat(p); % switch to XW format
-        %             p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
-        %             p = XW2RGBFormat(p', r, c);
-        %             oi = oiSet(oi, 'photons', p);
-        %         end
-        
-        % Set new wavelegnth samples.  
-        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; end
+        % Set new wavelength samples.  
+        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; 
+        else oldWave = [];
+        end
         oi.spectrum.wave = val(:);
+        
+        % We should probably not adjust lens, but leave it and simply
+        % interpolate the lens data when we use it to calculate.  The same
+        % for the macular pigment.
         if checkfields(oi, 'optics', 'lens')
             oi.optics.lens.wave = val(:);
         end
         
-        % At this point the photon data might be inconsistent.  
-        % One possibility is to ignore this and let the next computation
-        % take care of it.  But I think we won't be able to open the
-        % oiWindow in this sate.
+        % At this point the photon data might be inconsistent with the
+        % photons wavelength. One possibility is to ignore this and let the
+        % next computation take care of it.  But I think we won't be able
+        % to open the oiWindow in this state.
         % 
-        % So, we zero the data if the wavelength information doesn't match.
-        % We don't clear the data, however, because the row/col information
-        % include spatial measurements that are needed subsequently.
+        % So, we either interpolate the data, or if this is an
+        % extrapolation case we fill with zeros. We don't clear the data,
+        % however, because the row/col information include spatial
+        % measurements that are needed subsequently.
         if checkfields(oi,'data','photons')
-            % Ok, so now we have to deal with the photon data.  If we are
-            % here, we know there is a mis-match.
+            % Ok, so now we have to interpolate the photon data.
             if oldWave(1) < val(1) && oldWave(end) > val(end)
                 % Interpolation OK.  If the original is monochromatic, we
                 % can't interpolate. 

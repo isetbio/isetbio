@@ -41,6 +41,10 @@ else sz = oiGet(oi,'size');
         if ~isempty(meanIll)
             txt = addText(txt, sprintf('  Illum:       %.1f lux\n',meanIll));
         end
+        
+        fov = oiGet(oi,'hfov');
+        txt = addText(txt, sprintf('  FOV (wide):    %.1f deg\n',fov));
+        
     end
 end
 

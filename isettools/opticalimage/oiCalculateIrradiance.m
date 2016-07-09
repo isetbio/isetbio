@@ -1,7 +1,7 @@
 function irradiance = oiCalculateIrradiance(scene,optics)
 %Calculate optical image irradiance
 %
-%  irradiance = oiCalculateIrradiance(scene,optics)
+%  irradiance = oiCalculateIrradiance(scene, optics (can be an oi))
 %
 % The scene spectral radiance (photons/s/m2/sr/nm) is turned into optical
 % image irradiance (photons/s/m2/nm) based on information in the optics.
@@ -36,6 +36,12 @@ function irradiance = oiCalculateIrradiance(scene,optics)
 %    William L. Wolfe, Introduction to Radiometry, SPIE Press, 1998.
 %
 % Copyright ImagEval Consultants, LLC, 2005.
+
+% optics might be an oi or an optics
+if isequal(optics.type,'opticalimage')
+    % It is an oi, so get the optics from it
+    optics = oiGet(optics,'optics');
+end
 
 % Scene data are in radiance units
 radiance = sceneGet(scene, 'photons');

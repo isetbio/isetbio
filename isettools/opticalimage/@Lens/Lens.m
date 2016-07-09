@@ -83,6 +83,7 @@ classdef Lens
         
         function val = get.transmittance(obj)
             % compute proportion of quanta transmitted
+            % Can interpolate
             val = 10.^(-obj.spectralDensity);
         end
         

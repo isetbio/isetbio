@@ -48,6 +48,13 @@ switch lower(opticsType)
     case {'diffraction','diffractionlimited'}
         % Standard camera (cell phone) optics
         optics = opticsDiffraction;
+        
+        % For diffraction case, set lens transmittance to 1
+        % Perhaps we should allow the transmittance to be set freely as in
+        % ISET?  Or ...
+        optics.lens = Lens;  % Human lens object
+        optics.lens.density = 0;   % Pigment density set to 0 
+        
     case {'default','human','humanmw'}
         % Optics for the Marimont and Wandell human eye
         % Pupil radius in meters.  Default is 3 mm
@@ -59,7 +66,8 @@ switch lower(opticsType)
         optics = opticsHuman(pupilRadius);
         optics = opticsSet(optics, 'model', 'shift invariant');
         optics = opticsSet(optics, 'name', 'human-MW');
-        
+        optics.lens = Lens;  % Default human lens object
+
     case {'wvfhuman'}
         % Optics based on Zernike polynomial wavefront model estimated by
         % Thibos.
@@ -85,6 +93,9 @@ switch lower(opticsType)
         optics = oiGet(wvf2oi(wvfP),'optics');        
         optics = opticsSet(optics, 'model', 'shiftInvariant');
         optics = opticsSet(optics, 'name', 'human-wvf');        
+        
+        % Add Lens by default, now.
+        optics.lens = Lens;
 
     case 'mouse'
         % Pupil radius in meters.  

@@ -462,14 +462,14 @@ switch parm
         if length(wave) > 1, val = wave(2) - wave(1);
         else val = 1;
         end
-    case {'wave', 'wavelength'}
-        % oiGet(oi,'wave')
-        % There is a problem that the oi spectrum might differ from the
-        % optics spectrum.  There should only be one, and it should
-        % probably be part of the optics.  To smooth the transition to that
-        % wonderful day, I returning the optics spectrum if there is no oi
-        % spectrum.
-        % Always a column vector, even if people stick it in the wrong way.
+    case {'datawave','photonswave','photonswavelength','wave', 'wavelength'}
+        % oiGet(oi,'wave') 
+        % There are a number of different 
+        % differ from the optics spectrum.  There should only be one, and
+        % it should probably be part of the optics.  To smooth the
+        % transition to that wonderful day, we return the optics spectrum
+        % if there is no oi spectrum. Always a column vector, even if
+        % people stick it in the wrong way.
         if checkfields(oi,'spectrum', 'wave'), 
             val = oi.spectrum.wave(:); 
         elseif checkfields(oi,'optics','spectrum', 'wave'), 
@@ -481,7 +481,8 @@ switch parm
         end
     case {'nwave','nwaves'}
         % oiGet(oi,'n wave')
-        val = length(oiGet(oi,'wave'));
+        % Refers to data wave.
+        val = length(oiGet(oi,'data wave'));
         
     case 'height'
         % Height in meters is default

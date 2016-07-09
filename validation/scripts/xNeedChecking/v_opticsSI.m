@@ -36,7 +36,7 @@ for ii=1:length(wave), psf(:,:,ii) = h; end     % PSF data
 ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
 
 % Read the custom data and put it into an optics structure.
-oi = oiCreate;
+oi = oiCreate('diffraction');
 optics = siSynthetic('custom',oi,'customFile','deleteMe');
 
 %% Make sure the program knows you want to use shift invariant
@@ -51,20 +51,5 @@ oi = oiCompute(scene,oi);
 % Show the OI window
 vcReplaceAndSelectObject(oi);
 oiWindow;
-
-%%
-% Use Analyze | Optics | XXX to plot various functions in the optics
-% (optical image) window.
-
-%% Try importing a standard file
-
-fullName = fullfile(isetRootPath,'data','optics','si2x1GaussianWaveVarying.mat');
-newVal   = vcImportObject('OPTICS',fullName);
-oi       = vcGetObject('oi');
-oi       = oiCompute(scene,oi);
-vcReplaceAndSelectObject(oi);
-oiWindow;
-delete('customFile.mat');
-%delete('deleteMe.mat');
 
 %% End

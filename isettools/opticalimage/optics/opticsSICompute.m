@@ -17,16 +17,18 @@ showWbar = ieSessionGet('waitbar');
 
 % Compute the basic parameters of the oi from the scene parameters.
 oi = oiSet(oi, 'wangular', sceneGet(scene,'wangular'));
-oi = oiSet(oi, 'wave', sceneGet(scene, 'wave'));
+oi = oiSet(oi, 'data wave', sceneGet(scene, 'wave'));
 
 % This is the default compute path
 optics = oiGet(oi, 'optics');
 
 if isempty(opticsGet(optics, 'otf data')), error('No otf data'); end
 
-% We use the custom data.
-optics = opticsSet(optics, 'spectrum', oiGet(oi,'spectrum'));
-oi     = oiSet(oi, 'optics', optics);
+% We use the optics at the data wavelength values.
+% Testing what happens when we remove this.  Seems like nothing happens.
+% The v_oi script runs fine.
+%   optics = opticsSet(optics, 'spectrum', oiGet(oi,'spectrum'));
+%   oi     = oiSet(oi, 'optics', optics);
 
 % Convert radiance units to optical image irradiance (photons/(s m^2 nm))
 if showWbar
@@ -77,7 +79,11 @@ end
 
 % Apply lens pigment tranmittance
 lens = oiGet(oi, 'lens');
-p = oiGet(oi, 'photons');
+p    = oiGet(oi, 'photons');
+
+% We have to get the transmittance at the same wavelengths as the oi
+% data
+lens.wave = oiGet(oi,'data wave');
 transmittance = reshape(lens.transmittance, 1, 1, []);
 oi = oiSet(oi, 'photons', bsxfun(@times, p, transmittance));
 

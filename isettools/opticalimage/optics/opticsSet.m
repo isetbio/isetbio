@@ -41,15 +41,12 @@ function optics = opticsSet(optics,parm,val,varargin)
 %      {'focallength'}   - Focal distance for image at infinity (meters)
 %      {'transmittance'} - Wavelength transmittance  ([0,1])
 %
-% Wavelength information
-%      {'spectrum'}  - Wavelength information structure
-%        {'wave'}    - Wavelength samples
-%
 % OTF Information for shift-invariant optics model
 %      {'otfdata'}   - Used to store custom data.  Row x Col x Wave
 %      {'otffx'}     - frequency samples across col of otfdata (cyc/mm)
 %      {'otffy'}     - frequency samples down rows of otfdata  (cyc/mm)
 %      {'otfwave'}   - otf wavelengths
+%      {'lens'}      - lens object specifying transmittance
 %
 % Relative illumination data
 %      {'relillummethod'}   - 
@@ -92,9 +89,12 @@ switch parm
         
     case {'spectrum'}
         % Spectrum structure
+        warning('optics spectrum set, line 92')
         optics.spectrum = val;
+        
     case {'wavelength', 'wave'}
-        % Change wavelength sampling
+        % This appears to be unnecessary.  In fact, the whole
+        % optics.spectrum slot may be unnecessary.
         %
         % We used to change the OTF at the same time.  But this is not
         % necessary because the OTF structure has a wave term, and when we
@@ -107,6 +107,7 @@ switch parm
         % thing to check is whether it is used for diffraction.
         
         % Set new wavelength 
+        warning('optics spectrum wave set, line 110')
         optics.spectrum.wave = val(:);
         
     case {'transmittance','opticaltransmittance'}
@@ -114,6 +115,9 @@ switch parm
             error('Transmittance should be in [0,1].')
         end
         optics.transmittance = val;
+    case {'lens'}
+        % New lens object.  This should replace transmittance.
+        optics.lens = val;
 
     % ---- Relative illumination calculations
     case {'offaxis','offaxismethod','relillummethod','cos4thflag'}
