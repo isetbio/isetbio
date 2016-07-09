@@ -247,32 +247,35 @@ switch parm
         % oi = oiSet(oi,'wave',val)
         % The units are always nanometers.
         %
-        % Set wavelength samples.  This only acts if the new data
-        % wavelength samples differ from the existing wavelength sampling
+        % Set wavelength samples for the data variable. This is set during
+        % the oiCompute to match the scene data.  If you set it here, this
+        % will either interpolate the data or zero the data (no
+        % extrapolation is allowed).
+        
+        % If the set is the same as what exists, just return.
         if isequal(oiGet(oi, 'wave'), val(:)), return; end
         
-        % Set new wavelength samples.  
+        % Set the data wavelength term, for now stored in spectrum.  It
+        % will get shifted to oi.data.wave at some point.
         if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; 
         else oldWave = [];
         end
         oi.spectrum.wave = val(:);
         
-        % We should probably not adjust lens, but leave it and simply
-        % interpolate the lens data when we use it to calculate.  The same
-        % for the macular pigment.
+        % Adjusting this parameter simply changes how we interpolate the
+        % lens for computing. The full lens data are stored permanently.
         if checkfields(oi, 'optics', 'lens')
             oi.optics.lens.wave = val(:);
         end
         
         % At this point the photon data might be inconsistent with the
-        % photons wavelength. One possibility is to ignore this and let the
-        % next computation take care of it.  But I think we won't be able
-        % to open the oiWindow in this state.
-        % 
-        % So, we either interpolate the data, or if this is an
-        % extrapolation case we fill with zeros. We don't clear the data,
-        % however, because the row/col information include spatial
-        % measurements that are needed subsequently.
+        % data wavelength. We either 
+        %   * interpolate the data, or 
+        %   * if this is an extrapolation case we fill with zeros. 
+        %
+        % We don't clear the data because the row/col information include
+        % spatial measurements that are needed subsequently.
+        %
         if checkfields(oi,'data','photons')
             % Ok, so now we have to interpolate the photon data.
             if oldWave(1) < val(1) && oldWave(end) > val(end)
