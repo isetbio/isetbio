@@ -151,7 +151,7 @@ switch pType
         if size(data,1) == 1
             % Manage monochrome data
             plot(posMicrons.x,data');
-            xlabel('Position (mm)');
+            xlabel('Position (um)');
             ylabel('Irradiance (q/s/nm/m^2)');
             title('Monochrome image')
             grid on; set(gca,'xtick',ieChooseTickMarks(posMicrons.x))
