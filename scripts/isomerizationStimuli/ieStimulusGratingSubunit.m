@@ -143,7 +143,9 @@ for t = 1 : nSteps
 %     end
     
 %     barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/200));
-    barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/(100/params.freq)));
+
+    % barMovie = 0.5+1*(barMovie - 0.5)*sin(2*pi*((t-1)/(100/params.freq)));
+    barMovie = ((0.5+1*(barMovie - 0.5)*(sin(2*pi*((t-1)/(100/params.freq)))))>0.5);
       
 %     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
     barMovieResize = barMovie(params.barWidth+1:params.barWidth+sceneSize(1),1:sceneSize(2),:);
@@ -151,8 +153,11 @@ for t = 1 : nSteps
 %         barMovieResize = ones(size(barMovieResize))*0.5;
 %         barMovieResize(1,1,:) = ones(1,1,3);
 %     end
-    barMovieResize(1,1,:) = ones(1,1,3);
-    barMovieResize(1,2,:) = zeros(1,1,3);
+%     barMovieResize(1,1,:) = ones(1,1,3);
+%     barMovieResize(1,2,:) = zeros(1,1,3);
+    
+    barMovie(1,1,:) = ones(1,1,3);
+    barMovie(1,2,:) = zeros(1,1,3);
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 

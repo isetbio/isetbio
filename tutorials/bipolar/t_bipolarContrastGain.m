@@ -16,7 +16,7 @@ ieInit
 
 % Specify retinal patch eccentricity and field of view;
 ecc = 0.03;    % in mm
-fov = 3*0.25;  % in degrees of visual angle
+fov = 2*0.25;  % in degrees of visual angle
 
 % Choose the experimental dataset, cell type, and stimulus
 experimentI   = 1;       % Choose 1. RPE 2016-02-17-1, loads parameters and spikes
@@ -27,7 +27,7 @@ stimulusTestI = 1;       % Choose 1. Moving bar
 stimulusSelect = 1;
 nSteps = 100;
 barWidth = 40;
-freq = 5;
+freq = 2;
 
 switch stimulusSelect
     case 1
@@ -234,8 +234,8 @@ innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
 
 % Plot all of the PSTHs together
 % figure; plot(vertcat(innerRetinaSUPSTH{:})')
-figure; plot(vertcat(innerRetinaSUPSTH{21})')
-title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
+figure; plot(vertcat(innerRetinaSUPSTH{155})')
+title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc/.3));
 xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
 set(gca,'fontsize',14);
 % axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
@@ -244,3 +244,4 @@ grid on;
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
+ieMovie(psthMovie)
