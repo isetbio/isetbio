@@ -54,13 +54,15 @@ if obj.filterType == 1
     rdt = RdtClient('isetbio');
     rdt.crp('resources/data/rgc');
     if strcmpi(obj.cellType,'offDiffuse')
-        data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+%         data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
 %         load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all.mat')
+        load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_fr150.mat')
     else
-        data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+%         data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
 %         load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all.mat')
+        load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all_fr150.mat')
     end
-    bipolarFiltMat = data.bipolarFiltMat;
+%     bipolarFiltMat = data.bipolarFiltMat;
 
     % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
     
@@ -80,15 +82,16 @@ elseif obj.filterType == 2
     
 elseif obj.filterType == 3
         % RDT initialization
-    rdt = RdtClient('isetbio');
-    rdt.crp('resources/data/rgc');
-    if strcmpi(obj.cellType,'offDiffuse')
-        data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
-    else
-        data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
-    end
-    bipolarFiltMat = data.bipolarFiltMat;
+%     rdt = RdtClient('isetbio');
+%     rdt.crp('resources/data/rgc');
+%     if strcmpi(obj.cellType,'offDiffuse')
+%         data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
+%     else
+%         data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+%     end
+%     bipolarFiltMat = data.bipolarFiltMat;
 %     load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+   load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all_linear_fr150.mat');
     
     bipolarFilt = (bipolarFiltMat(obj.cellLocation,:)');
 end
@@ -99,26 +102,29 @@ end
 % bipolarFilt = bipolarFiltMat;
 
 
-% bipolarFilt = (bipolarFiltMat(1,:)');
-if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
-    bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
-    bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
-    bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
-else
-
-    bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
-    
-    bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
-    bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
-    
-end
-
+% % bipolarFilt = (bipolarFiltMat(1,:)');
+% if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
+%     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
+%     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
+%     bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
+% else
 % 
-bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+%     bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
+%     
+%     bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
+%     bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
+%     
+% end
+% 
+% % 
+% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
+% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+% 
+% bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+% bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 
-bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
 
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
@@ -130,6 +136,7 @@ bipolarOutputLinearCenter = reshape(bipolarOutputCenterRSRZ,szSubSample(1),szSub
 bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
 % figure; plot(squeeze(bipolarOutputLinear(20,20,:)));
 
+%% Calculate contrast gain adjustment
 
 %% Attach output to object
 % obj.responseCenter = os.coneCurrentSignal;

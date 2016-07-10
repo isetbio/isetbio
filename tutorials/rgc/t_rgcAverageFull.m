@@ -46,7 +46,7 @@ fov = 3*0.25;  % in degrees of visual angle
 
 % Choose the experimental dataset, cell type, and stimulus
 experimentI   = 1;       % Choose 1. RPE 2016-02-17-1, loads parameters and spikes
-cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
+cellTypeI     = 7;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
 stimulusTestI = 1;       % Choose 1. Moving bar
 %% Moving bar stimulus
 % In order to generate an isetbio stimulus, the user must choose a stimulus
@@ -108,6 +108,17 @@ else
     absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
 end
 
+% Get the cone mosaic and plot it
+cone_mosaic = sensorGet(absorptions,'cone type');
+vcNewGraphWin; imagesc(cone_mosaic); colormap jet;
+
+% Set cone mosaic
+% cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+blueIndices = find(cone_mosaic==0);
+cone_mosaic(blueIndices) = 2;
+absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+
 % Scale the size of cone mosaic approrpiately
 absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
 
@@ -159,6 +170,12 @@ for t = 1 : nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions
+    
+    % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+    
+    % Set cone mosaic
+    cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+    absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
     absorptions = sensorCompute(absorptions, oi);
     
     % On first step, initialize the sensor volts matrix
@@ -201,7 +218,7 @@ osB = osSet(osB, 'time step', timeStep);
 
 % Set mean current of outer segment as boundary condition
 sensorVolts = sensorGet(sensor,'volts');
-paramsOS.bgVolts = 1*mean(sensorVolts(:));
+paramsOS.bgVolts = 10*mean(sensorVolts(:));
 paramsOS.ecc = ecc; % mm
 clear sensorVolts
 
@@ -223,7 +240,7 @@ clear bp
 
 % Select the correct type of bipolar cell based on the user-specified RGC mosaic.
 switch cellTypeI
-    case 1
+    case {1,6}
         bpParams.cellType = 'onDiffuse';
     case 2
         bpParams.cellType = 'offDiffuse';
@@ -282,6 +299,26 @@ switch cellTypeI
         cellType = 'Off Midget RPE';
     case 5; 
         cellType = 'SBC RPE';
+    case 6;
+        cellType = 'On Parasol Apricot';
+        
+    case 7;
+        cellType = 'On Parasol Apricot';
+        
+    case 8;
+        cellType = 'Off Parasol Apricot';
+        
+    case 9;
+        cellType = 'On Midget Apricot';
+        
+    case 10;
+        cellType = 'SBC Apricot';
+    case 11 
+        cellType = 'on parasol';
+    case 12 
+        cellType = 'off parasol';
+    otherwise;
+        cellType = 'On Parasol RPE';
 end
 
 %% Set other RGC mosaic parameters
@@ -321,12 +358,12 @@ innerRetinaSU = irCompute(innerRetinaSU, bp);
 innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
 
 % Plot all of the PSTHs together
-% figure; plot(vertcat(innerRetinaSUPSTH{:})')
-% title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),fov));
-% xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
-% set(gca,'fontsize',14);
-% axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
-% grid on;
+figure; plot(vertcat(innerRetinaSUPSTH{:})')
+title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
+xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
+set(gca,'fontsize',14);
+axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
+grid on;
 
 %% Make a movie of the PSTH response
 

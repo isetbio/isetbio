@@ -321,15 +321,15 @@ switch ieParamFormat(params.what)
                 xcellstart = 1; ycellstart = 1;
             end
             
-            if strcmpi(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),'offparasol')
-                offMult = -1;
-            else 
-                offMult = 1;
-            end
+            offMult = 1;
+
             
             for xcell = xcellstart:nCells(1)
                 for ycell = ycellstart:nCells(2)
             if strcmpi(class(obj.mosaic{cellTypeInd}),'rgcphys')
+                if strcmpi(ieParamFormat(obj.mosaic{cellTypeInd}.cellType),'offparasol')
+                    offMult = -1;
+                end
                 plot(0:timeStep:timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),offMult*((obj.mosaic{cellTypeInd}.tCenter{xcell,ycell})),'r','linewidth',4)
                 line([0 timeStep*(-1+length(obj.mosaic{cellTypeInd}.tCenter{xcell,ycell}))], [0 0]);
             else

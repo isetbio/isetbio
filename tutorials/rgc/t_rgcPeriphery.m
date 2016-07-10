@@ -87,7 +87,7 @@ switch cellTypeI
         data = rdt.readArtifact('xval_mosaic_WN_ONSBC_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
 end
-
+frameRate = 1/121;
 % Load OS from RDT (1) or run from scratch (0)
 loadOS = 0;
 %% Load stimulus movie and fit/spiking data using RemoteDataToolbox
@@ -125,8 +125,8 @@ ieMovie(testmovieshort(:,:,1:showFrames));
 paramsStim.nsteps = 1;
 
 %  Bipolar filter is setfor 0.001 sec, so it needs to be 0.001
-paramsStim.timeInterval = 1/125;%0.001; % sec
-paramsStim.expTime = 1/125;%0.001; % sec
+paramsStim.timeInterval = 1/frameRate;%0.001; % sec
+paramsStim.expTime = 1/frameRate;%0.001; % sec
 
 % % For 2013-08-19-6
 % r = 12 mm = 36 degs;
@@ -254,7 +254,7 @@ nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 % Linear convolution
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
 
-innerRetinaSU = irSet(innerRetinaSU,'timing',1/120);
+innerRetinaSU = irSet(innerRetinaSU,'timing',1/frameRate);
 
 % Get the PSTH from the object
 innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
@@ -266,7 +266,7 @@ innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
 % store the movie stimulus in the the outer segment object 'displayRGB'.
 
 os1 = osCreate('displayRGB'); 
-os1 = osSet(os1, 'timeStep', 1/120);
+os1 = osSet(os1, 'timeStep', 1/frameRate);
 
 % Attach the movie to the object
 os1 = osSet(os1, 'rgbData', double(testmovieshort));

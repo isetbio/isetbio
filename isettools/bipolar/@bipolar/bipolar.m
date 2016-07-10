@@ -118,9 +118,12 @@ methods
                 bpSizeSurround = sizeScale;
 %                 obj.sRFcenter = ones(sizeScale).*sizeScale^2;
 %                 obj.sRFsurround = ones(sizeScale).*sizeScale^2;
-                obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-                obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
-        
+                rfCenterBig = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+                
+                obj.sRFcenter = rfCenterBig(:,:);
+                obj.sRFsurround = rfSurroundBig(:,:);
+                
             case{'onMidget','offMidget'}
                 
                 % ecc = 0 mm yields 1x1 cone input to bp

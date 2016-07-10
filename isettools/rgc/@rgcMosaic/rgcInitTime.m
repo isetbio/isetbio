@@ -19,7 +19,7 @@ rfTempMult = [1 -1 1 -1 1];       % invert IR for OFF paraosl and midget
 % vectors, one for each RGB channel. They have similar shapes but different
 % polarities and relative magnitudes depending on the cell type.
 switch ieParamFormat(rgcM.cellType)
-    case{'smallbistratified'}
+    case{'smallbistratified','sbc'}
         % SBCs have the B channel impulse response reversed in polarity
         rgbTempMult = [-0.4 -0.4 1]; % [R G B] magnitudes
     otherwise

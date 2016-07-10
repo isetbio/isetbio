@@ -123,15 +123,26 @@ switch ieParamFormat(cellType)
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('mosaicGLM_RPE_onSBC', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        
+    case{'onparasolapricot'}
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONParasol.mat','mosaicGLM')
+    case{'offparasolapricot'}
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFParasol.mat','mosaicGLM')
+    case{'onmidgetapricot'}
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONMidget.mat','mosaicGLM')
+    case{'offmidgetapricot'}
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFMidget.mat','mosaicGLM')
+    case{'onsbcapricot','sbcapricot'}
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_sbc.mat','mosaicGLM')
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6_fits.mat')
 
-        rdt.crp('resources/data/rgc');
-        data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
-        
+%         rdt.crp('resources/data/rgc');
+%         data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/goodind_2013_08_19_6_OFFParasol.mat')
         rdt = RdtClient('isetbio');
         rdt.crp('resources/data/rgc');                              
@@ -139,15 +150,16 @@ switch ieParamFormat(cellType)
         goodind = data2.goodind;
     otherwise % case 'onparasol'
 %         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
-%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6_fits.mat')
+        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
 
-        rdt.crp('resources/data/rgc');
-        data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;        
-        
-        rdt = RdtClient('isetbio');
-        data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
-        goodind = data2.goodind;
+%         rdt.crp('resources/data/rgc');
+%         data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;        
+%         
+%         rdt = RdtClient('isetbio');
+%         rdt.crp('resources/data/rgc');
+%         data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
+%         goodind = data2.goodind;
 end
 
 goodind = 1:length(mosaicGLM);
@@ -224,27 +236,27 @@ switch(averageFlag)
             
             % RPE data set - need to put on RDT
             % Fit values from Dacey 2000 and Croner & Kaplan 1994
-            case {'onparasol','onparasolrpe'}
+            case {'onparasol','onparasolrpe','onparasolapricot'}
                 b = 25;%68.3968/3; 
                 m = 18.9211;
                 b2 = .0218; m2 = .0065;
                 ecc0 = 10.9;
-            case {'offparasol','offparasolrpe'}
+            case {'offparasol','offparasolrpe','offparasolapricot'}
                 b = 25;%68.3968/3; 
                 m = 0.85*18.9211;
                 m = 0.85*18.9211;
                 b2 = .0218; m2 = 0.85*.0065;
                 ecc0 = 10.9;
-            case {'onmidget','onmidgetrpe'}
+            case {'onmidget','onmidgetrpe','onmidgetapricot'}
                 b = -8.110; m = 10.7629;    
                 b2 = .0059; m2 = .0034;
                 ecc0 = 10.9;
-            case {'offmidget','offmidgetrpe'}
+            case {'offmidget','offmidgetrpe','offmidgetapricot'}
                 b = -8.110; m = 0.85*10.7629;   
                 b2 = .0059; m2 = 0.85*.0034;
                 ecc0 = 10.9;
-            case {'sbc','onsbcrpe','sbcrpe'}
-                b = 35%70.2865; 
+            case {'sbc','onsbcrpe','sbcrpe','sbcapricot'}
+                b = 35;%70.2865; 
                 m = 20;%15.8208;
                 b2 = 70.2865; m2 = 15.8208;
                 ecc0 = 10.9;
@@ -321,12 +333,16 @@ switch(averageFlag)
                 
                 if isfield(mosaicAverageGLM.linearfilters,'PostSpike')
                     obj.postSpikeFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.PostSpike.Filter;
+                    
+%                     case{'onparasolapricot','offparasolapricot','onmidgetapricot','offmidgetapricot','onsbcapricot','sbcapricot'}
+%                         obj.couplingFilter{matFileCtr,1} = interp1(0:14,fittedGLM.linearfilters.Stimulus.time_rk1,0:.5:14);
+%                         otherwise
+%                             
                 else
                     %         load('/Users/james/Documents/MATLAB/isetbio misc/rpeNora/psf1.mat')
                     obj.postSpikeFilter{matFileCtr,1} = 0;%psf;
                 end
                 if isfield(mosaicAverageGLM.linearfilters,'Coupling')
-                    
                     obj.couplingFilter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Coupling.Filter;
                 end
                 
@@ -336,15 +352,24 @@ switch(averageFlag)
                     case {'onparasolrpe','offparasolrpe','onmidgetrpe','offmidgetrpe','onsbcrpe','sbcrpe'}
                         obj.tonicDrive{matFileCtr,1} = 0;
                         obj.generatorFunction{matFileCtr,1} = mosaicAverageGLM.model;
+                    case{'onparasolapricot','offparasolapricot','onmidgetapricot','offmidgetapricot','onsbcapricot','sbcapricot'}
+                        obj.tonicDrive{matFileCtr,1} = 0;%2.5;
+                        obj.generatorFunction{matFileCtr,1} = @exp;
                     otherwise
-                        obj.tonicDrive{matFileCtr,1} = mosaicAverageGLM.linearfilters.TonicDrive.Filter;
+                        obj.tonicDrive{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.tonicDrive;
                         obj.generatorFunction{matFileCtr,1} = @exp;
                 end
                 
                 rf1 = imresize(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,[1+2*floor(numberBipolarsPerCellRF/2) 1+2*floor(numberBipolarsPerCellRF/2) ]);
                 rf2 = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
                 rf1rs = (rf1.*sum(rf2(:))/sum(rf1(:)));
-                obj.sRFcenter{matFileCtr,1} = rf1rs;
+                
+%                 switch ieParamFormat(cellType)
+%                     case{'onparasolapricot','offparasolapricot','onmidgetapricot','offmidgetapricot','onsbcapricot','sbcapricot'}
+%                         obj.sRFcenter{matFileCtr,1} = 6*rf1rs;
+%                     otherwise
+                        obj.sRFcenter{matFileCtr,1} = rf1rs;
+%                 end
 %                 obj.sRFcenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
 %                 obj.sRFcenter{matFileCtr,1} = imresize(mosaicAverageGLM.linearfilters.Stimulus.space_rk1,[1+2*floor(numberBipolarsPerCellRF/2) 1+2*floor(numberBipolarsPerCellRF/2) ]);
                 

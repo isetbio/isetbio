@@ -8,7 +8,7 @@ end;
 mloc = max(loc);
 
 rfRad = 1*ir.mosaic{1}.rfDiaMagnitude/2;
-psthMovie = zeros(2*ceil(mloc(1)),2*ceil(mloc(2)),length(vertcat(irPSTH{:})'));
+psthMovie = zeros(2*ceil(mloc(1)),2*ceil(mloc(2)),length((irPSTH{1})'));
 for i = 1:length(ir.mosaic{1}.cellLocation); 
     loc(i,:) = params.inputScale.*ir.mosaic{1}.cellLocation{i}; 
     % psthMovie(round(2*loc(i,1)),round(2*loc(i,2)),:) = irPSTH{i};

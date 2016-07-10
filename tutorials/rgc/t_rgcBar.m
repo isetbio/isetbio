@@ -34,7 +34,7 @@ scene = sceneSet(scene, 'h fov', fov);
 
 params.expTime = 0.001;
 params.timeInterval = 0.001;
-params.nSteps = 200;     % Number of stimulus frames
+params.nSteps = 10;     % Number of stimulus frames
 
 
 %% Initialize the optics and the sensor
@@ -263,7 +263,11 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 
 innerRetina = irCreate(os, params);
 
+innerRetina.mosaicCreate('model','glm','type','on parasol');
+innerRetina.mosaicCreate('model','glm','type','off parasol');
 innerRetina.mosaicCreate('model','glm','type','on midget');
+innerRetina.mosaicCreate('model','glm','type','off midget');
+innerRetina.mosaicCreate('model','glm','type','sbc');
 %% Compute RGC response
 
 innerRetina = irCompute(innerRetina, os);

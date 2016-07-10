@@ -27,6 +27,10 @@ addParameter(p,'fov',            0.6,    @isnumeric);
 addParameter(p,'expTime',        0.01, @isnumeric);
 addParameter(p,'timeInterval',   0.01, @isnumeric);
 addParameter(p,'freq',          5,  @isnumeric);
+addParameter(p,'radius',          0,  @isnumeric);
+addParameter(p,'theta',          0,  @isnumeric);
+addParameter(p,'side',          0,  @ischar);
+addParameter(p,'downsamplefactor', 1,  @isnumeric);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -45,8 +49,43 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-absorptions = sensorCreate('human');
-absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
+
+if params.radius == 0
+    % Assume foveal cone density
+    absorptions = sensorCreate('human');
+
+else
+    % Generate cone mosaic with density according to eccentricitiy
+    coneP = coneCreate; % The default cone properties
+    retinalRadiusDegrees = params.radius;
+    retinalPolarDegrees  = params.theta;
+    whichEye             = params.side;
+    retinalPos = [retinalRadiusDegrees retinalPolarDegrees]; 
+    absorptions = sensorCreate('human', [coneP], [retinalPos], [whichEye]);
+end
+
+% Get the cone mosaic and plot it
+cone_mosaic = sensorGet(absorptions,'cone type');
+vcNewGraphWin; imagesc(cone_mosaic); colormap jet;
+
+% Set cone mosaic
+cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+% cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+% blueIndices = find(cone_mosaic==0);
+% cone_mosaic(blueIndices) = 2;
+absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+
+% Scale the size of cone mosaic approrpiately
+absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
+
+% Set aspect ratio
+% At this point, we have the right cone density and the right number in
+% cols, now we just need to set the rows to have the same aspect ratio as
+% the input movie.
+sceneSize = sceneGet(scene,'size');
+sensorSize = sensorGet(absorptions,'size');
+aspectRatioMovie = sceneSize(1)/sceneSize(2);
+absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
 
 absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
 absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
@@ -61,6 +100,8 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 % Loop through frames to build movie
 % The number of steps must be smaller than the width of the scene
 nSteps = params.nSteps;
+
+downSampleFactor = 8;
 
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
@@ -113,7 +154,7 @@ for t = 1 : nSteps
     barMovieResize(1,1,:) = ones(1,1,3);
     barMovieResize(1,2,:) = zeros(1,1,3);
     % Generate scene object from stimulus RGB matrix and display object
-    scene = sceneFromFile(barMovieResize, 'rgb', params.meanLuminance, display);
+    scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 
     scene = sceneSet(scene, 'h fov', fov);
     if t ==1
@@ -129,30 +170,38 @@ for t = 1 : nSteps
     sceneRGB(:,:,t,:) = barMovie;
     
 %     % Compute optical image
-%     oi = oiCompute(oi, scene);    
-%     
-%     % Compute absorptions
-%     absorptions = sensorCompute(absorptions, oi);
-
-%     if t == 1
-%         volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-%     end
+    oi = oiCompute(oi, scene);    
     
-    % volts(:,:,t) = sensorGet(absorptions, 'volts');
+    for tNew = 1:downSampleFactor
     
+        % Compute absorptions
+        
+        cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+        % cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+        % blueIndices = find(cone_mosaic==0);
+        % cone_mosaic(blueIndices) = 2;
+        absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+        absorptions = sensorComputeNoiseFree(absorptions, oi);
+        
+        if t == 1
+            volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
+        end
+        
+        volts(:,:,downSampleFactor*(t-1)+tNew) = sensorGet(absorptions, 'volts');
+    end
     % vcAddObject(scene); sceneWindow
 end
 
 if wFlag, delete(wbar); end
 
 
-% Compute optical image
-oi = oiCompute(oi, scene);
-
-% Compute absorptions
-absorptions = sensorCompute(absorptions, oi);
-
-volts(:,:,1) = sensorGet(absorptions, 'volts');
+% % Compute optical image
+% oi = oiCompute(oi, scene);
+% 
+% % Compute absorptions
+% absorptions = sensorCompute(absorptions, oi);
+% 
+% volts(:,:,1) = sensorGet(absorptions, 'volts');
 
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);
