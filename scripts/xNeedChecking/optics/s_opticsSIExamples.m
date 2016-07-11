@@ -156,6 +156,8 @@ oiWindow;
 fullName = fullfile(isetRootPath,'data','optics','si2x1GaussianWaveVarying.mat');
 newVal   = vcImportObject('OPTICS',fullName);
 oi       = vcGetObject('oi');
+lens = Lens; lens.density = 0;
+oi       = oiSet(oi,'optics lens',lens);
 oi       = oiCompute(scene,oi);
 
 oi = oiSet(oi,'name','Asymmetric Gaussian');

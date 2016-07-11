@@ -24,7 +24,7 @@ function ValidationFunction(runTimeParams)
     % Copyright ImagEval Consultants, LLC, 2009function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    s_initISET;
+    ieInit;
 
     %% Build a Macbeth color checker.
     scene = sceneCreate;  scene = sceneSet(scene,'fov',1);

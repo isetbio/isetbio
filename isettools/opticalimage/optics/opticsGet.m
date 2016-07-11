@@ -114,7 +114,8 @@ function val = opticsGet(optics,parm,varargin)
 %        {'wavelength'}     - wavelength samples
 %        {'nwave'}          - number of wavelength samples
 %        {'binwidth'}       - spacing between the samples
-%      {'transmittance'}    - wavelength transmission function
+%      {'transmittance'}    - Transmittance function of the lens
+%      {'lens'}             - The lens object
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
@@ -296,10 +297,23 @@ switch parm
         end
 
     case {'transmittance','wavelengthtransmittance'}
-        % [0,1]
-        if checkfields(optics,'transmittance'), val = optics.transmittance;
-        else val = ones(1,opticsGet(optics,'nwave')); end
-
+        % This should go away and be replaced by the default lens
+        % transmittance object.
+        % Between [0,1].  This term and the lens term need to be
+        % coordinated.  They are now out of sync.
+        if checkfields(optics,'lens')
+            val = optics.lens.get('transmittance');
+        elseif checkfields(optics,'transmittance')
+            warning('Old use of transmittance')
+            val = optics.transmittance;
+        else
+            warning('returning all 1s in transmittance')
+            val = ones(1,opticsGet(optics,'nwave'));
+        end
+    case {'lens'}
+        % New lens object.
+        val = optics.lens;
+        
         % ----- Diffraction limited parameters
     case {'dlfsupport','dlfsupportmatrix'}
         % Two different return formats.  Either

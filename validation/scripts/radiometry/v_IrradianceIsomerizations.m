@@ -33,6 +33,8 @@ function varargout = v_IrradianceIsomerizations(varargin)
 % isetbio and PTB.  PTB works by assuming that spectral power is per
 % wavelength band.  Isetbio takes irrandiance in a per nm basis and explicitly
 % includes the wavelength sampling step in its numerical integration.
+%
+% 3) Which oi model should we be creating?  Human or diffraction?
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end

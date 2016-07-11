@@ -233,50 +233,51 @@ switch parm
     case {'meanillum', 'meanilluminance'}
         oi.data.meanIll = val;
 
-    case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
-        % Set spectrum structure
-        if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
-        % adjust wavelength sampling
-        if isfield(oi, 'spectrum')
-            oi = oiSet(oi, 'wave', val.wave);
-        else
-            oi.spectrum = val;
-        end
-    case {'wave','wavelength','wavelengthnanometers'}
+        % 
+        %     case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
+        %         % Set spectrum structure
+        %         if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
+        %         % adjust wavelength sampling
+        %         if isfield(oi, 'spectrum')
+        %             oi = oiSet(oi, 'wave', val.wave);
+        %         else
+        %             oi.spectrum = val;
+        %         end
+    case {'datawave','datawavelength','wave','wavelength'}
         % oi = oiSet(oi,'wave',val)
-        % Set sampling wavelength if new sampling is not the same as
-        % existing wavelength sampling
+        % The units are always nanometers.
+        %
+        % Set wavelength samples for the data variable. This is set during
+        % the oiCompute to match the scene data.  If you set it here, this
+        % will either interpolate the data or zero the data (no
+        % extrapolation is allowed).
+        
+        % If the set is the same as what exists, just return.
         if isequal(oiGet(oi, 'wave'), val(:)), return; end
         
-        % Interpolate photons because the wavelength is changed
-        % Not sure we need to do this, so for now I am commenting it out.
-        % Maybe we should clear the data since it is no longer consistent.
-        %         p = oiGet(oi, 'photons');
-        %         if ~isempty(p)
-        %             [p, r, c] = RGB2XWFormat(p); % switch to XW format
-        %             p = interp1(oiGet(oi, 'wave'), p', val, 'linear*', 0);
-        %             p = XW2RGBFormat(p', r, c);
-        %             oi = oiSet(oi, 'photons', p);
-        %         end
-        
-        % Set new wavelegnth samples.  
-        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; end
+        % Set the data wavelength term, for now stored in spectrum.  It
+        % will get shifted to oi.data.wave at some point.
+        if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; 
+        else oldWave = [];
+        end
         oi.spectrum.wave = val(:);
+        
+        % Adjusting this parameter simply changes how we interpolate the
+        % lens for computing. The full lens data are stored permanently.
         if checkfields(oi, 'optics', 'lens')
             oi.optics.lens.wave = val(:);
         end
         
-        % At this point the photon data might be inconsistent.  
-        % One possibility is to ignore this and let the next computation
-        % take care of it.  But I think we won't be able to open the
-        % oiWindow in this sate.
-        % 
-        % So, we zero the data if the wavelength information doesn't match.
-        % We don't clear the data, however, because the row/col information
-        % include spatial measurements that are needed subsequently.
+        % At this point the photon data might be inconsistent with the
+        % data wavelength. We either 
+        %   * interpolate the data, or 
+        %   * if this is an extrapolation case we fill with zeros. 
+        %
+        % We don't clear the data because the row/col information include
+        % spatial measurements that are needed subsequently.
+        %
         if checkfields(oi,'data','photons')
-            % Ok, so now we have to deal with the photon data.  If we are
-            % here, we know there is a mis-match.
+            % Ok, so now we have to interpolate the photon data.
             if oldWave(1) < val(1) && oldWave(end) > val(end)
                 % Interpolation OK.  If the original is monochromatic, we
                 % can't interpolate. 

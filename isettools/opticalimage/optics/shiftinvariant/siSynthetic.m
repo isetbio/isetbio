@@ -161,6 +161,8 @@ optics = opticsSet(optics,'otffx',fx);
 optics = opticsSet(optics,'otffy',fy);
 optics = opticsSet(optics,'otfwave',wave);
 
+optics.lens.density = 0;
+
 if isempty(outFile), return;
 else                 vcSaveObject(optics,outFile);
 end

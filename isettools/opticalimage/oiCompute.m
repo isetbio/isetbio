@@ -71,6 +71,10 @@ end
 % Indicate scene it is derived from
 oi = oiSet(oi,'name',sceneGet(scene,'name'));
 
+% After computing, the oi data representation should have the same wave
+% as the scene 
+oi = oiSet(oi,'wave',sceneGet(scene,'wave'));
+
 % Pad the scene depth map and attach it to the oi.   The padded values are
 % set to 0, though perhaps we should pad them with the mean distance.
 oi = oiSet(oi,'depth map',oiPadDepthMap(scene));
