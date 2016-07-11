@@ -82,7 +82,7 @@ end
 
 jbin = 1; % current time bin
 nsp = 0; % number of spikes
-tspnext = exprnd(1);  % time of next spike (in rescaled time)
+tspnext = ieExprnd(1,1);  % time of next spike (in rescaled time)
 rprev = 0;  % Integrated rescaled time up to current point
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
@@ -103,7 +103,7 @@ while jbin <= rlen
                 Ispk(iiPostSpk) = Ispk(iiPostSpk)+ihhi(1:mxi-ispk);
             end
         end
-        tspnext = exprnd(1);  % draw next spike time
+        tspnext = ieExprnd(1,1);  % draw next spike time
         rprev = 0; % reset integrated intensity
         jbin = ispk+1;  % Move to next bin
         % --  Update # of samples per iter ---

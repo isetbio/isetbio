@@ -44,8 +44,10 @@ p.CaseSensitive = false;
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
 vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
 p.addRequired('input',vFunc);
+p.addParameter('coupling',false,@islogical);
 
 p.parse(ir,input,varargin{:});
+coupling = p.Results.coupling;
 
 %% Linear stage of the computation
 ir = irComputeLinearSTSeparable(ir, input);
@@ -59,7 +61,7 @@ switch class(ir.mosaic{1})
     otherwise
         % Runs for rgcLNP, rgcGLM
         % Check the coupling field to decide on the coupling parameter
-        ir = irComputeSpikes(ir,'coupling',false);
+        ir = irComputeSpikes(ir,'coupling',coupling);
 end
 
 end
