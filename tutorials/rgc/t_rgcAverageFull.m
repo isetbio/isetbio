@@ -62,10 +62,10 @@ params.row = 64; params.col = 64;
 params.meanLuminance = 200;
 
 % Temporal parameters
-upSampleFactor = 10;
-params.timeInterval = .001;%(1/125)/upSampleFactor;%0.001; % sec
-params.expTime      = .001;%(1/125)/upSampleFactor;%0.001; % sec
-params.nSteps = 150;     % Number of stimulus frames
+downSampleFactor = 20;
+params.timeInterval = .0004;%(1/125)/upSampleFactor;%0.001; % sec
+params.expTime      = .0004;%(1/125)/upSampleFactor;%0.001; % sec
+params.nSteps = 5*150;     % Number of stimulus frames
 
 % Retina patch parameters
 params.fov = fov;       % set at top
@@ -131,8 +131,9 @@ sensorSize = sensorGet(absorptions,'size');
 aspectRatioMovie = sceneSize(1)/sceneSize(2);
 absorptions = sensorSet(absorptions,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
 
-% @JRG: To do
-% Plot the cone mosaic
+absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
+absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
+
 %% Compute a dynamic set of cone absorptions for moving bar
 
 % Status of cone absorptions computation
@@ -144,14 +145,15 @@ nSteps = params.nSteps;
 if isempty(nSteps), 
     nSteps = sceneGet(scene,'cols') - params.barWidth; 
 end
-nSteps = min(sceneGet(scene,'cols') - params.barWidth, nSteps);
+downSampleFactorStep = 4;%downSampleFactor/2;
+nSteps = min(downSampleFactorStep*(sceneGet(scene,'cols') - params.barWidth), nSteps);
 
 % Loop through frames to build the oi and absorptions over time
 for t = 1 : nSteps
         
     % Build bar image with grayscale array
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
-    barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar at appropriate position
+    barMovie(:,ceil(t/downSampleFactorStep):(ceil(t/downSampleFactorStep)+params.barWidth-1),:) = 1;            % White bar at appropriate position
 
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
@@ -197,7 +199,7 @@ absorptions = sensorSet(absorptions, 'volts', volts);
 
 sensor = absorptions;
 
-ieMovie(sceneRGB)
+% ieMovie(sceneRGB)
 
 % View movie of cone absorptions
 ieMovie(sensor.data.volts);
@@ -218,7 +220,7 @@ osB = osSet(osB, 'time step', timeStep);
 
 % Set mean current of outer segment as boundary condition
 sensorVolts = sensorGet(sensor,'volts');
-paramsOS.bgVolts = 1*mean(sensorVolts(:));
+paramsOS.bgVolts = 10*mean(sensorVolts(:));
 paramsOS.ecc = ecc; % mm
 clear sensorVolts
 
@@ -232,7 +234,18 @@ osB = osCompute(osB,sensor,paramsOS);
 % Subsample outer segment current
 % osB.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:8:end));
 
-ieMovie(osB.coneCurrentSignal);
+% ieMovie(osB.coneCurrentSignal);
+
+
+osCurrentSize = osGet(osB,'size');
+osCurrentNew = zeros([osCurrentSize(1) osCurrentSize(2) ceil(osCurrentSize(3)/downSampleFactor)]);
+for fr = 1:osCurrentSize(3)/downSampleFactor
+    osCurrentNew(:,:,fr) = osB.coneCurrentSignal(:,:,downSampleFactor*(fr-1)+downSampleFactor);
+end
+
+osBDS = osB;
+osBDS = osSet(osBDS,'coneCurrentSignal', osCurrentNew);
+osBDS = osSet(osBDS,'timeStep',0.008);
 %% Find bipolar responses
 % Build the bipolar mosaic and compute the response
 
@@ -278,7 +291,7 @@ bp = bipolarCompute(bp, osB);
 
 % Visualize the bipolar mosaic response
 % bipolarPlot(bp,'response');
-ieMovie(bp.responseCenter);
+% ieMovie(bp.responseCenter);
 
 %% Set RGC mosaic parameters
 
@@ -370,7 +383,7 @@ figure; plot(vertcat(innerRetinaSUPSTH{:})')
 title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
 xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
 set(gca,'fontsize',14);
-axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
+% axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
 grid on;
 
 %% Make a movie of the PSTH response
