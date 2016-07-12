@@ -15,16 +15,107 @@ function obj = bipolarCompute(obj, os)
 % 5/2016 JRG (c) isetbio team
 
 %% Spatial response
-% Convolve spatial RFs over whole image, subsample to get evenly spaced
-% mosaic.
 
 % Get zero mean cone current signal
 osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
 osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
-osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
-spatialResponseCenter = ieSpaceTimeFilter(osSigZM, obj.sRFcenter);
-spatialResponseSurround = ieSpaceTimeFilter(osSigZM, obj.sRFsurround);
+% osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
+
+
+% Take product of outer segment current with the cone mask in order to
+% scale contributions of S cones appropriately. For off midget cells, scale
+% cone current by a factor of 0.25. For SBCs
+% scaledCurrent = bp.coneMask
+
+% Convolve spatial RFs over whole image, subsample to get evenly spaced
+% mosaic.
+
+switch obj.cellType
+    case{'offDiffuse','onDiffuse','onMidget'}
+        lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
+        sConeIndices = find(obj.coneMosaic==4);
+
+        osSigRSZMCenter   = osSigRSZM;
+        % osSigRSZMCenter(sConeIndices) = mean(osSigRSZMCenter(lmConeIndices));
+        
+        osSigRSZMSurround   = osSigRSZM;
+        % osSigRSZMSurround(sConeIndices) = mean(osSigRSZMSurround(lmConeIndices)        
+             
+        currentSignalCenter = osSigRSZMCenter;
+        currentSignalSurround = osSigRSZMSurround;
+        
+        sRepeat = find(diff(sConeIndices)==1);
+        
+        for fr = 1:size(currentSignalCenter,2)
+            coneCurrentFrame = osSigRSZMCenter(:,fr);
+            % meanLM = mean(coneCurrentFrame(lmConeIndices));
+            coneCurrentCenter = coneCurrentFrame;
+            coneCurrentSurround = coneCurrentFrame;
+            coneCurrentCenter(sConeIndices) = coneCurrentFrame(sConeIndices-1);
+            coneCurrentCenter(sConeIndices(sRepeat)+1) = coneCurrentFrame(sConeIndices(sRepeat+1)-2);
+            coneCurrentSurround(sConeIndices) = coneCurrentFrame(sConeIndices-1);
+            coneCurrentSurround(sConeIndices(sRepeat+1)) = coneCurrentFrame(sConeIndices(sRepeat+1)-2);
+            osSigRSZMCenter(:,fr) = coneCurrentCenter;
+            osSigRSZMSurround(:,fr) = coneCurrentSurround;
+        end
+
+        
+    case{'offMidget'}
+        sConeIndices = find(obj.coneMosaic==4);
+        minval = min(osSigRSZM(:));
+        osSigRSZMCenter   = osSigRSZM;
+        osSigRSZMCenter(sConeIndices,:)   = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
+        
+        osSigRSZMSurround   = osSigRSZM;
+        osSigRSZMSurround(sConeIndices,:) = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
+    
+    case{'onDiffuseSBC'}        
+        lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
+        sConeIndices = find(obj.coneMosaic==4);
+        osSigRSZMCenter   = osSigRSZM;
+        osSigRSZMSurround   = osSigRSZM;
+        
+        currentSignalCenter = osSigRSZMCenter;
+        currentSignalSurround = osSigRSZMSurround;
+        
+        sRepeat = find(diff(sConeIndices)==1);
+        
+        for fr = 1:size(currentSignalCenter,2)
+            coneCurrentFrame = osSigRSZMCenter(:,fr);
+            % meanLM = mean(coneCurrentFrame(lmConeIndices));
+%             coneCurrentCenter = coneCurrentFrame;
+            coneCurrentSurround = coneCurrentFrame;
+%             coneCurrentCenter(sConeIndices) = coneCurrentFrame(sConeIndices-1);
+%             coneCurrentCenter(sConeIndices(sRepeat)+1) = coneCurrentFrame(sConeIndices(sRepeat+1)-2);
+            coneCurrentSurround(sConeIndices) = coneCurrentFrame(sConeIndices-1);
+            coneCurrentSurround(sConeIndices(sRepeat+1)) = coneCurrentFrame(sConeIndices(sRepeat+1)-2);
+%             osSigRSZMCenter(:,fr) = coneCurrentCenter;
+            osSigRSZMSurround(:,fr) = coneCurrentSurround;
+        end
+        
+        [rLM,cLM]=ind2sub(size(obj.coneMosaic),lmConeIndices);
+        [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
+        
+        for sind = 1:length(sConeIndices)
+            sConeDist(sind,:) = sqrt((rLM - rS(sind)).^2 + (cLM - cS(sind)).^2);
+        end
+    
+        [mind,minind] = min(sConeDist);
+        % vcNewGraphWin; scatter(rLM(:),cLM(:),20,sConeIndices(minind),'filled')
+        % colormap([rand(length(sConeIndices),3)])
+        osSigRSZMCenter(lmConeIndices,:) = osSigRSZMCenter(sConeIndices(minind),:);
+end
+
+osSigZMCenter = reshape(osSigRSZMCenter,size(os.coneCurrentSignal));
+osSigZMSurround = reshape(osSigRSZMSurround,size(os.coneCurrentSignal));
+
+% osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
+% osSigZMCenter = osSigZM;
+% osSigZMSurround = osSigZM;
+
+spatialResponseCenter = ieSpaceTimeFilter(osSigZMCenter, obj.sRFcenter);
+spatialResponseSurround = ieSpaceTimeFilter(osSigZMSurround, obj.sRFsurround);
 
 
 % Subsample to pull out individual bipolars
@@ -68,8 +159,8 @@ if obj.filterType == 1
     
     if strcmpi(obj.cellType,'offDiffuse') || strcmpi(obj.cellType,'offMidget')
         bipolarFilt = mean(bipolarFiltMat)';
-    elseif strcmpi(obj.cellType,'onDiffuse') || strcmpi(obj.cellType,'onMidget')
-        bipolarFilt = mean(bipolarFiltMat)';
+    elseif strcmpi(obj.cellType,'onDiffuse') || strcmpi(obj.cellType,'onMidget') || strcmpi(obj.cellType,'onDiffuseSBC')
+        bipolarFilt = -mean(bipolarFiltMat)';
     end
     
 elseif obj.filterType == 2
@@ -123,8 +214,8 @@ end
 % bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 % bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 
-bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
+bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
 
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));

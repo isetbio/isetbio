@@ -53,6 +53,7 @@ end
 
 % Private properties. Only methods of the parent class can set these
 properties(Access = private)
+    coneMosaic;
 end
 
 % Public methods
@@ -68,6 +69,7 @@ methods
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
         addParameter(p, 'ecc',  1, @isnumeric);
+        addParameter(p, 'coneMosaic',  ones(size(os.coneCurrentSignal)), @isnumeric);
         
         p.parse(os, varargin{:});  
         
@@ -75,6 +77,7 @@ methods
         obj.timeStep = osGet(os,'timeStep');
         
         obj.cellType = p.Results.cellType;
+        obj.coneMosaic = p.Results.coneMosaic;
         
         switch p.Results.rectifyType
             case 1
@@ -82,8 +85,11 @@ methods
                 obj.rectificationSurround = @(x) zeros(size(x));
             case 2
                 obj.rectificationCenter = @(x) x.*(x>0);
-                obj.rectificationSurround = @(x) zeros(size(x));
+                obj.rectificationSurround = @(x) zeros(size(x));                
             case 3
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) x;
+            case 4
                 obj.rectificationCenter = @(x) x.*(x>0);
                 obj.rectificationSurround = @(x) x.*(x<0);
             otherwise
@@ -109,7 +115,7 @@ methods
         
         %         @JRG incorporate preferntial cone selection to bipolar rfs
         switch obj.cellType
-            case{'onDiffuse','offDiffuse'}
+            case{'onDiffuse','offDiffuse','onDiffuseSBC'}
                 % ecc = 0 mm yields 2x2 cone input to bp
                 % ecc = 30 mm yields 5x5 cone input to bp
                 sizeScale = floor(2 + 3/10*(p.Results.ecc)); 

@@ -110,14 +110,14 @@ end
 
 % Get the cone mosaic and plot it
 cone_mosaic = sensorGet(absorptions,'cone type');
-vcNewGraphWin; imagesc(cone_mosaic); colormap jet;
+vcNewGraphWin; imagesc(4-cone_mosaic); colormap jet;
 
 % Set cone mosaic
 % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
-cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-blueIndices = find(cone_mosaic==0);
-cone_mosaic(blueIndices) = 2;
-absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+% cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+% blueIndices = find(cone_mosaic==0);
+% cone_mosaic(blueIndices) = 2;
+% absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
 
 % Scale the size of cone mosaic approrpiately
 absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
@@ -174,8 +174,8 @@ for t = 1 : nSteps
     % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
     
     % Set cone mosaic
-    cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-    absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+%     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+%     absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
     absorptions = sensorCompute(absorptions, oi);
     
     % On first step, initialize the sensor volts matrix
@@ -218,7 +218,7 @@ osB = osSet(osB, 'time step', timeStep);
 
 % Set mean current of outer segment as boundary condition
 sensorVolts = sensorGet(sensor,'volts');
-paramsOS.bgVolts = 10*mean(sensorVolts(:));
+paramsOS.bgVolts = 1*mean(sensorVolts(:));
 paramsOS.ecc = ecc; % mm
 clear sensorVolts
 
@@ -238,29 +238,37 @@ ieMovie(osB.coneCurrentSignal);
 
 clear bp
 
+% Sets linear, on half-wave rectification, or on and off half-wave rect
+bpParams.rectifyType = 1;
+
 % Select the correct type of bipolar cell based on the user-specified RGC mosaic.
 switch cellTypeI
     case {1,6}
         bpParams.cellType = 'onDiffuse';
-    case 2
+    case {2,7}
         bpParams.cellType = 'offDiffuse';
-    case 3
+    case {3,8}
         bpParams.cellType = 'onMidget';
-    case 4
+    case {4,9}
         bpParams.cellType = 'offMidget';
-    case 5
-        bpParams.cellType = 'onDiffuse';
+    case {5,10}
+        bpParams.cellType = 'onDiffuseSBC';
+        % Sets linear, on half-wave rectification, or on and off half-wave rect
+        bpParams.rectifyType = 3;
 end
 
 % Sets filter as theoretical, mean physiology, or individual phys:
 bpParams.filterType = 1; 
 
-% Sets linear, on half-wave rectification, or on and off half-wave rect
-bpParams.rectifyType = 1;
+
 % bpParams.rectifyType = 3;
 
 % Make sure bipolar cells have the right eccentricity
 bpParams.ecc = ecc;
+
+% Get cone mosaic
+cone_mosaic = sensorGet(absorptions,'cone type');
+bpParams.coneMosaic = cone_mosaic;
 
 % Initialize the bipolar object
 bp = bipolar(osB, bpParams);
@@ -348,7 +356,7 @@ nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 
 %% Plot the cone, bipolar and RGC mosaics
 
-mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
+% mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 
 %% Compute the inner retina response
 

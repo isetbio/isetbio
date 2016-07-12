@@ -64,7 +64,7 @@ sensor = absorptions;
 % ieMovie(iStim.sceneRGB)
 
 % View movie of cone absorptions
-ieMovie(sensor.data.volts);
+% ieMovie(sensor.data.volts);
 
 
 %% Outer segment calculation - biophysical model
@@ -98,7 +98,7 @@ osB = osCompute(osB,sensor,paramsOS);
 % Subsample outer segment current
 % osB.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:8:end));
 
-ieMovie(osB.coneCurrentSignal);
+% ieMovie(osB.coneCurrentSignal);
 
 downSampleFactor = 8;
 osCurrentSize = osGet(osB,'size');
@@ -234,7 +234,7 @@ innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
 
 % Plot all of the PSTHs together
 % figure; plot(vertcat(innerRetinaSUPSTH{:})')
-figure; plot(vertcat(innerRetinaSUPSTH{155})')
+figure; plot(vertcat(innerRetinaSUPSTH{12})')
 title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc/.3));
 xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
 set(gca,'fontsize',14);
