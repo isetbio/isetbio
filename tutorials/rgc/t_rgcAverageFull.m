@@ -192,10 +192,15 @@ end
 
 % View scene in GUI
 % vcAddObject(scene); sceneWindow
-    
+
 % Set the stimuls into the sensor object
 absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
+
+% voltsZP = zeros(([73 109 2000]));
+% voltsZP(:,:,501:end) = sensor.data.volts;
+% 
+% absorptions = sensorSet(absorptions, 'volts', voltsZP);
 
 sensor = absorptions;
 
