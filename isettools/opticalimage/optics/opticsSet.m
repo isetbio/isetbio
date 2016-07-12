@@ -110,11 +110,29 @@ switch parm
         warning('optics spectrum wave set, line 110')
         optics.spectrum.wave = val(:);
         
-    case {'transmittance','opticaltransmittance'}
+    case {'transmittance','transmittancescale'}
+        % Set the lens transmittance scale factor
+        % opticsSet(optics,'transmittance',val)
+        %   val must be [0,1] and length(wave)
+        %
+        
         if max(val)>1 || min(val)<0
-            error('Transmittance should be in [0,1].')
+            error('Transmittance scale should be in [0,1].')
         end
-        optics.transmittance = val;
+        if checkfields(optics,'transmittance')
+            wave = length(optics.transmittance.wave);
+            if length(val) == length(wave)
+                optics.transmittance = val;
+            else
+                error('Transmittance data does not match current wave')
+            end
+        end
+        
+    case {'transmittancewave'}
+        % Set a new set of wavelength samples. Interpolate the scale to
+        % match This is not usually done in computation.  Normally we just
+        % request the scale factors at specific wave samples.
+        
     case {'lens'}
         % New lens object.  This should replace transmittance.
         optics.lens = val;

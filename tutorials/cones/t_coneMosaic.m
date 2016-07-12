@@ -80,6 +80,10 @@ tic;
 ir = irCompute(ir, bp, 'coupling',false);
 toc
 
+% tic;
+% ir = irCompute(ir, bp, 'coupling',true);
+% toc
+
 lastTime = ir.mosaic{1}.get('last spike time');
 
 ir.mosaic{1}.set('dt',1);

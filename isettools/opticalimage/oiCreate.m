@@ -19,8 +19,21 @@ function oi = oiCreate(oiType,varargin)
 %                   wavefront abberration from Thibos et al. (2009,
 %                   Ophthalmic & Physiological Optics)
 %  {'diffraction'}  - Diffraction limited optics,f/4, no diffuser or data
+%
+% These two are used for testing and not typically called for experiments.
+%
 %  {'uniformd65'}   - Turns off offaxis to make uniform D65 image
 %  {'uniformee'}    - Turns off offaxis to make uniform equal energy image
+%
+% Lens transmittance
+%   The human models include a lens object within the optics structure.
+%   The lens object represents information about the lens pigment.
+%
+%   The diffraction model does not include the lens object; instead, it
+%   includes a transmittance structure with a 'wave' and 'scale' slot.
+%   These slots characterize the lens spectral transmittance.  The values
+%   in the transmittance structure are interpolated as needed during the
+%   calculation. 
 %
 % Example:
 %   oi = oiCreate('human');
@@ -56,6 +69,10 @@ switch oiType
         oi = oiSet(oi, 'name','human-MW');
         oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
         
+        if checkfields(oi.optics,'transmittance')
+            oi.optics = rmfield(oi.optics,'transmittance');
+        end
+        
     case {'wvfhuman','shiftinvariant'}
         % A human lens specified using the WVF toolbox method
         % oi = oiCreate('wvf human',pupilMM,zCoefs,wave)
@@ -66,6 +83,10 @@ switch oiType
         oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
         oi = oiSet(oi, 'name','human-WVF');
         oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
+        
+        if checkfields(oi.optics,'transmittance')
+            oi.optics = rmfield(oi.optics,'transmittance');
+        end
         
     case {'diffractionlimited','diffraction'}
         % Default optics is f# = 4, diffraction limited
@@ -79,12 +100,24 @@ switch oiType
         oi = oiSet(oi, 'diffuser blur', 2*10^-6);
         oi = oiSet(oi, 'consistency', 1);
         
+        if checkfields(oi.optics,'lens')
+            oi.optics = rmfield(oi.optics,'lens');
+            oi.optics.transmittance.wave = (370:730)';
+            oi.optics.transmittance.scale = ones(length(370:730),1);
+        end
+        
+        
+        
+    % The following two are used for testing.  They are not really
+    % models.
     case {'uniformd65'}
+        % No lens, just transmittance structure (diffraction type)
         % Uniform, D65 optical image.  No cos4th falloff, huge field of
         % view (120 deg). Used in lux-sec SNR testing and scripting
         oi = oiCreateUniformD65;
                
     case {'uniformee'}
+         % No lens, just transmittance structure (diffraction type)
         % Uniform, equal energy optical image.  No cos4th falloff, huge
         % field of view (120 deg). 
         oi = oiCreateUniformEE;

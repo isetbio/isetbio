@@ -45,6 +45,7 @@ end
 
 % Scene data are in radiance units
 radiance = sceneGet(scene, 'photons');
+wave = sceneGet(scene,'wave');
 
 % oi = vcGetObject('oi');
 model = opticsGet(optics, 'model');
@@ -61,7 +62,7 @@ end
 
 % Apply lens transmittance.
 % Perhaps we should be getting the transmittance out of ZEMAX/CODEV
-transmittance = opticsGet(optics,'transmittance');
+transmittance = opticsGet(optics,'transmittance',wave);
 
 % If transmittance is all 1s, we can skip this step
 if any(transmittance(:) ~= 1)

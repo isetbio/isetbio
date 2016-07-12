@@ -115,6 +115,8 @@ function val = opticsGet(optics,parm,varargin)
 %        {'nwave'}          - number of wavelength samples
 %        {'binwidth'}       - spacing between the samples
 %      {'transmittance'}    - Transmittance function of the lens
+%         {'wave'}          - Wavelength samples
+%         {'scale'}         - Spectral radiance scale factor
 %      {'lens'}             - The lens object
 %
 % Copyright ImagEval Consultants, LLC, 2005.
@@ -296,20 +298,52 @@ switch parm
         else val = 1;
         end
 
-    case {'transmittance','wavelengthtransmittance'}
-        % This should go away and be replaced by the default lens
-        % transmittance object.
-        % Between [0,1].  This term and the lens term need to be
-        % coordinated.  They are now out of sync.
-        if checkfields(optics,'lens')
+    case {'transmittance','lenstransmittance','lenstransmittancescale'}
+        % Lens spectral transmittance representation
+        % opticsGet(optics,'transmittance',wave)
+        %
+        % When the optics are human, there is a lens object and we read the
+        % transmittance from it. When the optics are diffraction, there is
+        % a transmittance.wave and transmittance.scale field, and we
+        % interpolate from that.
+        
+        if checkfields(optics,'lens')  % Human optics
+            % The lens gets the proper wavelength sample because the object
+            % has a 'listener'
             val = optics.lens.get('transmittance');
-        elseif checkfields(optics,'transmittance')
-            warning('Old use of transmittance')
-            val = optics.transmittance;
-        else
-            warning('returning all 1s in transmittance')
-            val = ones(1,opticsGet(optics,'nwave'));
+            
+        elseif checkfields(optics,'transmittance') % Diffraction optics
+            val = optics.transmittance.scale;
+
+            % No listener for the old-fashioned struct.
+            if ~isempty(varargin)
+                newWave = varargin{1};
+                wave = optics.transmittance.wave;
+                scale = optics.transmittance.scale;
+                
+                if min(newWave(:))< min(wave(:)) || max(newWave(:)) > max(wave(:))
+                    % Extrapolation required.
+                    disp('Extrapolating transmittance with 1''s')
+                    val = interp1(wave,scale,newWave,'linear',1)';
+                else
+                    val = interp1(wave,scale,newWave,'linear')';
+                end
+            end
         end
+    case {'transmittancewave','lenstransmittancewave'}
+        % The lens transmittance wavelength samples
+        % Different case for lens and for 
+        if checkfields(optics,'lens')  % Human optics
+            % The lens gets the proper wavelength sample because the object
+            % has a 'listener'
+            val = optics.lens.get('wave');
+        elseif checkfields(optics,'transmittance')
+            val = optics.transmittance.wave;
+        else
+            error('No lens or transmittance');
+        end
+        
+
     case {'lens'}
         % New lens object.
         val = optics.lens;
