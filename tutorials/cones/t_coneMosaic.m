@@ -118,5 +118,32 @@ cMosaic.computeCurrent;
 
 bp = bipolar(cMosaic.os);
 bp.compute(cMosaic.os);
+bp.plot('movie response')
 
+%% Inner retina
+clear params
+params.name      = 'Macaque inner retina 1'; % This instance
+params.eyeSide   = 'left';   % Which eye
+params.eyeRadius = 1;        % Radius in mm
+params.eyeAngle  = 90;       % Polar angle in degrees
 
+%
+% Fix this.
+% Fix the other ganglion cell classes (e.g. off midget doesn't run).
+% Error using rgcLNP
+% Cannot define property 'responseSpikes' in class 'rgcLNP' because the property has already been defined in the superclass
+% 'rgcMosaic'.
+
+ir = irCreate(bp, params);
+ir.mosaicCreate('model','GLM','type','on midget');
+tic;
+ir = irCompute(ir, bp, 'coupling',false);
+toc
+
+ir.mosaic{1}.set('dt',1);
+psth = ir.mosaic{1}.get('psth');
+
+clear params
+params.vname = fullfile(isetbioRootPath,'local','barmovie.avi'); 
+param.FrameRate = 1; params.step = 1; params.show = false;
+ieMovie(psth,params);
