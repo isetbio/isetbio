@@ -1,7 +1,7 @@
 function [data, vObj] = ieMovie(data,varargin)
 % Show a movie of an (x,y,t) or (x,y,c,t) matrix
 %
-%   [mov, vObj] = ieMovie(data,varargin)
+%   [data, vObj] = ieMovie(data,varargin)
 % 
 %  data:   (row,col,color,time) or (row,col,time) (Required)
 %  step:   How many times frames to step over. Default = 1;
@@ -31,15 +31,20 @@ p.addParameter('vname','',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
 p.addParameter('show',true,@islogical);
-p.addParameter('hf',[],@isgraphics);
+p.addParameter('gamma',1,@isnumeric);
+p.KeepUnmatched = true;
+
+% This can be a handle to a figure, or the string 'none'
+% vFunc = @(x) (ischar(x) || isgraphics(x));
+% p.addParameter('hf',[],vFunc);
 
 p.parse(data,varargin{:});
 data  = p.Results.data;
 step  = p.Results.step;
 show  = p.Results.show;
-hf    = p.Results.hf;
 vname      = p.Results.vname;
 FrameRate  = p.Results.FrameRate;
+gamma      = p.Results.gamma;
 
 %% Create the movie and video object
 
@@ -50,7 +55,7 @@ tDim = ndims(data);
 nFrames = size(data, tDim);
 
 % Scale and gamma correct mov
-data = ieScale(data,0,1) .^ 0.3;
+data = ieScale(data,0,1) .^ gamma;
 
 % A name for writing was passed
 % So write and show the movie and write to file

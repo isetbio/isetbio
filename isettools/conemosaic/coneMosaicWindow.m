@@ -67,7 +67,7 @@ handles.curMov = [];  % photocurrent movie
 
 % Update handles structure
 guidata(hObject, handles);
-handles.cMosaic.window = hObject;
+handles.cMosaic.hdl = hObject;
 
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
 
@@ -174,7 +174,7 @@ coneMosaicGUIRefresh(hObject,eventdata,handles);
 end
 
 function coneMosaicGUIRefresh(hObject, eventdata, handles)
-%Update the cone mosaic gui window interface
+% Update the cone mosaic window interface - main pulldown
 %
 %   coneMosaciGUIRefresh(handles)
 %
@@ -269,7 +269,8 @@ switch plotType
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.mov)
             % generate movie
-            [~, handles.mov] = cm.plot('absorptions', 'hf', 'none', ...
+            [~, handles.mov] = cm.plot('movie absorptions', 'hf','none',...
+                'show',false, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
         end
@@ -302,7 +303,8 @@ switch plotType
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.curMov) % generate movie for photocurrent
-            [~, handles.curMov] = cm.plot('current', 'hf', 'none', ...
+            [~, handles.curMov] = cm.plot('movie current', 'hf','none', ...
+                'show', false, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
         end
@@ -757,7 +759,7 @@ elseif index == 5  % photocurrent movie
     mov = handles.curMov;
 end
 
-nFrames = size(mov, 4);
+nFrames = size(mov, ndims(mov));
 if nFrames == 1, 
     str = sprintf('Only one frame. No movie to show.'); 
     ieInWindowMessage(str,handles,3);
@@ -772,10 +774,17 @@ if get(handles.btnPlayPause, 'Value')
     % play the video when the value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
-    % axes(handles.axes2);
-    axes(get(handles.coneMosaicWindow,'CurrentAxes'));
+    gData = guidata(handles.coneMosaicWindow);
+    axes(gData.axes2);
+    % axes(get(handles.coneMosaicWindow,'CurrentAxes'));
+    
     while get(handles.btnPlayPause, 'Value')
-        imshow(mov(:, :, :, cnt));
+        if ndims(mov) == 3
+            imshow(mov(:, :, cnt));
+        elseif nimds(mov) ==4
+            imshow(mov(:, :, :, cnt));
+        end
+        
         set(handles.sliderMovieProgress, 'Value', cnt);
         
         drawnow; cnt = cnt + 1;

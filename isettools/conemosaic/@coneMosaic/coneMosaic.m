@@ -22,7 +22,7 @@ classdef coneMosaic < hiddenHandle
                           % The length of this property controls number of
                           % frames to be computed
         noiseFlag;        % To control which noise is included
-        window;           % handle of the gui window
+        hdl;              % handle of the gui window
     end
     
     properties (SetObservable, AbortSet)
@@ -198,7 +198,7 @@ classdef coneMosaic < hiddenHandle
             obj.mosaicSize = ceil(obj.mosaicSize .* fov./curFov);
         end
         
-        function guiWindow(obj, varargin)
+        function window(obj, varargin)
             coneMosaicWindow(obj);
         end
         
@@ -277,7 +277,7 @@ classdef coneMosaic < hiddenHandle
             obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
         end
-        
+       
         function set.absorptions(obj, val)
             obj.absorptions = single(val);
         end

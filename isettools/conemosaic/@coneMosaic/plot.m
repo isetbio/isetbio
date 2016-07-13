@@ -24,8 +24,10 @@ function [hf, uData] = plot(obj, type, varargin)
 %   'eye spectral qe'      - Cone pigment with macular and lens
 %   'mean absorptions'     - Image of the mean absorptions
 %   'absorptions'          - Movie of the absorptions on cone mosaic
-%   'movie absorptions'    - Gray scale movie of the absorptions
+%   'movie absorptions'    - Gray scale movie of absorptions
 %   'mean current'         - Image of the mean current
+%   'current'              - Current movie on cone mosaic
+%   'movie current'        - Gray scale movie of current
 %   'eye movement path'    - eye movement
 %   'current timeseries'   - Cone photocurrent graphs
 %
@@ -143,7 +145,7 @@ switch ieParamFormat(type)
         end
         % Additional arguments may be the video file name, step, and
         % FrameRate
-        uData = ieMovie(obj.absorptions,'hf',hf,varargin{:});
+        uData = ieMovie(obj.absorptions,varargin{:});
     case 'meancurrent'
         if isempty(obj.current)
             if isempty(p.Results.hf), close(hf); end
@@ -157,13 +159,22 @@ switch ieParamFormat(type)
         colormap(gray); % Shows a numerical value
         axis image;
     case {'current', 'photocurrent'}
-        % Photo current movie
+        % Photo current movie on colored cone mosaic
         if isempty(obj.current)
             if isempty(p.Results.hf), close(hf); end
             error('no photocurrent data');
         end
         uData = coneImageActivity(obj, hf, 'dataType', ...
             'photocurrent', varargin{:});
+    case 'moviecurrent'
+        % Current movie in gray scale
+        if isempty(obj.current)
+            if isempty(p.Results.hf), close(hf); end
+            error('no current data');
+        end
+        % Additional arguments may be the video file name, step, and
+        % FrameRate
+        uData = ieMovie(obj.current,varargin{:});
     case {'currenttimeseries'}
         % Photocurrent time series of selected points.
         % Need a way to choose which points!
