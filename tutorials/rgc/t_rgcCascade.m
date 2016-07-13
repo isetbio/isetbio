@@ -28,7 +28,7 @@ clear
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 1;%:2    % Choose On Parasol (1) or Off Parasol (2)
-stimulusTestI = 2;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
+stimulusTestI = 1;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
 % Experimental dataset
@@ -332,7 +332,7 @@ switch stimulusTestI
     case 2
 %         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
 %         
-%         hold on;
+%         hold on;j
 %         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
 
 %         minlen = minlen - 1000;

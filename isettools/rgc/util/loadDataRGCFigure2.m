@@ -41,21 +41,21 @@ switch experimentI
             case 1 % WN
                 
                 % Binary white noise test movie
-%                 data = rdt.readArtifact('testmovie_8pix_Identity_8pix', 'type', 'mat');                
-%                 testmovie = data.testmovie;
+                data = rdt.readArtifact('testmovie_8pix_Identity_8pix', 'type', 'mat');                
+                testmovie = data.testmovie;
                 
-                load(['/Users/james/Documents/MATLAB/'...
-                    'akheitman/WN_mapPRJ/Stimuli/'...
-                    'BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat']);
+%                 load(['/Users/james/Documents/MATLAB/'...
+%                     'akheitman/WN_mapPRJ/Stimuli/'...
+%                     'BW-8-1-0.48-11111_RNG_16807/testmovie_8pix_Identity_8pix.mat']);
                 
                 switch cellTypeI
                     case 1 % ON Parasol
-                        load('isetbio misc/RDT Uploads/xval_mosaic_WN_ONParasol_2013_08_19_6.mat');
-%                         data = rdt.readArtifact('xval_mosaic_WN_ONParasol_2013_08_19_6', 'type', 'mat');                
-%                         xval_mosaic = data.xval_mosaic;
+%                         load('isetbio misc/RDT Uploads/xval_mosaic_WN_ONParasol_2013_08_19_6.mat');
+                        data = rdt.readArtifact('xval_mosaic_WN_ONParasol_2013_08_19_6', 'type', 'mat');                
+                        xval_mosaic = data.xval_mosaic;
 %                                                 
-%                         data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
-%                         goodind = data2.goodind;
+                        data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
+                        goodind = data2.goodind;
                     case 2 % OFF Paraasol
 %                         load('isetbio misc/RDT Uploads/xval_mosaic_WN_OFFParasol_2013_08_19_6.mat');
                         data = rdt.readArtifact('xval_mosaic_WN_OFFParasol_2013_08_19_6', 'type', 'mat');                
