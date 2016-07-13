@@ -23,44 +23,12 @@ clear
 
 %% Initialize parameters for RGC mosaic
 
-ecc = 0.01; % in mm, ecc = 1 deg
+ecc = 0.03; % in mm, ecc = 1 deg
+fov = 3*0.25;
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
-stimulusTestI = 1;       % Choose WN test stimulus (1) or NSEM test stimulus (2)
-    
-% Switch on the conditions indices
-% Experimental dataset
-switch experimentI
-    case 1; experimentID = 'RPE_201602171';
-    otherwise; error('Data not yet available');
-end
-% The other experimental data will be added to the RDT in the future.
-
-% Stimulus: white noise or natural scene movie with eye movements
-switch stimulusTestI
-    case 1; stimulusTest = 'WN';
-    case 2; stimulusTest = 'NSEM';
-end
-
-% Cell type: ON or OFF Parasol
-switch cellTypeI
-    case 1; 
-        cellType = 'On Parasol RPE';      
-        fov = 4*0.25;
-    case 2; 
-        cellType = 'Off Parasol RPE';              
-        fov = 6*0.25;
-    case 3; 
-        cellType = 'On Midget RPE';        
-        fov = 1*0.25;
-    case 4; 
-        cellType = 'Off Midget RPE';
-        fov = 1*0.25;
-    case 5; 
-        cellType = 'SBC RPE';
-        fov = 6*0.25;
-end
+stimulusTestI = 1;       % Choose 1. Moving bar, 
 
 %% Moving bar stimulus
 
@@ -145,6 +113,45 @@ bp = bipolar(osB, bpParams);
 bp = bipolarCompute(bp, osB);
 
 % bipolarPlot(bp,'response');
+
+%%
+% experimentI   = 1;       % Choose dataset to load parameters and spikes
+% cellTypeI     = 1;       % Choose 1. OnPar, 2. OffPar, 3. OnMidg, 4. OffMidg, 5. SBC
+% stimulusTestI = 1;       % Choose WN test stimulus (1) or NSEM test stimulus (2)
+    
+% Switch on the conditions indices
+% Experimental dataset
+switch experimentI
+    case 1; experimentID = 'RPE_201602171';
+    otherwise; error('Data not yet available');
+end
+% The other experimental data will be added to the RDT in the future.
+
+% Stimulus: white noise or natural scene movie with eye movements
+switch stimulusTestI
+    case 1; stimulusTest = 'WN';
+    case 2; stimulusTest = 'NSEM';
+end
+
+% Cell type: ON or OFF Parasol
+switch cellTypeI
+    case 1; 
+        cellType = 'On Parasol RPE';      
+%         fov = 4*0.25;
+    case 2; 
+        cellType = 'Off Parasol RPE';              
+%         fov = 6*0.25;
+    case 3; 
+        cellType = 'On Midget RPE';        
+%         fov = 1*0.25;
+    case 4; 
+        cellType = 'Off Midget RPE';
+%         fov = 1*0.25;
+    case 5; 
+        cellType = 'SBC RPE';
+%         fov = 6*0.25;
+end
+
 %%
 % Set parameters
 clear params innerRetinaSU
@@ -195,4 +202,5 @@ mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
+
 % ieMovie(psthMovie);

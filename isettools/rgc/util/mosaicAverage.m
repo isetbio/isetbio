@@ -1,22 +1,36 @@
 function mosaicAverageGLM = mosaicAverage(mosaicGLM)
 
 for i = 1:length(mosaicGLM)
+    if isfield(mosaicGLM{i}.linearfilters.Stimulus,'space_rk1')
+        sRFtemp = mosaicGLM{i}.linearfilters.Stimulus.space_rk1;
+        sRF(i,:,:) = sRFtemp;
     
-    sRFtemp = mosaicGLM{i}.linearfilters.Stimulus.space_rk1;
-    sRF(i,:,:) = sRFtemp;
-%     sRF(i,:) = reshape(sRFtemp, size(sRFtemp,1)*size(sRFtemp,2));
-    maxsRF(i)  = max(sRFtemp(:));
-    minsRF(i)  = min(sRFtemp(:));
-    meansRF(i) = mean(sRFtemp(:));
+        %     sRF(i,:) = reshape(sRFtemp, size(sRFtemp,1)*size(sRFtemp,2));
+        maxsRF(i)  = max(sRFtemp(:));
+        minsRF(i)  = min(sRFtemp(:));
+        meansRF(i) = mean(sRFtemp(:));
+    end
     
-    tCtemp = mosaicGLM{i}.linearfilters.Stimulus.time_rk1;
-    tC(i,:) = tCtemp;
-    maxtC(i) = max(tCtemp);
-    mintC(i) = min(tCtemp);
-    meantC(i) = mean(tCtemp);
+    if isfield(mosaicGLM{i}.linearfilters.Stimulus,'space_rk1')
+        
+        tCtemp = mosaicGLM{i}.linearfilters.Stimulus.time_rk1;
+        tC(i,:) = tCtemp;
+        maxtC(i) = max(tCtemp);
+        mintC(i) = min(tCtemp);
+        meantC(i) = mean(tCtemp);
+    end
     
-    tonicD(i,:) = 0;% mosaicGLM{i}.linearfilters.tonicDrive{i,1}(:);
+%     if isfield(mosaicGLM{i}.linearfilters.Stimulus,'Filter')
+%         filter3d{i} = mosaicGLM{i}.linearfilters.Stimulus.Filter;
+%     end
     
+    if isfield(mosaicGLM{i}.linearfilters.Stimulus,'tonicDrive')            
+        tonicD(i,:) = mosaicGLM{i}.linearfilters.Stimulus.tonicDrive{i,1}(:);
+    elseif isfield(mosaicGLM{i}.linearfilters,'TonicDrive')
+        tonicD(i,:) = mosaicGLM{i}.linearfilters.TonicDrive.Filter;
+    else
+        tonicD(i,:) =0 ;
+    end
     if isfield(mosaicGLM{i},'model');
         nlcoeffs(i,:) = mosaicGLM{i}.model.Coefficients.Estimate;
     end
@@ -44,14 +58,31 @@ for i = 1:length(mosaicGLM)
     xv = [(floor(newSize/2)+1) - floor(oldSize/2) : (floor(newSize/2)+1) + floor(oldSize/2)] - (maxPCind(i) - floor(oldSize/2)) ;
     yv = [(floor(newSize/2)+1) - floor(oldSize/2) : (floor(newSize/2)+1) + floor(oldSize/2)] - (maxPRind(i) - floor(oldSize/2));
     
-    meanRF(xv,yv) = meanRF(xv,yv) + squeeze(sRF(i,:,:));
+
+    sRFi = squeeze(sRF(i,:,:));
+    [m1,m2] = max(abs(sRFi(:)));  
+    signmult = sign(sRFi(m2));
+    
+    tC(i,:) = signmult*tC(i,:);
+    
+    meanRF(xv,yv) = meanRF(xv,yv) + signmult*squeeze(sRF(i,:,:));
     meanCtr(xv,yv) = meanCtr(xv,yv) + ones(size(squeeze(sRF(i,:,:))));
 end
 
-% figure; surf(meanRF); shading flat
+% figure;
+% for i = 1:length(mosaicGLM)
+%     sRFi = squeeze(sRF(i,:,:));
+%     [m1,m2] = max(abs(sRFi(:)));  
+%     signmult = sign(sRFi(m2));
+%     subplot(121);
+%     surf(squeeze(signmult*sRF(i,:,:)));
+%     subplot(122);
+%     plot(tC(i,:));
+% end
+% figure; surf(meanRF./length(mosaicGLM)); shading flat
 
 meanAvg = meanRF./meanCtr;
-meanAvg(meanCtr<4) = 0;
+meanAvg(meanCtr<1) = 0;
 % figure; surf(meanAvg); shading flat; shading interp
 
 sum(meanAvg(:));%  3.8475 
@@ -80,9 +111,9 @@ mean(min(tC')); %  -0.29floor(oldSize/2)3
 mean(tonicD);% 2.2702
 
 cv = [(floor(newSize/2)+1) - floor(oldSize/2) : (floor(newSize/2)+1) + floor(oldSize/2)] - 1;
-mosaicAverageGLM.linearfilters.Stimulus.space_rk1 = meanAvg(cv,cv);
+mosaicAverageGLM.linearfilters.Stimulus.space_rk1 = meanRF(cv,cv)./length(mosaicGLM); % meanAvg(cv,cv);
 mosaicAverageGLM.linearfilters.Stimulus.time_rk1 = mean(tC);
-
+mosaicAverageGLM.linearfilters.Stimulus.tonicDrive = mean(tonicD);
 
 if isfield(mosaicGLM{i},'model');
     mosaicAverageGLM.modelavg = mean(nlcoeffs);
@@ -92,5 +123,5 @@ if isfield(mosaicGLM{i},'model');
 end
 
 if isfield(mosaicGLM{i},'stafit')
-    mosaicAverageGLM.sd = [sqrt(mean(sd_x(find(sd_x~=0)).^2)) sqrt(mean(sd_y(find(sd_y~=0)).^2))];
+    mosaicAverageGLM.sd = [sqrt(mean(sd_x(find((sd_x~=0)&(sd_x<6)&(sd_x>0.4))).^2)) sqrt(mean(sd_y(find((sd_y~=0)&(sd_y<6)&(sd_y>0.4))).^2))];
 end

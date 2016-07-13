@@ -133,12 +133,16 @@ switch ieParamFormat(params.what)
         if ~isempty(obj.responsePsth)
             val = obj.responsePsth;
         else
+            % convolve = gausswin(smoothing)/(trials*fittedLN.orig_glm.t_bin*sum(gausswin(smoothing)));
+            % LN_FR = conv(sum(fittedLN.xval.rasters.ln_sim),convolve,'same');
+
             nCells = size(obj.responseSpikes,1)*size(obj.responseSpikes,2);
             numberTrials = obj.numberTrials;
             for ce = 1:nCells
-                convolvewin2D = fspecial('gaussian',100,20);
-                convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
+%                 convolvewin2D = fspecial('gaussian',100,20);
+%                 convolvewin = convolvewin2D(51,:)./max(convolvewin2D(51,:));
 %                 convolvewin=gausswin(100);
+                convolvewin = gausswin(120)/(numberTrials*8.3275e-04*sum(gausswin(120)));
                 clear y
                 for trind = 1:numberTrials
                     y(trind,obj.responseSpikes{ce,1,trind})=1;
@@ -153,3 +157,4 @@ switch ieParamFormat(params.what)
         val = obj.responseVoltage;
 end
 
+  

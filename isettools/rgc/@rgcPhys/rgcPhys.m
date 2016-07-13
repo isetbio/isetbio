@@ -84,6 +84,11 @@ classdef rgcPhys % < rgcMosaic
            val = mosaicGet(obj, varargin{:});
         end
       
+        mosaicGLM = obj.glmLoad(cellType);
+        
+        obj = obj.mosaicLoadExperimental(mosaicGLM, cellType, varargin);
+        
+        obj = obj.mosaicLoadAverage(mosaicGLM, cellType, varargin);
     end
     
     % Methods that must only be implemented (Abstract in parent class).

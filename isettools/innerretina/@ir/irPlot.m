@@ -152,6 +152,7 @@ switch ieParamFormat(type)
             tx = obj.timing:obj.timing:obj.timing*length(tFilter);
             if length(tFilter)>1
                 plot(tx,tFilter);
+
             else
                 scatter(tx,tFilter,'x');
                 disp('Temporal filter is identity, see bipolar temporal filter');
