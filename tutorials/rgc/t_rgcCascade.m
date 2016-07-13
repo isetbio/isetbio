@@ -174,7 +174,7 @@ params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
-nTrials = 30; 
+nTrials = 57; 
 innerRetinaSU.mosaic{1} = innerRetinaSU.mosaic{1}.set('numberTrials',nTrials);
 
 %% Compute the inner retina response
@@ -224,7 +224,7 @@ params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetina = irPhys(os1, params);
-nTrials = 30;
+nTrials = 57;
 innerRetina.mosaic{1} = innerRetina.mosaic{1}.set('numberTrials',nTrials);
 %% Compute the inner retina response
 
