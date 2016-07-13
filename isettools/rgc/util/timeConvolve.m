@@ -35,14 +35,23 @@ for cc = 1:nChannels
             switch csFlag
                 case 'c'
                     impulseR = mosaic.get('tCenter','cell',[ii,jj]);
+                    tonicDrive = mosaic.get('tonicDrive','cell',[ii,jj]);
                 case 's'
                     impulseR = mosaic.get('tSurround','cell',[ii,jj]);
+                    tonicDrive = 0; %mosaic.get('tonicDrive','cell',[ii,jj]);
                 otherwise
             end
             
             % Convolve them all
             thisInput = squeeze(input(ii,jj,:,cc));
-            resp(ii,jj,:,cc) = conv(thisInput, impulseR','same');
+%             resp(ii,jj,:,cc) = conv(thisInput, impulseR','same')+tonicDrive;
+            
+            if size(thisInput,1) > size(impulseR,1)
+                impulseRZP = [impulseR; zeros(-size(impulseR,1)+size(thisInput,1),1)];
+                thisInputZP = thisInput;
+            end
+            resp(ii,jj,:,cc) = ifft(fft(impulseRZP).*fft(thisInputZP));           
+            
         end
         
         % If we have multiple color channels, for the displayRGB case, sum

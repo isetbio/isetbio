@@ -78,7 +78,10 @@ os = osSet(os, 'patch size', patchSize);
 
 %% Find bipolar responses
 
-bp = bipolar(os);
+
+bpParams.filterType = 3;
+bpParams.cellLocation = 58;
+bp = bipolar(os,bpParams);
 bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
 bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 % bipolarThreshold = -40;
@@ -126,33 +129,55 @@ legend('Bipolar IR','RGC Synaptic IR');
 set(gca,'fontsize',16);
 grid on;
 
-%% Find RGC responses
-% Build and IR object that takes as input the bipolar mosaic.
 
-% Initialize.
-clear params 
-clear innerRetinaBpSu
-params.name      = 'Bipolar with nonlinear subunits'; % This instance
+%%
+
+
+%% Build rgc
+
+clear params
+params.name      = 'Macaque inner retina 1'; % This instance
+
 params.eyeSide   = 'left';   % Which eye
 params.eyeRadius = 4;        % Radius in mm
 params.eyeAngle  = 90;       % Polar angle in degrees
-% bp = bipolarSet(bp,'patchSize',2e-4);
-innerRetinaBpSu = irCreate(bp, params);
 
-% Create a subunit model for the on midget ganglion cell parameters
-innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
-innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',10);
-% % Uncomment to get rid of spatial nonlinearity
-newRectifyFunction = @(x) x;
-innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
+innerRetinaSU = irCreate(bp, params);
 
-innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.01);
+% innerRetinaSU.mosaicCreate('model','glm','type','off midget');
+innerRetinaSU.mosaicCreate('model','glm','type','on midget');
 
-% irPlot(innerRetinaBpSu,'mosaic');
-
-% Compute RGC mosaic responses
-innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
-irPlot(innerRetinaBpSu,'linear')
+innerRetinaSU = irCompute(innerRetinaSU, bp);
+irPlot(innerRetinaSU,'linear');
+%%
+% irPlot(innerRetinaSU,'linear')
+% %% Find RGC responses
+% % Build and IR object that takes as input the bipolar mosaic.
+% 
+% % Initialize.
+% clear params 
+% clear innerRetinaBpSu
+% params.name      = 'Bipolar with nonlinear subunits'; % This instance
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 4;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
+% % bp = bipolarSet(bp,'patchSize',2e-4);
+% innerRetinaBpSu = irCreate(bp, params);
+% 
+% % Create a subunit model for the on midget ganglion cell parameters
+% innerRetinaBpSu.mosaicCreate('model','Subunit','type','off parasol');
+% innerRetinaBpSu.mosaic{1}.mosaicSet('numberTrials',10);
+% % % Uncomment to get rid of spatial nonlinearity
+% % newRectifyFunction = @(x) x;
+% % innerRetinaBpSu.mosaic{1}.mosaicSet('rectifyFunction',newRectifyFunction);
+% 
+% innerRetinaBpSu.mosaic{1}.mosaicSet('tonicDrive',0.01);
+% 
+% % irPlot(innerRetinaBpSu,'mosaic');
+% 
+% % Compute RGC mosaic responses
+% innerRetinaBpSu = irCompute(innerRetinaBpSu, bp);
+% irPlot(innerRetinaBpSu,'linear')
 
 %% Measure the temporal impulse response for the original GLM model
 % This response can be compared to the above response 
@@ -164,7 +189,7 @@ params.fov = 0.8;
 
 % Set impulse stimulus by only turning on a signal pixel at t = 1
 sceneRGB = zeros(params.image_size, params.image_size, params.nsteps, 3);
-sceneRGB(16,16,23,:) = 10*[10 10 10];
+sceneRGB(16,16,23,:) = 100*[10 10 10];
 
 % Create outer segment
 osD = osCreate('displayRGB');
@@ -196,3 +221,35 @@ innerRetinaRGB = irCompute(innerRetinaRGB, osD);
 
 % Plot response
 irPlot(innerRetinaRGB,'linear');%,'cell',[1 2])
+axis([0 0.45 2.245 2.28])
+
+%%
+os1 = osCreate('displayRGB'); 
+os1 = osSet(os1, 'timeStep', 1/120);
+
+% Attach the movie to the object
+os1 = osSet(os1, 'rgbData', sceneRGB);
+
+%% Generate RGC object for simulated GLM prediction of response
+% Set the parameters for the inner retina RGC mosaic. For the inner retina
+% type irPhys, the values for eyeSide, eyeRadius and eyeAngle have no
+% effect, because those are dependent on the properties of the retinal
+% piece used in the Chichilnisky Lab experiment.
+
+% Set parameters
+params.name = 'macaque phys';
+params.eyeSide = 'left'; 
+params.eyeRadius = 12; 
+params.eyeAngle = 0; ntrials = 0;
+
+% Determined at beginning to allow looping
+params.experimentID = '2013-08-19-6'; % Experimental dataset
+params.stimulusTest = 'WN'; % WN or NSEM
+params.cellType = 'on parasol';         % ON or OFF Parasol
+
+% Create object
+innerRetina = irPhys(os1, params);
+nTrials = 57; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
+
+innerRetina = irCompute(innerRetina,os1);
+irPlot(innerRetina,'linear')

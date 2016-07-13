@@ -70,8 +70,8 @@ classdef irPhys < ir
         function val = irGet(obj, varargin)
            % val = irGet(obj, varargin{:});
            val = irGet@ir(obj,varargin{:});
-        end
-      
+        end      
+        
     end
     
     % Methods that must only be implemented (Abstract in parent class).
