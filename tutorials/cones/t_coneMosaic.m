@@ -103,4 +103,20 @@ irPlot(ir, 'mosaic');
 
 % irPlot(ir, 'psth');
 
-%%
+%% Download an absorption movie and compute
+
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/istim');
+
+% Test for download
+data = rd.readArtifact('barMovie','type','mat');
+cMosaic = data.iStim.cMosaic;
+cMosaic.guiWindow;
+
+% The object is stored without the current.  So compute it now.
+cMosaic.computeCurrent;
+
+bp = bipolar(cMosaic.os);
+bp.compute(cMosaic.os);
+
+

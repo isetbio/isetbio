@@ -472,13 +472,14 @@ switch parm
         % people stick it in the wrong way.
         if checkfields(oi,'spectrum', 'wave'), 
             val = oi.spectrum.wave(:); 
-        elseif checkfields(oi,'optics','spectrum', 'wave'), 
-            val = oi.optics.spectrum.wave(:);
-        elseif checkfields(oi, 'optics', 'OTF', 'wave')
-            val = oi.optics.OTF.wave(:);
-        elseif checkfields(oi,'optics','rayTrace','psf','wavelength')
-            val = oi.optics.rayTrace.psf.wavelength(:);
         end
+        %         elseif checkfields(oi,'optics','spectrum', 'wave'),
+        %             val = oi.optics.spectrum.wave(:);
+        %         elseif checkfields(oi, 'optics', 'OTF', 'wave')
+        %             val = oi.optics.OTF.wave(:);
+        %         elseif checkfields(oi,'optics','rayTrace','psf','wavelength')
+        %             val = oi.optics.rayTrace.psf.wavelength(:);
+        %         end
     case {'nwave','nwaves'}
         % oiGet(oi,'n wave')
         % Refers to data wave.

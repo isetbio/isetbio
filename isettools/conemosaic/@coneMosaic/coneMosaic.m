@@ -353,7 +353,24 @@ classdef coneMosaic < hiddenHandle
                 obj.current = current;
             end
         end
+        
+        % Convert absorptions to photocurrent with the os model.
+        function computeCurrent(obj)
+            % We should check that absorptions is not empty
+            if isempty(obj.absorptions)
+               disp('Compute absorptions first.  No current comnputed');
+            end
+            
+            pRate = obj.absorptions/obj.integrationTime;
+            
+            obj.current = obj.os.osCompute(pRate, obj.pattern);
+            
+        end
+        
     end
+    
+
+    
     
     methods (Static)
         function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
