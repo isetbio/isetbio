@@ -338,7 +338,7 @@ subplot(312); hold on;
 % subplot(211); hold on;
 irPlot(innerRetina,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','r')
 % irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
-title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+title(sprintf('Black Box, WN, off parasol cell [%d 1]',cellNum));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 30]);
@@ -349,7 +349,7 @@ subplot(313); hold on;
 % subplot(212); hold on;
 irPlot(innerRetinaSU,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','b');
 % irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
-title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Cascade Conv, WN, off parasol cell [%d  1]',cellNum));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 
@@ -359,7 +359,7 @@ axis([tStart tEnd 0 30]);
 subplot(311); hold on;
 irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hf',h1,'dt',0.1,'color','k')
 % irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',params.cellIndices));
+title(sprintf('Recorded, WN, off parasol cell [%d  1]',params.cellIndices));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 

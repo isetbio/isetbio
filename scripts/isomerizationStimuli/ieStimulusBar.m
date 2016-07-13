@@ -110,7 +110,10 @@ if wFlag, delete(wbar); end
 
 % Set the stimuls into the sensor object
 cm.emPositions = zeros(nSteps, 2);
+cm.absorptions = zeros(size(absorptions));
 cm.absorptions = absorptions;
+
+cm.compute(oi, 'currentFlag', true);
 
 % These are both the results and the objects needed to recreate this
 % script. So calling isomerizationBar(iStim) should produce the same

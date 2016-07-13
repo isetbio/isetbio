@@ -18,18 +18,18 @@ cone_mosaic = sensor.human.coneType;
 scale2 = size(cone_mosaic,2)/spacing;%1;%size(cone_mosaic,2)/40;
 scale1 = scale2;
   
-[xg yg] = meshgrid([1:size(cone_mosaic,1),1:size(cone_mosaic,1)]);
+[xg yg] = meshgrid([1:size(cone_mosaic,1),1:size(cone_mosaic,2)]);
 xg2 = xg(1:size(cone_mosaic,1),1:size(cone_mosaic,2)); yg2 = yg(1:size(cone_mosaic,1),1:size(cone_mosaic,2));
 % 
 % % figure; scatter(xg2(:),yg2(:),40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
 % % figure; 
 % hold on;
-scatter(yg2(:)./scale1,xg2(:)./scale2,40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
+% scatter(yg2(:)./scale1,xg2(:)./scale2,40,4-cone_mosaic(:),'o','filled'); colormap jet; set(gca,'color',[0 0 0])
 
 % figure; 
 % imagesc(4-cone_mosaic); colormap jet;
 
-% imagesc((1:size(cone_mosaic,2))./scale1, (1:size(cone_mosaic,1))./scale1, 4-cone_mosaic); colormap jet;
+imagesc((1:size(cone_mosaic,2))./scale1, (1:size(cone_mosaic,1))./scale1, 4-cone_mosaic); colormap jet;
 
     % circle samples
 bpRad = 1;%size(bp.sRFcenter,1);
@@ -66,7 +66,7 @@ c1(2,:) = rfRad*sin(circle_samples);
 
 % figure; 
 hold on;
-magrand = 2.5;
+magrand = 3.5;
 for i = 1:length(ir.mosaic{1}.cellLocation)
 %     plot((magrand*rand(1)+loc(i,2)+(c1(1,2:end)+(rand(1,length(c1(1,2:end)),1)-.5) )-1*rfRad-0*ir.mosaic{1}.cellLocation{1,1}(1))./scale1,(magrand*rand(1)+loc(i,1)+(c1(2,2:end)+(rand(1,length(c1(1,2:end)))-.5))-1*rfRad-0*ir.mosaic{1}.cellLocation{1,1}(2))./scale2,'m','linewidth',3); axis equal
     

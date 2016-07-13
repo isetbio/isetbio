@@ -243,7 +243,7 @@ switch ieParamFormat(type)
                         
                         % Draw raster plots
                         % line([spikeTimes, spikeTimes]*timeStep,[tr tr-1],'color','k');                        
-                        scatter([spikeTimes].*timeStep,[tr*ones(length(spikeTimes),1)],10,'o',color,'filled');
+                        scatter([spikeTimes].*timeStep,[tr*ones(length(spikeTimes),1)],8,'o',color,'filled');
                         
                         axis([0 timeStep*lastspiketime 0 nTrials+1]);
                         
