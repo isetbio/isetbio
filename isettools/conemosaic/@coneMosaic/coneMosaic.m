@@ -32,7 +32,6 @@ classdef coneMosaic < hiddenHandle
     
     properties (GetAccess=public, SetAccess=public) % public temporarilly
         absorptions;  % The spatial array of cone absorptions
-        current;      % The spatial array of photocurrent over time
     end
     
     properties (Dependent)
@@ -50,6 +49,8 @@ classdef coneMosaic < hiddenHandle
         coneLocs;   % cone locations in meters
         qe;         % effective absorptance with macular pigment (not lens)
         
+        current;      % The spatial array of photocurrent over time
+
         spatialDensity; % spatial density (ratio) of the K-LMS cones
     end
     
@@ -261,7 +262,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.current(obj)
-            val = double(obj.current);
+            val = double(obj.os.coneCurrentSignal);
         end
         
         % set method for class properties
@@ -282,7 +283,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function set.current(obj, val)
-            obj.current = single(val);
+            obj.os.osSet('coneCurrentSignal',single(val));
         end
         
         function set.fov(obj, val) % set field of view
@@ -349,8 +350,7 @@ classdef coneMosaic < hiddenHandle
             % If we want the photo current, use the os model
             if currentFlag
                 pRate = absorptions/obj.integrationTime;
-                current = obj.os.osCompute(pRate, obj.pattern);
-                obj.current = current;
+                obj.os.osCompute(pRate, obj.pattern);
             end
         end
         
@@ -363,7 +363,7 @@ classdef coneMosaic < hiddenHandle
             
             pRate = obj.absorptions/obj.integrationTime;
             
-            obj.current = obj.os.osCompute(pRate, obj.pattern);
+            obj.os.osCompute(pRate, obj.pattern);
             
         end
         

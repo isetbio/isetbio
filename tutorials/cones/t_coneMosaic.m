@@ -111,6 +111,8 @@ rd.crp('/resources/data/istim');
 % Test for download
 data = rd.readArtifact('barMovie','type','mat');
 cMosaic = data.iStim.cMosaic;
+cMosaic.computeCurrent;
+
 cMosaic.guiWindow;
 
 % The object is stored without the current.  So compute it now.
@@ -136,6 +138,7 @@ params.eyeAngle  = 90;       % Polar angle in degrees
 
 ir = irCreate(bp, params);
 ir.mosaicCreate('model','GLM','type','on midget');
+
 tic;
 ir = irCompute(ir, bp, 'coupling',false);
 toc
