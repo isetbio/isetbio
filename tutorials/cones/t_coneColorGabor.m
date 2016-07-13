@@ -1,4 +1,4 @@
-%% t_colorOpponentGabor
+%% t_coneColorGabor
 %
 % Model cone responses for the experiment on detection of Gabor color
 % opponent stimuli in isetbio.
@@ -123,6 +123,10 @@ scatter3(pooledData{1}(:,1),pooledData{1}(:,2),pooledData{1}(:,3))
 scatter3(pooledData{2}(:,1),pooledData{2}(:,2),pooledData{2}(:,3))
 xlabel('pooled S cone response'); ylabel('pooled M cone response'); zlabel('pooled L cone response');
 
+% The pooled response for the cone array at
+% each contrast level is compared to the pooled response for no
+% Gabor present using a linear SVM, and the cross-validated
+% accuracy of the linear SVM is calculated.
 m1 = fitcsvm([pooledData{1}; pooledData{2}], [ones(noiseIterations,1); -1*ones(noiseIterations,1)], 'KernelFunction', 'linear');
 % Calculate cross-validated accuracy based on model:
 cv = crossval(m1,'kfold',5);

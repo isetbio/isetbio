@@ -65,9 +65,6 @@ display = displayCreate(params.display);
 
 %% Initialize scene as a Gabor image
 
-% parameters found in Fig. 6 caption
-paramsGabor = paramsGaborColorOpponent();
-
 % This is the contrast at each step in the simulation.  It ramps up
 % to the max (1 in this case), stays there, and then ramps back
 % down.
