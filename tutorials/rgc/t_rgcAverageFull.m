@@ -114,16 +114,16 @@ vcNewGraphWin; imagesc(4-cone_mosaic); colormap jet;
 
 % Set cone mosaic
 % Remove S cones if the patch is foveal
-if ecc < 0.3
-    % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
-%     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-    blueIndices = find(cone_mosaic==4);
-    blueRandPerm = randperm(length(blueIndices));
-    cone_mosaic(blueIndices(1:floor(blueRandPerm/2))) = 2;
-    cone_mosaic(blueIndices(ceil(blueRandPerm/2):end)) = 3;
-    absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
-
-end
+% if ecc < 0.3
+%     % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+% %     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+%     blueIndices = find(cone_mosaic==4);
+%     blueRandPerm = randperm(length(blueIndices));
+%     cone_mosaic(blueIndices(1:floor(length(blueRandPerm)/2))) = 2;
+%     cone_mosaic(blueIndices(ceil(length(blueRandPerm)/2):end)) = 3;
+%     absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+% 
+% end
 % Scale the size of cone mosaic approrpiately
 absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
 
@@ -181,13 +181,13 @@ for t = 1 : nSteps
     % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
     
     % Set cone mosaic
-    if ecc < 0.3
-        %     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-        
-        cone_mosaic(blueIndices(1:floor(blueRandPerm/2))) = 2;
-        cone_mosaic(blueIndices(ceil(blueRandPerm/2):end)) = 3;
-        absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
-    end
+%     if ecc < 0.3
+%         %     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+%                
+%         cone_mosaic(blueIndices(1:floor(length(blueRandPerm)/2))) = 2;
+%         cone_mosaic(blueIndices(ceil(length(blueRandPerm)/2):end)) = 3;
+%         absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+%     end
     absorptions = sensorCompute(absorptions, oi);
     
     % On first step, initialize the sensor volts matrix
@@ -207,10 +207,10 @@ end
 absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-voltsZP = zeros(([size(volts,1) size(volts,2) size(volts,3)+500]));
-voltsZP(:,:,501:end) = volts;
-
-absorptions = sensorSet(absorptions, 'volts', voltsZP);
+% voltsZP = zeros(([size(volts,1) size(volts,2) size(volts,3)+500]));
+% voltsZP(:,:,501:end) = volts;
+% 
+% absorptions = sensorSet(absorptions, 'volts', voltsZP);
 
 sensor = absorptions;
 
@@ -384,7 +384,7 @@ params.inputSize = size(bp.responseCenter);
 
 % Create RGC object
 innerRetinaSU = irPhys(bp, params);
-nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
+nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 
 %% Plot the cone, bipolar and RGC mosaics
 
@@ -402,10 +402,11 @@ figure; plot(vertcat(innerRetinaSUPSTH{:})')
 title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
 xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
 set(gca,'fontsize',14);
-% axis([0 length(innerRetinaSUPSTH{1}) 0 130]);
+lastSpikeTime=innerRetinaSU.mosaic{1}.mosaicGet('lastspiketime')
+axis([0 lastSpikeTime 0 max(max(vertcat(innerRetinaSUPSTH{:})))]);
 grid on;
 
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
-figure; ieMovie(psthMovie);
+% figure; ieMovie(psthMovie);

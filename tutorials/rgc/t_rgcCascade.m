@@ -35,9 +35,6 @@ stimulusTestI = 2;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2
 switch experimentI
     case 1; experimentID = '2013-08-19-6';
     otherwise; error('Data not yet available');
-%     case 2; experimentID = '2012-08-09-3'; % Data not yet available
-%     case 3; experimentID = '2013-10-10-0';
-%     case 4; experimentID = '2012-09-27-3';
 end
 % The other experimental data will be added to the RDT in the future.
 
@@ -53,8 +50,6 @@ switch cellTypeI
     case 2; cellType = 'Off Parasol';
 end
 
-% Load OS from RDT (1) or run from scratch (0)
-loadOS = 0;
 %% Load stimulus movie and fit/spiking data using RemoteDataToolbox
 
 % Loads the appropriate movie and spiking data for the experimental
@@ -66,8 +61,7 @@ loadOS = 0;
 nFrames = 1200; 
 testmovieshort = double(testmovie.matrix(:,:,1:nFrames)); 
 
-if ~loadOS 
-    
+%% Upsample movie stimulus for os computation    
 frRS = 8;
 testmovieRS = zeros(size(testmovieshort,1),size(testmovieshort,2),frRS*size(testmovieshort,3));
 for frnum = 1:nFrames
@@ -75,9 +69,6 @@ for frnum = 1:nFrames
         testmovieRS(:,:,(frnum-1)*frRS+frrep) = testmovieshort(:,:,frnum);
     end
 end
-%% Show test movie
-showFrames = 50;
-% ieMovie(testmovieshort(:,:,1:showFrames));
 
 %% Generate display, scene, oi, sensor
 paramsStim.nsteps = 1;%nFrames;%size(testmovieshort,3);
@@ -100,6 +91,8 @@ sensor = iStim.sensor;
 
 sensor.data.volts = 5e-4*double(testmovieshort)./255;
 % sensor.data.volts = 5e-4*testmovieRS./max(testmovieRS(:));
+sensor = sensorSet(sensor, 'cone type',3*ones([size(testmovieshort,1) size(testmovieshort,2)]));
+
 clear testmovieRS % testmovieshort
 %% Outer segment calculation - linear model
 % The iStim structure generates the movie, the scene, the oi and the
@@ -120,7 +113,7 @@ osL = osSet(osL, 'time step', timeStep);
 
 % Set circular convolution, only steady state
 paramsOSL.convolutionType = 1; 
-paramsOSL.ecc = 2; % mm
+paramsOSL.ecc = 11; % mm
 paramsOSL.singleType = 1;
 osLSub = osL;
 
@@ -136,48 +129,7 @@ osL = osCompute(osL,sensor,paramsOSL);
 % osLSub.osSet('coneCurrentSignal',sensor.data.volts);
 
 
-% osPlot(osLSub,sensor)
-%% osBioPhys
-
-% % Initialize
-osB = osCreate('biophys');
-
-% % % % % Set eccentricity of os patch here
-
-% Set size of retinal patch based on absorptions sensor object
-patchSize = sensorGet(sensor,'width','m');
-osB = osSet(osB, 'patch size', patchSize);
-
-% Set time step of simulation equal to absorptions sensor object
-timeStep = sensorGet(sensor,'time interval','sec');
-osB = osSet(osB, 'time step', timeStep);
-
-sensorVolts = sensorGet(sensor,'volts');
-paramsOS.bgVolts = 10*mean(sensorVolts(:));
-clear sensorVolts
-
-osBSub = osB;
-% Compute the outer segment response to the absorptions with the linear
-% model.
-% osB = osCompute(osB,sensor,paramsOS);
-% 
-% % % Plot the photocurrent for a pixel.
-% % osPlot(osB,sensor);
-% 
-% % osBSub.osSet('coneCurrentSignal',0);
-% 
-% osBSub.osSet('coneCurrentSignal',osB.coneCurrentSignal(:,:,1:80:end));
-% clear osB
-
-else
-    rdt = RdtClient('isetbio');
-    rdt.crp('resources/data/rgc');
-    data = rdt.readArtifact('full_osLSub_sensor_NSEM', 'type', 'mat');
-    osLSub = data.osLSub;
-    
-end
-
-% for cellNumber = 44
+% osPlot(osLSub,sensor
 
 %% Find bipolar responses
 clear bp os
@@ -218,11 +170,13 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
-params.cellIndices = 1:2%:118;
+params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
-nTrials = 57; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
+nTrials = 30; 
+innerRetinaSU.mosaic{1} = innerRetinaSU.mosaic{1}.set('numberTrials',nTrials);
+
 %% Compute the inner retina response
 
 % Linear convolution
@@ -266,12 +220,12 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
-params.cellIndices = 1:2%:118;
+params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetina = irPhys(os1, params);
-nTrials = 57; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
-
+nTrials = 30;
+innerRetina.mosaic{1} = innerRetina.mosaic{1}.set('numberTrials',nTrials);
 %% Compute the inner retina response
 
 innerRetina = irCompute(innerRetina, os1);
@@ -289,7 +243,7 @@ innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
 innerRetinaRecorded = irPhys(os1, params);  
 
 % innerRetinaRecorded = irSet(innerRetinaRecorded,'timing',.008);
-innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
+innerRetinaRecorded.mosaic{1} = innerRetinaRecorded.mosaic{1}.set('numberTrials',nTrials);
 
 % Set the recorded spikes that we got from the RDT into the object.
 innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
@@ -303,47 +257,54 @@ innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth'
 % Set the time and cell number
 tStart = 1.5;% 9%1.5;
 tEnd = 9;%21;%18%21;%1*8.5;
-cellNum = 1;
+cellNum = 10;
 
 % Plot the original GLM prediction
-vcNewGraphWin([],'upperleftbig'); 
+% vcNewGraphWin([],'upperleftbig'); 
+h1 = figure; hold on;
 subplot(312); hold on;
 % subplot(211); hold on;
-irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
+% irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
+irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','b');
 title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
 set(gca,'fontsize',14);
-axis([tStart tEnd 0 57]);
-axis off
+axis([tStart tEnd 0 nTrials]);
+% axis off
+set(gca, 'xtick',-1);
 
 % Plot the biophys/subunit prediction
 subplot(313); hold on;
 % subplot(212); hold on;
-irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
+% irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
+irPlot(innerRetina,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','r');
 title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
-% axis([tStart-.04 tEnd-.04 0 57]); % when using theoretical irGLM
-% axis([tStart tEnd 0 57]);
+% axis([tStart-.04 tEnd-.04 0 nTrials]); % when using theoretical irGLM
+% axis([tStart tEnd 0 nTrials]);
 % switch stimulusTestI
 %     case 1
-%         axis([tStart+1 tEnd+1 0 57]);
+%         axis([tStart+1 tEnd+1 0 nTrials]);
 %     case 2
-        axis([tStart tEnd 0 57]);
+        axis([tStart tEnd 0 nTrials]);
 % end
-axis off
+% axis off
+set(gca, 'xtick',-1);
 
 % % Plot the recorded spikes
 subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
+
+irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','k');
+% irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
 title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
 set(gca,'fontsize',14);
 
 switch stimulusTestI
     case 1
-        axis([tStart-0.5 tEnd-0.5 0 57]);
+        axis([tStart-0.5 tEnd-0.5 0 nTrials]);
     case 2
-        axis([tStart-1 tEnd-1 0 57]);
+        axis([tStart-1 tEnd-1 0 nTrials]);
 end
- set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
+%  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
 
  %%
  
@@ -404,70 +365,3 @@ set(gca,'fontsize',14);
 xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
 % % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
 % set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
-
-%%
-% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))))
-% figure; scatter(innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)))
- 
-for cellNum2 = 1:length(innerRetinaPSTH)
-    cellNumber = cellNum2
-    minlen = min([length(innerRetinaPSTH{cellNum2}) length(innerRetinaRecordedPSTH{cellNum2}) length(innerRetinaSUPSTH{cellNum2}) ]);
-switch stimulusTestI
-    
-
-    case 1
-        
-        rsim = innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaSUPSTH{cellNum2}(1200+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-fracVar(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-switch stimulusTestI
-    case 1
-        
-        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaPSTH{cellNum2}(1200+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaRecordedPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-fracVar2(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-
-switch stimulusTestI
-    case 1
-        
-        rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-        rrec = innerRetinaSUPSTH{cellNum2}((600+(1:minlen-1200)));
-%         rrec = innerRetinaSUPSTH{cellNum2}(600-0+(1:minlen-1200));
-    case 2
-        rsim = innerRetinaPSTH{cellNum2}(0+(1:minlen-1200));
-        % rrec = innerRetinaSUPSTH{cellNum2}(1200-0+(1:minlen-1200));
-        rrec = innerRetinaSUPSTH{cellNum2}((0+(1:minlen-1200)));
-end
-
-rsim = innerRetinaPSTH{cellNum2}(600+(1:minlen-1200));
-rrec = innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200));
-fracVar3(cellNum2) = 1 - sum((rsim-rrec).^2)/sum((rrec-mean(rrec)).^2);
-
-% figure;scatter(innerRetinaPSTH{cellNum2}(600+(1:minlen-1200)),innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200)))
-% 
-% figure;scatter(innerRetinaRecordedPSTH{cellNum2}(0+(1:minlen-1200)),innerRetinaSUPSTH{cellNum2}(600+(1:minlen-1200)))
-
-
-end
-% fracVar
-% fracVar2
-figure; scatter(fracVar, fracVar2); 
-hold on; plot(.01:.01:1,.01:.01:1)
-xlabel('SU'); ylabel('GLM');
-
-
-% end
