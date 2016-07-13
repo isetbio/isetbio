@@ -245,12 +245,6 @@ switch obj.filterType
         bipolarFilt = (data.bipolarFiltMat(obj.cellLocation,:)');
 end
 
-
-% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
-% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
-% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
-
 % % temporal filtering
 % tCenter = conv2(sCenter, bipolarFilt, 'same');
 % tSurround = conv2(sSurround, bipolarFilt, 'same');
@@ -282,6 +276,12 @@ end
 % 
 bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
 bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+
+
+% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
+% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
 
 bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
