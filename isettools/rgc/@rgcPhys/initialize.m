@@ -72,7 +72,7 @@ switch(averageFlag)
     
     % Load in a mosaic from a physiology experiment
     case 0        
-        obj = mosaicLoadExperimental(obj, mosaicGLM, cellType, cellIndices, goodind);
+        obj = mosaicLoadExperimental(obj, mosaicGLM, cellType, 'cellIndices',cellIndices, 'goodind',goodind);
         
     % Generate a mosaic that fully tiles the visual field 
     % with the average properties of an experimental mosaic,

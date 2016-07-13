@@ -120,8 +120,8 @@ methods
                 bpSizeSurround = sizeScale;
 %                 obj.sRFcenter = ones(sizeScale).*sizeScale^2;
 %                 obj.sRFsurround = ones(sizeScale).*sizeScale^2;
-                rfCenterBig = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-                rfSurroundBig = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+                rfCenterBig = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
                 
                 obj.sRFcenter = rfCenterBig(:,:);
                 obj.sRFsurround = rfSurroundBig(:,:);
@@ -137,8 +137,8 @@ methods
                 
 %                 obj.sRFcenter = ones(sizeScale)./sizeScale^2;
 %                 obj.sRFsurround = ones(sizeScale)./sizeScale^2;
-                obj.sRFcenter = 1;%fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-                obj.sRFsurround = 1;%fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+                obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
              
         end
         if isfield(p.Results,'cellLocation')

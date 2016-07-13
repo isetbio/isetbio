@@ -154,7 +154,7 @@ for xi = 1:numberRows
                 obj.tonicDrive{matFileCtr,1} = 0;
                 obj.generatorFunction{matFileCtr,1} = mosaicAverageGLM.model;
             case{'onparasolapricot','offparasolapricot','onmidgetapricot','offmidgetapricot','onsbcapricot','sbcapricot'}
-                obj.tonicDrive{matFileCtr,1} = 0;%2.5;
+                obj.tonicDrive{matFileCtr,1} = 0;
                 obj.generatorFunction{matFileCtr,1} = @exp;
             otherwise
                 obj.tonicDrive{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.tonicDrive;
@@ -168,7 +168,7 @@ for xi = 1:numberRows
         obj.sRFcenter{matFileCtr,1} = rf1rs;
       
         % For rk1 fits, set surround RF to zero
-        obj.sRFsurround{matFileCtr,1} = 0*mosaicAverageGLM.linearfilters.Stimulus.space_rk1;
+        obj.sRFsurround{matFileCtr,1} = zeros(size(rf1rs));
         
         % Calculate average temporal response
         obj.tCenter{matFileCtr,1} = mosaicAverageGLM.linearfilters.Stimulus.time_rk1;

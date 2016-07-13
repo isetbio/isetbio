@@ -76,13 +76,15 @@ classdef rgcPhys % < rgcMosaic
         % set function, see for details
         function obj = set(obj, varargin)
             % obj = set@rgcMosaic(obj, varargin);
-            mosaicSet(obj, varargin{:});
+            obj = mosaicSet(obj, varargin{:});
         end
         
         % get function, see for details
         function val = get(obj, varargin)
            val = mosaicGet(obj, varargin{:});
         end
+        
+        [stimX, stimY, offset] = obj.stimPositions(xcell,ycell)
       
         mosaicGLM = obj.glmLoad(cellType);
         
@@ -101,7 +103,7 @@ classdef rgcPhys % < rgcMosaic
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-        obj = initialize(obj, sensor, outersegment, varargin);
+        obj = initialize(obj, varargin);
     end
     
 end

@@ -210,7 +210,7 @@ switch obj.filterType
         
         switch ieParamFormat(obj.cellType)
             case {'offdiffuse','offmidget'}
-                bipolarFilt = mean(bipolarFiltMat)';
+                bipolarFilt = -mean(bipolarFiltMat)';
             case {'ondiffuse','onmidget','ondifusesbc'}
                 bipolarFilt = -mean(bipolarFiltMat)';
             otherwise
@@ -246,8 +246,10 @@ switch obj.filterType
 end
 
 
-bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
+% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
 
 % % temporal filtering
 % tCenter = conv2(sCenter, bipolarFilt, 'same');
@@ -263,26 +265,26 @@ bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
 % 
 % end
 
-% % bipolarFilt = (bipolarFiltMat(1,:)');
-% if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
-%     bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
-%     bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
-%     bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
-% else
+% bipolarFilt = (bipolarFiltMat(1,:)');
+if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
+    bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
+    bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
+    bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
+else
+
+    bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
+    
+    bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
+    bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
+    
+end
+
 % 
-%     bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
-%     
-%     bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
-%     bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);
-%     
-% end
-% 
-% % 
-% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
-% 
-% bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-% bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
+bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+
+bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 
 
 % Rezero

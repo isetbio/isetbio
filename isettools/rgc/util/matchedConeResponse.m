@@ -92,24 +92,7 @@ for iter = 1:totalIters
                 adaptedDataSingleType(y, :) = tempData(1:nSteps);
                 
             end
-            
-            %     elseif (ndims(coneCurrent) == 2)
-            %
-            %         % pre-allocate memory
-            %         adaptedData = zeros(size(coneCurrent,1),timeBins);
-            %
-            %         for xy = 1:size(coneCurrent, 1)
-            %             tempData = conv(squeeze(coneCurrent(xy, :)), Filter);
-            %             if (initialState.Compress)
-            %                 tempData = tempData / maxCur;
-            %                 tempData = meanCur * (tempData ./ (1 + 1 ./ tempData)-1);
-            %             else
-            %                 tempData = tempData - meanCur;
-            %             end
-            %             adaptedData(xy, :) = tempData(1:timeBins);
-            %         end
-            %     end
-            
+
             % Signals are in pA here
             adaptedDataRS(cone_locations,:) = adaptedDataSingleType;
             pooledData(iter, cone_type-1) = mean(adaptedDataSingleType(:));

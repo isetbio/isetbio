@@ -55,10 +55,12 @@ allowableFieldsToSet = {...
     'rfDiameter',...
     'rfDiaMagnitude',...
     'cellLocation',...
+    'mosaicSize',...
     'sRFcenter',...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
+    'tonicDrive',...
     'linearResponse',...
     'responseLinear',...
     'generatorFunction',...
@@ -68,12 +70,14 @@ allowableFieldsToSet = {...
     'postSpikeFilter',...
     'couplingFilter',...
     'couplingMatrix',...
+    'lastspiketime',....
     'responseRaster',...
     'responsePsth',...
     'responseVoltage',...
     'responseSpikes'...
     };
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToSet)));
+p.addParameter('cell',[],@(x) (length(x(:)) == 2));
 
 % % Define what units are allowable.
 % allowableUnitStrings = {'a', 'ma', 'ua', 'na', 'pa'}; % amps to picoamps
@@ -84,6 +88,7 @@ p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFieldsToS
 
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
+cell = p.Results.cell;
 
 % % Old error check on input.
 % if ~exist('params','var') || isempty(params)
@@ -101,14 +106,29 @@ switch ieParamFormat(params.what)
         val = obj.rfDiaMagnitude;
     case{'celllocation'}
         val = obj.cellLocation;
+        
+    case {'mosaicsize'}
+        % Mosaic size in units of number of RGCs
+        val = size(obj.cellLocation);
     case{'srfcenter'}
         val = obj.sRFcenter;
     case{'srfsurround'}
         val = obj.sRFsurround;
     case{'tcenter'}
         val = obj.tCenter;
+        if ~isempty(cell)
+            val = val{cell(1),cell(2)};
+        end
     case{'tsurround'}
         val = obj.tSurround;
+        if ~isempty(cell)
+            val = val{cell(1),cell(2)};
+        end
+    case{'tonicdrive'}
+        val = obj.tonicDrive;        
+        if ~isempty(cell)
+            val = val{cell(1),cell(2)};
+        end
     case{'linearresponse'}
         val = obj.linearResponse;
     case{'responselinear'}
@@ -127,6 +147,21 @@ switch ieParamFormat(params.what)
         val = obj.couplingFilter;
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
+        
+    case {'lastspiketime'}
+        nCells    = obj.get('mosaic size');
+        nTrials = obj.get('numbertrials');
+        spikes = obj.responseSpikes;
+
+        val = 0;
+        for ii=1:nCells(1)
+            for jj = 1:nCells(2)
+                for kk = 1:nTrials
+                    mx = max(spikes{ii,jj,kk});
+                    val = max([val,mx]);
+                end
+            end
+        end
     case{'responseraster'}
         val = obj.responseRaster;
     case{'responsepsth'}

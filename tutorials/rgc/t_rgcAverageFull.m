@@ -113,12 +113,17 @@ cone_mosaic = sensorGet(absorptions,'cone type');
 vcNewGraphWin; imagesc(4-cone_mosaic); colormap jet;
 
 % Set cone mosaic
-% cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
-% cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-% blueIndices = find(cone_mosaic==0);
-% cone_mosaic(blueIndices) = 2;
-% absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+% Remove S cones if the patch is foveal
+if ecc < 0.3
+    % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
+%     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+    blueIndices = find(cone_mosaic==4);
+    blueRandPerm = randperm(length(blueIndices));
+    cone_mosaic(blueIndices(1:floor(blueRandPerm/2))) = 2;
+    cone_mosaic(blueIndices(ceil(blueRandPerm/2):end)) = 3;
+    absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
 
+end
 % Scale the size of cone mosaic approrpiately
 absorptions = sensorSetSizeToFOV(absorptions, params.fov, scene, oi);
 
@@ -176,8 +181,13 @@ for t = 1 : nSteps
     % cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
     
     % Set cone mosaic
-%     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
-%     absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+    if ecc < 0.3
+        %     cone_mosaic = 2+round(rand(sensorGet(absorptions,'size')));
+        
+        cone_mosaic(blueIndices(1:floor(blueRandPerm/2))) = 2;
+        cone_mosaic(blueIndices(ceil(blueRandPerm/2):end)) = 3;
+        absorptions = sensorSet(absorptions,'cone type',cone_mosaic);
+    end
     absorptions = sensorCompute(absorptions, oi);
     
     % On first step, initialize the sensor volts matrix
@@ -197,16 +207,17 @@ end
 absorptions = sensorSet(absorptions, 'volts', volts);
 % vcAddObject(sensor); sensorWindow;
 
-% voltsZP = zeros(([73 109 2000]));
-% voltsZP(:,:,501:end) = sensor.data.volts;
-% 
-% absorptions = sensorSet(absorptions, 'volts', voltsZP);
+voltsZP = zeros(([size(volts,1) size(volts,2) size(volts,3)+500]));
+voltsZP(:,:,501:end) = volts;
+
+absorptions = sensorSet(absorptions, 'volts', voltsZP);
 
 sensor = absorptions;
 
 % ieMovie(sceneRGB)
 
 % View movie of cone absorptions
+vcNewGraphWin;
 ieMovie(sensor.data.volts);
 %% Outer segment calculation - biophysical model
 % The next step is to get the outer segment current. The biophysical outer
@@ -248,6 +259,8 @@ for fr = 1:osCurrentSize(3)/downSampleFactor
     osCurrentNew(:,:,fr) = osB.coneCurrentSignal(:,:,downSampleFactor*(fr-1)+downSampleFactor);
 end
 
+osCurrentNew(:,:,end) = osCurrentNew(:,:,end-1);
+
 osBDS = osB;
 osBDS = osSet(osBDS,'coneCurrentSignal', osCurrentNew);
 osBDS = osSet(osBDS,'timeStep',0.008);
@@ -262,7 +275,7 @@ bpParams.rectifyType = 1;
 % Select the correct type of bipolar cell based on the user-specified RGC mosaic.
 switch cellTypeI
     case {1,6}
-        bpParams.cellType = 'onDiffuse';
+        bpParams.cellType = 'onDiffuse'; 
     case {2,7}
         bpParams.cellType = 'offDiffuse';
     case {3,8}
@@ -296,6 +309,7 @@ bp = bipolarCompute(bp, osB);
 
 % Visualize the bipolar mosaic response
 % bipolarPlot(bp,'response');
+% vcNewGraphWin;
 % ieMovie(bp.responseCenter);
 
 %% Set RGC mosaic parameters
@@ -329,7 +343,7 @@ switch cellTypeI
         cellType = 'On Parasol Apricot';
         
     case 7;
-        cellType = 'On Parasol Apricot';
+        cellType = 'Off Parasol Apricot';
         
     case 8;
         cellType = 'Off Parasol Apricot';
@@ -394,3 +408,4 @@ grid on;
 %% Make a movie of the PSTH response
 
 psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
+figure; ieMovie(psthMovie);

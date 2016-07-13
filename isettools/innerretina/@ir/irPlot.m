@@ -51,12 +51,15 @@ p.addParameter('hf', []);                    % figure handle
 p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 p.addParameter('mosaic',[1:length(obj.mosaic)],@isnumeric); % specify mosaic 
 p.addParameter('cell',[],@isnumeric);
+p.addParameter('dt',1,@isnumeric);
+p.addParameter('color','b',@ischar);
 p.parse(type, varargin{:});
 hf = p.Results.hf;
 oi = p.Results.oi;
 mosaicIndices = p.Results.mosaic;
 cellIndices = p.Results.cell;
-
+dt = p.Results.dt;
+color = p.Results.color;
 uData = [];
 
 % plot
@@ -211,7 +214,7 @@ switch ieParamFormat(type)
     case{'raster','rasterresponse'}
         % Plot spike rasterse
         
-        timeStep = obj.timing;
+        timeStep = obj.timing*dt;
         % bindur = ir.mosaic{1}.get('dt');
         
         for cellTypeInd = mosaicIndices
@@ -230,8 +233,9 @@ switch ieParamFormat(type)
             for xcell = nCellStart(1):nCellEnd(1)
                 for ycell = nCellStart(2):nCellEnd(2)
                     cellCtr = cellCtr+1;
-                    subplot(length(nCellStart(1):nCellEnd(1)),length(nCellStart(2):nCellEnd(2)),cellCtr);
-
+                    if length(cellIndices)>2 
+                        subplot(length(nCellStart(1):nCellEnd(1)),length(nCellStart(2):nCellEnd(2)),cellCtr);
+                    end
                     for tr = 1:nTrials
                         % Get spike times
                         spikeTimes = obj.mosaic{cellTypeInd}.responseSpikes{xcell,ycell,tr};
@@ -239,7 +243,7 @@ switch ieParamFormat(type)
                         
                         % Draw raster plots
                         % line([spikeTimes, spikeTimes]*timeStep,[tr tr-1],'color','k');                        
-                        scatter([spikeTimes].*timeStep,[tr*ones(length(spikeTimes),1)],8,'o','r','filled');
+                        scatter([spikeTimes].*timeStep,[tr*ones(length(spikeTimes),1)],10,'o',color,'filled');
                         
                         axis([0 timeStep*lastspiketime 0 nTrials+1]);
                         

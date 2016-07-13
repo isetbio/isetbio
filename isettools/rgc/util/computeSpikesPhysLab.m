@@ -34,8 +34,8 @@ ihcpl = mosaicGet(obj, 'couplingFilter');
 nCells = length(obj.cellLocation);
 nCellsTotal = nCells;%nCells(1)*nCells(2);
 
-Vstm = obj.responseLinear{1,1};
-slen = length(Vstm);
+Vstm = (obj.responseLinear(1,:,:));
+slen = size(Vstm,3);
 dt = .1; % sensorGet(sensor,'integration time');
 % rlen = length([.5+dt:dt:slen+.5]');
 rlen = length([.5+dt:dt:slen-1]');
@@ -90,7 +90,8 @@ for xcell = 1:nCells
 %     if isfield(obj,'couplingFilter')
     cp_bins     = length(cif_cpgain{1});
 %     end
-    Vstm = horzcat(obj.responseLinear{xcell,:,1});
+%     Vstm = horzcat(obj.responseLinear{xcell,:,1});
+    Vstm = squeeze(obj.responseLinear(xcell,1,:))';
     slen = length(Vstm);
     % cif0 = nlfun(interp1([0:slen-1]',Vstm',[.5+dt:dt:slen-1]', 'linear'));
     

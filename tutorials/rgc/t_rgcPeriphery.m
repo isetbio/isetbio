@@ -39,6 +39,7 @@ stimulusTestI = 1;       % Choose WN test stimulus (1)
 % Experimental dataset
 switch experimentI
     case 1; experimentID = 'RPE_201602171';
+    case 2; experimentID = '2013-10-19-6';
     otherwise; error('Data not yet available');
 end
 % Other experimental data will be added to the RDT in the future.
@@ -46,7 +47,7 @@ end
 % Stimulus: white noise or natural scene movie with eye movements
 switch stimulusTestI
     case 1; stimulusTest = 'WN';
-%     case 2; stimulusTest = 'NSEM';
+    case 2; stimulusTest = 'NSEM';
     otherwise
         error('NSEM not yet implemented');
 end
@@ -87,7 +88,7 @@ switch cellTypeI
         data = rdt.readArtifact('xval_mosaic_WN_ONSBC_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
 end
-frameRate = 1/121;
+frameRate = 121;
 % Load OS from RDT (1) or run from scratch (0)
 loadOS = 0;
 %% Load stimulus movie and fit/spiking data using RemoteDataToolbox
@@ -140,6 +141,7 @@ paramsStim.side = 'left';
 % Get the cone absorptions for the movie with the ieStimulusMovie function
 iStim = ieStimulusMovie(permute(testmovieshort(:,:,1:nFrames), [2 1 3]),paramsStim);
 sensor = iStim.sensor; sensor.data.volts = 5e-4*double(testmovieshort)./255;
+sensor = sensorSet(sensor, 'cone type',3*ones([size(testmovieshort,1) size(testmovieshort,2)]));
 
 clear testmovieRS % testmovieshort
 
@@ -157,7 +159,7 @@ patchSize = sensorGet(sensor,'width','m');
 osL = osSet(osL, 'patch size', patchSize);
 
 % Set time step of simulation equal to absorptions sensor object
-timeStep = sensorGet(sensor,'time interval','sec');
+timeStep = sensorGet(sensor,'time interval');
 osL = osSet(osL, 'time step', timeStep);
 
 
@@ -244,11 +246,11 @@ params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol;
 
 % Choose the cell to plot
-params.cellIndices = 10;
+params.cellIndices = 7;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
-nTrials = 30; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
+nTrials = 30; innerRetinaSU.mosaic{1} = innerRetinaSU.mosaic{1}.set('numberTrials',nTrials);
 %% Compute the inner retina response
 
 % Linear convolution
@@ -288,11 +290,11 @@ params.experimentID = experimentID; % Experimental dataset
 params.stimulusTest = stimulusTest; % WN or NSEM
 params.cellType = cellType;         % ON or OFF Parasol
 
-params.cellIndices = 10;
+params.cellIndices = 7;
 
 % Create object
 innerRetina = irPhys(os1, params);
-nTrials = 30; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
+nTrials = 30; innerRetina.mosaic{1} = innerRetina.mosaic{1}.set('numberTrials',nTrials);
 
 %% Compute the inner retina response
 
@@ -300,6 +302,8 @@ innerRetina = irCompute(innerRetina, os1);
 
 % Get the PSTH from the object
 innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
+
+% innerRetinaSU = irNormalize(innerRetinaSU,innerRetina);
 
 %% Create a new inner retina object and attach the recorded spikes
 % We also want to compare the spikes recorded in the experiment to those
@@ -311,7 +315,7 @@ innerRetinaPSTH = mosaicGet(innerRetina.mosaic{1},'responsePsth');
 innerRetinaRecorded = irPhys(os1, params);  
 
 % innerRetinaRecorded = irSet(innerRetinaRecorded,'timing',.008);
-innerRetinaRecorded = irSet(innerRetinaRecorded,'numberTrials',nTrials);
+nTrials = 30; innerRetinaRecorded.mosaic{1} = innerRetinaRecorded.mosaic{1}.set('numberTrials',nTrials);
 
 % Set the recorded spikes that we got from the RDT into the object.
 innerRetinaRecorded = irSet(innerRetinaRecorded,'recordedSpikes',xval_mosaic);
@@ -328,11 +332,14 @@ tEnd = 9;%21;%18%21;%1*8.5;
 cellNum = 1;
 
 % Plot the original GLM prediction
-vcNewGraphWin([],'upperleftbig'); 
+% vcNewGraphWin([],'upperleftbig'); 
+h1=figure; hold on;
 subplot(312); hold on;
 % subplot(211); hold on;
-irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
+irPlot(innerRetina,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','r')
+% irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
 title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+% set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 30]);
 % axis off
@@ -340,16 +347,20 @@ axis([tStart tEnd 0 30]);
 % Plot the biophys/subunit prediction
 subplot(313); hold on;
 % subplot(212); hold on;
-irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
+irPlot(innerRetinaSU,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','b');
+% irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
 title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+% set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 
 axis([tStart tEnd 0 30]);
 
 % % Plot the recorded spikes
 subplot(311); hold on;
-irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hold','on','color','k')
+irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hf',h1,'dt',0.1,'color','k')
+% irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hold','on','color','k')
 title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',params.cellIndices));
+% set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 
 switch stimulusTestI
@@ -358,7 +369,7 @@ switch stimulusTestI
     case 2
         axis([tStart tEnd 0 30]);
 end
- set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
+%  set(gcf,'position',[ 0.0063   -0.0444    0.8819    0.9378]);
 
  %% Plot the PSTHs
  
