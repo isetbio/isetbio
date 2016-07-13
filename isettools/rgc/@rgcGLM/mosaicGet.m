@@ -43,7 +43,9 @@ switch param
         val = obj.couplingFilter;
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
-        
+    case {'tonicdrive'}
+        val = obj.tonicDrive;
+
     otherwise
         % Super class
         val = mosaicGet@rgcMosaic(obj,param,varargin{:});
