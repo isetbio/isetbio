@@ -58,15 +58,30 @@ switch ieParamFormat(cellType)
         mosaicGLM = data.mosaicGLM;
         
     case{'onparasolapricot'}
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONParasol.mat','mosaicGLM')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONParasol.mat','mosaicGLM')
+        rdt.crp('resources/data/rgc/apricot');
+        data = rdt.readArtifact('mosaicGLM_apricot_ONParasol', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
     case{'offparasolapricot'}
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFParasol.mat','mosaicGLM')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFParasol.mat','mosaicGLM')
+        rdt.crp('resources/data/rgc/apricot');
+        data = rdt.readArtifact('mosaicGLM_apricot_OFFParasol', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
     case{'onmidgetapricot'}
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONMidget.mat','mosaicGLM')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_ONMidget.mat','mosaicGLM')
+        rdt.crp('resources/data/rgc/apricot');
+        data = rdt.readArtifact('mosaicGLM_apricot_ONMidget', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
     case{'offmidgetapricot'}
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFMidget.mat','mosaicGLM')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_OFFMidget.mat','mosaicGLM')
+        rdt.crp('resources/data/rgc/apricot');      
+        data = rdt.readArtifact('mosaicGLM_apricot_OFFMidget', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
     case{'onsbcapricot','sbcapricot'}
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_sbc.mat','mosaicGLM')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_apricot_sbc.mat','mosaicGLM')
+        rdt.crp('resources/data/rgc/apricot');
+        data = rdt.readArtifact('mosaicGLM_apricot_sbc', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
     case 'offparasol'
 %         matFileNames = dir([glmFitPath experimentID '/OFF*.mat']);        
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')

@@ -80,7 +80,7 @@ params.side = 'left';   % eye side, used for temporal equiv ecc
 %% Compute an empty scene as a placeholder for the bar image
 
 % Create display
-display = displayCreate('CRT-Sony-HorwitzLab');
+display = displayCreate;
 
 % Set up default scene
 scene = sceneCreate();
