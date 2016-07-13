@@ -144,7 +144,7 @@ wFlag = ieSessionGet('wait bar');
 if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 
 frameRate = 1/125; % 125 FPS
-nFramesPerTimeStep = frameRate/params.timeInterval;
+nFramesPerTimeStep = ceil(frameRate/params.timeInterval);
 
 % Loop through frames to build movie
 for t = 1 : round ( params.nSteps / 1 )

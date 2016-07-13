@@ -54,7 +54,7 @@ function ir = irComputeLinearSTSeparable(ir, input, varargin)
 p = inputParser;
 p.CaseSensitive = false;
 
-p.addRequired('ir',@(x) isequal(class(x),'ir'));
+p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
 
 allowableInputs = {'osDisplayRGB','bipolar'};
 p.addRequired('input',@(x) ismember(class(x),allowableInputs));
@@ -80,42 +80,12 @@ switch osType
         % The Pillow code expects the input to be normalized to the mean of
         % zero, like a contrast. In this way a frame buffer of 1024 or 512
         % or 256 would all get scaled into the same [-0.5, 0.5] range.
-        spTempStim = ieContrast(spTempStim);
+        stim = ieContrast(spTempStim);
         %         range = max(spTempStim(:)) - min(spTempStim(:));
         %         spTempStim = (spTempStim - mean(spTempStim(:)))/range;
         
         % Looping over each rgc
-        for rgcType = 1:length(ir.mosaic)
-            
-            % We use a separable space-time receptive field.  This allows
-            % us to compute for space first and then time. Space.
-            [spResponseCenter, spResponseSurround] = ...
-                spConvolve(ir.mosaic{rgcType,1}, spTempStim);
-            
-            % Convolve with the temporal impulse response
-            responseLinear = ...
-                fullConvolve(ir.mosaic{rgcType,1}, spResponseCenter, spResponseSurround);
-            
-            % Store the linear response
-            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', responseLinear);
-            
-        end       
-        
-    case {'bipolar'}
-        % Bipolar test case in t_coneMosaic
-        % t_rgcBar, others to be named.
-        
-        % Determine the range of the rgb input data
-        stim   = bipolarGet(input, 'response');
-        stim = ieContrast(stim);       
-        % ieMovie(stim);
-        
-        % Looping over the rgc mosaics
-        for rgcType = 1:length(ir.mosaic)
-                
-            % Set the rgc impulse response to an impulse
-            ir.mosaic{rgcType}.set('tCenter all', 1);
-            ir.mosaic{rgcType}.set('tSurround all',0);           
+        for rgcType = 1:length(ir.mosaic)                  
             
             % We use a separable space-time receptive field.  This allows
             % us to compute for space first and then time. Space.
@@ -127,7 +97,45 @@ switch osType
             respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
             % Delete fullConvolve
             % ieMovie(respC - respS);
+                        
+            % Store the linear response
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
             
+        end       
+        
+    case {'bipolar'}
+        % Bipolar test case in t_coneMosaic
+        % t_rgcBar, others to be named.        
+        
+        % Looping over the rgc mosaics
+        for rgcType = 1:length(ir.mosaic)
+            
+            % Determine the range of the rgb input data
+            stim   = bipolarGet(input, 'response');
+            switch class(ir.mosaic{rgcType})
+                case 'rgcPhys'
+                    magFactor = 7.9; % due to bipolar filter
+                    stim = magFactor*ieContrast(stim);
+                otherwise
+                    stim = ieContrast(stim);
+            end
+            % ieMovie(stim);
+                
+            % Set the rgc impulse response to an impulse
+            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
+            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);           
+            
+            % We use a separable space-time receptive field.  This allows
+            % us to compute for space first and then time. Space.
+            [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
+            % ieMovie(respC);
+            
+            % Convolve with the temporal impulse response
+            respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+            respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+            % Delete fullConvolve
+            % ieMovie(respC - respS);
+                        
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
             

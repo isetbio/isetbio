@@ -61,6 +61,8 @@ allowableFieldsToSet = {...
     'sRFsurround',...
     'tCenter',...
     'tSurround',...
+    'tCenterAll',...
+    'tSurroundAll',...
     'responseLinear',...
     'generatorFunction',...
     'nlResponse',...
@@ -112,6 +114,25 @@ switch ieParamFormat(params.what)
         obj.tCenter = params.value;
     case{'tsurround'}
         obj.tSurround = params.value;
+    case{'tcenterall'}
+        nCells = size(obj.sRFcenter);
+        tCenterNew = cell(nCells(1),nCells(2));
+        for ii = 1:nCells(1)
+            for jj = 1:nCells(2)
+                tCenterNew{ii,jj} = params.value;
+            end
+        end
+        obj.tCenter = tCenterNew;
+        
+    case{'tsurroundall'}
+        nCells = size(obj.sRFsurround);
+        tSurroundNew = cell(nCells(1),nCells(2));
+        for ii = 1:nCells(1)
+            for jj = 1:nCells(2)
+                tSurroundNew{ii,jj} = params.value;
+            end
+        end
+        obj.tSurround = tSurroundNew;
     case{'responselinear'}
         obj.responseLinear = params.value;
     case{'generatorfunction'}

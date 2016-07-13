@@ -45,7 +45,12 @@ rowConv = 1; colConv = 1;
 
 % The middle cell is at (0,0).  This tells us how far offset the 1st cell
 % is from (0,0).
-offset = [rowConv colConv].*mosaic.cellLocation{1,1};
+switch class(mosaic)
+    case 'rgcPhys'
+        offset = [0 0];
+    otherwise
+        offset = [rowConv colConv].*mosaic.cellLocation{1,1};
+end
 
 for cc = 1 : nColors
     for ii = 1 : nCells(1)

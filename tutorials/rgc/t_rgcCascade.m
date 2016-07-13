@@ -28,7 +28,7 @@ clear
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 1;%:2    % Choose On Parasol (1) or Off Parasol (2)
-stimulusTestI = 1;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
+stimulusTestI = 2;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
 % Experimental dataset
@@ -195,7 +195,8 @@ bpParams.rectifyType = 1;
 % bpParams.cellLocation = cellNumber;
 
 bp = bipolar(os, bpParams);
-
+bp.bipolarSet('sRFcenter',1);
+bp.bipolarSet('sRFcenter',1);
 % bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
 % bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 
@@ -302,7 +303,7 @@ innerRetinaRecordedPSTH = mosaicGet(innerRetinaRecorded.mosaic{1},'responsePsth'
 % Set the time and cell number
 tStart = 1.5;% 9%1.5;
 tEnd = 9;%21;%18%21;%1*8.5;
-cellNum = 2;
+cellNum = 1;
 
 % Plot the original GLM prediction
 vcNewGraphWin([],'upperleftbig'); 
