@@ -87,10 +87,10 @@ switch ieParamFormat(cellType)
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6.mat')
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_OFFParasol_2013_08_19_6_fits.mat')
 
-%         rdt.crp('resources/data/rgc');
-%         data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6', 'type', 'mat');
-%         mosaicGLM = data.mosaicGLM;
-         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
+        rdt.crp('resources/data/rgc');
+        data = rdt.readArtifact('mosaicGLM_WN_OFFParasol_2013_08_19_6_fits', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;
+%          load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
 %         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/goodind_2013_08_19_6_OFFParasol.mat')
         rdt = RdtClient('isetbio');
         rdt.crp('resources/data/rgc');                              
@@ -98,16 +98,16 @@ switch ieParamFormat(cellType)
         goodind = data2.goodind;
     otherwise % case 'onparasol'
 %         matFileNames = dir([glmFitPath experimentID '/ON*.mat']);
-        load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
+%         load('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/mosaicGLM_WN_ONParasol_2013_08_19_6_fits.mat')
 
-%         rdt.crp('resources/data/rgc');
-%         data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6', 'type', 'mat');
-%         mosaicGLM = data.mosaicGLM;        
-%         
-%         rdt = RdtClient('isetbio');
-%         rdt.crp('resources/data/rgc');
-%         data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
-%         goodind = data2.goodind;
+        rdt.crp('resources/data/rgc');
+        data = rdt.readArtifact('mosaicGLM_WN_ONParasol_2013_08_19_6_fits', 'type', 'mat');
+        mosaicGLM = data.mosaicGLM;        
+        
+        rdt = RdtClient('isetbio');
+        rdt.crp('resources/data/rgc');
+        data2 = rdt.readArtifact('goodind_2013_08_19_6_ONParasol', 'type', 'mat');
+        goodind = data2.goodind;
 end
 
 goodind = 1:length(mosaicGLM);
