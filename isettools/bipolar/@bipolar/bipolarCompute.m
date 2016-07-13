@@ -200,18 +200,16 @@ switch obj.filterType
         rdt = RdtClient('isetbio');
         rdt.crp('resources/data/rgc');
         if strcmpi(obj.cellType,'offDiffuse')
-            data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');
-            load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all.mat')
+            data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');            
             
         else
-            data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
-            load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all.mat')
+            data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');            
             
         end
         bipolarFiltMat = data.bipolarFiltMat;
         
         switch ieParamFormat(obj.cellType)
-            case {'offdiffuse','offmidget'}}
+            case {'offdiffuse','offmidget'}
                 bipolarFilt = mean(bipolarFiltMat)';
             case {'ondiffuse','onmidget','ondifusesbc'}
                 bipolarFilt = -mean(bipolarFiltMat)';
@@ -248,8 +246,8 @@ switch obj.filterType
 end
 
 
-bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
-bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
 
 % % temporal filtering
 % tCenter = conv2(sCenter, bipolarFilt, 'same');
