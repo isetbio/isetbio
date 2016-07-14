@@ -356,7 +356,7 @@ classdef coneMosaic < hiddenHandle
             
             % set eye movement path
             if isempty(p.Results.emPath)
-                assert(~append && isempty(obj.absorptions), ...
+                assert(~append || isempty(obj.absorptions), ...
                     'emPath required when in increment mode');
                 emPath = obj.emPositions;
             else
