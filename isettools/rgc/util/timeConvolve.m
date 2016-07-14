@@ -50,7 +50,7 @@ for cc = 1:nChannels
                 impulseRZP = [impulseR; zeros(-size(impulseR,1)+size(thisInput,1),1)];
                 thisInputZP = thisInput;
             end
-            resp(ii,jj,:,cc) = ifft(fft(impulseRZP).*fft(thisInputZP));           
+            resp(ii,jj,:,cc) = ifft(fft(impulseRZP).*fft(thisInputZP))+tonicDrive;           
             
         end
         

@@ -44,6 +44,8 @@ cMosaic.compute(oi,'currentFlag',true);
 
 %% To compute the bipolar response
 bp = bipolar(cMosaic.os);
+bp.set('sRFcenter',1);
+bp.set('sRFsurround',1);
 bp.compute(cMosaic.os);
 
 % bp.plot('response');

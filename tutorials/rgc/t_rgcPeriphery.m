@@ -31,8 +31,8 @@ clear
 % Switch on input type
 % White noise (WN) or natural scenes with eye movements (NSEM)
 
-experimentI   = 2;       % Choose dataset to load parameters and spikes
-cellTypeI     = 6;       % Choose On Parasol (1) or Off Parasol (2)
+experimentI   = 1;       % Choose dataset to load parameters and spikes
+cellTypeI     = 1;       % Choose On Parasol (1) or Off Parasol (2)
 stimulusTestI = 1;       % Choose WN test stimulus (1) 
     
 % Switch on the conditions indices
@@ -87,10 +87,6 @@ switch cellTypeI
         rdt.crp('resources/data/rgc/rpe_dataset');
         data = rdt.readArtifact('xval_mosaic_WN_ONSBC_201602171', 'type', 'mat');
         xval_mosaic = data.xval_mosaic;
-    otherwise
-        cellType = 'On Parasol';
-        [testmovie2, xval_mosaic] =  loadDataRGCFigure2(experimentI,stimulusTestI,1);
-
 end
 frameRate = 121;
 % Load OS from RDT (1) or run from scratch (0)
@@ -109,7 +105,6 @@ WN_testmovie_lnfit = data.WN_testmovie_lnfit;
 nFrames = 1100; 
 testmovieshort = WN_testmovie_lnfit(:,:,1:nFrames); 
 
-testmovieshort = permute(testmovie2.matrix,[2 1 3]); 
 
 if ~loadOS 
     
@@ -343,7 +338,7 @@ subplot(312); hold on;
 % subplot(211); hold on;
 irPlot(innerRetina,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','r')
 % irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
-title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+title(sprintf('Black Box, WN, off parasol cell [%d 1]',cellNum));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 30]);
@@ -354,7 +349,7 @@ subplot(313); hold on;
 % subplot(212); hold on;
 irPlot(innerRetinaSU,'raster','cell',[1 1],'hf',h1,'dt',0.1,'color','b');
 % irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
-title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Cascade Conv, WN, off parasol cell [%d  1]',cellNum));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 
@@ -364,7 +359,7 @@ axis([tStart tEnd 0 30]);
 subplot(311); hold on;
 irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hf',h1,'dt',0.1,'color','k')
 % irPlot(innerRetinaRecorded,'raster','cell',[params.cellIndices 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',params.cellIndices));
+title(sprintf('Recorded, WN, off parasol cell [%d  1]',params.cellIndices));
 % set(gcf,'position',[0.0069    0.6667    0.9750    0.2267]);
 set(gca,'fontsize',14);
 

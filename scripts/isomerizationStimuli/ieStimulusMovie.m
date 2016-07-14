@@ -51,7 +51,7 @@ fov = params.fov;
 % params.GaborFlag = 0.2; % standard deviation of the Gaussian window
 
 % Create display
-display = displayCreate('CRT-Sony-HorwitzLab');
+display = displayCreate();
 
 % Set linear gamma so sensor absorptions = pixel values
 % This is done to model EJ's experiments

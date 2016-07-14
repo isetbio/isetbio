@@ -28,7 +28,7 @@ clear
 
 experimentI   = 1;       % Choose dataset to load parameters and spikes
 cellTypeI     = 1;%:2    % Choose On Parasol (1) or Off Parasol (2)
-stimulusTestI = 2;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
+stimulusTestI = 1;%:2     % Choose WN test stimulus (1) or NSEM test stimulus (2)
     
 % Switch on the conditions indices
 % Experimental dataset
@@ -174,7 +174,7 @@ params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetinaSU = irPhys(bp, params);
-nTrials = 30; 
+nTrials = 57; 
 innerRetinaSU.mosaic{1} = innerRetinaSU.mosaic{1}.set('numberTrials',nTrials);
 
 %% Compute the inner retina response
@@ -224,7 +224,7 @@ params.cellIndices = 1:10%:118;
 
 % Create object
 innerRetina = irPhys(os1, params);
-nTrials = 30;
+nTrials = 57;
 innerRetina.mosaic{1} = innerRetina.mosaic{1}.set('numberTrials',nTrials);
 %% Compute the inner retina response
 
@@ -266,7 +266,7 @@ subplot(312); hold on;
 % subplot(211); hold on;
 % irPlot(innerRetina,'raster','cell',[cellNum 1],'hold','on','color','r')
 irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','b');
-title(sprintf('Black Box, NSEM, off parasol cell [%d 1]',cellNum));
+title(sprintf('Black Box, %s, off parasol cell [%d 1]',stimulusTest,cellNum));
 set(gca,'fontsize',14);
 axis([tStart tEnd 0 nTrials]);
 % axis off
@@ -277,7 +277,7 @@ subplot(313); hold on;
 % subplot(212); hold on;
 % irPlot(innerRetinaSU,'raster','cell',[cellNum 1],'hold','on','color','b')
 irPlot(innerRetina,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','r');
-title(sprintf('Cascade Conv, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Cascade Conv, %s, off parasol cell [%d  1]',stimulusTest,cellNum));
 set(gca,'fontsize',14);
 % axis([tStart-.04 tEnd-.04 0 nTrials]); % when using theoretical irGLM
 % axis([tStart tEnd 0 nTrials]);
@@ -295,7 +295,7 @@ subplot(311); hold on;
 
 irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hf',h1,'dt',0.1,'color','k');
 % irPlot(innerRetinaRecorded,'raster','cell',[cellNum 1],'hold','on','color','k')
-title(sprintf('Recorded, NSEM, off parasol cell [%d  1]',cellNum));
+title(sprintf('Recorded, %s, off parasol cell [%d  1]',stimulusTest,cellNum));
 set(gca,'fontsize',14);
 
 switch stimulusTestI
@@ -311,57 +311,37 @@ end
 %  calculateFractionalVariance(innerRetinaPSTH, innerRetinaRecordedPSTH, stimulusTestI);
  
  %%
- 
-figure;
+ % Plot the PSTHs
 
-% subplot(414)
+figure;
 minlen = min([length(innerRetinaPSTH{cellNum}) length(innerRetinaRecordedPSTH{cellNum}) length(innerRetinaSUPSTH{cellNum}) ]);
 hold off
+
+del1 = 1200; del2 = 600;
 switch stimulusTestI
     case 1
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
-        
+        plot(([1:minlen-del1])./del1, innerRetinaPSTH{cellNum}(del2+(1:minlen-del1)),'r','linewidth',3);
         hold on;
-        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
-        
-        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(600-0+(1:minlen-1200)),':b','linewidth',3);
+        plot([1:minlen-del1]./del1,innerRetinaRecordedPSTH{cellNum}(((1:minlen-del1))),':k','linewidth',2);
+        plot([1:minlen-del1]./del1, innerRetinaSUPSTH{cellNum}(del2+(1:minlen-del1)),':b','linewidth',3);
         
         ax3 = axis;
         axis([0 8.5 ax3(3) ax3(4)])
 
     case 2
-%         plot((00+[1:minlen-1200])./1208, psthSim{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,psthRecorded{cellNum}((1:minlen-1200)),':k','linewidth',2);
-
-%         minlen = minlen - 1000;
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
-%         
-%         hold on;
-%         plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((000+(1:minlen-1200))),':k','linewidth',2);
-%         
-%         plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(000-36+(1:minlen-1200)),':b','linewidth',3);
-
-%         plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(600+(1:minlen-1200)),'r','linewidth',3);
-        
-        plot((00+[1:minlen-1200])./1208, innerRetinaPSTH{cellNum}(1200+(1:minlen-1200)),'r','linewidth',3);
+   
+        plot(([1:minlen-del1])./del1, innerRetinaPSTH{cellNum}(del1+(1:minlen-del1)),'r','linewidth',3);
         hold on;
-        plot([1:minlen-1200]./1208,innerRetinaRecordedPSTH{cellNum}((0+(1:minlen-1200))),':k','linewidth',2);
+        plot([1:minlen-del1]./del1,innerRetinaRecordedPSTH{cellNum}(((1:minlen-del1))),':k','linewidth',2);
         hold on;
-        plot((00+[1:minlen-1200])./1208, innerRetinaSUPSTH{cellNum}(1200-0+(1:minlen-1200)),':b','linewidth',3);
+        plot(([1:minlen-del1])./del1, innerRetinaSUPSTH{cellNum}(del1+(1:minlen-del1)),':b','linewidth',3);
         
         
         ax3 = axis;
         axis([tStart-1 tEnd-1 ax3(3) ax3(4)/2])
-%         axis([tStart-1 tEnd-1 ax3(3) 100])
-        
-        % axis([0-.5 8-.5 0 100])
 end
-
+title('PSTH')
 legend('Black Box','Recorded','Cascade Conv');
 grid on
-set(gca,'fontsize',14);
+set(gca,'fontsize',6);
 xlabel('Time (sec)'); ylabel('Response (spikes/sec)');
-% % set(gcf,'position',[   0.0063    0.2356    0.6861    0.3578]);
-% set(gcf,'position',[ 0.0063    0.2354    0.7219    0.4549]);
