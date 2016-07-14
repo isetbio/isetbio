@@ -35,10 +35,10 @@ for cc = 1:nChannels
             switch csFlag
                 case 'c'
                     impulseR = mosaic.get('tCenter','cell',[ii,jj]);
-                    % tonicDrive = mosaic.get('tonicDrive','cell',[ii,jj]);
+                    tonicDrive = mosaic.get('tonicDrive','cell',[ii,jj]);
                 case 's'
                     impulseR = mosaic.get('tSurround','cell',[ii,jj]);
-                    % tonicDrive = 0; %mosaic.get('tonicDrive','cell',[ii,jj]);
+                    tonicDrive = 0;
                 otherwise
             end
             

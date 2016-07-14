@@ -60,7 +60,7 @@ data = ieScale(data,0,1) .^ gamma;
 % A name for writing was passed
 % So write and show the movie and write to file
 if ~isempty(vname)
-    if isempty(hf), vcNewGraphWin;
+    if ~exist('hf','var'), hf=vcNewGraphWin;
     else figure(hf);
     end
     axis image
