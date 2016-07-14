@@ -80,8 +80,6 @@ if wFlag, wbar = waitbar(0,'Stimulus movie'); end
 % Loop through frames to build movie
 % The number of steps must be smaller than the width of the scene
 nSteps = min(sceneGet(scene,'cols') - params.barWidth, params.nSteps);
-
-absorptions = zeros([cm.mosaicSize nSteps]);
 for t = 1 : nSteps
     if wFlag, waitbar(t/nSteps,wbar); end
         
@@ -102,15 +100,11 @@ for t = 1 : nSteps
     % Compute optical image
     oi = oiCompute(oi, scene);    
     
-    % Compute absorptions
-    absorptions(:,:,t) = cm.compute(oi, 'currentFlag', false);
+    % Compute absorptions and photocurrent
+    cm.compute(oi, 'append', true, 'emPath', [0 0]);
 end
 
 if wFlag, delete(wbar); end
-
-% Set the stimuls into the sensor object
-cm.emPositions = zeros(nSteps, 2);
-cm.absorptions = absorptions;
 
 % These are both the results and the objects needed to recreate this
 % script. So calling isomerizationBar(iStim) should produce the same

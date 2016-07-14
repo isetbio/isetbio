@@ -48,20 +48,27 @@ p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
 p.addRequired('pRate', @isnumeric);
 p.addRequired('coneType', @ismatrix);
 p.addParameter('bgR', 0, @isscalar);
+p.addParameter('append', false, @islogical);
 
 p.parse(obj, pRate, coneType, varargin{:});
 bgR = p.Results.bgR;
+isAppend = p.Results.append;
 
 % init parameters
-p  = osInit;  % default parameters for biophysics model
+if ~isAppend
+    p  = osInit;  % default parameters for biophysics model
+    obj.state = osAdaptSteadyState(bgR, p, [size(pRate, 1) size(pRate, 2)]);
+    obj.state.timeInterval = obj.timeStep;
+end
 
-initialState = osAdaptSteadyState(bgR, p, [size(pRate, 1) size(pRate, 2)]);
-initialState.timeInterval = obj.timeStep;
-
-current  = osAdaptTemporal(pRate, initialState);
+[current, obj.state]  = osAdaptTemporal(pRate, obj.state);
 
 % add noise
 if obj.noiseFlag, current = osAddNoise(current); end
-obj.osSet('coneCurrentSignal', current);
+if isAppend
+    obj.coneCurrentSignal = cat(3, obj.coneCurrentSignal, current);
+else
+    obj.coneCurrentSignal = current;
+end
 
 end

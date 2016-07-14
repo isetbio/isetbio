@@ -11,6 +11,12 @@ function current = osCompute(obj, pRate, coneType, varargin)
 %   obj      - osLinear class object
 %   pRate    - photon absorption rate in R*/sec
 %   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
+%
+% Optional input (key-value pairs)
+%   append   - logical, compute new or to append to existing. When append
+%              is true, the computed current is appended to the existing
+%              photocurrent data in the object. The returned current value
+%              only contains photocurrent for input pRate.
 % 
 % Outputs:
 %   current  - outer segment current in pA
@@ -39,17 +45,23 @@ p = inputParser; p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
 p.addRequired('pRate', @isnumeric);
 p.addRequired('coneType', @ismatrix);
+p.addParameter('append', false, @islogical);
 
 p.parse(obj, pRate, coneType, varargin{:});
+isAppend = p.Results.append;
 
 % init parameters
-lmsFilters = obj.generateLinearFilters(mean(pRate(:))); % linear filters
-nFrames = size(pRate, 3);
+if ~isAppend, obj.pMean = 0; obj.nFrames = 0; end % clean up stored state
+obj.pMean = (obj.pMean*obj.nFrames + mean(pRate(:))*size(pRate, 3)) / ...
+    (obj.nFrames + size(pRate, 3));
+obj.nFrames = obj.nFrames + size(pRate, 3);
+
+lmsFilters = obj.generateLinearFilters(obj.pMean); % linear filters
 
 maxCur = 0.01*20.5^3; % Angueyra & Rieke (2013, Nature)
-meanCur = maxCur * (1 - 1/(1 + 45000/mean(pRate(:))));
+meanCur = maxCur * (1 - 1/(1 + 45000/obj.pMean));
 
-[pRate, r, c] = RGB2XWFormat(pRate);
+[pRate, r, c, pFrames] = RGB2XWFormat(pRate);
 current = zeros(size(pRate));
 
 % convolve the filters with the isomerization data
@@ -61,7 +73,7 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     index = find(coneType==ii);
     if ~isempty(index)
         curData = conv2(pRate(index, :), filter') - meanCur;
-        current(index, :) = curData(:, 2:nFrames+1);
+        current(index, :) = curData(:, 2:pFrames+1);
     end
 end
 
@@ -76,6 +88,10 @@ if osGet(obj,'noiseFlag') == 1
     params.sampTime = obj.timeStep;
     current = osAddNoise(current, params);
 end
-obj.osSet('cone current signal', current);
+if isAppend
+    obj.coneCurrentSignal = cat(3, obj.coneCurrentSignal, current);
+else
+    obj.coneCurrentSignal = current;
+end
 
 end
