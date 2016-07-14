@@ -725,8 +725,8 @@ elseif index == 5  % photocurrent movie
 end
 
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
-assert(cnt <= size(mov, 4), 'slider choice out of range');
-axes(handles.axes2); imshow(mov(:, :, :, cnt)); drawnow;
+assert(cnt <= size(mov, ndims(mov)), 'slider choice out of range');
+axes(handles.axes2); imshow(mov(:, :, cnt)); drawnow;
 
 % register right click menu
 c = uicontextmenu;

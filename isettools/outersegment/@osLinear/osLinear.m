@@ -18,6 +18,14 @@ classdef osLinear < outerSegment
         lmsConeFilter;
     end
     
+    properties (Access = private)
+        % The properties in this part is used to store the state of the
+        % outersegment so that we can do incremental computation
+        
+        pMean = 0;    % mean photon rate
+        nFrames = 0;  % number of frames that contribute to pMean 
+    end
+    
     % Public methods
     methods
         % Constructor

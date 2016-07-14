@@ -50,7 +50,6 @@ classdef coneMosaic < hiddenHandle
         qe;         % effective absorptance with macular pigment (not lens)
         
         current;      % The spatial array of photocurrent over time
-
         spatialDensity; % spatial density (ratio) of the K-LMS cones
     end
     
@@ -283,7 +282,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function set.current(obj, val)
-            obj.os.osSet('coneCurrentSignal',single(val));
+            obj.os.osSet('cone current signal', single(val));
         end
         
         function set.fov(obj, val) % set field of view
@@ -311,25 +310,66 @@ classdef coneMosaic < hiddenHandle
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function [absorptions, current] = compute(obj, oi, varargin)
-            % coneMosaic.plot()
-            %
             % Compute the pattern of cone absorptions and typically the
-            % photocurrent.
+            % photocurrent
+            %    [absorptions, current] = cMosaic.compute(oi);
+            %
+            % Inputs:
+            %   oi  - optical image, see oiCreate for more details
+            %
+            % Optional inputs:
+            %   currentFlag  - logical, whether to compute photocurrent
+            %   newNoise     - logical, whether to use new random seed
+            %   append       - logical, whether to append to existing data
+            %   emPath       - eye movement path in nx2 matrix. This
+            %                  parameter shadows obj.emPositions and is 
+            %                  required when append is true  
+            %
+            % Outputs:
+            %   absorptions  - cone photon absorptions
+            %   current      - cone photocurrent
+            %
+            % Notes:
+            %   If you have absorptions and want to compute photocurrent
+            %   only, use
+            %     pRate = absorptions / obj.integrationTime;
+            %     current = obj.os.osCompute(pRate, obj.pattern);
+            %
+            %   When append is true, the stored data will increment.
+            %   However, the returned absorptions and current are for the
+            %   current oi only.
+            %
+            
+            % parse inputs
             p = inputParser;
             p.addRequired('oi',@isstruct);
             p.addParameter('currentFlag', true, @islogical);
-            
-            % newNoise false means frozen noise, using the seed rng(1)
-            p.addParameter('newNoise',true,@islogical);
+            p.addParameter('newNoise', true, @islogical);
+            p.addParameter('append', false, @islogical);
+            p.addParameter('emPath', [], @isnumeric);
             
             p.parse(oi,varargin{:});
             oi = p.Results.oi;
             currentFlag = p.Results.currentFlag;
             newNoise = p.Results.newNoise;
+            append = p.Results.append;
+            
+            % set eye movement path
+            if isempty(p.Results.emPath)
+                assert(~append && isempty(obj.absorptions), ...
+                    'emPath required when in increment mode');
+                emPath = obj.emPositions;
+            else
+                emPath = p.Results.emPath;
+                if isempty(obj.absorptions), obj.emPositions = emPath;
+                else
+                    obj.emPositions = [obj.emPositions; emPath];
+                end
+            end
             
             % extend sensor size
-            padRows = max(abs(obj.emPositions(:, 2)));
-            padCols = max(abs(obj.emPositions(:, 1)));
+            padRows = max(abs(emPath(:, 2)));
+            padCols = max(abs(emPath(:, 1)));
             
             cpObj = obj.copy();
             cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
@@ -338,19 +378,25 @@ classdef coneMosaic < hiddenHandle
             LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
             
             % deal with eye movements
-            absorptions = obj.applyEMPath(LMS);
+            absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
             
             % Add photon noise to the whole volume
             if obj.noiseFlag
                 absorptions = obj.photonNoise(absorptions, ...
                     'newNoise', newNoise);
             end
-            obj.absorptions = absorptions;
+            if append
+                obj.absorptions = cat(3, obj.absorptions, absorptions);
+            else
+                obj.absorptions = absorptions;
+            end
             
             % If we want the photo current, use the os model
+            current = [];
             if currentFlag
                 pRate = absorptions/obj.integrationTime;
-                obj.os.osCompute(pRate, obj.pattern);
+                current = obj.os.osCompute(pRate, obj.pattern, ...
+                    'append', append);
             end
         end
         
@@ -511,6 +557,11 @@ classdef coneMosaic < hiddenHandle
             %   obj     - cone mosaic object
             %   LMS     - full LMS noise free absorptions
             %
+            % Optional inputs (key-value pairs)
+            %   padRows - rows padded
+            %   padCols - columns padded
+            %   emPath  - eye movement path
+            %
             % Outputs:
             %   absorptions - cone absorptions with eye movements
             %
@@ -521,11 +572,13 @@ classdef coneMosaic < hiddenHandle
             p.addRequired('LMS', @isnumeric);
             p.addParameter('padRows', [], @isnumeric);
             p.addParameter('padCols', [], @isnumeric);
+            p.addParameter('emPath', obj.emPositions, @isnumeric);
             
             p.parse(obj, LMS, varargin{:});
+            emPath = p.Results.emPath;
             padRows = p.Results.padRows; padCols = p.Results.padCols;
             
-            xpos = obj.emPositions(:, 1); ypos = obj.emPositions(:, 2);
+            xpos = emPath(:, 1); ypos = emPath(:, 2);
             if isempty(padRows), padRows = max(abs(ypos)); end
             if isempty(padCols), padCols = max(abs(xpos)); end
             
@@ -536,8 +589,8 @@ classdef coneMosaic < hiddenHandle
             end
             
             % select out the subframe given the eye position and cone type
-            absorptions = zeros(obj.rows,obj.cols,size(obj.emPositions,1));
-            for ii = 1 : size(obj.emPositions, 1)
+            absorptions = zeros(obj.rows, obj.cols, size(emPath, 1));
+            for ii = 1 : size(emPath, 1)
                 % sample by position
                 cropLMS = LMS(1+padRows+ypos(ii):end-padRows+ypos(ii), ...
                     1+padCols-xpos(ii):end-padCols-xpos(ii), :);
