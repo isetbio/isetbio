@@ -1,4 +1,6 @@
 function varargout = v_Cones(varargin)
+% TODO:  This should be re-written using the new Lens and coneMosaic
+% objects _ BW
 %
 % Test cone, lens and macular function calls.  Compare against PTB answers.
 %

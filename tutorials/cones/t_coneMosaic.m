@@ -116,7 +116,7 @@ data = rd.readArtifact('barMovie','type','mat');
 cMosaic = data.iStim.cMosaic;
 cMosaic.computeCurrent;
 
-cMosaic.guiWindow;
+cMosaic.window;
 
 % The object is stored without the current.  So compute it now.
 cMosaic.computeCurrent;

@@ -781,7 +781,7 @@ if get(handles.btnPlayPause, 'Value')
     while get(handles.btnPlayPause, 'Value')
         if ndims(mov) == 3
             imshow(mov(:, :, cnt));
-        elseif nimds(mov) ==4
+        elseif ndims(mov) ==4
             imshow(mov(:, :, :, cnt));
         end
         
