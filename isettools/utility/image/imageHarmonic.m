@@ -65,7 +65,9 @@ else
 end
 
 %% Calculate the harmonic
-[X,Y] = meshgrid((0:(parms.col-1))/parms.col,(0:(parms.row-1))/parms.row);
+x = (0:(parms.col-1))/parms.col; x = x - x(end)/2;
+y = (0:(parms.row-1))/parms.row; y = y - y(end)/2;
+[X,Y] = meshgrid(x,y);
 
 % Calculate the gabor window
 if parms.GaborFlag
