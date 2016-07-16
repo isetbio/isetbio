@@ -8,11 +8,13 @@ function iStim = ieStimulusBar(varargin)
 %   optical image and the sensor.
 % 
 % Example:
-%   clear params; params.barWidth = 10; params.fov=0.6;
+%   clear params; params.barWidth = 10; params.fov=1;
 %   iStim = ieStimulusBar(params);
-%   coneImageActivity(iStim.absorptions,'dFlag',true);
-%   vcAddObject(iStim.absorptions); sensorWindow;
-% 
+%   iStim.cMosaic.window;
+%  Returns the same 
+%   foo = ieStimulusBar(iStim.params);
+%   foo.cMosaic.window;
+%
 % 3/2016 JRG (c) isetbio team
 
 %% Parse inputs
@@ -38,7 +40,8 @@ params = p.Results;
 fov = params.fov;
 
 wFlag = ieSessionGet('wait bar');
-
+% Turn off so we supercede with this one
+ieSessionSet('wait bar',false);
 %% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
@@ -51,11 +54,6 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-% absorptions = sensorCreate('human');
-% absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
-% 
-% absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
-% absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
 
 % compute cone packing density
 fLength = oiGet(oi, 'focal length');
@@ -75,13 +73,12 @@ cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 fprintf('Computing cone isomerizations:    \n');
 
 % ieSessionSet('wait bar',true);
-if wFlag, wbar = waitbar(0,'Stimulus movie'); end
-
+wbar = waitbar(0,'Stimulus movie');
 % Loop through frames to build movie
 % The number of steps must be smaller than the width of the scene
 nSteps = min(sceneGet(scene,'cols') - params.barWidth, params.nSteps);
 for t = 1 : nSteps
-    if wFlag, waitbar(t/nSteps,wbar); end
+    waitbar(t/nSteps,wbar);
         
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
     barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar
@@ -104,10 +101,13 @@ for t = 1 : nSteps
     cm.compute(oi, 'append', true, 'emPath', [0 0]);
 end
 
-if wFlag, delete(wbar); end
+delete(wbar);
 
-% These are both the results and the objects needed to recreate this
-% script. So calling isomerizationBar(iStim) should produce the same
+% Restore
+ieSessionSet('wait bar',wFlag);
+
+% These are both the results and the data needed to run this
+% script. So calling isomerizationBar(iStim.params) should produce the same
 % results.
 iStim.params  = params;
 iStim.display = display;
