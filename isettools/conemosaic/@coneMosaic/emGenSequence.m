@@ -43,7 +43,7 @@ if emFlag(1)
     t = interval + randn(nFrames, 1) * intervalSD;
     t(t < 0.001) = 0.001; % get rid of negative values
     tPos = cumsum(t);
-    tPos = round(tPos / sampTime);
+    tPos = max(1, round(tPos / sampTime));
     indx = 1:find(tPos <= nFrames, 1, 'last');
     tPos = tPos(indx);
     
