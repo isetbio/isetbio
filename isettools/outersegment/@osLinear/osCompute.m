@@ -51,18 +51,24 @@ p.parse(obj, pRate, coneType, varargin{:});
 isAppend = p.Results.append;
 
 % init parameters
-if ~isAppend, obj.pMean = 0; obj.nFrames = 0; end % clean up stored state
-obj.pMean = (obj.pMean*obj.nFrames + mean(pRate(:))*size(pRate, 3)) / ...
-    (obj.nFrames + size(pRate, 3));
-obj.nFrames = obj.nFrames + size(pRate, 3);
+if ~isAppend, obj.absHistory = []; end % clean up stored state
+if isempty(obj.absHistory)
+    nHistFrames = 0;
+    obj.absHistory = pRate;
+else
+    nHistFrames = size(obj.absHistory, 3);
+    obj.absHistory = cat(3, obj.absHistory, pRate);
+end
 
-lmsFilters = obj.generateLinearFilters(obj.pMean); % linear filters
+% generate temporal filters
+pMean = mean(obj.absHistory(:));
+lmsFilters = obj.generateLinearFilters(pMean); % linear filters
 
 maxCur = 0.01*20.5^3; % Angueyra & Rieke (2013, Nature)
-meanCur = maxCur * (1 - 1/(1 + 45000/obj.pMean));
+meanCur = maxCur * (1 - 1/(1 + 45000/pMean));
 
-[pRate, r, c, pFrames] = RGB2XWFormat(pRate);
-current = zeros(size(pRate));
+[absorptions, r, c] = RGB2XWFormat(obj.absHistory);
+current = zeros(r*c, size(pRate, 3));
 
 % convolve the filters with the isomerization data
 for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
@@ -72,12 +78,16 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-        curData = conv2(pRate(index, :), filter') - meanCur;
-        current(index, :) = curData(:, 2:pFrames+1);
+        curData = conv2(absorptions(index, :), filter') - meanCur;
+        current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
     end
 end
 
-% % Reshape the output signal matrix.
+% record only recent history in obj
+newStart = max(size(obj.absHistory, 3) - length(filter) + 1, 1);
+obj.absHistory = obj.absHistory(:, :, newStart:end);
+
+% reshape the output signal matrix.
 current = XW2RGBFormat(current, r, c);
 
 % Add noise

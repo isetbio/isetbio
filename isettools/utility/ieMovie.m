@@ -34,10 +34,6 @@ p.addParameter('show',true,@islogical);
 p.addParameter('gamma',1,@isnumeric);
 p.KeepUnmatched = true;
 
-% This can be a handle to a figure, or the string 'none'
-% vFunc = @(x) (ischar(x) || isgraphics(x));
-% p.addParameter('hf',[],vFunc);
-
 p.parse(data,varargin{:});
 data  = p.Results.data;
 step  = p.Results.step;
@@ -60,9 +56,6 @@ data = ieScale(data,0,1) .^ gamma;
 % A name for writing was passed
 % So write and show the movie and write to file
 if ~isempty(vname)
-    if ~exist('hf','var'), hf=vcNewGraphWin;
-    else figure(hf);
-    end
     axis image
     
     % When dFlag is a struct, show the move and save it in a file

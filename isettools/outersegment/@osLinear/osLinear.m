@@ -22,8 +22,7 @@ classdef osLinear < outerSegment
         % The properties in this part is used to store the state of the
         % outersegment so that we can do incremental computation
         
-        pMean = 0;    % mean photon rate
-        nFrames = 0;  % number of frames that contribute to pMean 
+        absHistory = [];  % recent absorption history 
     end
     
     % Public methods
