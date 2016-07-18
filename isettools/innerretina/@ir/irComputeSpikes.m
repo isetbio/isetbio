@@ -26,6 +26,7 @@ function ir = irComputeSpikes(ir, varargin)
 p = inputParser;
 p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
 p.addParameter('coupling',true,@islogical);
+
 p.parse(ir,varargin{:});
 ir = p.Results.ir;
 coupling = p.Results.coupling;
@@ -50,7 +51,10 @@ for ii = 1:length(ir.mosaic)
         nSamples = size(responseLinear,3);
         nCells = mosaic.get('mosaic size');
         
+        % This is a vector of times that each cell spiked
         spikeTimes = cell([nCells,nTrials]);
+        
+        % Temporal sample of the voltage response
         respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nTrials);
         
         glminput = RGB2XWFormat(responseLinear);
@@ -75,7 +79,8 @@ for ii = 1:length(ir.mosaic)
                 for xc = 1:nCells(1)
                     for yc = 1:nCells(2)
                         cellCtr = cellCtr+1;
-                        spikeTimes{yc,xc,:,tt} = responseSpikesVec{1,cellCtr};
+                        % Vector of times when the cell spiked
+                        spikeTimes{yc,xc,tt} = responseSpikesVec{1,cellCtr};
                         respVolts(yc,xc,:,tt)  = Vmem(:,cellCtr);
                     end
                 end
@@ -88,11 +93,13 @@ for ii = 1:length(ir.mosaic)
             % Run without the slow coupling component by looping on the
             % simGLM, not simGLMcp
             
-            cellCtr = 0;
             
             glmprs   = setGLMprs(mosaic,'coupling',coupling);
             
             for tt = 1:nTrials
+                
+                cellCtr = 0;   % Reset the cell counter
+                
                 for xc=1:nCells(1)
                     for yc=1:nCells(2)
                         
@@ -103,12 +110,15 @@ for ii = 1:length(ir.mosaic)
                         % Run Pillow code
                         [responseSpikesVec, Vmem] = simGLM(glmprs, thisCellInput');
                         
-                        % Put the data in the outputs
-                        spikeTimes{yc,xc,:,tt} = responseSpikesVec;
+                        % Vector of times when the cell spiked
+                        spikeTimes{yc,xc,tt} = responseSpikesVec;
+                        
+                        % Voltages as a function of time
                         respVolts(yc,xc,:,tt)  = Vmem;
                     end
                 end
             end
+            
         end
     end    
 end

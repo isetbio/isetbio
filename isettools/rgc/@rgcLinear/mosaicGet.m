@@ -22,6 +22,7 @@ function val = mosaicGet(obj, param, varargin)
 p = inputParser; 
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
+p.KeepUnmatched = true;
 
 % The permissible fields for this class are below.  In addition, there are
 % parameters in the superclass, rgcMosaic.

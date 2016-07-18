@@ -38,16 +38,16 @@ function iStim = ieStimulusGabor(varargin)
 % Coarsely stepped, pretty tight Gabor window
 %   nSteps = 20; GaborFlag = 0.2; fov = .5;
 %   iStim = ieStimulusGabor('nSteps',nSteps,'GaborFlag',GaborFlag,'fov',fov);
-%   m = coneImageActivity(iStim.absorptions,'dFlag',true);
 %   sceneShowImage(iStim.scene);
+%   iStim.cMosaic.window;
 %
 %  Higher spatial frequency, more steps
-%   params.freq = 6; params.nSteps = 50; params.GaborFlag = 0.2;
+%   clear params; 
+%   params.nCycles = 8;
+%   params.freq = 6; params.nSteps = 200; params.GaborFlag = 0.2;
 %   iStim = ieStimulusGabor(params);
-%   dFlag.vname = 'Gabor_6f';
-%   dFlag.FrameRate = 30;
-%   coneImageActivity(iStim.absorptions,'dFlag',dFlag);
-%   sceneShowImage(iStim.scene);
+%   vcAddObject(iStim.oi); oiWindow;
+%   iStim.cMosaic.window;
 %
 % 3/2016 JRG (c) isetbio team
 
@@ -70,15 +70,20 @@ addParameter(p,'nCycles',        4, @isnumeric);
 addParameter(p,'fov',            0.6, @isnumeric);
 addParameter(p,'distance',       0.3, @isnumeric);   % Distance to screen
 
+% Retinal patch parameters
+addParameter(p,'radius',         0,  @isnumeric);
+addParameter(p,'theta',          0,  @isnumeric);
+addParameter(p,'side',           'left',  @ischar);
+
 % Field of view
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
 if params.row == 0
     % Make sure we have enough row and column samples to avoid aliasing the
-    % frequency.  Four is arbitrary, but twice Nyquist.
-   params.row = 4*params.freq*params.fov;
-   params.col = 4*params.freq*params.fov;
+    % frequency.  Eight is arbitrary, but four times Nyquist.
+   params.row = max(128,8*params.freq*params.fov);
+   params.col = max(128,8*params.freq*params.fov);
 end
 
 %% Compute a scene
@@ -90,11 +95,21 @@ scene = sceneSet(scene, 'h fov', fov);
 
 %% Initialize the optics and the sensor
 oi  = oiCreate('wvf human');
-absorptions = sensorCreate('human');
-absorptions = sensorSetSizeToFOV(absorptions, fov, scene, oi);
 
-absorptions = sensorSet(absorptions, 'exp time', params.expTime); 
-% absorptions = sensorSet(absorptions, 'time interval', params.timeInterval); 
+% compute cone packing density
+fLength = oiGet(oi, 'focal length');
+eccMM = 2 * tand(params.radius/2) * fLength * 1e3;
+coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
+coneSz = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
+
+cm = coneMosaic;
+cm.pigment.width  = coneSz(1); 
+cm.pigment.height = coneSz(2);
+
+% set size to field of view
+sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
+sceneDist = sceneGet(scene, 'distance');
+cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
 %% Compute a dynamic set of cone absorptions
 %
@@ -109,13 +124,13 @@ absorptions = sensorSet(absorptions, 'exp time', params.expTime);
 % the size.  But it still might be the right thing to do.  So the code here
 % is an experiment and we aren't sure how it will go.
 
-% ieSessionSet('wait bar',true);
-wFlag = ieSessionGet('wait bar');
-if wFlag, wbar = waitbar(0,'Stimulus movie'); end
+wFlag = ieSessionGet('wait bar'); ieSessionSet('wait bar',false);
+
+wbar = waitbar(0,'Stimulus movie');
 
 % Loop through frames to build movie
 for t = 1 : params.nSteps
-    if wFlag, waitbar(t/params.nSteps,wbar); end
+    waitbar(t/params.nSteps,wbar);
         
     % All we do is update the phase of the Gabor
     params.ph = (2*pi)*params.nCycles*(t-1)/params.nSteps; % one period over nSteps
@@ -123,40 +138,25 @@ for t = 1 : params.nSteps
     
     scene = sceneAdjustLuminance(scene,params.meanLuminance);
     scene = sceneSet(scene,'distance',params.distance);
-    
-    if t ==1
-        sceneRGB = zeros([sceneGet(scene, 'size'), params.nSteps, 3]);
-    end
     scene = sceneSet(scene, 'h fov', fov);
 
-    % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
-    
     % Compute optical image
     oi = oiCompute(oi, scene);    
     
-    % Compute absorptions
-    absorptions = sensorCompute(absorptions, oi);
+    % Compute absorptions and photocurrent
+    cm.compute(oi, 'append', true, 'emPath', [0 0],'currentFlag',false);
 
-    if t == 1
-        volts = zeros([sensorGet(absorptions, 'size') params.nSteps]);
-    end
-    
-    volts(:,:,t) = sensorGet(absorptions, 'volts');
-    
-    % vcAddObject(scene); sceneWindow
 end
 
-if wFlag, delete(wbar); end
+delete(wbar); ieSessionSet('wait bar',wFlag);
 
-% Set the stimuls into the sensor object
-absorptions = sensorSet(absorptions, 'volts', volts);
-% vcAddObject(sensor); sensorWindow;
+% Compute the current
+cm.computeCurrent;
 
 % Save all the inputs to rerun 
 iStim.params   = params;     % Parameters to rerun this function
 iStim.scene    = scene;      % Base scene
-iStim.sceneRGB = sceneRGB;   % Used for identity case.
-iStim.oi       = oi;         % 
-iStim.absorptions   = absorptions;
+iStim.oi       = oi;         
+iStim.cMosaic  = cm;
+
 end

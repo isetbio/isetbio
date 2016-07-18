@@ -30,8 +30,8 @@ function [hf, uData] = irPlot(obj, type, varargin)
 %         'nlResponse',...      - nonlinear response fgenerator(linear) of all cells
 %         'responseSpikes',...   - average waveform over N trials including
 %                                   post-spike and coupling filter effects
-%         'rasterResponse',...  - spike rasters of all cells from N trials
-%         'psthResponse'...     - peristimulus time histogram responses of all cells
+%         'raster',...          - spike rasters of all cells from N trials
+%         'psth'...             - peristimulus time histogram (specify a cell)
 %
 % Examples:
 %   irPlot(innerRetina,'mosaic');
@@ -269,7 +269,7 @@ switch ieParamFormat(type)
             nCellStart = [1 1]; nCellEnd = nCells;
             if length(cellIndices)>0 
                 nCellStart = [cellIndices];
-                nCellEnd = [cellIndices];
+                nCellEnd   = [cellIndices];
             end
             nTrials = obj.mosaic{1}.get('numbertrials');
             

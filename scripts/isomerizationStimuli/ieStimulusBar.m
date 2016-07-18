@@ -39,8 +39,8 @@ p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
 
+% Turn off so we supercede with this wait bar
 wFlag = ieSessionGet('wait bar');
-% Turn off so we supercede with this one
 ieSessionSet('wait bar',false);
 %% Compute a Gabor patch scene as a placeholder for the bar image
 

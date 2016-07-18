@@ -23,7 +23,7 @@ function val = mosaicGet(obj, param, varargin)
 p = inputParser; 
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
-
+p.KeepUnmatched = true;
 p.addRequired('param');
 
 % Parse and put results into structure p.

@@ -65,6 +65,10 @@ classdef coneMosaic < hiddenHandle
             % Initialize the cone mosaic class
             %   cMosaic =  coneMosaic('cone',cone,'os','os);
             
+            % TODO:  We should take eccentricity and angle as an input
+            % parameter and create cones of the appropriate size for that
+            % retinal location
+            
             % parse input
             p = inputParser;
             

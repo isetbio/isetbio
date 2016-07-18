@@ -1,12 +1,14 @@
 classdef ir < handle
-%% The inner retina class represents the mosaic of cells in the inner retina 
+%% The inner retina class represents cell mosaics
 %
 %   obj = ir(os, params);    %[usually called internally from irCreate]
 % 
-% An ir object is created from the isetbio @outerSegment object. The ir
-% (inner retina) object stores basic properties about the species and the
-% position of the simulated retinal patch. 
+% An ir object takes as input a bipolar object or an outerSegment object.
+% The ir (inner retina) object stores basic properties about the inner
+% retina such as the position of the simulated retinal patch.
 % 
+% GLM model
+%
 % See Pillow, Jonathan W., et al. "Spatio-temporal correlations and visual
 % signalling in a complete neuronal population." Nature 454.7207 (2008)
 % and Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries 
@@ -21,7 +23,7 @@ classdef ir < handle
 %               which is a subclass of the ir object.
 % 
 % Methods: intialize, set, get, compute, plot, movie
-%       see individual .m files for details.
+%       see individual m-files for details.
 % 
 % 
 % Examples: 
