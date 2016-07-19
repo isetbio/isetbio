@@ -200,10 +200,11 @@ switch obj.filterType
         rdt = RdtClient('isetbio');
         rdt.crp('resources/data/rgc');
         if strcmpi(obj.cellType,'offDiffuse')
-            data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');            
-            
+%             data = rdt.readArtifact('bipolarFilt_200_OFFP_2013_08_19_6_all', 'type', 'mat');            
+            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
         else
-            data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');            
+%             data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
+            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
             
         end
         bipolarFiltMat = data.bipolarFiltMat;
