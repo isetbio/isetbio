@@ -65,7 +65,7 @@ params.meanLuminance = 200;
 downSampleFactor = 20;
 params.timeInterval = .0004;%(1/125)/upSampleFactor;%0.001; % sec
 params.expTime      = .0004;%(1/125)/upSampleFactor;%0.001; % sec
-params.nSteps = 5*150;     % Number of stimulus frames
+params.nSteps = 750;     % Number of stimulus frames
 
 % Retina patch parameters
 params.fov = fov;       % set at top
@@ -346,10 +346,10 @@ switch cellTypeI
         cellType = 'Off Parasol Apricot';
         
     case 8;
-        cellType = 'Off Parasol Apricot';
+        cellType = 'On Midget Apricot';
         
     case 9;
-        cellType = 'On Midget Apricot';
+        cellType = 'Off Midget Apricot';
         
     case 10;
         cellType = 'SBC Apricot';

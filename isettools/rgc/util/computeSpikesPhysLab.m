@@ -69,7 +69,7 @@ cellCtr = 0;
 % data = rdt.readArtifact('pairspikecomp', 'type', 'mat');
 % pairspikecomp = data.pairspikecomp;
 pairspikecomp = cell(nCells,6,numberTrials);
-
+rollcomp = [];
 % nlfun = obj.generatorFunction;
 
 % nlfun = @(xin) -.28838 + 2.9304./(.042235 + exp(-1.6149*xin));

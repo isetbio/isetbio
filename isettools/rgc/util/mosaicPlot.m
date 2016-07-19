@@ -32,7 +32,7 @@ circle_samples = 0:0.05:2*pi;
 x_circle = bpRad*cos(circle_samples);
 y_circle = bpRad*sin(circle_samples);
 % 
-szbp = size(bp.sRFcenter,1)-1;
+szbp = size(bp.sRFcenter,1)-.5;
 % figure;
 hold on;
 szmosaic = size(cone_mosaic);

@@ -43,6 +43,16 @@ cMosaic.compute(oi,'currentFlag',true);
 % Examine the outer segment current
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
 
+%%
+fr1 = cMosaic.absorptions(:,:,1);
+cMosaic.set('absorptions',(zeros(144,176,500)));
+cMosaic.absorptions(:,:,1) = fr1;
+
+coneIsomerizationRate = cMosaic.absorptions/cMosaic.integrationTime;
+photocurrentSequence = cMosaic.os.compute(coneIsomerizationRate,cMosaic.pattern);
+
+
+
 %% To compute the bipolar response
 bp = bipolar(cMosaic.os);
 bp.set('sRFcenter',1);

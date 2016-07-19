@@ -35,11 +35,13 @@ osSigZM = reshape(osSig, size(os.coneCurrentSignal));
 
 %%%%%% Old can be removed
 % % Get zero mean cone current signal
-% osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
-% osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
+osSigRS = reshape(os.coneCurrentSignal, size(os.coneCurrentSignal,1)*size(os.coneCurrentSignal,2),size(os.coneCurrentSignal,3));
+osSigRSZM = osSigRS - repmat(mean(osSigRS,2),1,size(osSigRS,2));
+% osSigRSZM = osSigRS + 80;%repmat(osSigRS(:,1),1,size(osSigRS,2));
+% osSigRSZM = osSigRS - repmat((osSigRS,2),1,size(osSigRS,2));
 %%%%%%%%%
 
-% osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
+osSigZM = reshape(osSigRSZM,size(os.coneCurrentSignal));
 
 
 % Take product of outer segment current with the cone mask in order to
@@ -184,6 +186,7 @@ spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, strideSubsa
 
 
 szSubSample = size(spatialSubsampleCenter);
+if numel(szSubSample)<3; szSubSample(3) = 1; end;
 spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
 spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
 
@@ -211,9 +214,9 @@ switch obj.filterType
         
         switch ieParamFormat(obj.cellType)
             case {'offdiffuse','offmidget'}
-                bipolarFilt = -mean(bipolarFiltMat)';
-            case {'ondiffuse','onmidget','ondifusesbc'}
-                bipolarFilt = -mean(bipolarFiltMat)';
+                bipolarFilt = mean(bipolarFiltMat)';
+            case {'ondiffuse','onmidget','ondiffusesbc'}
+                bipolarFilt = mean(bipolarFiltMat)';
             otherwise
                 error('Unknown bipolar cell type');
         end
@@ -275,22 +278,42 @@ else
 end
 
 % 
-bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
+% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
 
 
-% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
-% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
-% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+bipolarOutputCenterRS = convn(bipolarFilt',spatialSubsampleCenterRS,'same');
+bipolarOutputSurroundRS = convn(bipolarFilt',spatialSubsampleSurroundRS,'same');
 
-bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+if size(spatialSubsampleCenterRS,2) < size(bipolarFilt,1)
+    
+    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
+    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+    
+    bipolarOutputCenterRS = bipolarOutputCenterRS(:,floor(size(bipolarFilt,1)/2):end);
+    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,floor(size(bipolarFilt,1)/2):end);
+    
+elseif size(bipolarOutputCenterRS,2) > floor(size(bipolarFilt,1)/2)
+    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+
+    bipolarOutputCenterRS = bipolarOutputCenterRS(:,1:end-floor(size(bipolarFilt,1)/2));
+    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,1:end-floor(size(bipolarFilt,1)/2));
+
+
+end
+% bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+% bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 
 
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
 bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));
+
+% Set tof first current value
+% bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat((bipolarOutputCenterRS(:,1)),1,size(bipolarOutputCenterRS,2))));
+% bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat((bipolarOutputSurroundRS(:,1)),1,size(bipolarOutputSurroundRS,2))));
+
 % figure; plot(conv(spatialSubsampleRS(50,:),obj.tIR'))
 
 % Back to original shape

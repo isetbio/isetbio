@@ -45,13 +45,13 @@ if nargout == 3
     if rgcMosaic.cellLocation{1,1}(1) > 0
         offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
     else
-        offset(1) = floor(rgcMosaic.cellLocation{1,1}(1));
+        offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
     end
     
     if rgcMosaic.cellLocation{1,1}(2) > 0
         offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
     else
-        offset(2) = floor(rgcMosaic.cellLocation{1,1}(2));
+        offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
     end
 end
 

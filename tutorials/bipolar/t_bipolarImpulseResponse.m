@@ -79,7 +79,7 @@ os = osSet(os, 'patch size', patchSize);
 %% Find bipolar responses
 
 
-bpParams.filterType = 3;
+bpParams.filterType = 4;
 bpParams.cellLocation = 58;
 bp = bipolar(os,bpParams);
 bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);

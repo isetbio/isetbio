@@ -44,13 +44,13 @@ for cc = 1:nChannels
             
             % Convolve them all
             thisInput = squeeze(input(ii,jj,:,cc));
-            % resp(ii,jj,:,cc) = conv(thisInput, impulseR','same')+tonicDrive;
+            resp(ii,jj,:,cc) = conv(thisInput, impulseR','same')+tonicDrive;
             
-            if size(thisInput,1) > size(impulseR,1)
-                impulseRZP = [impulseR; zeros(-size(impulseR,1)+size(thisInput,1),1)];
-                thisInputZP = thisInput;
-            end
-            resp(ii,jj,:,cc) = ifft(fft(impulseRZP).*fft(thisInputZP))+tonicDrive;           
+%             if size(thisInput,1) > size(impulseR,1)
+%                 impulseRZP = [impulseR; zeros(-size(impulseR,1)+size(thisInput,1),1)];
+%                 thisInputZP = thisInput;
+%             end
+%             resp(ii,jj,:,cc) = ifft(fft(impulseRZP).*fft(thisInputZP))+tonicDrive;           
             
         end
         
