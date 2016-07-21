@@ -1,63 +1,84 @@
-function temporalEquivEccentricity = retinalLocationToTEE(locationThetaDegrees, locationRadius, leftOrRightEyeIn)
-%% Find the temporal equivalent eccentricity. 
-% retinalLocationToTEE converts the coordinates of a location on the retina
-% given in polar coordinates (theta, r) to temporalEquivEccentricity (TEE).
+function temporalEquivEccentricity = retinalLocationToTEE(theta, rho, eyeSide)
+% Temporal equivalent eccentricity for a visual field position in an RGC mosaic
+%
+% This function is used to build RGC density and RF size values at
+% different eccentricities.
+%
+% The polar coordinates of a location on the retina (theta, rho) are
+% converted to temporalEquivEccentricity (TEE).  All values are specified
+% in degrees. 
+%
+% This function compensates for the observation that "contour lines of
+% constant RGC density are circular in the temporal half but elliptical in
+% the nasal half of the retina" (Chichilnisky & Kalmar, pg. 2738, 2002).
+%
 % The TEE is used to calculate the diameter of the receptive field size at
-% that location, given by Fig. 5 Chichilnisky & Kalmar (2002). It
-% compensates for the observation that "contour lines of constant RGC
-% density are circular in the temporal half but elliptical in the nasal
-% half of the retina" (Chichilnisky & Kalmar, pg. 2738, 2002).
-% 
-% TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text)
-% 
+% that location, given by Fig. 5 Chichilnisky & Kalmar (2002).
+%
+%     TEE = sqrt((0.61*X^2)+Y^2) (corrected from the text)
+%
 % Inputs:
-%   locationTheta - the theta value of the location of the patch in polar 
+%   theta - the theta value of the location of the patch in polar
 %       coordinates, in mm, normally from 5-15.
-%   locationRadius - the radius value of the location of the patch in polar 
+%   rho - the radius value of the location of the patch in polar
 %       coordinates, in degrees, from 0-360.
-%   leftOrRightEye - the eye is used to determine which angular values are
+%   eyeSide - the eye is used to determine which angular values are
 %       nasal or temporal; can be strings 'left' or 'right' or integers '0'
 %       (left) or '1' (right).
-% 
+%
 % Outputs:
-%   temporalEquivEccentricity - the eccentricity (mm) if the location in the
-%       nasal half were mapped onto the temporal half according to lines of
-%       constant RGC density. This is used to predict RGC density and RF size.
-% 
-% Example: 
-% temporalEquivEcc = retinalLocationToTEE(90, 3, 'right');
-% 
-% 
-% 9/2015 JRG 
+%   temporalEquivEccentricity - the eccentricity (mm) of the location in
+%   the nasal half is mapped onto the equivalent temporal eccentricity.
+%   This is equivalent with respect to RGC density. 
+%
+% Example:
+%
+% Plot the equivalent eccentricity as a graph
+%
+%  vcNewGraphWin;
+%  theta = 0:0.1:(2*pi+0.1);
+%  rho = 5*ones(size(theta));
+%  [x,y] = pol2cart(theta,rho);
+%  plot(x,y,'rx')
+%  ee = zeros(size(theta));
+%
+%  for ii = 1:length(theta)
+%     d = rad2deg(theta(ii));
+%     ee(ii) = retinalLocationToTEE(d, 5, 'right');
+%  end
+%  x = x .* ee/5;
+%  y = y .* ee/5;
+%  hold on; plot(x,y,'bo'); axis equal; grid on
+%
+% 9/2015 JRG
 % (c) isetbio
 
 
 %% Calculate TEE based on eye side, radius and angle
-% Get eye side
-if strcmp(leftOrRightEyeIn,'right')
-    leftOrRightEye = 0;
-elseif strcmp(leftOrRightEyeIn,'left')
-    leftOrRightEye = 1;
-    %     elseif ~((leftOrRightEyeIn == 0) || (leftOrRightEyeIn == 1))
-    %         leftOrRightEye = leftOrRightEyeIn;
-    %     else
-    %         error('Third input to retinalLocationToTEE must be 0, 1, or ''left''/''right''');
+
+%% Get eye side
+if strcmp(eyeSide,'right'),        eyeSide = 0;
+elseif strcmp(eyeSide,'left'),     eyeSide = 1;
+else
+    error('Incorrect eye side specification %s\n',eyeSide);
 end
 
-% Get angle
-locationTheta = (pi/180)*locationThetaDegrees;
+% Convert angle to radians
+theta = (pi/180)*theta;
 
-% Apply formula for TEE
-if ( (locationTheta > (pi/2) && locationTheta < (3*pi/2)) && leftOrRightEye==1 ) || ...
-    ( (locationTheta < (pi/2) || locationTheta > (3*pi/2)) && leftOrRightEye==0 ) 
+%% Apply formula for TEE
+if ( (theta > (pi/2) && theta < (3*pi/2)) && eyeSide==1 ) || ...
+        ( (theta < (pi/2) || theta > (3*pi/2)) && eyeSide==0 )
     
-    [xrad, yrad] = pol2cart(locationTheta, locationRadius);
+    [xrad, yrad] = pol2cart(theta, rho);
     
+    % Apparently some correction for other quadrants.  Here is the formula.
     aspectRatio = 0.61;
     temporalEquivEccentricity = sqrt((xrad*aspectRatio).^2 + yrad.^2);
+    
+else
+    % Temporal side.  No need for a correction.
+    temporalEquivEccentricity = rho;
+end
 
-else 
-    
-    temporalEquivEccentricity = locationRadius;
-    
 end
