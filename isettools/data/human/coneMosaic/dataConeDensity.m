@@ -114,3 +114,18 @@ plot(d.inferior.eccMM(3:end),d.inferior.density(3:end),'-bo');
 grid on;
 
 legend({'young','old','curcio'})
+
+
+pp = photoPigment;
+ecc = 0:0.1:2;
+curcio = zeros(size(ecc));
+burns  = zeros(size(ecc));
+for ii=1:length(ecc)
+    curcio(ii) = pp.eccDensity('eccMM',ecc(ii));
+    burns(ii)  = pp.eccDensity('eccMM',ecc(ii),'dataSet','burns young');
+end
+
+vcNewGraphWin;
+plot(ecc,burns,'r-o',ecc,curcio,'g-x');
+grid on;
+

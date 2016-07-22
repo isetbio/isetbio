@@ -134,7 +134,7 @@ classdef photoPigment < hiddenHandle
     end
     
     methods (Static)
-        function density = eccDensity(eccMM, angle, whichEye, varargin)
+        function density = eccDensity(varargin)
             % Compute cone packing density as a function of retinal
             % position
             %
@@ -144,6 +144,7 @@ classdef photoPigment < hiddenHandle
             %   ecc      - eccentricity (retinal position amplitude) in mm
             %   angle    - retinal position angle in degree, default is 0
             %   whichEye - can be either 'left' (default) or 'right'
+            %   dataSet  - curcio, burns young, burns old
             %
             % Outputs:
             %   density  - cone packing density in cones/mm^2
@@ -160,46 +161,65 @@ classdef photoPigment < hiddenHandle
             %      7376?7384. http://doi.org/10.1167/iovs.11-7199
             %
             % Example:
-            %   density = Cones.eccDensity(0, 90, 'left');
+            %   pp = photoPigment;
+            %   pp.eccDensity('eccMM',0.2)
+            %   pp.eccDensity('eccMM',0.2,'dataSet','curcio')
+            %   pp.eccDensity('eccMM',0.2,'whichEye','left','dataSet','burns young')
             %
             % HJ, ISETBIO TEAM, 2015
             
-            % Check inputs
-            if notDefined('eccMM'), eccMM = 0; end
-            if notDefined('angle'), angle = 0; end
-            if notDefined('whichEye'), whichEye = 'left'; end
+            %%
+            p = inputParser;
+            p.addParameter('eccMM',0,@isnumeric);
+            p.addParameter('angleDeg',0,@isnumeric);
+            p.addParameter('whichEye','left',@ischar);
+            p.addParameter('dataSet','default',@ischar);
             
-            % load data
-            d = load('coneDensity.mat');
+            p.parse(varargin{:});
             
-            % interpolate for retinal position amplitude on axis (nasal,
-            % superior, temporal and inferior direction)
+            eccMM    = p.Results.eccMM;
+            angleDeg = p.Results.angleDeg;
+            whichEye = p.Results.whichEye;
+            dataSet  = p.Results.dataSet;
+            dataSet = ieParamFormat(dataSet);
+            
+            % Cone density units are all cones/mm^2
+            switch dataSet
+                case {'default','conedensity','curcio'}
+                    d = load('coneDensity.mat');
+                case {'conedensityyoung','burnsyoung'}
+                    load('coneDensityYoung.mat','d');
+                case {'conedensityold','burnsold'}
+                    load('coneDensityOld.mat','d');
+                otherwise
+                    error('Unknown cone density data %s\n',dataSet);
+            end
+            
+            % interpolate for retinal position amplitude on axis (nasal, superior,
+            % temporal and inferior direction)
             onAxisD = zeros(5, 1);
             angleQ = [0 90 180 270 360];
             
             % compute packing density for superior and inferior
-            onAxisD(2)=interp1(d.superior.eccMM,d.superior.density,eccMM);
-            onAxisD(4)=interp1(d.inferior.eccMM,d.inferior.density,eccMM);
+            onAxisD(2) = interp1(d.superior.eccMM, d.superior.density, eccMM,'linear','extrap');
+            onAxisD(4) = interp1(d.inferior.eccMM, d.inferior.density, eccMM,'linear','extrap');
             
             % nasal and temporal
             switch lower(whichEye)
                 case 'left'
-                    onAxisD(1) = interp1(d.nasal.eccMM, ...
-                        d.nasal.density, eccMM);
-                    onAxisD(3) = interp1(d.temporal.eccMM, ...
-                        d.temporal.density, eccMM);
+                    onAxisD(1) = interp1(d.nasal.eccMM, d.nasal.density, eccMM,'linear','extrap');
+                    onAxisD(3) = interp1(d.temporal.eccMM, d.temporal.density, eccMM,'linear','extrap');
                 case 'right'
-                    onAxisD(1) = interp1(d.temporal.eccMM, ...
-                        d.temporal.density, eccMM);
-                    onAxisD(3) = interp1(d.nasal.eccMM, ...
-                        d.nasal.density, eccMM);
+                    onAxisD(1) = interp1(d.temporal.eccMM, d.temporal.density, eccMM,'linear','extrap');
+                    onAxisD(3) = interp1(d.nasal.eccMM, d.nasal.density, eccMM,'linear','extrap');
                 otherwise
                     error('unknown input for whichEye');
             end
             onAxisD(5) = onAxisD(1);
             
             % Interpolate for angle
-            density = interp1(angleQ, onAxisD, angle, 'linear');
+            density = interp1(angleQ, onAxisD, angleDeg, 'linear');
+
         end
     end
 end
