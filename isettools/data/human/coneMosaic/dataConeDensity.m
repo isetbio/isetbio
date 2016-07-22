@@ -7,10 +7,14 @@
 % Order of the rows is
 %  Superior, Inferior, Nasal, Temporal  (SINT)
 %
+% These numbers are substantially lower in the central fovea than the
+% Curcio numbers that are published (around 250,000 and here around
+% 70,000).
+%
 % BW Vistasoft Team, 2016
 
 %% Where the data will be saved
-chdir(fullfile(isetbioRootPath,'/isettools/data/cones'));
+chdir(fullfile(isetbioRootPath,'/isettools/data/human/coneMosaic/'));
 
 %% With error bars
 %
@@ -41,10 +45,16 @@ Old = ...
    50.1000   43.6000   39.5000   31.2000   28.8000   22.8000   18.4000   15.2000   11.3000   11.1000    8.8000    8.3000;
    52.6000   48.3000   43.0000   35.6000   33.1000   27.5000   22.5000   20.9000   17.6000   15.4000   12.4000   13.0000;
    46.6000   40.7000   39.0000   35.6000   33.6000   25.8000   22.0000   18.3000   14.9000   13.3000   11.0000    9.0000];
-   
+
+
 vcNewGraphWin; plot(ecc,Old)
 grid on; xlabel('mm'); ylabel('Density 10^3 cones/mm^2');
 
+%% Plot the Curcio data
+
+% Convert to cones/mm2
+Old   = Old*10^3;
+Young = Young*10^3;
 
 %% Build cone density structure for young eyes
 d.superior.eccMM = ecc;
@@ -53,19 +63,23 @@ d.superior.density = Young(1,:);
 
 d.inferior.eccMM = ecc;
 d.inferior.units = 'cones/mm2';
-d.superior.density = Young(2,:);
+d.inferior.density = Young(2,:);
 
 d.nasal.eccMM = ecc;
 d.nasal.units = 'cones/mm2';
-d.superior.density = Young(3,:);
+d.nasal.density = Young(3,:);
 
 d.temporal.eccMM = ecc;
 d.temporal.units = 'cones/mm2';
-d.superior.density = Young(4,:);
+d.temporal.density = Young(4,:);
 
 d.description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS';
 
 save('coneDensityYoung','d');
+
+vcNewGraphWin; 
+plot(d.inferior.eccMM(3:end),d.inferior.density(3:end),'-ro');
+grid on;
 
 %% Build cone density structure for old eyes
 d.superior.eccMM = ecc;
@@ -74,19 +88,29 @@ d.superior.density = Old(1,:);
 
 d.inferior.eccMM = ecc;
 d.inferior.units = 'cones/mm2';
-d.superior.density = Old(2,:);
+d.inferior.density = Old(2,:);
 
 d.nasal.eccMM = ecc;
 d.nasal.units = 'cones/mm2';
-d.superior.density = Old(3,:);
+d.nasal.density = Old(3,:);
 
 d.temporal.eccMM = ecc;
 d.temporal.units = 'cones/mm2';
-d.superior.density = Old(4,:);
+d.temporal.density = Old(4,:);
 
 d.description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS';
 
 save('coneDensityOld','d');
 
+hold on
+plot(d.inferior.eccMM(3:end),d.inferior.density(3:end),'-go');
+grid on;
+
 %%
 
+d = load('coneDensity');
+hold on
+plot(d.inferior.eccMM(3:end),d.inferior.density(3:end),'-bo');
+grid on;
+
+legend({'young','old','curcio'})
