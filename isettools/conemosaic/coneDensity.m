@@ -1,11 +1,11 @@
-function density = coneDensity(eccMM, angle, whichEye, varargin)
+function density = coneDensity(eccMM, angleDeg, whichEye, varargin)
 % Compute cone packing density as a function of retinal position
 %
 %   density = coneDensity(ecc, angle, whichEye, varargin)
 %
 % Inputs:
-%   ecc      - eccentricity (retinal position amplitude) in mm
-%   angle    - retinal position angle in degree, default is 0
+%   ecc      - eccentricity in mm, default is 0 (.30 mm/deg)
+%   angle    - angle in degree, default is 0
 %   whichEye - left or right eye, chosen from 'left' (default) or 'right'
 %
 % Outputs:
@@ -21,19 +21,19 @@ function density = coneDensity(eccMM, angle, whichEye, varargin)
 %      52(10), 7376?7384. http://doi.org/10.1167/iovs.11-7199
 %
 % Example:
-%   density = coneDensity(0, 90, 'left');
+%   density = coneDensity(8, 10, 'left');
 %
 % See also:
-%   sensorCreate
+%   coneMosaic
 %
 % HJ, ISETBIO TEAM, 2015
 
 % Check inputs
 if notDefined('eccMM'), eccMM = 0; end
-if notDefined('angle'), angle = 0; end
+if notDefined('angle'), angleDeg = 0; end
 if notDefined('whichEye'), whichEye = 'left'; end
 
-% load data
+% load cone density data.  Units are ....
 d = load('coneDensity.mat');
 
 % interpolate for retinal position amplitude on axis (nasal, superior,
@@ -59,6 +59,6 @@ end
 onAxisD(5) = onAxisD(1);
 
 % Interpolate for angle
-density = interp1(angleQ, onAxisD, angle, 'linear');
+density = interp1(angleQ, onAxisD, angleDeg, 'linear');
 
 end
