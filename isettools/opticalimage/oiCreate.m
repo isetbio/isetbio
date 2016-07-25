@@ -67,7 +67,7 @@ switch oiType
         oi = oiSet(oi, 'consistency',1);
         oi = oiSet(oi, 'optics', opticsCreate('human'));
         oi = oiSet(oi, 'name','human-MW');
-        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'wave')));
+        oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'optics wave')));
         
         if checkfields(oi.optics,'transmittance')
             oi.optics = rmfield(oi.optics,'transmittance');
