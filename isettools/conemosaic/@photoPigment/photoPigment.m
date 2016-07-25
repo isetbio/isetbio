@@ -1,16 +1,32 @@
 classdef photoPigment < hiddenHandle
-    % Class for single cone
+    % Class for single cone photopigment properties
     %
-    %   cone = Cones();
+    %   pp = photoPigment();
     %
-    % This class contains properties for single cone cell. For the full
-    % cone mosaic, see coneMosaic class
+    % This class contains properties for the photopigment absorption
+    % properties of a single cone cell. 
     %
+    % For the full cone mosaic, see coneMosaic class
+    %
+    % The dominant terms represented here description the photopigment
+    % itself.  In addition, there are a few terms the capture the effective
+    % optical size of the photopigment absorption.
+    %
+    % By default, we use the data in the isetbio file
+    % data/human/coneAbsorbance.mat to define the cone absorbance.  The
+    % other quantitites are derived from this.
+    %
+    % See t_photoPigment for more information and explanations about this
+    % object.
+    % 
     % HJ, ISETBIO Team, 2016
+    
+    % See BW queries below
     
     properties  % public properties
         opticalDensity;  % photopigment optical densities for L,M,S
         peakEfficiency;  % peak absorptance efficiency
+        
         width;           % cone width (include gap) in meters
         height;          % cone height (include gap) in meters
         
@@ -66,6 +82,8 @@ classdef photoPigment < hiddenHandle
             obj.pdHeight = p.Results.pdHeight;
             
             if isempty(p.Results.absorbance)
+                % BW:  Why is coneAbsorbance not cone absorbance?  Should
+                % we change the file on disk so we don't need the 10^?
                 obj.absorbance_ = 10 .^ ...
                     ieReadSpectra('coneAbsorbance', obj.wave_);
             else
