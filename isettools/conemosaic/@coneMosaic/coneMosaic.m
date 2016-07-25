@@ -1,11 +1,11 @@
 classdef coneMosaic < hiddenHandle
     % Create a cone mosaic class
     %
-    %   cMosaic =  coneMosaic('cone', cone, 'os', os);
+    %   cMosaic =  coneMosaic('pigment', photoPigment, 'os', os);
     %
-    % The cone mosaic defines an array of cones.  The individual cones have
-    % absorption properties defined by cMosaic.cone.  The computation from
-    % absorptions to photocurrent is defined by cMosaic.os
+    % The cone mosaic defines an array of cones. The individual cones have
+    % absorption properties defined by cMosaic.pigment. The computation
+    % from absorptions to photocurrent is defined by cMosaic.os
     %
     % HJ/JRG/BW ISETBIO Team, 2016
     

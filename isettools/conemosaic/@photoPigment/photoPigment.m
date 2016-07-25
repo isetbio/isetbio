@@ -1,7 +1,7 @@
 classdef photoPigment < hiddenHandle
     % Class for single cone
     %
-    %   cone = Cones();
+    %   pigment = photoPigment();
     %
     % This class contains properties for single cone cell. For the full
     % cone mosaic, see coneMosaic class
@@ -141,8 +141,8 @@ classdef photoPigment < hiddenHandle
             %   density = coneDensity(ecc, angle, whichEye, varargin)
             %
             % Inputs:
-            %   ecc      - eccentricity (retinal position amplitude) in mm
-            %   angle    - retinal position angle in degree, default is 0
+            %   eccMM    - eccentricity (retinal position amplitude) in mm
+            %   angleDeg - retinal position angle in degree, default is 0
             %   whichEye - can be either 'left' (default) or 'right'
             %   dataSet  - curcio, burns young, burns old
             %
@@ -164,12 +164,13 @@ classdef photoPigment < hiddenHandle
             %   pp = photoPigment;
             %   pp.eccDensity('eccMM',0.2)
             %   pp.eccDensity('eccMM',0.2,'dataSet','curcio')
-            %   pp.eccDensity('eccMM',0.2,'whichEye','left','dataSet','burns young')
+            %   pp.eccDensity('eccMM', 0.2, 'whichEye', 'left', ...
+            %                 'dataSet','burns young')
             %
             % HJ, ISETBIO TEAM, 2015
             
-            %%
-            p = inputParser;
+            % Parse inputs
+            p = inputParser; p.KeepUnmatched = true;
             p.addParameter('eccMM',0,@isnumeric);
             p.addParameter('angleDeg',0,@isnumeric);
             p.addParameter('whichEye','left',@ischar);
