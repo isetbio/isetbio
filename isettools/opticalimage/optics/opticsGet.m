@@ -310,7 +310,7 @@ switch parm
         if checkfields(optics,'lens')  % Human optics
             % The lens gets the proper wavelength sample because the object
             % has a 'listener'
-            val = optics.lens.get('transmittance');
+            val = optics.lens.get('transmittance', varargin{:});
             
         elseif checkfields(optics,'transmittance') % Diffraction optics
             val = optics.transmittance.scale;
