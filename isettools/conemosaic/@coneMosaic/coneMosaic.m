@@ -10,19 +10,20 @@ classdef coneMosaic < hiddenHandle
     % HJ/JRG/BW ISETBIO Team, 2016
     
     properties  % public properties
-        name              % the name of the object
+        name                % the name of the object
         
-        pigment;          % Cone class object, contain single cone property
-        macular;          % Macular class object
-        os;               % Outersegment properties
+        pigment;            % Cone class object, contain single cone property
+        macular;            % Macular class object
+        os;                 % Outersegment properties
         
-        pattern;          % Pattern of K-LMS cones in the mosaick
-        integrationTime;  % Cone temporal integration time in secs
-        emPositions;      % Eye movement positions in number of cones.
-                          % The length of this property controls number of
-                          % frames to be computed
-        noiseFlag;        % To control which noise is included
-        hdl;              % handle of the gui window
+        pattern;            % Pattern of K-LMS cones in the mosaick
+        patternSampleSize;
+        integrationTime;    % Cone temporal integration time in secs
+        emPositions;        % Eye movement positions in number of cones.
+                            % The length of this property controls number of
+                            % frames to be computed
+        noiseFlag;          % To control which noise is included
+        hdl;                % handle of the gui window
     end
     
     properties (SetObservable, AbortSet)
@@ -35,19 +36,19 @@ classdef coneMosaic < hiddenHandle
     end
     
     properties (Dependent)
-        wave;       % Wavelength samples
+        wave;           % Wavelength samples
         
-        rows;       % number of rows in the cone mosaic
-        cols;       % number of cols in the cone mosaic
-        mosaicSize; % [rows, cols]
+        rows;           % number of rows in the cone mosaic
+        cols;           % number of cols in the cone mosaic
+        mosaicSize;     % [rows, cols]
+        patternSupport; % [X(:) Y(:)] axes
+        width;          % width of cone mosaic in meters
+        height;         % height of cone mosaic in meters
+        fov;            % horizontal/vertical field of view assuming inf scene 
+                        % distance and 17mm optics focal length
         
-        width;      % width of cone mosaic in meters
-        height;     % height of cone mosaic in meters
-        fov;        % horizontal/vertical field of view assuming inf scene 
-                    % distance and 17mm optics focal length
-        
-        coneLocs;   % cone locations in meters
-        qe;         % effective absorptance with macular pigment (not lens)
+        coneLocs;       % cone locations in meters
+        qe;             % effective absorptance with macular pigment (not lens)
         
         current;      % The spatial array of photocurrent over time
         spatialDensity; % spatial density (ratio) of the K-LMS cones
@@ -100,9 +101,11 @@ classdef coneMosaic < hiddenHandle
             obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
+            obj.patternSampleSize = [obj.pigment.width obj.pigment.height];
+            
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
-                    obj.spatialDensity_, obj.pigment.width);
+                    obj.spatialDensity_, obj.patternSampleSize(1));
             else
                 obj.pattern = p.Results.pattern;
             end
@@ -198,7 +201,7 @@ classdef coneMosaic < hiddenHandle
             % compute current field of view
             imageDist = 1/(1/focalLength - 1/sceneDist);
             curFov = 2*atand([obj.height obj.width]/imageDist/2);
-            
+
             % set new size to object
             obj.mosaicSize = ceil(obj.mosaicSize .* fov./curFov);
         end
@@ -225,12 +228,20 @@ classdef coneMosaic < hiddenHandle
             val = [obj.rows obj.cols];
         end
         
+        function val = get.patternSupport(obj)
+            x = (1:obj.cols) * obj.patternSampleSize(1); x = x - mean(x);
+            y = (1:obj.rows) * obj.patternSampleSize(2); y = y - mean(y);
+            [xx, yy] = meshgrid(x,y);
+            val(:,:,1) = xx;
+            val(:,:,2) = yy;
+        end
+        
         function val = get.width(obj)  % width of cone mosaic in meters
-            val = obj.cols * obj.pigment.width;
+            val = obj.cols * obj.patternSampleSize(1);
         end
         
         function val = get.height(obj)  % height of cone mosaic in meters
-            val = obj.rows * obj.pigment.height;
+            val = obj.rows * obj.patternSampleSize(2);
         end
         
         function val = get.fov(obj)  % horizontal/vertical field of view
@@ -238,8 +249,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
-            x = (1:obj.cols) * obj.pigment.width; x = x - mean(x);
-            y = (1:obj.rows) * obj.pigment.height; y = y - mean(y);
+            x = (1:obj.cols) * obj.patternSampleSize(1); x = x - mean(x);
+            y = (1:obj.rows) * obj.patternSampleSize(2); y = y - mean(y);
             [X, Y] = meshgrid(x, y);
             val = [X(:) Y(:)];
         end
@@ -274,7 +285,7 @@ classdef coneMosaic < hiddenHandle
         function set.spatialDensity(obj, val)
             obj.spatialDensity_ = val;
             [~, obj.pattern] = humanConeMosaic(obj.mosaicSize, ...
-                    val, obj.pigment.width);
+                    val, obj.patternSampleSize(1));
             obj.clearData();
         end
         
@@ -298,7 +309,7 @@ classdef coneMosaic < hiddenHandle
         function set.mosaicSize(obj, val)
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
-                    obj.spatialDensity_, obj.pigment.width);
+                    obj.spatialDensity_, obj.patternSampleSize(1));
                 obj.os.patchSize = obj.width;
                 obj.clearData();
             end
@@ -526,7 +537,7 @@ classdef coneMosaic < hiddenHandle
                 oiGet(oi, 'height spatial resolution'), ...
                 oiGet(oi, 'width spatial resolution'));
             [coneR, coneC] = sample2space(0.5:obj.rows - 0.5, ...
-                0.5:obj.cols - 0.5, obj.pigment.height, obj.pigment.width);
+                0.5:obj.cols - 0.5, obj.patternSampleSize(2), obj.patternSampleSize(1));
             
             if fullLMS
                 absDensity = zeros(obj.rows, obj.cols, 3);
