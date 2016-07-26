@@ -1,6 +1,6 @@
 %% t_coneMosaicHex4
 %
-% Demonstrates jitter ?
+% Shows hex mosaic isomerization maps for an achromatic Gabor scene 
 %
 % NPC ISETBIO Team, Copyright 2016
 
