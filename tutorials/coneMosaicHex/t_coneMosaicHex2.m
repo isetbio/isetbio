@@ -1,6 +1,6 @@
 %% t_coneMosaicHex2
 %
-% Examines the effects of different resampling factors. 
+% Visualizes the effects of different resampling factors. 
 % A resampling factor value of 1 gives a rectangular grid.
 % A resampling factor of 2 gives pretty bad artifacts with largevinhomogenities.
 % As the resampling factor is increased beyond 2, inhomogeneities start to 
@@ -13,7 +13,8 @@ ieInit; clear; close all;
     
 rng('default'); rng(219347);
 
-%% Unit test: testing different resamplingFactors 
+%% Unit test 1: display different aspects of a hex mosaic in a 4 panel display, including 
+%% the hex mosaic, the originating rectangular mosaic, the hex grid used for sampling, and the null cones
 % Mosaic Parameters
 mosaicParams = struct(...
       'resamplingFactor', 7, ...
@@ -51,12 +52,12 @@ theHexMosaic.visualizeGrid(...
 keepGoing = true;
 while (keepGoing)
     commandwindow
-    resamplingFactor = input('Enter resampling factor: [>= 1 (-1 to exit)] :');
+    resamplingFactor = input(sprintf('\n<strong>Enter a new resampling factor [>= 1]. A negative exits the loop. New resampling Factor: </strong>'));
     if (isempty(resamplingFactor))
         resamplingFactor = 1;
     end
     
-    if (resamplingFactor < 0)
+    if (resamplingFactor <= 0)
         keepGoing = false;
         continue;
     end

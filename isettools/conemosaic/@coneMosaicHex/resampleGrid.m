@@ -7,8 +7,10 @@ function resampleGrid(obj, upSampleFactor)
     obj.coneLocsHexGrid = computeHexGridNodes(obj);
     
     % Decrease patternSampleSize and increase mosaicSize both by the upSampleFactor
-    obj.patternSampleSize = obj.patternSampleSize / upSampleFactor;
-    obj.mosaicSize = obj.mosaicSize * upSampleFactor;
+    obj.upSampleFactor = upSampleFactor;
+    obj.patternSampleSize = obj.patternSampleSize / obj.upSampleFactor;
+    obj.mosaicSize = obj.mosaicSize * obj.upSampleFactor;
+    
     
     % Sample the perfect hex grid on the high res rectangular grid nodes
     obj.pattern = rectSampledHexPattern(obj);
