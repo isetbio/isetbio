@@ -10,8 +10,8 @@ ieInit; clear; close all;
 rng('default'); rng(219347);
 
 mosaicParams = struct(...
-      'resamplingFactor', 5, ...
-                  'size', [48 48], ...
+      'resamplingFactor', 4, ...
+                  'size', [10 10], ...
         'spatialDensity', [0 0.62 0.31 0.07],...
              'noiseFlag', false ...
     );
@@ -22,22 +22,18 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
          'spatialDensity', mosaicParams.spatialDensity, ...
               'noiseFlag', mosaicParams.noiseFlag ...
 );
+theHexMosaic.setSizeToFOVForHexMosaic([0.5 0.5]);
 theHexMosaic.displayInfo();
 
 
-%% Unit test:  the ring rays scene
-commandwindow
-fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the ring rays scene. </strong>');
-pause
+%% Load an achromatic Gabor scene
+[dirName,~] = fileparts(which(mfilename()));
+load(fullfile(dirName,'GaborAchromScene.mat'))
+gaborScene = sceneSet(gaborScene,'fov', 1.0);
 
-% Generate ring rays stimulus
-scene = sceneCreate('rings rays');
-scene = sceneSet(scene,'fov', 1.0);
-vcAddObject(scene); sceneWindow
-    
 % Compute the optical image
 oi = oiCreate;
-oi = oiCompute(scene,oi);  
+oi = oiCompute(gaborScene,oi);  
 
 % Compute isomerization
 isomerizations = theHexMosaic.compute(oi,'currentFlag',false);

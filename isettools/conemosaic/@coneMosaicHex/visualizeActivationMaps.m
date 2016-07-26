@@ -5,8 +5,8 @@ function visualizeActivationMaps(obj, activation)
 
     % Compute activation image maps
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationImage(activation);
-    activatioRange = [min(activation(:)) max(activation(:))];
-
+    activationRange = prctile(activation(activation>0), [10 90])
+    
     hFig = figure();
     set(hFig, 'Position', [10 10 920 875], 'Color', [1 1 1], 'MenuBar', 'None');
     
@@ -43,7 +43,7 @@ function visualizeActivationMaps(obj, activation)
         
         imagesc(sampledHexMosaicXaxis*1e6, sampledHexMosaicYaxis*1e6, activationMapImage);
         axis 'image'; axis 'xy';
-        set(gca, 'CLim', activatioRange);
+        set(gca, 'CLim', activationRange);
         if (~showXticks)
             set(gca, 'XTick', []);
         end
