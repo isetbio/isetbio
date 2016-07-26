@@ -1,6 +1,11 @@
 function visualizeActivation(obj, activation)
+% Visualize activation images for the hex mosaic (all cones +  LMS submosaics)
+%
+% NPC, ISETBIO TEAM, 2015
 
-    [activationImage, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationImage(activation);
+    % Compute activation image maps
+    [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationImage(activation);
+    
     figure();
     imagesc(sampledHexMosaicXaxis, sampledHexMosaicYaxis, activationMap);
     axis 'image'; axis 'xy';

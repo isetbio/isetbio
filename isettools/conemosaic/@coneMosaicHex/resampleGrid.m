@@ -1,4 +1,7 @@
-function resampleGrid(obj, upSampleFactor)
+function resampleGrid(obj, resamplingFactor)
+%  % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
+%
+% NPC, ISETBIO TEAM, 2015
 
     % Restore original state
     obj.restoreOriginalResState();
@@ -6,11 +9,10 @@ function resampleGrid(obj, upSampleFactor)
     % Compute perfect hex grid
     obj.coneLocsHexGrid = computeHexGridNodes(obj);
     
-    % Decrease patternSampleSize and increase mosaicSize both by the upSampleFactor
-    obj.upSampleFactor = upSampleFactor;
-    obj.patternSampleSize = obj.patternSampleSize / obj.upSampleFactor;
-    obj.mosaicSize = obj.mosaicSize * obj.upSampleFactor;
-    
+    % Decrease patternSampleSize and increase mosaicSize both by the resamplingFactor
+    obj.resamplingFactor = resamplingFactor;
+    obj.patternSampleSize = obj.patternSampleSize / obj.resamplingFactor;
+    obj.mosaicSize = obj.mosaicSize * obj.resamplingFactor;
     
     % Sample the perfect hex grid on the high res rectangular grid nodes
     obj.pattern = rectSampledHexPattern(obj);
@@ -57,19 +59,17 @@ function pattern = rectSampledHexPattern(obj)
     yRectHiRes = (1:obj.rows) * obj.patternSampleSize(2); yRectHiRes = yRectHiRes - mean(yRectHiRes);
     [xx,yy] = meshgrid(xRectHiRes, yRectHiRes); 
     
-    % Optimize sub-sampling jitter
+    % Optimize sub-sampling jitter. In progress...
     optimizeSubSamplingJitter = false;
     if (optimizeSubSamplingJitter)
         [xHex, yHex] = optimizeJitter(xHex, yHex, xx, yy);
     end
-    
     
     xRectOriginal = (1:size(obj.originalResPattern,2)) * obj.originalResPatternSampleSize(1); xRectOriginal = xRectOriginal - mean(xRectOriginal);
     yRectOriginal = (1:size(obj.originalResPattern,1)) * obj.originalResPatternSampleSize(2); yRectOriginal = yRectOriginal - mean(yRectOriginal);
     xRectOriginal = xRectOriginal / max(xRectOriginal) * max(xRectHiRes);
     yRectOriginal = yRectOriginal / max(yRectOriginal) * max(yRectHiRes);
     [xxx,yyy] = meshgrid(xRectOriginal, yRectOriginal);
-    
     
     pattern = zeros(numel(yRectHiRes), numel(xRectHiRes))+1;    
     for k = 1:numel(xHex)
@@ -83,7 +83,8 @@ function pattern = rectSampledHexPattern(obj)
         pattern(hiResPatternRow, hiResPatternCol) = coneID;
     end
     
-    if (1==2)
+    debugPlots = false;
+    if (debugPlots)
         cmap = [0 0 0; 1 0 0; 0 1 0; 0 0 1];
         figure(10); clf;
         imagesc((obj.originalResPattern-1)/3);

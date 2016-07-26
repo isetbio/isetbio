@@ -1,4 +1,7 @@
 function visualizeGrid(obj, varargin)
+% Visualize different aspects of the hex grid
+%
+% NPC, ISETBIO TEAM, 2015
 
     % parse input
     p = inputParser;
@@ -22,7 +25,7 @@ function visualizeGrid(obj, varargin)
         titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
             size(obj.originalResPattern,2), size(obj.originalResPattern,1), numel(obj.originalResPattern), ...
             numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-            obj.upSampleFactor);
+            obj.resamplingFactor);
     end
     
     sampledHexMosaicXaxis = obj.patternSupport(1,:,1);

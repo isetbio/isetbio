@@ -1,21 +1,20 @@
 classdef coneMosaicHex < coneMosaic
     % Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  coneMosaicHex('cone', cone, 'os', os);
+    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varargin);
     %
-    % The cone mosaic defines an array of cones.  The individual cones have
-    % absorption properties defined by cMosaic.cone.  The computation from
-    % absorptions to photocurrent is defined by cMosaic.os
+    % The cone mosaic hex defines an array of cones placed on a hexagonal grid
+    % which is sampled according to the resamplingFactor. 
     %
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
-        upSampleFactor
+        resamplingFactor                % the resamplingFactor used
         coneLocsHexGrid                 % computed coneLocs (hex grid)
-        originalResConeLocs             % original res coneLocs (rect grid)
-        originalResPattern
-        originalResPatternSampleSize
-        originalResFOV
+        originalResConeLocs             % coneLocs of the originating rect grid
+        originalResPattern              % cone pattern of the originaing rect grid
+        originalResPatternSampleSize    % original pattern sample size
+        originalResFOV                  % original FOV
     end
     
     % Public methods
@@ -34,25 +33,35 @@ classdef coneMosaicHex < coneMosaic
             
             % parse input
             p = inputParser;
-            p.addRequired('upSampleFactor', @isnumeric);
+            p.addRequired('resamplingFactor', @isnumeric);
             p.parse(upSampleFactor);
-            obj.upSampleFactor = p.Results.upSampleFactor;
+            obj.resamplingFactor = p.Results.resamplingFactor;
             
             % Generate sampled hex grid
-            obj.resampleGrid(obj.upSampleFactor);
+            obj.resampleGrid(obj.resamplingFactor);
         end
         
+        % Change the FOV of the mosaic
         setSizeToFOVForHexMosaic(obj,fov);
-        resampleGrid(obj, upSampleFactor);
+        
+        % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
+        resampleGrid(obj, resamplingFactor);
+        
+        % Visualize different aspects of the hex grid
         visualizeGrid(obj, varargin);
+        
+        % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
+        [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationImage(obj, activation);
+        
+        % Visualize activation images for the hex mosaic (all cones +  LMS submosaics)
         visualizeActivation(obj, activation);
-        [activationImage, imageXaxis, imageYaxis] = computeActivationImage(obj, activation);
+        
+        % Print various infos about the cone mosaic
         displayInfo(obj);
         
     end % Public methods
     
     methods (Access = private)
-        computeHexMosaic(obj);
         saveOriginalResState(obj);
         restoreOriginalResState(obj);
     end % Private methods

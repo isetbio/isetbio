@@ -1,4 +1,7 @@
 function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = computeActivationImage(obj, activation)
+% Compute activation images for the hex mosaic (all cones +  LMS submosaics)
+%
+% NPC, ISETBIO TEAM, 2015
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1));
     sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2));
@@ -8,6 +11,7 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
     sampledHexMosaicXaxis = sampledHexMosaicXaxis(1):dx:sampledHexMosaicXaxis(end);
     sampledHexMosaicYaxis = sampledHexMosaicYaxis(1):dx:sampledHexMosaicYaxis(end);
     
+    % Generate cone aperture kernel - flat top Gaussian
     nSamples = ceil(0.5*obj.pigment.width/dx);
     apertureSupport = (-nSamples:nSamples)*dx;
     apertureSigma = obj.pigment.width/6;
@@ -18,8 +22,9 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
     apertureKernel(apertureKernel>0.15) = 0.15;
     apertureKernel = apertureKernel / max(apertureKernel(:));
     
-    if (1==2)
-        figure(1123);
+    visualizeConeApertureKernel = false;
+    if (visualizeConeApertureKernel)
+        figure(222); clf;
         imagesc(apertureKernel);
         set(gca, 'CLim', [0 1]);
         axis 'image'
