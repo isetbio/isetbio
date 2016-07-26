@@ -53,8 +53,8 @@ classdef coneMosaicHex < coneMosaic
         % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
         [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationImage(obj, activation);
         
-        % Visualize activation images for the hex mosaic (all cones +  LMS submosaics)
-        visualizeActivation(obj, activation);
+        % Visualize activation maps images for the hex mosaic (all cones +  LMS submosaics)
+        visualizeActivationMaps(obj, activation);
         
         % Print various infos about the cone mosaic
         displayInfo(obj);

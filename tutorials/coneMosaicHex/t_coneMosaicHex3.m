@@ -73,6 +73,7 @@ maxIsomerization = max([max(isomerizationsRect(:)) max(isomerizationsHex(:))]);
 % Render activation images for the hex mosaic
 [activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
 
+
 % Display results
 hFig = figure(100); clf;
 set(hFig, 'Position', [10 10 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
