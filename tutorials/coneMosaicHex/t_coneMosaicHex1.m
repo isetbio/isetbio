@@ -46,3 +46,4 @@ newFOV = [0.2 0.4];
 commandwindow
 fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
+theHexMosaic.displayInfo();
