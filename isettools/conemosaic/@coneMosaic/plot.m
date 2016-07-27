@@ -1,6 +1,6 @@
-function [hf, uData] = plot(obj, type, varargin)
+function [uData, hf] = plot(obj, type, varargin)
 % Plot function for coneMosaic
-%    [hf, uData] = coneMosaic.plot(type, varargin)
+%    [uData, hf] = coneMosaic.plot(type, varargin)
 %
 % Inputs:
 %   type - string, type of plot

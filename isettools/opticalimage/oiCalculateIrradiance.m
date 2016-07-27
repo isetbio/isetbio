@@ -62,7 +62,11 @@ end
 
 % Apply lens transmittance.
 % Perhaps we should be getting the transmittance out of ZEMAX/CODEV
-transmittance = opticsGet(optics,'transmittance',wave);
+if isfield(optics, 'lens')
+    transmittance = opticsGet(optics, 'transmittance', 'wave', wave);
+else
+    transmittance = opticsGet(optics, 'transmittance', wave);
+end
 
 % If transmittance is all 1s, we can skip this step
 if any(transmittance(:) ~= 1)
