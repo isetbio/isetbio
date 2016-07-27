@@ -1,8 +1,8 @@
 function restoreOriginalResState(obj)
     
-    obj.patternSampleSize = obj.originalResPatternSampleSize;
-    obj.mosaicSize = size(obj.originalResPattern);
-    obj.pattern = obj.originalResPattern;    
-    obj.setSizeToFOV(obj.originalResFOV);
+    obj.patternSampleSize = obj.patternSampleSizeOriginatingRectGrid;
+    obj.mosaicSize = size(obj.patternOriginatingRectGrid);
+    obj.pattern = obj.patternOriginatingRectGrid;    
+    obj.setSizeToFOV(obj.fovOriginatingRectGrid);
 
 end

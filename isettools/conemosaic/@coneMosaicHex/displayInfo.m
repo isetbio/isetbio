@@ -8,7 +8,7 @@ function displayInfo(obj)
     fprintf('%33s %2.2f (w) x %2.2f (h) \n', 'FOV (deg):', obj.fov(1), obj.fov(2));
     fprintf('%33s %2.0f\n', 'Grid resampling factor:', obj.resamplingFactor);
     fprintf('%33s %2.2f (w) x %2.2f (h)\n', 'Cone aperture (microns):', obj.pigment.width*1e6, obj.pigment.height*1e6);
-    fprintf('%33s %2.0f cols x %2.0f rows\n', 'Rectangular grid:', size(obj.originalResPattern,2), size(obj.originalResPattern,1));
+    fprintf('%33s %2.0f cols x %2.0f rows\n', 'Rectangular grid:', size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1));
     fprintf('%33s %2.0f cols x %2.0f rows\n', 'Resampled grid:', obj.cols, obj.rows);
     fprintf('%33s %d\n', 'Total cones:', numel(obj.pattern));
     fprintf('%33s %d\n', 'Active cones:' , numel(find(obj.pattern > 1)));

@@ -65,8 +65,8 @@ function pattern = rectSampledHexPattern(obj)
         [xHex, yHex] = optimizeJitter(xHex, yHex, xx, yy);
     end
     
-    xRectOriginal = (1:size(obj.originalResPattern,2)) * obj.originalResPatternSampleSize(1); xRectOriginal = xRectOriginal - mean(xRectOriginal);
-    yRectOriginal = (1:size(obj.originalResPattern,1)) * obj.originalResPatternSampleSize(2); yRectOriginal = yRectOriginal - mean(yRectOriginal);
+    xRectOriginal = (1:size(obj.patternOriginatingRectGrid,2)) * obj.patternSampleSizeOriginatingRectGrid(1); xRectOriginal = xRectOriginal - mean(xRectOriginal);
+    yRectOriginal = (1:size(obj.patternOriginatingRectGrid,1)) * obj.patternSampleSizeOriginatingRectGrid(2); yRectOriginal = yRectOriginal - mean(yRectOriginal);
     xRectOriginal = xRectOriginal / max(xRectOriginal) * max(xRectHiRes);
     yRectOriginal = yRectOriginal / max(yRectOriginal) * max(yRectHiRes);
     [xxx,yyy] = meshgrid(xRectOriginal, yRectOriginal);
@@ -75,8 +75,8 @@ function pattern = rectSampledHexPattern(obj)
     for k = 1:numel(xHex)
         % determine cone ID of closest cone in original pattern
         [~, idx] = min(sqrt((xHex(k)-xxx(:)).^2 + (yHex(k)-yyy(:)).^2));
-        [originalRow, originalCol] = ind2sub(size(obj.originalResPattern), idx);
-        coneID = obj.originalResPattern(originalRow,originalCol);
+        [originalRow, originalCol] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
+        coneID = obj.patternOriginatingRectGrid(originalRow,originalCol);
         
         [~, idx] = min(sqrt((xHex(k)-xx(:)).^2 + (yHex(k)-yy(:)).^2));
         [hiResPatternRow,hiResPatternCol] = ind2sub(size(pattern), idx);
@@ -87,7 +87,7 @@ function pattern = rectSampledHexPattern(obj)
     if (debugPlots)
         cmap = [0 0 0; 1 0 0; 0 1 0; 0 0 1];
         figure(10); clf;
-        imagesc((obj.originalResPattern-1)/3);
+        imagesc((obj.patternOriginatingRectGrid-1)/3);
         axis 'equal'; axis 'xy'
         set(gca, 'CLim', [0 1]);
         colormap(cmap);

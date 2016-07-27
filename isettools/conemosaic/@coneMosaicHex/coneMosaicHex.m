@@ -4,17 +4,27 @@ classdef coneMosaicHex < coneMosaic
     %   cMosaicHex =  coneMosaicHex(resamplingFactor, varargin);
     %
     % The cone mosaic hex defines an array of cones placed on a hexagonal grid
-    % which is sampled according to the resamplingFactor. 
+    % which is sampled according to the resamplingFactor. All key-value
+    % parameter pairs used with coneMosaic can be used with coneMosaicHex.
+    % e.g.:
+    %   cMosaicHex = coneMosaicHex(resamplingFactor, ...
+    %                     'name', 'the hex mosaic', ...
+    %                      'size', [48 32], ...
+    %                   'pattern', LMSpattern, ...
+    %                 'noiseFlag', 0,  ...
+    %            'spatialDensity', [0 0.6 0.3 0.1] ...
+    %   );
+    % See also coneMosaic.
     %
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
-        resamplingFactor                % the resamplingFactor used
-        coneLocsHexGrid                 % computed coneLocs (hex grid)
-        originalResConeLocs             % coneLocs of the originating rect grid
-        originalResPattern              % cone pattern of the originaing rect grid
-        originalResPatternSampleSize    % original pattern sample size
-        originalResFOV                  % original FOV
+        resamplingFactor                        % resamplingFactor
+        coneLocsHexGrid                         % computed coneLocs (hex grid)
+        coneLocsOriginatingRectGrid             % coneLocs of the originating rect grid
+        patternOriginatingRectGrid              % cone pattern of the originating rect grid
+        patternSampleSizeOriginatingRectGrid    % pattern sample size of the originating rect grid
+        fovOriginatingRectGrid                  % FOV of the originating rect grid
     end
     
     % Public methods

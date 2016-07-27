@@ -67,8 +67,10 @@ oi = oiCompute(scene,oi);
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi,'currentFlag',false);
 isomerizationsHex = theHexMosaic.compute(oi,'currentFlag',false);
-minIsomerization = min([min(isomerizationsRect(:)) min(isomerizationsHex(:))]);
-maxIsomerization = max([max(isomerizationsRect(:)) max(isomerizationsHex(:))]);
+nonNullConeIndices = theHexMosaic.pattern > 1;
+allIsomerizations = [isomerizationsRect(:); isomerizationsHex(nonNullConeIndices)];
+isomerizationsRange = prctile(allIsomerizations, [5 95]);
+
 
 % Render activation images for the hex mosaic
 [activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
@@ -79,13 +81,13 @@ hFig = figure(100); clf;
 set(hFig, 'Position', [10 10 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.14 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, activationsHexImage);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
 
 subplot('Position', [0.60 0.03 0.29 0.95]);
 imagesc(1:theRectMosaic.cols, 1:theRectMosaic.rows, isomerizationsRect);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('rect mosaic isomerizations (all cones)', 'FontSize', 16);
 colormap(gray(1024));
@@ -94,19 +96,19 @@ hFig = figure(101); clf;
 set(hFig, 'Position', [10 700 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.04 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,1)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic L-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.35 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,2)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic M-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.66 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,3)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic S-cone isomerizations', 'FontSize', 16);
 colormap(gray(1024));
@@ -131,8 +133,8 @@ oi = oiCompute(scene,oi);
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi,'currentFlag',false);
 isomerizationsHex = theHexMosaic.compute(oi,'currentFlag',false);
-minIsomerization = min([min(isomerizationsRect(:)) min(isomerizationsHex(:))]);
-maxIsomerization = max([max(isomerizationsRect(:)) max(isomerizationsHex(:))]);
+allIsomerizations = [isomerizationsRect(:); isomerizationsHex(nonNullConeIndices)];
+isomerizationsRange = prctile(allIsomerizations, [5 95]);
 
 % Render activation images for the hex mosaic
 [activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
@@ -142,13 +144,13 @@ hFig = figure(100); clf;
 set(hFig, 'Position', [10 10 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.14 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, activationsHexImage);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
 
 subplot('Position', [0.60 0.03 0.29 0.95]);
 imagesc(1:theRectMosaic.cols, 1:theRectMosaic.rows, isomerizationsRect);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('rect mosaic isomerizations (all cones)', 'FontSize', 16);
 colormap(gray(1024));
@@ -157,19 +159,19 @@ hFig = figure(101); clf;
 set(hFig, 'Position', [10 700 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.04 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,1)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic L-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.35 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,2)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic M-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.66 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,3)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic S-cone isomerizations', 'FontSize', 16);
 colormap(gray(1024));
@@ -192,8 +194,8 @@ oi = oiCompute(scene,oi);
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi,'currentFlag',false);
 isomerizationsHex = theHexMosaic.compute(oi,'currentFlag',false);
-minIsomerization = min([min(isomerizationsRect(:)) min(isomerizationsHex(:))]);
-maxIsomerization = max([max(isomerizationsRect(:)) max(isomerizationsHex(:))]);
+allIsomerizations = [isomerizationsRect(:); isomerizationsHex(nonNullConeIndices)];
+isomerizationsRange = prctile(allIsomerizations, [5 95]);
 
 % Render activation images for the hex mosaic
 [activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
@@ -203,13 +205,13 @@ hFig = figure(100); clf;
 set(hFig, 'Position', [10 10 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.14 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, activationsHexImage);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
 
 subplot('Position', [0.60 0.03 0.29 0.95]);
 imagesc(1:theRectMosaic.cols, 1:theRectMosaic.rows, isomerizationsRect);
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('rect mosaic isomerizations (all cones)', 'FontSize', 16);
 colormap(gray(1024));
@@ -218,19 +220,19 @@ hFig = figure(101); clf;
 set(hFig, 'Position', [10 700 1200 440], 'Color', [1 1 1], 'MenuBar', 'None');
 subplot('Position', [0.04 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,1)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic L-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.35 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,2)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic M-cone isomerizations', 'FontSize', 16);
 
 subplot('Position', [0.66 0.03 0.29 0.95]);
 imagesc(1:theHexMosaic.cols, 1:theHexMosaic.rows, squeeze(activationsLMSHexImage(:,:,3)));
-set(gca, 'CLim', [minIsomerization maxIsomerization], 'XTick', [], 'YTick', []);
+set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
 title('hex mosaic S-cone isomerizations', 'FontSize', 16);
 colormap(gray(1024));

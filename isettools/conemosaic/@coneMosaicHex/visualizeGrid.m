@@ -20,10 +20,10 @@ function visualizeGrid(obj, varargin)
     
     if (showCorrespondingRectangularMosaicInstead)
         titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
-            size(obj.originalResPattern,2), size(obj.originalResPattern,1), numel(obj.originalResPattern));
+            size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
     else
         titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
-            size(obj.originalResPattern,2), size(obj.originalResPattern,1), numel(obj.originalResPattern), ...
+            size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
             numel(find(obj.pattern > 1)), numel(obj.pattern), ...
             obj.resamplingFactor);
     end
@@ -41,7 +41,7 @@ function visualizeGrid(obj, varargin)
     apertureOutline.x = obj.pigment.width/2.0 * cos(iTheta);
     apertureOutline.y = obj.pigment.height/2.0 * sin(iTheta);
     
-    rectCoords = obj.originalResConeLocs;
+    rectCoords = obj.coneLocsOriginatingRectGrid;
     hexCoords = obj.coneLocsHexGrid;
     
     if (generateNewFigure)
@@ -105,18 +105,18 @@ function visualizeGrid(obj, varargin)
     else    
         % Original rectangular mosaic
         % The original rect sensors
-        idx = find(obj.originalResPattern==2);
-        %[iRows,iCols] = ind2sub(size(originalResPattern), idx);
+        idx = find(obj.patternOriginatingRectGrid==2);
+        %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
         edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7];
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 
-        idx = find(obj.originalResPattern==3);
-        %[iRows,iCols] = ind2sub(size(originalResPattern), idx);
+        idx = find(obj.patternOriginatingRectGrid==3);
+        %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
         edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 1.0 0.7]; 
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 
-        idx = find(obj.originalResPattern==4);
-        %[iRows,iCols] = ind2sub(size(originalResPattern), idx);
+        idx = find(obj.patternOriginatingRectGrid==4);
+        %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
         edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 0.7 1.0];
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     end

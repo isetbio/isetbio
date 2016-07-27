@@ -5,7 +5,7 @@ function visualizeActivationMaps(obj, activation)
 
     % Compute activation image maps
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationImage(activation);
-    activationRange = prctile(activation(activation>0), [10 90])
+    activationRange = prctile(activation(obj.pattern>1), [10 90]);
     
     hFig = figure();
     set(hFig, 'Position', [10 10 920 875], 'Color', [1 1 1], 'MenuBar', 'None');
