@@ -28,7 +28,10 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
                    'size', mosaicParams.size, ...
          'spatialDensity', mosaicParams.spatialDensity ...
     );
+% Print some grid info and visualize it
 theHexMosaic.displayInfo();
+theHexMosaic.visualizeGrid();
+
 
 
 % Display the corresponding rectangular grid instead
@@ -62,7 +65,10 @@ while (keepGoing)
         continue;
     end
     theHexMosaic.resampleGrid(resamplingFactor);
+    % Print some grid info and visualize it
     theHexMosaic.displayInfo();
+    theHexMosaic.visualizeGrid();
+
 
     % Display the corresponding rectangular grid instead
     theHexMosaic.visualizeGrid(...

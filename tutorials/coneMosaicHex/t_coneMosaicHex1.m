@@ -14,8 +14,11 @@ rng('default'); rng(219347);
 mosaicParams = struct(...
       'resamplingFactor', 3 ...   % this is the only required initializer parameter
   );
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor);
-
+% Generate the hex grid
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor); 
+% Print some grid info and visualize it
+theHexMosaic.displayInfo();
+theHexMosaic.visualizeGrid();
 
 %% Unit test 2: generate a custom hex mosaic
 commandwindow;
@@ -32,18 +35,24 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
                    'size', mosaicParams.size, ...
          'spatialDensity', mosaicParams.spatialDensity ...
     );
+% Print some grid info and visualize it
 theHexMosaic.displayInfo();
+theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.4 x 0.4 deg
 newFOV = [0.4 0.4];
 commandwindow
 fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
+% Print some grid info and visualize it
 theHexMosaic.displayInfo();
+theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.2 x 0.4 deg
 newFOV = [0.2 0.4];
 commandwindow
 fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
+% Print some grid info and visualize it
 theHexMosaic.displayInfo();
+theHexMosaic.visualizeGrid();

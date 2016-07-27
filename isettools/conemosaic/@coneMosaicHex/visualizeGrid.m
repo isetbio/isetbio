@@ -6,7 +6,7 @@ function visualizeGrid(obj, varargin)
     % parse input
     p = inputParser;
     p.addParameter('generateNewFigure', false, @islogical);
-    p.addParameter('panelPosition', []);
+    p.addParameter('panelPosition', [1 1]);
     p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
     p.addParameter('overlayNullSensors', false, @islogical);
     p.addParameter('overlayPerfectHexMesh', false, @islogical);

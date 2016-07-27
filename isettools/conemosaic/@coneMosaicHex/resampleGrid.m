@@ -16,9 +16,6 @@ function resampleGrid(obj, resamplingFactor)
     
     % Sample the perfect hex grid on the high res rectangular grid nodes
     obj.pattern = rectSampledHexPattern(obj);
-    
-    % Plot grid
-    obj.visualizeGrid('generateNewFigure', true, 'panelPosition', [1 1]);
 end
 
 function hexLocs = computeHexGridNodes(obj)
