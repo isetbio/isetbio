@@ -21,4 +21,7 @@ pp = photoPigment
 % resolution
 vcNewGraphWin; plot(pp.wave,pp.absorbance)
 
-
+%% Geometry
+ecc = 0.0; ang = 0;
+% Spacing (um), aperture (um), density (cones/mm2)
+[s,a,d] = coneSize(ecc,ang)
