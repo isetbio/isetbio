@@ -14,7 +14,7 @@ function resampleGrid(obj, resamplingFactor)
     obj.patternSampleSize = obj.patternSampleSize / obj.resamplingFactor;
     obj.mosaicSize = obj.mosaicSize * obj.resamplingFactor;
     
-    % Sample the perfect hex grid on the high res rectangular grid nodes
+    % Sample the perfect hex grid on the high res rectangular grid node
     obj.pattern = rectSampledHexPattern(obj);
 end
 
@@ -48,38 +48,39 @@ end
 
 
 function pattern = rectSampledHexPattern(obj)
-
-    xHex = squeeze(obj.coneLocsHexGrid(:,1));
-    yHex = squeeze(obj.coneLocsHexGrid(:,2));
-    
+    fprintf('\nResampling grid. Please wait ... ');
+    % Highres grid
     xRectHiRes = (1:obj.cols) * obj.patternSampleSize(1); xRectHiRes = xRectHiRes - mean(xRectHiRes);
     yRectHiRes = (1:obj.rows) * obj.patternSampleSize(2); yRectHiRes = yRectHiRes - mean(yRectHiRes);
     [xx,yy] = meshgrid(xRectHiRes, yRectHiRes); 
     
-    % Optimize sub-sampling jitter. In progress...
+    % Optimize sub-sampling jitter ideas. In progress...
     optimizeSubSamplingJitter = false;
     if (optimizeSubSamplingJitter)
-        [xHex, yHex] = optimizeJitter(xHex, yHex, xx, yy);
+        [xHex, yHex] = optimizeJitter(obj.coneLocsHexGrid, xx, yy);
     end
     
+    % Match spatial extent
     xRectOriginal = (1:size(obj.patternOriginatingRectGrid,2)) * obj.patternSampleSizeOriginatingRectGrid(1); xRectOriginal = xRectOriginal - mean(xRectOriginal);
     yRectOriginal = (1:size(obj.patternOriginatingRectGrid,1)) * obj.patternSampleSizeOriginatingRectGrid(2); yRectOriginal = yRectOriginal - mean(yRectOriginal);
     xRectOriginal = xRectOriginal / max(xRectOriginal) * max(xRectHiRes);
     yRectOriginal = yRectOriginal / max(yRectOriginal) * max(yRectHiRes);
     [xxx,yyy] = meshgrid(xRectOriginal, yRectOriginal);
     
-    pattern = zeros(numel(yRectHiRes), numel(xRectHiRes))+1;    
-    for k = 1:numel(xHex)
-        % determine cone ID of closest cone in original pattern
-        [~, idx] = min(sqrt((xHex(k)-xxx(:)).^2 + (yHex(k)-yyy(:)).^2));
-        [originalRow, originalCol] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
-        coneID = obj.patternOriginatingRectGrid(originalRow,originalCol);
-        
-        [~, idx] = min(sqrt((xHex(k)-xx(:)).^2 + (yHex(k)-yy(:)).^2));
-        [hiResPatternRow,hiResPatternCol] = ind2sub(size(pattern), idx);
-        pattern(hiResPatternRow, hiResPatternCol) = coneID;
-    end
+    % Generate the high res mosaic pattern
+    pattern = zeros(numel(yRectHiRes), numel(xRectHiRes))+1; 
     
+    % Determine the closest cone type in the originating  grid
+    [~,I] = pdist2([xxx(:) yyy(:)], obj.coneLocsHexGrid, 'euclidean', 'Smallest', 1);
+    
+    % Determine the closest cone location in the high-res grid
+    [~,II] = pdist2([xx(:) yy(:)], obj.coneLocsHexGrid, 'euclidean', 'Smallest', 1);
+    
+    % That's our cone !
+    pattern(ind2sub(size(obj.pattern),II)) = obj.patternOriginatingRectGrid(I);
+    fprintf('Done !\n');
+    
+    % Show patterns (only for debugging purposes)
     debugPlots = false;
     if (debugPlots)
         cmap = [0 0 0; 1 0 0; 0 1 0; 0 0 1];
@@ -99,13 +100,16 @@ function pattern = rectSampledHexPattern(obj)
     end
 end
 
-function [xHex, yHex] = optimizeJitter(xHex, yHex, xx, yy)
+function [xHex, yHex] = optimizeJitter(coneLocsHexGrid, xx, yy)
     tic
     fprintf('\n Optimizing resampling grid jitter ...\n');
     
     scalings = 1 + linspace(0.0,0.05,15);
     jitterListX = scalings;
     jitterListY = jitterListX;
+    
+    xHex = squeeze(coneLocsHexGrid(:,1));
+    yHex = squeeze(coneLocsHexGrid(:,2));
     
     gridPointIndicesToCheck = find(xHex >= -Inf & yHex >= -Inf); 
     xHexTmp = xHex(gridPointIndicesToCheck);
