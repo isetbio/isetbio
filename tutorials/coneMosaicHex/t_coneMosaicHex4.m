@@ -3,7 +3,7 @@
 % Computes hex mosaic isomerization maps for an achromatic Gabor scene and
 % illustrates coneMosaicHex's own method for mosaic activation visualization.
 %
-% NPC ISETBIO Team, Copyright 2016
+% NPC, ISETBIO Team, Copyright 2016
 
 %% Initialize
 ieInit; clear; close all;
@@ -20,10 +20,9 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
          'spatialDensity', mosaicParams.spatialDensity, ...
               'noiseFlag', mosaicParams.noiseFlag ...
 );
-tic
-fprintf('\nResising ....');
+
+% Set the mosaic's FOV to a wide aspect ratio
 theHexMosaic.setSizeToFOVForHexMosaic([0.9 0.6]);
-fprintf('Mosaic resizing took %2.1f seconds\n', toc);
 theHexMosaic.displayInfo();
 
 

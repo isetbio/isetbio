@@ -78,9 +78,9 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, s
         end
         
         edgeColor = [0.3 0.3 0.3]; lineStyle = '-';
-        activations1024levels = 1+round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*1023.0);
-        faceColorIndices = activations1024levels/1024;
-        renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorIndices,  edgeColor,  lineStyle);
+        activations1024levels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*1024.0);
+        faceColorsNormalizedValues = activations1024levels/1024;
+        renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle);
         set(gca, 'CLim', [0 1]);
         axis 'image'; axis 'xy';
         xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
@@ -121,7 +121,7 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, s
     drawnow
 end
 
-function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorIndices,  edgeColor, lineStyle)
+function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineStyle)
     verticesNum = numel(pixelOutline.x);
     x = zeros(verticesNum, numel(xCoords));
     y = zeros(verticesNum, numel(xCoords));
@@ -129,7 +129,7 @@ function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorIndices,  edg
         x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
         y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
     end
-    patch(x,y, faceColorIndices, 'EdgeColor', edgeColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
+    patch(x,y, faceColorsNormalizedValues, 'EdgeColor', edgeColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
 end
 
 
@@ -137,7 +137,6 @@ end
 function visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, figureSize)
 % Visualize mosaic activations as density maps
             
-    disp('here');
     % Compute activation image maps
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationDensityMap(activation);
     activeConesActivations = activation(obj.pattern>1);
