@@ -1,20 +1,27 @@
-function visualizeActivationMaps(obj, activation)
+function visualizeActivationMaps(obj, activation, varargin)
 % Visualize activation maps images for the hex mosaic (all cones +  LMS submosaics)
 %
 % NPC, ISETBIO TEAM, 2015
 
+    p = inputParser;
+    p.addParameter('figureSize', [920 875], @isnumeric);
+    p.addParameter('signalName', ' ', @ischar);
+    p.parse(varargin{:});        
+            
     % Compute activation image maps
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationImage(activation);
-    activationRange = prctile(activation(obj.pattern>1), [10 90]);
+    activeConesActivations = activation(obj.pattern>1);
+    %activationRange = prctile(activeConesActivations, [10 90]);
+    activationRange = [0 max(activeConesActivations(:))];
     
     hFig = figure();
-    set(hFig, 'Position', [10 10 920 875], 'Color', [1 1 1], 'MenuBar', 'None');
+    set(hFig, 'Position', cat(2, [10 10], p.Results.figureSize), 'Color', [1 1 1]); % , 'MenuBar', 'None');
     
     subplotPositions = [...
-        0.05 0.53 0.43 0.43; ...
-        0.53 0.53 0.43 0.43; ...
-        0.05 0.04 0.43 0.43; ...
-        0.53 0.04 0.43 0.43];
+        0.02 0.52 0.45 0.45; ...
+        0.49 0.52 0.45 0.45; ...
+        0.02 0.03 0.45 0.45; ...
+        0.49 0.03 0.45 0.45];
     
     for subplotIndex = 1:4
         subplot('Position', subplotPositions(subplotIndex,:));
@@ -52,8 +59,25 @@ function visualizeActivationMaps(obj, activation)
         end
         set(gca, 'FontSize', 14);
         title(subplotTitle, 'FontSize', 16);
+        
+        if (subplotIndex == 4)
+            % Add colorbar
+            originalPosition = get(gca, 'position');
+            hCbar = colorbar('eastoutside', 'peer', gca); % , 'Ticks', cbarStruct.ticks, 'TickLabels', cbarStruct.tickLabels);
+            hCbar.Orientation = 'vertical';
+            hCbar.Label.String = p.Results.signalName;
+            hCbar.FontSize = 14;
+            hCbar.FontName = 'Menlo';
+            hCbar.Color = [0.2 0.2 0.2];
+            % The addition changes the figure size, so undo this change
+            newPosition = get(gca, 'position');
+            set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+        end
+        
     end
 
-    colormap(gray(1024));
+    cmap = jet(1024);
+    cmap(1,:) = 0;
+    colormap(cmap);
     drawnow
 end

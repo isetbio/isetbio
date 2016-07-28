@@ -18,7 +18,8 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
     [x,y] = meshgrid(apertureSupport, apertureSupport);
     apertureKernel = exp(-0.5*(x/apertureSigma).^2) .* exp(-0.5*(y/apertureSigma).^2);
     apertureKernel = apertureKernel / max(apertureKernel(:));
-    apertureKernel = apertureKernel .^ 0.7;
+    apertureKernel = apertureKernel .^ 1.0;
+    apertureKernel(apertureKernel<exp(-0.5*(3)^2)) = 0;
     apertureKernel(apertureKernel>0.15) = 0.15;
     apertureKernel = apertureKernel / max(apertureKernel(:));
     
@@ -35,16 +36,24 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
     
     zeroFrame = zeros(interpolationF*obj.rows, interpolationF*obj.cols);
     activationImageLMScone = zeros(interpolationF*obj.rows, interpolationF*obj.cols, 3);
-    
+
     for coneID = 2:4
         ix = find(obj.pattern == coneID);
-        for k = 1:numel(ix)
-            [r,c] = ind2sub(size(obj.pattern),ix(k));
-            frame = zeroFrame;
-            frame((r-1)*interpolationF + interpolationF/2,(c-1)*interpolationF + interpolationF/2) = activation(r,c);
-            frame = conv2(frame, apertureKernel, 'same');
-            activationImageLMScone(:,:,coneID-1) = activationImageLMScone(:,:,coneID-1) + frame;
+        frame = zeroFrame;
+        [r,c] = ind2sub(size(obj.pattern),ix);
+        for k = 1:numel(ix)  
+            yy = (r(k)-1)*interpolationF + interpolationF/2 + round(apertureSupport/dx);
+            xx = (c(k)-1)*interpolationF + interpolationF/2 + round(apertureSupport/dx);
+            xx = xx(xx>0 & xx <= size(frame,2));
+            yy = yy(yy>0 & yy <= size(frame,1));
+            [xxx,yyy] = meshgrid(xx,yy);
+            xxx = xxx(:);
+            yyy = yyy(:);
+            yyyy = yyy-((r(k)-1)*interpolationF + interpolationF/2)+1 + nSamples;
+            xxxx = xxx-((c(k)-1)*interpolationF + interpolationF/2)+1 + nSamples;
+            frame(yyy, xxx) = frame(yyy,xxx) + activation(r(k),c(k))*apertureKernel(yyyy,xxxx);
         end
+        activationImageLMScone(:,:,coneID-1) = frame;
     end
     activationImage = sum(activationImageLMScone, 3);
 end
