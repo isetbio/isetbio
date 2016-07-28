@@ -8,17 +8,13 @@ function visualizeActivationMaps(obj, activation, varargin)
     p.addParameter('figureSize', [920 875], @isnumeric);
     p.addParameter('signalName', ' ', @ischar);
     p.addParameter('mapType', 'modulated disks', @ischar);
+    p.addParameter('colorMap', jet(1024), @isnumeric);
     p.parse(varargin{:});  
     
-    load(fullfile(isetbioRootPath, 'isettools', 'coneMosaic', 'coneMosaicHex', 'CustomColormaps.mat'), 'spectralLUT');
-    %cMap = spectralLUT;
-    %cMap = bone(1024);
-    cMap = jet(1024);
-    
     if strcmp(p.Results.mapType, 'modulated disks')
-        visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, p.Results.signalName, p.Results.figureSize);
+        visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
-        visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, p.Results.signalName, p.Results.figureSize);
+        visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     else
         error('visualizeActivationMaps:: Unknown map type');
     end
@@ -78,8 +74,9 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, s
         end
         
         edgeColor = [0.3 0.3 0.3]; lineStyle = '-';
-        activations1024levels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*1024.0);
-        faceColorsNormalizedValues = activations1024levels/1024;
+        cMapLevels = size(cMap,1);
+        activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
+        faceColorsNormalizedValues = activationsNlevels/cMapLevels;
         renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle);
         set(gca, 'CLim', [0 1]);
         axis 'image'; axis 'xy';
@@ -141,7 +138,7 @@ function visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalNa
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationDensityMap(activation);
     activeConesActivations = activation(obj.pattern>1);
     %activationRange = prctile(activeConesActivations, [10 90]);
-    activationRange = [0 max(activeConesActivations(:))];
+    activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
     
     hFig = figure();
     set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [1 1 1]); % , 'MenuBar', 'None');
