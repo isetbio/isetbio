@@ -61,7 +61,7 @@ classdef coneMosaicHex < coneMosaic
         visualizeGrid(obj, varargin);
         
         % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
-        [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationImage(obj, activation);
+        [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationDensityMap(obj, activation);
         
         % Visualize activation maps images for the hex mosaic (all cones +  LMS submosaics)
         visualizeActivationMaps(obj, activation, varargin);

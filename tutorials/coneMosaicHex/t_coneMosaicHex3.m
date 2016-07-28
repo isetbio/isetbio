@@ -73,7 +73,7 @@ isomerizationsRange = prctile(allIsomerizations, [5 95]);
 
 
 % Render activation images for the hex mosaic
-[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
+[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationDensityMap(isomerizationsHex);
 
 
 % Display results
@@ -137,7 +137,7 @@ allIsomerizations = [isomerizationsRect(:); isomerizationsHex(nonNullConeIndices
 isomerizationsRange = prctile(allIsomerizations, [5 95]);
 
 % Render activation images for the hex mosaic
-[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
+[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationDensityMap(isomerizationsHex);
 
 % Display results
 hFig = figure(100); clf;
@@ -198,7 +198,7 @@ allIsomerizations = [isomerizationsRect(:); isomerizationsHex(nonNullConeIndices
 isomerizationsRange = prctile(allIsomerizations, [5 95]);
 
 % Render activation images for the hex mosaic
-[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationImage(isomerizationsHex);
+[activationsHexImage, activationsLMSHexImage] = theHexMosaic.computeActivationDensityMap(isomerizationsHex);
 
 % Display results
 hFig = figure(100); clf;

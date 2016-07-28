@@ -123,7 +123,7 @@ function visualizeGrid(obj, varargin)
     
     hold off
     axis 'equal'; axis 'xy'
-    set(gca, 'XTick', sampledHexMosaicXaxis, 'YTick', sampledHexMosaicYaxis);
+    set(gca, 'XLim', [sampledHexMosaicXaxis(1) sampledHexMosaicXaxis(end)], 'YLim', [sampledHexMosaicYaxis(1) sampledHexMosaicYaxis(end)]);
     xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
     yTicks = [sampledHexMosaicYaxis(1) 0 sampledHexMosaicYaxis(end)];
     xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);

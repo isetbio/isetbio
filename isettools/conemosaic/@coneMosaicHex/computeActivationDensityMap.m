@@ -1,4 +1,4 @@
-function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = computeActivationImage(obj, activation)
+function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = computeActivationDensityMap(obj, activation)
 % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
 %
 % NPC, ISETBIO TEAM, 2015
