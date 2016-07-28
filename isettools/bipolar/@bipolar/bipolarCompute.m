@@ -60,6 +60,9 @@ switch obj.cellType
         osSigRSZMCenter   = osSigRSZM;
         osSigRSZMSurround   = osSigRSZM;        
         
+        [rLM,cLM]=ind2sub(size(obj.coneMosaic),lmConeIndices);
+        [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
+        
         % Set center and surround to only have LM cones
         lmConeDist = sqrt((repmat(rLM,[1 length(rS)]) - repmat(rS',[length(rLM) 1])).^2 - (repmat(cLM,[1 length(cS)]) - repmat(cS',[length(cLM) 1])).^2);
                 
