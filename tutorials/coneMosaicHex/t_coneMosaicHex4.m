@@ -26,7 +26,7 @@ theHexMosaic.setSizeToFOVForHexMosaic([0.9 0.6]);
 theHexMosaic.displayInfo();
 
 
-%% Load an achromatic Gabor scene
+%% Unit test 1: achromatic Gabor scene
 [dirName,~] = fileparts(which(mfilename()));
 load(fullfile(dirName,'GaborAchromScene.mat'))
 gaborScene = sceneSet(gaborScene,'fov', 1.0);
@@ -41,8 +41,8 @@ fprintf('\nComputing isomerizations ...');
 isomerizations = theHexMosaic.compute(oi,'currentFlag',false);
 fprintf('Isomerization computation took %2.1f seconds\n', toc);
 
-% Display isomerizations using coneMosaicHex's own 
-% mosaic activation visualization method
+%% Display isomerizations using coneMosaicHex's own 
+%% mosaic activation visualization method
 tic
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
@@ -51,5 +51,34 @@ theHexMosaic.visualizeActivationMaps(...
     'figureSize', [1550 950], ...
     'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks and 'modulated hexagons''
     'colorMap', jet(1024) ...
+    )
+fprintf('Isomerization visualization took %2.1f seconds\n', toc);
+
+
+%% Unit test 1: Vernier scene
+commandwindow
+fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the vernier scene. </strong>');
+pause
+
+% Generate the vernier scene
+scene = sceneCreate('vernier');
+scene.distance = 1;
+scene = sceneSet(scene,'fov', 1.0);
+vcAddObject(scene); sceneWindow
+
+% Compute the optical image
+oi = oiCreate;
+oi = oiCompute(scene,oi);  
+
+% Compute isomerizations for both mosaics
+isomerizationsVernier = theHexMosaic.compute(oi,'currentFlag',false);
+
+fprintf('\nVisualizing responses ... ');
+theHexMosaic.visualizeActivationMaps(...
+    isomerizationsVernier, ...
+    'signalName', 'isomerizations (R*/cone/integration time)', ...
+    'figureSize', [1550 950], ...
+    'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks and 'modulated hexagons''
+    'colorMap', bone(1024) ...
     )
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
