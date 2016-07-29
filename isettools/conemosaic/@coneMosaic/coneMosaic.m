@@ -16,6 +16,8 @@ classdef coneMosaic < hiddenHandle
         macular;          % Macular class object
         os;               % Outersegment properties
         
+        center;           % (x,y) center position of patch in meters
+        
         pattern;          % Pattern of K-LMS cones in the mosaick
         integrationTime;  % Cone temporal integration time in secs
         emPositions;      % Eye movement positions in number of cones.
@@ -75,6 +77,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('pigment', photoPigment(), ...
                 @(x) isa(x, 'photoPigment'));
             p.addParameter('name', 'cone mosaic', @ischar);
+            p.addParameter('center',[0,0],@(x)(isvector(x) && length(x) ==2));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
@@ -93,6 +96,7 @@ classdef coneMosaic < hiddenHandle
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
             obj.os = p.Results.os;
+            obj.center = p.Results.center;
             obj.wave = p.Results.wave;
             obj.integrationTime = p.Results.integrationTime;
             obj.spatialDensity_ = p.Results.spatialDensity(:);
@@ -106,6 +110,19 @@ classdef coneMosaic < hiddenHandle
             else
                 obj.pattern = p.Results.pattern;
             end
+            
+            % Set the cone spacing and aperture given its eccentricity and
+            % angle.  We could specify eye, but are we really sure about
+            % the left right thing in human?
+            % Units of returns are meters
+            ecc = sqrt(sum(obj.center.^2));
+            ang = atan2d(obj.center(2),obj.center(1));
+            [spacing, aperture] = coneSize(ecc,ang);
+
+            obj.pigment.pdWidth  = aperture;
+            obj.pigment.pdHeight = aperture;
+            obj.pigment.height = spacing;
+            obj.pigment.width  = spacing;
             
             % Initialize the mosaic properties
             obj.os.timeStep = obj.sampleTime;
@@ -207,7 +224,6 @@ classdef coneMosaic < hiddenHandle
             coneMosaicWindow(obj);
         end
         
-        
         % get methods for dependent variables
         function val = get.wave(obj)
             val = obj.pigment.wave;
@@ -238,8 +254,9 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
-            x = (1:obj.cols) * obj.pigment.width; x = x - mean(x);
-            y = (1:obj.rows) * obj.pigment.height; y = y - mean(y);
+            % 
+            x = (1:obj.cols) * obj.pigment.width; x = x - mean(x) + obj.center(1);
+            y = (1:obj.rows) * obj.pigment.height; y = y - mean(y) + obj.center(2);
             [X, Y] = meshgrid(x, y);
             val = [X(:) Y(:)];
         end
@@ -422,8 +439,6 @@ classdef coneMosaic < hiddenHandle
     end
     
 
-    
-    
     methods (Static)
         function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
             % Photon noise at the absorptions is Poisson.

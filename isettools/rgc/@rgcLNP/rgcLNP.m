@@ -54,9 +54,6 @@ classdef rgcLNP < rgcMosaic
         % The nonlinear voltage response after application of the generator
         % function and the spike coupling responses is represented here
         responseVoltage;
-        
-        % The spikes are computed from the response voltage
-        responseSpikes;
 
         % These hold the parameters used in the computation.
         % This is the response after a spike

@@ -1,4 +1,4 @@
-function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, row, col, rfDiameter)
+function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, inRow, inCol, rfDiameter)
 %% buildSpatialRF builds the spatial RF center and surround arrays for each cell
 % The spatial RFs are generated according to the number of pixel or cone
 % inputs, their spacing (in microns) and the diameter of the RF as
@@ -8,10 +8,10 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %      buildSpatialRFArray(spacing, row, col, rfDiameter)
 % 
 % Inputs: 
-%       spacing, 
-%       row, 
-%       col, 
-%       rfDiameter - receiptive field of 1 std in microns
+%       spacing - Center to center of the RF in microns
+%       row     - Number of input samples
+%       col     - Number of input samples
+%       rfDiameter - receptive field of 1 std in microns
 %   
 % Outputs: 
 %       spatialRFcenter cell array, 
@@ -26,16 +26,18 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 % 
 % 9/2015 JRG (c) isetbio
 
-%% Init parameters
-% Make sure spacing is in microns
+%% Manage parameters
+
+% Spacing must be in microns
 if spacing < 1e-2, spacing = spacing * 1e6; end
 patchSize = [spacing spacing];  % width / height in um
 
 % Determine the number of RGCs in the mosaic
-nRGC = floor(patchSize / rfDiameter); % number of rgc in h, v direction
+nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 
 % Convert rf diameter in units of number of cones
-rfDiameter = rfDiameter / (patchSize(1) / col);
+% Notice this is based only columns, assuming the 
+rfDiameter = rfDiameter / (patchSize(1) / inCol);
 
 extent = 2.5;    % ratio between sampling size and sptial RF
 r = 0.75;        % radius ratio between center and surround

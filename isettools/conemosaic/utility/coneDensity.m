@@ -1,10 +1,10 @@
-function density = coneDensity(eccMM, angleDeg, whichEye, varargin)
+function density = coneDensity(ecc, angleDeg, whichEye, varargin)
 % Compute cone packing density as a function of retinal position
 %
 %   density = coneDensity(ecc, angle, whichEye, varargin)
 %
 % Inputs:
-%   ecc      - eccentricity in mm, default is 0 (.30 mm/deg)
+%   ecc      - eccentricity in meters, default is 0 (.30 mm/deg)
 %   angle    - angle in degree, default is 0
 %   whichEye - left or right eye, chosen from 'left' (default) or 'right'
 %
@@ -29,7 +29,7 @@ function density = coneDensity(eccMM, angleDeg, whichEye, varargin)
 % HJ, ISETBIO TEAM, 2015
 
 % Check inputs
-if notDefined('eccMM'), eccMM = 0; end
+if notDefined('ecc'), ecc = 0; end
 if notDefined('angle'), angleDeg = 0; end
 if notDefined('whichEye'), whichEye = 'left'; end
 
@@ -40,6 +40,9 @@ d = load('coneDensity.mat');
 % temporal and inferior direction)
 onAxisD = zeros(5, 1);
 angleQ = [0 90 180 270 360];
+
+% Convert to mm for functions below
+eccMM = ecc*1e3;
 
 % compute packing density for superior and inferior
 onAxisD(2) = interp1(d.superior.eccMM, d.superior.density, eccMM);
