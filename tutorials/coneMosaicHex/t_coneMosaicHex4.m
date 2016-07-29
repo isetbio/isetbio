@@ -1,7 +1,7 @@
 %% t_coneMosaicHex4
 %
-% Computes hex mosaic isomerization maps for an achromatic Gabor scene and
-% illustrates coneMosaicHex's own method for mosaic activation visualization.
+% Computes hex mosaic isomerization maps for an achromatic Gabor scene and for the Vernier scene
+% and illustrates coneMosaicHex's own method for mosaic activation visualization.
 %
 % NPC, ISETBIO Team, Copyright 2016
 
