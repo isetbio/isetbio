@@ -7,12 +7,12 @@ function visualizeActivationMaps(obj, activation, varargin)
     p = inputParser;
     p.addParameter('figureSize', [920 875], @isnumeric);
     p.addParameter('signalName', ' ', @ischar);
-    p.addParameter('mapType', 'modulated disks', @ischar);
+    p.addParameter('mapType', 'modulated hexagons', @ischar);
     p.addParameter('colorMap', jet(1024), @isnumeric);
     p.parse(varargin{:});  
     
-    if strcmp(p.Results.mapType, 'modulated disks')
-        visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+    if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
+        visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
         visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     else
@@ -21,15 +21,21 @@ function visualizeActivationMaps(obj, activation, varargin)
 end
 
 
-function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, signalName, figureSize)
+function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, mapType, cMap, signalName, figureSize)
 % Visualize mosaic activations as disk mosaics
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1));
     sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2));
     
-    iTheta = (0:5:360)/180*pi;
-    apertureOutline.x = obj.pigment.width/2.0 * cos(iTheta);
-    apertureOutline.y = obj.pigment.height/2.0 * sin(iTheta);
+    if strcmp(mapType, 'modulated disks') 
+        iTheta = (0:5:360)/180*pi;
+        apertureOutline.x = obj.pigment.width/2.0 * cos(iTheta);
+        apertureOutline.y = obj.pigment.height/2.0 * sin(iTheta);
+    elseif strcmp(mapType, 'modulated hexagons')
+        iTheta = (0:60:360)/180*pi;
+        apertureOutline.x = 1.1*obj.pigment.width/2.0 * cos(iTheta);
+        apertureOutline.y = 1.1*obj.pigment.height/2.0 * sin(iTheta);
+    end
     
     activeConesActivations = activation(obj.pattern>1);
     activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
@@ -73,11 +79,11 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, s
                 showYticks = false;
         end
         
-        edgeColor = [0.3 0.3 0.3]; lineStyle = '-';
+        edgeColor = 'none'; lineStyle = '-'; lineWidth = 0.1;
         cMapLevels = size(cMap,1);
         activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
         faceColorsNormalizedValues = activationsNlevels/cMapLevels;
-        renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle);
+        renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
         set(gca, 'CLim', [0 1]);
         axis 'image'; axis 'xy';
         xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
@@ -118,7 +124,7 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, cMap, s
     drawnow
 end
 
-function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineStyle)
+function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineStyle, lineWidth)
     verticesNum = numel(pixelOutline.x);
     x = zeros(verticesNum, numel(xCoords));
     y = zeros(verticesNum, numel(xCoords));
@@ -126,7 +132,7 @@ function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedVa
         x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
         y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
     end
-    patch(x,y, faceColorsNormalizedValues, 'EdgeColor', edgeColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
+    patch(x,y, faceColorsNormalizedValues, 'EdgeColor', edgeColor, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
 end
 
 
