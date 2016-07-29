@@ -1,18 +1,18 @@
-%% t_rgcEyeMovements
-% 
-% Uses the coneMosaic object to simulate eye movements and compute the
-% response of a simulated foveal mosaic of RGCs. This tutorial can serve as
-% a basis for generating RGC responses to static images, which is something
-% many CSHL students asked for, as well as incorporating the new coneMosaic
-% object with the existing code for scaling the parameters of an RGC mosaic
-% to the fovea.
+%% Use the coneMosaic object to simulate responses of foveal RGC mosaic
+%
+% This tutorial generates RGC responses to static image. This tutorial also
+% includes
+%   * Eye movements
+%   
+%
 %
 % Based on t_coneMosaic and t_rgcAverageFull.
 % 
 % 7/2016 JRG HJ BW (c) isetbio team
 
 %% Initialize
-% ieInit
+
+ieInit
 
 % Initialize parameters of simulated retinal patch
 ecc = 2; % mm
