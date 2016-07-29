@@ -38,7 +38,7 @@ oi = oiCompute(gaborScene,oi);
 % Compute isomerizations
 tic
 fprintf('\nComputing isomerizations ...');
-isomerizations = theHexMosaic.compute(oi,'currentFlag',false);
+isomerizationsGabor = theHexMosaic.compute(oi,'currentFlag',false);
 fprintf('Isomerization computation took %2.1f seconds\n', toc);
 
 %% Display isomerizations using coneMosaicHex's own 
@@ -46,10 +46,10 @@ fprintf('Isomerization computation took %2.1f seconds\n', toc);
 tic
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-    isomerizations, ...
+    isomerizationsGabor, ...
     'signalName', 'isomerizations (R*/cone/integration time)', ...
     'figureSize', [1550 950], ...
-    'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks and 'modulated hexagons''
+    'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'colorMap', jet(1024) ...
     )
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
