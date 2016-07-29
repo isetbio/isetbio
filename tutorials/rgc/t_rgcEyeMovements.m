@@ -15,7 +15,7 @@
 ieInit
 
 % Initialize parameters of simulated retinal patch
-ecc = 2; % mm
+ecc = 0; % mm
 fov = .25;
 
 rdtUploadFlag = 1;

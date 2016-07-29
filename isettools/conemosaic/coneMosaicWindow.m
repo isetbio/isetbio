@@ -269,7 +269,7 @@ switch plotType
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.mov)
             % generate movie
-            [~, handles.mov] = cm.plot('movie absorptions', 'hf','none',...
+            handles.mov = cm.plot('movie absorptions', 'hf','none',...
                 'show',false, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
@@ -303,7 +303,7 @@ switch plotType
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.curMov) % generate movie for photocurrent
-            [~, handles.curMov] = cm.plot('movie current', 'hf','none', ...
+            handles.curMov = cm.plot('movie current', 'hf','none', ...
                 'show', false, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
@@ -328,7 +328,7 @@ end
 end
 
 function contextMenuPlot(source, callbackdata)
-% call back function for context menu
+% Should work on right click, but doesn't work on older versions of Matlab
 handles = guidata(source);
 
 % determine which data to use (absorption or current)
