@@ -46,12 +46,12 @@ fprintf('Isomerization computation took %2.1f seconds\n', toc);
 tic
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-    isomerizationsGabor, ...
-    'signalName', 'isomerizations (R*/cone/integration time)', ...
-    'figureSize', [1550 950], ...
-    'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks' and 'modulated hexagons'
-    'colorMap', jet(1024) ...
-    )
+    isomerizationsGabor, ...                                         % the signal matrix
+       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
+      'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                     % figure size in pixels
+    );
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 
 
@@ -75,10 +75,10 @@ isomerizationsVernier = theHexMosaic.compute(oi,'currentFlag',false);
 
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-    isomerizationsVernier, ...
-    'signalName', 'isomerizations (R*/cone/integration time)', ...
-    'figureSize', [1550 950], ...
-    'mapType', 'modulated hexagons', ...   % choose between 'density plot', 'modulated disks and 'modulated hexagons''
-    'colorMap', bone(1024) ...
-    )
+     isomerizationsVernier, ...                                      % the signal matrix
+       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
+      'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                     % figure size in pixels
+    );
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
