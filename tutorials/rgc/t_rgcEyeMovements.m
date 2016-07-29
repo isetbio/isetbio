@@ -17,6 +17,9 @@
 % Initialize parameters of simulated retinal patch
 ecc = 2; % mm
 fov = .25;
+
+rdtUploadFlag = 1;
+rdtDownloadFlag = 0;
 %% Build a scene and oi for computing
 
 % s = sceneCreate('vernier');
@@ -49,6 +52,28 @@ cMosaic.compute(oi,'currentFlag',true);
 % Examine the outer segment current
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
 
+%% Upload to RDT (optional)
+
+if rdtUploadFlag
+    save('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/image_responses/rings-rays2.mat','cMosaic');
+    filename1 = '/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/image_responses/rings-rays2.mat';
+    client = RdtClient('isetbio');
+    client.credentialsDialog();
+    client.crp('/resources/data/rgc/image_responses')
+    version1 = '1';
+    artifact = client.publishArtifact(filename1, 'version', version1);
+    client.openBrowser;
+end
+%% Load from RDT (optional)
+
+if rdtDownloadFlag
+    
+    rdt = RdtClient('isetbio');
+    rdt.crp('resources/data/rgc/image_responses');
+    data = rdt.readArtifact('rings-rays', 'type', 'mat');
+    cMosaic = data.cMosaic;
+
+end
 %% Compute the bipolar response
 
 bp = bipolar(cMosaic.os);
