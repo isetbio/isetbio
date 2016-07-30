@@ -121,10 +121,10 @@ params.eyeAngle = 0; ntrials = 0;
 
 % Create RGC object
 innerRetinaSU = ir(bp, params);
-innerRetinaSU.mosaicCreate('type',cellType,'model','Linear');
+innerRetinaSU.mosaicCreate('type',cellType,'model','GLM');
 
 %%
-nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
+nTrials = 1; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 
 %% Plot the cone, bipolar and RGC mosaics
 
@@ -133,20 +133,13 @@ nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 %% Compute the inner retina response
 
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
+lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
 
-% Get the PSTH from the object
-innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'psth');
+%%
+innerRetinaSU.mosaic{1}.set('dt',1);
+psth = innerRetinaSU.mosaic{1}.get('psth');
 
-% Plot all of the PSTHs together
-figure; plot(vertcat(innerRetinaSUPSTH{:})')
-title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
-xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
-set(gca,'fontsize',14);
-lastSpikeTime=innerRetinaSU.mosaic{1}.mosaicGet('lastspiketime')
-axis([0 lastSpikeTime 0 max(max(vertcat(innerRetinaSUPSTH{:})))]);
-grid on;
-
-%% Make a movie of the PSTH response
-
-psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
-% figure; ieMovie(psthMovie);
+clear params
+params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+param.FrameRate = 5; params.step = 2; params.show = false;
+ieMovie(psth,params);
