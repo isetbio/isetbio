@@ -18,8 +18,9 @@
 ieInit;
 
 % Initialize parameters of simulated retinal patch
-ecc = [2,2]*1e-3;   % Cone mosaic eccentricity in meters from fovea
+ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
+
 
 sceneType = 'rings rays';
 cellType = 'on parasol';
