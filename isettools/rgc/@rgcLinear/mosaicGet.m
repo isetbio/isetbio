@@ -38,7 +38,7 @@ switch ieParamFormat(param)
     % The special cases for rgcLinear should be here
     
     otherwise
-        val = mosaicGet@rgcMosaic(obj,param);
+        val = mosaicGet@rgcMosaic(obj,param,varargin{:});
                  
 end
 

@@ -24,6 +24,7 @@ p = inputParser;
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
 p.KeepUnmatched = true;
+p.KeepUnmatched = true;
 p.addRequired('param');
 
 % Parse and put results into structure p.
@@ -50,8 +51,6 @@ switch ieParamFormat(param)
         val = obj.couplingFilter;
     case{'couplingmatrix'}
         val = obj.couplingMatrix;
-    case{'tonicdrive'}
-        val = obj.tonicDrive;
         
     otherwise
         val = mosaicGet@rgcMosaic(obj,param,varargin{:});

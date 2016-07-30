@@ -19,7 +19,7 @@ function obj = mosaicSet(obj, param, val, varargin)
 p = inputParser; 
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
-
+p.KeepUnmatched = true;
 p.addRequired('param',@ischar);
 p.addRequired('val');
 

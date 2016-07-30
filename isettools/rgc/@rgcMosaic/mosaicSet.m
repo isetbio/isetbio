@@ -61,7 +61,7 @@ p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
 p.addRequired('val');
 
 p.parse(param,val,varargin{:}); 
-param = p.Results.param;
+param = ieParamFormat(p.Results.param);
 val   = p.Results.val;
 
 %% Set key-value pairs.

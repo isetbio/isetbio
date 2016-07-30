@@ -116,24 +116,12 @@ clear params innerRetinaSU
 params.name = 'macaque phys';
 params.eyeSide = 'left'; 
 params.eyeRadius = sqrt(sum(ecc.^2)); 
-params.fov = fov;
+% params.fov = fov;
 params.eyeAngle = 0; ntrials = 0;
-
-% Determined at beginning by user
-% params.experimentID = experimentID; % Experimental dataset
-% params.stimulusTest = stimulusTest; % WN or NSEM
-params.cellType = cellType;         % ON or OFF Parasol;
-
-% Set flag for average mosaic
-params.averageMosaic = 1;
-
-% Tell the RGC mosaic about how many bipolars per cone
-params.inputScale = size(bp.sRFcenter,1);
-params.inputSize = size(bp.responseCenter);
 
 % Create RGC object
 innerRetinaSU = ir(bp, params);
-innerRetinaSU.mosaicCreate('type',cellType,'model','LNP');
+innerRetinaSU.mosaicCreate('type',cellType,'model','Linear');
 
 %%
 nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
@@ -147,7 +135,7 @@ nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
 
 % Get the PSTH from the object
-innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
+innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'psth');
 
 % Plot all of the PSTHs together
 figure; plot(vertcat(innerRetinaSUPSTH{:})')
