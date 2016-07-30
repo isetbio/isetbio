@@ -28,6 +28,10 @@ em = p.Results.em;
 em = emSet(em, 'sample time', obj.sampleTime);
 sampTime  = obj.sampleTime;
 
+% Update the integration time to be the number of frames times the sample
+% time (in ms).  This should be a listener, I fear (BW).
+obj.integrationTime = obj.sampleTime*nFrames;
+
 if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
 emFlag = emGet(em, 'em flag');
 pos = zeros(nFrames, 2);

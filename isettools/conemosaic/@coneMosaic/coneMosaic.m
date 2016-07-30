@@ -18,13 +18,16 @@ classdef coneMosaic < hiddenHandle
         
         center;           % (x,y) center position of patch in meters
         
-        pattern;          % Pattern of K-LMS cones in the mosaick
+        pattern;          % Pattern of K-LMS cones in the mosaic
+        patternSampleSize;% Width of the cone aperture, I think (BW)
+        
         integrationTime;  % Cone temporal integration time in secs
         emPositions;      % Eye movement positions in number of cones.
                           % The length of this property controls number of
                           % frames to be computed
         noiseFlag;        % To control which noise is included
         hdl;              % handle of the gui window
+    end
     
     properties (SetObservable, AbortSet)
         sampleTime;       % Time step for em and os computation, shall we
@@ -103,7 +106,8 @@ classdef coneMosaic < hiddenHandle
             obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
-            obj.patternSampleSize = [obj.pigment.width obj.pigment.height];
+            % Not sure why we do this.  Seems like a mistake (BW).
+            obj.patternSampleSize = [obj.pigment.width, obj.pigment.height];
             
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...

@@ -328,7 +328,7 @@ end
 end
 
 function contextMenuPlot(source, callbackdata)
-% Should work on right click, but doesn't work on older versions of Matlab
+% call back function for context menu
 handles = guidata(source);
 
 % determine which data to use (absorption or current)

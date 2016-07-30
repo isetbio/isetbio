@@ -15,12 +15,11 @@
 
 %% Initialize parameters
 
-ieInit;
+clx; ieInit;
 
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
-
 
 sceneType = 'rings rays';
 cellType = 'on parasol';
@@ -29,6 +28,7 @@ cellType = 'on parasol';
 
 s = sceneCreate(sceneType);
 s = sceneSet(s,'fov',fov);
+s = sceneAdjustLuminance(s,10);
 vcAddObject(s);
 
 oi = oiCreate;
@@ -37,7 +37,7 @@ vcAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
-cMosaic = coneMosaic('center',[2 2]*1e-3);  % Create the object
+cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
 % cMosaic.rows = 100; cMosaic.cols = 120;
 % cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(500);
