@@ -1,7 +1,7 @@
-function [Img,params] = imageVernier(params)
+function [I, params] = imageVernier(params, varargin)
 % Create an RGB image of a vernier line-pair
 %
-%   [Img, params] = imageVernier(params)
+%   [I, params] = imageVernier(params)
 %
 % The default value for vernier image params are
 %   p.sceneSz   = 64
@@ -34,44 +34,53 @@ function [Img,params] = imageVernier(params)
 %
 % HJ/BW ISETBIO Team Copyright 2015
 
-%% Initialize parameters
-if notDefined('params'), params = []; end
-if isfield(params, 'sceneSz'), sz = params.sceneSz; else sz = 64; end
-if isfield(params, 'barWidth'), width = params.barWidth; else width = 1; end
-if isfield(params, 'offset'), offset = params.offset; else offset = 1; end
+% Parse input parameters
+p = inputParser; p.KeepUnmatched = true;
+p.addParameter('sceneSz', 64, @(x) isnumeric(x));
+p.addParameter('barWidth', 1, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('offset', 1, @(x) isnumeric(x) && isscalar(x));
+p.addParameter('barLength', [], @isnumeric);
+p.addParameter('barColor', 1, @isnumeric);
+p.addParameter('bgColor', 0, @(x) isnumeric(x));
+p.addParameter('pattern', []);
 
-if isfield(params, 'barColor')
-    barColor = params.barColor;
-else
-    barColor = 0.99;
-end
+p.parse(params, varargin{:});
+params = p.Results;
+sz = params.sceneSz;
+width = params.barWidth;
+offset = params.offset;
+barColor = params.barColor;
+bgColor=params.bgColor;
+barLen = params.barLength;
+
+if isempty(barLen), params.barLength = sz(1); barLen = sz(1); end
 if isscalar(barColor), barColor = repmat(barColor, [1 3]); end
+if isscalar(bgColor), bgColor = repmat(bgColor, [1 3]); end
 
-if isfield(params, 'bgColor'), bgColor=params.bgColor; else bgColor=0; end
-assert(isscalar(bgColor), 'bgColor should be a scalar');
-
-%% Create image to be shown on display
-%  create 1d pattern
-if isfield(params, 'pattern')
+% Create 1d pattern
+if ~isempty(params.pattern)
     pattern = params.pattern;
+    if ismatrix(pattern), pattern = repmat(pattern, [1 1 3]); end
 else
     if isscalar(sz), sz = [sz sz]; end
-    pattern = bgColor * ones(1, sz(2));
-    pattern(round((sz(2)-width)/2):round((sz(2)+width)/2)) = 1;
+    pattern = bsxfun(@times, reshape(bgColor,1,1,[]), ones(1,sz(2),3));
+    barIndx = round((sz(2)-width)/2):round((sz(2)-width)/2+width-1);
+    for ii = 1 : 3, pattern(1, barIndx, ii) = barColor(ii); end
 end
-Img = image1d(pattern, 'rgb', barColor, 'rows', sz(1));
+
+% Create image of the center bar part
+I = repmat(pattern, [barLen 1 1]);
 
 % Shift for offset
-Img(1:round(end/2),:,:) = ...
-    circshift(Img(1:round(end/2),:,:), [0 offset 0]);
+I(1:round(end/2),:,:) = circshift(I(1:round(end/2),:,:), [0 offset 0]);
 
-if nargout == 2
-    params.sceneSz   = sz;
-    params.barWidth  = width;
-    params.offset    = offset;
-    params.barColor  = barColor;
-    params.bgColor   = bgColor;
-    params.pattern   = pattern;
+% Pad rows with background color to get desired size
+I = padarray(I, [ceil((sz(1)-barLen)/2) 0 0], nan);
+I = I(1:sz(1), :, :);
+for ii = 1 : 3
+    curImg = I(:, :, ii);
+    curImg(isnan(curImg)) = bgColor(ii);
+    I(:, :, ii) = curImg;
 end
 
 end

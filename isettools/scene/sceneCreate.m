@@ -996,6 +996,7 @@ function scene = sceneVernier(scene, type, params)
 %     If type = 'display'
 %      lineSpace  - spacing between the lines in pixels if type = 'display'
 %      display    - display name or structure, useful if type = 'display'
+%      barLength  - length of the line segment in number of pixels
 %      barColor   - bar color, 0~1 RGB value for type = 'display'
 %      bgColor    - background color, 0~1 RGB for type = 'display'
 %
