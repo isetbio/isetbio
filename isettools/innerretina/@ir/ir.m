@@ -84,7 +84,7 @@ classdef ir < handle
     methods
         function obj = ir(os, varargin)
             
-                        % parse input
+            % parse input
             p = inputParser;
             p.addRequired('os');
             p.addParameter('eyeSide','left',@ischar);

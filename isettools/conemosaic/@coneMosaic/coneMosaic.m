@@ -76,39 +76,49 @@ classdef coneMosaic < hiddenHandle
             % parse input
             p = inputParser;
             
+            p.addParameter('name', 'cone mosaic', @ischar);
+            
+            % Included objects
             p.addParameter('pigment', photoPigment(), ...
                 @(x) isa(x, 'photoPigment'));
-            p.addParameter('name', 'cone mosaic', @ischar);
-            p.addParameter('center',[0,0],@(x)(isvector(x) && length(x) ==2));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
-            p.addParameter('wave', 400:10:700, @isnumeric);
-            p.addParameter('integrationTime', 0.05, @isscalar);
-            p.addParameter('emPositions', [0 0], @isnumeric);
-            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
-            p.addParameter('noiseFlag', 1, @isscalar);
-            p.addParameter('pattern', [], @isnumeric);
-            p.addParameter('size', [72 88], @isnumeric);
-            p.addParameter('sampleTime', 0.001, @isscalar);
             p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment')));
+
+            % Mosaic parameters
+            p.addParameter('center',[0,0],@(x)(isvector(x) && length(x) ==2));
+            p.addParameter('wave', 400:10:700, @isnumeric);
+            p.addParameter('pattern', [], @isnumeric);
+            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
+            p.addParameter('size', [72 88], @isnumeric);
+            p.addParameter('integrationTime', 0.05, @isscalar);
+            p.addParameter('sampleTime', 0.001, @isscalar);
+            
+            % Computational features
+            p.addParameter('emPositions', [0 0], @isnumeric);
+            p.addParameter('noiseFlag', 1, @isscalar);
             
             p.parse(varargin{:});
             
             % set properties
-            obj.name = p.Results.name;
+            obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
-            obj.os = p.Results.os;
+            obj.os      = p.Results.os;
+            
             obj.center = p.Results.center;
-            obj.wave = p.Results.wave;
+            obj.wave   = p.Results.wave;
+            obj.spatialDensity_ = p.Results.spatialDensity(:); % Why the _?
+            obj.sampleTime      = p.Results.sampleTime;
             obj.integrationTime = p.Results.integrationTime;
-            obj.spatialDensity_ = p.Results.spatialDensity(:);
+            
             obj.noiseFlag = p.Results.noiseFlag;
-            obj.sampleTime = p.Results.sampleTime;
             obj.emPositions = p.Results.emPositions;
             
-            % Not sure why we do this.  Seems like a mistake (BW).
+            % Not sure why we do this.  Related to NP.  To discuss in an
+            % issue. (BW)
             obj.patternSampleSize = [obj.pigment.width, obj.pigment.height];
             
+            % Needs a comment from HJ
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
                     obj.spatialDensity_, obj.patternSampleSize(1));
@@ -118,8 +128,7 @@ classdef coneMosaic < hiddenHandle
             
             % Set the cone spacing and aperture given its eccentricity and
             % angle.  We could specify eye, but are we really sure about
-            % the left right thing in human?
-            % Units of returns are meters
+            % the left right thing in human? Units of returns are meters
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
             [spacing, aperture] = coneSize(ecc,ang);
