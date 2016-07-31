@@ -47,23 +47,38 @@ classdef coneMosaic < hiddenHandle
         patternSupport; % [X(:) Y(:)] axes
         width;          % width of cone mosaic in meters
         height;         % height of cone mosaic in meters
-        fov;            % horizontal/vertical field of view assuming inf scene 
-                        % distance and 17mm optics focal length
+        fov;            % horizontal/vertical field of view assuming inf 
+                        % scene distance and 17mm optics focal length
         
         coneLocs;       % cone locations in meters
-        qe;             % effective absorptance with macular pigment (not lens)
+        qe;             % absorptance with macular pigment (not lens)
         
-        current;      % The spatial array of photocurrent over time
+        current;        % The spatial array of photocurrent over time
         spatialDensity; % spatial density (ratio) of the K-LMS cones
     end
     
     properties (Access=private)
+        % spatial density (ratio) of the K-LMS cones
+        %
+        % There are two properties about this LMS ratio: sptailDensity_ and
+        % spatialDensity. spatialDensity_ is a private variable of the
+        % class while spatialDensity is a dependent variable.
+        %
+        % When setting the spatialDensity_ inside the class, we just change
+        % this private property directly. When setting spatialDensity from
+        % outside, the set.spatialDensity is executed and the cone mosaic
+        % is regenerated.
+        %
+        % It's possible to have set function for spatialDensity directly.
+        % However, the current Matlab does not allow update other
+        % properties (e.g. mosaic pattern) in the set function for
+        % non-dependent properties.
+        %
+        % HJ
         spatialDensity_;
     end
     
-    % Public methods
-    methods
-        
+    methods    
         % Constructor
         function obj = coneMosaic(varargin)
             % Initialize the cone mosaic class
@@ -85,7 +100,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment')));
 
             % Mosaic parameters
-            p.addParameter('center',[0,0],@(x)(isvector(x) && length(x) ==2));
+            p.addParameter('center',[0 0], @(x)(numel(x) ==2));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('pattern', [], @isnumeric);
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
@@ -105,9 +120,9 @@ classdef coneMosaic < hiddenHandle
             obj.macular = p.Results.macular;
             obj.os      = p.Results.os;
             
-            obj.center = p.Results.center;
+            obj.center = p.Results.center(:)';
             obj.wave   = p.Results.wave;
-            obj.spatialDensity_ = p.Results.spatialDensity(:); % Why the _?
+            obj.spatialDensity_ = p.Results.spatialDensity(:);
             obj.sampleTime      = p.Results.sampleTime;
             obj.integrationTime = p.Results.integrationTime;
             
@@ -118,7 +133,7 @@ classdef coneMosaic < hiddenHandle
             % issue. (BW)
             obj.patternSampleSize = [obj.pigment.width, obj.pigment.height];
             
-            % Needs a comment from HJ
+            % generate human cone mosaic pattern if not specified
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
                     obj.spatialDensity_, obj.patternSampleSize(1));
@@ -128,7 +143,9 @@ classdef coneMosaic < hiddenHandle
             
             % Set the cone spacing and aperture given its eccentricity and
             % angle.  We could specify eye, but are we really sure about
-            % the left right thing in human? Units of returns are meters
+            % the left right thing in human?
+            % 
+            % Units of returns are meters
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
             [spacing, aperture] = coneSize(ecc,ang);
@@ -312,6 +329,7 @@ classdef coneMosaic < hiddenHandle
         
         % set method for class properties
         function set.spatialDensity(obj, val)
+            if all(obj.spatialDensity_(:) == val(:)), return; end
             obj.spatialDensity_ = val;
             [~, obj.pattern] = humanConeMosaic(obj.mosaicSize, ...
                     val, obj.patternSampleSize(1));
@@ -353,7 +371,6 @@ classdef coneMosaic < hiddenHandle
         end
     end
     
-    % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function [absorptions, current] = compute(obj, oi, varargin)
             % Compute the pattern of cone absorptions and typically the
