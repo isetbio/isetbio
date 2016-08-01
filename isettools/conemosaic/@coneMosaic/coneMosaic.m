@@ -10,28 +10,32 @@ classdef coneMosaic < hiddenHandle
     % HJ/JRG/BW ISETBIO Team, 2016
     
     properties  % public properties
-        name              % the name of the object
+        name                % the name of the object
         
-        pigment;          % Cone class object, contain single cone property
-        macular;          % Macular class object
-        os;               % Outersegment properties
+        pigment;            % Cone class object, contain single cone property
+        macular;            % Macular class object
+        os;                 % Outersegment properties
         
-        center;           % (x,y) center position of patch in meters
+        center;             % (x,y) center position of patch in meters
         
-        pattern;          % Pattern of K-LMS cones in the mosaic
-        patternSampleSize;% Width of the cone aperture, I think (BW)
+        pattern;            % Pattern of K-LMS cones in the mosaic
+        patternSampleSize;  % Separation between K-LMS pattern samples; for rectangular grid mosaics, 
+                            % this is set to the pigment width/height, i.e., the actual cone separation;
+                            % For hexagonal grid mosaics (instances of the coneMosaicHex class), 
+                            % this becomes the separation between the rect grid nodes over which the 
+                            % lower resolution hex grid is sampled (NC)
         
-        integrationTime;  % Cone temporal integration time in secs
-        emPositions;      % Eye movement positions in number of cones.
-                          % The length of this property controls number of
-                          % frames to be computed
-        noiseFlag;        % To control which noise is included
-        hdl;              % handle of the gui window
+        integrationTime;    % Cone temporal integration time in secs
+        emPositions;        % Eye movement positions in number of cones.
+                            % The length of this property controls number of
+                            % frames to be computed
+        noiseFlag;          % To control which noise is included
+        hdl;                % handle of the gui window
     end
     
     properties (SetObservable, AbortSet)
-        sampleTime;       % Time step for em and os computation, shall we
-                          % set this the same as integrationTime?
+        sampleTime;         % Time step for em and os computation, shall we
+                            % set this the same as integrationTime?
     end
     
     properties (GetAccess=public, SetAccess=public) % public temporarilly
