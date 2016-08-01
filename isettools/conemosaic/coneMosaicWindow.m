@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 30-Jun-2016 11:37:45
+% Last Modified by GUIDE v2.5 01-Aug-2016 09:54:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -249,7 +249,12 @@ switch plotType
         % cone mosaic image
         resetMovieControl(handles);
         cm.plot('cone mosaic', 'hf', handles.axes2);
-        axis image
+        
+        set(handles.menuPlotHLine, 'Enable', 'off');
+        set(handles.menuPlotVLine, 'Enable', 'off');
+        set(handles.menuPlotHLineLMS, 'Enable', 'off');
+        set(handles.menuPlotVLineLMS, 'Enable', 'off');
+        set(handles.menuPlotTimeSeries, 'Enable', 'off');
     case 'Mean absorptions'
         % mean cone absorptions
         resetMovieControl(handles);
@@ -263,6 +268,13 @@ switch plotType
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         axis image
+        
+        % enable plot options in menu
+        set(handles.menuPlotHLine, 'Enable', 'on');
+        set(handles.menuPlotVLine, 'Enable', 'on');
+        set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        set(handles.menuPlotTimeSeries, 'Enable', 'off');
     case 'Absorption movie'
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
@@ -284,6 +296,13 @@ switch plotType
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
         
+        % enable plot options in menu
+        set(handles.menuPlotHLine, 'Enable', 'on');
+        set(handles.menuPlotVLine, 'Enable', 'on');
+        set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        set(handles.menuPlotTimeSeries, 'Enable', 'on');
+        
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
@@ -298,6 +317,13 @@ switch plotType
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         axis image
+        
+        % enable plot options in menu
+        set(handles.menuPlotHLine, 'Enable', 'on');
+        set(handles.menuPlotVLine, 'Enable', 'on');
+        set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        set(handles.menuPlotTimeSeries, 'Enable', 'off');
     case 'Photocurrent movie'
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
@@ -317,6 +343,13 @@ switch plotType
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+        
+        % enable plot options in menu
+        set(handles.menuPlotHLine, 'Enable', 'on');
+        set(handles.menuPlotVLine, 'Enable', 'on');
+        set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        set(handles.menuPlotTimeSeries, 'Enable', 'on');
         
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
@@ -806,8 +839,6 @@ end
 
 end
 
-
-
 function editEccentricity_Callback(hObject, eventdata, handles)
 % hObject    handle to editEccentricity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -822,11 +853,29 @@ function editEccentricity_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to editEccentricity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
+end
+
+function menuPlotHLine_Callback(hObject, eventdata, handles)
+contextMenuPlot(hObject, []);
+end
+
+function menuPlotVLine_Callback(hObject, eventdata, handles)
+contextMenuPlot(hObject, []);
+end
+
+function menuPlotHLineLMS_Callback(hObject, eventdata, handles)
+contextMenuPlot(hObject, []);
+end
+
+function menuPlotVLineLMS_Callback(hObject, eventdata, handles)
+contextMenuPlot(hObject, []);
+end
+
+function menuPlotTimeSeries_Callback(hObject, ~, handles)
+set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
+contextMenuPlot(hObject, []);
 end

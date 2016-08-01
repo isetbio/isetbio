@@ -117,7 +117,7 @@ switch ieParamFormat(type)
         
         % show image if hf is given
         if isgraphics(hf, 'figure'), figure(hf); imshow(frame.cdata);
-        else isgraphics(hf, 'axes'), axes(hf); imshow(frame.cdata);
+        elseif isgraphics(hf, 'axes'), axes(hf); imshow(frame.cdata);
         end
         
     case 'conefundamentals'
