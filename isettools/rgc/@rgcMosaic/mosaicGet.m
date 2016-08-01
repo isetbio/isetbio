@@ -1,10 +1,13 @@
 function val = mosaicGet(obj, param, varargin)
-% mosaicGet method for @rgcMosaic super class 
+% Gets a property from an rgcMosaic object.
 % 
 %   val = mosaicGet(rgc.mosaic, property)
 % 
-% The subclasses have special values, and if the request is not for one of
-% those then this call is invoked to get the value
+% The mosaicGet function gets a property from the mosaic object if the
+% property is defined in the rgcMosaic superclass. The subclasses of
+% rgcMosaic have properties not included here, and if the request is not
+% for one of the properties common to all subclasses, then the subclass
+% mosaicGet is called.
 %
 % Inputs: 
 %   obj    - rgc object
@@ -34,7 +37,8 @@ function val = mosaicGet(obj, param, varargin)
 %   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
 %   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
 % 
-% 9/2015 JRG 
+% 9/2015 JRG (c) isetbio team
+% 7/2016 JRG updated
 
 %% Parse
 p = inputParser; 
@@ -67,7 +71,6 @@ p.parse(param,varargin{:});
 param = ieParamFormat(p.Results.param);
 cell = p.Results.cell;
 
-% @JRG - Please comment on the units
 switch ieParamFormat(param)
     
     case{'celltype'}
@@ -75,7 +78,7 @@ switch ieParamFormat(param)
         val = obj.cellType;
         
     case{'rfdiameter'}
-        % Spatail RF diameter in micrometers
+        % Spatial RF diameter in micrometers
         val = obj.rfDiameter; 
         
     case{'rfdiamagnitude'}
@@ -134,12 +137,13 @@ switch ieParamFormat(param)
     case {'dt'}
         % The bin subsampling size. In the original Pillow code, was a
         % fraction of the sampling rate of the linear response (usually
-        % 0.0083 sec). Now it takes into account the linear sampling rate
-        % and is given in units of microseconds.
+        % 1/120 = 0.0083 sec). Now it takes into account the linear
+        % sampling rate and is given in units of microseconds.
         val = obj.dt;   % 10 usec
-
         
     case {'lastspiketime'}
+        % The latest time at which a spike occurs in seconds, used in
+        % plotting functions.
         nCells    = obj.get('mosaic size');
         nTrials = obj.get('numbertrials');
         spikes = obj.responseSpikes;

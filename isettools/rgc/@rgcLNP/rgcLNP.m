@@ -113,32 +113,7 @@ classdef rgcLNP < rgcMosaic
     end
     
     % Methods that must only be implemented (Abstract in parent class).
-    methods (Access=public)
-        
-                % Overloaded display function to order properties as we want to
-        function disp(obj)
-            
-            % Get the string from the builtin disp and then rearrange
-            s1 =evalc('builtin(''disp'', obj'')');
-            
-            % Find newline character locations
-            newlineChars = strfind(s1,sprintf('\n'));
-            
-            % Pull out lines with properties and values
-            for nlInd = 2:length(newlineChars)
-                propertystr{nlInd} = s1(newlineChars(nlInd-1)+1:newlineChars(nlInd)-1);
-            end
-            
-            % Display the reordered property list
-            % Display the first line with class type
-            disp(sprintf('\n'));
-            disp(s1(1:newlineChars(1)))
-            % Order determined through trial and error
-            propertyOrder = [9:18 3:4 7:8 5:6];
-            for nlInd = propertyOrder
-                disp(propertystr{nlInd});
-            end
-        end
+    methods (Access=public)       
         
         initialize(obj);
     end    
