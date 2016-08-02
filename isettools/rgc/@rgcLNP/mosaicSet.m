@@ -1,17 +1,24 @@
 function obj = mosaicSet(obj, param, val, varargin)
-% mosaicSet for LNP subclass, superclass is @rgcMosaic
+%  Sets a property for an rgcLNP object.
 % 
 %   rgc.mosaic = mosaicSet(rgc.mosaic, param, value, varargin)
 %  
 % Inputs: 
-%   rgc object, key-value pair of property and value to which it is
-%   being set.
+% 
+%   obj    - rgc object
+%   param  - parameter string
+%   val    - parameter value
+%   varargin - Not used yet, but will be used for units and other things.
+% 
+% Outputs: 
+%    obj with property set appropriately
 % 
 % Examples:
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'psthResponse', psth)
 % 
-% ISETBIO Team, 2016
+% 9/2015 JRG (c) isetbio team
+% 7/2016 JRG updated
 
 %% Parse
 p = inputParser; 

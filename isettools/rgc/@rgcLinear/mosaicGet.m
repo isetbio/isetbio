@@ -1,22 +1,28 @@
 function val = mosaicGet(obj, param, varargin)
-% @rgcLinear subclass mosaicGet, superclass is @rgcMosaic 
-%
-% parameters using the input parser structure.
+% Gets a property from an rgcLinear object.
 % 
 %       val = mosaicGet(rgc.mosaic, param, property)
 % 
-% Inputs: rgc object, property to be gotten
+% The rgcLinear mosaic object has all of its properties defined by the
+% rgcMosaic superclass. A call to mosaicGet for the rgcLinear object will
+% pass the mosaicGet call onto the superclass method.
 % 
-% Outputs: val of property
+% Inputs: 
+%   obj    - rgc object
+%   param  - parameter string
+%   varargin - Not used yet, but will be used for units and other things.
 % 
-% Properties special to the rgcLinear class
-%   N/A yet
-%
+% Outputs: 
+%   val - parameter value
+% 
+%  Properties that can be gotten: see @rgcMosaic/mosaicGet.m
+% 
 % Examples:
 %   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
 %   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
 % 
-% 9/2015 JRG 
+% 9/2015 JRG (c) isetbio team
+% 7/2016 JRG updated
 
 %% Parse
 p = inputParser; 
@@ -28,15 +34,14 @@ p.KeepUnmatched = true;
 % parameters in the superclass, rgcMosaic.
 p.addRequired('param',@ischar);
 
-% Parse and put results into structure p.
 p.parse(param,varargin{:}); 
 param = p.Results.param;
 
 %% Set key-value pairs.
 switch ieParamFormat(param)
     
-    % The special cases for rgcLinear should be here
-    
+    % All properties for rgcLinear are defined in the rgcMosaic superclass,
+    % so see @rgcMosaic/mosaicGet.m.    
     otherwise
         val = mosaicGet@rgcMosaic(obj,param,varargin{:});
                  
