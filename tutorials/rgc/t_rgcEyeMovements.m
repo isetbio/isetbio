@@ -39,7 +39,7 @@ vcAddObject(oi); % oiWindow;
 
 cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
 % cMosaic.rows = 100; cMosaic.cols = 120;
-% cMosaic.rows = 144; cMosaic.cols = 176;
+cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(500);
 
 cMosaic.compute(oi,'currentFlag',true);
@@ -143,3 +143,5 @@ clear params
 params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
 param.FrameRate = 5; params.step = 2; params.show = false;
 ieMovie(psth,params);
+
+figure; imagesc(mean(psth,3))
