@@ -34,6 +34,10 @@ classdef rgcLNP < rgcMosaic
         
         % Number of repeats
         numberTrials = 10;
+        
+        % Parameter to specify the time bins Pillow uses for coupling and
+        % post spike filters (10 ms default)
+        dt = 0.01;
     end
            
     % Protected properties.
@@ -59,11 +63,7 @@ classdef rgcLNP < rgcMosaic
         % Pillow promotes the linear input voltage using a nonlinear
         % function that he calls the generator function.  By default this
         % is an exponential.
-        generatorFunction;
-        
-        % Parameter to specify the time bins Pillow uses for coupling and
-        % post spike filters (10 ms default)
-        dt = 0.01;
+        generatorFunction;       
         
         % The nonlinear voltage response after application of the generator
         % function and the spike coupling responses is represented here
