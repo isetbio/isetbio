@@ -10,11 +10,13 @@ function visualizeGrid(obj, varargin)
     p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
     p.addParameter('overlayNullSensors', false, @islogical);
     p.addParameter('overlayPerfectHexMesh', false, @islogical);
+    p.addParameter('overlayConeDensityContour', false, @islogical);
     p.parse(varargin{:});
             
     showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
     showNullSensors = p.Results.overlayNullSensors;
     showPerfectHexMesh = p.Results.overlayPerfectHexMesh;
+    showConeDensityContour = p.Results.overlayConeDensityContour;
     generateNewFigure = p.Results.generateNewFigure;
     panelPosition = p.Results.panelPosition;
     
@@ -28,16 +30,19 @@ function visualizeGrid(obj, varargin)
             obj.resamplingFactor);
     end
     
-    sampledHexMosaicXaxis = obj.patternSupport(1,:,1);
-    sampledHexMosaicYaxis = obj.patternSupport(:,1,2);
+    sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
+    sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
     
     % Choose the radius of the aperture obj.pigment.pdWidth vs obj.pigment.width
-    %dx = obj.pigment.pdWidth
-    dx = obj.pigment.width;
+    radiusComesFrom = 'ConeAperture';
+    if (strcmp(radiusComesFrom, 'ConeAperture'))
+        dx = obj.pigment.pdWidth;
+    else
+        dx = obj.pigment.width;
+    end
     
     pixelOutline.x = [-1 -1 1 1 -1]*dx/2;
     pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
-    
     originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
     originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
     
@@ -71,9 +76,41 @@ function visualizeGrid(obj, varargin)
     subplot('Position', [0.06 0.06 0.91 0.91]);
     hold on;
     
-       
+    if (showConeDensityContour)
+        mosaicRangeX = obj.center(1) + obj.width/2*[-1 1]  + [-obj.lambda obj.lambda]*1e-6;
+        mosaicRangeY = obj.center(2) + obj.height/2*[-1 1] + [-obj.lambda obj.lambda]*1e-6;
+        deltaX = 3*obj.lambda*1e-6;
+        areaHalfWidth = deltaX*3;
+        gridXPos = (mosaicRangeX(1)+areaHalfWidth):deltaX:(mosaicRangeX(2)-areaHalfWidth);
+        gridYPos = (mosaicRangeY(1)+areaHalfWidth):deltaX:(mosaicRangeY(2)-areaHalfWidth);
+        measurementAreaInMM2 = (2*areaHalfWidth*1e3)^2;
+        densityMap = zeros(numel(gridYPos), numel(gridXPos));
+        
+        for iYpos = 1:numel(gridYPos)
+        for iXpos = 1:numel(gridXPos)
+            xo = gridXPos(iXpos);
+            yo = gridYPos(iYpos);
+            conesWithin = numel(find( ...
+                obj.coneLocsHexGrid(:,1) >= xo-areaHalfWidth & ...
+                obj.coneLocsHexGrid(:,1) <= xo+areaHalfWidth & ... 
+                obj.coneLocsHexGrid(:,2) >= yo-areaHalfWidth & ...
+                obj.coneLocsHexGrid(:,2) <= yo+areaHalfWidth ));
+            densityMap(iYpos,iXpos) = conesWithin / measurementAreaInMM2;
+        end
+        end
+    end
+    
     % The active sensors (approximating the positions of the perfect hex grid)
     lineStyle = '-';
+    
+    if (showConeDensityContour)
+        contourLevels = 10;
+        gridXPos = mosaicRangeX(1) + (gridXPos - min(gridXPos))/(max(gridXPos) - min(gridXPos))*(mosaicRangeX(2)-mosaicRangeX(1));
+        gridYPos = mosaicRangeY(1) + (gridYPos - min(gridYPos))/(max(gridYPos) - min(gridYPos))*(mosaicRangeY(2)-mosaicRangeY(1));
+        [X,Y] = meshgrid(gridXPos, gridYPos);
+        contourf(X,Y, densityMap, linspace(min(densityMap(:)), max(densityMap(:)), contourLevels), 'LineWidth', 3.0);
+        colormap(1-gray);
+    end
     
     if (~showCorrespondingRectangularMosaicInstead)
         if (showNullSensors)
@@ -125,11 +162,23 @@ function visualizeGrid(obj, varargin)
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     end
     
+    if (showConeDensityContour)
+        % Add colorbar
+        ticks = linspace(min(densityMap(:)), max(densityMap(:)), 8);
+        tickLabels = sprintf('%2.1fK\n', ticks/1000);
+        hCbar = colorbar('northoutside', 'peer', gca, 'Ticks', ticks, 'TickLabels', tickLabels);
+            hCbar.Orientation = 'horizontal';
+            hCbar.Label.String = 'cone density (cones/mm2)';
+            hCbar.FontSize = 14;
+            hCbar.FontName = 'Menlo';
+            hCbar.Color = [0.2 0.2 0.2];
+    end
+    
+    
     hold off
     axis 'equal'; axis 'xy'
-    set(gca, 'XLim', [sampledHexMosaicXaxis(1) sampledHexMosaicXaxis(end)], 'YLim', [sampledHexMosaicYaxis(1) sampledHexMosaicYaxis(end)]);
-    xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
-    yTicks = [sampledHexMosaicYaxis(1) 0 sampledHexMosaicYaxis(end)];
+    xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+    yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
     xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
     yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
     set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
@@ -145,11 +194,12 @@ function renderPatchArray(pixelOutline, xCoords, yCoords, edgeColor, faceColor, 
     verticesNum = numel(pixelOutline.x);
     x = zeros(verticesNum, numel(xCoords));
     y = zeros(verticesNum, numel(xCoords));
+   
     for vertexIndex = 1:verticesNum
         x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
         y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
     end
-    patch(x,y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
+    patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
 end
   
 function renderHexMesh(xHex, yHex, meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle)

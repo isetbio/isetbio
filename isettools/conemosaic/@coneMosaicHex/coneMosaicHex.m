@@ -1,14 +1,15 @@
 classdef coneMosaicHex < coneMosaic
     % Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varargin);
+    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, varargin);
     %
     % The cone mosaic hex defines an array of cones placed on a hexagonal grid
-    % which is sampled according to the resamplingFactor. All key-value
+    % which is sampled according to the resamplingFactor. The cone density can be
+    % spatially-varying if varyingDensity is set to true. All key-value
     % parameter pairs used with coneMosaic can be used with coneMosaicHex.
     % e.g.:
-    %   cMosaicHex = coneMosaicHex(resamplingFactor, ...
-    %                     'name', 'the hex mosaic', ...
+    %   cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, ...
+    %                      'name', 'the hex mosaic', ...
     %                      'size', [48 32], ...
     %                   'pattern', LMSpattern, ...
     %                 'noiseFlag', 0,  ...
@@ -19,6 +20,8 @@ classdef coneMosaicHex < coneMosaic
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
+        lambda                                  % min cone separation in the computed grid
+        varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)
         coneLocsOriginatingRectGrid             % coneLocs of the originating rect grid
@@ -31,9 +34,9 @@ classdef coneMosaicHex < coneMosaic
     methods
         
         % Constructor
-        function obj = coneMosaicHex(upSampleFactor, varargin)
+        function obj = coneMosaicHex(upSampleFactor, varyingDensity, varargin)
             % Initialize the hex cone mosaic class
-            %   cMosaic =  coneMosaicHex(upSampleFactor, ['cone',cone,'os','os]);
+            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, ['cone',cone,'os','os]);
             
             % Call the super-class constructor.
             obj = obj@coneMosaic(varargin{:});
@@ -44,18 +47,21 @@ classdef coneMosaicHex < coneMosaic
             % parse input
             p = inputParser;
             p.addRequired('resamplingFactor', @isnumeric);
-            p.parse(upSampleFactor);
+            p.addRequired('varyingDensity', @islogical);
+            
+            p.parse(upSampleFactor, varyingDensity);
             obj.resamplingFactor = p.Results.resamplingFactor;
+            obj.varyingDensity = p.Results.varyingDensity;
             
             % Generate sampled hex grid
-            obj.resampleGrid(obj.resamplingFactor);
+            obj.resampleGrid(obj.resamplingFactor, obj.varyingDensity);
         end
         
         % Change the FOV of the mosaic
         setSizeToFOVForHexMosaic(obj,fov);
         
         % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
-        resampleGrid(obj, resamplingFactor);
+        resampleGrid(obj, resamplingFactor, varyingDensity);
         
         % Visualize different aspects of the hex grid
         visualizeGrid(obj, varargin);
