@@ -45,7 +45,7 @@ nX = 0; nY = 0;
 cellTypeInd = 1;
 
 [nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
-nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear{1,1});
+nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear(1,1,:));
 % nX = nX + nXi;
 % nY = nY = nYi;
 

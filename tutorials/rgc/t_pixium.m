@@ -40,14 +40,14 @@
 %% Initialize
 % clear;
 % ieInit;
-for bwL = 32%[ 32 50] 
+for bwL = 8%[ 32 50] 
     for freqL = 5%[5 8 2 12]
     close all;
 %% Parameters to alter
 clear electrodeArray
 % Electrode size
 % Set the size of implant pixels
-electrodeArray.width = 70e-6; % meters
+electrodeArray.width = 15e-6; % meters
 % electrodeArray.width = 140e-6; % meters
  
 % Retinal patch eccentricity
@@ -55,10 +55,10 @@ patchEccentricity = 4; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 1.6;
+fov = 1.6/3;
 
 % Stimulus length
-nSteps = 100;
+nSteps = 30;
 
 % Activation curve
 
@@ -304,10 +304,17 @@ paramsIR.eyeRadius = 3;        % Radius in mm
 paramsIR.eyeAngle  = 90;       % Polar angle in degrees
 
 % load('/Users/james/Documents/MATLAB/RGC-Reconstruction/WNstim_response_OffParasol_64_grating_june10.mat');
-load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/WNstim_response_OffParasol_RGC.mat')
-innerRetina2 = innerRetina; clear innerRetina;
-load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/WNstim_response_OnParasol_RGC.mat')
+% load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/WNstim_response_OffParasol_RGC.mat')
+% innerRetina2 = innerRetina; clear innerRetina;
+% load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/WNstim_response_OnParasol_RGC.mat')
 
+
+rdt = RdtClient('isetbio');
+rdt.crp('/resources/data/rgc/pixium/');
+data = rdt.readArtifact('WNstim_response_OffParasol_RGC', 'type', 'mat');
+innerRetina2 = data.innerRetina; % clear innerRetina;
+data = rdt.readArtifact('WNstim_response_OnParasol_RGC', 'type', 'mat');
+innerRetina = data.innerRetina; 
 
 % model   = 'LNP';    % Computational model
 % innerRetina = irCreate(os,paramsIR);
@@ -496,7 +503,7 @@ for mosaicInd = 1:length(innerRetina.mosaic)
                 % innerRetinaActivation{xind,yind}(frame) = 50*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
                 innerRetinaActivation(xind,yind,frame) = 50*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
             end
-            mosaicSet(innerRetina.mosaic{mosaicInd},'responseLinear', innerRetinaActivation);
+            mosaicSet(innerRetina.mosaic{mosaicInd},'responseLinear', innerRetinaActivation-mean(innerRetinaActivation(:)));
             % mosaicSet(innerRetina2.mosaic{mosaicInd},'responseLinear', innerRetinaActivation);
         end
     end
@@ -549,7 +556,7 @@ for mosaicInd = 1:length(innerRetina2.mosaic)
                 % innerRetinaActivation{xind,yind}(frame) = 50*innerRetinaFunction(innerRetinaInput(xind,yind,frame,mosaicInd));
                 innerRetinaActivation(xind,yind,frame) = 50*innerRetinaFunction(innerRetinaInput2(xind,yind,frame,mosaicInd));
             end
-            mosaicSet(innerRetina2.mosaic{mosaicInd},'responseLinear', -innerRetinaActivation);
+            mosaicSet(innerRetina2.mosaic{mosaicInd},'responseLinear', -3*(innerRetinaActivation-mean(innerRetinaActivation(:))));
             % mosaicSet(innerRetina2.mosaic{mosaicInd},'responseLinear', innerRetinaActivation);
         end
     end
@@ -566,7 +573,7 @@ irPlot(innerRetina, 'linear');
 clear stimulusReconstruction
 [stimulusReconstruction, paramsRec] = irReconstruct(innerRetina, 'tuningWoff', tuningWoffElec);
 
-
+figure; ieMovie(stimulusReconstruction(1:100,1:100,:));
 %% Low-rank SVD decoder
 
 % psthstruct = mosaicGet(innerRetina.mosaic{1},'psth');
@@ -619,9 +626,13 @@ end
 
 % yrs = reshape(y,[64 9928]);
 
-icVal = 400;
-load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_on_svd_' num2str(icVal) '.mat'])
+% icVal = 400;
+% load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_on_svd_' num2str(icVal) '.mat'])
 
+rdt = RdtClient('isetbio');
+rdt.crp('/resources/data/rgc/pixium/');
+data = rdt.readArtifact('filters_may26_on_svd_400', 'type', 'mat');
+filterMat= data.filterMat;
 
 numcells= 36; blocklength = 100;
 spikesout = (y);%double(matfOff.spikesoutsm);
@@ -632,8 +643,14 @@ recons_stim_on = reconsFromFilt(filterMat, spikeRespOn);
 % mov = reshape(stim,96,96,size(stim,2));
 movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
     
-icVal = 200;
-load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_off_svd_' num2str(icVal) '.mat'])
+% icVal = 200;
+% load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_off_svd_' num2str(icVal) '.mat'])
+
+
+% rdt = RdtClient('isetbio');
+% rdt.crp('/resources/data/rgc/pixium/');
+data = rdt.readArtifact('filters_may26_off_svd_200', 'type', 'mat');
+filterMat= data.filterMat;
 
 numcells2= 64; blocklength = 100;
 spikesout2 = (y2);%double(matfOff.spikesoutsm);
@@ -642,8 +659,13 @@ spikeRespOff = downSampResp(spikesout2, numcells2, blocklength);
 recons_stim_off = reconsFromFilt(filterMat, spikeRespOff);
 movrecons_off = reshape(recons_stim_off,96,96,size(recons_stim_off,2));
     
-icVal = 400;
-load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct_hoylab/filters_may26_on_off_svd_' num2str(icVal) '.mat'])
+% icVal = 400;
+% load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct_hoylab/filters_may26_on_off_svd_' num2str(icVal) '.mat'])
+
+% rdt = RdtClient('isetbio');
+% rdt.crp('/resources/data/rgc/pixium/');
+data = rdt.readArtifact('filters_may26_on_off_svd_400', 'type', 'mat');
+filterMat= data.filterMat;
 
 spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
 
