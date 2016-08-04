@@ -38,28 +38,28 @@ d = load('coneDensity.mat');
 
 % interpolate for retinal position amplitude on axis (nasal, superior,
 % temporal and inferior direction)
-onAxisD = zeros(5, 1);
+onAxisD = zeros(5, numel(ecc));
 angleQ = [0 90 180 270 360];
 
 % Convert to mm for functions below
 eccMM = ecc*1e3;
 
 % compute packing density for superior and inferior
-onAxisD(2) = interp1(d.superior.eccMM, d.superior.density, eccMM);
-onAxisD(4) = interp1(d.inferior.eccMM, d.inferior.density, eccMM);
+onAxisD(2,:) = interp1(d.superior.eccMM, d.superior.density, eccMM);
+onAxisD(4,:) = interp1(d.inferior.eccMM, d.inferior.density, eccMM);
 
 % nasal and temporal
 switch lower(whichEye)
     case 'left'
-        onAxisD(1) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
-        onAxisD(3) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
+        onAxisD(1,:) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
+        onAxisD(3,:) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
     case 'right'
-        onAxisD(1) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
-        onAxisD(3) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
+        onAxisD(1,:) = interp1(d.temporal.eccMM, d.temporal.density, eccMM);
+        onAxisD(3,:) = interp1(d.nasal.eccMM, d.nasal.density, eccMM);
     otherwise
         error('unknown input for whichEye');
 end
-onAxisD(5) = onAxisD(1);
+onAxisD(5,:) = onAxisD(1,:);
 
 % Interpolate for angle
 density = interp1(angleQ, onAxisD, angleDeg, 'linear');

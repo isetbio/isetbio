@@ -19,9 +19,9 @@ function [spacing, aperture, density] = coneSize(ecc,ang, varargin)
 % BW ISETBIO Team, 2016
 
 p = inputParser;
-vFunc = @(x)(isnumeric(x) && 0 <= x && x < 30*1e-3);  % Meters
+vFunc = @(x)(isnumeric(x) && all(0 <= x & x < 30*1e-3));  % Meters
 p.addRequired('ecc',vFunc);
-vFunc = @(x)(isnumeric(x) && 0 <= x <= 360);    % Angle in degrees
+vFunc = @(x)(isnumeric(x) && all(0 <= x <= 3600));    % Angle in degrees
 p.addRequired('ang',vFunc);
 vFunc = @(x)(ismember(x,{'left','right'}));
 p.addParameter('whichEye','left',vFunc);
@@ -38,7 +38,7 @@ conesPerMM = sqrt(density);
 conesPerM = conesPerMM*1e3;
 
 % Made up for now
-spacing = 1/conesPerM;
+spacing = 1./conesPerM;
 aperture = 0.7*spacing;   % Rods .... need to get the right value for this
 
 end
