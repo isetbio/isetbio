@@ -67,7 +67,7 @@ pause
 % Load acrhomatic Gabor scene
 [dirName,~] = fileparts(which(mfilename()));
 load(fullfile(dirName,'GaborAchromScene.mat'))
-gaborScene = sceneSet(gaborScene,'fov', 2.0);
+gaborScene = sceneSet(gaborScene,'fov', 1.0);
 
 % Compute the optical image
 oi = oiCreate;
