@@ -9,7 +9,7 @@ ieInit; clear; close all;
     
 rng('default'); rng(219347);
 
-%% Unit test 1: generate a sptially-varying density hex mosaic positioned at (0.5mm, 0.0mm)
+%% Unit test 1: generate a hex mosaic with spatially-varying cone density positioned at (0.5mm, 0.0mm)
 % Mosaic Parameters
 mosaicParams = struct(...
     'resamplingFactor', 7, ...          
@@ -18,7 +18,7 @@ mosaicParams = struct(...
                 'size', [32 50] ...          % generate from a rectangular mosaic of 32x50 cones
   );
 commandwindow
-fprintf('\n<strong>Hit enter to create a spatially-varying density hex mosaic positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
 
 % Generate the hex grid
@@ -30,10 +30,10 @@ theHexMosaic1 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyin
 theHexMosaic1.displayInfo();
 theHexMosaic1.visualizeGrid('overlayConeDensityContour', true, 'generateNewFigure', true);
 
-%% Unit test 2: generate a sptially-varying density hex mosaic positioned at (0.0, 0.5)
+%% Unit test 2: generate a hex mosaic with spatially-varying cone density positioned at (0.0, 0.5)
 mosaicParams.centerInMM = [0.0 0.5];
 commandwindow
-fprintf('\n<strong>Hit enter to create a spatially-varying density hex mosaic positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
 
 theHexMosaic2 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
@@ -44,10 +44,10 @@ theHexMosaic2 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyin
 theHexMosaic2.displayInfo();
 theHexMosaic2.visualizeGrid('overlayConeDensityContour', true, 'generateNewFigure', true);
 
-%% Unit test 3: generate a sptially-varying density hex mosaic positioned at (0.1, 0.1)
+%% Unit test 3: generate a hex mosaic with spatially-varying cone density positioned at at (0.1, 0.1)
 mosaicParams.centerInMM = [0.1 0.1];
 commandwindow
-fprintf('\n<strong>Hit enter to create a spatially-varying density hex mosaic positioned at x = %2.1f mm, y = %2.1f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
 
 theHexMosaic3 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
