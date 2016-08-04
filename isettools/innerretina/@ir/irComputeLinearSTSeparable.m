@@ -92,6 +92,11 @@ switch osType
             [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
             % ieMovie(respC);
             
+            tResponse = ir.mosaic{rgcType}.tCenter{1,1};
+            
+            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', tResponse);
+            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);        
+            
             % Convolve with the temporal impulse response
             respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
             respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
