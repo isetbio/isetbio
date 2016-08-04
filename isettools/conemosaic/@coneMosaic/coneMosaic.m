@@ -133,6 +133,21 @@ classdef coneMosaic < hiddenHandle
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
             
+            % Set the cone spacing and aperture given its eccentricity and
+            % angle.  We could specify eye, but are we really sure about
+            % the left right thing in human?
+            % 
+            % Units of returns are meters
+            ecc = sqrt(sum(obj.center.^2));
+            ang = atan2d(obj.center(2),obj.center(1));
+            [spacing, aperture] = coneSize(ecc,ang);
+
+            obj.pigment.pdWidth  = aperture;
+            obj.pigment.pdHeight = aperture;
+            obj.pigment.height = spacing;
+            obj.pigment.width  = spacing;
+            
+            
             % Not sure why we do this.  Related to NP.  To discuss in an
             % issue. (BW)
             % From NP to BW: 
@@ -155,19 +170,6 @@ classdef coneMosaic < hiddenHandle
                 obj.pattern = p.Results.pattern;
             end
             
-            % Set the cone spacing and aperture given its eccentricity and
-            % angle.  We could specify eye, but are we really sure about
-            % the left right thing in human?
-            % 
-            % Units of returns are meters
-            ecc = sqrt(sum(obj.center.^2));
-            ang = atan2d(obj.center(2),obj.center(1));
-            [spacing, aperture] = coneSize(ecc,ang);
-
-            obj.pigment.pdWidth  = aperture;
-            obj.pigment.pdHeight = aperture;
-            obj.pigment.height = spacing;
-            obj.pigment.width  = spacing;
             
             % Initialize the mosaic properties
             obj.os.timeStep = obj.sampleTime;
