@@ -1,7 +1,6 @@
 %% t_coneMosaicHex5
 %
-% Shows how to generate hexagonal mosaic with varying density and
-% spatial inhomogeneities.
+% Shows how to generate hexagonal mosaic with spatially-varying cone density.
 %
 % NPC ISETBIO Team, Copyright 2016
 
