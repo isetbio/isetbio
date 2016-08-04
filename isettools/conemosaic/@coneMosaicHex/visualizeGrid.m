@@ -30,16 +30,20 @@ function visualizeGrid(obj, varargin)
     
     sampledHexMosaicXaxis = obj.patternSupport(1,:,1);
     sampledHexMosaicYaxis = obj.patternSupport(:,1,2);
-    dx = sampledHexMosaicXaxis(2)-sampledHexMosaicXaxis(1);
+    
+    % Choose the radius of the aperture obj.pigment.pdWidth vs obj.pigment.width
+    %dx = obj.pigment.pdWidth
+    dx = obj.pigment.width;
+    
     pixelOutline.x = [-1 -1 1 1 -1]*dx/2;
     pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
     
-    originalPixelOutline.x = [-1 -1 1 1 -1]*obj.pigment.width/2.0;
-    originalPixelOutline.y = [-1 1 1 -1 -1]*obj.pigment.height/2.0;
+    originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
+    originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
     
     iTheta = (0:5:360)/180*pi;
-    apertureOutline.x = obj.pigment.width/2.0 * cos(iTheta);
-    apertureOutline.y = obj.pigment.height/2.0 * sin(iTheta);
+    apertureOutline.x = dx/2.0 * cos(iTheta);
+    apertureOutline.y = dx/2.0 * sin(iTheta);
     
     rectCoords = obj.coneLocsOriginatingRectGrid;
     hexCoords = obj.coneLocsHexGrid;
