@@ -100,15 +100,14 @@ function conePositions = smoothGrid(conePositions, gridParams)
 %     end
     
     % Convergence parameters
-    fraction = 0.01;
+    % fraction = 0.01;
     fraction = 0.01;
     positionalDiffTolerance = fraction * gridParams.lambdaMin;  
     deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
     
-    % dTolerance = 0.001 * gridParams.lambdaMin;
+    % fraction = 0.001;
     fraction = 0.001;
-    fraction = 0.01;
     dTolerance = fraction * gridParams.lambdaMin;
     
     % Initialize convergence

@@ -90,8 +90,9 @@ function visualizeGrid(obj, varargin)
     end
     
     if (~strcmp(showConeDensityContour, 'none'))
-        contourLevels = 10;
-        contourf(densityMapSupportX, densityMapSupportY, densityMap, linspace(min(densityMap(:)), max(densityMap(:)), contourLevels), 'LineWidth', 3.0);
+        contourLevels = 10000: 10000:250000;
+        contourf(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineWidth', 1.0);
+        set(gca, 'CLim', [10000 250000]);
         colormap(1-gray);
     end
     
@@ -147,9 +148,11 @@ function visualizeGrid(obj, varargin)
     end
     
     if (showConeDensityContour)
+        [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 3.0, 'ShowText', 'on', 'LabelSpacing', 500);
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16)
         % Add colorbar
-        ticks = linspace(min(densityMap(:)), max(densityMap(:)), 8);
-        tickLabels = sprintf('%2.1fK\n', ticks/1000);
+        ticks = 10000 : 30000: 250000;
+        tickLabels = sprintf('%2.0fK\n', ticks/1000);
         hCbar = colorbar('northoutside', 'peer', gca, 'Ticks', ticks, 'TickLabels', tickLabels);
             hCbar.Orientation = 'horizontal';
             hCbar.Label.String = 'cone density (cones/mm2)';
