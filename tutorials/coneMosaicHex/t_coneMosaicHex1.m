@@ -12,11 +12,11 @@ rng('default'); rng(219347);
 %% Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)
 % Mosaic Parameters
 mosaicParams = struct(...
-      'resamplingFactor', 3,  ...       % this is the only required initializer parameter
-        'varyingDensity', false ...     % whether to have an eccentricity based, spatially - varying density
+            'resamplingFactor', 3,  ...       % controls the accuracy of the hex mosaic grid
+'eccentricityBasedConeDensity', false ...     % whether to have an eccentricity based, spatially - varying density
   );
 % Generate the hex grid
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity); 
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.eccentricityBasedConeDensity); 
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
@@ -27,13 +27,13 @@ fprintf('\n<strong>Hit enter to generate a customized hex mosaic based on an 11x
 fprintf('<strong>Here we use a high resamplingFactor (10) to get a near perfect hex grid\n</strong>'); pause
 % Mosaic Parameters
 mosaicParams = struct(...
-      'resamplingFactor', 10, ...
-        'varyingDensity', false, ...            % whether to have an eccentricity based, spatially - varying density
-            'centerInMM', [0.5 0.5], ...        % mosaic eccentricity
-                  'size', [11 16], ...          % generate from a rectangular mosaic of 11 x 16 cones
-        'spatialDensity', [0 1/3 1/3 1/3]...    % with a LMS density of of 0.33:0.33:0.33
+            'resamplingFactor', 10, ...              % controls the accuracy of the hex mosaic grid
+'eccentricityBasedConeDensity', false, ...           % whether to have an eccentricity based, spatially - varying density
+                 'centerInMM', [0.5 0.5], ...        % mosaic eccentricity
+                       'size', [11 16], ...          % generate from a rectangular mosaic of 11 x 16 cones
+             'spatialDensity', [0 1/3 1/3 1/3]...    % with a LMS density of of 0.33:0.33:0.33
     );
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.eccentricityBasedConeDensity, ...
                    'name', 'the hex mosaic', ...
                  'center', mosaicParams.centerInMM*1e-3, ...
                    'size', mosaicParams.size, ...

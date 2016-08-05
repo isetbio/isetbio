@@ -11,17 +11,16 @@ ieInit; clear; close all;
 rng('default'); rng(219347);
 
 mosaicParams = struct(...
-      'resamplingFactor', 5, ...
-       'varyingDensity', false, ...                 % whether to have an eccentricity based, spatially - varying density
-            'centerInMM', [0.0 0.0], ...            % mosaic eccentricity
-                  'size', [64 64], ...              % generate from a rectangular mosaic of 64 x 64 cones
-        'spatialDensity', [0 0.62 0.31 0.07],...    % with a LMS density of of 0.62:0.31:0.07
-             'noiseFlag', false ...
+            'resamplingFactor', 5, ...                    % controls the accuracy of the hex mosaic grid
+'eccentricityBasedConeDensity', false, ...                % whether to have an eccentricity based, spatially - varying density
+                  'centerInMM', [0.0 0.0], ...            % mosaic eccentricity
+                        'size', [64 64], ...              % generate from a rectangular mosaic of 64 x 64 cones
+              'spatialDensity', [0 0.62 0.31 0.07],...    % with a LMS density of of 0.62:0.31:0.07
+                   'noiseFlag', false ...
     );
     
 %% Unit test 1: Generate two mosaics, a rectangular one and a hexagonal one. 
-%% Thex mosaic is derived from the rectangular oneVisualization mosaic 
-% Generate a rect mosaic 
+% The hex mosaic is derived from the rectangular mosaic instantiated below
 theRectMosaic = coneMosaic( ...
                    'name', 'the rect mosaic', ...
                    'size', mosaicParams.size, ...
@@ -29,17 +28,19 @@ theRectMosaic = coneMosaic( ...
               'noiseFlag', mosaicParams.noiseFlag ...
 );
 
-% Generate a hex mosaic using the pattern of the Rect mosaic
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
-                   'name', 'the hex mosaic', ...
-                   'size', mosaicParams.size, ...
-                'pattern', theRectMosaic.pattern, ...
-         'spatialDensity', mosaicParams.spatialDensity, ...
-              'noiseFlag', mosaicParams.noiseFlag ...
+% Generate a hex mosaic using the pattern of the rectangular mosaic
+theHexMosaic = coneMosaicHex(...
+                    mosaicParams.resamplingFactor, ...
+                    mosaicParams.eccentricityBasedConeDensity, ...
+            'size', mosaicParams.size, ...
+         'pattern', theRectMosaic.pattern, ...
+  'spatialDensity', mosaicParams.spatialDensity, ...
+       'noiseFlag', mosaicParams.noiseFlag, ...
+           'name', 'the hex mosaic' ...
 );
 theHexMosaic.displayInfo();
 
-%% Unit test 2: Use using the superclass (coneMosaic) plotting routine to visualize them.
+%% Unit test 2: use the superclass (coneMosaic) plotting routine to visualize the two mosaics
 commandwindow
 fprintf('\n<strong>Hit enter to display the two mosaics using the superclass plotting routines. </strong>');
 pause
@@ -52,7 +53,7 @@ theHexMosaic.plot('cone mosaic', 'hf', hFig2);
 
 
 
-%% Unit test 2: compare isomerizations between rect and hex mosaics for the ring rays scene
+%% Unit test 3: compare isomerizations between rect and hex mosaics for the ring rays scene
 commandwindow
 fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the ring rays scene. </strong>');
 pause
@@ -118,7 +119,7 @@ colormap(gray(1024));
 
 
 
-%% Unit test 3: compare isomerizations between rect and hex mosaics for the Vernier scene
+%% Unit test 4: compare isomerizations between rect and hex mosaics for the Vernier scene
 commandwindow
 fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the Vernier scene. </strong>');
 pause
@@ -180,7 +181,7 @@ colormap(gray(1024));
 
 
 
-%% Unit test 4: compare isomerizations between rect and hex mosaics for the slanted bar scene
+%% Unit test 5: compare isomerizations between rect and hex mosaics for the slanted bar scene
 commandwindow
 fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the slanted bar scene.</strong>\n\n');
 pause

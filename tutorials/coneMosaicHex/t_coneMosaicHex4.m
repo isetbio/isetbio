@@ -12,16 +12,18 @@ rng('default'); rng(219347);
 
 % Generate a hex mosaic with a medium resamplingFactor
 mosaicParams = struct(...
-      'resamplingFactor', 8, ...
-        'varyingDensity', false, ...              % whether to have an eccentricity based, spatially - varying density
-            'centerInMM', [0.5 0.3], ...          % mosaic eccentricity
-        'spatialDensity', [0 0.62 0.31 0.07],...
-             'noiseFlag', false ...
+            'resamplingFactor', 9, ...                  % controls the accuracy of the hex mosaic grid
+'eccentricityBasedConeDensity', false, ...              % whether to have an eccentricity based, spatially - varying density
+                  'centerInMM', [0.5 0.3], ...          % mosaic eccentricity
+              'spatialDensity', [0 0.62 0.31 0.07],...
+                   'noiseFlag', false ...
     );
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
-                 'center', mosaicParams.centerInMM*1e-3, ...
-         'spatialDensity', mosaicParams.spatialDensity, ...
-              'noiseFlag', mosaicParams.noiseFlag ...
+theHexMosaic = coneMosaicHex(...
+                    mosaicParams.resamplingFactor, ...
+                    mosaicParams.eccentricityBasedConeDensity, ...
+          'center', mosaicParams.centerInMM*1e-3, ...
+  'spatialDensity', mosaicParams.spatialDensity, ...
+       'noiseFlag', mosaicParams.noiseFlag ...
 );
 
 % Set the mosaic's FOV to a wide aspect ratio
@@ -49,7 +51,7 @@ fprintf('Isomerization computation took %2.1f seconds\n', toc);
 tic
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-    isomerizationsGabor, ...                                         % the signal matrix
+    isomerizationsGabor, ...                                         % the response matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
       'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
@@ -58,7 +60,7 @@ theHexMosaic.visualizeActivationMaps(...
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 
 
-%% Unit test 1: Vernier scene
+%% Unit test 2: Vernier scene
 commandwindow
 fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the vernier scene. </strong>');
 pause
@@ -78,7 +80,35 @@ isomerizationsVernier = theHexMosaic.compute(oi,'currentFlag',false);
 
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-     isomerizationsVernier, ...                                      % the signal matrix
+     isomerizationsVernier, ...                                      % the response matrix
+       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
+      'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                     % figure size in pixels
+    );
+fprintf('Isomerization visualization took %2.1f seconds\n', toc);
+
+
+%% Unit test 3: Rays scene
+commandwindow
+fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the rays scene. </strong>');
+pause
+
+% Generate ring rays stimulus
+scene = sceneCreate('rings rays');
+scene = sceneSet(scene,'fov', 1.0);
+vcAddObject(scene); sceneWindow
+
+% Compute the optical image
+oi = oiCreate;
+oi = oiCompute(scene,oi);  
+
+% Compute isomerizations for both mosaics
+isomerizationsRays = theHexMosaic.compute(oi,'currentFlag',false);
+
+fprintf('\nVisualizing responses ... ');
+theHexMosaic.visualizeActivationMaps(...
+     isomerizationsRays, ...                                         % the response matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
       'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level

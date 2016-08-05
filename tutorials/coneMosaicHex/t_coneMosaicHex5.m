@@ -12,56 +12,57 @@ rng('default'); rng(219347);
 %% Unit test 1: generate a hex mosaic with spatially-varying cone density positioned at (0.5mm, 0.0mm)
 % Mosaic Parameters
 mosaicParams = struct(...
-    'resamplingFactor', 7, ...          
-      'varyingDensity', true, ...
-          'centerInMM', [0.5 0.0], ...       % 0.5 mm horizontal, 0.0 vertical
-                'size', [32 50] ...          % generate from a rectangular mosaic of 32x50 cones
+             'resamplingFactor', 7, ...               % controls the accuracy of the hex mosaic grid      
+ 'eccentricityBasedConeDensity', true, ...            % whether to have an eccentricity based, spatially - varying density
+                   'centerInMM', [0.1 0.2], ...       % 0.2 mm horizontal, 0.1 vertical
+                         'size', [50 50] ...          % generate from a rectangular mosaic of 32x50 cones
   );
 commandwindow
 fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
 
 % Generate the hex grid
-theHexMosaic1 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
-            'center', mosaicParams.centerInMM*1e-3, ....
-              'size', mosaicParams.size ...
+theHexMosaic1 = coneMosaicHex(...
+                   mosaicParams.resamplingFactor, ...
+                   mosaicParams.eccentricityBasedConeDensity, ...
+         'center', mosaicParams.centerInMM*1e-3, ....
+           'size', mosaicParams.size ...
     ); 
 % Print some grid info and visualize it
 theHexMosaic1.displayInfo();
-theHexMosaic1.visualizeGrid('overlayConeDensityContour', true, 'generateNewFigure', true);
+theHexMosaic1.visualizeGrid(...
+    'overlayConeDensityContour', 'measured', ...     % choose between 'measured', 'theoretical', 'none'
+    'generateNewFigure', true...
+    );
 
-%% Unit test 2: generate a hex mosaic with spatially-varying cone density positioned at (0.0, 0.5)
-mosaicParams.centerInMM = [0.0 0.5];
+theHexMosaic1.visualizeGrid(...
+    'overlayConeDensityContour', 'theoretical', ...     % choose between 'measured', 'theoretical', 'none'
+    'generateNewFigure', true...
+    );
+
+
+%% Unit test 2: generate a hex mosaic with spatially-uniform cone density positioned
 commandwindow
-fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
-pause
-
-theHexMosaic2 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
-            'center', mosaicParams.centerInMM*1e-3, ....
-              'size', mosaicParams.size ...
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-uniform cone density positioned at x = %2.1f mm, y = %2.1f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+pause        
+mosaicParams.eccentricityBasedConeDensity = false;
+theHexMosaic2 = coneMosaicHex(...
+              mosaicParams.resamplingFactor, ...
+              mosaicParams.eccentricityBasedConeDensity, ...
+    'center', mosaicParams.centerInMM*1e-3, ....
+      'size', mosaicParams.size ...
     ); 
 % Print some grid info and visualize it
 theHexMosaic2.displayInfo();
-theHexMosaic2.visualizeGrid('overlayConeDensityContour', true, 'generateNewFigure', true);
+theHexMosaic2.visualizeGrid(...
+    'overlayConeDensityContour', 'measured', ...
+            'generateNewFigure', true...
+            );
+        
 
-%% Unit test 3: generate a hex mosaic with spatially-varying cone density positioned at at (0.1, 0.1)
-mosaicParams.centerInMM = [0.1 0.1];
+%% Unit test 3: compute and display activation maps to a Gabor stimulus
 commandwindow
-fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
-pause
-
-theHexMosaic3 = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
-            'center', mosaicParams.centerInMM*1e-3, ....
-              'size', mosaicParams.size ...
-    ); 
-% Print some grid info and visualize it
-theHexMosaic3.displayInfo();
-theHexMosaic3.visualizeGrid('overlayConeDensityContour', true, 'generateNewFigure', true);
-
-
-%% Unit test 4: compute and display activation maps to a Gabor stimulus
-commandwindow
-fprintf('\n<strong>Hit enter to compute and visualize isomerizations maps for the 3 mosaics for an achromatic Gabor scene. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to compute and visualize isomerizations maps for the 2 mosaics for an achromatic Gabor scene. </strong>');
 pause
 % Load acrhomatic Gabor scene
 [dirName,~] = fileparts(which(mfilename()));
@@ -75,29 +76,55 @@ oi = oiCompute(gaborScene,oi);
 % Compute isomerizations for the different mosaics and display the results
 isomerizationsGabor1 = theHexMosaic1.compute(oi,'currentFlag',false);
 isomerizationsGabor2 = theHexMosaic2.compute(oi,'currentFlag',false);
-isomerizationsGabor3 = theHexMosaic3.compute(oi,'currentFlag',false);
 
+activationLUT = jet(1024);
 theHexMosaic1.visualizeActivationMaps(...
-     isomerizationsGabor1, ...                                      % the signal matrix
+     isomerizationsGabor1, ...                                       % the signal matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', jet(1024), ...                                    % colormap to use for displaying activation level
+      'colorMap', activationLUT, ...                                 % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 
 theHexMosaic2.visualizeActivationMaps(...
-     isomerizationsGabor2, ...                                      % the signal matrix
+     isomerizationsGabor2, ...                                       % the signal matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', jet(1024), ...                                    % colormap to use for displaying activation level
+      'colorMap', activationLUT, ...                                 % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 
-theHexMosaic3.visualizeActivationMaps(...
-     isomerizationsGabor3, ...                                      % the signal matrix
+
+%% Unit test 4: compute and display activation maps to the Rays stimulus
+commandwindow
+fprintf('\n<strong>Hit enter to compute and visualize isomerizations maps for the 2 mosaics for the rays scene. </strong>');
+pause
+% Generate ring rays stimulus
+raysScene = sceneCreate('rings rays');
+raysScene= sceneSet(raysScene,'fov', 1.0);
+
+% Compute the optical image
+oi = oiCreate;
+oi = oiCompute(raysScene,oi); 
+
+% Compute isomerizations for the different mosaics and display the results
+isomerizationsRays1 = theHexMosaic1.compute(oi,'currentFlag',false);
+isomerizationsRays2 = theHexMosaic2.compute(oi,'currentFlag',false);
+
+activationLUT = bone(1024);
+theHexMosaic1.visualizeActivationMaps(...
+     isomerizationsRays1, ...                                        % the signal matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', jet(1024), ...                                    % colormap to use for displaying activation level
+      'colorMap', activationLUT, ...                                 % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                     % figure size in pixels
+    );
+
+theHexMosaic2.visualizeActivationMaps(...
+     isomerizationsRays2, ...                                        % the signal matrix
+       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
+      'colorMap', activationLUT, ...                                 % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 

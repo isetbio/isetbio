@@ -22,16 +22,15 @@ end
 function hexLocs = computeHexGridNodes(obj)
 
     % Compute minimum cone spacing (in microns)
-    obj.lambda = minConeSpacing(obj);
-    
-    grid.lambda = obj.lambda;
+    obj.lambdaMin = (sqrt(3)/2)*minConeSpacing(obj);
+    grid.lambdaMin = obj.lambdaMin;
     grid.coneSpacingFunction = @coneSpacingFunction;
     grid.domainFunction = @circularDomainFunction;
     grid.center = obj.center*1e6;
     grid.width = obj.width*1e6;
     grid.height = obj.height*1e6;
     grid.radius = sqrt((grid.width/2)^2 + (grid.height/2)^2);
-    grid.borderTolerance = 0.001*obj.lambda;
+    grid.borderTolerance = 0.001*obj.lambdaMin;
     
     if (obj.varyingDensity)
         hexLocs = generateConePositionsOnVaryingDensityGrid(grid);
@@ -43,10 +42,10 @@ function hexLocs = computeHexGridNodes(obj)
     mosaicRangeX = grid.center(1) + grid.width/2*[-1 1];
     mosaicRangeY = grid.center(2) + grid.height/2*[-1 1];
     indices = find( ...
-        hexLocs(:,1) >= mosaicRangeX(1)-obj.lambda/4 & ...
-        hexLocs(:,1) <= mosaicRangeX(2)+obj.lambda/4 & ... 
-        hexLocs(:,2) >= mosaicRangeY(1)-obj.lambda/4 & ...
-        hexLocs(:,2) <= mosaicRangeY(2)+obj.lambda/4 );
+        hexLocs(:,1) >= mosaicRangeX(1)-obj.lambdaMin/4 & ...
+        hexLocs(:,1) <= mosaicRangeX(2)+obj.lambdaMin/4 & ... 
+        hexLocs(:,2) >= mosaicRangeY(1)-obj.lambdaMin/4 & ...
+        hexLocs(:,2) <= mosaicRangeY(2)+obj.lambdaMin/4 );
     hexLocs = hexLocs(indices,:);
     
     % Return positions in meters
@@ -66,8 +65,7 @@ function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridPa
     
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-     
-    densityP = (gridParams.lambda./coneSeparations).^2;
+    densityP = (sqrt(3)/2) * ((gridParams.lambdaMin)./coneSeparations).^2;
     
     showConeSeparations = false;
     if (showConeSeparations)
@@ -83,9 +81,9 @@ function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridPa
     conePositions = conePositions(d < gridParams.borderTolerance,:);
     
     % Add jitter
-    beginWithJitteredPositions = true;
+    beginWithJitteredPositions = false;
     if (beginWithJitteredPositions)
-        conePositions = conePositions + randn(size(conePositions))*gridParams.lambda/6;
+        conePositions = conePositions + randn(size(conePositions))*gridParams.lambdaMin/6;
     end
     
     % Iteratively adjust the grid for a smooth coverage of the space
@@ -102,12 +100,16 @@ function conePositions = smoothGrid(conePositions, gridParams)
 %     end
     
     % Convergence parameters
-    positionalDiffTolerance = 0.1 * gridParams.lambda;  
-    deps = sqrt(eps)*gridParams.lambda; 
+    fraction = 0.01;
+    fraction = 0.01;
+    positionalDiffTolerance = fraction * gridParams.lambdaMin;  
+    deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
     
-    % dTolerance = 0.001 * gridParams.lambda;
-    dTolerance = 0.01 * gridParams.lambda;
+    % dTolerance = 0.001 * gridParams.lambdaMin;
+    fraction = 0.001;
+    fraction = 0.01;
+    dTolerance = fraction * gridParams.lambdaMin;
     
     % Initialize convergence
     oldConePositions = inf;
@@ -122,7 +124,7 @@ function conePositions = smoothGrid(conePositions, gridParams)
     tic
     while (notConverged)
         iteration = iteration + 1;
-        if (mod(iteration,100) == 1)
+        if (mod(iteration,50) == 1)
             fprintf('\nIteration: %d', iteration-1);
         end
         
@@ -191,7 +193,7 @@ function conePositions = smoothGrid(conePositions, gridParams)
         
         % force at all fixed cone positions must be 0
         % netForceVectors(1:size(fixedConesPositions,1),:) = 0;
-        forceMagnitudes(iteration,:) = sqrt(sum(netForceVectors.^2,2))/gridParams.lambda;
+        forceMagnitudes(iteration,:) = sqrt(sum(netForceVectors.^2,2))/gridParams.lambdaMin;
         
         % update cone positions according to netForceVectors
         conePositions = conePositions + deltaT * netForceVectors;
@@ -236,9 +238,17 @@ function conePositions = generateConePositionsOnPerfectGrid(gridParams)
 
     rows = 2*gridParams.radius;
     cols = 2*gridParams.radius;
-    conePositions = computeHexGrid(rows, cols, gridParams.lambda);
+    conePositions = computeHexGrid(rows, cols, gridParams.lambdaMin);
     conePositions(:,1) = conePositions(:,1) + gridParams.center(1);
     conePositions(:,2) = conePositions(:,2) + gridParams.center(2);
+end
+
+function lambda = midConeSpacing(obj)
+    midX = obj.center(1);
+    midY = obj.center(2);
+    minEccInMeters = sqrt(midX^2 + midY^2);
+    ang = atan2(midY, midX)/pi*180;
+    lambda = coneSize(minEccInMeters,ang)*1e6;  % in microns
 end
 
 function lambda = minConeSpacing(obj)

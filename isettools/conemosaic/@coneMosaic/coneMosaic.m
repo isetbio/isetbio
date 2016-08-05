@@ -39,7 +39,7 @@ classdef coneMosaic < hiddenHandle
     end
     
     properties (GetAccess=public, SetAccess=public) % public temporarilly
-        absorptions;  % The spatial array of cone absorptions
+        absorptions;    % The spatial array of cone absorptions
     end
     
     properties (Dependent)

@@ -20,7 +20,7 @@ classdef coneMosaicHex < coneMosaic
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
-        lambda                                  % min cone separation in the computed grid
+        lambdaMin                               % min cone separation in the mosaic
         varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)

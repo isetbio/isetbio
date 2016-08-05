@@ -10,7 +10,7 @@ function visualizeGrid(obj, varargin)
     p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
     p.addParameter('overlayNullSensors', false, @islogical);
     p.addParameter('overlayPerfectHexMesh', false, @islogical);
-    p.addParameter('overlayConeDensityContour', false, @islogical);
+    p.addParameter('overlayConeDensityContour', 'none', @ischar);
     p.parse(varargin{:});
             
     showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
@@ -61,7 +61,6 @@ function visualizeGrid(obj, varargin)
             figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
         end
     else
-        
         if (isempty(panelPosition))
             hFig = figure(1);
             figPosition = [rand()*2000 rand()*1000 980 670];
@@ -76,47 +75,32 @@ function visualizeGrid(obj, varargin)
     subplot('Position', [0.06 0.06 0.91 0.91]);
     hold on;
     
-    if (showConeDensityContour)
-        mosaicRangeX = obj.center(1) + obj.width/2*[-1 1]  + [-obj.lambda obj.lambda]*1e-6;
-        mosaicRangeY = obj.center(2) + obj.height/2*[-1 1] + [-obj.lambda obj.lambda]*1e-6;
-        deltaX = 3*obj.lambda*1e-6;
-        areaHalfWidth = deltaX*3;
-        gridXPos = (mosaicRangeX(1)+areaHalfWidth):deltaX:(mosaicRangeX(2)-areaHalfWidth);
-        gridYPos = (mosaicRangeY(1)+areaHalfWidth):deltaX:(mosaicRangeY(2)-areaHalfWidth);
-        measurementAreaInMM2 = (2*areaHalfWidth*1e3)^2;
-        densityMap = zeros(numel(gridYPos), numel(gridXPos));
-        
-        for iYpos = 1:numel(gridYPos)
-        for iXpos = 1:numel(gridXPos)
-            xo = gridXPos(iXpos);
-            yo = gridYPos(iYpos);
-            conesWithin = numel(find( ...
-                obj.coneLocsHexGrid(:,1) >= xo-areaHalfWidth & ...
-                obj.coneLocsHexGrid(:,1) <= xo+areaHalfWidth & ... 
-                obj.coneLocsHexGrid(:,2) >= yo-areaHalfWidth & ...
-                obj.coneLocsHexGrid(:,2) <= yo+areaHalfWidth ));
-            densityMap(iYpos,iXpos) = conesWithin / measurementAreaInMM2;
-        end
-        end
+    switch showConeDensityContour
+        case 'measured'
+            deltaX = 2*obj.lambdaMin*1e-6;
+            areaHalfWidth = deltaX*4;
+            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, 'from mosaic');
+        case 'theoretical'
+            deltaX = 2*obj.lambdaMin*1e-6;
+            areaHalfWidth = deltaX*4;
+            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, 'from model');
+        case 'none'
+        otherwise
+            error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
     end
     
-    % The active sensors (approximating the positions of the perfect hex grid)
-    lineStyle = '-';
-    
-    if (showConeDensityContour)
+    if (~strcmp(showConeDensityContour, 'none'))
         contourLevels = 10;
-        gridXPos = mosaicRangeX(1) + (gridXPos - min(gridXPos))/(max(gridXPos) - min(gridXPos))*(mosaicRangeX(2)-mosaicRangeX(1));
-        gridYPos = mosaicRangeY(1) + (gridYPos - min(gridYPos))/(max(gridYPos) - min(gridYPos))*(mosaicRangeY(2)-mosaicRangeY(1));
-        [X,Y] = meshgrid(gridXPos, gridYPos);
-        contourf(X,Y, densityMap, linspace(min(densityMap(:)), max(densityMap(:)), contourLevels), 'LineWidth', 3.0);
+        contourf(densityMapSupportX, densityMapSupportY, densityMap, linspace(min(densityMap(:)), max(densityMap(:)), contourLevels), 'LineWidth', 3.0);
         colormap(1-gray);
     end
     
     if (~showCorrespondingRectangularMosaicInstead)
+        lineStyle = '-';
         if (showNullSensors)
             idx = find(obj.pattern==1);
             [iRows,iCols] = ind2sub(size(obj.pattern), idx);
-            edgeColor = [0.4 0.4 0.4]; faceColor = 'none'; lineStyle = '-';
+            edgeColor = [0.4 0.4 0.4]; faceColor = 'none'; 
             renderPatchArray(pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
         end
         
@@ -148,7 +132,7 @@ function visualizeGrid(obj, varargin)
         % The original rect sensors
         idx = find(obj.patternOriginatingRectGrid==2);
         %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
-        edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7];
+        edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7]; lineStyle = '-';
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 
         idx = find(obj.patternOriginatingRectGrid==3);
@@ -188,6 +172,44 @@ function visualizeGrid(obj, varargin)
     set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
     drawnow;
 end
+
+
+function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, computeConeDensityMap)
+        
+    mosaicRangeX = obj.center(1) + obj.width/2*[-1 1]  + [-obj.lambdaMin obj.lambdaMin]*1e-6;
+    mosaicRangeY = obj.center(2) + obj.height/2*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
+
+    gridXPos = (mosaicRangeX(1)+areaHalfWidth):deltaX:(mosaicRangeX(2)-areaHalfWidth);
+    gridYPos = (mosaicRangeY(1)+areaHalfWidth):deltaX:(mosaicRangeY(2)-areaHalfWidth);
+    measurementAreaInMM2 = (2*areaHalfWidth*1e3)^2;
+    densityMap = zeros(numel(gridYPos), numel(gridXPos));
+        
+    if (strcmp(computeConeDensityMap, 'from mosaic'))
+        for iYpos = 1:numel(gridYPos)
+        for iXpos = 1:numel(gridXPos)
+            xo = gridXPos(iXpos);
+            yo = gridYPos(iYpos);
+            conesWithin = numel(find( ...
+                obj.coneLocsHexGrid(:,1) >= xo-areaHalfWidth-0.5*obj.lambdaMin*1e-6 & ...
+                obj.coneLocsHexGrid(:,1) <= xo+areaHalfWidth+0.5*obj.lambdaMin*1e-6 & ... 
+                obj.coneLocsHexGrid(:,2) >= yo-areaHalfWidth-0.5*obj.lambdaMin*1e-6 & ...
+                obj.coneLocsHexGrid(:,2) <= yo+areaHalfWidth+0.5*obj.lambdaMin*1e-6 ));
+            densityMap(iYpos,iXpos) = conesWithin / measurementAreaInMM2;
+        end
+        end
+    else
+        [X,Y] = meshgrid(gridXPos, gridYPos);
+        eccInMeters = sqrt(X.^2 + Y.^2);
+        ang = atan2(Y, X)/pi*180;
+        [~, ~, densities] = coneSize(eccInMeters(:),ang(:));
+        densityMap = reshape(densities, size(X));
+    end
+
+    gridXPos = mosaicRangeX(1) + (gridXPos - min(gridXPos))/(max(gridXPos) - min(gridXPos))*(mosaicRangeX(2)-mosaicRangeX(1));
+    gridYPos = mosaicRangeY(1) + (gridYPos - min(gridYPos))/(max(gridYPos) - min(gridYPos))*(mosaicRangeY(2)-mosaicRangeY(1));
+    [densityMapSupportX, densityMapSupportY] = meshgrid(gridXPos, gridYPos);
+end
+
 
 function renderPatchArray(pixelOutline, xCoords, yCoords, edgeColor, faceColor, lineStyle)
     

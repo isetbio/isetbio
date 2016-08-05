@@ -17,15 +17,15 @@ rng('default'); rng(219347);
 %% the hex mosaic, the originating rectangular mosaic, the hex grid used for sampling, and the null cones
 % Mosaic Parameters
 mosaicParams = struct(...
-      'resamplingFactor', 7, ...
-        'varyingDensity', false, ...            % whether to have an eccentricity based, spatially - varying density
-            'centerInMM', [0, 0], ...           % mosaic eccentricity
-                  'size', [11 16], ...          % generate from a rectangular mosaic of 16 x 16 cones
-        'spatialDensity', [0 1/3 1/3 1/3]...    % with a LMS density of of 0.33:0.33:0.33
+            'resamplingFactor', 7, ...                % controls the accuracy of the hex mosaic grid
+'eccentricityBasedConeDensity', false, ...            % whether to have an eccentricity based, spatially - varying density
+                  'centerInMM', [0, 0], ...           % mosaic eccentricity
+                        'size', [11 16], ...          % generate from a rectangular mosaic of 16 x 16 cones
+              'spatialDensity', [0 1/3 1/3 1/3]...    % with a LMS density of of 0.33:0.33:0.33
     );
     
 % Generate the hex mosaic
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varyingDensity, ...
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.eccentricityBasedConeDensity, ...
                    'name', 'the hex mosaic', ...
                  'center', mosaicParams.centerInMM, ....
                    'size', mosaicParams.size, ...
@@ -34,8 +34,6 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.varying
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
-
-
 
 % Display the corresponding rectangular grid instead
 theHexMosaic.visualizeGrid(...
