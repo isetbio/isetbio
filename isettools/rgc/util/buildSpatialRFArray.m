@@ -1,8 +1,9 @@
 function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, inRow, inCol, rfDiameter)
-%% buildSpatialRF builds the spatial RF center and surround arrays for each cell
-% The spatial RFs are generated according to the number of pixel or cone
-% inputs, their spacing (in microns) and the diameter of the RF as
-% determined by the TEE of the retial patch.
+% Builds the spatial RF center and surround arrays for each cell.
+% 
+% The spatial RFs are generated according to the size of the pixel, cone or
+% bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
+% as determined by the TEE of the retial patch.
 % 
 %   [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations] = 
 %      buildSpatialRFArray(spacing, row, col, rfDiameter)
@@ -25,6 +26,7 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 % 
 % 9/2015 JRG (c) isetbio
+% 7/2016 JRG updated
 
 %% Manage parameters
 
@@ -39,7 +41,7 @@ nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 % Notice this is based only columns, assuming the 
 rfDiameter = rfDiameter / (patchSize(1) / inCol);
 
-extent = 2.5;    % ratio between sampling size and sptial RF
+extent = 2.5;    % ratio between sampling size and spatial RF
 r = 0.75;        % radius ratio between center and surround
 k = 1.032 * r;   % 
 
@@ -112,28 +114,14 @@ for ii = 1 : length(centerX)
         xv = rand(1,2);
         xvn = rfDiameter * xv./norm(xv);
         x1 = xvn(1); y1 = xvn(2);
-        
-        % magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        
+               
         % Do some calculations to make plots where RFs are filled in
         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
-        rfDiaMagnitude{ii,jj,1} = magnitude1STD;
-        
-        % Get contours at 1STD
-        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
-        % ccCell{rfctr} = cc(:,2:end);
-        % cc(:,1) = [NaN; NaN];
-        % spatialContours{ii,jj,1} = cc;
+        rfDiaMagnitude{ii,jj,1} = magnitude1STD;        
         
         % clear cc
-        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        
-        % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
-        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
-        % ccCell{rfctr} = cc(:,2:end);
-        % cc(:,1) = [NaN; NaN];
-        % spatialContours{ii,jj,2} = cc;
+        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);       
         
         rfDiaMagnitude{ii,jj,2} = magnitude1STD;
         

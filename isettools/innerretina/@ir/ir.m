@@ -1,5 +1,5 @@
 classdef ir < handle
-    %% The inner retina class stores general properties of the retinal patch 
+    % The inner retina class stores general properties of the retinal patch 
     % and stores the rgcMosaic objects in its mosaic property field.
     %
     %   obj = ir(inputObj, params);    [usually called internally from irCreate]
@@ -15,14 +15,21 @@ classdef ir < handle
     % Neuroscience 22.7 (2002).
     %
     % Properties:
-    %    name:  animal, ir; example: 'macaque ir'
-    %    input: RGB stim or outersegment
-    %    temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE
-    %    mosaic: a cell array, where each cell is an rgcMosaic object,
+    %     name:      animal, ir; example: 'macaque ir'
+    %     row:       N Stimulus row samples
+    %     col:       N Stimulus col samples
+    %     spacing:   Stimulus input spacing (um)
+    %     timing:    Stimulus input time step (sec)
+    %     eyeSide:   Left or right eye
+    %     eyeRadius: Position of patch in radius
+    %     eyeAngle:  Angle (degrees)
+    %     temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE
+    %     numberTrials: number of trials for spike generation
+    %     mosaic: a cell array, where each cell is an rgcMosaic object,
     %               which is a subclass of the ir object.
     %
     % Methods: set, get, compute, plot
-    %       see individual m-files for details.
+    %       c
     %
     % Examples:
     %
@@ -89,7 +96,7 @@ classdef ir < handle
             p.addParameter('eyeAngle',0,@isnumeric);
             p.addParameter('name','ir1',@ischar);
             p.addParameter('species','macaque',@ischar);
-            
+            p.KeepUnmatched = true;
             p.parse(inputObj,varargin{:});
             
             obj.eyeSide   = p.Results.eyeSide;
@@ -163,10 +170,7 @@ classdef ir < handle
         
     end
     
-    % Methods that must only be implemented in the subclasses.
-    % If a subclass does not implement each and every of these methods
-    % it cannot instantiate objects.
-    
+    % Methods that must only be implemented in the subclasses. 
     methods (Abstract, Access=public)
     end
     
