@@ -24,8 +24,8 @@ function hexLocs = computeHexGridNodes(obj)
     % Compute minimum cone spacing (in microns)
     obj.lambdaMin = minConeSpacing(obj);
     obj.lambdaMid = midConeSpacing(obj);
-    grid.lambdaMin = obj.lambdaMin
-    grid.lambdaMid = obj.lambdaMid
+    grid.lambdaMin = obj.lambdaMin;
+    grid.lambdaMid = obj.lambdaMid;
     grid.coneSpacingFunction = @coneSpacingFunction;
     grid.domainFunction = @circularDomainFunction;
     grid.center = obj.center*1e6;
@@ -67,8 +67,8 @@ function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridPa
     
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-    normalizedConeSeparations = coneSeparations/min(coneSeparations(:));
-    densityP = 2/sqrt(3) * (1 ./ normalizedConeSeparations).^2;
+    normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
+    densityP = 0.956 * 2/sqrt(3) * (1 ./ normalizedConeSeparations).^2;
     
     showConeSeparations = false;
     if (showConeSeparations)
@@ -108,13 +108,13 @@ function conePositions = smoothGrid(conePositions, gridParams)
     
     % Convergence parameters
     % fraction = 0.01;
-    fraction = 0.1;
+    fraction = 0.5;
     positionalDiffTolerance = fraction * gridParams.lambdaMin;  
     deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
     
     % fraction = 0.001;
-    fraction = 0.01;
+    fraction = 0.05;
     dTolerance = fraction * gridParams.lambdaMin;
     
     % Initialize convergence
@@ -254,8 +254,8 @@ function lambda = midConeSpacing(obj)
     eccentricityInMeters = sqrt(midX^2 + midY^2);
     ang = atan2(midY, midX)/pi*180;
     [coneSpacingInMeters, aperture, density] = coneSize(eccentricityInMeters,ang);
-    lambda = coneSpacingInMeters * 1e6  % in microns
-    density
+    lambda = coneSpacingInMeters * 1e6;  % in microns
+    
 end
 
 function lambda = minConeSpacing(obj)
@@ -272,8 +272,7 @@ function lambda = minConeSpacing(obj)
     eccentricityInMeters = sqrt(minX^2 + minY^2);
     ang = atan2(minY, minX)/pi*180;
     [coneSpacingInMeters, aperture, density] = coneSize(eccentricityInMeters,ang);
-    lambda = coneSpacingInMeters * 1e6  % in microns
-    density
+    lambda = coneSpacingInMeters * 1e6;  % in microns
 end
 
 function hexLocs = computeHexGrid(rows, cols, lambda)

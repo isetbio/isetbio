@@ -17,9 +17,8 @@ mosaicParams = struct(...
                    'centerInMM', [0.2 -0.2], ...       % 0.2 mm horizontal, 0.1 vertical
                          'size', [60 60] ...          % generate from a rectangular mosaic of 32x50 cones
   );
-mosaicParams.centerInMM = [-0.00 0.00];
 commandwindow
-fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.2f mm, y = %2.2fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
 
 % Generate the hex grid
@@ -33,18 +32,20 @@ theHexMosaic1 = coneMosaicHex(...
 theHexMosaic1.displayInfo();
 theHexMosaic1.visualizeGrid(...
     'overlayConeDensityContour', 'measured', ...     % choose between 'measured', 'theoretical', 'none'
+  'coneDensityContourLevelStep', 5000, ...           % draw contours every 5000 cones/mm2
     'generateNewFigure', true...
     );
 
 theHexMosaic1.visualizeGrid(...
     'overlayConeDensityContour', 'theoretical', ...     % choose between 'measured', 'theoretical', 'none'
+  'coneDensityContourLevelStep', 5000, ...           % draw contours every 5000 cones/mm2
     'generateNewFigure', true...
     );
 
 
 %% Unit test 2: generate a hex mosaic with spatially-uniform cone density positioned
 commandwindow
-fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-uniform cone density positioned at x = %2.1f mm, y = %2.1f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-uniform cone density positioned at x = %2.2f mm, y = %2.2f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause        
 mosaicParams.eccentricityBasedConeDensity = false;
 theHexMosaic2 = coneMosaicHex(...
@@ -56,7 +57,6 @@ theHexMosaic2 = coneMosaicHex(...
 % Print some grid info and visualize it
 theHexMosaic2.displayInfo();
 theHexMosaic2.visualizeGrid(...
-    'overlayConeDensityContour', 'measured', ...
             'generateNewFigure', true...
             );
         

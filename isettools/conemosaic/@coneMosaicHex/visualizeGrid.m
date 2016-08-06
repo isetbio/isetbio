@@ -11,6 +11,7 @@ function visualizeGrid(obj, varargin)
     p.addParameter('overlayNullSensors', false, @islogical);
     p.addParameter('overlayPerfectHexMesh', false, @islogical);
     p.addParameter('overlayConeDensityContour', 'none', @ischar);
+    p.addParameter('coneDensityContourLevelStep', 5000, @isnumeric);
     p.parse(varargin{:});
             
     showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
@@ -19,6 +20,7 @@ function visualizeGrid(obj, varargin)
     showConeDensityContour = p.Results.overlayConeDensityContour;
     generateNewFigure = p.Results.generateNewFigure;
     panelPosition = p.Results.panelPosition;
+    coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
     
     if (showCorrespondingRectangularMosaicInstead)
         titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
@@ -136,8 +138,8 @@ function visualizeGrid(obj, varargin)
         renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     end
     
-    if (showConeDensityContour)
-        contourLevels = 5000: 5000:250000;
+    if (~strcmp(showConeDensityContour, 'none'))
+        contourLevels = coneDensityContourLevelStep: coneDensityContourLevelStep: 250000;
         [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 3.0, 'ShowText', 'on', 'LabelSpacing', 500);
         clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0])
         set(gca, 'CLim', [10000 250000]);
