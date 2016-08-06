@@ -10,21 +10,12 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 % to handle depth as well that are partly implemented and under
 % development.  We plan to integrate this aspect of the modeling with PBRT.
 %
-% A variety of scene types can be created automatically.  The routines that
-% create these scenes, including this one, serve as a template for creating
-% others you may wish to design.
+% A variety of scene types can be created automatically.  To see the list
+% of scenes use
 %
-% Scenes are represented as photons with 32 bits of precision by default.
-% The spectral representation is 400:10:700 by default.  Both of these can
-% be changed.
+%   sceneCreate('list types')
 %
-% To resample with respect to wavelength use the function
-% sceneInterpolateW.
-%
-% The create a scene with 16 bits of precision, call sceneCreate with the
-% full list of opticnal arguments and then append two arguments as in
-%
-%  sceneCreate(<complete list of optional arguments>,'bit depth',16)
+% See also: sceneInterpolateW, sceneAdjustIlluminant
 %
 % MACBETH COLOR AND LUMINANCE CHART
 %
@@ -178,6 +169,9 @@ end
 sceneName = ieParamFormat(sceneName);
 
 switch sceneName
+    case {'scenelist','list'}
+        doc('sceneList')
+        return;
     case 'default'
         % The user can make a Macbeth with different patch sizes and
         % wavelength sampling, by calling with additional arguments, such
@@ -418,14 +412,15 @@ switch sceneName
         scene = sceneGridLines(scene,sz,spacing,spectralType);
         
     case {'checkerboard'}
+        %   sceneCreate('checkerboard',pixelsPerCheck,numberOfChecks)
         period = 16; spacing = 8; spectralType = 'ep';
         if length(varargin) >= 1, period       = varargin{1}; end
         if length(varargin) >= 2, spacing      = varargin{2}; end
         if length(varargin) >= 3, spectralType = varargin{3}; end
         scene = sceneCheckerboard(scene,period,spacing,spectralType);
         
-    case {'demosaictarget','freqorientpattern', ...
-            'frequencyorientation','freqorient'}
+    case {'freqorientpattern', ...
+            'frequencyorientation','freqorient','demosaictarget'}
         %   parms.angles = linspace(0,pi/2,5);
         %   parms.freqs =  [1,2,4,8,16];
         %   parms.blockSize = 64;
@@ -444,11 +439,12 @@ switch sceneName
         %   parms.blockSize = 64;
         %   parms.contrast = .8;
         % scene = sceneCreate('moire orient',parms);
-        if isempty(varargin), scene = sceneMOTarget(scene);
-        else
-            % First argument is parms structure
-            scene = sceneMOTarget(scene,varargin{1});
-        end
+        error('Waiting for ISET');
+        %         if isempty(varargin), scene = sceneMOTarget(scene);
+        %         else
+        %             % First argument is parms structure
+        %             scene = sceneMOTarget(scene,varargin{1});
+        %         end
     case {'slantedbar','iso12233','slantededge'}
         % scene = sceneCreate('slantedEdge',sz, slope, fieldOfView, wave);
         % scene = sceneCreate('slantedEdge',128,1.33);  % size, slope
@@ -1251,7 +1247,6 @@ nWave = sceneGet(scene,'nwave');
 % Select one among sinusoidalim, squareim, sinusoidalim_line,
 % squareim_line, flat img = MOTarget('squareim',parms);
 img = MOTarget('sinusoidalim',parms);
-
 
 % Prevent dynamic range problem with ieCompressData
 img = ieClip(img,1e-4,1);
