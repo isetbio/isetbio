@@ -77,23 +77,12 @@ function visualizeGrid(obj, varargin)
     
     switch showConeDensityContour
         case 'measured'
-            deltaX = 2*obj.lambdaMin*1e-6;
-            areaHalfWidth = deltaX*4;
-            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, 'from mosaic');
+            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, 'from mosaic');
         case 'theoretical'
-            deltaX = 2*obj.lambdaMin*1e-6;
-            areaHalfWidth = deltaX*4;
-            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, 'from model');
+            [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, 'from model');
         case 'none'
         otherwise
             error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
-    end
-    
-    if (~strcmp(showConeDensityContour, 'none'))
-        contourLevels = 10000: 10000:250000;
-        contourf(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineWidth', 1.0);
-        set(gca, 'CLim', [10000 250000]);
-        colormap(1-gray);
     end
     
     if (~showCorrespondingRectangularMosaicInstead)
@@ -148,17 +137,10 @@ function visualizeGrid(obj, varargin)
     end
     
     if (showConeDensityContour)
+        contourLevels = 5000: 5000:250000;
         [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 3.0, 'ShowText', 'on', 'LabelSpacing', 500);
-        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16)
-        % Add colorbar
-        ticks = 10000 : 30000: 250000;
-        tickLabels = sprintf('%2.0fK\n', ticks/1000);
-        hCbar = colorbar('northoutside', 'peer', gca, 'Ticks', ticks, 'TickLabels', tickLabels);
-            hCbar.Orientation = 'horizontal';
-            hCbar.Label.String = 'cone density (cones/mm2)';
-            hCbar.FontSize = 14;
-            hCbar.FontName = 'Menlo';
-            hCbar.Color = [0.2 0.2 0.2];
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0])
+        set(gca, 'CLim', [10000 250000]);
     end
     
     
@@ -177,8 +159,11 @@ function visualizeGrid(obj, varargin)
 end
 
 
-function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, deltaX, areaHalfWidth, computeConeDensityMap)
+function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, computeConeDensityMap)
         
+    deltaX = 3*obj.lambdaMin*1e-6;
+    areaHalfWidth = deltaX*4;
+            
     mosaicRangeX = obj.center(1) + obj.width/2*[-1 1]  + [-obj.lambdaMin obj.lambdaMin]*1e-6;
     mosaicRangeY = obj.center(2) + obj.height/2*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
 
@@ -193,10 +178,10 @@ function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMa
             xo = gridXPos(iXpos);
             yo = gridYPos(iYpos);
             conesWithin = numel(find( ...
-                obj.coneLocsHexGrid(:,1) >= xo-areaHalfWidth-0.5*obj.lambdaMin*1e-6 & ...
-                obj.coneLocsHexGrid(:,1) <= xo+areaHalfWidth+0.5*obj.lambdaMin*1e-6 & ... 
-                obj.coneLocsHexGrid(:,2) >= yo-areaHalfWidth-0.5*obj.lambdaMin*1e-6 & ...
-                obj.coneLocsHexGrid(:,2) <= yo+areaHalfWidth+0.5*obj.lambdaMin*1e-6 ));
+                obj.coneLocsHexGrid(:,1) >= xo-areaHalfWidth  & ...
+                obj.coneLocsHexGrid(:,1) <= xo+areaHalfWidth  & ... 
+                obj.coneLocsHexGrid(:,2) >= yo-areaHalfWidth  & ...
+                obj.coneLocsHexGrid(:,2) <= yo+areaHalfWidth ));
             densityMap(iYpos,iXpos) = conesWithin / measurementAreaInMM2;
         end
         end

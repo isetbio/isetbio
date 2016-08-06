@@ -14,9 +14,10 @@ rng('default'); rng(219347);
 mosaicParams = struct(...
              'resamplingFactor', 7, ...               % controls the accuracy of the hex mosaic grid      
  'eccentricityBasedConeDensity', true, ...            % whether to have an eccentricity based, spatially - varying density
-                   'centerInMM', [0.1 0.2], ...       % 0.2 mm horizontal, 0.1 vertical
-                         'size', [50 50] ...          % generate from a rectangular mosaic of 32x50 cones
+                   'centerInMM', [0.2 -0.2], ...       % 0.2 mm horizontal, 0.1 vertical
+                         'size', [60 60] ...          % generate from a rectangular mosaic of 32x50 cones
   );
+mosaicParams.centerInMM = [-0.00 0.00];
 commandwindow
 fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.1f mm, y = %2.1fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
 pause
