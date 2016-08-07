@@ -237,7 +237,7 @@ classdef coneMosaic < hiddenHandle
         
         % set size to fov
         function obj = setSizeToFOV(obj, fov, varargin)
-            % set cone mosaic size according to the field of view
+            % set cone mosaic size according to the scene field of view
             %
             % Inputs:
             %   fov    - 2-element vector for desired horizontal/vertical
@@ -271,7 +271,43 @@ classdef coneMosaic < hiddenHandle
             coneMosaicWindow(obj);
         end
         
-        % get methods for dependent variables
+        function a = coneAbsorptions(obj,varargin)
+            % cMosaic.coneAbsorptions('L');
+            %
+            % Get absorptions from one the cone classes, possibly in a
+            % specific ROI
+            p = inputParser;
+            p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+            p.addParameter('coneType','all',@ischar);
+            p.addParameter('roi',[],@isvector);   % A rect in the array
+            p.parse(obj,varargin{:});
+            
+            if ~isempty(p.Results.roi)
+                % Clip out the pattern and absorptions
+            end
+            
+            % Pull out the relevant cone type data
+            switch lower(p.Results.coneType)
+                case 'l'
+                    cType = 2;
+                case 'm'
+                    cType = 3;
+                case 's'
+                    cType = 4;
+                otherwise
+                    error('Unknown cone type %s\n',p.Results.coneType);
+            end
+            
+            % Should be a better way to do this.  Help, someone.
+            idx = find(obj.pattern == cType);
+            [iRows,iCols] = ind2sub(size(obj.pattern), idx);
+            a = zeros(size(iRows));
+            for ii=1:length(iRows)
+                a(ii) = obj.absorptions(iRows(ii),iCols(ii));
+            end
+        end
+        
+        %% get methods for dependent variables
         function val = get.wave(obj)
             val = obj.pigment.wave;
         end
@@ -335,7 +371,7 @@ classdef coneMosaic < hiddenHandle
             val = obj.spatialDensity_;
         end
         
-        function val = get.absorptions(obj)
+        function val = get.absorptions(obj)           
             val = double(obj.absorptions);
         end
         
@@ -343,7 +379,7 @@ classdef coneMosaic < hiddenHandle
             val = double(obj.os.coneCurrentSignal);
         end
         
-        % set method for class properties
+        %% set method for class properties
         function set.spatialDensity(obj, val)
             if all(obj.spatialDensity_(:) == val(:)), return; end
             obj.spatialDensity_ = val;
