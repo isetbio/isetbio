@@ -152,6 +152,9 @@ end
 function [cvrlWls,cvrlLMS] = ReturnCVRLLMS
 % I downloaded the SS 2-deg fundamentals from CVRL, April 2015,
 % and pasted them in here (linear energy units, 1 nm sampling).
+% These are pasted here to two places, but there are more digits
+% available on the CVRL site, and (as of Summer 2016) in the PTB
+% data.
 %
 % This function just returns them.  
 cvrlWls = [390
