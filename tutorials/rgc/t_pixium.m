@@ -40,7 +40,7 @@
 %% Initialize
 % clear;
 % ieInit;
-for bwL = 8%[ 32 50] 
+for bwL = 20%[ 32 50] 
     for freqL = 5%[5 8 2 12]
     close all;
 %% Parameters to alter
@@ -58,7 +58,7 @@ patchEccentricity = 4; % mm
 fov = 1.6/3;
 
 % Stimulus length
-nSteps = 30;
+nSteps = 100;
 
 % Activation curve
 
@@ -640,6 +640,11 @@ spikeRespOn= downSampResp(spikesout, numcells, blocklength);
 % recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
 recons_stim_on = reconsFromFilt(filterMat, spikeRespOn);
 
+
+% matfSTA = matfile('/Users/james/Documents/MATLAB/RGC-Reconstruction/output/staFull_may26_on_off.mat');
+% sta = matfSTA.sta;
+% recons_stim_on_sta = reconsFromSTA(sta, spikeRespOn);
+
 % mov = reshape(stim,96,96,size(stim,2));
 movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
     
@@ -670,6 +675,11 @@ filterMat= data.filterMat;
 spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
 
 recons_stim_on_off = reconsFromFilt(filterMat, spikeRespOnOff);
+
+
+matfSTA = matfile('/Users/james/Documents/MATLAB/RGC-Reconstruction/output/staFull_may26_on_off.mat');
+sta = matfSTA.sta;
+recons_stim_on_off_sta = reconsFromSTA(sta, spikeRespOnOff);
 
 % mov = reshape(stim,96,96,size(stim,2));
 %     movrecons_on_off = reshape(recons_stim_on_off,96,96,size(recons_stim_on_off,2));
@@ -705,12 +715,12 @@ clear stimulusReconstructionHealthy
 [stimulusReconstructionHealthy, paramsRecHealthy] = irReconstruct(innerRetinaHealthy, 'tuningWoff', tuningWoffHealthy);
 
 %%
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mp4'];
-path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may27/';
-vObj = VideoWriter([path_str name_str],'MPEG-4');
-vObj.FrameRate = 10;
-vObj.Quality = 100;
-open(vObj);
+% name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mp4'];
+% path_str = '/Users/james/Documents/MATLAB/isetbio misc/pixium_videos/meeting_may27/';
+% vObj = VideoWriter([path_str name_str],'MPEG-4');
+% vObj.FrameRate = 10;
+% vObj.Quality = 100;
+% open(vObj);
 
 sizeScene = size(movingBar.sceneRGB(:,:,1,:));
 
@@ -736,7 +746,8 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
     
     subplot(223);    
 %     imagesc((stimulusReconstructionHealthy(1:paramsRecHealthy.maxx,1:paramsRecHealthy.maxy,frame1)));
-    imagesc((stimulusReconstructionHealthy(1:sizeScene(2),1:sizeScene(2),frame1)));
+%     imagesc((stimulusReconstructionHealthy(1:sizeScene(2),1:sizeScene(2),frame1)));
+        imagesc(movrecons_on(:,:,frame1));
      colormap gray
 %      caxis([1*paramsRecHealthy.minR 1*paramsRecHealthy.maxR]);
     caxis([1*paramsRecHealthy.minR 1*paramsRecHealthy.maxR]);
@@ -747,6 +758,7 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 %     imagesc((stimulusReconstruction(1:paramsRec.maxx,1:paramsRec.maxy,frame1)));
     imagesc((stimulusReconstruction(1:sizeScene(2),1:sizeScene(2),frame1)));
 
+% moviemat = movrecons_on;
      colormap gray
 % %     caxis([.5*paramsRec.minR .5*paramsRec.maxR]);
     caxis([1*paramsRec.minR 1*paramsRec.maxR]);
@@ -755,17 +767,17 @@ for frame1 = 1:params.nSteps%size(movingBar.sceneRGB,3)
 drawnow
 
     F = getframe(h1);
-    writeVideo(vObj,F);
+%     writeVideo(vObj,F);
 end
 end
 
 
-close(vObj)
+% close(vObj)
 
 
-close all;
-clear stimulusReconstruction stimulusReconstructionHealthy
-name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mat'];
-save([path_str name_str])
+% close all;
+% clear stimulusReconstruction stimulusReconstructionHealthy
+% name_str = ['gratingH_20Hz_width_' num2str(params.barWidth) '_freq_' num2str(freqL) '_onM_8_hz_ON_IMS1_' num2str(cputime*100) '.mat'];
+% save([path_str name_str])
     end
 end

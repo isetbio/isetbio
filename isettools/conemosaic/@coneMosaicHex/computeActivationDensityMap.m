@@ -3,8 +3,8 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
 %
 % NPC, ISETBIO TEAM, 2015
 
-    sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1));
-    sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2));
+    sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
+    sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2)) + obj.center(2);
     
     dx = sampledHexMosaicXaxis(2)-sampledHexMosaicXaxis(1);
     interpolationF = 2; dx = dx / interpolationF;

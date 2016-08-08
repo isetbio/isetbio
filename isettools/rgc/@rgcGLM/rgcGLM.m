@@ -39,7 +39,7 @@ classdef rgcGLM < rgcMosaic
         % model;
         % cellType;           % Possible types are ...
         % rfDiameter;         % receptive field center diameter
-        % cellLocation;
+        % cellLocation;       % spatial center of each RF
         % sRFcenter;          % spatial RF of the center on the receptor grid
         % sRFsurround;        % spatial RF of the surround
         % tCenter;            % temporal impulse response of the center

@@ -290,7 +290,8 @@ switch parm
                     oi = oiSet(oi, 'photons', p);
                 end
             else
-                disp('Extrapolation -  Setting oi photon data to zero.')
+                % Maybe we should still print this warning?
+                % disp('Extrapolation -  Setting oi photon data to zero.')
                 sz = oiGet(oi,'size');
                 oi = oiSet(oi,'photons',zeros(sz(1),sz(2),length(val)));
             end

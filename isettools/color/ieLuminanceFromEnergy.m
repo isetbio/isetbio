@@ -1,8 +1,8 @@
-function lum = ieLuminanceFromEnergy(energy,wave)
+function lum = ieLuminanceFromEnergy(energy,wave,varargin)
 % Calculate luminance (cd/m2) and related quantities (lux,lumens,cd) from spectral
 % energy
 %
-%    lum = ieLuminanceFromEnergy(energy,wave)
+%    lum = ieLuminanceFromEnergy(energy,wave,varargin)
 %
 % Purpose:
 %   The CIE formula for luminance converts a spectral radiance distribution
@@ -38,6 +38,15 @@ function lum = ieLuminanceFromEnergy(energy,wave)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+%% Parse input
+p = inputParser;
+p.addRequired('energy',@isnumeric);
+p.addRequired('wave',@isnumeric);
+p.addParameter('quiet',true,@islogical);
+p.parse(energy,wave,varargin{:});
+quiet = p.Results.quiet;
+
+%% Convert data shape
 % xwData = ieConvert2XW(energy,wave);
 switch vcGetImageFormat(energy,wave)
     case 'RGB'
@@ -53,7 +62,10 @@ V = ieReadSpectra(fName,wave);
 % 683 is the standard factor for conversion when the energy are in Watts.
 % The wavelength difference accounts for the wavelength sampling.
 if numel(wave) > 1,  dWave = wave(2) - wave(1);
-else                 dWave = 10;   disp('ieLuminanceFromEnergy monochrome: 10 nm band assumed');
+else                 dWave = 10;   
+    if ~quiet
+        disp('ieLuminanceFromEnergy monochrome: 10 nm band assumed');
+    end
 end
 lum = 683*(xwData*V) * dWave;
 

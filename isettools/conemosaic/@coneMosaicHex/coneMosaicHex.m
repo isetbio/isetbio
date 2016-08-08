@@ -21,6 +21,7 @@ classdef coneMosaicHex < coneMosaic
     
     properties (SetAccess=private)
         lambdaMin                               % min cone separation in the mosaic
+        lambdaMid                               % the cone separation at the middle of the mosaic
         varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)
@@ -54,14 +55,14 @@ classdef coneMosaicHex < coneMosaic
             obj.varyingDensity = p.Results.varyingDensity;
             
             % Generate sampled hex grid
-            obj.resampleGrid(obj.resamplingFactor, obj.varyingDensity);
+            obj.resampleGrid(obj.resamplingFactor);
         end
         
         % Change the FOV of the mosaic
         setSizeToFOVForHexMosaic(obj,fov);
         
         % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
-        resampleGrid(obj, resamplingFactor, varyingDensity);
+        resampleGrid(obj, resamplingFactor);
         
         % Visualize different aspects of the hex grid
         visualizeGrid(obj, varargin);

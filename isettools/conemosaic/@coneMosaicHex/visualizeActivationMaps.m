@@ -12,7 +12,7 @@ function visualizeActivationMaps(obj, activation, varargin)
     p.parse(varargin{:});  
     
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
-        visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+        visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
         visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     else
@@ -21,11 +21,11 @@ function visualizeActivationMaps(obj, activation, varargin)
 end
 
 
-function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, mapType, cMap, signalName, figureSize)
+function visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, figureSize)
 % Visualize mosaic activations as disk mosaics
 
-    sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1));
-    sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2));
+    sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
+    sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2)) + obj.center(2);
     
     if strcmp(mapType, 'modulated disks') 
         iTheta = (0:5:360)/180*pi;
@@ -86,8 +86,8 @@ function visualizeMosaicActivationsMapsAsModulatedDisks(obj, activation, mapType
         renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
         set(gca, 'CLim', [0 1]);
         axis 'image'; axis 'xy';
-        xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
-        yTicks = [sampledHexMosaicYaxis(1) 0 sampledHexMosaicYaxis(end)];
+        xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+        yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
         set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
@@ -182,8 +182,8 @@ function visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalNa
         
         imagesc(sampledHexMosaicXaxis, sampledHexMosaicYaxis, activationMapImage);
         axis 'image'; axis 'xy';
-        xTicks = [sampledHexMosaicXaxis(1) 0 sampledHexMosaicXaxis(end)];
-        yTicks = [sampledHexMosaicYaxis(1) 0 sampledHexMosaicYaxis(end)];
+        xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+        yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
         set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);

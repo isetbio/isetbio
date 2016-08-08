@@ -1,5 +1,5 @@
 classdef rgcMosaic < handle
-% Generates and rgcMosaic object.
+% Generates an rgcMosaic object.
 %
 % The RGC models are detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
 % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
@@ -55,7 +55,7 @@ classdef rgcMosaic < handle
         tonicDrive;         % DC term for linear response
         rfDiaMagnitude;     % for making movies of response
         responseLinear;     % Store the linear response after convolution
-        responseSpikes; 
+        responseSpikes;     % Store the spike times of the responses
         
     end
     
