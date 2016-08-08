@@ -18,14 +18,28 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 
 %% Set up defaults for the sizes and weights.
 
-% More comments on these numbers
-% What are the units? References.  What do these numbers refer to?
-rfSizeMult = [1 .85*1 0.5 .85*0.5 1.2]; 
+% In order to create the spatial RFs for each type of cell, we compute the
+% RF size for the On Parasol cells at a particular eccentricity based on
+% data from Watanabe & Rodieck (J. Comp. Neurol., 1989), Croner & Kaplan
+% (Vision Research, 1995) and Chichilniksy & Kalmar (J Neurosci., 2002,
+% Fig. 5, pg. 2741.). 
+% 
+% For other types of RGCs, we multiply the On Parasol RF size by a unitless
+% factor as listed here. The multipliers are based on Dacey, 2004, "Retinal
+% ganglion cell diversity", in The Cognitive Neurosciences, as well as
+% parameter fits to mosaic data from the Chichilnisky Lab found in the
+% EJLExperimentalRGC iestbio repository.
+
+rfSizeMult(1) = 1;      % On Parasol RF size multiplier
+rfSizeMult(2) = 0.85;   % Off Parasol RF size multiplier
+rfSizeMult(3) = 0.5;    % On Midget RF size multiplier
+rfSizeMult(4) = 0.425;  % Off Midget RF size multiplier
+rfSizeMult(5) = 1.1;    % SBC RF size multiplier
 
 % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
 % in ON and OFF ganglion cells of primate retina." The Journal of
-% Neuroscience 22.7 (2002), Fig. 5, pg. 2741. ** What are the units? **
+% Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
 receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
 
 % If os is osIdentity, determine number of pixels per spatial RF diameter.
@@ -41,13 +55,16 @@ umPerSensorPx = patchSizeX/sensorRows;
 % microns divided by the number of microns per pixel (or cone), scaled by
 % the factor determined by the type of mosaic that is being created.
 
-% in microns; divide by umPerScenePx to get pixels
+% in micrometers; divide by umPerScenePx to get pixels
 rgcM.rfDiameter = rfSizeMult(cellType)*(receptiveFieldDiameterParasol2STD/2); 
 
-% Build spatial RFs of all RGCs in this mosaic - Specify units here!
+% Build spatial RFs of all RGCs in this mosaic
 [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive] = ...
     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, rgcM.rfDiameter);
-
+% sRFcenter, sRFsurround and cellLocation are in units of the inputObj - scene pixels,
+% cones or bipolar cells.
+% rfDiaMagnitude is in units of micrometers.
+% tonicDrive is in units of conditional intensity.
 
 
 end
