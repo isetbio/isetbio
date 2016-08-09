@@ -27,6 +27,7 @@ function [respCenter, respSurround] = spConvolve(mosaic, input)
 %   handle osDisplayRGB case.
 %
 % JRG, ISETBIO TEAM, 2015
+% 7/2016, JRG/BW updated
 
 %% init parameters
 nSamples = size(input, 3);

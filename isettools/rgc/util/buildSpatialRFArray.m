@@ -32,14 +32,14 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 
 % Spacing must be in microns
 if spacing < 1e-2, spacing = spacing * 1e6; end
-patchSize = [spacing spacing];  % width / height in um
+patchSize = [spacing*inRow/inCol spacing];  % width / height in um
 
 % Determine the number of RGCs in the mosaic
 nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 
 % Convert rf diameter in units of number of cones
 % Notice this is based only columns, assuming the 
-rfDiameter = rfDiameter / (patchSize(1) / inCol);
+rfDiameter = rfDiameter / (patchSize(2) / inCol);
 
 extent = 2.5;    % ratio between sampling size and spatial RF
 r = 0.75;        % radius ratio between center and surround
@@ -47,9 +47,9 @@ k = 1.032 * r;   %
 
 % centers of receiptive fields
 centerNoise = 1.25; % divide by 2 for mean offset
-centerX = (0:2:nRGC(2)-1)*rfDiameter + centerNoise; 
-centerY = (0:2:nRGC(1)-1)*rfDiameter - centerNoise;
-rows = length(centerY); cols = length(centerX);
+centerX = (0:2:nRGC(1)-1)*rfDiameter + centerNoise; 
+centerY = (0:2:nRGC(2)-1)*rfDiameter - centerNoise;
+rows = length(centerX); cols = length(centerY);
 
 % points out to the extent of the spatial RF
 pts = -extent*rfDiameter+1 : extent*rfDiameter;

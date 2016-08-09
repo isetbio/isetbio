@@ -59,7 +59,8 @@ oi  = oiCreate('wvf human');
 fLength = oiGet(oi, 'focal length');
 eccMM = 2 * tand(params.radius/2) * fLength * 1e3;
 coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
-coneSz = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
+coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
+coneSz(2) = coneSz(1);
 
 cm = coneMosaic;
 cm.pigment.width = coneSz(1); cm.pigment.height = coneSz(2);

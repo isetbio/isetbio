@@ -13,7 +13,8 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 %
 % [ON Parasol; OFF Parasol; ON Midget; OFF Midget; Small bistratified];
 %
-% JRG, ISETBIO Team, 2016
+% 9/2015 JRG, ISETBIO Team
+% 7/2016 JRG updated
 
 
 %% Set up defaults for the sizes and weights.

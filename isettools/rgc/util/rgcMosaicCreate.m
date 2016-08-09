@@ -1,5 +1,5 @@
 function ir = rgcMosaicCreate(ir, varargin)
-% Add a type of RGC mosaic with a specific computational model
+% Add a type of RGC mosaic with a specific computational model.
 %
 % The rgc mosaics are stored as a cell array within the inner retina (ir)
 % class.  The RGC mosaics are the main computational engine for producing
@@ -75,6 +75,7 @@ switch ieParamFormat(model)
         irSet(ir, 'mosaic', obj);
     case{'phys','rgcphys'}
         % Unit testing of the physiology
+        % Requires the isetbio repository EJLExperimentalRGC
         obj = rgcPhys(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     otherwise

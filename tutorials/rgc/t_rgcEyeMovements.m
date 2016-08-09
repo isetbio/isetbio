@@ -15,7 +15,7 @@
 
 %% Initialize parameters
 
-clx; ieInit;
+% clx; ieInit;
 
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
