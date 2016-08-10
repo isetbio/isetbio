@@ -366,7 +366,8 @@ for step = 1:stepLevels
     
     % And with outersegment object.
     noiseFlag = 0;
-    adaptedOSDec = osBioPhys('noiseFlag', noiseFlag);
+    adaptedOSDec = osBioPhys();
+    adaptedOSDec = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
     adaptedOSDec = osSet(adaptedOSDec, 'timeStep', timeStep);
     adaptedOSDec.compute(pRate, coneType, 'bgR', 0);
     
