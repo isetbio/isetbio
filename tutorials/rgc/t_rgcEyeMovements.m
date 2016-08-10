@@ -22,8 +22,12 @@ ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
 
 sceneType = 'rings rays';
+% sceneType = 'vernier';
 cellType = 'on parasol';
 
+
+%%
+if strcmp(sceneType,'rings rays')
 %% Build a scene and oi for computing
 
 s = sceneCreate(sceneType);
@@ -31,6 +35,43 @@ s = sceneSet(s,'fov',fov);
 s = sceneAdjustLuminance(s,10);
 vcAddObject(s);
 
+%%
+elseif strcmp(sceneType,'rings rays')
+%% Create the display
+% In this example we impose a linear gamma table, though
+% in general it could be the default or anything.
+dpi = 500; d = displayCreate('LCD-Apple','dpi',dpi);
+
+viewDist = 2; % viewing distance in meters
+d = displaySet(d, 'viewing distance', viewDist);
+d = displaySet(d, 'gamma', 'linear');
+%% Create Vernier Scene (full display radiance representation)
+[~, p] = imageVernier();   % Mainly to get the parameters
+p.pattern = 0.2*ones(1,513); p.pattern(257) = 1;
+p.sceneSz = [513 513];
+
+% Aligned
+p.offset = 0;
+imgA = imageVernier(p);
+
+% Misaligned
+p.offset = 2;
+imgM = imageVernier(p);
+        
+% Create a scene with the image using the display parameters
+% The scene spectral radiance is created using the RGB image and the
+% properties of the display.
+sceneA = sceneFromFile(imgA, 'rgb', [], d); % aligned
+sceneM = sceneFromFile(imgM, 'rgb', [], d); % mis-aligned
+
+fov = size(imgA,2)/displayGet(d,'dots per deg');
+sceneA = sceneSet(sceneA,'fov',fov);
+sceneM = sceneSet(sceneM,'fov',fov);
+
+s = sceneM;
+%%
+end
+%%
 oi = oiCreate;
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
@@ -142,6 +183,7 @@ psth = innerRetinaSU.mosaic{1}.get('psth');
 clear params
 params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
 param.FrameRate = 5; params.step = 2; params.show = false;
-ieMovie(psth,params);
+%  figure; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
+figure; ieMovie(psth,params);
 
 figure; imagesc(mean(psth,3))

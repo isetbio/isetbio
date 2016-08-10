@@ -81,7 +81,7 @@ nSteps = min(sceneGet(scene,'cols') - params.barWidth, params.nSteps);
 for t = 1 : nSteps
     waitbar(t/nSteps,wbar);
         
-    barMovie = ones([sceneGet(scene, 'size'), 3])*0.001;  % Gray background
+    barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
     barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar
 
     % Generate scene object from stimulus RGB matrix and display object

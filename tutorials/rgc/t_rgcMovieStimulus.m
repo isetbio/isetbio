@@ -14,14 +14,16 @@
 %% Initialize parameters
 
 % clx; ieInit;
-
+clear;
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
-fov = 2;            % Scene Field of view in degrees
+fov = 2.8;            % Scene Field of view in degrees
 
 params.nSteps = 150;
-iStim = ieStimulusBar(params);
-% iStim = ieStimulusGabor(params);
+params.freq = 3;
+params.GaborFlag = 0.2;
+% iStim = ieStimulusBar(params);
+iStim = ieStimulusGabor(params);
 cMosaic = iStim.cMosaic;
 %% Compute the bipolar response
 
@@ -63,6 +65,7 @@ psth = innerRetinaSU.mosaic{1}.get('psth');
 clear params
 params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
 param.FrameRate = 5; params.step = 2; params.show = false;
+% figure; ieMovie(innerRetinaSU.mosaic{1}.responseLinear(:,:,1:120));
 figure; ieMovie(psth,params);
 
 % figure; imagesc(mean(psth,3))
