@@ -138,7 +138,9 @@ if ~exist('parm','var') || isempty(parm)
 end
 val = [];
 
-% See if this is really an optics call
+% See if this is really an optics call.  The routine ieParameterOtype will
+% do some fragile magic to decide whether want to do a subcall into
+% opticsGet or lensGet.  
 [oType,parm] = ieParameterOtype(parm);
 switch oType
     case 'optics'
