@@ -2,7 +2,20 @@ function p = osInit(varargin)
 % Initialize parameters in Rieke adaptation model
 %
 %    p = osInit
-%
+% 
+% The difference equation model implemented in the computation of the
+% osBioPhys outer segment current takes a number of parameters in order to
+% initialize the current response. 
+% 
+% This function allows the user to choose between two sets of parameters,
+% one for peripheral patches and one for foveal patches. The foveal cone
+% response is slightly slower than the peripheral, as shown by their
+% impulse responses.%
+% 
+% Reference:
+%   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
+%   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
+% 
 % See also:  osAdaptSteadyState, osAdaptTemporal, coneAdapt
 %
 % HJ, ISETBIO Team Copyright 2014

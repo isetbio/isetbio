@@ -29,6 +29,7 @@ addParameter(p,'fov',            0.6,   @isnumeric);
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'timeInterval',   0.005, @isnumeric);
 addParameter(p,'display',   'LCD-Apple',@ischar);
+addParameter(p,'os',            'linear',@ischar);
 
 % Retinal patch parameters
 addParameter(p,'radius',         0,  @isnumeric);
@@ -38,6 +39,7 @@ addParameter(p,'side',           'left',  @ischar);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
+osType = p.Results.os;
 
 % Turn off so we supercede with this wait bar
 wFlag = ieSessionGet('wait bar');
@@ -62,7 +64,13 @@ coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
 coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
-cm = coneMosaic;
+if strcmpi(osType, 'biophys');
+    osCM = osBioPhys();
+    cm = coneMosaic('os',osCM);
+else
+    cm = coneMosaic;
+end
+
 cm.pigment.width = coneSz(1); cm.pigment.height = coneSz(2);
 
 % set size to field of view
@@ -77,13 +85,19 @@ fprintf('Computing cone isomerizations:    \n');
 wbar = waitbar(0,'Stimulus movie');
 % Loop through frames to build movie
 % The number of steps must be smaller than the width of the scene
-nSteps = min(sceneGet(scene,'cols') - params.barWidth, params.nSteps);
+grayStart = 50; grayEnd = 20;
+% nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
+nStepsStim = (sceneGet(scene,'cols')+grayStart-params.barWidth);
+nSteps = nStepsStim + grayEnd;
 for t = 1 : nSteps
     waitbar(t/nSteps,wbar);
         
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
-    barMovie(:,t:(t+params.barWidth-1),:) = 1;            % White bar
-
+    
+    if t > grayStart && t < nStepsStim
+    barMovie(:,t-grayStart+1:(t-grayStart+1+params.barWidth-1),:) = 1;            % White bar
+    end
+    
     % Generate scene object from stimulus RGB matrix and display object
     scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 

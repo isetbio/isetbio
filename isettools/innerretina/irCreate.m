@@ -1,5 +1,5 @@
 function obj = irCreate(inputObj, varargin)
-%% irCreate: generate an @ir object.
+% Generate an ir object.
 %
 %  obj = irCreate(inputObj, params)
 % 
@@ -10,19 +10,17 @@ function obj = irCreate(inputObj, varargin)
 %             'eyeAngle',eyeAngle
 %             
 % Inputs: 
-%  os:     a outer segment structure
-%  name:   Name for this instance
-%  model:   Computation type for all the rgc mosaics
+%  inputObj:  a bipolar object or osDisplayRGBo object
+%  name:      Name for this instance
+%  model:     Computation type for all the rgc mosaics
 %       'linear' - Basic linear filtering as in typical center-surround
 %       'LNP'    - linear-nonlinear-Poisson, see Pillow paper as below; only contains post-spike filter
 %       'GLM'    - coupled generalized linear model, see Pillow paper, includes coupling filters  
-%       'Subunit'- cones act as individual subunits
 %       'Phys'   - pulls a set of parameters measured in physiology by
 %                           the Chichilnisky lab.
 %
 % Outputs: 
-%  rgc object: There are several types divided according to the model
-%              implementation.
+%  rgc object: of the specified model type
 % 
 % The coupled-GLM model is described in Pillow, Shlens, Paninski, Sher,
 % Litke, Chichilnisky & Simoncelli, Nature (2008).
@@ -37,7 +35,7 @@ function obj = irCreate(inputObj, varargin)
 %   innerRetina = irCreate(os,'name','EJ',...
 %             'eyeSide','left','eyeRadius',12,'eyeAngle',90));
 % 
-% See also:  t_rgc.m
+% See also:  ir.m, rgcMosaic.m
 %
 % JRG 9/2015 Copyright ISETBIO Team
 % JRG 7/2016 updated

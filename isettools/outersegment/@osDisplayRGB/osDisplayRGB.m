@@ -1,14 +1,18 @@
 classdef osDisplayRGB < outerSegment 
-% @osIdentity: a subclass of @outerSegment object
-% 
-% This subclass bypass the temporal filtering of the other outer segment
-% subclasses and passes the cone isomerizations without modification. 
-% It is intended to be used for stimulus-referred retinal
-% ganglion cell models initially.
-% 
-% identityOS = osIdentity(); 
+% displayRGB subclass of the outersegment object
 %
-% 7/2015 JRG
+%   os = osDisplayRGB();
+%
+% Bypasses the temporal filtering of the other outer segment subclasses and
+% passes the cone isomerizations without modification. It is intended to be
+% used for stimulus-referred retinal ganglion cell models initially.
+% 
+% displayRGBOS = osDisplayRGB(); 
+% 
+% See also subclasses:
+%       osLinear.m, osBioPhys.m
+%
+% JRG/HJ/BW, ISETBIO Team, 2016
 
     % Public properties.
     properties (SetAccess = public, GetAccess = public)

@@ -35,8 +35,8 @@ function ir = irCompute(ir, input, varargin)
 %
 % See also: rgcMosaic, irComputeSpikes, irComputeLinearSTSeparable
 %
-% JRG (c) isetbio team
-
+% 9/2015 JRG (c) isetbio team
+% 7/2016 JRG updated
 %% Parse inputs
 p = inputParser;
 p.CaseSensitive = false;

@@ -8,13 +8,8 @@ classdef bipolar < handle
 % photocurrent. 
 % 
 % In order to achieve this, the bipolar temporal impulse response (IR)
-% ought to be the result of deconvolution of the cone IR from the RGC IR.
-% However, we also want to simulate the nonlinear outer segment model, so
-% we approximate this bipolar temporal filter with a weighted
-% differentiator, such that responseBipolar(t) = w1*responseCone(t) +
-% w2*responseCone'(t), where w1 is close to zero and w2 is a large negative
-% number.
-
+% is the result of deconvolution of the cone IR from the RGC IR.
+%
 % The bipolar object also allows for the simulation of nonlinear subunits
 % within retinal ganglion cell spatial receptive fields.
 % 

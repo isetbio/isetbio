@@ -8,6 +8,8 @@ function contrast = ieContrast(sigIn,varargin)
 %
 % N.B. If the data are constant, then the return is all zero contrast.
 %
+% See also irComputeLinearSTSeparable.m
+% 
 % JRG/BW ISETBIO Team, 2016
 
 %% Parse
@@ -18,9 +20,9 @@ sigIn = p.Results.sigIn;
 
 sizeSig = size(sigIn);
 sigSS = sigIn;
+
+% % Only compute denominator for contrast using steady state signal
 % sigSS = sigIn(:,:,end-round(.5*sizeSig(3)):end);
-
-
 
 %%
 range = max(sigSS(:)) - min(sigSS(:));

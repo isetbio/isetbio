@@ -1,16 +1,20 @@
 classdef osBioPhys < outerSegment 
-% @osBioPhys: a subclass of @outerSegment that implements a biophysical
-% model of the phototransduction cascade to convert cone isomerizations
-% (R*) to current (pA). The model was built by Fred Rieke, and details can
-% be found at:
-%
-% http://isetbio.github.io/isetbio/cones/adaptation%20model%20-%20rieke.pdf
-% and 
-% https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
-%
-% adaptedOS = osBioPhys();
+% BioPhys subclass of the outersegment object
 % 
-% 7/2015 JRG
+%       os = osBioPhys();
+% 
+% Converts isomerizations (R*) to outer segment current (pA). The
+% difference equation model by Rieke implements a biophysical
+% simulation of the phototransduction cascade. If the noiseFlag
+% property of the osLinear object is set to 1, this method will add noise
+% to the current output signal.
+%%
+% Reference:
+%   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
+%   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
+% 
+% JRG/HJ/BW, ISETBIO Team, 2016
+
     properties(Access = private)
         state;   % biophysics parameter state
     end

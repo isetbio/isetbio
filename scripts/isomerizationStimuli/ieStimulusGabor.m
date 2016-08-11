@@ -65,6 +65,7 @@ addParameter(p,'ang',             0,    @isnumeric);
 addParameter(p,'GaborFlag',       1,    @isnumeric);  
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'nCycles',        4, @isnumeric);
+addParameter(p,'os',            'linear',@ischar);
 
 % Viewing parameters
 addParameter(p,'fov',            0.6, @isnumeric);
@@ -79,6 +80,9 @@ addParameter(p,'side',           'left',  @ischar);
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
+
+osType = p.Results.os;
+
 if params.row == 0
     % Make sure we have enough row and column samples to avoid aliasing the
     % frequency.  Eight is arbitrary, but four times Nyquist.
@@ -103,8 +107,14 @@ coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
 coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
-cm = coneMosaic;
-cm.pigment.width  = coneSz(1); 
+if strcmpi(osType, 'biophys');
+    osCM = osBioPhys();
+    cm = coneMosaic('os',osCM);
+else
+    cm = coneMosaic;
+end
+
+cm.pigment.width  = coneSz(1);
 cm.pigment.height = coneSz(2);
 
 % set size to field of view
@@ -128,14 +138,22 @@ cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 wFlag = ieSessionGet('wait bar'); ieSessionSet('wait bar',false);
 
 wbar = waitbar(0,'Stimulus movie');
-
+grayStart = 50; grayEnd = 20;
 % Loop through frames to build movie
 for t = 1 : params.nSteps
     waitbar(t/params.nSteps,wbar);
         
     % All we do is update the phase of the Gabor
     params.ph = (2*pi)*params.nCycles*(t-1)/params.nSteps; % one period over nSteps
-    scene = sceneCreate('harmonic', params);
+    
+    if t > grayStart && t < params.nSteps-grayEnd
+        scene = sceneCreate('harmonic', params);
+    else
+        contrastOld = params.contrast;
+        params.contrast = 0;
+        scene = sceneCreate('harmonic', params);
+        params.contrast = contrastOld;
+    end
     
     scene = sceneAdjustLuminance(scene,params.meanLuminance);
     scene = sceneSet(scene,'distance',params.distance);
