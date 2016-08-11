@@ -1,8 +1,14 @@
-function obj = irCreate(os, varargin)
-%% irCreate: generate an @rgcLinear, @rgcLNP or @rgcGLM object.
+function obj = irCreate(inputObj, varargin)
+%% irCreate: generate an @ir object.
 %
-%  obj = irCreate(outersegment,'name',name,'eyeSide',{'left','right'},'eyeRadius',eyeRadius,'eyeAngle',eyeAngle)
+%  obj = irCreate(inputObj, params)
 % 
+%           params:
+%             'name', name
+%             'eyeSide',{'left','right'},
+%             'eyeRadius',eyeRadius
+%             'eyeAngle',eyeAngle
+%             
 % Inputs: 
 %  os:     a outer segment structure
 %  name:   Name for this instance
@@ -34,42 +40,22 @@ function obj = irCreate(os, varargin)
 % See also:  t_rgc.m
 %
 % JRG 9/2015 Copyright ISETBIO Team
+% JRG 7/2016 updated
 
 %% Parse inputs
 p = inputParser;
-p.addRequired('os');
+p.addRequired('inputObj');
 addParameter(p,'name','inner retina',@ischar);
 addParameter(p,'species','unknown',@ischar);
 
-% In the future, we will read these from the os object, not here.  JRG is
-% adding these parameters
+% In the future, we will read these from the input object
 addParameter(p,'eyeSide',    'left', @ischar);
 addParameter(p,'eyeRadius',   4,     @isnumeric);
 addParameter(p,'eyeAngle',    0,     @isnumeric);  % X-axis is 0, positive Y is 90
 
-p.parse(os,varargin{:});
-
-% Maybe delete?? BW/JRG
-switch class(os)
-    case{'osIdentity'}
-        % For fast testing.  Creates a random image
-        if isempty(osGet(os,'rgbData'))
-            os = osSet(os, 'rgbData', rand(64));
-        end
-        
-        if isempty(osGet(os,'patch size'))
-            os = osSet(os, 'patch size', 180);
-        end
-        
-        if isempty(osGet(os,'time step'))
-            os = osSet(os,'time step',.01);
-        end
-
-    otherwise
-        % Don't worry, carry on
-end
+p.parse(inputObj,varargin{:});
 
 %% Create the object
-obj = ir(os, p.Results);
+obj = ir(inputObj, p.Results);
 
 

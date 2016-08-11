@@ -59,7 +59,7 @@ switch obj.cellType
         % colormap([rand(length(lmConeIndices),3)])
         osSigRSZMCenter(sConeIndices,:) = osSigRSZMCenter(lmConeIndices(minindlm),:);
         osSigRSZMSurround(sConeIndices,:) = osSigRSZMSurround(lmConeIndices(minindlm),:);
-        
+    % Keep S cone input for off Midget but only weight by 0.25
     case{'offMidget'}
         sConeIndices = find(obj.coneMosaic==4);
         minval = min(osSigRSZM(:));
@@ -68,7 +68,8 @@ switch obj.cellType
         
         osSigRSZMSurround   = osSigRSZM;
         osSigRSZMSurround(sConeIndices,:) = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
-    
+    % Make nearest S cones the center for SBCs, only L and M cones in
+    % surround
     case{'onDiffuseSBC'}        
         lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
         sConeIndices = find(obj.coneMosaic==4);
@@ -187,32 +188,34 @@ else
 end
 
 % 
-bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
-
-bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
+% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
+% 
+% bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
+% bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
 
 % % % % % 
-% bipolarOutputCenterRS = convn(bipolarFilt',spatialSubsampleCenterRS,'same');
-% bipolarOutputSurroundRS = convn(bipolarFilt',spatialSubsampleSurroundRS,'same');
-% 
-% if size(spatialSubsampleCenterRS,2) < size(bipolarFilt,1)
-%     
-%     bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
-%     bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
-%     
-%     bipolarOutputCenterRS = bipolarOutputCenterRS(:,floor(size(bipolarFilt,1)/2):end);
-%     bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,floor(size(bipolarFilt,1)/2):end);
-%     
-% elseif size(bipolarOutputCenterRS,2) > floor(size(bipolarFilt,1)/2)
-%     bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-%     bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
-% 
-%     bipolarOutputCenterRS = bipolarOutputCenterRS(:,1:end-floor(size(bipolarFilt,1)/2));
-%     bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,1:end-floor(size(bipolarFilt,1)/2));
-% 
-% end
+bipolarOutputCenterRS = convn(bipolarFilt',spatialSubsampleCenterRS,'same');
+bipolarOutputSurroundRS = convn(bipolarFilt',spatialSubsampleSurroundRS,'same');
+
+% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+if size(spatialSubsampleCenterRS,2) < size(bipolarFilt,1)
+    
+    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
+    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+    
+    bipolarOutputCenterRS = bipolarOutputCenterRS(:,floor(size(bipolarFilt,1)/2):end);
+    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,floor(size(bipolarFilt,1)/2):end);
+    
+elseif size(bipolarOutputCenterRS,2) > floor(size(bipolarFilt,1)/2)
+    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
+    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
+
+    bipolarOutputCenterRS = bipolarOutputCenterRS(:,1:end-floor(size(bipolarFilt,1)/2));
+    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,1:end-floor(size(bipolarFilt,1)/2));
+
+end
 % % % % % % 
 
 % Rezero

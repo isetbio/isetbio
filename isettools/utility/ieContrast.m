@@ -1,4 +1,4 @@
-function contrast = ieContrast(sig,varargin)
+function contrast = ieContrast(sigIn,varargin)
 % Convert a signal to a contrast
 %
 %    contrast = ieContrast(sig)
@@ -12,13 +12,19 @@ function contrast = ieContrast(sig,varargin)
 
 %% Parse
 p = inputParser;
-p.addRequired('sig',@isnumeric);
+p.addRequired('sigIn',@isnumeric);
+p.parse(sigIn,varargin{:});
+sigIn = p.Results.sigIn;
 
-p.parse(sig,varargin{:});
-sig = p.Results.sig;
+sizeSig = size(sigIn);
+sigSS = sigIn;
+% sigSS = sigIn(:,:,end-round(.5*sizeSig(3)):end);
+
+
 
 %%
-range = max(sig(:)) - min(sig(:));
+range = max(sigSS(:)) - min(sigSS(:));
+sig = sigIn;
 if range == 0
     warning('Constant data, hence zero contrast.');
     contrast = zeros(size(sig));

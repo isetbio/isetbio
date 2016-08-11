@@ -1,15 +1,20 @@
 function obj = mosaicSet(obj, param, val, varargin)
-% mosaicSet for @rgcMosaic superclass
+% Sets a property for an rgcMosaic object.
 %
-%  mosaic = mosaicGet(mosaic, property, value, varargin)
+%  mosaic = mosaicSet(mosaic, property, value, varargin)
 %  
-% The subclasses rgcLinear, rgcLNP and others use this mosaicSet unless
-% they have a special variable.
+% The mosaicSet function sets a property for the mosaic object if the
+% property is defined in the rgcMosaic superclass. The subclasses of
+% rgcMosaic have properties not included here, and if the request is not
+% for one of the properties common to all subclasses, then the subclass
+% mosaicSet is called.
 %
 % Inputs: 
-%   mosaic - 
-%   param  -
-%   value  - 
+% 
+%   obj    - rgc object
+%   param  - parameter string
+%   val    - parameter value
+%   varargin - Not used yet, but will be used for units and other things.
 % 
 % Outputs: 
 %    obj with property set appropriately
@@ -29,7 +34,8 @@ function obj = mosaicSet(obj, param, val, varargin)
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'linearResponse', linearResponse)
 % 
-% 9/2015 JRG  
+% 9/2015 JRG (c) isetbio team
+% 7/2016 JRG updated
 
 %% Parse
 p = inputParser;
@@ -61,26 +67,42 @@ p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
 p.addRequired('val');
 
 p.parse(param,val,varargin{:}); 
-param = p.Results.param;
+param = ieParamFormat(p.Results.param);
 val   = p.Results.val;
 
 %% Set key-value pairs.
 switch lower(param)
     case{'celltype'}
+        % String that stores cell type name
         obj.cellType = val;
     case{'rfdiameter'}
+        % Spatial RF diameter in micrometers
         obj.rfDiameter = val;
     case{'rfdiamagnitude'}
+        % Magnitude of linear spatial RF in units of spikes/sec at which 1
+        % SD contours are computed.
         obj.rfDiaMagnitude = val;
-    case{'celllocation'}
+    case{'celllocation'}        
+        % Location of RF center in units of zero-centered cone position
+        % The center of the RGC mosaic is at [0 0]
+        % If ir.mosaic{1}.cellLocation{1,1} = [-40 -40], then the mosaic
+        % underlying cone mosaic is about [80x80] depending on RF size 
         obj.cellLocation = val;
     case{'srfcenter'}
+        % Linear spatial center RF in units of conditional intensity,
+        % related by Poisson firing to spikes/sec.
         obj.sRFcenter = val;
     case{'srfsurround'}
+        % Linear spatial surround RF in units of conditional intensity,
+        % related by Poisson firing to spikes/sec.spikes/sec.
         obj.sRFsurround = val;
     case{'tcenter'}
+        % Linear temporal center impulse response in units of conditional
+        % intensity, related by Poisson firing to spikes/sec
         obj.tCenter = val;                
     case{'tsurround'}
+        % Linear temporal surround impulse response in units of conditional
+        % intensity, related by Poisson firing to spikes/sec
         obj.tSurround = val;
                 
     case{'tcenterall'}
@@ -103,12 +125,18 @@ switch lower(param)
         end
         obj.tSurround = tSurroundNew;
     case {'dt'}
+        % The bin subsampling size. In the original Pillow code, was a
+        % fraction of the sampling rate of the linear response (usually
+        % 1/120 = 0.0083 sec). Now it takes into account the linear
+        % sampling rate and is given in units of microseconds.
         obj.dt = val;
         
     case{'responselinear'}
-        % Need to deal with possibility of multiple trials!
+        % Linear response in units of conditional intensity, related by
+        % Poisson firing to spikes/sec
         obj.responseLinear = val;
     case {'responsespikes'}
+        % The spike times on a given trial.
         obj.responseSpikes = val;
 end
 

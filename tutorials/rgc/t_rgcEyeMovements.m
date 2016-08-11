@@ -2,47 +2,86 @@
 %
 % This tutorial generates RGC responses to static image. This tutorial also
 % includes
-%   * Eye movements
-%   
 %
+%   * Create a scene
+%   * Create an optical image
+%   * Calculate a cone mosaic of the fixed scene with eye movements 
+%   * Calculate bipolar
+%   * Calculate RGC for on parasol 
 %
 % Based on t_coneMosaic and t_rgcAverageFull.
 % 
 % 7/2016 JRG HJ BW (c) isetbio team
 
-%% Initialize
+%% Initialize parameters
 
-ieInit
+% clx; ieInit;
 
 % Initialize parameters of simulated retinal patch
-ecc = 0; % mm
-fov = .25;
+ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
+fov = 2;            % Scene Field of view in degrees
 
-rdtUploadFlag = 1;
-rdtDownloadFlag = 0;
+sceneType = 'rings rays';
+% sceneType = 'vernier';
+cellType = 'on parasol';
+
+
+%%
+if strcmp(sceneType,'rings rays')
 %% Build a scene and oi for computing
 
-% s = sceneCreate('vernier');
-% s.distance = 1;
-
-s = sceneCreate('rings rays');
+s = sceneCreate(sceneType);
+s = sceneSet(s,'fov',fov);
+s = sceneAdjustLuminance(s,10);
 vcAddObject(s);
-% s = sceneCreate('slanted bar');
-% fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
-% s = sceneFromFile(fname,'rgb');
 
-s = sceneSet(s,'fov',2);
+%%
+elseif strcmp(sceneType,'rings rays')
+%% Create the display
+% In this example we impose a linear gamma table, though
+% in general it could be the default or anything.
+dpi = 500; d = displayCreate('LCD-Apple','dpi',dpi);
 
+viewDist = 2; % viewing distance in meters
+d = displaySet(d, 'viewing distance', viewDist);
+d = displaySet(d, 'gamma', 'linear');
+%% Create Vernier Scene (full display radiance representation)
+[~, p] = imageVernier();   % Mainly to get the parameters
+p.pattern = 0.2*ones(1,513); p.pattern(257) = 1;
+p.sceneSz = [513 513];
+
+% Aligned
+p.offset = 0;
+imgA = imageVernier(p);
+
+% Misaligned
+p.offset = 2;
+imgM = imageVernier(p);
+        
+% Create a scene with the image using the display parameters
+% The scene spectral radiance is created using the RGB image and the
+% properties of the display.
+sceneA = sceneFromFile(imgA, 'rgb', [], d); % aligned
+sceneM = sceneFromFile(imgM, 'rgb', [], d); % mis-aligned
+
+fov = size(imgA,2)/displayGet(d,'dots per deg');
+sceneA = sceneSet(sceneA,'fov',fov);
+sceneM = sceneSet(sceneM,'fov',fov);
+
+s = sceneM;
+%%
+end
+%%
 oi = oiCreate;
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
-cMosaic = coneMosaic;  % Create the object
+cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
 % cMosaic.rows = 100; cMosaic.cols = 120;
-% cMosaic.rows = 144; cMosaic.cols = 176;
-cMosaic.emGenSequence(100);
+cMosaic.rows = 144; cMosaic.cols = 176;
+cMosaic.emGenSequence(500);
 
 cMosaic.compute(oi,'currentFlag',true);
 
@@ -52,28 +91,7 @@ cMosaic.compute(oi,'currentFlag',true);
 % Examine the outer segment current
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
 
-%% Upload to RDT (optional)
 
-if rdtUploadFlag
-    save('/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/image_responses/rings-rays2.mat','cMosaic');
-    filename1 = '/Users/james/Documents/MATLAB/isetbio misc/RDT uploads/image_responses/rings-rays2.mat';
-    client = RdtClient('isetbio');
-    client.credentialsDialog();
-    client.crp('/resources/data/rgc/image_responses')
-    version1 = '1';
-    artifact = client.publishArtifact(filename1, 'version', version1);
-    client.openBrowser;
-end
-%% Load from RDT (optional)
-
-if rdtDownloadFlag
-    
-    rdt = RdtClient('isetbio');
-    rdt.crp('resources/data/rgc/image_responses');
-    data = rdt.readArtifact('rings-rays', 'type', 'mat');
-    cMosaic = data.cMosaic;
-
-end
 %% Compute the bipolar response
 
 bp = bipolar(cMosaic.os);
@@ -82,78 +100,72 @@ bp.set('sRFsurround',1);
 bp.compute(cMosaic.os);
 
 %% Set RGC mosaic parameters
+% 
+% experimentID = 'RPE_201602171';
+% stimulusTest = 'bar';
 
-experimentI = 1;
-stimulusTestI = 1;
-cellTypeI = 1;
-
-% Switch on the conditions indices
-% Experimental dataset
-switch experimentI
-    case 1; experimentID = 'RPE_201602171';
-    otherwise; error('Data not yet available');
-end
-% The other experimental data will be added to the RDT in the future.
-
-% Stimulus: white noise or natural scene movie with eye movements
-switch stimulusTestI
-    case 1; stimulusTest = 'bar';
-end
-
-% Cell type: ON or OFF Parasol
-switch cellTypeI
-    case 1; 
-        cellType = 'On Parasol RPE';      
-    case 2; 
-        cellType = 'Off Parasol RPE';        
-    case 3; 
-        cellType = 'On Midget RPE';        
-    case 4; 
-        cellType = 'Off Midget RPE';
-    case 5; 
-        cellType = 'SBC RPE';
-    case 6;
-        cellType = 'On Parasol Apricot';        
-    case 7;
-        cellType = 'Off Parasol Apricot';        
-    case 8;
-        cellType = 'On Midget Apricot';        
-    case 9;
-        cellType = 'Off Midget Apricot';        
-    case 10;
-        cellType = 'SBC Apricot';
-    case 11 
-        cellType = 'on parasol';
-    case 12 
-        cellType = 'off parasol';
-    otherwise;
-        cellType = 'On Parasol RPE';
-end
+% experimentI = 1;
+% stimulusTestI = 1;
+% cellTypeI = 1;
+% 
+% % Switch on the conditions indices
+% % Experimental dataset
+% switch experimentI
+%     case 1; experimentID = 'RPE_201602171';
+%     otherwise; error('Data not yet available');
+% end
+% % The other experimental data will be added to the RDT in the future.
+% 
+% % Stimulus: white noise or natural scene movie with eye movements
+% switch stimulusTestI
+%     case 1; stimulusTest = 'bar';
+% end
+% 
+% % Cell type: ON or OFF Parasol
+% switch cellTypeI
+%     case 1; 
+%         cellType = 'On Parasol RPE';      
+%     case 2; 
+%         cellType = 'Off Parasol RPE';        
+%     case 3; 
+%         cellType = 'On Midget RPE';        
+%     case 4; 
+%         cellType = 'Off Midget RPE';
+%     case 5; 
+%         cellType = 'SBC RPE';
+%     case 6;
+%         cellType = 'On Parasol Apricot';        
+%     case 7;
+%         cellType = 'Off Parasol Apricot';        
+%     case 8;
+%         cellType = 'On Midget Apricot';        
+%     case 9;
+%         cellType = 'Off Midget Apricot';        
+%     case 10;
+%         cellType = 'SBC Apricot';
+%     case 11 
+%         cellType = 'on parasol';
+%     case 12 
+%         cellType = 'off parasol';
+%     otherwise;
+%         cellType = 'On Parasol RPE';
+% end
 
 %% Set other RGC mosaic parameters
 
 clear params innerRetinaSU
 params.name = 'macaque phys';
 params.eyeSide = 'left'; 
-params.eyeRadius = ecc; 
-params.fov = fov;
+params.eyeRadius = sqrt(sum(ecc.^2)); 
+% params.fov = fov;
 params.eyeAngle = 0; ntrials = 0;
 
-% Determined at beginning by user
-params.experimentID = experimentID; % Experimental dataset
-params.stimulusTest = stimulusTest; % WN or NSEM
-params.cellType = cellType;         % ON or OFF Parasol;
-
-% Set flag for average mosaic
-params.averageMosaic = 1;
-
-% Tell the RGC mosaic about how many bipolars per cone
-params.inputScale = size(bp.sRFcenter,1);
-params.inputSize = size(bp.responseCenter);
-
 % Create RGC object
-innerRetinaSU = irPhys(bp, params);
-nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
+innerRetinaSU = ir(bp, params);
+innerRetinaSU.mosaicCreate('type',cellType,'model','GLM');
+
+%%
+nTrials = 1; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 
 %% Plot the cone, bipolar and RGC mosaics
 
@@ -162,20 +174,16 @@ nTrials = 10; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 %% Compute the inner retina response
 
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
+lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
 
-% Get the PSTH from the object
-innerRetinaSUPSTH = mosaicGet(innerRetinaSU.mosaic{1},'responsePsth');
+%%
+innerRetinaSU.mosaic{1}.set('dt',1);
+psth = innerRetinaSU.mosaic{1}.get('psth');
 
-% Plot all of the PSTHs together
-figure; plot(vertcat(innerRetinaSUPSTH{:})')
-title(sprintf('%s Simulated Mosaic at %1.1f\\circ Ecc\nMoving Bar Response',cellType(1:end-4),ecc));
-xlabel('Time (msec)'); ylabel('PSTH (spikes/sec)');
-set(gca,'fontsize',14);
-lastSpikeTime=innerRetinaSU.mosaic{1}.mosaicGet('lastspiketime')
-axis([0 lastSpikeTime 0 max(max(vertcat(innerRetinaSUPSTH{:})))]);
-grid on;
+clear params
+params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+param.FrameRate = 5; params.step = 2; params.show = false;
+%  figure; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
+figure; ieMovie(psth,params);
 
-%% Make a movie of the PSTH response
-
-psthMovie = mosaicMovie(innerRetinaSUPSTH,innerRetinaSU, params);
-% figure; ieMovie(psthMovie);
+figure; imagesc(mean(psth,3))

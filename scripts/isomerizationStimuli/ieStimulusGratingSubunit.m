@@ -40,7 +40,7 @@ wFlag = ieSessionGet('wait bar');
 %% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
-display = displayCreate('CRT-Sony-HorwitzLab');
+display = displayCreate;
 
 % Set up scene, oi and sensor
 scene = sceneCreate();

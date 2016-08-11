@@ -78,24 +78,9 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-% <<<<<<< Updated upstream
         curData = conv2(absorptions(index, :), filter') - meanCur;
         current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
-% =======
-% %         curData = conv2(pRate(index, :), filter') - meanCur;
-% %         current(index, :) = curData(:, 2:pFrames+1);
-%         
-%         if size(pRate,2) > size(filter,1)
-%             filterZP = [repmat(filter',[size(pRate(index,:),1) 1]) zeros(size(pRate(index,:),1),-size(filter,1)+size(pRate,2))];
-%             pRateZP = pRate(index,:);
-%         else
-%             filterZP = filter;
-%             pRateZP = [pRate zeros(size(filter,1)-size(pRate,2),size(pRate,1))];
-%         end
-%         curData = ifft(fft(filterZP').*fft(pRateZP'))';        
-%         current(index, :) = curData;
-% 
-% >>>>>>> Stashed changes
+
     end
 end
 

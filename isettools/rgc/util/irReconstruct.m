@@ -21,11 +21,13 @@ p = inputParser;
 p.addRequired('innerRetina');
 p.addParameter('model', 'linear', @ischar);
 p.addParameter('tuningWoff', 1, @isnumeric);
+p.addParameter('percentDead', 0, @isnumeric);
 p.parse(innerRetina, varargin{:});
 
 innerRetina = p.Results.innerRetina;
 model = p.Results.model;
 tuningWoff = p.Results.tuningWoff;
+percentDead = p.Results.percentDead;
 
 %% 
 
@@ -43,7 +45,7 @@ nX = 0; nY = 0;
 cellTypeInd = 1;
 
 [nX,nY,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
-nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear{1,1});
+nFrames = length(innerRetina.mosaic{cellTypeInd}.responseLinear(1,1,:));
 % nX = nX + nXi;
 % nY = nY = nYi;
 
@@ -76,10 +78,21 @@ for cellTypeInd = 1:length(innerRetina.mosaic)
     end
     
 [nY,nX,~] = size(innerRetina.mosaic{cellTypeInd}.responseLinear);
+
+deadIndicesAll = randperm(nX*nY);
+numberDead = percentDead*(nX*nY);
+deadIndices = deadIndicesAll(1:numberDead);
+
+% [deadRow, deadCol] = ind2sub([nX nY], deadIndices);
+
 maxx = 0; maxy = 0;
+cellCtr = 0;
 % Loop through each cell and plot spikes over time
 for xc = 1:nX
     for yc = 1:nY
+        
+        cellCtr = cellCtr+1;
+        if ~any(cellCtr == deadIndices)
         
         [nPixX, nPixY] = size(innerRetina.mosaic{cellTypeInd}.sRFcenter{1,1});
         nFramesRF = length(innerRetina.mosaic{cellTypeInd}.tCenter{1});
@@ -112,6 +125,7 @@ for xc = 1:nX
                 tuningWeight*strf(xcgoodind,ycgoodind,:);
         end%iFrame
         maxx = max([maxx xcoords]); maxy = max([maxy ycoords]);
+        end
         end
     end%nX
 end%nY

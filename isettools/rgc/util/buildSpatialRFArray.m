@@ -1,17 +1,18 @@
-function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, row, col, rfDiameter)
-%% buildSpatialRF builds the spatial RF center and surround arrays for each cell
-% The spatial RFs are generated according to the number of pixel or cone
-% inputs, their spacing (in microns) and the diameter of the RF as
-% determined by the TEE of the retial patch.
+function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, inRow, inCol, rfDiameter)
+% Builds the spatial RF center and surround arrays for each cell.
+% 
+% The spatial RFs are generated according to the size of the pixel, cone or
+% bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
+% as determined by the TEE of the retial patch.
 % 
 %   [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations] = 
 %      buildSpatialRFArray(spacing, row, col, rfDiameter)
 % 
 % Inputs: 
-%       spacing, 
-%       row, 
-%       col, 
-%       rfDiameter - receiptive field of 1 std in microns
+%       spacing - Center to center of the RF in microns
+%       row     - Number of input samples
+%       col     - Number of input samples
+%       rfDiameter - receptive field of 1 std in microns
 %   
 % Outputs: 
 %       spatialRFcenter cell array, 
@@ -25,27 +26,30 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 % 
 % 9/2015 JRG (c) isetbio
+% 7/2016 JRG updated
 
-%% Init parameters
-% Make sure spacing is in microns
+%% Manage parameters
+
+% Spacing must be in microns
 if spacing < 1e-2, spacing = spacing * 1e6; end
-patchSize = [spacing spacing];  % width / height in um
+patchSize = [spacing*inRow/inCol spacing];  % width / height in um
 
 % Determine the number of RGCs in the mosaic
-nRGC = floor(patchSize / rfDiameter); % number of rgc in h, v direction
+nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 
 % Convert rf diameter in units of number of cones
-rfDiameter = rfDiameter / (patchSize(1) / col);
+% Notice this is based only columns, assuming the 
+rfDiameter = rfDiameter / (patchSize(2) / inCol);
 
-extent = 2.5;    % ratio between sampling size and sptial RF
+extent = 2.5;    % ratio between sampling size and spatial RF
 r = 0.75;        % radius ratio between center and surround
 k = 1.032 * r;   % 
 
 % centers of receiptive fields
 centerNoise = 1.25; % divide by 2 for mean offset
-centerX = (0:2:nRGC(2)-1)*rfDiameter + centerNoise; 
-centerY = (0:2:nRGC(1)-1)*rfDiameter - centerNoise;
-rows = length(centerY); cols = length(centerX);
+centerX = (0:2:nRGC(1)-1)*rfDiameter + centerNoise; 
+centerY = (0:2:nRGC(2)-1)*rfDiameter - centerNoise;
+rows = length(centerX); cols = length(centerY);
 
 % points out to the extent of the spatial RF
 pts = -extent*rfDiameter+1 : extent*rfDiameter;
@@ -110,28 +114,14 @@ for ii = 1 : length(centerX)
         xv = rand(1,2);
         xvn = rfDiameter * xv./norm(xv);
         x1 = xvn(1); y1 = xvn(2);
-        
-        % magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]) - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        
+               
         % Do some calculations to make plots where RFs are filled in
         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
         spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
-        rfDiaMagnitude{ii,jj,1} = magnitude1STD;
-        
-        % Get contours at 1STD
-        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
-        % ccCell{rfctr} = cc(:,2:end);
-        % cc(:,1) = [NaN; NaN];
-        % spatialContours{ii,jj,1} = cc;
+        rfDiaMagnitude{ii,jj,1} = magnitude1STD;        
         
         % clear cc
-        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        
-        % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr 
-        % cc = contour(i2,j2,abs(so_center),[magnitude1STD magnitude1STD]);% close;
-        % ccCell{rfctr} = cc(:,2:end);
-        % cc(:,1) = [NaN; NaN];
-        % spatialContours{ii,jj,2} = cc;
+        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);       
         
         rfDiaMagnitude{ii,jj,2} = magnitude1STD;
         

@@ -1,5 +1,5 @@
 function ir = rgcMosaicCreate(ir, varargin)
-% Add a type of RGC mosaic with a specific computational model
+% Add a type of RGC mosaic with a specific computational model.
 %
 % The rgc mosaics are stored as a cell array within the inner retina (ir)
 % class.  The RGC mosaics are the main computational engine for producing
@@ -16,9 +16,7 @@ function ir = rgcMosaicCreate(ir, varargin)
 % The implemented models are
 %
 %   Linear  - Straight linear convolution, no spikes
-%   GLM     - Pillow et al. coupled generalized linear model
-%   Pool    - Built by Winawer for psychophysics
-%   Subunit - Related to Markus Meister modeling
+%   GLM     - Pillow et al. coupled generalized line
 %   LNP     - Linear, nonlinear, poisson (EJ 2002 reference)
 %   Phys    - Fitting the physiology data from EJ
 %
@@ -33,10 +31,11 @@ function ir = rgcMosaicCreate(ir, varargin)
 %   ir.mosaicCreate('model','linear','type','on parasol');
 %   ir.mosaicCreate('model','GLM','type','on midget');
 %
-% See also: irCreate, rgcMosaic.m, rgcMosaicLinear.m, rgcMosaicLNP.m,
-%           rgcMosaicGLM.m, t_rgc.m, t_rgcIntroduction.
+% See also: irCreate.m, rgcMosaic.m, rgcLinear.m, rgcLNP.m,
+%           rgcGLM.m, t_rgc.m, t_rgcIntroduction.
 %
 % Copyright ISETBIO Team 2016
+% 7/2016 JRG updated
 
 %% Parse inputs
 
@@ -61,30 +60,24 @@ model      = p.Results.model;
 switch ieParamFormat(model)
     case {'linear','rgclinear'}
         % Straight linear convolution, no spikes
+        % Chichilnisky & Kalmar, J. Neurosci (2002)
         obj = rgcLinear(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
-    case {'pool', 'rgcpool'}
-        % Built by Winawer for psychophysics
-        obj = rgcPool(ir, mosaicType);
-        irSet(ir, 'mosaic', obj);
     case {'lnp', 'rgclnp'}
-        % Standard linear nonlinear poisson
-        % EJ 2002 reference
+        % Standard linear nonlinear poisson        
+        % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
         obj = rgcLNP(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case {'glm','rgcglm'}
-        % Pillow et al. 2008
+        % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
+        % Nature (2008).
         obj = rgcGLM(ir, mosaicType);
-        irSet(ir, 'mosaic', obj);
-    case {'subunit','rgcsubunit'}
-        % Related to Markus Meister modeling
-        obj = rgcSubunit(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     case{'phys','rgcphys'}
         % Unit testing of the physiology
+        % Requires the isetbio repository EJLExperimentalRGC
         obj = rgcPhys(ir, mosaicType);
         irSet(ir, 'mosaic', obj);
     otherwise
         error('Unknown inner retina class: %s\n',class(ir));
 end
-

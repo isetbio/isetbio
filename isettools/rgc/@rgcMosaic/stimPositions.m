@@ -33,8 +33,8 @@ sRFMidPointY = floor((extent/2)*size(rgcMosaic.sRFcenter{1,1},2));
 yStartCoord = (stimCenterCoords(2) - sRFMidPointY);
 yEndCoord   = (stimCenterCoords(2) + sRFMidPointY);
 
-stimX =  floor(xStartCoord):floor(xEndCoord);
-stimY =  floor(yStartCoord):floor(yEndCoord);
+stimX =  ceil(xStartCoord):floor(xEndCoord);
+stimY =  ceil(yStartCoord):floor(yEndCoord);
 
 if nargout == 3
     % Explain the offset better

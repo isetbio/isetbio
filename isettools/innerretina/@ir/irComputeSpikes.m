@@ -76,8 +76,8 @@ for ii = 1:length(ir.mosaic)
                 
                 % Put the data in the outputs
                 cellCtr = 0;
-                for xc = 1:nCells(1)
-                    for yc = 1:nCells(2)
+                for xc = 1:nCells(2)
+                    for yc = 1:nCells(1)
                         cellCtr = cellCtr+1;
                         % Vector of times when the cell spiked
                         spikeTimes{yc,xc,tt} = responseSpikesVec{1,cellCtr};
@@ -100,8 +100,8 @@ for ii = 1:length(ir.mosaic)
                 
                 cellCtr = 0;   % Reset the cell counter
                 
-                for xc=1:nCells(1)
-                    for yc=1:nCells(2)
+                for xc=1:nCells(2)
+                    for yc=1:nCells(1)
                         
                         cellCtr = cellCtr+1;
                         % Pull out linear response of a cell
