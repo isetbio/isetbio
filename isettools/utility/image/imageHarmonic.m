@@ -18,6 +18,12 @@ function [img, parms] = imageHarmonic(parms)
 % When the flag is non-zero, the value specifies the standard deviation
 % of the Gaussian as a fraction of the image size.  For example, if the
 % image size is 128 and GaborFlag = 0.25, the standard deviation is 32.
+% For non-square images, image size is taken as the minimum of the row
+% and column image size.  
+%
+% To really keep you on your toes, if the flag is negative, the window is 
+% a circular half-cosine, and the parameter is the length of the
+% half-cosine (that is, like the radius).
 %
 % Default parameters are applied if parms is not sent in.  You can see the
 % defaults by requesting them on return as below.
@@ -69,13 +75,21 @@ x = (0:(parms.col-1))/parms.col; x = x - x(end)/2;
 y = (0:(parms.row-1))/parms.row; y = y - y(end)/2;
 [X,Y] = meshgrid(x,y);
 
-% Calculate the gabor window
+% Calculate the gabor window, or the half-cosine if the
+% space parameter is negative
 if parms.GaborFlag
-    hsize = size(X);
-    sigma = parms.GaborFlag*min(parms.row,parms.col);
-    g = fspecial('gauss',hsize,sigma);
+    sigmaParam = parms.GaborFlag*min(parms.row,parms.col);
+    if (parms.GaborFlag > 0)
+        g = fspecial('gauss',size(X),sigmaParam);
+    else
+        xArg = pi*parms.col*X/(-sigmaParam);
+        yArg = pi*parms.row*Y/(-sigmaParam);
+        g = cos(xArg).*cos(yArg);
+        index = find(xArg < -pi/2 | xArg > pi/2 | yArg < -pi/2 | yArg > pi/2);
+        g(index) = 0;
+    end
     g = g/max(g(:));
-else 
+else
     g = ones(size(X));
 end
 
