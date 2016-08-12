@@ -125,12 +125,9 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %         s = sceneCreate('vernier','display',p);
 %
 % TEXT
-%      {'letter', 'font}- Scene created for certain character and display
-%   For displays that have a psf, and a subset of all the possible letter
-%   sizes and font combinations, we can create a scene.
-%      letter = 'g'; fontSize = 18; 
-%      display ='LCD-Apple'; fontName = 'Georgia';
-%      scene = sceneCreate('letter', 'g', fontSize, fontName, display);
+%      {'letter'}- Scene of a display character
+%        font = fontCreate; display ='LCD-Apple';
+%        scene = sceneCreate('letter', font, display);
 %
 % NOISE ANALYSIS TEST PATTERNS
 %
@@ -994,16 +991,16 @@ function scene = sceneVernier(scene, type, params)
 %      meanLum    - mean luminance
 %
 %     If type = 'display'
-%      lineSpace  - spacing between the lines in pixels if type = 'display'
-%      display    - display name or structure, useful if type = 'display'
+%      lineSpace  - spacing between the lines in pixels 
+%      display    - display name or structure
 %      barLength  - length of the line segment in number of pixels
-%      barColor   - bar color, 0~1 RGB value for type = 'display'
-%      bgColor    - background color, 0~1 RGB for type = 'display'
+%      barColor   - bar color, 0~1 RGB value 
+%      bgColor    - background color, 0~1 RGB 
 %
 %     If type = 'object'
-%      il         - illuminanece, for type = 'object'
-%      barReflect - bar reflectance, for type = 'object'
-%      bgReflect  - background reflectance, for type = 'object'
+%      il         - illuminance 
+%      barReflect - bar reflectance
+%      bgReflect  - background reflectance
 %
 % Any parameters that are not specified in the structure have defaults.
 % See the code below.

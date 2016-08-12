@@ -39,7 +39,8 @@ p.sceneSz = [128,129]; p.barWidth = 2; p.offset = 3; p.lineSpace = 2;
 p.meanLum = 100;p.barColor = [.9 0.9 0.9]; p.bgColor = .3;
 s = sceneCreate('vernier','display',p);
 % vcAddObject(s); sceneWindow;
-
+fontSize = 14; fontName = 'Georgia';
+s = sceneCreate('letter', 'g', fontSize, fontName, d);
 %%
 
 oi = oiCreate;
