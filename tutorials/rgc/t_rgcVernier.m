@@ -15,68 +15,46 @@
 
 %% Initialize parameters
 
-% clx; ieInit;
-clear
+clx; ieInit;
 
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
-fov = 2;            % Scene Field of view in degrees
+fov = 1;            % Scene Field of view in degrees
 emLength = 250;     % Eye movement frames
 
-sceneType = 'vernier';
-cellType = 'on parasol';
+cellType = 'on midget';
 
 %% Create the display
-% See t_VernierClassifier.m
-% In this example we impose a linear gamma table, though
+
+% Create a display with a linear gamma table, though
 % in general it could be the default or anything.
-
 dpi = 500; d = displayCreate('LCD-Apple','dpi',dpi);
-
 viewDist = 2; % viewing distance in meters
 d = displaySet(d, 'viewing distance', viewDist);
 d = displaySet(d, 'gamma', 'linear');
 
-%% Create Vernier Scene (full display radiance representation)
-% See t_VernierClassifier.m
+clear p;
+p.display = d;
+p.sceneSz = [128,129]; p.barWidth = 2; p.offset = 3; p.lineSpace = 2;
+p.meanLum = 100;p.barColor = [.9 0.9 0.9]; p.bgColor = .3;
+s = sceneCreate('vernier','display',p);
+% vcAddObject(s); sceneWindow;
 
-params0.barwidth = 1;
-[~, p] = imageVernier(params0);   % Mainly to get the parameters
-p.pattern = 0.2*ones(1,513); p.pattern(257) = 1;
-p.sceneSz = [513 513];
-
-% Aligned
-p.offset = 0;
-imgA = imageVernier(p);
-
-% Misaligned
-p.offset = 2;
-imgM = imageVernier(p);
-        
-% Create a scene with the image using the display parameters
-% The scene spectral radiance is created using the RGB image and the
-% properties of the display.
-sceneA = sceneFromFile(imgA, 'rgb', [], d); % aligned
-sceneM = sceneFromFile(imgM, 'rgb', [], d); % mis-aligned
-
-fov = size(imgA,2)/displayGet(d,'dots per deg');
-sceneA = sceneSet(sceneA,'fov',fov);
-sceneM = sceneSet(sceneM,'fov',fov);
-
-s = sceneM;
 %%
 
 oi = oiCreate;
 oi = oiCompute(oi,s);
-vcAddObject(oi); % oiWindow;
+% vcAddObject(oi); oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
-cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
-% cMosaic.rows = 100; cMosaic.cols = 120;
-% cMosaic.rows = 144; cMosaic.cols = 176;
+cMosaic = coneMosaic;  % Create the object
+% cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
+% cMosaic = coneMosaicHex(5,true);  % Create the object
 cMosaic.emGenSequence(emLength);
-
+cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
+    'sceneDist',sceneGet(s,'distance'),...
+    'focallength',oiGet(oi,'optics focal length'));
 cMosaic.compute(oi,'currentFlag',true);
 
 % Show the window
@@ -91,11 +69,12 @@ bp = bipolar(cMosaic.os);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
 bp.compute(cMosaic.os);
+% bp.plot('movie response')
 
 %% Set other RGC mosaic parameters
 
 clear params innerRetinaSU
-params.name = 'macaque phys';
+params.name = 'vernier test';
 params.eyeSide = 'left'; 
 params.eyeRadius = sqrt(sum(ecc.^2)); 
 % params.fov = fov;
@@ -118,19 +97,22 @@ psth = innerRetinaSU.mosaic{1}.get('psth');
 
 clear params
 % params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
-param.FrameRate = 5; params.step = 2; params.show = false;
+param.FrameRate = 3; params.step = 1; params.show = true;
 
 % % View movie of RGC linear response
 %  vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
 
-steadyStateFrame = 40;
+% Show the movie after the signal has reached steady state
+steadyStateFrame = 30;  % In ms if dt is 1
 
 % View movie of PSTH for mosaic
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
 % % View average of PSTH movie
-% vcNewGraphWin; imagesc(mean(psth,3))
+vcNewGraphWin; imagesc(mean(psth,3)); axis image
 
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
+
+%%

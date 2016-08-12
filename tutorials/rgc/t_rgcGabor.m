@@ -70,6 +70,7 @@ bp = bipolar(cMosaic.os);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
 bp.compute(cMosaic.os);
+% bp.plot('movie response')
 
 %% Set other RGC mosaic parameters
 
@@ -98,7 +99,7 @@ innerRetinaSU.mosaic{1}.set('dt',1);
 psth = innerRetinaSU.mosaic{1}.get('psth');
 
 clear params 
-param.FrameRate = 5; params.step = 2; params.show = true;
+param.FrameRate = 3; params.step = 1; params.show = true;
 
 % % View movie of RGC linear response
 % vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear(:,:,1:120));

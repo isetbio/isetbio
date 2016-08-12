@@ -117,8 +117,12 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %         sceneCreate('grid lines',imageSize,pixelsBetweenLines);
 %         sceneCreate('point array',imageSize,pixelsBetweenPoints);
 %         sceneCreate('moire orient',imageSize,edgeSlope);
-%         sceneCreate('vernier',imageSize,lineWidth,pixelOffset);
-%         sceneCreate('radial lines', imageSize);
+%         sceneCreate('radia%         sceneCreate('radial lines', imageSize);l lines', imageSize);
+%
+%         clear p; p.display = 'LCD-Apple';
+%         p.sceneSz = [64,65]; p.barWidth = 2; p.offset = 1; p.meanLum = 10;
+%         p.lineSpace = 2;  p.barColor = [1 0.5 0.5]; p.bgColor = .5;
+%         s = sceneCreate('vernier','display',p);
 %
 % TEXT
 %      {'letter', 'font}- Scene created for certain character and display
@@ -1005,10 +1009,10 @@ function scene = sceneVernier(scene, type, params)
 % See the code below.
 %
 % Examples:
-%     p.sceneSz = 64; p.barWidth = -1; p.offset = 3; p.meanLum = 10;
+%     clear p; p.sceneSz = 64; p.barWidth = 5; p.offset = 3; p.meanLum = 10;
 %     p.lineSpace = 1;  p.barColor = [1 0.5 0.5]; p.bgColor = [ 0 0 0];
 %     s = sceneCreate('vernier','display',p);
-%
+%     vcAddObject(s); sceneWindow;
 % HJ
 
 % check inputs
