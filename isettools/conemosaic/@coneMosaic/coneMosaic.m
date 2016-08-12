@@ -25,7 +25,7 @@ classdef coneMosaic < hiddenHandle
                             % this becomes the separation between the rect grid nodes over which the 
                             % lower resolution hex grid is sampled (NC)
         
-        integrationTime;    % Cone temporal integration time in secs
+        integrationTime;    % Cone temporal integration time in secs (50 ms default)
         emPositions;        % Eye movement positions in number of cones.
                             % The length of this property controls number of
                             % frames to be computed
@@ -33,10 +33,10 @@ classdef coneMosaic < hiddenHandle
         hdl;                % handle of the gui window
     end
     
-    properties (SetObservable, AbortSet)
-        sampleTime;         % Time step for em and os computation, shall we
-                            % set this the same as integrationTime?
-    end
+    %     properties (SetObservable, AbortSet)
+    %         sampleTime;         % Time step for em and os computation. In the
+    %                             % os this is called timeStep. Default is 1 ms
+    %     end
     
     properties (GetAccess=public, SetAccess=public) % public temporarilly
         absorptions;    % The spatial array of cone absorptions
@@ -110,7 +110,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
-            p.addParameter('sampleTime', 0.001, @isscalar);
+            % p.addParameter('sampleTime', 0.001, @isscalar);
             
             % Computational features
             p.addParameter('emPositions', [0 0], @isnumeric);
@@ -127,7 +127,7 @@ classdef coneMosaic < hiddenHandle
             obj.center = p.Results.center(:)';
             obj.wave   = p.Results.wave;
             obj.spatialDensity_ = p.Results.spatialDensity(:);
-            obj.sampleTime      = p.Results.sampleTime;
+            % obj.sampleTime      = p.Results.sampleTime;
             obj.integrationTime = p.Results.integrationTime;
             
             obj.noiseFlag = p.Results.noiseFlag;
@@ -172,7 +172,7 @@ classdef coneMosaic < hiddenHandle
             
             
             % Initialize the mosaic properties
-            obj.os.timeStep = obj.sampleTime;
+            % obj.os.timeStep = obj.sampleTime;
             obj.os.patchSize = obj.width;
             
             % initialize listener
@@ -180,8 +180,11 @@ classdef coneMosaic < hiddenHandle
             % in obj.pigment and obj.macular are the same
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
-            addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
-            addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
+            
+            % Trying to remove sampleTime
+            %  addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
+            % addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
+
         end
         
         function str = description(obj, varargin)
@@ -211,7 +214,7 @@ classdef coneMosaic < hiddenHandle
             str = [str sprintf('\tFOV (width,height): [%.2f, %.2f] deg\n', ...
                 obj.fov(1), obj.fov(2))];
             str = [str sprintf('\tSample time step:   %.1f ms\n', ...
-                1e3*obj.sampleTime)];
+                1e3*obj.os.timeStep)];
             str = [str, sprintf('\tNFrames                 %d\n',...
                 size(obj.absorptions,3))];
             str = [str sprintf('\tPhoton noise flag:   %d\n', obj.noiseFlag)];
@@ -237,15 +240,18 @@ classdef coneMosaic < hiddenHandle
         
         % set size to fov
         function obj = setSizeToFOV(obj, fov, varargin)
-            % set cone mosaic size according to the scene field of view
+            % Updates the cone mosaic size to match the FOV
+            %
+            %    cm.setSizeToFOV(fov,varargin)
             %
             % Inputs:
-            %   fov    - 2-element vector for desired horizontal/vertical
-            %            field of view in degrees
-            % 
-            % Outputs:
-            %   obj    - class object with size and mosaic updated
+            %   fov - 2-element vector for desired horizontal/vertical
+            %         field of view in degrees
             %
+            % Parameters
+            %     sceneDist:    (Inf,   meters)
+            %     focalLength:  (0.017, meters)
+            % 
             
             % parse input
             p = inputParser;
@@ -727,14 +733,14 @@ classdef coneMosaic < hiddenHandle
             end
         end
         
-        function setSampleTime(obj, src, ~)
-            warning('Sample time changed...can be bad');
-            switch src.DefiningClass.Name
-                case 'coneMosaic'
-                    obj.os.timeStep = obj.sampleTime;
-                otherwise
-                    obj.sampleTime = obj.os.timeStep;
-            end
-        end
+        %         function setSampleTime(obj, src, ~)
+        %             warning('Sample time changed...can be bad');
+        %             switch src.DefiningClass.Name
+        %                 case 'coneMosaic'
+        %                     obj.os.timeStep = obj.sampleTime;
+        %                 otherwise
+        %                     obj.sampleTime = obj.os.timeStep;
+        %             end
+        %         end
     end
 end

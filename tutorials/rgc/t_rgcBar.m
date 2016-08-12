@@ -1,7 +1,6 @@
-%% Use the coneMosaic object to simulate responses of foveal RGC mosaic
+%% Use the RDT coneMosaic moving bar as input to test RGC mosaic responsese
 %
-% This tutorial generates RGC responses to a moving bar. This tutorial also
-% includes
+% This tutorial generates RGC responses to a moving bar.
 %
 %   * Create a scene, oi and cMosaic
 %   * Run computation locally or pull from RDT
@@ -18,28 +17,10 @@
 
 clx; ieInit;
 
-% Initialize parameters of simulated retinal patch
-ecc = [0,0]*1e-3;     % Cone mosaic eccentricity in meters from fovea
-fov = 2.8;            % Scene Field of view in degrees
 
-rdtFlag = 1;          % 0 = compute locally, 1 = pull cMosaic from RDT
-osFlag  = 0;          % 0 = osLinear, 1 = osBioPhys
+%% RDT computation
 
-%% Local or RDT computation
 
-switch rdtFlag
-    case 0 % Compute locally
-        
-        %% Generate iStim structure locally
-        
-        if osFlag; params.os = 'bioPhys'; end;
-        
-        % This function generates a movie of a bar sweeping from left to right; the
-        % movie is converted into an isetbio scene, oi and cone mosaic within the
-        % function, and these are returned within the iStim structure.
-        iStim = ieStimulusBar(params);
-        
-        cMosaic = iStim.cMosaic;
         
         %%
     case 1 % Use RDT
@@ -55,8 +36,9 @@ switch rdtFlag
                 data = rdt.readArtifact('barMovie_cMosaic_osBioPhys', 'type', 'mat');
         end
         
-        iStim = data.iStim; clear data;
-        cMosaic = iStim.cMosaic;
+        % We are only using the cMosaic
+        cMosaic = data.iStim.cMosaic;
+        clear data;
         %%
 end
 
@@ -66,6 +48,8 @@ bp = bipolar(cMosaic.os);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
 bp.compute(cMosaic.os);
+
+% bp.plot('movie response')
 
 %% Set other RGC mosaic parameters
 

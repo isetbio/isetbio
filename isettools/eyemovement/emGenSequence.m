@@ -1,6 +1,8 @@
 function sensor = emGenSequence(sensor)
 %% Generate eye movement sensor sequence
 %
+% To be deprecated ... only applies to sensor, not to cone mosaic
+%
 %    sensor = emGenSequence([sensor]);
 %
 %  Inputs:

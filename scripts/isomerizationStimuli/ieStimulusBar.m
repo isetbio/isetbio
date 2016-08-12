@@ -1,11 +1,24 @@
 function iStim = ieStimulusBar(varargin)
-% Creates a movie/dynamic scene stimulus in isetbio of a white bar on a
-% black background that sweeps from left to right.
+% Creates a dynamic cone mosaic response to a moving bar stimulus
 % 
-% Inputs: a structure that defines the parameters of the bar stimulus.
-% 
-% Outputs: iStim is a structure that contains the display, the scene, the
-%   optical image and the sensor.
+% Inputs: a parameter structure that defines
+%   * the bar stimulus properties
+%   * cone mosaic properties
+%   
+%  
+%  Stimulus parameters:
+%    display, barWidth, meanLuminance, nSteps,row, col, fov, grayStart,
+%    grayEnd
+%
+%  Cone mosaic parameters:
+%    os, expTime, eccentricity, angle, side
+%
+% Outputs: iStim is a structure that contains 
+%   * display model
+%   * original static bar scene
+%   * optical image of the scene
+%   * cone mosaic responses to the scene as the bar translates 
+%      (no eye movements)
 % 
 % Example:
 %   clear params; params.barWidth = 10; params.fov=1;
@@ -19,22 +32,29 @@ function iStim = ieStimulusBar(varargin)
 
 %% Parse inputs
 
+% Loop through frames to build movie
+% The number of steps must be smaller than the width of the scene
+grayStart = 50; grayEnd = 20;
+
+
 p = inputParser;
-addParameter(p,'barWidth',       5,     @isnumeric);
-addParameter(p,'meanLuminance',  200,   @isnumeric);
+% Stimulus parameters
+addParameter(p,'display',   'LCD-Apple',@ischar);
+addParameter(p,'barWidth',       5,     @isnumeric); % Pixels
+addParameter(p,'meanLuminance',  200,   @isnumeric); % Cd/m2
 addParameter(p,'nSteps',         inf,   @isnumeric); % determined by cols
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
-addParameter(p,'fov',            0.6,   @isnumeric);  
-addParameter(p,'expTime',        0.005, @isnumeric);
-addParameter(p,'timeInterval',   0.005, @isnumeric);
-addParameter(p,'display',   'LCD-Apple',@ischar);
-addParameter(p,'os',            'linear',@ischar);
+addParameter(p,'fov',            0.6,   @isnumeric); % Deg 
+addParameter(p,'grayStart',      75,    @isnumeric); % ms 
+addParameter(p,'grayEnd',        50,    @isnumeric); % ms 
 
-% Retinal patch parameters
-addParameter(p,'radius',         0,  @isnumeric);
-addParameter(p,'theta',          0,  @isnumeric);
-addParameter(p,'side',           'left',  @ischar);
+% OS and mosaic parameters
+addParameter(p,'os',            'linear',@ischar);
+addParameter(p,'expTime',        0.005, @isnumeric); % Sec
+addParameter(p,'radius',         0,  @isnumeric);  % Degrees?
+addParameter(p,'theta',          0,  @isnumeric);  % Degrees?
+addParameter(p,'side',           'left',  @ischar);% Left/right
 
 p.parse(varargin{:});
 params = p.Results;
@@ -83,9 +103,7 @@ fprintf('Computing cone isomerizations:    \n');
 
 % ieSessionSet('wait bar',true);
 wbar = waitbar(0,'Stimulus movie');
-% Loop through frames to build movie
-% The number of steps must be smaller than the width of the scene
-grayStart = 50; grayEnd = 20;
+
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
 nStepsStim = (sceneGet(scene,'cols')+grayStart-params.barWidth);
 nSteps = nStepsStim + grayEnd;

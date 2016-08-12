@@ -1,8 +1,20 @@
-%% Script shows how we store iStim up in the RDT
+%% Store iStim data in the RDT
 %
+% These files are used for testing RGC ... other purposes?
 %
+% JRG/BW ISETBIO Team, 2016
 
 
+%% Create the moving bar iStim for RDT upload
+
+clear params
+params.barWidth = 10; 
+params.fov=0.4;
+params.timeInterval = 0.002;  % Two ms time interval
+iStim = ieStimulusBar(params);
+
+fname = fullfile(isetbioRootPath,'local','barMovie.mat');
+save(fname,'iStim');
 
 
 %% Create the file with the gabor movie iStim in it
@@ -22,16 +34,6 @@ rd.crp('/resources/data/istim');
 %%
 rd.publishArtifact(fname);
 
-%% Create the file with the bar iStim
-
-clear params
-params.barWidth = 10; 
-params.fov=0.4;
-params.timeInterval = 0.002;  % Two ms time interval
-iStim = ieStimulusBar(params);
-
-fname = fullfile(isetbioRootPath,'local','barMovie.mat');
-save(fname,'iStim');
 
 %%
 rd.publishArtifact(fname);

@@ -16,7 +16,7 @@ function pos = emGenSequence(obj, nFrames, varargin)
 % See also:
 %   emCreate
 
-% parse input
+%% parse input
 p = inputParser;
 p.addRequired('nFrames', @isscalar);
 p.addParameter('em', emCreate, @isstruct);
@@ -25,18 +25,18 @@ p.addParameter('rSeed', [], @isscalar);
 % set parameters
 p.parse(nFrames, varargin{:});
 em = p.Results.em;
-em = emSet(em, 'sample time', obj.sampleTime);
-sampTime  = obj.sampleTime;
+em = emSet(em, 'sample time', obj.os.timeStep);
+sampTime  = obj.os.timeStep;
 
 % Update the integration time to be the number of frames times the sample
 % time (in ms).  This should be a listener, I fear (BW).
-obj.integrationTime = obj.sampleTime*nFrames;
+obj.integrationTime = obj.os.timeStep*nFrames;
 
 if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
 emFlag = emGet(em, 'em flag');
 pos = zeros(nFrames, 2);
 
-% generate eye movement for tremor
+%% generate eye movement for tremor
 if emFlag(1)
     % Load parameters
     amplitude  = emGet(em, 'tremor amplitude', 'cones/sample');
