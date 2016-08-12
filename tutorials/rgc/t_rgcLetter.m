@@ -28,16 +28,13 @@ cellType = 'on parasol';
 
 % Create a display with a linear gamma table, though
 % in general it could be the default or anything.
-dpi = 300; d = displayCreate('LCD-Apple','dpi',dpi);
-viewDist = 1; % viewing distance in meters
+dpi = 500; d = displayCreate('LCD-Apple','dpi',dpi);
+viewDist = 2; % viewing distance in meters
 d = displaySet(d, 'viewing distance', viewDist);
 d = displaySet(d, 'gamma', 'linear');
 
-clear p;
-p.display = d;
-p.sceneSz = [128,129]; p.barWidth = 2; p.offset = 3; p.lineSpace = 2;
-p.meanLum = 100;p.barColor = [.9 0.9 0.9]; p.bgColor = .3;
-s = sceneCreate('vernier','display',p);
+font = fontCreate; 
+s = sceneCreate('letter', font, d);
 % vcAddObject(s); sceneWindow;
 
 %%
