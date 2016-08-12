@@ -22,12 +22,15 @@ clear
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
 emLength = 250;     % Eye movement frames
+
 sceneType = 'vernier';
 cellType = 'on parasol';
 
 %% Create the display
+% See t_VernierClassifier.m
 % In this example we impose a linear gamma table, though
 % in general it could be the default or anything.
+
 dpi = 500; d = displayCreate('LCD-Apple','dpi',dpi);
 
 viewDist = 2; % viewing distance in meters
@@ -62,6 +65,7 @@ sceneM = sceneSet(sceneM,'fov',fov);
 
 s = sceneM;
 %%
+
 oi = oiCreate;
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
@@ -80,7 +84,6 @@ cMosaic.compute(oi,'currentFlag',true);
 
 % Examine the outer segment current
 % cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
-
 
 %% Compute the bipolar response
 
@@ -102,27 +105,32 @@ params.eyeAngle = 0; ntrials = 0;
 innerRetinaSU = ir(bp, params);
 innerRetinaSU.mosaicCreate('type',cellType,'model','GLM');
 
-%%
 nTrials = 1; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
-
-%% Plot the cone, bipolar and RGC mosaics
-
-% mosaicPlot(innerRetinaSU,bp,sensor,params,cellType,ecc);
 
 %% Compute the inner retina response
 
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
 lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
 
-%%
+%% Make the PSTH movie
 innerRetinaSU.mosaic{1}.set('dt',1);
 psth = innerRetinaSU.mosaic{1}.get('psth');
 
 clear params
-params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+% params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
 param.FrameRate = 5; params.step = 2; params.show = false;
+
+% % View movie of RGC linear response
 %  vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
+
 steadyStateFrame = 40;
+
+% View movie of PSTH for mosaic
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
-vcNewGraphWin; imagesc(mean(psth,3))
+% % View average of PSTH movie
+% vcNewGraphWin; imagesc(mean(psth,3))
+
+% % Plots of RGC linear response and OS current
+% vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
+% vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')

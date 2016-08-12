@@ -9,7 +9,7 @@
 %   * Calculate bipolar
 %   * Calculate RGC for on parasol 
 %
-% Based on t_coneMosaic and t_rgcAverageFull.
+% Based on t_coneMosaic.
 % 
 % 7/2016 JRG HJ BW (c) isetbio team
 
@@ -25,7 +25,7 @@ emLength = 250;     % Eye movement frames
 sceneType = 'rings rays';
 cellType = 'on parasol';
 
-osFlag  = 1; % 0 for osLinear, 1 for osBioPhys
+osFlag  = 1;        % 0 for osLinear, 1 for osBioPhys
 
 %% Build a scene and oi for computing
 
@@ -34,21 +34,21 @@ s = sceneSet(s,'fov',fov);
 s = sceneAdjustLuminance(s,10);
 vcAddObject(s);
 
-%%
 oi = oiCreate;
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
-if osFlag
-    osCM = osBioPhys();
+if osFlag % osBioPhys
+    osCM = osBioPhys(); 
     cMosaic = coneMosaic('center',[0 0]*1e-3,'os',osCM);  % Create the object
-else
+else      % osLinear
     cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
 end
 
 
+% % Set cone mosaic size
 % cMosaic.rows = 100; cMosaic.cols = 120;
 cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(emLength);
@@ -88,15 +88,25 @@ nTrials = 1; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
 lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
 
-%%
+%% Make the PSTH movie
 innerRetinaSU.mosaic{1}.set('dt',1);
 psth = innerRetinaSU.mosaic{1}.get('psth');
 
 clear params
-params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+
+% params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
 param.FrameRate = 5; params.step = 2; params.show = false;
+
+% % View movie of RGC linear response
 %  vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
+
+% View movie of PSTH for mosaic
 steadyStateFrame = 40;
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
+% % View average of PSTH movie
 vcNewGraphWin; imagesc(mean(psth,3))
+
+% % Plots of RGC linear response and OS current
+% vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
+% vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
