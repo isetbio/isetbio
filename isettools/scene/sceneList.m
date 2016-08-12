@@ -21,13 +21,15 @@
 %    scene = sceneCreate('multispectral');  % Empty, multispectral
 %    scene = sceneCreate('rgb')
 %
-% Patterns
+% Noise testing patterns
 %    sceneCreate('linear Intensity Ramp', imSize)
 %    sceneCreate('uniform Equal Energy', imSize, wave)
 %    sceneCreate('uniform Equal Photon', imSize, wave)
 %    sceneCreate('uniform d65', imSize)
 %    sceneCreate('uniform bb', imSize,colorTemp, wave)
+%    sceneCreate('white noise',row,col])
 %
+% General patterns
 %    sceneCreate('rings rays',radialF,imsize)            
 %    sceneCreate {'harmonic', paramStruct)
 %    sceneCreate{'sweep frequency',imSize,maxFreq)
@@ -66,11 +68,9 @@
 %    sceneCreate('zone plate', imSize);
 %    sceneCreate('moire orient',imSize,edgeSlope);
 %
-%    sceneCreate('white noise',prow,col])
-%
 % Text
 %    font = fontCreate; d = displayCreate;
 %    scene = sceneCreate('letter', font, d);
 % 
-
+%%
 
