@@ -57,7 +57,7 @@ if emFlag(1)
     % Unit length direction
     pos(tPos, :) = amplitude*[direction sqrt(1-direction.^2)];
     
-    pos(tPos, :) = bsxfun(@times,pos(tPos,:), t(indx)/sampTime);
+    pos(tPos, :) = bsxfun(@times,pos(tPos,:), t(indx(:))/sampTime);
     pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
     pos = cumsum(pos, 1);
 end
