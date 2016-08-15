@@ -1,17 +1,17 @@
 %% Store iStim data in the RDT
 %
-% These files are used for testing RGC responses. The purpose is to
+% These stimulus files are used for testing RGC responses. The purpose is to
 % illustrate the firing of the RGCs in response to stimuli with obvious
 % spatial patterns. The movies generated from the RGC linear and PSTH
 % responses ought to closely resemble the spatial activity of these
 % stimuli.
 % 
-% Here, we build the stimulus, optical image and cone mosaic for the RGC
-% test stimuli. This takes too long for running within a single test
-% script, so we precompute them here and store them with the RDT.
+% Here, we build the stimulus, optical image and cone mosaic for the
+% test stimuli. We precompute them here and store them with the RDT to save
+% time.
 % 
 % The user must set publishFlag to 1 in order to publish the data to the
-% RDT.
+% RDT. Default is do not publish.
 % 
 % Stimuli:
 %   * Moving bar
@@ -35,9 +35,8 @@ publishFlag = 0;
 
 clear params
 params.barWidth = 10; 
-params.fov=0.4;
-params.timeInterval = 0.001;  % Two ms time interval
-iStim = ieStimulusBar(params);
+params.fov      = 0.3;
+iStim = ieStimulusBar(params);  % Full params are returned in iStim
 
 fname = fullfile(isetbioRootPath,'local','barMovie.mat');
 save(fname,'iStim');
@@ -45,7 +44,8 @@ save(fname,'iStim');
 % Publish to RDT
 if publishFlag; rd.publishArtifact(fname); end;
 
-%% Create the file with the gabor movie iStim in it
+%% Create the file with the Gabor movie iStim in it
+
 params.freq = 3;
 params.nSteps = 350;
 params.GaborFlag = 0.3;
@@ -106,8 +106,6 @@ if publishFlag; rd.publishArtifact(fname); end;
 %% Create the Vernier stimulus cMosaic
 
 % Initialize parameters of simulated retinal patch
-ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
-fov = 1;            % Scene Field of view in degrees
 emLength = 250;     % Eye movement frames
 
 % Create the display
@@ -133,14 +131,11 @@ oi = oiCompute(oi,s);
 % Build a default cone mosaic and compute the OI
 
 cMosaic = coneMosaic;  % Create the object
-% cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
-% cMosaic = coneMosaicHex(5,true);  % Create the object
 cMosaic.emGenSequence(emLength);
 cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
     'sceneDist',sceneGet(s,'distance'),...
     'focallength',oiGet(oi,'optics focal length'));
 cMosaic.compute(oi,'currentFlag',true);
-
 
 fname = fullfile(isetbioRootPath,'local','vernier_cMosaic.mat');
 save(fname,'cMosaic');
@@ -151,8 +146,6 @@ if publishFlag; rd.publishArtifact(fname); end;
 %% Create the isetbio letter stimulus with eye movements
 
 % Initialize parameters of simulated retinal patch
-ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
-fov = 1;            % Scene Field of view in degrees
 emLength = 250;     % Eye movement frames
 
 cellType = 'on parasol';
@@ -175,10 +168,7 @@ oi = oiCompute(oi,s);
 % vcAddObject(oi); oiWindow;
 
 % Build a default cone mosaic and compute the OI
-
 cMosaic = coneMosaic;  % Create the object
-% cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
-% cMosaic = coneMosaicHex(5,true);  % Create the object
 cMosaic.emGenSequence(emLength);
 cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
     'sceneDist',sceneGet(s,'distance'),...
@@ -190,4 +180,6 @@ fname = fullfile(isetbioRootPath,'local','letter_cMosaic.mat');
 save(fname,'cMosaic');
 
 % Publish to RDT
-if publishFlag; rd.publishArtifact(fname); end;
+if publishFlag; rd.publishArtifact(fname); end
+
+%%

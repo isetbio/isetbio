@@ -5,10 +5,11 @@ function iStim = ieStimulusBar(varargin)
 %   * the bar stimulus properties
 %   * cone mosaic properties
 %   
-%  
 %  Stimulus parameters:
-%    display, barWidth, meanLuminance, nSteps,row, col, fov, grayStart,
-%    grayEnd
+%    display, barWidth, meanLuminance, nSteps,row, col, fov, 
+%    startFrames   - Frames before stimulus (uniform, mean luminance)
+%    stimFrames    - Number of stimulus frames
+%    endFrames     - Frames after stimulus end (uniform, mean luminance)
 %
 %  Cone mosaic parameters:
 %    os, expTime, eccentricity, angle, side
@@ -24,34 +25,29 @@ function iStim = ieStimulusBar(varargin)
 %   clear params; params.barWidth = 10; params.fov=1;
 %   iStim = ieStimulusBar(params);
 %   iStim.cMosaic.window;
+%
 %  Returns the same 
-%   foo = ieStimulusBar(iStim.params);
-%   foo.cMosaic.window;
+%   iStim = ieStimulusBar(iStim.params);
+%   iStim.cMosaic.window;
 %
 % 3/2016 JRG (c) isetbio team
 
 %% Parse inputs
-
-% Loop through frames to build movie
-% The number of steps must be smaller than the width of the scene
-grayStart = 50; grayEnd = 20;
-
-
 p = inputParser;
+
 % Stimulus parameters
 addParameter(p,'display',   'LCD-Apple',@ischar);
 addParameter(p,'barWidth',       5,     @isnumeric); % Pixels
 addParameter(p,'meanLuminance',  200,   @isnumeric); % Cd/m2
-addParameter(p,'nSteps',         inf,   @isnumeric); % determined by cols
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,   @isnumeric); % Deg 
-addParameter(p,'grayStart',      75,    @isnumeric); % ms 
-addParameter(p,'grayEnd',        50,    @isnumeric); % ms 
+addParameter(p,'startFrames',    50,    @isnumeric); % ms 
+addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
+addParameter(p,'endFrames',      50,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);
-addParameter(p,'expTime',        0.005, @isnumeric); % Sec
 addParameter(p,'radius',         0,  @isnumeric);  % Degrees?
 addParameter(p,'theta',          0,  @isnumeric);  % Degrees?
 addParameter(p,'side',           'left',  @ischar);% Left/right
@@ -60,8 +56,10 @@ p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
 osType = p.Results.os;
+startFrames = params.startFrames;
+endFrames   = params.endFrames;
 
-% Turn off so we supercede with this wait bar
+% We insist on turning off the wait bar
 wFlag = ieSessionGet('wait bar');
 ieSessionSet('wait bar',false);
 %% Compute a Gabor patch scene as a placeholder for the bar image
@@ -91,12 +89,17 @@ else
     cm = coneMosaic;
 end
 
-cm.pigment.width = coneSz(1); cm.pigment.height = coneSz(2);
+% Set the cone aperture size
+cm.pigment.width  = coneSz(1); 
+cm.pigment.height = coneSz(2);
 
-% set size to field of view
+% Set cone mosaic field of view to match the scene
 sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
 sceneDist = sceneGet(scene, 'distance');
 cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
+
+% Set the exposure time for each step
+cm.integrationTime = cm.os.timeStep;
 
 %% Compute a dynamic set of cone absorptions for moving bar
 fprintf('Computing cone isomerizations:    \n');
@@ -104,34 +107,51 @@ fprintf('Computing cone isomerizations:    \n');
 % ieSessionSet('wait bar',true);
 wbar = waitbar(0,'Stimulus movie');
 
+% This is the mean oi that we use at the start and end
+barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
+scene    = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
+oiMean   = oiCompute(oi,scene);
+
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
-nStepsStim = (sceneGet(scene,'cols')+grayStart-params.barWidth);
-nSteps = nStepsStim + grayEnd;
+stimFrames = (sceneGet(scene,'cols') - params.barWidth);
+nSteps = startFrames + stimFrames + endFrames;
 for t = 1 : nSteps
     waitbar(t/nSteps,wbar);
-        
-    barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
-    
-    if t > grayStart && t < nStepsStim
-    barMovie(:,t-grayStart+1:(t-grayStart+1+params.barWidth-1),:) = 1;            % White bar
-    end
-    
-    % Generate scene object from stimulus RGB matrix and display object
-    scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 
-    scene = sceneSet(scene, 'h fov', fov);
-    if t ==1
-        sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+    if ~(t > startFrames && t < (startFrames + stimFrames + 1))
+        % Use uniform field oi for time prior to and after stimulus
+        oi = oiMean;
+    else
+        
+        % Gray background
+        barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  
+        
+        % Bar at this time
+        colStart = t - startFrames + 1;
+        colEnd   = colStart + params.barWidth - 1;
+        % barMovie(:,t-startFrames + 1:(t-startFrames+1+params.barWidth-1),:) = 1;
+        barMovie(:,colStart:colEnd,:) = 1;
+
+        % Generate scene object from stimulus RGB matrix and display object
+        scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
+        
+        scene = sceneSet(scene, 'h fov', fov);
+        if t ==1
+            sceneRGB = zeros([sceneGet(scene, 'size'), nSteps, 3]);
+        end
+        
+        % Get scene RGB data
+        sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
+        
+        % Compute optical image
+        oi = oiCompute(oi, scene);
     end
     
-    % Get scene RGB data    
-    sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
-    
-    % Compute optical image
-    oi = oiCompute(oi, scene);    
     
     % Compute absorptions and photocurrent
     cm.compute(oi, 'append', true, 'emPath', [0 0]);
+    
+    
 end
 
 delete(wbar);
