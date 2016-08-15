@@ -20,12 +20,28 @@
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
-emLength = 250;     % Eye movement frames
+emLength = 400;     % Eye movement frames
 
 sceneType = 'rings rays';
 cellType = 'on parasol';
 
-osFlag  = 1;        % 0 for osLinear, 1 for osBioPhys
+osFlag  = 0;        % 0 for osLinear, 1 for osBioPhys
+
+%% Get iStim structure for rings and rays movie from RDT - why so slow?
+% The RDT seems to take longer than creating the stimulus locally
+% 
+% rdt = RdtClient('isetbio');
+% rdt.crp('/resources/data/istim');
+% 
+% switch osFlag
+%     case 0 % osLinear
+%         data = rdt.readArtifact('ringsRays_cMosaic', 'type', 'mat');
+%     case 1 % osBioPhys
+%         data = rdt.readArtifact('ringsRays_cMosaic_osBioPhys', 'type', 'mat');
+% end
+% 
+% % iStim = data.iStim; clear data;
+% cMosaic = data.cMosaic;
 
 %% Build a scene and oi for computing
 
@@ -95,18 +111,26 @@ psth = innerRetinaSU.mosaic{1}.get('psth');
 clear params
 
 % params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
-param.FrameRate = 5; params.step = 2; params.show = false;
+param.FrameRate = 5; params.step = 2; params.show = true;
 
 % % View movie of RGC linear response
 %  vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear);
 
 % View movie of PSTH for mosaic
 steadyStateFrame = 40;
-vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
+% vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
 % % View average of PSTH movie
-vcNewGraphWin; imagesc(mean(psth,3))
+vcNewGraphWin; 
+subplot(121);
+oiShowImage(oi);
+subplot(122);
+imagesc(mean(psth,3)); axis image
 
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
+
+%% Make GIF
+params.vname = [isetbioRootPath '/local/ringsRaysTest.gif'];
+% ieGIF(psth(:,:,steadyStateFrame:end),params);

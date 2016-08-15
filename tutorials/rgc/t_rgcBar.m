@@ -2,9 +2,7 @@
 %
 % This tutorial generates RGC responses to a moving bar.
 %
-%   * Create a scene, oi and cMosaic
-%   * Run computation locally or pull from RDT
-%   * Select osLinear or osBioPhys for cone current
+%   * Get precomputed cone mosaic response from RDT
 %   * Calculate bipolar
 %   * Calculate RGC for on parasol 
 %   * Estimate position of bar from RGC firing
@@ -17,30 +15,26 @@
 
 clx; ieInit;
 
+ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
+fov = 2.8;          % Scene Field of view in degrees
+
+osFlag = 0;         % 0 = osLinear, 1 = osBioPhys
 
 %% RDT computation
+rdt = RdtClient('isetbio');
+rdt.crp('/resources/data/istim');
 
-
-        
-        %%
-    case 1 % Use RDT
-        
-        %% Get iStim structure for barMovie from RDT
-        rdt = RdtClient('isetbio');
-        rdt.crp('/resources/data/istim');
-        
-        switch osFlag
-            case 0 % osLinear
-                data = rdt.readArtifact('barMovie_cMosaic', 'type', 'mat');
-            case 1 % osBioPhys
-                data = rdt.readArtifact('barMovie_cMosaic_osBioPhys', 'type', 'mat');
-        end
-        
-        % We are only using the cMosaic
-        cMosaic = data.iStim.cMosaic;
-        clear data;
-        %%
+switch osFlag
+    case 0 % osLinear
+        data = rdt.readArtifact('barMovie_cMosaic', 'type', 'mat');
+    case 1 % osBioPhys
+        data = rdt.readArtifact('barMovie_cMosaic_osBioPhys', 'type', 'mat');
 end
+
+% We are only using the cMosaic
+sceneRGB = data.iStim.sceneRGB;
+cMosaic = data.iStim.cMosaic;
+clear data;
 
 %% Compute the bipolar response
 
@@ -94,12 +88,13 @@ vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
 
+
 %% Estimate position of bar
 
 clear colLocation trueLocation
 
 szPsth = size(psth);
-sizeRGB = size(iStim.sceneRGB);
+sizeRGB = size(sceneRGB);
 sizeMosaic = innerRetinaSU.mosaic{1}.get('mosaicSize');
 
 % Plot estimated position of bar versus true position of bar
@@ -111,7 +106,7 @@ for fr = 1:szPsth(3)-frStart-frEnd
     colLocation(fr) = mean(spikingCells2);
     
     % Find indicies of true bar pixels for each frame
-    [barPx1 barPx2] = find(iStim.sceneRGB(:,:,fr+frStart)>.75);
+    [barPx1 barPx2] = find(sceneRGB(:,:,fr+frStart)>.75);
     % Find average column position
     trueLocation(fr) = mean(barPx2)*sizeMosaic(2)./sizeRGB(2);
 end
@@ -122,3 +117,7 @@ hold on; plot(1:szPsth(3)-frStart-frEnd,trueLocation);
 xlabel('Time (msec)');
 ylabel('Position estimate (mm)');
 legend('Estimated Position','True Position','location','NW');
+
+%% Make GIF
+params.vname = [isetbioRootPath '/local/barMovieTest.gif'];
+% ieGIF(psth(:,:,steadyStateFrame:end),params);

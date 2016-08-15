@@ -3,9 +3,7 @@
 % This tutorial generates RGC responses to a drifting Gabor. This tutorial
 % also includes
 %
-%   * Create a scene, oi and cMosaic
-%   * Run computation locally or pull from RDT
-%   * Select osLinear or osBioPhys for cone current
+%   * Get precomputed cone mosaic response from RDT
 %   * Calculate bipolar
 %   * Calculate RGC for on parasol 
 %
@@ -24,45 +22,21 @@ nSteps = 150;       % Number of temporal frames
 
 rdtFlag = 1;        % 0 = compute locally, 1 = pull cMosaic from RDT
 osFlag  = 0;        % 0 = osLinear, 1 = osBioPhys
-%%
-switch rdtFlag
-    case 0 % Compute locally
-        
-        %% Generate iStim structure locally
-        
-        if osFlag; params.os = 'bioPhys'; end;
-        
-        params.freq = 3;
-        params.nSteps = nSteps;
-        params.GaborFlag = 0.3;
-        
-        % This function generates a movie of a Gabor drifing in phase; the
-        % movie is converted into an isetbio scene, oi and cone mosaic
-        % within the function, and these are returned within the iStim
-        % structure.
 
-        iStim = ieStimulusGabor(params);
-        
-        cMosaic = iStim.cMosaic;
-        
-        %%
-    case 1 % Use RDT
-        
-        %% Get iStim structure for barMovie from RDT
-        rdt = RdtClient('isetbio');
-        rdt.crp('/resources/data/istim');
-        
-        switch osFlag
-            case 0 % osLinear
-                data = rdt.readArtifact('gaborDrifting_cMosaic', 'type', 'mat');
-            case 1 % osBioPhys
-                data = rdt.readArtifact('gaborDrifting_cMosaic_osBioPhys', 'type', 'mat');
-        end
-        
-        iStim = data.iStim; clear data;
-        cMosaic = iStim.cMosaic;
-        %%
+%%
+%% Get iStim structure for barMovie from RDT
+rdt = RdtClient('isetbio');
+rdt.crp('/resources/data/istim');
+
+switch osFlag
+    case 0 % osLinear
+        data = rdt.readArtifact('gaborDrifting_cMosaic', 'type', 'mat');
+    case 1 % osBioPhys
+        data = rdt.readArtifact('gaborDrifting_cMosaic_osBioPhys', 'type', 'mat');
 end
+
+iStim = data.iStim; clear data;
+cMosaic = iStim.cMosaic;
 
 %% Compute the bipolar response
 
@@ -114,3 +88,7 @@ vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
+
+%% Make GIF
+params.vname = [isetbioRootPath '/local/gaborMovieTest.gif'];
+% ieGIF(psth(:,:,steadyStateFrame:end),params);

@@ -1,6 +1,6 @@
 %% Use the coneMosaic object to simulate responses of foveal RGC mosaic
 %
-% This tutorial generates RGC responses to the isetbio vernier
+% This tutorial generates RGC responses to the isetbio letter
 % stimulus with eye movements.
 %
 %   * Create a scene
@@ -24,6 +24,21 @@ emLength = 250;     % Eye movement frames
 
 cellType = 'on parasol';
 
+%% Get iStim structure for letter movie from RDT - why so slow?
+% The RDT seems to take longer than creating the stimulus locally
+
+% rdt = RdtClient('isetbio');
+% rdt.crp('/resources/data/istim');
+% 
+% switch osFlag
+%     case 0 % osLinear
+%         data = rdt.readArtifact('letter_cMosaic', 'type', 'mat');
+%     case 1 % osBioPhys
+%         data = rdt.readArtifact('letter_cMosaic_osBioPhys', 'type', 'mat');
+% end
+% 
+% % iStim = data.iStim; clear data;
+% cMosaic = data.cMosaic;
 %% Create the display
 
 % Create a display with a linear gamma table, though
@@ -71,7 +86,7 @@ bp.compute(cMosaic.os);
 %% Set other RGC mosaic parameters
 
 clear params innerRetinaSU
-params.name = 'vernier test';
+params.name = 'letter test';
 params.eyeSide = 'left'; 
 params.eyeRadius = sqrt(sum(ecc.^2)); 
 % params.fov = fov;
@@ -93,7 +108,7 @@ innerRetinaSU.mosaic{1}.set('dt',1);
 psth = innerRetinaSU.mosaic{1}.get('psth');
 
 clear params
-% params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+% params.vname = fullfile(isetbioRootPath,'local','letter.avi'); 
 param.FrameRate = 3; params.step = 1; params.show = true;
 
 % % View movie of RGC linear response
@@ -106,10 +121,17 @@ steadyStateFrame = 30;  % In ms if dt is 1
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
 % % View average of PSTH movie
-vcNewGraphWin; imagesc(mean(psth,3)); axis image
+vcNewGraphWin; 
+subplot(121);
+oiShowImage(oi);
+subplot(122);
+imagesc(mean(psth,3)); axis image
 
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
 
-%%
+
+%% Make GIF
+params.vname = [isetbioRootPath '/local/letterMovieTest.gif'];
+% ieGIF(psth(:,:,steadyStateFrame:end),params);

@@ -24,6 +24,20 @@ emLength = 250;     % Eye movement frames
 
 cellType = 'on parasol';
 
+%% Get iStim structure for vernier movie from RDT
+% rdt = RdtClient('isetbio');
+% rdt.crp('/resources/data/istim');
+% 
+% switch osFlag
+%     case 0 % osLinear
+%         data = rdt.readArtifact('vernier_cMosaic', 'type', 'mat');
+%     case 1 % osBioPhys
+%         data = rdt.readArtifact('vernier_cMosaic_osBioPhys', 'type', 'mat');
+% end
+% 
+% % iStim = data.iStim; clear data;
+% cMosaic = data.cMosaic;
+
 %% Create the display
 
 % Create a display with a linear gamma table, though
@@ -109,10 +123,16 @@ steadyStateFrame = 30;  % In ms if dt is 1
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
 
 % % View average of PSTH movie
-vcNewGraphWin; imagesc(mean(psth,3)); axis image
+vcNewGraphWin; 
+subplot(121);
+oiShowImage(oi);
+subplot(122);
+imagesc(mean(psth,3)); axis image
 
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
 
-%%
+%% Make GIF
+params.vname = [isetbioRootPath '/local/vernierMovieTest.gif'];
+% ieGIF(psth(:,:,steadyStateFrame:end),params);
