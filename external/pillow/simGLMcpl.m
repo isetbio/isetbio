@@ -46,6 +46,7 @@ Vstm = Vstm + repmat(glmprs.dc(:)',slen+2,1);
 
 % -------------- Compute interpolated h current ----------------------
 ih = glmprs.ih;
+ihind = glmprs.ihind;
 if ~isempty(ih)
     ihthi = (dt:dt:max(glmprs.iht))';  % time points for sampling
     ihhi = interp1(glmprs.iht, ih, ihthi, 'linear', 0);
@@ -72,6 +73,17 @@ jbin = 1;
 % CHANGED FOR ISETBIO to reduce toolbox dependence
 tspnext = ieExprnd(1,1,ncells);
 rprev = zeros(1,ncells);
+
+% CHANGED FOR ISETBIO to run large mosaics faster
+% coupledInds = cell(size(ihind,1),1);
+% coupledIndsGood = cell(size(ihind,1),1);
+% coupledIndsNZ = cell(size(ihind,1),1);
+% for ic = 1:size(ihind,1)
+%     coupledInds{ic} = ihind(ic,:);
+%     coupledIndsGood{ic} = find(coupledInds{ic}~=0);
+%     coupledIndsNZ{ic} = coupledInds{ic}(coupledIndsGood{ic});
+% end
+
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);  nii = length(iinxt);
     rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
@@ -95,9 +107,15 @@ while jbin <= rlen
             
             % Post Spike Calculation
             if ~isempty(iiPostSpk)
-                Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
+                % Vmem(iiPostSpk,:) = Vmem(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
+                
+                coupledInds = ihind(icell,:); 
+                coupledIndsGood = find(coupledInds~=0);
+                coupledIndsNZ = coupledInds(coupledIndsGood);
+                Vmem(iiPostSpk,coupledIndsNZ) = Vmem(iiPostSpk,coupledIndsNZ)+ihhi(1:mxi-ispk,coupledIndsGood,icell);
                 if nargout == 3  % Record post-spike current
-                    Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
+                    % Ispk(iiPostSpk,:)=Ispk(iiPostSpk,:)+ihhi(1:mxi-ispk,:,icell);
+                    Ispk(iiPostSpk,coupledIndsNZ)=Ispk(iiPostSpk,coupledIndsNZ)+ihhi(1:mxi-ispk,coupledIndsGood,icell);
                 end
             end
             rprev(icell) = 0;  % reset this cell's integral

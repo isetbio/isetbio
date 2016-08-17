@@ -54,11 +54,34 @@ if coupling
     glmprs.dc = zeros(nCells);
     
     %% Set coupling filters
+%     ihcpl = mosaicGet(mosaic, 'couplingFilter');
+%     
+%     hlen = length(ihcpl{1,1});
+%     cellCtr = 0;
+%     ih = zeros(nCellsTotal, nCellsTotal, hlen);
+%     for xcell = 1:nCells(1)
+%         for ycell = 1:nCells(2)
+%             cellCtr = cellCtr+1;
+%             
+%             if isa(mosaic, 'rgcPhys')
+%                 % @JRG - Move out to EJ repository
+%                 coupledCells = mosaic.couplingMatrix{xcell,ycell};
+%                 ih(cellCtr,coupledCells,:) = (horzcat(mosaic.couplingFilter{1,cellCtr}{:}))';
+%                 ih(cellCtr,cellCtr,:) = ((mosaic.postSpikeFilter{1,cellCtr}))';
+%             else
+%                 ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{cellCtr}, nCellsTotal,hlen);
+%             end
+%         end
+%     end
+%     
+%     ih = permute(ih,[3 2 1]); % flip 2nd & 3rd dimensions
+%     glmprs.ih = ih;
+    
     ihcpl = mosaicGet(mosaic, 'couplingFilter');
     
     hlen = length(ihcpl{1,1});
     cellCtr = 0;
-    ih = zeros(nCellsTotal, nCellsTotal, hlen);
+    ih = zeros(6, nCellsTotal, hlen);
     for xcell = 1:nCells(1)
         for ycell = 1:nCells(2)
             cellCtr = cellCtr+1;
@@ -69,14 +92,23 @@ if coupling
                 ih(cellCtr,coupledCells,:) = (horzcat(mosaic.couplingFilter{1,cellCtr}{:}))';
                 ih(cellCtr,cellCtr,:) = ((mosaic.postSpikeFilter{1,cellCtr}))';
             else
-                ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{cellCtr}, nCellsTotal,hlen);
+%                 ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{cellCtr}, nCellsTotal,hlen);
+                clear ii jj indNZ
+                indNZ = find(mosaic.couplingFilter{cellCtr}(:,:,1)~=0);
+                [ii,jj] = ind2sub([mosaic.get('mosaic size')],indNZ);
+                
+                for iiind = 1:length(ii)
+                    ih(iiind,cellCtr,:) = mosaic.couplingFilter{cellCtr}(ii(iiind),jj(iiind),:);
+                    
+                end
+                ihind(cellCtr,1:length(indNZ)) = indNZ;
             end
         end
     end
     
     ih = permute(ih,[3 2 1]); % flip 2nd & 3rd dimensions
     glmprs.ih = ih;
-    
+    glmprs.ihind = ihind;
     %% Set time samples
     if~(isfield(mosaic,'dt'))
         glmprs.iht = .01*(1:size(ih,1));

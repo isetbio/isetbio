@@ -20,7 +20,7 @@ clx; ieInit;
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 1;            % Scene Field of view in degrees
-emLength = 250;     % Eye movement frames
+emLength = 500;     % Eye movement frames
 
 cellType = 'on parasol';
 
