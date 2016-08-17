@@ -274,9 +274,10 @@ nSamples = length(stimulus);
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Create human sensor.
+timeStep = 5e-5;                    % time step
 sensor = sensorCreate('human');
 sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', 5e-5);
+sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Set photon rates.
 % This is an artifact of directly specifying the stimulus
