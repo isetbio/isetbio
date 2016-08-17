@@ -363,11 +363,11 @@ for step = 1:stepLevels
     
     % Set photon rates.
     sensor = sensorSet(sensor, 'photon rate', stimulus);
-    
+    pRate = sensorGet(sensor, 'photon rate');
     % And with outersegment object.
     noiseFlag = 0;
     adaptedOSDec = osBioPhys();
-    adaptedOSDec = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
+    adaptedOSDec = osSet(adaptedOSDec, 'noiseFlag', noiseFlag);
     adaptedOSDec = osSet(adaptedOSDec, 'timeStep', timeStep);
     adaptedOSDec.compute(pRate, coneType, 'bgR', 0);
     
