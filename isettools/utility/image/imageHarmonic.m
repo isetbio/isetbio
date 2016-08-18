@@ -82,8 +82,8 @@ if parms.GaborFlag
     if (parms.GaborFlag > 0)
         g = fspecial('gauss',size(X),sigmaParam);
     else
-        xArg = pi*parms.col*X/(-sigmaParam);
-        yArg = pi*parms.row*Y/(-sigmaParam);
+        xArg = pi*parms.col*X/(-2*sigmaParam);
+        yArg = pi*parms.row*Y/(-2*sigmaParam);
         g = cos(xArg).*cos(yArg);
         index = find(xArg < -pi/2 | xArg > pi/2 | yArg < -pi/2 | yArg > pi/2);
         g(index) = 0;
