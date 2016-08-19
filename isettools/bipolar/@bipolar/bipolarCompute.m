@@ -1,6 +1,9 @@
 function obj = bipolarCompute(obj, os, varargin)
-% Computes the responses of the bipolar object. 
+% Compute bipolar responses
 % 
+%   Still under active development
+%   Should become:  bipolar.compute(coneMosaic,varargin);
+%
 % The outersegment input contains frames of cone mosaic signal at a
 % particular time step. The bipolar response is found by first convolving
 % the center and surround Gaussian spatial receptive fields of the bipolar
@@ -17,7 +20,7 @@ function obj = bipolarCompute(obj, os, varargin)
 %% parse input parameters
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'bipolar'));
-p.addRequired('os', @(x) isa(x, 'outerSegment'));
+p.addRequired('os', @(x) isa(x, 'outerSegment'));  % Should be coneMosaic
 
 % parse
 p.parse(obj, os, varargin{:});
@@ -70,7 +73,7 @@ switch obj.cellType
         osSigRSZMSurround(sConeIndices,:) = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
     % Make nearest S cones the center for SBCs, only L and M cones in
     % surround
-    case{'onDiffuseSBC'}        
+    case{'onSBC'}        
         lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
         sConeIndices = find(obj.coneMosaic==4);
         osSigRSZMCenter   = osSigRSZM;
@@ -141,7 +144,7 @@ switch obj.filterType
         switch ieParamFormat(obj.cellType)
             case {'offdiffuse','offmidget'}
                 bipolarFilt = -mean(bipolarFiltMat)';
-            case {'ondiffuse','onmidget','ondiffusesbc'}
+            case {'ondiffuse','onmidget','onsbc'}
                 bipolarFilt = -mean(bipolarFiltMat)';
             otherwise
                 error('Unknown bipolar cell type');
@@ -232,3 +235,5 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 
 obj.responseCenter = obj.rectificationCenter(bipolarOutputLinearCenter);
 obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
+
+end

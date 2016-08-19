@@ -144,9 +144,9 @@ switch ieParamFormat(param)
     case {'lastspiketime'}
         % The latest time at which a spike occurs in seconds, used in
         % plotting functions.
-        nCells    = obj.get('mosaic size');
+        nCells  = obj.get('mosaic size');
         nTrials = obj.get('numbertrials');
-        spikes = obj.responseSpikes;
+        spikes  = obj.responseSpikes;
 
         val = 0;
         for ii=1:nCells(1)

@@ -93,47 +93,68 @@ methods
         
         % Build spatial receptive field
         
-        % This plot is based off of this passage from Dacey, Brainard, Lee,
-        % et al., Vision Research, 2000, page 1808 bottom right.
+        % The data for the size of the support is based off of this passage
+        % from Dacey, Brainard, Lee, et al., Vision Research, 2000, page
+        % 1808 bottom right.
         % (http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf)
         %
-        % Also see Boycott & Wassle, 1991,  (European Journal of Neuroscience), Table 1.
+        % Also see Boycott & Wassle, 1991,  (European Journal of
+        % Neuroscience), Table 1.
         %
         % Likely the larger RF sizes measured physiological (Dacey et al.)
-        % vs anatomically (B&W) reflect spread of signals among cones (via direct
-        % gap junctions) and probably more important among cone bipolars
-        % (via gap junctions with AII amacrine cells). - Fred
+        % vs anatomically (B&W) reflect spread of signals among cones (via
+        % direct gap junctions) and probably more important among cone
+        % bipolars (via gap junctions with AII amacrine cells). - Fred
         
-        %         @JRG incorporate preferntial cone selection to bipolar rfs
+        % @JRG included  preferential cone selection to bipolar rfs. These
+        % set the basic parameters of the spatial receptive fields. There
+        % are some detailed modifications about the type of cone inputs (no
+        % S-cones to the on midget or the diffuse systems).
+        % 
+        % We will also incorporate a function that changes the size of the
+        % spread and support as a function of eccentricity.  For now we
+        % just put in some placeholder numbers.
+        
         switch obj.cellType
-            case{'onDiffuse','offDiffuse','onDiffuseSBC'}
+            case{'onDiffuse','offDiffuse'}
+                % Diffus bipolars that carry parasol signals
                 % ecc = 0 mm yields 2x2 cone input to bp
                 % ecc = 30 mm yields 5x5 cone input to bp
-                sizeScale = floor(2 + 3/10*(p.Results.ecc)); 
                 
-                bpSizeCenter = sizeScale;
-                bpSizeSurround = sizeScale;
-%                 obj.sRFcenter = ones(sizeScale).*sizeScale^2;
-%                 obj.sRFsurround = ones(sizeScale).*sizeScale^2;
-                rfCenterBig = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+                % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
+                support = floor(2 + 3/10*(p.Results.ecc)); 
+                spread = 2;  % Standard deviation of the Gaussian - will be a function
+                rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
+                
+                obj.sRFcenter = rfCenterBig(:,:);
+                obj.sRFsurround = rfSurroundBig(:,:);
+                
+            case {'onSBC'}
+                % Small bistratified cells - handle S-cone signals
+                
+                % Needs to be checked and thought through some more @JRG
+                % for this particular cell type.
+                support = floor(2 + 3/10*(p.Results.ecc));
+                
+                spread = 3;  % Standard deviation of the Gaussian - will be a function
+                rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
                 
                 obj.sRFcenter = rfCenterBig(:,:);
                 obj.sRFsurround = rfSurroundBig(:,:);
                 
             case{'onMidget','offMidget'}
+                % Midget bipolars to midget RGCs
                 
                 % ecc = 0 mm yields 1x1 cone input to bp
                 % ecc = 30 mm yields 3x3 cone input to bp
-                sizeScale = floor(1 + (2/10)*(p.Results.ecc)); 
-                
-                bpSizeCenter = sizeScale;
-                bpSizeSurround = sizeScale;
-                
-%                 obj.sRFcenter = ones(sizeScale)./sizeScale^2;
-%                 obj.sRFsurround = ones(sizeScale)./sizeScale^2;
-                obj.sRFcenter = fspecial('gaussian',[bpSizeCenter,bpSizeCenter],1); % convolutional for now
-                obj.sRFsurround = fspecial('gaussian',[bpSizeSurround,bpSizeSurround],1); % convolutional for now
+                % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
+
+                support = floor(1 + (2/10)*(p.Results.ecc)); 
+                spread = 1;
+                obj.sRFcenter   = fspecial('gaussian',[support,support], spread); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[support,support], spread); % convolutional for now
              
         end
         if isfield(p.Results,'cellLocation')
