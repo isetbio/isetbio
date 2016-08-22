@@ -1,4 +1,4 @@
- function [adaptedData, p] = osAdaptTemporal(pRate,p)
+ function [adaptedData, obj] = osAdaptTemporal(pRate,obj)
 % Time varying voltage response from photon rate and initial state
 %
 %    adaptedData = osAdaptTemporal(pRate,initialState)
@@ -35,23 +35,23 @@
 
 %%  Check inputs
 if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate required.'); end
-if ~exist('p','var') || isempty(p), error('Initial state required.'); end
+% if ~exist('p','var') || isempty(p), error('Initial state required.'); end
     
 % One millisecond time step
-if isfield(p, 'timeInterval'), dt = p.timeInterval; else dt = 0.001; end
+if isfield(obj, 'timeInterval'), dt = obj.timeInterval; else dt = 0.001; end
 
 %% Simulate differential equations
-adaptedData = zeros([size(p.opsin) size(pRate, 3)+1]);
-adaptedData(:,:,1) = p.bgCur;
+adaptedData = zeros([size(obj.opsin) size(pRate, 3)+1]);
+adaptedData(:,:,1) = obj.bgCur;
 for ii = 1 : size(pRate, 3)
-    p.opsin = p.opsin + dt*(p.OpsinGain*pRate(:,:,ii) - p.sigma*p.opsin);
-    p.PDE   = p.PDE + dt*(p.opsin + p.eta - p.phi * p.PDE);
-    p.Ca    = p.Ca + dt*(p.q*p.k * p.cGMP.^p.h./(1+p.Ca_slow/p.cdark)-p.beta*p.Ca);
-    p.Ca_slow = p.Ca_slow - dt * p.betaSlow * (p.Ca_slow - p.Ca);
-    p.st    = p.smax ./ (1 + (p.Ca / p.kGc).^p.n);
-    p.cGMP  = p.cGMP  + dt * (p.st - p.PDE .* p.cGMP);
+    obj.opsin = obj.opsin + dt*(obj.OpsinGain*pRate(:,:,ii) - obj.sigma*obj.opsin);
+    obj.PDE   = obj.PDE + dt*(obj.opsin + obj.eta - obj.phi * obj.PDE);
+    obj.Ca    = obj.Ca + dt*(obj.q*obj.k * obj.cGMP.^obj.h./(1+obj.Ca_slow/obj.cdark)-obj.beta*obj.Ca);
+    obj.Ca_slow = obj.Ca_slow - dt * obj.betaSlow * (obj.Ca_slow - obj.Ca);
+    obj.st    = obj.smax ./ (1 + (obj.Ca / obj.kGc).^obj.n);
+    obj.cGMP  = obj.cGMP  + dt * (obj.st - obj.PDE .* obj.cGMP);
     
-    adaptedData(:,:,ii) = - p.k * p.cGMP.^p.h ./ (1 + p.Ca_slow / p.cdark);
+    adaptedData(:,:,ii) = - obj.k * obj.cGMP.^obj.h ./ (1 + obj.Ca_slow / obj.cdark);
 end
 
 adaptedData(:, :, size(pRate, 3)+1) = adaptedData(:, :, size(pRate, 3));

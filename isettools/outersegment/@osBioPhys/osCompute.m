@@ -56,9 +56,9 @@ isAppend = p.Results.append;
 
 % init parameters
 if ~isAppend || isempty(obj.state)
-    p  = osInit;  % default parameters for biophysics model
-    obj.state = osAdaptSteadyState(bgR, p, [size(pRate, 1) size(pRate, 2)]);
-    obj.state.timeInterval = obj.timeStep;
+%     p  = osInit;  % default parameters for biophysics model
+    obj.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
+    obj.state.timeStep = obj.timeStep;
 end
 
 [current, obj.state]  = osAdaptTemporal(pRate, obj.state);

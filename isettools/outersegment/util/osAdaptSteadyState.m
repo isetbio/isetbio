@@ -1,4 +1,4 @@
-function p = osAdaptSteadyState(bgR, p, varargin)
+function obj = osAdaptSteadyState(obj, bgR, varargin)
 % Steady-state background current calculated from the background rates.
 %
 %    initialState = osAdaptSteadyState(bgR,p,sz)
@@ -32,7 +32,7 @@ function p = osAdaptSteadyState(bgR, p, varargin)
 %% Parameters
 if notDefined('bgR'), error('Background isomerization rate required.'); end
 if isscalar(bgR) && ~isempty(varargin), bgR = bgR*ones(varargin{1});  end
-if notDefined('p'),  p = osInit; end
+% if notDefined('p'),  p = osInit; end
 
 %% Calculation
 %  In most cases, the input bgR matrix will only contain only a small
@@ -45,9 +45,9 @@ sz = size(bgR);
 bgCur = zeros(length(bgR));
 for ii = 1 : length(bgR)
     v = bgR(ii);
-    bgCur(ii) = fminbnd(@(x) abs(x - (p.k*p.beta*p.cdark) * ...
-        (p.smax*p.phi)^p.h / (v/p.sigma + p.eta)^p.h / ...
-        (p.beta*p.cdark + p.q*x) / (1 + (p.q*x/p.beta/p.kGc)^p.n)^p.h), ...
+    bgCur(ii) = fminbnd(@(x) abs(x - (obj.k*obj.beta*obj.cdark) * ...
+        (obj.smax*obj.phi)^obj.h / (v/obj.sigma + obj.eta)^obj.h / ...
+        (obj.beta*obj.cdark + obj.q*x) / (1 + (obj.q*x/obj.beta/obj.kGc)^obj.n)^obj.h), ...
         0, 1000);
 end
 
@@ -57,13 +57,13 @@ bgR   = reshape(bgR(recover_index), sz);
 bgCur = reshape(bgCur(recover_index), sz);
 
 % Compute additional initial values
-p.opsin   = bgR / p.sigma;
-p.PDE     = (p.opsin + p.eta) / p.phi;
-p.Ca      = bgCur * p.q / p.beta;
-p.Ca_slow = p.Ca;
-p.st      = p.smax ./ (1 + (p.Ca / p.kGc).^p.n);
-p.cGMP    = p.st * p.phi ./ (p.opsin + p.eta);
+obj.opsin   = bgR / obj.sigma;
+obj.PDE     = (obj.opsin + obj.eta) / obj.phi;
+obj.Ca      = bgCur * obj.q / obj.beta;
+obj.Ca_slow = obj.Ca;
+obj.st      = obj.smax ./ (1 + (obj.Ca / obj.kGc).^obj.n);
+obj.cGMP    = obj.st * obj.phi ./ (obj.opsin + obj.eta);
 
-p.bgCur = bgCur;
+obj.bgCur = bgCur;
 
 end

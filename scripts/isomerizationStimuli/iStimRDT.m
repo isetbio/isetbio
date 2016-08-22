@@ -36,8 +36,9 @@ publishFlag = 0;
 clear params
 params.barWidth = 10; 
 params.fov      = 0.3;
+params.os = 'biophys';
 iStim = ieStimulusBar(params);  % Full params are returned in iStim
-
+%%
 fname = fullfile(isetbioRootPath,'local','barMovie.mat');
 save(fname,'iStim');
 

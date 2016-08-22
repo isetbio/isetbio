@@ -18,7 +18,7 @@ clx; ieInit;
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2.8;          % Scene Field of view in degrees
 
-osFlag = 0;         % 0 = osLinear, 1 = osBioPhys
+osFlag = 1;         % 0 = osLinear, 1 = osBioPhys
 
 %% RDT computation
 rdt = RdtClient('isetbio');
