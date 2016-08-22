@@ -1,28 +1,31 @@
 function obj = osAdaptSteadyState(obj, bgR, varargin)
 % Steady-state background current calculated from the background rates.
 %
-%    initialState = osAdaptSteadyState(bgR,p,sz)
+%    obj = osAdaptSteadyState(obj, bgR, sz)
+%                    [only called internally from @osBioPhys/osCompute.m]
 %
 % Inputs:
-%  bgR:  Vector (or matrix) of background isomerization rates
-%  p:    Parameter list (from osInit)
-%
+%  obj - osBioPhys object containing pre-set parameters from obj init
+%  bgR - Vector (or matrix) of background isomerization rates
+% 
 %  varargin{1}: sz - sensor array size, (e.g., sensorGet(sensor,'size')),
 %                    this parameter is only useful when input bgR is a
 %                    scalar
 %
 % Output:
-%  initialState:  The parameters in p augmented by additional terms needed
-%                 for the dynamic calculation in osAdaptTemporal
+%   obj   - osBioPhys object containing all initial parameters needed for
+%       computation of adapted current over time series input.
 %
 % Example:
-%   osAdaptSteadyState(1000,[],[1 1])
+%   From @osBioPhys/osCompute.m, line 60:
+%     obj.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
+% 
+% Reference:
+%   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
+%   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 %
-% The derivation for the formula can be found from:
-%   
-%
-% HJ/VISTASOFT Team, 2014
-
+% HJ, ISETBIO Team, 2014
+% JRG, ISETBIO Team, updated 8/2016
 %% Programming note
 %
 % Notice that the computation is a search over a bounded variable.  The

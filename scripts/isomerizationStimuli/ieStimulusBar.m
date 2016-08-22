@@ -83,7 +83,8 @@ coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
 if strcmpi(osType, 'biophys');
-    osCM = osBioPhys();
+%     osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
 else
     cm = coneMosaic;

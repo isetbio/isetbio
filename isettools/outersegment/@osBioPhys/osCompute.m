@@ -25,6 +25,7 @@ function current = osCompute(obj, pRate, coneType, varargin)
 %
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
+%%
 % check pRate type for backward compatibility
 if isstruct(pRate) && isfield(pRate, 'type') && ...
         strcmp(pRate.type, 'sensor')

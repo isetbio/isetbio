@@ -1,15 +1,16 @@
  function [adaptedData, obj] = osAdaptTemporal(pRate,obj)
 % Time varying voltage response from photon rate and initial state
 %
-%    adaptedData = osAdaptTemporal(pRate,initialState)
+%    adaptedData = osAdaptTemporal(pRate, obj)
+%                    [only called internally from @osBioPhys/osCompute.m]
 % 
 % Inputs:
-%   pRate - Photon absorption rate
-%   p     - Structure containing many initial parameters
+%   pRate - Photon absorption rate from coneMosaic.absorptions/coneMosaic.integrationTime
+%   obj   - osBioPhys object containing many initial parameters
 %
 % Return
-%   adaptedData - adapted photocurrent data (pA)
-%   p           - structure of final state parameters
+%   adaptedData - adapted photocurrent data (pA) for coneMosaic.current
+%   obj         - osBioPhys object containing many final parameters
 %
 % In this case, the physiological differential equations for cones are
 % implemented. The differential equations are:
@@ -22,24 +23,29 @@
 %    6) S(t) = smax / (1 + (Ca(t)/kGc)^n)
 %    7) I(t) = k * cGMP(t)^h / (1 + Ca_slow/Ca_dark)
 %
-% This model gives a cone-by-cone adaptation and it requires a time-series
-% data in sensor structure
+% This model gives a cone-by-cone adaptation and produces a time-series
+% structure in adaptedDat that is stored into the current field of the cone
+% mosaic object in @osBioPhys/osCompute.m.
+% 
+% Reference:
+%   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
+%   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 %
 % Example:
-%   t_os, t_osIntroduction
+%   From @osBioPhys/osCompute.m, line 64:
+%        [current, obj.state]  = osAdaptTemporal(pRate, obj.state);
 %
 % See also:
-%   osInit, osAdaptSteadyState, coneAdapt
+%   osAdaptSteadyState, osAdaptTemporal
 %
+% 
 % HJ, ISETBIO Team, 2014
+% JRG, ISETBIO Team, updated 8/2016
 
 %%  Check inputs
 if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate required.'); end
-% if ~exist('p','var') || isempty(p), error('Initial state required.'); end
     
-% One millisecond time step
-if isfield(obj, 'timeInterval'), dt = obj.timeInterval; else dt = 0.001; end
-
+dt = obj.timeStep;
 %% Simulate differential equations
 adaptedData = zeros([size(obj.opsin) size(pRate, 3)+1]);
 adaptedData(:,:,1) = obj.bgCur;
