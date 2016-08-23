@@ -62,7 +62,7 @@ if ~isAppend || isempty(obj.state)
     obj.state.timeStep = obj.timeStep;
 end
 
-[current, obj.state]  = osAdaptTemporal(pRate, obj.state);
+[current, obj.state]  = osAdaptTemporal(pRate, obj);
 
 % add noise
 if obj.noiseFlag, current = osAddNoise(current); end

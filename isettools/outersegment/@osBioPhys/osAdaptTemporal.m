@@ -1,4 +1,4 @@
- function [adaptedData, obj] = osAdaptTemporal(pRate,obj)
+ function [adaptedData, model] = osAdaptTemporal(pRate,obj)
 % Time varying voltage response from photon rate and initial state
 %
 %    adaptedData = osAdaptTemporal(pRate, obj)
@@ -33,7 +33,7 @@
 %
 % Example:
 %   From @osBioPhys/osCompute.m, line 64:
-%        [current, obj.model.state]  = osAdaptTemporal(pRate, obj.model.state);
+%        [current, model.state]  = osAdaptTemporal(pRate, model.state);
 %
 % See also:
 %   osAdaptSteadyState, osAdaptTemporal
@@ -46,25 +46,26 @@
 if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate required.'); end
     
 dt = obj.timeStep;
+model = obj.state;
 %% Simulate differential equations
-adaptedData = zeros([size(obj.model.opsin) size(pRate, 3)+1]);
-adaptedData(:,:,1) = obj.model.bgCur;
+adaptedData = zeros([size(model.opsin) size(pRate, 3)+1]);
+adaptedData(:,:,1) = model.bgCur;
 
-q    = 2 * obj.model.beta * obj.model.cdark / (obj.model.k * obj.model.gdark^obj.model.h);
-smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);  
+q    = 2 * model.beta * model.cdark / (model.k * model.gdark^model.h);
+smax = model.eta/model.phi * model.gdark * (1 + (model.cdark / model.kGc)^model.n);  
 
 for ii = 1 : size(pRate, 3)
-    obj.model.opsin = obj.model.opsin + dt*(obj.model.OpsinGain*pRate(:,:,ii) - obj.model.sigma*obj.model.opsin);
-    obj.model.PDE   = obj.model.PDE + dt*(obj.model.opsin + obj.model.eta - obj.model.phi * obj.model.PDE);
-    obj.model.Ca    = obj.model.Ca + dt*(q*obj.model.k * obj.model.cGMP.^obj.model.h./(1+obj.model.Ca_slow/obj.model.cdark)-obj.model.beta*obj.model.Ca);
-    obj.model.Ca_slow = obj.model.Ca_slow - dt * obj.model.betaSlow * (obj.model.Ca_slow - obj.model.Ca);
-    obj.model.st    = smax ./ (1 + (obj.model.Ca / obj.model.kGc).^obj.model.n);
-    obj.model.cGMP  = obj.model.cGMP  + dt * (obj.model.st - obj.model.PDE .* obj.model.cGMP);
+    model.opsin = model.opsin + dt*(model.OpsinGain*pRate(:,:,ii) - model.sigma*model.opsin);
+    model.PDE   = model.PDE + dt*(model.opsin + model.eta - model.phi * model.PDE);
+    model.Ca    = model.Ca + dt*(q*model.k * model.cGMP.^model.h./(1+model.Ca_slow/model.cdark)-model.beta*model.Ca);
+    model.Ca_slow = model.Ca_slow - dt * model.betaSlow * (model.Ca_slow - model.Ca);
+    model.st    = smax ./ (1 + (model.Ca / model.kGc).^model.n);
+    model.cGMP  = model.cGMP  + dt * (model.st - model.PDE .* model.cGMP);
     
-    adaptedData(:,:,ii) = - obj.model.k * obj.model.cGMP.^obj.model.h ./ (1 + obj.model.Ca_slow / obj.model.cdark);
+    adaptedData(:,:,ii) = - model.k * model.cGMP.^model.h ./ (1 + model.Ca_slow / model.cdark);
 end
 
 adaptedData(:, :, size(pRate, 3)+1) = adaptedData(:, :, size(pRate, 3));
 adaptedData = adaptedData(:,:, 2:end);
-
+model = obj.model;
 end

@@ -15,7 +15,7 @@ classdef osBioPhys < outerSegment
 % 
 % JRG/HJ/BW, ISETBIO Team, 2016
 
-    properties(Access = public)
+    properties(Access = private)
         state;   % biophysics parameter state
     end
     
@@ -110,9 +110,9 @@ classdef osBioPhys < outerSegment
             val = osGet(obj, varargin{:});
         end
         
-        obj = osAdaptSteadyState(obj, bgR, varargin);
+        state = osAdaptSteadyState(obj, bgR, varargin);
         
-        [adaptedData, obj] = osAdaptTemporal(pRate,obj);
+        [adaptedData, state] = osAdaptTemporal(pRate,obj);
         
         % @JRG need to make new object version of osAddNoise
         [adaptedCur, params] = osAddNoise(curNF, params);

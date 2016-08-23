@@ -1,4 +1,4 @@
-function obj = osAdaptSteadyState(obj, bgR, varargin)
+function model = osAdaptSteadyState(obj, bgR, varargin)
 % Steady-state background current calculated from the background rates.
 %
 %    obj = osAdaptSteadyState(obj, bgR, sz)
@@ -46,7 +46,9 @@ sz = size(bgR);
 
 q    = 2 * obj.model.beta * obj.model.cdark / (obj.model.k * obj.model.gdark^obj.model.h);
 smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);
-        
+
+model = obj.model;
+
 % Init steady state current for background
 bgCur = zeros(length(bgR));
 for ii = 1 : length(bgR)
@@ -63,13 +65,13 @@ bgR   = reshape(bgR(recover_index), sz);
 bgCur = reshape(bgCur(recover_index), sz);
 
 % Compute additional initial values
-obj.model.opsin   = bgR / obj.model.sigma;
-obj.model.PDE     = (obj.model.opsin + obj.model.eta) / obj.model.phi;
-obj.model.Ca      = bgCur * q / obj.model.beta;
-obj.model.Ca_slow = obj.model.Ca;
-obj.model.st      = smax ./ (1 + (obj.model.Ca / obj.model.kGc).^obj.model.n);
-obj.model.cGMP    = obj.model.st * obj.model.phi ./ (obj.model.opsin + obj.model.eta);
+model.opsin   = bgR / obj.model.sigma;
+model.PDE     = (model.opsin + obj.model.eta) / obj.model.phi;
+model.Ca      = bgCur * q / obj.model.beta;
+model.Ca_slow = model.Ca;
+model.st      = smax ./ (1 + (model.Ca / obj.model.kGc).^obj.model.n);
+model.cGMP    = model.st * obj.model.phi ./ (model.opsin + obj.model.eta);
 
-obj.model.bgCur = bgCur;
+model.bgCur = bgCur;
 
 end
