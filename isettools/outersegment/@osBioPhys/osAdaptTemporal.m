@@ -45,14 +45,14 @@
 %%  Check inputs
 if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate required.'); end
     
-dt = obj.model.timeStep;
+dt = obj.timeStep;
 %% Simulate differential equations
 adaptedData = zeros([size(obj.model.opsin) size(pRate, 3)+1]);
 adaptedData(:,:,1) = obj.model.bgCur;
 
 q    = 2 * obj.model.beta * obj.model.cdark / (obj.model.k * obj.model.gdark^obj.model.h);
-smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);
-        
+smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);  
+
 for ii = 1 : size(pRate, 3)
     obj.model.opsin = obj.model.opsin + dt*(obj.model.OpsinGain*pRate(:,:,ii) - obj.model.sigma*obj.model.opsin);
     obj.model.PDE   = obj.model.PDE + dt*(obj.model.opsin + obj.model.eta - obj.model.phi * obj.model.PDE);
