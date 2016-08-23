@@ -29,17 +29,17 @@ rd = RdtClient('isetbio');
 rd.credentialsDialog;
 rd.crp('/resources/data/istim');
 
-publishFlag = 0;
+publishFlag = 1;
 
 %% Create the moving bar iStim for RDT upload
 
-clear params
+clear params iStim
 params.barWidth = 10; 
-params.fov      = 0.3;
+params.fov      = 0.6;
 params.os = 'biophys';
 iStim = ieStimulusBar(params);  % Full params are returned in iStim
 %%
-fname = fullfile(isetbioRootPath,'local','barMovie.mat');
+fname = fullfile(isetbioRootPath,'local','barMovie_osBioPhys.mat');
 save(fname,'iStim');
 
 % Publish to RDT

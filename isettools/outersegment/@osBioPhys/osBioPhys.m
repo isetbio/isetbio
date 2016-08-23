@@ -17,31 +17,35 @@ classdef osBioPhys < outerSegment
 
     properties(Access = public)
         state;   % biophysics parameter state
-
-        sigma;   % rhodopsin activity decay rate (1/sec) - default 22
-        phi;     % phosphodiesterase activity decay rate (1/sec) - default 22
-        eta;     % phosphodiesterase activation rate constant (1/sec) - default 2000
-        gdark;   % concentration of cGMP in darkness - default 20.5
-        k;       % constant relating cGMP to current - default 0.02
-        h;       % cooperativity for cGMP->current - default 3
-        cdark;   % dark calcium concentration - default 1
-        beta;    % rate constant for calcium removal in 1/sec - default 9
-        betaSlow;% rate constant for slow calcium modulation of channels - default 0.4
-        n;       % cooperativity for cyclase, hill coef - default 4
-        kGc;     % hill affinity for cyclase - default 0.5
-        OpsinGain; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+    end
+    
+    properties(SetAccess = protected, GetAccess = public)
+        model;
         
-        q;      % constant accoutning for fraction of the current carried by calcium and the outer segment volume
-        smax;   % max cGMP creation rate
-        
-        bgCur;  % background current
-        
-        opsin   % photopigment activity
-        PDE     % cGMP hydrolysis rate by phoshpodiesterase 
-        Ca      % calcium concentration
-        Ca_slow % lowpass-filtered calcium concentration
-        st      % cGMP creation rate
-        cGMP    % cGMP concentration
+%         sigma;   % rhodopsin activity decay rate (1/sec) - default 22
+%         phi;     % phosphodiesterase activity decay rate (1/sec) - default 22
+%         eta;     % phosphodiesterase activation rate constant (1/sec) - default 2000
+%         gdark;   % concentration of cGMP in darkness - default 20.5
+%         k;       % constant relating cGMP to current - default 0.02
+%         h;       % cooperativity for cGMP->current - default 3
+%         cdark;   % dark calcium concentration - default 1
+%         beta;    % rate constant for calcium removal in 1/sec - default 9
+%         betaSlow;% rate constant for slow calcium modulation of channels - default 0.4
+%         n;       % cooperativity for cyclase, hill coef - default 4
+%         kGc;     % hill affinity for cyclase - default 0.5
+%         OpsinGain; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+%         
+%         q;      % constant accoutning for fraction of the current carried by calcium and the outer segment volume
+%         smax;   % max cGMP creation rate
+%         
+%         bgCur;  % background current
+%         
+%         opsin   % photopigment activity
+%         PDE     % cGMP hydrolysis rate by phoshpodiesterase 
+%         Ca      % calcium concentration
+%         Ca_slow % lowpass-filtered calcium concentration
+%         st      % cGMP creation rate
+%         cGMP    % cGMP concentration
     end
     
 
@@ -60,38 +64,38 @@ classdef osBioPhys < outerSegment
                 
                 case 0 % peripheral
                     % Peripheral parameters
-                    obj.sigma = 22;  % rhodopsin activity decay rate (1/sec) - default 22
-                    obj.phi = 22;     % phosphodiesterase activity decay rate (1/sec) - default 22
-                    obj.eta = 2000;	  % phosphodiesterase activation rate constant (1/sec) - default 2000
-                    obj.gdark = 20.5; % concentration of cGMP in darkness - default 20.5
-                    obj.k = 0.02;     % constant relating cGMP to current - default 0.02
-                    obj.h = 3;       % cooperativity for cGMP->current - default 3
-                    obj.cdark = 1;  % dark calcium concentration - default 1
-                    obj.beta = 9;	  % rate constant for calcium removal in 1/sec - default 9
-                    obj.betaSlow = 0.4; % rate constant for slow calcium modulation of channels - default 0.4
-                    obj.n = 4;  	  % cooperativity for cyclase, hill coef - default 4
-                    obj.kGc = 0.5;   % hill affinity for cyclase - default 0.5
-                    obj.OpsinGain = 10; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+                    obj.model.sigma = 22;  % rhodopsin activity decay rate (1/sec) - default 22
+                    obj.model.phi = 22;     % phosphodiesterase activity decay rate (1/sec) - default 22
+                    obj.model.eta = 2000;	  % phosphodiesterase activation rate constant (1/sec) - default 2000
+                    obj.model.gdark = 20.5; % concentration of cGMP in darkness - default 20.5
+                    obj.model.k = 0.02;     % constant relating cGMP to current - default 0.02
+                    obj.model.h = 3;       % cooperativity for cGMP->current - default 3
+                    obj.model.cdark = 1;  % dark calcium concentration - default 1
+                    obj.model.beta = 9;	  % rate constant for calcium removal in 1/sec - default 9
+                    obj.model.betaSlow = 0.4; % rate constant for slow calcium modulation of channels - default 0.4
+                    obj.model.n = 4;  	  % cooperativity for cyclase, hill coef - default 4
+                    obj.model.kGc = 0.5;   % hill affinity for cyclase - default 0.5
+                    obj.model.OpsinGain = 10; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
           
                 case 1 % foveal
                     % Foveal parameters
-                    obj.sigma = 10;       % rhodopsin activity decay rate (1/sec) - default 22
-                    obj.phi   = 22;       % phosphodiesterase activity decay rate (1/sec) - default 22
-                    obj.eta   = 700;      % phosphodiesterase activation rate constant (1/sec) - default 2000
-                    obj.gdark = 20.5;     % concentration of cGMP in darkness - default 20.5
-                    obj.k     = 0.02;     % constant relating cGMP to current - default 0.02
-                    obj.h     = 3;        % cooperativity for cGMP->current - default 3
-                    obj.cdark = 1;        % dark calcium concentration - default 1
-                    obj.beta  = 5;        % rate constant for calcium removal in 1/sec - default 9
-                    obj.betaSlow = 0.4;   % rate constant for slow calcium modulation of channels - default 0.4
-                    obj.n     = 4;        % cooperativity for cyclase, hill coef - default 4
-                    obj.kGc   = 0.5;      % hill affinity for cyclase - default 0.5
-                    obj.OpsinGain = 12;   % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+                    obj.model.sigma = 10;       % rhodopsin activity decay rate (1/sec) - default 22
+                    obj.model.phi   = 22;       % phosphodiesterase activity decay rate (1/sec) - default 22
+                    obj.model.eta   = 700;      % phosphodiesterase activation rate constant (1/sec) - default 2000
+                    obj.model.gdark = 20.5;     % concentration of cGMP in darkness - default 20.5
+                    obj.model.k     = 0.02;     % constant relating cGMP to current - default 0.02
+                    obj.model.h     = 3;        % cooperativity for cGMP->current - default 3
+                    obj.model.cdark = 1;        % dark calcium concentration - default 1
+                    obj.model.beta  = 5;        % rate constant for calcium removal in 1/sec - default 9
+                    obj.model.betaSlow = 0.4;   % rate constant for slow calcium modulation of channels - default 0.4
+                    obj.model.n     = 4;        % cooperativity for cyclase, hill coef - default 4
+                    obj.model.kGc   = 0.5;      % hill affinity for cyclase - default 0.5
+                    obj.model.OpsinGain = 12;   % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
             end
             
-            % Derived properties
-            obj.q    = 2 * obj.beta * obj.cdark / (obj.k * obj.gdark^obj.h);
-            obj.smax = obj.eta/obj.phi * obj.gdark * (1 + (obj.cdark / obj.kGc)^obj.n);
+            % % Derived properties
+            % obj.model.q    = 2 * obj.model.beta * obj.model.cdark / (obj.model.k * obj.model.gdark^obj.model.h);
+            % obj.model.smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);
                      
         end
         
@@ -105,6 +109,13 @@ classdef osBioPhys < outerSegment
             % get function, see osBioPhysGet for details
             val = osGet(obj, varargin{:});
         end
+        
+        obj = osAdaptSteadyState(obj, bgR, varargin);
+        
+        [adaptedData, obj] = osAdaptTemporal(pRate,obj);
+        
+        % @JRG need to make new object version of osAddNoise
+        [adaptedCur, params] = osAddNoise(curNF, params);
     end
     
     methods (Access=public)        

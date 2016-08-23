@@ -52,7 +52,7 @@ nFrames = size(data, tDim);
 
 % Scale and gamma correct mov
 data = ieScale(data,0,1) .^ gamma;
-
+mind = min(data(:)); maxd = max(data(:));
 % A name for writing was passed
 % So write and show the movie and write to file
 if ~isempty(vname)
@@ -66,6 +66,7 @@ if ~isempty(vname)
         % RGB data
         for ii = 1:step:nFrames
             imagesc(data(:,:,:,ii));
+            caxis([mind maxd]);
             F = getframe; 
             writeVideo(vObj,F);
         end
@@ -74,6 +75,7 @@ if ~isempty(vname)
         colormap(gray)
         for ii = 1:step:nFrames
             imagesc(data(:,:,ii));
+            caxis([mind maxd]);
             F = getframe;
             writeVideo(vObj,F);
         end
@@ -85,12 +87,12 @@ elseif show
     if isequal(tDim,4)
         % RGB data
         for ii=1:size(data,tDim)
-            imagesc(data(:,:,:,ii)); axis image; drawnow; 
+            imagesc(data(:,:,:,ii)); axis image; caxis([mind maxd]); drawnow; 
         end
     elseif isequal(tDim,3)
         colormap(gray);
         for ii = 1:nFrames
-            imagesc(data(:,:,ii)); axis image; drawnow; 
+            imagesc(data(:,:,ii)); axis image; caxis([mind maxd]); drawnow; 
         end
     end
 end

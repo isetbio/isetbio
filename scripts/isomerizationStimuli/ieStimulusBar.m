@@ -42,9 +42,9 @@ addParameter(p,'meanLuminance',  200,   @isnumeric); % Cd/m2
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,   @isnumeric); % Deg 
-addParameter(p,'startFrames',    50,    @isnumeric); % ms 
+addParameter(p,'startFrames',    60,    @isnumeric); % ms 
 addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
-addParameter(p,'endFrames',      50,    @isnumeric); % ms 
+addParameter(p,'endFrames',      30,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);
@@ -83,8 +83,8 @@ coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
 if strcmpi(osType, 'biophys');
-%     osCM = osBioPhys();            % peripheral (fast) cone dynamics
-    osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+%     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
 else
     cm = coneMosaic;
