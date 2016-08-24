@@ -30,6 +30,22 @@
 % Reference:
 %   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
 %   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
+% 
+% Further model parameters computed within this function for each time
+% step:
+% 
+%         q;      % constant accoutning for fraction of the current carried 
+%                       by calcium and the outer segment volume
+%         smax;   % max cGMP creation rate
+%         
+%         bgCur;  % background current
+%         
+%         opsin   % photopigment activity
+%         PDE     % cGMP hydrolysis rate by phoshpodiesterase 
+%         Ca      % calcium concentration
+%         Ca_slow % lowpass-filtered calcium concentration
+%         st      % cGMP creation rate
+%         cGMP    % cGMP concentration
 %
 % Example:
 %   From @osBioPhys/osCompute.m, line 64:

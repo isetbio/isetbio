@@ -1,4 +1,4 @@
-function obj = bipolarCompute(obj, os, varargin)
+function obj = bipolarCompute(obj, inputObj, varargin)
 % Compute bipolar responses
 % 
 %   Still under active development
@@ -20,10 +20,18 @@ function obj = bipolarCompute(obj, os, varargin)
 %% parse input parameters
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'bipolar'));
-p.addRequired('os', @(x) isa(x, 'outerSegment'));  % Should be coneMosaic
+p.addRequired('inputObj', @(x) isa(x, 'outerSegment')| isa(x, 'coneMosaic'));  
 
 % parse
-p.parse(obj, os, varargin{:});
+p.parse(obj, inputObj, varargin{:});
+
+% The input object should be coneMosaic, but it can also be an OS for
+% backwards compatibility for now.
+if isa(inputObj,'coneMosaic')
+    os = inputObj.os;
+else
+    os = inputObj;
+end
 
 %% Spatial filtering and subsampling
 % Convolve spatial RFs over whole image, subsample to get evenly spaced
@@ -45,13 +53,13 @@ switch obj.cellType
     % Remove S cone input for these types of bipolars
     case{'offDiffuse','onDiffuse','onMidget'}
         
-        lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
-        sConeIndices = find(obj.coneMosaic==4);
+        lmConeIndices = find(obj.coneType ==2 | obj.coneType == 3);
+        sConeIndices = find(obj.coneType==4);
         osSigRSZMCenter   = osSigRSZM;
         osSigRSZMSurround   = osSigRSZM;        
         
-        [rLM,cLM]=ind2sub(size(obj.coneMosaic),lmConeIndices);
-        [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
+        [rLM,cLM]=ind2sub(size(obj.coneType),lmConeIndices);
+        [rS,cS]=ind2sub(size(obj.coneType),sConeIndices);
         
         % Set center and surround to only have LM cones
         lmConeDist = sqrt((repmat(rLM,[1 length(rS)]) - repmat(rS',[length(rLM) 1])).^2 - (repmat(cLM,[1 length(cS)]) - repmat(cS',[length(cLM) 1])).^2);
@@ -64,7 +72,7 @@ switch obj.cellType
         osSigRSZMSurround(sConeIndices,:) = osSigRSZMSurround(lmConeIndices(minindlm),:);
     % Keep S cone input for off Midget but only weight by 0.25
     case{'offMidget'}
-        sConeIndices = find(obj.coneMosaic==4);
+        sConeIndices = find(obj.coneType==4);
         minval = min(osSigRSZM(:));
         osSigRSZMCenter   = osSigRSZM;
         osSigRSZMCenter(sConeIndices,:)   = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
@@ -74,14 +82,14 @@ switch obj.cellType
     % Make nearest S cones the center for SBCs, only L and M cones in
     % surround
     case{'onSBC'}        
-        lmConeIndices = find(obj.coneMosaic ==2 | obj.coneMosaic == 3);
-        sConeIndices = find(obj.coneMosaic==4);
+        lmConeIndices = find(obj.coneType ==2 | obj.coneType == 3);
+        sConeIndices = find(obj.coneType==4);
         osSigRSZMCenter   = osSigRSZM;
         osSigRSZMSurround   = osSigRSZM;        
         
         % Set center to only have S cones
         
-        [rLM,cLM]=ind2sub(size(obj.coneMosaic),lmConeIndices);
+        [rLM,cLM]=ind2sub(size(obj.coneType),lmConeIndices);
         [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
         
         for sind = 1:length(sConeIndices)

@@ -44,31 +44,46 @@ end
 
 % Private properties. Only methods of the parent class can set these
 properties(Access = private)
-    coneMosaic;
+    coneType;
 end
 
 % Public methods
 methods
     
     % Constructor
-    function obj = bipolar(os, varargin)     
+    function obj = bipolar(inputObj, varargin)     
         
         p = inputParser;
-        addRequired(p, 'os');
+        addRequired(p, 'inputObj');
         addParameter(p, 'cellType', 'offDiffuse', @ischar);
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
         addParameter(p, 'ecc',  1, @isnumeric);
-        addParameter(p, 'coneMosaic',  ones(size(os.coneCurrentSignal)), @isnumeric);
+        addParameter(p, 'coneType',  -1, @isnumeric);
         
-        p.parse(os, varargin{:});  
+        p.parse(inputObj, varargin{:});  
+        
+        % The input object should be coneMosaic, but it can also be an OS for
+        % backwards compatibility for now.
+        if isa(inputObj,'coneMosaic')
+            os = inputObj.os;
+            obj.coneType = inputObj.pattern;
+        else
+            os = inputObj;
+            if p.Results.coneType(1,1) == -1;
+                obj.coneType = ones(size(os.coneCurrentSignal,1),size(os.coneCurrentSignal,2));
+            else
+                obj.coneType = p.Results.coneType;
+            end
+            
+        end
         
         obj.patchSize = osGet(os,'patchSize');
         obj.timeStep = osGet(os,'timeStep');
         
         obj.cellType = p.Results.cellType;
-        obj.coneMosaic = p.Results.coneMosaic;
+        % obj.coneType = p.Results.coneType;
         
         switch p.Results.rectifyType
             case 1

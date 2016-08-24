@@ -20,36 +20,9 @@ classdef osBioPhys < outerSegment
     end
     
     properties(SetAccess = protected, GetAccess = public)
-        model;
-        
-%         sigma;   % rhodopsin activity decay rate (1/sec) - default 22
-%         phi;     % phosphodiesterase activity decay rate (1/sec) - default 22
-%         eta;     % phosphodiesterase activation rate constant (1/sec) - default 2000
-%         gdark;   % concentration of cGMP in darkness - default 20.5
-%         k;       % constant relating cGMP to current - default 0.02
-%         h;       % cooperativity for cGMP->current - default 3
-%         cdark;   % dark calcium concentration - default 1
-%         beta;    % rate constant for calcium removal in 1/sec - default 9
-%         betaSlow;% rate constant for slow calcium modulation of channels - default 0.4
-%         n;       % cooperativity for cyclase, hill coef - default 4
-%         kGc;     % hill affinity for cyclase - default 0.5
-%         OpsinGain; % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
-%         
-%         q;      % constant accoutning for fraction of the current carried by calcium and the outer segment volume
-%         smax;   % max cGMP creation rate
-%         
-%         bgCur;  % background current
-%         
-%         opsin   % photopigment activity
-%         PDE     % cGMP hydrolysis rate by phoshpodiesterase 
-%         Ca      % calcium concentration
-%         Ca_slow % lowpass-filtered calcium concentration
-%         st      % cGMP creation rate
-%         cGMP    % cGMP concentration
-    end
-    
-
-    
+        model;        
+    end  
+   
     methods
         
         function obj = osBioPhys(varargin)

@@ -69,9 +69,15 @@ for flagInd = 5% 1:length(osFlag)
     fprintf('Bipolar compute ...');
     switch bipolarFlag(flagInd)
         case 0 % linear bipolar
-            bp = bipolar(cMosaic.os);
+            
+            % bpParams.coneType = cMosaic.pattern;
+            % bp = bipolar(cMosaic.os,bpParams);
+            bp = bipolar(cMosaic);
         case 1 % subunit bipolar
-            bp = bipolar(cMosaic.os,'rectifyType',2);
+            
+            % bpParams.coneType = cMosaic.pattern;
+            % bp = bipolar(cMosaic.os,bpParams);
+            bp = bipolar(cMosaic,'rectifyType',2);
     end
     
     bp.compute(cMosaic.os);
