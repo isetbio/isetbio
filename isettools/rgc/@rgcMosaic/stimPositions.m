@@ -3,9 +3,12 @@ function [stimX, stimY, offset] = stimPositions(rgcMosaic,xcell,ycell)
 %
 %  [stimX, stimY, offset] = stimPositions(obj,xcell,ycell)
 %
-% @JRG More comments please.
+% In order to compute the linear response of an RGC, the relevant spatial
+% positions of the stimulus must be determined based on the center
+% coordinates of the RF in stimulus space and the spatial extent of the RF.
+% This function pulls out the relevant spatial coordinates for a given RGC.
 %
-% JRG ISETBIO Team
+% 5/2016 JRG (c) ISETBIO Team
 
 % The RGC center location
 stimCenterCoords = rgcMosaic.cellLocation{xcell,ycell};
@@ -37,8 +40,8 @@ stimX =  ceil(xStartCoord):floor(xEndCoord);
 stimY =  ceil(yStartCoord):floor(yEndCoord);
 
 if nargout == 3
-    % Explain the offset better
-    % @JRG
+    % An offset is sometimes used because RGC mosaics may be defined with
+    % their center coordinates not at (0,0).
     
     % Set rounding of cell location based on whether it is
     % positive or negative

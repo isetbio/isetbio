@@ -69,7 +69,7 @@ meanCur = maxCur * (1 - 1/(1 + 45000/pMean));
 
 [absorptions, r, c] = RGB2XWFormat(obj.absHistory);
 current = zeros(r*c, size(pRate, 3));
-
+pRateRS = RGB2XWFormat(pRate);
 % convolve the filters with the isomerization data
 for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % pull out the linear filter for current cone type.
@@ -80,7 +80,16 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     if ~isempty(index)
         curData = conv2(absorptions(index, :), filter') - meanCur;
         current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
-
+        
+%         if size(pRateRS,2) > size(filter,1)
+%             filterZP = [repmat(filter',[size(pRateRS(index,:),1) 1]) zeros(size(pRateRS(index,:),1),-size(filter,1)+size(pRateRS,2))];
+%             pRateZP = pRateRS(index,:);
+%         else
+%             filterZP = filter;
+%             pRateZP = [pRateRS zeros(size(filter,1)-size(pRateRS,2),size(pRateRS,1))];
+%         end
+%         curData = ifft(fft(filterZP').*fft(pRateZP'))';        
+%         current(index, :) = curData;
     end
 end
 

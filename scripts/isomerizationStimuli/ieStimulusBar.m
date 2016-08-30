@@ -84,8 +84,31 @@ coneSz(2) = coneSz(1);
 
 if strcmpi(osType, 'biophys');
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag',1);
 %     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
+    
+elseif strcmpi(osType,'hex')    
+    rng('default'); rng(219347);
+    
+    % Generate a hex mosaic with a medium resamplingFactor
+    mosaicParams = struct(...
+        'resamplingFactor', 9, ...                 % controls the accuracy of the hex mosaic grid
+        'spatiallyVaryingConeDensity', false, ...  % whether to have an eccentricity based, spatially - varying density
+        'centerInMM', [0.5 0.3], ...               % mosaic eccentricity
+        'spatialDensity', [0 0.62 0.31 0.07],...
+        'noiseFlag', false ...
+        );
+    cm = coneMosaicHex(...
+        mosaicParams.resamplingFactor, ...
+        mosaicParams.spatiallyVaryingConeDensity, ...
+        'center', mosaicParams.centerInMM*1e-3, ...
+        'spatialDensity', mosaicParams.spatialDensity, ...
+        'noiseFlag', mosaicParams.noiseFlag ...
+        );
+    
+    % Set the mosaic's FOV to a wide aspect ratio
+    cm.setSizeToFOVForHexMosaic([0.9 0.6]);
 else
     cm = coneMosaic;
 end
@@ -151,9 +174,12 @@ for t = 1 : nSteps
     
     % Compute absorptions and photocurrent
     cm.compute(oi, 'append', true, 'emPath', [0 0]);
-    
+%     cm.compute(oi, 'append', true, 'currentFlag', false, 'emPath', [0 0]);
     
 end
+
+% Need to compute current after otherwise osAddNoise is wrong
+% cm.computeCurrent();
 
 delete(wbar);
 

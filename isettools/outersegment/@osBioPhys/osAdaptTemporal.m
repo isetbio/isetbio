@@ -83,5 +83,5 @@ end
 
 adaptedData(:, :, size(pRate, 3)+1) = adaptedData(:, :, size(pRate, 3));
 adaptedData = adaptedData(:,:, 2:end);
-model = obj.model;
+% model = obj.model;
 end

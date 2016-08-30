@@ -87,8 +87,6 @@ classdef osBioPhys < outerSegment
         
         [adaptedData, state] = osAdaptTemporal(pRate,obj);
         
-        % @JRG need to make new object version of osAddNoise
-        [adaptedCur, params] = osAddNoise(curNF, params);
     end
     
     methods (Access=public)        

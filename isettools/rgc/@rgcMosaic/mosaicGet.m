@@ -57,6 +57,9 @@ allowFields = {...
         'tsurround',...
         'tonicdrive',...
         'responselinear'...
+        'responseSpikes',...
+        'spikeTimes',...
+        'spikesDownSampled',...
         'mosaicsize', ...
         'dt', ...
         'lastspiketime', ...
@@ -158,6 +161,31 @@ switch ieParamFormat(param)
             end
         end
         
+    case{'responsespikes','spiketimes'}
+        % Get the spike times in an array
+        
+        nCells  = obj.get('mosaic size');
+        nTrials = obj.get('numbertrials');        
+        spikes  = obj.responseSpikes;
+        val = 0;
+        for ii=1:nCells(1)
+            for jj = 1:nCells(2)
+                for kk = 1:nTrials
+                    mx = length(spikes{ii,jj,kk});
+                    val = max([val,mx]);
+                end
+            end
+        end
+        val = zeros(nCells(1), nCells(2), mx, nTrials);
+        
+        for ii=1:nCells(1)
+            for jj = 1:nCells(2)
+                for kk = 1:nTrials
+                    val(ii,jj,1:length(spikes{ii,jj,kk}),kk) = spikes{ii,jj,kk};
+                end
+            end
+        end        
+        
     case {'spikes'}
         % cellCtr = 0;
         % @JRG - Needs to be updated
@@ -201,6 +229,26 @@ switch ieParamFormat(param)
                 val = spikes;
             end
         end
+        
+    case{'spikesdownsampled'}
+        % Get the spikes in an array, but downsampled by dt
+        
+        spikes = obj.get('spikes');        
+        
+        nCells  = obj.get('mosaic size');  
+                
+        numDownSampleBlocks = ceil(size(spikes,3)*obj.dt);
+        lenBlock = round(1./obj.dt);
+        val = zeros(nCells(1), nCells(2), numDownSampleBlocks);
+        for ii=1:nCells(1)
+            for jj = 1:nCells(2)
+                for kk = 1:numDownSampleBlocks
+                    downSampleIndStart = (kk-1)*lenBlock + 1;
+                    downSampleIndEnd   = (kk)*lenBlock;
+                    val(ii,jj,kk) = sum(spikes(ii,jj,downSampleIndStart:downSampleIndEnd));
+                end
+            end
+        end        
         
     case{'psth'}
         % Calculate the PSTH from the response

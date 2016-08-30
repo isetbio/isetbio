@@ -39,7 +39,11 @@ end
 
 % Get zero mean cone current signal
 osSig = RGB2XWFormat(os.coneCurrentSignal);
-osSigRSZM = bsxfun(@minus, osSig, mean(osSig, 2));
+if size(osSig,2) > 1
+    osSigRSZM = bsxfun(@minus, osSig, mean(osSig, 2));
+else
+    osSigRSZM =osSig;
+end
 osSigZM = reshape(osSig, size(os.coneCurrentSignal));
 
 %% Map cone positions to appropriate centers or surrounds of RGC RFs
@@ -175,9 +179,9 @@ switch obj.filterType
         else
             data = rdt.readArtifact('bipolarFilt_200_ONP_2013_08_19_6_all', 'type', 'mat');
         end
-        bipolarFiltMat = data.bipolarFiltMat;
-        load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
-       
+        % bipolarFiltMat = data.bipolarFiltMat;
+        % load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_OFFP_2013_08_19_6_all_linear.mat');
+        bipolarFilt = -(data.bipolarFiltMat(obj.cellLocation,:)');
     case 4  % sampled at 150 fr/sec for impulse response
     
         data = load('/Users/james/Documents/MATLAB/isetbio misc/bipolarTemporal/bipolarFilt_200_ONP_2013_08_19_6_all_linear_fr150.mat');
@@ -198,7 +202,7 @@ else
     
 end
 
-% 
+
 % bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
 % bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
 % 
