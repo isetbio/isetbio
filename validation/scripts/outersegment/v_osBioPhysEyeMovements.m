@@ -1,23 +1,25 @@
 function varargout = v_osBioPhysEyeMovements(varargin)
+% Check os biophysical model against neural data (simulating eye movements)
 %
-% Check biophysical model of the cone outer segments against neural data (simulating eye movements)
+% This script tests the biophysically-based outer segment model of photon
+% isomerizations to photocurrent transduction in the cone outer segments.
+% The simulation is compared with a recording sesssion that simulated eye
+% movements for a natural image stimulus.
 %
-% This script tests the biophysically-based outer segment model of 
-% photon isomerizations to photocurrent transduction that occurs in the
-% cone outer segments.  The comparison is for a recording sesssion that
-% simulated eye movements for a natural image stimulus.
+% STATUS as of 2/10/16.  
 %
-% STATUS as of 2/10/16.  This fetches using the remote data toolbox the
-% eyeMovementExample file provided by Fred's lab and compares model predictions
-% given input isomerizations with measured photocurrent.  The agreement is
-% good up to a constant current offset, which we understand is due to
-% features of the measurement and/or the way the data were saved.
-% Currently, the validation data are simply shifted to match the model
-% predictions.  Better would be to specify in the eyeMovementExample data file the
-% offset that provides the best estimate of the real measurement offset.
-% Or, if this isn't possible, then things are fine, but we should know that
-% and write it down here and/or in a comment about the eyeMovementExample
-% data file.
+%  * This fetches using the remote data toolbox the eyeMovementExample file
+%  provided by Fred's lab and compares model predictions
+% given input isomerizations with measured photocurrent.  
+%  * The agreement is good up to a constant current offset, which we
+%  understand is due to features of the measurement and/or the way the data were saved.
+%
+% Currently, the validation data DC value is simply shifted to match the
+% model predictions.  Better would be to specify in the eyeMovementExample
+% data file the offset that provides the best estimate of the real
+% measurement offset. Or, if this isn't possible, then things are fine, but
+% we should know that and write it down here and/or in a comment about the
+% eyeMovementExample data file.
 %
 % 6/xx/2015    npc   Created.
 % 7/xx/2015    jrg   Test with ISETBIO outersegment object
@@ -27,8 +29,11 @@ function varargout = v_osBioPhysEyeMovements(varargin)
 %                    version OSObjectVsOrigValidation.
 % 1/12/16      npc   Created this version after separating the eye movements 
 %                    component from s_coneModelValidate.
+%
+% 2016 ISETBIO Team
 
-    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+
 end
 
 %% Function implementing the isetbio validation code
@@ -37,7 +42,7 @@ function ValidationFunction(runTimeParams)
     %% Init
     ieInit;
 
-    %% Load measured outer segment data
+    %% Load measured outer segment data.  usec time base
     [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses();
     
     %% Compute @os model response
@@ -48,13 +53,19 @@ function ValidationFunction(runTimeParams)
      
     % Create human sensor with 1 cone and load its photon rate with 
     % the stimulus photon rate time sequence
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-    sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
+    %     sensor = sensorCreate('human');
+    %     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+    %     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+    %     sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
 
+    cmosaic = coneMosaic;
+    cmosaic.rows = 1; cmosaic.cols = 1;
+    cmosaic.integrationTime = simulationTimeIntervalInSeconds;
+    cmosaic.absorptions = stimulusPhotonRate*simulationTimeIntervalInSeconds;
+    
     % Create a biophysically-based outersegment model object.
-    osB = osBioPhys();
+    % osB = osBioPhys();
+    cmosaic.os = osBioPhys();
     
     pRate = sensorGet(sensor, 'photon rate');
     coneType = sensorGet(sensor, 'cone type');
@@ -77,11 +88,11 @@ function ValidationFunction(runTimeParams)
     offset2Time = 9.1;
     [~,offset2TimeBin] = min(abs(time - offset2Time ));
     
-    % Add two different offset to measured current
+    % Make the current level match at the offset times
     measuredOuterSegmentCurrentOffset1 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset1TimeBin)-measuredOuterSegmentCurrent(offset1TimeBin));
     measuredOuterSegmentCurrentOffset2 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset2TimeBin)-measuredOuterSegmentCurrent(offset2TimeBin));
     
-    % compute RMS error
+    % compute RMS error.  Why are there so many NaNs in the measured data?
     residual1 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset1(:);
     residual2 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset2(:);
     validIndices = find(~isnan(measuredOuterSegmentCurrent));
@@ -90,14 +101,15 @@ function ValidationFunction(runTimeParams)
 
     % Plot the two calculations and compare against measured data.
     if (runTimeParams.generatePlots)
-        h = figure(1);
-        set(h, 'Position', [10 1000 1000 1200]);
-        subplot('Position', [0.05 0.54 0.94 0.42]);
+        h = vcNewGraphWin([],'tall');
+        subplot(2,1,1)
+        % subplot('Position', [0.05 0.54 0.94 0.42]);
         stairs(time,stimulusPhotonRate, 'r-',  'LineWidth', 2.0);
         set(gca, 'XLim', [time(1) time(end)], 'FontSize', 12);
         ylabel('Stimulus (R*/sec)','FontSize',14);
         
-        subplot('Position', [0.05 0.03 0.94 0.46]);
+        subplot(2,1,2)
+        % subplot('Position', [0.05 0.03 0.94 0.46]);
         plot(time, measuredOuterSegmentCurrent, '.-', 'LineWidth', 2.0); hold on;
         plot(time, measuredOuterSegmentCurrentOffset1, 'm-', 'LineWidth', 2.0);
         plot(time, measuredOuterSegmentCurrentOffset2, 'b-', 'LineWidth', 2.0);

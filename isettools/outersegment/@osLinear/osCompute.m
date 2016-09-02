@@ -23,6 +23,14 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % 
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
+% PROGRAMMING TODO
+%
+%  The append method appears to be problematic when used with osAddNoise.
+%  We should remind ourselves why we needed the append and then we should
+%  either not let the wrong calculation happen or fix it.
+%
+% JRG/BW
+
 % check pRate type for backward compatibility
 if isstruct(pRate) && isfield(pRate, 'type') && ...
         strcmp(pRate.type, 'sensor')

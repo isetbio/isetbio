@@ -1,7 +1,10 @@
 function varargout = v_osBioPhysObject(varargin)
+% To Deprecate.  Replaced by other v_os<> functions that break out the
+% contents from here.
+%
 % Validate the biophysical model of the cone outer segments.
 %
-% This script tests out our implementation of a biophysical model of the
+% This script tests our implementation of a biophysical model of the
 % isomerizations to photocurrent transduction process that occurs in the
 % cone outer segments.
 %
