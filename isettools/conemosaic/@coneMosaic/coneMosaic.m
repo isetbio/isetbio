@@ -492,7 +492,10 @@ classdef coneMosaic < hiddenHandle
             padRows = max(abs(emPath(:, 2)));
             padCols = max(abs(emPath(:, 1)));
             
+            % We need a copy of the object because ...
             cpObj = obj.copy();
+            
+            % Perhaps because of eye movements?
             cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
             
             % compute full LMS noise free absorptions
