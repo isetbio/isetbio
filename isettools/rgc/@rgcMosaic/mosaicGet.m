@@ -242,11 +242,15 @@ switch ieParamFormat(param)
         val = zeros(nCells(1), nCells(2), numDownSampleBlocks);
         for ii=1:nCells(1)
             for jj = 1:nCells(2)
-                for kk = 1:numDownSampleBlocks
+                for kk = 1:numDownSampleBlocks-1
                     downSampleIndStart = (kk-1)*lenBlock + 1;
                     downSampleIndEnd   = (kk)*lenBlock;
                     val(ii,jj,kk) = sum(spikes(ii,jj,downSampleIndStart:downSampleIndEnd));
                 end
+                kk = numDownSampleBlocks;
+                downSampleIndStart = (kk-1)*lenBlock + 1;
+                % downSampleIndEnd   = (kk)*lenBlock;
+                val(ii,jj,kk) = sum(spikes(ii,jj,downSampleIndStart:end));
             end
         end        
         

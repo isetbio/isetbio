@@ -53,7 +53,7 @@ cMosaic_osBioPhys = data.iStim.cMosaic;
 clear data;
 
 %%
-for flagInd = 5% 1:length(osFlag)
+for flagInd = 1% 1:length(osFlag)
     
     tic;
     fprintf('osFlag %d - bipolarFlag %d - rgcFlag %d\n',osFlag(flagInd),bipolarFlag(flagInd), rgcFlag(flagInd));
