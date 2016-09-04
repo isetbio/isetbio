@@ -59,7 +59,7 @@ clear data;
 % cMosaic_osBioPhys.window;
 
 %%
-for flagInd = 5% 1:length(osFlag)
+for flagInd = 1% 1:length(osFlag)
     
     tic;
     fprintf('osFlag %d - bipolarFlag %d - rgcFlag %d\n',osFlag(flagInd),bipolarFlag(flagInd), rgcFlag(flagInd));

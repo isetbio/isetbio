@@ -84,7 +84,7 @@ coneSz(2) = coneSz(1);
 
 if strcmpi(osType, 'biophys');
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
-    osCM.set('noise flag',1);
+    osCM.set('noise flag',0);
 %     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
     
@@ -173,13 +173,20 @@ for t = 1 : nSteps
     
     
     % Compute absorptions and photocurrent
-    cm.compute(oi, 'append', true, 'emPath', [0 0]);
-%     cm.compute(oi, 'append', true, 'currentFlag', false, 'emPath', [0 0]);
+%     cm.compute(oi, 'append', true, 'emPath', [0 0]);
+    cm.compute(oi, 'append', true, 'currentFlag', false, 'emPath', [0 0]);
     
 end
 
 % Need to compute current after otherwise osAddNoise is wrong
-% cm.computeCurrent();
+
+
+if strcmpi(osType, 'biophys');
+    osBParams.bgR = 10*mean(cm.absorptions(:)./cm.os.timeStep);
+    cm.computeCurrent(osBParams);
+else
+    cm.computeCurrent();
+end
 
 delete(wbar);
 
