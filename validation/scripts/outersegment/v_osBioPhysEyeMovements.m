@@ -51,35 +51,52 @@ function ValidationFunction(runTimeParams)
     % In generar, the stimulation time interval should be set to a small enough value so as to avoid overflow errors.
     simulationTimeIntervalInSeconds = time(2)-time(1);
      
-    % Create human sensor with 1 cone and load its photon rate with 
-    % the stimulus photon rate time sequence
-    %     sensor = sensorCreate('human');
-    %     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    %     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-    %     sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
-
     cmosaic = coneMosaic;
     cmosaic.rows = 1; cmosaic.cols = 1;
     cmosaic.integrationTime = simulationTimeIntervalInSeconds;
     cmosaic.absorptions = stimulusPhotonRate*simulationTimeIntervalInSeconds;
-    
-    % Create a biophysically-based outersegment model object.
-    % osB = osBioPhys();
+%     
+%     % Create a biophysically-based outersegment model object.
+
     cmosaic.os = osBioPhys();
-    
-    pRate = sensorGet(sensor, 'photon rate');
-    coneType = sensorGet(sensor, 'cone type');
-    
-    % Specify no noise
-    noiseFlag = 0;
-    osB.osSet('noiseFlag', noiseFlag);
-    osB.osSet('timeStep', simulationTimeIntervalInSeconds);
+    cmosaic.os.timeStep = simulationTimeIntervalInSeconds;
+    pRate(1,1,:) = stimulusPhotonRate; %cmosaic.absorptions/cmosaic.integrationTime;
+    cmosaic.os.compute(pRate, cmosaic.pattern);
 
-    % Compute the model's response to the stimulus
-    osB.osCompute(pRate, coneType);
+    osBiophysOuterSegmentCurrent = cmosaic.os.osGet('coneCurrentSignal');
+    
+% Create human sensor with 1 cone and load its photon rate with
+% the stimulus photon rate time sequence
+%     sensor = sensorCreate('human');
+%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+%     sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
+%    
+%     pRate = sensorGet(sensor, 'photon rate');
+%     coneType = sensorGet(sensor, 'cone type');
+%     osB = osBioPhys();
+%     % Specify no noise
+%     noiseFlag = 0;
+%     osB.osSet('noiseFlag', noiseFlag);
+%     osB.osSet('timeStep', simulationTimeIntervalInSeconds);
+% 
+%     % Compute the model's response to the stimulus
+%     osB.osCompute(pRate, coneType);
 
+%%%%%%%%%%
+%     osB = osBioPhys();
+%     % Specify no noise
+%     noiseFlag = 0;
+%     osB.osSet('noiseFlag', noiseFlag);
+%     osB.osSet('timeStep', simulationTimeIntervalInSeconds);
+%     pRate = cmosaic.absorptions/cmosaic.integrationTime;
+%     coneType = 2;
+%     % Compute the model's response to the stimulus
+%     osB.osCompute(pRate, coneType);
+%%%%%%%%%%
     % Get the computed current
-    osBiophysOuterSegmentCurrent = osB.osGet('coneCurrentSignal');
+%     osBiophysOuterSegmentCurrent = osGet(osB,'coneCurrentSignal');
+        
     osBiophysOuterSegmentCurrent = squeeze(osBiophysOuterSegmentCurrent(1,1,:));
     
     offset1Time = 0.35;
