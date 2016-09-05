@@ -40,7 +40,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Init
-    ieInit;
+    % ieInit;
 
     %% Load measured outer segment data.  usec time base
     [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses();
@@ -51,37 +51,43 @@ function ValidationFunction(runTimeParams)
     % In generar, the stimulation time interval should be set to a small enough value so as to avoid overflow errors.
     simulationTimeIntervalInSeconds = time(2)-time(1);
      
-    cmosaic = coneMosaic;
-    cmosaic.rows = 1; cmosaic.cols = 1;
-    cmosaic.integrationTime = simulationTimeIntervalInSeconds;
-    cmosaic.absorptions = stimulusPhotonRate*simulationTimeIntervalInSeconds;
+%     cmosaic = coneMosaic;
+%     cmosaic.rows = 1; cmosaic.cols = 1;
+%     cmosaic.integrationTime = simulationTimeIntervalInSeconds;
+%     cmosaic.absorptions = stimulusPhotonRate*simulationTimeIntervalInSeconds;
+% %     
+% %     % Create a biophysically-based outersegment model object.
+% 
+%     cmosaic.os = osBioPhys();
+%     cmosaic.os.timeStep = simulationTimeIntervalInSeconds;
+%     pRate(1,1,:) = stimulusPhotonRate;%cmosaic.absorptions./cmosaic.integrationTime;
+%     cmosaic.os.compute(pRate, cmosaic.pattern);
+% 
+%     osBiophysOuterSegmentCurrent = cmosaic.os.osGet('coneCurrentSignal');
 %     
-%     % Create a biophysically-based outersegment model object.
-
-    cmosaic.os = osBioPhys();
-    cmosaic.os.timeStep = simulationTimeIntervalInSeconds;
-    pRate(1,1,:) = stimulusPhotonRate; %cmosaic.absorptions/cmosaic.integrationTime;
-    cmosaic.os.compute(pRate, cmosaic.pattern);
-
-    osBiophysOuterSegmentCurrent = cmosaic.os.osGet('coneCurrentSignal');
-    
+%     osBiophysOuterSegmentCurrent = squeeze(osBiophysOuterSegmentCurrent(1,1,:));
+%     out1 = osBiophysOuterSegmentCurrent;
 % Create human sensor with 1 cone and load its photon rate with
 % the stimulus photon rate time sequence
-%     sensor = sensorCreate('human');
-%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-%     sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
-%    
-%     pRate = sensorGet(sensor, 'photon rate');
-%     coneType = sensorGet(sensor, 'cone type');
-%     osB = osBioPhys();
-%     % Specify no noise
-%     noiseFlag = 0;
-%     osB.osSet('noiseFlag', noiseFlag);
-%     osB.osSet('timeStep', simulationTimeIntervalInSeconds);
-% 
-%     % Compute the model's response to the stimulus
-%     osB.osCompute(pRate, coneType);
+    sensor = sensorCreate('human');
+    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+    
+%     sensor = sensorSet(sensor,'exposure time', simulationTimeIntervalInSeconds);
+%     sensor = sensorSet(sensor,'integration time', simulationTimeIntervalInSeconds);
+%     sensor = sensorSet(sensor, 'exp time', simulationTimeIntervalInSeconds);
+    sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
+   
+    pRate = sensorGet(sensor, 'photon rate');
+    coneType = sensorGet(sensor, 'cone type');
+    osB = osBioPhys();
+    % Specify no noise
+    noiseFlag = 0;
+    osB.osSet('noiseFlag', noiseFlag);
+    osB.osSet('timeStep', simulationTimeIntervalInSeconds);
+
+    % Compute the model's response to the stimulus
+    osB.osCompute(pRate, coneType);
 
 %%%%%%%%%%
 %     osB = osBioPhys();
@@ -95,10 +101,10 @@ function ValidationFunction(runTimeParams)
 %     osB.osCompute(pRate, coneType);
 %%%%%%%%%%
     % Get the computed current
-%     osBiophysOuterSegmentCurrent = osGet(osB,'coneCurrentSignal');
+    osBiophysOuterSegmentCurrent = osGet(osB,'coneCurrentSignal');
         
     osBiophysOuterSegmentCurrent = squeeze(osBiophysOuterSegmentCurrent(1,1,:));
-    
+    out2 = osBiophysOuterSegmentCurrent;
     offset1Time = 0.35;
     [~,offset1TimeBin] = min(abs(time - offset1Time ));
 
