@@ -12,6 +12,7 @@ function obj = setSizeToFOV(obj, fov, varargin)
 %     sceneDist:    (Inf,   meters)
 %     focalLength:  (0.017, meters)
 %
+% HJ ISETBIO Team 2016
 
 % parse input
 p = inputParser;

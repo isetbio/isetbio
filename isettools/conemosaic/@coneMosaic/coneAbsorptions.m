@@ -1,9 +1,11 @@
-
 function a = coneAbsorptions(obj,varargin)
 % cMosaic.coneAbsorptions('L');
 %
 % Get absorptions from one the cone classes, possibly in a
 % specific ROI
+% 
+% HJ ISETBIO Team 2016
+
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
 p.addParameter('coneType','all',@ischar);

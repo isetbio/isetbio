@@ -1,6 +1,7 @@
-
-% Convert absorptions to photocurrent with the os model.
 function computeCurrent(obj, varargin)
+% Convert absorptions to photocurrent with the os model.
+% 
+% HJ ISETBIO Team 2016
 
 % parse inputs
 p = inputParser;

@@ -1,6 +1,7 @@
 function obj = clearData(obj, varargin)
 % clear computed data
-
-obj.absorptions = [];
-obj.current = [];
+% 
+% HJ ISETBIO Team 2016
+    obj.absorptions = [];
+    obj.current = [];
 end

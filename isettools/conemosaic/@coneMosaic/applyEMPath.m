@@ -14,6 +14,8 @@ function absorptions = applyEMPath(obj, LMS, varargin)
 % Outputs:
 %   absorptions - cone absorptions with eye movements
 %
+% 
+% HJ ISETBIO Team 2016
 
 % parse inputs
 p = inputParser;

@@ -1,4 +1,3 @@
-
 function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
 % Photon noise at the absorptions is Poisson.
 % The Poisson variance is equal to the mean
@@ -10,6 +9,8 @@ function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
 % adequate. We trap (below) the cases when the value is small
 % (less than 25) and replace it with the real Poisson random
 % value, which is slower to compute.
+% 
+% HJ ISETBIO Team 2016
 
 p = inputParser;
 p.addRequired('absorptions',@isnumeric);

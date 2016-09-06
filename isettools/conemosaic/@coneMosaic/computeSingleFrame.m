@@ -1,8 +1,10 @@
 function absorptions = computeSingleFrame(obj, oi, varargin)
-% compute function for single frame
+% Compute function for single frame.
 % 
 % This function computes mean expected photon absorptions for
 % one frame, without including eye movements or noise.
+% 
+% HJ ISETBIO Team 2016
 
 % parse inputs
 p = inputParser();
