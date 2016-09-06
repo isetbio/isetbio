@@ -90,9 +90,9 @@ classdef osBioPhys < outerSegment
     end
     
     methods (Access=public)        
-        function obj = compute(obj, sensor, varargin)
+        function obj = compute(obj, varargin)
             % see osCompute for details
-            obj = osCompute(obj, sensor, varargin{:});
+            obj = osCompute(obj, varargin{:});
         end
         
         function plot(obj, sensor, varargin)
