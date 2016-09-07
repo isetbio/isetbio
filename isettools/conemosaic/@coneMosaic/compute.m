@@ -28,6 +28,7 @@ function [absorptions, current] = compute(obj, oi, varargin)
 %   However, the returned absorptions and current are for the
 %   current oi only.
 %
+% HJ ISETBIO Team 2016
 
 % parse inputs
 p = inputParser;
