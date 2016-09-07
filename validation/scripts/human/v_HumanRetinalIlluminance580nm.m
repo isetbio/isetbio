@@ -58,6 +58,10 @@ function ValidationFunction(runTimeParams)
     roi = oiGet(oi,'size') ./2; 
     photonIrradiance = oiGet(oi,'roi mean photons',roi);
     
+    % divide by lens transmittance, to agree with old validations - Nicolas
+    lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
+    photonIrradiance = photonIrradiance ./ lensTransmittance';
+    
     %% Compute difference from expected value
     expectedPhotonIrradiance = 10^19;
     percentDifference = (photonIrradiance - expectedPhotonIrradiance)/expectedPhotonIrradiance;

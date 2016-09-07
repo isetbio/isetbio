@@ -104,7 +104,7 @@ function ValidationFunction(runTimeParams)
     isetbioIrradianceEnergy = oiGet(oi,'roi mean energy', oiRoiLocs);
     
     lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
-    % Multiply by the lens transmittance, to agree with old validations 
+    % Divide by lens transmittance, to agree with old validations 
     % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
     isetbioIrradianceEnergy = isetbioIrradianceEnergy ./ lensTransmittance';
     
@@ -117,7 +117,7 @@ function ValidationFunction(runTimeParams)
     % This also verifies that two ways of getting the same information out
     % in isetbio give the same answer.
     irradianceData = vcGetROIData(oi,oiRoiLocs,'energy');
-    % Multiply by the lens transmittance, to agree with old validations 
+    % Divide by lens transmittance, to agree with old validations 
     % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
     irradianceData = bsxfun(@times, irradianceData, 1./lensTransmittance');
 
