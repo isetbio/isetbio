@@ -305,10 +305,7 @@ end
 % end
 
 %% Save validation operations
-UnitTest.validationData('conversionData', dataStruct, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'conversionData.isetbioIrradianceSpdPhotons', 4.5e+6 ...
-    );
+UnitTest.validationData('conversionData', dataStruct);
 
 %% Plot
 if (runTimeParams.generatePlots)
