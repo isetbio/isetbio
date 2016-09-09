@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 01-Aug-2016 09:54:47
+% Last Modified by GUIDE v2.5 08-Sep-2016 22:25:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -303,7 +303,7 @@ switch plotType
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
         
-        % play movie
+        % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
         resetMovieControl(handles);
@@ -792,7 +792,10 @@ elseif index == 5  % photocurrent movie
     mov = handles.curMov;
 end
 
-nFrames = size(mov, ndims(mov));
+if ismatrix(mov), nFrames = 1;
+else nFrames = size(mov, ndims(mov));
+end
+
 if nFrames == 1, 
     str = sprintf('Only one frame. No movie to show.'); 
     ieInWindowMessage(str,handles,3);
