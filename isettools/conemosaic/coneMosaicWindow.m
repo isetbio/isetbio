@@ -303,7 +303,7 @@ switch plotType
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
         
-        % play movie
+        % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
         resetMovieControl(handles);
