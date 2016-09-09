@@ -25,6 +25,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Create appropriate structures
+    humanOI = oiCreate('human');
     sensor = sensorCreate('human');
     wave   = sensorGet(sensor,'wave');
     human  = sensorGet(sensor,'human');
@@ -72,7 +73,14 @@ function ValidationFunction(runTimeParams)
     % Not sure exactly which PTB file the isetbio lens transmittance
     % was taken from, but the answer comes out very close to what PTB 
     % uses for its CIE 2-deg case.
-    lensTransmittance = lensGet(human.lens,'transmittance');
+    
+    % OLD isetbio where lens was part of the sensor
+    %lensTransmittance = lensGet(human.lens,'transmittance');
+    
+    % Replaced by following line
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    lensTransmittance = lensGet(oiGet(humanOI,'lens'),'transmittance');
+    
     UnitTest.validationData('lensTransmittance', lensTransmittance);
     UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.lensDensity.transmittance'-lensTransmittance)),'Difference between PTB and isetbio lens transmittance',1e-12);
 
@@ -88,6 +96,11 @@ function ValidationFunction(runTimeParams)
     % pigment, as well as inner segment diameter and pigment quantal
     % efficiency.
     coneQE = sensorGet(sensor,'spectral qe');
+    
+    % Multiply by the lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    coneQE = bsxfun(@times, coneQE, lensTransmittance);
+    
     UnitTest.validationData('coneQE', coneQE);
     UnitTest.assertIsZero(max(abs(ptbPhotoreceptors.isomerizationAbsorptance'-coneQE(:,2:4))),'Difference between PTB and isetbio cone quantal efficiency',1e-3);
     
@@ -143,7 +156,12 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('coneSpectralAbsorptanceNoMac', coneSpectralAbsorptanceNoMac);
 
     %% Lens transmittance
-    lensTransmittanceNoMac = lensGet(human.lens,'transmittance');
+    % OLD Isetbio 
+    % lensTransmittanceNoMac = lensGet(human.lens,'transmittance');
+    
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    lensTransmittanceNoMac = lensTransmittance;
+    
     UnitTest.validationData('lensTransmittanceNoMac', lensTransmittanceNoMac);
 
     %% Macular transmittance
@@ -151,7 +169,12 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('macularTransmittanceNoMac', macularTransmittanceNoMac);
 
     %% Quantal efficiency of cones
-    coneQENoMac = sensorGet(sensor,'spectral qe');
+    % OLD Isetbio 
+    % coneQENoMac = sensorGet(sensor,'spectral qe');
+    
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    coneQENoMac = bsxfun(@times, coneQE, 1./macularTransmittance);
+    
     UnitTest.validationData('coneQENoMac', coneQENoMac);
 
     %% Plot

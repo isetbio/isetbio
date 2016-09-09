@@ -103,6 +103,12 @@ function ValidationFunction(runTimeParams)
     end
     isetbioIrradianceEnergy = oiGet(oi,'roi mean energy', oiRoiLocs);
     
+    lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
+    % Divide by lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    isetbioIrradianceEnergy = isetbioIrradianceEnergy ./ lensTransmittance';
+    
+
     %% Check spatial uniformity of optical image irradiance data.
     % With optics turned off, we think this should be perfect but it isn't.
     % It's good to 1%, but not to 0.1%.  This may be why PTB and isetbio
@@ -111,8 +117,12 @@ function ValidationFunction(runTimeParams)
     % This also verifies that two ways of getting the same information out
     % in isetbio give the same answer.
     irradianceData = vcGetROIData(oi,oiRoiLocs,'energy');
+    % Divide by lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    irradianceData = bsxfun(@times, irradianceData, 1./lensTransmittance');
+
     irradianceEnergyCheck = mean(irradianceData,1);
-    if (any(isetbioIrradianceEnergy ~= irradianceEnergyCheck))
+    if (any(abs(isetbioIrradianceEnergy -irradianceEnergyCheck) > 1e-10))
         UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'Two ways of extracting mean optical image irradiance in isetbio do not agree.');
         return;
     end
@@ -196,6 +206,11 @@ function ValidationFunction(runTimeParams)
     sensor = sensorSet(sensor,'noise flag',0);
     isetbioCones = sensorGet(sensor,'spectral qe');
     isetbioCones = isetbioCones(:,2:4);
+    
+    % Multiply by the lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    isetbioCones = bsxfun(@times, isetbioCones, lensTransmittance);
+    
     
     % Compare with PTB
     coneDifference = ptbCones-isetbioCones;

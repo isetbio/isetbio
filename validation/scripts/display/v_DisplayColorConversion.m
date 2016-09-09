@@ -105,6 +105,8 @@ try
     sensor = sensorSet(sensor,'rows',128);
     sensor = sensorSet(sensor,'cols',128);
     [sensor, ~] = sensorSetSizeToFOV(sensor,sensorDegrees,scene,oi);
+    
+    
     sensor = sensorCompute(sensor,oi);
     if (runTimeParams.generatePlots)
         vcAddObject(sensor); sensorWindow('scale',1);
@@ -144,6 +146,13 @@ try
     S_cones   = WlsToS(sensorGet(sensor,'wave'));
     T_conesQE = sensorGet(sensor,'spectral qe')';
     T_conesQE = T_conesQE(2:4,:);
+    
+    % Multiply by the lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
+    T_conesQE = bsxfun(@times, T_conesQE, lensTransmittance');
+ 
+    
     
     %% Create PTB calibration structure from ISETBIO display object
     %
@@ -232,7 +241,12 @@ try
     % inversion.
     rect = [sceneSize(2)/2,sceneSize(1)/2,roiPixels,roiPixels];
     roiRoiLocs = ieRoi2Locs(rect);
-    isetbioIrradianceSpdPhotons  = oiGet(oi,'roi mean photons',  roiRoiLocs); 
+    isetbioIrradianceSpdPhotons  = oiGet(oi,'roi mean photons',  roiRoiLocs);
+    
+    % Divide by lens transmittance, to agree with old validations 
+    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    isetbioIrradianceSpdPhotons = isetbioIrradianceSpdPhotons ./ lensTransmittance';
+    
     ptbIrradianceSpdPhotons = ptbPrimarySpdMagCorrectIrradiancePhotons*ptbRGBToTestPrimary;
     if (runTimeParams.generatePlots)
         figure; clf; hold on;
