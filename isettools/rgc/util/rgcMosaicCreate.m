@@ -1,41 +1,38 @@
 function ir = rgcMosaicCreate(ir, varargin)
-% Add a type of RGC mosaic with a specific computational model.
+% Add an RGC mosaic with a specific computational model and cell type
+% 
+%      ir = rgcMosaicCreate(ir, 'model',val, 'mosaicType',val)
+% or
+%      ir.mosaicCreate('model', val, 'type', val);
 %
-% The rgc mosaics are stored as a cell array within the inner retina (ir)
-% class.  The RGC mosaics are the main computational engine for producing
-% retinal spike outputs.
+% The rgc mosaics are stored as a cell array attached to the inner retina
+% (ir) class.  The RGC mosaics are the main computational engine for
+% producing retinal spike outputs.
 %
-% The implemented mosaic types are
+% The  mosaic types are
+%     'ON Parasol', 
+%     'OFF Parasol', 
+%     'ON Midget', 
+%     'OFF Midget', 
+%     'Small Bistratified' 
 %
-%   'ON Parasol', 
-%   'OFF Parasol', 
-%   'ON Midget', 
-%   'OFF Midget', 
-%   'Small Bistratified' 
-%
-% The implemented models are
-%
-%   Linear  - Straight linear convolution, no spikes
+% The  models are
 %   GLM     - Pillow et al. coupled generalized line
 %   LNP     - Linear, nonlinear, poisson (EJ 2002 reference)
 %   Phys    - Fitting the physiology data from EJ
-%
-% Examples:
-%
-%   ir = rgcMosaicCreate(ir, 'model', ['linear','GLM',etc.], 'mosaicType', ['on parasol', 'sbc', etc.])
+%   Deprecated: Linear  - Straight linear convolution
 %
 % Often, we call it as a method of the inner retina class. In that case,
 % the call looks like: 
 %
-%   ir = irCreate(osCreate('identity'));
-%   ir.mosaicCreate('model','linear','type','on parasol');
-%   ir.mosaicCreate('model','GLM','type','on midget');
+%     ir = irCreate(osCreate('identity'));
+%     ir.mosaicCreate('model','lnp','type','on parasol');
+%     ir.mosaicCreate('model','GLM','type','on midget');
 %
-% See also: irCreate.m, rgcMosaic.m, rgcLinear.m, rgcLNP.m,
-%           rgcGLM.m, t_rgc.m, t_rgcIntroduction.
+% See also:   t_rgc<>.m,     v_rgc<>, contain many examples.  These may
+% rely on the RemoteData Toolbox downloads of pre-computed stimuli.
 %
 % Copyright ISETBIO Team 2016
-% 7/2016 JRG updated
 
 %% Parse inputs
 
@@ -45,24 +42,26 @@ p.addRequired('ir');
 % Experiment ... thinking about input parsing more generally (JRG/BW)
 mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratified','sbc'};
 p.addParameter('type','on parasol',@(x) any(validatestring(ieParamFormat(x),mosaicTypes)));
+
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
-p.addParameter('model','linear',@(x) any(validatestring(x,modelTypes)));
+p.addParameter('model','lnp',@(x) any(validatestring(x,modelTypes)));
 
 p.parse(ir,varargin{:});
 
-%% Specify the ganglion cell mosaic type
 mosaicType = p.Results.type;
-model      = p.Results.model;
+model             = p.Results.model;
 %% Switch on the computational model
 
 % There is a separate mosaic class for each ir computational model.  
 % These are rgcMosaicLinear, rgcMosaicLNP, rgcMosaicGLM,...
 switch ieParamFormat(model)
-    case {'linear','rgclinear'}
-        % Straight linear convolution, no spikes
-        % Chichilnisky & Kalmar, J. Neurosci (2002)
-        obj = rgcLinear(ir, mosaicType);
-        irSet(ir, 'mosaic', obj);
+%     case {'linear','rgclinear'}
+%         % Straight linear convolution, no spikes
+%         % Chichilnisky & Kalmar, J. Neurosci (2002)
+%         % deprecated?  (BW).
+%         % 
+%         obj = rgcLinear(ir, mosaicType);
+%         irSet(ir, 'mosaic', obj);
     case {'lnp', 'rgclnp'}
         % Standard linear nonlinear poisson        
         % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
