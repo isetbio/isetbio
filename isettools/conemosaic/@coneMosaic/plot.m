@@ -32,10 +32,7 @@ function [uData, hf] = plot(obj, type, varargin)
 %   'current timeseries'   - Cone photocurrent graphs
 %
 % Example:
-%   cm = coneMosaic;
-%   cm.plot('macular transmittance')
-%   cm.plot('spectral qe','oi',oi)
-%   cm.plot('absorptions','dFlag',true);  % Display the movie
+%    rgc.mosaic{1}.plot(type)
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
@@ -44,20 +41,13 @@ function [uData, hf] = plot(obj, type, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('type', @isstr);               % Type of plot
-p.addParameter('hf', []);                    % figure handle
-p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 
 p.parse(type, varargin{:});
-hf = p.Results.hf;
-oi = p.Results.oi;
 
-uData = [];
+% The mosaicWindow is part of the rgcMosaic object, right?
 
 % plot
-if isempty(hf), hf = vcNewGraphWin;  
-elseif isgraphics(hf, 'figure'), figure(hf); 
-elseif isgraphics(hf, 'axes'), axes(hf);
-end
+
 
 % set color order so that LMS plots as RGB
 if ~isequal(hf, 'none')

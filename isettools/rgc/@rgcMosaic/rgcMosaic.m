@@ -1,39 +1,47 @@
 classdef rgcMosaic < handle
-% Generates an rgcMosaic object.
+% Generates an rgcMosaic 
 %
-% The RGC models are detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
-% Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-% and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
-% Nature (2008).
-% 
-% The computational model implemented here relies on code by
-% <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
-% distributed under the GNU General Public License.
-% 
-% This class is called when creating a new rgcMosaic from an inner
-% retina object.  Typically we get here from a call like
+% Each RGC mosaic has a particular model and a type.  The model specifies
+% how we compute the RGC response, and the type specifies the parameters of
+% the model given the type.
 %
-%   ir.mosaicCreate('model','Linear','type','your type goes here'); 
+% The inner retina object holds a collection of retinal ganglion cell
+% mosaics. The mosaics themselves are typically created by a function of
+% the inner retina class, such as
+%
+%   ir.mosaicCreate('model','LNP','type','cell type'); 
+%
+% This file contains the constructor and the window call.  Other functions,
+% such as plot(), are separated in the @rgcMosaic directory.
 %
 % Inputs:
-%    model: 'linear,'LNP','GLM' [subclasses of rgcMosaic]
+%    model: 'LNP','GLM' [subclasses of rgcMosaic]
 %    type: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified'
 %
-% Outputs:
-%   The rgcMosaic object
+% Notes:
 %
-% See also: rgcLinear.m, rgcLNP.m, rgcGLM.m
+%   The RGC models are detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
+%   Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
+%   and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
+%   Nature (2008).
+% 
+%   The computational model implemented for the coupled GLM model relies on
+%   code by <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
+%   distributed under the GNU General Public License.
+% 
+% See also: rgcLNP.m, rgcGLM.m, irCreate, s_initRetina
 %
 % Example: 
 % 
-%   ir.mosaicCreate('model','Linear','type','on midget'); 
+%   ir.mosaicCreate('model','LNP','type','on midget'); 
 % 
-% 9/2015 JRG (c) isetbio team
-% 7/2016 JRG updated
+% JRG/BW ISETBIO team, 2015
+
     
     %% Define object
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
+        figureHandle;
     end
     
     % Protected properties.
@@ -121,6 +129,12 @@ classdef rgcMosaic < handle
     
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
+        function window(obj)
+            obj.figureHandle = mosaicWindow(obj);
+            % Tip: Retrieve guidata using
+            %    gui = guidata(obj.figureHandle);
+            %
+        end
     end
     
     % Methods may be called by the subclasses, but are otherwise private
