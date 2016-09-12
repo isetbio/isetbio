@@ -41,7 +41,7 @@ classdef rgcMosaic < handle
     %% Define object
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        figureHandle;
+        Parent;
     end
     
     % Protected properties.
@@ -64,7 +64,12 @@ classdef rgcMosaic < handle
         rfDiaMagnitude;     % for making movies of response
         responseLinear;     % Store the linear response after convolution
         responseSpikes;     % Store the spike times of the responses
-        
+
+    end
+    
+    properties (Access = public)
+        % When we open the figure for the mosaic, we store the handle here
+        figureHandle;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -113,6 +118,9 @@ classdef rgcMosaic < handle
             obj.rgcInitSpace(ir, mosaicInd);
             obj.rgcInitTime(ir, mosaicInd);
             
+            % We need the parameters in the parent often enough.  So put in
+            % a pointer to it here.
+            obj.Parent = ir;
         end
         
         % set function, see mosaicSet for details

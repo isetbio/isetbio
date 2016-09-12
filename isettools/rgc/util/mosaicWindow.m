@@ -52,10 +52,12 @@ function mosaicWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to mosaicWindow (see VARARGIN)
 
-% check inputs
+% check inputs and get the rgcMosaic object
 if isempty(varargin) || ~isa(varargin{1}, 'rgcMosaic')
-    error('regc mosaic object required');
+    error('rgc mosaic object required');
 end
+rgcM = varargin{1};
+rgcM.figureHandle = hObject;   % Store this figure handle
 
 % Choose default command line output for mosaicWindow
 handles.output = hObject;
@@ -208,5 +210,14 @@ function mosaicWindowRefresh(handles)
 disp('Refresh')
 
 rgcM = handles.rgcMosaic;
+fig = figure(rgcM.figureHandle);
+gdata = guidata(fig);
+
+% Update the geometry axis plot
+axis(gdata.axisGeometry);
+rgcM.plot('mosaic');
+
+% Show the appropriate response axis plot
+axis(gdata.axisResponse);
 
 end
