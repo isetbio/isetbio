@@ -71,8 +71,9 @@ switch ieParamFormat(type)
         resp = RGB2XWFormat(psth);
         
         g = guidata(hf);
-        axes(g.axisGeometry); cla;
-        plot(timeStep:timeStep:timeStep*size(resp,1),sum(resp,2));
+        axes(g.axisResponse); 
+        cla(g.axisResponse,'reset');
+        plot(g.axisResponse,timeStep:timeStep:timeStep*size(resp,1),sum(resp,2));
         xlabel(sprintf('Time (sec)'));
         % ylabel(sprintf('Conditional Intensity'));
         % title(sprintf('%s',obj.cellType));
@@ -83,7 +84,8 @@ switch ieParamFormat(type)
         % We should plot, say, 5x5 array just to illustrate, rather than
         % the whole mosaic.  Only the whole mosaic on demand
         g = guidata(obj.figureHandle);
-        set(g.axisGeometry); cla;
+        axes(g.axisGeometry); 
+        cla(g.axisGeometry,'reset');
         
         % Somehow, we need these variables, too.  Let's rethink the
         % parameterization of the spatial receptive fields.

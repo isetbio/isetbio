@@ -200,6 +200,7 @@ function menuFileClose_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileClose (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.rgcM.figureHandle = [];
 delete(handles.mosaicWindow);
 end
 
@@ -214,10 +215,13 @@ fig = figure(rgcM.figureHandle);
 gdata = guidata(fig);
 
 % Update the geometry axis plot
-axis(gdata.axisGeometry);
+axes(gdata.axisGeometry);
+cla(gdata.axisGeometry,'reset');
 rgcM.plot('mosaic');
 
 % Show the appropriate response axis plot
-axis(gdata.axisResponse);
+axes(gdata.axisResponse);
+cla(gdata.axisResponse,'reset');
+axis off
 
 end
