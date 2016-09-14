@@ -98,8 +98,6 @@ switch ieParamFormat(type)
         % We should plot, say, 5x5 array just to illustrate, rather than
         % the whole mosaic.  Only the whole mosaic on demand
         g = guidata(obj.figureHandle);
-        axes(g.axisGeometry); 
-        cla(g.axisGeometry,'reset');
         
         % Somehow, we need these variables, too.  Let's rethink the
         % parameterization of the spatial receptive fields.

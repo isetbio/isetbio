@@ -210,16 +210,9 @@ function mosaicWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 disp('Refresh')
 
-rgcM = handles.rgcMosaic;
-fig = figure(rgcM.figureHandle);
+rgcM  = handles.rgcMosaic;
+fig   = figure(rgcM.figureHandle);
 gdata = guidata(fig);
-
-% Update the geometry axis plot
-axes(gdata.axisGeometry);
-cla(gdata.axisGeometry,'reset');
-rgcM.plot('mosaic');
-xlabel('Distance (um)');
-
 % Show the appropriate response axis plot
 axes(gdata.axisResponse);
 cla(gdata.axisResponse,'reset');
@@ -228,8 +221,21 @@ cla(gdata.axisResponse,'reset');
 spikes = rgcM.get('response spikes');
 img = mean(spikes,3);
 imagesc(img); colormap(gray); colorbar;
-axis off
+xlabel('Distance (um)');
 
+% RF shape overlay on the response window
+% % Update the geometry axis plot
+% axes(gdata.axisGeometry);
+% cla(gdata.axisGeometry,'reset');
+
+% Make a button for rfOverlay
+rfOverlay = false;
+if rfOverlay
+    rgcM.plot('mosaic');
+end
+
+
+% Text description
 str = rgcM.describe;
 set(gdata.rgcProperties,'string',str);
 
