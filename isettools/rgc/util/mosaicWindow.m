@@ -224,6 +224,7 @@ xlabel('Distance (um)');
 axes(gdata.axisResponse);
 cla(gdata.axisResponse,'reset');
 
+% Switch depending on the state of the pull down
 spikes = rgcM.get('response spikes');
 img = mean(spikes,3);
 imagesc(img); colormap(gray); colorbar;
@@ -231,4 +232,5 @@ axis off
 
 str = rgcM.describe;
 set(gdata.rgcProperties,'string',str);
+
 end
