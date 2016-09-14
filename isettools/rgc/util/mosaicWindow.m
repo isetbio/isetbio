@@ -218,10 +218,17 @@ gdata = guidata(fig);
 axes(gdata.axisGeometry);
 cla(gdata.axisGeometry,'reset');
 rgcM.plot('mosaic');
+xlabel('Distance (um)');
 
 % Show the appropriate response axis plot
 axes(gdata.axisResponse);
 cla(gdata.axisResponse,'reset');
+
+spikes = rgcM.get('response spikes');
+img = mean(spikes,3);
+imagesc(img); colormap(gray); colorbar;
 axis off
 
+str = rgcM.describe;
+set(gdata.rgcProperties,'string',str);
 end

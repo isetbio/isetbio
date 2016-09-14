@@ -4,11 +4,13 @@ function [data, vObj] = ieMovie(data,varargin)
 %   [data, vObj] = ieMovie(data,varargin)
 % 
 %  data:   (row,col,color,time) or (row,col,time) (Required)
-%  step:   How many times frames to step over. Default = 1;
-%  show:   Display the movie
-%  vname:  (video file name)
-%  FrameRate: (video frame rate)
-%  hf:        Figure for showing data (vcNewGraphWin() by default)
+%
+%                                             Default
+%  step:   How many times frames to step over. (1);
+%  show:   Display the movie                   (true)
+%  vname:  Video file name                     (vName)
+%  FrameRate: Video frame rate                 (20)
+%  hf:        Figure for showing data          (vcNewGraphWin())
 %
 % Example:
 %   ieMovie(rand(50,50,50));
@@ -27,11 +29,13 @@ function [data, vObj] = ieMovie(data,varargin)
 %% Parse inputs
 p = inputParser;
 p.addRequired('data',@isnumeric);
-p.addParameter('vname','',@ischar);
+p.addParameter('vname','vName',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
 p.addParameter('show',true,@islogical);
 p.addParameter('gamma',1,@isnumeric);
+p.addParameter('ax',gca,@isgraphics);
+
 p.KeepUnmatched = true;
 
 p.parse(data,varargin{:});
@@ -41,10 +45,12 @@ show  = p.Results.show;
 vname      = p.Results.vname;
 FrameRate  = p.Results.FrameRate;
 gamma      = p.Results.gamma;
+ax         = p.Results.ax;
 
 %% Create the movie and video object
 
 vObj = [];
+axes(ax);
 
 % Could be monochrome or rgb
 tDim = ndims(data);

@@ -47,23 +47,37 @@ elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
-% set color order so that LMS plots as RGB
-if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');
-    if isgraphics(hf,'axes')
-        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
-    else  % Figure
-        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
-    end
-end
+% % set color order so that LMS plots as RGB
+% if ~isequal(hf, 'none')
+%     co = get(gca, 'ColorOrder');
+%     if isgraphics(hf,'axes')
+%         set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
+%     else  % Figure
+%         set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+%     end
+% end
 
 fprintf('Plot %s for %s class\n',type,class(obj));
 
 switch ieParamFormat(type)
     case 'spikemeanimage'
-        disp('spike image')
+        % Spike mean image
+        g = guidata(hf);
+        axes(g.axisResponse);
+        
+        spikes = obj.get('responseSpikes');
+        img = mean(spikes,3);
+        imagesc(img);
+        
     case 'spikemovie'
         disp('Spike Movie')
+    case{'movielinear','linearmovie'}
+        resp = obj.get('response linear');
+        dFlag.FrameRate = 2;
+        g = guidata(hf);
+        axes(g.axisResponse);
+        
+        ieMovie(resp,'dFlag',dFlag);
     case 'psth'
         % Peri-stimulus time histogram
         timeStep = obj.Parent.timing;

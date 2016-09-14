@@ -143,6 +143,25 @@ classdef rgcMosaic < handle
             %    gui = guidata(obj.figureHandle);
             %
         end
+        
+        function str= describe(obj)
+            % Print the relevant text to a string
+            % This is used in the display window
+            
+            str =sprintf('Cell type: %s\n',obj.cellType);
+            txt = sprintf('Model: %s\n',class(obj));
+            str = addText(str,txt);
+            txt = sprintf('N Trials %d\n',obj.numberTrials);
+            str = addText(str,txt);
+            
+            parent = obj.Parent;
+            txt = sprintf('Row,Col: %d, %d\n',parent.row,parent.col);
+            str = addText(str,txt);
+            txt = sprintf('Patch size %d (um)\n',1e6*parent.spacing);
+            str = addText(str,txt);
+            
+        end
+        
     end
     
     % Methods may be called by the subclasses, but are otherwise private
