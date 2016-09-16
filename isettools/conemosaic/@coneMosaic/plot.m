@@ -41,23 +41,30 @@ function [uData, hf] = plot(obj, type, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('type', @isstr);               % Type of plot
+p.addParameter('hf', []);                    % figure handle
+p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 
 p.parse(type, varargin{:});
+hf = p.Results.hf;
+oi = p.Results.oi;
 
-% The mosaicWindow is part of the rgcMosaic object, right?
+uData = [];
 
 % plot
-
+if isempty(hf), hf = vcNewGraphWin;  
+elseif isgraphics(hf, 'figure'), figure(hf); 
+elseif isgraphics(hf, 'axes'), axes(hf);
+end
 
 % set color order so that LMS plots as RGB
-% if ~isequal(hf, 'none')
-%     co = get(gca, 'ColorOrder');
-%     if isgraphics(hf,'axes')
-%         set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
-%     else  % Figure
-%         set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
-%     end
-% end
+if ~isequal(hf, 'none')
+    co = get(gca, 'ColorOrder');
+    if isgraphics(hf,'axes')
+        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
+    else  % Figure
+        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+    end
+end
 
 switch ieParamFormat(type)
     case 'conemosaic'
