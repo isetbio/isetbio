@@ -43,7 +43,6 @@ nSamp = p.Results.nSamp;
 
 switch shape
     case 'circle'
-        % ieDrawShape('circle',[20 20],10);
         hold on;
         center = p.Results.center;
         radius = p.Results.radius;

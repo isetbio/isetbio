@@ -137,8 +137,8 @@ switch ieParamFormat(type)
                 radius = umPerCell;   
                 % Could be out of the loop ... or could be pulled from a
                 % space varying rgc object.
-                ieShape('circle','center',center,'radius',radius,'color','b');
-                
+                [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
+                fill(pts(:,1),pts(:,2),[1 0 1]);
                 % center
                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
                 %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...

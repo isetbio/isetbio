@@ -50,14 +50,14 @@ p.parse(type, varargin{:});
 
 
 % set color order so that LMS plots as RGB
-if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');
-    if isgraphics(hf,'axes')
-        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
-    else  % Figure
-        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
-    end
-end
+% if ~isequal(hf, 'none')
+%     co = get(gca, 'ColorOrder');
+%     if isgraphics(hf,'axes')
+%         set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
+%     else  % Figure
+%         set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+%     end
+% end
 
 switch ieParamFormat(type)
     case 'conemosaic'
