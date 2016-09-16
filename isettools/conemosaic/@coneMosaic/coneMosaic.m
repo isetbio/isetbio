@@ -542,6 +542,18 @@ classdef coneMosaic < hiddenHandle
             
         end
         
+        % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
+        function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
+            [demosaicedAbsorptionsMap, sRGB] = obj.demosaicedResponses();
+        end
+        
+        % Method returning the demosaiced photocurrent maps
+        function demosaicedCurrentsMap = demosaicedPhotoCurrentMaps(obj, current)
+            demosaicedCurrentsMap = obj.demosaicedResponses(current);
+        end
+        
+        % Demosaicing method
+        varargout = demosaicedResponses(obj, varargin);
     end
     
 
