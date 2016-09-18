@@ -358,7 +358,10 @@ classdef coneMosaic < hiddenHandle
     end
     
     methods (Access=public)
+        % Declare the compute method
         [absorptions, current] = compute(obj, oi, varargin);
+        
+        % Declare the computeCurrent method
         computeCurrent(obj, varargin);
     end
 

@@ -43,8 +43,8 @@ end
 absorptions = zeros(obj.rows, obj.cols, size(emPath, 1));
 for ii = 1 : size(emPath, 1)
     % sample by position
-    cropLMS = LMS(1+padRows+ypos(ii):end-padRows+ypos(ii), ...
-        1+padCols-xpos(ii):end-padCols-xpos(ii), :);
+    cropLMS = LMS((1+padRows+ypos(ii)):(end-padRows+ypos(ii)), ...
+        (1+padCols-xpos(ii)):(end-padCols-xpos(ii)), :);
     
     % sample by conetype
     absorptions(:, :, ii) = sum(cropLMS .* mask, 3);
