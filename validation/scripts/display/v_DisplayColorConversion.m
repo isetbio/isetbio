@@ -305,7 +305,9 @@ end
 % end
 
 %% Save validation operations
-UnitTest.validationData('conversionData', dataStruct);
+UnitTest.validationData('conversionData', dataStruct, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'conversionData.ptbIrradianceSpdPhotons', 100)
 
 %% Plot
 if (runTimeParams.generatePlots)
