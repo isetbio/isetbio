@@ -280,9 +280,10 @@ switch plotType
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
         if isempty(handles.mov)
+            ieInWindowMessage('Building movie',handles,2);
             % generate movie
             handles.mov = cm.plot('movie absorptions', 'hf','none',...
-                'show',false, ...
+                'show',true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
         end
@@ -328,9 +329,12 @@ switch plotType
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'on');
+        
+        % The movie is playing here.  I don't think it should be.
         if isempty(handles.curMov) % generate movie for photocurrent
+            ieInWindowMessage('Building movie',handles,2);
             handles.curMov = cm.plot('movie current', 'hf','none', ...
-                'show', false, ...
+                'show', true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
         end
@@ -816,11 +820,10 @@ if get(handles.btnPlayPause, 'Value')
     
     while get(handles.btnPlayPause, 'Value')
         if ndims(mov) == 3
-            imshow(mov(:, :, cnt));
+            imshow(mov(:, :, cnt)); 
         elseif ndims(mov) ==4
             imshow(mov(:, :, :, cnt));
         end
-        
         set(handles.sliderMovieProgress, 'Value', cnt);
         
         drawnow; cnt = cnt + 1;
