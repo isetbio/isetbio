@@ -183,16 +183,17 @@ classdef coneMosaic < hiddenHandle
             
             % Trying to remove sampleTime
             %  addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
-            % addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
+            %  addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
 
         end
         
-        
-        
-        clearData(obj, varargin);
-        a = coneAbsorptions(obj,varargin);
-        window(obj, varargin);
-        obj = setSizeToFOV(obj, fov, varargin);
+        % Not sure what this is doing here?
+        % Should it be in the functon above?
+        % Look at it when we get online
+        %         clearData(obj, varargin);
+        %         a = coneAbsorptions(obj,varargin);
+        %         window(obj, varargin);
+        %         obj = setSizeToFOV(obj, fov, varargin);
         
         %% get methods for dependent variables
         % http://www.mathworks.com/help/matlab/matlab_oop/specifying-methods-and-functions.html#bu4wzba
