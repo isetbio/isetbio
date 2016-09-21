@@ -32,10 +32,7 @@ function [uData, hf] = plot(obj, type, varargin)
 %   'current timeseries'   - Cone photocurrent graphs
 %
 % Example:
-%   cm = coneMosaic;
-%   cm.plot('macular transmittance')
-%   cm.plot('spectral qe','oi',oi)
-%   cm.plot('absorptions','dFlag',true);  % Display the movie
+%    rgc.mosaic{1}.plot(type)
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
@@ -126,7 +123,7 @@ switch ieParamFormat(type)
         uData = mean(obj.absorptions,3);
         if ~isequal(hf, 'none')
             imagesc(uData); axis off; colorbar; 
-            title('Mean number of absorptions');
+            % title('Mean number of absorptions');
         end
         colormap(gray);  % Shows a numerical value
         axis image;
@@ -154,7 +151,7 @@ switch ieParamFormat(type)
         uData = mean(obj.current, 3);
         if ~isequal(hf, 'none')
             imagesc(uData); axis off; colorbar;
-            title('Mean photocurrent (pA)');
+            % title('Mean photocurrent (pA)');
         end
         colormap(gray); % Shows a numerical value
         axis image;
@@ -305,7 +302,7 @@ uData.time = (0:size(outputSignal,2)-1)*dt;
 uData.current = outputSignal(1+floor((sz(1)*sz(2)/100)*rand(200,1)),:);
 plot(uData.time, uData.current);
 
-title('Output current');
+% title('Output current');
 xlabel('Time (sec)');
 ylabel('pA');
 

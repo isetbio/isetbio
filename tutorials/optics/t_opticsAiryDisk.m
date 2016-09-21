@@ -54,8 +54,8 @@ radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor(units);
 
 % Draw a circle at the first zero crossing (Airy disk)
 nCircleSamples = 200;
-[adX,adY,adZ] = ieShape('circle',nCircleSamples,radius);
-
+[~, ptsXY]=ieShape('circle','nSamp',nCircleSamples,'radius',radius);
+adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
 %% Plot the diffraction limited PSF.  
 x = sSupport(:,:,1); y = sSupport(:,:,2);
 mesh(x,y,psf);

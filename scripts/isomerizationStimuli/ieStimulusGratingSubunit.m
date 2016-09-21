@@ -66,7 +66,7 @@ end
 
 % Get the cone mosaic and plot it
 cone_mosaic = sensorGet(absorptions,'cone type');
-vcNewGraphWin; imagesc(cone_mosaic); colormap jet;
+% vcNewGraphWin; imagesc(cone_mosaic); colormap jet;
 
 % Set cone mosaic
 cone_mosaic = 3*ones(sensorGet(absorptions,'size'));
@@ -174,7 +174,8 @@ for t = 1 : nSteps
     
     sceneRGB(:,:,t,:) = barMovie;
     
-%     % Compute optical image
+% % % % % % % % % % % % % % % % % % % % %     
+    % Compute optical image
     oi = oiCompute(oi, scene);    
     
     for tNew = 1:downSampleFactor
@@ -194,6 +195,9 @@ for t = 1 : nSteps
         
         volts(:,:,downSampleFactor*(t-1)+tNew) = sensorGet(absorptions, 'volts');
     end
+% % % % % % % % % % % % % % % % % % % % % % % % % 
+
+
     % vcAddObject(scene); sceneWindow
 end
 

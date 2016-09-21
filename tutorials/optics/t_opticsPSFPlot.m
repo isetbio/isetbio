@@ -58,7 +58,10 @@ sSupport(:,:,2) = Y*deltaSpace;
 %% Determine first zero crossing
 fNumber = opticsGet(optics,'f number');
 radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor(units);
-[adX,adY,adZ] = ieShape('circle',200,radius);
+
+nCircleSamples = 200;
+[~, ptsXY]=ieShape('circle','nSamp',nCircleSamples,'radius',radius);
+adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
 
 x = sSupport(:,:,1); y = sSupport(:,:,2);
 
