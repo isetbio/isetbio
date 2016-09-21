@@ -84,12 +84,8 @@ if (runTimeParams.generatePlots)
 end
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur1',adaptedCur, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'adaptedCur1', 1e-10);
-UnitTest.validationData('osAdaptedCur1',osAdaptedCur, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'osAdaptedCur1', 1e-10);
+UnitTest.validationData('adaptedCur1',adaptedCur);
+UnitTest.validationData('osAdaptedCur1',osAdaptedCur);
 clear adaptedOS paramsOS
 
 %% Steps + flashes
@@ -257,12 +253,8 @@ end
 % Save validation data
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(flashAmp(:)-flashAmpOS(:))),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur2',adaptedCur, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'adaptedCur2', 1e-10);
-UnitTest.validationData('osAdaptedCur2',osAdaptedCur, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'osAdaptedCur2', 1e-10);
+UnitTest.validationData('adaptedCur2',adaptedCur);
+UnitTest.validationData('osAdaptedCur2',osAdaptedCur);
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 
 %% Saccade-like stimuli
@@ -322,11 +314,11 @@ end
 tolerance = 1e-11;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
 UnitTest.validationData('adaptedCur3',adaptedCur, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'adaptedCur3', 1e-10);
+     'UsingTheFollowingVariableTolerancePairs', ...
+     'adaptedCur3', 1e-7);
 UnitTest.validationData('osAdaptedCur3',osAdaptedCur, ...
     'UsingTheFollowingVariableTolerancePairs', ...
-    'osAdaptedCur3', 1e-10);
+    'osAdaptedCur3', 1e-7);
 clear adaptedOS paramsOS
 
 %% Increment/decrement asymmetry
@@ -441,21 +433,11 @@ end
 % Tuck data away.
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs((-maxDec ./ maxInc)-(-maxOSDec ./ maxOSInc))),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCurInc',adaptedCurInc, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'adaptedCurInc', 1e-10);
+UnitTest.validationData('adaptedCurInc',adaptedCurInc);
+UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.coneCurrentSignal);
+UnitTest.validationData('adaptedCurDec',adaptedCurDec);
+UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.coneCurrentSignal);
 
-UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.coneCurrentSignal, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'osAdaptedCurInc', 1e-10);
-
-UnitTest.validationData('adaptedCurDec',adaptedCurDec, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'adaptedCurDec', 1e-10);
-
-UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.coneCurrentSignal, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'osAdaptedCurDec', 1e-10);
 end
 
 % ***********************
