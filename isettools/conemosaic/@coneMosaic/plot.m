@@ -36,23 +36,25 @@ function [uData, hf] = plot(obj, type, varargin)
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
-
-% parse input
+%% parse input
 p = inputParser;
 p.KeepUnmatched = true;
+
+p.addRequired('obj');
 p.addRequired('type', @isstr);               % Type of plot
+
 p.addParameter('hf', []);                    % figure handle
 p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 
-p.parse(type, varargin{:});
+p.parse(obj,type, varargin{:});
 hf = p.Results.hf;
-oi = p.Results.oi;
+oi = p.Results.oi;   % Used in plotGraphs routine
 
 uData = [];
 
 % plot
-if isempty(hf), hf = vcNewGraphWin;  
-elseif isgraphics(hf, 'figure'), figure(hf); 
+if isempty(hf), hf = vcNewGraphWin;
+elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
@@ -60,133 +62,161 @@ end
 if ~isequal(hf, 'none')
     co = get(gca, 'ColorOrder');
     if isgraphics(hf,'axes')
-        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :)) 
+        set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
     else  % Figure
         set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
     end
 end
 
-switch ieParamFormat(type)
-    case 'conemosaic'
-        [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
-            conePlot(obj.coneLocs * 1e6, obj.pattern);
-        if ~isequal(hf, 'none'), 
-            imagesc(uData.mosaicImage); axis off; axis image;
+% Define whether we plot an image or a graph
+imageList = ...
+    {'conemosaic','meanabsorptions','absorptions', 'movieabsorptions', ...
+    'meancurrent','moviecurrent','current','photocurrent', ...
+    };
+
+%% Three possible plot types.
+%
+%   plotImageRect, plotImageHex, plotGraph
+%
+
+plotType = ieParamFormat(type);
+if ismember(plotType,imageList)
+    % Switch based on hex or rectangular mosaic type
+    if isa(obj,'coneMosaicHex')
+        % Not yet written.  Basically a call into the visualizeGrid
+        % function
+        disp('NYI')
+        % plotImageHex(obj,plotType);
+    else
+        % Could become plotImageRect(obj,type)
+        switch plotType
+            case 'conemosaic'
+                [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
+                    conePlot(obj.coneLocs * 1e6, obj.pattern);
+                imagesc(uData.mosaicImage); axis off; axis image;
+            case 'meanabsorptions'
+                % title('Mean number of absorptions');
+                if isempty(obj.absorptions)
+                    error('no absorption data');
+                end
+                uData = mean(obj.absorptions,3);
+                imagesc(uData); axis off; colorbar;
+                
+                colormap(gray);  % Shows a numerical value
+                axis image;
+            case 'absorptions'
+                % Movie of the absorptions on the cone mosaic
+                if isempty(obj.absorptions)
+                    % Could be come cla; return
+                    error('no absorption data');
+                end
+                uData = coneImageActivity(obj, hf, varargin{:});
+            case 'movieabsorptions'
+                % Movie in gray scale
+                if isempty(obj.absorptions)
+                    % Could become cla return
+                    error('no absorption data');
+                end
+                % Additional arguments may be the video file name, step, and
+                % FrameRate
+                uData = ieMovie(obj.absorptions,varargin{:});
+            case 'meancurrent'
+                if isempty(obj.current)
+                    error('no photocurrent data computed');
+                end
+                uData = mean(obj.current, 3);
+                if ~isequal(hf, 'none')
+                    imagesc(uData); axis off; colorbar;
+                    % title('Mean photocurrent (pA)');
+                end
+                colormap(gray); % Shows a numerical value
+                axis image;
+            case {'current', 'photocurrent'}
+                % Photo current movie on colored cone mosaic
+                if isempty(obj.current)
+                    if isempty(p.Results.hf), close(hf); end
+                    error('no photocurrent data');
+                end
+                uData = coneImageActivity(obj, hf, 'dataType', ...
+                    'photocurrent', varargin{:});
+            case 'moviecurrent'
+                % Current movie in gray scale
+                if isempty(obj.current)
+                    if isempty(p.Results.hf), close(hf); end
+                    error('no current data');
+                end
+                % Additional arguments may be the video file name, step, and
+                % FrameRate
+                uData = ieMovie(obj.current,varargin{:});
         end
-    case 'conefundamentals'
-        % The cone absorptance without macular pigment or lens
-        uData = obj.pigment.absorptance;
-        if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2); grid on; 
-            xlabel('Wavelength (nm)'); ylabel('Cone quanta absorptance');
-        end
-    case 'maculartransmittance'
-        uData = obj.macular.transmittance;
-        if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2); grid on;
-            xlabel('Wavelength (nm)'); ylabel('Macular transmittance');
-        end
-    case 'macularabsorptance'
-        uData = obj.macular.absorptance;
-        if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2); grid on;
-            xlabel('Wavelength (nm)'); ylabel('Macular absorptance');
-        end
-    case 'macularabsorbance'
-        uData = obj.macular.unitDensity;
-        if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2); grid on;
-            xlabel('Wavelength (nm)'); ylabel('Macular absorbance');
-        end
-    case 'conespectralqe'
-        % Quantum efficiency of macular pigment and cone photopigments
-        uData = obj.qe;
-        if ~isequal(hf, 'none')
-            plot(obj.wave, obj.qe, 'LineWidth', 2); grid on;
-            xlabel('Wavelength (nm)'); ylabel('Cone quanta efficiency');
-        end
-    case 'eyespectralqe'
-        % Includes lens, macular pigment, and cone photopigment properties
-        if isempty(oi), error('oi required for spectral qe'); end
-        lensTransmittance = oiGet(oi,'lens transmittance','wave',obj.wave);
-        uData = bsxfun(@times, lensTransmittance, obj.qe);
+        return;
+    end
+    
+else
+    
+    % Plot a graph
+    % Could become plotGraphs(obj,type)
+    switch ieParamFormat(type)
         
-        if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2); grid on;
-            xlabel('Wavelength (nm)'); ylabel('Eye quanta efficiency');
-        end
-    case 'meanabsorptions'
-        if isempty(obj.absorptions)
-            if isempty(p.Results.hf), close(hf); end
-            error('no absorption data');
-        end
-        uData = mean(obj.absorptions,3);
-        if ~isequal(hf, 'none')
-            imagesc(uData); axis off; colorbar; 
-            % title('Mean number of absorptions');
-        end
-        colormap(gray);  % Shows a numerical value
-        axis image;
-    case 'absorptions'
-        % Movie of the absorptions on the cone mosaic
-        if isempty(obj.absorptions)
-            if isempty(p.Results.hf), close(hf); end
-            error('no absorption data');
-        end
-        uData = coneImageActivity(obj, hf, varargin{:});
-    case 'movieabsorptions'
-        % Movie in gray scale
-        if isempty(obj.absorptions)
-            if isempty(p.Results.hf), close(hf); end
-            error('no absorption data');
-        end
-        % Additional arguments may be the video file name, step, and
-        % FrameRate
-        uData = ieMovie(obj.absorptions,varargin{:});
-    case 'meancurrent'
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no photocurrent data computed');
-        end
-        uData = mean(obj.current, 3);
-        if ~isequal(hf, 'none')
-            imagesc(uData); axis off; colorbar;
-            % title('Mean photocurrent (pA)');
-        end
-        colormap(gray); % Shows a numerical value
-        axis image;
-    case {'current', 'photocurrent'}
-        % Photo current movie on colored cone mosaic
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no photocurrent data');
-        end
-        uData = coneImageActivity(obj, hf, 'dataType', ...
-            'photocurrent', varargin{:});
-    case 'moviecurrent'
-        % Current movie in gray scale
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no current data');
-        end
-        % Additional arguments may be the video file name, step, and
-        % FrameRate
-        uData = ieMovie(obj.current,varargin{:});
-    case {'currenttimeseries'}
-        % Photocurrent time series of selected points.
-        % Need a way to choose which points!
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no photocurrent data');
-        end
-        uData = plotCurrentTimeseries(obj,varargin{:});
-        
-    case {'empath', 'eyemovementpath'}
-        plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
-        grid on; xlabel('Horizontal position (cones)');
-        ylabel('Vertical position (cones)');
-    otherwise
-        error('unsupported plot type');
+        case 'conefundamentals'
+            % The cone absorptance without macular pigment or lens
+            uData = obj.pigment.absorptance;
+            if ~isequal(hf, 'none')
+                plot(obj.wave, uData, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Cone quanta absorptance');
+            end
+        case 'maculartransmittance'
+            uData = obj.macular.transmittance;
+            if ~isequal(hf, 'none')
+                plot(obj.wave, uData, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Macular transmittance');
+            end
+        case 'macularabsorptance'
+            uData = obj.macular.absorptance;
+            if ~isequal(hf, 'none')
+                plot(obj.wave, uData, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Macular absorptance');
+            end
+        case 'macularabsorbance'
+            uData = obj.macular.unitDensity;
+            if ~isequal(hf, 'none')
+                plot(obj.wave, uData, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Macular absorbance');
+            end
+        case 'conespectralqe'
+            % Quantum efficiency of macular pigment and cone photopigments
+            uData = obj.qe;
+            if ~isequal(hf, 'none')
+                plot(obj.wave, obj.qe, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Cone quanta efficiency');
+            end
+        case 'eyespectralqe'
+            % Includes lens, macular pigment, and cone photopigment properties
+            if isempty(oi), error('oi required for spectral qe'); end
+            lensTransmittance = oiGet(oi,'lens transmittance','wave',obj.wave);
+            uData = bsxfun(@times, lensTransmittance, obj.qe);
+            
+            if ~isequal(hf, 'none')
+                plot(obj.wave, uData, 'LineWidth', 2); grid on;
+                xlabel('Wavelength (nm)'); ylabel('Eye quanta efficiency');
+            end
+        case {'currenttimeseries'}
+            % Photocurrent time series of selected points.
+            % Need a way to choose which points!
+            if isempty(obj.current)
+                if isempty(p.Results.hf), close(hf); end
+                error('no photocurrent data');
+            end
+            uData = plotCurrentTimeseries(obj,varargin{:});
+            
+        case {'empath', 'eyemovementpath'}
+            plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
+            grid on; xlabel('Horizontal position (cones)');
+            ylabel('Vertical position (cones)');
+        otherwise
+            error('unsupported plot type');
+    end
+    
 end
 
 end
@@ -195,7 +225,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
 %   mov = coneImageActivity(coneMosaic,varargin)
-% 
+%
 % cones:  coneMosaic class object=
 % hf:     figure handle or 'none' or a struct
 %         If a struct, hf contains the movie parameters.  The movie is
@@ -279,7 +309,7 @@ elseif ~isequal(hf, 'none') && ishandle(hf)
     % If it is a figure handle, show it in that figure
     for ii=1:size(mov,4), imshow(mov(:,:,:,ii)); drawnow; end
 end
-    
+
 end
 
 

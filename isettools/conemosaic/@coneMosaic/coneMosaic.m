@@ -187,51 +187,7 @@ classdef coneMosaic < hiddenHandle
 
         end
         
-        function str = description(obj, varargin)
-            % generate description string for coneMosaic object
-            %
-            % Input:
-            %   obj - coneMosaic class object
-            %
-            % Optional parameters (key-value pairs)
-            %   'skipPigment'  - whether to include pigment description
-            %   'skipMacular'  - whether to include macular description
-            %
-            % Output:
-            %   str - description string for coneMosaic object
-            %
-            
-            % parse input
-            p = inputParser;
-            p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
-            p.addParameter('skipPigment', false, @islogical);
-            p.addParameter('skipMacular', false, @islogical);
-            p.parse(obj, varargin{:});
-            
-            % cone mosaic properties
-            str = sprintf('\tSize (Wide/High):  [%.2f %.2f] mm\n', ...
-                obj.width * 1e3, obj.height * 1e3);
-            str = [str sprintf('\tFOV (Wide/High):  [%.2f, %.2f] deg\n', ...
-                obj.fov(1), obj.fov(2))];
-            str = [str sprintf('\tTime step:              %.1f ms\n', ...
-                1e3*obj.os.timeStep)];
-            str = [str, sprintf('\tNFrames                 %d\n',...
-                size(obj.absorptions,3))];
-            if obj.noiseFlag, flag = 'on'; else flag = 'off'; end
-            str = [str sprintf('\tPhoton noise:        %s\n', flag)];
-            str = [str sprintf('\OS model: %s\n', ...
-                class(obj.os))];
-            
-            % cone pigment properties
-            if ~p.Results.skipPigment
-                str = [str obj.pigment.description];
-            end
-            
-            % macular pigment properties
-            if ~p.Results.skipMacular
-                str = [str obj.macular.description];
-            end
-        end
+        
         
         clearData(obj, varargin);
         a = coneAbsorptions(obj,varargin);
@@ -240,8 +196,10 @@ classdef coneMosaic < hiddenHandle
         
         %% get methods for dependent variables
         % http://www.mathworks.com/help/matlab/matlab_oop/specifying-methods-and-functions.html#bu4wzba
-        % All functions that use dots in their names must be defined in the classdef file, including:
-        %   -  Converter methods that must use the package name as part of the class name because the class is contained in packages
+        % All functions that use dots in their names must be defined in the
+        % classdef file, including:
+        %   -  Converter methods that must use the package name as part of
+        %      the class name because the class is contained in packages 
         %   -  Property set and get access methods
         function val = get.wave(obj)
             val = obj.pigment.wave;

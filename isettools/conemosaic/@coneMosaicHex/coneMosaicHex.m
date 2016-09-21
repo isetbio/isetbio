@@ -3,11 +3,16 @@ classdef coneMosaicHex < coneMosaic
     %
     %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, varargin);
     %
-    % The cone mosaic hex defines an array of cones placed on a hexagonal grid
-    % which is sampled according to the resamplingFactor. The cone density can be
-    % spatially-varying if varyingDensity is set to true. All key-value
-    % parameter pairs used with coneMosaic can be used with coneMosaicHex.
-    % e.g.:
+    % The cone mosaic HEX is a subclass of coneMosaic. It differs because
+    % the array of cones is placed on a hexagonal, rather than rectangular,
+    % grid. 
+    %
+    % The hex mosaic is sampled according to the resamplingFactor. The cone
+    % density can be spatially-varying if varyingDensity is set to true.
+    %
+    % Name-Value parameter pairs used with coneMosaic also can be used with
+    % coneMosaicHex, e.g., 
+    %
     %   cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, ...
     %                      'name', 'the hex mosaic', ...
     %                      'size', [48 32], ...
@@ -15,7 +20,8 @@ classdef coneMosaicHex < coneMosaic
     %                 'noiseFlag', 0,  ...
     %            'spatialDensity', [0 0.6 0.3 0.1] ...
     %   );
-    % See also coneMosaic.
+    %
+    % See also: coneMosaic.
     %
     % NPC ISETBIO Team, 2016
     
@@ -79,9 +85,13 @@ classdef coneMosaicHex < coneMosaic
     end % Public methods
     
     methods (Access = private)
+        % Private methods
+        %
+        % These are templated here. The actual code is in the
+        % @coneMosaicHex directory.
         saveOriginalResState(obj);
         restoreOriginalResState(obj);
-    end % Private methods
+    end 
     
 end
 

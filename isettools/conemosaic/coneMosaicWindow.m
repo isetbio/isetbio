@@ -262,11 +262,15 @@ switch plotType
         
         % set up right click menu (context menu)
         c = uicontextmenu;
-        handles.axes2.Children.UIContextMenu = c;
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        if ~isempty(handles.axes2.Children)
+            handles.axes2.Children.UIContextMenu = c;
+            uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+            uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+            uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+            uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        end
+        
+        % Make the axis look like an image
         axis image
         
         % enable plot options in menu

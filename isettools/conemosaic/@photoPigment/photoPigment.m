@@ -90,20 +90,7 @@ classdef photoPigment < hiddenHandle
                 obj.absorbance = p.Results.absorbance;
             end
         end
-        
-        function str = description(obj, varargin)
-            % generate description string for this object
-            str = sprintf('\tWidth/height:\t[%.2f, %.2f] um\n', ...
-                obj.pdWidth*1e6, obj.pdHeight*1e6);
-            str = [str sprintf('\tGap (h, v):\t[%.2f, %.2f] um\n', ...
-                obj.gapWidth*1e6, obj.gapHeight*1e6)];
-            str = [str sprintf('\tOptical density: ') ...
-                sprintf('[%.2f, %.2f, %.2f]\n', obj.opticalDensity(1), ...
-                obj.opticalDensity(2), obj.opticalDensity(3))];
-            str = [str sprintf('\tPeak efficiency: ') ...
-                sprintf('[%.2f, %.2f, %.2f]\n', obj.peakEfficiency(1), ...
-                obj.peakEfficiency(2), obj.peakEfficiency(3))];
-        end
+
         
         % get method for dependent variable
         function val = get.absorbance(obj) % inerpolate for absorbance
