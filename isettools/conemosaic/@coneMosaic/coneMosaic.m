@@ -219,7 +219,7 @@ classdef coneMosaic < hiddenHandle
                 size(obj.absorptions,3))];
             if obj.noiseFlag, flag = 'on'; else flag = 'off'; end
             str = [str sprintf('\tPhoton noise:        %s\n', flag)];
-            str = [str sprintf('\OS model: %s\n', ...
+            str = [str sprintf('\tOS model:              %s\n', ...
                 class(obj.os))];
             
             % cone pigment properties
