@@ -187,13 +187,6 @@ classdef coneMosaic < hiddenHandle
 
         end
         
-        % Not sure what this is doing here?
-        % Should it be in the functon above?
-        % Look at it when we get online
-        %         clearData(obj, varargin);
-        %         a = coneAbsorptions(obj,varargin);
-        %         window(obj, varargin);
-        %         obj = setSizeToFOV(obj, fov, varargin);
         
         %% get methods for dependent variables
         % http://www.mathworks.com/help/matlab/matlab_oop/specifying-methods-and-functions.html#bu4wzba
@@ -321,8 +314,22 @@ classdef coneMosaic < hiddenHandle
         % Declare the compute method
         [absorptions, current] = compute(obj, oi, varargin);
         
+        % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
+        function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
+            [demosaicedAbsorptionsMap, sRGB] = obj.demosaicedResponses();
+        end
+        
+        % Method returning the demosaiced photocurrent maps
+        function demosaicedCurrentsMap = demosaicedPhotoCurrentMaps(obj, current)
+            demosaicedCurrentsMap = obj.demosaicedResponses(current);
+        end
+        
+        % Demosaicing method
+        varargout = demosaicedResponses(obj, varargin);
+
         % Declare the computeCurrent method
         computeCurrent(obj, varargin);
+
     end
 
     methods (Static)

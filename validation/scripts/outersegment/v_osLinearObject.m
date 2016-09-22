@@ -84,8 +84,8 @@ if (runTimeParams.generatePlots)
 end
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur',adaptedCur);
-UnitTest.validationData('osAdaptedCur',osAdaptedCur);
+UnitTest.validationData('adaptedCur1',adaptedCur);
+UnitTest.validationData('osAdaptedCur1',osAdaptedCur);
 clear adaptedOS paramsOS
 
 %% Steps + flashes
@@ -253,8 +253,8 @@ end
 % Save validation data
 tolerance = 1e-12;
 UnitTest.assertIsZero(max(abs(flashAmp(:)-flashAmpOS(:))),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur',adaptedCur);
-UnitTest.validationData('osAdaptedCur',osAdaptedCur);
+UnitTest.validationData('adaptedCur2',adaptedCur);
+UnitTest.validationData('osAdaptedCur2',osAdaptedCur);
 clear adaptedOS adaptedOSSteponly paramsOS paramsOSStepOnly
 
 %% Saccade-like stimuli
@@ -313,8 +313,12 @@ end
 % Save validation data
 tolerance = 1e-11;
 UnitTest.assertIsZero(max(abs(adaptedCur-osAdaptedCur)),'Comparison for dark impulse response',tolerance);
-UnitTest.validationData('adaptedCur',adaptedCur);
-UnitTest.validationData('osAdaptedCur',osAdaptedCur);
+UnitTest.validationData('adaptedCur3',adaptedCur, ...
+     'UsingTheFollowingVariableTolerancePairs', ...
+     'adaptedCur3', 1e-7);
+UnitTest.validationData('osAdaptedCur3',osAdaptedCur, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'osAdaptedCur3', 1e-7);
 clear adaptedOS paramsOS
 
 %% Increment/decrement asymmetry

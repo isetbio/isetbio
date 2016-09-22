@@ -830,8 +830,8 @@ switch lower(pType)
                 fNumber = opticsGet(optics,'fNumber');
                 radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor('um');
                 nSamp = 200;
-                [adX,adY,adZ] = ieShape('circle',nSamp,radius);
-                
+                [~,ptsXY]=ieShape('circle','nSamp',nSamp,'radius',radius);
+                adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
             case {'shiftinvariant'}
                 psf = opticsGet(optics,'psfdata',thisWave);
                 tmp = opticsGet(optics,'psfSupport',units);
