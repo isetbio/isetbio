@@ -62,7 +62,15 @@ switch ieParamFormat(type);
         % It brings the image up in the wrong window because we didn't pass
         % the hf and set the axis.  But the good news is, it gets here and
         % runs.  Next, on to fixing the varargin{} and such.
-        visualizeGrid(obj);  % Default arguments for now
+        plotHexMosaic(obj);  % Default arguments for now
+    case 'meanabsorptions'
+        disp('NYI')
+    case 'movieabsorptions'
+        disp('NYI')
+    case 'meancurrent'
+        disp('NYI')
+    case 'moviecurrent'
+        disp('NYI')
     otherwise
         % Not one of the hex image types.  So, pass up to the base class
         [uData,hf] = plot@coneMosaic(obj,type,varargin{:});

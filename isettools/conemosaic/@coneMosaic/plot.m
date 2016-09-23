@@ -91,13 +91,13 @@ switch ieParamFormat(type);
         
         colormap(gray);  % Shows a numerical value
         axis image;
-    case 'absorptions'
-        % Movie of the absorptions on the cone mosaic
-        if isempty(obj.absorptions)
-            % Could be come cla; return
-            error('no absorption data');
-        end
-        uData = coneImageActivity(obj, hf, varargin{:});
+        %     case 'absorptions'
+        %         % Movie of the absorptions on the cone mosaic
+        %         if isempty(obj.absorptions)
+        %             % Could be come cla; return
+        %             error('no absorption data');
+        %         end
+        %         uData = coneImageActivity(obj, hf, varargin{:});
     case 'movieabsorptions'
         % Movie in gray scale
         if isempty(obj.absorptions)
@@ -118,14 +118,14 @@ switch ieParamFormat(type);
         end
         colormap(gray); % Shows a numerical value
         axis image;
-    case {'current', 'photocurrent'}
-        % Photo current movie on colored cone mosaic
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no photocurrent data');
-        end
-        uData = coneImageActivity(obj, hf, 'dataType', ...
-            'photocurrent', varargin{:});
+        %     case {'current', 'photocurrent'}
+        %         % Photo current movie on colored cone mosaic
+        %         if isempty(obj.current)
+        %             if isempty(p.Results.hf), close(hf); end
+        %             error('no photocurrent data');
+        %         end
+        %         uData = coneImageActivity(obj, hf, 'dataType', ...
+        %             'photocurrent', varargin{:});
     case 'moviecurrent'
         % Current movie in gray scale
         if isempty(obj.current)

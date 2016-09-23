@@ -37,16 +37,16 @@ panelPosition = p.Results.panelPosition;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
 
 %% Set up cone coordinates and outline
-
-if (showCorrespondingRectangularMosaicInstead)
-    titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
-        size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
-else
-    titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
-        size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
-        numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-        obj.resamplingFactor);
-end
+% 
+% if (showCorrespondingRectangularMosaicInstead)
+%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
+%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
+% else
+%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
+%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
+%         numel(find(obj.pattern > 1)), numel(obj.pattern), ...
+%         obj.resamplingFactor);
+% end
 
 sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
 sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
@@ -71,6 +71,13 @@ apertureOutline.y = dx/2.0 * sin(iTheta);
 rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
 
+% Try scaling the values to see if that puts it in our range
+mx = max(abs(hexCoords(:,1)));
+hexCoords(:,1) = hexCoords(:,1)/mx;
+mx = max(abs(hexCoords(:,1)));
+hexCoords(:,2) = hexCoords(:,2)/mx;
+
+
 %% Set up figure
 
 if (generateNewFigure)
@@ -82,19 +89,12 @@ if (generateNewFigure)
     end
 else
     % We want to use the coneMosaic window 
-    if (isempty(panelPosition))
-        hFig = figure(1);
-        figPosition = [rand()*2000 rand()*1000 980 670];
-    else
-        hFig = figure(panelPosition(1)*10+panelPosition(2));
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
-    end
+    % axes(obj.hdl.CurrentAxes);
+    figure(obj.hdl);
+    cla;
+    % set(gca,'xlim',[min(hexCoords(:,1)), max(hexCoords(:,1))])
+    % set(gca,'ylim',[min(hexCoords(:,2)), max(hexCoords(:,2))])
 end
-cla;
-set(hFig, 'Position', figPosition, 'Color', [1 1 1], 'MenuBar', 'none', 'NumberTitle', 'off');
-set(hFig, 'Name', titleString);
-subplot('Position', [0.06 0.06 0.91 0.91]);
-hold on;
 
 %% Do the display
 switch showConeDensityContour
