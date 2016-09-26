@@ -327,6 +327,10 @@ classdef coneMosaic < hiddenHandle
         % Demosaicing method
         varargout = demosaicedResponses(obj, varargin);
 
+        % Method that low-passes a mosaic's response using different space
+        % constants for each of the L,M, and S-cone submosaic.
+        [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassActivationMap(response, theMosaic, spaceConstants);
+        
         % Declare the computeCurrent method
         computeCurrent(obj, varargin);
 
