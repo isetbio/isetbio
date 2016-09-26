@@ -18,7 +18,7 @@ function t_coneMosaicLowPassResponses()
     cMosaicOBJ.noiseFlag = false;
     [isomerizationsMap, currentsMap] = cMosaicOBJ.compute(oi,'currentFlag', true);
     
-    % Low-pass response
+    % Low-pass the isomerizations map
     lowPassSpaceConstantInMicrons = [5 5 10];
     [isomerizationsMapLowPassed, Lmap, Mmap, Smap] = cMosaicOBJ.lowPassMosaicResponse(isomerizationsMap, lowPassSpaceConstantInMicrons);
     
