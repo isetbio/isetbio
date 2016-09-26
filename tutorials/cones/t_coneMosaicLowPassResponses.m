@@ -36,12 +36,17 @@ function t_coneMosaicLowPassResponses()
            'topMargin',      0.03);
        
     subplot('Position', subplotPosVectors(1,1).v)
+    imshow(sceneGet(scene, 'RGB'))
+    axis 'image'
+    title('input scene');
+    
+    subplot('Position', subplotPosVectors(1,2).v)
     imagesc(isomerizationsMap);
     set(gca, 'CLim', climRange);
     axis 'image'
     title(sprintf('original response (max = %2.1f)', max(isomerizationsMap(:))));
     
-    subplot('Position', subplotPosVectors(1,2).v)
+    subplot('Position', subplotPosVectors(1,3).v)
     imagesc(isomerizationsMapLowPassed);
     set(gca, 'CLim', climRange);
     axis 'image'
