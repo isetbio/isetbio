@@ -30,7 +30,9 @@ function varargout = demosaicedResponses(obj, varargin)
          [coneRows, coneCols] = ind2sub([obj.rows obj.cols], coneIndices(coneMosaics{coneMosaicIndex}));
          for frameIndex = 1:nFrames
              responsesFrame = squeeze(responses(:,:, frameIndex));
-             demosaicedResponses(:,:,coneMosaicIndex,frameIndex) = griddata(coneCols, coneRows, responsesFrame(coneIndices(coneMosaics{coneMosaicIndex})), XX, YY, 'linear');
+             F = scatteredInterpolant(coneCols, coneRows, responsesFrame(coneIndices(coneMosaics{coneMosaicIndex})), 'linear');
+             demosaicedResponses(:,:,coneMosaicIndex,frameIndex) = F(XX,YY); 
+             %demosaicedResponses(:,:,coneMosaicIndex,frameIndex) = griddata(coneCols, coneRows, responsesFrame(coneIndices(coneMosaics{coneMosaicIndex})), XX, YY, 'linear');
          end % frameIndex
        end 
     end % coneMosaicIndex
