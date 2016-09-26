@@ -1,9 +1,7 @@
-function visualizeGrid(obj, varargin)
+function plotHexMosaic(obj, varargin)
 % Visualize different aspects of the hex grid
 %
 % Name-Value options
-%   generateNewFigure  - False
-%   panelPosition      - [1 1]
 %   showCorrespondingRectangularMosaicInstead - False
 %   overlayNullSensorsPerfectHexMesh          - False
 %   overlayPerfectHexMesh       - False
@@ -19,8 +17,6 @@ function visualizeGrid(obj, varargin)
 
 %% parse input
 p = inputParser;
-p.addParameter('generateNewFigure', false, @islogical);
-p.addParameter('panelPosition', [1 1]);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
@@ -32,21 +28,7 @@ showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangul
 showNullSensors = p.Results.overlayNullSensors;
 showPerfectHexMesh = p.Results.overlayPerfectHexMesh;
 showConeDensityContour = p.Results.overlayConeDensityContour;
-generateNewFigure = p.Results.generateNewFigure;
-panelPosition = p.Results.panelPosition;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
-
-%% Set up cone coordinates and outline
-% 
-% if (showCorrespondingRectangularMosaicInstead)
-%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
-%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
-% else
-%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
-%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
-%         numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-%         obj.resamplingFactor);
-% end
 
 sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
 sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
@@ -64,37 +46,16 @@ pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
 originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
 originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
 
-iTheta = (0:5:360)/180*pi;
+iTheta = (0:15:360)/180*pi;
 apertureOutline.x = dx/2.0 * cos(iTheta);
 apertureOutline.y = dx/2.0 * sin(iTheta);
 
 rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
 
-% Try scaling the values to see if that puts it in our range
-mx = max(abs(hexCoords(:,1)));
-hexCoords(:,1) = hexCoords(:,1)/mx;
-mx = max(abs(hexCoords(:,1)));
-hexCoords(:,2) = hexCoords(:,2)/mx;
 
-
-%% Set up figure
-
-if (generateNewFigure)
-    hFig = figure(round(rand()*100000));
-    if (isempty(panelPosition))
-        figPosition = [rand()*2000 rand()*1000 980 670];
-    else
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
-    end
-else
-    % We want to use the coneMosaic window 
-    % axes(obj.hdl.CurrentAxes);
-    figure(obj.hdl);
-    cla;
-    % set(gca,'xlim',[min(hexCoords(:,1)), max(hexCoords(:,1))])
-    % set(gca,'ylim',[min(hexCoords(:,2)), max(hexCoords(:,2))])
-end
+% Clear axes
+cla(obj.hdl.CurrentAxes, 'reset');
 
 %% Do the display
 switch showConeDensityContour
