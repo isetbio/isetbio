@@ -24,7 +24,8 @@ function t_coneMosaicLowPassResponses()
     
     % Visualize results
     climRange = [min([min(isomerizationsMap(:)) min(isomerizationsMapLowPassed(:))]) max([max(isomerizationsMap(:)) max(isomerizationsMapLowPassed(:))])];
-    figure(1); clf;
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 500 1024 500]);
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2, ...
            'colsNum', 3, ...
