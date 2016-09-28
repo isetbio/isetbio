@@ -263,7 +263,9 @@ switch plotType
         % set up right click menu (context menu)
         c = uicontextmenu;
         if ~isempty(handles.axes2.Children)
-            handles.axes2.Children.UIContextMenu = c;
+            for ichild = 1:size(handles.axes2.Children,1)
+                handles.axes2.Children(ichild).UIContextMenu = c;
+            end
             uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
             uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
             uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);

@@ -64,13 +64,68 @@ switch ieParamFormat(type);
         % runs.  Next, on to fixing the varargin{} and such.
         plotHexMosaic(obj);  % Default arguments for now
     case 'meanabsorptions'
-        disp('NYI')
+
+        % Copied from t_coneMosaicHex3.m, line 70
+        isomerizationsHex = obj.absorptions;
+        nonNullConeIndices = obj.pattern > 1;
+        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+                
+        % Render activation images for the hex mosaic
+        [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
+                
+        % Display results
+        % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
+        imagesc(mean(activationsHexImage,3));
+        % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+        axis 'image'; axis 'xy'
+        colormap gray;
+        
     case 'movieabsorptions'
-        disp('NYI')
+
+        % Copied from t_coneMosaicHex3.m, line 70
+        isomerizationsHex = obj.absorptions;
+        nonNullConeIndices = obj.pattern > 1;
+        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+                
+        % Render activation images for the hex mosaic
+        [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
+        
+        activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
+        for frameIndex = 1:size(isomerizationsHex,3)
+            [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
+            activationsHexMovie(:,:,frameIndex) = activationsHexImage;
+        end
+        
+        % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+        axis 'image'; axis 'xy'
+        % title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
+        % % % % % % %
+        uData = ieMovie(activationsHexMovie,varargin{:});
+        
     case 'meancurrent'
-        disp('NYI')
+        disp('NYI');
+%         if isempty(obj.current)
+%             error('no photocurrent data computed');
+%         end
+%         uData = mean(obj.current, 3);
+%         if ~isequal(hf, 'none')
+%             imagesc(uData); axis off; colorbar;
+%             % title('Mean photocurrent (pA)');
+%         end
+%         colormap(gray); % Shows a numerical value
+%         axis image;
     case 'moviecurrent'
-        disp('NYI')
+        
+        disp('NYI');
+%         % Current movie in gray scale
+%         if isempty(obj.current)
+%             if isempty(p.Results.hf), close(hf); end
+%             error('no current data');
+%         end
+%         % Additional arguments may be the video file name, step, and
+%         % FrameRate
+%         uData = ieMovie(obj.current,varargin{:});
+        
     otherwise
         % Not one of the hex image types.  So, pass up to the base class
         [uData,hf] = plot@coneMosaic(obj,type,varargin{:});

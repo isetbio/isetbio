@@ -6,7 +6,7 @@
 % If you run this script, a usable collection of all these objects will be
 % produced.
 %
-%    scene, oi, cmosaic, bp, rgc
+%    scene, oi, cmosaic, cmosaichex, bp, rgc
 %
 % BW ISETBIO Team, 2016
 
@@ -29,6 +29,17 @@ oi = oiCompute(oi,scene);
 cmosaic = coneMosaic;
 cmosaic.emGenSequence(50);
 cmosaic.compute(oi); clear a;
+
+resamplingFactor = 8;
+varyingDensity = false;
+cmosaichex = coneMosaicHex(resamplingFactor, varyingDensity, ...
+                             'name', 'the hex mosaic', ...
+                             'size', [48 32], ...
+                        'noiseFlag', 0,  ...
+                   'spatialDensity', [0 0.6 0.3 0.1] ...
+          );      
+cmosaichex.emGenSequence(50);
+cmosaichex.compute(oi); clear a;
 
 bp = bipolar(cmosaic);
 bp.compute(cmosaic);
