@@ -68,7 +68,11 @@ switch showConeDensityContour
         error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
 end
 
+% showCorrespondingRectangularMosaicInstead = true;
 if (~showCorrespondingRectangularMosaicInstead)
+    % Show Hex mosaic (don't show the rectangular mosaic)
+    
+    profile on
     lineStyle = '-';
     if (showNullSensors)
         idx = find(obj.pattern==1);
@@ -77,7 +81,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         renderPatchArray(pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     end
     
-    % L-cones
+    % L-cones - The 'finds' take a long time, 3-times.  Let's see if we can't
+    % speed it up.
     idx = find(obj.pattern == 2);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [1 0 0]; faceColor = [1.0 0.7 0.7];
@@ -100,6 +105,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
         renderHexMesh(hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
+    profile off
+    
 else
     % Show the corresponding rectangular mosaic
     
@@ -129,8 +136,7 @@ end
 
 %% Arrange axis and fonts
 
-hold off
-axis 'equal'; axis 'xy'
+hold off; axis 'equal'; axis 'xy'
 xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);

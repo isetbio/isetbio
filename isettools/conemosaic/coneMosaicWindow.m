@@ -69,17 +69,23 @@ handles.curMov = [];  % photocurrent movie
 guidata(hObject, handles);
 handles.cMosaic.hdl = hObject;
 
+% Adjust the database and bring this figure to the front
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
-
 figure(hObject);
+
+% Get the font size initialized
 ieFontInit(hObject);
 
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+% Set the popup default image selection to mean absorptions when the window
+% opens.
 str = get(handles.popupImageType, 'String');
 if iscell(str) && length(str) > 1
-    set(handles.popupImageType, 'Value',2);  % This is mean absorptions
-    coneMosaicGUIRefresh(hObject, eventdata, handles);
+    % This is mean absorptions
+    set(handles.popupImageType, 'Value',2);  
 end
+
+% Refresh and move on
+coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
 
