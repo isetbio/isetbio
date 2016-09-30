@@ -673,7 +673,8 @@ function menuPlotMosaicConeMosaic_Callback(~, ~, handles)
 % hObject    handle to menuPlotMosaicConeMosaic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.cMosaic.plot('cone mosaic','showCorrespondingRectangularMosaicInstead',false);
+handles.cMosaic.plot('cone mosaic',...
+    'showCorrespondingRectangularMosaicInstead',false);
 end
 
 function menuPlotMosaicMeanAbsorptions_Callback(~, ~, handles)
@@ -709,6 +710,8 @@ handles.cMosaic.plot('macular transmittance');
 end
 
 function menuPlotMacularAbsorptance_Callback(~, ~, handles)
+% Plot | Macular | Absorptance
+%
 % hObject    handle to menuPlotMacularAbsorptance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
