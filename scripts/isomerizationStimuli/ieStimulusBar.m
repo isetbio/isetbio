@@ -93,7 +93,7 @@ elseif strcmpi(osType,'hex')
     
     % Generate a hex mosaic with a medium resamplingFactor
     mosaicParams = struct(...
-        'resamplingFactor', 9, ...                 % controls the accuracy of the hex mosaic grid
+        'resamplingFactor', 4, ...                 % controls the accuracy of the hex mosaic grid
         'spatiallyVaryingConeDensity', false, ...  % whether to have an eccentricity based, spatially - varying density
         'centerInMM', [0.5 0.3], ...               % mosaic eccentricity
         'spatialDensity', [0 0.62 0.31 0.07],...
