@@ -6,7 +6,7 @@
 % If you run this script, a usable collection of all these objects will be
 % produced.
 %
-%    scene, oi, cmosaic, cmosaichex, bp, rgc
+%    scene, oi, cmosaic, bp, rgc
 %
 % BW ISETBIO Team, 2016
 
@@ -22,24 +22,16 @@ clx;
 %% All the way from scene to inner retina 
 scene = sceneCreate('rings rays');
 scene = sceneSet(scene,'fov',2);
+% ieAddObject(scene); sceneWindow;
 
 oi = oiCreate;
 oi = oiCompute(oi,scene);
+% ieAddObject(oi); oiWindow;
 
 cmosaic = coneMosaic;
 cmosaic.emGenSequence(50);
 cmosaic.compute(oi); clear a;
-
-resamplingFactor = 8;
-varyingDensity = false;
-cmosaichex = coneMosaicHex(resamplingFactor, varyingDensity, ...
-                             'name', 'the hex mosaic', ...
-                             'size', [48 32], ...
-                        'noiseFlag', 0,  ...
-                   'spatialDensity', [0 0.6 0.3 0.1] ...
-          );      
-cmosaichex.emGenSequence(50);
-cmosaichex.compute(oi); clear a;
+% cmosaic.window
 
 bp = bipolar(cmosaic);
 bp.compute(cmosaic);
@@ -56,6 +48,12 @@ ntrials = 1;
 rgc = ir(bp, params);
 rgc.mosaicCreate('type',cellType,'model','LNP');
 rgc.compute(bp);
+
+% When debugging coneMosaicHex
+resampleF = 2;
+cmosaicH = coneMosaicHex(resampleF,false);
+cmosaicH.emGenSequence(50);
+cmosaicH.compute(oi); clear a;
 
 %% Clear and list the objects
 clear ntrial params ans

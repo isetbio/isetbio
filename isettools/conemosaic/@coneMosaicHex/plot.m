@@ -62,16 +62,17 @@ switch ieParamFormat(type);
         % It brings the image up in the wrong window because we didn't pass
         % the hf and set the axis.  But the good news is, it gets here and
         % runs.  Next, on to fixing the varargin{} and such.
-        plotHexMosaic(obj);  % Default arguments for now
+        plotHexMosaic(obj,'hf',hf,varargin{:});  % Default arguments for now
     case 'meanabsorptions'
 
         % Copied from t_coneMosaicHex3.m, line 70
         isomerizationsHex = obj.absorptions;
-        nonNullConeIndices = obj.pattern > 1;
-        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+        % nonNullConeIndices = obj.pattern > 1;
+        % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
-        [activationsHexImage,activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
+        [activationsHexImage,~,supX,supY] = ...
+            obj.computeActivationDensityMap(isomerizationsHex);
                 
         % Display results
         % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
@@ -84,7 +85,7 @@ switch ieParamFormat(type);
         sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
         sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
         dx = obj.pigment.pdWidth;
-%         hold off
+
         axis 'equal'; axis 'xy'
         xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
         yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
@@ -101,46 +102,32 @@ switch ieParamFormat(type);
 
         % Copied from t_coneMosaicHex3.m, line 70
         isomerizationsHex = obj.absorptions;
-        nonNullConeIndices = obj.pattern > 1;
-        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+        % nonNullConeIndices = obj.pattern > 1;
+        % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
-        [activationsHexImage,activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
+        [activationsHexImage,~,~,~] = ...
+            obj.computeActivationDensityMap(isomerizationsHex);
                 
         activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
         for frameIndex = 1:size(isomerizationsHex,3)
-            [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
+            [activationsHexImage, ~] = ...
+                obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
             activationsHexMovie(:,:,frameIndex) = activationsHexImage;
         end
         
-        % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
         axis 'image'; axis 'xy'
-        % title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
-        % % % % % % %
         uData = ieMovie(activationsHexMovie,varargin{:});
         
     case 'meancurrent'
-        disp('NYI');
-%         if isempty(obj.current)
-%             error('no photocurrent data computed');
-%         end
-%         uData = mean(obj.current, 3);
-%         if ~isequal(hf, 'none')
-%             imagesc(uData); axis off; colorbar;
-%             % title('Mean photocurrent (pA)');
-%         end
-%         colormap(gray); % Shows a numerical value
-%         axis image;
-
-
         % Copied from t_coneMosaicHex3.m, line 70
         clear isomerizationsHex
         isomerizationsHex = obj.current;
-        nonNullConeIndices = obj.pattern > 1;
-        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+        % nonNullConeIndices = obj.pattern > 1;
+        % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
-        [activationsHexImage, activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
+        [activationsHexImage, ~,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
                 
         % Display results
         % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
@@ -153,7 +140,7 @@ switch ieParamFormat(type);
         sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
         sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
         dx = obj.pigment.pdWidth;
-%         hold off
+
         axis 'equal'; axis 'xy'
         xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
         yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
@@ -164,25 +151,13 @@ switch ieParamFormat(type);
         box on; grid off;
         set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
         set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
-%         drawnow
 
-    case 'moviecurrent'
-        
-        disp('NYI');
-%         % Current movie in gray scale
-%         if isempty(obj.current)
-%             if isempty(p.Results.hf), close(hf); end
-%             error('no current data');
-%         end
-%         % Additional arguments may be the video file name, step, and
-%         % FrameRate
-%         uData = ieMovie(obj.current,varargin{:});
-        
+    case 'moviecurrent'   
 
         % Copied from t_coneMosaicHex3.m, line 70
         isomerizationsHex = obj.current;
-        nonNullConeIndices = obj.pattern > 1;
-        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+        % nonNullConeIndices = obj.pattern > 1;
+        % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
         [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
