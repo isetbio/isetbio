@@ -71,15 +71,32 @@ switch ieParamFormat(type);
         isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
-        [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
+        [activationsHexImage,activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
                 
         % Display results
         % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
-        imagesc(mean(activationsHexImage,3));
+        imagesc(supX,supY,mean(activationsHexImage,3));
         % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
         axis 'image'; axis 'xy'
         colormap gray;
         
+        hold on;
+        sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
+        sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
+        dx = obj.pigment.pdWidth;
+%         hold off
+        axis 'equal'; axis 'xy'
+        xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+        yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+        xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
+        yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
+        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+        set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], 'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+        box on; grid off;
+        set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
+        set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
+        drawnow
+
     case 'movieabsorptions'
 
         % Copied from t_coneMosaicHex3.m, line 70
@@ -88,8 +105,8 @@ switch ieParamFormat(type);
         isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
                 
         % Render activation images for the hex mosaic
-        [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
-        
+        [activationsHexImage,activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
+                
         activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
         for frameIndex = 1:size(isomerizationsHex,3)
             [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
@@ -114,6 +131,41 @@ switch ieParamFormat(type);
 %         end
 %         colormap(gray); % Shows a numerical value
 %         axis image;
+
+
+        % Copied from t_coneMosaicHex3.m, line 70
+        clear isomerizationsHex
+        isomerizationsHex = obj.current;
+        nonNullConeIndices = obj.pattern > 1;
+        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+                
+        % Render activation images for the hex mosaic
+        [activationsHexImage, activationsType,supX,supY] = obj.computeActivationDensityMap(isomerizationsHex);
+                
+        % Display results
+        % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
+        imagesc(supX,supY,mean(activationsHexImage,3));
+        % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+        axis 'image'; axis 'xy'
+        colormap gray;
+        
+        hold on;
+        sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
+        sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
+        dx = obj.pigment.pdWidth;
+%         hold off
+        axis 'equal'; axis 'xy'
+        xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+        yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+        xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
+        yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
+        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+        set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], 'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+        box on; grid off;
+        set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
+        set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
+%         drawnow
+
     case 'moviecurrent'
         
         disp('NYI');
@@ -126,6 +178,26 @@ switch ieParamFormat(type);
 %         % FrameRate
 %         uData = ieMovie(obj.current,varargin{:});
         
+
+        % Copied from t_coneMosaicHex3.m, line 70
+        isomerizationsHex = obj.current;
+        nonNullConeIndices = obj.pattern > 1;
+        isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+                
+        % Render activation images for the hex mosaic
+        [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
+        
+        activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
+        for frameIndex = 1:size(isomerizationsHex,3)
+            [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
+            activationsHexMovie(:,:,frameIndex) = activationsHexImage;
+        end
+        
+        % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+        axis 'image'; axis 'xy'
+        % title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
+        % % % % % % %
+        uData = ieMovie(activationsHexMovie,varargin{:});
     otherwise
         % Not one of the hex image types.  So, pass up to the base class
         [uData,hf] = plot@coneMosaic(obj,type,varargin{:});

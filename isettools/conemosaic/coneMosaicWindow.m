@@ -317,8 +317,10 @@ switch plotType
         cm.plot('mean current', 'hf', handles.axes2);
         
         % set up right click menu (context menu)
-        c = uicontextmenu;
-        handles.axes2.Children.UIContextMenu = c;
+        c = uicontextmenu;       
+        for ichild = 1:size(handles.axes2.Children,1)
+            handles.axes2.Children(ichild).UIContextMenu = c;
+        end
         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
