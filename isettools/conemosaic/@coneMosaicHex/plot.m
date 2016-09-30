@@ -62,7 +62,7 @@ switch ieParamFormat(type);
         % It brings the image up in the wrong window because we didn't pass
         % the hf and set the axis.  But the good news is, it gets here and
         % runs.  Next, on to fixing the varargin{} and such.
-        plotHexMosaic(obj);  % Default arguments for now
+        plotHexMosaic(obj,'hf',hf,varargin{:});  % Default arguments for now
     case 'meanabsorptions'
 
         % Copied from t_coneMosaicHex3.m, line 70
