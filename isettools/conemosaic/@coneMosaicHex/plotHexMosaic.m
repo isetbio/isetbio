@@ -20,7 +20,7 @@ p = inputParser;
 p.KeepUnmatched = true;   % This allows unrecognized parameters
 
 % Defaulting this to true until we solve the rendering speed problem
-p.addParameter('showCorrespondingRectangularMosaicInstead', true, @islogical);
+p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
@@ -57,7 +57,8 @@ pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
 originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
 originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
 
-iTheta = (0:15:360)/180*pi;
+dAngle = 15;
+iTheta = (0:dAngle:360-dAngle)/180*pi;
 apertureOutline.x = dx/2.0 * cos(iTheta);
 apertureOutline.y = dx/2.0 * sin(iTheta);
 
@@ -213,7 +214,7 @@ for vertexIndex = 1:verticesNum
     x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
     y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
 end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
+patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', 'none');
 end
 
 %% Separate function??
