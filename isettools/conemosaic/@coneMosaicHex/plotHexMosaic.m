@@ -57,7 +57,7 @@ pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
 originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
 originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
 
-dAngle = 15;
+dAngle = 30;
 iTheta = (0:dAngle:360-dAngle)/180*pi;
 apertureOutline.x = dx/2.0 * cos(iTheta);
 apertureOutline.y = dx/2.0 * sin(iTheta);
@@ -214,7 +214,7 @@ for vertexIndex = 1:verticesNum
     x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
     y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
 end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', 'none');
+patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
 end
 
 %% Separate function??

@@ -73,6 +73,7 @@ handles.cMosaic.hdl = hObject;
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
 figure(hObject);
 
+
 % Get the font size initialized
 ieFontInit(hObject);
 
@@ -86,6 +87,9 @@ end
 
 % Refresh and move on
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+% Very important for good rendering speed
+set(hObject, 'Renderer', 'OpenGL')
 
 end
 
