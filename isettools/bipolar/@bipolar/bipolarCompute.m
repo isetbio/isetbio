@@ -101,45 +101,73 @@ switch obj.cellType
         
     case{'offMidget'}
         % Keep S cone input for off Midget but only weight by 0.25
-        sConeIndices = find(obj.coneType==4);
+        
+        % Find the locations (row, col) of the different cone types
+        [~,~,S] = coneTypeLocations(cmosaic,'val','index');
+        
         minval = min(osSigRSZM(:));
+        
         osSigRSZMCenter   = osSigRSZM;
-        osSigRSZMCenter(sConeIndices,:)   = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
+        osSigRSZMCenter(S,:)   = 0.25*(osSigRSZMCenter(S,:)-minval)+minval;
         
         osSigRSZMSurround   = osSigRSZM;
-        osSigRSZMSurround(sConeIndices,:) = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
+        osSigRSZMSurround(S,:) = 0.25*(osSigRSZMSurround(S,:)-minval)+minval;
+                
+        %         sConeIndices = find(obj.coneType==4);
+        %         minval = min(osSigRSZM(:));
+        %         osSigRSZMCenter   = osSigRSZM;
+        %         osSigRSZMCenter(sConeIndices,:)   = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
+        %
+        %         osSigRSZMSurround   = osSigRSZM;
+        %         osSigRSZMSurround(sConeIndices,:) = 0.25*(osSigRSZMCenter(sConeIndices,:)-minval)+minval;
 
     case{'onSBC'}  
-        % Make nearest S cones the center for SBCs, only L and M cones in
-        % surround
-        lmConeIndices = find(obj.coneType ==2 | obj.coneType == 3);
-        sConeIndices = find(obj.coneType==4);
+        % Set L and M cones to zero in SBC center, set S cones to zero in
+        % SBC surround.
+        % Find the locations (row, col) of the different cone types
+        [L,M,S] = coneTypeLocations(cmosaic,'val','index');
+        LM = [L; M];
+        
         osSigRSZMCenter   = osSigRSZM;
         osSigRSZMSurround = osSigRSZM;        
         
+        minval = min(osSigRSZM(:));
         % Set center to only have S cones
         
-        [rLM,cLM]=ind2sub(size(obj.coneType),lmConeIndices);
-        [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
+        osSigRSZMCenter   = osSigRSZM;
+        osSigRSZMCenter(LM,:)   = minval*ones(size(osSigRSZMCenter(LM,:)));
         
-        for sind = 1:length(sConeIndices)
-            sConeDist(sind,:) = sqrt((rLM - rS(sind)).^2 + (cLM - cS(sind)).^2);
-        end
-    
-        [mind,minind] = min(sConeDist);
-        % Plot LM cones mapped to S cones
-        % vcNewGraphWin; scatter(rLM(:),cLM(:),20,sConeIndices(minind),'filled')
-        % colormap([rand(length(sConeIndices),3)])
-        osSigRSZMCenter(lmConeIndices,:) = osSigRSZMCenter(sConeIndices(minind),:);
-        
-        % Set surround to only have LM cones
-        lmConeDist = sqrt((repmat(rLM,[1 length(rS)]) - repmat(rS',[length(rLM) 1])).^2 - (repmat(cLM,[1 length(cS)]) - repmat(cS',[length(cLM) 1])).^2);
-        
-        [mindlm,minindlm] = min(lmConeDist);
-        % Plot S cones mapped to LM cones
-        % vcNewGraphWin; scatter(rS(:),cS(:),20,lmConeIndices(minindlm),'filled')
-        % colormap([rand(length(lmConeIndices),3)])
-        osSigRSZMSurround(sConeIndices,:) = osSigRSZMSurround(lmConeIndices(minindlm),:);
+        osSigRSZMSurround   = osSigRSZM;
+        osSigRSZMSurround(S,:)   = minval*ones(size(osSigRSZMSurround(S,:)));
+               
+        %         lmConeIndices = find(obj.coneType ==2 | obj.coneType == 3);
+        %         sConeIndices = find(obj.coneType==4);
+        %         osSigRSZMCenter   = osSigRSZM;
+        %         osSigRSZMSurround = osSigRSZM;
+        %
+        %         % Set center to only have S cones
+        %
+        %         [rLM,cLM]=ind2sub(size(obj.coneType),lmConeIndices);
+        %         [rS,cS]=ind2sub(size(obj.coneMosaic),sConeIndices);
+        %
+        %         for sind = 1:length(sConeIndices)
+        %             sConeDist(sind,:) = sqrt((rLM - rS(sind)).^2 + (cLM - cS(sind)).^2);
+        %         end
+        %
+        %         [mind,minind] = min(sConeDist);
+        %         % Plot LM cones mapped to S cones
+        %         % vcNewGraphWin; scatter(rLM(:),cLM(:),20,sConeIndices(minind),'filled')
+        %         % colormap([rand(length(sConeIndices),3)])
+        %         osSigRSZMCenter(lmConeIndices,:) = osSigRSZMCenter(sConeIndices(minind),:);
+        %
+        %         % Set surround to only have LM cones
+        %         lmConeDist = sqrt((repmat(rLM,[1 length(rS)]) - repmat(rS',[length(rLM) 1])).^2 - (repmat(cLM,[1 length(cS)]) - repmat(cS',[length(cLM) 1])).^2);
+        %
+        %         [mindlm,minindlm] = min(lmConeDist);
+        %         % Plot S cones mapped to LM cones
+        %         % vcNewGraphWin; scatter(rS(:),cS(:),20,lmConeIndices(minindlm),'filled')
+        %         % colormap([rand(length(lmConeIndices),3)])
+        %         osSigRSZMSurround(sConeIndices,:) = osSigRSZMSurround(lmConeIndices(minindlm),:);
         
 end
 

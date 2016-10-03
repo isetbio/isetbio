@@ -34,9 +34,9 @@ switch val
         % Done
     case 'rowcol'       
         % Get the (row,col) locations of each of the cone type
-        [r,c] = ind2sub(size(cmosaic.pattern),l); l = [r,c]; clear r c
-        [r,c] = ind2sub(size(cmosaic.pattern),m); m = [r,c]; clear r c
-        [r,c] = ind2sub(size(cmosaic.pattern),s); s = [r,c];
+        [r,c] = ind2sub(size(cmosaic.pattern),l); clear l m s; l = [r,c]; clear r c
+        [r,c] = ind2sub(size(cmosaic.pattern),m); clear l m s; m = [r,c]; clear r c
+        [r,c] = ind2sub(size(cmosaic.pattern),s); clear l m s; s = [r,c];
     otherwise
         error('Unknown return value type %s\n',val);
 end

@@ -46,13 +46,14 @@ iStim.cMosaic.visualizeActivationMaps(...
 
 %% Compute bipolar response
 
-bp = bipolar(iStim.cMosaic);
+bpParams.cellType = 'offMidget';
+bp = bipolar(iStim.cMosaic, bpParams);
 bp.compute(iStim.cMosaic);
 bp.plot('movie response')
 
 %% Compute RGC response
 clear params innerRetinaSU
-cellType = 'onParasol';
+cellType = 'offMidget';
 % cellType = 'offParasol';
 params.name = 'macaque phys';
 params.eyeSide = 'left';
