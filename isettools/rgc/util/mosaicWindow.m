@@ -139,12 +139,53 @@ str = contents{get(hObject,'Value')};
 
 % Perform the action given the selection
 switch str
+    case 'Receptive Field Mosaic'
+        disp(str)
+        
     case 'Spike movie'
         disp(str)
+        
+        psthTest = handles.rgcMosaic.get('spikes');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
+        
+        uData = ieMovie(psthTest,vParams);    
+    case 'Linear movie'
+        disp(str)
+        
+        responseLinear = handles.rgcMosaic.get('responseLinear');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
+        
+        uData = ieMovie(responseLinear,vParams);
     case 'Spike mean (image)'
         disp(str)
-    case 'PSTH'
+        
+        spikesTest = handles.rgcMosaic.get('spikes');
+        imagesc(mean(spikesTest,3)); drawnow
+        
+    case 'Linear plot'
         disp(str)
+        
+        responseLinear = handles.rgcMosaic.get('responseLinear');
+        plot(RGB2XWFormat(responseLinear)');
+    case 'PSTH plot'
+        
+        responsePsth = handles.rgcMosaic.get('psth');
+        plot(RGB2XWFormat(responsePsth)');
+    case 'PSTH movie'
+        disp(str)
+        
+        responsePsth = handles.rgcMosaic.get('psth');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
+        
+        uData = ieMovie(responsePsth,vParams);
+    case 'PSTH mean (image)'
+        disp(str)
+        
+        psthTest = handles.rgcMosaic.get('psth');
+        imagesc(mean(psthTest,3)); drawnow
     otherwise
         error('Unknown string %s\n',str);
 end
@@ -219,7 +260,7 @@ cla(gdata.axisResponse,'reset');
 
 % Switch depending on the state of the pull down
 spikes = rgcM.get('response spikes');
-img = mean(spikes,3);
+img = mean(spikes(:,:,:,1),3);
 imagesc(img); colormap(gray); colorbar;
 xlabel('Distance (um)');
 
