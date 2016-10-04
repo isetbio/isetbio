@@ -19,10 +19,13 @@ ieInit;
 % Assemble conditions to run.
 condData = {};
 
+% Examine effects of varying the response time interval
+conditionSet = 1;
+
+% Examine the effects of photonNoise vs osNoise
 conditionSet = 2;
 
 if (conditionSet == 1)
-    % Effects of varying the response time interval
     
     addCondition = true;
     if (addCondition)
