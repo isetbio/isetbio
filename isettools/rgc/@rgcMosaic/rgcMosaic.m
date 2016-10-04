@@ -151,7 +151,7 @@ classdef rgcMosaic < handle
             str =sprintf('Cell type: %s\n',obj.cellType);
             txt = sprintf('Model: %s\n',class(obj));
             str = addText(str,txt);
-            txt = sprintf('N Trials %d\n',obj.numberTrials);
+            txt = sprintf('N Trials %d\n',obj.Parent.numberTrials);
             str = addText(str,txt);
             
             parent = obj.Parent;
