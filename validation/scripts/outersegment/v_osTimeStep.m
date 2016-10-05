@@ -311,6 +311,8 @@ function condData = makeConditionSet(conditionSet)
 
         case 3
             
+            stimulusRefreshRateInHz = 30;
+            eyeMovementsPerStimulusRefresh = 6;
             
             % Examine performance
             condData{numel(condData)+1} = struct(...
@@ -318,8 +320,8 @@ function condData = makeConditionSet(conditionSet)
             'meanLuminance', meanLuminance, ...         % scene mean luminance
             'modulation', 0.5, ...                      % % modulation against background
             'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
-            'stimulusSamplingInterval',  1/87, ...      % 87 Hz stimulus refresh
-            'responseTimeInterval', (1/87)/2, ...       % 2 eye movements / stimulus frame
+            'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
+            'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...       % 2 eye movements / stimulus frame
             'photonNoise', true, ...
             'osNoise', true);
 
@@ -483,12 +485,12 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     xlabel('time (seconds)', 'FontSize', 14, 'FontWeight', 'bold');
     title('L,M,S-cone isomerization rates', 'FontSize', 14);
 
-    % Plot the photocurrents
+    %% Plot the photocurrents
     subplot('Position', [0.75 0.07 0.22 0.89]);
     photoCurrentRange = [min(photoCurrentSequence(:)) max(photoCurrentSequence(:))+2];
     hold on;
     for k = 1:3
-        plot(responseTimeAxis, squeeze(photoCurrentSequence(referenceConeRows(k),referenceConeCols(k),:)), '.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
+        plot(responseTimeAxis, squeeze(photoCurrentSequence(referenceConeRows(k),referenceConeCols(k),:)), 'k.-', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
     end
     % Plot lines demarkating each OI time duration
     for oiIndex = 1:numel(theOIsequence)
