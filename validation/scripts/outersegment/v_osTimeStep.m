@@ -16,93 +16,16 @@ function ValidationFunction(runTimeParams)
 %% Init
 ieInit;
 
-% Assemble conditions to run.
-condData = {};
-
 % Examine effects of varying the response time interval
 conditionSet = 1;
 
 % Examine the effects of photonNoise vs osNoise and stimulus modulation
 conditionSet = 2;
 
-meanLuminance = 100;     % scene mean luminance
+% Examine computation performance
+conditionSet = 3;
 
-switch conditionSet
-    
-    % Examine effects of varying the response time interval
-    case 1
-        
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-       ' meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.1, ...                      % 10%  modulation against background
-        'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-        'responseTimeInterval', 20/1000, ...        % 20 milliseconds
-        'photonNoise', false, ...
-        'osNoise', false);
-    end
-
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-        'meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.1, ...                      % 10% modulation against background
-        'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-        'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-        'photonNoise', false, ...
-        'osNoise', false);
-    end
-
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-        'meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.1, ...                      % 10% modulation against background
-        'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-        'responseTimeInterval', 1/1000, ...         % 1 milliseconds
-        'photonNoise', false, ...
-        'osNoise', false);
-    end
-    
-    % Effects of varying the noise and stimulus modulation
-    case 2
-    
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-        'meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.1, ...                      % 10% modulation against background
-        'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
-        'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-        'photonNoise', true, ...
-        'osNoise', false);
-    end
-
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-        'meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.1, ...                      % 10% modulation against background
-        'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
-        'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-        'photonNoise', true, ...
-        'osNoise', true);
-    end
-
-    addCondition = true;
-    if (addCondition)
-    condData{numel(condData)+1} = struct(...
-        'meanLuminance', meanLuminance, ...         % scene mean luminance
-        'modulation', 0.3, ...                      % 30% modulation against background
-        'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
-        'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-        'photonNoise', true, ...
-        'osNoise', true);
-    end
-
-end
-
+condData = makeConditionSet(conditionSet);
 
 
 % Run all the conditions
@@ -111,10 +34,12 @@ for stimulusConditionIndex = 1:numel(condData)
     c = condData{stimulusConditionIndex};   
     
     % Run the simulation for this condition
+    tic
     [theConeMosaic, theOIsequence, ...
         isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, ...
-        stimulusTimeAxis, responseTimeAxis] = runSimulation(c.meanLuminance, c.modulation, c.stimulusSamplingInterval, c.responseTimeInterval, c.photonNoise, c.osNoise);
-
+        stimulusTimeAxis, responseTimeAxis] = runSimulation(c.mosaicSize, c.meanLuminance, c.modulation, c.modulationRegion, c.stimulusSamplingInterval, c.responseTimeInterval, c.photonNoise, c.osNoise);
+    toc
+    
     % Plot the results
     plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, stimulusTimeAxis, responseTimeAxis, stimulusConditionIndex, c);
 end
@@ -123,14 +48,18 @@ end
 
 function [theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, ...
-    stimulusTimeAxis, responseTimeAxis] = runSimulation(meanLuminance, modulation, stimulusSamplingInterval, responseTimeInterval, photonNoise, osNoise)
+    stimulusTimeAxis, responseTimeAxis] = runSimulation(mosaicSize, meanLuminance, modulation, modulationRegion, stimulusSamplingInterval, responseTimeInterval, photonNoise, osNoise)
 
     % Define the time axis for the simulation (how much data we will generate)
     stimulusTimeAxis = -0.6:stimulusSamplingInterval:0.4;
     stimulusRampTau = 0.165;
 
     % Generate a uniform field scene with desired mean luminance
-    FOV = 2.0;
+    if (isnan(mosaicSize))
+        FOV = 2.0;
+    else
+        FOV = max(mosaicSize);
+    end
     theScene = uniformFieldSceneCreate(FOV, meanLuminance);
 
     % Generate optics
@@ -138,15 +67,14 @@ function [theConeMosaic, theOIsequence, ...
     theOI = oiGenerate(noOptics);
 
     % Generate the sequence of optical images
-    theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, stimulusTimeAxis, stimulusRampTau, modulation);
+    theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, stimulusTimeAxis, stimulusRampTau, modulation, modulationRegion);
 
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(photonNoise, osNoise, responseTimeInterval, stimulusSamplingInterval, numel(theOIsequence));
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, responseTimeInterval, stimulusSamplingInterval, numel(theOIsequence));
 
     % Compute mosaic response to sequence of OIs!
     [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, responseTimeAxis] = ...
         computeMultiOIMosaicResponse(theConeMosaic, theOIsequence, stimulusSamplingInterval, stimulusTimeAxis);
-
 end
 
 
@@ -178,6 +106,10 @@ function  [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence,
         % Compute absorbions for current OI eye movement path
         theConeMosaic.emPositions = eyeMovementPathForThisOI;
         %fprintf('Added %d points for oiIndex: %d\n', lastEyeMovementIndex-firstEyeMovementIndex+1, oiIndex);
+        
+        % Note: absorptionsForThisOI is the # of absorptions within the
+        % integrationTime, but integrationTime (set in emGenSequence) is osTImeStep *
+        % eyeMovementFrames. This is clearly incorrect.
         absorptionsForThisOI = theConeMosaic.compute(theOIsequence{oiIndex}, 'currentFlag', false, 'newNoise', true);
 
         % Concatenate sequences
@@ -193,12 +125,20 @@ function  [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence,
     photoCurrentSequence = theConeMosaic.os.osCompute(isomerizationRateSequence, theConeMosaic.pattern, 'append', false);
 end
 
-function theConeMosaic = coneMosaicGenerate(photonNoise, osNoise, responseTimeInterval, stimulusSamplingInterval, opticalImageSequenceLength)
-    % Generate a human cone mosaic with 1L, 1M and 1S cone
+function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, responseTimeInterval, stimulusSamplingInterval, opticalImageSequenceLength)
+    
     theConeMosaic = coneMosaic;
-    theConeMosaic.rows = 1;
-    theConeMosaic.cols = 3;
-    theConeMosaic.pattern = [2 3 4];
+    
+    if isnan(mosaicSize)
+        % Generate a human cone mosaic with 1L, 1M and 1S cone
+        theConeMosaic.rows = 1;
+        theConeMosaic.cols = 3;
+        theConeMosaic.pattern = [2 3 4];
+    else
+        theConeMosaic.setSizeToFOV(mosaicSize);
+    end
+    
+    % Set the noise
     theConeMosaic.noiseFlag = photonNoise;
 
     % Generate the outer-segment object to be used by the coneMosaic
@@ -216,8 +156,7 @@ function theConeMosaic = coneMosaicGenerate(photonNoise, osNoise, responseTimeIn
 end
 
 
-function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, stimulusTimeAxis, stimulusRampTau, modulation)
-
+function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, stimulusTimeAxis, stimulusRampTau, modulation, modulationRegion)
     % Stimulus time ramp
     stimulusRamp = exp(-0.5*(stimulusTimeAxis/stimulusRampTau).^2);
     
@@ -226,7 +165,22 @@ function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, th
 
     backgroundPhotons = oiGet(theOI, 'photons');
     for stimFrameIndex = 1:numel(stimulusTimeAxis)
-        retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
+        tic
+        if strcmp(modulationRegion, 'FULL')
+            retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
+        elseif strcmp(modulationRegion, 'CENTER')
+            if (stimFrameIndex == 1)
+                pos = oiGet(theOI, 'spatial support', 'microns');
+                ecc = sqrt(squeeze(sum(pos.^2, 3)));
+                idx = find(ecc < 0.5*max(pos(:)));
+                [idx1, idx2] = ind2sub(size(ecc), idx);
+            end
+            retinalPhotonsAtCurrentFrame = backgroundPhotons;
+            retinalPhotonsAtCurrentFrame(idx1, idx2, :) = retinalPhotonsAtCurrentFrame(idx1, idx2, :) * (1.0 + modulation*stimulusRamp(stimFrameIndex));
+        else
+            error('Unknown modulationRegion ''%s'', modulationRegion');
+        end
+        toc
         theOIsequence{stimFrameIndex} = oiSet(theOI, 'photons', retinalPhotonsAtCurrentFrame);
     end
 end
@@ -252,17 +206,190 @@ function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
     uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
     % 1 meter away
     uniformScene = sceneSet(uniformScene, 'distance', 1.0);
-    % set the radiance (in photons/steradian/m^2/nm)
+    % set some radiance (in photons/steradian/m^2/nm)
     photonFlux = 1e16;
     uniformScene = sceneSet(uniformScene, 'photons', photonFlux*ones(64,64,numel(sceneGet(uniformScene, 'wave'))));
-    % set desired luminance
+    % adjust radiance according to desired  mean luminance
     uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
+end
+
+
+function condData = makeConditionSet(conditionSet)
+
+    % scene mean luminance
+    meanLuminance = 500;    
+    
+    % Assemble conditions to run.
+    condData = {};
+
+    switch conditionSet
+
+        % Examine effects of varying the response time interval
+        case 1
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.1, ...                      % 10%  modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
+                'responseTimeInterval', 20/1000, ...        % 20 milliseconds
+                'photonNoise', false, ...
+                'osNoise', false);
+            end
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.1, ...                      % 10% modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
+                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
+                'photonNoise', false, ...
+                'osNoise', false);
+            end
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.1, ...                      % 10% modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
+                'responseTimeInterval', 1/1000, ...         % 1 milliseconds
+                'photonNoise', false, ...
+                'osNoise', false);
+            end
+
+        % Effects of varying the noise and stimulus modulation
+        case 2
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.1, ...                      % 10% modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
+                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
+                'photonNoise', true, ...
+                'osNoise', false);
+            end
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.1, ...                      % 10% modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
+                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
+                'photonNoise', true, ...
+                'osNoise', true);
+            end
+
+            addCondition = true;
+            if (addCondition)
+            condData{numel(condData)+1} = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.3, ...                      % 30% modulation against background
+                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
+                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
+                'photonNoise', true, ...
+                'osNoise', true);
+            end
+
+
+        case 3
+            
+            
+            % Examine performance
+            condData{numel(condData)+1} = struct(...
+            'mosaicSize', 0.5, ...                      % FOV = 3x3 deg
+            'meanLuminance', meanLuminance, ...         % scene mean luminance
+            'modulation', 0.5, ...                      % % modulation against background
+            'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
+            'stimulusSamplingInterval',  1/87, ...      % 87 Hz stimulus refresh
+            'responseTimeInterval', (1/87)/2, ...       % 2 eye movements / stimulus frame
+            'photonNoise', true, ...
+            'osNoise', true);
+
+    end
 end
 
 function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, stimulusTimeAxis, responseTimeAxis, figNo, condData)
 
-    % Plot everything
+    % Plot the sequence of OIs with the eye movements 
     hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10+figNo*50 10+figNo*100 1600 800], 'Color', [1 1 1]);
+    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Response Sampling: %2.1f ms', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.responseTimeInterval*1000));
+
+    plotRows = round(0.75*sqrt(numel(theOIsequence))); 
+    plotCols = ceil(numel(theOIsequence)/plotRows);
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', plotRows, ...
+           'colsNum', plotCols, ...
+           'heightMargin',   0.03, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.03, ...
+           'rightMargin',    0.01, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.02);
+       
+    maxRGB = 0;
+    for oiIndex = 1:numel(theOIsequence)
+        tmp = xyz2rgb(oiGet(theOIsequence{oiIndex}, 'xyz'));
+        if (maxRGB < max(tmp(:)))
+            maxRGB = max(tmp(:));
+        end
+         oiImage{oiIndex} = tmp;
+    end
+    
+    for oiIndex = 1:numel(theOIsequence)
+        pos = oiGet(theOIsequence{oiIndex}, 'spatial support', 'microns');
+        oiXaxis = pos(1,:,1); oiYaxis = pos(:,1,2);
+        r = floor((oiIndex-1)/plotCols)+1;
+        c = mod((oiIndex-1), plotCols)+1;
+        subplot('Position', subplotPosVectors(r,c).v);
+        
+        % Plot the OI
+        imagesc(oiXaxis, oiYaxis, oiImage{oiIndex}/maxRGB);
+        % Overlay the eye movements up to this point
+        hold on;
+        idx = find(responseTimeAxis <= stimulusTimeAxis(oiIndex));
+        plot(eyeMovementSequence(idx,1)*theConeMosaic.pigment.width*1e6, eyeMovementSequence(idx,2)*theConeMosaic.pigment.width*1e6, 'k.-', 'LineWidth', 1.0);
+        if (oiIndex < numel(theOIsequence))
+            idx = find((responseTimeAxis>=stimulusTimeAxis(oiIndex)) & (responseTimeAxis<stimulusTimeAxis(oiIndex+1)));
+        else
+            idx = find((responseTimeAxis>=stimulusTimeAxis(oiIndex)));
+        end
+        % Emphasize in red, the eye movements for the current framer
+        plot(eyeMovementSequence(idx,1)*theConeMosaic.pigment.width*1e6, eyeMovementSequence(idx,2)*theConeMosaic.pigment.width*1e6, 'r.-', 'LineWidth', 4.0);
+        
+        % overlay the cone mosaic
+        if (oiIndex == 1)
+            plot(theConeMosaic.coneLocs(:,1)*1e6, theConeMosaic.coneLocs(:,2)*1e6, 'k.');
+        end
+        
+        axis 'image'; axis 'xy';
+        set(gca, 'CLim', [0 1]);
+        if ~((r == plotRows) && (c == 1))
+            set(gca, 'XTick', [], 'YTick', []);
+        end
+        title(sprintf('t: %2.2f', stimulusTimeAxis(oiIndex)));
+    end
+    
+    % Plot time-varying responses
+    hFig = figure(figNo+1000); clf;
     set(hFig, 'Position', [10+figNo*50 10+figNo*100 2300 560], 'Color', [1 1 1]);
     set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Response Sampling: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.responseTimeInterval*1000, condData.photonNoise, condData.osNoise));
 
@@ -325,12 +452,23 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     
     
     %% Plot the LMS isomerizations
+    if (theConeMosaic.rows ==1) && (theConeMosaic.cols == 3)
+       referenceConeRows = [1 1 1]; referenceConeCols = [1 2 3];
+    else
+       % Find the (row,col) coords of the center-most L, M and S-cone
+       for k = 1:3
+            coneIndices = find(theConeMosaic.pattern == k+1); 
+            [~, idx] = min(sum((theConeMosaic.coneLocs(coneIndices,:)).^2, 2));
+            [referenceConeRows(k), referenceConeCols(k)] = ind2sub(size(theConeMosaic.pattern), coneIndices(idx));
+       end
+    end
     subplot('Position', [0.50 0.07 0.22 0.89]);
     isomerizationRange = [min(isomerizationRateSequence(:)) 1.05*max(isomerizationRateSequence(:))];
-    plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,1,:)), 'r.', 'MarkerSize', 15, 'LineWidth', 1.5);
-    hold on;
-    plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,2,:)), 'g.', 'MarkerSize', 15, 'LineWidth', 1.5);
-    plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,3,:)), 'b.', 'MarkerSize', 15, 'LineWidth', 1.5);
+    hold  on
+    coneColors = [1 0 0; 0 1 0; 0 0 1];
+    for k = 1:3
+        plot(responseTimeAxis, squeeze(isomerizationRateSequence(referenceConeRows(k),referenceConeCols(k),:)), '.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
+    end
     
     % Plot lines demarkating each OI time duration
     for oiIndex = 1:numel(theOIsequence)
@@ -348,10 +486,10 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     % Plot the photocurrents
     subplot('Position', [0.75 0.07 0.22 0.89]);
     photoCurrentRange = [min(photoCurrentSequence(:)) max(photoCurrentSequence(:))+2];
-    plot(responseTimeAxis, squeeze(photoCurrentSequence(1,1,:)), 'r.', 'MarkerSize', 15, 'LineWidth', 1.5);
     hold on;
-    plot(responseTimeAxis, squeeze(photoCurrentSequence(1,2,:)), 'g.', 'MarkerSize', 15, 'LineWidth', 1.5);
-    plot(responseTimeAxis, squeeze(photoCurrentSequence(1,3,:)), 'b.', 'MarkerSize', 15, 'LineWidth', 1.5);
+    for k = 1:3
+        plot(responseTimeAxis, squeeze(photoCurrentSequence(referenceConeRows(k),referenceConeCols(k),:)), '.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
+    end
     % Plot lines demarkating each OI time duration
     for oiIndex = 1:numel(theOIsequence)
         plot(stimulusTimeAxis(oiIndex)*[1 1], photoCurrentRange, 'k-');
