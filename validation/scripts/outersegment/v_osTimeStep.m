@@ -103,13 +103,10 @@ function  [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence,
         eyeMovementIndices = firstEyeMovementIndex:lastEyeMovementIndex;
         eyeMovementPathForThisOI = eyeMovementsForOISequence(eyeMovementIndices,:);
         
-        % Compute absorbions for current OI eye movement path
+        % Set the current eye movement path
         theConeMosaic.emPositions = eyeMovementPathForThisOI;
-        %fprintf('Added %d points for oiIndex: %d\n', lastEyeMovementIndex-firstEyeMovementIndex+1, oiIndex);
         
-        % Note: absorptionsForThisOI is the # of absorptions within the
-        % integrationTime, but integrationTime (set in emGenSequence) is osTImeStep *
-        % eyeMovementFrames. This is clearly incorrect.
+        % Compute absorptions for current OI and eye movement path
         absorptionsForThisOI = theConeMosaic.compute(theOIsequence{oiIndex}, 'currentFlag', false, 'newNoise', true);
 
         % Concatenate sequences
@@ -127,8 +124,10 @@ end
 
 function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, responseTimeInterval, stimulusSamplingInterval, opticalImageSequenceLength)
     
+    % Default human mosaic
     theConeMosaic = coneMosaic;
     
+    % Adjust size
     if isnan(mosaicSize)
         % Generate a human cone mosaic with 1L, 1M and 1S cone
         theConeMosaic.rows = 1;
@@ -153,6 +152,10 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, re
     % Generate eye movement sequence for all oi's
     eyeMovementFramesPerOpticalImage = stimulusSamplingInterval/theConeMosaic.os.timeStep;
     theConeMosaic.emGenSequence(ceil(opticalImageSequenceLength*eyeMovementFramesPerOpticalImage));
+    
+    % * * * * * * SUPER IMPORTANT * * * * *
+    % Set the integration time correctly, because emGenSequence re-sets it to os.timeStep * eyeMovementFrames
+    theConeMosaic.integrationTime = theConeMosaic.os.timeStep;
 end
 
 
@@ -162,10 +165,11 @@ function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, th
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);
-
     backgroundPhotons = oiGet(theOI, 'photons');
+    
+    fprintf('Computing sequence of optical images\n');
+    
     for stimFrameIndex = 1:numel(stimulusTimeAxis)
-        tic
         if strcmp(modulationRegion, 'FULL')
             retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
         elseif strcmp(modulationRegion, 'CENTER')
@@ -180,7 +184,6 @@ function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, th
         else
             error('Unknown modulationRegion ''%s'', modulationRegion');
         end
-        toc
         theOIsequence{stimFrameIndex} = oiSet(theOI, 'photons', retinalPhotonsAtCurrentFrame);
     end
 end
@@ -309,22 +312,39 @@ function condData = makeConditionSet(conditionSet)
             end
 
 
-        case 3
-            
+        case 3    
             stimulusRefreshRateInHz = 30;
             eyeMovementsPerStimulusRefresh = 6;
+            mosaicSize = 0.2;
             
-            % Examine performance
+            % No noise
             condData{numel(condData)+1} = struct(...
-            'mosaicSize', 0.5, ...                      % FOV = 3x3 deg
-            'meanLuminance', meanLuminance, ...         % scene mean luminance
-            'modulation', 0.5, ...                      % % modulation against background
-            'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
-            'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
-            'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...       % 2 eye movements / stimulus frame
-            'photonNoise', true, ...
-            'osNoise', true);
-
+                'mosaicSize', mosaicSize, ...               % FOV = 3x3 deg
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.5, ...                      % % modulation against background
+                'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
+                'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...       % 2 eye movements / stimulus frame
+                'photonNoise', false, ...
+                'osNoise', false);
+            
+            c0 = condData{end};
+            
+            % Photon noise only
+            c0.photonNoise = true;
+            c0.osNoise = false;
+            condData{numel(condData)+1} = c0;
+            
+            % OS noise only
+            c0.photonNoise = false;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
+            % both photon noise and OS noise
+            c0.photonNoise = true;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
     end
 end
 
