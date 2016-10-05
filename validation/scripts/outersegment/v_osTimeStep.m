@@ -16,13 +16,13 @@ function ValidationFunction(runTimeParams)
 %% Init
 ieInit;
 
-% Examine effects of varying the response time interval
+% Examine effects of varying the response time interval i.e., the integration time
 conditionSet = 1;
 
-% Examine the effects of photonNoise vs osNoise and stimulus modulation
+% Examine the effects stimulus modulation
 conditionSet = 2;
 
-% Examine computation performance
+% Examine the magnitudes of the photon and OS noise
 conditionSet = 3;
 
 condData = makeConditionSet(conditionSet);
@@ -220,130 +220,115 @@ end
 function condData = makeConditionSet(conditionSet)
 
     % scene mean luminance
-    meanLuminance = 500;    
+    meanLuminance = 1500;    
     
     % Assemble conditions to run.
     condData = {};
 
     switch conditionSet
 
-        % Examine effects of varying the response time interval
+        % Examine effects of varying the response time interval (which is the integration time)
         case 1
 
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
+            % Steady params
+            c0 = struct(...
                 'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
                 'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.1, ...                      % 10%  modulation against background
+                'modulation', 0.5, ...                      % 10%  modulation against background
                 'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
-                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-                'responseTimeInterval', 20/1000, ...        % 20 milliseconds
-                'photonNoise', false, ...
+                'stimulusSamplingInterval',  1/10, ...      % 100 Hz stimulus refresh
+                'responseTimeInterval', nan, ...            % we'll vary that one
+                'photonNoise', true, ...
                 'osNoise', false);
-            end
 
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
-                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-                'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.1, ...                      % 10% modulation against background
-                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
-                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-                'photonNoise', false, ...
-                'osNoise', false);
-            end
+            % Varied params
+            c0.responseTimeInterval = 20/1000;              % 20 millisecond response interval/integration time
+            condData{numel(condData)+1} = c0;
+            
+            c0.responseTimeInterval = 10/1000;              % 10 millisecond response interval/integration time
+            condData{numel(condData)+1} = c0;
+            
+            c0.responseTimeInterval = 2/1000;               % 5 millisecond response interval/integration time
+            condData{numel(condData)+1} = c0;
+            
 
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
-                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-                'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.1, ...                      % 10% modulation against background
-                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
-                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
-                'responseTimeInterval', 1/1000, ...         % 1 milliseconds
-                'photonNoise', false, ...
-                'osNoise', false);
-            end
-
-        % Effects of varying the noise and stimulus modulation
+        % Effects of varying the stimulus modulation
         case 2
 
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
+            % Steady params
+            c0 = struct(...
                 'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
                 'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.1, ...                      % 10% modulation against background
-                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
-                'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
-                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-                'photonNoise', true, ...
-                'osNoise', false);
-            end
-
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
-                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-                'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.1, ...                      % 10% modulation against background
+                'modulation', nan, ...                      % we'll vary that one
                 'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
                 'responseTimeInterval', 5/1000, ...         % 5 milliseconds
                 'photonNoise', true, ...
                 'osNoise', true);
-            end
-
-            addCondition = true;
-            if (addCondition)
-            condData{numel(condData)+1} = struct(...
-                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-                'meanLuminance', meanLuminance, ...         % scene mean luminance
-                'modulation', 0.3, ...                      % 30% modulation against background
-                'modulationRegion', 'FULL', ...             % modulate the entire image (choose b/n 'FULL', and 'CENTER')
-                'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
-                'responseTimeInterval', 5/1000, ...         % 5 milliseconds
-                'photonNoise', true, ...
-                'osNoise', true);
-            end
-
+            
+            % Varied params
+            c0.modulation = 0.1;                            % 10% modulation
+            condData{numel(condData)+1} = c0;
+            
+            c0.modulation = 0.5;                            % 50% modulation
+            condData{numel(condData)+1} = c0;
+            
+            c0.modulation = 1.0;                            % 100% modulation
+            condData{numel(condData)+1} = c0;
 
         case 3    
+            
             stimulusRefreshRateInHz = 30;
             eyeMovementsPerStimulusRefresh = 6;
-            mosaicSize = 0.2;
             
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.5, ...                      % % modulation against background
+                'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
+                'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...  
+                'photonNoise', nan, ...
+                'osNoise', nan);
+            
+            % Varied params
             % No noise
-            condData{numel(condData)+1} = struct(...
-                'mosaicSize', mosaicSize, ...               % FOV = 3x3 deg
+            c0.photonNoise = false;
+            c0.osNoise = false;
+            condData{numel(condData)+1} = c0;
+            
+            % Photon noise
+            c0.photonNoise = true;
+            c0.osNoise = false;
+            condData{numel(condData)+1} = c0;
+            
+            % OS noise 
+            c0.photonNoise = false;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
+            % Both photon noise and OS noise
+            c0.photonNoise = true;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
+        case 4
+            
+            % Custom
+            stimulusRefreshRateInHz = 30;
+            eyeMovementsPerStimulusRefresh = 6;
+            
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', 0.2, ...               % FOV = 3x3 deg
                 'meanLuminance', meanLuminance, ...         % scene mean luminance
                 'modulation', 0.5, ...                      % % modulation against background
                 'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
                 'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...       % 2 eye movements / stimulus frame
-                'photonNoise', false, ...
-                'osNoise', false);
-            
-            c0 = condData{end};
-            
-            % Photon noise only
-            c0.photonNoise = true;
-            c0.osNoise = false;
-            condData{numel(condData)+1} = c0;
-            
-            % OS noise only
-            c0.photonNoise = false;
-            c0.osNoise = true;
-            condData{numel(condData)+1} = c0;
-            
-            % both photon noise and OS noise
-            c0.photonNoise = true;
-            c0.osNoise = true;
-            condData{numel(condData)+1} = c0;
+                'photonNoise', nan, ...
+                'osNoise', nan);
             
     end
 end
