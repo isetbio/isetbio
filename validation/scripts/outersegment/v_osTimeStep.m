@@ -22,15 +22,21 @@ condData = {};
 % Examine effects of varying the response time interval
 conditionSet = 1;
 
-% Examine the effects of photonNoise vs osNoise
+% Examine the effects of photonNoise vs osNoise and stimulus modulation
 conditionSet = 2;
 
-if (conditionSet == 1)
+meanLuminance = 100;     % scene mean luminance
+
+switch conditionSet
     
+    % Examine effects of varying the response time interval
+    case 1
+        
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.1, ...                      % 10% photon modulation against background
+       ' meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.1, ...                      % 10%  modulation against background
         'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
         'responseTimeInterval', 20/1000, ...        % 20 milliseconds
         'photonNoise', false, ...
@@ -40,7 +46,8 @@ if (conditionSet == 1)
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.1, ...                      % 10% photon modulation against background
+        'meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.1, ...                      % 10% modulation against background
         'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
         'responseTimeInterval', 5/1000, ...         % 5 milliseconds
         'photonNoise', false, ...
@@ -50,19 +57,22 @@ if (conditionSet == 1)
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.1, ...                      % 10% photon modulation against background
+        'meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.1, ...                      % 10% modulation against background
         'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh
         'responseTimeInterval', 1/1000, ...         % 1 milliseconds
         'photonNoise', false, ...
         'osNoise', false);
     end
     
-elseif (conditionSet == 2)
     % Effects of varying the noise and stimulus modulation
+    case 2
+    
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.1, ...                      % 10% photon modulation against background
+        'meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.1, ...                      % 10% modulation against background
         'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
         'responseTimeInterval', 5/1000, ...         % 5 milliseconds
         'photonNoise', true, ...
@@ -72,7 +82,8 @@ elseif (conditionSet == 2)
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.1, ...                      % 10% photon modulation against background
+        'meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.1, ...                      % 10% modulation against background
         'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
         'responseTimeInterval', 5/1000, ...         % 5 milliseconds
         'photonNoise', true, ...
@@ -82,7 +93,8 @@ elseif (conditionSet == 2)
     addCondition = true;
     if (addCondition)
     condData{numel(condData)+1} = struct(...
-        'modulation', 0.3, ...                      % 30% photon modulation against background
+        'meanLuminance', meanLuminance, ...         % scene mean luminance
+        'modulation', 0.3, ...                      % 30% modulation against background
         'stimulusSamplingInterval',  1/10, ...      % 10 Hz stimulus refresh
         'responseTimeInterval', 5/1000, ...         % 5 milliseconds
         'photonNoise', true, ...
@@ -101,7 +113,7 @@ for stimulusConditionIndex = 1:numel(condData)
     % Run the simulation for this condition
     [theConeMosaic, theOIsequence, ...
         isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, ...
-        stimulusTimeAxis, responseTimeAxis] = runSimulation(c.modulation, c.stimulusSamplingInterval, c.responseTimeInterval, c.photonNoise, c.osNoise);
+        stimulusTimeAxis, responseTimeAxis] = runSimulation(c.meanLuminance, c.modulation, c.stimulusSamplingInterval, c.responseTimeInterval, c.photonNoise, c.osNoise);
 
     % Plot the results
     plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, stimulusTimeAxis, responseTimeAxis, stimulusConditionIndex, c);
@@ -111,14 +123,14 @@ end
 
 function [theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, ...
-    stimulusTimeAxis, responseTimeAxis] = runSimulation(modulation, stimulusSamplingInterval, responseTimeInterval, photonNoise, osNoise)
+    stimulusTimeAxis, responseTimeAxis] = runSimulation(meanLuminance, modulation, stimulusSamplingInterval, responseTimeInterval, photonNoise, osNoise)
 
     % Define the time axis for the simulation (how much data we will generate)
     stimulusTimeAxis = -0.6:stimulusSamplingInterval:0.4;
     stimulusRampTau = 0.165;
 
     % Generate a uniform field scene with desired mean luminance
-    FOV = 2.0; meanLuminance = 500;
+    FOV = 2.0;
     theScene = uniformFieldSceneCreate(FOV, meanLuminance);
 
     % Generate optics
@@ -133,26 +145,27 @@ function [theConeMosaic, theOIsequence, ...
 
     % Compute mosaic response to sequence of OIs!
     [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, responseTimeAxis] = ...
-        computeMosaicResponse(theConeMosaic, theOIsequence, stimulusSamplingInterval, stimulusTimeAxis);
+        computeMultiOIMosaicResponse(theConeMosaic, theOIsequence, stimulusSamplingInterval, stimulusTimeAxis);
 
 end
 
 
 function  [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence, responseTimeAxis] = ...
-    computeMosaicResponse(theConeMosaic, theOIsequence, stimulusSamplingInterval, stimulusTimeAxis)
+    computeMultiOIMosaicResponse(theConeMosaic, theOIsequence, stimulusSamplingInterval, stimulusTimeAxis)
 
     % Save a copy of the entire eye movement sequence
     eyeMovementsForOISequence = theConeMosaic.emPositions;
 
-    % Check that this is possible
+    % Check that there is at least 1 eye movement per OI
     eyeMovementFramesPerOpticalImage = stimulusSamplingInterval/theConeMosaic.os.timeStep;
     if (eyeMovementFramesPerOpticalImage < 1.0)
         error('\nEye movements per optical image: %f.\nEither decrease the responseTimeInterval or increase the stimulusSamplingInterval \n', eyeMovementFramesPerOpticalImage);
     end
     
-    % Initialize our variables
-    absorptions = []; lastEyeMovementIndex = 0; eyeMovementSequence = [];
-
+    % Initialize our time series
+    absorptions = []; eyeMovementSequence = [];  
+    lastEyeMovementIndex = 0;
+    
     % Loop over the optical images and compute isomerizations
     for oiIndex = 1:numel(theOIsequence)
 
@@ -232,7 +245,7 @@ function theOI = oiGenerate(noOptics)
     end
 end
 
-% Supporting functions
+
 function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
     uniformScene = sceneCreate('uniformd65');
     % square scene with desired FOV
@@ -251,7 +264,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     % Plot everything
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10+figNo*50 10+figNo*100 2300 560], 'Color', [1 1 1]);
-    set(hFig, 'Name', sprintf('Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Response Sampling: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.modulation, condData.stimulusSamplingInterval*1000, condData.responseTimeInterval*1000, condData.photonNoise, condData.osNoise));
+    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Response Sampling: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.responseTimeInterval*1000, condData.photonNoise, condData.osNoise));
 
     oiWavelengthAxis = oiGet(theOIsequence{1}, 'wave');
     
