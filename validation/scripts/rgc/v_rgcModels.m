@@ -2,8 +2,8 @@ function varargout = v_rgcModels(varargin)
 %
 % Validation script for RGC spiking.
 %
-% Test the RGC firing in response to a simple stimlus, e.g. a moving bar,
-% and compare to validation data.
+% Test the RGC responses to a simple stimlus, e.g. a moving bar.  We
+% compare these responses to validation data (regression test).
 %
 % The RGC response is computed for different types of computational models:
 %
@@ -16,27 +16,32 @@ function varargout = v_rgcModels(varargin)
 %   7. OS = biophys, bipolar = subunit, RGC = LNP
 %   8. OS = biophys, bipolar = subunit, RGC = GLM (coupled)
 %
-% Movies of the PSTH are shown for each simulation. Note that there are
-% differences between the spiking activity for the different combinations
-% of OS, bipolar and RGC. This script compares the responses of each
-% simulation from a certain isetbio github commit and checks it with the
-% same simulation in the current commit. If there have been no changes that
-% affect the value of the PSTH for each simulation, the validationRun
-% variable will have entries close to zero (< 0.01).
+% There are differences between the spiking activity for the different
+% combinations of OS, bipolar and RGC. This script compares the responses
+% of each simulation from a certain isetbio github commit and checks it
+% with the same simulation in the current commit. If there have been no
+% changes that affect the value of the PSTH for each simulation, the
+% validationRun variable will have entries close to zero (< 0.01).
+%
+% Movies of the PSTH are shown for each simulation. 
 %
 % 8/2016 JRG (c) isetbio team
-
+%   
+% If we uncomment this and some of the code below, this calculation will
+% fit into the Unit Test framework
+%
 %     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 % end
 
 %% Function implementing the isetbio validation code
 % function ValidationFunction(runTimeParams)
-% clx; ieInit;
-clear
-rng(1237)
-showMovieFlag  = 0;
-showLinearFlag = 1;
 
+clearvars
+rng(1237);             % Set for repeatbility
+showSpikesFlag  = 0;   % Shows spike responses
+showLinearFlag = 1;    % Shows the linear RGC values 
+
+% Set up the various possible conditions
 osFlag      = [0 0 0 0 1 1 1 1]; % 0 = osLinear,        1 = osBioPhys
 bipolarFlag = [0 0 1 1 0 0 1 1]; % 0 = bipolar linear,  1 = bipolar rectify
 rgcFlag     = [0 1 0 1 0 1 0 1]; % 0 = rgc uncoupled,   1 = rgc coupled
@@ -64,19 +69,22 @@ clear data;
 % To see the movie use this:
 % cMosaic_osBioPhys.window;
 
-%%
+%% Loop over the eight conditions
+
 for flagInd = 1:length(osFlag)
     
     tic;
-    fprintf('osFlag %d - bipolarFlag %d - rgcFlag %d\n',osFlag(flagInd),bipolarFlag(flagInd), rgcFlag(flagInd));
+    fprintf('\nosFlag %d - bipolarFlag %d - rgcFlag %d - ', ...
+        osFlag(flagInd),bipolarFlag(flagInd), rgcFlag(flagInd));
     
+    % Choose cmosaic for this conditions
     switch osFlag(flagInd)
         case 0 % osLinear
             cMosaic = cMosaic_osLinear;
         case 1 % osBioPhys
             cMosaic = cMosaic_osBioPhys;
     end
-    %%
+    
     % Compute the bipolar response
     fprintf('Bipolar compute ...');
     switch bipolarFlag(flagInd)
@@ -96,7 +104,7 @@ for flagInd = 1:length(osFlag)
     
     % bp.plot('movie response')
     
-    % Set other RGC mosaic parameters
+    % Set RGC mosaic parameters
     fprintf('Inner retina compute ...');
     
     clear params innerRetinaSU
@@ -105,7 +113,7 @@ for flagInd = 1:length(osFlag)
     params.name = 'macaque phys';
     params.eyeSide = 'left';
     params.eyeRadius = 0;
-    params.eyeAngle = 0; ntrials = 0;
+    params.eyeAngle = 0; 
     
     % Create RGC object
     innerRetinaSU = ir(bp, params);
@@ -114,7 +122,6 @@ for flagInd = 1:length(osFlag)
     nTrials = 4; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
     
     % Compute the inner retina response
-    
     switch rgcFlag(flagInd)
         case 0 % no coupling
             innerRetinaSU = irCompute(innerRetinaSU, bp);
@@ -122,24 +129,21 @@ for flagInd = 1:length(osFlag)
             innerRetinaSU = irCompute(innerRetinaSU, bp, 'coupling', true);
     end
     
-%     fprintf('Elapsed time:  %.1f\n',toc);
+    % fprintf('Elapsed time:  %.1f\n',toc);
     
     % Make the PSTH movie
-    lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
+    % lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
     innerRetinaSU.mosaic{1}.set('dt',1);
     
     linearTest{flagInd} = innerRetinaSU.mosaic{1}.get('response linear');
     psthTest{flagInd} = innerRetinaSU.mosaic{1}.get('psth');
-    
-    
+    s
     % View movie of RGC linear response
     clear vParams
     vParams.FrameRate = 5; vParams.step = 2; vParams.show = true;
     
-
-    
     % View movie of PSTH for mosaic
-    if showMovieFlag
+    if showSpikesFlag
         %         vcNewGraphWin;
         %         ieMovie(linearTest{flagInd},vParams);
     
@@ -147,8 +151,8 @@ for flagInd = 1:length(osFlag)
         vcNewGraphWin; 
         ieMovie(psthTest{flagInd}(:,:,steadyStateFrame:end),vParams);
     end
-        
 end
+fprintf('\n');
 
 %% Plot linear response
 if showLinearFlag
@@ -163,6 +167,7 @@ if showLinearFlag
         axis([0 160 0 6.5]);
     end
 end
+
 %% Some notes for validation script ...
 %
 % Will be deprecated when we have the full validation script written.
