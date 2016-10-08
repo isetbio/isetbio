@@ -27,7 +27,6 @@ conditionSet = 3;
 
 condData = makeConditionSet(conditionSet);
 
-
 % Run all the conditions
 for stimulusConditionIndex = 1:numel(condData)
     % Get the condition data
@@ -56,7 +55,7 @@ function [theConeMosaic, theOIsequence, ...
 
     % Generate a uniform field scene with desired mean luminance
     if (isnan(mosaicSize))
-        FOV = 2.0;
+        FOV = 0.5;
     else
         FOV = max(mosaicSize);
     end
@@ -103,11 +102,11 @@ function  [isomerizationRateSequence, photoCurrentSequence, eyeMovementSequence,
         eyeMovementIndices = firstEyeMovementIndex:lastEyeMovementIndex;
         eyeMovementPathForThisOI = eyeMovementsForOISequence(eyeMovementIndices,:);
         
-        % Set the current eye movement path
-        theConeMosaic.emPositions = eyeMovementPathForThisOI;
-        
         % Compute absorptions for current OI and eye movement path
-        absorptionsForThisOI = theConeMosaic.compute(theOIsequence{oiIndex}, 'currentFlag', false, 'newNoise', true);
+        absorptionsForThisOI = theConeMosaic.compute(theOIsequence{oiIndex}, ...
+            'emPath', eyeMovementPathForThisOI, ...      % current OI eye movement path
+            'currentFlag', false, ...
+            'newNoise', true);
 
         % Concatenate sequences
         absorptions = cat(3, absorptions, absorptionsForThisOI);
@@ -176,7 +175,7 @@ function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, th
             if (stimFrameIndex == 1)
                 pos = oiGet(theOI, 'spatial support', 'microns');
                 ecc = sqrt(squeeze(sum(pos.^2, 3)));
-                idx = find(ecc < 0.5*max(pos(:)));
+                idx = find(ecc < 0.25*max(pos(:)));
                 [idx1, idx2] = ind2sub(size(ecc), idx);
             end
             retinalPhotonsAtCurrentFrame = backgroundPhotons;
