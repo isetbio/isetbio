@@ -21,10 +21,10 @@ ieInit;
 conditionSet = 1;
 
 % Examine the effects of varying the integrationTime
-conditionSet = 2;
+%conditionSet = 2;
 
 % Examine the magnitudes of the photon and OS noise
-%conditionSet = 3;
+conditionSet = 3;
 
 condData = makeConditionSet(conditionSet);
 
@@ -308,7 +308,7 @@ function condData = makeConditionSet(conditionSet)
 
         case 3    
             
-            stimulusRefreshRateInHz = 30;
+            stimulusRefreshRateInHz = 25;
             eyeMovementsPerStimulusRefresh = 6;
             
             % Steady params
@@ -318,7 +318,7 @@ function condData = makeConditionSet(conditionSet)
                 'modulation', 0.5, ...                      % % modulation against background
                 'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      % 87 Hz stimulus refresh
-                'integrationTime', 20/1000, ...             % 20 milliseconds
+                'integrationTime', 5/1000, ...             % 5 milliseconds
                 'responseTimeInterval', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...  
                 'photonNoise', nan, ...
                 'osNoise', nan);
