@@ -1,8 +1,9 @@
 function varargout = v_osTimeStep(varargin)
 %
-% Validate basic multi-optical image computations for different temporal dynamics. 
-%
-% This script checks multi-optical image computations with eye movements.
+% Demonstrate simulations using three different timebases, one for stimuli (based on stimulus refresh rate), 
+% one for absorptions and eye movements (based on coneMosaic.integrationTime), and a third one for 
+% outer segment current computations (based on os.timeStep) 
+% Also demonstrates computations based on multi-optical images with eye mvoements.
 %
 % NPC, ISETBIO TEAM, 2016
 %
