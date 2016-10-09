@@ -59,6 +59,8 @@ classdef coneMosaic < hiddenHandle
         
         current;        % The spatial array of photocurrent over time
         spatialDensity; % spatial density (ratio) of the K-LMS cones
+        
+        absorptionsTimeAxis;
     end
     
     properties (Access=private)
@@ -266,6 +268,10 @@ classdef coneMosaic < hiddenHandle
             val = double(obj.os.coneCurrentSignal);
         end
         
+        function val = get.absorptionsTimeAxis(obj)
+            val = (1:1:(size(obj.absorptions,3))) * obj.integrationTime;
+        end
+        
         %% set method for class properties
         function set.spatialDensity(obj, val)
             if all(obj.spatialDensity_(:) == val(:)), return; end
@@ -338,6 +344,7 @@ classdef coneMosaic < hiddenHandle
 
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
+        resampledAbsorptionsSequence = resampleAbsorptionsSequence(absorptionsSequence, originalTimeAxis, resampledTimeAxis);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

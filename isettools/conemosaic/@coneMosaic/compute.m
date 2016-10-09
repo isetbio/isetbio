@@ -87,8 +87,15 @@ end
 % If we want the photo current, use the os model
 current = [];
 if currentFlag
-    pRate = absorptions/obj.integrationTime;
+    absorptionsTimeAxis = obj.absorptionsTimeAxis;
+    % compute the os time axis
+    dtOS = obj.os.timeStep;
+    osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
+    resampledAbsorptionsSequence = coneMosaic.resampleAbsorptionsSequence(absorptions, absorptionsTimeAxis, osTimeAxis);
+    pRate = resampledAbsorptionsSequence/dtOS;
+    
     current = obj.os.osCompute(pRate, obj.pattern, ...
         'append', append);
 end
 end
+
