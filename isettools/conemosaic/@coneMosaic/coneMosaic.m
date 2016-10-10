@@ -320,6 +320,9 @@ classdef coneMosaic < hiddenHandle
         % Declare the compute method
         [absorptions, current] = compute(obj, oi, varargin);
         
+        % Declare the compute method for a sequence of optical images viewed sequentially
+        [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, oiTimeAxis, varargin)
+
         % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
         function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
             [demosaicedAbsorptionsMap, sRGB] = obj.demosaicedResponses();
