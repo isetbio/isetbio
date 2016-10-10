@@ -82,8 +82,14 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         end
     end % oiIndex
        
+    % Reload the full eye movement sequence
+    obj.emPositions = eyeMovementsForOISequence;
+    
+    % Reload the full absorptions signal
+    obj.absorptions = absorptions;
+    
     % align absorptions time axis with respect to optical image sequence time axis
-    absorptionsTimeAxis = oiTimeAxis(1) + absorptionsTimeAxis; 
+    absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis; 
     
     if (currentFlag)
         % compute the os time axis
@@ -101,6 +107,5 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         varargout{2} = osTimeAxis;
     end % currentFlag
 
-    % Reload the full eye movement sequence
-    obj.emPositions = eyeMovementsForOISequence;
+    
 end

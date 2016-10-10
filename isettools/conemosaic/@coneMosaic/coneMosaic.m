@@ -63,6 +63,7 @@ classdef coneMosaic < hiddenHandle
         absorptionsTimeAxis;
     end
     
+    
     properties (Access=private)
         % spatial density (ratio) of the K-LMS cones
         %
