@@ -236,7 +236,7 @@ function condData = makeConditionSet(conditionSet)
                 'osNoise', false);
             
             % Varied params
-            c0.integrationTime = 100/1000;                          % 100 ms
+            c0.integrationTime = 50/1000;                          % 50 ms
             condData{numel(condData)+1} = c0;
             
             c0.integrationTime = 10/1000;                           % 10 ms
