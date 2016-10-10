@@ -201,8 +201,8 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
 
     tabGroup = uitabgroup('Parent', hFig);
     
-    eyeMovementsTab = uitab(tabGroup, 'Title', '2D eye movements and OI sequence', 'BackgroundColor', [1 1 1]);
-    timeSeriesTab = uitab(tabGroup, 'Title', 'Time series: optical image photon rate, eye movements, aborptions, & photocurrents', 'BackgroundColor', [1 1 1]);
+    eyeMovementsTab = uitab(tabGroup, 'Title', '2D eye movements and OI sequence', 'BackgroundColor', [1 1 1], 'ForegroundColor', [0 0 1]);
+    timeSeriesTab = uitab(tabGroup, 'Title', 'Time series: optical image photon rate, eye movements, aborptions, & photocurrents', 'BackgroundColor', [1 1 1], 'ForegroundColor', [0 0 1]);
     
     set(tabGroup, 'SelectedTab',eyeMovementsTab);
     axes('parent',eyeMovementsTab);
@@ -357,6 +357,9 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     ylabel('photocurrent (pA)', 'FontSize', 14, 'FontWeight', 'bold');
     xlabel('time (seconds)', 'FontSize', 14, 'FontWeight', 'bold');
     title('@osLinear response', 'FontSize', 14);
+    
+    % Switch to eye movements tab
+    set(tabGroup, 'SelectedTab',eyeMovementsTab);
     
     drawnow
     
