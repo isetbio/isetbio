@@ -5,7 +5,7 @@
 %
 % Inputs:
 %   oiSequence  - cell array with a sequence of optical images, see oiCreate for more details
-%   oiTimeAxis  - time axis for the optical images
+%   oiTimeAxis  - time axis for the optical image sequence
 %
 % Optional inputs:
 %   currentFlag  - logical, whether to compute photocurrent
@@ -55,8 +55,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         else
             eyeMovementIndices = find(eyeMovementTimeAxis >= oiTimeAxis(oiIndex));
         end
-        
-        fprintf('Eye movements num for optical image %d: %2.2f\n', oiIndex, numel(eyeMovementIndices));
+        %fprintf('Eye movements num for optical image %d: %2.2f\n', oiIndex, numel(eyeMovementIndices));
         
         if (isempty(eyeMovementIndices))
             continue;
@@ -97,6 +96,4 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         % Compute photocurrent time axis (starting at the origin of the oiTimeAxis)
         varargout{2} = osTimeAxis;
     end % currentFlag
-
-    
 end
