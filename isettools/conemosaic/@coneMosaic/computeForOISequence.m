@@ -41,45 +41,36 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     % Save a copy of the entire eye movement sequence because we will be 
     % applying different emPath segments for different optical images
     eyeMovementsForOISequence = obj.emPositions;
-    
-    % Check that there is at least 1 eye movement per OI
-    eyeMovementsNumPerOpticalImage = (oiTimeAxis(2)-oiTimeAxis(1))/obj.integrationTime;
-    if (eyeMovementsNumPerOpticalImage < 1.000-1e-6)
-        error('\nEye movements per optical image (%f) is less than 1. Integration time: %g, stimulus interval: %g.\nEither decrease the integrationTime or increase the stimulusSamplingInterval \n', eyeMovementFramesPerOpticalImage, obj.integrationTime, oiTimeAxis(2)-oiTimeAxis(1));
-    end
+    eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(size(eyeMovementsForOISequence,1)-1)) * obj.integrationTime;
     
     % Initialize our time series
-    absorptions = []; absorptionsTimeAxis = []; eyeMovementSequence = [];  
-    lastEyeMovementIndex = 0;
+    absorptions = [];
     
     % Loop over the optical images and compute isomerizations
     for oiIndex = 1:numel(oiSequence)
         
         % Retrieve eye movements for current OI
-        firstEyeMovementIndex = lastEyeMovementIndex+1;
-        lastEyeMovementIndex = round(oiIndex*eyeMovementsNumPerOpticalImage);
-        eyeMovementIndices = firstEyeMovementIndex:lastEyeMovementIndex;
-        % fprintf('Eye movements num for optical image %d: %2.2f\n', oiIndex, numel(eyeMovementIndices));
+        if (oiIndex < numel(oiSequence))
+            eyeMovementIndices = find((eyeMovementTimeAxis >= oiTimeAxis(oiIndex)) & (eyeMovementTimeAxis < oiTimeAxis(oiIndex+1)));
+        else
+            eyeMovementIndices = find(eyeMovementTimeAxis >= oiTimeAxis(oiIndex));
+        end
         
-        eyeMovementPathForThisOI = eyeMovementsForOISequence(eyeMovementIndices,:);
+        fprintf('Eye movements num for optical image %d: %2.2f\n', oiIndex, numel(eyeMovementIndices));
         
+        if (isempty(eyeMovementIndices))
+            continue;
+        end
+
         % Compute absorptions for current OI and eye movement path
         absorptionsForThisOI = obj.compute(oiSequence{oiIndex}, ...
-            'emPath', eyeMovementPathForThisOI, ...      % current OI eye movement path
+            'emPath', eyeMovementsForOISequence(eyeMovementIndices,:), ...      % current OI eye movement path
             'newNoise', newNoise, ...
-            'currentFlag', false ...                     % no current computation for each oi -current will be computed for the entire sequence of absorptions
+            'currentFlag', false ...                                            % current computation not computed for each oi - current will be computed for the entire sequence of absorptions
             );
         
         % Concatenate sequences
-        if (isempty(absorptionsTimeAxis))
-            absorptionsTimeAxis = obj.absorptionsTimeAxis;
-            eyeMovementSequence = eyeMovementPathForThisOI;
-            absorptions = absorptionsForThisOI;
-        else
-            absorptionsTimeAxis = cat(2, absorptionsTimeAxis, absorptionsTimeAxis(end)+obj.absorptionsTimeAxis);
-            absorptions = cat(3, absorptions, absorptionsForThisOI);
-            eyeMovementSequence = cat(1, eyeMovementSequence, eyeMovementPathForThisOI);
-        end
+        absorptions = cat(3, absorptions, absorptionsForThisOI);
     end % oiIndex
        
     % Reload the full eye movement sequence
@@ -97,7 +88,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
     
         % Resample absorptions to osTimeAxis
-        resampledAbsorptionsSequence = coneMosaic.resampleAbsorptionsSequence(absorptions, absorptionsTimeAxis, osTimeAxis);
+        resampledAbsorptionsSequence = coneMosaic.resample(absorptions, absorptionsTimeAxis, osTimeAxis);
     
         % Convert to photon rate in photons/sec for the osTimeStep
         pRate = resampledAbsorptionsSequence/dtOS;

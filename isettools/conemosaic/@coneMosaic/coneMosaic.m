@@ -270,7 +270,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.absorptionsTimeAxis(obj)
-            val = (1:1:(size(obj.absorptions,3))) * obj.integrationTime;
+            val = (0:1:(size(obj.absorptions,3)-1)) * obj.integrationTime;
         end
         
         %% set method for class properties
@@ -348,7 +348,7 @@ classdef coneMosaic < hiddenHandle
 
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
-        resampledAbsorptionsSequence = resampleAbsorptionsSequence(absorptionsSequence, originalTimeAxis, resampledTimeAxis);
+        resampledAbsorptionsSequence = resample(absorptionsSequence, originalTimeAxis, resampledTimeAxis);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

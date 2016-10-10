@@ -89,6 +89,10 @@ classdef outerSegment < handle
 
     end
     
+    methods (Static)
+        resampledPhotocurrents = resample(photocurrents, originalTimeAxis, resampledTimeAxis);
+    end
+    
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
         initialize(obj);
