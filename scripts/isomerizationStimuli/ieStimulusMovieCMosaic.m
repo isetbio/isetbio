@@ -1,12 +1,10 @@
-function iStim = ieStimulusBar(varargin)
-% Creates a dynamic cone mosaic response to a moving bar stimulus
+function iStim = ieStimulusMovieCMosaic(movieInput,varargin)
+% Creates a dynamic cone mosaic response to an image or movie stimulus
 % 
 % Inputs: a parameter structure that defines
-%   * the bar stimulus properties
-%   * cone mosaic properties
+%    * cone mosaic properties
 %   
 %  Stimulus parameters:
-%    display, barWidth, meanLuminance, nSteps,row, col, fov, 
 %    startFrames   - Frames before stimulus (uniform, mean luminance)
 %    stimFrames    - Number of stimulus frames
 %    endFrames     - Frames after stimulus end (uniform, mean luminance)
@@ -16,35 +14,36 @@ function iStim = ieStimulusBar(varargin)
 %
 % Outputs: iStim is a structure that contains 
 %   * display model
-%   * original static bar scene
+%   * original scene
 %   * optical image of the scene
-%   * cone mosaic responses to the scene as the bar translates 
+%   * cone mosaic responses to the scene 
 %      (no eye movements)
 % 
 % Example:
 %   clear params; params.barWidth = 10; params.fov=1;
-%   iStim = ieStimulusBar(params);
+%   iStim = ieStimulusMovie(params);
 %   iStim.cMosaic.window;
 %
 %  Returns the same 
-%   iStim = ieStimulusBar(iStim.params);
+%   iStim = ieStimulusMovie(iStim.params);
 %   iStim.cMosaic.window;
 %
-% 3/2016 JRG (c) isetbio team
+% 10/2016 JRG (c) isetbio team
 
 %% Parse inputs
 p = inputParser;
 
 % Stimulus parameters
+
+addRequired(p,'movieInput');
 addParameter(p,'display',   'LCD-Apple',@ischar);
-addParameter(p,'barWidth',       5,     @isnumeric); % Pixels
 addParameter(p,'meanLuminance',  200,   @isnumeric); % Cd/m2
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,   @isnumeric); % Deg 
-addParameter(p,'startFrames',    120,    @isnumeric); % ms 
+addParameter(p,'startFrames',    10,    @isnumeric); % ms 
 addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
-addParameter(p,'endFrames',      60,    @isnumeric); % ms 
+addParameter(p,'endFrames',      6,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);
@@ -66,6 +65,10 @@ ieSessionSet('wait bar',false);
 
 % Create display
 display = displayCreate(params.display);
+
+% Set linear gamma so sensor absorptions = pixel values
+% This is done to model EJ's experiments
+display = displaySet(display,'gamma','linear');
 
 % Set up scene, oi and sensor
 scene = sceneCreate();
@@ -118,6 +121,7 @@ cm.pigment.width  = coneSz(1);
 cm.pigment.height = coneSz(2);
 
 % Set cone mosaic field of view to match the scene
+scene = sceneSet(scene, 'h fov', fov);
 sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
 sceneDist = sceneGet(scene, 'distance');
 cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
@@ -136,8 +140,12 @@ barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
 scene    = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 oiMean   = oiCompute(oi,scene);
 
+% % Adjust aspect ratio
+% aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
+% sensor = sensorSet(sensor,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
+
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
-stimFrames = (sceneGet(scene,'cols') - params.barWidth);
+stimFrames = size(movieInput,3);
 nSteps = startFrames + stimFrames + endFrames;
 for t = 1 : nSteps
     waitbar(t/nSteps,wbar);
@@ -147,17 +155,8 @@ for t = 1 : nSteps
         oi = oiMean;
     else
         
-        % Gray background
-        barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  
-        
-        % Bar at this time
-        colStart = t - startFrames + 1;
-        colEnd   = colStart + params.barWidth - 1;
-        % barMovie(:,t-startFrames + 1:(t-startFrames+1+params.barWidth-1),:) = 1;
-        barMovie(:,colStart:colEnd,:) = 1;
-
         % Generate scene object from stimulus RGB matrix and display object
-        scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
+        scene = sceneFromFile(movieInput(:,:,t-startFrames+0), 'rgb', params.meanLuminance, display);
         
         scene = sceneSet(scene, 'h fov', fov);
         if t ==1

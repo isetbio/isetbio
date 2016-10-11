@@ -34,10 +34,11 @@ publishFlag = 1;
 %% Create the moving bar iStim for RDT upload
 
 clear params iStim
+params.radius = 1e-3;
 params.barWidth = 10; 
 params.fov      = 0.6;
 % params.os = 'biophys';
-params.os = 'hex';
+% params.os = 'hex';
 iStim = ieStimulusBar(params);  % Full params are returned in iStim
 %%
 fname = fullfile(isetbioRootPath,'local','barMovie_osBioPhys.mat');
