@@ -1,4 +1,4 @@
-function varargout = v_osTimeStep(varargin)
+function t_osTimeStep
 %
 % Demonstrate simulations using three different timebases, one for stimuli (based on stimulus refresh rate), 
 % one for absorptions and eye movements (based on coneMosaic.integrationTime), and a third one for 
@@ -9,248 +9,44 @@ function varargout = v_osTimeStep(varargin)
 % NPC, ISETBIO TEAM, 2016
 %
 
-    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
-end
-
-%% Function implementing the isetbio validation code
-function ValidationFunction(runTimeParams)
 
 %% Init
 ieInit;
 
-% scene mean luminance
-meanLuminance = 400;  
+% Examine the effects of varying the integrationTime
+conditionSet = 1;
+
+% Examine effects of varying the response time interval (os.timeStep)
+ conditionSet = 2;
+
+% Examine and contrast the magnitudes of photon noise vs OS noise
+conditionSet = 3;
+
+% Custom condition
+%conditionSet = 4;
+
+condData = makeConditionSet(conditionSet);
+
+% Run all the conditions
+for stimulusConditionIndex = 1:numel(condData)
+    % Get the condition data
+    c = condData{stimulusConditionIndex};   
     
-% Steady params
-c0 = struct(...
-    'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-    'meanLuminance', meanLuminance, ...         % scene mean luminance
-    'modulation', 1.0, ...                      % 100%  modulation against background
-    'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
-    'stimulusSamplingInterval',  0.12, ...      % 8.3- Hz stimulus refresh, e.g., 100 msec per optical image
-    'osTimeStep', 1/1000, ...                   % 1 millisecond
-    'integrationTime', nan, ...                 % we will vary this one
-    'photonNoise', true, ...
-    'osNoise', false);
-
-% Generate 1000 response instances
-instancesNum = 500;
-
+    % Run the simulation for this condition
+    [theConeMosaic, theOIsequence, ...
+        isomerizationRateSequence, photoCurrentSequence, ...
+        oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis] = runSimulation(c.mosaicSize, c.meanLuminance, c.modulation, c.modulationRegion, c.stimulusSamplingInterval, c.integrationTime, c.osTimeStep, c.photonNoise, c.osNoise);
     
-    
-% 60 ms integrationTime
-stimulusConditionIndex = 1;
-theCondition = c0;
-theCondition.integrationTime = 60/1000;                  
-c{stimulusConditionIndex} = theCondition;
-
-[theConeMosaic, theOIsequence, ...
- isomerizationRateSequence, photoCurrentSequence, ...
- oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, ...
- allInstancesAbsorptionsCountSequence60msec, ...
- allInstancesIsomerizationRateSequence60msec, ...
- allInstancesPhotoCurrentSequence60msec] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
-
-plotSNR(absorptionsTimeAxis, oiTimeAxis, ...
-        allInstancesAbsorptionsCountSequence60msec, ...
-        mean(allInstancesAbsorptionsCountSequence60msec, 4), ...
-        std(allInstancesAbsorptionsCountSequence60msec, 0, 4), ...
-        photoCurrentTimeAxis, ...
-        mean(allInstancesPhotoCurrentSequence60msec,4), ...
-        std(allInstancesPhotoCurrentSequence60msec, 0, 4), ...
-        stimulusConditionIndex*10);
-
-
-% 30 ms integrationTime
-stimulusConditionIndex = 2;
-theCondition = c0;
-theCondition.integrationTime = 30/1000;                  
-c{stimulusConditionIndex} = theCondition;
-
-[theConeMosaic, theOIsequence, ...
- isomerizationRateSequence, photoCurrentSequence, ...
- oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, ...
- allInstancesAbsorptionsCountSequence30msec, ...
- allInstancesIsomerizationRateSequence30msec, ...
- allInstancesPhotoCurrentSequence30msec] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
-
-
-
-plotSNR(absorptionsTimeAxis, oiTimeAxis, ...
-        allInstancesAbsorptionsCountSequence30msec, ...
-        mean(allInstancesAbsorptionsCountSequence30msec, 4), ...
-        std(allInstancesAbsorptionsCountSequence30msec, 0, 4), ...
-        photoCurrentTimeAxis, ...
-        mean(allInstancesPhotoCurrentSequence30msec,4), ...
-        std(allInstancesPhotoCurrentSequence30msec, 0, 4), ...
-        stimulusConditionIndex*10);
-    
-    
-% Plot the results from last instance
-%plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, stimulusConditionIndex, c{stimulusConditionIndex});
-
-
+    % Plot the results
+    plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, stimulusConditionIndex, c);
 end
 
-
-function plotSNR(time, oiTimeAxis, allInstancesIsomerizationsCount, isomerizationMeans, isomerizationSTDs, photocurrentTime, photocurrentMeans, photocurrentSTDs, figNo)
-    hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10+figNo*10 10 1800 1180], 'Color', [0 0 0]);
-    
-    colors = [1 0 0; 0 1.0 0; 0 0.8 1];
-    coneNames = {'L-cone', 'M-cone', 'S-cone'};
-    
-    dt = time(2)-time(1);
-    instancesNum = size(allInstancesIsomerizationsCount,4);
-    SNRlim = [0 90; 0 90; 0 30];
-    photocurrentRange = [-50 -10];
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 3, ...
-           'colsNum', 4, ...
-           'heightMargin',   0.04, ...
-           'widthMargin',    0.05, ...
-           'leftMargin',     0.05, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.04, ...
-           'topMargin',      0.04);
-    
-    for coneType = 1:3
-        mu = squeeze(isomerizationMeans(1,coneType,:));
-        sigma = squeeze(isomerizationSTDs(1,coneType,:));
-        variance = sigma.^2;
-        FanoFactor = mu ./ variance;
-        SNR = mu ./ sigma;
-        
-        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:)))));
-        minIsomerizationCountForThisCone = min(min(min(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:)))));
-        
-        % Absorption events
-        subplot('Position', subplotPosVectors(coneType,1).v);
-        hold on
-        % Identify stimulus presentation times
-        for k = 1:numel(oiTimeAxis)
-            plot(oiTimeAxis(k)*[1 1], [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone], 'k-', 'Color', [0.5 0.5 0.5]);
-        end
-        
-        barOpacity = 0.1;
-        for tIndex = 1:numel(time)
-            quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,coneType,tIndex,:));
-            plot([time(tIndex) time(tIndex)+dt], [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
-        end
-        box on;
-        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', [0.2 0.2 0.2], 'FontSize', 14, 'XLim', [time(1) time(end)+dt], 'YLim', [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone]);
-        if (coneType == 3)
-            xlabel('time (seconds)', 'FontSize', 16);
-        end
-        ylabel(sprintf('quanta in %2.1f msec', 1000*dt), 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
-        title(sprintf('%s isomerizations (%d instances)', coneNames{coneType}, instancesNum), 'FontSize', 16, 'Color', [1 1 1]);
-
-        % Absorptions FanoFactor
-        subplot('Position', subplotPosVectors(coneType,2).v);
-        hold on
-        % Identify stimulus presentation times
-        for k = 1:numel(oiTimeAxis)
-            plot(oiTimeAxis(k)*[1 1], [0.5 2], 'k-', 'Color', [0.5 0.5 0.5]);
-        end
-        % Identify the FanoFactor = 1 line
-        plot([time time(end)+dt], [ones(size(time)) 1], '--', 'Color', [0.8 0.8 0.3], 'LineWidth', 1.5);
-        for tIndex = 1:numel(time)
-            if (tIndex < numel(time))
-                xx = [time(tIndex) time(tIndex)+dt time(tIndex+1)];
-                yy = [FanoFactor(tIndex) * [1 1] FanoFactor(tIndex+1)];
-            else
-                xx = [time(tIndex) time(tIndex)+dt];
-                yy = FanoFactor(tIndex) * [1 1];
-            end
-            plot(xx,yy, '-', 'Color', colors(coneType,:), 'LineWidth', 1.5);
-        end
-        box on;
-        yTicks = [0.5 0.75 1.0 1/0.75 1/0.5];
-        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', [0.2 0.2 0.2], 'FontSize', 14, 'XLim', [time(1) time(end)+dt], 'YLim', [0.5 2.0], 'YScale', 'Log', 'YTick', yTicks, 'YTickLabel', sprintf('%2.2f\n', yTicks));
-        if (coneType == 3)
-            xlabel('time (seconds)', 'FontSize', 16);
-        end
-        ylabel('quanta Fano factor ( \mu/{\sigma}^2 )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
-        title('Fano Factor', 'FontSize', 16, 'Color', [1 1 1]);
-        
-        
-        % Absorptions SNR
-        subplot('Position', subplotPosVectors(coneType,3).v);
-        hold on
-        % Identify stimulus presentation times
-        for k = 1:numel(oiTimeAxis)
-            plot(oiTimeAxis(k)*[1 1], SNRlim(coneType,:), 'k-', 'Color', [0.5 0.5 0.5]);
-        end
-
-        for tIndex = 1:numel(time)
-            if (tIndex < numel(time))
-                xx = [time(tIndex) time(tIndex)+dt time(tIndex+1)];
-                yy = [SNR(tIndex) * [1 1] SNR(tIndex+1)];
-            else
-                xx = [time(tIndex) time(tIndex)+dt];
-                yy = SNR(tIndex) * [1 1];
-            end
-            plot(xx,yy, '-', 'Color', colors(coneType,:), 'LineWidth', 1.5);
-        end
-        box on;
-        %yTicks = [0.5 0.75 1.0 1/0.75 1/0.5];
-        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', [0.2 0.2 0.2], 'FontSize', 14, 'XLim', [time(1) time(end)+dt],  'YLim', SNRlim(coneType,:), 'YScale', 'Linear');
-        if (coneType == 3)
-            xlabel('time (seconds)', 'FontSize', 16);
-        end
-        ylabel('quanta SNR ( \mu/\sigma )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
-        title('SNR', 'FontSize', 16, 'Color', [1 1 1]);
-        
-        
-        % photocurrents
-        meanCurrent = squeeze(photocurrentMeans(1,coneType,:));
-        sigmaCurrent = squeeze(photocurrentSTDs(1,coneType,:));
-        
-        subplot('Position', subplotPosVectors(coneType,4).v);
-        % Identify stimulus presentation times
-        hold on
-        for k = 1:numel(oiTimeAxis)
-            plot(oiTimeAxis(k)*[1 1], photocurrentRange, 'k-', 'Color', [0.5 0.5 0.5]);
-        end
-        
-        % Plot photocurrents
-        x = [photocurrentTime(1) photocurrentTime photocurrentTime(end:-1:1) photocurrentTime(1)];
-        y = [sigmaCurrent(1); sigmaCurrent; -sigmaCurrent(end:-1:1); sigmaCurrent(1)] + ...
-            [meanCurrent(1);  meanCurrent;   meanCurrent(end:-1:1);  meanCurrent(1)];
-        patch(x,y, 0.25*colors(coneType,:)+0.75*[1 1 1]); hold on
-        plot(photocurrentTime, meanCurrent, '-', 'Color', 0.5*colors(coneType,:), 'LineWidth', 1.5);
-        box on;
-        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', [0.2 0.2 0.2], 'FontSize', 14, 'XLim', [time(1) time(end)+dt], 'YLim', photocurrentRange);
-        if (coneType == 3)
-            xlabel('time (seconds)', 'FontSize', 16);
-        end
-        ylabel('photocurrent (pA)', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
-        title('Pphotocurrent (+/- sigma), os.noiseFlag = false', 'FontSize', 16, 'Color', [1 1 1]);
-        
-        drawnow;
-    end
-    
-    %NicePlot.exportFigToPNG(sprintf('Fig%d.png', figNo), hFig, 300);
 end
 
 function [theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, ...
-    oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, ...
-    allInstancesAbsorptionsCountSequence, ...
-    allInstancesIsomerizationRateSequence, ...
-    allInstancesPhotoCurrentSequence] = runSimulation(condData, instancesNum)
+    oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis] = runSimulation(mosaicSize, meanLuminance, modulation, modulationRegion, stimulusSamplingInterval, integrationTime, osTimeStep, photonNoise, osNoise)
 
-    mosaicSize = condData.mosaicSize;
-    meanLuminance = condData.meanLuminance;
-    modulation = condData.modulation;
-    modulationRegion = condData.modulationRegion;
-    stimulusSamplingInterval = condData.stimulusSamplingInterval;
-    integrationTime = condData.integrationTime;
-    osTimeStep = condData.osTimeStep;
-    photonNoise = condData.photonNoise; 
-    osNoise = condData.osNoise;
-    
     % Define the time axis for the simulation (how much data we will generate)
     oiTimeAxis = -0.6:stimulusSamplingInterval:0.4;
     stimulusRampTau = 0.165;
@@ -273,31 +69,17 @@ function [theConeMosaic, theOIsequence, ...
     % Generate the cone mosaic with eye movements for theOIsequence
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, numel(theOIsequence));
 
-    % Make all movements 0.
-    theConeMosaic.emPositions = theConeMosaic.emPositions * 0;
+    [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
+        theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
+        'currentFlag', true, ...
+        'newNoise', true ...
+        );
     
-    % Compute instancesNum times (note: eyeMovements remain unchanged from instance to instance)
-    for instanceIndex = 1:instancesNum
-        fprintf('Computing instance %d / %d\n', instanceIndex, instancesNum);
-        [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
-            theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
-            'currentFlag', true, ...
-            'newNoise', true ...
-            );
-        % Compute photon rate from photon count
-        isomerizationRateSequence = absorptionsCountSequence / theConeMosaic.integrationTime;
+    % If you need a resampled (most likely a down-sampled) version of the photocurrent, here is how to get it.
+    % resampledPhotocurrents = outerSegment.resample(photoCurrentSequence, photoCurrentTimeAxis, absorptionsTimeAxis);
     
-        % Preallocate memory
-        if (instanceIndex == 1)
-            allInstancesAbsorptionsCountSequence = zeros([size(absorptionsCountSequence) instancesNum ]);
-            allInstancesIsomerizationRateSequence = zeros([size(isomerizationRateSequence) instancesNum ]);
-            allInstancesPhotoCurrentSequence = zeros([size(photoCurrentSequence) instancesNum ]);
-        end
-        
-        allInstancesAbsorptionsCountSequence(:,:,:, instanceIndex) = absorptionsCountSequence;
-        allInstancesIsomerizationRateSequence(:,:,:, instanceIndex) = isomerizationRateSequence;
-        allInstancesPhotoCurrentSequence(:,:,:, instanceIndex) = photoCurrentSequence;
-    end
+    % Compute photon rate from photon count
+    isomerizationRateSequence = absorptionsCountSequence / theConeMosaic.integrationTime;
 end
 
 
@@ -585,4 +367,127 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
         plot([0 0], signalRange, '-', 'Color', [0.7 0.1 0.3], 'LineWidth', 2);
     end
 
+end
+
+
+function condData = makeConditionSet(conditionSet)
+
+    % scene mean luminance
+    meanLuminance = 1500;    
+    
+    % Assemble conditions to run.
+    condData = {};
+
+    switch conditionSet
+
+        % Effects of varying the integrationTime
+        case 1
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.5, ...                      % 50%  modulation against background
+                'modulationRegion', 'CENTER', ...           % modulate the central image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh, e.g., 20 msec per optical image
+                'osTimeStep', 1/1000, ...                   % 1 millisecond
+                'integrationTime', nan, ...                 % we will vary this one
+                'photonNoise', true, ...
+                'osNoise', false);
+            
+            % Varied params
+            c0.integrationTime = 100/1000;                  % 100 ms (longer than the stimulus sampling interval, so < 1 eye movement / oi)
+            condData{numel(condData)+1} = c0;
+            
+            c0.integrationTime = 10/1000;                   % 10 ms (smaller than the stimulus sampling interval, 2 eye movements / oi)
+            condData{numel(condData)+1} = c0;
+            
+            c0.integrationTime = 1/1000;                    % 1 ms (20 eye movements / oi)
+            condData{numel(condData)+1} = c0;
+            
+        % Examine effects of varying the os.timeStep
+        case 2
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.5, ...                      % 50%  modulation against background
+                'modulationRegion', 'CENTER', ...           % modulate the central image (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/10, ...      % 100 Hz stimulus refresh
+                'integrationTime', 20/1000, ...             % 20 milliseconds
+                'osTimeStep', nan, ...                      % we'll vary that one
+                'photonNoise', true, ...
+                'osNoise', false);
+
+            % Varied params
+            c0.osTimeStep = 20/1000;                    % 20 milliseconds
+            condData{numel(condData)+1} = c0;
+            
+            c0.osTimeStep = 10/1000;                    % 10 milliseconds
+            condData{numel(condData)+1} = c0;
+            
+            c0.osTimeStep = 2/1000;                     % 2 milliseconds
+            condData{numel(condData)+1} = c0;
+            
+        
+            
+        % Examine and contrast the magnitudes of photon noise vs OS noise
+        case 3    
+         
+            stimulusRefreshRateInHz = 25;
+            eyeMovementsPerStimulusRefresh = 6;
+            
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+                'meanLuminance', meanLuminance, ...         % scene mean luminance
+                'modulation', 0.5, ...                      % % modulation against background
+                'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      
+                'integrationTime', 5/1000, ...             % 5 milliseconds
+                'osTimeStep', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...  
+                'photonNoise', nan, ...
+                'osNoise', nan);
+            
+            % Varied params
+            % No noise
+            c0.photonNoise = false;
+            c0.osNoise = false;
+            condData{numel(condData)+1} = c0;
+            
+            % Photon noise
+            c0.photonNoise = true;
+            c0.osNoise = false;
+            condData{numel(condData)+1} = c0;
+            
+            % OS noise 
+            c0.photonNoise = false;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
+            % Both photon noise and OS noise
+            c0.photonNoise = true;
+            c0.osNoise = true;
+            condData{numel(condData)+1} = c0;
+            
+        % Custom condition - customize it !
+        case 4
+            
+            % Custom
+            stimulusRefreshRateInHz = 66;
+            integrationTime = 5/1000;
+            
+            % Steady params
+            c0 = struct(...
+                'mosaicSize', 0.5, ...                                           % FOV = 0.5 x 0.5 deg
+                'meanLuminance', meanLuminance, ...                              % scene mean luminance
+                'modulation', 0.5, ...                                           % modulation against background
+                'modulationRegion', 'CENTER', ...                                % modulate the center only  (choose b/n 'FULL', and 'CENTER')
+                'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      
+                'integrationTime', integrationTime, ...     
+                'osTimeStep', 1/1000, ...                                       % 1 millisecond
+                'photonNoise', false, ...
+                'osNoise', false);
+            
+           condData{numel(condData)+1} = c0;
+    end
 end
