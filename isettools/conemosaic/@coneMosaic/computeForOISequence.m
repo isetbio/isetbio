@@ -91,8 +91,10 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     
         % Convert to photon rate in photons/sec for the osTimeStep
         pRate = resampledAbsorptionsSequence/dtOS;
+        
+        % Compute the photocurrent response
         varargout{1} = obj.os.osCompute(pRate, obj.pattern, 'append', false);
-    
+        
         % Compute photocurrent time axis (starting at the origin of the oiTimeAxis)
         varargout{2} = osTimeAxis;
     end % currentFlag
