@@ -137,7 +137,7 @@ for flagInd = 1:length(osFlag)
     
     linearTest{flagInd} = innerRetinaSU.mosaic{1}.get('response linear');
     psthTest{flagInd} = innerRetinaSU.mosaic{1}.get('psth');
-    s
+    
     % View movie of RGC linear response
     clear vParams
     vParams.FrameRate = 5; vParams.step = 2; vParams.show = true;

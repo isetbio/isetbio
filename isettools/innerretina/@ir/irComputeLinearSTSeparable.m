@@ -56,8 +56,14 @@ p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
 
-allowableInputs = {'osDisplayRGB','bipolar'};
-p.addRequired('input',@(x) ismember(class(x),allowableInputs));
+% allowableInputs = {'osDisplayRGB','bipolar'};
+% p.addRequired('input',@(x) ismember(class(x),allowableInputs));
+if length(input) == 1
+    vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
+else
+    vFunc = @(x) ~isempty(validatestring(class(x{1}),{'osDisplayRGB','bipolar'}));
+end
+p.addRequired('input',vFunc);
 
 p.parse(ir,input,varargin{:});
 ir = p.Results.ir;
@@ -67,7 +73,11 @@ input = p.Results.input;
 
 % Possible osTypes are osIdentity, osLinear, and osBiophys
 % Only osIdentity is implemented now.
-osType = class(input);
+if length(input) == 1
+    osType = class(input);
+else
+    osType = class(input{1});
+end
 switch osType
     case 'osDisplayRGB'
         % Display RGB means straight from the frame buffer to your brain
@@ -116,7 +126,11 @@ switch osType
         for rgcType = 1:length(ir.mosaic)
             
             % Determine the range of the rgb input data
-            stim   = bipolarGet(input, 'response');
+            if length(input) == 1
+                stim   = bipolarGet(input, 'response');
+            else
+                stim   = bipolarGet(input{rgcType}, 'response');
+            end
             switch class(ir.mosaic{rgcType})
                 case 'rgcPhys'
                     magFactor = 7.9; % due to bipolar filter
