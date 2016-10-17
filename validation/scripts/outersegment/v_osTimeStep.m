@@ -23,7 +23,7 @@ rng('default'); rng(1);
 
 
 % Define number of response instances
-instancesNum = 500;
+instancesNum = 200;
 
 
 % scene mean luminance
