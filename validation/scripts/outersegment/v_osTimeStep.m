@@ -77,7 +77,9 @@ UnitTest.validationData('absorptionsTimeAxis60msec', absorptionsTimeAxis60msec);
 UnitTest.validationData('photoCurrentTimeAxis60msec', photoCurrentTimeAxis60msec);
 UnitTest.validationData('allInstancesAbsorptionsCountSequence60msec', allInstancesAbsorptionsCountSequence60msec);
 UnitTest.validationData('allInstancesIsomerizationRateSequence60msec', allInstancesIsomerizationRateSequence60msec);
-UnitTest.validationData('allInstancesPhotoCurrents0msec', allInstancesPhotoCurrents60msec);
+UnitTest.validationData('allInstancesPhotoCurrents60msec', allInstancesPhotoCurrents60msec, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'allInstancesPhotoCurrents60msec', 1e-7);
 
 % 30 ms integration time validation data
 UnitTest.validationData('oiTimeAxis30msec', oiTimeAxis30msec);
@@ -85,7 +87,9 @@ UnitTest.validationData('absorptionsTimeAxis30msec', absorptionsTimeAxis30msec);
 UnitTest.validationData('photoCurrentTimeAxis30msec', photoCurrentTimeAxis30msec);
 UnitTest.validationData('allInstancesAbsorptionsCountSequence30msec', allInstancesAbsorptionsCountSequence30msec);
 UnitTest.validationData('allInstancesIsomerizationRateSequence30msec', allInstancesIsomerizationRateSequence30msec);
-UnitTest.validationData('allInstancesPhotoCurrents30msec', allInstancesPhotoCurrents30msec);
+UnitTest.validationData('allInstancesPhotoCurrents30msec', allInstancesPhotoCurrents30msec, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'allInstancesPhotoCurrents30msec', 1e-7);
 
 % Extra data: coneMosaics and oiSequences
 UnitTest.extraData('theConeMosaic60msec', theConeMosaic60msec);
