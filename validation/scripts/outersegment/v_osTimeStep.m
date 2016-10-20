@@ -455,8 +455,11 @@ function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, th
     theOI = oiCompute(theOI, theScene);
     backgroundPhotons = oiGet(theOI, 'photons');
     
-    fprintf('Computing sequence of optical images\n');
+    % Preallocate cell array
+    theOIsequence = cell(1,numel(oiTimeAxis));
     
+    % Compute the seuence
+    fprintf('Computing sequence of optical images\n');
     for stimFrameIndex = 1:numel(oiTimeAxis)
         if strcmp(modulationRegion, 'FULL')
             retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
