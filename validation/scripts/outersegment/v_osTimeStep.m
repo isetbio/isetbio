@@ -97,9 +97,8 @@ UnitTest.extraData('theOIsequence60msec', theOIsequence60msec);
 UnitTest.extraData('theConeMosaic30msec', theConeMosaic30msec);
 UnitTest.extraData('theOIsequence30msec', theOIsequence30msec);
 
-
+% Plot results
 if (runTimeParams.generatePlots)
-    
     plotSNR(absorptionsTimeAxis60msec, oiTimeAxis60msec, photoCurrentTimeAxis60msec, ...
             allInstancesAbsorptionsCountSequence60msec, ...
             allInstancesPhotoCurrents60msec, ...
@@ -110,10 +109,6 @@ if (runTimeParams.generatePlots)
             allInstancesPhotoCurrents30msec, ...
             2);
 end
-    
-% Plot the results from last instance
-%plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence, photoCurrentSequence, oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, stimulusConditionIndex, c{stimulusConditionIndex});
-
 
 end
 
