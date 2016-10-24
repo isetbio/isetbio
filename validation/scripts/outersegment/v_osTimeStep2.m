@@ -23,11 +23,10 @@ rng('default'); rng(1);
 
 
 % Define number of response instances
-instancesNum = 50;
-
+instancesNum = 100;
 
 % scene mean luminance
-meanLuminance = 200;  
+meanLuminance = 100;  
     
 % Steady params
 c0 = struct(...
@@ -35,91 +34,85 @@ c0 = struct(...
     'meanLuminance', meanLuminance, ...         % scene mean luminance
     'modulation', 1.0, ...                      % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
-    'stimulusSamplingInterval',  30/1000, ...   % 8.3- Hz stimulus refresh, e.g., 100 msec per optical image
-    'osTimeStep', 1/1000, ...                   % 1 millisecond
+    'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', nan, ...                 % we will vary this one
     'photonNoise', true, ...
+    'osTimeStep', 1/1000, ...                   % 1 millisecond
     'osNoise', false);
 
-    
-% 60 ms integrationTime
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 100/1000; 
-theCondition.integrationTime = 60/1000;                  
-c{stimulusConditionIndex} = theCondition;
-
-% 30 ms integrationTime
-stimulusConditionIndex = 2;
-theCondition = c0;
-theCondition.stimulusSamplingInterval = 60/1000;  
-theCondition.integrationTime = 60/1000; 
-theCondition
+theCondition.stimulusSamplingInterval = 30/1000;  
+theCondition.integrationTime = 66/1000; 
 c{stimulusConditionIndex} = theCondition;
 
 
-
-
-stimulusConditionIndex = 1;
-[theConeMosaic60msec, theOIsequence60msec, ...
- oiTimeAxis60msec, absorptionsTimeAxis60msec, photoCurrentTimeAxis60msec, ...
- allInstancesAbsorptionsCountSequence60msec, ...
- allInstancesIsomerizationRateSequence60msec, ...
- allInstancesPhotoCurrents60msec] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
-
-
-
 stimulusConditionIndex = 2;
-
-[theConeMosaic30msec, theOIsequence30msec, ...
- oiTimeAxis30msec, absorptionsTimeAxis30msec, photoCurrentTimeAxis30msec, ...
- allInstancesAbsorptionsCountSequence30msec, ...
- allInstancesIsomerizationRateSequence30msec, ...
- allInstancesPhotoCurrents30msec] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 66/1000; 
+theCondition.integrationTime = 66/1000;                  
+c{stimulusConditionIndex} = theCondition;
 
 
-% Plot results
-if (runTimeParams.generatePlots)
-    plotSNR(absorptionsTimeAxis60msec, oiTimeAxis60msec, photoCurrentTimeAxis60msec, ...
-            allInstancesAbsorptionsCountSequence60msec, ...
-            allInstancesPhotoCurrents60msec, ...
-            1);
+stimulusConditionIndex = 3;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 125/1000;  
+theCondition.integrationTime = 66/1000;
+c{stimulusConditionIndex} = theCondition;
 
-    plotSNR(absorptionsTimeAxis30msec, oiTimeAxis30msec, photoCurrentTimeAxis30msec, ...
-            allInstancesAbsorptionsCountSequence30msec, ...
-            allInstancesPhotoCurrents30msec, ...
-            2);
+
+
+for stimulusConditionIndex = 1:numel(c)
+   [theConeMosaic{stimulusConditionIndex}, theOIsequence{stimulusConditionIndex}, ...
+    oiTimeAxis{stimulusConditionIndex}, absorptionsTimeAxis{stimulusConditionIndex}, photoCurrentTimeAxis{stimulusConditionIndex}, ...
+    allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
+    allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
+    allInstancesPhotoCurrents{stimulusConditionIndex}] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
+
+    if (runTimeParams.generatePlots)
+        plotSNR(absorptionsTimeAxis{stimulusConditionIndex}, ...
+            oiTimeAxis{stimulusConditionIndex}, ...
+            photoCurrentTimeAxis{stimulusConditionIndex}, ...
+            allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
+            allInstancesPhotoCurrents{stimulusConditionIndex}, ...
+            stimulusConditionIndex);
+    end   
 end
+
 
 % Save validation data
 % conditions data
 UnitTest.validationData('condParams', c);
 % 
-% 60 ms integration time data
-UnitTest.validationData('oiTimeAxis60msec', oiTimeAxis60msec);
-UnitTest.validationData('absorptionsTimeAxis60msec', absorptionsTimeAxis60msec);
-UnitTest.validationData('photoCurrentTimeAxis60msec', photoCurrentTimeAxis60msec);
-UnitTest.validationData('allInstancesAbsorptionsCountSequence60msec', allInstancesAbsorptionsCountSequence60msec);
-UnitTest.validationData('allInstancesIsomerizationRateSequence60msec', allInstancesIsomerizationRateSequence60msec);
-UnitTest.validationData('allInstancesPhotoCurrents60msec', allInstancesPhotoCurrents60msec, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'allInstancesPhotoCurrents60msec', 1e-7);
-% 
-% 30 ms integration time data
-UnitTest.validationData('oiTimeAxis30msec', oiTimeAxis30msec);
-UnitTest.validationData('absorptionsTimeAxis30msec', absorptionsTimeAxis30msec);
-UnitTest.validationData('photoCurrentTimeAxis30msec', photoCurrentTimeAxis30msec);
-UnitTest.validationData('allInstancesAbsorptionsCountSequence30msec', allInstancesAbsorptionsCountSequence30msec);
-UnitTest.validationData('allInstancesIsomerizationRateSequence30msec', allInstancesIsomerizationRateSequence30msec);
-UnitTest.validationData('allInstancesPhotoCurrents30msec', allInstancesPhotoCurrents30msec, ...
-    'UsingTheFollowingVariableTolerancePairs', ...
-    'allInstancesPhotoCurrents30msec', 1e-7);
+
+UnitTest.validationData('oiTimeAxisCond1', oiTimeAxis{1});
+UnitTest.validationData('absorptionsTimeAxisCond1', absorptionsTimeAxis{1});
+UnitTest.validationData('photoCurrentTimeAxisCond1', photoCurrentTimeAxis{1});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstancesAbsorptionsCountSequence{1});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', allInstancesIsomerizationRateSequence{1});
+UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 7));
+
+UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
+UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
+UnitTest.validationData('photoCurrentTimeAxisCond2', photoCurrentTimeAxis{2});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond2', allInstancesAbsorptionsCountSequence{2});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond2', allInstancesIsomerizationRateSequence{2});
+UnitTest.validationData('allInstancesPhotoCurrentsCond2', round(allInstancesPhotoCurrents{2}, 7));
+
+UnitTest.validationData('oiTimeAxisCond3', oiTimeAxis{3});
+UnitTest.validationData('absorptionsTimeAxisCond3', absorptionsTimeAxis{3});
+UnitTest.validationData('photoCurrentTimeAxisCond3', photoCurrentTimeAxis{3});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond3', allInstancesAbsorptionsCountSequence{3});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', allInstancesIsomerizationRateSequence{3});
+UnitTest.validationData('allInstancesPhotoCurrentsCond3', round(allInstancesPhotoCurrents{3}, 7));
 
 % Extra data: coneMosaics and oiSequences
-UnitTest.extraData('theConeMosaic60msec', theConeMosaic60msec);
-UnitTest.extraData('theOIsequence60msec', theOIsequence60msec);
-UnitTest.extraData('theConeMosaic30msec', theConeMosaic30msec);
-UnitTest.extraData('theOIsequence30msec', theOIsequence30msec);
+UnitTest.extraData('theConeMosaicCond1', theConeMosaic{1});
+UnitTest.extraData('theOIsequenceCond1', theOIsequence{1});
+UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
+UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
+UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
+UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
 end
 
 
@@ -139,11 +132,11 @@ function [theConeMosaic, theOIsequence, ...
     photonNoise = condData.photonNoise; 
     osNoise = condData.osNoise;
     
-    % Define the time axis for the simulation (how much data we will generate)
+    % Define the time axis for the simulation
     minTime = -0.84;
-    maxTime = 0.6;
+    maxTime = 0.72;
     oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
-    stimulusRampTau = 0.165;
+    stimulusRampTau = 0.18;
 
     % Generate a uniform field scene with desired mean luminance
     if (isnan(mosaicSize))
@@ -183,9 +176,6 @@ function [theConeMosaic, theOIsequence, ...
             allInstancesIsomerizationRateSequence = zeros([size(isomerizationRateSequence) instancesNum ]);
             allInstancesPhotoCurrentSequence = zeros([size(photoCurrentSequence) instancesNum ]);
         end
-        instanceIndex
-        size(allInstancesAbsorptionsCountSequence)
-        size(absorptionsCountSequence)
         
         allInstancesAbsorptionsCountSequence(:,:,:, instanceIndex) = absorptionsCountSequence;
         allInstancesIsomerizationRateSequence(:,:,:, instanceIndex) = isomerizationRateSequence;
@@ -257,7 +247,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         photocurrentInverseFanoFactor = mu ./variance;
         photocurrentSNR = mu ./ sigma;
         
-        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:)))));
+        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:))))) + 1;
         minIsomerizationCountForThisCone = min(min(min(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:)))));
         
         plotBackgroundColor = [0.1 0.1 0.1];
@@ -409,7 +399,6 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         if (coneType == 1)
             title('SNR  ( \mu/\sigma )', 'FontSize', 16, 'Color', [1 1 1]);
         end
-        
         
         drawnow;
     end

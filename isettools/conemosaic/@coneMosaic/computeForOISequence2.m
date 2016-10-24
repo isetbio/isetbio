@@ -42,182 +42,172 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
     % applying different emPath segments for different optical images
     eyeMovementsForOISequence = obj.emPositions;
     eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(size(eyeMovementsForOISequence,1)-1)) * obj.integrationTime;
-    
-    size(eyeMovementTimeAxis)
-    
+
     % Initialize our time series
-    absorptions = [];
+    absorptions = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(eyeMovementTimeAxis));
     
-    oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
+    % Round oiTimeAxis 
+    oiTimeAxis = sign(oiTimeAxis) .* round(abs(oiTimeAxis), 9);
+    % Round oiRefresh and save a copy of the default integrationTime
+    oiRefreshInterval = round(oiTimeAxis(2)-oiTimeAxis(1), 9);
+    defaultIntegrationTime = round(obj.integrationTime, 9);
+    
+    
+    if (oiRefreshInterval >= defaultIntegrationTime)
 
-    % Case where we have an integer number of eye movements / refresh interval    
-    if (mod(round(oiRefreshInterval*1000000),round(obj.integrationTime*1000000)) == 0)
-        fprintf('Integer\n');
-        % Loop over the optical images and compute isomerizations
-        for oiIndex = 1:numel(oiSequence)
-            % Retrieve eye movements for current OI
-            eyeMovementIndices = find((eyeMovementTimeAxis >= oiTimeAxis(oiIndex)) & (eyeMovementTimeAxis < oiTimeAxis(oiIndex) + oiRefreshInterval));
-            if (isempty(eyeMovementIndices))
-                continue;
+% SCENARIO
+%              |----- oiRefreshInterval ----|----- oiRefreshInterval ----|----- oiRefreshInterval ----|
+%      oi      |                            |                            |                            |
+%   sequence   |                            |<-----tFrameStart           |                            |
+% _____________.____________________________|           tFrameEnd------->|____________________________|
+%     eye      |          |          |          |          |          |          |          |          |
+%   movement   |          |          |-intTime->|-intTime->|-intTime->|          |          |          |
+%   sequence   |          |          |          |          |          |          |          |          |
+% ------------------------------------******xxxx|**********|**********|--------------------------------|
+%                                       p1   p2     full       full
+
+        % Loop over the optical images
+        for oiIndex = 1:numel(oiSequence) 
+
+            % Current oi time limits
+            tFrameStart = oiTimeAxis(oiIndex);
+            tFrameEnd   = tFrameStart + oiRefreshInterval;
+
+            % Find eye movement indices withing the oi limits
+            indices = find(...
+                (eyeMovementTimeAxis > tFrameStart-defaultIntegrationTime) & ... % include the eye movement that started before the current oi if its integration time extends into the oi
+                (eyeMovementTimeAxis <= tFrameEnd-defaultIntegrationTime)...     % do not include the last eye movement if its integration time extends beyond the current oi
+                    );
+            if (isempty(indices))
+                continue; 
             end
 
-            % Compute absorptions for current OI and eye movement path
-            absorptionsForThisOI = obj.compute(oiSequence{oiIndex}, ...
-                'emPath', eyeMovementsForOISequence(eyeMovementIndices,:), ...      % current OI eye movement path
-                'newNoise', newNoise, ...
-                'currentFlag', false ...                                            % current computation not computed for each oi - current will be computed for the entire sequence of absorptions
-                );
+            % the first eye movement requires special treatment as it may have started before the current frame,
+            % so we need to compute partial absorptions over the previous frame and over the current frame
+            idx = indices(1);
+            integrationTimeForFirstPartialAbsorption = tFrameStart-eyeMovementTimeAxis(idx);
+            integrationTimeForSecondPartialAbsorption = eyeMovementTimeAxis(idx)+defaultIntegrationTime-tFrameStart;
 
-            % Concatenate sequences
-            absorptions = cat(3, absorptions, absorptionsForThisOI);
-        end % oiIndex
-    
-    % Case where we have a non-integer number of eye movements / refresh interval
+            % Partial absorptions (p1 in graph above) with previous oi
+            if (oiIndex > 1)
+                % Update coneMosaic before compute()
+                obj.integrationTime = integrationTimeForFirstPartialAbsorption;
+                absorptionsDuringPreviousFrame = obj.compute(...
+                                oiSequence{oiIndex-1}, ...
+                                'emPath', eyeMovementsForOISequence(idx,:), ...
+                                'newNoise', newNoise, ...
+                                'currentFlag', false ...                                                    
+                                ); 
+            else
+                absorptionsDuringPreviousFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), 1);
+            end
+
+            % Partial absorptions (p2 in graph above) with current oi
+            % Update coneMosaic before compute()
+            obj.integrationTime = integrationTimeForSecondPartialAbsorption;
+            absorptionsDuringCurrentFrame =  obj.compute(...
+                                oiSequence{oiIndex}, ...
+                                'emPath', eyeMovementsForOISequence(idx,:), ...
+                                'newNoise', newNoise, ...
+                                'currentFlag', false ...                                                    
+                                );
+            % insert the sum in the to time series  
+            insertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+            absorptions(:,:, insertionIndex) = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
+
+            % Full absorptions with current oi and default integration time)
+            if (numel(indices)>1)
+                % Update coneMosaic before compute()
+                idx = indices(2:end);
+                obj.integrationTime = defaultIntegrationTime;
+                absorptionsForRemainingEyeMovements = obj.compute(...
+                        oiSequence{oiIndex}, ...
+                        'emPath', eyeMovementsForOISequence(idx,:), ...      
+                        'newNoise', newNoise, ...
+                        'currentFlag', false ...      
+                        );
+                % insert in time series  
+                insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+                absorptions(:,:, insertionIndices) = absorptionsForRemainingEyeMovements; 
+            end
+        end  % oiIndex
+
+    % oiRefreshInterval > defaultIntegrationTime
     else
-
-        fprintf('Non Integer\n');
         
-        % Save default integration time for later restoration
-        originalIntegrationTime = obj.integrationTime;
-            
-        % Subcase where oiRefreshInterval > obj.integrationTime
-        if (oiRefreshInterval > originalIntegrationTime)
-                 
-            % Loop over the optical images
-            for oiIndex = 1:numel(oiSequence) 
-                % Retrieve eye movements for current OI
-                eyeMovementIndices = find((eyeMovementTimeAxis >= oiTimeAxis(oiIndex)) & (eyeMovementTimeAxis < oiTimeAxis(oiIndex) + oiRefreshInterval));
-                if (isempty(eyeMovementIndices))
-                    continue;
-                end
-                   
-                % Compute absorptions for current OI and ALL BUT THE LAST eye movement
-                obj.integrationTime = originalIntegrationTime;
-                absorptionsForThisOI = obj.compute(oiSequence{oiIndex}, ...
-                        'emPath', eyeMovementsForOISequence(eyeMovementIndices(1:end-1),:), ...      % do not include first and last eye movement for current OI
-                        'newNoise', newNoise, ...
-                        'currentFlag', false ...                                                    
-                        ); 
-                % Concatenate sequences 
-                absorptions = cat(3, absorptions, absorptionsForThisOI);
-                disp('1');
-                size(absorptions)
-                
-                % Compute absorptions for the LAST eye movement which could be extending into the next OI
-                if (eyeMovementTimeAxis(eyeMovementIndices(end))+originalIntegrationTime >= oiTimeAxis(oiIndex) + oiRefreshInterval)
+% SCENARIO  
+%     eye      |                             |                             |                             |
+%   movement   |                             |                             |                             |
+%   sequence   |                             |<-----emStart                |                             |
+% _____________._____________________________|                emEnd------->|_____________________________|
+%              |            |            |            |            |            |          |          |
+%      oi      |            |            |-oiRefresh->|-oiRefresh->|-oiRefresh->|          |          |     
+%   sequence   |            |            |    ********|************|*******     |          |          |       
+% ---------------------------------------------partial-----full-----partial-------------------------------  
 
-                    % Set new (partial) integrationTime applicable for the last eye movement duration into the current OI
-                    obj.integrationTime = (oiTimeAxis(oiIndex) + oiRefreshInterval) - eyeMovementTimeAxis(eyeMovementIndices(end));
-                    
-                    absorptionsForThisPartialOI = obj.compute(oiSequence{oiIndex}, ...
-                            'emPath', eyeMovementsForOISequence(eyeMovementIndices(end),:), ...      % only include last eye movement for current OI
-                            'newNoise', newNoise, ...
-                            'currentFlag', false ...                                                    
-                            );
-                        
-                    % Check if the current OI is the last OI
-                    if (oiIndex == numel(oiSequence)) 
-                        % Concatenate by adding the current OI partial absorptions
-                        absorptions = cat(3, absorptions, absorptionsForThisPartialOI);
-                        disp('2');
-                size(absorptions)
+        % Loop over the eye movements
+        for emIndex = 1:numel(eyeMovementTimeAxis) 
+        
+            % Current eye movement time limits
+            emStart = eyeMovementTimeAxis(emIndex);
+            emEnd   = emStart + defaultIntegrationTime;
+            
+            actualIntegrationTime = 0;
+            
+            % Find oi indices withing the eye movement frame time limits
+            indices = find(...
+                (oiTimeAxis > emStart-oiRefreshInterval) & ... % include an oi whose onset time was before the current em onset and whose presentation extends into the duration of the current em
+                (oiTimeAxis < emEnd)... 
+                    );
+            if (isempty(indices)); continue; end
+            
+            % Partial absorptions during the ovelap with the oi that started before the emStart
+            idx = indices(1);
+            integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
+            % Update coneMosaic before compute()
+            obj.integrationTime = integrationTimeForFirstPartialAbsorption;
+            actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
+            absorptionsAccum = obj.compute(...
+                                oiSequence{idx}, ...
+                                'emPath', eyeMovementsForOISequence(emIndex,:), ...
+                                'newNoise', newNoise, ...
+                                'currentFlag', false ...                                                    
+                                ); 
+ 
+            % Next, compute full absorptions for the remaining OIs
+            if (numel(indices)>1) 
+                for k = 2:numel(indices)
+                    % Update coneMosaic before compute()
+                    if (k < numel(indices))
+                        obj.integrationTime = oiRefreshInterval;
                     else
-                        % Set new (partial) integrationTime applicable to the last eye movement duration into the next OI
-                        obj.integrationTime = eyeMovementTimeAxis(eyeMovementIndices(end)) + originalIntegrationTime - oiTimeAxis(oiIndex+1);
-                        
-                        % Compute absorptions for next OI and the last eye movement
-                        absorptionsForTheNextPartialOI = obj.compute(oiSequence{oiIndex+1}, ...
-                            'emPath', eyeMovementsForOISequence(eyeMovementIndices(end),:), ...      % only include last eye movement for current OI
-                            'newNoise', newNoise, ...
-                            'currentFlag', false ...                                                    
-                            );
-                        
-                        % Concatenate by adding the sum of partial absorptions for the current  OI + next  OI
-                        absorptions = cat(3, absorptions, absorptionsForThisPartialOI + absorptionsForTheNextPartialOI);
-                        disp('2');
-                size(absorptions)
+                        idx = indices(end);
+                        integrationTimeForLastPartialAbsorption = emEnd - oiTimeAxis(idx);
+                        obj.integrationTime = integrationTimeForLastPartialAbsorption;
                     end
-                else
-                    % Compute absorptions for current OI
-                    absorptionsForThisOI = obj.compute(oiSequence{oiIndex}, ...
-                        'emPath', eyeMovementsForOISequence(eyeMovementIndices(end),:), ...
-                        'newNoise', newNoise, ...
-                        'currentFlag', false ...                                                    
-                        );
-                    % Concatenate sequences
-                    absorptions = cat(3, absorptions, absorptionsForThisOI);
-                    disp('2');
-                 size(absorptions)
-                end
+                    actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
+                    absorptionsAccum = absorptionsAccum + obj.compute(...
+                            oiSequence{indices(k)}, ...
+                            'emPath', eyeMovementsForOISequence(emIndex,:), ...      
+                            'newNoise', newNoise, ...
+                            'currentFlag', false ...      
+                            );
+                end  % for k              
             end
-            
-        % Subcase where obj.integrationTime > oiRefreshInterval
-        else
-            
-            % Loop over the eye movements
-            for eyeMovementIndex = 1:numel(eyeMovementTimeAxis)
-                
-                % Retrieve OIs during the duration of the current eye movement
-                oiIndices = find((oiTimeAxis >= eyeMovementTimeAxis(eyeMovementIndex)-oiRefreshInterval) & (oiTimeAxis < eyeMovementTimeAxis(eyeMovementIndex) + originalIntegrationTime));
-                if (isempty(oiIndices))
-                    continue;
-                end
-                
-                accumAbsorptions = 0;
-                
-                oiIndex = 1;
-                % Set new (partial) integrationTime for the first OI
-                obj.integrationTime = oiTimeAxis(oiIndices(oiIndex)) + oiRefreshInterval - eyeMovementTimeAxis(eyeMovementIndex);
-         %       fprintf('int. time for point 1= %f, oiRefresh = %f eye t = %f\n', obj.integrationTime, oiRefreshInterval, eyeMovementTimeAxis(eyeMovementIndex));
-
-                absorptionsForThisOI = obj.compute(oiSequence{oiIndices(oiIndex)}, ...
-                        'emPath', eyeMovementsForOISequence(eyeMovementIndex,:), ...      
-                        'newNoise', newNoise, ...
-                        'currentFlag', false ...                                                    
-                        );
-                accumAbsorptions = accumAbsorptions + absorptionsForThisOI;
-                     
-                % Accumulate absorptions over the course of the OIs during
-                % the current eye movement (except for the last OI)
-                % Set new integrationTime equal to the OI interval
-                obj.integrationTime = oiRefreshInterval;
-                    
-                for oiIndex = 2:numel(oiIndices)-1
-                    absorptionsForThisOI = obj.compute(oiSequence{oiIndices(oiIndex)}, ...
-                        'emPath', eyeMovementsForOISequence(eyeMovementIndex,:), ...    
-                        'newNoise', newNoise, ...
-                        'currentFlag', false ...                                                    
-                        );
-                     accumAbsorptions = accumAbsorptions + absorptionsForThisOI;
-                end % oiIndex
-                
-                
-                % Update accumAbsorptions with the absorptions during for the LAST OI which could be extending into the next eye movement
-                % Set new (partial) integrationTime 
-                oiIndex = numel(oiIndices);
-                obj.integrationTime = eyeMovementTimeAxis(eyeMovementIndex) + originalIntegrationTime - oiTimeAxis(oiIndices(oiIndex));
-        %        fprintf('int. time for point N = %f, oiRefresh = %f eye t = %f\n', obj.integrationTime, oiRefreshInterval, eyeMovementTimeAxis(eyeMovementIndex));
-
-                absorptionsForThisOI = obj.compute(oiSequence{oiIndices(oiIndex)}, ...
-                        'emPath', eyeMovementsForOISequence(eyeMovementIndex,:), ...  
-                        'newNoise', newNoise, ...
-                        'currentFlag', false ...                                                    
-                        );
-                accumAbsorptions = accumAbsorptions + absorptionsForThisOI;
-
-                % Concatenate sequences 
-                if (eyeMovementIndex == 1)
-                    absorptions = zeros([size(accumAbsorptions) numel(eyeMovementTimeAxis)]);
-                end
-                absorptions(:,:,eyeMovementIndex) = accumAbsorptions; 
-            end
-        end
-        
-        % Restore original integration time
-        obj.integrationTime = originalIntegrationTime;
-            
+           
+           if (abs(actualIntegrationTime-defaultIntegrationTime) > defaultIntegrationTime*0.001)
+               error('Actual integration time (%3.5f) not equal to desired value (3.5f) \n', actualIntegrationTime, defaultIntegrationTime);
+           end
+           
+           % insert to time series  
+           insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+           absorptions(:,:, insertionIndices) = absorptionsAccum;
+        end % emIndex  
     end
-       
+
+    % Restore default integrationTime
+    obj.integrationTime = defaultIntegrationTime;
+
     % Reload the full eye movement sequence
     obj.emPositions = eyeMovementsForOISequence;
     
