@@ -4,7 +4,7 @@
 %         cMosaic.compute(oiSequence, oiTimeAxis);
 %
 % Inputs:
-%   oiSequence  - cell array with a sequence of optical images, see oiCreate for more details
+%   oiSequence  - an @oiSequence object
 %   oiTimeAxis  - time axis for the optical image sequence
 %
 % Optional inputs:
@@ -23,8 +23,8 @@
 function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(obj, oiSequence, oiTimeAxis, varargin)
 
     p = inputParser;
-    p.addRequired('oiSequence',@iscell);
-    p.addRequired('oiTimeAxis',@isnumeric);
+    p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+    p.addRequired('oiTimeAxis', @isnumeric);
     p.addParameter('currentFlag', false, @islogical);
     p.addParameter('newNoise', true, @islogical);
     p.parse(oiSequence, oiTimeAxis,varargin{:});
@@ -34,7 +34,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
     currentFlag = p.Results.currentFlag;
     newNoise = p.Results.newNoise;
 
-    if (numel(oiSequence) ~= numel(oiTimeAxis))
+    if (oiSequence.length ~= numel(oiTimeAxis))
         error('oiTimeAxis and oiSequence must have equal length\n');
     end
     
@@ -42,16 +42,21 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
     % applying different emPath segments for different optical images
     eyeMovementsForOISequence = obj.emPositions;
     eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(size(eyeMovementsForOISequence,1)-1)) * obj.integrationTime;
-
-    % Initialize our time series
-    absorptions = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(eyeMovementTimeAxis));
+    
+    timingPrecisionDigits = 7;
+    % Round eyeMovementTimeAxis
+    eyeMovementTimeAxis(eyeMovementTimeAxis>=0) = round(eyeMovementTimeAxis(eyeMovementTimeAxis>=0), timingPrecisionDigits);
+    eyeMovementTimeAxis(eyeMovementTimeAxis<0) = -round(-eyeMovementTimeAxis(eyeMovementTimeAxis<0), timingPrecisionDigits);
     
     % Round oiTimeAxis 
-    oiTimeAxis = sign(oiTimeAxis) .* round(abs(oiTimeAxis), 9);
-    % Round oiRefresh and save a copy of the default integrationTime
-    oiRefreshInterval = round(oiTimeAxis(2)-oiTimeAxis(1), 9);
-    defaultIntegrationTime = round(obj.integrationTime, 9);
+    oiTimeAxis = sign(oiTimeAxis) .* round(abs(oiTimeAxis), timingPrecisionDigits);
     
+    % Round oiRefresh and save a copy of the default integrationTime
+    oiRefreshInterval = round(oiTimeAxis(2)-oiTimeAxis(1), timingPrecisionDigits);
+    defaultIntegrationTime = round(obj.integrationTime, timingPrecisionDigits);
+    
+    % Initialize our time series
+    absorptions = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(eyeMovementTimeAxis));
     
     if (oiRefreshInterval >= defaultIntegrationTime)
 
@@ -65,9 +70,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
 %   sequence   |          |          |          |          |          |          |          |          |
 % ------------------------------------******xxxx|**********|**********|--------------------------------|
 %                                       p1   p2     full       full
+%                               partial_/     \_partial
+%
 
         % Loop over the optical images
-        for oiIndex = 1:numel(oiSequence) 
+        for oiIndex = 1:oiSequence.length
 
             % Current oi time limits
             tFrameStart = oiTimeAxis(oiIndex);
@@ -76,11 +83,8 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
             % Find eye movement indices withing the oi limits
             indices = find(...
                 (eyeMovementTimeAxis > tFrameStart-defaultIntegrationTime) & ... % include the eye movement that started before the current oi if its integration time extends into the oi
-                (eyeMovementTimeAxis <= tFrameEnd-defaultIntegrationTime)...     % do not include the last eye movement if its integration time extends beyond the current oi
+                (eyeMovementTimeAxis <= tFrameEnd-defaultIntegrationTime+eps)...     % do not include the last eye movement if its integration time extends beyond the current oi
                     );
-            if (isempty(indices))
-                continue; 
-            end
 
             % the first eye movement requires special treatment as it may have started before the current frame,
             % so we need to compute partial absorptions over the previous frame and over the current frame
@@ -93,7 +97,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
                 % Update coneMosaic before compute()
                 obj.integrationTime = integrationTimeForFirstPartialAbsorption;
                 absorptionsDuringPreviousFrame = obj.compute(...
-                                oiSequence{oiIndex-1}, ...
+                                oiSequence.frameAtIndex(oiIndex-1), ...
                                 'emPath', eyeMovementsForOISequence(idx,:), ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
@@ -106,7 +110,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
             % Update coneMosaic before compute()
             obj.integrationTime = integrationTimeForSecondPartialAbsorption;
             absorptionsDuringCurrentFrame =  obj.compute(...
-                                oiSequence{oiIndex}, ...
+                                oiSequence.frameAtIndex(oiIndex), ...
                                 'emPath', eyeMovementsForOISequence(idx,:), ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
@@ -121,7 +125,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
                 idx = indices(2:end);
                 obj.integrationTime = defaultIntegrationTime;
                 absorptionsForRemainingEyeMovements = obj.compute(...
-                        oiSequence{oiIndex}, ...
+                        oiSequence.frameAtIndex(oiIndex), ...
                         'emPath', eyeMovementsForOISequence(idx,:), ...      
                         'newNoise', newNoise, ...
                         'currentFlag', false ...      
@@ -168,7 +172,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
             obj.integrationTime = integrationTimeForFirstPartialAbsorption;
             actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
             absorptionsAccum = obj.compute(...
-                                oiSequence{idx}, ...
+                                oiSequence.frameAtIndex(idx), ...
                                 'emPath', eyeMovementsForOISequence(emIndex,:), ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
@@ -187,7 +191,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence2(o
                     end
                     actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
                     absorptionsAccum = absorptionsAccum + obj.compute(...
-                            oiSequence{indices(k)}, ...
+                            oiSequence.frameAtIndex(indices(k)), ...
                             'emPath', eyeMovementsForOISequence(emIndex,:), ...      
                             'newNoise', newNoise, ...
                             'currentFlag', false ...      

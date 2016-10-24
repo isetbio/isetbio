@@ -32,8 +32,8 @@ meanLuminance = 100;
 c0 = struct(...
     'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
     'meanLuminance', meanLuminance, ...         % scene mean luminance
-    'modulation', 1.0, ...                      % 100%  modulation against background
-    'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
+    'modulationGain', 1.0, ...                  % 100%  modulation against background
+    'modulationRegion', 'CENTER', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', nan, ...                 % we will vary this one
     'photonNoise', true, ...
@@ -42,14 +42,14 @@ c0 = struct(...
 
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 30/1000;  
+theCondition.stimulusSamplingInterval = 66/1000;  
 theCondition.integrationTime = 66/1000; 
 c{stimulusConditionIndex} = theCondition;
 
 
 stimulusConditionIndex = 2;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 66/1000; 
+theCondition.stimulusSamplingInterval = 30/1000; 
 theCondition.integrationTime = 66/1000;                  
 c{stimulusConditionIndex} = theCondition;
 
@@ -124,7 +124,7 @@ function [theConeMosaic, theOIsequence, ...
 
     mosaicSize = condData.mosaicSize;
     meanLuminance = condData.meanLuminance;
-    modulation = condData.modulation;
+    modulationGain = condData.modulationGain;
     modulationRegion = condData.modulationRegion;
     stimulusSamplingInterval = condData.stimulusSamplingInterval;
     integrationTime = condData.integrationTime;
@@ -136,14 +136,19 @@ function [theConeMosaic, theOIsequence, ...
     minTime = -0.84;
     maxTime = 0.72;
     oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
+    
+    % Compute the stimulus modulation function
     stimulusRampTau = 0.18;
-
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+    
     % Generate a uniform field scene with desired mean luminance
     if (isnan(mosaicSize))
         FOV = 0.2;
     else
         FOV = max(mosaicSize);
     end
+    
+    % Generate the scene
     theScene = uniformFieldSceneCreate(FOV, meanLuminance);
 
     % Generate optics
@@ -151,10 +156,10 @@ function [theConeMosaic, theOIsequence, ...
     theOI = oiGenerate(noOptics);
 
     % Generate the sequence of optical images
-    theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, oiTimeAxis, stimulusRampTau, modulation, modulationRegion);
+    theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, modulationFunction, modulationRegion);
 
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, numel(theOIsequence));
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
 
     % Make all movements 0.
     theConeMosaic.emPositions = theConeMosaic.emPositions * 0;
@@ -450,39 +455,20 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, in
 end
 
 
-function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, oiTimeAxis, stimulusRampTau, modulation, modulationRegion)
-    % Stimulus time ramp
-    stimulusRamp = exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
-    
+function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI,  modulationFunction, modulationType)
+
     % Compute the optical image
-    theOI = oiCompute(theOI, theScene);
-    backgroundPhotons = oiGet(theOI, 'photons');
+    oiBackground = oiCompute(theOI, theScene);
+    oiModulated  = oiBackground;
     
-    % Preallocate cell array
-    theOIsequence = cell(1,numel(oiTimeAxis));
-    
-    % Compute the seuence
-    fprintf('Computing sequence of optical images\n');
-    for stimFrameIndex = 1:numel(oiTimeAxis)
-        if strcmp(modulationRegion, 'FULL')
-            retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
-        elseif strcmp(modulationRegion, 'CENTER')
-            if (stimFrameIndex == 1)
-                pos = oiGet(theOI, 'spatial support', 'microns');
-                ecc = sqrt(squeeze(sum(pos.^2, 3)));
-                idx = find(ecc < 0.5*max(pos(:)));
-                [idx1, idx2] = ind2sub(size(ecc), idx);
-            end
-            retinalPhotonsAtCurrentFrame = backgroundPhotons;
-            retinalPhotonsAtCurrentFrame(idx1, idx2, :) = retinalPhotonsAtCurrentFrame(idx1, idx2, :) * (1.0 + modulation*stimulusRamp(stimFrameIndex));
-        else
-            error('Unknown modulationRegion ''%s'', modulationRegion');
-        end
-        if (oiTimeAxis(stimFrameIndex) < -0.6)
-            retinalPhotonsAtCurrentFrame = 0*retinalPhotonsAtCurrentFrame;
-        end
-        theOIsequence{stimFrameIndex} = oiSet(theOI, 'photons', retinalPhotonsAtCurrentFrame);
+    if strcmp(modulationType, 'FULL')
+        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction);
+    else
+        pos = oiGet(oiBackground, 'spatial support', 'microns');
+        modulationRegion.radiusInMicrons = 0.5*max(pos(:));
+        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion);
     end
+   
 end
 
 
@@ -501,14 +487,11 @@ end
 
 
 function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
-    uniformScene = sceneCreate('uniformd65');
+    uniformScene = sceneCreate('uniform equal photon');
     % square scene with desired FOV
     uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
     % 1 meter away
     uniformScene = sceneSet(uniformScene, 'distance', 1.0);
-    % set some radiance (in photons/steradian/m^2/nm)
-    photonFlux = 1e16;
-    uniformScene = sceneSet(uniformScene, 'photons', photonFlux*ones(64,64,numel(sceneGet(uniformScene, 'wave'))));
     % adjust radiance according to desired  mean luminance
     uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 end
