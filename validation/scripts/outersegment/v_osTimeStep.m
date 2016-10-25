@@ -21,24 +21,21 @@ ieInit;
 % Reproduce identical random number
 rng('default'); rng(1);
 
-
 % Define number of response instances
-instancesNum = 200;
-
-% scene mean luminance
-meanLuminance = 100;  
+instancesNum = 100; 
     
 % Steady params
 c0 = struct(...
     'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-    'meanLuminance', meanLuminance, ...         % scene mean luminance
+    'meanLuminance', 100, ...                   % scene mean luminance
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', nan, ...                 % we will vary this one
-    'photonNoise', true, ...
+    'photonNoise', true, ...                    % add Poisson noise
     'osTimeStep', 1/1000, ...                   % 1 millisecond
-    'osNoise', false);
+    'osNoise', false ...                        % no photocurrent noise
+    );
 
 
 % Identical stimulus sampling interval and integration time
@@ -64,11 +61,16 @@ theCondition.integrationTime = 66/1000;
 c{stimulusConditionIndex} = theCondition;
 
 for stimulusConditionIndex = 1:numel(c)
-   [theConeMosaic{stimulusConditionIndex}, theOIsequence{stimulusConditionIndex}, ...
-    oiTimeAxis{stimulusConditionIndex}, absorptionsTimeAxis{stimulusConditionIndex}, photoCurrentTimeAxis{stimulusConditionIndex}, ...
-    allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
-    allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
-    allInstancesPhotoCurrents{stimulusConditionIndex}] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
+    
+   [ theConeMosaic{stimulusConditionIndex}, ...
+     theOIsequence{stimulusConditionIndex}, ...
+     oiTimeAxis{stimulusConditionIndex}, ...
+     absorptionsTimeAxis{stimulusConditionIndex}, ...
+     photoCurrentTimeAxis{stimulusConditionIndex}, ...
+     allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
+     allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
+     allInstancesPhotoCurrents{stimulusConditionIndex} ...
+   ] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
 
     if (runTimeParams.generatePlots)
         plotSNR(absorptionsTimeAxis{stimulusConditionIndex}, ...
@@ -84,7 +86,6 @@ end
 % Save validation data
 % conditions data
 UnitTest.validationData('condParams', c);
-% 
 
 UnitTest.validationData('oiTimeAxisCond1', oiTimeAxis{1});
 UnitTest.validationData('absorptionsTimeAxisCond1', absorptionsTimeAxis{1});
