@@ -5,7 +5,11 @@ classdef oiSequence
     % (1) theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction)
     %
     % (2) modulationRegion.radiusInMicrons = 300;
-    %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion);
+    %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion, 'oiModulatedReplacesBackground', true);
+    %
+    % See t_oiSequence for example usage.
+    %
+    %  NPC, ISETBIO TEAM, 2016
     
     properties 
         
@@ -23,6 +27,9 @@ classdef oiSequence
         % the modulated oi (an oi, the pedestal)
         oiModulated
         modulatedPhotons
+        
+        % whether to the oiModulated replaces the oiFixed
+        oiModulatedReplacesBackground;
         
         % the modulating function (an array of modulation values, one for
         % each frame)
@@ -47,20 +54,25 @@ classdef oiSequence
             p.addRequired('oiModulated',  @isstruct);
             p.addRequired('modulationFunction',  @isnumeric);
             p.addParameter('modulationRegion', defaultModulationRegion, @isstruct);
+            p.addParameter('oiModulatedReplacesBackground', false, @islogical);
             p.parse(oiFixed, oiModulated, modulationFunction, varargin{:});
             
             obj.oiFixed = p.Results.oiFixed;
             obj.oiModulated = p.Results.oiModulated;
             obj.modulationFunction = p.Results.modulationFunction;
             obj.modulationRegion = p.Results.modulationRegion;
+            obj.oiModulatedReplacesBackground = p.Results.oiModulatedReplacesBackground;
             
             % Make sure that oiFixed and oiModulated have identical shape
             oiFixedSpatialSupport      = round(oiGet(obj.oiFixed, 'spatial support','microns'), 7);
             oiModulatedSpatialSupport  = round(oiGet(obj.oiModulated, 'spatial support','microns'), 7);
-            if (any(oiFixedSpatialSupport(:) ~= oiModulatedSpatialSupport(:)))
+            
+            if (any(size(oiFixedSpatialSupport) ~= size(oiModulatedSpatialSupport)))
                 error('Mismatch between spatial dimensions of oiFixed, oiModulated');
             end
-            
+            if (any(oiFixedSpatialSupport(:) ~= oiModulatedSpatialSupport(:)))
+                error('Mismatch between spatial support of oiFixed, oiModulated');
+            end
             % Extract the photons
             obj.fixedPhotons = oiGet(obj.oiFixed, 'photons');
             obj.modulatedPhotons = oiGet(obj.oiModulated, 'photons');
@@ -82,7 +94,14 @@ classdef oiSequence
                 mask = ecc < obj.modulationRegion.radiusInMicrons;
                 retinalPhotons = obj.fixedPhotons;
                 for k = 1:size(retinalPhotons,3)
-                	retinalPhotons(:,:, k) = retinalPhotons(:,:, k) + obj.modulationFunction(frameIndex)*(mask.*squeeze(obj.modulatedPhotons(:,:, k)));
+                    modulatedPhotonFrame = squeeze(obj.modulatedPhotons(:,:, k));
+                    if (obj.oiModulatedReplacesBackground)
+                        background = retinalPhotons(:,:, k);
+                        background(mask == 1) = modulatedPhotonFrame(mask == 1);
+                        retinalPhotons(:,:, k) = background;
+                    else
+                        retinalPhotons(:,:, k) = retinalPhotons(:,:, k) + obj.modulationFunction(frameIndex)*(mask.*modulatedPhotonFrame);
+                    end
                 end
             end
             
