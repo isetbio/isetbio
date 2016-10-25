@@ -14,16 +14,16 @@ function t_osTimeStep
 ieInit;
 
 % Examine the effects of varying the integrationTime
-conditionSet = 1;
+%conditionSet = 1;
 
 % Examine effects of varying the response time interval (os.timeStep)
- conditionSet = 2;
+%conditionSet = 2;
 
 % Examine and contrast the magnitudes of photon noise vs OS noise
-conditionSet = 3;
+%conditionSet = 3;
 
 % Custom condition
-%conditionSet = 4;
+conditionSet = 4;
 
 condData = makeConditionSet(conditionSet);
 
@@ -45,11 +45,16 @@ end
 
 function [theConeMosaic, theOIsequence, ...
     isomerizationRateSequence, photoCurrentSequence, ...
-    oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis] = runSimulation(mosaicSize, meanLuminance, modulation, modulationRegion, stimulusSamplingInterval, integrationTime, osTimeStep, photonNoise, osNoise)
+    oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis] = runSimulation(mosaicSize, meanLuminance,  modulationGain, modulationRegion, stimulusSamplingInterval, integrationTime, osTimeStep, photonNoise, osNoise)
 
-    % Define the time axis for the simulation (how much data we will generate)
-    oiTimeAxis = -0.6:stimulusSamplingInterval:0.4;
-    stimulusRampTau = 0.165;
+    % Define the time axis for the simulation
+    minTime = -0.84;
+    maxTime = 0.72;
+    oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
+    
+    % Compute the stimulus modulation function
+    stimulusRampTau = 0.18;
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
 
     % Generate a uniform field scene with desired mean luminance
     if (isnan(mosaicSize))
@@ -64,17 +69,17 @@ function [theConeMosaic, theOIsequence, ...
     theOI = oiGenerate(noOptics);
 
     % Generate the sequence of optical images
-    theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, oiTimeAxis, stimulusRampTau, modulation, modulationRegion);
+    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction, modulationRegion);
 
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, numel(theOIsequence));
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
 
     [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
-        theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
-        'currentFlag', true, ...
-        'newNoise', true ...
-        );
-    
+            theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
+            'currentFlag', true, ...
+            'newNoise', true ...
+            );
+        
     % If you need a resampled (most likely a down-sampled) version of the photocurrent, here is how to get it.
     % resampledPhotocurrents = outerSegment.resample(photoCurrentSequence, photoCurrentTimeAxis, absorptionsTimeAxis);
     
@@ -129,32 +134,17 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, in
 end
 
 
-function theOIsequence = oiSequenceGenerateForRampedSceneModulation(theScene, theOI, oiTimeAxis, stimulusRampTau, modulation, modulationRegion)
-    % Stimulus time ramp
-    stimulusRamp = exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+function theOIsequence = oiSequenceGenerate(theScene, theOI,  modulationFunction, modulationType)
+    % Compute the background and modulated optical images
+    oiBackground = oiCompute(theOI, theScene);
+    oiModulated  = oiBackground;
     
-    % Compute the optical image
-    theOI = oiCompute(theOI, theScene);
-    backgroundPhotons = oiGet(theOI, 'photons');
-    
-    fprintf('Computing sequence of optical images\n');
-    
-    for stimFrameIndex = 1:numel(oiTimeAxis)
-        if strcmp(modulationRegion, 'FULL')
-            retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + modulation*stimulusRamp(stimFrameIndex));
-        elseif strcmp(modulationRegion, 'CENTER')
-            if (stimFrameIndex == 1)
-                pos = oiGet(theOI, 'spatial support', 'microns');
-                ecc = sqrt(squeeze(sum(pos.^2, 3)));
-                idx = find(ecc < 0.5*max(pos(:)));
-                [idx1, idx2] = ind2sub(size(ecc), idx);
-            end
-            retinalPhotonsAtCurrentFrame = backgroundPhotons;
-            retinalPhotonsAtCurrentFrame(idx1, idx2, :) = retinalPhotonsAtCurrentFrame(idx1, idx2, :) * (1.0 + modulation*stimulusRamp(stimFrameIndex));
-        else
-            error('Unknown modulationRegion ''%s'', modulationRegion');
-        end
-        theOIsequence{stimFrameIndex} = oiSet(theOI, 'photons', retinalPhotonsAtCurrentFrame);
+    if strcmp(modulationType, 'FULL')
+        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction);
+    else
+        pos = oiGet(oiBackground, 'spatial support', 'microns');
+        modulationRegion.radiusInMicrons = 0.75*max(pos(:));
+        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion);
     end
 end
 
@@ -174,14 +164,11 @@ end
 
 
 function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
-    uniformScene = sceneCreate('uniformd65');
+    uniformScene = sceneCreate('uniform equal photon', 128);
     % square scene with desired FOV
     uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
     % 1 meter away
     uniformScene = sceneSet(uniformScene, 'distance', 1.0);
-    % set some radiance (in photons/steradian/m^2/nm)
-    photonFlux = 1e16;
-    uniformScene = sceneSet(uniformScene, 'photons', photonFlux*ones(64,64,numel(sceneGet(uniformScene, 'wave'))));
     % adjust radiance according to desired  mean luminance
     uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 end
@@ -192,7 +179,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     % Plot the sequence of OIs with the eye movements 
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10+figNo*50 10+figNo*100 1920 760], 'Color', [1 1 1]);
-    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Integration Time: %2.1f ms,   Response Sampling: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.integrationTime*1000, condData.osTimeStep*1000, condData.photonNoise, condData.osNoise));
+    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Integration Time: %2.1f ms,   osTimeStep: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.integrationTime*1000, condData.osTimeStep*1000, condData.photonNoise, condData.osNoise));
 
     tabGroup = uitabgroup('Parent', hFig);
     
@@ -203,8 +190,8 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     axes('parent',eyeMovementsTab);
 
     
-    plotRows = round(0.75*sqrt(numel(theOIsequence))); 
-    plotCols = ceil(numel(theOIsequence)/plotRows);
+    plotRows = round(0.75*sqrt(theOIsequence.length)); 
+    plotCols = ceil(theOIsequence.length/plotRows);
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', plotRows, ...
            'colsNum', plotCols, ...
@@ -216,8 +203,8 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
            'topMargin',      0.02);
        
     maxRGB = 0;
-    for oiIndex = 1:numel(theOIsequence)
-        tmp = xyz2rgb(oiGet(theOIsequence{oiIndex}, 'xyz'));
+    for oiIndex = 1:theOIsequence.length
+        tmp = xyz2rgb(oiGet(theOIsequence.frameAtIndex(oiIndex), 'xyz'));
         if (maxRGB < max(tmp(:)))
             maxRGB = max(tmp(:));
         end
@@ -227,8 +214,8 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     % Retrieve the eye movement sequence
     eyeMovementSequence = theConeMosaic.emPositions;
     
-    for oiIndex = 1:numel(theOIsequence)
-        pos = oiGet(theOIsequence{oiIndex}, 'spatial support', 'microns');
+    for oiIndex = 1:theOIsequence.length
+        pos = oiGet(theOIsequence.frameAtIndex(oiIndex), 'spatial support', 'microns');
         oiXaxis = pos(1,:,1); oiYaxis = pos(:,1,2);
         r = floor((oiIndex-1)/plotCols)+1;
         c = mod((oiIndex-1), plotCols)+1;
@@ -240,7 +227,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
         hold on;
         idx = find(absorptionsTimeAxis < oiTimeAxis(oiIndex));
         plot(eyeMovementSequence(idx,1)*theConeMosaic.pigment.width*1e6, eyeMovementSequence(idx,2)*theConeMosaic.pigment.width*1e6, 'ks-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.3 0.3 0.3]);
-        if (oiIndex < numel(theOIsequence))
+        if (oiIndex < theOIsequence.length)
             idx = find((absorptionsTimeAxis>=oiTimeAxis(oiIndex)) & (absorptionsTimeAxis<oiTimeAxis(oiIndex+1)));
         else
             idx = find((absorptionsTimeAxis>=oiTimeAxis(oiIndex)));
@@ -267,10 +254,10 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     
     %% Plot the photon rate at the center of the optical image
     subplot('Position', [0.03 0.07 0.18 0.89]);
-    oiWavelengthAxis = oiGet(theOIsequence{1}, 'wave');
-    referencePositionOpticalImagePhotons = zeros(numel(oiWavelengthAxis), numel(theOIsequence));
-    for oiIndex = 1:numel(theOIsequence)
-        retinalPhotonsAtCurrentFrame = oiGet(theOIsequence{oiIndex}, 'photons');
+    oiWavelengthAxis = oiGet(theOIsequence.frameAtIndex(1), 'wave');
+    referencePositionOpticalImagePhotons = zeros(numel(oiWavelengthAxis), theOIsequence.length);
+    for oiIndex = 1:theOIsequence.length
+        retinalPhotonsAtCurrentFrame = oiGet(theOIsequence.frameAtIndex(oiIndex), 'photons');
         refRow = round(size(retinalPhotonsAtCurrentFrame,1)/2);
         refCol = round(size(retinalPhotonsAtCurrentFrame,2)/2);
         referencePositionOpticalImagePhotons(:, oiIndex) = squeeze(retinalPhotonsAtCurrentFrame(refRow, refCol, :));
@@ -360,7 +347,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     
     function plotStimulusTimes(signalRange)
         % Plot lines demarkating each OI time duration
-        for oiIndex = 1:numel(theOIsequence)
+        for oiIndex = 1:theOIsequence.length
             plot(oiTimeAxis(oiIndex)*[1 1], signalRange, 'k-');
         end
         % Plot the origin in magenta
