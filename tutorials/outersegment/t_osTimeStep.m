@@ -140,7 +140,7 @@ function theOIsequence = oiSequenceGenerate(theScene, theOI,  modulationFunction
     oiModulated  = oiBackground;
     
     if strcmp(modulationType, 'FULL')
-        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction);
+        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'composition', 'add');
     else
         pos = oiGet(oiBackground, 'spatial support', 'microns');
         modulationRegion.radiusInMicrons = 0.75*max(pos(:));

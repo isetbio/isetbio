@@ -160,7 +160,7 @@ function [theConeMosaic, theOIsequence, ...
     theOI = oiGenerate(noOptics);
 
     % Generate the sequence of optical images
-    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction, modulationRegion);
+    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction, modulationRegion, 'composition', 'add');
 
     % Generate the cone mosaic with eye movements for theOIsequence
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
