@@ -41,8 +41,8 @@ c0 = struct(...
 % Identical stimulus sampling interval and integration time
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 66/1000;  
-theCondition.integrationTime = 66/1000; 
+theCondition.stimulusSamplingInterval = 67/1000;  
+theCondition.integrationTime = 67/1000; 
 c{stimulusConditionIndex} = theCondition;
 
 
@@ -50,14 +50,14 @@ c{stimulusConditionIndex} = theCondition;
 stimulusConditionIndex = 2;
 theCondition = c0;
 theCondition.stimulusSamplingInterval = 30/1000; 
-theCondition.integrationTime = 66/1000;                  
+theCondition.integrationTime = 67/1000;                  
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval > integration time
 stimulusConditionIndex = 3;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 125/1000;  
-theCondition.integrationTime = 66/1000;
+theCondition.stimulusSamplingInterval = 111/1000;  
+theCondition.integrationTime = 67/1000;
 c{stimulusConditionIndex} = theCondition;
 
 for stimulusConditionIndex = 1:numel(c)

@@ -43,35 +43,29 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     eyeMovementsForOISequence = obj.emPositions;
     eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(size(eyeMovementsForOISequence,1)-1)) * obj.integrationTime;
     
-    timingPrecisionDigits = 7;
-    % Round eyeMovementTimeAxis
-    eyeMovementTimeAxis(eyeMovementTimeAxis>=0) = round(eyeMovementTimeAxis(eyeMovementTimeAxis>=0), timingPrecisionDigits);
-    eyeMovementTimeAxis(eyeMovementTimeAxis<0) = -round(-eyeMovementTimeAxis(eyeMovementTimeAxis<0), timingPrecisionDigits);
+    % Compute OIrefresh
+    oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
     
-    % Round oiTimeAxis 
-    oiTimeAxis = sign(oiTimeAxis) .* round(abs(oiTimeAxis), timingPrecisionDigits);
-    
-    % Round oiRefresh and save a copy of the default integrationTime
-    oiRefreshInterval = round(oiTimeAxis(2)-oiTimeAxis(1), timingPrecisionDigits);
-    defaultIntegrationTime = round(obj.integrationTime, timingPrecisionDigits);
-    
+    % Save default integration time
+    defaultIntegrationTime = obj.integrationTime;
+
     % Initialize our time series
     absorptions = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(eyeMovementTimeAxis));
     
     if (oiRefreshInterval >= defaultIntegrationTime)
 
-% SCENARIO
-%              |----- oiRefreshInterval ----|----- oiRefreshInterval ----|----- oiRefreshInterval ----|
-%      oi      |                            |                            |                            |
-%   sequence   |                            |<-----tFrameStart           |                            |
-% _____________.____________________________|           tFrameEnd------->|____________________________|
-%     eye      |          |          |          |          |          |          |          |          |
-%   movement   |          |          |-intTime->|-intTime->|-intTime->|          |          |          |
-%   sequence   |          |          |          |          |          |          |          |          |
-% ------------------------------------******xxxx|**********|**********|--------------------------------|
-%                                       p1   p2     full       full
-%                               partial_/     \_partial
-%
+    % SCENARIO
+    %              |----- oiRefreshInterval ----|----- oiRefreshInterval ----|----- oiRefreshInterval ----|
+    %      oi      |                            |                            |                            |
+    %   sequence   |                            |<-----tFrameStart           |                            |
+    % _____________.____________________________|           tFrameEnd------->|____________________________|
+    %     eye      |          |          |          |          |          |          |          |          |
+    %   movement   |          |          |-intTime->|-intTime->|-intTime->|          |          |          |
+    %   sequence   |          |          |          |          |          |          |          |          |
+    % ------------------------------------******xxxx|**********|**********|--------------------------------|
+    %                                       p1   p2     full        full
+    %                   partial absorption_/      \_partial absorption  \_ full absorption
+    %
 
         % Loop over the optical images
         for oiIndex = 1:oiSequence.length
@@ -84,6 +78,9 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             indices = find( (eyeMovementTimeAxis >  tFrameStart-defaultIntegrationTime) & ...      
                             (eyeMovementTimeAxis <= tFrameEnd-defaultIntegrationTime+eps) );
             
+            if (isempty(indices))
+                error('empty indices');
+            end
             % the first eye movement requires special treatment as it may have started before the current frame,
             % so we need to compute partial absorptions over the previous frame and over the current frame
             idx = indices(1);
@@ -137,16 +134,17 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     % oiRefreshInterval > defaultIntegrationTime
     else
         
-% SCENARIO  
-%     eye      |                             |                             |                             |
-%   movement   |                             |                             |                             |
-%   sequence   |                             |<-----emStart                |                             |
-% _____________._____________________________|                emEnd------->|_____________________________|
-%              |            |            |            |            |            |          |          |
-%      oi      |            |            |-oiRefresh->|-oiRefresh->|-oiRefresh->|          |          |     
-%   sequence   |            |            |    ********|************|*******     |          |          |       
-% ---------------------------------------------partial-----full-----partial-------------------------------  
-
+    % SCENARIO  
+    %     eye      |                             |                             |                             |
+    %   movement   |                             |                             |                             |
+    %   sequence   |                             |<-----emStart                |                             |
+    % _____________._____________________________|                emEnd------->|_____________________________|
+    %              |            |            |            |            |            |          |          |
+    %      oi      |            |            |-oiRefresh->|-oiRefresh->|-oiRefresh->|          |          |     
+    %   sequence   |            |            |    ********|************|*******     |          |          |       
+    % ---------------------------------------------partial-----full-----partial-------------------------------  
+    %                                            absorption  absorption absorption
+%
         % Loop over the eye movements
         for emIndex = 1:numel(eyeMovementTimeAxis) 
         
@@ -160,7 +158,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             indices = find( (oiTimeAxis > emStart-oiRefreshInterval) & ...
                             (oiTimeAxis <= emEnd + eps) );
             
-            % Partial absorptions during the ovelap with the oi that started before the emStart
+            if (isempty(indices))
+                error('empty indices');
+            end
+            
+            % Partial absorptions during the ovelap with the OI that started before the emStart
             idx = indices(1);
             integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
             % Update coneMosaic before compute()
@@ -178,8 +180,10 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                 for k = 2:numel(indices)
                     % Update coneMosaic before compute()
                     if (k < numel(indices))
+                        % full absorption during the duration of the OI
                         obj.integrationTime = oiRefreshInterval;
                     else
+                        % partial absorption during the last OI
                         idx = indices(end);
                         integrationTimeForLastPartialAbsorption = emEnd - oiTimeAxis(idx);
                         obj.integrationTime = integrationTimeForLastPartialAbsorption;
