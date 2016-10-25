@@ -28,8 +28,8 @@ classdef oiSequence
         oiModulated
         modulatedPhotons
         
-        % whether to the oiModulated replaces the oiFixed
-        oiModulatedReplacesBackground;
+        % whether to add the oiModulated to the oiFixed or to blend it with the oiFixed
+        composition;
         
         % the modulating function (an array of modulation values, one for
         % each frame)
@@ -54,14 +54,18 @@ classdef oiSequence
             p.addRequired('oiModulated',  @isstruct);
             p.addRequired('modulationFunction',  @isnumeric);
             p.addParameter('modulationRegion', defaultModulationRegion, @isstruct);
-            p.addParameter('oiModulatedReplacesBackground', false, @islogical);
+            p.addParameter('composition', 'add', @ischar);
             p.parse(oiFixed, oiModulated, modulationFunction, varargin{:});
             
             obj.oiFixed = p.Results.oiFixed;
             obj.oiModulated = p.Results.oiModulated;
             obj.modulationFunction = p.Results.modulationFunction;
             obj.modulationRegion = p.Results.modulationRegion;
-            obj.oiModulatedReplacesBackground = p.Results.oiModulatedReplacesBackground;
+            obj.composition = p.Results.composition;
+            
+            if (~strcmp(obj.composition, 'add')) && (~strcmp(obj.composition, 'blend'))
+                error('''composition'' must be set to either ''blend'' or ''add''.');
+            end
             
             % Make sure that oiFixed and oiModulated have identical shape
             oiFixedSpatialSupport      = round(oiGet(obj.oiFixed, 'spatial support','microns'), 7);
@@ -84,24 +88,24 @@ classdef oiSequence
         
         function oiFrame = frameAtIndex(obj, frameIndex)
 
-            if (isnan(obj.modulationRegion.radiusInMicrons))
-                % full-field modulation
+            if (strcmp(obj.composition, 'add'))
                 retinalPhotons = obj.fixedPhotons + obj.modulationFunction(frameIndex)*obj.modulatedPhotons;
             else
+                retinalPhotons = obj.fixedPhotons*(1-obj.modulationFunction(frameIndex)) + obj.modulationFunction(frameIndex)*obj.modulatedPhotons;
+            end
+            
+            if (~isnan(obj.modulationRegion.radiusInMicrons))
                 % modulate a subregion only
                 pos = oiGet(obj.oiModulated, 'spatial support', 'microns');
                 ecc = sqrt(sum(pos.^2, 3));
                 mask = ecc < obj.modulationRegion.radiusInMicrons;
-                retinalPhotons = obj.fixedPhotons;
+                
                 for k = 1:size(retinalPhotons,3)
-                    modulatedPhotonFrame = squeeze(obj.modulatedPhotons(:,:, k));
-                    if (obj.oiModulatedReplacesBackground)
-                        background = retinalPhotons(:,:, k);
-                        background(mask == 1) = modulatedPhotonFrame(mask == 1);
-                        retinalPhotons(:,:, k) = background;
-                    else
-                        retinalPhotons(:,:, k) = retinalPhotons(:,:, k) + obj.modulationFunction(frameIndex)*(mask.*modulatedPhotonFrame);
-                    end
+                    fullFrame = retinalPhotons(:,:, k);
+                    background = obj.fixedPhotons;
+                    background = background(:,:, k);
+                    fullFrame(mask == 0) = background(mask == 0);
+                    retinalPhotons(:,:, k) = fullFrame;
                 end
             end
             

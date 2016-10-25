@@ -7,7 +7,7 @@
 %
 
 % Generate a uniform scene
-meanLuminance = 30;
+meanLuminance = 10;
 uniformScene = sceneCreate('uniform equal photon', 128);
 % square scene with desired FOV
 FOV = 2.0;
@@ -18,13 +18,13 @@ uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 
 % Generate a gabor scene
 gaborParams = struct(...
-    'freq', 4, ...
-    'contrast', 0.4, ...
+    'freq', 2, ...
+    'contrast', 0.3, ...
     'ph', 0, ...
 	'ang',  0, ...
     'row', 128, ...
     'col', 128, ...
-	'GaborFlag', true);
+	'GaborFlag', false);
 gaborScene = sceneCreate('harmonic', gaborParams);
 gaborScene = sceneSet(gaborScene, 'wAngular', FOV);
 gaborScene = sceneSet(gaborScene, 'distance', 1.0);
@@ -34,7 +34,7 @@ gaborScene = sceneAdjustLuminance(gaborScene, meanLuminance);
 stimulusSamplingInterval = 60/1000;
 oiTimeAxis = -0.6:stimulusSamplingInterval:0.6;
 stimulusRampTau = 0.165;
-% monophsaic modulation function
+% monophasic modulation function
 modulationFunction = exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
 % biphasic modulation function
 modulationFunction2 = exp(-0.5*((oiTimeAxis-0.2)/stimulusRampTau).^2) - exp(-0.5*((oiTimeAxis+0.2)/stimulusRampTau).^2);
@@ -46,24 +46,25 @@ oi = oiCompute(oi, uniformScene);
 % Compute the background and the modulated optical images
 oiBackground = oiCompute(oi, uniformScene);
 oiModulated  = oiBackground;
-  
-% Instantiate an oiSequence object for computing a sequence of full field ois
-theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction);
-
-% Instantiate another oiSequence object for computing a sequence of windowed (radius = 250 microns)ois
+oiModulatedGabor = oiCompute(oi, gaborScene);
 modulationRegion.radiusInMicrons = 250;
-theOIsequence2 = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion);
 
-% Instantiate another oiSequence object for computing windowed (radius = 250 microns) ois with biphasic modulation
-modulationRegion.radiusInMicrons = 250;
-theOIsequence3 = oiSequence(oiBackground, oiModulated, modulationFunction2, 'modulationRegion', modulationRegion);
+% oiSequence object for computing a sequence of ois where the oiModulated
+% (uniform field) is ADDED to the oiBackground over an 250 micron radius
+% region using a monophasic modulation function
+theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'composition', 'add', 'modulationRegion', modulationRegion);
 
-% Instantiate another oiSequence object for computing windowed (radius = 250 microns) ois with biphasic modulation 
-% and a modulated oi corresponding to a gabor scene
-oiModulated = oiCompute(oi, gaborScene);
-modulationRegion.radiusInMicrons = 250;
-theOIsequence4 = oiSequence(oiBackground, oiModulated, modulationFunction2, 'modulationRegion', modulationRegion, 'oiModulatedReplacesBackground', true);
+% oiSequence object for computing a sequence of ois where the oiModulated
+% (a grating) is BLENDED with the oiBackground using a biphasic modulation function
+theOIsequence2 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2, 'composition', 'blend');
 
+% oiSequence object for computing a sequence of ois where the oiModulated
+% (a grating) is ADDED with the oiBackground using a biphasic modulation function
+theOIsequence3 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2,  'composition', 'add');
+
+% oiSequence object for computing a sequence of ois where the oiModulated
+% (a grating) is BLENDED with the oiBackground using a biphasic modulation function
+theOIsequence4 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2, 'composition', 'blend', 'modulationRegion', modulationRegion);
 
 % Plot the oisequences
 hFig = figure(1); clf;
@@ -74,6 +75,7 @@ for oiIndex = 1:theOIsequence.length
     subplot(8,round(theOIsequence.length/2)+1, 1);
     plot(1:theOIsequence.length, modulationFunction, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
+    title('mode: add');
     xlabel('frame index');
     ylabel('modulation');
     
@@ -93,6 +95,7 @@ for oiIndex = 1:theOIsequence.length
     subplot(8,round(theOIsequence.length/2)+1, 1 + 2*(1+round(theOIsequence.length/2)));
     plot(1:theOIsequence.length, modulationFunction, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
+    title('mode: blend');
     xlabel('frame index');
     ylabel('modulation');
     
@@ -112,6 +115,7 @@ for oiIndex = 1:theOIsequence.length
     subplot(8,round(theOIsequence.length/2)+1, 1 + 4*(1+round(theOIsequence.length/2)));
     plot(1:theOIsequence.length, modulationFunction2, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
+    title('mode: add');
     xlabel('frame index');
     ylabel('modulation');
     
@@ -131,6 +135,7 @@ for oiIndex = 1:theOIsequence.length
     subplot(8,round(theOIsequence.length/2)+1, 1 + 6*(1+round(theOIsequence.length/2)));
     plot(1:theOIsequence.length, modulationFunction2, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
+    title('mode: blend');
     xlabel('frame index');
     ylabel('modulation');
     
