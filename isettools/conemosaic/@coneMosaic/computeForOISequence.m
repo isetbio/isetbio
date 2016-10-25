@@ -89,8 +89,9 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
 
             % Partial absorptions (p1 in graph above) with previous oi
             if (oiIndex > 1)
-                % Update coneMosaic before compute()
+                % Update the @coneMosaic with the partial integration time
                 obj.integrationTime = integrationTimeForFirstPartialAbsorption;
+                % Compute partial absorptions
                 absorptionsDuringPreviousFrame = obj.compute(...
                                 oiSequence.frameAtIndex(oiIndex-1), ...
                                 'emPath', eyeMovementsForOISequence(idx,:), ...
@@ -102,23 +103,25 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             end
 
             % Partial absorptions (p2 in graph above) with current oi
-            % Update coneMosaic before compute()
+            % Update the @coneMosaic with the partial integration time
             obj.integrationTime = integrationTimeForSecondPartialAbsorption;
+            % Compute partial absorptions
             absorptionsDuringCurrentFrame =  obj.compute(...
                                 oiSequence.frameAtIndex(oiIndex), ...
                                 'emPath', eyeMovementsForOISequence(idx,:), ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
                                 );
-            % insert the sum in the to time series  
+            % insert the sum of the two partial absorptions in the time series  
             insertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
             absorptions(:,:, insertionIndex) = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
 
             % Full absorptions with current oi and default integration time)
-            if (numel(indices)>1)
-                % Update coneMosaic before compute()
-                idx = indices(2:end);
+            if (numel(indices)>1)    
+                % Update the @coneMosaic with the default integration time
                 obj.integrationTime = defaultIntegrationTime;
+                % Compute absorptions for all remaining the OIs
+                idx = indices(2:end);
                 absorptionsForRemainingEyeMovements = obj.compute(...
                         oiSequence.frameAtIndex(oiIndex), ...
                         'emPath', eyeMovementsForOISequence(idx,:), ...      
@@ -152,6 +155,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             emStart = eyeMovementTimeAxis(emIndex);
             emEnd   = emStart + defaultIntegrationTime;
             
+            % sum the partial integration times
             actualIntegrationTime = 0;
             
             % Find oi indices withing the eye movement frame time limits
@@ -165,9 +169,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             % Partial absorptions during the ovelap with the OI that started before the emStart
             idx = indices(1);
             integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
-            % Update coneMosaic before compute()
+            % Update the @coneMosaic with the partial integration time
             obj.integrationTime = integrationTimeForFirstPartialAbsorption;
+            % Update the sum of partial integration times
             actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
+            % Compute absorptions
             absorptionsAccum = obj.compute(...
                                 oiSequence.frameAtIndex(idx), ...
                                 'emPath', eyeMovementsForOISequence(emIndex,:), ...
@@ -178,7 +184,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             % Next, compute full absorptions for the remaining OIs
             if (numel(indices)>1) 
                 for k = 2:numel(indices)
-                    % Update coneMosaic before compute()
+                     % Update the @coneMosaic with the partial integration time
                     if (k < numel(indices))
                         % full absorption during the duration of the OI
                         obj.integrationTime = oiRefreshInterval;
@@ -188,7 +194,9 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                         integrationTimeForLastPartialAbsorption = emEnd - oiTimeAxis(idx);
                         obj.integrationTime = integrationTimeForLastPartialAbsorption;
                     end
+                    % Update the sum of partial integration times
                     actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
+                    % Compute absorptions
                     absorptionsAccum = absorptionsAccum + obj.compute(...
                             oiSequence.frameAtIndex(indices(k)), ...
                             'emPath', eyeMovementsForOISequence(emIndex,:), ...      
@@ -198,7 +206,8 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                 end  % for k              
             end
            
-           if (abs(actualIntegrationTime-defaultIntegrationTime) > defaultIntegrationTime*0.01) && (emIndex < numel(eyeMovementTimeAxis))
+           % Check the sum of partial absorptions equal the default absorption time
+           if (abs(actualIntegrationTime-defaultIntegrationTime) > defaultIntegrationTime*0.0001) && (emIndex < numel(eyeMovementTimeAxis))
                error('Actual integration time (%3.5f) not equal to desired value (%3.5f) [emIndex: %d / %d]\n', actualIntegrationTime, defaultIntegrationTime, emIndex, numel(eyeMovementTimeAxis));
            end
            
@@ -225,7 +234,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         dtOS = obj.os.timeStep;
         osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
     
-        % Resample absorptions to osTimeAxis
+        % Resample absorptions to osTimeAxis timebase
         resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, absorptionsTimeAxis, osTimeAxis);
     
         % Convert to photon rate in photons/sec for the osTimeStep
