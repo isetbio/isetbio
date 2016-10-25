@@ -1,6 +1,6 @@
-% Method to resample an absorptions count sequence ensuring that the total
+% Method to temporally resample an absorptions count sequence ensuring that the total
 % number of photons are unchanged in the original and the resampled versions
-function resampledAbsorptionsSequence = resample(absorptionsSequence, originalTimeAxis, resampledTimeAxis)
+function resampledAbsorptionsSequence = tResample(absorptionsSequence, originalTimeAxis, resampledTimeAxis)
  
     reshapeMatrix = false;
     
