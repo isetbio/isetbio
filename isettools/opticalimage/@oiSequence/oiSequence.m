@@ -19,7 +19,7 @@ classdef oiSequence
         length
     end
     
-    properties (Access = private)   
+    properties (SetAccess = private)   
         % the fixed oi (an oi, the background)
         oiFixed
         fixedPhotons
@@ -84,6 +84,14 @@ classdef oiSequence
             
         function val = get.length(obj)
             val = numel(obj.modulationFunction);
+        end
+        
+        function val = get.modulationFunction(obj)
+            val = obj.modulationFunction;
+        end
+        
+        function val = get.composition(obj)
+            val = obj.composition;
         end
         
         function oiFrame = frameAtIndex(obj, frameIndex)

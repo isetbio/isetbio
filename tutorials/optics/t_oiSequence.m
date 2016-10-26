@@ -19,7 +19,7 @@ uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 % Generate a gabor scene
 gaborParams = struct(...
     'freq', 2, ...
-    'contrast', 0.3, ...
+    'contrast', 1.0, ...
     'ph', 0, ...
 	'ang',  0, ...
     'row', 128, ...
@@ -35,9 +35,10 @@ stimulusSamplingInterval = 60/1000;
 oiTimeAxis = -0.6:stimulusSamplingInterval:0.6;
 stimulusRampTau = 0.165;
 % monophasic modulation function
-modulationFunction = exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+modulationFunction1 = 0.7*exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+modulationFunction2 = -modulationFunction1;
 % biphasic modulation function
-modulationFunction2 = exp(-0.5*((oiTimeAxis-0.2)/stimulusRampTau).^2) - exp(-0.5*((oiTimeAxis+0.2)/stimulusRampTau).^2);
+modulationFunction3 = 0.7*(exp(-0.5*((oiTimeAxis-0.2)/stimulusRampTau).^2) - exp(-0.5*((oiTimeAxis+0.2)/stimulusRampTau).^2));
 
 % Default human optics
 oi = oiCreate('human');
@@ -52,19 +53,19 @@ modulationRegion.radiusInMicrons = 250;
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (uniform field) is ADDED to the oiBackground over an 250 micron radius
 % region using a monophasic modulation function
-theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'composition', 'add', 'modulationRegion', modulationRegion);
+theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction1, 'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a biphasic modulation function
-theOIsequence2 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2, 'composition', 'blend');
+theOIsequence2 = oiSequence(oiBackground, oiModulated, modulationFunction2, 'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is ADDED with the oiBackground using a biphasic modulation function
-theOIsequence3 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2,  'composition', 'add');
+theOIsequence3 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction1,  'composition', 'add');
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a biphasic modulation function
-theOIsequence4 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction2, 'composition', 'blend', 'modulationRegion', modulationRegion);
+theOIsequence4 = oiSequence(oiBackground, oiModulatedGabor, modulationFunction3, 'composition', 'blend');
 
 % Plot the oisequences
 hFig = figure(1); clf;
@@ -73,9 +74,9 @@ for oiIndex = 1:theOIsequence.length
     
     % Plot the modulation function
     subplot(8,round(theOIsequence.length/2)+1, 1);
-    plot(1:theOIsequence.length, modulationFunction, 'ks-', 'LineWidth', 1.5);
+    plot(1:theOIsequence.length, theOIsequence.modulationFunction, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
-    title('mode: add');
+    title(sprintf('mode: %s', theOIsequence.composition));
     xlabel('frame index');
     ylabel('modulation');
     
@@ -84,7 +85,7 @@ for oiIndex = 1:theOIsequence.length
     
     % plot it
     subplot(8,round(theOIsequence.length/2)+1, 1+oiIndex);
-    rgbImage = xyz2rgb(oiGet(currentOI, 'xyz'));
+    rgbImage = lrgb2srgb(xyz2rgb(oiGet(currentOI, 'xyz')));
     imagesc(rgbImage, [0 1]);
     title(sprintf('frame %d', oiIndex));
     axis 'image'
@@ -92,10 +93,10 @@ for oiIndex = 1:theOIsequence.length
     
     
     % Plot the modulation function
-    subplot(8,round(theOIsequence.length/2)+1, 1 + 2*(1+round(theOIsequence.length/2)));
-    plot(1:theOIsequence.length, modulationFunction, 'ks-', 'LineWidth', 1.5);
+    subplot(8,round(theOIsequence2.length/2)+1, 1 + 2*(1+round(theOIsequence2.length/2)));
+    plot(1:theOIsequence2.length, theOIsequence2.modulationFunction, 'ks-', 'LineWidth', 1.5);
     set(gca, 'XLim', [1 theOIsequence.length]);
-    title('mode: blend');
+    title(sprintf('mode: %s', theOIsequence2.composition));
     xlabel('frame index');
     ylabel('modulation');
     
@@ -104,7 +105,7 @@ for oiIndex = 1:theOIsequence.length
     
     % plot it
     subplot(8,round(theOIsequence.length/2)+1, 1+oiIndex+2*(1+round(theOIsequence.length/2)));
-    rgbImage = xyz2rgb(oiGet(currentOI, 'xyz'));
+    rgbImage = lrgb2srgb(xyz2rgb(oiGet(currentOI, 'xyz')));
     imagesc(rgbImage, [0 1]);
     title(sprintf('frame %d', oiIndex));
     axis 'image'
@@ -112,10 +113,10 @@ for oiIndex = 1:theOIsequence.length
     
     
     % Plot the modulation function
-    subplot(8,round(theOIsequence.length/2)+1, 1 + 4*(1+round(theOIsequence.length/2)));
-    plot(1:theOIsequence.length, modulationFunction2, 'ks-', 'LineWidth', 1.5);
-    set(gca, 'XLim', [1 theOIsequence.length]);
-    title('mode: add');
+    subplot(8,round(theOIsequence3.length/2)+1, 1 + 4*(1+round(theOIsequence3.length/2)));
+    plot(1:theOIsequence3.length, theOIsequence3.modulationFunction, 'ks-', 'LineWidth', 1.5);
+    set(gca, 'XLim', [1 theOIsequence3.length]);
+    title(sprintf('mode: %s', theOIsequence3.composition));
     xlabel('frame index');
     ylabel('modulation');
     
@@ -123,8 +124,8 @@ for oiIndex = 1:theOIsequence.length
     currentOI = theOIsequence3.frameAtIndex(oiIndex);
     
     % plot it
-    subplot(8,round(theOIsequence.length/2)+1, 1+oiIndex+4*(1+round(theOIsequence.length/2)));
-    rgbImage = xyz2rgb(oiGet(currentOI, 'xyz'));
+    subplot(8,round(theOIsequence3.length/2)+1, 1+oiIndex+4*(1+round(theOIsequence3.length/2)));
+    rgbImage = lrgb2srgb(xyz2rgb(oiGet(currentOI, 'xyz')));
     imagesc(rgbImage, [0 1]);
     title(sprintf('frame %d', oiIndex));
     axis 'image'
@@ -132,10 +133,10 @@ for oiIndex = 1:theOIsequence.length
     
     
     % Plot the modulation function
-    subplot(8,round(theOIsequence.length/2)+1, 1 + 6*(1+round(theOIsequence.length/2)));
-    plot(1:theOIsequence.length, modulationFunction2, 'ks-', 'LineWidth', 1.5);
-    set(gca, 'XLim', [1 theOIsequence.length]);
-    title('mode: blend');
+    subplot(8,round(theOIsequence4.length/2)+1, 1 + 6*(1+round(theOIsequence4.length/2)));
+    plot(1:theOIsequence.length, theOIsequence4.modulationFunction, 'ks-', 'LineWidth', 1.5);
+    set(gca, 'XLim', [1 theOIsequence4.length]);
+    title(sprintf('mode: %s', theOIsequence4.composition));
     xlabel('frame index');
     ylabel('modulation');
     
@@ -143,8 +144,8 @@ for oiIndex = 1:theOIsequence.length
     currentOI = theOIsequence4.frameAtIndex(oiIndex);
     
     % plot it
-    subplot(8,round(theOIsequence.length/2)+1, 1+oiIndex+6*(1+round(theOIsequence.length/2)));
-    rgbImage = xyz2rgb(oiGet(currentOI, 'xyz'));
+    subplot(8,round(theOIsequence4.length/2)+1, 1+oiIndex+6*(1+round(theOIsequence4.length/2)));
+    rgbImage = lrgb2srgb(xyz2rgb(oiGet(currentOI, 'xyz')));
     imagesc(rgbImage, [0 1]);
     title(sprintf('frame %d', oiIndex));
     axis 'image'
