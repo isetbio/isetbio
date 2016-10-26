@@ -68,28 +68,45 @@ theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction
 theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction3, 'composition', 'blend');
 
 % Plot the oisequences
+colsNum = ceil(theOIsequence(1).length/2);
+subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 2*numel(theOIsequence), ...
+           'colsNum', colsNum+1, ...
+           'heightMargin',   0.025, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.03, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.03);
+       
 hFig = figure(1); clf;
-set(hFig, 'Color', [1 1 1], 'Position', [10 10 1500 950]);
+set(hFig, 'Color', [1 1 1], 'Position', [10 10 1350 900]);
+
 for oiIndex = 1:theOIsequence(1).length
-    for k = 1:4
-        % Plot the modulation function
-        subplot(8,round(theOIsequence(k).length/2)+1, 1 + (k-1)*2*(1+round(theOIsequence2.length/2)));
-        plot(1:theOIsequence(k).length, theOIsequence(k).modulationFunction, 'rs-', 'LineWidth', 1.5);
-        set(gca, 'XLim', [1 theOIsequence(k).length]);
-        title(sprintf('mode: %s', theOIsequence(k).composition));
-        xlabel('frame index');
-        ylabel('modulation');
-    
+    for k = 1:numel(theOIsequence)
+        
+        row = (k-1)*2+1 + floor((oiIndex-1)/colsNum);
+        
+        if (oiIndex == 1)
+            % Plot the modulation function
+            subplot('Position', subplotPosVectors((k-1)*2+1,1).v);
+            plot(1:theOIsequence(k).length, theOIsequence(k).modulationFunction, 'rs-', 'LineWidth', 1.5);
+            set(gca, 'XLim', [1 theOIsequence(k).length], 'FontSize', 12);
+            title(sprintf('composition\n''%s''', theOIsequence(k).composition));
+            xlabel('frame index');
+            ylabel('modulation');
+        end
+        
         % Ask theOIsequence to return the oiIndex-th frame
         currentOI = theOIsequence(k).frameAtIndex(oiIndex);
-    
-        % plot it
-        subplot(8,round(theOIsequence(k).length/2)+1, 1+oiIndex+(k-1)*2*(1+round(theOIsequence2.length/2)));
+        % And plot it
+        col = 2+mod(oiIndex-1, colsNum);
+        subplot('Position', subplotPosVectors(row,col).v);
         rgbImage = xyz2srgb(oiGet(currentOI, 'xyz'));
         imagesc(rgbImage, [0 1]);
         title(sprintf('frame %d', oiIndex));
         axis 'image'
-        set(gca, 'XTick', [], 'YTick', []);
+        set(gca, 'XTick', [], 'YTick', [],'FontSize', 12);
         drawnow
     end
 end
