@@ -7,7 +7,7 @@
 %
 
 % Generate a uniform scene
-meanLuminance = 10;
+meanLuminance = 40;
 uniformScene = sceneCreate('uniform equal photon', 128);
 % square scene with desired FOV
 FOV = 2.0;
@@ -85,10 +85,11 @@ for oiIndex = 1:theOIsequence(1).length
     
         % plot it
         subplot(8,round(theOIsequence(k).length/2)+1, 1+oiIndex+(k-1)*2*(1+round(theOIsequence2.length/2)));
-        rgbImage = lrgb2srgb(xyz2rgb(oiGet(currentOI, 'xyz')));
+        rgbImage = xyz2srgb(oiGet(currentOI, 'xyz'));
         imagesc(rgbImage, [0 1]);
         title(sprintf('frame %d', oiIndex));
         axis 'image'
         set(gca, 'XTick', [], 'YTick', []);
+        drawnow
     end
 end
