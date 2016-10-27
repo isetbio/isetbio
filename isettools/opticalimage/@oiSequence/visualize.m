@@ -1,8 +1,8 @@
 % Visualize the sequence
 function visualize(obj)
 
-colsNum = round(sqrt(obj.length));
-rowsNum = floor(obj.length/colsNum);
+colsNum = round(1.3*sqrt(obj.length));
+rowsNum = ceil(obj.length/colsNum);
 subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', rowsNum, ...
            'colsNum', colsNum+1, ...
@@ -25,7 +25,7 @@ end
 XYZmax = 2*XYZmax;
 
 hFig = figure();
-set(hFig, 'Color', [1 1 1], 'Position', [10 10 1050 730]);
+set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]);
 
 for oiIndex = 1:obj.length
     if (oiIndex == 1)

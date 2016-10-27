@@ -92,6 +92,7 @@ classdef oiSequence
         
         % Visualize the sequence
         visualize(obj);
+        visualizeWithEyeMovementSequence(obj, emTimeAxis);
         
         % Return the length of the oiSequence
         function val = get.length(obj)
