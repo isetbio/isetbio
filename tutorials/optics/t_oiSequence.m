@@ -7,7 +7,7 @@
 %
 
 % Generate a uniform scene
-meanLuminance = 40;
+meanLuminance = 100;
 uniformScene = sceneCreate('uniform equal photon', 128);
 % square scene with desired FOV
 FOV = 2.0;
