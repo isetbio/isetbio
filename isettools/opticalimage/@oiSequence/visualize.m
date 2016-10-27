@@ -13,14 +13,17 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'bottomMargin',   0.03, ...
            'topMargin',      0.03);
 
-xyzmax = 0;
+XYZmax = 0;
 for oiIndex = 1:obj.length
      currentOI = obj.frameAtIndex(oiIndex);
-     xyz = oiGet(currentOI, 'xyz');
-     if (max(xyz(:)) > xyzmax)
-         xyzmax = max(xyz(:));
+     XYZ = oiGet(currentOI, 'xyz');
+     if (max(XYZ(:)) > XYZmax)
+         XYZmax = max(XYZ(:));
      end
 end
+% Do not exceed XYZ values of 0.5 (for correct rendering)
+XYZmax = 2*XYZmax;
+
 
 for oiIndex = 1:obj.length
     if (oiIndex == 1)
@@ -36,14 +39,14 @@ for oiIndex = 1:obj.length
     % Ask theOIsequence to return the oiIndex-th frame
     currentOI = obj.frameAtIndex(oiIndex);
     support = oiGet(currentOI, 'spatial support', 'microns');
-    [illuminanceMap, meanIlluminance] = oiCalculateIlluminance(currentOI);
+    [~, meanIlluminance] = oiCalculateIlluminance(currentOI);
     xaxis = support(1,:,1);
     yaxis = support(:,1,2);
     row = 1+floor((oiIndex)/(colsNum+1));
     col = 1+mod((oiIndex),(colsNum+1));
     
     subplot('Position', subplotPosVectors(row,col).v);
-    rgbImage = xyz2srgb(oiGet(currentOI, 'xyz')/xyzmax);
+    rgbImage = xyz2srgb(oiGet(currentOI, 'xyz')/XYZmax);
     imagesc(xaxis, yaxis, rgbImage, [0 1]);
     axis 'image'
     if (col == 1) && (row == rowsNum)
