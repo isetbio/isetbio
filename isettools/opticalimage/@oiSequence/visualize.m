@@ -57,7 +57,7 @@ for oiIndex = 1:obj.length
        set(gca, 'XTick', xticks, 'YTick', yticks, 'XTickLabel', sprintf('%2.0f\n', xticks), 'YTickLabel', sprintf('%2.0f\n', yticks));
     else
        set(gca, 'XTick', [], 'YTick', [])
-       xlabel(sprintf('frame %d', oiIndex));
+       xlabel(sprintf('frame %d (%2.1fms)', oiIndex, 1000*obj.oiTimeAxis(oiIndex)));
     end
     title(sprintf('mean illum: %2.1f', meanIlluminance));
     set(gca, 'FontSize', 12);

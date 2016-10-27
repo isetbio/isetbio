@@ -28,6 +28,9 @@ classdef oiSequence
         oiModulated
         modulatedPhotons
         
+        % the oiSequence timebase
+        oiTimeAxis
+        
         % whether to add the oiModulated to the oiFixed or to blend it with the oiFixed
         composition;
         
@@ -44,7 +47,7 @@ classdef oiSequence
     methods  % public methods
             
         % constructor
-        function obj = oiSequence(oiFixed, oiModulated, modulationFunction, varargin)
+        function obj = oiSequence(oiFixed, oiModulated, oiTimeAxis, modulationFunction, varargin)
             
             defaultModulationRegion = struct(...
                 'radiusInMicrons', nan);
@@ -52,13 +55,15 @@ classdef oiSequence
             p = inputParser;
             p.addRequired('oiFixed',  @isstruct);
             p.addRequired('oiModulated',  @isstruct);
+            p.addRequired('oiTimeAxis', @isnumeric);
             p.addRequired('modulationFunction',  @isnumeric);
             p.addParameter('modulationRegion', defaultModulationRegion, @isstruct);
             p.addParameter('composition', 'add', @ischar);
-            p.parse(oiFixed, oiModulated, modulationFunction, varargin{:});
+            p.parse(oiFixed, oiModulated, oiTimeAxis, modulationFunction, varargin{:});
             
             obj.oiFixed = p.Results.oiFixed;
             obj.oiModulated = p.Results.oiModulated;
+            obj.oiTimeAxis = p.Results.oiTimeAxis;
             obj.modulationFunction = p.Results.modulationFunction;
             obj.modulationRegion = p.Results.modulationRegion;
             obj.composition = p.Results.composition;
@@ -96,6 +101,11 @@ classdef oiSequence
         % Return the modulationFunction used
         function val = get.modulationFunction(obj)
             val = obj.modulationFunction;
+        end
+        
+        % Return the oiTimeAxis used
+        function val = get.oiTimeAxis(obj)
+            val = obj.oiTimeAxis;
         end
         
         % Return the composition type used
