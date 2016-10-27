@@ -24,6 +24,8 @@ end
 % Do not exceed XYZ values of 0.5 (for correct rendering)
 XYZmax = 2*XYZmax;
 
+hFig = figure();
+set(hFig, 'Color', [1 1 1], 'Position', [10 10 1050 730]);
 
 for oiIndex = 1:obj.length
     if (oiIndex == 1)

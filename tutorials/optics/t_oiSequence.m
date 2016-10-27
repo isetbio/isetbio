@@ -73,7 +73,5 @@ theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction
 
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
-    hFig = figure(k*10); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1050 730]);
     theOIsequence(k).visualize();
 end
