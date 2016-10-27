@@ -82,45 +82,28 @@ classdef oiSequence
             obj.modulatedPhotons = oiGet(obj.oiModulated, 'photons');
         end
             
+        % Method for on-the-fly computation of the oi at desired index
+        oiFrame = frameAtIndex(obj, index);
+        
+        % Visualize the sequence
+        visualize(obj);
+        
+        % Return the length of the oiSequence
         function val = get.length(obj)
             val = numel(obj.modulationFunction);
         end
         
+        % Return the modulationFunction used
         function val = get.modulationFunction(obj)
             val = obj.modulationFunction;
         end
         
+        % Return the composition type used
         function val = get.composition(obj)
             val = obj.composition;
         end
         
-        function oiFrame = frameAtIndex(obj, frameIndex)
-
-            if (strcmp(obj.composition, 'add'))
-                retinalPhotons = obj.fixedPhotons + obj.modulationFunction(frameIndex)*obj.modulatedPhotons;
-            else
-                retinalPhotons = obj.fixedPhotons*(1-obj.modulationFunction(frameIndex)) + obj.modulationFunction(frameIndex)*obj.modulatedPhotons;
-            end
-            
-            if (~isnan(obj.modulationRegion.radiusInMicrons))
-                % modulate a subregion only
-                pos = oiGet(obj.oiModulated, 'spatial support', 'microns');
-                ecc = sqrt(sum(pos.^2, 3));
-                mask = ecc < obj.modulationRegion.radiusInMicrons;
-                
-                for k = 1:size(retinalPhotons,3)
-                    fullFrame = retinalPhotons(:,:, k);
-                    background = obj.fixedPhotons;
-                    background = background(:,:, k);
-                    fullFrame(mask == 0) = background(mask == 0);
-                    retinalPhotons(:,:, k) = fullFrame;
-                end
-            end
-            
-            % Return the composite oi
-            oiFrame = obj.oiFixed;
-            oiFrame = oiSet(oiFrame, 'photons', retinalPhotons);
-        end
+        
     end
     
 end
