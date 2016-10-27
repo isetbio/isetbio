@@ -56,16 +56,20 @@ modulationRegion.radiusInMicrons = 250;
 theOIsequence(1) = oiSequence(oiBackground, oiModulated, modulationFunction1, 'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
-% (a grating) is BLENDED with the oiBackground using a biphasic modulation function
+% (a grating) is BLENDED with the oiBackground using a monophasic modulation function
 theOIsequence(2) = oiSequence(oiBackground, oiModulated, modulationFunction2, 'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
-% (a grating) is ADDED with the oiBackground using a biphasic modulation function
+% (a grating) is ADDED with the oiBackground using a monophasic modulation function
 theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction1,  'composition', 'add');
 
 % oiSequence object for computing a sequence of ois where the oiModulated
-% (a grating) is BLENDED with the oiBackground using a biphasic modulation function
-theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction3, 'composition', 'blend');
+% (a grating) is BLENDED with the oiBackground using a monophasic modulation function
+theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction1,  'composition', 'blend');
+
+% oiSequence object for computing a sequence of ois where the oiModulated
+% (a grating) is BLENDED with the oiBackground  over an 250 micron radius using a biphasic modulation function
+theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, modulationFunction3, 'composition', 'blend', 'modulationRegion', modulationRegion);
 
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
