@@ -123,7 +123,11 @@ switch ieParamFormat(type)
         % Replace with ieShape('circle','center',...,'radius',...)
         % To draw the center and surround mosaic geometry
         % Axis units should be um
-        %
+        
+        % New strategy: make surface plot of all RFs combined and take a
+        % thin z slice to show contours. This is useful for when RFs are
+        % not circular, and each has a different elliptical shape (JRG).
+        
         nCells = obj.get('mosaic size');
 %         nCell = 5;   % Central 5 cells
 %         cellList = -2:2;
@@ -153,16 +157,36 @@ switch ieParamFormat(type)
 %                 %                     'color','y');
                 
                 hold on;
-                surf([1:size(obj.sRFcenter{xcell,ycell},2)]-round(size(obj.sRFcenter{xcell,ycell},2)/2)+obj.cellLocation{xcell,ycell}(2),[1:size(obj.sRFcenter{xcell,ycell},1)]-round(size(obj.sRFcenter{xcell,ycell},1)/2)+obj.cellLocation{xcell,ycell}(1),obj.sRFcenter{xcell,ycell});
+                % Generate x and y coordinates for spatial RF
+                sRFx = [1:size(obj.sRFcenter{xcell,ycell},2)];
+                sRFy = [1:size(obj.sRFcenter{xcell,ycell},1)];
+                
+                % Shift to zero by subtracting half of size
+                sRFxZero = round(size(obj.sRFcenter{xcell,ycell},2)/2);
+                sRFyZero = round(size(obj.sRFcenter{xcell,ycell},1)/2);
+                
+                % Get center coordinate
+                sRFxCenter = obj.cellLocation{xcell,ycell}(2);
+                sRFyCenter = obj.cellLocation{xcell,ycell}(1);
+                
+                % Combine for appropriate coordinates
+                plotX = sRFx-sRFxZero+sRFxCenter;
+                plotY = sRFy-sRFyZero+sRFyCenter;
+                
+                % Plot surface
+                surf(plotX,plotY,obj.sRFcenter{xcell,ycell});
         
             end
         end
         
         axis equal
         shading interp
-        maxRF = max(obj.sRFcenter{xcell,ycell}(:));
+        
+        % Since we've plotted the surface, take a thin z slice for contours
+        maxRF = max(obj.sRFcenter{1,1}(:));
         ax1 = axis;
         axis([ax1 .5*maxRF-.05 .5*maxRF]);
+        
 %         alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
 %         set(gca,'xlim',alim,'ylim',alim);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
