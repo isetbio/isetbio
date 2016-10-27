@@ -104,23 +104,31 @@ classdef ir < handle
             obj.eyeAngle  = p.Results.eyeAngle;
             obj.name      = p.Results.name;            
             
-            switch class(inputObj)
+            if length(inputObj) == 1
+                inputObjType = class(inputObj);
+                inputObjComponent = inputObj;
+            else
+                inputObjType = class(inputObj{1});
+                inputObjComponent = inputObj{1};
+            end
+            
+            switch inputObjType
                 case{'osDisplayRGB'}
-                    obj.spacing = osGet(inputObj,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObj,'time step'); % Temporal sampling
+                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
+                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
                     [obj.row, obj.col, ~, ~] = size(osGet(inputObj,'rgbData'));
                 case{'osIdentity'}
-                    obj.spacing = osGet(inputObj,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObj,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(osGet(inputObj,'photonRate'));
+                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
+                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
+                    [obj.row, obj.col, ~, ~] = size(osGet(inputObjComponent,'photonRate'));
                 case{'bipolar'}
-                    obj.spacing = bipolarGet(inputObj,'patch size'); % Bipolar width
-                    obj.timing  = bipolarGet(inputObj,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(bipolarGet(inputObj,'bipolarResponseCenter'));
+                    obj.spacing = bipolarGet(inputObjComponent,'patch size'); % Bipolar width
+                    obj.timing  = bipolarGet(inputObjComponent,'time step'); % Temporal sampling
+                    [obj.row, obj.col, ~, ~] = size(bipolarGet(inputObjComponent,'bipolarResponseCenter'));
                 otherwise
-                    obj.spacing = osGet(inputObj,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObj,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~] = size(osGet(inputObj,'coneCurrentSignal'));
+                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
+                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
+                    [obj.row, obj.col, ~] = size(osGet(inputObjComponent,'coneCurrentSignal'));
             end
             
             % Initialize the mosaic property but do not generate any mosaics

@@ -1,9 +1,7 @@
-function visualizeGrid(obj, varargin)
+function plotHexMosaic(obj, varargin)
 % Visualize different aspects of the hex grid
 %
 % Name-Value options
-%   generateNewFigure  - False
-%   panelPosition      - [1 1]
 %   showCorrespondingRectangularMosaicInstead - False
 %   overlayNullSensorsPerfectHexMesh          - False
 %   overlayPerfectHexMesh       - False
@@ -19,34 +17,29 @@ function visualizeGrid(obj, varargin)
 
 %% parse input
 p = inputParser;
-p.addParameter('generateNewFigure', false, @islogical);
-p.addParameter('panelPosition', [1 1]);
+p.KeepUnmatched = true;   % This allows unrecognized parameters
+
+% Defaulting this to true until we solve the rendering speed problem
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
 p.addParameter('coneDensityContourLevelStep', 5000, @isnumeric);
+p.addParameter('hf',obj.hdl.CurrentAxes,@isgraphics);
 p.parse(varargin{:});
 
+
+% From the coneMosaicWindow, this is normally the rectangular version.
+% From the Plot | Mosaic | Cone Mosaic we show the hex data
 showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
-showNullSensors = p.Results.overlayNullSensors;
+showNullSensors    = p.Results.overlayNullSensors;
 showPerfectHexMesh = p.Results.overlayPerfectHexMesh;
-showConeDensityContour = p.Results.overlayConeDensityContour;
-generateNewFigure = p.Results.generateNewFigure;
-panelPosition = p.Results.panelPosition;
+showConeDensityContour      = p.Results.overlayConeDensityContour;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
 
-%% Set up cone coordinates and outline
-% 
-% if (showCorrespondingRectangularMosaicInstead)
-%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
-%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
-% else
-%     titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
-%         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
-%         numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-%         obj.resamplingFactor);
-% end
+% Sometimes this is the main window and sometimes this is a new window
+% passed in.
+thisAxes = p.Results.hf;
 
 sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
 sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
@@ -64,37 +57,16 @@ pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
 originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
 originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
 
-iTheta = (0:5:360)/180*pi;
+dAngle = 30;
+iTheta = (0:dAngle:360-dAngle)/180*pi;
 apertureOutline.x = dx/2.0 * cos(iTheta);
 apertureOutline.y = dx/2.0 * sin(iTheta);
 
 rectCoords = obj.coneLocsOriginatingRectGrid;
-hexCoords = obj.coneLocsHexGrid;
+hexCoords  = obj.coneLocsHexGrid;
 
-% Try scaling the values to see if that puts it in our range
-mx = max(abs(hexCoords(:,1)));
-hexCoords(:,1) = hexCoords(:,1)/mx;
-mx = max(abs(hexCoords(:,1)));
-hexCoords(:,2) = hexCoords(:,2)/mx;
-
-
-%% Set up figure
-
-if (generateNewFigure)
-    hFig = figure(round(rand()*100000));
-    if (isempty(panelPosition))
-        figPosition = [rand()*2000 rand()*1000 980 670];
-    else
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
-    end
-else
-    % We want to use the coneMosaic window 
-    % axes(obj.hdl.CurrentAxes);
-    figure(obj.hdl);
-    cla;
-    % set(gca,'xlim',[min(hexCoords(:,1)), max(hexCoords(:,1))])
-    % set(gca,'ylim',[min(hexCoords(:,2)), max(hexCoords(:,2))])
-end
+% Clear axes, which sometimes is a figure handle that has one axis
+cla(thisAxes, 'reset');
 
 %% Do the display
 switch showConeDensityContour
@@ -108,6 +80,11 @@ switch showConeDensityContour
 end
 
 if (~showCorrespondingRectangularMosaicInstead)
+    % Show Hex mosaic (don't show the rectangular mosaic)
+    % We are not using this code right now.  We are defaulting to rect
+    % because of speed of the rendering.  We are going to make a pull down
+    % that renders the hex mosaic in a separate window for the mean time.
+    % When we the solve the problem we will use that code in here.
     lineStyle = '-';
     if (showNullSensors)
         idx = find(obj.pattern==1);
@@ -116,7 +93,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         renderPatchArray(pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     end
     
-    % L-cones
+    % L-cones - The 'finds' take a long time, 3-times.  Let's see if we can't
+    % speed it up.
     idx = find(obj.pattern == 2);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [1 0 0]; faceColor = [1.0 0.7 0.7];
@@ -139,8 +117,10 @@ if (~showCorrespondingRectangularMosaicInstead)
         meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
         renderHexMesh(hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
+    
 else
     % Show the corresponding rectangular mosaic
+    % This is the code we use for now
     
     % The original rect sensors
     idx = find(obj.patternOriginatingRectGrid==2);
@@ -168,8 +148,7 @@ end
 
 %% Arrange axis and fonts
 
-hold off
-axis 'equal'; axis 'xy'
+hold off; axis 'equal'; axis 'xy'
 xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);

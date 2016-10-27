@@ -298,7 +298,7 @@ function uData = plotCurrentTimeseries(obj,varargin)
 % Pull out the time series of the photo current and plot it
 
 % Temporal samples
-dt = obj.sampleTime;
+dt = obj.os.timeStep;
 
 % The current
 outputSignalTemp = obj.current;

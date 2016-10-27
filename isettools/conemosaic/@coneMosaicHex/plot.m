@@ -62,15 +62,92 @@ switch ieParamFormat(type);
         % It brings the image up in the wrong window because we didn't pass
         % the hf and set the axis.  But the good news is, it gets here and
         % runs.  Next, on to fixing the varargin{} and such.
-        plotHexMosaic(obj);  % Default arguments for now
+        plotHexMosaic(obj,'hf',hf,varargin{:});  % Default arguments for now
     case 'meanabsorptions'
-        disp('NYI')
+
+        plotHexMeanImage(obj,'type','absorptions');
+        
+%                 clear isomerizationsHex
+%         isomerizationsHex = obj.current;
+%         % nonNullConeIndices = obj.pattern > 1;
+%         % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+%                 
+%         % Render activation images for the hex mosaic
+%         [activationsHexImage, ~,supX,supY] = obj.computeActivationDensityMap(mean(isomerizationsHex(:,:,end),3));
+%                 
+%         % Display results
+%         % imagesc(1:obj.cols, 1:obj.rows, mean(activationsHexImage,3));
+%         imagesc(supX,supY,activationsHexImage);
+%         % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+%         axis 'image'; axis 'xy'
+%         colormap gray;
+%         
+%         hold on;
+%         sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
+%         sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
+%         dx = obj.pigment.pdWidth;
+% 
+%         axis 'equal'; axis 'xy'
+%         xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+%         yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+%         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
+%         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
+%         set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+%         set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], 'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+%         box on; grid off;
+%         isomerizationsRange = prctile(activationsHexImage(:), [5 95]);
+% 
+%         set(gca, 'CLim', isomerizationsRange);
+%         set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
+%         set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
     case 'movieabsorptions'
-        disp('NYI')
+
+        uData = movieHex(obj,'type','absorptions');
+        
+%         % Copied from t_coneMosaicHex3.m, line 70
+%         isomerizationsHex = obj.absorptions;
+%         % nonNullConeIndices = obj.pattern > 1;
+%         % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+%                 
+%         % Render activation images for the hex mosaic
+%         [activationsHexImage,~,~,~] = ...
+%             obj.computeActivationDensityMap(isomerizationsHex);
+%                 
+%         activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
+%         for frameIndex = 1:size(isomerizationsHex,3)
+%             [activationsHexImage, ~] = ...
+%                 obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
+%             activationsHexMovie(:,:,frameIndex) = activationsHexImage;
+%         end
+%         
+%         axis 'image'; axis 'xy'
+%         uData = ieMovie(activationsHexMovie,varargin{:});
+        
     case 'meancurrent'
-        disp('NYI')
-    case 'moviecurrent'
-        disp('NYI')
+        
+        plotHexMeanImage(obj,'type','current');
+
+    case 'moviecurrent'   
+        uData = movieHex(obj,'type','current');
+%         % Copied from t_coneMosaicHex3.m, line 70
+%         isomerizationsHex = obj.current;
+%         % nonNullConeIndices = obj.pattern > 1;
+%         % isomerizationsRange = prctile(isomerizationsHex(:), [5 95]);
+%                 
+%         % Render activation images for the hex mosaic
+%         [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex);
+%         
+%         activationsHexMovie = zeros([size(activationsHexImage),size(isomerizationsHex,3)]);
+%         for frameIndex = 1:size(isomerizationsHex,3)
+%             [activationsHexImage, ~] = obj.computeActivationDensityMap(isomerizationsHex(:,:,frameIndex));
+%             activationsHexMovie(:,:,frameIndex) = activationsHexImage;
+%         end
+%         
+%         % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
+%         axis 'image'; axis 'xy'
+%         % title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
+%         % % % % % % %
+%         uData = ieMovie(activationsHexMovie,varargin{:});
     otherwise
         % Not one of the hex image types.  So, pass up to the base class
         [uData,hf] = plot@coneMosaic(obj,type,varargin{:});

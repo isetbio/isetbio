@@ -69,17 +69,27 @@ handles.curMov = [];  % photocurrent movie
 guidata(hObject, handles);
 handles.cMosaic.hdl = hObject;
 
+% Adjust the database and bring this figure to the front
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
-
 figure(hObject);
+
+
+% Get the font size initialized
 ieFontInit(hObject);
 
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+% Set the popup default image selection to mean absorptions when the window
+% opens.
 str = get(handles.popupImageType, 'String');
 if iscell(str) && length(str) > 1
-    set(handles.popupImageType, 'Value',2);  % This is mean absorptions
-    coneMosaicGUIRefresh(hObject, eventdata, handles);
+    % This is mean absorptions
+    set(handles.popupImageType, 'Value',2);  
 end
+
+% Refresh and move on
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+% Very important for good rendering speed
+set(hObject, 'Renderer', 'OpenGL')
 
 end
 
@@ -263,7 +273,9 @@ switch plotType
         % set up right click menu (context menu)
         c = uicontextmenu;
         if ~isempty(handles.axes2.Children)
-            handles.axes2.Children.UIContextMenu = c;
+            for ichild = 1:size(handles.axes2.Children,1)
+                handles.axes2.Children(ichild).UIContextMenu = c;
+            end
             uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
             uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
             uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
@@ -293,8 +305,10 @@ switch plotType
         end
         
         % set up right click menu (context menu)
-        c = uicontextmenu;
-        handles.axes2.Children.UIContextMenu = c;
+        c = uicontextmenu;        
+        for ichild = 1:size(handles.axes2.Children,1)
+            handles.axes2.Children(ichild).UIContextMenu = c;
+        end
         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
@@ -315,8 +329,10 @@ switch plotType
         cm.plot('mean current', 'hf', handles.axes2);
         
         % set up right click menu (context menu)
-        c = uicontextmenu;
-        handles.axes2.Children.UIContextMenu = c;
+        c = uicontextmenu;       
+        for ichild = 1:size(handles.axes2.Children,1)
+            handles.axes2.Children(ichild).UIContextMenu = c;
+        end
         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
@@ -345,7 +361,9 @@ switch plotType
         
         % set up right click menu (context menu)
         c = uicontextmenu;
-        handles.axes2.Children.UIContextMenu = c;
+        for ichild = 1:size(handles.axes2.Children,1)
+            handles.axes2.Children(ichild).UIContextMenu = c;
+        end
         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
@@ -650,19 +668,25 @@ function menuPlotCone_Callback(hObject, eventdata, handles)
 end
 
 function menuPlotMosaic_Callback(hObject, eventdata, handles)
+% Top  level 
+%   Mosaic 
 % hObject    handle to menuPlotMosaic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 end
 
 function menuPlotMosaicConeMosaic_Callback(~, ~, handles)
+% Plot | Mosaic | Cone Mosaic
+%
 % hObject    handle to menuPlotMosaicConeMosaic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.cMosaic.plot('cone mosaic');
+handles.cMosaic.plot('cone mosaic','showCorrespondingRectangularMosaicInstead',false);
 end
 
 function menuPlotMosaicMeanAbsorptions_Callback(~, ~, handles)
+% Plot | Mosaic | Mean absorptions
+%
 % hObject    handle to menuPlotMosaicMeanAbsorptions (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -684,6 +708,8 @@ handles.cMosaic.plot('cone fundamentals');
 end
 
 function menuPlotMacularTransmittance_Callback(~, ~, handles)
+% Plot | Macular | Transmittance
+%
 % hObject    handle to menuPlotMacularTransmittance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -839,7 +865,9 @@ else
     
     % register right click menu
     c = uicontextmenu;
-    handles.axes2.Children.UIContextMenu = c;
+    for ichild = 1:size(handles.axes2.Children,1)
+        handles.axes2.Children(ichild).UIContextMenu = c;
+    end
     uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
