@@ -98,6 +98,7 @@ switch ieParamFormat(type)
         % We should plot, say, 5x5 array just to illustrate, rather than
         % the whole mosaic.  Only the whole mosaic on demand
         g = guidata(obj.figureHandle);
+        cla;
         
         % Somehow, we need these variables, too.  Let's rethink the
         % parameterization of the spatial receptive fields.
@@ -123,40 +124,50 @@ switch ieParamFormat(type)
         % To draw the center and surround mosaic geometry
         % Axis units should be um
         %
-        % nCells = obj.get('mosaic size');
-        nCell = 5;   % Central 5 cells
-        cellList = -2:2;
+        nCells = obj.get('mosaic size');
+%         nCell = 5;   % Central 5 cells
+%         cellList = -2:2;
         % I am noticing that the center of the sRF when the size is even
         % is, well, not good.  We should probably always insist on odd
         % row/col of the sRF images.
-        for xcell = cellList
-            for ycell = cellList
-                center = [xcell*umPerCell, ycell*umPerCell];
-                % This should be a real radius ... it appears to be just
-                % the spacing ... must read the constructor (BW).
-                radius = umPerCell;   
-                % Could be out of the loop ... or could be pulled from a
-                % space varying rgc object.
-                [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
-                fill(pts(:,1),pts(:,2),[1 0 1]);
-                % center
-                %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
-                %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-                %                     'color','b');
-                %                 hold on;
-                %                 % surround
-                %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
-                %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-                %                     'color','y');
+        for xcell = 1:nCells(1)
+            for ycell = 1:nCells(2)
+%         for xcell = cellList
+%             for ycell = cellList
+%                 center = [xcell*umPerCell, ycell*umPerCell];
+%                 % This should be a real radius ... it appears to be just
+%                 % the spacing ... must read the constructor (BW).
+%                 radius = umPerCell;   
+%                 % Could be out of the loop ... or could be pulled from a
+%                 % space varying rgc object.
+%                 [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
+%                 fill(pts(:,1),pts(:,2),[1 0 1]);
+%                 % center
+%                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
+%                 %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
+%                 %                     'color','b');
+%                 %                 hold on;
+%                 %                 % surround
+%                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
+%                 %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
+%                 %                     'color','y');
+                
+                hold on;
+                surf([1:size(obj.sRFcenter{xcell,ycell},2)]-round(size(obj.sRFcenter{xcell,ycell},2)/2)+obj.cellLocation{xcell,ycell}(2),[1:size(obj.sRFcenter{xcell,ycell},1)]-round(size(obj.sRFcenter{xcell,ycell},1)/2)+obj.cellLocation{xcell,ycell}(1),obj.sRFcenter{xcell,ycell});
+        
             end
         end
         
         axis equal
-        alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
-        set(gca,'xlim',alim,'ylim',alim);
+        shading interp
+        maxRF = max(obj.sRFcenter{xcell,ycell}(:));
+        ax1 = axis;
+        axis([ax1 .5*maxRF-.05 .5*maxRF]);
+%         alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
+%         set(gca,'xlim',alim,'ylim',alim);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
-        grid on
-        
+%         grid on
+        hold off;
     otherwise
 end
 

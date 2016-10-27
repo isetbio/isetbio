@@ -139,9 +139,9 @@ str = contents{get(hObject,'Value')};
 
 % Perform the action given the selection
 switch str
-    case 'Receptive Field Mosaic'
+    case 'Receptive field mosaic'
         disp(str)
-        
+        handles.rgcMosaic.plot('mosaic')
     case 'Spike movie'
         disp(str)
         
