@@ -160,7 +160,7 @@ function [theConeMosaic, theOIsequence, ...
     theOI = oiGenerate(noOptics);
 
     % Generate the sequence of optical images
-    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction, modulationRegion, 'composition', 'add');
+    theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
 
     % Generate the cone mosaic with eye movements for theOIsequence
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
@@ -172,7 +172,7 @@ function [theConeMosaic, theOIsequence, ...
     for instanceIndex = 1:instancesNum
         fprintf('Computing response instance %d of %d\n', instanceIndex, instancesNum);
         [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
-            theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
+            theConeMosaic.computeForOISequence(theOIsequence, ...
             'currentFlag', true, ...
             'newNoise', true ...
             );
@@ -240,17 +240,17 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, in
 end
 
 
-function theOIsequence = oiSequenceGenerate(theScene, theOI,  modulationFunction, modulationType)
+function theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, modulationType)
     % Compute the background and modulated optical images
     oiBackground = oiCompute(theOI, theScene);
     oiModulated  = oiBackground;
     
     if strcmp(modulationType, 'FULL')
-        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction);
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction);
     else
         pos = oiGet(oiBackground, 'spatial support', 'microns');
         modulationRegion.radiusInMicrons = 0.5*max(pos(:));
-        theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion);
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction, 'modulationRegion', modulationRegion);
     end
 end
 

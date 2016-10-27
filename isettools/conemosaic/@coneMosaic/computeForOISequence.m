@@ -1,7 +1,7 @@
 % Compute the pattern of cone absorptions and typically the
 % photocurrent
 %    [absorptions, absorpionsTimeAxis, [current, currentTimeAxis]] = ...
-%         cMosaic.compute(oiSequence, oiTimeAxis);
+%         cMosaic.compute(oiSequence, varargin);
 %
 % Inputs:
 %   oiSequence  - an @oiSequence object
@@ -20,20 +20,19 @@
 % NPC ISETBIO Team 2016
 %
 
-function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, oiTimeAxis, varargin)
+function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence,  varargin)
 
     p = inputParser;
     p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-    p.addRequired('oiTimeAxis', @isnumeric);
     p.addParameter('currentFlag', false, @islogical);
     p.addParameter('newNoise', true, @islogical);
-    p.parse(oiSequence, oiTimeAxis,varargin{:});
+    p.parse(oiSequence,  varargin{:});
     
     oiSequence = p.Results.oiSequence;
-    oiTimeAxis = p.Results.oiTimeAxis;
     currentFlag = p.Results.currentFlag;
     newNoise = p.Results.newNoise;
-
+    oiTimeAxis = oiSequence.oiTimeAxis;
+    
     if (oiSequence.length ~= numel(oiTimeAxis))
         error('oiTimeAxis and oiSequence must have equal length\n');
     end
