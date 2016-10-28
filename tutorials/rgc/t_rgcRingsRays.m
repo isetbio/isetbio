@@ -72,7 +72,8 @@ end
 cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(emLength);
 
-cMosaic.compute(oi,'currentFlag',true);
+cMosaic.compute(oi,'currentFlag',false);
+cMosaic.computeCurrent();
 
 % Show the window
 % cMosaic.window;

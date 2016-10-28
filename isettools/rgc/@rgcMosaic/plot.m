@@ -98,7 +98,7 @@ switch ieParamFormat(type)
         % We should plot, say, 5x5 array just to illustrate, rather than
         % the whole mosaic.  Only the whole mosaic on demand
         g = guidata(obj.figureHandle);
-        cla;
+        cla reset;
         
         % Somehow, we need these variables, too.  Let's rethink the
         % parameterization of the spatial receptive fields.
@@ -116,9 +116,9 @@ switch ieParamFormat(type)
         % Convert RGC position to distance
         % These calculations can't be right.  The RF size has to be
         % independent of the number of cells.... FIX.
-        patchSizeX   = obj.Parent.spacing;   % Meters
-        numberCellsX = obj.Parent.col;       % Meters
-        umPerCell    = 1e6*patchSizeX/numberCellsX;   % Cell lcenters
+        patchSizeX      = obj.Parent.spacing;   % Meters
+        numberBipolarsX = obj.Parent.col;       % Bipolar cells
+        umPerBipolar       = 1e6*patchSizeX/numberBipolarsX;   % Meters per Bipolar
         
         % Replace with ieShape('circle','center',...,'radius',...)
         % To draw the center and surround mosaic geometry
@@ -158,6 +158,8 @@ switch ieParamFormat(type)
                 
                 hold on;
                 % Generate x and y coordinates for spatial RF
+                % These are in units of bipolars ["the RGC RF is N bipolar
+                % wide"], converted to meters below
                 sRFx = [1:size(obj.sRFcenter{xcell,ycell},2)];
                 sRFy = [1:size(obj.sRFcenter{xcell,ycell},1)];
                 
@@ -174,7 +176,9 @@ switch ieParamFormat(type)
                 plotY = sRFy-sRFyZero+sRFyCenter;
                 
                 % Plot surface
-                surf(plotX,plotY,obj.sRFcenter{xcell,ycell});
+                % Convert coordinates from number of bipolar cells to
+                % meters
+                surf(umPerBipolar*plotX,umPerBipolar*plotY,obj.sRFcenter{xcell,ycell});
         
             end
         end
@@ -184,8 +188,10 @@ switch ieParamFormat(type)
         
         % Since we've plotted the surface, take a thin z slice for contours
         maxRF = max(obj.sRFcenter{1,1}(:));
-        ax1 = axis;
-        axis([ax1 .5*maxRF-.05 .5*maxRF]);
+        ax1 = axis
+        axis([ax1 exp(-1)*2*maxRF-.05 exp(-1)*2*maxRF]);
+%         axis([-10-max(umPerBipolar*plotX) 10+max(umPerBipolar*plotX) -10-max(umPerBipolar*plotY) 10+max(umPerBipolar*plotY) .5*maxRF-.05 .5*maxRF]);
+        
         
 %         alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
 %         set(gca,'xlim',alim,'ylim',alim);
