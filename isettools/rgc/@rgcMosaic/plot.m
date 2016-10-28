@@ -98,6 +98,7 @@ switch ieParamFormat(type)
         % We should plot, say, 5x5 array just to illustrate, rather than
         % the whole mosaic.  Only the whole mosaic on demand
         g = guidata(obj.figureHandle);
+        cla;
         
         % Somehow, we need these variables, too.  Let's rethink the
         % parameterization of the spatial receptive fields.
@@ -122,41 +123,75 @@ switch ieParamFormat(type)
         % Replace with ieShape('circle','center',...,'radius',...)
         % To draw the center and surround mosaic geometry
         % Axis units should be um
-        %
-        % nCells = obj.get('mosaic size');
-        nCell = 5;   % Central 5 cells
-        cellList = -2:2;
+        
+        % New strategy: make surface plot of all RFs combined and take a
+        % thin z slice to show contours. This is useful for when RFs are
+        % not circular, and each has a different elliptical shape (JRG).
+        
+        nCells = obj.get('mosaic size');
+%         nCell = 5;   % Central 5 cells
+%         cellList = -2:2;
         % I am noticing that the center of the sRF when the size is even
         % is, well, not good.  We should probably always insist on odd
         % row/col of the sRF images.
-        for xcell = cellList
-            for ycell = cellList
-                center = [xcell*umPerCell, ycell*umPerCell];
-                % This should be a real radius ... it appears to be just
-                % the spacing ... must read the constructor (BW).
-                radius = umPerCell;   
-                % Could be out of the loop ... or could be pulled from a
-                % space varying rgc object.
-                [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
-                fill(pts(:,1),pts(:,2),[1 0 1]);
-                % center
-                %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
-                %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-                %                     'color','b');
-                %                 hold on;
-                %                 % surround
-                %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
-                %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-                %                     'color','y');
+        for xcell = 1:nCells(1)
+            for ycell = 1:nCells(2)
+%         for xcell = cellList
+%             for ycell = cellList
+%                 center = [xcell*umPerCell, ycell*umPerCell];
+%                 % This should be a real radius ... it appears to be just
+%                 % the spacing ... must read the constructor (BW).
+%                 radius = umPerCell;   
+%                 % Could be out of the loop ... or could be pulled from a
+%                 % space varying rgc object.
+%                 [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
+%                 fill(pts(:,1),pts(:,2),[1 0 1]);
+%                 % center
+%                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
+%                 %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
+%                 %                     'color','b');
+%                 %                 hold on;
+%                 %                 % surround
+%                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
+%                 %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
+%                 %                     'color','y');
+                
+                hold on;
+                % Generate x and y coordinates for spatial RF
+                sRFx = [1:size(obj.sRFcenter{xcell,ycell},2)];
+                sRFy = [1:size(obj.sRFcenter{xcell,ycell},1)];
+                
+                % Shift to zero by subtracting half of size
+                sRFxZero = round(size(obj.sRFcenter{xcell,ycell},2)/2);
+                sRFyZero = round(size(obj.sRFcenter{xcell,ycell},1)/2);
+                
+                % Get center coordinate
+                sRFxCenter = obj.cellLocation{xcell,ycell}(2);
+                sRFyCenter = obj.cellLocation{xcell,ycell}(1);
+                
+                % Combine for appropriate coordinates
+                plotX = sRFx-sRFxZero+sRFxCenter;
+                plotY = sRFy-sRFyZero+sRFyCenter;
+                
+                % Plot surface
+                surf(plotX,plotY,obj.sRFcenter{xcell,ycell});
+        
             end
         end
         
         axis equal
-        alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
-        set(gca,'xlim',alim,'ylim',alim);
-        xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
-        grid on
+        shading interp
         
+        % Since we've plotted the surface, take a thin z slice for contours
+        maxRF = max(obj.sRFcenter{1,1}(:));
+        ax1 = axis;
+        axis([ax1 .5*maxRF-.05 .5*maxRF]);
+        
+%         alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
+%         set(gca,'xlim',alim,'ylim',alim);
+        xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
+%         grid on
+        hold off;
     otherwise
 end
 
