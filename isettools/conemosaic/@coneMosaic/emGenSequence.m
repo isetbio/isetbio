@@ -23,14 +23,11 @@ p.addParameter('em', emCreate, @isstruct);
 p.addParameter('rSeed', [], @isscalar);
 
 % set parameters
+sampTime  = obj.integrationTime;
+
 p.parse(nFrames, varargin{:});
 em = p.Results.em;
-em = emSet(em, 'sample time', obj.os.timeStep);
-sampTime  = obj.os.timeStep;
-
-% Update the integration time to be the number of frames times the sample
-% time (in ms).  This should be a listener, I fear (BW).
-obj.integrationTime = obj.os.timeStep*nFrames;
+em = emSet(em, 'sample time', sampTime);
 
 if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
 emFlag = emGet(em, 'em flag');

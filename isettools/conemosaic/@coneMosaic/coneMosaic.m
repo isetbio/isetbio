@@ -59,7 +59,10 @@ classdef coneMosaic < hiddenHandle
         
         current;        % The spatial array of photocurrent over time
         spatialDensity; % spatial density (ratio) of the K-LMS cones
+        
+        absorptionsTimeAxis;
     end
+    
     
     properties (Access=private)
         % spatial density (ratio) of the K-LMS cones
@@ -266,6 +269,10 @@ classdef coneMosaic < hiddenHandle
             val = double(obj.os.coneCurrentSignal);
         end
         
+        function val = get.absorptionsTimeAxis(obj)
+            val = (0:1:(size(obj.absorptions,3)-1)) * obj.integrationTime;
+        end
+        
         %% set method for class properties
         function set.spatialDensity(obj, val)
             if all(obj.spatialDensity_(:) == val(:)), return; end
@@ -314,6 +321,9 @@ classdef coneMosaic < hiddenHandle
         % Declare the compute method
         [absorptions, current] = compute(obj, oi, varargin);
         
+        % Declare the compute method for a sequence of optical images viewed sequentially
+        [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, oiTimeAxis, varargin)
+
         % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
         function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
             [demosaicedAbsorptionsMap, sRGB] = obj.demosaicedResponses();
@@ -338,6 +348,7 @@ classdef coneMosaic < hiddenHandle
 
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
+        resampledAbsorptionsSequence = tResample(absorptionsSequence, originalTimeAxis, resampledTimeAxis);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

@@ -1,7 +1,7 @@
-function [absorptions, current] = compute(obj, oi, varargin)
+function [absorptions, current, currentTimeAxis] = compute(obj, oi, varargin)
 % Compute the pattern of cone absorptions and typically the
 % photocurrent
-%    [absorptions, current] = cMosaic.compute(oi);
+%    [absorptions, current, currentTimeAxis] = cMosaic.compute(oi);
 %
 % Inputs:
 %   oi  - optical image, see oiCreate for more details
@@ -87,8 +87,17 @@ end
 % If we want the photo current, use the os model
 current = [];
 if currentFlag
-    pRate = absorptions/obj.integrationTime;
+    absorptionsTimeAxis = obj.absorptionsTimeAxis;
+    % compute the os time axis
+    dtOS = obj.os.timeStep;
+    osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
+    resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, absorptionsTimeAxis, osTimeAxis);
+    pRate = resampledAbsorptionsSequence/dtOS;
+    
     current = obj.os.osCompute(pRate, obj.pattern, ...
         'append', append);
+    
+    currentTimeAxis = osTimeAxis;
 end
 end
+
