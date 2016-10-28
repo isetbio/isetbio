@@ -4,9 +4,9 @@
 %
 %
 % NPC, ISETBIO TEAM, 2016
-%
 
-% Generate a uniform scene
+
+%% Generate a uniform scene
 meanLuminance = 100;
 uniformScene = sceneCreate('uniform equal photon', 128);
 % square scene with desired FOV
@@ -30,7 +30,7 @@ gaborScene = sceneSet(gaborScene, 'wAngular', FOV);
 gaborScene = sceneSet(gaborScene, 'distance', 1.0);
 gaborScene = sceneAdjustLuminance(gaborScene, meanLuminance);
 
-% generating stimulus modulation functions
+%% generating stimulus modulation functions
 stimulusSamplingInterval = 60/1000;
 oiTimeAxis = -0.6:stimulusSamplingInterval:0.6;
 stimulusRampTau = 0.165;
@@ -53,25 +53,32 @@ modulationRegion.radiusInMicrons = 250;
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (uniform field) is ADDED to the oiBackground over an 250 micron radius
 % region using a monophasic modulation function
-theOIsequence(1) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction1, 'composition', 'add', 'modulationRegion', modulationRegion);
+theOIsequence(1) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction1, ...
+    'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
-theOIsequence(2) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction2, 'composition', 'add', 'modulationRegion', modulationRegion);
+theOIsequence(2) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction2, ...
+    'composition', 'add', 'modulationRegion', modulationRegion);
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is ADDED with the oiBackground using a monophasic modulation function
-theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  'composition', 'add');
+theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
+    'composition', 'add');
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
-theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  'composition', 'blend');
+theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
+    'composition', 'blend');
 
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground  over an 250 micron radius using a biphasic modulation function
-theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction3, 'composition', 'blend', 'modulationRegion', modulationRegion);
+theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction3, ...
+    'composition', 'blend', 'modulationRegion', modulationRegion);
 
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
     theOIsequence(k).visualize();
 end
+
+%%

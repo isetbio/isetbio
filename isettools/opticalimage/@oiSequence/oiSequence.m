@@ -68,6 +68,20 @@ classdef oiSequence
             obj.modulationRegion = p.Results.modulationRegion;
             obj.composition = p.Results.composition;
             
+            % The oiTimeAxis must be the same length as the number of
+            % values in the modulationFunction.  If it only has 1 value, we
+            % are going to assume that the value is delta T and we will
+            % create the whole vector.  If it has a vector, but that vector
+            % is not the same length as the modulationFunction, we throw an
+            % error.
+            if length(obj.oiTimeAxis) == 1
+                % First moment in time is 0. Increments by the set value.
+                obj.oiTimeAxis = obj.oiTimeAxis*(0:(length(modulationFunction))-1);
+            elseif length(obj.oiTimeAxis) ~= length(obj.modulationFunction)
+                error('Time axis does not match modulation function');
+            end
+              
+            % Set a validation function above, don't do this.
             if (~strcmp(obj.composition, 'add')) && (~strcmp(obj.composition, 'blend'))
                 error('''composition'' must be set to either ''blend'' or ''add''.');
             end
@@ -82,17 +96,22 @@ classdef oiSequence
             if (any(oiFixedSpatialSupport(:) ~= oiModulatedSpatialSupport(:)))
                 error('Mismatch between spatial support of oiFixed, oiModulated');
             end
-            % Extract the photons
+            
+            % Extract the photons from the fixed and modulation oi's
             obj.fixedPhotons = oiGet(obj.oiFixed, 'photons');
             obj.modulatedPhotons = oiGet(obj.oiModulated, 'photons');
         end
             
+        %% Define methods in the @oiSequence directory
+        
         % Method for on-the-fly computation of the oi at desired index
         oiFrame = frameAtIndex(obj, index);
         
         % Visualize the sequence
         visualize(obj);
         visualizeWithEyeMovementSequence(obj, emTimeAxis);
+        
+        %% Local get methods
         
         % Return the length of the oiSequence
         function val = get.length(obj)
