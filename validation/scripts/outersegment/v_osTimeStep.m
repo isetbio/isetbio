@@ -56,7 +56,7 @@ c{stimulusConditionIndex} = theCondition;
 % Stimulus sampling interval > integration time
 stimulusConditionIndex = 3;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 111/1000;  
+theCondition.stimulusSamplingInterval = 145/1000;  
 theCondition.integrationTime = 67/1000;
 c{stimulusConditionIndex} = theCondition;
 
@@ -261,7 +261,7 @@ end
 
 
 function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
-    uniformScene = sceneCreate('uniform equal photon');
+    uniformScene = sceneCreate('uniform equal photon', 128);
     % square scene with desired FOV
     uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
     % 1 meter away
