@@ -1,13 +1,16 @@
-% Compute the pattern of cone absorptions and typically the
-% photocurrent
+% Compute the pattern of cone absorptions and typically the photocurrent
+% for a sequence of optica images (@oiSequence), and optionally a number of
+% eye movement paths.
+%
 %    [absorptions, absorpionsTimeAxis, [current, currentTimeAxis]] = ...
 %         cMosaic.compute(oiSequence, varargin);
 %
 % Inputs:
 %   oiSequence  - an @oiSequence object
-%   oiTimeAxis  - time axis for the optical image sequence
 %
 % Optional inputs:
+%   emPaths      - N eye movement paths, each with M eye movements, organized in an [N x M x 2] matrix
+%
 %   currentFlag  - logical, whether to compute photocurrent
 %   newNoise     - logical, whether to use new random seed
 %
@@ -20,15 +23,17 @@
 % NPC ISETBIO Team 2016
 %
 
-function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence,  varargin)
+function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, varargin)
 
     p = inputParser;
     p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+    p.addParameter('emPaths', [], @isnumeric);
     p.addParameter('currentFlag', false, @islogical);
     p.addParameter('newNoise', true, @islogical);
-    p.parse(oiSequence,  varargin{:});
+    p.parse(oiSequence, varargin{:});
     
     oiSequence = p.Results.oiSequence;
+    emPaths = p.Results.emPaths;
     currentFlag = p.Results.currentFlag;
     newNoise = p.Results.newNoise;
     oiTimeAxis = oiSequence.oiTimeAxis;
@@ -37,10 +42,18 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         error('oiTimeAxis and oiSequence must have equal length\n');
     end
     
-    % Save a copy of the entire eye movement sequence because we will be 
-    % applying different emPath segments for different optical images
-    eyeMovementsForOISequence = obj.emPositions;
-    eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(size(eyeMovementsForOISequence,1)-1)) * obj.integrationTime;
+    if (isempty(emPaths))
+        emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
+    end
+    
+    if (isempty(emPaths))
+        error('Either supply an ''emPaths'' key-value pair, or preload coneMosaic.emPositions');
+    end
+    
+    % Compute eye movement time axis
+    instancesNum = size(emPaths,1);
+    eyeMovementsNum = size(emPaths,2);
+    eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(eyeMovementsNum-1)) * obj.integrationTime;
     
     % Compute OIrefresh
     oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
@@ -48,8 +61,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     % Save default integration time
     defaultIntegrationTime = obj.integrationTime;
 
-    % Initialize our time series
-    absorptions = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(eyeMovementTimeAxis));
+    % Allocate memory for absorptions in [instancesNum x time x cone_rows x
+    % cone_cols] format. This is done because Matlab drops the last
+    % dimension if it is singleton, i.e., when there is 1 eye movement
+    % At then end we reshape it to [instancesNum x cone_rows x cone_cols x time]
+    absorptions = zeros(instancesNum, numel(eyeMovementTimeAxis), size(obj.pattern,1), size(obj.pattern,2));
     
     if (oiRefreshInterval >= defaultIntegrationTime)
 
@@ -87,49 +103,60 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             integrationTimeForSecondPartialAbsorption = eyeMovementTimeAxis(idx)+defaultIntegrationTime-tFrameStart;
 
             % Partial absorptions (p1 in graph above) with previous oi
+            % (across all instances)
             if (oiIndex > 1)
                 % Update the @coneMosaic with the partial integration time
                 obj.integrationTime = integrationTimeForFirstPartialAbsorption;
                 % Compute partial absorptions
+                emSubPath = reshape(squeeze(emPaths(1:instancesNum,idx,:)), [instancesNum 2]);
                 absorptionsDuringPreviousFrame = obj.compute(...
                                 oiSequence.frameAtIndex(oiIndex-1), ...
-                                'emPath', eyeMovementsForOISequence(idx,:), ...
+                                'emPath', emSubPath, ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
                                 ); 
             else
-                absorptionsDuringPreviousFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), 1);
+                absorptionsDuringPreviousFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), instancesNum);
             end
 
             % Partial absorptions (p2 in graph above) with current oi
+            % across all instances
             % Update the @coneMosaic with the partial integration time
             obj.integrationTime = integrationTimeForSecondPartialAbsorption;
             % Compute partial absorptions
+            emSubPath = reshape(squeeze(emPaths(1:instancesNum,idx,:)), [instancesNum 2]);
             absorptionsDuringCurrentFrame =  obj.compute(...
                                 oiSequence.frameAtIndex(oiIndex), ...
-                                'emPath', eyeMovementsForOISequence(idx,:), ...
+                                'emPath', emSubPath, ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
                                 );
+            
+            totalAbsorptions = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
             % insert the sum of the two partial absorptions in the time series  
             insertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-            absorptions(:,:, insertionIndex) = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
-
+            absorptions(1:instancesNum, insertionIndex, :, :) = permute(reshape(totalAbsorptions, [1 size(totalAbsorptions)]), [4 1 2 3]);
+            
+            
             % Full absorptions with current oi and default integration time)
             if (numel(indices)>1)    
                 % Update the @coneMosaic with the default integration time
                 obj.integrationTime = defaultIntegrationTime;
                 % Compute absorptions for all remaining the OIs
                 idx = indices(2:end);
+                emSubPath = reshape(emPaths(1:instancesNum, idx,:), [instancesNum*numel(idx) 2]);
                 absorptionsForRemainingEyeMovements = obj.compute(...
                         oiSequence.frameAtIndex(oiIndex), ...
-                        'emPath', eyeMovementsForOISequence(idx,:), ...      
+                        'emPath', emSubPath, ...      
                         'newNoise', newNoise, ...
                         'currentFlag', false ...      
                         );
+                absorptionsForRemainingEyeMovements = reshape(absorptionsForRemainingEyeMovements, [size(absorptionsForRemainingEyeMovements,1) size(absorptionsForRemainingEyeMovements,2) instancesNum numel(idx)]);
+                absorptionsForRemainingEyeMovements = permute(absorptionsForRemainingEyeMovements, [3 4 1 2]);
+                
                 % insert in time series  
                 insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-                absorptions(:,:, insertionIndices) = absorptionsForRemainingEyeMovements; 
+                absorptions(1:instancesNum, insertionIndices,:,:) = absorptionsForRemainingEyeMovements; 
             end
         end  % oiIndex
 
@@ -148,7 +175,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     %                                            absorption  absorption absorption
 %
         % Loop over the eye movements
-        for emIndex = 1:numel(eyeMovementTimeAxis) 
+        for emIndex = 1:eyeMovementsNum
         
             % Current eye movement time limits
             emStart = eyeMovementTimeAxis(emIndex);
@@ -173,13 +200,14 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             % Update the sum of partial integration times
             actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
             % Compute absorptions
+            emSubPath = reshape(emPaths(1:instancesNum, emIndex,:), [instancesNum 2]);
             absorptionsAccum = obj.compute(...
                                 oiSequence.frameAtIndex(idx), ...
-                                'emPath', eyeMovementsForOISequence(emIndex,:), ...
+                                'emPath', emSubPath, ...
                                 'newNoise', newNoise, ...
                                 'currentFlag', false ...                                                    
                                 ); 
- 
+
             % Next, compute full absorptions for the remaining OIs
             if (numel(indices)>1) 
                 for k = 2:numel(indices)
@@ -196,9 +224,10 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                     % Update the sum of partial integration times
                     actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
                     % Compute absorptions
+                    emSubPath = reshape(emPaths(1:instancesNum, emIndex,:), [instancesNum 2]);
                     absorptionsAccum = absorptionsAccum + obj.compute(...
                             oiSequence.frameAtIndex(indices(k)), ...
-                            'emPath', eyeMovementsForOISequence(emIndex,:), ...      
+                            'emPath', emSubPath, ...      
                             'newNoise', newNoise, ...
                             'currentFlag', false ...      
                             );
@@ -212,18 +241,25 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
            
            % insert to time series  
            insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-           absorptions(:,:, insertionIndices) = absorptionsAccum;
+           absorptions(1:instancesNum, insertionIndices, :, :) = permute(reshape(absorptionsAccum, [1 size(absorptionsAccum)]), [4 1 2 3]);
         end % emIndex  
-    end
+    end % oiRefreshInterval > defaultIntegrationTime
 
     % Restore default integrationTime
     obj.integrationTime = defaultIntegrationTime;
 
-    % Reload the full eye movement sequence
-    obj.emPositions = eyeMovementsForOISequence;
+    % Reload the full eye movement sequence for the first instance only
+    if (ndims(emPaths) == 3)
+        obj.emPositions = squeeze(emPaths(1,:,:));
+    else
+        obj.emPositions = emPaths;
+    end
     
-    % Reload the full absorptions signal
-    obj.absorptions = absorptions;
+    % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
+    absorptions = permute(absorptions, [1 3 4 2]);
+
+    % Reload the full absorptions signal from the first instance only
+    obj.absorptions = squeeze(absorptions(1,:,:,:));
     
     % align absorptions time axis with respect to optical image sequence time axis
     absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis; 
@@ -232,15 +268,24 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         % compute the photocurrent time axis
         dtOS = obj.os.timeStep;
         osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
-    
-        % Resample absorptions to osTimeAxis timebase
-        resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, absorptionsTimeAxis, osTimeAxis);
-    
-        % Convert to photon rate in photons/sec for the osTimeStep
-        pRate = resampledAbsorptionsSequence/dtOS;
         
-        % Compute and return the photocurrent response
-        varargout{1} = obj.os.osCompute(pRate, obj.pattern, 'append', false);
+        photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis));
+        for instanceIndex = 1:instancesNum
+            tmp = squeeze(absorptions(instanceIndex,:,:,:));
+            tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(absorptionsTimeAxis)]);
+            
+            tmp = coneMosaic.tResample(tmp, absorptionsTimeAxis, osTimeAxis);
+            tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(osTimeAxis)]);
+            
+            % Convert to photon rate in photons/sec for the osTimeStep
+            tmp = tmp/dtOS;
+            
+            % Compute photocurrent
+            photocurrents(instanceIndex,:,:,:) = obj.os.osCompute(tmp, obj.pattern, 'append', false);
+        end
+      
+        % Return photocurrents
+        varargout{1} = photocurrents;
         
         % Return the photocurrent time axis 
         varargout{2} = osTimeAxis;

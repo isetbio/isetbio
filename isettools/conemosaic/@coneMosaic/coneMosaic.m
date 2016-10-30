@@ -270,7 +270,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.absorptionsTimeAxis(obj)
-            val = (0:1:(size(obj.absorptions,3)-1)) * obj.integrationTime;
+            sz = size(obj.absorptions);
+            val = (0:1:(sz(end)-1)) * obj.integrationTime;
         end
         
         %% set method for class properties

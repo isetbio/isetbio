@@ -8,8 +8,8 @@ function resampledAbsorptionsSequence = tResample(absorptionsSequence, originalT
         % reshape for efficient computation
         [absorptionsSequence , r, c] = RGB2XWFormat(absorptionsSequence);
         reshapeMatrix = true; 
-    elseif (ndims(absorptionsSequence) ~= 2)
-        error('absorptionsCountSequence must be either 2D or 3D');
+    elseif (ndims(absorptionsSequence) ~= 2) && (ndims(absorptionsSequence) ~= 1)
+        error('absorptionsCountSequence must be either 1D 2D or 3D');
     end
     
     if ((numel(originalTimeAxis) == 1) && (numel(resampledTimeAxis) == 1))

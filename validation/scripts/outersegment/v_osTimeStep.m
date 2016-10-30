@@ -137,9 +137,8 @@ function [theConeMosaic, theOIsequence, ...
     osNoise = condData.osNoise;
     
     % Define the time axis for the simulation
-    minTime = -0.84;
-    maxTime = 0.72;
-    oiTimeAxis = minTime:stimulusSamplingInterval:maxTime;
+    oiTimeAxis = 0:stimulusSamplingInterval:1.5;
+    oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
     stimulusRampTau = 0.18;
@@ -161,42 +160,35 @@ function [theConeMosaic, theOIsequence, ...
 
     % Generate the sequence of optical images
     theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
+    theOIsequence.visualize();
 
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
+    [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
 
-    % Make all movements 0.
-    theConeMosaic.emPositions = theConeMosaic.emPositions * 0;
-    
-    % Compute all instances
+    % Generate eye movement paths for all instances
+    emPaths = zeros(instancesNum, eyeMovementsNum,2);
     for instanceIndex = 1:instancesNum
-        fprintf('Computing response instance %d of %d\n', instanceIndex, instancesNum);
-        [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
+        emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
+    end
+    
+    tic
+    % Compute all instances
+    [allInstancesAbsorptionsCountSequence, absorptionsTimeAxis, allInstancesPhotoCurrentSequence, photoCurrentTimeAxis] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
+            'emPaths', emPaths, ...
             'currentFlag', true, ...
             'newNoise', true ...
             );
-        % Compute photon rate from photon count
-        isomerizationRateSequence = absorptionsCountSequence / theConeMosaic.integrationTime;
-    
-        % Preallocate memory
-        if (instanceIndex == 1)
-            allInstancesAbsorptionsCountSequence = zeros([size(absorptionsCountSequence) instancesNum ]);
-            allInstancesIsomerizationRateSequence = zeros([size(isomerizationRateSequence) instancesNum ]);
-            allInstancesPhotoCurrentSequence = zeros([size(photoCurrentSequence) instancesNum ]);
-        end
+     toc
      
-        % Populate data matrices
-        allInstancesAbsorptionsCountSequence(:,:,:, instanceIndex) = absorptionsCountSequence;
-        allInstancesIsomerizationRateSequence(:,:,:, instanceIndex) = isomerizationRateSequence;
-        allInstancesPhotoCurrentSequence(:,:,:, instanceIndex) = photoCurrentSequence;
-    end
+    % Compute photon rate from photon count
+    allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
 end
 
 
 % ------- Helper functions --------
 
-function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, opticalImageSequenceLength)
+function [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, opticalImageSequenceLength)
     % Default human mosaic
     theConeMosaic = coneMosaic;
     
@@ -235,7 +227,6 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, in
         error('Less than 1 eye movement!!! \nStimulus sampling interval:%g Cone mosaic integration time: %g\n', stimulusSamplingInterval, theConeMosaic.integrationTime);
     else 
         fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-        theConeMosaic.emGenSequence(eyeMovementsNum);
     end
 end
 
@@ -284,22 +275,22 @@ end
 
 function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstancesIsomerizationsCount, allInstancesPhotoCurrents, figNo)
     
-    % Compute isomerization means and stds
-    isomerizationMeans = mean(allInstancesIsomerizationsCount, 4);
-    isomerizationSTDs = std(allInstancesIsomerizationsCount, 0, 4);
+    % Compute isomerization means and stds across all instances
+    isomerizationMeans = mean(allInstancesIsomerizationsCount, 1);
+    isomerizationSTDs = std(allInstancesIsomerizationsCount, 0, 1);
     
     % Subtract first time point from all photocurrents
     timePoint = 1;
-    photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,timePoint,:);
-    allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, reshape(photocurrentBaselineAtTimePoint1, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) 1 size(allInstancesPhotoCurrents,4)])); 
+    photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint);
+    allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, reshape(photocurrentBaselineAtTimePoint1, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) size(allInstancesPhotoCurrents,3) 1])); 
 
-    % compute photocurrent means and stds
-    photocurrentMeansBaselineCorrected  = mean(allInstancesPhotoCurrents,4);
-    photocurrentSTDsBaselineCorrected   = std(allInstancesPhotoCurrents, 0, 4);
+    % compute photocurrent means and stds across all instances
+    photocurrentMeansBaselineCorrected  = mean(allInstancesPhotoCurrents,1);
+    photocurrentSTDsBaselineCorrected   = std(allInstancesPhotoCurrents, 0, 1);
     
     
     dt = isomerizationsTimeAxis(2)-isomerizationsTimeAxis(1);
-    instancesNum = size(allInstancesIsomerizationsCount,4);
+    instancesNum = size(allInstancesIsomerizationsCount,1);
     % Plotting limits
     absorptionsFanoFactorLims = [0.0 10];
     photocurrentFanoFactorLims = [0.0 100];
@@ -307,7 +298,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     photocurrentRange = [-5 50];  
     
     
-    hFig = figure(figNo); clf;
+    hFig = figure(figNo+1000); clf;
     set(hFig, 'Position', [10+figNo*10 10 1800 1180], 'Color', [0 0 0]);
     
     colors = [1 0 0; 0 1.0 0; 0 0.8 1];
@@ -324,8 +315,9 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
            'topMargin',      0.04);
     
     for coneType = 1:3
-        mu = squeeze(isomerizationMeans(1,coneType,:));
-        sigma = squeeze(isomerizationSTDs(1,coneType,:));
+
+        mu = squeeze(isomerizationMeans(1,1, coneType,:));
+        sigma = squeeze(isomerizationSTDs(1,1, coneType,:));
         % avoid divisions by zero
         sigma(mu == 0) = 1;
         
@@ -333,8 +325,8 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         isomerizationsInverseFanoFactor = mu ./ variance;
         isomerizationsSNR = mu ./sigma;
         
-        mu = squeeze(photocurrentMeansBaselineCorrected(1,coneType,:));
-        sigma = squeeze(photocurrentSTDsBaselineCorrected(1,coneType,:));
+        mu = squeeze(photocurrentMeansBaselineCorrected(1,1,coneType,:));
+        sigma = squeeze(photocurrentSTDsBaselineCorrected(1,1,coneType,:));
         % avoid divisions by near zero by making very small photocurrents = 0
         sigma(mu < 0.1) = 1;
         mu(mu < 0.1) = 0;
@@ -343,8 +335,8 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         photocurrentInverseFanoFactor = mu ./variance;
         photocurrentSNR = mu ./ sigma;
         
-        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:))))) + 1;
-        minIsomerizationCountForThisCone = min(min(min(squeeze(allInstancesIsomerizationsCount(:,coneType, :,:)))));
+        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,:,coneType,:))))) + 1;
+        minIsomerizationCountForThisCone = min(min(min(squeeze(allInstancesIsomerizationsCount(:,:, coneType,:)))));
         
         plotBackgroundColor = [0.1 0.1 0.1];
         
@@ -358,7 +350,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         
         barOpacity = 0.1;
         for tIndex = 1:numel(isomerizationsTimeAxis)
-            quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,coneType,tIndex,:));
+            quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,1, coneType,tIndex));
             plot([isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt], [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
         end
         box on;
@@ -442,7 +434,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         end
         
         % Plot photocurrents
-        plot(photocurrentTime, squeeze(allInstancesPhotoCurrents(1, coneType, :, :)), 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity*2]);
+        plot(photocurrentTime, squeeze(allInstancesPhotoCurrents(:,1,coneType, :)), 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity*2]);
         box on;
         set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', photocurrentRange);
         if (coneType == 3)

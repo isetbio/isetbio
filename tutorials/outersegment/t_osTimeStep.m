@@ -79,7 +79,6 @@ function [theConeMosaic, theOIsequence, ...
             'currentFlag', true, ...
             'newNoise', true ...
             );
-        
     % If you need a resampled (most likely a down-sampled) version of the photocurrent, here is how to get it.
     % resampledPhotocurrents = outerSegment.resample(photoCurrentSequence, photoCurrentTimeAxis, absorptionsTimeAxis);
     
@@ -315,7 +314,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     hold  on
     coneColors = [1 0 0; 0 1 0; 0 0 1];
     for k = 1:3
-        plot(absorptionsTimeAxis, squeeze(isomerizationRateSequence(referenceConeRows(k),referenceConeCols(k),:)), '.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
+        plot(absorptionsTimeAxis, squeeze(isomerizationRateSequence(1, referenceConeRows(k),referenceConeCols(k),:)), '.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
     end
     plotStimulusTimes(isomerizationRange);
     
@@ -330,7 +329,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     photoCurrentRange = [min(photoCurrentSequence(:)) max(photoCurrentSequence(:))+2];
     hold on;
     for k = 1:3
-        plot(responseTimeAxis, squeeze(photoCurrentSequence(referenceConeRows(k),referenceConeCols(k),:)), 'k.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
+        plot(responseTimeAxis, squeeze(photoCurrentSequence(1, referenceConeRows(k),referenceConeCols(k),:)), 'k.', 'Color', squeeze(coneColors(k,:)), 'MarkerSize', 15, 'LineWidth', 1.5);
     end
     plotStimulusTimes(photoCurrentRange);
     
