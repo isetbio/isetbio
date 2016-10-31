@@ -269,7 +269,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         dtOS = obj.os.timeStep;
         osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
         
-        photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis));
+        photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis), 'single');
         for instanceIndex = 1:instancesNum
             tmp = squeeze(absorptions(instanceIndex,:,:,:));
             tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(absorptionsTimeAxis)]);
@@ -281,7 +281,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             tmp = tmp/dtOS;
             
             % Compute photocurrent
-            photocurrents(instanceIndex,:,:,:) = obj.os.osCompute(tmp, obj.pattern, 'append', false);
+            photocurrents(instanceIndex,:,:,:) = single(obj.os.osCompute(tmp, obj.pattern, 'append', false));
         end
       
         % Return photocurrents
