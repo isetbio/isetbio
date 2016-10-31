@@ -65,7 +65,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     % cone_cols] format. This is done because Matlab drops the last
     % dimension if it is singleton, i.e., when there is 1 eye movement
     % At then end we reshape it to [instancesNum x cone_rows x cone_cols x time]
-    absorptions = zeros(instancesNum, numel(eyeMovementTimeAxis), size(obj.pattern,1), size(obj.pattern,2));
+    absorptions = zeros(instancesNum, numel(eyeMovementTimeAxis), size(obj.pattern,1), size(obj.pattern,2), 'single');
     
     if (oiRefreshInterval >= defaultIntegrationTime)
 
@@ -135,7 +135,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             totalAbsorptions = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
             % insert the sum of the two partial absorptions in the time series  
             insertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-            absorptions(1:instancesNum, insertionIndex, :, :) = permute(reshape(totalAbsorptions, [1 size(totalAbsorptions)]), [4 1 2 3]);
+            absorptions(1:instancesNum, insertionIndex, :, :) = single(permute(reshape(totalAbsorptions, [1 size(totalAbsorptions)]), [4 1 2 3]));
             
             
             % Full absorptions with current oi and default integration time)
@@ -156,7 +156,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                 
                 % insert in time series  
                 insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-                absorptions(1:instancesNum, insertionIndices,:,:) = absorptionsForRemainingEyeMovements; 
+                absorptions(1:instancesNum, insertionIndices,:,:) = single(absorptionsForRemainingEyeMovements); 
             end
         end  % oiIndex
 
@@ -241,7 +241,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
            
            % insert to time series  
            insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-           absorptions(1:instancesNum, insertionIndices, :, :) = permute(reshape(absorptionsAccum, [1 size(absorptionsAccum)]), [4 1 2 3]);
+           absorptions(1:instancesNum, insertionIndices, :, :) = single(permute(reshape(absorptionsAccum, [1 size(absorptionsAccum)]), [4 1 2 3]));
         end % emIndex  
     end % oiRefreshInterval > defaultIntegrationTime
 
