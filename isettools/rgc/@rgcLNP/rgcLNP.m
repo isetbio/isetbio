@@ -37,7 +37,7 @@ classdef rgcLNP < rgcMosaic
         
         % Parameter to specify the time bins Pillow uses for coupling and
         % post spike filters (10 ms default)
-        dt = 0.01;
+        dt = 0.1;
     end
            
     % Protected properties.

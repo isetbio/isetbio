@@ -29,6 +29,8 @@ coupling = p.Results.coupling;
 % Parameters shared whether coupled or not
 glmprs.nlfun = mosaic.generatorFunction;
 
+global RefreshRate
+
 if coupling
     %% Get number of cells
     nCells = mosaic.get('mosaic size');
@@ -111,8 +113,8 @@ if coupling
     glmprs.ihind = ihind;
     %% Set time samples
     if~(isfield(mosaic,'dt'))
-        glmprs.iht = .01*(1:size(ih,1));
-        glmprs.dt = .01;
+        glmprs.iht = (1/RefreshRate)*(1:size(ih,1));
+        glmprs.dt = (1/RefreshRate);
     else
         % Set interpolation
         glmprs.iht = mosaic.dt*(1:size(ih,1));
@@ -150,8 +152,8 @@ else
     
     %% Set time samples
     if~(isfield(mosaic,'dt'))
-        glmprs.iht = .01*(1:size(ih,1));
-        glmprs.dt = .01;
+        glmprs.iht = (1/RefreshRate)*(1:size(ih,1));
+        glmprs.dt = (1/RefreshRate);
     else
         % Set interpolation
         glmprs.iht = mosaic.dt*(1:size(ih,1));
