@@ -108,7 +108,7 @@ classdef oiSequence
         oiFrame = frameAtIndex(obj, index);
         
         % Visualize the sequence
-        visualize(obj);
+        visualize(obj,varargin);
         visualizeWithEyeMovementSequence(obj, emTimeAxis);
         
         %% Local get methods
