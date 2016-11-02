@@ -33,7 +33,7 @@ function [tsp,Vmem,Ispk] = simGLMsingle(glmprs,Stim);
 % --------------- Check Inputs ----------------------------------
 global RefreshRate;
 
-nbinsPerEval = 100;  % Default number of bins to update for each spike
+nbinsPerEval = RefreshRate;  % Default number of bins to update for each spike
 dt = glmprs.dt;
 % Check that dt evenly divides 1
 if (mod(1,dt) ~= 0), dt = 1/round(1/dt);
@@ -82,7 +82,8 @@ end
 
 jbin = 1; % current time bin
 nsp = 0; % number of spikes
-tspnext = ieExprnd(1,1);  % time of next spike (in rescaled time)
+% tspnext = ieExprnd(1,1);  % time of next spike (in rescaled time)
+tspnext = -log(rand(1));
 rprev = 0;  % Integrated rescaled time up to current point
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);
@@ -92,7 +93,8 @@ while jbin <= rlen
         jbin = iinxt(end)+1;
         rprev = rrcum(end);
     else   % Spike!
-        ispk = iinxt(min(find(rrcum>=tspnext))); % time bin where spike occurred
+%         ispk = iinxt(min(find(rrcum>=tspnext))); % time bin where spike occurred
+        gi = (rrcum>=tspnext); ispk2 = iinxt(gi); ispk = ispk2(1);
         nsp = nsp+1;
         tsp(nsp,1) = ispk*dt; % spike time
         mxi = min(rlen, ispk+hlen); % max time affected by post-spike kernel
@@ -103,7 +105,8 @@ while jbin <= rlen
                 Ispk(iiPostSpk) = Ispk(iiPostSpk)+ihhi(1:mxi-ispk);
             end
         end
-        tspnext = ieExprnd(1,1);  % draw next spike time
+%         tspnext = ieExprnd(1,1);  % draw next spike time
+        tspnext = -log(rand(1));
         rprev = 0; % reset integrated intensity
         jbin = ispk+1;  % Move to next bin
         % --  Update # of samples per iter ---
