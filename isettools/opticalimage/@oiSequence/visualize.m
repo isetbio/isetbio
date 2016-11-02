@@ -42,14 +42,15 @@ switch format
                 for ii=1:length(wgts)
                     d(:,:,ii) = illFixed*(1-wgts(ii)) + illMod*wgts(ii);
                     % To make a video, we should do this type of thing
-                end                
+                end
+                
                 % d = ieScale(d,0,1) .^ 0.5;
                 % mind = min(d(:)); maxd = max(d(:));
+                % I don't know why ieMovie can't run well on this
                 for ii=1:length(wgts)
                     image(d(:,:,ii)); axis image; drawnow;
                     % if save,  F = getframe; writeVideo(vObj,F); end
                 end
-                % ieMovie(d);  % Scales stuff in the wrong way
                 
             case 'add'
                 for ii=1:length(wgts)

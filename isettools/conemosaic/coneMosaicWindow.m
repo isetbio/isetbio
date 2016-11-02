@@ -461,7 +461,7 @@ switch source.Label
         end
     case 'time series'
         vcNewGraphWin;
-        t = (1:size(data, 3)) * handles.cMosaic.sampleTime * 1e3;
+        t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
         plot(t, squeeze(data(x, y, :)), 'LineWidth', 2);
         grid on; xlabel('Time (ms)'); ylabel(yStr);
     otherwise
