@@ -1,6 +1,6 @@
 % Method to temporally resample an absorptions count sequence ensuring that the total
 % number of photons are unchanged in the original and the resampled versions
-function resampledAbsorptionsSequence = tResample(absorptionsSequence, originalTimeAxis, resampledTimeAxis)
+function resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis)
  
     reshapeMatrix = false;
     
@@ -19,10 +19,14 @@ function resampledAbsorptionsSequence = tResample(absorptionsSequence, originalT
     
     % resample count sequence in the photocurrent timebase, i.e. upsample.
     resampledAbsorptionsSequence = zeros(size(absorptionsSequence,1), numel(resampledTimeAxis));
-    for coneIndex = 1:size(absorptionsSequence,1)
-        countsBefore = squeeze(absorptionsSequence(coneIndex,:));
-        countsAfter  = interp1(originalTimeAxis, countsBefore, resampledTimeAxis, 'previous');
-        resampledAbsorptionsSequence(coneIndex,:) = countsAfter / sum(countsAfter) * sum(countsBefore);
+    for coneType = 2:4
+        indices = find(pattern == coneType);
+        for k = 1:numel(indices)
+            coneIndex = indices(k);
+            countsBefore = squeeze(absorptionsSequence(coneIndex,:));
+            countsAfter  = interp1(originalTimeAxis, countsBefore, resampledTimeAxis, 'previous');
+            resampledAbsorptionsSequence(coneIndex,:) = countsAfter / sum(countsAfter) * sum(countsBefore);
+        end
     end
     
     if (reshapeMatrix)

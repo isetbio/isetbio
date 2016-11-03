@@ -349,7 +349,7 @@ classdef coneMosaic < hiddenHandle
 
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
-        resampledAbsorptionsSequence = tResample(absorptionsSequence, originalTimeAxis, resampledTimeAxis);
+        resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

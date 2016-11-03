@@ -271,17 +271,15 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         
         photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis), 'single');
         for instanceIndex = 1:instancesNum
+            fprintf('Computing photocurrents for instance %d/%d\n', instanceIndex,instancesNum);
             tmp = squeeze(absorptions(instanceIndex,:,:,:));
+
             tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(absorptionsTimeAxis)]);
-            
-            tmp = coneMosaic.tResample(tmp, absorptionsTimeAxis, osTimeAxis);
+            tmp = coneMosaic.tResample(tmp, obj.pattern, absorptionsTimeAxis, osTimeAxis);
             tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(osTimeAxis)]);
             
-            % Convert to photon rate in photons/sec for the osTimeStep
-            tmp = tmp/dtOS;
-            
-            % Compute photocurrent
-            photocurrents(instanceIndex,:,:,:) = single(obj.os.osCompute(tmp, obj.pattern, 'append', false));
+            % Compute photocurrent from photonRate (tmp/dtOS)
+            photocurrents(instanceIndex,:,:,:) = single(obj.os.osCompute(tmp/dtOS, obj.pattern, 'append', false));
         end
       
         % Return photocurrents
