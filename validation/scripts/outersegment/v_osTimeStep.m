@@ -70,7 +70,7 @@ for stimulusConditionIndex = 1:numel(c)
      allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
      allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
      allInstancesPhotoCurrents{stimulusConditionIndex} ...
-   ] = runSimulation(c{stimulusConditionIndex}, instancesNum);  
+   ] = runSimulation(c{stimulusConditionIndex}, instancesNum, runTimeParams);  
 
     if (runTimeParams.generatePlots)
         plotSNR(absorptionsTimeAxis{stimulusConditionIndex}, ...
@@ -124,7 +124,7 @@ function [theConeMosaic, theOIsequence, ...
     oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, ...
     allInstancesAbsorptionsCountSequence, ...
     allInstancesIsomerizationRateSequence, ...
-    allInstancesPhotoCurrentSequence] = runSimulation(condData, instancesNum)
+    allInstancesPhotoCurrentSequence] = runSimulation(condData, instancesNum, runtimeParams)
 
     mosaicSize = condData.mosaicSize;
     meanLuminance = condData.meanLuminance;
@@ -160,8 +160,10 @@ function [theConeMosaic, theOIsequence, ...
 
     % Generate the sequence of optical images
     theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
-    theOIsequence.visualize('format', 'montage');
-
+    if (runtimeParams.generatePlots)
+        theOIsequence.visualize('format', 'montage');
+    end
+    
     % Generate the cone mosaic with eye movements for theOIsequence
     [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
 
