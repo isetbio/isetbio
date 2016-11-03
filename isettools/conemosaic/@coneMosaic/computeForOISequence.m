@@ -289,5 +289,8 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         
         % Return the photocurrent time axis 
         varargout{2} = osTimeAxis;
+    else
+        varargout{1} = [];
+        varargout{2} = [];
     end % currentFlag
 end
