@@ -78,7 +78,7 @@ theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modula
 
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
-    theOIsequence(k).visualize();
+    theOIsequence(k).visualize('format', 'montage');
 end
 
 %%
