@@ -91,21 +91,21 @@ UnitTest.validationData('oiTimeAxisCond1', oiTimeAxis{1});
 UnitTest.validationData('absorptionsTimeAxisCond1', absorptionsTimeAxis{1});
 UnitTest.validationData('photoCurrentTimeAxisCond1', photoCurrentTimeAxis{1});
 UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstancesAbsorptionsCountSequence{1});
-UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 5));
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 5));
 
 UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
 UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
 UnitTest.validationData('photoCurrentTimeAxisCond2', photoCurrentTimeAxis{2});
 UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond2', allInstancesAbsorptionsCountSequence{2});
-UnitTest.validationData('allInstancesIsomerizationRateSequenceCond2', round(allInstancesIsomerizationRateSequence{2}, 5));
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond2', round(allInstancesIsomerizationRateSequence{2}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond2', round(allInstancesPhotoCurrents{2}, 5));
 
 UnitTest.validationData('oiTimeAxisCond3', oiTimeAxis{3});
 UnitTest.validationData('absorptionsTimeAxisCond3', absorptionsTimeAxis{3});
 UnitTest.validationData('photoCurrentTimeAxisCond3', photoCurrentTimeAxis{3});
 UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond3', allInstancesAbsorptionsCountSequence{3});
-UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', round(allInstancesIsomerizationRateSequence{3}, 5));
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', round(allInstancesIsomerizationRateSequence{3}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond3', round(allInstancesPhotoCurrents{3}, 5));
 
 % Extra data: coneMosaics and oiSequences
