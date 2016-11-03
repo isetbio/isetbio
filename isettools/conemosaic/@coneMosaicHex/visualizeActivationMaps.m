@@ -1,4 +1,4 @@
-function visualizeActivationMaps(obj, activation, varargin)
+function hFig = visualizeActivationMaps(obj, activation, varargin)
 % Visualize mosaic activations separately for each submosaic and for the
 % entire mosaic.
 %
@@ -12,16 +12,16 @@ function visualizeActivationMaps(obj, activation, varargin)
     p.parse(varargin{:});  
     
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
-        visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+        hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
-        visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+        hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
     else
         error('visualizeActivationMaps:: Unknown map type');
     end
 end
 
 
-function visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, figureSize)
+function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, figureSize)
 % Visualize mosaic activations as disk mosaics
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
@@ -41,45 +41,57 @@ function visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapTyp
     activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
     
     hFig = figure();
-    set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [1 1 1]); % , 'MenuBar', 'None');
+    set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [0 0 0]); % , 'MenuBar', 'None');
     
-    subplotPositions = [...
-        0.02 0.52 0.45 0.45; ...
-        0.49 0.52 0.45 0.45; ...
-        0.02 0.03 0.45 0.45; ...
-        0.49 0.03 0.45 0.45];
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 4, ...
+           'heightMargin',   0.03, ...
+           'widthMargin',    0.03, ...
+           'leftMargin',     0.04, ...
+           'rightMargin',    0.06, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.02);
     
     for subplotIndex = 1:4
-        subplot('Position', subplotPositions(subplotIndex,:));
+        subplot('Position', subplotPosVectors(1,subplotIndex).v);
         set(gca, 'Color', [0 0 0]);
         switch subplotIndex
             case 1
                 idx = find(obj.pattern == 2);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'L-cone submosaic activation';
-                showXticks = false;
+                showXticks = true;
                 showYticks = true;
+                edgeColor = 'none'; 
+                lineWidth = 0.1;
             case 2
                 idx = find(obj.pattern == 3);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'M-cone submosaic activation';
-                showXticks = false;
+                showXticks = true;
                 showYticks = false;
+                edgeColor = 'none'; 
+                lineWidth = 0.1;
             case 3
                 idx = find(obj.pattern == 4);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'S-cone submosaic activation';
                 showXticks = true;
-                showYticks = true;
+                showYticks = false;
+                edgeColor = 'none'; 
+                lineWidth = 0.1;
             case 4
                 idx = find(obj.pattern > 1);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'total mosaic activation';
                 showXticks = true;
                 showYticks = false;
+                edgeColor = 'none'; 
+                lineWidth = 0.1;
         end
         
-        edgeColor = 'none'; lineStyle = '-'; lineWidth = 0.1;
+        lineStyle = '-'; 
         cMapLevels = size(cMap,1);
         activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
         faceColorsNormalizedValues = activationsNlevels/cMapLevels;
@@ -90,7 +102,7 @@ function visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapTyp
         yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
         if (~showXticks)
             set(gca, 'XTick', []);
         end
@@ -101,7 +113,7 @@ function visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapTyp
         set(gca, 'XLim', [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width]);
         set(gca, 'YLim', [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width]);
         set(gca, 'FontSize', 14);
-        title(subplotTitle, 'FontSize', 16);
+        title(subplotTitle, 'FontSize', 16, 'Color', [1 1 1]);
         
         if (subplotIndex == 4)
             ticks = 0:0.1:1.0;
@@ -137,7 +149,7 @@ end
 
 
 
-function visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, figureSize)
+function hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, figureSize)
 % Visualize mosaic activations as density maps
             
     % Compute activation image maps
