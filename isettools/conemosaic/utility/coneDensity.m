@@ -21,7 +21,7 @@ function density = coneDensity(ecc, angleDeg, whichEye, varargin)
 %      52(10), 7376?7384. http://doi.org/10.1167/iovs.11-7199
 %
 % Example:
-%   density = coneDensity(8, 10, 'left');
+%   density = coneDensity(8*1e-3, 10, 'left');
 %
 % See also:
 %   coneMosaic
@@ -33,7 +33,7 @@ if notDefined('ecc'), ecc = 0; end
 if notDefined('angle'), angleDeg = 0; end
 if notDefined('whichEye'), whichEye = 'left'; end
 
-% load cone density data.  Units are ....
+% load cone density data.  Units are cones / mm^2
 d = load('coneDensity.mat');
 
 % interpolate for retinal position amplitude on axis (nasal, superior,
