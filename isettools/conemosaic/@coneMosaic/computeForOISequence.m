@@ -173,7 +173,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     %   sequence   |            |            |    ********|************|*******     |          |          |       
     % ---------------------------------------------partial-----full-----partial-------------------------------  
     %                                            absorption  absorption absorption
-%
+
         % Loop over the eye movements
         for emIndex = 1:eyeMovementsNum
         

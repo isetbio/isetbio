@@ -4,7 +4,7 @@ function [absorptions, current, currentTimeAxis] = compute(obj, oi, varargin)
 %    [absorptions, current, currentTimeAxis] = cMosaic.compute(oi);
 %
 % Inputs:
-%   oi  - optical image, see oiCreate for more details
+%   oi  - optical image, or oiSequence.  See oiCreate for more details
 %
 % Optional inputs:
 %   currentFlag  - logical, whether to compute photocurrent
@@ -30,7 +30,15 @@ function [absorptions, current, currentTimeAxis] = compute(obj, oi, varargin)
 %
 % HJ ISETBIO Team 2016
 
-% parse inputs
+%% Check if an oi sequence. 
+% Send to the specialized compute in that case.
+% Otherwise, just carry on.
+if isequal(class(oi),'oiSequence')
+    obj.computeForOISequence(oi,varargin{:});
+    return;
+end
+
+%% parse inputs
 p = inputParser;
 p.addRequired('oi',@isstruct);
 p.addParameter('currentFlag', true, @islogical);
@@ -44,7 +52,7 @@ currentFlag = p.Results.currentFlag;
 newNoise = p.Results.newNoise;
 append = p.Results.append;
 
-% set eye movement path
+%% set eye movement path
 if isempty(p.Results.emPath)
     assert(~append || isempty(obj.absorptions), ...
         'emPath required when in increment mode');
@@ -57,7 +65,7 @@ else
     end
 end
 
-% extend sensor size
+%% extend sensor size
 padRows = max(abs(emPath(:, 2)));
 padCols = max(abs(emPath(:, 1)));
 
@@ -84,7 +92,8 @@ else
     obj.absorptions = absorptions;
 end
 
-% If we want the photo current, use the os model
+%% If we want the photo current, use the os model
+% If you want it later, call obj.computeCurrent;
 current = [];
 if currentFlag
     absorptionsTimeAxis = obj.absorptionsTimeAxis;
@@ -99,5 +108,6 @@ if currentFlag
     
     currentTimeAxis = osTimeAxis;
 end
+
 end
 
