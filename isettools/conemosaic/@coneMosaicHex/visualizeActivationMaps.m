@@ -9,6 +9,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p.addParameter('signalName', ' ', @ischar);
     p.addParameter('mapType', 'modulated hexagons', @ischar);
     p.addParameter('colorMap', jet(1024), @isnumeric);
+    p.addParameter('signalRange', [], @isnumeric);
     p.parse(varargin{:});  
     
     if (any(size(activation) ~= size(obj.pattern)))
@@ -36,16 +37,16 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     
     
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
-        hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+        hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, p.Results.signalName, p.Results.signalRange, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
-        hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.figureSize);
+        hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, p.Results.signalName, p.Results.signalRange, p.Results.figureSize);
     else
         error('visualizeActivationMaps:: Unknown map type');
     end
 end
 
 
-function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, figureSize)
+function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, signalRange, figureSize)
 % Visualize mosaic activations as disk mosaics
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
@@ -62,7 +63,11 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
     end
 
     activeConesActivations = activation(obj.pattern>1);
-    activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
+    if (isempty(signalRange))
+        activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
+    else
+        activationRange = signalRange;
+    end
     
     hFig = figure();
     set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [0 0 0]); % , 'MenuBar', 'None');
@@ -173,14 +178,18 @@ end
 
 
 
-function hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, figureSize)
+function hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, signalRange, figureSize)
 % Visualize mosaic activations as density maps
             
     % Compute activation image maps
     [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = obj.computeActivationDensityMap(activation);
     activeConesActivations = activation(obj.pattern>1);
     %activationRange = prctile(activeConesActivations, [10 90]);
-    activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
+    if (isempty(signalRange))
+        activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
+    else
+         activationRange = signalRange;
+    end
     
     hFig = figure();
     set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [1 1 1]); % , 'MenuBar', 'None');
