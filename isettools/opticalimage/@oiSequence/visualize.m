@@ -3,6 +3,7 @@ function [uData, hFig] = visualize(obj,varargin)
 %
 % Parameter/value
 %  format - {weights, movie, montage}
+%  save   - Save a video file
 %
 % NP/BW ISETBIO Team, 2016
 
@@ -10,13 +11,24 @@ function [uData, hFig] = visualize(obj,varargin)
 p = inputParser;
 
 p.addRequired('obj');
+
+% For video case ...
 p.addParameter('format','movie',@ischar);
+p.addParameter('save',false,@islogical);
+p.addParameter('vname','videoName',@ischar);
+p.addParameter('FrameRate',20,@isnumeric);
+p.addParameter('step',1,@isnumeric);
 
 p.parse(obj,varargin{:});
 format = p.Results.format;
+save   = p.Results.save;
+vname      = p.Results.vname;
+FrameRate  = p.Results.FrameRate;
 
 %%  Show the oiSequence in one of the possible formats
 uData = [];
+vObj = [];    % Video object
+
 switch format
     case 'weights'
         % Graph the weights'
@@ -31,6 +43,11 @@ switch format
         illMod   = oiGet(obj.oiModulated,'illuminance');
         hFig = vcNewGraphWin; colormap(gray(256));
         axis image; axis off;
+        if save
+            vObj = VideoWriter(vname);
+            vObj.FrameRate = FrameRate;
+            open(vObj);
+        end
         
         mx1 = max(illFixed(:)); mx2 = max(illMod(:));
         mx = max(mx1,mx2);
@@ -49,10 +66,20 @@ switch format
                 % I don't know why ieMovie can't run well on this
                 for ii=1:length(wgts)
                     image(d(:,:,ii)); axis image; drawnow;
-                    % if save,  F = getframe; writeVideo(vObj,F); end
+                    if save,  F = getframe; writeVideo(vObj,F); end
+                end
+                
+                % Write the video object if save is true
+                if save
+                    writeVideo(vObj,F);
+                    close(vObj);
                 end
                 
             case 'add'
+                if save
+                    disp('Save condition not implemented yet for add');
+                end
+                
                 for ii=1:length(wgts)
                     imagesc(illFixed + illMod*(wgts(ii)));
                     pause(0.1);
@@ -61,6 +88,8 @@ switch format
                 error('Unknown composition %s\n',obj.composition);
         end
         
+
+
     case 'montage'
         % Window with snapshots
         colsNum = round(1.3*sqrt(obj.length));
