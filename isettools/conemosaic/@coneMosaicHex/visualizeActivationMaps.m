@@ -14,8 +14,8 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     if (any(size(activation) ~= size(obj.pattern)))
        % reshape the activation patten to obj.pattern
        nonNullCones = obj.pattern(find(obj.pattern>1));
-       if (numel(activation) == numel(nonNullCones))
-            
+       
+       if (numel(activation) == numel(nonNullCones)) 
             tmp = activation;
             iLsource = find(nonNullCones==2);
             iMsource = find(nonNullCones==3);
@@ -60,11 +60,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         apertureOutline.x = 1.1*obj.pigment.width/2.0 * cos(iTheta);
         apertureOutline.y = 1.1*obj.pigment.height/2.0 * sin(iTheta);
     end
-    
-    disp('here')
-    size(activation)
-    size(obj.pattern)
-    
+
     activeConesActivations = activation(obj.pattern>1);
     activationRange = [min(activeConesActivations(:)) max(activeConesActivations(:))];
     
