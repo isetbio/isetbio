@@ -176,7 +176,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
 
         % Loop over the eye movements
         for emIndex = 1:eyeMovementsNum
-        
+
             % Current eye movement time limits
             emStart = eyeMovementTimeAxis(emIndex);
             emEnd   = emStart + defaultIntegrationTime;
@@ -255,33 +255,83 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         obj.emPositions = emPaths;
     end
     
-    % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
-    absorptions = permute(absorptions, [1 3 4 2]);
+    
+    if (isa(obj, 'coneMosaicHex'))
+        absorptions = reshape(absorptions, [size(absorptions,1) size(absorptions,2) size(absorptions,3)*size(absorptions,4)]);
+        nonNullConeIndices = find(obj.pattern > 1);
+        absorptions = absorptions(:,:,nonNullConeIndices);
+        % Reshape absorptions to correct dimensions [instances, cone_indices, time]
+        absorptions = permute(absorptions, [1 3 2]);
+        if (currentFlag)
+            % Add one more absorption at the end
+            absorptions = cat(3, absorptions, squeeze(absorptions(:,:,end)));
+        end
+    else
+        % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
+        absorptions = permute(absorptions, [1 3 4 2]);
+        if (currentFlag)
+            % Add one more absorption at the end
+            absorptions = cat(4, absorptions, absorptions(:,:,:,end));
+        end
+    end
 
-    % Reload the full absorptions signal from the first instance only
-    obj.absorptions = squeeze(absorptions(1,:,:,:));
+    % Reload the mean(over all instances) absorptions signal
+    obj.absorptions = mean(absorptions,1);
     
     % align absorptions time axis with respect to optical image sequence time axis
     absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis; 
-    
+
     if (currentFlag)
         % compute the photocurrent time axis
         dtOS = obj.os.timeStep;
-        osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
+        osTimeAxis = absorptionsTimeAxis(1): dtOS : absorptionsTimeAxis(end);
         
-        photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis), 'single');
-        for instanceIndex = 1:instancesNum
-            fprintf('Computing photocurrents for instance %d/%d\n', instanceIndex,instancesNum);
-            tmp = squeeze(absorptions(instanceIndex,:,:,:));
+        if (isa(obj, 'coneMosaicHex'))
+            photocurrents = zeros(instancesNum, numel(nonNullConeIndices), numel(osTimeAxis), 'single');
+            for instanceIndex = 1:instancesNum
+                fprintf('Computing photocurrents for instance %d/%d\n', instanceIndex,instancesNum);
+                tmp = squeeze(absorptions(instanceIndex,:,:));
+                
+                % Resample to osTimeAxis
+                tmp = coneMosaic.tResample(tmp, obj.pattern(nonNullConeIndices), absorptionsTimeAxis, osTimeAxis);
 
-            tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(absorptionsTimeAxis)]);
-            tmp = coneMosaic.tResample(tmp, obj.pattern, absorptionsTimeAxis, osTimeAxis);
-            tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(osTimeAxis)]);
-            
-            % Compute photocurrent from photonRate (tmp/dtOS)
-            photocurrents(instanceIndex,:,:,:) = single(obj.os.osCompute(tmp/dtOS, obj.pattern, 'append', false));
+                % osCompute expects a 3D pRate, so make it so
+                tmp = reshape(tmp, [size(tmp,1) 1 size(tmp,2)]);
+                % Compute photocurrent from photonRate (tmp/dtOS)
+                tmp = single(obj.os.osCompute(tmp/dtOS, obj.pattern(nonNullConeIndices), 'append', false));
+                % Put it back in correct shape
+                photocurrents(instanceIndex,:,:) = permute(tmp, [2 1 3]);
+            end
+        else
+            photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis), 'single');
+            for instanceIndex = 1:instancesNum
+                fprintf('Computing photocurrents for instance %d/%d\n', instanceIndex,instancesNum);
+                tmp = squeeze(absorptions(instanceIndex,:,:,:));
+
+                % Resample to osTimeAxis (reshape to 2D for faster processing)
+                % Reshape needed for spatial case where we have singleton dimensions
+                tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(absorptionsTimeAxis)]);
+                tmp = coneMosaic.tResample(tmp, obj.pattern, absorptionsTimeAxis, osTimeAxis);
+                tmp = reshape(tmp, [size(obj.pattern,1) size(obj.pattern,2) numel(osTimeAxis)]);
+
+                % Compute photocurrent from photonRate (tmp/dtOS)
+                photocurrents(instanceIndex,:,:,:) = single(obj.os.osCompute(tmp/dtOS, obj.pattern, 'append', false));
+            end
         end
-      
+        
+        % Remove the last absorption we inserted at the end
+        if (isa(obj, 'coneMosaicHex')) 
+            absorptions = absorptions(:,:,1:(end-1));
+        else
+            absorptions = absorptions(:,:,:,1:(end-1));
+        end
+        
+        % Reload the mean(over all instances) absorptions signal
+        obj.absorptions = mean(absorptions,1);
+    
+        % Re-align absorptions time axis with respect to optical image sequence time axis
+        absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis;
+    
         % Return photocurrents
         varargout{1} = photocurrents;
         
