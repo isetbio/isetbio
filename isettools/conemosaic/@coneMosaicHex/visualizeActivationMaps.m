@@ -98,7 +98,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                 idx = find(obj.pattern == 3);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'M-cone submosaic activation';
-                showXticks = true;
+                showXticks = false;
                 showYticks = false;
                 edgeColor = 'none'; 
                 lineWidth = 0.1;
@@ -106,7 +106,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                 idx = find(obj.pattern == 4);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'S-cone submosaic activation';
-                showXticks = true;
+                showXticks = false;
                 showYticks = false;
                 edgeColor = 'none'; 
                 lineWidth = 0.1;
@@ -114,7 +114,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                 idx = find(obj.pattern > 1);
                 [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 subplotTitle = 'total mosaic activation';
-                showXticks = true;
+                showXticks = false;
                 showYticks = false;
                 edgeColor = 'none'; 
                 lineWidth = 0.1;
@@ -154,7 +154,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             hCbar.Label.String = signalName;
             hCbar.FontSize = 14;
             hCbar.FontName = 'Menlo';
-            hCbar.Color = [0.2 0.2 0.2];
+            hCbar.Color = [0.9 0.9 0.5];
             % The addition changes the figure size, so undo this change
             newPosition = get(gca, 'position');
             set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
