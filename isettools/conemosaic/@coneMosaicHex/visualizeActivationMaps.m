@@ -180,7 +180,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                'heightMargin',   0.0, ...
                'widthMargin',    0.0, ...
                'leftMargin',     0.009, ...
-               'rightMargin',    0.07, ...
+               'rightMargin',    0.05, ...
                'bottomMargin',   0.03, ...
                'topMargin',      0.02);
         
@@ -199,14 +199,14 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
         faceColorsNormalizedValues = activationsNlevels/cMapLevels;
         renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
-        set(gca, 'CLim', [0 1]);
+        set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
         axis 'image'; axis 'xy';
         xTicks = obj.center(1) + 1e-6 * (-150:75:150);
-        yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+        yTicks = [] % [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
         
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
+        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels);
         if (~showXticks)
             set(gca, 'XTick', []);
         end
@@ -243,7 +243,6 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             end
         end
     end
-    
     
     colormap(cMap);
     drawnow
