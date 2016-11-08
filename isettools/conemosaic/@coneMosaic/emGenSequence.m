@@ -106,6 +106,13 @@ if emFlag(3)
         pos = pos + cumsum(offset);
     end
 end
+
+% If the mosaic is a hex mosaic, we need to amplify the positions by
+% the resampling factor.
+if (isa(obj, 'coneMosaicHex'))
+    pos = pos * obj.resamplingFactor;
+end
+
 pos = round(pos);
 obj.emPositions = pos;
 

@@ -100,7 +100,7 @@ if currentFlag
     % compute the os time axis
     dtOS = obj.os.timeStep;
     osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
-    resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, absorptionsTimeAxis, osTimeAxis);
+    resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, osTimeAxis);
     pRate = resampledAbsorptionsSequence/dtOS;
     
     current = obj.os.osCompute(pRate, obj.pattern, ...
