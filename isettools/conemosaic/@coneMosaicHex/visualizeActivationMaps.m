@@ -10,6 +10,8 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p.addParameter('mapType', 'modulated hexagons', @ischar);
     p.addParameter('colorMap', jet(1024), @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
+    p.addParameter('xRange', [], @isnumeric);
+    p.addParameter('yRange', [], @isnumeric);
     p.addParameter('separateLMSmosaics', true, @islogical);
     p.addParameter('activationTime', [], @isnumeric);
     p.addParameter('zoomInFactor', 1.0, @isnumeric);
@@ -42,11 +44,11 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
       
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
         hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, p.Results.mapType, p.Results.colorMap, ...
-                   p.Results.signalName, p.Results.signalRange, p.Results.separateLMSmosaics, ...
+                   p.Results.signalName, p.Results.signalRange, p.Results.xRange, p.Results.yRange, p.Results.separateLMSmosaics, ...
                    p.Results.activationTime, p.Results.zoomInFactor, p.Results.visualizedInstanceIndex, p.Results.figureSize);
     elseif strcmp(p.Results.mapType, 'density plot')
         hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, p.Results.colorMap, ...
-                   p.Results.signalName, p.Results.signalRange, p.Results.separateLMSmosaics, ...
+                   p.Results.signalName, p.Results.signalRange, p.Results.xRange, p.Results.yRange, p.Results.separateLMSmosaics, ...
                    p.Results.activationTime, p.Results.zoomInFactor, p.Results.visualizedInstanceIndex, p.Results.figureSize);
     else
         error('visualizeActivationMaps:: Unknown map type');
@@ -54,7 +56,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
 end
 
 
-function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, signalRange, separateLMSmosaics, activationTime, zoomInFactor, instanceIndex, figureSize)
+function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation, mapType, cMap, signalName, signalRange, xRange, yRange, separateLMSmosaics, activationTime, zoomInFactor, instanceIndex, figureSize)
 % Visualize mosaic activations as disk mosaics
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
@@ -140,8 +142,8 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
             set(gca, 'CLim', [0 1]);
             axis 'image'; axis 'xy';
-            xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
-            yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+            xTicks = obj.center(1) + (-150:75:150);
+            yTicks = obj.center(2) + (-150:75:150);
             xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
             yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
             set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.0 0.0 0.0], 'YColor', [0.0 0.0 0.0]);
@@ -152,8 +154,21 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                 set(gca, 'YTick', []);
             end
             box on; grid off;
-            set(gca, 'XLim', [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width]);
-            set(gca, 'YLim', [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width]);
+            if (isempty(xRange))
+                xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
+            else
+                xRange(1) = xRange(1) - obj.pigment.width; 
+                xRange(2) = xRange(2) + +obj.pigment.width;
+            end
+            if (isempty(yRange))
+                yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
+            else
+                yRange(1) = yRange(1)-obj.pigment.width;
+                yRange(2) = yRange(2)+obj.pigment.width;
+            end
+            
+            set(gca, 'XLim', xRange*zoomInFactor);
+            set(gca, 'YLim', yRange*zoomInFactor);
             set(gca, 'FontSize', 18, 'FontName', 'Menlo');
             title(subplotTitle, 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
 
@@ -187,7 +202,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         subplot('Position', subplotPosVectors(1,1).v);
         set(gca, 'Color', [0 0 0]);
         showXticks = true;
-        showYticks = true;
+        showYticks = false;
         edgeColor = 'none'; 
         lineWidth = 0.1;
         
@@ -202,7 +217,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
         axis 'image'; axis 'xy';
         xTicks = obj.center(1) + 1e-6 * (-150:75:150);
-        yTicks = [] % [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+        yTicks = obj.center(2) + 1e-6 * (-150:75:150);
         
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
@@ -214,8 +229,21 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             set(gca, 'YTick', []);
         end
         box on; grid off;
-        set(gca, 'XLim', [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width]*zoomInFactor);
-        set(gca, 'YLim', [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width]*zoomInFactor);
+        if (isempty(xRange))
+            xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
+        else
+            xRange(1) = xRange(1) - obj.pigment.width; 
+            xRange(2) = xRange(2) + +obj.pigment.width;
+        end
+        if (isempty(yRange))
+            yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
+        else
+            yRange(1) = yRange(1)-obj.pigment.width;
+            yRange(2) = yRange(2)+obj.pigment.width;
+        end
+            
+        set(gca, 'XLim', xRange*zoomInFactor);
+        set(gca, 'YLim', yRange*zoomInFactor);
         set(gca, 'FontSize', 18, 'FontName', 'Menlo');
         
         ticks = 0:0.1:1.0;
