@@ -124,7 +124,7 @@ function [theConeMosaic, theOIsequence, ...
     oiTimeAxis, absorptionsTimeAxis, photoCurrentTimeAxis, ...
     allInstancesAbsorptionsCountSequence, ...
     allInstancesIsomerizationRateSequence, ...
-    allInstancesPhotoCurrentSequence] = runSimulation(condData, instancesNum, runtimeParams)
+    allInstancesPhotoCurrents] = runSimulation(condData, instancesNum, runtimeParams)
 
     mosaicSize = condData.mosaicSize;
     meanLuminance = condData.meanLuminance;
@@ -173,18 +173,63 @@ function [theConeMosaic, theOIsequence, ...
         emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
     end
     
-    tic
-    % Compute all instances
-    [allInstancesAbsorptionsCountSequence, absorptionsTimeAxis, allInstancesPhotoCurrentSequence, photoCurrentTimeAxis] = ...
+    
+    % Compute all instances 
+    [allInstancesAbsorptionsCountSequence, absorptionsTimeAxis, allInstancesPhotoCurrents, photoCurrentTimeAxis] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
             'emPaths', emPaths, ...
             'currentFlag', true, ...
             'newNoise', true ...
             );
-     toc
      
-    % Compute photon rate from photon count
-    allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
+     % Compute photon rate from photon count
+     allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
+    
+     
+     % Internal consistency checks
+     
+     % Check that the mosaic.absorptions property agrees with the allInstancesAbsorptionsCountSequence
+     lastInstance = size(allInstancesAbsorptionsCountSequence,1);
+     s1 = single(theConeMosaic.absorptions);
+     s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: absorptions from coneMosaic property and returned absorptions',tolerance);
+    
+     % Check that the mosaic.current property agrees with the allInstancesPhotoCurrents
+     s1 = single(theConeMosaic.current);
+     s2 = single(reshape(squeeze(allInstancesPhotoCurrents(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(photoCurrentTimeAxis)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: current from coneMosaic property and returned photocurrents',tolerance);
+     
+     
+     % Compute responses for the first instance only using compute
+     [allInstancesAbsorptionsCountSequence2, absorptionsTimeAxis2, allInstancesPhotoCurrents2, photoCurrentTimeAxis2] = ...
+            theConeMosaic.compute(theOIsequence, ...
+            'emPath', emPaths(1,:,:), ...
+            'currentFlag', true, ...
+            'newNoise', true ...
+            );
+        
+     lastInstance = size(allInstancesAbsorptionsCountSequence2,1);
+     s1 = single(theConeMosaic.absorptions);
+     s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence2(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis2)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: absorptions from coneMosaic property and returned absorptions',tolerance);
+    
+     % Check that the mosaic.current property agrees with the allInstancesPhotoCurrents
+     s1 = single(theConeMosaic.current);
+     s2 = single(reshape(squeeze(allInstancesPhotoCurrents2(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(photoCurrentTimeAxis2)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: current from coneMosaic property and returned photocurrents',tolerance);
+   
 end
 
 

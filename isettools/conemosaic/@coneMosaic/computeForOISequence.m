@@ -336,7 +336,9 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         end
         
         % Reload the absorptions signal from the last instance
-        obj.absorptions = squeeze(absorptions(end,:,:,:));
+        sz = size(absorptions);
+        lastInstance = sz(1);
+        obj.absorptions = reshape(squeeze(absorptions(lastInstance,:,:,:)), [size(obj.pattern,1) size(obj.pattern,2) sz(end)]);
     
         % Re-align absorptions time axis with respect to optical image sequence time axis
         absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis;

@@ -266,7 +266,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.current(obj)
-            val = double(obj.os.coneCurrentSignal);
+            sz = size(obj.os.coneCurrentSignal);
+            val = reshape(double(obj.os.coneCurrentSignal), [size(obj.pattern,1) size(obj.pattern,2) sz(end)]);
         end
         
         function val = get.absorptionsTimeAxis(obj)
@@ -320,7 +321,7 @@ classdef coneMosaic < hiddenHandle
     
     methods (Access=public)
         % Declare the compute method
-        [absorptions, current] = compute(obj, oi, varargin);
+        [absorptions, current, currentTimeAxis, varargout] = compute(obj, oi, varargin);
         
         % Declare the compute method for a sequence of optical images viewed sequentially
         [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, oiTimeAxis, varargin)
