@@ -19,27 +19,8 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
         
     p.parse(varargin{:});  
     
-    if (any(size(activation) ~= size(obj.pattern)))
-       % reshape the activation patten to obj.pattern
-       nonNullCones = obj.pattern(find(obj.pattern>1));
-       
-       if (numel(activation) == numel(nonNullCones)) 
-            tmp = activation;
-            iLsource = find(nonNullCones==2);
-            iMsource = find(nonNullCones==3);
-            iSsource = find(nonNullCones==4);
-            
-            iLdest = find(obj.pattern==2);
-            iMdest = find(obj.pattern==3);
-            iSdest = find(obj.pattern==4);
-                
-            activation = zeros(size(obj.pattern));
-            activation(iLdest) = tmp(iLsource);
-            activation(iMdest) = tmp(iMsource);
-            activation(iSdest) = tmp(iSsource);
-       else
-           error('The elements of the activation pattern (%d) does not match the number of non-null cones (%d) ', numel(activation), numel(nonNullCones));
-       end
+    if (any(size(activation) ~= size(obj.pattern)))    
+       activation = coneMosaic.reshapeActivationMap1DTo2D(activation, obj.pattern);
     end
       
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')

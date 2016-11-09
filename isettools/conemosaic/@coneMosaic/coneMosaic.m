@@ -324,7 +324,7 @@ classdef coneMosaic < hiddenHandle
         
         % Declare the compute method for a sequence of optical images viewed sequentially
         [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence, oiTimeAxis, varargin)
-
+        
         % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
         function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
             [demosaicedAbsorptionsMap, sRGB] = obj.demosaicedResponses();
@@ -350,6 +350,7 @@ classdef coneMosaic < hiddenHandle
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
         resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis);
+        activation2D = reshapeActivationMap1DTo2D(activation1D, pattern);
     end
 
     % Methods may be called by the subclasses, but are otherwise private
