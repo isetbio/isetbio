@@ -158,13 +158,13 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                 xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
             else
                 xRange(1) = xRange(1) - obj.pigment.width; 
-                xRange(2) = xRange(2) + +obj.pigment.width;
+                xRange(2) = xRange(2) + obj.pigment.width;
             end
             if (isempty(yRange))
                 yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
             else
-                yRange(1) = yRange(1)-obj.pigment.width;
-                yRange(2) = yRange(2)+obj.pigment.width;
+                yRange(1) = yRange(1) - obj.pigment.width;
+                yRange(2) = yRange(2) + obj.pigment.width;
             end
             
             set(gca, 'XLim', xRange*zoomInFactor);
