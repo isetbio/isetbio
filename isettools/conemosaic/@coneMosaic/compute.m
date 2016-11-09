@@ -1,4 +1,4 @@
-function [absorptions, current, currentTimeAxis] = compute(obj, oi, varargin)
+function [absorptions, current, currentTimeAxis, varargout] = compute(obj, oi, varargin)
 % Compute the pattern of cone absorptions and typically the
 % photocurrent
 %    [absorptions, current, currentTimeAxis] = cMosaic.compute(oi);
@@ -34,8 +34,12 @@ function [absorptions, current, currentTimeAxis] = compute(obj, oi, varargin)
 % Send to the specialized compute in that case.
 % Otherwise, just carry on.
 if isequal(class(oi),'oiSequence')
-    obj.computeForOISequence(oi,varargin{:});
+    [absorptions, current, currentTimeAxis, photoCurrentTimeAxis] = ...
+        obj.computeForOISequence(oi,varargin{:});
+    varargout{1} = photoCurrentTimeAxis;
     return;
+else
+    varargout{1} = [];
 end
 
 %% parse inputs
