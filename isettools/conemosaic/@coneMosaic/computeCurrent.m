@@ -5,10 +5,11 @@ function computeCurrent(obj, varargin)
 
 % parse inputs
 p = inputParser;
+p.KeepUnmatched = true;
 p.addParameter('bgR', 0, @isnumeric);
 
 p.parse(varargin{:});
-bgR = p.Results.bgR;
+% bgR = p.Results.bgR;
 
 % We should check that absorptions is not empty
 if isempty(obj.absorptions)
@@ -17,6 +18,6 @@ end
 
 pRate = obj.absorptions/obj.integrationTime;
 
-obj.os.osCompute(pRate, obj.pattern, p.Results);
+obj.os.osCompute(pRate, obj.pattern, p.Results, varargin{:});
 
 end

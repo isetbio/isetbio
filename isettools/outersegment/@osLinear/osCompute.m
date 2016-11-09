@@ -23,19 +23,11 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % 
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
-% PROGRAMMING TODO
-%
-%  The append method appears to be problematic when used with osAddNoise.
-%  We should remind ourselves why we needed the append and then we should
-%  either not let the wrong calculation happen or fix it.
-%
-% JRG/BW
-
 % check pRate type for backward compatibility
 if isstruct(pRate) && isfield(pRate, 'type') && ...
         strcmp(pRate.type, 'sensor')
     warning('The input is a sensor, should update to use coneMosaic.');
-    obj.osSet('timestep', sensorGet(pRate, 'time interval'));
+    obj.osSet('timestep', sensorGet(pRate, 'time interval'))
     if notDefined('coneType')
         current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
             sensorGet(pRate, 'cone type'));
@@ -53,36 +45,78 @@ p = inputParser; p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
 p.addRequired('pRate', @isnumeric);
 p.addRequired('coneType', @ismatrix);
-p.addParameter('append', false, @islogical);
+p.addParameter('linearized', true, @islogical);
 
 p.parse(obj, pRate, coneType, varargin{:});
-isAppend = p.Results.append;
+linearized = p.Results.linearized;
 
-% init parameters
-if ~isAppend, obj.absHistory = []; end % clean up stored state
-if isempty(obj.absHistory)
-    nHistFrames = 0;
-    obj.absHistory = pRate;
+nHistFrames = 0;
+
+lConeIndices = find(coneType == 2);
+mConeIndices = find(coneType == 3);
+sConeIndices = find(coneType == 4);
+
+pRateXW = RGB2XWFormat(pRate);
+lConeAbsorptions = pRateXW(lConeIndices,:);
+mConeAbsorptions = pRateXW(mConeIndices,:);
+sConeAbsorptions = pRateXW(sConeIndices,:);
+
+if ~isempty(lConeAbsorptions); 
+    lConeMean = mean(lConeAbsorptions(:)); 
+else 
+    lConeMean = 0;
+end;
+if ~isempty(mConeAbsorptions); 
+    mConeMean = mean(mConeAbsorptions(:)); 
 else
-    nHistFrames = size(obj.absHistory, 3);
-    obj.absHistory = cat(3, obj.absHistory, pRate);
+    mConeMean = 0;
+end;
+if ~isempty(sConeAbsorptions); 
+    sConeMean = mean(sConeAbsorptions(:)); 
+else
+    sConeMean = 0;
+end;
+pMean = [lConeMean mConeMean sConeMean];
+
+if ~linearized
+    lmsFilters = obj.generateLinearFilters(mean(pMean(:))); % linear filters
+else
+    scaleFactor = 0.11143; % from physiology experiments, see coneIRFtutorial.m
+    
+    Io = 2250;                     % half-desensitizing background (in R*/cone/sec, from Juan's paper - corrected)
+    Ib = pMean; %[7131 6017 1973]; % R* per sec due to background adapting field (one for each cone, L, M, S)
+    % adjust this to specific experiment
+    % Ib = [2250 2250 2250];
+    gain_dark = 0.32;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
+    gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
+    
+    lmsFilter = obj.generateBioPhysFilters('meanRate', pMean, varargin{:}); % linear filters
+    lmsFilter0 = lmsFilter(1);
+    lmsFilter = scaleFactor*(lmsFilter - lmsFilter0);
+    
+    % scale IRF to reflect amplitude at chosen background
+    % using Weber adaptation equation above and gainRatio derived from it
+    newGain = gainRatio .* gain_dark;
+    oldGain = max(lmsFilter);
+    IRFScaleFactor = newGain ./ oldGain;
+    
+    lmsFilters = (IRFScaleFactor'*lmsFilter' - ones(3,size(lmsFilter,1))*lmsFilter0)';
 end
 
-% generate temporal filters
-pMean = mean(obj.absHistory(:));
-lmsFilters = obj.generateLinearFilters(pMean); % linear filters
-
+obj.lmsConeFilter = lmsFilters;
 maxCur = 0.01*20.5^3; % Angueyra & Rieke (2013, Nature)
-meanCur = maxCur * (1 - 1/(1 + 45000/pMean));
+meanCur = maxCur * (1 - 1./(1 + 45000./pMean));
 
-[absorptions, r, c] = RGB2XWFormat(obj.absHistory);
+% First entry is trial.  We are showing only the first trial here.
+[absorptions, r, c] = RGB2XWFormat(pRate);
 
 % pRateRS = RGB2XWFormat(pRate);
 % if size(pRateRS,2) > size(lmsFilters(:, 1),1)
-    current = zeros(r*c, size(pRate, 3));
+current = zeros(r*c, size(pRate, 3));
 % else    
 %     current = zeros(r*c, size(lmsFilters(:, 1), 1));
 % end
+
 % convolve the filters with the isomerization data
 for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % pull out the linear filter for current cone type.
@@ -91,7 +125,7 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-        curData = conv2(absorptions(index, :), filter') - meanCur;
+        curData = conv2(absorptions(index, :), filter') - meanCur(ii-1);
         current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
         
 %         if size(pRateRS,2) > size(filter,1)
@@ -107,8 +141,8 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
 end
 
 % record only recent history in obj
-newStart = max(size(obj.absHistory, 3) - length(filter) + 1, 1);
-obj.absHistory = obj.absHistory(:, :, newStart:end);
+newStart = max(size(pRate, 3) - length(filter) + 1, 1);
+pRate = pRate(:, :, newStart:end);
 
 % reshape the output signal matrix.
 current = XW2RGBFormat(current, r, c);
@@ -118,13 +152,14 @@ current = XW2RGBFormat(current, r, c);
 % This is handled properly because the params has the time sampling
 % rate included.
 if osGet(obj,'noiseFlag') == 1
+    disp('Current noise added.')
     params.sampTime = obj.timeStep;
     current = osAddNoise(current, params);
-end
-if isAppend
-    obj.coneCurrentSignal = cat(3, obj.coneCurrentSignal, current);
 else
-    obj.coneCurrentSignal = current;
+    disp('No current noise added.')
 end
+
+
+obj.coneCurrentSignal = current;
 
 end

@@ -59,7 +59,7 @@ vcNewGraphWin; hold on
 tme = (1:nSamples)*timeStep;
 plot(tme,squeeze(currentScaled./max(currentScaled(:))),'g','LineWidth',2);
 plot(tme,squeeze(current2Scaled./max(current2Scaled(:))),'r','LineWidth',2);
-grid on; legend('Peripheral','Foveal');
+grid on; % legend('Peripheral','Foveal');
 axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
 xlabel('Time (sec)','FontSize',14);
 ylabel('Photocurrent (pA)','FontSize',14);
@@ -69,3 +69,17 @@ set(gca,'fontsize',14);
 % Print out model paramters for peripheral and foveal dynamics
 cm.os.model   % peripheral
 cm2.os.model  % foveal
+
+%
+osCML = osLinear();            % linear cone dynamics
+osCML.set('noise flag',0);
+cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+cmL.integrationTime = timeStep;
+cmL.os.timeStep = timeStep;
+cmL.absorptions  = stimulus;
+
+cmL.computeCurrent('linearized',false,'osType',false);
+currentScaledL = (cmL.current) - cmL.current(1);
+
+plot(tme,squeeze(currentScaledL./max(currentScaledL(:))),'--b','LineWidth',2);
+legend('Peripheral','Foveal','Linear');

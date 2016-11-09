@@ -1,11 +1,11 @@
 % t_osLinearize
 %
 % Illustrates the difference between the foveal and peripheral cone outer
-% segment impulse responses using the osBioPhys object at different flash
+% segment impulse responses using the osBioPhys object at different mean
 % intensities.
 %
 % A single cone is created, and its absorption time course is set to have an
-% impulse at the first time step. Biophysical outer segments are created,
+% impulse at the specified time step. Biophysical outer segments are created,
 % one with foveal dynamics and one with peripheral dynamics.
 %
 % The goal is to create a lookup table of the impulse response at different
@@ -13,93 +13,134 @@
 %
 % 11/2016 JRG (c) isetbio team
 
-%%
-ieInit
-vcNewGraphWin([],'tall');
+%% Peripheral (fast) cone dynamics
+clear;
 
-%%
-flashIntensArray = [20000 50000 200000 500000 2000000 4000000];
-nSamples = 2000;        % 2000 samples
+bgIsoArray = 1000;%[10 100 500 1000 2000 5000 10000];
+meanIsoArray = [100 500 1000 2000 5000 10000];
+
+% Set up parameters for stimulus.
+nSamples = 6000;        % 2000 samples
 timeStep = 1e-4;        % time step
-
-subplot(2,1,1); hold on;
-for flashIntensInd = 1:length(flashIntensArray)
-    
-    % Set up parameters for stimulus.
-    
-    flashIntens = flashIntensArray(flashIntensInd);    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-    
-    % Create stimulus.
-    stimulus = zeros(1,3,nSamples);
-    stimulus(1,1:3,1) = flashIntens*timeStep;
-    % stimulus = reshape(stimulus, [1 1 nSamples]);
-    
-    % Generate the cone mosaics
-    osCM = osBioPhys();            % peripheral (fast) cone dynamics
-    osCM.set('noise flag',0);
-    cm = coneMosaic('os',osCM,'pattern', [2 3 4]); % a single cone
-    cm.integrationTime = timeStep;
-    cm.os.timeStep = timeStep;
         
-    % Set photon rates. This is a kluge that appeared
-    % just for this test, and that should probably go
-    % away again. This is an artifact of directly specifying the stimulus
-    % in the cone mosaic, and will not be an issue when the absorptions
-    % are the result of a sensorCompute command on a scene and oi.
-    cm.absorptions  = stimulus;
+flashIntens = 1000000*timeStep;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
+flashTimeStep = 3000;
+        
+        
+vcNewGraphWin; hold on
+for meanInd = 1:length(meanIsoArray)
+    for bgInd = 1:length(bgIsoArray)        
+        
+        bgIsomerizations = bgIsoArray(bgInd);
+        
+        meanIntens  = meanIsoArray(meanInd)*timeStep;      % flash intensity in R*/cone/sec (maintained for 1 bin only)
     
-    % Compute outer segment currents.
-    cm.computeCurrent();
-    currentScaled = (cm.current);% - cm.current(1);
-    
-    % Plot the impulse responses for comparison.
-    % vcNewGraphWin;
-    tme = (1:nSamples)*timeStep;
-    plot(tme,squeeze(currentScaled),'g','LineWidth',2); hold on;
-    % plot(tme,squeeze(currentScaled./max(currentScaled(:))),'g','LineWidth',2);
-    % plot(tme,squeeze(current2Scaled./max(current2Scaled(:))),'r','LineWidth',2);
-    grid on; % legend('Peripheral','Foveal');
-    % axis([0 0.2 min((squeeze(current2Scaled(1,1,:))./max(current2Scaled(:)))) 1]);
-    axis([0 0.2 -100 0]);
-    xlabel('Time (sec)','FontSize',14);
-    ylabel('Photocurrent (pA)','FontSize',14);
-    % title('Impulse response in the dark','FontSize',16);
-    title(sprintf('Flash intensity = %1.1e', flashIntensArray(flashIntensInd)),'FontSize',16);
-    set(gca,'fontsize',14);
-    % legend('Peripheral','Foveal');
-    set(gca,'yscale','log')
+        % Create stimulus.
+        stimulus = meanIntens*ones(nSamples, 1);
+        % stimulus(1) = flashIntens*timeStep;
+        stimulus(flashTimeStep) = flashIntens;
+        stimulus = reshape(stimulus, [1 1 nSamples]);
+        
+        % Generate the cone mosaics
+        osCM = osBioPhys('osType',false);            % peripheral (fast) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = timeStep;
+        cm.os.timeStep = timeStep;
+        
+        cm.absorptions  = stimulus;
+        
+        % Compute outer segment currents.
+        cm.computeCurrent('bgR',bgIsomerizations);
+        currentScaled = (cm.current);% - cm.current(flashTimeStep);
+        
+        % Plot the impulse responses for comparison.
+        
+        subplot(2,2,1); hold on;
+        tme = (1:nSamples)*timeStep;
+        plot(tme,squeeze(currentScaled),'LineWidth',3);
+        grid on; % legend('Peripheral','Foveal');
+        % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+        xlabel('Time (sec)','FontSize',14);
+        ylabel('pA','FontSize',14);
+        set(gca,'fontsize',14);
+        title(sprintf('Peripheral (fast)\nImpulse response as a function of mean R*/sec'));
+        
+        subplot(2,2,2); hold on;
+        tme = (1:nSamples)*timeStep;
+        plot(tme-flashTimeStep*timeStep,squeeze(currentScaled)- cm.current(flashTimeStep),'LineWidth',3);
+        grid on; % legend('Peripheral','Foveal');
+        % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+        axis([0 nSamples*timeStep-flashTimeStep*timeStep -3 16]);
+        xlabel('Time (sec)','FontSize',14);
+        ylabel('pA','FontSize',14);
+        set(gca,'fontsize',14);
+        % title('Impulse response in the dark
+        
+        title(sprintf('Peripheral (fast)\nIR as a function of mean R*/sec, rezeroed'));
+        
+    end
 end
+% legend(num2str(meanIsoArray));
+legend('100', '500', '1000', '2000', '5000', '10000')
 
-%% Foveal
+%% Foveal (slow) cone dynamics
 
-subplot(2,1,2); hold on;
-for flashIntensInd = 1:length(flashIntensArray)
+nSamples = 10000;        % 2000 samples
+flashTimeStep = 5000;
+% vcNewGraphWin; hold on
+for meanInd = 1:length(meanIsoArray)
+    for bgInd = 1:length(bgIsoArray)        
+        
+        bgIsomerizations = bgIsoArray(bgInd);
+        
+        meanIntens  = meanIsoArray(meanInd)*timeStep;      % flash intensity in R*/cone/sec (maintained for 1 bin only)
     
-    flashIntens = flashIntensArray(flashIntensInd);    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-    
-    % Create stimulus.
-    stimulus = zeros(1,3,nSamples);
-    stimulus(1,1:3,1) = flashIntens*timeStep;
-    
-    osCM2 = osBioPhys('osType',true);  % foveal (slow) cone dynamics
-    osCM2.set('noise flag',0);
-    cm2 = coneMosaic('os',osCM2, 'pattern', [2 3 4]); % a single cone
-    cm2.integrationTime = timeStep;
-    cm2.os.timeStep = timeStep;
-    cm2.absorptions = stimulus;
-    cm2.computeCurrent();
-    current2Scaled = (cm2.current);% - cm2.current(1);
-    tme = (1:nSamples)*timeStep;
-    plot(tme,squeeze(current2Scaled),'r-','LineWidth',2);
-    axis([0 0.2 -100 0]);
-    xlabel('Time (sec)','FontSize',14);
-    ylabel('Photocurrent (pA)','FontSize',14);
-    title(sprintf('Fovea'),'FontSize',16);
-    set(gca,'fontsize',14);
-    grid on; % legend('Peripheral','Foveal');
-    axis([0 0.2 -100 0]);
-    % legend{}
-    set(gca,'yscale','log')
+        % Create stimulus.
+        stimulus = meanIntens*ones(nSamples, 1);
+        % stimulus(1) = flashIntens*timeStep;
+        stimulus(flashTimeStep) = flashIntens;
+        stimulus = reshape(stimulus, [1 1 nSamples]);
+        
+        % Generate the cone mosaics
+        osCM = osBioPhys('osType',true);            % foveal (slow) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = timeStep;
+        cm.os.timeStep = timeStep;
+        
+        cm.absorptions  = stimulus;
+        
+        % Compute outer segment currents.
+        cm.computeCurrent('bgR',bgIsomerizations);
+        currentScaled = (cm.current);% - cm.current(flashTimeStep);
+        
+        % Plot the impulse responses for comparison.
+        
+        subplot(2,2,3); hold on;
+        tme = (1:nSamples)*timeStep;
+        plot(tme,squeeze(currentScaled),'LineWidth',3);
+        grid on; % legend('Peripheral','Foveal');
+        % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+        xlabel('Time (sec)','FontSize',14);
+        ylabel('pA','FontSize',14);
+        set(gca,'fontsize',14);
+        title(sprintf('Foveal (slow)\nImpulse response as a function of mean R*/sec'));
+        
+        subplot(2,2,4); hold on;
+        tme = (1:nSamples)*timeStep;
+        plot(tme-flashTimeStep*timeStep,squeeze(currentScaled)- cm.current(flashTimeStep),'LineWidth',3);
+        grid on; % legend('Peripheral','Foveal');
+        % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+        axis([0 nSamples*timeStep-flashTimeStep*timeStep -10 60]);
+        xlabel('Time (sec)','FontSize',14);
+        ylabel('pA','FontSize',14);
+        set(gca,'fontsize',14);
+        % title('Impulse response in the dark
+        
+        title(sprintf('Foveal (slow)\nImpulse response, rezeroed'));
+        
+    end
 end
-
-%%
+% legend(num2str(meanIsoArray));
+legend('100', '500', '1000', '2000', '5000', '10000')

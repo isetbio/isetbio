@@ -1,13 +1,19 @@
 function varargout = v_osTimeStep(varargin)
 %
-% Demonstrate simulations using three different timebases, one for stimuli (based on stimulus refresh rate), 
-% one for absorptions and eye movements (based on coneMosaic.integrationTime), and a third one for 
-% outer segment current computations (based on os.timeStep) 
-% Also demonstrates usage of the computeForOISequence() method of @coneMosaic, which computes 
-% absorptions and photocurrents for a sequence of sequentially presented optical images with eye movements.
+% Demonstrate simulations using three different timebases, 
+%    For stimuli (based on stimulus refresh rate), 
+%    For absorptions and eye movements (based on coneMosaic.integrationTime)
+%    For outer segment current computations (based on os.timeStep) 
+%
+% Mainly, we can just use the compute method of the @coneMosaic class for
+% either a single image or for a sequence of oi images (oiSequence class).
+%
+% This script demonstrates the direct usage of the computeForOISequence()
+% method of @coneMosaic. The sequence version of compute calculates
+% absorptions and photocurrents for an oiSequence class of optical images
+% with eye movements.
 %
 % NPC, ISETBIO TEAM, 2016
-%
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end

@@ -28,6 +28,8 @@ txt = sprintf('%s %d\n', 'Active cones:' , numel(find(obj.pattern > 1)));
 str = addText(str,txt);
 txt = sprintf('%s %g\n', 'Density (cones/mm^2):', numel(find(obj.pattern > 1))/(obj.width*obj.height*1e6));
 str = addText(str,txt);
+txt = sprintf('%s %g\n', 'N Time samples:', length(obj.absorptionsTimeAxis));
+str = addText(str,txt);
 
 % cone pigment properties
 if ~p.Results.skipPigment
