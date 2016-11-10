@@ -45,7 +45,7 @@ end
 %% parse inputs
 p = inputParser;
 p.addRequired('oi',@isstruct);
-p.addParameter('currentFlag', true, @islogical);
+p.addParameter('currentFlag', false, @islogical);
 p.addParameter('newNoise', true, @islogical);
 p.addParameter('append', false, @islogical);
 p.addParameter('emPath', [], @isnumeric);
@@ -90,6 +90,9 @@ if obj.noiseFlag
     absorptions = obj.photonNoise(absorptions, ...
         'newNoise', newNoise);
 end
+
+% Setting obj.absorptions seems to set the time absorptionsTimeAxis also,
+% but incorrectly.  Fix!
 if append
     obj.absorptions = cat(3, obj.absorptions, absorptions);
 else
@@ -97,20 +100,39 @@ else
 end
 
 %% If we want the photo current, use the os model
-% If you want it later, call obj.computeCurrent;
+
+% You can always calculate the photocurrent later using
+% coneMosaic..computeCurrent;
+
 current = [];
+currentTimeAxis = [];
 if currentFlag
-    absorptionsTimeAxis = obj.absorptionsTimeAxis;
-    % compute the os time axis
-    dtOS = obj.os.timeStep;
-    osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
-    resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, osTimeAxis);
-    pRate = resampledAbsorptionsSequence/dtOS;
+
+    if ismatrix(obj.absorptions)
+        disp('No current calculated - absorptions are a single frame')        
+        return;
+    else
+        % compute the os time axes
+        absorptionsTimeAxis = obj.absorptionsTimeAxis;
+        
+        % Current time axis
+        dtOS = obj.os.timeStep;
+        currentTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
+        
+        % Resample over time
+        resampledAbsorptionsSequence = ...
+            coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, currentTimeAxis);
+        
+        % Keep the total number of photon absorptions constant by
+        % correcting for the new delta time
+        pRate = resampledAbsorptionsSequence/dtOS;
+        
+        % Should append be true or false or what?
+        current = obj.os.osCompute(pRate, obj.pattern, ...
+            'append', append);
+        
+    end
     
-    current = obj.os.osCompute(pRate, obj.pattern, ...
-        'append', append);
-    
-    currentTimeAxis = osTimeAxis;
 end
 
 end

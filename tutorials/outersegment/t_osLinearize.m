@@ -1,8 +1,7 @@
 % t_osLinearize
 %
-% Illustrates the difference between the foveal and peripheral cone outer
-% segment impulse responses using the osBioPhys object at different mean
-% intensities.
+% Illustrates thefoveal and peripheral cone outer segment tempral impulse
+% responses using the osBioPhys object at different mean intensities.
 %
 % A single cone is created, and its absorption time course is set to have an
 % impulse at the specified time step. Biophysical outer segments are created,
@@ -13,30 +12,43 @@
 %
 % 11/2016 JRG (c) isetbio team
 
-%% Peripheral (fast) cone dynamics
-clear;
+%% 
+ieInit;
 
-bgIsoArray = 1000;%[10 100 500 1000 2000 5000 10000];
+%% Peripheral cone dynamics
+
+% Mean background isomerization rate per time sample (0.1 ms)
+% We will use a range of these, but here are some typical values
+backgroundMean = 10;   %[10 100 500 1000 2000 5000 10000];
+
+% Mean of what?
 meanIsoArray = [100 500 1000 2000 5000 10000];
 
 % Set up parameters for stimulus.
-nSamples = 6000;        % 2000 samples
+nSamples = 6000;        % Number of time samples (0.1 ms)
 timeStep = 1e-4;        % time step
-        
-flashIntens = 1000000*timeStep;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-flashTimeStep = 3000;
-        
-        
+
+% Extra photons at the flash time bin
+% Units are R*
+flashIntens   = 10;      %
+flashTimeStep = 3000;    % Warm up period, then flash
+
 vcNewGraphWin; hold on
+
 for meanInd = 1:length(meanIsoArray)
-    for bgInd = 1:length(bgIsoArray)        
+    for bgInd = 1:length(bgIsoArray)
+        
+        % Build the stimulus
+        stimulus = ones(1,nSamples)*backgroundMean(bgInd);
         
         bgIsomerizations = bgIsoArray(bgInd);
         
-        meanIntens  = meanIsoArray(meanInd)*timeStep;      % flash intensity in R*/cone/sec (maintained for 1 bin only)
-    
+        % flash intensity in R*/cone/sec (maintained for 1 bin only)
+        meanIntens  = meanIsoArray(meanInd)*timeStep;      
+        
         % Create stimulus.
         stimulus = meanIntens*ones(nSamples, 1);
+        
         % stimulus(1) = flashIntens*timeStep;
         stimulus(flashTimeStep) = flashIntens;
         stimulus = reshape(stimulus, [1 1 nSamples]);
@@ -90,12 +102,12 @@ nSamples = 10000;        % 2000 samples
 flashTimeStep = 5000;
 % vcNewGraphWin; hold on
 for meanInd = 1:length(meanIsoArray)
-    for bgInd = 1:length(bgIsoArray)        
+    for bgInd = 1:length(bgIsoArray)
         
         bgIsomerizations = bgIsoArray(bgInd);
         
         meanIntens  = meanIsoArray(meanInd)*timeStep;      % flash intensity in R*/cone/sec (maintained for 1 bin only)
-    
+        
         % Create stimulus.
         stimulus = meanIntens*ones(nSamples, 1);
         % stimulus(1) = flashIntens*timeStep;
