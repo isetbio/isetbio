@@ -87,8 +87,20 @@ absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
 
 % Add photon noise to the whole volume
 if obj.noiseFlag
-    absorptions = obj.photonNoise(absorptions, ...
-        'newNoise', newNoise);
+    if (isa(obj, 'coneMosaicHex'))
+        % photonNoise is expensive, so only call photonNoise on the
+        % non-null cones for a hex mosaic.
+        nonNullConeIndices = find(obj.pattern > 1);
+        timeSamples = size(absorptions,3);
+        absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
+        absorptionsCopy = absorptions;
+        absorptions = absorptions(:, nonNullConeIndices);
+        absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'newNoise', newNoise);
+        absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
+        clear 'absorptionsCopy'
+    else
+        absorptions = obj.photonNoise(absorptions, 'newNoise', newNoise);
+    end
 end
 if append
     obj.absorptions = cat(3, obj.absorptions, absorptions);
@@ -106,10 +118,7 @@ if currentFlag
     osTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
     resampledAbsorptionsSequence = coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, osTimeAxis);
     pRate = resampledAbsorptionsSequence/dtOS;
-    
-    current = obj.os.osCompute(pRate, obj.pattern, ...
-        'append', append);
-    
+    current = obj.os.osCompute(pRate, obj.pattern, 'append', append);
     currentTimeAxis = osTimeAxis;
 end
 

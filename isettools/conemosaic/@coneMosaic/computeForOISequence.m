@@ -270,7 +270,6 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     if (isa(obj, 'coneMosaicHex'))
         % Reshape absorptions to correct dimensions [instances, cone_indices, time]
         absorptions = permute(absorptions, [1 3 2]);
-        
         if (currentFlag)
             % Add one more absorption at the end
             absorptions = cat(3, absorptions, squeeze(absorptions(:,:,end)));
@@ -336,10 +335,13 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         end
         
         % Reload the absorptions signal from the last instance
-        sz = size(absorptions);
-        lastInstance = sz(1);
-        obj.absorptions = reshape(squeeze(absorptions(lastInstance,:,:,:)), [size(obj.pattern,1) size(obj.pattern,2) sz(end)]);
-    
+        instancesNum = size(absorptions,1);
+        timePoints = size(absorptions,4);
+        if (isa(obj, 'coneMosaicHex')) 
+            obj.absorptions = squeeze(absorptions(instancesNum,:,:,:));
+        else
+            obj.absorptions = reshape(squeeze(absorptions(instancesNum,:,:,:)), [size(obj.pattern,1) size(obj.pattern,2) timePoints]);
+        end
         % Re-align absorptions time axis with respect to optical image sequence time axis
         absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis;
     
