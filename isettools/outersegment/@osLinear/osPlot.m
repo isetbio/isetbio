@@ -1,6 +1,7 @@
 function h = osPlot(obj, absorptions, varargin)
-% Plots the input (photons/sec), linear filters and output (pA) of the
-% linear outer segment.
+% Plots about the outersegment properties
+%
+%   TODO:  osPlot(obj,plotType,varargin); 
 %
 % Inputs: 
 %   osLinear object

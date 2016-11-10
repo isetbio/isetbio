@@ -28,7 +28,9 @@ txt = sprintf('%s %d\n', 'Active cones:' , numel(find(obj.pattern > 1)));
 str = addText(str,txt);
 txt = sprintf('%s %g\n', 'Density (cones/mm^2):', numel(find(obj.pattern > 1))/(obj.width*obj.height*1e6));
 str = addText(str,txt);
-txt = sprintf('%s %g sec (%d samps)\n', 'Duration: ', obj.absorptionsTimeAxis(end),length(obj.absorptionsTimeAxis));
+nSamples = length(obj.absorptionsTimeAxis);
+T = nSamples*obj.os.timeStep;
+txt = sprintf('%s %g sec (%d samps)\n', 'Duration: ', T, nSamples);
 str = addText(str,txt);
 
 % cone pigment properties
