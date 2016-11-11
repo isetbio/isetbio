@@ -1,7 +1,7 @@
 function current = osCompute(obj, cMosaic, varargin)
 % Compute the response of the outer segments using the linear model 
 %
-%    current = osCompute(obj, pRate, coneType, varargin)
+%    current = osCompute(obj, cMosaic, varargin)
 %
 % We use the linear model for cases in which there is a uniform background,
 % as we typically find in psychophysical experiments.  When the images are
@@ -26,8 +26,7 @@ function current = osCompute(obj, cMosaic, varargin)
 %
 % Inputs: 
 %   obj      - osLinear class object
-%   pRate    - photon absorption rate in R*/sec
-%   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
+%   cMosaic  - parent cone mosaic
 %
 % Optional input (key-value pairs)
 %   append   - logical, compute new or to append to existing. When append
@@ -65,17 +64,18 @@ p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 % To remove and write a script to check model compatibility with Juan's stuff
-p.addParameter('linearized', true, @islogical);
+% p.addParameter('linearized', true, @islogical);
 
-p.parse(obj, pRate, coneType, varargin{:});
+p.parse(obj,cMosaic,varargin{:});
 
-linearized = p.Results.linearized;
+% linearized = p.Results.linearized;
 
 pRate = cMosaic.absorptions/cMosaic.integrationTime;
 coneType = cMosaic.pattern;
 
 nHistFrames = 0;
 
+% Next up, write this function.
 [lConeMean, mConeMean, sConeMean] = osMeanRate(obj);
 
 % This will get moved to a specific test of the other filters
