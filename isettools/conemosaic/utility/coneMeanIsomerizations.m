@@ -1,4 +1,4 @@
-function [lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations(cMosaic, varargin)
+function [lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations(varargin)
 % 
 % Get the mean photon rate by cone type.
 % 
@@ -6,13 +6,28 @@ function [lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations(cMosaic, var
 
 
 % parse inputs
-p = inputParser; 
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
-p.parse(cMosaic,varargin{:});
-cMosaic = p.Results.cMosaic;
+% p = inputParser; 
+% p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+% p.parse(cMosaic,varargin{:});
+% cMosaic = p.Results.cMosaic;
+% 
+% coneType = cMosaic.pattern;
+% pRate    = cMosaic.absorptions;
 
-coneType = cMosaic.pattern;
-pRate    = cMosaic.absorptions;
+p = inputParser; p.KeepUnmatched = true;
+p.addParameter('cMosaic',  [],@(x) isa(x, 'coneMosaic'));
+p.addParameter('pRate',    [], @(x) ndims(x) == 3);
+p.addParameter('coneType', [], @ismatrix);
+p.parse(varargin{:});
+
+cMosaic = p.Results.cMosaic;
+pRate = p.Results.pRate;
+coneType = p.Results.coneType;
+
+if ~isempty(cMosaic) 
+    pRate = cMosaic.absorptions./cMosaic.integrationTime;
+    coneType = cMosaic.pattern;
+end
 
 % Get where cones of each type are located in the mosaic
 lConeIndices = find(coneType == 2);

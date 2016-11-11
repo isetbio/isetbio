@@ -19,6 +19,6 @@ if isempty(obj.absorptions)
 end
 
 % Pass in the cone mosaic object and any parsed arguments
-obj.os.osCompute(obj, p.Results);
-
+% obj.os.osCompute(obj, p.Results);
+obj.os.osCompute(obj.absorptions/obj.integrationTime, obj.pattern, 'append', false);
 end

@@ -1,4 +1,5 @@
-function current = osCompute(obj, cMosaic, varargin)
+function current = osCompute(obj, pRate, coneType, varargin)
+% function current = osCompute(obj, cMosaic, varargin)
 % Compute the response of the outer segments using the linear model 
 %
 %    current = osCompute(obj, cMosaic, varargin)
@@ -59,24 +60,40 @@ function current = osCompute(obj, cMosaic, varargin)
 % end
 
 % parse inputs
+% p = inputParser; 
+% p.KeepUnmatched = true;
+% p.addRequired('obj', @(x) isa(x, 'osLinear'));
+% p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+% % To remove and write a script to check model compatibility with Juan's stuff
+% % p.addParameter('linearized', true, @islogical);
+% 
+% p.parse(obj,cMosaic,varargin{:});
+% 
+% pRate = cMosaic.absorptions/cMosaic.integrationTime;
+% coneType = cMosaic.pattern;
+
+
+% parse inputs
 p = inputParser; 
 p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addRequired('pRate', @isnumeric);
+p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
+
 % To remove and write a script to check model compatibility with Juan's stuff
-% p.addParameter('linearized', true, @islogical);
+p.addParameter('linearized', true, @islogical);
 
-p.parse(obj,cMosaic,varargin{:});
-
+p.parse(obj, pRate, coneType, varargin{:});
+linearized = p.Results.linearized;
+coneType   = p.Results.coneType;
+pRate      = p.Results.pRate;
 % linearized = p.Results.linearized;
-
-pRate = cMosaic.absorptions/cMosaic.integrationTime;
-coneType = cMosaic.pattern;
 
 nHistFrames = 0;
 
 % Next up, write this function.
-[lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations(cMosaic);
+% [lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations('cMosaic',cMosaic);
+[lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations('pRate',pRate,'coneType',coneType);
 
 % This will get moved to a specific test of the other filters
 %    lmsFilters = obj.generateLinearFilters(mean(pMean(:))); % linear filters
@@ -85,7 +102,7 @@ nHistFrames = 0;
 
 % call this bioPhysLinearFilters() to produce the impulse response
 % functions for the specific mean rates
-lmsFilters = obj.generateBioPhysFilters('meanRate', [lConeMean, mConeMean, sConeMean], varargin{:}); % linear filters
+lmsFilters = obj.generateBioPhysFilters([lConeMean, mConeMean, sConeMean], varargin{:}); % linear filters
 
 % These convert a single photon increment on mean to a photocurrent IRF
 obj.lmsConeFilter = lmsFilters;

@@ -56,7 +56,7 @@ plot(tme,squeeze(currentScaled./max(currentScaled(:))),'r','LineWidth',2);
 
 %% osLinear impulse response
 
-osCML = osLinear('osType',true);            % linear cone dynamics
+osCML = osLinear('osType',false);            % linear cone dynamics
 osCML.set('noise flag',0);
 cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
 cmL.integrationTime = timeStep;

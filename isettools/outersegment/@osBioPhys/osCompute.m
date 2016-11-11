@@ -1,4 +1,5 @@
-function current = osCompute(obj, cMosaic, varargin)
+function current = osCompute(obj, pRate, coneType, varargin)
+% function current = osCompute(obj, cMosaic, varargin)
 % Compute the output response of the L, M and S cone outer segments
 %
 %   current = osCompute(obj, pRate, coneType, varargin)
@@ -44,19 +45,31 @@ function current = osCompute(obj, cMosaic, varargin)
 % end
 
 % parse inputs
+% p = inputParser; p.KeepUnmatched = true;
+% p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
+% p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+% p.addParameter('bgR', 0, @isscalar);
+% p.addParameter('append', false, @islogical);
+% 
+% p.parse(obj, coneMosaic, varargin{:});
+% 
+% bgR = p.Results.bgR;
+% isAppend = p.Results.append;
+% 
+% pRate = cMosaic.absorptions/cMosaic.integrationTime;
+% coneType = cMosaic.pattern;
+
+% parse inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addRequired('pRate', @isnumeric);
+p.addRequired('coneType', @ismatrix);
 p.addParameter('bgR', 0, @isscalar);
 p.addParameter('append', false, @islogical);
 
-p.parse(obj, coneMosaic, varargin{:});
-
+p.parse(obj, pRate, coneType, varargin{:});
 bgR = p.Results.bgR;
 isAppend = p.Results.append;
-
-pRate = cMosaic.absorptions/cMosaic.integrationTime;
-coneType = cMosaic.pattern;
 
 % init parameters
 if ~isAppend || isempty(obj.state)

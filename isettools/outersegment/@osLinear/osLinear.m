@@ -153,7 +153,7 @@ classdef osLinear < outerSegment
             % parse input parameters
             p = inputParser; p.KeepUnmatched = true;
             p.addRequired('os', @(x) isa(x, 'outerSegment'));
-            p.addRequired('meanRate', @(x) (length(x) == 3)); % LMS mean absorption rates R*/sec
+            p.addRequired('meanRate', @(x) length(x) == 3); % LMS mean absorption rates R*/sec
             p.addParameter('osType',false,@islogical);  % Foveal or peripheral
             p.parse(os, meanRate, varargin{:})
             
@@ -178,14 +178,14 @@ classdef osLinear < outerSegment
                 bgIsomerizations = meanRate(meanInd);
                 
                 % flash intensity in R*/cone/sec (maintained for 1 bin only)
-                meanIntens  = meanRate(meanInd);
+                meanIntens  = meanRate(meanInd)*timeStep;
                 
                 % Create stimulus.
                 stimulus = meanIntens*ones(nSamples, 1);
                 stimulusFlat = reshape(stimulus, [1 1 nSamples]);
                 
                 % stimulus(1) = flashIntens*timeStep;
-                stimulus(flashTimeStep) = flashIntens;
+                stimulus(warmup) = flashIntens;
                 stimulus = reshape(stimulus, [1 1 nSamples]);
                 
                 % Generate the cone mosaic for the impulse stimulus
@@ -240,7 +240,7 @@ classdef osLinear < outerSegment
 %                 title(sprintf('Peripheral (fast)\nIR as a function of mean R*/sec, rezeroed'));
                 
                 numberIsomerizations = flashIntens;
-                impulseResponseLMS(:,meanInd) = (squeeze(currentScaled(flashTimeStep:end))- squeeze(currentScaledFlat(flashTimeStep:end)))./numberIsomerizations;
+                impulseResponseLMS(:,meanInd) = -(squeeze(currentScaled(warmup:end))- squeeze(currentScaledFlat(warmup:end)))./numberIsomerizations;
             end
             
         end
