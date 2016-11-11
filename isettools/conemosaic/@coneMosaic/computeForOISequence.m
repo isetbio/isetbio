@@ -13,6 +13,7 @@
 %
 %   currentFlag  - logical, whether to compute photocurrent
 %   newNoise     - logical, whether to use new random seed
+%   workerID     - if passed and is non-empty, display the progress for the current worker in the parpool pool
 %
 % Outputs:
 %   absorptions          - cone photon absorptions (photon counts in integrationTime)
@@ -30,14 +31,18 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     p.addParameter('emPaths', [], @isnumeric);
     p.addParameter('currentFlag', false, @islogical);
     p.addParameter('newNoise', true, @islogical);
+    p.addParameter('workerID', [], @isnumeric);
+    p.addParameter('workDescription', '', @ischar);
     p.parse(oiSequence, varargin{:});
     
     oiSequence = p.Results.oiSequence;
     emPaths = p.Results.emPaths;
     currentFlag = p.Results.currentFlag;
     newNoise = p.Results.newNoise;
-    oiTimeAxis = oiSequence.oiTimeAxis;
+    workerID = p.Results.workerID;
+    workDescription = p.Results.workDescription;
     
+    oiTimeAxis = oiSequence.oiTimeAxis;
     if (oiSequence.length ~= numel(oiTimeAxis))
         error('oiTimeAxis and oiSequence must have equal length\n');
     end
@@ -60,7 +65,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     
     % Save default integration time
     defaultIntegrationTime = obj.integrationTime;
-
+    
     % Only allocate memory for the non-null cones in a 3D matrix [instances x time x numel(nonNullConesIndices)]
     nonNullConesIndices = find(obj.pattern>1);
     absorptions = zeros(instancesNum, numel(eyeMovementTimeAxis), numel(nonNullConesIndices), 'single');
@@ -84,6 +89,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         % Loop over the optical images
         for oiIndex = 1:oiSequence.length
 
+            if (~isempty(workerID))
+                % Update progress bar
+                displayProgress(workerID, workDescription, 0.5*oiIndex/oiSequence.length);
+            end
+            
             % Current oi time limits
             tFrameStart = oiTimeAxis(oiIndex);
             tFrameEnd   = tFrameStart + oiRefreshInterval;
@@ -185,6 +195,10 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         % Loop over the eye movements
         for emIndex = 1:eyeMovementsNum
 
+            if (~isempty(workerID))
+                displayProgress(workerID, workDescription, 0.5*emIndex/eyeMovementsNum);
+            end
+            
             % Current eye movement time limits
             emStart = eyeMovementTimeAxis(emIndex);
             emEnd   = emStart + defaultIntegrationTime;
@@ -298,6 +312,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         if (isa(obj, 'coneMosaicHex'))
             photocurrents = zeros(instancesNum, numel(nonNullConesIndices), numel(osTimeAxis), 'single');
             for instanceIndex = 1:instancesNum
+                
+                if (~isempty(workerID))
+                    displayProgress(workerID, workDescription, 0.5 + 0.5*instanceIndex/instancesNum);
+                end
+                
                 tmp = squeeze(absorptions(instanceIndex,:,:));
                 
                 % Resample to osTimeAxis
@@ -314,6 +333,11 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             photocurrents = zeros(instancesNum, size(obj.pattern,1), size(obj.pattern,2), numel(osTimeAxis), 'single');
             
             for instanceIndex = 1:instancesNum
+                
+                if (~isempty(workerID))
+                    displayProgres(workerID, 0.5 + 0.5*instanceIndex/instancesNum);
+                end
+                
                 tmp = squeeze(absorptions(instanceIndex,:,:,:));
 
                 % Resample to osTimeAxis (reshape to 2D for faster processing)
@@ -354,4 +378,31 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         varargout{1} = [];
         varargout{2} = [];
     end % currentFlag
+ 
+    if (~isempty(workerID))
+        displayProgress(workerID, workDescription, nan);
+    end
 end
+
+function displayProgress(workerID, workDescription, progress)
+    
+    maxStarsNum = 60;
+    if (isnan(progress))
+        fprintf('worker-%02d: %s |', workerID, workDescription);
+        for k = 1:60
+            fprintf('*');
+        end
+        fprintf('|');
+    else
+        fprintf('worker-%02d: %s |', workerID, workDescription);
+        if (progress>1)
+            progress = 1;
+        end
+        starsNum = round(maxStarsNum*progress);
+        for k = 1:starsNum
+            fprintf('*');
+        end
+    end
+    fprintf('\n');
+end
+                
