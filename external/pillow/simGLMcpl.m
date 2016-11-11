@@ -87,7 +87,7 @@ rprev = zeros(1,ncells);
 
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);  nii = length(iinxt);
-    rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
+    rrnxt = exp(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
     rrcum = cumsum(rrnxt+[rprev;zeros(nii-1,ncells)],1);  % Cumulative intensity
     if all(tspnext >= rrcum(end,:)) % No spike in this window
         jbin = iinxt(end)+1;

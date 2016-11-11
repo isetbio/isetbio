@@ -37,7 +37,7 @@ coupling = p.Results.coupling;
 % sample of the linear response is broken into N bins, where N is the
 % refresh rate. This is used in simGLM.m and simGLMcpl.m from Pillow.
 global RefreshRate
-RefreshRate = 100;
+RefreshRate = 10;
 
 % For every IR, this could be a vector in the future
 nTrials = ir.get('number trials');
