@@ -126,14 +126,25 @@ classdef osLinear < outerSegment
             obj.lmsConeFilter = newIRFs;
         end
         
-        function impulseResponseLMS = generateBioPhysFilters(os, varargin)
-            % Generates the impulse responses for the LMS cones with the appropriate
-            % magnitude using the biophysical model for the outer segment.
+        function impulseResponseLMS = generateBioPhysFilters(os, meanRate, varargin)
+            % Returns the impulse response of the photocurrent given a
+            % single photon absorption above the mean rate.
             %
-            % Manually sets an impulse stimulus in the absorptions field of a new cone
-            % mosaic object, generates the impulse response for the LMS cones and
-            % returns them, in order to be used in a linear computation with a
-            % near-constant background.
+            % These response functions are used when we are modeling a
+            % uniform background and stimuli that are smallish contrast
+            % modulations above and below that background.  These are often
+            % the conditions in a psychophysical or physiological
+            % experiment. 
+            %
+            % This function takes in the mean rate of the backgournd 
+            % Generates the impulse responses for the LMS cones with the
+            % appropriate magnitude using the biophysical model for the
+            % outer segment.
+            %
+            % Manually sets an impulse stimulus in the absorptions field of
+            % a new cone mosaic object, generates the impulse response for
+            % the LMS cones and returns them, in order to be used in a
+            % linear computation with a near-constant background.
             %
             % See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize
             %
@@ -142,42 +153,32 @@ classdef osLinear < outerSegment
             % parse input parameters
             p = inputParser; p.KeepUnmatched = true;
             p.addRequired('os', @(x) isa(x, 'outerSegment'));
-            p.addParameter('meanRate',@isnumeric);
-            p.addParameter('osType',false,@islogical);
-            p.addParameter('coneType',@isnumeric);
-            p.parse(os, varargin{:})
+            p.addRequired('meanRate', @(x) (length(x) == 3)); % LMS mean absorption rates R*/sec
+            p.addParameter('osType',false,@islogical);  % Foveal or peripheral
+            p.parse(os, meanRate, varargin{:})
             
-            os = p.Results.os;
-            osType = p.Results.osType;
-            meanIsoArray = p.Results.meanRate;
-            coneType = p.Results.coneType;
+            os       = p.Results.os;
+            osType   = p.Results.osType;
+            meanRate = p.Results.meanRate;
             
             % Generate impulse responses for L, M or S cone
             % A new cone mosaic is generated for each type of cone, and the
             % impulse response
+            timeStep = os.timeStep;               % time step
+            nSamples = round(0.8/timeStep) + 1;   % 0.8 sec
             
-            timeStep = os.timeStep;        % time step
-            nSamples = round(0.8/timeStep) + 1;       % 0.3 sec
+            flashIntens = 1;   % 1 photon above the background mean            
+            warmup = round(0.5/timeStep) + 1;  % Warm up period is 0.5 sec
             
-            % Manually set flash rate to just one at 5000 R*/sec
-            flashIntens = 10;         
+            % vcNewGraphWin; hold on
             
-            backgroundMean = 1000;   %[10 100 500 1000 2000 5000 10000];
-            
-            flashTimeStep = 5000;    % Warm up period, then flash
-            
-%             vcNewGraphWin; hold on           
-            
-            for meanInd = 1:length(meanIsoArray)
-                
-                % Build the stimulus
-                stimulus = ones(1,nSamples)*backgroundMean;
-                
+            for meanInd = 1:length(meanRate)
+                                
                 % Set mean background for start of current output
-                bgIsomerizations = backgroundMean;
+                bgIsomerizations = meanRate(meanInd);
                 
                 % flash intensity in R*/cone/sec (maintained for 1 bin only)
-                meanIntens  = meanIsoArray(meanInd);
+                meanIntens  = meanRate(meanInd);
                 
                 % Create stimulus.
                 stimulus = meanIntens*ones(nSamples, 1);
