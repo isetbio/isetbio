@@ -25,6 +25,11 @@ classdef osLinear < outerSegment
         absHistory = [];  % recent absorption history 
     end
     
+    % Defined in separate files within the @osLinear directory
+    methods (Access=public)
+        [lmsFilters, meanCurrent] = generateBioPhysFilters(os, meanRate, varargin);
+    end
+    
     % Public methods
     methods
         % Constructor
@@ -54,11 +59,12 @@ classdef osLinear < outerSegment
             % see osPlot for details
             osPlot(obj, cMosaic);
         end
+        
     end
     
     methods (Access = private)
         function newIRFs = generateLinearFilters(obj, meanRate, varargin)
-            % Generates the linear temporal filters for the L, M and S
+            % To deprecate: Generates the linear temporal filters for the L, M and S
             % cones based on physiological data from Angueyra and Rieke
             % (Nat. Neuro., 2013).
             %
@@ -126,123 +132,7 @@ classdef osLinear < outerSegment
             obj.lmsConeFilter = newIRFs;
         end
         
-        function impulseResponseLMS = generateBioPhysFilters(os, meanRate, varargin)
-            % Returns the impulse response of the photocurrent given a
-            % single photon absorption above the mean rate.
-            %
-            % These response functions are used when we are modeling a
-            % uniform background and stimuli that are smallish contrast
-            % modulations above and below that background.  These are often
-            % the conditions in a psychophysical or physiological
-            % experiment. 
-            %
-            % This function takes in the mean rate of the backgournd 
-            % Generates the impulse responses for the LMS cones with the
-            % appropriate magnitude using the biophysical model for the
-            % outer segment.
-            %
-            % Manually sets an impulse stimulus in the absorptions field of
-            % a new cone mosaic object, generates the impulse response for
-            % the LMS cones and returns them, in order to be used in a
-            % linear computation with a near-constant background.
-            %
-            % See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize
-            %
-            % 11/2016 JRG (c) isetbio team
-            
-            % parse input parameters
-            p = inputParser; p.KeepUnmatched = true;
-            p.addRequired('os', @(x) isa(x, 'outerSegment'));
-            p.addRequired('meanRate', @(x) length(x) == 3); % LMS mean absorption rates R*/sec
-            p.addParameter('osType',false,@islogical);  % Foveal or peripheral
-            p.parse(os, meanRate, varargin{:})
-            
-            os       = p.Results.os;
-            osType   = p.Results.osType;
-            meanRate = p.Results.meanRate;
-            
-            % Generate impulse responses for L, M or S cone
-            % A new cone mosaic is generated for each type of cone, and the
-            % impulse response
-            timeStep = os.timeStep;               % time step
-            nSamples = round(0.8/timeStep) + 1;   % 0.8 sec
-            
-            flashIntens = 1;   % 1 photon above the background mean            
-            warmup = round(0.5/timeStep) + 1;  % Warm up period is 0.5 sec
-            
-            % vcNewGraphWin; hold on
-            
-            for meanInd = 1:length(meanRate)
-                                
-                % Set mean background for start of current output
-                bgIsomerizations = meanRate(meanInd);
-                
-                % flash intensity in R*/cone/sec (maintained for 1 bin only)
-                meanIntens  = meanRate(meanInd)*timeStep;
-                
-                % Create stimulus.
-                stimulus = meanIntens*ones(nSamples, 1);
-                stimulusFlat = reshape(stimulus, [1 1 nSamples]);
-                
-                % stimulus(1) = flashIntens*timeStep;
-                stimulus(warmup) = flashIntens;
-                stimulus = reshape(stimulus, [1 1 nSamples]);
-                
-                % Generate the cone mosaic for the impulse stimulus
-                osCM = osBioPhys('osType',osType);            
-                osCM.set('noise flag',0);
-                cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
-                cm.integrationTime = timeStep;
-                cm.os.timeStep = timeStep;
-                
-                cm.absorptions  = stimulus;
-                
-                % Compute outer segment currents.
-                cm.computeCurrent('bgR',bgIsomerizations);
-                currentScaled = (cm.current);% - cm.current(flashTimeStep);
-                
-                % Generate the cone mosaic for the flat stimulus
-                osCMflat = osBioPhys('osType',osType);            
-                osCMflat.set('noise flag',0);
-                cmFlat = coneMosaic('os',osCMflat ,'pattern', 2); % a single cone
-                cmFlat.integrationTime = timeStep;
-                cmFlat.os.timeStep = timeStep;
-                
-                cmFlat.absorptions  = stimulusFlat;
-                
-                % Compute outer segment currents.
-                cmFlat.computeCurrent('bgR',bgIsomerizations);
-                currentScaledFlat = (cmFlat.current);% - cm.current(flashTimeStep);
-                
-                % Plot the impulse responses for comparison.
-                
-%                 subplot(1,2,1); hold on;
-%                 tme = (1:nSamples)*timeStep;
-%                 plot(tme,squeeze(currentScaled),'LineWidth',3);
-%                 grid on; % legend('Peripheral','Foveal');
-%                 % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
-%                 xlabel('Time (sec)','FontSize',14);
-%                 ylabel('pA','FontSize',14);
-%                 set(gca,'fontsize',14);
-%                 title(sprintf('Peripheral (fast)\nImpulse response as a function of mean R*/sec'));
-%                 
-%                 subplot(1,2,2); hold on;
-%                 tme = (1:nSamples)*timeStep;
-%                 plot(tme-flashTimeStep*timeStep,squeeze(currentScaled)- squeeze(currentScaledFlat),'LineWidth',3);
-%                 grid on; % legend('Peripheral','Foveal');
-%                 % axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
-%                 axis([0 nSamples*timeStep-flashTimeStep*timeStep -.2 2]);
-%                 xlabel('Time (sec)','FontSize',14);
-%                 ylabel('pA','FontSize',14);
-%                 set(gca,'fontsize',14);
-%                 % title('Impulse response in the dark
-%                 
-%                 title(sprintf('Peripheral (fast)\nIR as a function of mean R*/sec, rezeroed'));
-                
-                numberIsomerizations = flashIntens;
-                impulseResponseLMS(:,meanInd) = -(squeeze(currentScaled(warmup:end))- squeeze(currentScaledFlat(warmup:end)))./numberIsomerizations;
-            end
-            
-        end
+        
     end
 end
+

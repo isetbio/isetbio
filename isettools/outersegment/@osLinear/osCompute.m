@@ -1,8 +1,8 @@
 function current = osCompute(obj, pRate, coneType, varargin)
-% function current = osCompute(obj, cMosaic, varargin)
+% function current = osCompute(obj, pRate, coneType, varargin)
 % Compute the response of the outer segments using the linear model 
 %
-%    current = osCompute(obj, cMosaic, varargin)
+%    current = osCompute(obj, pRate, coneType, varargin)
 %
 % We use the linear model for cases in which there is a uniform background,
 % as we typically find in psychophysical experiments.  When the images are
@@ -26,8 +26,9 @@ function current = osCompute(obj, pRate, coneType, varargin)
 %
 %
 % Inputs: 
-%   obj      - osLinear class object
-%   cMosaic  - parent cone mosaic
+%   obj       - osLinear class object
+%   pRate     - R*/sec (x,y,t)
+%   coneType  - coneMosaic.pattern 
 %
 % Optional input (key-value pairs)
 %   append   - logical, compute new or to append to existing. When append
@@ -40,26 +41,9 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % 
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
-% We don't think anyone sends in a sensor any more.
+% We are hoping to switch to the arguments: [obj, cMosaic, varargin]
+% When we do, this should be the parsing
 %
-% check pRate type for backward compatibility
-% if isstruct(pRate) && isfield(pRate, 'type') && ...
-%         strcmp(pRate.type, 'sensor')
-%     warning('The input is a sensor, should update to use coneMosaic.');
-%     obj.osSet('timestep', sensorGet(pRate, 'time interval'))
-%     if notDefined('coneType')
-%         current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-%             sensorGet(pRate, 'cone type'));
-%     else
-%         current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-%             sensorGet(pRate, 'cone type'), coneType, varargin{:});
-%     end
-%     in the old code, we return obj instead of current
-%     current = obj.osSet('cone current signal', current);
-%     return
-% end
-
-% parse inputs
 % p = inputParser; 
 % p.KeepUnmatched = true;
 % p.addRequired('obj', @(x) isa(x, 'osLinear'));
@@ -80,42 +64,30 @@ p.addRequired('obj', @(x) isa(x, 'osLinear'));
 p.addRequired('pRate', @isnumeric);
 p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
 
-% To remove and write a script to check model compatibility with Juan's stuff
-p.addParameter('linearized', true, @islogical);
-
 p.parse(obj, pRate, coneType, varargin{:});
-linearized = p.Results.linearized;
 coneType   = p.Results.coneType;
 pRate      = p.Results.pRate;
-% linearized = p.Results.linearized;
 
 nHistFrames = 0;
 
-% Next up, write this function.
-% [lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations('cMosaic',cMosaic);
-[lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations('pRate',pRate,'coneType',coneType);
-
-% This will get moved to a specific test of the other filters
-%    lmsFilters = obj.generateLinearFilters(mean(pMean(:))); % linear filters
 
 %% This is the place where we get the linear filters given the mean rate
 
-% call this bioPhysLinearFilters() to produce the impulse response
-% functions for the specific mean rates
-lmsFilters = obj.generateBioPhysFilters([lConeMean, mConeMean, sConeMean], varargin{:}); % linear filters
+% meanRate units are isomerizatons per section (R*/sec)
+meanRate = coneMeanIsomerizations('pRate',pRate,'coneType',coneType);
 
 % These convert a single photon increment on mean to a photocurrent IRF
-obj.lmsConeFilter = lmsFilters;
+[lmsFilters, meanCur] = obj.generateBioPhysFilters(meanRate, varargin{:});
+% vcNewGraphWin; plot(obj.lmsConeFilter)
 
 %% We need to ask whether we can't put this into the units
 
 % This converts the mean absorption rate into the base current
-maxCur = 0.01*20.5^3; % Dunn & Rieke (2007, Nature)
-meanCur = maxCur * (1 - 1./(1 + 45000./[lConeMean, mConeMean, sConeMean]));
+% maxCur = 0.01*20.5^3; % Dunn & Rieke (2007, Nature)
+% meanCur = maxCur * (1 - 1./(1 + 45000./meanRate));
 
 %%  The predicted photocurrent is
 %
-%  conv(absorptions - meanAbsorptions,lmsFilters) + baseCurrent
 
 % First entry is trial.  We are showing only the first trial here.
 [absorptions, r, c] = RGB2XWFormat(pRate);
@@ -130,8 +102,19 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-        curData = conv2(absorptions(index, :), filter') - meanCur(ii-1);
-        current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
+        % The mean absorptions produces the meanCur
+        % The differences from the mean produce the impulse response
+        % So the formula convolves the differences from the mean with the
+        % filter and then adds the mean background current
+        %
+        %  conv(absorptions - meanAbsorptions,lmsFilters) + baseCurrent
+        
+        % We are nervous about the size.
+        dAbsorptions = absorptions(index,:) - meanRate(ii);
+        current(index,:)  = conv2(dAbsorptions,lmsFilters(:,ii-1)','same') + meanCur(ii-1);
+        
+        % curData = conv2(absorptions(index, :), filter') - meanCur(ii-1);
+        % current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
     end
 end
 
