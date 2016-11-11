@@ -76,7 +76,7 @@ coneType = cMosaic.pattern;
 nHistFrames = 0;
 
 % Next up, write this function.
-[lConeMean, mConeMean, sConeMean] = osMeanRate(obj);
+[lConeMean, mConeMean, sConeMean] = coneMeanIsomerizations(cMosaic);
 
 % This will get moved to a specific test of the other filters
 %    lmsFilters = obj.generateLinearFilters(mean(pMean(:))); % linear filters
@@ -85,7 +85,7 @@ nHistFrames = 0;
 
 % call this bioPhysLinearFilters() to produce the impulse response
 % functions for the specific mean rates
-lmsFilters = obj.generateBioPhysFilters('meanRate', pMean, varargin{:}); % linear filters
+lmsFilters = obj.generateBioPhysFilters('meanRate', [lConeMean, mConeMean, sConeMean], varargin{:}); % linear filters
 
 % These convert a single photon increment on mean to a photocurrent IRF
 obj.lmsConeFilter = lmsFilters;
@@ -94,7 +94,7 @@ obj.lmsConeFilter = lmsFilters;
 
 % This converts the mean absorption rate into the base current
 maxCur = 0.01*20.5^3; % Dunn & Rieke (2007, Nature)
-meanCur = maxCur * (1 - 1./(1 + 45000./pMean));
+meanCur = maxCur * (1 - 1./(1 + 45000./[lConeMean, mConeMean, sConeMean]));
 
 %%  The predicted photocurrent is
 %
