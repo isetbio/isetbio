@@ -96,7 +96,7 @@ for t = 1 : 2 : params.nSteps
         
 %     stimRGBraw = 0.5+(0.25*randn(params.row,params.col,3));
     %     stimulusRGBdata = floor(254*abs(stimRGBraw)./max(stimRGBraw(:)));
-    dsfactor = 4;   % should be 2 for parasol
+    dsfactor = 2;   % should be 2 for parasol
 %     dsfactor = 4;   % 4 for midget?
     stimRGBraw = rand(params.row/dsfactor,params.col/dsfactor);    
     stimRGBthresh = zeros(params.row/dsfactor,params.col/dsfactor);    
