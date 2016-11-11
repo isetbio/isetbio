@@ -1,4 +1,4 @@
-function current = osCompute(obj, pRate, coneType, varargin)
+function current = osCompute(obj, cMosaic, varargin)
 % Compute the output response of the L, M and S cone outer segments
 %
 %   current = osCompute(obj, pRate, coneType, varargin)
@@ -27,33 +27,36 @@ function current = osCompute(obj, pRate, coneType, varargin)
 
 %%
 % check pRate type for backward compatibility
-if isstruct(pRate) && isfield(pRate, 'type') && ...
-        strcmp(pRate.type, 'sensor')
-    warning('The input is a sensor, should update to use coneMosaic.');
-    obj.osSet('timestep', sensorGet(pRate, 'time interval'));
-    if notDefined('coneType')
-        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-            sensorGet(pRate, 'cone type'));
-    else
-        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-            sensorGet(pRate, 'cone type'), coneType, varargin{:});
-    end
-    % in the old code, we return obj instead of current
-    current = obj.osSet('cone current signal', current);
-    return
-end
+% if isstruct(pRate) && isfield(pRate, 'type') && ...
+%         strcmp(pRate.type, 'sensor')
+%     warning('The input is a sensor, should update to use coneMosaic.');
+%     obj.osSet('timestep', sensorGet(pRate, 'time interval'));
+%     if notDefined('coneType')
+%         current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
+%             sensorGet(pRate, 'cone type'));
+%     else
+%         current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
+%             sensorGet(pRate, 'cone type'), coneType, varargin{:});
+%     end
+%     % in the old code, we return obj instead of current
+%     current = obj.osSet('cone current signal', current);
+%     return
+% end
 
 % parse inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
-p.addRequired('pRate', @isnumeric);
-p.addRequired('coneType', @ismatrix);
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('bgR', 0, @isscalar);
 p.addParameter('append', false, @islogical);
 
-p.parse(obj, pRate, coneType, varargin{:});
+p.parse(obj, coneMosaic, varargin{:});
+
 bgR = p.Results.bgR;
 isAppend = p.Results.append;
+
+pRate = cMosaic.absorptions/cMosaic.integrationTime;
+coneType = cMosaic.pattern;
 
 % init parameters
 if ~isAppend || isempty(obj.state)

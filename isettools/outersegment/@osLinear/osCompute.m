@@ -1,4 +1,4 @@
-function current = osCompute(obj, pRate, coneType, varargin)
+function current = osCompute(obj, cMosaic, varargin)
 % Compute the response of the outer segments using the linear model 
 %
 %    current = osCompute(obj, pRate, coneType, varargin)
@@ -23,10 +23,6 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % noiseFlag is set to true, this method adds noise to the current output
 % signal. See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
-% TODO:
-%   pRate -> meanRates (one for each cone type)
-%     These can be calculated here from the obj.absorptions.
-%     So the pRate can go away.
 %
 % Inputs: 
 %   obj      - osLinear class object
@@ -67,81 +63,31 @@ function current = osCompute(obj, pRate, coneType, varargin)
 p = inputParser; 
 p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osLinear'));
-p.addRequired('pRate', @isnumeric);
-p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
-
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 % To remove and write a script to check model compatibility with Juan's stuff
 p.addParameter('linearized', true, @islogical);
 
 p.parse(obj, pRate, coneType, varargin{:});
+
 linearized = p.Results.linearized;
-coneType   = p.Results.coneType;
+
+pRate = cMosaic.absorptions/cMosaic.integrationTime;
+coneType = cMosaic.pattern;
 
 nHistFrames = 0;
 
-lConeIndices = find(coneType == 2);
-mConeIndices = find(coneType == 3);
-sConeIndices = find(coneType == 4);
-
-%% We only need a 3-vector pRate for three cone types.
-%
-% Thats because we are assuming a uniform field as in a psychophysical or
-% physiological experiment for the linear case.
-
-
-pRateXW = RGB2XWFormat(pRate);
-lConeAbsorptions = pRateXW(lConeIndices,:);
-mConeAbsorptions = pRateXW(mConeIndices,:);
-sConeAbsorptions = pRateXW(sConeIndices,:);
-
-if ~isempty(lConeAbsorptions); 
-    lConeMean = mean(lConeAbsorptions(:)); 
-else 
-    lConeMean = 0;
-end;
-if ~isempty(mConeAbsorptions); 
-    mConeMean = mean(mConeAbsorptions(:)); 
-else
-    mConeMean = 0;
-end;
-if ~isempty(sConeAbsorptions); 
-    sConeMean = mean(sConeAbsorptions(:)); 
-else
-    sConeMean = 0;
-end;
-pMean = [lConeMean mConeMean sConeMean];
+[lConeMean, mConeMean, sConeMean] = osMeanRate(obj);
 
 % This will get moved to a specific test of the other filters
 %    lmsFilters = obj.generateLinearFilters(mean(pMean(:))); % linear filters
 
 %% This is the place where we get the linear filters given the mean rate
 
-% scaleFactor = 0.11143; % from physiology experiments, see coneIRFtutorial.m
-% 
-% Io = 2250;                     % half-desensitizing background (in R*/cone/sec, from Juan's paper - corrected)
-% Ib = pMean; %[7131 6017 1973]; % R* per sec due to background adapting field (one for each cone, L, M, S)
-% % adjust this to specific experiment
-% % Ib = [2250 2250 2250];
-% gain_dark = 0.32;              % from Juan's paper (approximate peak of the IRF measured in darkness, and in units of pA/R*) - corrected
-% gainRatio = 1 ./ (1+(Ib./Io)); % the right side of the equation above, and the gain ratio implied by the bkgnd adapting field
-
 % call this bioPhysLinearFilters() to produce the impulse response
 % functions for the specific mean rates
-lmsFilter = obj.generateBioPhysFilters('meanRate', pMean, varargin{:}); % linear filters
+lmsFilters = obj.generateBioPhysFilters('meanRate', pMean, varargin{:}); % linear filters
 
-% lmsFilter0 = lmsFilter(1);
-% lmsFilter = scaleFactor*(lmsFilter - lmsFilter0);
-% 
-% % scale IRF to reflect amplitude at chosen background
-% % using Weber adaptation equation above and gainRatio derived from it
-% newGain = gainRatio .* gain_dark;
-% oldGain = max(lmsFilter);
-% IRFScaleFactor = newGain ./ oldGain;
-% 
-% lmsFilters = (IRFScaleFactor'*lmsFilter' - ones(3,size(lmsFilter,1))*lmsFilter0)';
-
-%% These convert a single photon increment on mean to a photocurrent IRF
-
+% These convert a single photon increment on mean to a photocurrent IRF
 obj.lmsConeFilter = lmsFilters;
 
 %% We need to ask whether we can't put this into the units
@@ -153,8 +99,6 @@ meanCur = maxCur * (1 - 1./(1 + 45000./pMean));
 %%  The predicted photocurrent is
 %
 %  conv(absorptions - meanAbsorptions,lmsFilters) + baseCurrent
-%
-
 
 % First entry is trial.  We are showing only the first trial here.
 [absorptions, r, c] = RGB2XWFormat(pRate);

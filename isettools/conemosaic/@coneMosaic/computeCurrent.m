@@ -16,8 +16,6 @@ if isempty(obj.absorptions)
     disp('Compute absorptions first.  No current comnputed');
 end
 
-pRate = obj.absorptions/obj.integrationTime;
-
-obj.os.osCompute(pRate, obj.pattern, p.Results, varargin{:});
+obj.os.osCompute(obj, p.Results, varargin{:});
 
 end
