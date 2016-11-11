@@ -110,8 +110,9 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
         %  conv(absorptions - meanAbsorptions,lmsFilters) + baseCurrent
         
         % We are nervous about the size.
-        dAbsorptions = absorptions(index,:) - meanRate(ii);
-        current(index,:)  = conv2(dAbsorptions,lmsFilters(:,ii-1)','same') + meanCur(ii-1);
+        dAbsorptions = absorptions(index,:) - meanRate(ii-1);
+        tmpCurrent = conv2(dAbsorptions,lmsFilters(:,ii-1)') + meanCur(ii-1);
+        current(index,:) = tmpCurrent(:,1:size(pRate, 3));
         
         % curData = conv2(absorptions(index, :), filter') - meanCur(ii-1);
         % current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
