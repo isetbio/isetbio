@@ -39,8 +39,11 @@ switch format
     case 'movie'
         % Show the oi as an illuminance movie
         wgts     = obj.modulationFunction;
+        nFrames  = length(wgts);
         illFixed = oiGet(obj.oiFixed,'illuminance');
         illMod   = oiGet(obj.oiModulated,'illuminance');
+        name     = oiGet(obj.oiModulated,'name');
+        
         hFig = vcNewGraphWin; colormap(gray(256));
         axis image; axis off;
         if save
@@ -49,46 +52,38 @@ switch format
             open(vObj);
         end
         
+        % This code is general, and it could become an obj.get.movie;
+        % Or obj.get.illuminanceMovie
         mx1 = max(illFixed(:)); mx2 = max(illMod(:));
         mx = max(mx1,mx2);
         d = zeros([size(illFixed),length(obj.oiTimeAxis)]);
+        illFixed = 256*illFixed/mx; illMod = 256*illMod/mx;
         
         switch obj.composition
             case 'blend'
-                illFixed = 256*illFixed/mx; illMod = 256*illMod/mx;
-                for ii=1:length(wgts)
+                for ii=1:nFrames
                     d(:,:,ii) = illFixed*(1-wgts(ii)) + illMod*wgts(ii);
                     % To make a video, we should do this type of thing
                 end
-                
-                % d = ieScale(d,0,1) .^ 0.5;
-                % mind = min(d(:)); maxd = max(d(:));
-                % I don't know why ieMovie can't run well on this
-                for ii=1:length(wgts)
-                    image(d(:,:,ii)); axis image; drawnow;
-                    if save,  F = getframe; writeVideo(vObj,F); end
-                end
-                
-                % Write the video object if save is true
-                if save
-                    writeVideo(vObj,F);
-                    close(vObj);
-                end
-                
             case 'add'
-                if save
-                    disp('Save condition not implemented yet for add');
-                end
-                
-                for ii=1:length(wgts)
-                    imagesc(illFixed + illMod*(wgts(ii)));
-                    pause(0.1);
-                end
+                for ii=1:nFrames
+                    d(:,:,ii) = illFixed + illMod*wgts(ii);
+                end     
             otherwise
-                error('Unknown composition %s\n',obj.composition);
+                error('Unknown composition method: %s\n',obj.composition);
         end
         
-
+        %  Show the movie data
+        for ii=1:nFrames
+            image(d(:,:,ii)); axis image; title(name); drawnow;
+            if save,  F = getframe; writeVideo(vObj,F); end
+        end
+        
+        % Write the video object if save is true
+        if save
+            writeVideo(vObj,F);
+            close(vObj);
+        end
 
     case 'montage'
         % Window with snapshots
