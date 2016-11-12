@@ -117,7 +117,7 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %         sceneCreate('grid lines',imageSize,pixelsBetweenLines);
 %         sceneCreate('point array',imageSize,pixelsBetweenPoints);
 %         sceneCreate('moire orient',imageSize,edgeSlope);
-%         sceneCreate('radia%         sceneCreate('radial lines', imageSize);l lines', imageSize);
+%         sceneCreate('radial lines', imageSize);
 %
 %         clear p; p.display = 'LCD-Apple';
 %         p.sceneSz = [64,65]; p.barWidth = 2; p.offset = 1; p.meanLum = 10;
