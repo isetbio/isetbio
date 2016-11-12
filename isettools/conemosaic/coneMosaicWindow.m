@@ -193,6 +193,9 @@ function coneMosaicGUIRefresh(hObject, eventdata, handles)
 % get coneMosaic object
 cm = handles.cMosaic;
 
+% Place name in text string box
+set(handles.txtName,'string',sprintf('Name: %s',cm.name));
+
 % set row and cols
 set(handles.editRows, 'string', num2str(cm.rows));
 set(handles.editCols, 'string', num2str(cm.cols));
@@ -265,6 +268,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'off');
         set(handles.menuPlotVLineLMS, 'Enable', 'off');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Mean absorptions'
         % mean cone absorptions
         resetMovieControl(handles);
@@ -291,18 +296,28 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Absorption movie'
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
+        
         if isempty(handles.mov)
-            ieInWindowMessage('Building movie',handles,2);
+            % Alert to movie build
+            ieInWindowMessage('Building absorptions movie',handles);
+            
             % generate movie
             handles.mov = cm.plot('movie absorptions', 'hf','none',...
                 'show',true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
+            
+            % Clear message
+            ieInWindowMessage('',handles);
             guidata(hObject, handles);
         end
+        
+        % Initiate movie display GUI elements.
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        set(handles.sliderMovieProgress, 'Visible', 'on');
         
         % set up right click menu (context menu)
         c = uicontextmenu;        
@@ -321,7 +336,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        
+        set(handles.txtMovieFrame,'Visible','on');
+
         % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
@@ -345,19 +361,23 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Photocurrent movie'
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
         
-        % The movie is playing here.  I don't think it should be.
         if isempty(handles.curMov) % generate movie for photocurrent
-            ieInWindowMessage('Building movie',handles,2);
+            ieInWindowMessage('Building photocurrent movie',handles);
             handles.curMov = cm.plot('movie current', 'hf','none', ...
                 'show', true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
+            ieInWindowMessage('',handles);
         end
+        
+        % Graphics elements
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        set(handles.sliderMovieProgress, 'Visible', 'on');
         
         % set up right click menu (context menu)
         c = uicontextmenu;
@@ -376,7 +396,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        
+        set(handles.txtMovieFrame,'Visible','on');
+
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
     otherwise
@@ -820,14 +841,13 @@ function btnPlayPause_Callback(~, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 index = get(handles.popupImageType, 'Value');
-if index == 3  % absorption movie
-    mov = handles.mov;
-elseif index == 5  % photocurrent movie
-    mov = handles.curMov;
+
+if     index == 3, mov = handles.mov;    % absorption movie
+elseif index == 5, mov = handles.curMov; % photocurrent movie
 end
 
 if ismatrix(mov), nFrames = 1;
-else nFrames = size(mov, ndims(mov));
+else              nFrames = size(mov, ndims(mov));
 end
 
 if nFrames == 1, 
@@ -841,7 +861,7 @@ set(handles.sliderMovieProgress, 'Max', nFrames);
 set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
 if get(handles.btnPlayPause, 'Value')
-    % play the video when the value is not zero
+    % play video if  value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
     gData = guidata(handles.coneMosaicWindow);
@@ -849,20 +869,21 @@ if get(handles.btnPlayPause, 'Value')
     % axes(get(handles.coneMosaicWindow,'CurrentAxes'));
     
     while get(handles.btnPlayPause, 'Value')
-        if ndims(mov) == 3
-            imshow(mov(:, :, cnt)); 
-        elseif ndims(mov) ==4
-            imshow(mov(:, :, :, cnt));
-        end
-        set(handles.sliderMovieProgress, 'Value', cnt);
         
-        drawnow; cnt = cnt + 1;
-        if cnt > nFrames, cnt = 1; end
+        if ndims(mov)     == 3,         imshow(mov(:, :, cnt)); 
+        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt));
+        end 
+        set(handles.sliderMovieProgress, 'Value', cnt);
+        set(handles.txtMovieFrame,'string',cnt);
+        drawnow; 
+        
+        % Cycle the cnt
+        cnt = cnt + 1; if cnt > nFrames, cnt = 1; end
     end
 else
     % pause video when the value is zero
     set(handles.btnPlayPause, 'String', 'Play');
-    
+
     % register right click menu
     c = uicontextmenu;
     for ichild = 1:size(handles.axes2.Children,1)
