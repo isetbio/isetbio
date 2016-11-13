@@ -216,6 +216,10 @@ set(handles.editKLMS, 'string', str);
 str = cm.description('skipMacular', true, 'skipPigment', true);
 set(handles.txtMosaic, 'string', str);
 
+% set outersegment description
+str = cm.descriptionOS;
+set(handles.txtOS,'string',str);
+
 % set photopigment properties
 set(handles.editConeWidth, 'string', num2str(cm.pigment.width*1e6));
 set(handles.editConeHeight, 'string', num2str(cm.pigment.height*1e6));
