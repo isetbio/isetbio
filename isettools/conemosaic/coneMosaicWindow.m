@@ -492,10 +492,19 @@ switch source.Label
             ylabel([names(ii-1) ' ' yStr]);
         end
     case 'time series'
+        % Time series is enabled for the absorption and current movie modes
         vcNewGraphWin;
-        mx = max(handles.cMosaic.current(:));
-        mn = min(handles.cMosaic.current(:));
-        t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
+        if index == 3  %  absorption movie
+            % Show the absorption time series
+            mx = max(handles.cMosaic.absorptions(:));
+            mn = min(handles.cMosaic.absorptions(:));
+            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
+        elseif index == 5  % photocurrent movie
+            mx = max(handles.cMosaic.current(:));
+            mn = min(handles.cMosaic.current(:));
+            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
+        end
+        
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);

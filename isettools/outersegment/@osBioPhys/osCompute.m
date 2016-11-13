@@ -1,28 +1,23 @@
 function current = osCompute(obj, cMosaic, varargin)
-% Compute the output response of the L, M and S cone outer segments
+% Compute the photocurrent response of the L, M and S cones
 %
 %   current = osCompute(obj, cMosaic, varargin)
 % 
 % This converts isomerizations (R*) to outer segment current (pA). The
-% difference equation model by Rieke is applied here. If the noiseFlag
-% property of the osLinear object is set to 1, this method will add noise
-% to the current output signal.
+% difference equation model by Rieke is applied here. 
+%
+% If the noiseFlag property of the osLinear object is set to true, this
+% method adds photocurrent noise to the output signal. See osAddNoise().
 %
 % Inputs: 
 %   obj      - the osBioPhys object
-%   pRate    - photon absorption rate in R*/sec
-%   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
+%   cMosaic  - The parent of the outersegment object
 % 
 % Optional paramters (key-value pairs)
 %   'bgR'    - background (initial state) cone isomerization rate
 %
 % Outputs:
 %   current  - outer segment current in pA
-%
-% TODO
-%  How we are handling the different cone classes is not clear to BW.
-%  This needs a scientific review.  For now, to make it run, I am putting
-%  in the mean rate for one cone class.  See the code below.
 %
 % Reference:
 %   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
@@ -39,9 +34,13 @@ p.addParameter('bgR',0,@isnumeric);
 
 % The background absorption rate
 p.parse(obj, cMosaic, varargin{:});
-bgR = p.Results.bgR;
 
-% This was bgR.  What should it be now?  R*/second?
+% This is the background isomerization rate mean for each cone class
+% (R*/sec). It could be calculated here using coneMeanIsomerizations.  Not
+% sure why we pass it in.
+bgR = mean(p.Results.bgR);
+
+% R*/sec over time (x,y,t) for each one. 
 pRate = cMosaic.absorptions/cMosaic.integrationTime;
 
 %% What should we put in as the bgR in this case?

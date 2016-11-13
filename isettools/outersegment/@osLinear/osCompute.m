@@ -1,61 +1,45 @@
 function current = osCompute(obj, cMosaic, varargin)
-% function current = osCompute(obj, pRate, coneType, varargin)
-% Compute the response of the outer segments using the linear model 
+% Compute the  outer segment photocurrents using the linear model
 %
-%    current = osCompute(obj, pRate, coneType, varargin)
-%
-% We use the linear model for cases in which there is a uniform background,
-% as we typically find in psychophysical experiments.  When the images are
-% more complex (e.g., natural scenes) you should use the osBioPhys model,
-% not the linear model.
-%
-% The impulse response function of the linear model calculated here matches
-% the linear osBioPhys model given that the observer is in a steady-state
-% on the mean background (specified by the three cone pRate values).
-%
-% The basic idea is this.  When we have a mean field with a specific photon
-% absorption rate, we get the base current returned from the osBioPhys()
-% model.  We then get the temporal impulse response function that we expect
-% when we add 1 photon to the mean level.  The predicted current, then, is
-%
-%   (absorptions - meanAbsorptions) * impulseResponse + (base current)
-% 
-% This converts isomerizations (R*) to outer segment current (pA). If the
-% noiseFlag is set to true, this method adds noise to the current output
-% signal. See Angueyra and Rieke (2013, Nature Neuroscience) for details.
-%
+%    current = osCompute(obj, cMosaic, varargin)
 %
 % Inputs: 
 %   obj       - osLinear class object
-%   pRate     - R*/sec (x,y,t)
-%   coneType  - coneMosaic.pattern 
+%   cMosaic   - parent object of the outersegment
 %
-% Optional input (key-value pairs)
-%   append   - logical, compute new or to append to existing. When append
-%              is true, the computed current is appended to the existing
-%              photocurrent data in the object. The returned current value
-%              only contains photocurrent for input pRate.
+% Output:
+%   current  - outer segment photocurrent current in pA
 % 
-% Outputs:
-%   current  - outer segment current in pA
+% We use  osLinear.osCompute (linear model) for experiments in which there
+% is a uniform background, as we typically find in psychophysical
+% experiments. When the images are more complex (e.g., natural scenes), use
+% the osBioPhys model, not the linear model.
+%
+% The impulse response function of the linear model calculated here matches
+% the small signal from the osBioPhys model, assuming the observer is in a
+% steady-state on the mean background.
+%
+% The impulse response is calculated like this. We calculate the (base
+% current) returned by the osBioPhys() model to a uniform stimulus.  We
+% then calculate the response when we add 1 photon to the mean level for
+% one sampling bin. This difference between these two signals is the
+% photocurrent impulseResponse to a photon.
+%
+% To compute the current from a general stimulus we calculate the
+% differences from the mean, convolve with the impulse response, and then
+% add in the base current.
+%
+%   (absorptions - meanAbsorptions) * impulseResponse + (base current)
 % 
+% This converts isomerizations (R*) to outer segment current (pA).
+%
+% If the os.noiseFlag is true, this method adds noise to the current output
+% signal. 
+%
+% See Angueyra and Rieke (2013, Nature Neuroscience) for details.  And see
+% osAddNoise() for specification and validation of the noise model
+%
 % JRG/HJ/BW, ISETBIO TEAM, 2016
-
-% We are hoping to switch to the arguments: [obj, cMosaic, varargin]
-% When we do, this should be the parsing
-%
-% p = inputParser; 
-% p.KeepUnmatched = true;
-% p.addRequired('obj', @(x) isa(x, 'osLinear'));
-% p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
-% % To remove and write a script to check model compatibility with Juan's stuff
-% % p.addParameter('linearized', true, @islogical);
-% 
-% p.parse(obj,cMosaic,varargin{:});
-% 
-% pRate = cMosaic.absorptions/cMosaic.integrationTime;
-% coneType = cMosaic.pattern;
-
 
 %% parse inputs
 p = inputParser; 
@@ -64,9 +48,6 @@ p.addRequired('obj', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 
 p.parse(obj,cMosaic);
-
-% p.addRequired('pRate', @isnumeric);
-% p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
 
 coneType   = cMosaic.pattern;
 meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
@@ -121,24 +102,18 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
     end
 end
 
-% record only recent history in obj
-% newStart = max(size(pRate, 3) - length(filter) + 1, 1);
-% pRate = pRate(:, :, newStart:end);
-
 % Reshape the current back into (x,y,t) format
 current = XW2RGBFormat(current, r, c);
 
-% Add noise or not.
-
-% The osAddNoise function expects the input to be current and it needs to
-% know the time sampling.  Hence, we send that in, too.
+% Noise anyone?
 if osGet(obj,'noiseFlag') == 1
+    % The osAddNoise function expects the input to be current and it needs to
+    % know the time sampling.
     disp('Current noise added.')
     current = osAddNoise(current, 'sampTime',obj.timeStep);
 else
     disp('No current noise added.')
 end
-
 
 obj.coneCurrentSignal = current;
 

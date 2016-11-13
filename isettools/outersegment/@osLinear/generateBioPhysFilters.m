@@ -32,7 +32,10 @@ function [lmsFilters, meanCurrent] = generateBioPhysFilters(os, meanRate, vararg
 %
 % 11/2016 JRG/BW (c) isetbio team
 
-% parse input parameters
+%%
+disp('generateBioPhysFilters should be deprecated.  use linearFilters.')
+
+%% parse input parameters
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('meanRate', @(x) length(x) == 3); % LMS mean absorption rates R*/sec
