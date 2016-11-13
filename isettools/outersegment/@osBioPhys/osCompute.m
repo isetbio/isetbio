@@ -41,7 +41,7 @@ p.addParameter('bgR',0,@isnumeric);
 p.parse(obj, cMosaic, varargin{:});
 bgR = p.Results.bgR;
 
-% This was bgR.  What should it be now?
+% This was bgR.  What should it be now?  R*/second?
 pRate = cMosaic.absorptions/cMosaic.integrationTime;
 
 %% What should we put in as the bgR in this case?
@@ -55,13 +55,8 @@ obj.state.timeStep = obj.timeStep;
 % How does this handle the separate cone signals?
 [current, obj.state]  = osAdaptTemporal(pRate, obj);
 
-% add noise - alert user
-if obj.noiseFlag
-    disp('Current noise added')
-    current = osAddNoise(current);
-else
-    disp('No current noise added')
-end
+% The outer segment noise flag
+if obj.noiseFlag, current = osAddNoise(current); end
 
 % In some cases, we run with 1 photoreceptors to set up the LMS filters.
 % In that case this is a good curve to plot

@@ -40,18 +40,18 @@ p.addParameter('sceneSz', 64, @(x) isnumeric(x));
 p.addParameter('barWidth', 1, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('offset', 1, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('barLength', [], @isnumeric);
-p.addParameter('barColor', 1, @isnumeric);
+p.addParameter('barColor', 1, @isscalar);
 p.addParameter('bgColor', 0, @(x) isnumeric(x));
 p.addParameter('pattern', []);
 
 p.parse(params, varargin{:});
 params = p.Results;
-sz = params.sceneSz;
-width = params.barWidth;
+sz     = params.sceneSz;
+width  = params.barWidth;
 offset = params.offset;
 barColor = params.barColor;
-bgColor=params.bgColor;
-barLen = params.barLength;
+bgColor  = params.bgColor;
+barLen   = params.barLength;
 
 if isempty(barLen), params.barLength = sz(1); barLen = sz(1); end
 if isscalar(barColor), barColor = repmat(barColor, [1 3]); end

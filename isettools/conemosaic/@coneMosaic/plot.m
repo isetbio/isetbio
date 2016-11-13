@@ -62,10 +62,10 @@ uData = [];
 % Find a cleaner way to check and send to os.plot().  Maybe create a parse
 % argument string as in ISET.
 if (length(pType) > 3 && strcmp(pType(1:3),'os '))
-    obj.os.plot(pType(4:end));
+    obj.os.plot(pType(4:end),varargin{:});
     return;
 elseif (length(pType) > 13 && strcmp(pType(1:13),'outersegment '))
-    obj.os.plot(pType(14:end));
+    obj.os.plot(pType(14:end),varargin{:});
     return;
 end
 

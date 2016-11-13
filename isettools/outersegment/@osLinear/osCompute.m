@@ -69,21 +69,21 @@ p.parse(obj,cMosaic);
 % p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
 
 coneType   = cMosaic.pattern;
-pRate      = cMosaic.absorptions/cMosaic.integrationTime;  % R*/sec
-meanRate   = coneMeanIsomerizations(cMosaic);              % R*/sec
-tSamples   = size(pRate,3);
+meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
+tSamples   = size(cMosaic.absorptions,3);
 
 %% This is the place where we get the linear filters given the mean rate
 
 % These convert a single photon increment on mean to a photocurrent impulse
 % response function
 [lmsFilters, meanCur] = obj.linearFilters(cMosaic);
-% vcNewGraphWin; plot(obj.lmsConeFilter)
+% obj.plot('current filters','meancurrent',meanCur)
 
 %%  The predicted photocurrent is
 
 % Convert (x,y,t) to (space,t)
-[absorptions, r, c] = RGB2XWFormat(pRate);
+[absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);   % Per sample
+% vcNewGraphWin; plot(absorptions(100,:));
 
 % We will store the current here
 current = zeros(r*c, tSamples);
@@ -106,11 +106,14 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
         dAbsorptions = absorptions(index,:) - meanRate(ii-1);
         % The difference should be distributed around 0
         %
-        % vcNewGraphWin; hist(dAbsorptions(:),100);
+        % vcNewGraphWin; hist(dAbsorptions(:));
         % mean(dAbsorptions(:))
+        %
+        % vcNewGraphWin; plot(dAbsorptions(10,:))
         
         % Convolve and then add in the mean
         tmpCurrent = conv2(dAbsorptions,lmsFilters(:,ii-1)') + meanCur(ii-1);
+        % vcNewGraphWin; plot(tmpCurrent(10,:))
         
         % Store it
         current(index,:) = tmpCurrent(:,1:tSamples);

@@ -54,6 +54,11 @@ switch format
         
         % This code is general, and it could become an obj.get.movie;
         % Or obj.get.illuminanceMovie
+        % The algorithm for mixing these is problematic because we
+        % calculate the max between the two scenes.  This normalization can
+        % lead to unwanted problems (as it did for vernier coding).  I need
+        % to have the data come here in real physical units and deal with
+        % it appropriately.
         mx1 = max(illFixed(:)); mx2 = max(illMod(:));
         mx = max(mx1,mx2);
         d = zeros([size(illFixed),length(obj.oiTimeAxis)]);

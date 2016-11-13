@@ -4,22 +4,30 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 % Input
 %   cMosaic  - Cone Mosaic object (required)
 %
+% Parameters
+%   perSample - Normally the returned rate is mean per sec.  But setting
+%              'perSample',true  makes the mean rate per temporal sample bins
+%
 % Return
 %   meanRate - Three vector of mean rates for the (L,M,S) cones (R*/sec)
 % 
 % 11/2016 JRG (c) isetbio team
 
-%% We use the absorptions in the cMosaic
-%
+%% Validate input parameters
+
 p = inputParser; 
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
-p.parse(cMosaic,varargin{:});
-cMosaic = p.Results.cMosaic;
+p.addParameter('perSample',false,@islogical);
 
-coneType = cMosaic.pattern;
-pRate    = cMosaic.absorptions;
+p.parse(cMosaic,varargin{:});
+cMosaic    = p.Results.cMosaic;
+perSample  = p.Results.perSample;
+
 
 %% Locations of each cone type
+
+coneType = cMosaic.pattern;
+pRate    = cMosaic.absorptions;  % Absorptions per sample
 
 lConeIndices = find(coneType == 2);
 mConeIndices = find(coneType == 3);
@@ -47,8 +55,14 @@ if ~isempty(sConeAbsorptions), sMean = mean(sConeAbsorptions(:));
 else                           sMean = 0;
 end
 
-%% Correct so returned units are absorptions per second
+%% Correct so returned units are absorptions per second or per time bin
 
-meanRate = [lMean, mMean, sMean]/cMosaic.integrationTime;
+if perSample
+    % Return mean number of absorptions per temporal sample
+    meanRate = [lMean, mMean, sMean];    
+else
+    % Convert to R*/sec.  This is the default
+    meanRate = [lMean, mMean, sMean]/cMosaic.integrationTime;
+end
 
 end
