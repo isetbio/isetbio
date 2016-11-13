@@ -102,7 +102,8 @@ function btnComputeImage_Callback(hObject, eventdata, handles)
 % Button press computes the image from the optics data
 oi = vcGetObject('OI');
 if isempty(oi) || isempty(oiGet(oi, 'photons'))
-    error('No optical image photon data available');
+    warning('No optical image.  Use ieAddObject(oi) to store.');
+    return;
 end
 
 handles.cMosaic.compute(oi);
@@ -421,7 +422,7 @@ if index > length(contents), index = 1; end
 plotType = contents{index};
 
 % get a point
-[x, y] = ginput(1);
+[x, y] = ginput(1); % Rounded and clipped to the data, below
 
 switch plotType
     case 'Mean absorptions'
@@ -435,9 +436,10 @@ switch plotType
             data = handles.cMosaic.absorptions(:, :, cnt);
         end
         
+        % Not necessary (BW)
         % map x, y to cone positions
-        x = x / size(handles.mov, 2) * size(data, 2);
-        y = y / size(handles.mov, 1) * size(data, 1);
+        %         x = x / size(handles.mov, 2) * size(data, 2);
+        %         y = y / size(handles.mov, 1) * size(data, 1);
         yStr = 'Absorptions';
     case 'Mean photocurrent'
         data = mean(handles.cMosaic.current, 3);
@@ -450,13 +452,17 @@ switch plotType
             data = handles.cMosaic.current(:, :, cnt);
         end
         
+        % Not necessary (BW)
         % map x, y to cone positions
-        x = x / size(handles.curMov, 2) * size(data, 2);
-        y = y / size(handles.curMov, 1) * size(data, 1);
+        %         x = x / size(handles.curMov, 2) * size(data, 2);
+        %         y = y / size(handles.curMov, 1) * size(data, 1);
         yStr = 'Photocurrent (pA)';
 end
 x = ieClip(round(x), 1, size(data, 2));
 y = ieClip(round(y), 1, size(data, 1));
+
+% Draw a circle around the selected point.
+c = viscircles([x,y],1);
 
 switch source.Label
     case 'hLine response'
@@ -485,9 +491,13 @@ switch source.Label
         end
     case 'time series'
         vcNewGraphWin;
+        mx = max(handles.cMosaic.current(:));
+        mn = min(handles.cMosaic.current(:));
         t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
-        plot(t, squeeze(data(x, y, :)), 'LineWidth', 2);
+        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         grid on; xlabel('Time (ms)'); ylabel(yStr);
+        set(gca,'ylim',[mn mx]);
+        
     otherwise
         error('Unknown label type');
 end

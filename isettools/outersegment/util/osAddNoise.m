@@ -14,21 +14,25 @@ function [adaptedCur, freq] = osAddNoise(curNF, varargin)
 %    curNF  - noise free cone adapted membrane photo current.  The units
 %             are pA (picoAmps) (CHECK!).
 %   sampTime - sample time interval (secs), see sensorGet(s, 'time interval');
-%   NYI:  seed     - noise seed for reproducibility
+%   **NYI**  seed     - noise seed for reproducibility
 %
 %  Outputs:
 %    adaptedCur - membrane current with noise added
 %    freq       - temporal frequency for checking the noise
 %
 %  Example:
-%    
-%    [noise, freq] = osAddNoise(zeros(10,10,10000), 'sampTime',1/5000);
-%    noiseF = squeeze(mean(mean(abs(fft(noise, [], 3)).^2)));
-%    vcNewGraphWin; loglog(freq, noiseF(1:length(freq)));
-%    xlabel('Frequency(Hz)'); ylabel('Power Spectrum (pA^2/Hz)'); 
+%    nSamp = 10000; deltaT = 1/5000;
+%    [noise, freq] = osAddNoise(zeros(10,10,nSamp), 'sampTime',deltaT);
+%    fprintf('Should be close to zero:  Mean noise %f (pA)\n',mean(noise(:)));
 %
-%   These y units are way off, it seems to BW.
-%      xlim([1 1e3]); ylim([1e-4 1]);
+%  This formula for the noise frequency response amplitude (from Fred R)
+%  The 2 is there for some negative frequency, and the correction for the
+%  number of time samples is the usual FFT correction.
+%    noiseF = squeeze(mean(mean(abs(fft(noise, [], 3)*(2/nSamp)).^2)));
+%    vcNewGraphWin; loglog(freq, noiseF(1:length(freq)));
+%    line('Xdata',[0.1 freq(end)],'Ydata',[.205 .205]);
+%    xlabel('Frequency(Hz)'); ylabel('Power Spectrum (pA^2/Hz)'); 
+%    
 %
 %  See also:
 %    coneAdapt, osAdaptSteadyState, osAdaptTemporal
