@@ -1,4 +1,6 @@
 function [lmsFilters, meanCurrent] = generateBioPhysFilters(os, meanRate, varargin)
+% To be deprecated and replaced by linearFilters
+%
 % Returns the impulse response of the photocurrent given a single photon
 % absorption 
 %
@@ -28,7 +30,7 @@ function [lmsFilters, meanCurrent] = generateBioPhysFilters(os, meanRate, vararg
 %
 % See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize
 %
-% 11/2016 JRG (c) isetbio team
+% 11/2016 JRG/BW (c) isetbio team
 
 % parse input parameters
 p = inputParser; p.KeepUnmatched = true;

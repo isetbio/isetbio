@@ -13,6 +13,9 @@ classdef osBioPhys < outerSegment
 %   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
 %   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
 % 
+% TODO:
+%  See constructor comments about osType (BW)
+%
 % JRG/HJ/BW, ISETBIO Team, 2016
 
     properties(Access = private)
@@ -31,9 +34,12 @@ classdef osBioPhys < outerSegment
             addParameter(p,'osType',0,@islogical);
             p.parse(varargin{:});
             
-            osType = p.Results.osType; % peripheral (0) or foveal (1)
+            % We should rename the osType parameter and make eccentricity a
+            % number. Everything less than X should be foveal and greater
+            % than X should be peripheral.
+            eccentricity = p.Results.osType; % peripheral (0) or foveal (1)
             
-            switch osType
+            switch eccentricity
                 
                 case 0 % peripheral
                     % Peripheral parameters

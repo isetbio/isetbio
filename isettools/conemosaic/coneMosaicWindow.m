@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 08-Sep-2016 22:25:27
+% Last Modified by GUIDE v2.5 12-Nov-2016 13:01:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -100,12 +100,15 @@ end
 
 function btnComputeImage_Callback(hObject, eventdata, handles)
 % Button press computes the image from the optics data
-[~, oi] = vcGetSelectedObject('OI');
+oi = vcGetObject('OI');
 if isempty(oi) || isempty(oiGet(oi, 'photons'))
     error('No optical image photon data available');
 end
+
 handles.cMosaic.compute(oi);
+handles.cMosaic.name = oiGet(oi,'name');
 set(handles.popupImageType, 'Value', 2); % mean absorptions
+
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -194,7 +197,7 @@ function coneMosaicGUIRefresh(hObject, eventdata, handles)
 cm = handles.cMosaic;
 
 % Place name in text string box
-set(handles.txtName,'string',sprintf('Name: %s',cm.name));
+set(handles.txtName,'string',sprintf('%s',cm.name));
 
 % set row and cols
 set(handles.editRows, 'string', num2str(cm.rows));
@@ -766,11 +769,25 @@ function menuPlotEMPath_Callback(~, ~, handles)
 handles.cMosaic.plot('eye movement path');
 end
 
-function menuEditGenerateEM_Callback(hObject, eventdata, handles)
-% hObject    handle to menuEditGenerateEM (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-str = ieReadString('Number of frames', '5000');
+
+% --------------------------------------------------------------------
+function menuCones_Callback(hObject, eventdata, handles)
+% Cones - Main Pull down for computing.
+%
+end
+
+% --------------------------------------------------------------------
+function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
+% Cones | Compute photocurrent
+%
+handles.cMosaic.computeCurrent;
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+function menuConesGenerateEM_Callback(hObject, eventdata, handles)
+% Cones | Generate eye movements
+%
+str = ieReadString('Number of frames', '500');
 if ~isempty(str)
     handles.cMosaic.emGenSequence(str2double(str));
     menuEditClearData_Callback(hObject, eventdata, handles);

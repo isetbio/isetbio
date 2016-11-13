@@ -1,13 +1,13 @@
-function [uData, hf] = plot(obj, type, varargin)
+function [uData, hf] = plot(obj, pType, varargin)
 % Plot function for coneMosaic base class
 %
-%    [uData, hf] = coneMosaic.plot(type, varargin)
+%    [uData, hf] = coneMosaic.plot(pType, varargin)
 %
 % There is a specialized plot() for the coneMosaicHex class that calls this
 % function.
 %
 % Inputs:
-%   type - string, type of plot
+%   pType - string, type of plot
 %
 % Optional input (key-val pairs in varargin):
 %   'hf' - figure handle or control structure, the meaning of value is
@@ -35,6 +35,9 @@ function [uData, hf] = plot(obj, type, varargin)
 %   'eye movement path'    - eye movement
 %   'current timeseries'   - Cone photocurrent graphs
 %
+% When you present 'os ' or 'outersegment ' then we pass the arguments
+% along to os.plot()
+%
 % Example:
 %    rgc.mosaic{1}.plot(type)
 %
@@ -45,16 +48,26 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 p.addRequired('obj');
-p.addRequired('type', @isstr);               % Type of plot
+p.addRequired('pType', @isstr);               % Type of plot
 
 p.addParameter('hf', []);                    % figure handle
 p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 
-p.parse(obj,type, varargin{:});
+p.parse(obj,pType, varargin{:});
 hf = p.Results.hf;
 oi = p.Results.oi;   % Used in plotGraphs routine
 
 uData = [];
+
+% Find a cleaner way to check and send to os.plot().  Maybe create a parse
+% argument string as in ISET.
+if (length(pType) > 3 && strcmp(pType(1:3),'os '))
+    obj.os.plot(pType(4:end));
+    return;
+elseif (length(pType) > 13 && strcmp(pType(1:13),'outersegment '))
+    obj.os.plot(pType(14:end));
+    return;
+end
 
 % plot
 if isempty(hf), hf = vcNewGraphWin;
@@ -74,7 +87,7 @@ end
 
 %% Could simplify this big switch
 
-switch ieParamFormat(type);
+switch ieParamFormat(pType)
     
     % ----   Images
     case 'conemosaic'

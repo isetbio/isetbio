@@ -1,24 +1,23 @@
-function computeCurrent(obj, varargin)
+function computeCurrent(cMosaic, varargin)
 % Convert absorptions to photocurrent with the os model.
 % 
-% obj:  A coneMosaic
+% cMosaic:  A coneMosaic
 % 
 % HJ ISETBIO Team 2016
 
 % parse inputs
 p = inputParser;
 p.KeepUnmatched = true;
-% p.addParameter('bgR', 0, @isnumeric);
-
 p.parse(varargin{:});
-% bgR = p.Results.bgR;
 
 % We should check that absorptions is not empty
-if isempty(obj.absorptions)
-    disp('Compute absorptions first.  No current comnputed');
+if isempty(cMosaic.absorptions)
+    disp('You must compute absorptions first.  Although we could do it here.');
 end
 
-% Pass in the cone mosaic object and any parsed arguments
-% obj.os.osCompute(obj, p.Results);
-obj.os.osCompute(obj.absorptions/obj.integrationTime, obj.pattern, 'append', false);
+% We should change this to pass in the cone mosaic object and any parsed
+% arguments, rather than these parameters.
+% obj.os.osCompute(obj.absorptions/obj.integrationTime, obj.pattern, 'append', false);
+cMosaic.os.osCompute(cMosaic,varargin{:});
+
 end

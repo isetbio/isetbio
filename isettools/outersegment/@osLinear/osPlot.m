@@ -1,8 +1,6 @@
 function h = osPlot(obj, absorptions, varargin)
 % Plots about the outersegment properties
 %
-%   TODO:  osPlot(obj,plotType,varargin); 
-%
 % Inputs: 
 %   osLinear object
 %   absorptions

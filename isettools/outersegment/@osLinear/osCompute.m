@@ -1,4 +1,4 @@
-function current = osCompute(obj, pRate, coneType, varargin)
+function current = osCompute(obj, cMosaic, varargin)
 % function current = osCompute(obj, pRate, coneType, varargin)
 % Compute the response of the outer segments using the linear model 
 %
@@ -57,83 +57,81 @@ function current = osCompute(obj, pRate, coneType, varargin)
 % coneType = cMosaic.pattern;
 
 
-% parse inputs
+%% parse inputs
 p = inputParser; 
 p.KeepUnmatched = true;
-p.addRequired('obj', @(x) isa(x, 'osLinear'));
-p.addRequired('pRate', @isnumeric);
-p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
+p.addRequired('obj', @(x) isa(x, 'outerSegment'));
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 
-p.parse(obj, pRate, coneType, varargin{:});
-coneType   = p.Results.coneType;
-pRate      = p.Results.pRate;
+p.parse(obj,cMosaic);
 
-nHistFrames = 0;
+% p.addRequired('pRate', @isnumeric);
+% p.addRequired('coneType', @ismatrix);  % Comes from coneMosaic parent
 
+coneType   = cMosaic.pattern;
+pRate      = cMosaic.absorptions/cMosaic.integrationTime;  % R*/sec
+meanRate   = coneMeanIsomerizations(cMosaic);              % R*/sec
+tSamples   = size(pRate,3);
 
 %% This is the place where we get the linear filters given the mean rate
 
-% meanRate units are isomerizatons per section (R*/sec)
-meanRate = coneMeanIsomerizations('pRate',pRate,'coneType',coneType);
-
-% These convert a single photon increment on mean to a photocurrent IRF
-[lmsFilters, meanCur] = obj.generateBioPhysFilters(meanRate, varargin{:});
+% These convert a single photon increment on mean to a photocurrent impulse
+% response function
+[lmsFilters, meanCur] = obj.linearFilters(cMosaic);
 % vcNewGraphWin; plot(obj.lmsConeFilter)
 
-%% We need to ask whether we can't put this into the units
-
-% This converts the mean absorption rate into the base current
-% maxCur = 0.01*20.5^3; % Dunn & Rieke (2007, Nature)
-% meanCur = maxCur * (1 - 1./(1 + 45000./meanRate));
-
 %%  The predicted photocurrent is
-%
 
-% First entry is trial.  We are showing only the first trial here.
+% Convert (x,y,t) to (space,t)
 [absorptions, r, c] = RGB2XWFormat(pRate);
 
-current = zeros(r*c, size(pRate, 3));
+% We will store the current here
+current = zeros(r*c, tSamples);
 
 % convolve the filters with the isomerization data
 for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
-    % pull out the linear filter for current cone type.
-    filter = lmsFilters(:, ii-1);
     
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-        % The mean absorptions produces the meanCur
-        % The differences from the mean produce the impulse response
-        % So the formula convolves the differences from the mean with the
-        % filter and then adds the mean background current
+        % The mean absorptions produces a mean current that was returned
+        % above when we calculated the lmsFilters (meanCur).
+        % 
+        % We calculate the total photocurrent by convolving the difference
+        % of the absorption rate from the mean absorption rate and the LM
+        % or S filter.  We then add in the mean background current
         %
-        %  conv(absorptions - meanAbsorptions,lmsFilters) + baseCurrent
+        %  conv(absorptions - meanAbsorptions,lmsFilters) + meanCur
         
-        % We are nervous about the size.
         dAbsorptions = absorptions(index,:) - meanRate(ii-1);
-        tmpCurrent = conv2(dAbsorptions,lmsFilters(:,ii-1)') + meanCur(ii-1);
-        current(index,:) = tmpCurrent(:,1:size(pRate, 3));
+        % The difference should be distributed around 0
+        %
+        % vcNewGraphWin; hist(dAbsorptions(:),100);
+        % mean(dAbsorptions(:))
         
-        % curData = conv2(absorptions(index, :), filter') - meanCur(ii-1);
-        % current(index, :) = curData(:, nHistFrames+1+(1:size(pRate, 3)));
+        % Convolve and then add in the mean
+        tmpCurrent = conv2(dAbsorptions,lmsFilters(:,ii-1)') + meanCur(ii-1);
+        
+        % Store it
+        current(index,:) = tmpCurrent(:,1:tSamples);
+        
     end
 end
 
 % record only recent history in obj
-newStart = max(size(pRate, 3) - length(filter) + 1, 1);
-pRate = pRate(:, :, newStart:end);
+% newStart = max(size(pRate, 3) - length(filter) + 1, 1);
+% pRate = pRate(:, :, newStart:end);
 
-% reshape the output signal matrix.
+% Reshape the current back into (x,y,t) format
 current = XW2RGBFormat(current, r, c);
 
-% Add noise
-% The osAddNoise function expects and input to be isomerization rate.
-% This is handled properly because the params has the time sampling
-% rate included.
+% Add noise or not.
+
+% The osAddNoise function expects the input to be current and it needs to
+% know the time sampling.  Hence, we send that in, too.
 if osGet(obj,'noiseFlag') == 1
     disp('Current noise added.')
-    params.sampTime = obj.timeStep;
-    current = osAddNoise(current, params);
+    current = osAddNoise(current, 'sampTime',obj.timeStep);
 else
     disp('No current noise added.')
 end

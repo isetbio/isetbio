@@ -27,7 +27,12 @@ classdef osLinear < outerSegment
     
     % Defined in separate files within the @osLinear directory
     methods (Access=public)
+        % Will be depreciated
         [lmsFilters, meanCurrent] = generateBioPhysFilters(os, meanRate, varargin);
+        
+        % Calculate linear filters and mean current for a cMosaic
+        [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin);
+
     end
     
     % Public methods
@@ -55,10 +60,8 @@ classdef osLinear < outerSegment
             obj = osCompute(obj, pRate, coneType, varargin{:});
         end
         
-        function plot(obj, cMosaic)
-            % see osPlot for details
-            osPlot(obj, cMosaic);
-        end
+        % Declaration for functions in the directory
+        plot(obj, pType, varargin);
         
     end
     
