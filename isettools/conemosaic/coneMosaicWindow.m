@@ -832,6 +832,7 @@ end
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
 assert(cnt <= size(mov, ndims(mov)), 'slider choice out of range');
 axes(handles.axes2); imshow(mov(:, :, cnt)); drawnow;
+set(handles.txtMovieFrame,'string',cnt);
 
 % register right click menu
 c = uicontextmenu;
