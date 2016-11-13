@@ -472,22 +472,24 @@ switch source.Label
         vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); grid on;
         xlabel('Vertical position (cones)'); ylabel(yStr);
     case 'hLine LMS'
-        vcNewGraphWin; names = 'LMS';
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(y, :) == ii);
-            plot(pos, data(y, pos), '.-', 'LineWidth', 2); grid on;
+            plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Horizontal Position (cones');
-            ylabel([names(ii-1) ' ' lower(yStr)]);
+            ylabel([names(ii-1) ' ' yStr]);
         end
     case 'vLine LMS'
-        vcNewGraphWin; names = 'LMS';
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(:, x) == ii);
-            plot(pos, data(pos, x), '.-', 'LineWidth', 2); grid on;
+            plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Vertical Position (cones');
-            ylabel([names(ii-1) ' ' lower(yStr)]);
+            ylabel([names(ii-1) ' ' yStr]);
         end
     case 'time series'
         vcNewGraphWin;
