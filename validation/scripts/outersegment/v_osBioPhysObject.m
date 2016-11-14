@@ -32,33 +32,26 @@ ieInit;
 % Set up parameters for stimulus.
 nSamples = 2000;        % 2000 samples
 timeStep = 1e-4;        % time step
-flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
-
-% Create human sensor.
-sensor = sensorCreate('human');
-sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
+flashIntens = 50000*timeStep;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
 % Create stimulus.
 stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
-% Set photon rates. This is a kluge that appeared
-% just for this test, and that should probably go
-% away again. This is an artifact of directly specifying the stimulus
-% in the sensor, and will not be an issue when the sensor
-% is the result of a sensorCompute command on a scene and oi.
-sensor = sensorSet(sensor, 'photon rate', stimulus);
-pRate = sensorGet(sensor, 'photon rate');
-coneType = sensorGet(sensor, 'cone type');
+% % Set photon rates. This is a kluge that appeared
+% % just for this test, and that should probably go
+% % away again. 
 
-% Create outersegment object and get the adapted response.
-noiseFlag = 0;
-adaptedOS = osBioPhys();
-adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
-osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
+osCM = osBioPhys();            % peripheral (fast) cone dynamics
+osCM.set('noise flag',0);
+cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+cm.integrationTime = timeStep;
+cm.os.timeStep = timeStep;
+cm.absorptions  = stimulus;
+% Compute outer segment currents.
+cm.computeCurrent();
+osAdaptedCur = (cm.current);
 
 % Make a plot of what happened using osPlot.
 if (runTimeParams.generatePlots)   
@@ -87,12 +80,12 @@ nSamples = stimPeriod(2)+4000;      % number of samples
 timeStep = 1e-4;                    % time step
 flashTime = stimPeriod - 3000;      % time of flashes
 flashDur = 10;                      % flash duration (bins)
-flashIntens = 10000;                % flash intensity R*/cone/sec
+flashIntens = 10000*timeStep;                % flash intensity R*/cone/sec
 
 % Create human sensor.
-sensor = sensorCreate('human');
-sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
+% sensor = sensorCreate('human');
+% sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+% sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Set up plot
 if (runTimeParams.generatePlots)
@@ -109,7 +102,7 @@ nStepIntensities = 11;
 for step = 1:nStepIntensities
     
     % Create stimulus: step alone.
-    stimIntensity(step) = 50 * 2^step;
+    stimIntensity(step) = timeStep * 50 * 2^step;
     stimulus = zeros(nSamples, 1);
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
     stimulus = reshape(stimulus, [1 1 nSamples]);
@@ -117,23 +110,18 @@ for step = 1:nStepIntensities
     % Increase flash strength if we are in range where cones are adapting.
     if (stimIntensity(step) > 4000);
         FlashScFact = FlashScFact * 2;
-    end
+    end    
     
-    % Set photon rates.
-    % This is an artifact of directly specifying the stimulus
-    % in the sensor, and will not be an issue when the sensor
-    % is the result of a sensorCompute command on a scene and oi.
-    sensor = sensorSet(sensor, 'photon rate', stimulus);
-    pRate = sensorGet(sensor, 'photon rate');
-    coneType = sensorGet(sensor, 'cone type');
-    
-    % Compute using outersegment object osBioPhys.
-    noiseFlag = 0;
-    adaptedOSStepOnly = osBioPhys();
-    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'noiseFlag', noiseFlag);
-    adaptedOSStepOnly = osSet(adaptedOSStepOnly, 'timeStep', timeStep);
-    osCompute(adaptedOSStepOnly, pRate, coneType);
-    
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag',0);
+    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+    cm.integrationTime = timeStep;
+    cm.os.timeStep = timeStep;
+    cm.absorptions  = stimulus;
+    % Compute outer segment currents.
+    cm.computeCurrent();
+    osAdaptedStepOnlyCur = (cm.current);
+
     % Create stimulus: step + flashes.
     stimulus = zeros(nSamples, 1);
     stimulus(stimPeriod(1):stimPeriod(2)) = stimIntensity(step);
@@ -141,40 +129,38 @@ for step = 1:nStepIntensities
     stimulus(flashTime(2):flashTime(2)+flashDur) = stimulus(flashTime(2):flashTime(2)+flashDur) + flashIntens*FlashScFact;
     stimulus = reshape(stimulus, [1 1 nSamples]);
     
-    % Set photon rates.
-    sensor = sensorSet(sensor, 'photon rate', stimulus);
-    pRate = sensorGet(sensor, 'photon rate');
-    coneType = sensorGet(sensor, 'cone type');
-    
-    % Create outersegment object.
-    noiseFlag = 0;
-    adaptedOS = osBioPhys();
-    adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-    adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
-    adaptedOS.compute(pRate, coneType, 'bgR', 0);
-    
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag',0);
+    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+    cm.integrationTime = timeStep;
+    cm.os.timeStep = timeStep;
+    cm.absorptions  = stimulus;
+    % Compute outer segment currents.
+    cm.computeCurrent();
+    osAdaptedCur = (cm.current);
+
     % Plot.
     if (runTimeParams.generatePlots)
         subplot(1, 3, 1);
-        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:), 'r', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, osAdaptedCur(:), 'r', 'lineWidth', 2);
 
         subplot(1, 3, 2);
-        plot((1:nSamples)*timeStep, adaptedOSStepOnly.coneCurrentSignal(:), 'r', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, osAdaptedStepOnlyCur(:), 'r', 'lineWidth', 2);
 
         subplot(1, 3, 3);
-        plot((1:nSamples)*timeStep, adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:), 'r', 'lineWidth', 2);
+        plot((1:nSamples)*timeStep, osAdaptedCur(:) - osAdaptedStepOnlyCur(:), 'r', 'lineWidth', 2);
       
     end
     
-    tempOS = adaptedOS.coneCurrentSignal(:) - adaptedOSStepOnly.coneCurrentSignal(:);
+    tempOS =  osAdaptedCur(:) - osAdaptedStepOnlyCur(:);
     flashAmpOS(step) = max(tempOS(flashTime(2):flashTime(2)+1000)) / (FlashScFact * max(tempOS(flashTime(1):flashTime(1)+1000)));
-    ssCurOS(step) = -(adaptedOSStepOnly.coneCurrentSignal(1, 1, stimPeriod(2)) - adaptedOSStepOnly.coneCurrentSignal(1, 1, 1))/adaptedOSStepOnly.coneCurrentSignal(1, 1, 1);
+    ssCurOS(step) = -(osAdaptedStepOnlyCur(1, 1, stimPeriod(2)) - osAdaptedStepOnlyCur(1, 1, 1))/osAdaptedStepOnlyCur(1, 1, 1);
     
     % Fit transient of step response.
     transientTime = stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2);
     %transient{step} = adaptedCurStepOnly(transientTime);
     %transient{step} = transient{step} - transient{step}(end);
-    transientOS{step} = adaptedOSStepOnly.coneCurrentSignal(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
+    transientOS{step} = osAdaptedStepOnlyCur(stimPeriod(1)+round(6e-2/timeStep):stimPeriod(2));
     transientOS{step} = transientOS{step} - transientOS{step}(end);
     
 end
@@ -274,28 +260,19 @@ measuredCur = eyeMovementExample.data.Mean;
 measuredCur = measuredCur - measuredCur(1,end);
 stimulus = eyeMovementExample.data.Stim;
 nSamples = length(stimulus);
-stimulus = reshape(stimulus, [1 1 nSamples]);
+stimulus = reshape(stimulus*timeStep, [1 1 nSamples]);
 
 % Create human sensor.
 timeStep = 5e-5;                    % time step
-sensor = sensorCreate('human');
-sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
-
-% Set photon rates.
-% This is an artifact of directly specifying the stimulus
-% in the sensor, and will not be an issue when the sensor
-% is the result of a sensorCompute command on a scene and oi.
-sensor = sensorSet(sensor, 'photon rate', stimulus);
-pRate = sensorGet(sensor, 'photon rate');
-coneType = sensorGet(sensor, 'cone type');
-
-% Create outersegment object.
-noiseFlag = 0;
-adaptedOS = osBioPhys();
-adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
-osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
+osCM = osBioPhys();            % peripheral (fast) cone dynamics
+osCM.set('noise flag',0);
+cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+cm.integrationTime = timeStep;
+cm.os.timeStep = timeStep;
+cm.absorptions  = stimulus;
+% Compute outer segment currents.
+cm.computeCurrent();
+osAdaptedCur = (cm.current);
 
 % Plot the two calculations and compare against measured data.
 if (runTimeParams.generatePlots)
@@ -323,9 +300,9 @@ timeStep = 2e-4;
 Contrast = 1;
 
 % Create human sensor.
-sensor = sensorCreate('human');
-sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
+% sensor = sensorCreate('human');
+% sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+% sensor = sensorSet(sensor, 'time interval', timeStep);
 
 % Start figure for this next bit
 if (runTimeParams.generatePlots)  
@@ -342,46 +319,41 @@ for step = 1:stepLevels
     stimulusInc = zeros(nSamples, 1);
     stimulusInc(100:nSamples-100) = stimIntensity(step);
     stimulusInc(stimPeriod(1):stimPeriod(2)) = stimIntensity(step)*(1 + Contrast);
-    stimulus = reshape(stimulusInc, [1 1 nSamples]);
+    stimulus = reshape(stimulusInc*timeStep, [1 1 nSamples]);
     
-    % Set photon rates.
-    % This is an artifact of directly specifying the stimulus
-    % in the sensor, and will not be an issue when the sensor
-    % is the result of a sensorCompute command on a scene and oi.
-    sensor = sensorSet(sensor, 'photon rate', stimulus);
-    pRate = sensorGet(sensor, 'photon rate');
-    coneType = sensorGet(sensor, 'cone type');
-    
-    % Create outersegment object and compute with it.
-    noiseFlag = 0;
-    adaptedOSInc = osBioPhys();
-    adaptedOSInc = osSet(adaptedOSInc, 'noiseFlag', noiseFlag);
-    adaptedOSInc = osSet(adaptedOSInc, 'timeStep', timeStep);
-    osCompute(adaptedOSInc, pRate, coneType);
-     
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag',0);
+    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+    cm.integrationTime = timeStep;
+    cm.os.timeStep = timeStep;
+    cm.absorptions  = stimulus;
+    % Compute outer segment currents.
+    cm.computeCurrent();
+    adaptedOSInc = (cm.current);
+
     %  create stimulus: step + flashes
     stimulusDec = zeros(nSamples, 1);
     stimulusDec(100:nSamples-100) = stimIntensity(step);
     stimulusDec(stimPeriod(1):stimPeriod(2)) = stimIntensity(step)*(1 - Contrast);
-    stimulus = reshape(stimulusDec, [1 1 nSamples]);
+    stimulus = reshape(stimulusDec*timeStep, [1 1 nSamples]);
     
-    % Set photon rates.
-    sensor = sensorSet(sensor, 'photon rate', stimulus);
-    pRate = sensorGet(sensor, 'photon rate');
-    % And with outersegment object.
-    noiseFlag = 0;
-    adaptedOSDec = osBioPhys();
-    adaptedOSDec = osSet(adaptedOSDec, 'noiseFlag', noiseFlag);
-    adaptedOSDec = osSet(adaptedOSDec, 'timeStep', timeStep);
-    adaptedOSDec.compute(pRate, coneType, 'bgR', 0);
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag',0);
+    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+    cm.integrationTime = timeStep;
+    cm.os.timeStep = timeStep;
+    cm.absorptions  = stimulus;
+    % Compute outer segment currents.
+    cm.computeCurrent();
+    adaptedOSDec = (cm.current);
     
-    maxOSInc(step) = adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSInc.coneCurrentSignal(1, 1, stimPeriod(1)-1);
-    maxOSDec(step) = adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(2)-1) - adaptedOSDec.coneCurrentSignal(1, 1, stimPeriod(1)-1);
+    maxOSInc(step) = adaptedOSInc(1, 1, stimPeriod(2)-1) - adaptedOSInc(1, 1, stimPeriod(1)-1);
+    maxOSDec(step) = adaptedOSDec(1, 1, stimPeriod(2)-1) - adaptedOSDec(1, 1, stimPeriod(1)-1);
     
     % Add current to the figure.
     if (runTimeParams.generatePlots)
         subplot(1,2,2); hold on;
-        plot((1:nSamples)*timeStep, adaptedOSInc.coneCurrentSignal(:), (1:nSamples)*timeStep, adaptedOSDec.coneCurrentSignal(:));
+        plot((1:nSamples)*timeStep, adaptedOSInc(:), (1:nSamples)*timeStep, adaptedOSDec(:));
     end
 end
 
@@ -402,8 +374,8 @@ if (runTimeParams.generatePlots)
 end
 
 % Tuck data away.
-UnitTest.validationData('osAdaptedCurInc',adaptedOSInc.coneCurrentSignal);
-UnitTest.validationData('osAdaptedCurDec',adaptedOSDec.coneCurrentSignal);
+UnitTest.validationData('osAdaptedCurInc',adaptedOSInc);
+UnitTest.validationData('osAdaptedCurDec',adaptedOSDec);
 
 end
 

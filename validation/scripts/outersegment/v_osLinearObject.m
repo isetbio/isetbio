@@ -30,7 +30,7 @@ ieInit;
 % Set up parameters for stimulus.
 nSamples = 2000;        % 2000 samples
 timeStep = 1e-4;        % time step
-flashIntens = 50000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
+flashIntens = 10;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
 % Create human sensor.
 sensor = sensorCreate('human');
@@ -48,22 +48,32 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % This is an artifact of directly specifying the stimulus
 % in the sensor, and will not be an issue when the sensor
 % is the result of a sensorCompute command on a scene and oi.
-sensor = sensorSet(sensor, 'photon rate', stimulus);
+sensor = sensorSet(sensor, 'photon rate', stimulus./timeStep);
 
 % Compute model current, using the old code.
 params.bgVolts  = 0;
 [~, adaptedCur] = coneAdapt(sensor, 'linear', params);
 
-% Create outersegment object and get the adapted response.
-noiseFlag = 0; 
-adaptedOS = osLinear();
-adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
-adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+% % Create outersegment object and get the adapted response.
+% noiseFlag = 0; 
+% adaptedOS = osLinear();
+% adaptedOS = osSet(adaptedOS, 'noiseFlag', noiseFlag);
+% adaptedOS = osSet(adaptedOS, 'timeStep', timeStep);
+% 
+% % Compute the linear response and get the current.
+% pRate = sensorGet(sensor, 'photon rate');
+% coneType = sensorGet(sensor, 'cone type');
+% osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
 
-% Compute the linear response and get the current.
-pRate = sensorGet(sensor, 'photon rate');
-coneType = sensorGet(sensor, 'cone type');
-osAdaptedCur = osCompute(adaptedOS, pRate, coneType);
+osCML = osLinear('osType',false);            % linear cone dynamics
+osCML.set('noise flag',0);
+cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+cmL.integrationTime = timeStep;
+cmL.os.timeStep = timeStep;
+cmL.absorptions  = stimulus;
+
+cmL.computeCurrent('linearized',true);
+osAdaptedCur = (cmL.current);
 
 % Make a plot of what happened using osPlot.
 if (runTimeParams.generatePlots)   

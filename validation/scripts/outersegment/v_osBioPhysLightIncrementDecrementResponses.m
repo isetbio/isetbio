@@ -40,9 +40,9 @@ function ValidationFunction(runTimeParams)
     contrastsExamined = [-1 1];
     
     % create human sensor with 1 cone
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+%     sensor = sensorCreate('human');
+%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
 
     decrementResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes));  
     incrementResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes)); 
@@ -56,26 +56,17 @@ function ValidationFunction(runTimeParams)
             
             % generate step (decrement/increment)
             stimulusPhotonRateStep(contrastIndex, :) = stimulusPhotonRate;
-            stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));
-            
-            % set the stimulus photon rate
-            sensor = sensorSet(sensor, 'photon rate', reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]));
-            pRate = sensorGet(sensor, 'photon rate');
-            coneType = sensorGet(sensor, 'cone type');
-            
-            % create a biophysically-based outersegment model object
-            osB = osBioPhys();
-        
-            % specify no noise
-            noiseFlag = 0;
-            osB.osSet('noiseFlag', noiseFlag);
-            osB.osSet('timeStep', simulationTimeIntervalInSeconds);
-    
-            % compute the model's response to the stimulus
-            osB.osCompute(pRate, coneType, 'bgR', 0);
-            
-            % get the computed current
-            current = osB.osGet('coneCurrentSignal');
+            stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));            
+
+            osCM = osBioPhys();            % peripheral (fast) cone dynamics
+            osCM.set('noise flag',0);
+            cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+            cm.integrationTime = simulationTimeIntervalInSeconds;
+            cm.os.timeStep = simulationTimeIntervalInSeconds;
+            cm.absorptions  = simulationTimeIntervalInSeconds*reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]);
+            % Compute outer segment currents.
+            cm.computeCurrent();
+            current = (cm.current);
 
             % store copy for saving to validation file
             if ((stepIndex == 1) && (contrastIndex == 1))
@@ -95,7 +86,7 @@ function ValidationFunction(runTimeParams)
         incrementResponseAmplitude(stepIndex) = abs(osBiophysOuterSegmentCurrent(stepIndex, 2, tBin3seconds) - adaptedIncrResponse);
         fprintf('StepIndex %d: Decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementResponseAmplitude(stepIndex), incrementResponseAmplitude(stepIndex) );
         
-        if (runTimeParams.generatePlots)  
+%         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
                 set(h, 'Position', [10 10 900 1200]);
@@ -130,7 +121,7 @@ function ValidationFunction(runTimeParams)
             
             drawnow;
         end % if (runTimeParams.generatePlots)
-    end % stepIndex
+%     end % stepIndex
     
     showFit = false;
     decToIncRatioNeural = zeros(1, numel(stimulusPhotonRateAmplitudes));

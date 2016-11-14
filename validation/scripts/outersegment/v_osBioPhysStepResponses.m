@@ -43,9 +43,9 @@ function ValidationFunction(runTimeParams)
     pulseOffset = 120000;
     
     % create human sensor with 1 cone
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+%     sensor = sensorCreate('human');
+%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
         
     for stepIndex = 1:numel(stimulusPhotonRates)
         
@@ -62,25 +62,16 @@ function ValidationFunction(runTimeParams)
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
         
-        % set the stimulus photon rate
-        sensor = sensorSet(sensor, 'photon rate', reshape(stimulusPhotonRate, [1 1 numel(stimulusPhotonRate)]));
-        pRate = sensorGet(sensor, 'photon rate');
-        coneType = sensorGet(sensor, 'cone type');
-
-        % create a biophysically-based outersegment model object
-        osB = osBioPhys();
-        
-        % specify no noise
-        noiseFlag = 0;
-        osB.osSet('noiseFlag', noiseFlag);
-        osB.osSet('timeStep', simulationTimeIntervalInSeconds);
-        
-        % compute the model's response to the stimulus
-        osB.osCompute(pRate, coneType);
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stimulusPhotonRate,[1,1,length(stimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        current = (cm.current);
     
-        % get the computed current
-        current = osB.osGet('coneCurrentSignal');
-        
         % store copy for saving to validation file
         if (stepIndex == 1)
             osBiophysOuterSegmentCurrent = zeros(numel(stimulusPhotonRates), size(current,3));

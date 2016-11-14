@@ -33,12 +33,7 @@ function ValidationFunction(runTimeParams)
     
     % Set the simulation time interval. In general, the stimulation time interval should 
     % be set to a small enough value so as to avoid overflow errors.
-    simulationTimeIntervalInSeconds = 1e-4;
-    
-    % create human sensor with 1 cone
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+    simulationTimeIntervalInSeconds = 1e-4;   
         
     % Compute the simulation time axis
     stepOnset  = 4000;             % step onset
@@ -60,25 +55,16 @@ function ValidationFunction(runTimeParams)
         % create step stimulus temporal profile
         stepStimulusPhotonRate = zeros(nSamples, 1);
         stepStimulusPhotonRate(stimPeriod(1):stimPeriod(2),1) = stepIntensities(stepIndex);
-        
-        % set the stimulus photon rate
-        sensor = sensorSet(sensor, 'photon rate', reshape(stepStimulusPhotonRate, [1 1 size(stepStimulusPhotonRate,1)]));
-        pRate = sensorGet(sensor, 'photon rate');
-        coneType = sensorGet(sensor, 'cone type');
-        
-        % create a biophysically-based outersegment model object
-        osB = osBioPhys();
-
-        % specify no noise
-        noiseFlag = 0;
-        osB.osSet('noiseFlag', noiseFlag);
-        osB.osSet('timeStep', simulationTimeIntervalInSeconds);
-
-        % compute the outer segment model's response to the step stimulus
-        osB.osCompute(pRate, coneType, 'bgR', 0);
-            
-        % get the computed current
-        stepCurrent(stepIndex,:) = osB.osGet('coneCurrentSignal');
+ 
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        stepCurrent(stepIndex,:)  = squeeze(cm.current);            
         
         % create step+flash stimulus temporal profile
         % add first pulse before the onset of the light step
@@ -89,16 +75,17 @@ function ValidationFunction(runTimeParams)
         % add third pulse (light increment) during the light step 
         stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;
     
-        % set the stimulus photon rate
-        sensor = sensorSet(sensor, 'photon rate', reshape(stepFlashStimulusPhotonRate , [1 1 size(stepFlashStimulusPhotonRate ,1)]));
-        pRate = sensorGet(sensor, 'photon rate');
-        coneType = sensorGet(sensor, 'cone type');
-        
-        % compute the outer segment model's response to the step + flash stimulus
-        osB.osCompute(pRate, coneType, 'bgR', 0);
-        
+
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        stepFlashCurrent(stepIndex,:)  = squeeze(cm.current);      
         % get the computed current
-        stepFlashCurrent(stepIndex,:) = osB.osGet('coneCurrentSignal');
         
         % compute flash responses
         flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
