@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 12-Nov-2016 13:01:45
+% Last Modified by GUIDE v2.5 14-Nov-2016 13:46:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,10 +73,6 @@ handles.cMosaic.hdl = hObject;
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
 figure(hObject);
 
-
-% Get the font size initialized
-ieFontInit(hObject);
-
 % Set the popup default image selection to mean absorptions when the window
 % opens.
 str = get(handles.popupImageType, 'String');
@@ -88,8 +84,12 @@ end
 % Refresh and move on
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
+% Set the font size based on the ISETBIO preferences
+ieFontInit(hObject);
+
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
+
 
 end
 
@@ -466,7 +466,7 @@ x = ieClip(round(x), 1, size(data, 2));
 y = ieClip(round(y), 1, size(data, 1));
 
 % Draw a circle around the selected point.
-c = viscircles([x,y],1);
+c = viscircles([x,y],0.7);
 
 switch source.Label
     case 'hLine response'
@@ -821,6 +821,29 @@ end
 
 end
 
+% --------------------------------------------------------------------
+function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
+% hObject    handle to menuConePhotocurrentNoise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Flip from whatever state to the other
+handles.cMosaic.os.noiseFlag = 1 - handles.cMosaic.os.noiseFlag;
+
+% Set check when on, clear check when off
+if handles.cMosaic.os.noiseFlag
+    handles.menuConePhotocurrentNoise.Checked = 'on';
+else
+    handles.menuConePhotocurrentNoise.Checked = 'off';
+end
+
+% Refresh
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
+
+%---------------
+
 function popupImageType_Callback(hObject, eventdata, handles)
 % hObject    handle to popupImageType (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -981,3 +1004,4 @@ function menuPlotTimeSeries_Callback(hObject, ~, handles)
 set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
 contextMenuPlot(hObject, []);
 end
+

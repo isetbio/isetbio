@@ -86,7 +86,7 @@ function ValidationFunction(runTimeParams)
         incrementResponseAmplitude(stepIndex) = abs(osBiophysOuterSegmentCurrent(stepIndex, 2, tBin3seconds) - adaptedIncrResponse);
         fprintf('StepIndex %d: Decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementResponseAmplitude(stepIndex), incrementResponseAmplitude(stepIndex) );
         
-%         if (runTimeParams.generatePlots)  
+        if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
                 set(h, 'Position', [10 10 900 1200]);
@@ -121,7 +121,7 @@ function ValidationFunction(runTimeParams)
             
             drawnow;
         end % if (runTimeParams.generatePlots)
-%     end % stepIndex
+     end % stepIndex
     
     showFit = false;
     decToIncRatioNeural = zeros(1, numel(stimulusPhotonRateAmplitudes));
