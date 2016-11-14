@@ -268,6 +268,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.absorptionsTimeAxis(obj)
+            % Computed from the 3rd dimension of absorptions and integration time
             sz = size(obj.absorptions);
             if length(sz) == 3, val = (0:1:(sz(3)-1)) * obj.integrationTime;
             else                val = 0;
