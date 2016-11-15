@@ -177,8 +177,8 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                'widthMargin',    0.0, ...
                'leftMargin',     0.009, ...
                'rightMargin',    0.05, ...
-               'bottomMargin',   0.03, ...
-               'topMargin',      0.02);
+               'bottomMargin',   0.04, ...
+               'topMargin',      0.03);
         
         subplot('Position', subplotPosVectors(1,1).v);
         set(gca, 'Color', [0 0 0]);
@@ -187,14 +187,30 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         edgeColor = 'none'; 
         lineWidth = 0.1;
         
-        idx = find(obj.pattern > 1);
-        [iRows,iCols] = ind2sub(size(obj.pattern), idx);
+        for coneType = 2:4
+            idx = find(obj.pattern == coneType);
+            [iRows,iCols] = ind2sub(size(obj.pattern), idx);
                 
-        lineStyle = '-'; 
-        cMapLevels = size(cMap,1);
-        activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
-        faceColorsNormalizedValues = activationsNlevels/cMapLevels;
-        renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
+            lineStyle = '-'; 
+            cMapLevels = size(cMap,1);
+            activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
+            faceColorsNormalizedValues = activationsNlevels/cMapLevels;
+            
+            if (coneType == 2)
+                edgeColor = [1.0 0.5 0.5];
+            elseif (coneType == 3)
+                edgeColor = [0.3 1.0 0.3];
+            else
+                edgeColor = [0.1 0.8 1.0];
+            end
+            renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
+            if (coneType == 2)
+                hold on;
+            end
+        end
+        
+        hold off;
+        
         set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
         axis 'image'; axis 'xy';
         xTicks = obj.center(1) + 1e-6 * (-150:75:150);
@@ -242,13 +258,13 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]); 
         if (~isnan(instanceIndex))
             if (~isempty(activationTime))
-                title(sprintf('t = %2.1f msec (response instance: #%d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
+                title(sprintf('t = %7.1f msec (response instance: #3d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
             else
                 title(sprintf('instance: %d', instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
             end
         else
             if (~isempty(activationTime))
-                title(sprintf('t = %2.1f msec', activationTime*1000), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
+                title(sprintf('t = %02.1f msec', activationTime*1000), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
             end
         end
     end
