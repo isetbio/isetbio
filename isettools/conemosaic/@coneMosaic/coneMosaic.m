@@ -57,7 +57,7 @@ classdef coneMosaic < hiddenHandle
         coneLocs;       % cone locations in meters
         qe;             % absorptance with macular pigment (not lens)
         
-        current;        % The spatial array of photocurrent over time
+        current;        % The (x,y,t) of photocurrent, stored in os
         spatialDensity; % spatial density (ratio) of the K-LMS cones
         
         absorptionsTimeAxis;
@@ -263,6 +263,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.current(obj)
+            % The current is stored in the os object.
+            % We retrieve it from there.
             sz = size(obj.os.coneCurrentSignal);
             val = reshape(double(obj.os.coneCurrentSignal), [size(obj.pattern,1) size(obj.pattern,2) sz(end)]);
         end
