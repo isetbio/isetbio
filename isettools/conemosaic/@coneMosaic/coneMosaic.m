@@ -150,21 +150,8 @@ classdef coneMosaic < hiddenHandle
             obj.pigment.height = spacing;
             obj.pigment.width  = spacing;
             
-            % Not sure why we do this.  Related to NP.  To discuss in an
-            % issue. (BW) From NP to BW: In a rect mosaic (instantiated via
-            % coneMosaic), obj.pattern is the actual pattern of the cones
-            % in the mosaic. Therefore the elements of obj.pattern are
-            % separated by a distance equal to the inter-cone separation.
-            % In a hex mosaic (instantiated via coneMosaicHex), obj.pattern
-            % represents the pattern of a high resolution sampling array,
-            % in which most elements are null(K) cones. The non-null
-            % elements are LMS cones positioned at the nodes of a hex grid.
-            % Therefore, in a coneMosaicHex, the patternSampleSize is set
-            % (by the coneMosaicHex class) to a value that corresponds not
-            % to actual LMS cone spacing, but to the spacing of the high
-            % resolution sampling array. 
-            % From BW: Thanks.  I will use this exchange in the wiki.
-            % 
+            % See description of this parameter on the wiki page at
+            % https://github.com/isetbio/isetbio/wiki/Cone-mosaic#note-on-the-patternsamplesize-variable
             obj.patternSampleSize = [obj.pigment.width, obj.pigment.height];
             
             % generate human cone mosaic pattern if not specified
