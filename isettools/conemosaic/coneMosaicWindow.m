@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 14-Nov-2016 13:46:45
+% Last Modified by GUIDE v2.5 15-Nov-2016 21:34:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -798,15 +798,6 @@ end
 % --------------------------------------------------------------------
 function menuCones_Callback(hObject, eventdata, handles)
 % Cones - Main Pull down for computing.
-%
-end
-
-% --------------------------------------------------------------------
-function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
-% Cones | Compute photocurrent
-%
-handles.cMosaic.computeCurrent;
-coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 function menuConesGenerateEM_Callback(hObject, eventdata, handles)
@@ -816,16 +807,48 @@ str = ieReadString('Number of frames', '500');
 if ~isempty(str)
     handles.cMosaic.emGenSequence(str2double(str));
     menuEditClearData_Callback(hObject, eventdata, handles);
+    set(handles.popupImageType, 'Value', 2); % mean absorptions
     coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 end
 
 % --------------------------------------------------------------------
+function menuConesAbsorptions_Callback(hObject, eventdata, handles)
+% Cones | Compute absorptions
+%
+% Loads current oi to compute the absorptions.  If no oi is selected, it
+% complains.
+
+oi = vcGetObject('OI');
+if isempty(oi) || isempty(oiGet(oi, 'photons'))
+    warning('No optical image.  Use ieAddObject(oi) to store.');
+    return;
+end
+
+fprintf('Calculating with optical image %s\n',oiGet(oi,'name'));
+handles.cMosaic.compute(oi);
+handles.cMosaic.name = oiGet(oi,'name');
+set(handles.popupImageType, 'Value', 2); % mean absorptions
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
+
+% --------------------------------------------------------------------
+function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
+% Cones | Compute photocurrent
+%
+handles.cMosaic.computeCurrent;
+set(handles.popupImageType, 'Value', 4); % mean current
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --------------------------------------------------------------------
 function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
-% hObject    handle to menuConePhotocurrentNoise (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Cones | Toggle photocurrent noise
+% Also executes computeCurrent
+
+set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
 
 % Flip from whatever state to the other
 handles.cMosaic.os.noiseFlag = 1 - handles.cMosaic.os.noiseFlag;
@@ -837,7 +860,8 @@ else
     handles.menuConePhotocurrentNoise.Checked = 'off';
 end
 
-% Refresh
+handles.cMosaic.computeCurrent;
+set(handles.popupImageType, 'Value', 4); % mean current
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -1004,4 +1028,6 @@ function menuPlotTimeSeries_Callback(hObject, ~, handles)
 set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
 contextMenuPlot(hObject, []);
 end
+
+
 

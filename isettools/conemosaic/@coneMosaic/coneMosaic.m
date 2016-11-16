@@ -272,20 +272,9 @@ classdef coneMosaic < hiddenHandle
         function val = get.absorptionsTimeAxis(obj)
             % Computed from the 3rd dimension of absorptions and
             % integration time. 
-            % We can have a bug if the cone mosaic is one dimensional. In
-            % that case, we are not properly pullzing out the time axis.
-            % We should test for row or col equal to 1 and deal with that
-            % case.
-            if obj.rows == 1 && obj.cols == 1
-                % A single cone
-                tSamps = length(obj.absorptions);
-            elseif obj.rows == 1 || obj.cols == 1
-                % One of the dimensions is 1
-                tSamps = max(size(obj.absorptions));
-            else
-                % 2D cone mosaic so 3rd dimension is time
-                tSamps = size(obj.absorptions,3);
-            end
+            
+            % This should always be the number of time samples
+            tSamps = size(obj.absorptions,3);
             
             % The formula, finally.
             val = (0:1:(tSamps-1)) * obj.integrationTime;
