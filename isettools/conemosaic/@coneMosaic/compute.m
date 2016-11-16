@@ -100,7 +100,7 @@ else
 end
 
 %% If we want the photo current, use the os model
-
+%
 % You can always calculate the photocurrent later using
 % coneMosaic..computeCurrent;
 
@@ -108,8 +108,8 @@ current = [];
 currentTimeAxis = [];
 if currentFlag
 
-    if ismatrix(obj.absorptions)
-        disp('No current calculated - absorptions are a single frame')        
+    if size(obj.absorptions,3) == 1
+        disp('Absorptions are a single frame.  No current to calculate.')        
         return;
     else
         % compute the os time axes
@@ -119,17 +119,16 @@ if currentFlag
         dtOS = obj.os.timeStep;
         currentTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
         
-        % Resample over time
-        resampledAbsorptionsSequence = ...
-            coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, currentTimeAxis);
+        % Resample the absorptions over time
+        %resampledAbsorptionsSequence = ...
+        %    coneMosaic.tResample(absorptions, obj.pattern, absorptionsTimeAxis, currentTimeAxis);
         
         % Keep the total number of photon absorptions constant by
-        % correcting for the new delta time
-        pRate = resampledAbsorptionsSequence/dtOS;
+        % correcting for the new delta time (dtOS)
+        % pRate = resampledAbsorptionsSequence/dtOS;
         
         % Should append be true or false or what?
-        current = obj.os.osCompute(pRate, obj.pattern, ...
-            'append', append);
+        current = obj.os.osCompute(cMosaic,'append', append);
         
     end
     
