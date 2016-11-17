@@ -1,7 +1,7 @@
 function varargout = v_osEMData(varargin)
-% Check os biophysical model against neural data (simulating eye movements)
+% Check os models against neural data (simulating eye movements)
 %
-% This script tests the biophysically-based outer segment model of photon
+% This script tests the linear and biophysical outer segment models of photon
 % isomerizations to photocurrent transduction in the cone outer segments.
 % The simulation is compared with a recording sesssion that simulated eye
 % movements for a natural image stimulus.
@@ -29,7 +29,8 @@ function varargout = v_osEMData(varargin)
 %                    version OSObjectVsOrigValidation.
 % 1/12/16      npc   Created this version after separating the eye movements 
 %                    component from s_coneModelValidate.
-%
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
 % 2016 ISETBIO Team
 
 varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
@@ -44,8 +45,6 @@ function ValidationFunction(runTimeParams)
 
     %% Load measured outer segment data.  usec time base
     [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses();
-    
-    %% Compute @os model response
     
     % Set the simulation time interval equal to the temporal sampling resolution of the measured measured data
     % In generar, the stimulation time interval should be set to a small enough value so as to avoid overflow errors.
@@ -133,14 +132,14 @@ function ValidationFunction(runTimeParams)
         drawnow;
     end
     
-    % Save validation data    
+    %% Save validation data    
     UnitTest.validationData('osLinearCur', osLinearOuterSegmentCurrent);
     UnitTest.validationData('osBiophysCur', osBiophysOuterSegmentCurrent);
     UnitTest.validationData('time', time);
     UnitTest.validationData('stimulusPhotonRate', stimulusPhotonRate);
 end
 
-% Helper functions
+%% Helper functions
 function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses()
     
     dataSource = {'resources/data/cones', 'eyeMovementExample'};

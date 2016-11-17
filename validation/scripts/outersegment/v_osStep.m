@@ -1,8 +1,8 @@
 function varargout = v_osStep(varargin)
 % 
-% Validate the biophysical model of the cone outer segments against neural data (step stimuli)
+% Validate the cone outer segment models against neural data (step stimuli)
 %
-% This script tests the biophysically-based outer segment model of 
+% This script tests the linear and biophysical outer segment models of 
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments, for recordings of response to light steps of
 % different sizes.
@@ -20,6 +20,8 @@ function varargout = v_osStep(varargin)
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneAdaptNoise.
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -42,11 +44,7 @@ function ValidationFunction(runTimeParams)
     pulseOnset  =  40001;
     pulseOffset = 120000;
     
-    % create human sensor with 1 cone
-%     sensor = sensorCreate('human');
-%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-        
+    %% Compute os responses            
     for stepIndex = 1:numel(stimulusPhotonRates)
         
         % retrieve the measured currents for the examined step size
@@ -61,7 +59,7 @@ function ValidationFunction(runTimeParams)
         % create stimulus temporal profile
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
-        
+    %% Linear model
         osCML = osLinear();            
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
@@ -71,7 +69,7 @@ function ValidationFunction(runTimeParams)
         % Compute outer segment currents.
         cmL.computeCurrent();
         currentL = (cmL.current);
-        
+    %% Biophys model        
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag',0);
         cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
@@ -81,7 +79,7 @@ function ValidationFunction(runTimeParams)
         % Compute outer segment currents.
         cm.computeCurrent();
         current = (cm.current);
-    
+    %% Plot responses
         % store copy for saving to validation file
         if (stepIndex == 1)
             osLinearOuterSegmentCurrent = zeros(numel(stimulusPhotonRates), size(currentL,3));
@@ -144,20 +142,20 @@ function ValidationFunction(runTimeParams)
                 legend('measured (trial-1)', 'measured (trial-2)', 'measured (trial-3)', 'osLinear', 'osBioPhys model');
             end
             
-%             if (stepIndex == numel(stimulusPhotonRates))
-%                 NicePlot.exportFigToPNG('PulseTests2.png', h, 300);
-%             end
+            %             if (stepIndex == numel(stimulusPhotonRates))
+            %                 NicePlot.exportFigToPNG('PulseTests2.png', h, 300);
+            %             end
         end   
     end % stepIndex
     
-    % Save validation data
+    %% Save validation data
     UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
     UnitTest.validationData('simulationTime', simulationTime);
     UnitTest.validationData('stimPeriod', stimPeriod);
     UnitTest.validationData('stimulusPhotonRates', stimulusPhotonRates);
 end
 
-% Helper functions
+%% Helper functions
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
     
     dataSource = {'resources/data/cones', 'stepExample'};

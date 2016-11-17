@@ -1,7 +1,7 @@
 function varargout = v_osIncDec(varargin)
-% Validate the biophysical model for light increment and decrement stimuli
+% Validate the os models for light increment and decrement stimuli
 %
-% This script tests the biophysically-based outer segment model of 
+% This script tests the linear and biophysical outer segment models of 
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments.  This is for steps (1.5 sec), both incremental and
 % decremental with respect to backgrounds of different intensities.
@@ -10,6 +10,8 @@ function varargout = v_osIncDec(varargin)
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneModelValidate.
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -39,6 +41,7 @@ function ValidationFunction(runTimeParams)
     
     contrastsExamined = [-1 1];
     
+    %% Compute os responses    
     decrementLinearResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes));  
     incrementLinearResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes)); 
     
@@ -55,7 +58,8 @@ function ValidationFunction(runTimeParams)
             % generate step (decrement/increment)
             stimulusPhotonRateStep(contrastIndex, :) = stimulusPhotonRate;
             stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));            
-
+            
+            % Linear model
             osCML = osLinear();            
             osCML.set('noise flag',0);
             cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
@@ -66,6 +70,7 @@ function ValidationFunction(runTimeParams)
             cmL.computeCurrent();
             currentL = (cmL.current);
             
+            % Biophys model
             osCM = osBioPhys();            % peripheral (fast) cone dynamics
             osCM.set('noise flag',0);
             cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
@@ -86,16 +91,20 @@ function ValidationFunction(runTimeParams)
             
         end % contrastIndex
 
-
+        %% Capture relevant segments of current responses for inc and dec
         % Gauge response amplitude at 3 seconds
         [~, tBin3seconds] = min(abs(simulationTime-3.0));   % time bin to estimate response to inc/dec pulse
         [~, tBin5seconds] = min(abs(simulationTime-5.0));   % time bin to estimate response to pedestal
         
+        % Store appropriate segments of current responses for inc and dec
+        % for biophys model
         linearDecrResponse = osLinearOuterSegmentCurrent(stepIndex, 1, tBin5seconds);
         linearIncrResponse = osLinearOuterSegmentCurrent(stepIndex, 2, tBin5seconds);        
         adaptedDecrResponse = osBiophysOuterSegmentCurrent(stepIndex, 1, tBin5seconds);
         adaptedIncrResponse = osBiophysOuterSegmentCurrent(stepIndex, 2, tBin5seconds);
         
+        % Store appropriate segments of current responses for inc and dec
+        % for linear model
         decrementLinearResponseAmplitude(stepIndex) = abs(osLinearOuterSegmentCurrent(stepIndex, 1, tBin3seconds) - linearDecrResponse);
         incrementLinearResponseAmplitude(stepIndex) = abs(osLinearOuterSegmentCurrent(stepIndex, 2, tBin3seconds) - linearIncrResponse);
         decrementResponseAmplitude(stepIndex) = abs(osBiophysOuterSegmentCurrent(stepIndex, 1, tBin3seconds) - adaptedDecrResponse);
@@ -104,6 +113,7 @@ function ValidationFunction(runTimeParams)
         fprintf('StepIndex %d: Linear decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementLinearResponseAmplitude(stepIndex), incrementLinearResponseAmplitude(stepIndex) );        
         fprintf('StepIndex %d: Biophys decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementResponseAmplitude(stepIndex), incrementResponseAmplitude(stepIndex) );
         
+        %% Plot
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
@@ -175,7 +185,7 @@ function ValidationFunction(runTimeParams)
     hold off;
     drawnow;
     
-    % Save validation data
+    %% Save validation data
     
     UnitTest.validationData('osLinearCurrent', osLinearOuterSegmentCurrent);
     UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
@@ -184,6 +194,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('stimulusPhotonRateAmplitudes',stimulusPhotonRateAmplitudes);
 end
 
+%% Helper functions
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
     dataSource = {'resources/data/cones', 'decIncRatios.mat'};
     fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});

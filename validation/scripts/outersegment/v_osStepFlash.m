@@ -1,8 +1,8 @@
 function varargout = v_osStepFlash(varargin)
 %
-% Validate the biophysical model for very brief flashes on different pedestals.
+% Validate the os models for very brief flashes on different pedestals.
 %
-% This script tests the biophysically-based outer segment model of 
+% This script tests the linear and biophysical outer segment models of 
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments.  It computes responses for brief flashes of fixed
 % amplitude, but presented on step pedestals of different intensities.
@@ -21,7 +21,8 @@ function varargout = v_osStepFlash(varargin)
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneModelValidate.
-
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
@@ -30,6 +31,7 @@ function ValidationFunction(runTimeParams)
 
     %% Init
     ieInit;
+    %% Build stimuli
     
     % Set the simulation time interval. In general, the stimulation time interval should 
     % be set to a small enough value so as to avoid overflow errors.
@@ -50,12 +52,13 @@ function ValidationFunction(runTimeParams)
     nStepIntensities = 11;
     stepIntensities = 50 * 2.^(1:nStepIntensities);
     
+%% Compute os responses
     for stepIndex = 1:nStepIntensities
-        
+    %% Step stimulus    
         % create step stimulus temporal profile
         stepStimulusPhotonRate = zeros(nSamples, 1);
         stepStimulusPhotonRate(stimPeriod(1):stimPeriod(2),1) = stepIntensities(stepIndex);
-
+    % Linear os
         osCML = osLinear();            
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
@@ -64,8 +67,9 @@ function ValidationFunction(runTimeParams)
         cmL.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
         % Compute outer segment currents.
         cmL.computeCurrent('bgR',stepStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
-        stepCurrentLinear(stepIndex,:)  = squeeze(cmL.current);            
+        stepCurrentLinear(stepIndex,:)  = squeeze(cmL.current);      
         
+    % Biophys os
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag',0);
         cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
@@ -76,6 +80,7 @@ function ValidationFunction(runTimeParams)
         cm.computeCurrent();
         stepCurrent(stepIndex,:)  = squeeze(cm.current);            
         
+    %% Flash stimulus
         % create step+flash stimulus temporal profile
         % add first pulse before the onset of the light step
         stepFlashStimulusPhotonRate = stepStimulusPhotonRate;
@@ -84,7 +89,8 @@ function ValidationFunction(runTimeParams)
         stepFlashStimulusPhotonRate(flashTime(2):flashTime(2)+flashDur) = stepFlashStimulusPhotonRate (flashTime(2):flashTime(2)+flashDur) - flashIntensity;
         % add third pulse (light increment) during the light step 
         stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;  
-        
+    
+    % Linear os        
         osCML = osLinear();            
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
@@ -96,6 +102,7 @@ function ValidationFunction(runTimeParams)
         cmL.computeCurrent('bgR',stepFlashStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
         stepFlashCurrentLinear(stepIndex,:)  = squeeze(cmL.current); 
 
+    % Biophys os        
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag',0);
         cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
@@ -106,7 +113,8 @@ function ValidationFunction(runTimeParams)
         cm.computeCurrent();
         stepFlashCurrent(stepIndex,:)  = squeeze(cm.current);      
         % get the computed current
-        
+
+    %% Compute differences between flash and step stimuli
         % compute flash responses        
         flashOnlyLinearCurrent = squeeze(stepFlashCurrentLinear(stepIndex,:))-squeeze(stepCurrentLinear(stepIndex,:));
         darkFlashLinearResponse = max(flashOnlyLinearCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
@@ -117,7 +125,8 @@ function ValidationFunction(runTimeParams)
         darkFlashResponse = max(flashOnlyCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
         lightDecrementFlashResponse(stepIndex) = min(flashOnlyCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
         lightIncrementFlashResponse(stepIndex) = max(flashOnlyCurrent(find(simulationTime>1.5)));
-         
+        
+    %% Plot each step and flash level
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
@@ -170,7 +179,8 @@ function ValidationFunction(runTimeParams)
             drawnow;
         end
     end % stepIndex
-    
+
+    %% Plot summary ratios
     if (runTimeParams.generatePlots)    
         % compute sensitivity vs background intensity relation for neural data
         % with half desens around 2500 (Angueyra and Rieke, 2013)
@@ -214,7 +224,7 @@ function ValidationFunction(runTimeParams)
         ylabel('flash response / dark flash response','FontSize', 12);
     end
     
-    % Save validation data
+    %% Save validation data
     UnitTest.validationData('stepCurrentLinear', stepCurrentLinear);
     UnitTest.validationData('stepFlashCurrentLinear',stepFlashCurrentLinear);
     UnitTest.validationData('stepCurrent', stepCurrent);
