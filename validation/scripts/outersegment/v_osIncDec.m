@@ -1,4 +1,4 @@
-function varargout = v_osBioPhysLightIncrementDecrementResponses(varargin)
+function varargout = v_osIncDec(varargin)
 % Validate the biophysical model for light increment and decrement stimuli
 %
 % This script tests the biophysically-based outer segment model of 

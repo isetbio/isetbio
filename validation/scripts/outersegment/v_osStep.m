@@ -1,4 +1,4 @@
-function varargout = v_osLinearStepResponses(varargin)
+function varargout = v_osStep(varargin)
 % 
 % Validate the biophysical model of the cone outer segments against neural data (step stimuli)
 %
@@ -41,7 +41,12 @@ function ValidationFunction(runTimeParams)
     nSamples = numel(simulationTime);
     pulseOnset  =  40001;
     pulseOffset = 120000;
-            
+    
+    % create human sensor with 1 cone
+%     sensor = sensorCreate('human');
+%     sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
+%     sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
+        
     for stepIndex = 1:numel(stimulusPhotonRates)
         
         % retrieve the measured currents for the examined step size
@@ -57,7 +62,7 @@ function ValidationFunction(runTimeParams)
         stimulusPhotonRate = zeros(nSamples, 1);
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
         
-        osCML = osLinear();            % peripheral (fast) cone dynamics
+        osCML = osLinear();            
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
@@ -66,12 +71,24 @@ function ValidationFunction(runTimeParams)
         % Compute outer segment currents.
         cmL.computeCurrent();
         currentL = (cmL.current);
+        
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag',0);
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stimulusPhotonRate,[1,1,length(stimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        current = (cm.current);
     
         % store copy for saving to validation file
         if (stepIndex == 1)
             osLinearOuterSegmentCurrent = zeros(numel(stimulusPhotonRates), size(currentL,3));
+            osBiophysOuterSegmentCurrent = zeros(numel(stimulusPhotonRates), size(current,3));
         end
         osLinearOuterSegmentCurrent(stepIndex,:) = squeeze(currentL(1,1,:));
+        osBiophysOuterSegmentCurrent(stepIndex,:) = squeeze(current(1,1,:));
     
         % plot model and measured data and stimulus
         if (runTimeParams.generatePlots)
@@ -109,7 +126,8 @@ function ValidationFunction(runTimeParams)
             end
             
             % plot computed current
-            plot(simulationTime, squeeze(osLinearOuterSegmentCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0);
+            plot(simulationTime, squeeze(osLinearOuterSegmentCurrent(stepIndex,:)), 'm-', 'LineWidth', 2.0); hold on;
+            plot(simulationTime, squeeze(osBiophysOuterSegmentCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0);
             if (stepIndex == numel(stimulusPhotonRates))
             	xlabel('time (sec)','FontSize',12);
             else
@@ -119,11 +137,11 @@ function ValidationFunction(runTimeParams)
             %set(gca, 'YLim', [-150 0]);
             ylabel('current (pAmps)','FontSize',12);
             if (size(measuredCurrents,1) == 1)
-                legend('measured (trial-1)', 'osBioPhys model');
+                legend('measured (trial-1)', 'osLinear', 'osBioPhys model');
             elseif (size(measuredCurrents,1) == 2)
-                legend('measured (trial-1)', 'measured (trial-2)', 'osBioPhys model');
+                legend('measured (trial-1)', 'measured (trial-2)', 'osLinear', 'osBioPhys model');
             elseif (size(measuredCurrents,1) == 3)
-                legend('measured (trial-1)', 'measured (trial-2)', 'measured (trial-3)', 'osBioPhys model');
+                legend('measured (trial-1)', 'measured (trial-2)', 'measured (trial-3)', 'osLinear', 'osBioPhys model');
             end
             
 %             if (stepIndex == numel(stimulusPhotonRates))
@@ -133,7 +151,7 @@ function ValidationFunction(runTimeParams)
     end % stepIndex
     
     % Save validation data
-    UnitTest.validationData('osBiophysCurrent', osLinearOuterSegmentCurrent);
+    UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
     UnitTest.validationData('simulationTime', simulationTime);
     UnitTest.validationData('stimPeriod', stimPeriod);
     UnitTest.validationData('stimulusPhotonRates', stimulusPhotonRates);

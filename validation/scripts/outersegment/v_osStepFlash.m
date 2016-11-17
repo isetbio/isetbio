@@ -1,4 +1,4 @@
-function varargout = v_osBioPhysStepBriefFlashesResponses(varargin)
+function varargout = v_osStepFlash(varargin)
 %
 % Validate the biophysical model for very brief flashes on different pedestals.
 %
