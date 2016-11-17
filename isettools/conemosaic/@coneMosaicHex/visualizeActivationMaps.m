@@ -123,8 +123,8 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
             set(gca, 'CLim', [0 1]);
             axis 'image'; axis 'xy';
-            xTicks = obj.center(1) + (-150:75:150);
-            yTicks = obj.center(2) + (-150:75:150);
+            xTicks = obj.center(1) + (-75:75:75);
+            yTicks = obj.center(2) + (-75:75:75);
             xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
             yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
             set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.0 0.0 0.0], 'YColor', [0.0 0.0 0.0]);
@@ -185,7 +185,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         showXticks = true;
         showYticks = false;
         edgeColor = 'none'; 
-        lineWidth = 0.1;
+        lineWidth = 1.5;
         
         for coneType = 2:4
             idx = find(obj.pattern == coneType);
@@ -213,8 +213,8 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         
         set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
         axis 'image'; axis 'xy';
-        xTicks = obj.center(1) + 1e-6 * (-150:75:150);
-        yTicks = obj.center(2) + 1e-6 * (-150:75:150);
+        xTicks = obj.center(1) + 1e-6 * (-75:75:75);
+        yTicks = obj.center(2) + 1e-6 * (-75:75:75);
         
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
@@ -258,7 +258,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]); 
         if (~isnan(instanceIndex))
             if (~isempty(activationTime))
-                title(sprintf('t = %7.1f msec (response instance: #3d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
+                title(sprintf('t = %7.1f msec              (response instance: #%3d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
             else
                 title(sprintf('instance: %d', instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
             end
