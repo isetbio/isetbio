@@ -1,4 +1,4 @@
-function varargout = v_osBioPhysData(varargin)
+function varargout = v_osLinearEyeMovements(varargin)
 % Check os biophysical model against neural data (simulating eye movements)
 %
 % This script tests the biophysically-based outer segment model of photon
@@ -51,7 +51,6 @@ function ValidationFunction(runTimeParams)
     % In generar, the stimulation time interval should be set to a small enough value so as to avoid overflow errors.
     simulationTimeIntervalInSeconds = time(2)-time(1);
     
-    %% Linear model
     osCML = osLinear();            % peripheral (fast) cone dynamics
     osCML.set('noise flag',0);
     cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
@@ -63,21 +62,6 @@ function ValidationFunction(runTimeParams)
     osLinearOuterSegmentCurrent = (cmL.current);
     
     osLinearOuterSegmentCurrent = squeeze(osLinearOuterSegmentCurrent(1,1,:));
-    
-    %% Biophys model
-    osCM = osBioPhys();            % peripheral (fast) cone dynamics
-    osCM.set('noise flag',0);
-    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
-    cm.integrationTime = simulationTimeIntervalInSeconds;
-    cm.os.timeStep = simulationTimeIntervalInSeconds;
-    cm.absorptions  = reshape(stimulusPhotonRate, [1 1 size(stimulusPhotonRate,2)])*simulationTimeIntervalInSeconds;
-    % Compute outer segment currents.
-    cm.computeCurrent('bgR',(cm.absorptions(1,1,1))./cm.integrationTime);
-    osBiophysOuterSegmentCurrent = (cm.current);
-    
-    osBiophysOuterSegmentCurrent = squeeze(osBiophysOuterSegmentCurrent(1,1,:));
-    
-    %% Handle initial offsets
     offset1Time = 0.35;
     [~,offset1TimeBin] = min(abs(time - offset1Time ));
 
@@ -87,25 +71,15 @@ function ValidationFunction(runTimeParams)
     % Make the current level match at the offset times
     measuredOuterSegmentCurrentLinearOffset1 = measuredOuterSegmentCurrent +  (osLinearOuterSegmentCurrent(offset1TimeBin)-measuredOuterSegmentCurrent(offset1TimeBin));
     measuredOuterSegmentCurrentLinearOffset2 = measuredOuterSegmentCurrent +  (osLinearOuterSegmentCurrent(offset2TimeBin)-measuredOuterSegmentCurrent(offset2TimeBin));
-  
-    measuredOuterSegmentCurrentOffset1 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset1TimeBin)-measuredOuterSegmentCurrent(offset1TimeBin));
-    measuredOuterSegmentCurrentOffset2 = measuredOuterSegmentCurrent +  (osBiophysOuterSegmentCurrent(offset2TimeBin)-measuredOuterSegmentCurrent(offset2TimeBin));
     
-    %% Compute RMS error  
-    % Why are there so many NaNs in the measured data?
+    % compute RMS error.  Why are there so many NaNs in the measured data?
     residualLinear1 = osLinearOuterSegmentCurrent(:)-measuredOuterSegmentCurrentLinearOffset1(:);
     residualLinear2 = osLinearOuterSegmentCurrent(:)-measuredOuterSegmentCurrentLinearOffset2(:);
     validIndices = find(~isnan(measuredOuterSegmentCurrent));
     errorLinearRMS1 = sqrt(mean(residualLinear1(validIndices).^2));
     errorLinearRMS2 = sqrt(mean(residualLinear2(validIndices).^2));
 
-    residual1 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset1(:);
-    residual2 = osBiophysOuterSegmentCurrent(:)-measuredOuterSegmentCurrentOffset2(:);
-    validIndices = find(~isnan(measuredOuterSegmentCurrent));
-    errorRMS1 = sqrt(mean(residual1(validIndices).^2));
-    errorRMS2 = sqrt(mean(residual2(validIndices).^2));
-
-    %% Plot the two calculations and compare against measured data.
+    % Plot the two calculations and compare against measured data.
     if (runTimeParams.generatePlots)
         h = vcNewGraphWin([],'tall');
         subplot(2,1,1)
@@ -116,26 +90,23 @@ function ValidationFunction(runTimeParams)
         
         subplot(2,1,2)
         % subplot('Position', [0.05 0.03 0.94 0.46]);
-        % plot(time, measuredOuterSegmentCurrent, '.-', 'LineWidth', 2.0); hold on;
-        % plot(time, measuredOuterSegmentCurrentOffset1, 'm-', 'LineWidth', 2.0);
-        plot(time, measuredOuterSegmentCurrentOffset2, 'b-', 'LineWidth', 2.0); hold on;             
+        plot(time, measuredOuterSegmentCurrent, '.-', 'LineWidth', 2.0); hold on;
+        plot(time, measuredOuterSegmentCurrentLinearOffset1, 'm-', 'LineWidth', 2.0);
+        plot(time, measuredOuterSegmentCurrentLinearOffset2, 'b-', 'LineWidth', 2.0);
         plot(time, osLinearOuterSegmentCurrent, 'k-',  'LineWidth', 2.0);
-        plot(time, osBiophysOuterSegmentCurrent, 'm-',  'LineWidth', 2.0);  
-        % plot(time(offset1TimeBin)*[1 1], [-100 100], 'm-');
-        % plot(time(offset2TimeBin)*[1 1], [-100 100], 'b-');
+        plot(time(offset1TimeBin)*[1 1], [-100 100], 'm-');
+        plot(time(offset2TimeBin)*[1 1], [-100 100], 'b-');
         set(gca, 'XLim', [time(1) time(end)], 'FontSize', 12);
         xlabel('Time (sec)','FontSize',14);
         ylabel('Photocurrent (pA)','FontSize',14);
-        % h = legend('measured (as saved in datafile)', sprintf('measured (adjusted to match model at %2.2f sec)', offset1Time),  sprintf('measured (adjusted to match model at %2.2f msec)',offset2Time) ,'osLinear model', 'osBioPhys model', 'location', 'NorthWest');
-        h = legend( sprintf('measured (adjusted to match model at %2.2f msec)',offset2Time) ,'osLinear model', 'osBioPhys model', 'location', 'NorthEast');
+        h = legend('measured (as saved in datafile)', sprintf('measured (adjusted to match model at %2.2f sec)', offset1Time),  sprintf('measured (adjusted to match model at %2.2f msec)',offset2Time) , 'osLinear model', 'location', 'NorthWest');
         set(h, 'FontSize', 12);
-        title(sprintf('rms: %2.2f pA (offset at %2.2f sec)\nrms: %2.2f pA (offset at %2.2f sec)', errorRMS1, offset1Time, errorRMS2, offset2Time), 'FontName', 'Fixed');
+        title(sprintf('rms: %2.2f pA (offset at %2.2f sec)\nrms: %2.2f pA (offset at %2.2f sec)', errorLinearRMS1, offset1Time, errorLinearRMS2, offset2Time), 'FontName', 'Fixed');
         drawnow;
     end
     
-    % Save validation data    
-    UnitTest.validationData('osLinearCur', osLinearOuterSegmentCurrent);
-    UnitTest.validationData('osBiophysCur', osBiophysOuterSegmentCurrent);
+    % Save validation data
+    UnitTest.validationData('osBiophysCur', osLinearOuterSegmentCurrent);
     UnitTest.validationData('time', time);
     UnitTest.validationData('stimulusPhotonRate', stimulusPhotonRate);
 end

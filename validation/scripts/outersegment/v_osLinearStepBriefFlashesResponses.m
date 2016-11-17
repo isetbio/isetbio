@@ -1,4 +1,4 @@
-function varargout = v_osBioPhysStepBriefFlashesResponses(varargin)
+function varargout = v_osLinearStepBriefFlashesResponses(varargin)
 %
 % Validate the biophysical model for very brief flashes on different pedestals.
 %
@@ -55,26 +55,16 @@ function ValidationFunction(runTimeParams)
         % create step stimulus temporal profile
         stepStimulusPhotonRate = zeros(nSamples, 1);
         stepStimulusPhotonRate(stimPeriod(1):stimPeriod(2),1) = stepIntensities(stepIndex);
-
-        osCML = osLinear();            
+ 
+        osCML = osLinear();            % peripheral (fast) cone dynamics
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
         cmL.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
         % Compute outer segment currents.
-        cmL.computeCurrent('bgR',stepStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
+        cmL.computeCurrent();
         stepCurrentLinear(stepIndex,:)  = squeeze(cmL.current);            
-        
-        osCM = osBioPhys();            % peripheral (fast) cone dynamics
-        osCM.set('noise flag',0);
-        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
-        cm.integrationTime = simulationTimeIntervalInSeconds;
-        cm.os.timeStep = simulationTimeIntervalInSeconds;
-        cm.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
-        % Compute outer segment currents.
-        cm.computeCurrent();
-        stepCurrent(stepIndex,:)  = squeeze(cm.current);            
         
         % create step+flash stimulus temporal profile
         % add first pulse before the onset of the light step
@@ -83,41 +73,27 @@ function ValidationFunction(runTimeParams)
         % add second pulse (light decrement) during the light step 
         stepFlashStimulusPhotonRate(flashTime(2):flashTime(2)+flashDur) = stepFlashStimulusPhotonRate (flashTime(2):flashTime(2)+flashDur) - flashIntensity;
         % add third pulse (light increment) during the light step 
-        stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;  
-        
-        osCML = osLinear();            
+        stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;
+    
+
+        osCML = osLinear();            % peripheral (fast) cone dynamics
         osCML.set('noise flag',0);
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
         cmL.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
         % Compute outer segment currents.
-        
-        cmL.computeCurrent('bgR',stepFlashStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
-        stepFlashCurrentLinear(stepIndex,:)  = squeeze(cmL.current); 
-
-        osCM = osBioPhys();            % peripheral (fast) cone dynamics
-        osCM.set('noise flag',0);
-        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
-        cm.integrationTime = simulationTimeIntervalInSeconds;
-        cm.os.timeStep = simulationTimeIntervalInSeconds;
-        cm.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
-        % Compute outer segment currents.
-        cm.computeCurrent();
-        stepFlashCurrent(stepIndex,:)  = squeeze(cm.current);      
+        cmL.computeCurrent();
+        stepFlashCurrentLinear(stepIndex,:)  = squeeze(cmL.current);      
         % get the computed current
         
-        % compute flash responses        
+        % compute flash responses
         flashOnlyLinearCurrent = squeeze(stepFlashCurrentLinear(stepIndex,:))-squeeze(stepCurrentLinear(stepIndex,:));
         darkFlashLinearResponse = max(flashOnlyLinearCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
         lightDecrementFlashLinearResponse(stepIndex) = min(flashOnlyLinearCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
         lightIncrementFlashLinearResponse(stepIndex) = max(flashOnlyLinearCurrent(find(simulationTime>1.5)));
-         
-        flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
-        darkFlashResponse = max(flashOnlyCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
-        lightDecrementFlashResponse(stepIndex) = min(flashOnlyCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
-        lightIncrementFlashResponse(stepIndex) = max(flashOnlyCurrent(find(simulationTime>1.5)));
-         
+ 
+        
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
@@ -137,12 +113,9 @@ function ValidationFunction(runTimeParams)
             title(sprintf('step: %d R*/sec',stepIntensities(stepIndex)), 'FontSize',12);
         
             % plot compound response in the middle
-            subplot(nStepIntensities,3,(stepIndex-1)*3+2);             
-            plot(simulationTime, squeeze(stepFlashCurrentLinear(stepIndex,:)), 'g-', 'LineWidth', 2.0); hold on
-            plot(simulationTime, squeeze(stepCurrentLinear(stepIndex,:)), 'b:', 'LineWidth', 2.0);
-        
-            plot(simulationTime, squeeze(stepFlashCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0); hold on
-            plot(simulationTime, squeeze(stepCurrent(stepIndex,:)), 'm:', 'LineWidth', 2.0);
+            subplot(nStepIntensities,3,(stepIndex-1)*3+2); 
+            plot(simulationTime, squeeze(stepFlashCurrentLinear(stepIndex,:)), 'k-', 'LineWidth', 2.0); hold on
+            plot(simulationTime, squeeze(stepCurrentLinear(stepIndex,:)), 'm:', 'LineWidth', 2.0);
         
             set(gca, 'XLim', [simulationTime(1) simulationTime(end)]);
             if (stepIndex == nStepIntensities)
@@ -154,10 +127,8 @@ function ValidationFunction(runTimeParams)
             title('compound response', 'FontSize',12);
         
             % plot flash-only response on the right
-            subplot(nStepIntensities,3,(stepIndex-1)*3+3); hold on;
-            
-            plot(simulationTime, flashOnlyLinearCurrent, 'g-', 'LineWidth', 2.0);
-            plot(simulationTime, flashOnlyCurrent, 'k-', 'LineWidth', 2.0);
+            subplot(nStepIntensities,3,(stepIndex-1)*3+3); 
+            plot(simulationTime, flashOnlyLinearCurrent, 'k-', 'LineWidth', 2.0);
             set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [-2.2 2.2]);
             if (stepIndex == nStepIntensities)
                 xlabel('time (sec)','FontSize',12);
@@ -179,37 +150,28 @@ function ValidationFunction(runTimeParams)
 
         % can also fit the same model to the simulated data, but we are not
         % currently plotting this.
-        wfcoefLinear = nlinfit(stepIntensities, log10(lightIncrementFlashLinearResponse/darkFlashLinearResponse), 'weberFechner', coef);
-        modelLinearDataFit = 10.^(weberFechner(wfcoefLinear, stepIntensities));
-
-        wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashResponse/darkFlashResponse), 'weberFechner', coef);
+        wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashLinearResponse/darkFlashLinearResponse), 'weberFechner', coef);
         modelDataFit = 10.^(weberFechner(wfcoef, stepIntensities));
 
         h = figure(2); clf;
         set(h, 'Position', [10 10 1000 500]);
-        subplot(1,2,1); 
-        loglog(stepIntensities, -lightDecrementFlashLinearResponse/darkFlashLinearResponse, 'go-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]); hold on      
-        loglog(stepIntensities, -lightDecrementFlashResponse/darkFlashResponse, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]);
+        hold on
+        subplot(1,2,1)
+        loglog(stepIntensities, -lightDecrementFlashLinearResponse/darkFlashLinearResponse, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]);
         title('light decrement flash sensitivity');
-        % set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
+        set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
         xlabel('step intensity (R*/sec)', 'FontSize', 12);
         ylabel('flash response / dark flash response','FontSize', 12);
         
-        % Likely some sort of problem with the linear model and its initial
-        % current, see darkFlashResponse vs. darkFlashResponseLinear.
-        % figure; plot(flashOnlyLinearCurrent); hold on; plot(flashOnlyCurrent);
-        % figure; plot(stepFlashCurrentLinear(1,:)); hold on; plot(stepFlashCurrent(1,:))
-        
-        subplot(1,2,2); 
-        loglog(stepIntensities, lightIncrementFlashLinearResponse/darkFlashLinearResponse, 'ko-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 1 0.8]); hold on;
-        loglog(stepIntensities, lightIncrementFlashResponse/darkFlashResponse, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);       
+        subplot(1,2,2)
+        loglog(stepIntensities, lightIncrementFlashLinearResponse/darkFlashLinearResponse, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);
+        hold on;
         %loglog(stepIntensities, modelDataFit, 'b-', 'LineWidth', 2.0);
-        %loglog(stepIntensities, modelLinearDataFit, 'b-', 'LineWidth', 2.0);
         loglog(stepIntensities, neuralDataFit, 'm-', 'LineWidth', 2.0);
 
         title('light increment flash');
-        legend('lienar model', 'biophys model', 'neural data');
-        % set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
+        legend('model', 'neural data');
+        set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
         xlabel('step intensity (R*/sec)', 'FontSize', 12);
         ylabel('flash response / dark flash response','FontSize', 12);
     end
@@ -217,8 +179,6 @@ function ValidationFunction(runTimeParams)
     % Save validation data
     UnitTest.validationData('stepCurrentLinear', stepCurrentLinear);
     UnitTest.validationData('stepFlashCurrentLinear',stepFlashCurrentLinear);
-    UnitTest.validationData('stepCurrent', stepCurrent);
-    UnitTest.validationData('stepFlashCurrent',stepFlashCurrent);
     UnitTest.validationData('simulationTime', simulationTime);
     UnitTest.validationData('stimPeriod', stimPeriod);
     UnitTest.validationData('flashTime', flashTime);
