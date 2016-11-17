@@ -11,7 +11,7 @@ classdef oiSequence
     %
     %  NPC, ISETBIO TEAM, 2016
     
-    properties 
+    properties
         
     end
     
@@ -19,7 +19,7 @@ classdef oiSequence
         length
     end
     
-    properties (SetAccess = private)   
+    properties (SetAccess = private)
         % the fixed oi (an oi, the background)
         oiFixed
         fixedPhotons
@@ -45,7 +45,7 @@ classdef oiSequence
     
     
     methods  % public methods
-            
+        
         % constructor
         function obj = oiSequence(oiFixed, oiModulated, oiTimeAxis, modulationFunction, varargin)
             
@@ -80,7 +80,7 @@ classdef oiSequence
             elseif length(obj.oiTimeAxis) ~= length(obj.modulationFunction)
                 error('Time axis does not match modulation function');
             end
-              
+            
             % Set a validation function above, don't do this.
             if (~strcmp(obj.composition, 'add')) && (~strcmp(obj.composition, 'blend'))
                 error('''composition'' must be set to either ''blend'' or ''add''.');
@@ -101,7 +101,7 @@ classdef oiSequence
             obj.fixedPhotons = oiGet(obj.oiFixed, 'photons');
             obj.modulatedPhotons = oiGet(obj.oiModulated, 'photons');
         end
-            
+        
         %% Define methods in the @oiSequence directory
         
         % Method for on-the-fly computation of the oi at desired index
