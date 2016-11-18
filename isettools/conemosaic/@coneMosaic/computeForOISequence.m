@@ -60,11 +60,15 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     eyeMovementsNum = size(emPaths,2);
     eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(eyeMovementsNum-1)) * obj.integrationTime;
     
-    % Compute OIrefresh
-    oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
-    
     % Save default integration time
     defaultIntegrationTime = obj.integrationTime;
+    
+    % Compute OIrefresh
+    if (numel(oiTimeAxis) == 1)
+        oiRefreshInterval = defaultIntegrationTime;
+    else
+        oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
+    end
     
     % Only allocate memory for the non-null cones in a 3D matrix [instances x time x numel(nonNullConesIndices)]
     nonNullConesIndices = find(obj.pattern>1);
@@ -304,6 +308,22 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     % align absorptions time axis with respect to optical image sequence time axis
     absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis; 
 
+    % Special case where we only have a time series with just 1 point (+the
+    % extra time point inserted above)
+    if (numel(absorptionsTimeAxis) == 2)
+        % Remove the last absorption we inserted at the end
+        if (isa(obj, 'coneMosaicHex')) 
+            absorptions = absorptions(:,:,1:(end-1));
+        else
+            absorptions = absorptions(:,:,:,1:(end-1));
+        end
+        
+        varargout{1} = [];
+        varargout{2} = [];
+        fprintf(2,'coneMosaic.computeForOISequence: Absorptions time axis has only one point. Returning empty photocurrents\n');
+        return;
+    end
+    
     if (currentFlag)
         % compute the photocurrent time axis
         dtOS = obj.os.timeStep;
