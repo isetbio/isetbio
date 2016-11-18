@@ -184,8 +184,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         set(gca, 'Color', [0 0 0]);
         showXticks = true;
         showYticks = false;
-        edgeColor = 'none'; 
-        lineWidth = 1.5;
+        lineWidth = 1.0;
         
         for coneType = 2:4
             idx = find(obj.pattern == coneType);
@@ -197,11 +196,11 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             faceColorsNormalizedValues = activationsNlevels/cMapLevels;
             
             if (coneType == 2)
-                edgeColor = [1.0 0.5 0.5];
+                edgeColor = [1.0 0.1 0.1];
             elseif (coneType == 3)
-                edgeColor = [0.3 1.0 0.3];
+                edgeColor = [0.1 1.0 0.1];
             else
-                edgeColor = [0.1 0.8 1.0];
+                edgeColor = [0.1 0.6 1.0];
             end
             renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
             if (coneType == 2)
