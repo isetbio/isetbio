@@ -7,6 +7,11 @@ classdef oiSequence
     % (2) modulationRegion.radiusInMicrons = 300;
     %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion, 'oiModulatedReplacesBackground', true);
     %
+    % TODO:  Maybe set up some oiGet/Set routines with the syntax
+    %        oiSequence.get('oiFixed mumble') and
+    %        oiSequence.get('oiModulated mumble')???
+    %        Maybe oiSequence.get('frame',val)???
+    %
     % See t_oiSequence for example usage.
     %
     %  NPC, ISETBIO TEAM, 2016
@@ -109,7 +114,12 @@ classdef oiSequence
         
         % Visualize the sequence
         visualize(obj,varargin);
-        visualizeWithEyeMovementSequence(obj, emTimeAxis);
+        
+        % Use the eye movements?  We have eye movements in coneMosaic, not
+        % oi.  So, I think we need to wait to see the eye movements until
+        % we are in the cMosaic case.  If we want them here, then we need
+        % to take a whole em object. (BW).
+        % visualizeWithEyeMovementSequence(obj, emTimeAxis);
         
         %% Local get methods
         

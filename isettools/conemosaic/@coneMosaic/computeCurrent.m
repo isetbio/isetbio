@@ -10,15 +10,12 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
-% We check that absorptions is not empty
+% Check that the absorptions have been computed
 if isempty(cMosaic.absorptions)
-    disp('You must compute absorptions first.  Although we could do it here.');
+    disp('You must compute isomerizations (absorptions) prior to the current.');
 end
 
-% OLD:
-%  obj.os.osCompute(obj.absorptions/obj.integrationTime, obj.pattern, 'append', false);
-
-%% Make the call to the outer segment photocurrent computation
+%% Call the relevant outer segment photocurrent computation
 
 % This is the background rate we expect.  By passing it in, we warm up the
 % biophysical model to reach steady state faster.  
