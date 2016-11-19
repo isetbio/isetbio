@@ -22,11 +22,9 @@ classdef oiSequence
     properties (SetAccess = private)   
         % the fixed oi (an oi, the background)
         oiFixed
-        fixedPhotons
         
         % the modulated oi (an oi, the pedestal)
         oiModulated
-        modulatedPhotons
         
         % the oiSequence timebase
         oiTimeAxis
@@ -96,10 +94,6 @@ classdef oiSequence
             if (any(oiFixedSpatialSupport(:) ~= oiModulatedSpatialSupport(:)))
                 error('Mismatch between spatial support of oiFixed, oiModulated');
             end
-            
-            % Extract the photons from the fixed and modulation oi's
-            obj.fixedPhotons = oiGet(obj.oiFixed, 'photons');
-            obj.modulatedPhotons = oiGet(obj.oiModulated, 'photons');
         end
             
         %% Define methods in the @oiSequence directory

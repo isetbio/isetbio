@@ -1,10 +1,14 @@
 % Compute the oi at desired index
 function oiFrame = frameAtIndex(obj, index)
 
+    % Extract the photons from the fixed and modulation oi's
+    fixedPhotons = oiGet(obj.oiFixed, 'photons');
+    modulatedPhotons = oiGet(obj.oiModulated, 'photons');
+
     if (strcmp(obj.composition, 'add'))
-        retinalPhotons = obj.fixedPhotons + obj.modulationFunction(index)*obj.modulatedPhotons;
+        retinalPhotons = fixedPhotons + obj.modulationFunction(index)*modulatedPhotons;
     else
-        retinalPhotons = obj.fixedPhotons*(1-obj.modulationFunction(index)) + obj.modulationFunction(index)*obj.modulatedPhotons;
+        retinalPhotons = fixedPhotons*(1-obj.modulationFunction(index)) + obj.modulationFunction(index)*modulatedPhotons;
     end
 
     if (~isnan(obj.modulationRegion.radiusInMicrons))
@@ -15,7 +19,7 @@ function oiFrame = frameAtIndex(obj, index)
 
         for k = 1:size(retinalPhotons,3)
             fullFrame = retinalPhotons(:,:, k);
-            background = obj.fixedPhotons;
+            background = fixedPhotons;
             background = background(:,:, k);
             fullFrame(mask == 0) = background(mask == 0);
             retinalPhotons(:,:, k) = fullFrame;

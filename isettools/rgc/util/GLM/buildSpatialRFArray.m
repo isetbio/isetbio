@@ -74,11 +74,11 @@ tonicDrive          = cell(rows, cols);
 for ii = 1 : length(centerX)
     for jj = 1 : length(centerY)
         % Specify centers, offset even rows for hexagonal packing
-        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter;
-        jc = centerY(jj);
+        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + 3*centerNoise*(2*rand(1,1)-1);
+        jc = centerY(jj) + 3*centerNoise*(2*rand(1,1)-1);
    
         % Add some noise to deviate from circularity
-        d1 = 1; d2 = 0;      % 0.0675*randn(1,1);
+        d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
         Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
 
         % Calculate values for input to DoG function in an efficient way
