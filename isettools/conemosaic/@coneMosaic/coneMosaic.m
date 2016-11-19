@@ -252,8 +252,8 @@ classdef coneMosaic < hiddenHandle
         function val = get.current(obj)
             % The current is stored in the os object.
             % We retrieve it from there.
-            sz = size(obj.os.coneCurrentSignal);
-            val = reshape(double(obj.os.coneCurrentSignal), [size(obj.pattern,1) size(obj.pattern,2) sz(end)]);
+            tSamples = size(obj.os.coneCurrentSignal,3);
+            val = reshape(double(obj.os.coneCurrentSignal), [size(obj.pattern,1) size(obj.pattern,2) tSamples]);
         end
         
         function val = get.absorptionsTimeAxis(obj)
