@@ -1,7 +1,18 @@
-function ois = oisCreate(oisType,varargin)
+function [ois, varargout] = oisCreate(oisType,varargin)
 % Create an oiSequence
 %
 %     ois = oisCreate(oisType,param/val)
+%
+% Examples
+%
+%  Harmonic -  TODO:  We can add parameters to the params(:) struct that
+%  specify the scene sets.
+%   
+%    params(1) = harmonicP; params(2) = params(1); params(2).contrast = 0;
+%    [ois, scenes] = oisCreate('harmonic','params',params);
+%    ois.visualize;
+%
+%  Vernier - TODO
 %
 % BW ISETBIO Team, 2016
 
@@ -9,7 +20,7 @@ function ois = oisCreate(oisType,varargin)
 p = inputParser;
 p.addRequired('oisType',@ischar)
 p.addParameter('params',[],@isstruct);
-p.parse(oisType,varargin);
+p.parse(oisType,varargin{:});
 
 oisType = ieParamFormat(p.Results.oisType);
 
@@ -21,51 +32,32 @@ params = p.Results.params;
 switch oisType
     case 'harmonic'
         % oisCreate('harmonic',params);
-        % params default is returned by harmonicP;
+        % params:  A two element array as returned by harmonicP;
+        if length(params) ~= 2, error('Two param sets needed.'); end
         scene = cell(1,2);
+        OIs = cell(1, 2);
         
-        params.freq =  10; % spatial frequencies of 1 and 5
-        params.contrast = 0.6; % contrast of the two frequencies
-        params.ang  = [0, 0]; % orientations
-        params.ph  = [0 0]; % phase
-        scene{1} = sceneCreate('harmonic',params);
-        scene{1} = sceneSet(scene{1},'name',sprintf('F %d',params.freq));
-        ieAddObject(scene{1});
-        
-        % Create scene: background field only, no harmonic
-        clear params
-        params.freq =  0; % spatial frequencies of 1 and 5
-        params.contrast = 0; % contrast of the two frequencies
-        params.ang  = [0, 0]; % orientations
-        params.ph  = [0 0]; % phase
-        scene{2} = sceneCreate('harmonic',params);
-        scene{2} = sceneSet(scene{2},'name','Uniform');
-        ieAddObject(scene{2});
-        
-        %%
+        % We need a way to send in scene parameters for setting
         imgFov = .5 ;      % image field of view
         vDist  = 0.3;          % viewing distance (meter)
-        
-        % set scene fov
-        for ii = 1 : length(scene)
+        for ii=1:2
+            scene{ii} = sceneCreate('harmonic',params(ii));
             scene{ii} = sceneSet(scene{ii}, 'h fov', imgFov);
             scene{ii} = sceneSet(scene{ii}, 'distance', vDist);
+            scene{ii} = sceneSet(scene{ii},'name',...
+                sprintf('F %d C %.2f', params(ii).freq, params(ii).contrast));
         end
-        % sceneWindow
-        
-        %%
-        
-        % These are the default.
-        oi = oiCreate('wvf human');
-        
+        % ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
+                
         % Compute optical images from the scene
-        OIs = cell(length(scene), 1);
-        for ii = 1 : length(OIs)
+        oi = oiCreate('wvf human');
+        for ii = 1 :2
             OIs{ii} = oiCompute(oi,scene{ii});
         end
         
-        
         %% Build the oiSequence
+        
+        % We need a way to send in the weights (modulationFunction)
         
         % We build the stimulus using a time series of weights. We have the mean
         % field on for a while, then rise/fall, then mean field.
@@ -78,16 +70,17 @@ switch oisType
         % cone mosasic integration time.  That time is locked to the eye movements.
         tSamples = length(weights);
         sampleTimes = 0.002*(1:tSamples);  % Time in sec
-        
         % vcNewGraphWin; plot(1:tSamples, weights,'o');
         % xlabel('Time (ms)');
         
         % The weights define some amount of the constant background and some amount
         % of the line on the same constant background
-        oiHarmonicSeq = oiSequence(OIs{2}, OIs{1}, ...
+        ois = oiSequence(OIs{2}, OIs{1}, ...
             sampleTimes, weights, ...
             'composition', 'blend');
-        oiHarmonicSeq.visualize('format','movie');
+        
+        varargout{1} = scene;
+        
     otherwise
         error('Unknown type %s\n',oisType);
 end
