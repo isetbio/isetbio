@@ -90,7 +90,6 @@ ieFontInit(hObject);
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
 
-
 end
 
 % --- Outputs from this function are returned to the command line.
@@ -315,7 +314,8 @@ switch plotType
             % Alert to movie build
             ieInWindowMessage('Building absorptions movie',handles);
             
-            % generate movie
+            % generate movie - This is fast and the actual display is slow.
+            % Let's use one bit of code and make it the same.
             handles.mov = cm.plot('movie absorptions', 'hf','none',...
                 'show',true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
@@ -970,13 +970,15 @@ if get(handles.btnPlayPause, 'Value')
     gData = guidata(handles.coneMosaicWindow);
     axes(gData.axes2);
     
-    % Keep the color bar up to align with mean absorption window
     
     while get(handles.btnPlayPause, 'Value')
-        
+        % This is very slow compared to the cm.plot() call.
+        % Not sure what to do, if anything (BW).
         if ndims(mov)     == 3,         imshow(mov(:, :, cnt).^gam); 
         elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt).^gam);
         end 
+        
+        % Show a color bar up to align with 'mean' windows
         colorbar('ticks',[0,1],'ticklabels',{mn,mx});
 
         set(handles.sliderMovieProgress, 'Value', cnt);

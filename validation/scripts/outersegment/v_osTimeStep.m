@@ -197,7 +197,7 @@ function [theConeMosaic, theOIsequence, ...
      
      % Internal consistency checks
      
-     % Check that the mosaic.absorptions property agrees with the allInstancesAbsorptionsCountSequence
+     % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
      lastInstance = size(allInstancesAbsorptionsCountSequence,1);
      s1 = single(theConeMosaic.absorptions);
      s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis)]));
@@ -206,7 +206,7 @@ function [theConeMosaic, theOIsequence, ...
      quantityOfInterest = s1(:)-s2(:);
      UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: absorptions from coneMosaic property and returned absorptions',tolerance);
     
-     % Check that the mosaic.current property agrees with the allInstancesPhotoCurrents
+     % Check that the data in the current property agrees with the data in the last instance of allInstancesPhotoCurrents
      s1 = single(theConeMosaic.current);
      s2 = single(reshape(allInstancesPhotoCurrents(lastInstance,:,:,:), ...
          size(theConeMosaic.pattern,1), size(theConeMosaic.pattern,2), size(allInstancesPhotoCurrents,4)));
@@ -214,9 +214,8 @@ function [theConeMosaic, theOIsequence, ...
      tolerance = 1E-6;
      quantityOfInterest = s1(:)-s2(:);
      UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: current from coneMosaic property and returned photocurrents',tolerance);
-     
-     
-     % Compute responses for the first instance only using compute
+       
+     % Compute responses for the first instance only using the coneMosaic.compute() method
      [allInstancesAbsorptionsCountSequence2, absorptionsTimeAxis2, allInstancesPhotoCurrents2, photoCurrentTimeAxis2] = ...
             theConeMosaic.compute(theOIsequence, ...
             'emPath', emPaths(1,:,:), ...
@@ -224,6 +223,7 @@ function [theConeMosaic, theOIsequence, ...
             'newNoise', true ...
             );
         
+     % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
      lastInstance = size(allInstancesAbsorptionsCountSequence2,1);
      s1 = single(theConeMosaic.absorptions);
      s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence2(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis2)]));
@@ -232,7 +232,7 @@ function [theConeMosaic, theOIsequence, ...
      quantityOfInterest = s1(:)-s2(:);
      UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: absorptions from coneMosaic property and returned absorptions',tolerance);
     
-     % Check that the mosaic.current property agrees with the allInstancesPhotoCurrents
+     % Check that the data in the current property agrees with the data in the last instance of allInstancesPhotoCurrents
      s1 = single(theConeMosaic.current);
      s2 = single(reshape(allInstancesPhotoCurrents2(lastInstance,:,:,:), ...
          size(theConeMosaic.pattern,1), size(theConeMosaic.pattern,2), size(allInstancesPhotoCurrents2,4)));
@@ -240,7 +240,6 @@ function [theConeMosaic, theOIsequence, ...
      tolerance = 1E-6;
      quantityOfInterest = s1(:)-s2(:);
      UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: current from coneMosaic property and returned photocurrents',tolerance);
-   
 end
 
 
