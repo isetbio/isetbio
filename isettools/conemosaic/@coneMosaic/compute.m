@@ -128,7 +128,7 @@ if currentFlag
         % pRate = resampledAbsorptionsSequence/dtOS;
         
         % Should append be true or false or what?
-        current = obj.os.osCompute(cMosaic,'append', append);
+        obj.current = obj.os.osCompute(cMosaic,'append', append);
         
     end
     

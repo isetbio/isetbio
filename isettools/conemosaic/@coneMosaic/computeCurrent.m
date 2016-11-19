@@ -22,6 +22,6 @@ end
 bgR = coneMeanIsomerizations(cMosaic);
 
 % Onward.
-cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
+cMosaic.current = cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
 
 end

@@ -319,8 +319,9 @@ end
 % from the last trial.
 obj.absorptions = reshape(absorptions(end,:,:,:),obj.rows,obj.cols,size(absorptions,4));
 
-% align absorptions time axis with respect to optical image sequence time axis
-absorptionsTimeAxis = oiTimeAxis(1) + obj.absorptionsTimeAxis;
+% Align absorptions time axis with respect to optical image sequence time
+% axis; Note sure what this is.  Ask NC.
+absorptionsTimeAxis = oiTimeAxis(1) +  obj.timeAxis;
 
 if (currentFlag)
     % Why do we have to add a time step?  Let's ask NC

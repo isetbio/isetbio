@@ -57,10 +57,4 @@ obj.state.timeStep = obj.timeStep;
 % The outer segment noise flag
 if obj.noiseFlag, current = osAddNoise(current); end
 
-% In some cases, we run with 1 photoreceptors to set up the LMS filters.
-% In that case this is a good curve to plot
-%    vcNewGraphWin; plot(squeeze(current));
-
-obj.coneCurrentSignal = current;
-
 end

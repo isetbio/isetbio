@@ -1,31 +1,28 @@
 classdef outerSegment < handle
-    % outerSegment parent class for modeling cone photocurrent
+    % outerSegment parent class for computing cone photocurrent (pA) from
+    % isomerization rate (R*)
     %
-    % This is an abstract class, which means it is only a template that is
-    % never really created.  Rather, we have subclasses that we use with this
-    % as the abstract parent.
+    % This is an abstract class: it is a template but never creates a
+    % computable object itself. The computable objects are the subclasses,
+    % osLinear and osBioPhys.  Those classes store the parameters and
+    % methods to compute outer segment current responses in two different
+    % ways.
     %
-    % The subclasses osLinear and osBioPhys calculate outer segment current
-    % responses using either a linear temporal filter model or a biophysical
-    % difference equations model (both based on physiology from Fred Rieke's
-    % lab, and both models determined by Fred Rieke).
+    %  * osBioPhys uses the set of difference equations based on physiology
+    % from Fred Rieke's lab
+    % 
+    %  * osLinear derives a linear temporal filter for small signal
+    % deviations from the mean isomerization (R*) rate, again using the
+    % Rieke lab model.
     %
-    % osLinear implements isomerizations (R*) to photocurrent (pA) using only
-    % cone linear temporal filters. The default values are those determined by
-    % the Angueyra and Rieke (2013, Nature Neuroscience).
+    %   <http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf>
+    %   <https://github.com/isetbio/isetbio/wiki/Cone-Adaptation>
     %
-    % osBioPhys converts isomerizations (R*) to outer segment current (pA). The
-    % difference equation model by Rieke is applied here. If the noiseFlag
-    % property of the osLinear object is set to 1, this method will add noise
-    % to the current output signal.
+    % If the noiseFlag property is set to true, the compute methods add
+    % noise to the output current.  The default noise values are those
+    % determined by the Angueyra and Rieke (2013, Nature Neuroscience).
     %
-    % Reference for osBioPhys model:
-    %   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
-    %   https://github.com/isetbio/isetbio/wiki/Cone-Adaptation
-    %
-    % The class also allows the addition of noise based on physiological
-    % measurements of cone responses to a neutral gray background (physiology
-    % and model also by Fred Rieke).
+    %   <http://www.nature.com/neuro/journal/v16/n11/abs/nn.3534.html>
     %
     % See the subclasses:
     %       osLinear.m, osBioPhys.m
@@ -48,7 +45,7 @@ classdef outerSegment < handle
     end
     
     properties (SetAccess = protected)
-        coneCurrentSignal;    % output signal in pA
+        % coneCurrentSignal;    % output signal in pA
     end
     
     properties (SetObservable, AbortSet)
@@ -59,7 +56,7 @@ classdef outerSegment < handle
     methods
         function obj = outerSegment(varargin)
             obj.noiseFlag = 0;
-            obj.coneCurrentSignal = [];
+            % obj.coneCurrentSignal = [];
             obj.timeStep = 1e-3;
         end
         

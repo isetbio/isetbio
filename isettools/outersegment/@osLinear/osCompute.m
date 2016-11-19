@@ -1,43 +1,41 @@
 function current = osCompute(obj, cMosaic, varargin)
-% Compute the  outer segment photocurrents using the linear model
+% Linear model computing outer segment photocurrent from isomerizations (R*) 
 %
 %    current = osCompute(obj, cMosaic, varargin)
 %
+% We use  osLinear.osCompute (linear model) for experiments in which there
+% is a uniform background, as we often find in psychophysical experiments.
+% When the images are more complex (e.g., natural scenes), use the
+% osBioPhys model, not the linear model.
+%
 % Inputs: 
 %   obj       - osLinear class object
-%   cMosaic   - parent object of the outersegment
+%   cMosaic   - parent object of the outerSegment
 %
 % Output:
 %   current  - outer segment photocurrent current in pA
 % 
-% We use  osLinear.osCompute (linear model) for experiments in which there
-% is a uniform background, as we typically find in psychophysical
-% experiments. When the images are more complex (e.g., natural scenes), use
-% the osBioPhys model, not the linear model.
+% The linear model impulse response function is the small signal of the
+% osBioPhys model. The impulse response depends on the on mean
+% isomerization rate.
 %
-% The impulse response function of the linear model calculated here matches
-% the small signal from the osBioPhys model, assuming the observer is in a
-% steady-state on the mean background.
+% We calculate the osBioPhys current response to
 %
-% The impulse response is calculated like this. We calculate the (base
-% current) returned by the osBioPhys() model to a uniform stimulus.  We
-% then calculate the response when we add 1 photon to the mean level for
-% one sampling bin. This difference between these two signals is the
-% photocurrent impulseResponse to a photon.
+%   * a constant abosrption rate
+%   * a constant with 1 photon added to one sampling bin. 
 %
-% To compute the current from a general stimulus we calculate the
-% differences from the mean, convolve with the impulse response, and then
-% add in the base current.
+% The difference between these two signals is the photocurrent
+% impulseResponse to a photon.
 %
-%   (absorptions - meanAbsorptions) * impulseResponse + (base current)
-% 
-% This converts isomerizations (R*) to outer segment current (pA).
+% The current predicted to an arbitrary stimulus is the current from the
+% mean isomerization rate plus the current from small deviations around the
+% the mean isomerization rate.
 %
-% If the os.noiseFlag is true, this method adds noise to the current output
-% signal. 
+%  (mean current) + convolve((absorptions - meanAbsorptions),impulseResponse) 
 %
-% See Angueyra and Rieke (2013, Nature Neuroscience) for details.  And see
-% osAddNoise() for specification and validation of the noise model
+% If the os.noiseFlag is true, the method adds noise to the current output
+% signal. See osAddNoise() for specification and validation of the noise
+% model. See Angueyra and Rieke (2013, Nature Neuroscience) for details.
 %
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
@@ -115,6 +113,6 @@ else
     disp('No current noise added.')
 end
 
-obj.coneCurrentSignal = current;
+% obj.coneCurrentSignal = current;
 
 end

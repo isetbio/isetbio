@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 15-Nov-2016 21:34:34
+% Last Modified by GUIDE v2.5 19-Nov-2016 14:29:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -182,8 +182,11 @@ set(hObject,'BackgroundColor', get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editGam_Callback(hObject, eventdata, handles)
-handles.mov = [];
+handles.mov    = [];
 handles.curMov = [];
+
+set(handles.editGam,'value',str2double(get(handles.editGam,'string')));
+
 coneMosaicGUIRefresh(hObject,eventdata,handles);
 end
 
@@ -932,9 +935,18 @@ function btnPlayPause_Callback(~, ~, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = get(handles.popupImageType, 'Value');
 
-if     index == 3, mov = handles.mov;    % absorption movie
-elseif index == 5, mov = handles.curMov; % photocurrent movie
+if index == 3, 
+    mov = handles.mov;    % absorption movie
+    mx = sprintf('%d',max(handles.cMosaic.absorptions(:)));
+    mn = '0';
+elseif index == 5, 
+    mov = handles.curMov; % photocurrent movie
+    mx = sprintf('%d',round(max(handles.cMosaic.current(:))));
+    mn = sprintf('%d',round(min(handles.cMosaic.current(:))));
 end
+
+% Gamma for display
+gam = get(handles.editGam,'value');
 
 if ismatrix(mov), nFrames = 1;
 else              nFrames = size(mov, ndims(mov));
@@ -954,15 +966,19 @@ if get(handles.btnPlayPause, 'Value')
     % play video if  value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
+    
     gData = guidata(handles.coneMosaicWindow);
     axes(gData.axes2);
-    % axes(get(handles.coneMosaicWindow,'CurrentAxes'));
+    
+    % Keep the color bar up to align with mean absorption window
     
     while get(handles.btnPlayPause, 'Value')
         
-        if ndims(mov)     == 3,         imshow(mov(:, :, cnt)); 
-        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt));
+        if ndims(mov)     == 3,         imshow(mov(:, :, cnt).^gam); 
+        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt).^gam);
         end 
+        colorbar('ticks',[0,1],'ticklabels',{mn,mx});
+
         set(handles.sliderMovieProgress, 'Value', cnt);
         set(handles.txtMovieFrame,'string',cnt);
         drawnow; 
@@ -1028,6 +1044,3 @@ function menuPlotTimeSeries_Callback(hObject, ~, handles)
 set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
 contextMenuPlot(hObject, []);
 end
-
-
-

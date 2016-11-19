@@ -27,7 +27,7 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %
 % 11/2016 JRG/BW (c) isetbio team
 
-% parse input parameters
+%% parse input parameters
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x,'coneMosaic')); 
@@ -38,7 +38,8 @@ p.parse(os, cMosaic, varargin{:})
 eccentricity   = p.Results.eccentricity;        % Needs updating
 meanRate = coneMeanIsomerizations(cMosaic);     % R*/sec
 
-% Generate impulse responses for L, M or S cone
+%% Generate impulse responses for L, M or S cone
+
 % A new cone mosaic is generated for each type of cone, and the
 % impulse response
 timeStep = os.timeStep;               % time step
@@ -51,7 +52,7 @@ warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
 os.lmsConeFilter = zeros(nSamples-warmup+1,length(meanRate));
 meanCurrent = zeros(1,3);
 
-% Generate the cone mosaic with biophysical model for the impulse stimulus
+%% Generate the cone mosaic with biophysical model for the impulse stimulus
 osCM = osBioPhys('osType',eccentricity);   % Will become eccentricity some day
 osCM.set('noise flag',0);                  % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
