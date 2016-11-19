@@ -1,13 +1,19 @@
 classdef osBioPhys < outerSegment 
-% BioPhys subclass of the outersegment object
+% The parameters and methods to convert isomerizations (R*) to outer
+% segment current (pA).
 % 
 %       os = osBioPhys();
 % 
-% Converts isomerizations (R*) to outer segment current (pA). The
-% difference equation model by Rieke implements a biophysical
-% simulation of the phototransduction cascade. If the noiseFlag
-% property of the osLinear object is set to 1, this method will add noise
-% to the current output signal.
+% Rieke and colleagues defined a set of difference equations as a
+% simulation of the phototransduction cascade. This object defines the
+% parameters and methods to transform the computed isomerizations (R*) in
+% the coneMosaic current.
+%
+% If the noiseFlag property of the osLinear object is true, this method
+% adds noise to the current output signal.
+%
+% The osBioPhys model is also the basis of how we find the linear filters
+% in the osLinear model, another subclass of outerSegment.
 %
 % Reference:
 %   http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf

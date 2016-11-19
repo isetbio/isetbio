@@ -18,9 +18,10 @@ classdef osLinear < outerSegment
     % compute methods add noise to the current output signal.  The default
     % values are those determined by the Angueyra and Rieke (2013, Nature
     % Neuroscience).
-    % <http://www.nature.com/neuro/journal/v16/n11/abs/nn.3534.html>
-    % The current is calculated by convolving separate temporal filters
-    % for the L, M and S cones with the isomerization time course.
+    %    <http://www.nature.com/neuro/journal/v16/n11/abs/nn.3534.html>
+    % 
+    % The current is calculated by convolving separate temporal filters for
+    % the L, M and S cones with the isomerization time course.
     %
     % See outerSegment class for more information.
     %
