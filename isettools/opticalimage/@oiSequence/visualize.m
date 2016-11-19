@@ -20,8 +20,8 @@ p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
 
 p.parse(obj,varargin{:});
-format = p.Results.format;
-save   = p.Results.save;
+format     = p.Results.format;
+save       = p.Results.save;
 vname      = p.Results.vname;
 FrameRate  = p.Results.FrameRate;
 
