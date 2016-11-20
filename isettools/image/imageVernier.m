@@ -40,7 +40,7 @@ p.addParameter('sceneSz', 64, @(x) isnumeric(x));
 p.addParameter('barWidth', 1, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('offset', 1, @(x) isnumeric(x) && isscalar(x));
 p.addParameter('barLength', [], @isnumeric);
-p.addParameter('barColor', 1, @isscalar);
+p.addParameter('barColor', 1, @isnumeric);
 p.addParameter('bgColor', 0, @(x) isnumeric(x));
 p.addParameter('pattern', []);
 
