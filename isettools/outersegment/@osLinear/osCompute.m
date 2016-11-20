@@ -51,12 +51,27 @@ coneType   = cMosaic.pattern;
 meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
 tSamples   = size(cMosaic.absorptions,3);
 
-%% This is the place where we get the linear filters given the mean rate
+%% Get the linear filters for the mean rate
 
 % These convert a single photon increment on mean to a photocurrent impulse
 % response function
 [lmsFilters, meanCur] = obj.linearFilters(cMosaic);
+
 % obj.plot('current filters','meancurrent',meanCur)
+
+%% Interpolate the lmsFilters to the time base of the absorptions
+
+absTimeAxis = cMosaic.timeAxis;
+osTimeAxis  = obj.timeAxis;
+interpFilters = zeros(cMosaic.tSamples,3);
+for ii=1:3
+    % Interpolate and preserve the area under the curve
+    areaBefore = sum(lmsFilters(:,ii));
+    interpFilters(:,ii) = interp1(osTimeAxis(:),lmsFilters(:,ii),absTimeAxis(:),'pchip');
+    areaAfter = sum(interpFilters(:,ii));
+    interpFilters(:,ii) = interpFilters(:,ii)*(areaBefore/areaAfter);
+end
+lmsFilters = interpFilters;
 
 %%  The predicted photocurrent is
 

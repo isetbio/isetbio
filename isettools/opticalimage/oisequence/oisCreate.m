@@ -18,13 +18,23 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 % 
 % Example:
 %
-%    hparams(1) = harmonicP; 
-%    hparams(2) = hparams(1); hparams(2).contrast = 0;
-%    sparams.fov = 0.3; 
-%    [ois, scenes] = oisCreate('harmonic','blend',weights, 'hparams',hparams,'sparams',sparams);
-%    ois.visualize;
+% Harmonics
 %
-%  Vernier - TODO
+%   hparams(1) = harmonicP; 
+%   hparams(2) = hparams(1); hparams(2).contrast = 0;
+%   sparams.fov = 0.3; 
+%   [ois, scenes] = oisCreate('harmonic','blend',weights, 'hparams',hparams,'sparams',sparams);
+%   ois.visualize;
+%
+%  Vernier
+%
+%   clear hparams; hparams(2) = vernierP; 
+%   hparams(2).name = 'offset'; hparams(2).bgColor = 0;
+%   hparams(1) = hparams(2); 
+%   hparams(1).barWidth = 0; hparams(1).bgColor = 0.5; hparams(1).name = 'uniform';
+%   [vernier, scenes] = oisCreate('vernier','add', weights,'hparams',hparams,'sparams',sparams);
+%   vernier.visualize;
+%   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %
 % BW ISETBIO Team, 2016
 
@@ -92,8 +102,45 @@ switch oisType
         
         % The weights define some amount of the constant background and some amount
         % of the line on the same constant background
-        ois = oiSequence(OIs{2}, OIs{1}, sampleTimes, modulation, ...
+        ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
+        
+        % Return the cell array of scenes.
+        varargout{1} = scene;
+    case 'vernier'
+        % oisCreate('vernier', ...);
+        if length(hparams) ~= 2, error('Specify two vernier param sets.'); end
+        scene = cell(1,2);
+        OIs = cell(1, 2);
+        
+        % Create vernier stimulus and background
+        for ii=1:2
+            scene{ii} = sceneCreate('vernier', 'display', hparams(ii));
+            scene{ii} = sceneSet(scene{ii},'name',hparams(ii).name);
+        end
+        
+        % Adjust both scenes based on sparams.
+        fields = fieldnames(sparams);
+        if ~isempty(fields)
+            for ii=1:length(fields)
+                for jj=1:2
+                    val = eval(['sparams.',fields{ii}]);
+                    scene{jj} = sceneSet(scene{jj}, fields{ii},val);
+                end
+            end
+        end
+        %ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
+
+        % Compute optical images from the scene
+        oi = oiCreate('wvf human');
+        for ii = 1:2
+            OIs{ii} = oiCompute(oi,scene{ii});
+        end
+                % ieAddObject(OIs{1}); ieAddObject(OIs{2}); oiWindow;
+
+        ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
+            'composition', composition);
+        % ois.visualize;
         
         % Return the cell array of scenes.
         varargout{1} = scene;

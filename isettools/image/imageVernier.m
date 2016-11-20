@@ -34,7 +34,7 @@ function [I, params] = imageVernier(params, varargin)
 %
 % HJ/BW ISETBIO Team Copyright 2015
 
-% Parse input parameters
+%% Parse input parameters
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('sceneSz', 64, @(x) isnumeric(x));
 p.addParameter('barWidth', 1, @(x) isnumeric(x) && isscalar(x));
@@ -57,7 +57,7 @@ if isempty(barLen), params.barLength = sz(1); barLen = sz(1); end
 if isscalar(barColor), barColor = repmat(barColor, [1 3]); end
 if isscalar(bgColor), bgColor = repmat(bgColor, [1 3]); end
 
-% Create 1d pattern
+%% Create 1d pattern
 if ~isempty(params.pattern)
     pattern = params.pattern;
     if ismatrix(pattern), pattern = repmat(pattern, [1 1 3]); end

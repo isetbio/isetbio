@@ -12,7 +12,8 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 % of eye movement sequences.  The oiSequence itself is always just one
 % current time series. (BW).  
 %
-% Also, NC is adding features into this and trapping cases. 
+% Also, NC is adding features into this and trapping cases. We need to
+% integrate.
 %
 % This method is typically called by coneMosaic.compute(oiSequence)
 %

@@ -1,8 +1,13 @@
 function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 % Returns the photocurrent impulse response for a single absorption 
 %
-% The impulse response function is calculated using the biophysical model.
-% Hence, it depends on the mean absorption rate. 
+% The LMS impulse response functions calculated here are used to model cone
+% photocurrent for stimuli that are small or transient contrasts above and
+% below a steady background.  These are often the conditions in a
+% psychophysical or physiological experiment.
+%
+% The impulse response function is derived from Rieke's biophysical model.
+% Hence, it depends on the mean absorption rate.
 %
 % Input
 %  os:      A linear outer segment object
@@ -15,10 +20,10 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %  meanCurrent - The steady state caused by the mean absorption rate. This
 %                value is used in osCompute(). 
 %
-% The impulse response functions calculated here are used when we are
-% modeling a uniform background and stimuli that are smallish contrast
-% modulations above and below that background.  These are often the
-% conditions in a psychophysical or physiological experiment.
+% The LMS filters (impulse response functions) are stored here at a
+% particular time step (os.timeStep), which is typically 1 ms, but could be
+% shorter.  When it is used in osLinear.osCompute, the filters are
+% resampled to the time base of the cone absorptions.
 %
 % See osLinear.osCompute() for how the impulse response function and mean
 % currents are used.
@@ -42,7 +47,7 @@ meanRate = coneMeanIsomerizations(cMosaic);     % R*/sec
 
 % A new cone mosaic is generated for each type of cone, and the
 % impulse response
-timeStep = os.timeStep;               % time step
+timeStep = os.timeStep;               % time step (should be < 1 ms)
 nSamples = round(0.8/timeStep) + 1;   % 0.8 total sec
 
 flashIntens = 1;   % 1 photon above the background mean
@@ -52,20 +57,23 @@ warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
 os.lmsConeFilter = zeros(nSamples-warmup+1,length(meanRate));
 meanCurrent = zeros(1,3);
 
-%% Generate the cone mosaic with biophysical model for the impulse stimulus
+%% Generate a cone mosaic with an outerSegment based on the biophysical model 
+
+% We turn off the noise and use the biophysical coneMosaic model to
+% calculate an impulse response.
 osCM = osBioPhys('osType',eccentricity);   % Will become eccentricity some day
 osCM.set('noise flag',0);                  % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;
 
+% For each of the cone types
 for meanInd = 1:length(meanRate)
     
-    % Total isomerizations in each time step R* (maintained for 1 bin only)
-    % We add one photon absorption to one mean
+    % Get the isomerization rate (R*) in each time step R*
     meanIntens  = meanRate(meanInd)*timeStep;  
     
-    % Create a constant mean background stimulus.
+    % Create a constant stimulus at this rate
     stimulus = meanIntens*ones(nSamples, 1);
     
     % Compute outer segment current for the constant stimulus
@@ -74,8 +82,8 @@ for meanInd = 1:length(meanRate)
     currentConstant = squeeze(cm.current);
     % vcNewGraphWin; plot(timeStep*(1:nSamples),currentConstant);
     
-    % Add the impulse to the background one time step after the
-    % warmup period
+    % Add a single photon (impulse) to the background one time step after
+    % the warmup period
     stimulus(warmup+1) = meanIntens + flashIntens;
     
     % Compute outer segment currents with biophysical model
@@ -85,20 +93,22 @@ for meanInd = 1:length(meanRate)
     currentImpulse = squeeze(cm.current);
     % hold on; plot(timeStep*(1:nSamples),currentImpulse);
     
-    % Check the +/-1 for warmup or warmup + 1 or ....
+    % Store the impulse response.  We put flashIntens in for completeness,
+    % but it is 1 so really, no need.
     os.lmsConeFilter(:,meanInd) = ...
         (currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1) ./ flashIntens;
     % vcNewGraphWin; 
     % plot(stimulus - meanIntens); hold on; 
     % plot(currentImpulse-currentConstant); grid on
     
-    % The mean current from the constant stimulus background.  We are a
-    % tiny bit worried about the very end, so we take a few steps before
-    % the very end.  Edges are always a bitch.
+    % We are a tiny bit worried about the edges; so we set a few steps
+    % before the very end to the mean current from the constant stimulus
+    % background. Edges are always a bitch.
     meanCurrent(meanInd) = currentConstant(end-10);
     
 end
 
+%% Assign them as output and return
 lmsFilters = os.lmsConeFilter;
 
 end
