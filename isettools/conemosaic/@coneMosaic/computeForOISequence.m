@@ -396,13 +396,12 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     
     % Function to reformat absorptions
     function reformatAbsorptionInstancesMatrix(instancesNum, timePointsNum, coneRows, coneCols)
-        % Will save all absorptions as singles
+        % Save all absorptions as singles to save space
         absorptionInstances = single(absorptionInstances);
         % Reshape to cones x instances x timePoints. Note the 3rd dimension of
-        % absorptionInstances is traditionally time, but here it is instances * time
+        % absorptionInstances is traditionally time, but when we are doing multiple instances, it is instances * time
         absorptionInstances = reshape(absorptionInstances, [coneRows*coneCols instancesNum timePointsNum]);
-        % Only get the absorptions for the non-null cones - this has an
-        % effect only for coneMosaicHex
+        % Only get the absorptions for the non-null cones - this has an effect only for coneMosaicHex mosaics
         absorptionInstances = absorptionInstances(nonNullConesIndices,:,:);
         % Reshape to [instances x cones x timePoints]
         absorptionInstances = permute(absorptionInstances, [2 1 3]);
