@@ -70,9 +70,9 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
         oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
     end
     
-    % Only allocate memory for the non-null cones in a 3D matrix [instances x time x numel(nonNullConesIndices)]
+    % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
     nonNullConesIndices = find(obj.pattern>1);
-    absorptions = zeros(instancesNum, numel(eyeMovementTimeAxis), numel(nonNullConesIndices), 'single');
+    absorptions = zeros(instancesNum, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
     
     
     if (oiRefreshInterval >= defaultIntegrationTime)
@@ -148,16 +148,12 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                                 );
             
             % summed absorptions
-            totalAbsorptions = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
-            
-            % Only get the absorptions for the non-null cones
-            totalAbsorptions = reshape(permute(totalAbsorptions, [3 1 2]), [instancesNum size(obj.pattern,1) * size(obj.pattern,2)]);
-            totalAbsorptions = reshape(totalAbsorptions(:, nonNullConesIndices), [instancesNum 1 numel(nonNullConesIndices)]);
-            
-            % insert the sum of the two partial absorptions in the time series  
-            insertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1; 
-            absorptions(1:instancesNum, insertionIndex, :) = single(totalAbsorptions);
-            
+            absorptionInstances = absorptionsDuringPreviousFrame+absorptionsDuringCurrentFrame;
+                
+            % Reformat and insert to time series  
+            insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1; 
+            reformatAbsorptionInstancesMatrix(instancesNum, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+            absorptions(1:instancesNum, :, insertionIndices) = absorptionInstances;
       
             % Full absorptions with current oi and default integration time)
             if (numel(indices)>1)    
@@ -167,21 +163,17 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                 idx = indices(2:end);
                 emSubPath = reshape(emPaths(1:instancesNum, idx,:), [instancesNum*numel(idx) 2]);
                 obj.absorptions = [];
-                absorptionsForRemainingEyeMovements = obj.compute(...
+                absorptionInstances = obj.compute(...
                         oiSequence.frameAtIndex(oiIndex), ...
                         'emPath', emSubPath, ...      
                         'newNoise', newNoise, ...
                         'currentFlag', false ...      
                         );
                 
-                % Only get the absorptions for the non-null cones
-                absorptionsForRemainingEyeMovements = reshape(permute(absorptionsForRemainingEyeMovements, [3 1 2]), [instancesNum*numel(idx) size(obj.pattern,1)*size(obj.pattern,2)]);
-                absorptionsForRemainingEyeMovements = reshape(absorptionsForRemainingEyeMovements(:, nonNullConesIndices), [instancesNum numel(idx) numel(nonNullConesIndices)]);
-                    
-                % insert in time series  
+                % Reformat and insert to time series     
                 insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-                absorptions(1:instancesNum, insertionIndices,:,:) = single(absorptionsForRemainingEyeMovements);
-                
+                reformatAbsorptionInstancesMatrix(instancesNum, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+                absorptions(1:instancesNum, :, insertionIndices) = absorptionInstances;
             end
         end  % oiIndex
 
@@ -231,7 +223,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
             % Compute absorptions
             emSubPath = reshape(emPaths(1:instancesNum, emIndex,:), [instancesNum 2]);
             obj.absorptions = [];
-            absorptionsAccum = obj.compute(...
+            absorptionInstances = obj.compute(...
                                 oiSequence.frameAtIndex(idx), ...
                                 'emPath', emSubPath, ...
                                 'newNoise', newNoise, ...
@@ -256,7 +248,7 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                     % Compute absorptions
                     emSubPath = reshape(emPaths(1:instancesNum, emIndex,:), [instancesNum 2]);
                     obj.absorptions = [];
-                    absorptionsAccum = absorptionsAccum + obj.compute(...
+                    absorptionInstances = absorptionInstances + obj.compute(...
                             oiSequence.frameAtIndex(indices(k)), ...
                             'emPath', emSubPath, ...      
                             'newNoise', newNoise, ...
@@ -270,13 +262,10 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
                error('Actual integration time (%3.5f) not equal to desired value (%3.5f) [emIndex: %d / %d]\n', actualIntegrationTime, defaultIntegrationTime, emIndex, numel(eyeMovementTimeAxis));
            end
            
-           % Only get the absorptions for the non-null cones
-           absorptionsAccum = reshape(permute(absorptionsAccum, [3 1 2]), [instancesNum size(obj.pattern,1) * size(obj.pattern,2)]);
-           absorptionsAccum = reshape(absorptionsAccum(:, nonNullConesIndices), [instancesNum 1 numel(nonNullConesIndices)]);
-            
-           % insert to time series  
+           % Reformat and insert to time series  
            insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-           absorptions(1:instancesNum, insertionIndices, :) = single(absorptionsAccum);
+           reformatAbsorptionInstancesMatrix(instancesNum, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+           absorptions(1:instancesNum, :, insertionIndices) = absorptionInstances;
         end % emIndex  
     end % oiRefreshInterval > defaultIntegrationTime
 
@@ -291,15 +280,13 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     end
     
     if (isa(obj, 'coneMosaicHex'))
-        % Reshape absorptions to correct dimensions [instances, cone_indices, time]
-        absorptions = permute(absorptions, [1 3 2]);
         if (currentFlag)
             % Add one more absorption at the end
             absorptions = cat(3, absorptions, squeeze(absorptions(:,:,end)));
         end
     else
         % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
-        absorptions = permute(reshape(absorptions, [instancesNum numel(eyeMovementTimeAxis) size(obj.pattern,1) size(obj.pattern,2)]),[1 3 4 2]);
+        absorptions = reshape(absorptions, [instancesNum size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
         
         if (currentFlag)
             % Add one more absorption at the end
@@ -406,6 +393,21 @@ function [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(ob
     if (~isempty(workerID))
         displayProgress(workerID, workDescription, nan);
     end
+    
+    % Function to reformat absorptions
+    function reformatAbsorptionInstancesMatrix(instancesNum, timePointsNum, coneRows, coneCols)
+        % Will save all absorptions as singles
+        absorptionInstances = single(absorptionInstances);
+        % Reshape to cones x instances x timePoints. Note the 3rd dimension of
+        % absorptionInstances is traditionally time, but here it is instances * time
+        absorptionInstances = reshape(absorptionInstances, [coneRows*coneCols instancesNum timePointsNum]);
+        % Only get the absorptions for the non-null cones - this has an
+        % effect only for coneMosaicHex
+        absorptionInstances = absorptionInstances(nonNullConesIndices,:,:);
+        % Reshape to [instances x cones x timePoints]
+        absorptionInstances = permute(absorptionInstances, [2 1 3]);
+     end
+        
 end
 
 function displayProgress(workerID, workDescription, progress)
