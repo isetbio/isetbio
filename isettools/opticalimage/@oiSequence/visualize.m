@@ -33,7 +33,7 @@ switch format
     case 'weights'
         % Graph the weights'
         hFig = vcNewGraphWin;
-        plot(obj.oiTimeAxis, obj.modulationFunction);
+        plot(obj.timeAxis, obj.modulationFunction);
         xlabel('Time (ms)'); ylabel('Modulation');
         title(sprintf('Composition: %s',obj.composition));
     case 'movie'
@@ -61,7 +61,7 @@ switch format
         % it appropriately.
         mx1 = max(illFixed(:)); mx2 = max(illMod(:));
         mx = max(mx1,mx2);
-        d = zeros([size(illFixed),length(obj.oiTimeAxis)]);
+        d = zeros([size(illFixed),length(obj.timeAxis)]);
         illFixed = 256*illFixed/mx; illMod = 256*illMod/mx;
         
         switch obj.composition
@@ -149,7 +149,7 @@ switch format
                 ylabel('microns');
             else
                 set(gca, 'XTick', [], 'YTick', [])
-                xlabel(sprintf('frame %d (%2.1fms)', oiIndex, 1000*obj.oiTimeAxis(oiIndex)));
+                xlabel(sprintf('frame %d (%2.1fms)', oiIndex, 1000*obj.timeAxis(oiIndex)));
             end
             title(sprintf('mean illum: %2.1f', meanIlluminance));
             set(gca, 'FontSize', 12);
