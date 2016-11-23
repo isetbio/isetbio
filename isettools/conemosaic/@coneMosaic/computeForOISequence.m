@@ -4,18 +4,24 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 %    [absorptions, photocurrents] = cMosaic.compute(oiSequence, varargin);
 %
 % There are several ways to use this function.  The simplest is to send in
-% a single oiSequence and a single eye movement sequence.  In that case
+% a single oiSequence and a single eye movement sequence.
 %
-% TO CLARIFY:
+% It is also possible to run this for a multiple eye movement paths.
+% Below is an example of how to do this for 10,000 eye movement paths (trials), 
+% each consisting of 100 eye movements.
 %
-% It is also possible to run this for a multiple eye movement paths.  I am
-% not entirely clear about how we are managing the number of trials and
-% sequences here.  I think the number of trials is determined by the number
-% of eye movement sequences.  The oiSequence itself is always just one
-% current time series. (BW).
-%
-% Also, NC is adding features into this and trapping cases. We need to
-% integrate.
+%  nTrials = 10000; eyeMovementsNum = 100; 
+%  emPaths = zeros(instancesBlockSize, eyeMovementsNum, 2);
+%  for iTrial = 1:nTrials
+%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(eyeMovementsNum);
+%  end
+%  [absorptions, photocurrents] = cMosaic.computeForOISequence(...
+%       theOIsequence, ...
+%       'emPaths', theEMPaths, ...
+%       'currentFlag', true, ...
+%       'newNoise', true ...
+%   );
+%                    
 %
 % This method is typically called by coneMosaic.compute(oiSequence)
 %
@@ -63,7 +69,7 @@ currentFlag = p.Results.currentFlag;
 newNoise    = p.Results.newNoise;
 workerID    = p.Results.workerID;
 workDescription = p.Results.workDescription;
-oiTimeAxis  = oiSequence.oiTimeAxis;
+oiTimeAxis  = oiSequence.timeAxis;
 
 nTimes = numel(oiTimeAxis);
 if (oiSequence.length ~= nTimes)
@@ -175,6 +181,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         
         % Compute partial absorptions
         emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
+        obj.absorptions = [];
         absorptionsDuringCurrentFrame =  obj.compute(...
             oiSequence.frameAtIndex(oiIndex), ...
             'emPath', emSubPath, ...
@@ -199,6 +206,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             % Compute absorptions for all remaining the OIs
             idx = indices(2:end);
             emSubPath = reshape(emPaths(1:nTrials, idx,:), [nTrials*numel(idx) 2]);
+            obj.absorptions = [];
             absorptionsAllTrials = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex), ...
                 'emPath', emSubPath, ...
@@ -322,13 +330,13 @@ end
 if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
    
     if (isa(obj, 'coneMosaicHex'))
-        % Reshape to full hex pattern
+        % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
         obj.absorptions = oneDhexTo2Dhex(squeeze(absorptions(nTrials,:,:)), obj.pattern);
     else
-        % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
+        % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
         absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
         
-        % If we don't compute the current, then we just return the absorptions from the last trial.
+        % Return the absorptions from the last trial.
         obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
     end
     return;
@@ -339,13 +347,16 @@ end
 % The currentFlag must be on, and there must be a few eye movements. So we
 % compute. 
 %
+
 if (currentFlag)
     if (isa(obj, 'coneMosaicHex'))
         photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
-            obj.absorptions = squeeze(absorptions(ii,:,:));
+            % Reshape to full 3D matrix for obj.computeCurrent
+            obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
             obj.computeCurrent;
-            photocurrents(ii,:,:) = single(reshape(obj.current, [1 numel(nonNullConesIndices) numel(eyeMovementTimeAxis)]));
+            % Back to 2D matrix to save space
+            photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
         end
     else
         photocurrents  = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
@@ -361,13 +372,13 @@ end
 % Reload the absorptions from the last instance (again, since we destroyed
 % obj.absorptions in the current computation)
 if (isa(obj, 'coneMosaicHex'))
-    % Reshape to full hex pattern
-    obj.absorptions = oneDhexTo2Dhex(squeeze(absorptions(nTrials,:,:)), obj.pattern);
+    % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
+    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
 else
-    % Reshape absorptions to correct dimensions [instances, cone_rows, cone_cols, time]
+    % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
     absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
     
-    % If we don't compute the current, then we just return the absorptions from the last trial.
+    % Return the absorptions from the last trial.
     obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
 end
 
@@ -389,29 +400,7 @@ end
     end
 
 end
-
-%%
-function twoDhex = oneDhexTo2Dhex(oneDhex, pattern)
-
-% Mathworks suggests using this call rather than the original find
-nonNullCones = pattern(pattern>1);
-
-% Same here.
-iLsource = find(nonNullCones==2);
-iMsource = find(nonNullCones==3);
-iSsource = find(nonNullCones==4);
-
-iLdest = find(pattern==2);
-iMdest = find(pattern==3);
-iSdest = find(pattern==4);
-
-twoDhex = zeros(size(obj.pattern,1)*size(obj.pattern,2), size(oneDhex,2));
-twoDhex(iLdest,:) = oneDhex(iLsource,:);
-twoDhex(iMdest,:) = oneDhex(iMsource,:);
-twoDhex(iSdest,:) = oneDhex(iSsource,:);
-twoDhex = reshape(twoDhex, size(obj.pattern,1), size(obj.pattern,2), size(oneDhex,2));
-end
-
+    
 %%
 function displayProgress(workerID, workDescription, progress)
 

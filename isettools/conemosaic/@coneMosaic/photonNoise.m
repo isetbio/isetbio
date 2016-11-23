@@ -17,7 +17,7 @@ function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
 
 %%
 p = inputParser;
-p.addRequired('absorptions',@ismatrix);  % Frozen or new random noise
+p.addRequired('absorptions',@isnumeric);  % Frozen or new random noise
 p.addParameter('newNoise',true,@islogical);  % Frozen or new random noise
 
 p.parse(absorptions,varargin{:});
