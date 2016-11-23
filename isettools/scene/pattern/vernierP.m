@@ -23,7 +23,8 @@ function params = vernierP(varargin)
 %  pattern   - Spatial pattern
 %
 % Examples
-%   p = vernierP; p.name = 'example'; s = sceneCreate('vernier','display',p);
+%   p = vernierP; 
+%   p.name = 'example'; s = sceneCreate('vernier','display',p);
 %   ieAddObject(s); sceneWindow;
 %
 %   p.bgColor = [1 0 0]; p.barColor = [0 1 0]; 
@@ -32,9 +33,8 @@ function params = vernierP(varargin)
 %   p.barLength = 8;  
 %   s = sceneCreate('vernier','display',p); ieAddObject(s); sceneWindow;
 %
-%   x = (-32:32)/64; f = 2;
-%   p.pattern = 0.5*cos(2*pi*f*x) + 0.5;
-%   p.offset = 6; p.barLength = 12;
+%   x = (-32:32)/64; f = 2; pattern = 0.5*cos(2*pi*f*x) + 0.5;
+%   p = vernierP('pattern',pattern,'offset',6,'barLength',12);
 %   s = sceneCreate('vernier','display',p); ieAddObject(s); sceneWindow;
 %
 % See also
@@ -51,12 +51,14 @@ p.addParameter('name','unknown',@ischar);
 p.addParameter('display',displayCreate('LCD-Apple'),@isstruct);
 p.addParameter('sceneSz',[50 50],@isnumeric);
 
-p.addParameter('offset',1,@isinteger);
+p.addParameter('offset',1,@isscalar);
 p.addParameter('bgColor',0.5,@isscalar);
 
 p.addParameter('barWidth',1,@isnumeric);
 p.addParameter('barLength',[],@isscalar);
 p.addParameter('barColor',1,@isscalar);
+
+p.addParameter('pattern',1,@ismatrix);
 
 p.parse(varargin{:});
 
@@ -78,6 +80,6 @@ params.barWidth  = p.Results.barWidth;    % Pixels
 params.barLength = p.Results.barLength;   % Pixels?
 params.barColor  = p.Results.barColor;    % (rgb?)
 
-params.name      = p.Results.barColor;    % Identifier
+params.pattern   = p.Results.pattern;    % Spatial
 
 end

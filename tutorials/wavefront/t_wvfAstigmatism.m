@@ -7,11 +7,11 @@ function t_wvfAstigmatism
 % (c) Wavefront Toolbox Team, 2012
 
 %% Initialize and set parameters
-s_initISET;
+ieInit;
 
 %% Ranges for plotting
-maxMIN = 2;
-maxMM  = 1;
+% maxMIN = 2;
+% maxMM  = 1;
 maxUM  = 20;
 
 %% Set up default parameters structure with diffraction limited default
@@ -39,7 +39,7 @@ for ii=1:size(Zvals,1)
     title(sprintf('Defocus = %.1f Astig == %.1f\n',Zvals(ii,1),Zvals(ii,2)));
 end
 
-%% End
+%%
 
 
 

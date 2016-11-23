@@ -58,11 +58,15 @@ function val = wvfGet(wvf,parm,varargin)
 %  +  'number calc wavelengths' - Number of wavelengths to calculate over
 %
 % Pupil and sointspread function
-%  +  'wavefront aberrations' - The wavefront aberrations in microns.  Must call wvfComputePupilFunction on wvf before get (um)
-%  +  'pupil function' - The pupil function.  Must call wvfComputePupilFunction on wvf before get.
-%  +  'psf' - Point spread function.  Must call wvfComputePSF on wvf before get
+%  +  'wavefront aberrations' - The wavefront aberrations in microns.  Must
+%      call wvfComputePupilFunction on wvf before get (um) 
+%  +  'pupil function' - The pupil function.  Must call
+%      wvfComputePupilFunction on wvf before get. 
+%  +  'psf' - Point spread function.  Must call wvfComputePSF on wvf before
+%      get 
 %  +  'psf centered' - Peak of PSF is at center of returned matrix
-%  +  '1d psf' - One dimensional horizontal (along row) slice through PSF centered on its max
+%  +  '1d psf' - One dimensional horizontal (along row) slice through PSF
+%  centered on its max 
 %  +  'diffraction psf' - Diffraction limite PSF
 %  +  'cone psf' - PSF as seen by cones for given weighting spectrum.
 %
