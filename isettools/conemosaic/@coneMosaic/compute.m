@@ -1,4 +1,4 @@
-function [absorptions, current, varargout] = compute(obj, oi, varargin)
+function [absorptions, current] = compute(obj, oi, varargin)
 % Compute the pattern of cone absorptions and possibly the photocurrent
 %
 %  [absorptions, current] = cMosaic.compute(oi);
@@ -23,15 +23,8 @@ function [absorptions, current, varargout] = compute(obj, oi, varargin)
 
 % Send to the specialized compute in that case.
 if isequal(class(oi),'oiSequence')
-    % Deleted various returns that pertainin to current time axis.  In the
-    % modern age, the current and absorption time axes are the same and
-    % derived from the integrationTime and number of samples in the
-    % coneMosaic object. (BW)
     [absorptions, current] = obj.computeForOISequence(oi,varargin{:});
-    % varargout{1} = photoCurrentTimeAxis;
     return;
-else
-    varargout{1} = [];
 end
 
 %% parse inputs
@@ -47,10 +40,11 @@ oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
 newNoise    = p.Results.newNoise;
 
+obj.absorptions = [];
+obj.current = [];
+
 %% set eye movement path
 if isempty(p.Results.emPath)
-    assert(~append || isempty(obj.absorptions), ...
-        'emPath required when in increment mode');
     emPath = obj.emPositions;
 else
     emPath = p.Results.emPath;
@@ -75,12 +69,12 @@ LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
 
 % deal with eye movements
 absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
+% vcNewGraphWin; imagesc(absorptions);
 
 % Add photon noise to the whole volume
 if obj.noiseFlag
     if (isa(obj, 'coneMosaicHex'))
-        % photonNoise is expensive, so only call photonNoise on the
-        % non-null cones for a hex mosaic.
+        % Only call photonNoise on the non-null cones for a hex mosaic.
         nonNullConeIndices = find(obj.pattern > 1);
         timeSamples = size(absorptions,3);
         absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
@@ -89,49 +83,32 @@ if obj.noiseFlag
         absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'newNoise', newNoise);
         absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
         clear 'absorptionsCopy'
-    else
-        absorptions = obj.photonNoise(absorptions, 'newNoise', newNoise);
+    else % Rectangular mosaic
+        % Noisy absorptions.  Notice, this does not set the absorptions in
+        % the object yet.  We do that below.
+        absorptions = obj.photonNoise(absorptions,'newNoise', newNoise);
+        % vcNewGraphWin; imagesc(absorptions);
     end
 end
 
-% Setting obj.absorptions seems to set the time absorptionsTimeAxis also,
-% but incorrectly.  Fix!
-% if append
-%     obj.absorptions = cat(3, obj.absorptions, absorptions);
-% else
-%     obj.absorptions = absorptions;
-% end
+% In the single sample case, we set the absorptions in the object.
+obj.absorptions = absorptions;
 
 %% If we want the photo current, use the os model
 
-% N.B. You can always calculate the photocurrent later using
-%
+% We recommend that you calculate the photocurrent later using
 %   coneMosaic.computeCurrent;
-%
-% That is BW's preferred method.
+% rather than by setting this flag.
 
 current         = [];
-% currentTimeAxis = [];  % Used by NC???  Not needed here.
 if currentFlag
-
     if size(obj.absorptions,3) == 1
         disp('Absorptions are a single frame.  No current to calculate.')        
         return;
     else
-        % compute the os time axes
-        % BW doesn't think this is needed any more
-        %
-        %         absorptionsTimeAxis = obj.absorptionsTimeAxis;
-        %
-        %         % Current time axis
-        %         dtOS = obj.os.timeStep;
-        %         currentTimeAxis = absorptionsTimeAxis(1): dtOS :absorptionsTimeAxis(end);
-        
         % Should append be true or false or what?
-        obj.current = obj.os.osCompute(cMosaic,'append', append);
-        
+        obj.current = obj.os.osCompute(cMosaic);
     end
-    
 end
 
 end
