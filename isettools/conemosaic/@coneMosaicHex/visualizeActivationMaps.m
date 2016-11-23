@@ -20,7 +20,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p.parse(varargin{:});  
     
     if (any(size(activation) ~= size(obj.pattern)))    
-       activation = coneMosaic.reshapeActivationMap1DTo2D(activation, obj.pattern);
+       activation = obj.reshapeHex2DmapToHex3Dmap(activation);
     end
       
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')

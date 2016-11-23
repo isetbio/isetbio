@@ -331,7 +331,7 @@ if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
    
     if (isa(obj, 'coneMosaicHex'))
         % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-        obj.absorptions = oneDhexTo2Dhex(squeeze(absorptions(nTrials,:,:)), obj.pattern);
+        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
     else
         % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
         absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
