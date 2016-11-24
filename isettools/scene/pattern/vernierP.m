@@ -58,7 +58,7 @@ p.addParameter('barWidth',1,@isnumeric);
 p.addParameter('barLength',[],@isscalar);
 p.addParameter('barColor',1,@isscalar);
 
-p.addParameter('pattern',1,@ismatrix);
+p.addParameter('pattern',[],@ismatrix);
 
 p.parse(varargin{:});
 

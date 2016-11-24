@@ -380,10 +380,8 @@ switch sceneName
         %   vcAddObject(s); sceneWindow;
         %
         if ~isempty(varargin), type = varargin{1}; else type = 'object'; end
-        if length(varargin) > 1, 
-            params = varargin{2};
-        else
-            params = [];
+        if length(varargin) > 1,  params = varargin{2};
+        else                      params = [];
         end
         scene = sceneVernier(scene, type, params);
         return;
