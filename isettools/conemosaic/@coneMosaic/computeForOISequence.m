@@ -359,9 +359,9 @@ if (currentFlag)
             photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
         end
     else
-        photocurrents  = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
+        photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
-            obj.absorptions = squeeze(absorptions(ii,:,:,:));
+            obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
             obj.computeCurrent;
             photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
         end
@@ -376,10 +376,10 @@ if (isa(obj, 'coneMosaicHex'))
     obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
 else
     % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
-    absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
+    absorptions = reshape(absorptions, [nTrials obj.rows obj.cols numel(eyeMovementTimeAxis)]);
     
     % Return the absorptions from the last trial.
-    obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
+    obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [obj.rows obj.cols numel(eyeMovementTimeAxis)]);
 end
 
 
