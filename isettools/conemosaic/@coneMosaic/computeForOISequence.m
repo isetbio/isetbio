@@ -3,43 +3,13 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 %
 %    [absorptions, photocurrents] = cMosaic.compute(oiSequence, varargin);
 %
-% There are several ways to use this function.  The simplest is to send in
-% a single oiSequence and a single eye movement sequence.
-%
-% It is also possible to run this for a multiple eye movement paths.
-% Below is an example of how to do this for 10,000 eye movement paths (trials), 
-% each consisting of 100 eye movements.
-%
-%  nTrials = 10000; eyeMovementsNum = 100; 
-%  emPaths = zeros(instancesBlockSize, eyeMovementsNum, 2);
-%  for iTrial = 1:nTrials
-%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(eyeMovementsNum);
-%  end
-%  [absorptions, photocurrents] = cMosaic.computeForOISequence(...
-%       theOIsequence, ...
-%       'emPaths', theEMPaths, ...
-%       'currentFlag', true, ...
-%       'newNoise', true ...
-%   );
-%                    
-%
-% This method is typically called by coneMosaic.compute(oiSequence)
-%
-% The returned absorptions has an extra dimension (the first one) so that
-% we can calculate for multiple eye movement paths.  The absorptions from a
-% single eye movement case would be
-%
-%    absorptions(thisTrial,:,:,:)
-%
-% The coneMosaic object (obj) always has the absorptions from the last
-% trial and dimensions (row,col,time).
-%
 % Inputs:
-%   oiSequence  - an @oiSequence object
+%   obj         - @coneMosaic object
+%   oiSequence  - @oiSequence object
 %
 % Optional inputs:
-%   emPaths      - N eye movement paths, each with M eye movements
-%                  organized in an [N x M x 2] matrix
+%   emPaths      - [N x M x 2] matrix of N eye movement paths, each with
+%                  Mx2 eye positions
 %   currentFlag  - logical, whether to compute photocurrent
 %   newNoise     - logical, whether to use new random seed
 %
@@ -47,9 +17,44 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 %   absorptions          - cone photon absorptions (photon counts in integrationTime)
 %   photocurrent         - cone photocurrent
 %
-% Examples:
+% There are several ways to use this function.  The simplest is to send in
+% a single oiSequence and a single eye movement sequence.
 %
-% See also: coneMosaic.compute
+%   coneMosaic.compute(oiSequence)
+%
+% It is also possible to run this for a multiple eye movement paths. In
+% that case, the coneMosaic object contains only the last trial.  The full
+% set of data for all the trial are contained in the returned outputs,
+% absorptions and photocurrent.
+%
+%   [absorptions, photocurrents] = cMosaic.computeForOISequence(oiSequence);
+%
+% Examples:
+%  This is an example of how to do this for 1,000 eye movement paths
+%  (trials), each consisting of 100 eye movements.
+%
+%   nTrials = 1000; eyeMovementsNum = 100; 
+%   emPaths = zeros(instancesBlockSize, eyeMovementsNum, 2);
+%   for iTrial = 1:nTrials
+%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(eyeMovementsNum);
+%   end
+%   [absorptions, photocurrents] = cMosaic.computeForOISequence(...
+%       theOIsequence, ...
+%       'emPaths', theEMPaths, ...
+%       'currentFlag', true, ...
+%       'newNoise', true ...
+%   );
+%                    
+% The returned absorptions has an extra dimension (the first one) so that
+% we can calculate for multiple eye movement paths.  The absorptions from a
+% single eye movement case would be
+%
+%    absorptions(thisTrial,:,:,:)
+%
+% The coneMosaic object (obj) has the absorptions from the last trial and
+% dimensions (row,col,time).
+%
+% See also: coneMosaic.compute, v_cmosaic, 
 %
 % NPC ISETBIO Team 2016
 
@@ -104,6 +109,11 @@ if (numel(oiTimeAxis) == 1)
 else
     oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
 end
+% It can be problematic when the coneMosaic integration time is very
+% different from the oiSequence timing.  So we print a warning in that
+% case.
+if oiRefreshInterval/defaultIntegrationTime
+
 
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
@@ -112,7 +122,8 @@ absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAx
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
-    % equal to the eye movement update rate
+    % equal to the eye movement update rate.  
+    % 
     
     % SCENARIO
     %              |----- oiRefreshInterval ----|----- oiRefreshInterval ----|----- oiRefreshInterval ----|
@@ -382,6 +393,7 @@ else
     obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [obj.rows obj.cols numel(eyeMovementTimeAxis)]);
 end
 
+end
 
 %% Nested function to reformat absorptions
     function reformatAbsorptionsAllTrialsMatrix(nTrials, timePointsNum, coneRows, coneCols)
@@ -398,9 +410,8 @@ end
         % Reshape to [instances x cones x timePoints]
         absorptionsAllTrials = permute(absorptionsAllTrials, [2 1 3]);
     end
-
 end
-    
+
 %%
 function displayProgress(workerID, workDescription, progress)
 

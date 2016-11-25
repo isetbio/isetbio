@@ -36,6 +36,9 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %   vernier.visualize;
 %   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %
+% Impulse - Useful for testing photocurrent response
+%
+%
 % BW ISETBIO Team, 2016
 
 %% Inputs
@@ -45,7 +48,7 @@ p.addRequired('composition',@ischar);
 p.addRequired('modulation');
 
 p.addParameter('sampleTimes',[],@isvector);
-p.addParameter('hparams',[],@isstruct);
+p.addParameter('tparams',[],@isstruct);
 p.addParameter('sparams',[],@isstruct);
 
 p.parse(oisType,composition,modulation,varargin{:});
@@ -60,7 +63,7 @@ if isempty(sampleTimes)
 end
 
 % Many of the types have a params structure that we will pass along
-hparams = p.Results.hparams;   % Harmonics parameters (two structs needed)
+tparams = p.Results.tparams;   % Test stimulus parameters (two structs needed)
 sparams = p.Results.sparams;   % Scene parameters, only one set.
 
 %%
@@ -68,14 +71,14 @@ switch oisType
     case 'harmonic'
         % oisCreate('harmonic',params);
         % params:  A two element array as returned by harmonicP;
-        if length(hparams) ~= 2, error('Specify two harmonic param sets.'); end
+        if length(tparams) ~= 2, error('Specify two harmonic param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
 
         % Create basic harmonics
         for ii=1:2
-            scene{ii} = sceneCreate('harmonic',hparams(ii));
-            sname = sprintf('F %d C %.2f', hparams(ii).freq, hparams(ii).contrast);
+            scene{ii} = sceneCreate('harmonic',tparams(ii));
+            sname = sprintf('F %d C %.2f', tparams(ii).freq, tparams(ii).contrast);
             scene{ii} = sceneSet(scene{ii},'name',sname);
         end
         % ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
@@ -109,14 +112,14 @@ switch oisType
         varargout{1} = scene;
     case 'vernier'
         % oisCreate('vernier', ...);
-        if length(hparams) ~= 2, error('Specify two vernier param sets.'); end
+        if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
         
         % Create vernier stimulus and background
         for ii=1:2
-            scene{ii} = sceneCreate('vernier', 'display', hparams(ii));
-            scene{ii} = sceneSet(scene{ii},'name',hparams(ii).name);
+            scene{ii} = sceneCreate('vernier', 'display', tparams(ii));
+            scene{ii} = sceneSet(scene{ii},'name',tparams(ii).name);
         end
         
         % Adjust both scenes based on sparams.
@@ -141,6 +144,48 @@ switch oisType
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
         % ois.visualize;
+        
+        % Return the cell array of scenes.
+        varargout{1} = scene;
+        
+    case 'impulse'
+        % oisCreate('impulse', ...);
+        % sparams sets 'fov' and luminance.
+        % The weights are expected to be [0 0 .... 1 ... 0 0];
+        % Composition:  Usually add
+        % tparams(2) could be uniform with equal intensity
+        scene = cell(1,2);
+        OIs = cell(1, 2);
+        
+        for ii=1:2
+            scene{ii} = sceneCreate('uniform ee');
+        end
+        
+        % Adjust both scenes based on sparams.
+        if ~isempty(sparams)
+            fields = fieldnames(sparams);
+            if ~isempty(fields)
+                for ii=1:length(fields)
+                    for jj=1:2
+                        val = eval(['sparams.',fields{ii}]);
+                        scene{jj} = sceneSet(scene{jj}, fields{ii},val);
+                    end
+                end
+            end
+        end
+        
+        %ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
+        
+        % Compute optical images from the scene
+        oi = oiCreate('wvf human');
+        for ii = 1:2
+            OIs{ii} = oiCompute(oi,scene{ii});
+        end
+        % ieAddObject(OIs{1}); ieAddObject(OIs{2}); oiWindow;
+        
+        ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
+            'composition', composition);
+        % ois.visualize;  % Not working right.  Something about image scale
         
         % Return the cell array of scenes.
         varargout{1} = scene;
