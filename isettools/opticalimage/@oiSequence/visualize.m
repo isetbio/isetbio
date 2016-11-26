@@ -44,7 +44,6 @@ switch format
         illMod   = oiGet(obj.oiModulated,'illuminance');
         name     = oiGet(obj.oiModulated,'name');
         
-        axis image; axis off;
         if save
             vObj = VideoWriter(vname);
             vObj.FrameRate = FrameRate;
@@ -78,7 +77,8 @@ switch format
         end
         
         %  Show the movie data
-        hFig = vcNewGraphWin; colormap(gray(max(d(:))));
+        hFig = vcNewGraphWin; 
+        colormap(gray(max(d(:)))); axis image; axis off;
         for ii=1:nFrames
             image(d(:,:,ii)); axis image; title(name); drawnow;
             if save,  F = getframe; writeVideo(vObj,F); end

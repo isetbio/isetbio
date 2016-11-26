@@ -81,12 +81,17 @@ if emFlag(3)
     speed = emGet(em, 'msaccade speed', 'cones/sample');
     speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
     
-    % compute time of occurance
+    % compute time of occurence
     t = interval + randn(nFrames, 1) * intervalSD;
     t(t < 0.3) = 0.3 + 0.1*rand; % get rid of negative values
     t = cumsum(t);
     tPos = round(t / sampTime);
     tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
+    
+    % When the integration time is slow, we were getting tPos = 0 values,
+    % which are not permissible.  Check the math.  This is a dumb hack by
+    % BW.
+    tPos = max(tPos,1);
     
     % Compute positions
     for ii = 1 : length(tPos)

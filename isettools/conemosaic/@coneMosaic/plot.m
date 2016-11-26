@@ -22,18 +22,27 @@ function [uData, hf] = plot(obj, pType, varargin)
 % Plot type can be chosen from
 %   'cone mosaic'          - Color image of the cone arrangement
 %   'cone fundamentals'    - Cone pigment without macular or lens
+%   'cone spectral qe'     - Cone pigment and macular
+%
+%  Pigments
 %   'macular transmittance'- Graph
 %   'macular absorptance'  - Graph
-%   'cone spectral qe'     - Cone pigment and macular
 %   'eye spectral qe'      - Cone pigment with macular and lens
+%
+%  Absorptions
 %   'mean absorptions'     - Image of the mean absorptions
 %   'absorptions'          - Movie of the absorptions on cone mosaic
 %   'movie absorptions'    - Gray scale movie of absorptions
-%   'mean current'         - Image of the mean current
-%   'current'              - Current movie on cone mosaic
-%   'movie current'        - Gray scale movie of current
+%
+%  Eye movements
 %   'eye movement path'    - eye movement
+%
+%  Current
+%   'current'              - Current movie on cone mosaic
+%   'mean current'         - Image of the mean current
 %   'current timeseries'   - Cone photocurrent graphs
+%   'impulse response'     - Current impulse response for this integration time
+%   'movie current'        - Gray scale movie of current
 %
 % When you present 'os ' or 'outersegment ' then we pass the arguments
 % along to os.plot()

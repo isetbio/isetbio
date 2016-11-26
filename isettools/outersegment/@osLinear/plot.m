@@ -39,16 +39,16 @@ meancurrent = p.Results.meancurrent;  % Background current for linear model
 
 switch ieParamFormat(pType)
         
-    case {'currentfilters'}
+    case {'impulseresponse','currentfilters'}
         % Plot linear temporal filters for L, M and S cones.
 
         h = vcNewGraphWin;
-        tSamples = (1:size(os.lmsConeFilter,1))*os.timeStep*1000;
+        tSamples = os.timeAxis;
         
         plot(tSamples,os.lmsConeFilter(:,1),'r-', ...
             tSamples,os.lmsConeFilter(:,2),'g-', ...
             tSamples,os.lmsConeFilter(:,3),'b-');
-        xlabel('Time (ms)'); ylabel('Current (pA)');
+        xlabel('Time (sec)'); ylabel('Current (pA)');
         grid on;
         l = cell(1,3);
         if ~isempty(meancurrent)

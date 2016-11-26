@@ -21,42 +21,40 @@ classdef coneMosaic < hiddenHandle
     %
     % HJ/JRG/BW ISETBIO Team, 2016
     
-    properties (GetAccess=public, SetAccess=public) % fully public
+    % Keep the format for the comments.  This is used in doc coneMosaic
+    properties (GetAccess=public, SetAccess=public) 
 
         name                % the name of the object
         
-        % These define the individual element properties
         pigment;            % Cone photopigment class
         macular;            % Macular class
         os;                 % outerSegment class
 
-        % Computed values
-        absorptions;        % The spatial array of cone absorptions; must be consistent with pattern
+        absorptions;        % The spatial array of cone absorptions
+                            % must be consistent with pattern
         current;            % The (x,y,t) of photocurrent, stored in os
 
-        % Spatial arrangement of the coneMosaic
-        center;             % (x,y) center position of patch in meters
+        center;             % Center position of patch (x,y - meters)
         
-        pattern;            % Pattern of K-LMS cones in the mosaic; Defines rows and cols, too 
+        pattern;            % Pattern of K-LMS cones in the mosaic%
+                            % Defines rows and cols, too 
         
-        patternSampleSize;  % Separation between K-LMS pattern samples; 
-                            % for rectangular grid mosaics, 
-                            % this is set to the pigment width/height,
-                            % i.e., the actual cone separation; For
-                            % hexagonal grid mosaics (instances of the
-                            % coneMosaicHex class), this is the
-                            % separation between the rect grid nodes over
-                            % which the lower resolution hex grid is
+        patternSampleSize;  % Separation between K-LMS pattern samples 
+                            % For rectangular grid mosaics, this is set to
+                            % the pigment width/height, i.e., the actual
+                            % cone separation; For hexagonal grid mosaics
+                            % (instances of the coneMosaicHex class), this
+                            % is the separation between the rect grid nodes
+                            % over which the lower resolution hex grid is
                             % sampled (NC)
         
-        % Computational entries
         integrationTime;    % Cone temporal integration time (secs)
-        emPositions;        % Eye movement positions (number of cones).
+        emPositions;        % Eye movement positions (spatial units are number of cones).
                             % The number of positions controls number of
                             % frames to be computed
-        noiseFlag;          % Noise properties in absorption calculation
-                            %
-        hdl;                % handle of the gui window
+        noiseFlag;          % Absorption calculation noise (usually photon noise is on)
+                            
+        hdl;                % handle of the coneMosaic window
     end
     
     
@@ -362,7 +360,7 @@ classdef coneMosaic < hiddenHandle
         [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassActivationMap(response, theMosaic, spaceConstants);
         
         % Declare the computeCurrent method
-        computeCurrent(obj, varargin);
+        interpFilters = computeCurrent(obj, varargin);
 
         function val = timeAxis(obj)
             % Call:  obj.timeAxis;

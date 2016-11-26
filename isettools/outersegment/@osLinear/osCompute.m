@@ -1,7 +1,7 @@
-function current = osCompute(obj, cMosaic, varargin)
+function [current, interpFilters] = osCompute(obj, cMosaic, varargin)
 % Linear model computing outer segment photocurrent from isomerizations (R*) 
 %
-%    current = osCompute(obj, cMosaic, varargin)
+%    [current, interpFilters] = osCompute(obj, cMosaic, varargin)
 %
 % We use  osLinear.osCompute (linear model) for experiments in which there
 % is a uniform background, as we often find in psychophysical experiments.
@@ -13,8 +13,10 @@ function current = osCompute(obj, cMosaic, varargin)
 %   cMosaic   - parent object of the outerSegment
 %
 % Output:
-%   current  - outer segment photocurrent current in pA
-% 
+%   current       - outer segment photocurrent current in pA
+%   interpFilters - Interpolated impulse response functions (to integration
+%                   time samples)
+%
 % The linear model impulse response function is the small signal of the
 % osBioPhys model. The impulse response depends on the on mean
 % isomerization rate.
@@ -59,19 +61,18 @@ tSamples   = size(cMosaic.absorptions,3);
 
 % obj.plot('current filters','meancurrent',meanCur)
 
-%% Interpolate the lmsFilters to the time base of the absorptions
+%% Interpolate the stored lmsFilters to the time base of the absorptions
 
-absTimeAxis = cMosaic.timeAxis;
-osTimeAxis  = obj.timeAxis;
+absTimeAxis   = cMosaic.timeAxis;
+osTimeAxis    = obj.timeAxis;
 interpFilters = zeros(cMosaic.tSamples,3);
 for ii=1:3
-    % Interpolate and preserve the area under the curve
-    areaBefore = sum(lmsFilters(:,ii));
-    interpFilters(:,ii) = interp1(osTimeAxis(:),lmsFilters(:,ii),absTimeAxis(:),'pchip');
-    areaAfter = sum(interpFilters(:,ii));
-    interpFilters(:,ii) = interpFilters(:,ii)*(areaBefore/areaAfter);
+    % Interpolation assumes that we are accounting for the time sample bin
+    % width elsewhere.  Also, we extrapolate the filters with zeros to make
+    % sure that they extend all the way through the absorption time axis.
+    % See the notes in s_matlabConv2.m for an explanation of why.
+    interpFilters(:,ii) = interp1(osTimeAxis(:),lmsFilters(:,ii),absTimeAxis(:),'linear',0);
 end
-lmsFilters = interpFilters;
 
 %%  The predicted photocurrent is
 
@@ -83,30 +84,34 @@ lmsFilters = interpFilters;
 current = zeros(r*c, tSamples);
 
 % convolve the filters with the isomerization data
-for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank
+for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank, so we skip
     
     % locate cones with specific type and convolve with temporal filter
     index = find(coneType==ii);
     if ~isempty(index)
-        % The mean absorptions produces a mean current that was returned
-        % above when we calculated the lmsFilters (meanCur).
+        % The mean absorptions produces a mean current. This current level
+        % was returned above when we calculated the lmsFilters (meanCur).
         % 
-        % We calculate the total photocurrent by convolving the difference
-        % of the absorption rate from the mean absorption rate and the LM
-        % or S filter.  We then add in the mean background current
+        % Here we calculate the time-varying photocurrent by  
+        %   * Convolving the difference of the absorption rate from the
+        %   mean absorption rate with the L, M or S filter
+        %   * Adding in the mean background current
         %
         %  conv(absorptions - meanAbsorptions,lmsFilters) + meanCur
         
+        % dAbsorptions is [nCones by nTime]
         dAbsorptions = absorptions(index,:) - meanRate(ii-1);
         % The difference should be distributed around 0
         %
-        % vcNewGraphWin; hist(dAbsorptions(:));
-        % mean(dAbsorptions(:))
-        %
-        % vcNewGraphWin; plot(dAbsorptions(10,:))
+        %   vcNewGraphWin; hist(dAbsorptions(:));
+        %   mean(dAbsorptions(:))
         
-        % Convolve and then add in the mean
-        tmpCurrent = conv2(dAbsorptions,lmsFilters(:,ii-1)') + meanCur(ii-1);
+        % Convolve and  add in the mean.  The general conv2 produces a new
+        % time series that is longer than nTimes.  We only want the
+        % convolution up to the final absorption.  Not really sure if we
+        % want 'same' here, or we want circonv, or ... (BW).
+        % tmpCurrent = conv2(dAbsorptions,interpFilters(:,ii-1)','same') + meanCur(ii-1);
+        tmpCurrent = conv2(interpFilters(:,ii-1)',dAbsorptions) + meanCur(ii-1);
         % vcNewGraphWin; plot(tmpCurrent(10,:))
         
         % Store it
@@ -127,7 +132,5 @@ if osGet(obj,'noiseFlag') == 1
 else
     disp('No current noise added.')
 end
-
-% obj.coneCurrentSignal = current;
 
 end
