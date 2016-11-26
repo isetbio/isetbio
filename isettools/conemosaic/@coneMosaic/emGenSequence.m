@@ -74,24 +74,26 @@ end
 
 % generate eye movement for micro-saccade
 if emFlag(3)
-    % Load parameters
+    % Load microsaccade model parameters
     interval = emGet(em, 'msaccade interval');
     intervalSD = emGet(em, 'msaccade interval SD');
     dirSD = emGet(em, 'msaccade dir SD', 'deg');
     speed = emGet(em, 'msaccade speed', 'cones/sample');
     speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
     
-    % compute time of occurence
+    % Compute microsaccade occurence times
     t = interval + randn(nFrames, 1) * intervalSD;
-    t(t < 0.3) = 0.3 + 0.1*rand; % get rid of negative values
-    t = cumsum(t);
-    tPos = round(t / sampTime);
-    tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
+    t(t < 0.3) = 0.3 + 0.1*rand;     % get rid of negative times
+    t = cumsum(t);                   % Add them up
     
-    % When the integration time is slow, we were getting tPos = 0 values,
-    % which are not permissible.  Check the math.  This is a dumb hack by
-    % BW.
-    tPos = max(tPos,1);
+    % Convert to integer locations of the positions
+    tPos = round(t / sampTime);
+    
+    % Finds the last nonzero element in the tPos array with a value less
+    % than nFrames.  But that element has to be at least 1. BW doesn't
+    % really understand the logic of the model here.
+    tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
+    tPos = max(tPos,1);   % HJ to check.
     
     % Compute positions
     for ii = 1 : length(tPos)
