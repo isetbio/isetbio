@@ -135,7 +135,6 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
-            % p.addParameter('sampleTime', 0.001, @isscalar);
             
             % Computational features
             p.addParameter('emPositions', [0 0], @isnumeric);
