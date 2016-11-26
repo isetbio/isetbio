@@ -24,7 +24,7 @@ cMosaic.setSizeToFOV(0.7);
 cMosaic.integrationTime = 0.001;
 
 % Initialize luminance levels and mean isomerization count and filters
-lum = logspace(log10(2),4,8);
+lum = logspace(log10(0.5),3,8);
 meanI = zeros(size(lum));
 f = zeros(402,length(lum));
 
@@ -61,4 +61,25 @@ for ii=1:length(meanI), l{ii} = num2str(meanI(ii),'%.1e'); end
 legend(l)
 
 
+%% Calculate the peak of the impulse response
+
+vcNewGraphWin;
+mx = max(f);   % The peak response is basically the impulse response gain
+
+% To be at threshold, the photons times the gain equals some criterion level
+%
+%   ThreshPhotons * Gain = Criterion
+%
+% So 
+%
+%   ThresholdPhotons = 1/Gain
+%
+
+loglog(meanI,1./mx,'k-');            
+xlabel('Mean isomerization rate');
+ylabel('Effective sensitivity');
+grid on;
+
 %%
+
+
