@@ -109,10 +109,6 @@ if (numel(oiTimeAxis) == 1)
 else
     oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
 end
-% It can be problematic when the coneMosaic integration time is very
-% different from the oiSequence timing.  So we print a warning in that
-% case.
-if oiRefreshInterval/defaultIntegrationTime
 
 
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
@@ -151,15 +147,15 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         tFrameEnd   = tFrameStart + oiRefreshInterval;
         
         % Find eye movement indices withing the oi limits
-        indices = find( (eyeMovementTimeAxis >  tFrameStart-defaultIntegrationTime) & ...
+        indices = find( (eyeMovementTimeAxis >=  tFrameStart-defaultIntegrationTime) & ...
             (eyeMovementTimeAxis <= tFrameEnd-defaultIntegrationTime+eps) );
         
         if (isempty(indices))
-            %  time samples in
+            % time samples in
             % the mosaic than we have oi samples.  That should be OK.
-            disp('Fewer Eye movement time samples than oi samples')
-            break;
-            %error('empty indices');
+            % disp('Fewer Eye movement time samples than oi samples')
+            % break;
+            error('Empty indices. This should never happen.');
         end
         % the first eye movement requires special treatment as it may have started before the current frame,
         % so we need to compute partial absorptions over the previous frame and over the current frame
@@ -263,13 +259,13 @@ else
         actualIntegrationTime = 0;
         
         % Find oi indices withing the eye movement frame time limits
-        indices = find( (oiTimeAxis > emStart-oiRefreshInterval) & ...
+        indices = find( (oiTimeAxis >= emStart-oiRefreshInterval) & ...
             (oiTimeAxis <= emEnd + eps) );
         
         if (isempty(indices))
-            disp('Fewer eye movement time samples than oi samples')
-            break;
-            % error('empty indices');
+            %disp('Fewer eye movement time samples than oi samples')
+            %break;
+            error('Empty indices. This should never happen.');
         end
         
         % Partial absorptions during the ovelap with the OI that started before the emStart
@@ -391,8 +387,6 @@ else
     
     % Return the absorptions from the last trial.
     obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [obj.rows obj.cols numel(eyeMovementTimeAxis)]);
-end
-
 end
 
 %% Nested function to reformat absorptions
