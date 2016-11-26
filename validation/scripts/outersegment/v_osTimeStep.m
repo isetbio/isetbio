@@ -40,7 +40,7 @@ c0 = struct(...
     'integrationTime', nan, ...                 % we will vary this one
     'photonNoise', true, ...                    % add Poisson noise
     'osTimeStep', 1/1000, ...                   % 1 millisecond
-    'osNoise', false ...                        % no photocurrent noise
+    'osNoise', true ...                        % no photocurrent noise
     );
 
 
@@ -51,7 +51,7 @@ theCondition.stimulusSamplingInterval = 67/1000;
 theCondition.integrationTime = 67/1000; 
 c{stimulusConditionIndex} = theCondition;
 
-
+if (1==2)
 % Stimulus sampling interval < integration time
 stimulusConditionIndex = 2;
 theCondition = c0;
@@ -65,6 +65,8 @@ theCondition = c0;
 theCondition.stimulusSamplingInterval = 145/1000;  
 theCondition.integrationTime = 67/1000;
 c{stimulusConditionIndex} = theCondition;
+end
+
 
 for stimulusConditionIndex = 1:numel(c)
     
@@ -100,6 +102,7 @@ UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstance
 UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 5));
 
+if (1==2)
 UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
 UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
 UnitTest.validationData('photoCurrentTimeAxisCond2', photocurrentsTimeAxis{2});
@@ -121,6 +124,7 @@ UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
 UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
 UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
 UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
+end
 
 end
 
@@ -168,7 +172,8 @@ function [theConeMosaic, theOIsequence, ...
     % Generate the sequence of optical images
     theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
     if (runtimeParams.generatePlots)
-        theOIsequence.visualize('format', 'montage');
+        %theOIsequence.visualize('format', 'montage');
+        theOIsequence.visualize();
     end
     
     % Generate the cone mosaic with eye movements for theOIsequence
@@ -341,11 +346,18 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     
     % Subtract first time point from all photocurrents
     timePoint = 1;
-    min(allInstancesPhotoCurrents(:))
-    max(allInstancesPhotoCurrents(:))
-    photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint);
+    
+    normalizePhotocurrents = false;
+    if (normalizePhotocurrents)
+        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint);
+        photocurrentRange = [0 60];
+    else
+        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint)* 0;
+        photocurrentRange = [min(allInstancesPhotoCurrents(:)) max(allInstancesPhotoCurrents(:))];
+    end
     allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, reshape(photocurrentBaselineAtTimePoint1, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) size(allInstancesPhotoCurrents,3) 1])); 
-
+    
+    
     % compute photocurrent means and stds across all instances
     photocurrentMeansBaselineCorrected  = mean(allInstancesPhotoCurrents,1);
     photocurrentSTDsBaselineCorrected   = std(allInstancesPhotoCurrents, 0, 1);
@@ -357,7 +369,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     absorptionsFanoFactorLims = [0.0 10];
     photocurrentFanoFactorLims = [0.0 100];
     SNRlims = [0 60];
-    photocurrentRange = [-5 100];  
+      
     
     
     hFig = figure(figNo+1000); clf;
