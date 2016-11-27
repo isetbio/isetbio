@@ -37,7 +37,7 @@ c0 = struct(...
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
-    'integrationTime', nan, ...                 % we will vary this one
+    'integrationTime', 15/1000, ...             % 15 msec
     'photonNoise', true, ...                    % add Poisson noise
     'osTimeStep', 1/1000, ...                   % 1 millisecond
     'osNoise', true ...                        % no photocurrent noise
@@ -47,25 +47,20 @@ c0 = struct(...
 % Identical stimulus sampling interval and integration time
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 67/1000;  
-theCondition.integrationTime = 67/1000; 
+theCondition.stimulusSamplingInterval = 15/1000;  
 c{stimulusConditionIndex} = theCondition;
 
-if (1==2)
 % Stimulus sampling interval < integration time
 stimulusConditionIndex = 2;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 30/1000; 
-theCondition.integrationTime = 67/1000;                  
+theCondition.stimulusSamplingInterval = 10/1000;               
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval > integration time
 stimulusConditionIndex = 3;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 145/1000;  
-theCondition.integrationTime = 67/1000;
+theCondition.stimulusSamplingInterval = 66/1000;
 c{stimulusConditionIndex} = theCondition;
-end
 
 
 for stimulusConditionIndex = 1:numel(c)
@@ -347,9 +342,9 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     % Subtract first time point from all photocurrents
     timePoint = 1;
     
-    normalizePhotocurrents = false;
+    normalizePhotocurrents = true;
     if (normalizePhotocurrents)
-        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint);
+        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint)* 0 + min(allInstancesPhotoCurrents(:));
         photocurrentRange = [0 60];
     else
         photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint)* 0;
@@ -367,7 +362,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     instancesNum = size(allInstancesIsomerizationsCount,1);
     % Plotting limits
     absorptionsFanoFactorLims = [0.0 10];
-    photocurrentFanoFactorLims = [0.0 100];
+    photocurrentFanoFactorLims = [0.0 10];
     SNRlims = [0 60];
       
     
