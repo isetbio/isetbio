@@ -33,10 +33,10 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 %  This is an example of how to do this for 1,000 eye movement paths
 %  (trials), each consisting of 100 eye movements.
 %
-%   nTrials = 1000; eyeMovementsNum = 100; 
-%   emPaths = zeros(instancesBlockSize, eyeMovementsNum, 2);
+%   nTrials = 1000; nEyeMovements = 100; 
+%   emPaths = zeros(instancesBlockSize, nEyeMovements, 2);
 %   for iTrial = 1:nTrials
-%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(eyeMovementsNum);
+%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
 %   end
 %   [absorptions, photocurrents] = cMosaic.computeForOISequence(...
 %       theOIsequence, ...
@@ -61,6 +61,7 @@ function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, va
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('newNoise', true, @islogical);
@@ -100,8 +101,8 @@ defaultIntegrationTime = obj.integrationTime;
 
 %% Compute eye movement time axis
 nTrials         = size(emPaths,1);
-eyeMovementsNum = size(emPaths,2);
-eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(eyeMovementsNum-1)) * obj.integrationTime;
+nEyeMovements = size(emPaths,2);
+eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(nEyeMovements-1)) * obj.integrationTime;
 
 %% Compute OIrefresh
 if (numel(oiTimeAxis) == 1)
@@ -153,8 +154,8 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         if (isempty(indices))
             % time samples in
             % the mosaic than we have oi samples.  That should be OK.
-             disp('Fewer Eye movement time samples than oi samples')
-             break;
+            disp('Fewer Eye movement time samples than oi samples')
+            break;
             %error('Empty indices. This should never happen.');
         end
         % the first eye movement requires special treatment as it may have started before the current frame,
@@ -245,10 +246,10 @@ else
     %                                            absorption  absorption absorption
     
     % Loop over the eye movements
-    for emIndex = 1:eyeMovementsNum
+    for emIndex = 1:nEyeMovements
         
         if (~isempty(workerID))
-            displayProgress(workerID, workDescription, 0.5*emIndex/eyeMovementsNum);
+            displayProgress(workerID, workDescription, 0.5*emIndex/nEyeMovements);
         end
         
         % Current eye movement time limits

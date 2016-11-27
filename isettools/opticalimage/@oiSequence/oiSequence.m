@@ -109,11 +109,9 @@ classdef oiSequence
         % Visualize the sequence
         visualize(obj,varargin);
         
-        % Use the eye movements?  We have eye movements in coneMosaic, not
-        % oi.  So, I think we need to wait to see the eye movements until
-        % we are in the cMosaic case.  If we want them here, then we need
-        % to take a whole em object. (BW).
-        % visualizeWithEyeMovementSequence(obj, emTimeAxis);
+        function val = timeStep(obj)
+            val = obj.timeAxis(2) - obj.timeAxis(1);
+        end
         
         %% Local get methods
         
