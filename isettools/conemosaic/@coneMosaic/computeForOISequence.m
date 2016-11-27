@@ -153,9 +153,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         if (isempty(indices))
             % time samples in
             % the mosaic than we have oi samples.  That should be OK.
-            % disp('Fewer Eye movement time samples than oi samples')
-            % break;
-            error('Empty indices. This should never happen.');
+             disp('Fewer Eye movement time samples than oi samples')
+             break;
+            %error('Empty indices. This should never happen.');
         end
         % the first eye movement requires special treatment as it may have started before the current frame,
         % so we need to compute partial absorptions over the previous frame and over the current frame
@@ -263,9 +263,9 @@ else
             (oiTimeAxis <= emEnd + eps) );
         
         if (isempty(indices))
-            %disp('Fewer eye movement time samples than oi samples')
-            %break;
-            error('Empty indices. This should never happen.');
+            disp('Fewer eye movement time samples than oi samples')
+            break;
+            %error('Empty indices. This should never happen.');
         end
         
         % Partial absorptions during the ovelap with the OI that started before the emStart
