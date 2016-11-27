@@ -12,8 +12,9 @@
 % that uses the filters.
 % 
 %   *  We create a uniform scene and set its luminance level.
-%   *  We create a cone mosaic of one type of cone
-%   *
+%   *  We create a cone mosaic of one type of cone (M)
+%   *  For many different luminances, we calculate the linear filters
+%   *  We plot the threshold as a function of luminance
 %
 
 %%
@@ -25,7 +26,7 @@ scene = sceneSet(scene,'fov',1);
 oi = oiCreate('human');
 
 %%
-cMosaic = coneMosaic('os',osLinear,'spatialDensity',[0 1 0 0]);
+cMosaic = coneMosaic('os',osLinear,'spatialDensity',[0 0 1 0]);
 cMosaic.setSizeToFOV(0.7);
 cMosaic.integrationTime = 0.001;
 
@@ -51,7 +52,7 @@ for ii = 1:length(lum)
     
     % Compute the linear filters and plot them
     cMosaic.os.linearFilters(cMosaic);
-    f(:,ii) = cMosaic.os.lmsConeFilter(:,1);
+    f(:,ii) = cMosaic.os.lmsConeFilter(:,2);
     
 end
 %% Do the plot
@@ -86,8 +87,8 @@ mx = max(f);
 %   ThresholdPhotons = Criterion / Gain
 %
 
-loglog(meanI,1./mx,'k-o');            
-xlabel('Mean isomerization rate');
+loglog(lum,1./mx,'k-o');            
+xlabel('Mean luminance (cd/m^2)');
 ylabel('Effective threshold');
 grid on;
 title('Threshold vs. Background Rate')
