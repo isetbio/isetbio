@@ -48,10 +48,11 @@ for ii = 1:length(lum)
 end
 %% Do the plot
 
-vcNewGraphWin;
+vcNewGraphWin([],'wide');
 hold on;
 t = cMosaic.os.timeAxis;
 
+subplot(1,2,1)
 plot(t,f);
 grid on
 xlabel('Time (sec)'); ylabel('Current (pA)');
@@ -64,7 +65,7 @@ title('Impulse Response vs. Background Rate')
 
 %% Calculate the peak of the impulse response
 
-vcNewGraphWin;
+subplot(1,2,2)
 mx = max(f);  
 
 % The peak response is basically the impulse response gain. To be at

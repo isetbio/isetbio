@@ -1,14 +1,18 @@
 function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 % Returns the photocurrent impulse response for a single absorption 
 %
-% The LMS impulse response functions calculated here are used to model cone
-% photocurrent for stimuli that are small or transient contrasts above and
-% below a steady background.  These are often the conditions in a
+% The LMS impulse response functions calculated here model the cone
+% photocurrent response to brief or low contrasts above and below a steady
+% background.  These experimental conditions are often found in
 % psychophysical or physiological experiment.
 %
 % The impulse response function is derived from Rieke's biophysical model.
-% Hence, it depends on the mean absorption rate.
+% It depends on the mean absorption rate, and exhibits adaptation behavior.
+% (s_osLinearFilters)
 %
+% There are different parameters for foveal and peripheral functions
+% (t_osLinearize). 
+% 
 % Input
 %  os:      A linear outer segment object
 %  cMosaic: The parent object of the outersegment
@@ -28,7 +32,7 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 % See osLinear.osCompute() for how the impulse response function and mean
 % currents are used.
 %
-% See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize
+% See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize, s_osLinearFilters
 %
 % 11/2016 JRG/BW (c) isetbio team
 
