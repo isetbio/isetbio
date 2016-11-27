@@ -34,7 +34,7 @@ weights = [zeros(1, 5), stimWeights, zeros(1, 5)];
 hparams(1) = harmonicP;
 hparams(2) = hparams(1); hparams(2).contrast = 0;
 sparams.fov = 0.3;
-ois = oisCreate('harmonic','blend',weights, 'hparams',hparams,'sparams',sparams);
+ois = oisCreate('harmonic','blend',weights, 'tparams',hparams,'sparams',sparams);
 % ois.visualize;
 
 % Assert values from November 19, 2016 (BW)
@@ -53,10 +53,11 @@ UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 % by coneMosaic.compute
 cMosaic = coneMosaic;
 cMosaic.setSizeToFOV(0.2);
-cMosaic.integrationTime = ois.oiTimeAxis(2);  % This is the integration time
-cMosaic.emGenSequence(length(ois.oiTimeAxis));
+cMosaic.integrationTime = ois.timeAxis(2);  % This is the integration time
+cMosaic.emGenSequence(length(ois.timeAxis));
 cMosaic.compute(ois);
 
+tolerance = 1E-2;
 quantityOfInterest = (sum(cMosaic.absorptions(:))/121450) - 1;
 UnitTest.assertIsZero(quantityOfInterest,'coneMosaic abosprtions',tolerance);
 
