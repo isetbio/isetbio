@@ -21,8 +21,12 @@ function ValidationFunction(runTimeParams)
 
 %%
 ieInit;
-clear variables
-rng(1);  % Set noise
+
+% Reproduce identical random number
+rng('default'); rng(1);
+
+% Zero testing tolerance
+tolerance = 1e-4;
 
 %% Impulse on a 1 ms time axis.
 integrationTime = 5e-3;
@@ -42,8 +46,6 @@ oiImpulse = oisCreate('impulse','add',weights,...
     'sparams',sparams,...
     'sampleTimes',sampleTimes);
 
-% oiImpulse.visualize;
-
 %% Set the cone mosaic parameters
 
 cMosaic = coneMosaic;    % Default is osLinear
@@ -56,39 +58,33 @@ cMosaic.emGenSequence(tSamples);
 cMosaic.compute(oiImpulse);
 sumA = sum(cMosaic.absorptions(:));
 
-% How I calculated
-% A = 0;
-% for ii=1:10; cMosaic.compute(oi); A = A + sum(cMosaic.absorptions(:)); end
-% v = A/10;
 
-tolerance = 1e-4;
-
-v = 19000241;
+v = 18996576;
 test = (sumA - v)/v;
 UnitTest.assertIsZero(test,'Total absorptions test',tolerance);
 
 %% Compute the current and get the interpolated filters
 
-% The difference between noise flag true and false is actually interesting.
-% When the noise is true, the individual cones have relatively little
-% reliability.
+% No noise, compute the filters
 cMosaic.os.noiseFlag = false;
 interpFilters = cMosaic.computeCurrent;
 sumF = sum(interpFilters(:));
-UnitTest.assertIsZero((sumF-1.4292)/sumF,'Linear filters test',tolerance);
+test = (sumF - 1.4302)/sumF;
+UnitTest.assertIsZero(test,'Linear filters test',tolerance);
 
-%
+% and then the photocurrent 
 sumC = sum(cMosaic.current(:));
-UnitTest.assertIsZero((sumC--3.8807e+07)/sumC,'Photocurrent test',tolerance);
+test = (sumC - -3.8808e+07)/sumC;
+UnitTest.assertIsZero(test,'Photocurrent test',tolerance);
 
 % cMosaic.window;
 
-%% If you want to see the interpolated and complete impulse response ..
-
-% Should wrap in the runtime plot condition.
-cMosaic.plot('os impulse response');
-hold on;
-plot(cMosaic.timeAxis, interpFilters,'o');
-grid on; xlabel('Time (sec)');
+%% Compare the interpolated and complete impulse response functions.
+if (runTimeParams.generatePlots)
+    cMosaic.plot('os impulse response');
+    hold on;
+    plot(cMosaic.timeAxis, interpFilters,'o');
+    grid on; xlabel('Time (sec)');
+end
 
 end
