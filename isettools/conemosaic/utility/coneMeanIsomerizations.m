@@ -23,12 +23,17 @@ p.parse(cMosaic,varargin{:});
 cMosaic    = p.Results.cMosaic;
 perSample  = p.Results.perSample;
 
+% Default
+lMean = 0; mMean = 0; sMean = 0;
+meanRate = [lMean, mMean, sMean];
 
 %% Locations of each cone type
 
 coneType = cMosaic.pattern;
 pRate    = cMosaic.absorptions;  % Absorptions per sample
+if isempty(pRate), return; end   % Return 0 when no absorptions
 
+%% Compute
 lConeIndices = find(coneType == 2);
 mConeIndices = find(coneType == 3);
 sConeIndices = find(coneType == 4);

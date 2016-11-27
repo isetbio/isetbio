@@ -18,9 +18,12 @@ cMosaic = coneMosaic('os',osLinear,'pattern',[2 2 2]);
 % the impulse response due to adaptation.
 meanIsoArray = [100 500 1000 2000 5000 10000]*cMosaic.integrationTime;
 
+% This should be a function that gets tSamples from osLinear class
+tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+
 %%  Loop on different background rates and plot
-fovea = zeros(4002,length(meanIsoArray));
-periphery = zeros(4002,length(meanIsoArray));
+fovea = zeros(tSamples,length(meanIsoArray));
+periphery = zeros(tSamples,length(meanIsoArray));
 
 for ii = 1:length(meanIsoArray)
     

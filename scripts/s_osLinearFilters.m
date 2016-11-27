@@ -1,13 +1,19 @@
-%% Calculate he lms linear filters in the BioPhys model (Rieke)
+%% The cone mosaic and the lms linear filters in the BioPhys model (Rieke)
 %
-% The linear filters are calculated by introducing a small perturbation
-% into the osBioPhys model.  The linear filters differ as a function of the
-% mean luminance level (background absorption rate).
+% The linear outer segment model relies on impulse response functions that
+% are calculated by introducing a small perturbation into the osBioPhys
+% model.  The linear filters differ as a function of the mean luminance
+% level (background absorption rate).
 %
-% Notice in the resulting
+% This script illustrates the filters, their dependence on background rate,
+% and how that dependence translates into a 'gain' (threshold sensitivity).
 %
-% Computation - We create a uniform scene and set its luminance level.
-% Then we create a cone mosaic of one type of 
+% This script carries out a very simple but relatively complete computation
+% that uses the filters.
+% 
+%   *  We create a uniform scene and set its luminance level.
+%   *  We create a cone mosaic of one type of cone
+%   *
 %
 
 %%
@@ -26,7 +32,9 @@ cMosaic.integrationTime = 0.001;
 % Initialize luminance levels and mean isomerization count and filters
 lum = logspace(log10(0.5),4,12);
 meanI = zeros(size(lum));
-f = zeros(4002,length(lum));
+tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+
+f = zeros(tSamples,length(lum));
 
 %%  Loop to calculate filters
 
