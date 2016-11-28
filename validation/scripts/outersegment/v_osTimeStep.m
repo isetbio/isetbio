@@ -342,7 +342,6 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     % Subtract baseline from all photocurrents
     normalizePhotocurrents = true;
     if (normalizePhotocurrents)
-        size(allInstancesPhotoCurrents)
         minLMS = squeeze(min(min(min(allInstancesPhotoCurrents,[],1), [],2), [], 4));
         photocurrentBaseline = ones(size(allInstancesPhotoCurrents));
         for coneIndex = 1:3
@@ -370,8 +369,6 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     photocurrentFanoFactorLims = [0.0 10];
     SNRlims = [0 60];
       
-    
-    
     hFig = figure(figNo+1000); clf;
     set(hFig, 'Position', [10+figNo*10 10 1800 1180], 'Color', [0 0 0]);
     

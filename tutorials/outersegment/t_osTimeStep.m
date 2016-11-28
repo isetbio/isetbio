@@ -14,7 +14,7 @@ function t_osTimeStep
 ieInit;
 
 % Examine the effects of varying the integrationTime
-%conditionSet = 1;
+conditionSet = 1;
 
 % Examine effects of varying the response time interval (os.timeStep)
 %conditionSet = 2;
@@ -23,7 +23,7 @@ ieInit;
 %conditionSet = 3;
 
 % Custom condition
-conditionSet = 4;
+%conditionSet = 4;
 
 condData = makeConditionSet(conditionSet);
 
@@ -72,20 +72,21 @@ function [theConeMosaic, theOIsequence, ...
     theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, modulationRegion);
 
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
 
+    % Generate eye movement sequence for all oi's
+    eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
+    theConeMosaic.emGenSequence(eyeMovementsNum);
+    
     [absorptionsCountSequence, photoCurrentSequence] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
-            'currentFlag', false, ...
+            'currentFlag', true, ...
             'newNoise', true ...
             );
     absorptionsTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);  
     photoCurrentTimeAxis = absorptionsTimeAxis;
     
-    theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
-    pause
-    % If you need a resampled (most likely a down-sampled) version of the photocurrent, here is how to get it.
-    % resampledPhotocurrents = outerSegment.resample(photoCurrentSequence, photoCurrentTimeAxis, absorptionsTimeAxis);
+    %theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
     
     % Compute photon rate from photon count
     isomerizationRateSequence = absorptionsCountSequence / theConeMosaic.integrationTime;
@@ -94,7 +95,7 @@ end
 
 % ------- Helper functions --------
 
-function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, opticalImageSequenceLength)
+function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
     % Default human mosaic
     theConeMosaic = coneMosaic;
     
@@ -123,18 +124,6 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, in
 
     % Couple the outersegment object to the cone mosaic object
     theConeMosaic.os = theOuterSegment;
-
-    % Generate eye movement sequence for all oi's
-    stimulusSamplingInterval = oiTimeAxis(2)-oiTimeAxis(1);
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/theConeMosaic.integrationTime;
-    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*opticalImageSequenceLength);
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g Cone mosaic integration time: %g\n', stimulusSamplingInterval, theConeMosaic.integrationTime);
-    else 
-        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-        theConeMosaic.emGenSequence(eyeMovementsNum);
-    end
 end
 
 
@@ -380,7 +369,7 @@ function condData = makeConditionSet(conditionSet)
                 'modulation', 0.5, ...                      % 50%  modulation against background
                 'modulationRegion', 'CENTER', ...           % modulate the central image (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh, e.g., 20 msec per optical image
-                'osTimeStep', 1/1000, ...                   % 1 millisecond
+                'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
                 'integrationTime', nan, ...                 % we will vary this one
                 'photonNoise', true, ...
                 'osNoise', false);
@@ -410,13 +399,13 @@ function condData = makeConditionSet(conditionSet)
                 'osNoise', false);
 
             % Varied params
-            c0.osTimeStep = 20/1000;                    % 20 milliseconds
+            c0.osTimeStep = 1/1000;                    % 1 milliseconds
             condData{numel(condData)+1} = c0;
             
-            c0.osTimeStep = 10/1000;                    % 10 milliseconds
+            c0.osTimeStep = 0.5/1000;                  % 0.5 milliseconds
             condData{numel(condData)+1} = c0;
             
-            c0.osTimeStep = 2/1000;                     % 2 milliseconds
+            c0.osTimeStep = 0.1/1000;                  % 0.1 milliseconds
             condData{numel(condData)+1} = c0;
             
         
@@ -435,7 +424,7 @@ function condData = makeConditionSet(conditionSet)
                 'modulationRegion', 'CENTER', ...           % modulate the center only  (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      
                 'integrationTime', 5/1000, ...             % 5 milliseconds
-                'osTimeStep', 1/(stimulusRefreshRateInHz*eyeMovementsPerStimulusRefresh), ...  
+                'osTimeStep', 0.1/1000, ...  
                 'photonNoise', nan, ...
                 'osNoise', nan);
             
@@ -475,7 +464,7 @@ function condData = makeConditionSet(conditionSet)
                 'modulationRegion', 'CENTER', ...                                % modulate the center only  (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      
                 'integrationTime', integrationTime, ...     
-                'osTimeStep', 1/1000, ...                                       % 1 millisecond
+                'osTimeStep', 0.1/1000, ...                                       % 0.1 millisecond
                 'photonNoise', false, ...
                 'osNoise', false);
             

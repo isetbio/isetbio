@@ -103,6 +103,10 @@ classdef oiSequence
         
         %% Define methods in the @oiSequence directory
         
+        % Method to compute the maximum number of eye movement for current
+        % sequence and a given integrationTime
+        maxEyeMovementsNum = maxEyeMovementsNumGivenIntegrationTime(obj, integrationTime);
+        
         % Method for on-the-fly computation of the oi at desired index
         oiFrame = frameAtIndex(obj, index);
         
