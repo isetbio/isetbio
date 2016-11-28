@@ -39,7 +39,7 @@ c0 = struct(...
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', 15/1000, ...             % 15 msec
     'photonNoise', true, ...                    % add Poisson noise
-    'osTimeStep', 1/1000, ...                   % 1 millisecond
+    'osTimeStep', 0.1/1000, ...                   % 1 millisecond
     'osNoise', true ...                        % no photocurrent noise
     );
 
@@ -172,16 +172,14 @@ function [theConeMosaic, theOIsequence, ...
     end
     
     % Generate the cone mosaic with eye movements for theOIsequence
-    [theConeMosaic, eyeMovementsNum] = ...
-        coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, ...
-        osTimeStep, oiTimeAxis, theOIsequence.length);
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
 
     % Generate eye movement paths for all instances
+    eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
     emPaths = zeros(instancesNum, eyeMovementsNum,2);
     for instanceIndex = 1:instancesNum
         emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
-    end
-    
+    end 
     
     % Compute all instances 
     [allInstancesAbsorptionsCountSequence, allInstancesPhotoCurrents] = ...
@@ -197,7 +195,6 @@ function [theConeMosaic, theOIsequence, ...
     
      
      % Internal consistency checks
-     
      % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
      lastInstance = size(allInstancesAbsorptionsCountSequence,1);
      s1 = single(theConeMosaic.absorptions);
@@ -248,7 +245,7 @@ end
 
 % ------- Helper functions --------
 
-function [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, opticalImageSequenceLength)
+function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
     % Default human mosaic
     theConeMosaic = coneMosaic;
     
@@ -277,17 +274,6 @@ function [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicSize, photo
 
     % Couple the outersegment object to the cone mosaic object
     theConeMosaic.os = theOuterSegment;
-
-    % Generate eye movement sequence for all oi's
-    stimulusSamplingInterval = oiTimeAxis(2)-oiTimeAxis(1);
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/theConeMosaic.integrationTime;
-    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*opticalImageSequenceLength);
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g Cone mosaic integration time: %g\n', stimulusSamplingInterval, theConeMosaic.integrationTime);
-    else 
-        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-    end
 end
 
 
@@ -529,7 +515,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
         % Plot the time-varying Fano factor
         stairs(photocurrentTime, photocurrentInverseFanoFactor, 'Color', colors(coneType,:), 'LineWidth', 1.5);
         box on;
-        yTicks = [1 5 10 30 50 100];
+        yTicks = [0 1 2 4 8];
         set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', photocurrentFanoFactorLims, 'YScale', 'Linear', 'YTick', yTicks, 'YTickLabel', sprintf('%2.2f\n', yTicks));
         if (coneType == 3)
             xlabel('time (seconds)', 'FontSize', 16);
