@@ -20,7 +20,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p.parse(varargin{:});  
     
     if (any(size(activation) ~= size(obj.pattern)))    
-       activation = coneMosaic.reshapeActivationMap1DTo2D(activation, obj.pattern);
+       activation = obj.reshapeHex2DmapToHex3Dmap(activation);
     end
       
     if strcmp(p.Results.mapType, 'modulated disks') || strcmp(p.Results.mapType, 'modulated hexagons')
@@ -60,8 +60,9 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         activationRange = signalRange;
     end
     
+
     hFig = figure(); clf;
-    set(hFig, 'Position', cat(2, [10 10], figureSize), 'Color', [0 0 0]); % , 'MenuBar', 'None');
+    set(hFig, 'Position', [10 10 figureSize(1) figureSize(2)], 'Color', [0 0 0]); % , 'MenuBar', 'None');
     
     if (separateLMSmosaics)
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -186,6 +187,25 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         showYticks = false;
         lineWidth = 1.0;
         
+        if (isempty(xRange))
+            xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
+        else
+            xRange(1) = xRange(1) - obj.pigment.width; 
+            xRange(2) = xRange(2) + +obj.pigment.width;
+        end
+        if (isempty(yRange))
+            yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
+        else
+            yRange(1) = yRange(1)-obj.pigment.width;
+            yRange(2) = yRange(2)+obj.pigment.width;
+        end
+        
+        %axis 'equal';
+        %set(gca, 'XLim', xRange);
+        %set(gca, 'YLim', yRange);
+        
+        zoom(zoomFactor);
+        
         for coneType = 2:4
             idx = find(obj.pattern == coneType);
             [iRows,iCols] = ind2sub(size(obj.pattern), idx);
@@ -206,12 +226,22 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             if (coneType == 2)
                 hold on;
             end
+            drawnow;
+            pause;
         end
-        
         hold off;
         
+        drawnow
+        fprintf('After hold off');
+        pause
+        
         set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
-        axis 'image'; axis 'xy';
+ 
+        
+        drawnow
+        fprintf('After setting axis xy');
+        pause
+        
         xTicks = obj.center(1) + 1e-6 * (-75:75:75);
         yTicks = obj.center(2) + 1e-6 * (-75:75:75);
         
@@ -225,27 +255,20 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             set(gca, 'YTick', []);
         end
         box on; grid off;
-        if (isempty(xRange))
-            xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
-        else
-            xRange(1) = xRange(1) - obj.pigment.width; 
-            xRange(2) = xRange(2) + +obj.pigment.width;
-        end
-        if (isempty(yRange))
-            yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
-        else
-            yRange(1) = yRange(1)-obj.pigment.width;
-            yRange(2) = yRange(2)+obj.pigment.width;
-        end
-            
-        set(gca, 'XLim', xRange*zoomInFactor);
-        set(gca, 'YLim', yRange*zoomInFactor);
+        
+      
+        
         set(gca, 'FontSize', 18, 'FontName', 'Menlo');
         
         ticks = 0:0.1:1.0;
         tickLabels = sprintf('%2.0f\n', round(activationRange(1) + ticks * (activationRange(2)-activationRange(1))));
+        
+        drawnow
+        fprintf('Before adding the colorbar');
+        pause
+        
         % Add colorbar
-        originalPosition = get(gca, 'position');
+        originalPosition = get(gca, 'position')
         hCbar = colorbar('eastoutside', 'peer', gca, 'Ticks', ticks, 'TickLabels', tickLabels);
         hCbar.Orientation = 'vertical';
         hCbar.Label.String = signalName;
@@ -253,8 +276,17 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         hCbar.FontName = 'Menlo';
         hCbar.Color = [0.9 0.9 0.5];
         % The addition changes the figure size, so undo this change
-        newPosition = get(gca, 'position');
+        newPosition = get(gca, 'position')
+        
+        drawnow
+        fprintf('Before setting the new positions');
+        pause
+        
         set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]); 
+        
+        drawnow
+        fprintf('after setting the new positions');
+        pause
         if (~isnan(instanceIndex))
             if (~isempty(activationTime))
                 title(sprintf('t = %7.1f msec              (response instance: #%3d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
@@ -270,6 +302,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
     
     colormap(cMap);
     drawnow
+    pause
 end
 
 function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineStyle, lineWidth)

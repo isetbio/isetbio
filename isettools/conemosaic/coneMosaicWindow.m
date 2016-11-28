@@ -26,7 +26,7 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 08-Sep-2016 22:25:27
+% Last Modified by GUIDE v2.5 19-Nov-2016 14:29:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,10 +73,6 @@ handles.cMosaic.hdl = hObject;
 vcSetFigureHandles('conemosaic',hObject,eventdata,handles);
 figure(hObject);
 
-
-% Get the font size initialized
-ieFontInit(hObject);
-
 % Set the popup default image selection to mean absorptions when the window
 % opens.
 str = get(handles.popupImageType, 'String');
@@ -87,6 +83,9 @@ end
 
 % Refresh and move on
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+% Set the font size based on the ISETBIO preferences
+ieFontInit(hObject);
 
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
@@ -100,12 +99,16 @@ end
 
 function btnComputeImage_Callback(hObject, eventdata, handles)
 % Button press computes the image from the optics data
-[~, oi] = vcGetSelectedObject('OI');
+oi = vcGetObject('OI');
 if isempty(oi) || isempty(oiGet(oi, 'photons'))
-    error('No optical image photon data available');
+    warning('No optical image.  Use ieAddObject(oi) to store.');
+    return;
 end
+
 handles.cMosaic.compute(oi);
+handles.cMosaic.name = oiGet(oi,'name');
 set(handles.popupImageType, 'Value', 2); % mean absorptions
+
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -178,8 +181,11 @@ set(hObject,'BackgroundColor', get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editGam_Callback(hObject, eventdata, handles)
-handles.mov = [];
+handles.mov    = [];
 handles.curMov = [];
+
+set(handles.editGam,'value',str2double(get(handles.editGam,'string')));
+
 coneMosaicGUIRefresh(hObject,eventdata,handles);
 end
 
@@ -192,6 +198,9 @@ function coneMosaicGUIRefresh(hObject, eventdata, handles)
 
 % get coneMosaic object
 cm = handles.cMosaic;
+
+% Place name in text string box
+set(handles.txtName,'string',sprintf('%s',cm.name));
 
 % set row and cols
 set(handles.editRows, 'string', num2str(cm.rows));
@@ -208,6 +217,10 @@ set(handles.editKLMS, 'string', str);
 % set description strings
 str = cm.description('skipMacular', true, 'skipPigment', true);
 set(handles.txtMosaic, 'string', str);
+
+% set outersegment description
+str = cm.descriptionOS;
+set(handles.txtOS,'string',str);
 
 % set photopigment properties
 set(handles.editConeWidth, 'string', num2str(cm.pigment.width*1e6));
@@ -265,6 +278,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'off');
         set(handles.menuPlotVLineLMS, 'Enable', 'off');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Mean absorptions'
         % mean cone absorptions
         resetMovieControl(handles);
@@ -291,18 +306,29 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Absorption movie'
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
+        
         if isempty(handles.mov)
-            ieInWindowMessage('Building movie',handles,2);
-            % generate movie
+            % Alert to movie build
+            ieInWindowMessage('Building absorptions movie',handles);
+            
+            % generate movie - This is fast and the actual display is slow.
+            % Let's use one bit of code and make it the same.
             handles.mov = cm.plot('movie absorptions', 'hf','none',...
                 'show',true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
+            
+            % Clear message
+            ieInWindowMessage('',handles);
             guidata(hObject, handles);
         end
+        
+        % Initiate movie display GUI elements.
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        set(handles.sliderMovieProgress, 'Visible', 'on');
         
         % set up right click menu (context menu)
         c = uicontextmenu;        
@@ -321,7 +347,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        
+        set(handles.txtMovieFrame,'Visible','on');
+
         % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
@@ -345,19 +372,23 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        set(handles.txtMovieFrame,'Visible','off');
+
     case 'Photocurrent movie'
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
         
-        % The movie is playing here.  I don't think it should be.
         if isempty(handles.curMov) % generate movie for photocurrent
-            ieInWindowMessage('Building movie',handles,2);
+            ieInWindowMessage('Building photocurrent movie',handles);
             handles.curMov = cm.plot('movie current', 'hf','none', ...
                 'show', true, ...
                 'gamma', str2double(get(handles.editGam, 'String')));
             guidata(hObject, handles);
+            ieInWindowMessage('',handles);
         end
+        
+        % Graphics elements
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        set(handles.sliderMovieProgress, 'Visible', 'on');
         
         % set up right click menu (context menu)
         c = uicontextmenu;
@@ -376,7 +407,8 @@ switch plotType
         set(handles.menuPlotHLineLMS, 'Enable', 'on');
         set(handles.menuPlotVLineLMS, 'Enable', 'on');
         set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        
+        set(handles.txtMovieFrame,'Visible','on');
+
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
     otherwise
@@ -397,7 +429,7 @@ if index > length(contents), index = 1; end
 plotType = contents{index};
 
 % get a point
-[x, y] = ginput(1);
+[x, y] = ginput(1); % Rounded and clipped to the data, below
 
 switch plotType
     case 'Mean absorptions'
@@ -411,9 +443,10 @@ switch plotType
             data = handles.cMosaic.absorptions(:, :, cnt);
         end
         
+        % Not necessary (BW)
         % map x, y to cone positions
-        x = x / size(handles.mov, 2) * size(data, 2);
-        y = y / size(handles.mov, 1) * size(data, 1);
+        %         x = x / size(handles.mov, 2) * size(data, 2);
+        %         y = y / size(handles.mov, 1) * size(data, 1);
         yStr = 'Absorptions';
     case 'Mean photocurrent'
         data = mean(handles.cMosaic.current, 3);
@@ -426,13 +459,17 @@ switch plotType
             data = handles.cMosaic.current(:, :, cnt);
         end
         
+        % Not necessary (BW)
         % map x, y to cone positions
-        x = x / size(handles.curMov, 2) * size(data, 2);
-        y = y / size(handles.curMov, 1) * size(data, 1);
+        %         x = x / size(handles.curMov, 2) * size(data, 2);
+        %         y = y / size(handles.curMov, 1) * size(data, 1);
         yStr = 'Photocurrent (pA)';
 end
 x = ieClip(round(x), 1, size(data, 2));
 y = ieClip(round(y), 1, size(data, 1));
+
+% Draw a circle around the selected point.
+c = viscircles([x,y],0.7);
 
 switch source.Label
     case 'hLine response'
@@ -442,28 +479,43 @@ switch source.Label
         vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); grid on;
         xlabel('Vertical position (cones)'); ylabel(yStr);
     case 'hLine LMS'
-        vcNewGraphWin; names = 'LMS';
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(y, :) == ii);
-            plot(pos, data(y, pos), '.-', 'LineWidth', 2); grid on;
+            plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Horizontal Position (cones');
-            ylabel([names(ii-1) ' ' lower(yStr)]);
+            ylabel([names(ii-1) ' ' yStr]);
         end
     case 'vLine LMS'
-        vcNewGraphWin; names = 'LMS';
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(:, x) == ii);
-            plot(pos, data(pos, x), '.-', 'LineWidth', 2); grid on;
+            plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Vertical Position (cones');
-            ylabel([names(ii-1) ' ' lower(yStr)]);
+            ylabel([names(ii-1) ' ' yStr]);
         end
     case 'time series'
+        % Time series is enabled for the absorption and current movie modes
         vcNewGraphWin;
-        t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
-        plot(t, squeeze(data(x, y, :)), 'LineWidth', 2);
+        if index == 3  %  absorption movie
+            % Show the absorption time series
+            mx = max(handles.cMosaic.absorptions(:));
+            mn = min(handles.cMosaic.absorptions(:));
+            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
+        elseif index == 5  % photocurrent movie
+            mx = max(handles.cMosaic.current(:));
+            mn = min(handles.cMosaic.current(:));
+            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
+        end
+        
+        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         grid on; xlabel('Time (ms)'); ylabel(yStr);
+        set(gca,'ylim',[mn mx]);
+        
     otherwise
         error('Unknown label type');
 end
@@ -745,18 +797,79 @@ function menuPlotEMPath_Callback(~, ~, handles)
 handles.cMosaic.plot('eye movement path');
 end
 
-function menuEditGenerateEM_Callback(hObject, eventdata, handles)
-% hObject    handle to menuEditGenerateEM (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-str = ieReadString('Number of frames', '5000');
+
+% --------------------------------------------------------------------
+function menuCones_Callback(hObject, eventdata, handles)
+% Cones - Main Pull down for computing.
+end
+
+function menuConesGenerateEM_Callback(hObject, eventdata, handles)
+% Cones | Generate eye movements
+%
+str = ieReadString('Number of frames', '500');
 if ~isempty(str)
     handles.cMosaic.emGenSequence(str2double(str));
     menuEditClearData_Callback(hObject, eventdata, handles);
+    set(handles.popupImageType, 'Value', 2); % mean absorptions
     coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 end
+
+% --------------------------------------------------------------------
+function menuConesAbsorptions_Callback(hObject, eventdata, handles)
+% Cones | Compute absorptions
+%
+% Loads current oi to compute the absorptions.  If no oi is selected, it
+% complains.
+
+oi = vcGetObject('OI');
+if isempty(oi) || isempty(oiGet(oi, 'photons'))
+    warning('No optical image.  Use ieAddObject(oi) to store.');
+    return;
+end
+
+fprintf('Calculating with optical image %s\n',oiGet(oi,'name'));
+handles.cMosaic.compute(oi);
+handles.cMosaic.name = oiGet(oi,'name');
+set(handles.popupImageType, 'Value', 2); % mean absorptions
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
+
+% --------------------------------------------------------------------
+function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
+% Cones | Compute photocurrent
+%
+handles.cMosaic.computeCurrent;
+set(handles.popupImageType, 'Value', 4); % mean current
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+end
+
+% --------------------------------------------------------------------
+function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
+% Cones | Toggle photocurrent noise
+% Also executes computeCurrent
+
+set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
+
+% Flip from whatever state to the other
+handles.cMosaic.os.noiseFlag = 1 - handles.cMosaic.os.noiseFlag;
+
+% Set check when on, clear check when off
+if handles.cMosaic.os.noiseFlag
+    handles.menuConePhotocurrentNoise.Checked = 'on';
+else
+    handles.menuConePhotocurrentNoise.Checked = 'off';
+end
+
+handles.cMosaic.computeCurrent;
+set(handles.popupImageType, 'Value', 4); % mean current
+coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+end
+
+%---------------
 
 function popupImageType_Callback(hObject, eventdata, handles)
 % hObject    handle to popupImageType (see GCBO)
@@ -794,6 +907,7 @@ end
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
 assert(cnt <= size(mov, ndims(mov)), 'slider choice out of range');
 axes(handles.axes2); imshow(mov(:, :, cnt)); drawnow;
+set(handles.txtMovieFrame,'string',cnt);
 
 % register right click menu
 c = uicontextmenu;
@@ -820,14 +934,22 @@ function btnPlayPause_Callback(~, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 index = get(handles.popupImageType, 'Value');
-if index == 3  % absorption movie
-    mov = handles.mov;
-elseif index == 5  % photocurrent movie
-    mov = handles.curMov;
+
+if index == 3, 
+    mov = handles.mov;    % absorption movie
+    mx = sprintf('%d',max(handles.cMosaic.absorptions(:)));
+    mn = '0';
+elseif index == 5, 
+    mov = handles.curMov; % photocurrent movie
+    mx = sprintf('%d',round(max(handles.cMosaic.current(:))));
+    mn = sprintf('%d',round(min(handles.cMosaic.current(:))));
 end
 
+% Gamma for display
+gam = get(handles.editGam,'value');
+
 if ismatrix(mov), nFrames = 1;
-else nFrames = size(mov, ndims(mov));
+else              nFrames = size(mov, ndims(mov));
 end
 
 if nFrames == 1, 
@@ -841,28 +963,35 @@ set(handles.sliderMovieProgress, 'Max', nFrames);
 set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
 if get(handles.btnPlayPause, 'Value')
-    % play the video when the value is not zero
+    % play video if  value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
     cnt = round(get(handles.sliderMovieProgress, 'Value'));
+    
     gData = guidata(handles.coneMosaicWindow);
     axes(gData.axes2);
-    % axes(get(handles.coneMosaicWindow,'CurrentAxes'));
+    
     
     while get(handles.btnPlayPause, 'Value')
-        if ndims(mov) == 3
-            imshow(mov(:, :, cnt)); 
-        elseif ndims(mov) ==4
-            imshow(mov(:, :, :, cnt));
-        end
-        set(handles.sliderMovieProgress, 'Value', cnt);
+        % This is very slow compared to the cm.plot() call.
+        % Not sure what to do, if anything (BW).
+        if ndims(mov)     == 3,         imshow(mov(:, :, cnt).^gam); 
+        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt).^gam);
+        end 
         
-        drawnow; cnt = cnt + 1;
-        if cnt > nFrames, cnt = 1; end
+        % Show a color bar up to align with 'mean' windows
+        colorbar('ticks',[0,1],'ticklabels',{mn,mx});
+
+        set(handles.sliderMovieProgress, 'Value', cnt);
+        set(handles.txtMovieFrame,'string',cnt);
+        drawnow; 
+        
+        % Cycle the cnt
+        cnt = cnt + 1; if cnt > nFrames, cnt = 1; end
     end
 else
     % pause video when the value is zero
     set(handles.btnPlayPause, 'String', 'Play');
-    
+
     % register right click menu
     c = uicontextmenu;
     for ichild = 1:size(handles.axes2.Children,1)

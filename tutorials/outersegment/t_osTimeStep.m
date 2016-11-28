@@ -74,11 +74,16 @@ function [theConeMosaic, theOIsequence, ...
     % Generate the cone mosaic with eye movements for theOIsequence
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
 
-    [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
+    [absorptionsCountSequence, photoCurrentSequence] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
-            'currentFlag', true, ...
+            'currentFlag', false, ...
             'newNoise', true ...
             );
+    absorptionsTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);  
+    photoCurrentTimeAxis = absorptionsTimeAxis;
+    
+    theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
+    pause
     % If you need a resampled (most likely a down-sampled) version of the photocurrent, here is how to get it.
     % resampledPhotocurrents = outerSegment.resample(photoCurrentSequence, photoCurrentTimeAxis, absorptionsTimeAxis);
     
@@ -460,7 +465,7 @@ function condData = makeConditionSet(conditionSet)
             
             % Custom
             stimulusRefreshRateInHz = 66;
-            integrationTime = 5/1000;
+            integrationTime = 50/1000;
             
             % Steady params
             c0 = struct(...

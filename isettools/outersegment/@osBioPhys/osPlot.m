@@ -32,7 +32,6 @@ addRequired(p, 'sensor');
 addParameter(p,'type', 'all', @ischar);
 
 p.parse(obj, absorptions, varargin{:});
-params  = p.Results;
 absorptions  = params.sensor;
 type   = params.type;
 
@@ -63,6 +62,9 @@ switch ieParamFormat(type)
         osPlotCurrent(obj,absorptions)
         
     otherwise
+        % Pass back to super class plot routine
+        plot@outersegment(obj,param,varargin{:});
+        
         warning('Unknown plot type %s\n',type);
 end
 

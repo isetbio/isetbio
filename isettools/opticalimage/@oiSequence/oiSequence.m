@@ -2,16 +2,21 @@ classdef oiSequence
     % Class for generating a sequence of optical images
     %
     % Usage:
-    % (1) theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction)
+    % (1) theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunctionTimeAxis, modulationFunction)
     %
     % (2) modulationRegion.radiusInMicrons = 300;
-    %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunction, 'modulationRegion', modulationRegion, 'oiModulatedReplacesBackground', true);
+    %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunctionTimeAxis, modulationFunction, 'modulationRegion', modulationRegion);
+    %
+    % TODO:  Maybe set up some oiGet/Set routines with the syntax
+    %        oiSequence.get('oiFixed mumble') and
+    %        oiSequence.get('oiModulated mumble')???
+    %        Maybe oiSequence.get('frame',val)???
     %
     % See t_oiSequence for example usage.
     %
     %  NPC, ISETBIO TEAM, 2016
     
-    properties 
+    properties
         
     end
     
@@ -19,7 +24,7 @@ classdef oiSequence
         length
     end
     
-    properties (SetAccess = private)   
+    properties (SetAccess = private)
         % the fixed oi (an oi, the background)
         oiFixed
         
@@ -27,7 +32,7 @@ classdef oiSequence
         oiModulated
         
         % the oiSequence timebase
-        oiTimeAxis
+        timeAxis
         
         % whether to add the oiModulated to the oiFixed or to blend it with the oiFixed
         composition;
@@ -43,7 +48,7 @@ classdef oiSequence
     
     
     methods  % public methods
-            
+        
         % constructor
         function obj = oiSequence(oiFixed, oiModulated, oiTimeAxis, modulationFunction, varargin)
             
@@ -61,24 +66,24 @@ classdef oiSequence
             
             obj.oiFixed = p.Results.oiFixed;
             obj.oiModulated = p.Results.oiModulated;
-            obj.oiTimeAxis = p.Results.oiTimeAxis;
+            obj.timeAxis = p.Results.oiTimeAxis;
             obj.modulationFunction = p.Results.modulationFunction;
             obj.modulationRegion = p.Results.modulationRegion;
             obj.composition = p.Results.composition;
             
-            % The oiTimeAxis must be the same length as the number of
+            % The timeAxis must be the same length as the number of
             % values in the modulationFunction.  If it only has 1 value, we
             % are going to assume that the value is delta T and we will
             % create the whole vector.  If it has a vector, but that vector
             % is not the same length as the modulationFunction, we throw an
             % error.
-            if length(obj.oiTimeAxis) == 1
+            if length(obj.timeAxis) == 1
                 % First moment in time is 0. Increments by the set value.
-                obj.oiTimeAxis = obj.oiTimeAxis*(0:(length(modulationFunction))-1);
-            elseif length(obj.oiTimeAxis) ~= length(obj.modulationFunction)
+                obj.timeAxis = obj.timeAxis*(0:(length(modulationFunction))-1);
+            elseif length(obj.timeAxis) ~= length(obj.modulationFunction)
                 error('Time axis does not match modulation function');
             end
-              
+            
             % Set a validation function above, don't do this.
             if (~strcmp(obj.composition, 'add')) && (~strcmp(obj.composition, 'blend'))
                 error('''composition'' must be set to either ''blend'' or ''add''.');
@@ -95,7 +100,7 @@ classdef oiSequence
                 error('Mismatch between spatial support of oiFixed, oiModulated');
             end
         end
-            
+        
         %% Define methods in the @oiSequence directory
         
         % Method for on-the-fly computation of the oi at desired index
@@ -103,7 +108,10 @@ classdef oiSequence
         
         % Visualize the sequence
         visualize(obj,varargin);
-        visualizeWithEyeMovementSequence(obj, emTimeAxis);
+        
+        function val = timeStep(obj)
+            val = obj.timeAxis(2) - obj.timeAxis(1);
+        end
         
         %% Local get methods
         
@@ -117,9 +125,9 @@ classdef oiSequence
             val = obj.modulationFunction;
         end
         
-        % Return the oiTimeAxis used
-        function val = get.oiTimeAxis(obj)
-            val = obj.oiTimeAxis;
+        % Return the timeAxis used
+        function val = get.timeAxis(obj)
+            val = obj.timeAxis;
         end
         
         % Return the composition type used

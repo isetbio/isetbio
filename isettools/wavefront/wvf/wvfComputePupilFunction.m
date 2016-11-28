@@ -191,7 +191,8 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         end
         c(5) = c(5) + lcaMicrons + defocusCorrectionMicrons;
         
-        % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to j = 4 (defocus) coefficient\n',thisWave,lcaMicrons);
+        % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to 
+        % j = 4 (defocus) coefficient\n',thisWave,lcaMicrons); 
         
         % This loop uses the function zerfun to compute the Zernike
         % polynomial of each required order. That function normalizes a bit

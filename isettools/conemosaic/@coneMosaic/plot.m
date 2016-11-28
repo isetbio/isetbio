@@ -1,13 +1,13 @@
-function [uData, hf] = plot(obj, type, varargin)
+function [uData, hf] = plot(obj, pType, varargin)
 % Plot function for coneMosaic base class
 %
-%    [uData, hf] = coneMosaic.plot(type, varargin)
+%    [uData, hf] = coneMosaic.plot(pType, varargin)
 %
 % There is a specialized plot() for the coneMosaicHex class that calls this
 % function.
 %
 % Inputs:
-%   type - string, type of plot
+%   pType - string, type of plot
 %
 % Optional input (key-val pairs in varargin):
 %   'hf' - figure handle or control structure, the meaning of value is
@@ -22,18 +22,30 @@ function [uData, hf] = plot(obj, type, varargin)
 % Plot type can be chosen from
 %   'cone mosaic'          - Color image of the cone arrangement
 %   'cone fundamentals'    - Cone pigment without macular or lens
+%   'cone spectral qe'     - Cone pigment and macular
+%
+%  Pigments
 %   'macular transmittance'- Graph
 %   'macular absorptance'  - Graph
-%   'cone spectral qe'     - Cone pigment and macular
 %   'eye spectral qe'      - Cone pigment with macular and lens
+%
+%  Absorptions
 %   'mean absorptions'     - Image of the mean absorptions
 %   'absorptions'          - Movie of the absorptions on cone mosaic
 %   'movie absorptions'    - Gray scale movie of absorptions
-%   'mean current'         - Image of the mean current
-%   'current'              - Current movie on cone mosaic
-%   'movie current'        - Gray scale movie of current
+%
+%  Eye movements
 %   'eye movement path'    - eye movement
+%
+%  Current
+%   'current'              - Current movie on cone mosaic
+%   'mean current'         - Image of the mean current
 %   'current timeseries'   - Cone photocurrent graphs
+%   'impulse response'     - Current impulse response for this integration time
+%   'movie current'        - Gray scale movie of current
+%
+% When you present 'os ' or 'outersegment ' then we pass the arguments
+% along to os.plot()
 %
 % Example:
 %    rgc.mosaic{1}.plot(type)
@@ -45,16 +57,26 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 p.addRequired('obj');
-p.addRequired('type', @isstr);               % Type of plot
+p.addRequired('pType', @isstr);               % Type of plot
 
 p.addParameter('hf', []);                    % figure handle
 p.addParameter('oi',[],@isstruct);           % Used for spectral qe
 
-p.parse(obj,type, varargin{:});
+p.parse(obj,pType, varargin{:});
 hf = p.Results.hf;
 oi = p.Results.oi;   % Used in plotGraphs routine
 
 uData = [];
+
+% Find a cleaner way to check and send to os.plot().  Maybe create a parse
+% argument string as in ISET.
+if (length(pType) > 3 && strcmp(pType(1:3),'os '))
+    obj.os.plot(pType(4:end),varargin{:});
+    return;
+elseif (length(pType) > 13 && strcmp(pType(1:13),'outersegment '))
+    obj.os.plot(pType(14:end),varargin{:});
+    return;
+end
 
 % plot
 if isempty(hf), hf = vcNewGraphWin;
@@ -74,7 +96,7 @@ end
 
 %% Could simplify this big switch
 
-switch ieParamFormat(type);
+switch ieParamFormat(pType)
     
     % ----   Images
     case 'conemosaic'
@@ -86,11 +108,22 @@ switch ieParamFormat(type);
         if isempty(obj.absorptions)
             error('no absorption data');
         end
-        uData = mean(obj.absorptions,3);
-        imagesc(uData); axis off; colorbar;
         
+        % Show the data, with the gamma from the window.
+        uData = mean(obj.absorptions,3);
+        gdata = guidata(obj.hdl);
+        gam = str2double(get(gdata.editGam,'string'));
+        imagesc(uData.^gam); axis off;
+        
+        % Preserve the tick labels in real photons
         colormap(gray);  % Shows a numerical value
+        cbar = colorbar;
+        photons = str2double(get(cbar,'TickLabels')).^(1/gam);
+        photons = num2str(round(photons)); set(cbar,'TickLabels',photons);
         axis image;
+        
+        % Could be resurrected some day with a different name
+        %
         %     case 'absorptions'
         %         % Movie of the absorptions on the cone mosaic
         %         if isempty(obj.absorptions)
@@ -112,12 +145,25 @@ switch ieParamFormat(type);
             error('no photocurrent data computed');
         end
         uData = mean(obj.current, 3);
-        if ~isequal(hf, 'none')
-            imagesc(uData); axis off; colorbar;
-            % title('Mean photocurrent (pA)');
+        
+        % Apply gamma.  The current is always negative.
+        gdata = guidata(obj.hdl);
+        gam = str2double(get(gdata.editGam,'string'));
+        if max(uData(:)) > 0
+            warning('Gamma correction in display is not correct');
         end
-        colormap(gray); % Shows a numerical value
+        
+        % Carry on assuming current is negative pA.
+        % uData = -1*(abs(uData).^gam);
+        uData = abs(uData);
+        if ~isequal(hf, 'none'), imagesc(uData.^gam); end
+        
+        axis off; colormap(flipud(gray));  % Shows a numerical value
+        cbar = colorbar;
+        current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
+        current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
+        
         %     case {'current', 'photocurrent'}
         %         % Photo current movie on colored cone mosaic
         %         if isempty(obj.current)
@@ -132,12 +178,14 @@ switch ieParamFormat(type);
             if isempty(p.Results.hf), close(hf); end
             error('no current data');
         end
+        
         % Additional arguments may be the video file name, step, and
         % FrameRate
+        disp('No gamma applied');
         uData = ieMovie(obj.current,varargin{:});
         
         
-    % ------ Graphs
+        % ------ Graphs
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
         uData = obj.pigment.absorptance;

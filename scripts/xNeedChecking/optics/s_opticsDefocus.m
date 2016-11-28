@@ -1,4 +1,4 @@
-% s_opticsDefocus
+%% s_opticsDefocus
 %
 % Illustrate the OTF and linespreads for defocus under different
 % conditions.  

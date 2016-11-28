@@ -6,9 +6,9 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 %
 % This function is one line long.  But we have a lot of comments here.
 %
-% The pupil size should be that used to normalize the radius of the
-% Zernike coefficients; that is the size with respect to which the
-% meausurements were made.
+% The pupil size should be that used to normalize the radius of the Zernike
+% coefficients; that is the size with respect to which the measurements
+% were made.
 %
 % The sign convention is that a positive number in diopters leads to a
 % positive number in microns.  Some care is required when using this
@@ -16,7 +16,8 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 % in which increased power corresponds to a negative refractive error in
 % diopters.
 %
-% About this conversion, Heidi says:
+% About this conversion, Heidi Hofer says:
+%
 %    The last equation converts between the Zernike defocus coefficient
 %    to a dioptric value (actually the other way), which is not specific
 %    in any way to LCA.

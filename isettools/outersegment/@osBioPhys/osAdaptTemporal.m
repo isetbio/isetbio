@@ -5,7 +5,7 @@
 %                    [only called internally from @osBioPhys/osCompute.m]
 % 
 % Inputs:
-%   pRate - Photon absorption rate from coneMosaic.absorptions/coneMosaic.integrationTime
+%   pRate - Photon absorption rate, coneMosaic.absorptions/coneMosaic.integrationTime
 %   obj   - osBioPhys object containing many initial parameters
 %
 % Return
