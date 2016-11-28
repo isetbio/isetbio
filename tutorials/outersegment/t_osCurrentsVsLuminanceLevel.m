@@ -14,7 +14,7 @@ function t_osCurrentsVsLuminanceLevel
     theOI = oiGenerate(noOptics);
     
     % Luminance levels to be examined
-    luminancesExamined = [100 500 1000 2000 3000 4000 6000];
+    luminancesExamined = [100 500 1000 1500 2000 3000 4000 8000];
 
     % outer segment time steps to be examined
     osTimeSteps = [0.001 0.01 0.1 0.3 0.5 1 3 5]/1000;
@@ -127,20 +127,26 @@ function t_osCurrentsVsLuminanceLevel
                 % Compute modulation of photocurrents at different mean luminance levels
                 for coneIndex = 1:3
                     photocurrent = squeeze(photocurrents(1,1,coneIndex,:));
-                    maxP = max(photocurrent);
-                	minP = min(photocurrent);
-                    modulation(lumIndex,coneIndex) = (maxP-minP)/(maxP+minP);
+                    baselineP = photocurrent(end);
+                    if (baselineP < 0)
+                        deltaPhotocurrent = max(photocurrent - baselineP);
+                    else
+                        deltaPhotocurrent = 0;
+                    end
+                    [lumIndex baselineP deltaPhotocurrent] 
+                    modulation(lumIndex,coneIndex) = deltaPhotocurrent;
                 end % coneIndex
             end
                 
-        end
+        end % osTimeStepIndex
+        
     end % lumIndex
     
     % Plot the dynamic range as a function of mean luminance
     figure(2); clf;
-    plot(luminancesExamined, modulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0); hold on
-    plot(luminancesExamined, modulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0);
-    plot(luminancesExamined, modulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0);
+    plot(luminancesExamined, modulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); hold on
+    plot(luminancesExamined, modulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
+    plot(luminancesExamined, modulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
     grid on; box on;
     xlabel('luminance (cd/m2)');
     ylabel('modulation');
