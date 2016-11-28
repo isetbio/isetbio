@@ -339,18 +339,23 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
     isomerizationMeans = mean(allInstancesIsomerizationsCount, 1);
     isomerizationSTDs = std(allInstancesIsomerizationsCount, 0, 1);
     
-    % Subtract first time point from all photocurrents
-    timePoint = 1;
-    
+    % Subtract baseline from all photocurrents
     normalizePhotocurrents = true;
     if (normalizePhotocurrents)
-        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint)* 0 + min(allInstancesPhotoCurrents(:));
+        size(allInstancesPhotoCurrents)
+        minLMS = squeeze(min(min(min(allInstancesPhotoCurrents,[],1), [],2), [], 4));
+        photocurrentBaseline = ones(size(allInstancesPhotoCurrents));
+        for coneIndex = 1:3
+            photocurrentBaseline(:,:,coneIndex,:) = minLMS(coneIndex);
+        end
         photocurrentRange = [0 60];
     else
-        photocurrentBaselineAtTimePoint1 = allInstancesPhotoCurrents(:,:,:,timePoint)* 0;
+        photocurrentBaseline = allInstancesPhotoCurrents(:,:,:,1)*0;
+        photocurrentBaseline = reshape(photocurrentBaseline, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) size(allInstancesPhotoCurrents,3) 1]);
         photocurrentRange = [min(allInstancesPhotoCurrents(:)) max(allInstancesPhotoCurrents(:))];
+        
     end
-    allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, reshape(photocurrentBaselineAtTimePoint1, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) size(allInstancesPhotoCurrents,3) 1])); 
+    allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, photocurrentBaseline); 
     
     
     % compute photocurrent means and stds across all instances
