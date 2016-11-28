@@ -108,11 +108,22 @@ switch ieParamFormat(pType)
         if isempty(obj.absorptions)
             error('no absorption data');
         end
-        uData = mean(obj.absorptions,3);
-        imagesc(uData); axis off; colorbar;
         
+        % Show the data, with the gamma from the window.
+        uData = mean(obj.absorptions,3);
+        gdata = guidata(obj.hdl);
+        gam = str2double(get(gdata.editGam,'string'));
+        imagesc(uData.^gam); axis off;
+        
+        % Preserve the tick labels in real photons
         colormap(gray);  % Shows a numerical value
+        cbar = colorbar;
+        photons = str2double(get(cbar,'TickLabels')).^(1/gam);
+        photons = num2str(round(photons)); set(cbar,'TickLabels',photons);
         axis image;
+        
+        % Could be resurrected some day with a different name
+        %
         %     case 'absorptions'
         %         % Movie of the absorptions on the cone mosaic
         %         if isempty(obj.absorptions)
@@ -134,12 +145,25 @@ switch ieParamFormat(pType)
             error('no photocurrent data computed');
         end
         uData = mean(obj.current, 3);
-        if ~isequal(hf, 'none')
-            imagesc(uData); axis off; colorbar;
-            % title('Mean photocurrent (pA)');
+        
+        % Apply gamma.  The current is always negative.
+        gdata = guidata(obj.hdl);
+        gam = str2double(get(gdata.editGam,'string'));
+        if max(uData(:)) > 0
+            warning('Gamma correction in display is not correct');
         end
-        colormap(gray); % Shows a numerical value
+        
+        % Carry on assuming current is negative pA.
+        % uData = -1*(abs(uData).^gam);
+        uData = abs(uData);
+        if ~isequal(hf, 'none'), imagesc(uData.^gam); end
+        
+        axis off; colormap(flipud(gray));  % Shows a numerical value
+        cbar = colorbar;
+        current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
+        current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
+        
         %     case {'current', 'photocurrent'}
         %         % Photo current movie on colored cone mosaic
         %         if isempty(obj.current)
@@ -154,12 +178,14 @@ switch ieParamFormat(pType)
             if isempty(p.Results.hf), close(hf); end
             error('no current data');
         end
+        
         % Additional arguments may be the video file name, step, and
         % FrameRate
+        disp('No gamma applied');
         uData = ieMovie(obj.current,varargin{:});
         
         
-    % ------ Graphs
+        % ------ Graphs
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
         uData = obj.pigment.absorptance;
