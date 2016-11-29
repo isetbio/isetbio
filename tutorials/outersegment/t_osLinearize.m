@@ -22,8 +22,11 @@ meanIsoArray = [100 500 1000 2000 5000 10000]*cMosaic.integrationTime;
 tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
 
 %%  Loop on different background rates and plot
-fovea = zeros(tSamples,length(meanIsoArray));
+
+fovea     = zeros(tSamples,length(meanIsoArray));
 periphery = zeros(tSamples,length(meanIsoArray));
+
+os = cMosaic.os;
 
 for ii = 1:length(meanIsoArray)
     
