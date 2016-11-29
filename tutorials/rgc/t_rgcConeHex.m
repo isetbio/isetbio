@@ -34,13 +34,13 @@ iStim = ieStimulusBar(params);  % Full params are returned in iStim
 % iStim.cMosaic.visualizeGrid();
 
 isomerizationsBar = iStim.cMosaic.absorptions;
-iStim.cMosaic.visualizeActivationMaps(...
-    isomerizationsBar(:,:,100), ...                                  % the response matrix
-       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
-    'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
-    'figureSize', [1550 950] ...                                     % figure size in pixels
-    );
+% iStim.cMosaic.visualizeActivationMaps(...
+%     isomerizationsBar(:,:,1), ...                                  % the response matrix
+%        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+%     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
+%       'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
+%     'figureSize', [1550 950] ...                                     % figure size in pixels
+%     );
 
 % iStim.cMosaic.window;
 

@@ -1,4 +1,4 @@
-%% Use the RDT coneMosaic moving bar as input to test RGC mosaic responsese
+%% Use the RDT coneMosaic moving bar as input to test RGC mosaic responses
 %
 % This tutorial generates RGC responses to a moving bar.
 %
@@ -10,20 +10,19 @@
 % Based on t_coneMosaic.
 % 
 % 7/2016 JRG HJ BW (c) isetbio team
-
+ 
 %% Initialize parameters
-
+ 
 clx; ieInit;
-
+ 
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2.8;          % Scene Field of view in degrees
-
+ 
 osFlag = 0;         % 0 = osLinear, 1 = osBioPhys
-
+ 
 %% RDT computation
 rdt = RdtClient('isetbio');
 rdt.crp('/resources/data/istim');
-
 switch osFlag
     case 0 % osLinear
         data = rdt.readArtifact('barMovie_osLinear', 'type', 'mat');
@@ -31,23 +30,24 @@ switch osFlag
     case 1 % osBioPhys
         data = rdt.readArtifact('barMovie_osBioPhys', 'type', 'mat');
 end
-
+ 
 % We are only using the cMosaic
 sceneRGB = data.iStim.sceneRGB;
 cMosaic = data.iStim.cMosaic;
+cMosaic.computeCurrent;
 clear data;
-
+ 
 %% Compute the bipolar response
-
-bp = bipolar(cMosaic.os);
+ 
+bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
-bp.compute(cMosaic.os);
-
+bp.compute(cMosaic);
+ 
 % bp.plot('movie response')
-
+ 
 %% Set other RGC mosaic parameters
-
+ 
 clear params innerRetinaSU
 cellType = 'onParasol';
 % cellType = 'offParasol';
@@ -56,48 +56,48 @@ params.eyeSide = 'left';
 params.eyeRadius = sqrt(sum(ecc.^2)); 
 % params.fov = fov;
 params.eyeAngle = 0; ntrials = 0;
-
+ 
 % Create RGC object
 innerRetinaSU = ir(bp, params);
 innerRetinaSU.mosaicCreate('type',cellType,'model','GLM');
-
+ 
 nTrials = 1; innerRetinaSU = irSet(innerRetinaSU,'numberTrials',nTrials);
-
+ 
 %% Compute the inner retina response
-
+ 
 innerRetinaSU = irCompute(innerRetinaSU, bp); 
 lastTime = innerRetinaSU.mosaic{1}.get('last spike time');
-
+ 
 %% Make the PSTH movie
 innerRetinaSU.mosaic{1}.set('dt',1);
 psth = innerRetinaSU.mosaic{1}.get('psth');
-
+ 
 clear params 
 param.FrameRate = 5; params.step = 2; params.show = true;
-
+ 
 % % View movie of RGC linear response
 % vcNewGraphWin; ieMovie(innerRetinaSU.mosaic{1}.responseLinear(:,:,1:120));
-
+ 
 % View movie of PSTH for mosaic
 steadyStateFrame = 50; % Get rid of transient spiking
 vcNewGraphWin; ieMovie(psth(:,:,steadyStateFrame:end),params);
-
+ 
 % % View average of PSTH movie
 % vcNewGraphWin; imagesc(mean(psth,3))
-
+ 
 % % Plots of RGC linear response and OS current
 % vcNewGraphWin; plot(RGB2XWFormat(innerRetinaSU.mosaic{1}.responseLinear)')
 % vcNewGraphWin; plot(RGB2XWFormat(iStim.cMosaic.current)')
-
-
+ 
+ 
 %% Estimate position of bar
-
+ 
 clear colLocation trueLocation
-
+ 
 szPsth = size(psth);
 sizeRGB = size(sceneRGB);
 sizeMosaic = innerRetinaSU.mosaic{1}.get('mosaicSize');
-
+ 
 % Plot estimated position of bar versus true position of bar
 frStart = steadyStateFrame; frEnd = 15;
 for fr = 1:szPsth(3)-frStart-frEnd
@@ -111,14 +111,16 @@ for fr = 1:szPsth(3)-frStart-frEnd
     % Find average column position
     trueLocation(fr) = mean(barPx2)*sizeMosaic(2)./sizeRGB(2);
 end
-
-
+ 
+ 
 vcNewGraphWin; scatter(1:szPsth(3)-frStart-frEnd,colLocation-0*min(colLocation),'x');
 hold on; plot(1:szPsth(3)-frStart-frEnd,trueLocation);
 xlabel('Time (msec)');
 ylabel('Position estimate (mm)');
 legend('Estimated Position','True Position','location','NW');
-
+ 
 %% Make GIF
 params.vname = [isetbioRootPath '/local/barMovieTest.gif'];
 % ieGIF(psth(:,:,steadyStateFrame:end),params);
+
+

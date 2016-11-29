@@ -39,13 +39,13 @@ function val = mosaicGet(obj, param, varargin)
 % 
 % 9/2015 JRG (c) isetbio team
 % 7/2016 JRG updated
-
+ 
 %% Parse
 p = inputParser; 
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
 p.KeepUnmatched = true;
-
+ 
 allowFields = {...
         'celltype',...
         'rfdiameter',...
@@ -68,12 +68,12 @@ allowFields = {...
     };
 p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
 p.addParameter('cell',[],@(x) (length(x(:)) == 2));
-
+ 
 % Parse and put results into structure p.
 p.parse(param,varargin{:}); 
 param = ieParamFormat(p.Results.param);
 cell = p.Results.cell;
-
+ 
 switch ieParamFormat(param)
     
     case{'celltype'}
@@ -150,7 +150,7 @@ switch ieParamFormat(param)
         nCells  = obj.get('mosaic size');
         nTrials = obj.get('numbertrials');
         spikes  = obj.responseSpikes;
-
+ 
         val = 0;
         for ii=1:nCells(1)
             for jj = 1:nCells(2)
@@ -226,9 +226,10 @@ switch ieParamFormat(param)
                 else
                     spikes(xcell,ycell,1:length(spikesCell)) = spikesCell;
                 end
-                val = spikes;
+                
             end
         end
+        val = spikes; clear spikes spikesCell;
         
     case{'spikesdownsampled'}
         % Get the spikes in an array, but downsampled by dt
@@ -282,5 +283,7 @@ switch ieParamFormat(param)
         val = psth;
         
 end
-
+ 
 end
+
+

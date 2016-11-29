@@ -55,7 +55,7 @@ end
 % Zero-mean the cone current signal at each cone
 
 % This places the cone 3D matrix into a coneNumber x time matrix
-osSig = RGB2XWFormat(os.coneCurrentSignal);
+osSig = RGB2XWFormat(cmosaic.current);
 
 % Typically there 
 if size(osSig,2) > 1
@@ -134,8 +134,8 @@ switch obj.cellType
                        
 end
 
-osSigZMCenter = reshape(osSigRSZMCenter,size(os.coneCurrentSignal));
-osSigZMSurround = reshape(osSigRSZMSurround,size(os.coneCurrentSignal));
+osSigZMCenter = reshape(osSigRSZMCenter,size(cmosaic.current));
+osSigZMSurround = reshape(osSigRSZMSurround,size(cmosaic.current));
 
 % Convolve spatially every frame
 spatialResponseCenter = ieSpaceTimeFilter(osSigZMCenter, obj.sRFcenter);

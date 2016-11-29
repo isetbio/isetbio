@@ -173,8 +173,8 @@ for t = 1 : nSteps
     
     
     % Compute absorptions and photocurrent
-%     cm.compute(oi, 'append', true, 'emPath', [0 0]);
-    cm.compute(oi, 'append', true, 'currentFlag', false, 'emPath', [0 0]);
+    cm.compute(oi, 'append', true, 'emPath', [0 0]);
+%     cm.compute(oi,'emPath', [0 0]);
     
 end
 

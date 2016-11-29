@@ -37,13 +37,13 @@ end
 
 iStim = data.iStim; clear data;
 cMosaic = iStim.cMosaic;
-
+cMosaic.computeCurrent;
 %% Compute the bipolar response
 
-bp = bipolar(cMosaic.os);
+bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
-bp.compute(cMosaic.os);
+bp.compute(cMosaic);
 % bp.plot('movie response')
 
 %% Set other RGC mosaic parameters
