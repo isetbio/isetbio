@@ -1,10 +1,19 @@
 function varargout = v_osTimeStep(varargin)
 %
-% Validate current computation using different time steps. 
+% Demonstrate simulations using three different timebases, 
+%    For stimuli (based on stimulus refresh rate), 
+%    For absorptions and eye movements (based on coneMosaic.integrationTime)
+%    For outer segment current computations (based on os.timeStep) 
 %
-% This script tests ....
+% Mainly, we can just use the compute method of the @coneMosaic class for
+% either a single image or for a sequence of oi images (oiSequence class).
 %
-% 9/29/2016    npc   Created.
+% This script demonstrates the direct usage of the computeForOISequence()
+% method of @coneMosaic. The sequence version of compute calculates
+% absorptions and photocurrents for an oiSequence class of optical images
+% with eye movements.
+%
+% NPC, ISETBIO TEAM, 2016
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -15,363 +24,529 @@ function ValidationFunction(runTimeParams)
 %% Init
 ieInit;
 
-% Generate optics
-noOptics = false;
-if (noOptics)
-    theOI = oiCreate('diffraction limited');
-    optics = oiGet(theOI,'optics');           
-    optics = opticsSet(optics,'fnumber',0);
-    optics = opticsSet(optics, 'off axis method', 'skip');
-    theOI = oiSet(theOI,'optics', optics);
-else
-    theOI = oiCreate('human');
-end
+% Reproduce identical random number
+rng('default'); rng(1);
 
-% Generate a uniform field scene with desired mean luminance
-FOV = 2.0;  % deg
-meanLuminance = 500;
-theScene = uniformFieldSceneCreate(FOV, meanLuminance);
-meanSceneLuminance = sceneGet(theScene, 'mean luminance');
-        
-%% Compute the optical image
-theOI = oiCompute(theOI, theScene);
-oiWavelengthAxis = oiGet(theOI, 'wave');
-
-%% Set the stimulusSamplingInterval equal to the refresh cycle of a 120Hz display
-stimulusSamplingInterval = 1/60;
-stimulusTimeAxis =  -0.6:stimulusSamplingInterval:0.3;
-
-%% The stimulus luminance is ramped up and down in time using a Gaussian window.
-stimulusRampTau = 0.165;
-stimulusRamp = exp(-0.5*(stimulusTimeAxis/stimulusRampTau).^2);
-
-%% Instead of computing a new scene for each stimulus frame, we modulate the 
-%% photons field of the optical image
-stimulusContrast = 0.1;
-backgroundPhotons = oiGet(theOI, 'photons');
-retinalPhotonsTimeCourse = zeros([size(backgroundPhotons) numel(stimulusTimeAxis)]);
-refRow = round(size(retinalPhotonsTimeCourse,1)/2);
-refCol = round(size(retinalPhotonsTimeCourse,2)/2);
-referencePositionPhotons = zeros(numel(oiWavelengthAxis), numel(stimulusTimeAxis));
-for stimFrameIndex = 1:numel(stimulusTimeAxis)
-    retinalPhotonsAtCurrentFrame = backgroundPhotons * (1.0 + stimulusContrast*stimulusRamp(stimFrameIndex));
-    theOIsequence{stimFrameIndex} = oiSet(theOI, 'photons', retinalPhotonsAtCurrentFrame);
-    referencePositionPhotons(:, stimFrameIndex) = squeeze(retinalPhotonsAtCurrentFrame(refRow, refCol, :));
-end
-
-%% Generate a human cone mosaic with 1L, 1M and 1S cone
-theConeMosaic = coneMosaic;
-theConeMosaic.rows = 1;
-theConeMosaic.cols = 3;
-theConeMosaic.pattern = [2 3 4];
-theConeMosaic.noiseFlag = false;
-theConeMosaic.integrationTime = stimulusSamplingInterval;
-
-
-%% Generate the outer-segment object to be used by the coneMosaic
-theOuterSegment = osLinear();
-theOuterSegment.noiseFlag = false;
-theOuterSegment.timeStep  = 1/1000;
-
-%% Couple the outersegment object to the cone mosaic object
-theMosaic.os = theOuterSegment;
-
-
-eyeMovementsPerOI = 0;  % no eye movements
-[isomerizationRateSequence, photoCurrentSequence, responseTimeAxis] = ...
-    coneMosaic_computeMultiOI(theConeMosaic, theOIsequence, eyeMovementsPerOI, 'currentFlag', true);
+% Define number of response instances
+instancesNum = 100; 
     
+% Steady params
+c0 = struct(...
+    'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
+    'meanLuminance', 100, ...                   % scene mean luminance
+    'modulationGain', 1.0, ...                  % 100%  modulation against background
+    'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
+    'stimulusSamplingInterval',  nan, ...       % we will vary this one
+    'integrationTime', 15/1000, ...             % 15 msec
+    'photonNoise', true, ...                    % add Poisson noise
+    'osTimeStep', 0.1/1000, ...                   % 1 millisecond
+    'osNoise', true ...                        % no photocurrent noise
+    );
 
-%% Plot the retinal photon rate at the center pixel and all wavelengths
-figure(1); clf; hold on;
-cmap = jet(size(referencePositionPhotons,1));
-legends = {};
-for waveIndex = 1:size(referencePositionPhotons,1)
-    plot(stimulusTimeAxis,squeeze(referencePositionPhotons(waveIndex,:)), '-', 'Color', cmap(waveIndex,:), 'LineWidth', 1.5);
-    legends{numel(legends)+1} = sprintf('%2.0f nm', oiWavelengthAxis(waveIndex));
+
+% Identical stimulus sampling interval and integration time
+stimulusConditionIndex = 1;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 15/1000;  
+c{stimulusConditionIndex} = theCondition;
+
+% Stimulus sampling interval < integration time
+stimulusConditionIndex = 2;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 10/1000;               
+c{stimulusConditionIndex} = theCondition;
+
+% Stimulus sampling interval > integration time
+stimulusConditionIndex = 3;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 66/1000;
+c{stimulusConditionIndex} = theCondition;
+
+
+for stimulusConditionIndex = 1:numel(c)
+    
+   [ theConeMosaic{stimulusConditionIndex}, ...
+     theOIsequence{stimulusConditionIndex}, ...
+     oiTimeAxis{stimulusConditionIndex}, ...
+     absorptionsTimeAxis{stimulusConditionIndex}, ...
+     photocurrentsTimeAxis{stimulusConditionIndex}, ...
+     allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
+     allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
+     allInstancesPhotoCurrents{stimulusConditionIndex} ...
+   ] = runSimulation(c{stimulusConditionIndex}, instancesNum, runTimeParams);  
+
+    if (runTimeParams.generatePlots)
+        plotSNR(absorptionsTimeAxis{stimulusConditionIndex}, ...
+            oiTimeAxis{stimulusConditionIndex}, ...
+            photocurrentsTimeAxis{stimulusConditionIndex}, ...
+            allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
+            allInstancesPhotoCurrents{stimulusConditionIndex}, ...
+            stimulusConditionIndex);
+    end   
 end
-legend(legends, 'Location', 'EastOutside');
-xlabel('time (seconds');
-ylabel('retinal photon rate at stimulus center');
 
 
-%% Plot the isomerization rate sequence
-figure(2); clf;
-subplot(2,1,1);
-plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,1,:)), 'r-', 'LineWidth', 1.5);
-hold on;
-plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,2,:)), 'g-', 'LineWidth', 1.5);
-plot(responseTimeAxis, squeeze(isomerizationRateSequence(1,3,:)), 'b-', 'LineWidth', 1.5);
-hold off;
-ylabel('isomerization rate (R*/sec)');
-xlabel('time (sec)');
+% Save validation data
+% conditions data
+UnitTest.validationData('condParams', c);
 
-subplot(2,1,2);
-plot(responseTimeAxis, squeeze(photoCurrentSequence(1,1,:)), 'r-', 'LineWidth', 1.5);
-hold on;
-plot(responseTimeAxis, squeeze(photoCurrentSequence(1,2,:)), 'g-', 'LineWidth', 1.5);
-plot(responseTimeAxis, squeeze(photoCurrentSequence(1,3,:)), 'b-', 'LineWidth', 1.5);
-hold off;
-ylabel('photocurrent');
-xlabel('time (sec)');
+UnitTest.validationData('oiTimeAxisCond1', oiTimeAxis{1});
+UnitTest.validationData('absorptionsTimeAxisCond1', absorptionsTimeAxis{1});
+UnitTest.validationData('photoCurrentTimeAxisCond1', photocurrentsTimeAxis{1});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstancesAbsorptionsCountSequence{1});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 4));
+UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 5));
 
-return;
+if (1==2)
+UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
+UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
+UnitTest.validationData('photoCurrentTimeAxisCond2', photocurrentsTimeAxis{2});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond2', allInstancesAbsorptionsCountSequence{2});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond2', round(allInstancesIsomerizationRateSequence{2}, 4));
+UnitTest.validationData('allInstancesPhotoCurrentsCond2', round(allInstancesPhotoCurrents{2}, 5));
 
+UnitTest.validationData('oiTimeAxisCond3', oiTimeAxis{3});
+UnitTest.validationData('absorptionsTimeAxisCond3', absorptionsTimeAxis{3});
+UnitTest.validationData('photoCurrentTimeAxisCond3', photocurrentsTimeAxis{3});
+UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond3', allInstancesAbsorptionsCountSequence{3});
+UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', round(allInstancesIsomerizationRateSequence{3}, 4));
+UnitTest.validationData('allInstancesPhotoCurrentsCond3', round(allInstancesPhotoCurrents{3}, 5));
 
-
-
-%% Set the stimulusSamplingInterval equal to the refresh cycle of a 120Hz display
-stimulusSamplingInterval = 1/60;
-
-%% Generate a cone mosaic object with cone
-theConeMosaic = coneMosaic('size', [1 1]);
-% Make it an L-cone (2)
-theConeMosaic.pattern = 2;
-% Make the integration time equal to the stimulus sampling interval
-theConeMosaic.integrationTime = stimulusSamplingInterval;
-
-%% Generate a linear outersegment object
-theLinearOS = osLinear();
-theLinearOS.noiseFlag = false;
-% Set the outer-segment time step equal to the mosaic's integration time.
-% This maybe ok for @osLinear, but definitely not for @osBiophys
-% If we want a finer timerStep, we must correspondigly upsample the photonrate, before passing it to theMosaic.os.compute().
-theLinearOS.timeStep = theConeMosaic.integrationTime;
-
-%% Assign theLinearOS for to our mosaic
-theMosaic.os = theLinearOS;
-
-%% Generate a photon isomerization signal with a Gaussian-shaped modulation
-% Time axis (-1.0 .. +1.0) seconds
-timeAxis = -0.3:theConeMosaic.integrationTime:0.3;
-
-meanPhotonRate = 3000;   % isomerizations / sec
-peakModulationPhotonRate = 1000; % isomerizations / sec
-isomerizationRateInPhotonsPerSec = meanPhotonRate + peakModulationPhotonRate * exp(-0.5*(timeAxis/(3*theConeMosaic.integrationTime)).^2);
-isomerizationsPerTimeBin = isomerizationRateInPhotonsPerSec*theConeMosaic.integrationTime;
-theMosaic.absorptions(1,1,:) = isomerizationRateInPhotonsPerSec;
-
-% Compute totals
-totalTime = numel(timeAxis)*theConeMosaic.integrationTime;
-totalPhotonsFromRate = sum(isomerizationRateInPhotonsPerSec*theConeMosaic.integrationTime);
-totalPhotons = sum(isomerizationsPerTimeBin);
-
-% Compute the photocurrent
-photocurrent = theMosaic.os.compute(theMosaic.absorptions(1,1,:),theConeMosaic.pattern);
-
-hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 650 1280])
-
-subplot(3,1,1);
-plot(timeAxis, isomerizationsPerTimeBin, 'r*', 'LineWidth', 1.5);
-hold on;
-plot([0 0], [0 10000], 'k-');
-set(gca, 'YLim', [0 100]);
-set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
-xlabel('time');
-ylabel('photons / time bin');
-title(sprintf('photon sequence, total photons: %g in %2.2f secs', totalPhotons, totalTime));
-
-subplot(3,1,2);
-stairs(timeAxis-theConeMosaic.integrationTime/2, isomerizationRateInPhotonsPerSec, 'r-', 'LineWidth', 1.5);
-hold on
-plot([0 0], [0 10000], 'k-');
-set(gca, 'YLim', [0 5000]);
-set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
-xlabel('time');
-ylabel('isomerization rate: photons / sec');
-title(sprintf('isomerization rate, total photons: %g in %2.2f secs', totalPhotonsFromRate, totalTime));
-
-subplot(3,1,3);
-max(photocurrent(:))
-stairs(timeAxis-theConeMosaic.integrationTime/2, squeeze(photocurrent(1,1,:)), 'r-', 'LineWidth', 1.5);
-hold on
-plot([0 0], [-85 0], 'k-');
-set(gca, 'YLim', [-85 -60]);
-set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
-title('photocurrent');
-drawnow;
+% Extra data: coneMosaics and oiSequences
+UnitTest.extraData('theConeMosaicCond1', theConeMosaic{1});
+UnitTest.extraData('theOIsequenceCond1', theOIsequence{1});
+UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
+UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
+UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
+UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
+end
 
 end
 
 
-% Supporting functions
+% ------- Main computation function --------
+
+function [theConeMosaic, theOIsequence, ...
+    oiTimeAxis, absorptionsTimeAxis, photocurrentsTimeAxis, ...
+    allInstancesAbsorptionsCountSequence, ...
+    allInstancesIsomerizationRateSequence, ...
+    allInstancesPhotoCurrents] = runSimulation(condData, instancesNum, runtimeParams)
+
+    mosaicSize = condData.mosaicSize;
+    meanLuminance = condData.meanLuminance;
+    modulationGain = condData.modulationGain;
+    modulationRegion = condData.modulationRegion;
+    stimulusSamplingInterval = condData.stimulusSamplingInterval;
+    integrationTime = condData.integrationTime;
+    osTimeStep = condData.osTimeStep;
+    photonNoise = condData.photonNoise; 
+    osNoise = condData.osNoise;
+    
+    % Define the time axis for the simulation
+    oiTimeAxis = 0:stimulusSamplingInterval:1.5;
+    oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
+    
+    % Compute the stimulus modulation function
+    stimulusRampTau = 0.18;
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+    
+    % Generate a uniform field scene with desired mean luminance
+    if (isnan(mosaicSize))
+        FOV = 0.2;
+    else
+        FOV = max(mosaicSize);
+    end
+    
+    % Generate the scene
+    theScene = uniformFieldSceneCreate(FOV, meanLuminance);
+
+    % Generate optics
+    noOptics = false;
+    theOI = oiGenerate(noOptics);
+
+    % Generate the sequence of optical images
+    theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
+    if (runtimeParams.generatePlots)
+        %theOIsequence.visualize('format', 'montage');
+        theOIsequence.visualize();
+    end
+    
+    % Generate the cone mosaic with eye movements for theOIsequence
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
+
+    % Generate eye movement paths for all instances
+    eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
+    emPaths = zeros(instancesNum, eyeMovementsNum,2);
+    for instanceIndex = 1:instancesNum
+        emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
+    end 
+    
+    % Compute all instances 
+    [allInstancesAbsorptionsCountSequence, allInstancesPhotoCurrents] = ...
+            theConeMosaic.computeForOISequence(theOIsequence, ...
+            'emPaths', emPaths, ...
+            'currentFlag', true, ...
+            'newNoise', true);
+     absorptionsTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+     photocurrentsTimeAxis = absorptionsTimeAxis;
+     
+     % Compute photon rate from photon count
+     allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
+    
+     
+     % Internal consistency checks
+     % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
+     lastInstance = size(allInstancesAbsorptionsCountSequence,1);
+     s1 = single(theConeMosaic.absorptions);
+     s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: absorptions from coneMosaic property and returned absorptions',tolerance);
+    
+     % Check that the data in the current property agrees with the data in the last instance of allInstancesPhotoCurrents
+     s1 = single(theConeMosaic.current);
+     s2 = single(reshape(allInstancesPhotoCurrents(lastInstance,:,:,:), ...
+         size(theConeMosaic.pattern,1), size(theConeMosaic.pattern,2), size(allInstancesPhotoCurrents,4)));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.computeForOISequence: current from coneMosaic property and returned photocurrents',tolerance);
+       
+     % Compute responses for the first instance only using the coneMosaic.compute() method
+     [allInstancesAbsorptionsCountSequence2, allInstancesPhotoCurrents2] = ...
+            theConeMosaic.compute(theOIsequence, ...
+            'emPath', emPaths(1,:,:), ...
+            'currentFlag', true, ...
+            'newNoise', true ...
+            );
+     absorptionsTimeAxis2 = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+     photocurrentsTimeAxis2 = absorptionsTimeAxis2;
+     
+     % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
+     lastInstance = size(allInstancesAbsorptionsCountSequence2,1);
+     s1 = single(theConeMosaic.absorptions);
+     s2 = single(reshape(squeeze(allInstancesAbsorptionsCountSequence2(lastInstance,:,:,:)), [size(theConeMosaic.pattern,1) size(theConeMosaic.pattern,2) numel(absorptionsTimeAxis2)]));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: absorptions from coneMosaic property and returned absorptions',tolerance);
+    
+     % Check that the data in the current property agrees with the data in the last instance of allInstancesPhotoCurrents
+     s1 = single(theConeMosaic.current);
+     s2 = single(reshape(allInstancesPhotoCurrents2(lastInstance,:,:,:), ...
+         size(theConeMosaic.pattern,1), size(theConeMosaic.pattern,2), size(allInstancesPhotoCurrents2,4)));
+     
+     tolerance = 1E-6;
+     quantityOfInterest = s1(:)-s2(:);
+     UnitTest.assertIsZero(quantityOfInterest,'coneMosaic.compute: current from coneMosaic property and returned photocurrents',tolerance);
+end
+
+
+% ------- Helper functions --------
+
+function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
+    % Default human mosaic
+    theConeMosaic = coneMosaic;
+    
+    % Adjust size
+    if isnan(mosaicSize)
+        % Generate a human cone mosaic with 1L, 1M and 1S cone
+        theConeMosaic.rows = 1;
+        theConeMosaic.cols = 3;
+        theConeMosaic.pattern = [2 3 4];
+    else
+        theConeMosaic.setSizeToFOV(mosaicSize);
+    end
+    
+    % Set the noise
+    theConeMosaic.noiseFlag = photonNoise;
+
+    % Set the integrationTime
+    theConeMosaic.integrationTime = integrationTime;
+    
+    % Generate the outer-segment object to be used by the coneMosaic
+    theOuterSegment = osLinear();
+    theOuterSegment.noiseFlag = osNoise;
+    
+    % Set a custom timeStep, for @osLinear we do not need the default 0.1 msec
+    theOuterSegment.timeStep = osTimeStep;
+
+    % Couple the outersegment object to the cone mosaic object
+    theConeMosaic.os = theOuterSegment;
+end
+
+
+function theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, modulationType)
+    % Compute the background and modulated optical images
+    oiBackground = oiCompute(theOI, theScene);
+    oiModulated  = oiBackground;
+    
+    if strcmp(modulationType, 'FULL')
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction);
+    else
+        pos = oiGet(oiBackground, 'spatial support', 'microns');
+        modulationRegion.radiusInMicrons = 0.5*max(pos(:));
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction, 'modulationRegion', modulationRegion);
+    end
+end
+
+
+function theOI = oiGenerate(noOptics)
+    % Generate optics
+    if (noOptics)
+        theOI = oiCreate('diffraction limited');
+        optics = oiGet(theOI,'optics');           
+        optics = opticsSet(optics,'fnumber',0);
+        optics = opticsSet(optics, 'off axis method', 'skip');
+        theOI = oiSet(theOI,'optics', optics);
+    else
+        theOI = oiCreate('human');
+    end
+end
+
+
 function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
-    uniformScene = sceneCreate('uniformd65');
+    uniformScene = sceneCreate('uniform equal photon', 128);
     % square scene with desired FOV
     uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
     % 1 meter away
     uniformScene = sceneSet(uniformScene, 'distance', 1.0);
-    % set the radiance (in photons/steradian/m^2/nm)
-    photonFlux = 1e16;
-    uniformScene = sceneSet(uniformScene, 'photons', photonFlux*ones(64,64,numel(sceneGet(uniformScene, 'wave'))));
-    % set desired luminance
+    % adjust radiance according to desired  mean luminance
     uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
 end
 
 
-% To be added to coneMosaic next to compute();
-function [isomerizationRateSequence, photoCurrentSequence, responseTimeAxis] = coneMosaic_computeMultiOI(theConeMosaic, theOIsequence, eyeMovementsPerOI, varargin)
+% --- Plotting function ----
 
-    class(theConeMosaic)
-    % parse inputs
-    p = inputParser;
-    p.addRequired('theConeMosaic', @(x)isa(x, 'coneMosaic'));
-    p.addRequired('theOIsequence', @iscell);
-    p.addRequired('eyeMovementsPerOI', @isnumeric);
-    p.addParameter('currentFlag', false, @islogical);
-    p.parse(theConeMosaic, theOIsequence, eyeMovementsPerOI,varargin{:});
-    currentFlag = p.Results.currentFlag;
+function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstancesIsomerizationsCount, allInstancesPhotoCurrents, figNo)
     
-    % Generate an expanded mosaic to deal with eye movements
-    padRows = 64;
-    padCols = 64;
-    theExpandedMosaic = theConeMosaic.copy();
-    theExpandedMosaic.pattern = zeros(theConeMosaic.rows+2*padRows, theConeMosaic.cols+2*padCols);
-    theExpandedMosaic.noiseFlag = false;
-
-    for oiIndex = 1:numel(theOIsequence)
-        % Compute noise-free isomerizations at each cone location for the current optical image
-        fullFrameIsomerizatios{oiIndex} = theExpandedMosaic.computeSingleFrame(theOIsequence{oiIndex},'FullLMS',true);
-    end % oiIndex
+    % Compute isomerization means and stds across all instances
+    isomerizationMeans = mean(allInstancesIsomerizationsCount, 1);
+    isomerizationSTDs = std(allInstancesIsomerizationsCount, 0, 1);
     
-    clear 'theExpandedMosaic'
-    
-    % Generate eye movements for the entire sequence of OIs.
-    % If 'eyeMovementsPerOI' is <= 0, generate 1 eye movement/oi with zero amplitude movement
-    if (eyeMovementsPerOI > 0)
-        eyeMovementsNum = eyeMovementsPerOI*numel(theOIsequence);
-        eyeMovementSequence = theConeMosaic.emGenSequence(eyeMovementsNum);
+    % Subtract baseline from all photocurrents
+    normalizePhotocurrents = true;
+    if (normalizePhotocurrents)
+        minLMS = squeeze(min(min(min(allInstancesPhotoCurrents,[],1), [],2), [], 4));
+        photocurrentBaseline = ones(size(allInstancesPhotoCurrents));
+        for coneIndex = 1:3
+            photocurrentBaseline(:,:,coneIndex,:) = minLMS(coneIndex);
+        end
+        photocurrentRange = [0 60];
     else
-        eyeMovementsPerOI = 1;
-        eyeMovementsNum = eyeMovementsPerOI*numel(theOIsequence);
-        eyeMovementSequence = 0*theConeMosaic.emGenSequence(eyeMovementsNum);
+        photocurrentBaseline = allInstancesPhotoCurrents(:,:,:,1)*0;
+        photocurrentBaseline = reshape(photocurrentBaseline, [size(allInstancesPhotoCurrents,1) size(allInstancesPhotoCurrents,2) size(allInstancesPhotoCurrents,3) 1]);
+        photocurrentRange = [min(allInstancesPhotoCurrents(:)) max(allInstancesPhotoCurrents(:))];
+        
     end
-
+    allInstancesPhotoCurrents = bsxfun(@minus, allInstancesPhotoCurrents, photocurrentBaseline); 
     
-    % Loop over the oi sequence
-    for oiIndex = 1:numel(theOIsequence)
-       % Apply current frame eye movements to the mosaic
-       eyeMovementIndices = (oiIndex-1)*eyeMovementsPerOI + (1:eyeMovementsPerOI);
-       theConeMosaic.emPositions = eyeMovementSequence(eyeMovementIndices,:);
-
-        % Compute noise-free isomerizations for the current oi by applying eye movements during this oi
-        theCurrentOpticalImageIsomerizations = ...
-           theConeMosaic.applyEMPath(fullFrameIsomerizatios{oiIndex}, ...
-            'padRows',padRows, 'padCols',padCols);
-
-        % Add noise
-        if (theConeMosaic.noiseFlag)
-            theCurrentOpticalImageIsomerizations = theConeMosaic.photonNoise(theCurrentOpticalImageIsomerizations,'newNoise', true);
-        end
-
-        % Accumulate isomerizations by adding theCurrentOpticalImageIsomerizations 
-        if (oiIndex == 1)
-            isomerizationCountSequence = theCurrentOpticalImageIsomerizations;
-        else
-            isomerizationCountSequence = cat(3, isomerizationCountSequence, theCurrentOpticalImageIsomerizations);
-        end
-    end % for oiIndex
     
-    % Compute isomerization rate
-    totalTime = theConeMosaic.integrationTime * size(isomerizationCountSequence,3);
-    responseTimeAxis = linspace(0,totalTime,size(isomerizationCountSequence,3));
-    effectiveIntegrationTime = theConeMosaic.integrationTime/eyeMovementsPerOI;
-    isomerizationRateSequence = isomerizationCountSequence / effectiveIntegrationTime;
+    % compute photocurrent means and stds across all instances
+    photocurrentMeansBaselineCorrected  = mean(allInstancesPhotoCurrents,1);
+    photocurrentSTDsBaselineCorrected   = std(allInstancesPhotoCurrents, 0, 1);
     
-    if (currentFlag)  
-        if (abs(theConeMosaic.os.timeStep - effectiveIntegrationTime) > 1e-6)
-            % Compute new effective integration time
-            timeScale = effectiveIntegrationTime/theConeMosaic.os.timeStep;
-            effectiveIntegrationTimeNew = effectiveIntegrationTime / timeScale;
-            
-            % Rescale the isomerizationRateSequence
-            isomerizationRateSequence = isomerizationCountSequence * timeScale;
-            resampleTimeAxis = 0:effectiveIntegrationTimeNew:totalTime;
-            
-            % Resample the isomerizationRateSequence
-            fprintf('Resampling (factor: %2.2f) isomerizationRateSequence to match the time step of the OuterSegment\n', timeScale);
-            isomerizationRateSequenceResampled = zeros(size(isomerizationRateSequence,1), size(isomerizationRateSequence,2), numel(resampleTimeAxis));
-            for iRow = 1:size(isomerizationRateSequence,1)
-                for iCol = 1:size(isomerizationRateSequence,2)
-                    isomerizationRateSequenceResampled(iRow, iCol,:) = interp1(responseTimeAxis, squeeze(isomerizationRateSequence(iRow, iCol,:)), resampleTimeAxis, 'linear');
-                end
-            end
-            
-            fprintf('Computing photocurrent\n');
-            photoCurrentSequenceResampled = theConeMosaic.os.osCompute(isomerizationRateSequenceResampled, theConeMosaic.pattern, 'append', false);
-            clear 'isomerizationRateSequenceResampled'
-            
-            % Back to original sampling 
-            fprintf('Resampling photocurrent to match the time base of the eye movements\n');
-            photoCurrentSequence = zeros(size(isomerizationRateSequence,1), size(isomerizationRateSequence,2), numel(responseTimeAxis));
-            for iRow = 1:size(isomerizationRateSequence,1)
-                for iCol = 1:size(isomerizationRateSequence,2)
-                    photoCurrentSequence(iRow, iCol,:) = interp1(resampleTimeAxis, squeeze(photoCurrentSequenceResampled(iRow, iCol,:)), responseTimeAxis, 'linear');
-                end
-            end
-            clear 'photoCurrentSequenceResampled'
-        else
-            % match between os.timeStep and effectiveIntegrationTime
-            photoCurrentSequence = theConeMosaic.os.osCompute(isomerizationRateSequence, theConeMosaic.pattern, 'append', false);
+    
+    dt = isomerizationsTimeAxis(2)-isomerizationsTimeAxis(1);
+    instancesNum = size(allInstancesIsomerizationsCount,1);
+    % Plotting limits
+    absorptionsFanoFactorLims = [0.0 10];
+    photocurrentFanoFactorLims = [0.0 10];
+    SNRlims = [0 60];
+      
+    hFig = figure(figNo+1000); clf;
+    set(hFig, 'Position', [10+figNo*10 10 1800 1180], 'Color', [0 0 0]);
+    
+    colors = [1 0 0; 0 1.0 0; 0 0.8 1];
+    coneNames = {'L-cone', 'M-cone', 'S-cone'};
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 3, ...
+           'colsNum', 6, ...
+           'heightMargin',   0.04, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.04);
+    
+    for coneType = 1:3
+
+        mu = squeeze(isomerizationMeans(1,1, coneType,:));
+        sigma = squeeze(isomerizationSTDs(1,1, coneType,:));
+        % avoid divisions by zero
+        sigma(mu == 0) = 1;
+        
+        variance = sigma.^2;
+        isomerizationsInverseFanoFactor = mu ./ variance;
+        isomerizationsSNR = mu ./sigma;
+        
+        mu = squeeze(photocurrentMeansBaselineCorrected(1,1,coneType,:));
+        sigma = squeeze(photocurrentSTDsBaselineCorrected(1,1,coneType,:));
+        % avoid divisions by near zero by making very small photocurrents = 0
+        sigma(mu < 0.1) = 1;
+        mu(mu < 0.1) = 0;
+        
+        variance = sigma.^2;
+        photocurrentInverseFanoFactor = mu ./variance;
+        photocurrentSNR = mu ./ sigma;
+        
+        maxIsomerizationCountForThisCone = max(max(max(squeeze(allInstancesIsomerizationsCount(:,:,coneType,:))))) + 1;
+        minIsomerizationCountForThisCone = min(min(min(squeeze(allInstancesIsomerizationsCount(:,:, coneType,:)))));
+        
+        plotBackgroundColor = [0.1 0.1 0.1];
+        
+        % Absorption events
+        subplot('Position', subplotPosVectors(coneType,1).v);
+        hold on
+        % Identify stimulus presentation times
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone], 'k-', 'Color', [0.5 0.5 0.5]);
         end
         
-    else
-        photoCurrentSequence = [];
+        barOpacity = 0.1;
+        for tIndex = 1:numel(isomerizationsTimeAxis)
+            quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,1, coneType,tIndex));
+            plot([isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt], [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
+        end
+        box on;
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone]);
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel(sprintf('%s isomerizations in %2.1f msec', coneNames{coneType}, 1000*dt), 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title(sprintf('isomerizations\n(%d instances)', instancesNum), 'FontSize', 16, 'Color', [1 1 1]);
+        end
+        
+        
+        
+        % Absorptions InverseFanoFactor
+        subplot('Position', subplotPosVectors(coneType,2).v);
+        hold on
+        % Identify stimulus presentation times
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], absorptionsFanoFactorLims, 'k-', 'Color', [0.5 0.5 0.5]);
+        end
+        % Identify the FanoFactor = 1 line
+        plot([isomerizationsTimeAxis isomerizationsTimeAxis(end)+dt], [ones(size(isomerizationsTimeAxis)) 1], '--', 'Color', [0.8 0.8 0.3], 'LineWidth', 1.5);
+        % Plot the time-varying Fano factor
+        for tIndex = 1:numel(isomerizationsTimeAxis)
+            if (tIndex < numel(isomerizationsTimeAxis))
+                xx = [isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt isomerizationsTimeAxis(tIndex+1)];
+                yy = [isomerizationsInverseFanoFactor(tIndex) * [1 1] isomerizationsInverseFanoFactor(tIndex+1)];
+            else
+                xx = [isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt];
+                yy = isomerizationsInverseFanoFactor(tIndex) * [1 1];
+            end
+            plot(xx,yy, '-', 'Color', colors(coneType,:), 'LineWidth', 1.5);
+        end
+        box on;
+        yTicks = [0 1 2 4 8];
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', absorptionsFanoFactorLims, 'YScale', 'Linear', 'YTick', yTicks, 'YTickLabel', sprintf('%2.2f\n', yTicks));
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel('quanta inverse Fano factor ( \mu/{\sigma}^2 )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title('Inv. Fano Factor ( \mu/{\sigma}^2 )', 'FontSize', 16, 'Color', [1 1 1]);
+        end
+        
+        % Absorptions SNR
+        subplot('Position', subplotPosVectors(coneType,3).v);
+        hold on
+        % Identify stimulus presentation times
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], SNRlims, 'k-', 'Color', [0.5 0.5 0.5]);
+        end
+        % Plot the time-varying SNR
+        for tIndex = 1:numel(isomerizationsTimeAxis)
+            if (tIndex < numel(isomerizationsTimeAxis))
+                xx = [isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt isomerizationsTimeAxis(tIndex+1)];
+                yy = [isomerizationsSNR(tIndex) * [1 1] isomerizationsSNR(tIndex+1)];
+            else
+                xx = [isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt];
+                yy = isomerizationsSNR(tIndex) * [1 1];
+            end
+            plot(xx,yy, '-', 'Color', colors(coneType,:), 'LineWidth', 1.5);
+        end
+        box on;
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt],  'YLim', SNRlims, 'YScale', 'Linear');
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel('quanta SNR ( \mu/\sigma )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title('SNR ( \mu/\sigma )', 'FontSize', 16, 'Color', [1 1 1]);
+        end
+        
+        
+        % photocurrents
+        subplot('Position', subplotPosVectors(coneType,4).v);
+        % Identify stimulus presentation times
+        hold on
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], photocurrentRange, 'k-', 'Color', [0.5 0.5 0.5]);
+        end
+        
+        % Plot photocurrents
+        plot(photocurrentTime, squeeze(allInstancesPhotoCurrents(:,1,coneType, :)), 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity*2]);
+        box on;
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', photocurrentRange);
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel('photocurrent (pA)', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title(sprintf('pcurrent, os.noiseFlag=false\n (%d instances)', instancesNum), 'FontSize', 16, 'Color', [1 1 1]);
+        end
+
+        % Photocurrent time-varying inverse FanoFactor
+        
+        subplot('Position', subplotPosVectors(coneType,5).v);
+        hold on
+        % Identify stimulus presentation times
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], photocurrentFanoFactorLims, 'k-', 'Color', [0.5 0.5 0.5]);
+        end
+        % Identify the FanoFactor = 1 line
+        plot([photocurrentTime photocurrentTime(end)], [ones(size(photocurrentTime)) 1], '--', 'Color', [0.8 0.8 0.3], 'LineWidth', 1.5);
+        % Plot the time-varying Fano factor
+        stairs(photocurrentTime, photocurrentInverseFanoFactor, 'Color', colors(coneType,:), 'LineWidth', 1.5);
+        box on;
+        yTicks = [0 1 2 4 8];
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt], 'YLim', photocurrentFanoFactorLims, 'YScale', 'Linear', 'YTick', yTicks, 'YTickLabel', sprintf('%2.2f\n', yTicks));
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel('photocurrent Inverse Fano factor ( \mu/{\sigma}^2 )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title('Inv. Fano Factor ( \mu/{\sigma}^2 )', 'FontSize', 16, 'Color', [1 1 1]);
+        end
+        
+        
+        % photocurrents SNR
+        subplot('Position', subplotPosVectors(coneType,6).v);
+        hold on
+        % Identify stimulus presentation times
+        for k = 1:numel(oiTimeAxis)
+            plot(oiTimeAxis(k)*[1 1], SNRlims, 'k-', 'Color', [0.5 0.5 0.5]);
+        end
+        % Plot the time-varying SNR
+        stairs(photocurrentTime, photocurrentSNR, 'Color', colors(coneType,:), 'LineWidth', 1.5);
+        box on;
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'Color', plotBackgroundColor, 'FontSize', 14, 'XLim', [isomerizationsTimeAxis(1) isomerizationsTimeAxis(end)+dt],  'YLim', SNRlims, 'YScale', 'Linear');
+        if (coneType == 3)
+            xlabel('time (seconds)', 'FontSize', 16);
+        end
+        ylabel('photocurrent SNR ( \mu/\sigma )', 'FontSize', 16, 'FontWeight', 'bold', 'Color', [1 1 0.3]);
+        if (coneType == 1)
+            title('SNR  ( \mu/\sigma )', 'FontSize', 16, 'Color', [1 1 1]);
+        end
+        
+        drawnow;
     end
+    
+    %NicePlot.exportFigToPNG(sprintf('Fig%d.png', figNo), hFig, 300);
 end
-
-
-
-% debug = false;
-% if (debug)
-% Get the optics
-%     optics = oiGet(theOI, 'optics');
-%     no OTF
-%     optics = opticsSet(optics, 'model', 'diffraction limited');
-%     set back the customized optics
-%     theOI = oiSet(theOI,'optics', optics);
-%     set the lens Transmittance to 1.0
-%     theLens = oiGet(theOI,'lens');
-%     lensTransmittanceOriginal = theLens.get('transmittance')
-%     theLens = theLens.set('absorbance', zeros(size(theLens.wave)))
-%     lensTransmittance = theLens.get('transmittance')
-%     pause
-%     
-%     lensTransmittanceOriginal = theLens.transmittance;
-%     zeroAbsorbance = zeros(size(lensTransmittanceOriginal));
-%     theLens.absorbance =  zeroAbsorbance;
-%     lensTransmittanceFull = theLens.transmittance
-%     theOI = oiSet(theOI, 'lens', theLens);
-% 
-% 
-% 
-%     FOVs = [0.125 0.25 0.5 1 2 4 8 16 32 64];
-%     meanLuminance = 300;
-%     for k = 1:numel(FOVs)
-%         uniformScene = uniformFieldSceneCreate(FOVs(k), meanLuminance);
-%         meanSceneLuminance(k) = sceneGet(uniformScene, 'mean luminance');
-% 
-%         Compute the optical image
-%         theOI = oiCompute(theOI, uniformScene);
-%         meanRetinalIlluminance(k) = oiGet(theOI, 'mean illuminance');
-%     end
-% 
-%     figure(1); clf;
-%     subplot(1,2,1)
-%     plot(FOVs, meanSceneLuminance, 'ks-');
-%     xlabel('scene size (deg)');
-%     title('scene luminance');
-% 
-%     subplot(1,2,2)
-%     plot(FOVs, meanRetinalIlluminance, 'ks-');
-%     xlabel('scene size (deg)');
-%     title('retinal illuminance');
-%     drawnow;
-%     pause
-% 
-%     figure(101); clf;
-%     subplot(1,2,1);
-%     imshow(sceneGet(uniformScene, 'RGB'))
-% 
-% end %(debug)

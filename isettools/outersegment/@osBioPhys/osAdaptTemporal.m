@@ -1,11 +1,11 @@
  function [adaptedData, model] = osAdaptTemporal(pRate,obj)
-% Time varying voltage response from photon rate and initial state
+% Time varying current response from photon rate and initial state
 %
 %    adaptedData = osAdaptTemporal(pRate, obj)
 %                    [only called internally from @osBioPhys/osCompute.m]
 % 
 % Inputs:
-%   pRate - Photon absorption rate from coneMosaic.absorptions/coneMosaic.integrationTime
+%   pRate - Photon absorption rate, coneMosaic.absorptions/coneMosaic.integrationTime
 %   obj   - osBioPhys object containing many initial parameters
 %
 % Return
@@ -63,6 +63,7 @@ if ~exist('pRate','var') || isempty(pRate), error('Photon absorption rate requir
     
 dt = obj.timeStep;
 model = obj.state;
+
 %% Simulate differential equations
 adaptedData = zeros([size(model.opsin) size(pRate, 3)+1]);
 adaptedData(:,:,1) = model.bgCur;

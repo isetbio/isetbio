@@ -37,7 +37,7 @@ coupling = p.Results.coupling;
 % sample of the linear response is broken into N bins, where N is the
 % refresh rate. This is used in simGLM.m and simGLMcpl.m from Pillow.
 global RefreshRate
-RefreshRate = 100;
+RefreshRate = 10;
 
 % For every IR, this could be a vector in the future
 nTrials = ir.get('number trials');
@@ -121,14 +121,16 @@ for ii = 1:length(ir.mosaic)
             
         end
     end    
-end
 
-% Set mosaic property
-ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
-
-% The nonlinear voltage which is only set in the GLM model
-if isa(ir.mosaic{ii},'rgcGLM')
-    ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+    
+    % Set mosaic property
+    ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
+    
+    % The nonlinear voltage which is only set in the GLM model
+    if isa(ir.mosaic{ii},'rgcGLM')
+        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+    end
+    
 end
 
 end

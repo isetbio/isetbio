@@ -1,17 +1,17 @@
-function current = osCompute(obj, pRate, coneType, varargin)
-% Compute the output response of the L, M and S cone outer segments
+function current = osCompute(obj, cMosaic, varargin)
+% Compute the photocurrent response of the L, M and S cones
 %
-%   current = osCompute(obj, pRate, coneType, varargin)
+%   current = osCompute(obj, cMosaic, varargin)
 % 
 % This converts isomerizations (R*) to outer segment current (pA). The
-% difference equation model by Rieke is applied here. If the noiseFlag
-% property of the osLinear object is set to 1, this method will add noise
-% to the current output signal.
+% difference equation model by Rieke is applied here. 
+%
+% If the noiseFlag property of the osLinear object is set to true, this
+% method adds photocurrent noise to the output signal. See osAddNoise().
 %
 % Inputs: 
 %   obj      - the osBioPhys object
-%   pRate    - photon absorption rate in R*/sec
-%   coneType - cone type matrix, 1 for blank, 2-4 for LMS respectively
+%   cMosaic  - The parent of the outersegment object
 % 
 % Optional paramters (key-value pairs)
 %   'bgR'    - background (initial state) cone isomerization rate
@@ -25,51 +25,36 @@ function current = osCompute(obj, pRate, coneType, varargin)
 %
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
-%%
-% check pRate type for backward compatibility
-if isstruct(pRate) && isfield(pRate, 'type') && ...
-        strcmp(pRate.type, 'sensor')
-    warning('The input is a sensor, should update to use coneMosaic.');
-    obj.osSet('timestep', sensorGet(pRate, 'time interval'));
-    if notDefined('coneType')
-        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-            sensorGet(pRate, 'cone type'));
-    else
-        current = obj.osCompute(sensorGet(pRate, 'photon rate'), ...
-            sensorGet(pRate, 'cone type'), coneType, varargin{:});
-    end
-    % in the old code, we return obj instead of current
-    current = obj.osSet('cone current signal', current);
-    return
-end
-
-% parse inputs
-p = inputParser; p.KeepUnmatched = true;
+%% parse inputs
+p = inputParser; 
+p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
-p.addRequired('pRate', @isnumeric);
-p.addRequired('coneType', @ismatrix);
-p.addParameter('bgR', 0, @isscalar);
-p.addParameter('append', false, @islogical);
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addParameter('bgR',0,@isnumeric);
 
-p.parse(obj, pRate, coneType, varargin{:});
-bgR = p.Results.bgR;
-isAppend = p.Results.append;
+% The background absorption rate
+p.parse(obj, cMosaic, varargin{:});
 
-% init parameters
-if ~isAppend || isempty(obj.state)
-%     p  = osInit;  % default parameters for biophysics model
-    obj.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
-    obj.state.timeStep = obj.timeStep;
-end
+% This is the background isomerization rate mean for each cone class
+% (R*/sec). It could be calculated here using coneMeanIsomerizations.  Not
+% sure why we pass it in.
+bgR = mean(p.Results.bgR);
 
+% R*/sec over time (x,y,t) for each one. 
+pRate = cMosaic.absorptions/cMosaic.integrationTime;
+
+%% What should we put in as the bgR in this case?
+
+% JRG and BW need to review the logic here, which may not be right yet.
+% How we handle the different cone classes is not clear.
+obj.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
+
+obj.state.timeStep = obj.timeStep;
+
+% How does this handle the separate cone signals?
 [current, obj.state]  = osAdaptTemporal(pRate, obj);
 
-% add noise
+% The outer segment noise flag
 if obj.noiseFlag, current = osAddNoise(current); end
-if isAppend
-    obj.coneCurrentSignal = cat(3, obj.coneCurrentSignal, current);
-else
-    obj.coneCurrentSignal = current;
-end
 
 end

@@ -3,63 +3,88 @@ classdef coneMosaic < hiddenHandle
     %
     %   cMosaic =  coneMosaic('pigment', photoPigment, 'os', os);
     %
-    % The cone mosaic defines an array of cones. The individual cones have
-    % absorption properties defined by cMosaic.pigment. The computation
-    % from absorptions to photocurrent is defined by cMosaic.os
+    % The cone mosaic defines the absorptions and photocurrent in an array
+    % of cones. The default cone mosaic is rectangular.  There is a
+    % subclass of coneMosaicHex (hexagonal sampling). That is implemented
+    % by using a finer grid and placing the cones on a submosaic within the
+    % larger rectangular mosaic.
+    %
+    % The cone quantum efficiencies are defined by both the macular pigment
+    % and the pigment. The lens is incoporated as part of the optics.
+    %
+    % The isomerizations (absorptions, R*) are calculated using
+    % coneMosaic.compute.
+    %
+    % The absorptions are converted to photocurrent by the method defined
+    % in the outerSegment class, coneMosaic.os.  The compute for current is
+    % coneMosaic.computeCurrent.
     %
     % HJ/JRG/BW ISETBIO Team, 2016
     
-    properties  % public properties
+    % Keep the format for the comments.  This is used in doc coneMosaic
+    properties (GetAccess=public, SetAccess=public) 
+
         name                % the name of the object
         
-        pigment;            % Cone class object, contain single cone property
-        macular;            % Macular class object
-        os;                 % Outersegment properties
+        pigment;            % Cone photopigment class
+        macular;            % Macular class
+        os;                 % outerSegment class
+
+        absorptions;        % The spatial array of cone absorptions
+                            % must be consistent with pattern
+        current;            % The (x,y,t) of photocurrent, stored in os
+
+        center;             % Center position of patch (x,y - meters)
         
-        center;             % (x,y) center position of patch in meters
+        pattern;            % Pattern of K-LMS cones in the mosaic%
+                            % Defines rows and cols, too 
         
-        pattern;            % Pattern of K-LMS cones in the mosaic
-        patternSampleSize;  % Separation between K-LMS pattern samples; for rectangular grid mosaics, 
-                            % this is set to the pigment width/height, i.e., the actual cone separation;
-                            % For hexagonal grid mosaics (instances of the coneMosaicHex class), 
-                            % this becomes the separation between the rect grid nodes over which the 
-                            % lower resolution hex grid is sampled (NC)
+        patternSampleSize;  % Separation between K-LMS pattern samples 
+                            % For rectangular grid mosaics, this is set to
+                            % the pigment width/height, i.e., the actual
+                            % cone separation; For hexagonal grid mosaics
+                            % (instances of the coneMosaicHex class), this
+                            % is the separation between the rect grid nodes
+                            % over which the lower resolution hex grid is
+                            % sampled (NC)
         
-        integrationTime;    % Cone temporal integration time in secs (50 ms default)
-        emPositions;        % Eye movement positions in number of cones.
-                            % The length of this property controls number of
+        integrationTime;    % Cone temporal integration time (secs)
+        emPositions;        % Eye movement positions (spatial units are number of cones).
+                            % The number of positions controls number of
                             % frames to be computed
-        noiseFlag;          % To control which noise is included
-        hdl;                % handle of the gui window
+        noiseFlag;          % Absorption calculation noise (usually photon noise is on)
+                            
+        hdl;                % handle of the coneMosaic window
     end
     
-    %     properties (SetObservable, AbortSet)
-    %         sampleTime;         % Time step for em and os computation. In the
-    %                             % os this is called timeStep. Default is 1 ms
-    %     end
-    
-    properties (GetAccess=public, SetAccess=public) % public temporarilly
-        absorptions;    % The spatial array of cone absorptions
-    end
     
     properties (Dependent)
-        wave;           % Wavelength samples
+        % Dependency shown in parenthesis
         
-        rows;           % number of rows in the cone mosaic
-        cols;           % number of cols in the cone mosaic
-        mosaicSize;     % [rows, cols]
-        patternSupport; % [X(:) Y(:)] axes
-        width;          % width of cone mosaic in meters
-        height;         % height of cone mosaic in meters
+        wave;           % Wavelength samples (pigment)
+        
+        rows;           % number of rows in the cone mosaic (pattern)
+        cols;           % number of cols in the cone mosaic (pattern)
+        mosaicSize;     % [rows, cols] (pattern)
+        patternSupport; % [X(:) Y(:)] axes (Pattern)
+        
+        width;          % width of cone mosaic in meters (patternSampleSize)
+        height;         % height of cone mosaic in meters (patternSampleSize)
         fov;            % horizontal/vertical field of view assuming inf 
                         % scene distance and 17mm optics focal length
+                        % (patternSampleSize, via height and width)
+        tSamples        % Number of temporal samples
         
-        coneLocs;       % cone locations in meters
-        qe;             % absorptance with macular pigment (not lens)
+        coneLocs;       % cone locations in meters (pigment)
+        qe;             % absorptance with macular pigment, but not lens
+                        % which is accounted for in the oi representation.
+                        % (pigment and macular)
         
-        current;        % The spatial array of photocurrent over time
         spatialDensity; % spatial density (ratio) of the K-LMS cones
+        
+        % absorptionsTimeAxis; % Time samples (absorptions and integrationTime) 
     end
+    
     
     properties (Access=private)
         % spatial density (ratio) of the K-LMS cones
@@ -110,7 +135,6 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
             p.addParameter('integrationTime', 0.05, @isscalar);
-            % p.addParameter('sampleTime', 0.001, @isscalar);
             
             % Computational features
             p.addParameter('emPositions', [0 0], @isnumeric);
@@ -147,19 +171,8 @@ classdef coneMosaic < hiddenHandle
             obj.pigment.height = spacing;
             obj.pigment.width  = spacing;
             
-            
-            % Not sure why we do this.  Related to NP.  To discuss in an
-            % issue. (BW)
-            % From NP to BW: 
-            % In a rect mosaic (instantiated via coneMosaic), obj.pattern is the actual pattern of
-            % the cones in the mosaic. Therefore the elements of obj.pattern are separated by a 
-            % distance equal to the inter-cone separation.
-            % In a hex mosaic (instantiated via coneMosaicHex), obj.pattern represents the pattern 
-            % of a high resolution sampling array, in which most elements are null(K) cones. 
-            % The non-null elements are LMS cones positioned at the nodes of a hex grid. Therefore, 
-            % in a coneMosaicHex, the patternSampleSize is set (by the coneMosaicHex class) to a 
-            % value that corresponds not to actual LMS cone spacing, but to the spacing of the 
-            % high resolution sampling array.
+            % See description of this parameter on the wiki page at
+            % https://github.com/isetbio/isetbio/wiki/Cone-mosaic#note-on-the-patternsamplesize-variable
             obj.patternSampleSize = [obj.pigment.width, obj.pigment.height];
             
             % generate human cone mosaic pattern if not specified
@@ -170,20 +183,15 @@ classdef coneMosaic < hiddenHandle
                 obj.pattern = p.Results.pattern;
             end
             
-            
             % Initialize the mosaic properties
             % obj.os.timeStep = obj.sampleTime;
             obj.os.patchSize = obj.width;
             
             % initialize listener
             % these listeners make sure the wavelength samples
-            % in obj.pigment and obj.macular are the same
+            % in obj.pigment and obj.macular match
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
-            
-            % Trying to remove sampleTime
-            %  addlistener(obj, 'sampleTime', 'PostSet', @obj.setSampleTime);
-            %  addlistener(obj.os, 'timeStep', 'PostSet', @obj.setSampleTime);
 
         end
         
@@ -263,8 +271,24 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.current(obj)
-            val = double(obj.os.coneCurrentSignal);
+            % Shouldn't have to do this any more, right?
+            if isempty(obj.current), val = [];
+            else                     val = double(obj.current);
+            end
         end
+        
+        function val = get.tSamples(obj)
+            % Computed from the 1st dimension of eye movement positions
+            if isempty(obj.emPositions), val = 1; return; end
+            
+            % The number of eye positions defines the number of samples
+            val = size(obj.emPositions,1);
+
+            % If you want the number of time steps in sec as an axis:
+            %
+            %   val = (0:1:(tSamps-1)) * obj.integrationTime;
+
+        end        
         
         %% set method for class properties
         function set.spatialDensity(obj, val)
@@ -285,7 +309,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function set.current(obj, val)
-            obj.os.osSet('cone current signal', single(val));
+            obj.current = single(val);
         end
         
         function set.fov(obj, val) % set field of view
@@ -312,7 +336,10 @@ classdef coneMosaic < hiddenHandle
     
     methods (Access=public)
         % Declare the compute method
-        [absorptions, current] = compute(obj, oi, varargin);
+        [absorptions, current, varargout] = compute(obj, oi, varargin);
+        
+        % Declare the compute method for a sequence of optical images viewed sequentially
+        [absorptions, absorptionsTimeAxis, varargout] = computeForOISequence(obj, oiSequence,  varargin)
         
         % Method returning the demosaiced isomerization maps and the corresponding sRGB rendition
         function [demosaicedAbsorptionsMap, sRGB] = demosaicedIsomerizationMaps(obj, varargin)
@@ -332,12 +359,18 @@ classdef coneMosaic < hiddenHandle
         [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassActivationMap(response, theMosaic, spaceConstants);
         
         % Declare the computeCurrent method
-        computeCurrent(obj, varargin);
+        interpFilters = computeCurrent(obj, varargin);
 
+        function val = timeAxis(obj)
+            % Call:  obj.timeAxis;
+            val = (0:1:(obj.tSamples-1)) * obj.integrationTime;
+        end
+        
     end
 
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
+        resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis);
     end
 
     % Methods may be called by the subclasses, but are otherwise private
@@ -353,15 +386,5 @@ classdef coneMosaic < hiddenHandle
     methods (Access = private)
         setWave(obj, src, ~)
     end
-        
-        %         function setSampleTime(obj, src, ~)
-        %             warning('Sample time changed...can be bad');
-        %             switch src.DefiningClass.Name
-        %                 case 'coneMosaic'
-        %                     obj.os.timeStep = obj.sampleTime;
-        %                 otherwise
-        %                     obj.sampleTime = obj.os.timeStep;
-        %             end
-        %         end
-        %     end
+
 end

@@ -1,5 +1,5 @@
 function ieFontInit(fig)
-%Initialize the font size based on the preference setting for ISET
+% Initialize the font size based on the preference setting for ISET
 %
 %   ieFontInit(fig)
 %
@@ -7,7 +7,7 @@ function ieFontInit(fig)
 % we store a user-defined preference for a font size that modulates the
 % Matlab default size.  This size appears different across platforms.
 %
-% ISETBUI font size preferences are managed using the preference mechanism
+% ISETBIO font size preferences are managed using the preference mechanism
 % in Matlab. The ISET preferences are obtained using getpref('ISET'). The
 % font size is a field, fontDelta, in the ISET preference structure.
 %
@@ -26,6 +26,10 @@ catch
     setpref('ISETBIO','fontSize',fSize);
 end
 
+% fprintf('Setting font size to %d\n',fSize);
+
+% No idea why I have to run this twice.  Must figure out ...
+ieFontSizeSet(fig,fSize);
 ieFontSizeSet(fig,fSize);
 
 end

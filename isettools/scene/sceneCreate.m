@@ -117,7 +117,7 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %         sceneCreate('grid lines',imageSize,pixelsBetweenLines);
 %         sceneCreate('point array',imageSize,pixelsBetweenPoints);
 %         sceneCreate('moire orient',imageSize,edgeSlope);
-%         sceneCreate('radia%         sceneCreate('radial lines', imageSize);l lines', imageSize);
+%         sceneCreate('radial lines', imageSize);
 %
 %         clear p; p.display = 'LCD-Apple';
 %         p.sceneSz = [64,65]; p.barWidth = 2; p.offset = 1; p.meanLum = 10;
@@ -380,10 +380,8 @@ switch sceneName
         %   vcAddObject(s); sceneWindow;
         %
         if ~isempty(varargin), type = varargin{1}; else type = 'object'; end
-        if length(varargin) > 1, 
-            params = varargin{2};
-        else
-            params = [];
+        if length(varargin) > 1,  params = varargin{2};
+        else                      params = [];
         end
         scene = sceneVernier(scene, type, params);
         return;
@@ -753,90 +751,6 @@ illP      = illuminantGet(il,'photons');
 img       = img*diag(illP);
 img       = XW2RGBFormat(img,r,c);
 scene     = sceneSet(scene,'photons',img);
-
-end
-
-%--------------------------------------------------
-function [scene,p] = sceneHarmonic(scene,params, wave)
-%% Create a scene of a (windowed) harmonic function.
-%
-% Harmonic parameters are: parms.freq, parms.row, parms.col, parms.ang
-% parms.ph, parms.contrast
-%
-% Missing default parameters are supplied by imageHarmonic.
-%
-% The frequency is with respect to the image (cyces/image).  To determine
-% cycles/deg, use cpd: freq/sceneGet(scene,'fov');
-%
-
-scene = sceneSet(scene,'name','harmonic');
-
-if notDefined('wave')
-    scene = initDefaultSpectrum(scene,'hyperspectral');
-else
-    scene = initDefaultSpectrum(scene, 'custom',wave);
-end
-
-nWave = sceneGet(scene,'nwave');
-
-% TODO: Adjust pass the parameters back from the imgHarmonic window. In
-% other cases, they are simply attached to the global parameters in
-% vcSESSION.  We can get them by a getappdata call in here, but not if we
-% close the window as part of imageSetHarmonic
-if notDefined('params')
-    [h, params] = imageSetHarmonic; waitfor(h);
-    img = imageHarmonic(params);
-    p   = params;
-else
-    [img,p] = imageHarmonic(params);
-end
-
-% To reduce rounding error problems for large dynamic range, we set the
-% lowest value to something slightly more than zero.  This is due to the
-% ieCompressData scheme.
-img(img==0) = 1e-4;
-img   = img/(2*max(img(:)));    % Forces mean reflectance to 25% gray
-
-% Mean illuminant at 100 cd
-wave = sceneGet(scene,'wave');
-il = illuminantCreate('equal photons',wave,100);
-scene = sceneSet(scene,'illuminant',il);
-
-img = repmat(img,[1,1,nWave]);
-[img,r,c] = RGB2XWFormat(img);
-illP = illuminantGet(il,'photons');
-img = img*diag(illP);
-img = XW2RGBFormat(img,r,c);
-scene = sceneSet(scene,'photons',img);
-
-% set scene field of view
-scene = sceneSet(scene, 'h fov', 1);
-
-end
-
-%--------------------------------------------------
-function scene = sceneRamp(scene,sz)
-%% Intensity ramp (see L-star chart for L* steps)
-
-if notDefined('sz'), sz = 128; end
-
-scene = sceneSet(scene,'name','ramp');
-scene = initDefaultSpectrum(scene,'hyperspectral');
-nWave = sceneGet(scene,'nwave');
-wave = sceneGet(scene,'wave');
-
-img = imgRamp(sz);
-img = img/(max(img(:)));
-
-il = illuminantCreate('equal photons',wave,100);
-scene = sceneSet(scene,'illuminant',il);
-
-img = repmat(img,[1,1,nWave]);
-[img,r,c] = RGB2XWFormat(img);
-illP = illuminantGet(il,'photons');
-img = img*diag(illP);
-img = XW2RGBFormat(img,r,c);
-scene = sceneSet(scene,'photons',img);
 
 end
 
@@ -1301,58 +1215,6 @@ img = zeros(size(d,1),size(d,2),nWave);
 illP = illuminantGet(il,'photons');
 for ii=1:nWave, img(:,:,ii) = d*illP(ii); end
 scene = sceneSet(scene,'photons',img);
-
-end
-
-%---------------------------------------------------------------
-function scene = sceneSlantedBar(scene,imSize,barSlope,fieldOfView,wave)
-%%
-%  Slanted bar, 2 deg field of view
-%  Slope 2.6 (upper left to lower right)
-%  Default size:  384
-%
-% The scene is set to equal photons across wavelength.
-
-if notDefined('imSize'),      imSize = 384; end
-if notDefined('barSlope'),    barSlope = 2.6; end
-if notDefined('fieldOfView'), fieldOfView = 2; end
-if notDefined('wave'),        wave = 400:10:700; end
-scene = sceneSet(scene,'name','slantedBar');
-
-scene = sceneSet(scene,'wave',wave);
-
-wave = sceneGet(scene,'wave');
-nWave  = sceneGet(scene,'nwave');
-
-% Make the image
-imSize = round(imSize/2);
-[X,Y] = meshgrid(-imSize:imSize,-imSize:imSize);
-img = zeros(size(X));
-
-%  y = barSlope*x defines the line.  We find all the Y values that are
-%  above the line
-list = (Y > barSlope*X );
-
-% We assume target is perfectly reflective (white), so the illuminant is
-% the equal energy illuminant; that is, the SPD is all due to the
-% illuminant
-img( list ) = 1;
-
-% Prevent dynamic range problem with ieCompressData
-img = ieClip(img,1e-6,1);
-
-% Now, create the illuminant
-il = illuminantCreate('equal energy',wave);
-scene = sceneSet(scene,'illuminant',il);
-illP = illuminantGet(il,'photons');
-
-% Create the scene photons
-photons = zeros(size(img,1),size(img,2),nWave);
-for ii=1:nWave, photons(:,:,ii) = img*illP(ii); end
-scene = sceneSet(scene,'photons',photons);
-
-% Set the field of view
-scene = sceneSet(scene,'horizontalfieldofview',fieldOfView);
 
 end
 

@@ -1,7 +1,7 @@
-function varargout = v_osBioPhysLightIncrementDecrementResponses(varargin)
-% Validate the biophysical model for light increment and decrement stimuli
+function varargout = v_osIncDec(varargin)
+% Validate the os models for light increment and decrement stimuli
 %
-% This script tests the biophysically-based outer segment model of 
+% This script tests the linear and biophysical outer segment models of 
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments.  This is for steps (1.5 sec), both incremental and
 % decremental with respect to backgrounds of different intensities.
@@ -10,6 +10,8 @@ function varargout = v_osBioPhysLightIncrementDecrementResponses(varargin)
 %
 % 1/12/16      npc   Created after separating the relevant 
 %                    components from s_coneModelValidate.
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -39,11 +41,10 @@ function ValidationFunction(runTimeParams)
     
     contrastsExamined = [-1 1];
     
-    % create human sensor with 1 cone
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-    sensor = sensorSet(sensor, 'time interval', simulationTimeIntervalInSeconds);
-
+    %% Compute os responses    
+    decrementLinearResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes));  
+    incrementLinearResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes)); 
+    
     decrementResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes));  
     incrementResponseAmplitude = zeros(1, numel(stimulusPhotonRateAmplitudes)); 
     
@@ -56,45 +57,63 @@ function ValidationFunction(runTimeParams)
             
             % generate step (decrement/increment)
             stimulusPhotonRateStep(contrastIndex, :) = stimulusPhotonRate;
-            stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));
+            stimulusPhotonRateStep(contrastIndex, pulseOnset:pulseOffset) = stimulusPhotonRate(pulseOnset:pulseOffset,1) * (1+contrastsExamined(contrastIndex));            
             
-            % set the stimulus photon rate
-            sensor = sensorSet(sensor, 'photon rate', reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]));
-            pRate = sensorGet(sensor, 'photon rate');
-            coneType = sensorGet(sensor, 'cone type');
+            % Linear model
+            osCML = osLinear();            
+            osCML.set('noise flag',0);
+            cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+            cmL.integrationTime = simulationTimeIntervalInSeconds;
+            cmL.os.timeStep = simulationTimeIntervalInSeconds;
+            cmL.absorptions  = simulationTimeIntervalInSeconds*reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]);
+            % Compute outer segment currents.
+            cmL.computeCurrent();
+            currentL = (cmL.current);
             
-            % create a biophysically-based outersegment model object
-            osB = osBioPhys();
-        
-            % specify no noise
-            noiseFlag = 0;
-            osB.osSet('noiseFlag', noiseFlag);
-            osB.osSet('timeStep', simulationTimeIntervalInSeconds);
-    
-            % compute the model's response to the stimulus
-            osB.osCompute(pRate, coneType, 'bgR', 0);
-            
-            % get the computed current
-            current = osB.osGet('coneCurrentSignal');
+            % Biophys model
+            osCM = osBioPhys();            % peripheral (fast) cone dynamics
+            osCM.set('noise flag',0);
+            cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+            cm.integrationTime = simulationTimeIntervalInSeconds;
+            cm.os.timeStep = simulationTimeIntervalInSeconds;
+            cm.absorptions  = simulationTimeIntervalInSeconds*reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]);
+            % Compute outer segment currents.
+            cm.computeCurrent();
+            current = (cm.current);
 
             % store copy for saving to validation file
             if ((stepIndex == 1) && (contrastIndex == 1))
+                osLinearOuterSegmentCurrent = zeros(numel(stimulusPhotonRateAmplitudes), numel(contrastsExamined), size(current,3));
                 osBiophysOuterSegmentCurrent = zeros(numel(stimulusPhotonRateAmplitudes), numel(contrastsExamined), size(current,3));
             end
+            osLinearOuterSegmentCurrent(stepIndex, contrastIndex,:) = currentL(1,1,:);
             osBiophysOuterSegmentCurrent(stepIndex, contrastIndex,:) = current(1,1,:);
             
         end % contrastIndex
 
-
+        %% Capture relevant segments of current responses for inc and dec
         % Gauge response amplitude at 3 seconds
         [~, tBin3seconds] = min(abs(simulationTime-3.0));   % time bin to estimate response to inc/dec pulse
         [~, tBin5seconds] = min(abs(simulationTime-5.0));   % time bin to estimate response to pedestal
+        
+        % Store appropriate segments of current responses for inc and dec
+        % for biophys model
+        linearDecrResponse = osLinearOuterSegmentCurrent(stepIndex, 1, tBin5seconds);
+        linearIncrResponse = osLinearOuterSegmentCurrent(stepIndex, 2, tBin5seconds);        
         adaptedDecrResponse = osBiophysOuterSegmentCurrent(stepIndex, 1, tBin5seconds);
         adaptedIncrResponse = osBiophysOuterSegmentCurrent(stepIndex, 2, tBin5seconds);
+        
+        % Store appropriate segments of current responses for inc and dec
+        % for linear model
+        decrementLinearResponseAmplitude(stepIndex) = abs(osLinearOuterSegmentCurrent(stepIndex, 1, tBin3seconds) - linearDecrResponse);
+        incrementLinearResponseAmplitude(stepIndex) = abs(osLinearOuterSegmentCurrent(stepIndex, 2, tBin3seconds) - linearIncrResponse);
         decrementResponseAmplitude(stepIndex) = abs(osBiophysOuterSegmentCurrent(stepIndex, 1, tBin3seconds) - adaptedDecrResponse);
         incrementResponseAmplitude(stepIndex) = abs(osBiophysOuterSegmentCurrent(stepIndex, 2, tBin3seconds) - adaptedIncrResponse);
-        fprintf('StepIndex %d: Decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementResponseAmplitude(stepIndex), incrementResponseAmplitude(stepIndex) );
         
+        fprintf('StepIndex %d: Linear decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementLinearResponseAmplitude(stepIndex), incrementLinearResponseAmplitude(stepIndex) );        
+        fprintf('StepIndex %d: Biophys decrement response amplitude: %2.2f, Increment response amplitude: %2.1f\n', stepIndex, decrementResponseAmplitude(stepIndex), incrementResponseAmplitude(stepIndex) );
+        
+        %% Plot
         if (runTimeParams.generatePlots)  
             if (stepIndex == 1)
                 h = figure(1); clf;
@@ -117,6 +136,9 @@ function ValidationFunction(runTimeParams)
             
             % plot responses on the right
             subplot(numel(stimulusPhotonRateAmplitudes),2,(stepIndex-1)*2+2); 
+            plot(simulationTime, squeeze(osLinearOuterSegmentCurrent(stepIndex, 1, :)), 'g-', 'LineWidth', 2.0); hold on;
+            plot(simulationTime, squeeze(osLinearOuterSegmentCurrent(stepIndex, 2, :)), 'k-', 'LineWidth', 1.0);
+          
             plot(simulationTime, squeeze(osBiophysOuterSegmentCurrent(stepIndex, 1, :)), 'm-', 'LineWidth', 2.0); hold on;
             plot(simulationTime, squeeze(osBiophysOuterSegmentCurrent(stepIndex, 2, :)), 'b-', 'LineWidth', 1.0);
             
@@ -130,15 +152,18 @@ function ValidationFunction(runTimeParams)
             
             drawnow;
         end % if (runTimeParams.generatePlots)
-    end % stepIndex
+     end % stepIndex
     
     showFit = false;
     decToIncRatioNeural = zeros(1, numel(stimulusPhotonRateAmplitudes));
-    decToIncRatioModel = zeros(1, numel(stimulusPhotonRateAmplitudes));
+    decToIncRatioModel = zeros(1, numel(stimulusPhotonRateAmplitudes));    
+    decToIncRatioLinearModel = zeros(1, numel(stimulusPhotonRateAmplitudes));
     
     for stepIndex = 1:numel(stimulusPhotonRateAmplitudes)
         [decToIncRatioNeural(stepIndex), stimulusPhotonRateAxisFit, decToIncRatioNeuralFit] = generateDecIncRatioEstimate(stimulusPhotonRateAmplitudes(stepIndex), showFit, stimulusPhotonRateAmplitudesNeuralDataPoints, decToIncRatioNeuralDataPoints);
         decToIncRatioModel(stepIndex) = decrementResponseAmplitude(stepIndex) / incrementResponseAmplitude(stepIndex);
+        decToIncRatioLinearModel(stepIndex) = decrementLinearResponseAmplitude(stepIndex) / incrementLinearResponseAmplitude(stepIndex);
+ 
     end
     
     h = figure(2); clf;
@@ -147,24 +172,29 @@ function ValidationFunction(runTimeParams)
     plot(stimulusPhotonRateAmplitudesNeuralDataPoints, decToIncRatioNeuralDataPoints, 'mo', 'MarkerFaceColor', [1 0.7 0.7], 'MarkerSize', 8);
     %plot(stimulusPhotonRateAxisFit, decToIncRatioNeuralFit, 'r-', 'LineWidth', 2.0);
     plot(stimulusPhotonRateAmplitudes, decToIncRatioModel, 'bs', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 1.0]);
+    plot(stimulusPhotonRateAmplitudes, decToIncRatioLinearModel, 'gs', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 1 0.7]);
+
     set(gca, 'FontSize', 12);
     xlabel('log10 background intensity (R*/cone/sec)', 'FontSize', 14);
     ylabel('decrement/increment response ratio', 'FontSize', 14);
     %hLegend = legend('neural data', 'fit to neural data (logistic)', '@osBiophys model data');
-    hLegend = legend('neural data',  '@osBiophys model data');
+    hLegend = legend('neural data',  '@osBiophys model data','@osLinear model data');
     set(hLegend, 'Location', 'SouthEast', 'FontSize', 12);
     box on;
     grid on;
     hold off;
     drawnow;
     
-    % Save validation data
+    %% Save validation data
+    
+    UnitTest.validationData('osLinearCurrent', osLinearOuterSegmentCurrent);
     UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
     UnitTest.validationData('simulationTime', simulationTime);
     UnitTest.validationData('stimPeriod', stimPeriod);
     UnitTest.validationData('stimulusPhotonRateAmplitudes',stimulusPhotonRateAmplitudes);
 end
 
+%% Helper functions
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
     dataSource = {'resources/data/cones', 'decIncRatios.mat'};
     fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});

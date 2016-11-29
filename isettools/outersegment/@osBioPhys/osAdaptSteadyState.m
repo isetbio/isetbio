@@ -2,20 +2,16 @@ function model = osAdaptSteadyState(obj, bgR, varargin)
 % Steady-state background current calculated from the background rates.
 %
 %    obj = osAdaptSteadyState(obj, bgR, sz)
-%                    [only called internally from @osBioPhys/osCompute.m]
+%           [called internally from @osBioPhys/osCompute.m]
 %
 % Inputs:
-%  obj - osBioPhys object containing pre-set parameters from obj init
-%  bgR - Vector (or matrix) of background isomerization rates
-% 
-%  varargin{1}: sz - sensor array size, (e.g., sensorGet(sensor,'size')),
-%                    this parameter is only useful when input bgR is a
-%                    scalar
+%  obj - osBioPhys object
+%  bgR - Vector (or matrix) of background isomerization rates (R*/sec)
 %
 % Output:
-%   obj   - osBioPhys object containing all initial parameters needed for
-%       computation of adapted current over time series input.
-%
+%   model - osBioPhys model parameters needed for computation of adapted
+%           current over time series input.  The model is attached to the
+%           input object and returned as a parameter.
 % Example:
 %   From @osBioPhys/osCompute.m, line 60:
 %     obj.model.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
@@ -26,21 +22,25 @@ function model = osAdaptSteadyState(obj, bgR, varargin)
 %
 % HJ, ISETBIO Team, 2014
 % JRG, ISETBIO Team, updated 8/2016
+
 %% Programming note
 %
 % Notice that the computation is a search over a bounded variable.  The
-% upper and lower bounds are huge for current and thus good enough to
-% always find something, we think.
+% upper and lower bounds are huge for current and thus adequate to always
+% find a solution (we think).
 
 %% Parameters
 if notDefined('bgR'), error('Background isomerization rate required.'); end
 if isscalar(bgR) && ~isempty(varargin), bgR = bgR*ones(varargin{1});  end
-% if notDefined('p'),  p = osInit; end
 
 %% Calculation
+
 %  In most cases, the input bgR matrix will only contain only a small
 %  number of unique values (the background is almost flat) and we can just
 %  loop over them
+% TO DISCUSS:  What's this about?
+% Also, what are the units of bgR?  R*/sec?  Or R*/timeSample?
+
 sz = size(bgR);
 [bgR, ~, recover_index] = unique(bgR(:));
 

@@ -1,7 +1,7 @@
-function [adaptedCur, params] = osAddNoise(curNF, params)
-% Add noise to noise free membrane current (curNF)
+function [adaptedCur, freq] = osAddNoise(curNF, varargin)
+% Add noise to noise-free membrane current (curNF)
 %
-%   adaptedCur = osAddNoise(curNF, params)
+%   [adaptedCur, freq] = osAddNoise(curNF, varargun)
 %
 % Cone noise is additive and independent of cone signal. The noise is
 % Gaussian and the spectral power distribution can be characterized by the
@@ -13,20 +13,26 @@ function [adaptedCur, params] = osAddNoise(curNF, params)
 % Inputs:
 %    curNF  - noise free cone adapted membrane photo current.  The units
 %             are pA (picoAmps) (CHECK!).
-%    params - parameter structure, could include:
-%      .seed     - noise seed for reproducibility
-%      .sampTime - sample time interval (secs), see sensorGet(s, 'time interval');
+%   sampTime - sample time interval (secs), see sensorGet(s, 'time interval');
+%   **NYI**  seed     - noise seed for reproducibility
 %
 %  Outputs:
 %    adaptedCur - membrane current with noise added
+%    freq       - temporal frequency for checking the noise
 %
 %  Example:
-%    params.sampTime = 1/5000;
-%    [noise, params] = osAddNoise(zeros(10,10,10000), params);
-%    noiseF = squeeze(mean(mean(abs(fft(noise, [], 3)).^2)));
-%    vcNewGraphWin; loglog(params.freq, noiseF(1:length(params.freq)));
+%    nSamp = 10000; deltaT = 1/5000;
+%    [noise, freq] = osAddNoise(zeros(10,10,nSamp), 'sampTime',deltaT);
+%    fprintf('Should be close to zero:  Mean noise %f (pA)\n',mean(noise(:)));
+%
+%  This formula for the noise frequency response amplitude (from Fred R)
+%  The 2 is there for some negative frequency, and the correction for the
+%  number of time samples is the usual FFT correction.
+%    noiseF = squeeze(mean(mean(abs(fft(noise, [], 3)*(2/nSamp)).^2)));
+%    vcNewGraphWin; loglog(freq, noiseF(1:length(freq)));
+%    line('Xdata',[0.1 freq(end)],'Ydata',[.205 .205]);
 %    xlabel('Frequency(Hz)'); ylabel('Power Spectrum (pA^2/Hz)'); 
-%    xlim([1 1e3]); ylim([1e-4 1]);
+%    
 %
 %  See also:
 %    coneAdapt, osAdaptSteadyState, osAdaptTemporal
@@ -34,13 +40,16 @@ function [adaptedCur, params] = osAddNoise(curNF, params)
 %  (HJ) ISETBIO, 2014
 
 %% Init
-if notDefined('curNF'), error('noise-free adapted current required'); end
-if notDefined('params'), params = []; end
+p = inputParser;
+p.addRequired('curNF',@isnumeric);
+p.addParameter('sampTime',0.001,@isscalar);
+p.addParameter('seed',rng,@isstruct);
+p.parse(curNF,varargin{:});
 
-if isfield(params, 'seed'), rng(params.seed); else params.seed = rng; end
-if isfield(params, 'sampTime'), sampTime = params.sampTime;
-else sampTime = 0.001; % 1 ms
-end
+sampTime = p.Results.sampTime;
+
+% We do not seem to be handling this correctly!
+% seed = p.Results.seed;
 
 %% Build model and generate noise
 
@@ -54,11 +63,11 @@ end
 
 % Generate the noise according to the noise spectral distribution
 k = ceil((size(curNF, temporalDimIndex)-1)/2);
-params.freq = (0:k)/ sampTime / size(curNF, temporalDimIndex);
+freq = (0:k)/ sampTime / size(curNF, temporalDimIndex);
 
 LorentzCoeffs = [0.16  55  4;
                  0.045 190 2.5];
-noiseSPD = lorentzSum(LorentzCoeffs, params.freq);
+noiseSPD = lorentzSum(LorentzCoeffs, freq);
 
 % Make-up the negative frequency part
 noiseSPD = [noiseSPD noiseSPD(end:-1:1)];

@@ -8,6 +8,7 @@ function ieValidateFullAll(varargin)
 %    'numeric tolerance' - val
 %    'graph mismatched data' - true/false
 %    'generate plots' - true, false
+%    'doFullAndFastValidation'  - true, false
 %
 % Examples:
 %   validateFullAll('verbosity','high');
@@ -45,27 +46,33 @@ end
 %% Whether to plot data that do not agree with the ground truth
 UnitTest.setPref('graphMismatchedData', true);
 
+fullValidationMode = 'FULLONLY';
 %% Adjust parameters based on input arguments
 if ~isempty(varargin)
-elseif ~isodd(length(varargin))
-    for ii=1:2:length(varargin)
-        param = ieParamFormat(varargin{ii});
-        val   = varargin{ii+1};
-        switch(param)
-            case 'verbosity'
-                UnitTest.setPref('verbosity',val);
-            case 'numerictolerance'
-                UnitTest.setPref('numericTolerance', val);
-            case 'graphMismatchedData'
-                UnitTest.setPref('graphMismatchedData', val);
-            case 'generatePlots'
-                UnitTest.setPref('generatePlots',  val);
-            otherwise
-                error('Unknown validation string %s\n',varargin{ii+1});
+    if ~isodd(length(varargin))
+        for ii=1:2:length(varargin)
+            param = ieParamFormat(varargin{ii});
+            val   = varargin{ii+1};
+            switch(param)
+                case 'verbosity'
+                    UnitTest.setPref('verbosity',val);
+                case 'numerictolerance'
+                    UnitTest.setPref('numericTolerance', val);
+                case 'graphMismatchedData'
+                    UnitTest.setPref('graphMismatchedData', val);
+                case 'generatePlots'
+                    UnitTest.setPref('generatePlots',  val);
+                case 'dofullandfastvalidation'
+                    if val
+                        fullValidationMode = 'FULL';
+                    end
+                otherwise
+                    error('Unknown validation string %s\n',varargin{ii+1});
+            end
         end
-    end
-else
-    error('Odd number of arguments, must be param/val pairs');
+     else
+        error('Odd number of arguments, must be param/val pairs');
+     end
 end
 
 %% Print current values of isetbioValidation prefs
@@ -77,6 +84,6 @@ vScriptsList = eval(listingScript);
 
 %% How to validate
 % Run a FULL validation session (comparing actual data)
-UnitTest.runValidationSession(vScriptsList, 'FULL');
+UnitTest.runValidationSession(vScriptsList, fullValidationMode);
 
 end

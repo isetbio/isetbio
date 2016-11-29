@@ -52,11 +52,11 @@ function [img, parms] = imageHarmonic(parms)
 
 % If no parameters sent, use the default.
 % Otherwise over-write the default with user specified parameters
-if ~exist('parms','var'), parms = harmonicParms;
+if ~exist('parms','var'), parms = harmonicP;
 else
     
     % Set up the default parameters
-    dparms = harmonicParms;
+    dparms = harmonicP;
     
     % Check the user structure and over-write any of the parameters with the
     % user parameters
@@ -110,18 +110,4 @@ end
 
 end
 
-
-%% Default parameters for the harmonic
-function parms = harmonicParms
-
-% Default harmonic parameters for this function
-parms.ang = 0;
-parms.contrast = 1;
-parms.freq = 1; 
-parms.ph = pi/2;
-parms.row = 64; 
-parms.col = 64; 
-parms.GaborFlag = 0;
-
-end
 

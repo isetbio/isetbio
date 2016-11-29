@@ -42,7 +42,11 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
+if length(input) == 1
+    vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
+else
+    vFunc = @(x) ~isempty(validatestring(class(x{1}),{'osDisplayRGB','bipolar'}));
+end
 p.addRequired('input',vFunc);
 p.addParameter('coupling',false,@islogical);
 

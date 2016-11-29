@@ -16,7 +16,7 @@ function [tsp,Vmem,Ispk] = simGLMcpl(glmprs,Stim)
 global RefreshRate;
 
 ncells = size(glmprs.k, 3);
-nbinsPerEval = 100;  % Default number of bins to update for each spike
+nbinsPerEval = RefreshRate;  % Default number of bins to update for each spike
 dt = glmprs.dt;
 % Check that dt evenly divides 1
 if mod(1,dt) ~= 0
@@ -71,7 +71,8 @@ nsp = zeros(1,ncells);
 jbin = 1;
 
 % CHANGED FOR ISETBIO to reduce toolbox dependence
-tspnext = ieExprnd(1,1,ncells);
+% tspnext = ieExprnd(1,1,ncells);
+tspnext = -log(rand(1,ncells));
 rprev = zeros(1,ncells);
 
 % CHANGED FOR ISETBIO to run large mosaics faster
@@ -86,7 +87,7 @@ rprev = zeros(1,ncells);
 
 while jbin <= rlen
     iinxt = jbin:min(jbin+nbinsPerEval-1,rlen);  nii = length(iinxt);
-    rrnxt = nlfun(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
+    rrnxt = exp(Vmem(iinxt,:))*dt/RefreshRate; % Cond Intensity
     rrcum = cumsum(rrnxt+[rprev;zeros(nii-1,ncells)],1);  % Cumulative intensity
     if all(tspnext >= rrcum(end,:)) % No spike in this window
         jbin = iinxt(end)+1;
@@ -121,7 +122,8 @@ while jbin <= rlen
             rprev(icell) = 0;  % reset this cell's integral
             
             % CHANGED FOR ISETBIO to reduce toolbox dependence
-            tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell
+            % tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell            
+            tspnext = -log(rand(1));
         end
         jbin = ispk+1;  % Move to next bin
         % --  Update # of samples per iter ---

@@ -121,6 +121,7 @@ switch parm
         scene.distance = val;
 
     case {'wangular','widthangular','hfov','horizontalfieldofview','fov'}
+        if ~isscalar(val), warning('fov is vector. Using first entry'); end
         if val > 180, val = 180 - eps; warndlg('Warning: fov > 180');
         elseif val < 0, val = eps; warndlg('Warning fov < 0');
         end

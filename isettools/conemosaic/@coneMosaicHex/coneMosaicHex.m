@@ -76,11 +76,17 @@ classdef coneMosaicHex < coneMosaic
         % Visualize different aspects of the hex grid
         visualizeGrid(obj, varargin);
         
+        % Reshape a full 3D hex activation map (coneRows x coneCols x time] to a 2D map (non-null cones x time)
+        hex2Dmap = reshapeHex3DmapToHex2Dmap(obj, hex3Dmap);
+        
+        % Reshape a 2D map (non-null cones x time) to the full 3D hex activation map (coneRows x coneCols x time)
+        hex3Dmap = reshapeHex2DmapToHex3Dmap(obj, hex2Dmap);
+        
         % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
         [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationDensityMap(obj, activation);
         
         % Visualize activation maps images for the hex mosaic (all cones +  LMS submosaics)
-        visualizeActivationMaps(obj, activation, varargin);
+        hFig = visualizeActivationMaps(obj, activation, varargin);
         
         % Print various infos about the cone mosaic
         displayInfo(obj);

@@ -22,7 +22,7 @@ function varargout = mosaicWindow(varargin)
 
 % Edit the above text to modify the response to help mosaicWindow
 
-% Last Modified by GUIDE v2.5 10-Sep-2016 15:17:34
+% Last Modified by GUIDE v2.5 28-Oct-2016 13:46:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,6 +73,11 @@ guidata(hObject, handles);
 % Refresh/Initialize window information
 mosaicWindowRefresh(handles);
 
+% Very important for good rendering speed
+set(hObject, 'Renderer', 'OpenGL')
+
+handles.linearMov = [];
+handles.psthMov = [];
 end
 
 % --- Outputs from this function are returned to the command line.
@@ -98,6 +103,9 @@ function menuEdit_Callback(hObject, eventdata, handles)
 % hObject    handle to menuEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.linearMov = [];
+handles.psthMov = [];
 end
 
 % --------------------------------------------------------------------
@@ -139,12 +147,90 @@ str = contents{get(hObject,'Value')};
 
 % Perform the action given the selection
 switch str
+    case 'Receptive field mosaic'
+        disp(str)
+        handles.rgcMosaic.plot('mosaic')
     case 'Spike movie'
         disp(str)
+        
+        psthTest = handles.rgcMosaic.get('spikes');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
+        
+        uData = ieMovie(psthTest,vParams);    
+    case 'Linear movie'
+        disp(str)
+        
+        responseLinear = handles.rgcMosaic.get('responseLinear');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
+%         
+        uData = ieMovie(responseLinear,vParams);
+
+%         set(handles.btnPlayPause, 'Visible', 'on');
+%         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+%         set(handles.sliderMovieProgress, 'Visible', 'on');
+%         if ~exist('handles.linearMov','var')
+% %         if isempty(handles.linearMov)
+% %             ieInWindowMessage('Building movie',handles,2);
+%             % generate movie
+% %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
+% %                 'show',true, ...
+% %                 'gamma', str2double(get(handles.editGam, 'String')));
+%             handles.linearMov = ieMovie(responseLinear,vParams);
+%             guidata(hObject, handles);
+%         end
+%                 
+%         % play movie if more than one frame
+%         btnPlayPause_Callback(hObject, eventdata, handles);
+        
     case 'Spike mean (image)'
         disp(str)
-    case 'PSTH'
+        
+        spikesTest = handles.rgcMosaic.get('spikes');
+        imagesc(mean(spikesTest,3)); drawnow
+        
+    case 'Linear plot'
         disp(str)
+        
+        responseLinear = handles.rgcMosaic.get('responseLinear');
+        plot(RGB2XWFormat(responseLinear)');
+    case 'PSTH plot'
+        
+        responsePsth = handles.rgcMosaic.get('psth');
+        plot(RGB2XWFormat(responsePsth)');
+    case 'PSTH movie'
+        disp(str)
+        
+        responsePsth = handles.rgcMosaic.get('psth');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
+%         
+        uData = ieMovie(responsePsth,vParams);
+        
+%         
+%         set(handles.btnPlayPause, 'Visible', 'on');
+%         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+%         set(handles.sliderMovieProgress, 'Visible', 'on');
+%         if ~exist('handles.psthMov','var')
+% %         if isempty(handles.psthMov)
+% %             ieInWindowMessage('Building movie',handles,2);
+%             % generate movie
+% %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
+% %                 'show',true, ...
+% %                 'gamma', str2double(get(handles.editGam, 'String')));
+%             handles.psthMov = ieMovie(responsePsth,vParams);
+%             guidata(hObject, handles);
+%         end
+%                 
+%         % play movie if more than one frame
+%         btnPlayPause_Callback(hObject, eventdata, handles);
+        
+    case 'PSTH mean (image)'
+        disp(str)
+        
+        psthTest = handles.rgcMosaic.get('psth');
+        imagesc(mean(psthTest,3)); drawnow
     otherwise
         error('Unknown string %s\n',str);
 end
@@ -219,7 +305,7 @@ cla(gdata.axisResponse,'reset');
 
 % Switch depending on the state of the pull down
 spikes = rgcM.get('response spikes');
-img = mean(spikes,3);
+img = mean(spikes(:,:,:,1),3);
 imagesc(img); colormap(gray); colorbar;
 xlabel('Distance (um)');
 
@@ -239,4 +325,36 @@ end
 str = rgcM.describe;
 set(gdata.rgcProperties,'string',str);
 
+end
+
+
+% --- Executes on button press in btnPlayPause.
+function btnPlayPause_Callback(hObject, eventdata, handles)
+% hObject    handle to btnPlayPause (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of btnPlayPause
+end
+
+% --- Executes on slider movement.
+function sliderMovieProgress_Callback(hObject, eventdata, handles)
+% hObject    handle to sliderMovieProgress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+end
+
+% --- Executes during object creation, after setting all properties.
+function sliderMovieProgress_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sliderMovieProgress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
 end

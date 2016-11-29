@@ -42,9 +42,9 @@ addParameter(p,'meanLuminance',  200,   @isnumeric); % Cd/m2
 addParameter(p,'row',            64,    @isnumeric);  
 addParameter(p,'col',            64,    @isnumeric);  
 addParameter(p,'fov',            0.6,   @isnumeric); % Deg 
-addParameter(p,'startFrames',    60,    @isnumeric); % ms 
+addParameter(p,'startFrames',    120,    @isnumeric); % ms 
 addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
-addParameter(p,'endFrames',      30,    @isnumeric); % ms 
+addParameter(p,'endFrames',      60,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);

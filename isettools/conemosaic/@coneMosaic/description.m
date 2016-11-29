@@ -29,6 +29,13 @@ str = addText(str,txt);
 txt = sprintf('%s %g\n', 'Density (cones/mm^2):', numel(find(obj.pattern > 1))/(obj.width*obj.height*1e6));
 str = addText(str,txt);
 
+% Does the number of absorptions always per integration time? I think so.
+% But there is the question of absorption times in the os, too.
+nSamples = size(obj.absorptions,3);   % Number of time samples
+T   = nSamples*obj.integrationTime;
+txt = sprintf('%s %g sec (%d samps)\n', 'Duration: ', T, nSamples);
+str = addText(str,txt);
+
 % cone pigment properties
 if ~p.Results.skipPigment
     str = addText(str, obj.pigment.description);

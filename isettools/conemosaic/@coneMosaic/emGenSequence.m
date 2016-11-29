@@ -23,14 +23,11 @@ p.addParameter('em', emCreate, @isstruct);
 p.addParameter('rSeed', [], @isscalar);
 
 % set parameters
+sampTime  = obj.integrationTime;
+
 p.parse(nFrames, varargin{:});
 em = p.Results.em;
-em = emSet(em, 'sample time', obj.os.timeStep);
-sampTime  = obj.os.timeStep;
-
-% Update the integration time to be the number of frames times the sample
-% time (in ms).  This should be a listener, I fear (BW).
-obj.integrationTime = obj.os.timeStep*nFrames;
+em = emSet(em, 'sample time', sampTime);
 
 if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
 emFlag = emGet(em, 'em flag');
@@ -77,19 +74,26 @@ end
 
 % generate eye movement for micro-saccade
 if emFlag(3)
-    % Load parameters
+    % Load microsaccade model parameters
     interval = emGet(em, 'msaccade interval');
     intervalSD = emGet(em, 'msaccade interval SD');
     dirSD = emGet(em, 'msaccade dir SD', 'deg');
     speed = emGet(em, 'msaccade speed', 'cones/sample');
     speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
     
-    % compute time of occurance
+    % Compute microsaccade occurence times
     t = interval + randn(nFrames, 1) * intervalSD;
-    t(t < 0.3) = 0.3 + 0.1*rand; % get rid of negative values
-    t = cumsum(t);
+    t(t < 0.3) = 0.3 + 0.1*rand;     % get rid of negative times
+    t = cumsum(t);                   % Add them up
+    
+    % Convert to integer locations of the positions
     tPos = round(t / sampTime);
+    
+    % Finds the last nonzero element in the tPos array with a value less
+    % than nFrames.  But that element has to be at least 1. BW doesn't
+    % really understand the logic of the model here.
     tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
+    tPos = max(tPos,1);   % HJ to check.
     
     % Compute positions
     for ii = 1 : length(tPos)
@@ -109,6 +113,13 @@ if emFlag(3)
         pos = pos + cumsum(offset);
     end
 end
+
+% If the mosaic is a hex mosaic, we need to amplify the positions by
+% the resampling factor.
+if (isa(obj, 'coneMosaicHex'))
+    pos = pos * obj.resamplingFactor;
+end
+
 pos = round(pos);
 obj.emPositions = pos;
 

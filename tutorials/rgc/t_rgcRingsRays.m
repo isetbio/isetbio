@@ -24,6 +24,7 @@ emLength = 400;     % Eye movement frames
 
 sceneType = 'rings rays';
 cellType = 'on parasol';
+% cellType = 'off midget';
 
 osFlag  = 0;        % 0 for osLinear, 1 for osBioPhys
 
@@ -65,11 +66,14 @@ end
 
 
 % % Set cone mosaic size
+
+% cMosaic.rows = 50; cMosaic.cols = 60;
 % cMosaic.rows = 100; cMosaic.cols = 120;
 cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(emLength);
 
-cMosaic.compute(oi,'currentFlag',true);
+cMosaic.compute(oi,'currentFlag',false);
+cMosaic.computeCurrent();
 
 % Show the window
 % cMosaic.window;
