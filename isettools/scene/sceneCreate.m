@@ -939,24 +939,19 @@ if isfield(params, 'offset'),    offset = params.offset; else offset = 1; end
 switch type
     case 'object'
         % Init bar and background reflectance parameter
-        if isfield(params,'barReflect')
-            lineReflectance = params.barReflect;
-        else
-            lineReflectance = 0.6;
+        if isfield(params,'barReflect'), lineReflectance = params.barReflect;
+        else                             lineReflectance = 0.6;
         end
-        if isfield(params, 'bgReflect')
-            backReflectance = params.bgReflect;
-        else
-            backReflectance = 0.3;
+        
+        if isfield(params, 'bgReflect'), backReflectance = params.bgReflect;
+        else                             backReflectance = 0.3;
         end
         
         scene = sceneSet(scene,'name',sprintf('vernier-%d',offset));
         
         %% We make the image square
-        if isscalar(sz)
-            r = sz; c = sz;
-        else
-            r = sz(1);  c = sz(2);
+        if isscalar(sz),  r = sz; c = sz;
+        else              r = sz(1);  c = sz(2);
         end
         
         % Make the column number odd so we can really center the top line
@@ -984,10 +979,8 @@ switch type
         nWave   = sceneGet(scene,'nwave');
         
         %% Make the photon data
-        if isfield(params,'il')
-            il = params.il;
-        else
-            il    = illuminantCreate('equal photons',wave);
+        if isfield(params,'il'), il = params.il;
+        else               il    = illuminantCreate('equal photons',wave);
         end
         scene = sceneSet(scene,'illuminant',il);
         illP  = sceneGet(scene,'illuminant photons');
@@ -1006,17 +999,16 @@ switch type
         scene = sceneSet(scene,'photons',photons);
     case 'display'
         % Init related parameters
-        if isfield(params, 'display')
-            display = params.display;
-        else
-            display = displayCreate('LCD-Apple');
+        if isfield(params, 'display'), display = params.display;
+        else                           display = displayCreate('LCD-Apple');
         end
         if ischar(display), display = displayCreate(display); end
         
         Img = imageVernier(params);
         
-        % Create scene
+        % Create scene from the RGB data
         scene = sceneFromFile(Img, 'rgb',[], display);
+        
     otherwise
         error('unknown vernier scene type');
 end
