@@ -13,11 +13,11 @@ function t_osCurrentsVsLuminanceLevel
     noOptics = false;
     theOI = oiGenerate(noOptics);
     
-    % Luminance levels to be examined
-    luminancesExamined = [100 500 1000 1500 2000 3000 4000 8000];
+    % Background luminance levels to be examined
+    luminancesExamined = [100 300 500 1000 1500 2000 3000 4000 8000];
 
-    % outer segment time steps to be examined
-    osTimeSteps = [0.001 0.01 0.1 0.3 0.5 1 3 5]/1000;
+    % Outer segment time steps to be examined
+    osTimeSteps = [0.001 0.01 0.1 0.3 0.5 1 3]/1000;
 
     % Generate a number of oiSequences, one for each luminance examined
     for lumIndex = 1:numel(luminancesExamined)
@@ -55,7 +55,7 @@ function t_osCurrentsVsLuminanceLevel
 
     
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1800 1000]);
+    set(hFig, 'Position', [10 10 1800 1200]);
      
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', numel(luminancesExamined), ...
@@ -89,9 +89,9 @@ function t_osCurrentsVsLuminanceLevel
                 plot(timeAxis, squeeze(isomerizations(1,1,2,:)), 'g-', 'LineWidth', 1.5);
                 plot(timeAxis, squeeze(isomerizations(1,1,3,:)), 'b-', 'LineWidth', 1.5);
                 set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
-                title(sprintf('mean lum: %d cd/m2', luminancesExamined(lumIndex)));
+                title(sprintf('background lum: %d cd/m2', luminancesExamined(lumIndex)));
                 ylabel(sprintf('absorptions / %d ms', theConeMosaic.integrationTime*1000));
-                set(gca, 'YLim', [0 5500]);
+                set(gca, 'YLim', [0 10000]);
                 
                 if (lumIndex <  numel(luminancesExamined))
                     set(gca, 'XTickLabel', {});
@@ -124,7 +124,7 @@ function t_osCurrentsVsLuminanceLevel
             grid on; box on; drawnow;
             
             if (osTimeStepIndex == 1)
-                % Compute modulation of photocurrents at different mean luminance levels
+                % Compute modulation of photocurrents at different background luminance levels
                 for coneIndex = 1:3
                     photocurrent = squeeze(photocurrents(1,1,coneIndex,:));
                     baselineP = photocurrent(end);
@@ -142,15 +142,16 @@ function t_osCurrentsVsLuminanceLevel
         
     end % lumIndex
     
-    % Plot the dynamic range as a function of mean luminance
-    figure(2); clf;
+    % Plot the dynamic range as a function of background luminance
+    hFig = figure(2); clf;
+    set(hFig, 'Position', [10 10 500 425]);
     plot(luminancesExamined, modulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); hold on
     plot(luminancesExamined, modulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
     plot(luminancesExamined, modulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
     grid on; box on;
-    xlabel('luminance (cd/m2)');
-    ylabel('modulation');
-    set(gca, 'XLim', [70 7000], 'XScale', 'log');
+    xlabel('background luminance (cd/m2)', 'FontSize', 14, 'FontWeight', 'bold');
+    ylabel('current modulation (pAmps) [peak - baseline]', 'FontSize', 14, 'FontWeight', 'bold');
+    set(gca, 'XLim', [90 9000], 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
 end
 
 
