@@ -266,6 +266,8 @@ plotType = str{index};
 set(handles.popupImageType, 'Value', index);
 set(handles.popupImageType, 'String', str);
 
+%% We should make some of the repeated calls in the switch a function
+% BW
 
 switch plotType
     case 'Cone mosaic'
@@ -999,17 +1001,18 @@ else
     % We should show the right image frame here
     % TODO
     
-    % register right click menu
-    c = uicontextmenu;
-    for ichild = 1:size(handles.axes2.Children,1)
-        handles.axes2.Children(ichild).UIContextMenu = c;
-    end
-    uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
 end
+
+% register right click menu
+c = uicontextmenu;
+for ichild = 1:size(handles.axes2.Children,1)
+    handles.axes2.Children(ichild).UIContextMenu = c;
+end
+uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
 
 end
 
