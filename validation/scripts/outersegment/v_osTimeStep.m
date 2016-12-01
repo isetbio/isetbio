@@ -28,12 +28,12 @@ ieInit;
 rng('default'); rng(1);
 
 % Define number of response instances
-instancesNum = 100; 
+instancesNum = 50; 
     
 % Steady params
 c0 = struct(...
     'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-    'meanLuminance', 50, ...                   % scene mean luminance
+    'meanLuminance', 100, ...                   % scene mean luminance
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
@@ -143,11 +143,11 @@ function [theConeMosaic, theOIsequence, ...
     osNoise = condData.osNoise;
     
     % Define the time axis for the simulation
-    oiTimeAxis = 0:stimulusSamplingInterval:1.5;
+    oiTimeAxis = 0:stimulusSamplingInterval:0.6;
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
-    stimulusRampTau = 0.18;
+    stimulusRampTau = 0.07;
     modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
     
     % Generate a uniform field scene with desired mean luminance
@@ -405,7 +405,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
             plot(oiTimeAxis(k)*[1 1], [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone], 'k-', 'Color', [0.5 0.5 0.5]);
         end
         
-        barOpacity = 0.1;
+        barOpacity = 0.25;
         for tIndex = 1:numel(isomerizationsTimeAxis)
             quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,1, coneType,tIndex));
             plot([isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt], [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
