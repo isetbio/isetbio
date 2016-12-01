@@ -992,6 +992,7 @@ else
     % Turn on the slider and frame counter
     set(handles.txtMovieFrame,'Visible','on');
     val = str2double(get(handles.txtMovieFrame,'String'));
+    val = max(1,val);
     set(handles.sliderMovieProgress, 'Value', val);
     set(handles.sliderMovieProgress, 'Visible', 'on');
     
