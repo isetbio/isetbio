@@ -139,7 +139,7 @@ switch oisType
         for ii = 1:2
             OIs{ii} = oiCompute(oi,scene{ii});
         end
-                % ieAddObject(OIs{1}); ieAddObject(OIs{2}); oiWindow;
+        % ieAddObject(OIs{1}); ieAddObject(OIs{2}); oiWindow;
 
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
