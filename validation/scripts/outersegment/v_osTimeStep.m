@@ -28,7 +28,7 @@ ieInit;
 rng('default'); rng(1);
 
 % Define number of response instances
-instancesNum = 100; 
+instancesNum = 50; 
     
 % Steady params
 c0 = struct(...
@@ -37,9 +37,9 @@ c0 = struct(...
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
-    'integrationTime', 15/1000, ...             % 15 msec
+    'integrationTime', 10/1000, ...             % 15 msec
     'photonNoise', true, ...                    % add Poisson noise
-    'osTimeStep', 0.1/1000, ...                   % 1 millisecond
+    'osTimeStep', 0.5/1000, ...                 % 0.5 millisecond
     'osNoise', true ...                        % no photocurrent noise
     );
 
@@ -47,13 +47,13 @@ c0 = struct(...
 % Identical stimulus sampling interval and integration time
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 15/1000;  
+theCondition.stimulusSamplingInterval = 10/1000;  
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval < integration time
 stimulusConditionIndex = 2;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 10/1000;               
+theCondition.stimulusSamplingInterval = 7/1000;               
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval > integration time
@@ -143,11 +143,11 @@ function [theConeMosaic, theOIsequence, ...
     osNoise = condData.osNoise;
     
     % Define the time axis for the simulation
-    oiTimeAxis = 0:stimulusSamplingInterval:1.5;
+    oiTimeAxis = 0:stimulusSamplingInterval:0.6;
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
-    stimulusRampTau = 0.18;
+    stimulusRampTau = 0.07;
     modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
     
     % Generate a uniform field scene with desired mean luminance
@@ -405,7 +405,7 @@ function plotSNR(isomerizationsTimeAxis, oiTimeAxis, photocurrentTime, allInstan
             plot(oiTimeAxis(k)*[1 1], [minIsomerizationCountForThisCone maxIsomerizationCountForThisCone], 'k-', 'Color', [0.5 0.5 0.5]);
         end
         
-        barOpacity = 0.1;
+        barOpacity = 0.25;
         for tIndex = 1:numel(isomerizationsTimeAxis)
             quantaAtThisTimeBin = squeeze(allInstancesIsomerizationsCount(:,1, coneType,tIndex));
             plot([isomerizationsTimeAxis(tIndex) isomerizationsTimeAxis(tIndex)+dt], [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
