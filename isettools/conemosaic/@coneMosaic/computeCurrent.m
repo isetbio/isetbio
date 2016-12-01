@@ -33,6 +33,7 @@ bgR = coneMeanIsomerizations(cMosaic);
 % If osLinear class
 if isa(cMosaic.os,'osLinear')
     [cMosaic.current, interpFilters] = cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
+    % ieMovie(cMosaic.current);
 else
     cMosaic.current = cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
 end

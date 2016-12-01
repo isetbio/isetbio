@@ -77,15 +77,17 @@ end
 if isequal(tDim,4)
     % RGB data
     for ii=1:step:size(data,tDim)
-        imagesc(data(:,:,:,ii)); axis image; caxis([mind maxd]); drawnow;
+        imagesc(data(:,:,:,ii)); axis image; set(gca,'xticklabel','','yticklabel','');
+        caxis([mind maxd]); drawnow;
         if ii == 1 && ~show, set(gcf,'Visible','off'); end
         if save,  F = getframe; writeVideo(vObj,F); end
     end
 elseif isequal(tDim,3)
     % Monochrome data
-    colormap(gray);
+    colormap(gray); 
     for ii = 1:step:nFrames
-        imagesc(data(:,:,ii)); axis image; caxis([mind maxd]); drawnow;
+        imagesc(data(:,:,ii)); axis image; set(gca,'xticklabel','','yticklabel','');
+        caxis([mind maxd]); drawnow;
         if ii == 1 && ~show, set(gcf,'Visible','off'); end
         if save,  F = getframe; writeVideo(vObj,F); end
     end

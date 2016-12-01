@@ -122,6 +122,7 @@ end
 
 % Reshape the current back into (x,y,t) format
 current = XW2RGBFormat(current, r, c);
+% ieMovie(current);
 
 % Noise anyone?
 if osGet(obj,'noiseFlag') == 1
@@ -129,6 +130,7 @@ if osGet(obj,'noiseFlag') == 1
     % know the time sampling.
     disp('Current noise added.')
     current = osAddNoise(current, 'sampTime',obj.timeStep);
+    % ieMovie(current);
 else
     disp('No current noise added.')
 end

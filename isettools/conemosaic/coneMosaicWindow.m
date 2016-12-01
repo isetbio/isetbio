@@ -284,7 +284,7 @@ switch plotType
         % mean cone absorptions
         resetMovieControl(handles);
         cm.plot('mean absorptions', 'hf', handles.axes2);
-        
+
         % set up right click menu (context menu)
         c = uicontextmenu;
         if ~isempty(handles.axes2.Children)
@@ -328,7 +328,7 @@ switch plotType
         % Initiate movie display GUI elements.
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
+        set(handles.sliderMovieProgress, 'Visible', 'off');
         
         % set up right click menu (context menu)
         c = uicontextmenu;        
@@ -388,7 +388,7 @@ switch plotType
         % Graphics elements
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
+        set(handles.sliderMovieProgress, 'Visible', 'off');
         
         % set up right click menu (context menu)
         c = uicontextmenu;
@@ -424,7 +424,7 @@ handles = guidata(source);
 
 % determine which data to use (absorption or current)
 contents = get(handles.popupImageType, 'String');
-index = get(handles.popupImageType, 'Value');
+index    = get(handles.popupImageType, 'Value');
 if index > length(contents), index = 1; end
 plotType = contents{index};
 
@@ -900,16 +900,23 @@ function sliderMovieProgress_Callback(~, ~, handles)
 % hObject    handle to sliderMovieProgress (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 index = get(handles.popupImageType, 'Value');
-if index == 3  % absorption movie
-    mov = handles.mov;
-elseif index == 5  % photocurrent movie
-    mov = handles.curMov;
+if index == 3,     mov = handles.cMosaic.absorptions;
+elseif index == 5, mov = handles.cMosaic.current;
 end
+
+gam = get(handles.editGam,'value');
+
+mov = ieScale(mov,0,1) .^ gam;
+mind = min(mov(:)); maxd = max(mov(:));
 
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
 assert(cnt <= size(mov, ndims(mov)), 'slider choice out of range');
-axes(handles.axes2); imshow(mov(:, :, cnt)); drawnow;
+axes(handles.axes2); 
+imagesc(mov(:,:,cnt)); 
+axis image; set(gca,'xticklabel','','yticklabel',''); caxis([mind maxd]); 
+drawnow;
 set(handles.txtMovieFrame,'string',cnt);
 
 % register right click menu
@@ -933,67 +940,56 @@ end
 end
 
 function btnPlayPause_Callback(~, ~, handles)
-% hObject    handle to btnPlayPause (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-index = get(handles.popupImageType, 'Value');
+% Play/Pause button near slider
 
-if index == 3, 
-    mov = handles.mov;    % absorption movie
-    mx = sprintf('%d',max(handles.cMosaic.absorptions(:)));
-    mn = '0';
-elseif index == 5, 
-    mov = handles.curMov; % photocurrent movie
-    mx = sprintf('%d',round(max(handles.cMosaic.current(:))));
-    mn = sprintf('%d',round(min(handles.cMosaic.current(:))));
+% We don't want the numbers during the movie, I think.
+axis off;
+
+% Which type of data, absorptions or current
+index = get(handles.popupImageType, 'Value');
+if index == 3,       mov = handles.cMosaic.absorptions;
+elseif index == 5,   mov = handles.cMosaic.current;
 end
 
 % Gamma for display
 gam = get(handles.editGam,'value');
 
+% Check that there are some frames for a movie
 if ismatrix(mov), nFrames = 1;
 else              nFrames = size(mov, ndims(mov));
 end
-
 if nFrames == 1, 
     str = sprintf('Only one frame. No movie to show.'); 
     ieInWindowMessage(str,handles,3);
     return; 
 end
 
-set(handles.sliderMovieProgress, 'Min', 1);
-set(handles.sliderMovieProgress, 'Max', nFrames);
-set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
+% Display up the slider
+% set(handles.sliderMovieProgress, 'Min', 1);
+% set(handles.sliderMovieProgress, 'Max', nFrames);
+% set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
+% If play, then play.
 if get(handles.btnPlayPause, 'Value')
     % play video if  value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
-    cnt = round(get(handles.sliderMovieProgress, 'Value'));
-    
+    set(handles.sliderMovieProgress, 'Visible', 'off');
+    set(handles.txtMovieFrame,'Visible','off');
+
     gData = guidata(handles.coneMosaicWindow);
     axes(gData.axes2);
-    
-    
     while get(handles.btnPlayPause, 'Value')
-        % This is very slow compared to the cm.plot() call.
-        % Not sure what to do, if anything (BW).
-        if ndims(mov)     == 3,         imshow(mov(:, :, cnt).^gam); 
-        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt).^gam);
-        end 
-        
-        % Show a color bar up to align with 'mean' windows
-        colorbar('ticks',[0,1],'ticklabels',{mn,mx});
-
-        set(handles.sliderMovieProgress, 'Value', cnt);
-        set(handles.txtMovieFrame,'string',cnt);
-        drawnow; 
-        
-        % Cycle the cnt
-        cnt = cnt + 1; if cnt > nFrames, cnt = 1; end
+        % Plays the movie until the pause button is pushed.
+        % I removed the slider and counter for now.  We could pass the pause button into
+        % the ieMovie routine.  Say, ('hdlCounter',XXX,'hdlPause',yyy)
+        ieMovie(mov,'gamma',gam);
     end
+    
 else
     % pause video when the value is zero
     set(handles.btnPlayPause, 'String', 'Play');
+    set(handles.sliderMovieProgress, 'Visible', 'on');
+    set(handles.txtMovieFrame,'Visible','on');
 
     % register right click menu
     c = uicontextmenu;
