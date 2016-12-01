@@ -33,13 +33,13 @@ instancesNum = 100;
 % Steady params
 c0 = struct(...
     'mosaicSize', nan, ...                      % 1 L-, 1 M-, and 1 S-cone only
-    'meanLuminance', 100, ...                   % scene mean luminance
+    'meanLuminance', 50, ...                   % scene mean luminance
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
-    'integrationTime', 15/1000, ...             % 15 msec
+    'integrationTime', 10/1000, ...             % 15 msec
     'photonNoise', true, ...                    % add Poisson noise
-    'osTimeStep', 0.1/1000, ...                   % 1 millisecond
+    'osTimeStep', 0.5/1000, ...                 % 0.5 millisecond
     'osNoise', true ...                        % no photocurrent noise
     );
 
@@ -47,13 +47,13 @@ c0 = struct(...
 % Identical stimulus sampling interval and integration time
 stimulusConditionIndex = 1;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 15/1000;  
+theCondition.stimulusSamplingInterval = 10/1000;  
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval < integration time
 stimulusConditionIndex = 2;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 10/1000;               
+theCondition.stimulusSamplingInterval = 7/1000;               
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval > integration time
