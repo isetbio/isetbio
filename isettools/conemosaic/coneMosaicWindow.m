@@ -965,9 +965,9 @@ if nFrames == 1,
 end
 
 % Display up the slider
-% set(handles.sliderMovieProgress, 'Min', 1);
-% set(handles.sliderMovieProgress, 'Max', nFrames);
-% set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
+set(handles.sliderMovieProgress, 'Min', 1);
+set(handles.sliderMovieProgress, 'Max', nFrames);
+set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
 % If play, then play.
 if get(handles.btnPlayPause, 'Value')
@@ -986,11 +986,18 @@ if get(handles.btnPlayPause, 'Value')
     end
     
 else
-    % pause video when the value is zero
+    % pause video when the value is false (zero)
     set(handles.btnPlayPause, 'String', 'Play');
-    set(handles.sliderMovieProgress, 'Visible', 'on');
+    
+    % Turn on the slider and frame counter
     set(handles.txtMovieFrame,'Visible','on');
-
+    val = str2double(get(handles.txtMovieFrame,'String'));
+    set(handles.sliderMovieProgress, 'Value', val);
+    set(handles.sliderMovieProgress, 'Visible', 'on');
+    
+    % We should show the right image frame here
+    % TODO
+    
     % register right click menu
     c = uicontextmenu;
     for ichild = 1:size(handles.axes2.Children,1)
