@@ -489,6 +489,7 @@ switch source.Label
             plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Horizontal Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
+            set(gca,'xlim',[1 size(data,2)]);
         end
     case 'vLine LMS'
         vcNewGraphWin([],'tall'); names = 'LMS';
@@ -499,6 +500,8 @@ switch source.Label
             plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Vertical Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
+            set(gca,'xlim',[1 size(data,1)]);
+
         end
     case 'time series'
         % Time series is enabled for the absorption and current movie modes
