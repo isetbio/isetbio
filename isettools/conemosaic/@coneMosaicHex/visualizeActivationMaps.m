@@ -44,7 +44,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
     sampledHexMosaicYaxis = squeeze(obj.patternSupport(:,1,2)) + obj.center(2);
     
     if strcmp(mapType, 'modulated disks') 
-        iTheta = (0:15:360)/180*pi;
+        iTheta = (0:20:360)/180*pi;
         apertureOutline.x = obj.pigment.width/2.0 * cos(iTheta);
         apertureOutline.y = obj.pigment.height/2.0 * sin(iTheta);
     elseif strcmp(mapType, 'modulated hexagons')
@@ -117,11 +117,10 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                     lineWidth = 0.1;
             end % switch
         
-            lineStyle = '-'; 
             cMapLevels = size(cMap,1);
             activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
             faceColorsNormalizedValues = activationsNlevels/cMapLevels;
-            renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
+            renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows),faceColorsNormalizedValues,  edgeColor, lineWidth);
             set(gca, 'CLim', [0 1]);
             axis 'image'; axis 'xy';
             xTicks = obj.center(1) + (-75:75:75);
@@ -171,6 +170,11 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             end
         end
     else
+        
+        alpha = (1-zoomInFactor)/0.7; 
+        lineWidth = 0.1 + alpha;
+        [zoomInFactor alpha lineWidth]
+            
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                'rowsNum', 1, ...
                'colsNum', 1, ...
@@ -185,69 +189,70 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         set(gca, 'Color', [0 0 0]);
         showXticks = true;
         showYticks = false;
-        lineWidth = 1.0;
         
         if (isempty(xRange))
             xRange = [sampledHexMosaicXaxis(1)-obj.pigment.width sampledHexMosaicXaxis(end)+obj.pigment.width];
         else
             xRange(1) = xRange(1) - obj.pigment.width; 
-            xRange(2) = xRange(2) + +obj.pigment.width;
+            xRange(2) = xRange(2) + obj.pigment.width;
         end
         if (isempty(yRange))
             yRange = [sampledHexMosaicYaxis(1)-obj.pigment.width sampledHexMosaicYaxis(end)+obj.pigment.width];
         else
-            yRange(1) = yRange(1)-obj.pigment.width;
-            yRange(2) = yRange(2)+obj.pigment.width;
+            yRange(1) = yRange(1) - obj.pigment.width;
+            yRange(2) = yRange(2) + obj.pigment.width;
         end
         
-        %axis 'equal';
-        %set(gca, 'XLim', xRange);
-        %set(gca, 'YLim', yRange);
-        
-        zoom(zoomFactor);
+        set(gca, 'XLim', xRange*zoomInFactor, 'YLim', yRange*zoomInFactor, 'CLim', [0 1]);
+            
+        cMapLevels = size(cMap,1);
         
         for coneType = 2:4
+            
             idx = find(obj.pattern == coneType);
-            [iRows,iCols] = ind2sub(size(obj.pattern), idx);
-                
-            lineStyle = '-'; 
-            cMapLevels = size(cMap,1);
+            [iRows,iCols] = ind2sub(size(obj.pattern), idx);  
+            coneXcoords = sampledHexMosaicXaxis(iCols);
+            coneYcoords = sampledHexMosaicYaxis(iRows);
             activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
             faceColorsNormalizedValues = activationsNlevels/cMapLevels;
+            faceColorsNormalizedValues(faceColorsNormalizedValues<0) = 0;
             
+           
+            coneXcoords = coneXcoords(:);
+            coneYcoords = coneYcoords(:);
+            idx = find( (coneXcoords > xRange(1)) & (coneXcoords < xRange(2)) & (coneYcoords > yRange(1)) & (coneYcoords < yRange(2)) );
+            coneXcoords = coneXcoords(idx);
+            coneYcoords = coneYcoords(idx);
+            faceColorsNormalizedValues = faceColorsNormalizedValues(idx);
+            
+
             if (coneType == 2)
-                edgeColor = [1.0 0.1 0.1];
+                edgeColor = [1.0 0.1 0.1] * alpha + (1-alpha)*[0.2 0.2 0.2];
             elseif (coneType == 3)
-                edgeColor = [0.1 1.0 0.1];
+                edgeColor = [0.1 1.0 0.1] * alpha + (1-alpha)*[0.2 0.2 0.2];
             else
-                edgeColor = [0.1 0.6 1.0];
+                edgeColor = [0.1 0.6 1.0] * alpha + (1-alpha)*[0.2 0.2 0.2];
             end
-            renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), faceColorsNormalizedValues,  edgeColor,  lineStyle, lineWidth);
+            
+            if (lineWidth < 0.2)
+                edgeColor = 'none';
+            end
+            
+            renderPatchArray(apertureOutline, coneXcoords, coneYcoords, faceColorsNormalizedValues,  edgeColor,  lineWidth);
             if (coneType == 2)
                 hold on;
             end
-            drawnow;
-            pause;
         end
         hold off;
         
-        drawnow
-        fprintf('After hold off');
-        pause
-        
-        set(gca, 'CLim', [0 1], 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
- 
-        
-        drawnow
-        fprintf('After setting axis xy');
-        pause
-        
         xTicks = obj.center(1) + 1e-6 * (-75:75:75);
         yTicks = obj.center(2) + 1e-6 * (-75:75:75);
-        
         xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
         yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels);
+        
+        axis 'equal';
+        set(gca, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8]);
+        set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'FontSize', 18, 'FontName', 'Menlo');
         if (~showXticks)
             set(gca, 'XTick', []);
         end
@@ -256,19 +261,10 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         end
         box on; grid off;
         
-      
-        
-        set(gca, 'FontSize', 18, 'FontName', 'Menlo');
-        
+        % Add colorbar
         ticks = 0:0.1:1.0;
         tickLabels = sprintf('%2.0f\n', round(activationRange(1) + ticks * (activationRange(2)-activationRange(1))));
-        
-        drawnow
-        fprintf('Before adding the colorbar');
-        pause
-        
-        % Add colorbar
-        originalPosition = get(gca, 'position')
+        originalPosition = get(gca, 'position');
         hCbar = colorbar('eastoutside', 'peer', gca, 'Ticks', ticks, 'TickLabels', tickLabels);
         hCbar.Orientation = 'vertical';
         hCbar.Label.String = signalName;
@@ -276,17 +272,9 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         hCbar.FontName = 'Menlo';
         hCbar.Color = [0.9 0.9 0.5];
         % The addition changes the figure size, so undo this change
-        newPosition = get(gca, 'position')
-        
-        drawnow
-        fprintf('Before setting the new positions');
-        pause
-        
+        newPosition = get(gca, 'position');
         set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]); 
         
-        drawnow
-        fprintf('after setting the new positions');
-        pause
         if (~isnan(instanceIndex))
             if (~isempty(activationTime))
                 title(sprintf('t = %7.1f msec              (response instance: #%3d)', activationTime*1000, instanceIndex), 'FontSize', 18, 'Color', [1 1 1], 'FontName', 'Menlo');
@@ -299,23 +287,30 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             end
         end
     end
-    
     colormap(cMap);
     drawnow
-    pause
 end
 
-function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineStyle, lineWidth)
-    verticesNum = numel(pixelOutline.x);
-    x = zeros(verticesNum, numel(xCoords));
-    y = zeros(verticesNum, numel(xCoords));
-    for vertexIndex = 1:verticesNum
-        x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
-        y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
+function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineWidth)
+    verticesPerCone = numel(pixelOutline.x);
+    verticesList = zeros(verticesPerCone * numel(xCoords), 2);
+    facesList = [];
+
+    for coneIndex = 1:numel(xCoords)
+        idx = (coneIndex-1)*verticesPerCone + (1:verticesPerCone);
+        verticesList(idx,1) = pixelOutline.x(:) + xCoords(coneIndex);
+        verticesList(idx,2) = pixelOutline.y(:) + yCoords(coneIndex);
+        facesList = cat(1, facesList, idx);
     end
-    patch(x,y, faceColorsNormalizedValues, 'EdgeColor', edgeColor, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
-end
 
+    S.Vertices = verticesList;
+    S.Faces = facesList;
+    S.FaceVertexCData = faceColorsNormalizedValues;
+    S.FaceColor = 'flat';
+    S.EdgeColor = edgeColor;
+    S.LineWidth = lineWidth;
+    patch(S);
+end
 
 
 function hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, cMap, signalName, signalRange, separateLMSmosaics, activationTime, zoomInFactor, instanceIndex, figureSize)
