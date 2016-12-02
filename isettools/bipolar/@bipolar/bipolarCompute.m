@@ -28,7 +28,8 @@ function obj = bipolarCompute(obj, cmosaic, varargin)
 %
 %  The principal decision is whether the bipolar transformation is linear
 %  or includes a rectification.  This is controlled by the obj.rectifyType
-%  parameter. The rectification happens on the spatial filtering.
+%  parameter. The rectification happens at the end of the function, after 
+%  both spatial and temporal filtering.
 %  REFERENCE: Meister option
 %  
 %  The spatial filtering is followed by a temporal filter that is selected
@@ -162,142 +163,30 @@ spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szS
 spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,1).*ones(size(spatialSubsampleCenterRS,1),1) spatialSubsampleCenterRS];
 spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(size(spatialSubsampleSurroundRS,1),1) spatialSubsampleSurroundRS];    
 
-%% Pull bipolar temporal filter from RDT
-
-% The bipolar temporal filter is a result of the deconvolution of the
-% linear cone temporal response and the linear RGC temporal response. There
-% are several different bipolar filters that the user can select based on
-% the type of simulation (simulated parameters or physiological
-% parameters).
+%% Load bipolar temporal filter
 % 
-% For the bipolar filter from simulated RGC parameters, the ideal RGC
-% temporal response was generated using the code by Jonathan Pillow. For
-% the bipolar filter from physiological RGC parameters, a bipolar filter
-% for each individual RGC was generated. These may be averaged together or
-% kept separate for certain computations (impulse response, comparison of
-% RGC responses from isetbio to RGC responses from the Chichilnisky Lab's
-% code.
+% Bipolar filters were deconvolved from the measured temporal impulse response of each
+% cell in the mosaic and the linear cone temporal response. The
+% mean of the bipolar temporal filters for the whole mosaic is used
+% as the ideal bipolar filter.
 % 
-% In order to set the filterType property for the bipolar, the user must
-% pass it as a parameter when the bipolar mosaic is created.
-
-switch obj.filterType
-    case 1
-        % The basic physiology response case. Bipolar filters were
-        % deconvolved from the measured temporal impulse response of each
-        % cell in the mosaic and the linear cone temporal response. The
-        % mean of the bipolar temporal filters for the whole mosaic is used
-        % as the ideal bipolar filter.
-        
-        % There are different bipolar filters for on p/m and off p/m cells
-        if strcmpi(obj.cellType,'offDiffuse')
-            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
-        else
-            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
-        end
-        bipolarFiltMat = data.bipolarFiltMat;
-        
-        switch ieParamFormat(obj.cellType)
-            case {'offdiffuse','offmidget'}
-                bipolarFilt = -mean(bipolarFiltMat)';
-            case {'ondiffuse','onmidget','onsbc'}
-                bipolarFilt = -mean(bipolarFiltMat)';
-            otherwise
-                error('Unknown bipolar cell type');
-        end
-                
-    case  2
-        % The basic simulated response case. Bipolar filters were
-        % deconvolved from the ideal temporal impulse response from the
-        % Pillow simulation code.
-        load([isetRootPath  '/data/bipolar/irGLM.mat']);
-        if strcmpi(obj.cellType, 'offDiffuse')
-            bipolarFilt = irGLM;
-        else
-            bipolarFilt = -irGLM;
-        end
-
-    case 3
-        % The physiology response case that allows the individual bipolar
-        % filters to be used. This case is for testing the impulse response
-        % of the isetbio RGC and comparing to the impulse response measured
-        % in physiology, or for matching RGC responses with code from the
-        % Chichilnisky Lab.
-        if strcmpi(obj.cellType,'offDiffuse')            
-            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
-        else
-            data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
-        end
-        
-        bipolarFilt = -(data.bipolarFiltMat(obj.cellLocation,:)');
-
-    case 4  
-        % The same as case 3, but at a higher sampling rate,sampled at 
-        % 150 fr/sec for the impulse response calculation.
-        data = load([isetRootPath  '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all_linear_fr150.mat']);
-        bipolarFilt = (data.bipolarFiltMat(obj.cellLocation,:)');
-end
-
-% bipolarFilt = (bipolarFiltMat(1,:)');
-
-%% Zero pad filter or signal
-% Zero paddding to allow for computations with FFT and IFFT (circular convolution). 
-% This is primarily for handling the case when the stimulus is only one frame.
-
-if size(spatialSubsampleCenterRS,2) > size(bipolarFilt,1)
-    % Stimulus input longer than bipolar filter   
-    bipolarOutputCenterRSLongZP = [spatialSubsampleCenterRS];% zeros([size(spatialSubsampleCenterRS,1) size(bipolarFilt,1)])];
-    bipolarOutputSurroundRSLongZP = [spatialSubsampleSurroundRS];% zeros([size(spatialSubsampleSurroundRS,1)-size(bipolarFilt,1)])];
-    
-    % Zero pad the bipolar filter and repmat in order to convolve with each cone
-    bipolarFiltZP = repmat([bipolarFilt; zeros([-size(bipolarFilt,1)+size(spatialSubsampleCenterRS,2)],1)]',size(spatialSubsampleCenterRS,1) ,1);
+% There are different bipolar filters for on p/m and off p/m cells
+if strcmpi(obj.cellType,'offDiffuse')
+    data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
 else
-    % Stimulus shorter than bipolar filter (likely one frmae)
-    % Zero pad the stimulus
-    bipolarOutputCenterRSLongZP = ([spatialSubsampleCenterRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleCenterRS,2)],1)',size(spatialSubsampleCenterRS,1),1)]);
-    
-    % Repmat the bipolar filter for each cone input
-    bipolarOutputSurroundRSLongZP = ([spatialSubsampleSurroundRS repmat(zeros([size(bipolarFilt,1)-size(spatialSubsampleSurroundRS,2)],1)',size(spatialSubsampleSurroundRS,1),1)]);
-    bipolarFiltZP = repmat(bipolarFilt',size(spatialSubsampleSurroundRS,1),1);    
+    data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
 end
+bipolarFilt = -mean(data.bipolarFiltMat)';
+% TODO: Remove bipolar.filterType parameter from object
 
 %% Compute the temporal response of the bipolar mosaic
 
-% % Compute with FFT (circular convolution, no transient responses). This
-% % works for reproducing the responses from the Chichilnisky Lab code.
-% bipolarOutputCenterRSLong = ifft(fft(bipolarOutputCenterRSLongZP').*fft(bipolarFiltZP'))';
-% bipolarOutputSurroundRSLong = ifft(fft(bipolarOutputSurroundRSLongZP').*fft(bipolarFiltZP'))';
-% bipolarOutputCenterRS = bipolarOutputCenterRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-% bipolarOutputSurroundRS = bipolarOutputSurroundRSLong;%(:,1:end-(1e-3/os.timeStep)*temporalDelay);
-
 % Compute with convn (includes transient response). This is important for
 % handling the one-frame stimulus case. 
-% % % % % 
-bipolarOutputCenterRS = convn(bipolarFilt',spatialSubsampleCenterRS,'same');
-bipolarOutputSurroundRS = convn(bipolarFilt',spatialSubsampleSurroundRS,'same');
-
-% bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-% bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
-if size(spatialSubsampleCenterRS,2) < size(bipolarFilt,1)
-    % Stimulus input longer than bipolar filter temporal length
-    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','full');
-    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+bipolarOutputCenterRS   = convn(spatialSubsampleCenterRS,  bipolarFilt','full');
+bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
     
-    % Get rid of the transient onset response
-    bipolarOutputCenterRS = bipolarOutputCenterRS(:,floor(size(bipolarFilt,1)/2):end);
-    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,floor(size(bipolarFilt,1)/2):end);
-    
-elseif size(bipolarOutputCenterRS,2) > floor(size(bipolarFilt,1)/2)
-    % Bipolar filter temporal length longer than stimulus input, probably
-    % one frame
-    bipolarOutputCenterRS = convn(spatialSubsampleCenterRS,bipolarFilt','same');
-    bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','same');
-    % Get rid of the transient onset response
-    bipolarOutputCenterRS = bipolarOutputCenterRS(:,1:end-floor(size(bipolarFilt,1)/2));
-    bipolarOutputSurroundRS = bipolarOutputSurroundRS(:,1:end-floor(size(bipolarFilt,1)/2));
-
-end
-% % % % % % 
+%% Format data
 
 % Rezero
 bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
@@ -307,9 +196,9 @@ bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputS
 bipolarOutputLinearCenter = reshape(bipolarOutputCenterRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputCenterRS,2));
 bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
 
-%% Calculate contrast gain adjustment
+% TODO: Calculate contrast gain adjustment
 
-%% Attach output to object
+%% Apply rectification function and ttach output to object
 
 obj.responseCenter = obj.rectificationCenter(bipolarOutputLinearCenter);
 obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);

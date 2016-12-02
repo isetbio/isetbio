@@ -28,7 +28,7 @@ classdef rgcGLM < rgcMosaic
     properties (SetAccess = public, GetAccess = public)
         % Parameter to specify the time bins Pillow uses for coupling and
         % post spike filters (.01 = 100 bins per linear time sample)
-        dt = 0.01;
+        dt = 0.1;
     end
     
     properties (SetAccess = private, GetAccess = public)
