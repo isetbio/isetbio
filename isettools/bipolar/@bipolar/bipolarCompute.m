@@ -39,11 +39,12 @@ function obj = bipolarCompute(obj, cmosaic, varargin)
 % 5/2016 JRG (c) isetbio team
 
 %% parse input parameters
+
 p = inputParser;
 p.addRequired('obj', @(x) (isa(x, 'bipolar')));
 p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));  
 
-% parse
+% parse - no options at this opint
 p.parse(obj, cmosaic, varargin{:});
 
 %% Spatial filtering and subsampling
@@ -53,6 +54,8 @@ p.parse(obj, cmosaic, varargin{:});
 % This places the cone 3D matrix into a coneNumber x time matrix
 osSig = RGB2XWFormat(cmosaic.current);
 
+%% Zero-mean the input signal.
+%
 % BW thinks that the receptive field should govern how we map the input
 % current to the output current.   If the RF has a zero mean, then spatial
 % mean -> 0. If the RF has a unit mean then spatial mean -> mean
@@ -61,10 +64,6 @@ if size(osSig,2) > 1
     % Typical case.  Substract the mean over time of each cone signal from
     % itself. 
     osSigRSZM = bsxfun(@minus, osSig, mean(osSig, 2));
-else
-    % Sometimes there is only one time point, so don't subtract it from
-    % itself (which would be zero).
-    osSigRSZM = osSig;
 end
 
 %% Enfoce anatomical rules on cone to bipolar connections
@@ -119,10 +118,7 @@ switch obj.cellType
         % Find the locations (row, col) of the different cone types
         [L,M,S] = coneTypeLocations(cmosaic,'val','index');
         LM = [L; M];
-        
-        osSigRSZMCenter   = osSigRSZM;
-        osSigRSZMSurround = osSigRSZM;        
-        
+                
         minval = min(osSigRSZM(:));
         % Set center to only have S cones
         
@@ -134,6 +130,7 @@ switch obj.cellType
                        
 end
 
+% Put the data back into RGB format, like RGB2XW()
 osSigZMCenter = reshape(osSigRSZMCenter,size(cmosaic.current));
 osSigZMSurround = reshape(osSigRSZMSurround,size(cmosaic.current));
 
@@ -164,7 +161,9 @@ spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,1).*ones(size
 spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(size(spatialSubsampleSurroundRS,1),1) spatialSubsampleSurroundRS];    
 
 %% Load bipolar temporal filter
-% 
+
+% TODO:  Do the temporal interpolation of the bipolar time filter
+
 % Bipolar filters were deconvolved from the measured temporal impulse response of each
 % cell in the mosaic and the linear cone temporal response. The
 % mean of the bipolar temporal filters for the whole mosaic is used
@@ -172,10 +171,16 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(
 % 
 % There are different bipolar filters for on p/m and off p/m cells
 if strcmpi(obj.cellType,'offDiffuse')
+    % Off parasol (off diffuse) only
     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
 else
+    % On parasol and all others
     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
 end
+
+% The bipolarFiltMat is 100 different filters.  Fix that in the
+% representation.  The script that builds this is about to be uploaded to
+% the repository by JRG.
 bipolarFilt = -mean(data.bipolarFiltMat)';
 % TODO: Remove bipolar.filterType parameter from object
 
@@ -198,9 +203,12 @@ bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),s
 
 % TODO: Calculate contrast gain adjustment
 
-%% Apply rectification function and ttach output to object
+%% Apply rectification function and to the center and surround separately
 
-obj.responseCenter = obj.rectificationCenter(bipolarOutputLinearCenter);
+% obj.rectify(input,'rType',{hw,fw,none})
+obj.responseCenter   = obj.rectificationCenter(bipolarOutputLinearCenter);
 obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
 
+% Should we be rectifying the sum of the center/surround or should the two
+% terms separately?
 end
