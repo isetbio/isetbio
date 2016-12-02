@@ -71,7 +71,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                'heightMargin',   0.01, ...
                'widthMargin',    0.01, ...
                'leftMargin',     0.01, ...
-               'rightMargin',    0.005, ...
+               'rightMargin',    0.006, ...
                'bottomMargin',   0.005, ...
                'topMargin',      0.005);
 
@@ -171,7 +171,14 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
         end
     else
         
-        alpha = (1-zoomInFactor)/0.7; 
+        % Animation of color 
+        zoomInFactorToBeginAlpha = 0.65;
+        zoomInFactorMin = 0.3;
+        if (zoomInFactor <= zoomInFactorToBeginAlpha) 
+            alpha = (zoomInFactorToBeginAlpha-zoomInFactor)/(zoomInFactorToBeginAlpha-zoomInFactorMin); 
+        else
+            alpha = 0.0;
+        end
         lineWidth = 0.1 + alpha;
         [zoomInFactor alpha lineWidth]
             
@@ -181,7 +188,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
                'heightMargin',   0.0, ...
                'widthMargin',    0.0, ...
                'leftMargin',     0.009, ...
-               'rightMargin',    0.05, ...
+               'rightMargin',    0.06, ...
                'bottomMargin',   0.04, ...
                'topMargin',      0.03);
         
@@ -203,7 +210,9 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             yRange(2) = yRange(2) + obj.pigment.width;
         end
         
-        set(gca, 'XLim', xRange*zoomInFactor, 'YLim', yRange*zoomInFactor, 'CLim', [0 1]);
+        xRange = xRange*zoomInFactor;
+        yRange = yRange*zoomInFactor;
+        set(gca, 'XLim', xRange, 'YLim', yRange, 'CLim', [0 1]);
             
         cMapLevels = size(cMap,1);
         
@@ -216,7 +225,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, activation,
             activationsNlevels = round((activation(idx)-activationRange(1))/(activationRange(2)-activationRange(1))*cMapLevels);
             faceColorsNormalizedValues = activationsNlevels/cMapLevels;
             faceColorsNormalizedValues(faceColorsNormalizedValues<0) = 0;
-            
+            faceColorsNormalizedValues(faceColorsNormalizedValues>1) = 1;
            
             coneXcoords = coneXcoords(:);
             coneYcoords = coneYcoords(:);
@@ -295,17 +304,18 @@ function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedVa
     verticesPerCone = numel(pixelOutline.x);
     verticesList = zeros(verticesPerCone * numel(xCoords), 2);
     facesList = [];
-
+    colors = [];
     for coneIndex = 1:numel(xCoords)
         idx = (coneIndex-1)*verticesPerCone + (1:verticesPerCone);
         verticesList(idx,1) = pixelOutline.x(:) + xCoords(coneIndex);
         verticesList(idx,2) = pixelOutline.y(:) + yCoords(coneIndex);
         facesList = cat(1, facesList, idx);
+        colors = cat(1, colors, repmat(faceColorsNormalizedValues(coneIndex), [verticesPerCone 1]));
     end
 
     S.Vertices = verticesList;
     S.Faces = facesList;
-    S.FaceVertexCData = faceColorsNormalizedValues;
+    S.FaceVertexCData = colors;
     S.FaceColor = 'flat';
     S.EdgeColor = edgeColor;
     S.LineWidth = lineWidth;
