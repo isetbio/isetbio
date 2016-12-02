@@ -6,8 +6,9 @@ function t_osCurrentsVsLuminanceLevel
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
-    stimulusRampTau = 0.18;
-    modulationFunction = exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+    stimulusRampTau = 10/1000;  % 0.18;
+    modulationGain = 0.1;
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
     
     % Generate optics
     noOptics = false;
@@ -80,6 +81,11 @@ function t_osCurrentsVsLuminanceLevel
            'bottomMargin',   0.04, ...
            'topMargin',      0.01);
        
+    isomerizationsRange =  [0 2000];
+    luminanceRange = [90 9000];
+    pCurrentRange = [-70 5];
+    
+    
     for lumIndex = 1: numel(luminancesExamined) 
         for osTimeStepIndex = 0:numel(osTimeSteps)
             if (osTimeStepIndex > 0)
@@ -92,7 +98,9 @@ function t_osCurrentsVsLuminanceLevel
                 'newNoise', true);
 
             timeAxis = theConeMosaic.timeAxis + theOIsequenceArray{lumIndex}.timeAxis(1);
-     
+            timeRange = [timeAxis(1) timeAxis(end)];
+            timeRange = [-300 300]/1000;
+    
             % Plot the isomerization signals
             if (osTimeStepIndex == 0)
                 figure(hFig);
@@ -101,10 +109,10 @@ function t_osCurrentsVsLuminanceLevel
                 hold on;
                 plot(timeAxis, squeeze(isomerizations(1,1,2,:)), 'g-', 'LineWidth', 1.5);
                 plot(timeAxis, squeeze(isomerizations(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
+                set(gca, 'XLim', timeRange);
                 title(sprintf('background lum: %d cd/m2', luminancesExamined(lumIndex)));
                 ylabel(sprintf('absorptions / %d ms', theConeMosaic.integrationTime*1000), 'FontSize', 12);
-                set(gca, 'YLim', [0 10000], 'FontSize', 12);
+                set(gca, 'YLim', isomerizationsRange, 'FontSize', 12);
                 
                 if (lumIndex <  numel(luminancesExamined))
                     set(gca, 'XTickLabel', {});
@@ -121,13 +129,13 @@ function t_osCurrentsVsLuminanceLevel
                 hold on;
                 plot(timeAxis, squeeze(isomerizations(1,1,2,:)), 'g-', 'LineWidth', 1.5);
                 plot(timeAxis, squeeze(isomerizations(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
+                set(gca, 'XLim', timeRange);
                 set(gca, 'FontSize', 14);
                 title(sprintf('%d cd/m2', luminancesExamined(lumIndex)));
                 if (lumIndex == numel(luminancesExamined))
                     ylabel(sprintf('absorptions / %d ms', theConeMosaic.integrationTime*1000), 'FontSize', 14, 'FontWeight', 'bold');
                 end
-                set(gca, 'YLim', [0 10000], 'FontSize', 14);
+                set(gca, 'YLim', isomerizationsRange, 'FontSize', 14);
                 
                 if (lumIndex <  numel(luminancesExamined))
                     set(gca, 'XTickLabel', {});
@@ -144,12 +152,12 @@ function t_osCurrentsVsLuminanceLevel
                 hold on;
                 plot(timeAxis, squeeze(photocurrents(1,1,2,:)), 'g-', 'LineWidth', 1.5);
                 plot(timeAxis, squeeze(photocurrents(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
+                set(gca, 'XLim', timeRange);
                 title(sprintf('os.timeStep = %2.3f ms', theConeMosaic.os.timeStep*1000));
                 if (osTimeStepIndex == 1)
                     ylabel('current (pAmps)');
                 end
-                set(gca, 'YLim', [-90 10]);
+                set(gca, 'YLim', pCurrentRange);
                 
                 if (osTimeStepIndex > 1)
                     set(gca, 'YTickLabel', {});
@@ -171,13 +179,13 @@ function t_osCurrentsVsLuminanceLevel
                     hold on;
                     plot(timeAxis, squeeze(photocurrents(1,1,2,:)), 'g-', 'LineWidth', 1.5);
                     plot(timeAxis, squeeze(photocurrents(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                    set(gca, 'XLim', [timeAxis(1) timeAxis(end)]);
+                    set(gca, 'XLim', timeRange);
                     set(gca, 'FontSize', 14);
                     
                     if (lumIndex == numel(luminancesExamined))
                         ylabel('current (pAmps)', 'FontSize', 14, 'FontWeight', 'bold');
                     end
-                    set(gca, 'YLim', [-90 10]);
+                    set(gca, 'YLim', pCurrentRange);
 
                     if (osTimeStepIndex > 1)
                         set(gca, 'YTickLabel', {});
@@ -228,7 +236,7 @@ function t_osCurrentsVsLuminanceLevel
     plot(luminancesExamined, isomerizationRateModulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); 
     plot(luminancesExamined, isomerizationRateModulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
     plot(luminancesExamined, isomerizationRateModulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
-    set(gca, 'FontSize', 14, 'XLim', [90 9000], 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
+    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
     xlabel('background luminance (cd/m2)', 'FontSize', 14, 'FontWeight', 'bold');
     ylabel('isomerization rate modulation (R*/cone/sec) [peak - baseline]', 'FontSize', 14, 'FontWeight', 'bold');
     hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'Location', 'NorthWest');
@@ -244,7 +252,7 @@ function t_osCurrentsVsLuminanceLevel
     plot(luminancesExamined, photoCurrentModulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); 
     plot(luminancesExamined, photoCurrentModulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
     plot(luminancesExamined, photoCurrentModulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
-    set(gca, 'FontSize', 14, 'XLim', [90 9000], 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
+    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
     xlabel('background luminance (cd/m2)', 'FontSize', 14, 'FontWeight', 'bold');
     ylabel('current modulation (pAmps) [peak - baseline]', 'FontSize', 14, 'FontWeight', 'bold');
     hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'Location', 'NorthWest');
