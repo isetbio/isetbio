@@ -1,63 +1,61 @@
 function obj = bipolarCompute(obj, cmosaic, varargin)
-% Compute bipolar responses
+% Compute bipolar continuous current responses
 % 
-%   Still under active development
-%   Should become:  bipolar.compute(coneMosaic,varargin);
+%    bipolar.compute(coneMosaic,varargin);
+%
+% The bipolars act as a spatial-temporal function that converts the cone
+% photocurrent into bipolar current that is delivered to the retinal
+% ganglion cells.
 %
 % Inputs:
 %   obj:       a bipolar object
-%   cmosaic:   coneMosaic  (N.B.  We allow an os for backward
-%              compatibility, but that will be deprecated).
+%   cmosaic:   coneMosaic 
 % 
-% Anatomical connections:
-%  The bipolar cells are classified into several types
+% Key parameters
+%
+%  Cell type - The bipolar cells are classified into several types
 %    
 %  * on/off diffuse, which connect to parasol RGCs
 %  * on/off midget, which connect to midget RGCs
 %  * on small bistratified, which connect to S-cone bistratified
 %
-% This function forces the receptive field properties in terms of cone
-% connections to match up correctly with the cone mosaic
+%  Processing - linear or rectified
 %
-% Computations:
-%  The outersegment input contains frames of cone mosaic signal at a
-%  particular time step. The bipolar response is found by first convolving
-%  the center and surround Gaussian spatial receptive fields of the bipolar
-%  cell within each cone signal frame. Then, the resulting signal is put
-%  through the weighted temporal differentiator in order to result in an
-%  impulse response that approximates the IR of the RGC.
-% 
-% TODO:
-% Particular options that could be employed are rezeroing of the signal at
-% the end of the temporal computation as well as rectification on the
-% output signal.
+%  The cone mosaic current contains a time series of the photocurrent
+%  (coneMosaic.current). The bipolar response performs a spatio-temporal
+%  separable convolution (first spatial filtering, then temporal filtering)
+%  of the cone current to create the bipolar current.
+%
+%  The principal decision is whether the bipolar transformation is linear
+%  or includes a rectification.  This is controlled by the obj.rectifyType
+%  parameter. The rectification happens on the spatial filtering.
+%  REFERENCE: Meister option
+%  
+%  The spatial filtering is followed by a temporal filter that is selected
+%  in order to match the impulse response that expect to find at the RGC
+%  input.  REFERENCE: Chichilnisky option
 % 
 % 5/2016 JRG (c) isetbio team
 
 %% parse input parameters
 p = inputParser;
-p.addRequired('obj', @(x) isa(x, 'bipolar'));
-p.addRequired('cmosaic', @(x) isa(x, 'outerSegment') | isa(x, 'coneMosaic'));  
+p.addRequired('obj', @(x) (isa(x, 'bipolar')));
+p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));  
 
 % parse
 p.parse(obj, cmosaic, varargin{:});
 
-% The input object should be coneMosaic, but it can also be an OS for
-% backwards compatibility for now.
-if isa(cmosaic,'coneMosaic'),     os = cmosaic.os;
-else                              os = cmosaic;
-end
-
 %% Spatial filtering and subsampling
-% Convolve spatial RFs over whole image, subsample to get evenly spaced
-% mosaic.
 
-% Zero-mean the cone current signal at each cone
+% Convolve spatial RFs across the photo current of the cones in the mosaic
 
 % This places the cone 3D matrix into a coneNumber x time matrix
 osSig = RGB2XWFormat(cmosaic.current);
 
-% Typically there 
+% BW thinks that the receptive field should govern how we map the input
+% current to the output current.   If the RF has a zero mean, then spatial
+% mean -> 0. If the RF has a unit mean then spatial mean -> mean
+%
 if size(osSig,2) > 1
     % Typical case.  Substract the mean over time of each cone signal from
     % itself. 
@@ -68,20 +66,21 @@ else
     osSigRSZM = osSig;
 end
 
-%% Enfoce anatomical requirements on cone connections
+%% Enfoce anatomical rules on cone to bipolar connections
 
-% Rules:
+% Anatomical rules:
 %
-%  off Diffuse, on Diffuse and on Midget - remove S cone inputs
-%    These are replaced with nearest L/M input. 
-%  For offMidget, keep S cones but scale the connection strength down by 75%. 
-%  For onSBC, only S cone inputs to center, only L/M cone inputs to surround.
+%  off Diffuse, on Diffuse and on Midget - These receive no S cone input
+%  offMidget - keep S cones but scale the connection strength down by 75% 
+%  onSBC     - S cone inputs to center, only L/M cone inputs to surround
 %
-% Citation:  See bipolar.m
+% Citations:  See bipolar.m.  Wiki page <>
 
-% We need to let people change this.  It should be a choice when people run
-% the code rather than buried in here.  It may matter a lot, or not, but it
-% should be open to people experimenting with it.
+% TODO:  In the future we should set this up as a structure that we use to
+% implement the anatomical rules.  Let's send in a struct that defines the
+% anatomical rules (e.g., aRules) with slots that implement the kind of
+% stuff listed above.
+%
 switch obj.cellType
     case{'offDiffuse','onDiffuse','onMidget'}
 
@@ -137,14 +136,19 @@ end
 osSigZMCenter = reshape(osSigRSZMCenter,size(cmosaic.current));
 osSigZMSurround = reshape(osSigRSZMSurround,size(cmosaic.current));
 
-% Convolve spatially every frame
-spatialResponseCenter = ieSpaceTimeFilter(osSigZMCenter, obj.sRFcenter);
+%% Spatial convolution
+
+% Full spatial convolution for every frame
+spatialResponseCenter   = ieSpaceTimeFilter(osSigZMCenter, obj.sRFcenter);
 spatialResponseSurround = ieSpaceTimeFilter(osSigZMSurround, obj.sRFsurround);
 
-% Subsample to pull out individual bipolars
-strideSubsample = size(obj.sRFcenter,1);
-spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, strideSubsample);
-spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, strideSubsample);
+% Subsample in space to the resolution we expect for this bipolar mosaic
+% The spacing is equal to the number of pixels that make up the center of
+% the spatial receptive field.  This could be a settable parameter for
+% others to experiment with, too.
+spacing = size(obj.sRFcenter,1);
+spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, spacing);
+spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, spacing);
 
 %% Temporal filtering
 
@@ -159,6 +163,7 @@ spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,1).*ones(size
 spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(size(spatialSubsampleSurroundRS,1),1) spatialSubsampleSurroundRS];    
 
 %% Pull bipolar temporal filter from RDT
+
 % The bipolar temporal filter is a result of the deconvolution of the
 % linear cone temporal response and the linear RGC temporal response. There
 % are several different bipolar filters that the user can select based on
