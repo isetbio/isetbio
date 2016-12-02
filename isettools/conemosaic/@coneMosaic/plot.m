@@ -105,9 +105,7 @@ switch ieParamFormat(pType)
         imagesc(uData.mosaicImage); axis off; axis image;
     case 'meanabsorptions'
         % title('Mean number of absorptions');
-        if isempty(obj.absorptions)
-            error('no absorption data');
-        end
+        if isempty(obj.absorptions), error('no absorption data'); end
         
         % Show the data, with the gamma from the window.
         uData = mean(obj.absorptions,3);
@@ -122,28 +120,17 @@ switch ieParamFormat(pType)
         photons = num2str(round(photons)); set(cbar,'TickLabels',photons);
         axis image;
         
-        % Could be resurrected some day with a different name
-        %
-        %     case 'absorptions'
-        %         % Movie of the absorptions on the cone mosaic
-        %         if isempty(obj.absorptions)
-        %             % Could be come cla; return
-        %             error('no absorption data');
-        %         end
-        %         uData = coneImageActivity(obj, hf, varargin{:});
     case 'movieabsorptions'
         % Movie in gray scale
-        if isempty(obj.absorptions)
-            % Could become cla return
-            error('no absorption data');
-        end
+        
+        % Could become cla return
+        if isempty(obj.absorptions), error('no absorption data'); end
+        
         % Additional arguments may be the video file name, step, and
         % FrameRate
         uData = ieMovie(obj.absorptions,varargin{:});
     case 'meancurrent'
-        if isempty(obj.current)
-            error('no photocurrent data computed');
-        end
+        if isempty(obj.current), error('no photocurrent data'); end
         uData = mean(obj.current, 3);
         
         % Apply gamma.  The current is always negative.
@@ -163,15 +150,6 @@ switch ieParamFormat(pType)
         current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
         current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
-        
-        %     case {'current', 'photocurrent'}
-        %         % Photo current movie on colored cone mosaic
-        %         if isempty(obj.current)
-        %             if isempty(p.Results.hf), close(hf); end
-        %             error('no photocurrent data');
-        %         end
-        %         uData = coneImageActivity(obj, hf, 'dataType', ...
-        %             'photocurrent', varargin{:});
     case 'moviecurrent'
         % Current movie in gray scale
         if isempty(obj.current)
@@ -184,7 +162,24 @@ switch ieParamFormat(pType)
         disp('No gamma applied');
         uData = ieMovie(obj.current,varargin{:});
         
-        
+     % RGB movies - Could be resurrected some day with a different name
+     %
+     %     case 'absorptions'
+     %         % Movie of the absorptions on the cone mosaic
+     %         if isempty(obj.absorptions)
+     %             % Could be come cla; return
+     %             error('no absorption data');
+     %         end
+     %         uData = coneImageActivity(obj, hf, varargin{:});
+     %     case {'current', 'photocurrent'}
+     %         % Photo current movie on colored cone mosaic
+     %         if isempty(obj.current)
+     %             if isempty(p.Results.hf), close(hf); end
+     %             error('no photocurrent data');
+     %         end
+     %         uData = coneImageActivity(obj, hf, 'dataType', ...
+     %             'photocurrent', varargin{:});
+     
         % ------ Graphs
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
@@ -248,7 +243,7 @@ end
 end
 
 
-
+% Would be used in commented out cases above, some day.
 function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
