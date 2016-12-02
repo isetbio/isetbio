@@ -90,6 +90,9 @@ ieFontInit(hObject);
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
 
+% Set up the context menu
+contextMenuInit(handles);
+
 end
 
 % --- Outputs from this function are returned to the command line.
@@ -272,144 +275,133 @@ set(handles.popupImageType, 'String', str);
 switch plotType
     case 'Cone mosaic'
         % cone mosaic image
-        resetMovieControl(handles);
+        resetMovieControl(handles,'off');
         cm.plot('cone mosaic', 'hf', handles.axes2);
         
-        set(handles.menuPlotHLine, 'Enable', 'off');
-        set(handles.menuPlotVLine, 'Enable', 'off');
-        set(handles.menuPlotHLineLMS, 'Enable', 'off');
-        set(handles.menuPlotVLineLMS, 'Enable', 'off');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
+        % enable plot options in menu
+        enable.hLine = 'off';    enable.vLine = 'off';
+        enable.hLineLMS = 'off'; enable.vLineLMS = 'off';
+        enable.timeSeries = 'off';
+        contextMenuEnable(handles,enable);
 
     case 'Mean absorptions'
         % mean cone absorptions
-        resetMovieControl(handles);
+        resetMovieControl(handles,'off');
         cm.plot('mean absorptions', 'hf', handles.axes2);
-
-        % set up right click menu (context menu)
-        c = uicontextmenu;
-        if ~isempty(handles.axes2.Children)
-            for ichild = 1:size(handles.axes2.Children,1)
-                handles.axes2.Children(ichild).UIContextMenu = c;
-            end
-            uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        end
         
         % Make the axis look like an image
         axis image
         
+        % set up right click menu (context menu)
+        %         c = uicontextmenu;
+        %         if ~isempty(handles.axes2.Children)
+        %             for ichild = 1:size(handles.axes2.Children,1)
+        %                 handles.axes2.Children(ichild).UIContextMenu = c;
+        %             end
+        %             uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        %             uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        %             uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        %             uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        %         end
+                
         % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'off';
+        contextMenuInit(handles);
+        contextMenuEnable(handles,enable);
+        
+        %         set(handles.menuPlotHLine, 'Enable', 'on');
+        %         set(handles.menuPlotVLine, 'Enable', 'on');
+        %         set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        %         set(handles.txtMovieFrame,'Visible','off');
 
     case 'Absorption movie'
-        
-        if isempty(handles.mov)
-            % Alert to movie build
-            ieInWindowMessage('Building absorptions movie',handles);
-            
-            % generate movie - This is fast and the actual display is slow.
-            % Let's use one bit of code and make it the same.
-            handles.mov = cm.plot('movie absorptions', 'hf','none',...
-                'show',true, ...
-                'gamma', str2double(get(handles.editGam, 'String')));
-            
-            % Clear message
-            ieInWindowMessage('',handles);
-            guidata(hObject, handles);
-        end
+        resetMovieControl(handles,'on');  %Turn off the movie controller
+
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'on';
+        contextMenuEnable(handles,enable);
         
         % Initiate movie display GUI elements.
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'off');
         
-        % set up right click menu (context menu)
-        c = uicontextmenu;        
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
-        
-        % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        set(handles.txtMovieFrame,'Visible','on');
-
         % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
-        resetMovieControl(handles);
-        cm.plot('mean current', 'hf', handles.axes2);
+        resetMovieControl(handles,'off');  %Turn off the movie controller
         
-        % set up right click menu (context menu)
-        c = uicontextmenu;       
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        cm.plot('mean current', 'hf', handles.axes2);
         axis image
         
-        % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
+        % set up right click menu (context menu)
+        %         c = uicontextmenu;
+        %         for ichild = 1:size(handles.axes2.Children,1)
+        %             handles.axes2.Children(ichild).UIContextMenu = c;
+        %         end
+        %         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'off';
+        contextMenuInit(handles);
+        contextMenuEnable(handles,enable);
+        
+        %         set(handles.menuPlotHLine, 'Enable', 'on');
+        %         set(handles.menuPlotVLine, 'Enable', 'on');
+        %         set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotTimeSeries, 'Enable', 'off');
+        %         set(handles.txtMovieFrame,'Visible','off');
 
     case 'Photocurrent movie'
-        
-        if isempty(handles.curMov) % generate movie for photocurrent
-            ieInWindowMessage('Building photocurrent movie',handles);
-            handles.curMov = cm.plot('movie current', 'hf','none', ...
-                'show', true, ...
-                'gamma', str2double(get(handles.editGam, 'String')));
-            guidata(hObject, handles);
-            ieInWindowMessage('',handles);
-        end
-        
+        %
+        %         if isempty(handles.curMov) % generate movie for photocurrent
+        %             ieInWindowMessage('Building photocurrent movie',handles);
+        %             handles.curMov = cm.plot('movie current', 'hf','none', ...
+        %                 'show', true, ...
+        %                 'gamma', str2double(get(handles.editGam, 'String')));
+        %             guidata(hObject, handles);
+        %             ieInWindowMessage('',handles);
+        %         end
+        resetMovieControl(handles,'on');  %Turn off the movie controller
+
         % Graphics elements
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
         set(handles.sliderMovieProgress, 'Visible', 'off');
         
         % set up right click menu (context menu)
-        c = uicontextmenu;
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+        %         c = uicontextmenu;
+        %         for ichild = 1:size(handles.axes2.Children,1)
+        %             handles.axes2.Children(ichild).UIContextMenu = c;
+        %         end
+        %         uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+        %         uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
         
         % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        set(handles.txtMovieFrame,'Visible','on');
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'on';
+        contextMenuEnable(handles,enable);
+        
+        %         set(handles.menuPlotHLine, 'Enable', 'on');
+        %         set(handles.menuPlotVLine, 'Enable', 'on');
+        %         set(handles.menuPlotHLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotVLineLMS, 'Enable', 'on');
+        %         set(handles.menuPlotTimeSeries, 'Enable', 'on');
+        %         set(handles.txtMovieFrame,'Visible','on');
 
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
@@ -417,6 +409,52 @@ switch plotType
         error('Unknown plot type');
 end
 
+
+end
+
+function c = contextMenuInit(handles)
+% Set up right click menu (context menu)
+% Typical sequence is 
+%
+%    c = contextMenuInit(handles,enable)
+%    % Set up enable.XXX
+%    contextMenuEnable(enable)
+%
+
+c = uicontextmenu;
+if ~isempty(handles.axes2.Children)
+    for ichild = 1:size(handles.axes2.Children,1)
+        handles.axes2.Children(ichild).UIContextMenu = c;
+    end
+    uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+end
+
+end
+
+function contextMenuEnable(handles,enable)
+% enable plot options in menu
+%
+%    c = contextMenuInit(handles,enable)
+%    % Set up enable.XXX
+%    contextMenuEnable(enable)
+%
+% enable is a structure of 'on' and 'off' values
+%
+%   enable.hLine
+%   enable.hLineLMS
+%   enable.vLine
+%   enable.vLineLMS
+%   enable.timeSeries
+%
+
+set(handles.menuPlotHLine, 'Enable', enable.hLine);
+set(handles.menuPlotVLine, 'Enable', enable.vLine);
+set(handles.menuPlotHLineLMS, 'Enable',enable.hLineLMS);
+set(handles.menuPlotVLineLMS, 'Enable', enable.vLineLMS);
+set(handles.menuPlotTimeSeries, 'Enable', enable.timeSeries);
 
 end
 
@@ -527,13 +565,25 @@ end
 
 end
 
-function resetMovieControl(handles)
-% reset movie control
-set(handles.btnPlayPause, 'Visible', 'off');
-set(handles.sliderMovieProgress, 'Visible', 'off');
+function resetMovieControl(handles,status)
+% reset movie controls for playing a movie
 
-set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
-set(handles.sliderMovieProgress, 'Value', 1);
+switch status
+    case 'off'
+        set(handles.btnPlayPause, 'Visible', 'off');
+        set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
+
+        set(handles.sliderMovieProgress, 'Visible', 'off');
+        set(handles.sliderMovieProgress, 'Value', 1);
+    case 'on'
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+
+        set(handles.sliderMovieProgress, 'Visible', 'off');
+        set(handles.sliderMovieProgress, 'Value', 1);
+
+end
+        
 end
 
 function menuPlot_Callback(hObject, eventdata, handles)
