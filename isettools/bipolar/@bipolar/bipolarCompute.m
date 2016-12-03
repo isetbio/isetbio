@@ -181,16 +181,27 @@ end
 % The bipolarFiltMat is 100 different filters.  Fix that in the
 % representation.  The script that builds this is about to be uploaded to
 % the repository by JRG.
-bipolarFilt = -mean(data.bipolarFiltMat)';
+% bipolarFilt = -mean(data.bipolarFiltMat)';
 % TODO: Remove bipolar.filterType parameter from object
 
+bipolarFilt = bipolarFilter(obj, cmosaic);
+warning('filter created here, see bipolarFilter.m; looks noncausal?');
 %% Compute the temporal response of the bipolar mosaic
 
 % Compute with convn (includes transient response). This is important for
 % handling the one-frame stimulus case. 
-bipolarOutputCenterRS   = convn(spatialSubsampleCenterRS,  bipolarFilt','full');
-bipolarOutputSurroundRS = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
+
+% % Could problem be ordering of filter and input signal? Doesn't seem like
+% % it.
+% bipolarOutputCenterRSlong   = convn(spatialSubsampleCenterRS,  bipolarFilt','full');
+% bipolarOutputSurroundRSlong = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
     
+bipolarOutputCenterRSlong   = convn(bipolarFilt',spatialSubsampleCenterRS,  'full');
+bipolarOutputSurroundRSlong = convn(bipolarFilt',spatialSubsampleSurroundRS,'full');
+
+warning('some sort of wrapping around end of time axis...');
+bipolarOutputCenterRS   = bipolarOutputCenterRSlong(:,1:size(spatialSubsampleCenterRS,2));
+bipolarOutputSurroundRS = bipolarOutputSurroundRSlong(:,1:size(spatialSubsampleCenterRS,2));
 %% Format data
 
 % Rezero
