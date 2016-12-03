@@ -1,6 +1,5 @@
-function k = buildTemporalImpulseResponse(samplingTime)
-%% buildTemporalImpulseResponse
-% builds the temporal filter function for cells in an rgcMosaic.
+function [k, timeAxis] = buildTemporalImpulseResponse(samplingTime)
+% Builds the temporal filter function for RGCs in an rgcMosaic.
 % 
 %     ir.tCenter{rgbInd,1} = buildTemporalImpulseResponse(samplingTime);
 % 
@@ -22,15 +21,22 @@ function k = buildTemporalImpulseResponse(samplingTime)
 %% Build temporal impulse response
 % From code by J. Pillow:
 % 
+% samplingTime = 1;
 % DTsim = .01; % Bin size for simulating model & computing likelihood.
 % nkt = 20;  % Number of time bins in filter;
-DTsim = samplingTime; % Bin size for simulating model & computing likelihood.
-filterLength = 0.2;
+% DTsim = samplingTime; % Bin size for simulating model & computing likelihood (seconds)
+
+filterLength = 0.2;   % Seconds
 nkt = ceil(filterLength/samplingTime);  % Number of time bins in filter;
 timeAxis = samplingTime:samplingTime:filterLength;
-tk = [0:nkt-1]';
+
+tk = (0:nkt-1)';
 b1 = nkt/32; b2 = nkt/16;
 k1 = 1/(gamma(6)*b1)*(tk/b1).^5 .* exp(-tk/b1);  % Gamma pdfn
 k2 = 1/(gamma(6)*b2)*(tk/b2).^5 .* exp(-tk/b2);  % Gamma pdf
+
 k = (k1-k2./1.5);
 k = 1.2*(k./max(k));
+
+% plot(k)
+end

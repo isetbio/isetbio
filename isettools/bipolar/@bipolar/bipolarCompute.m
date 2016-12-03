@@ -38,6 +38,45 @@ function obj = bipolarCompute(obj, cmosaic, varargin)
 % 
 % 5/2016 JRG (c) isetbio team
 
+%% TODO NOTES
+%
+% Load bipolar temporal filter
+
+% Bipolar filters were deconvolved from the measured temporal impulse response of each
+% cell in the mosaic and the linear cone temporal response. The
+% mean of the bipolar temporal filters for the whole mosaic is used
+% as the ideal bipolar filter.
+% 
+% There are different bipolar filters for on p/m and off p/m cells
+% if strcmpi(obj.cellType,'offDiffuse')
+%     % Off parasol (off diffuse) only
+%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
+% else
+%     % On parasol and all others
+%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
+% end
+% The bipolarFiltMat is 100 different filters.  Fix that in the
+% representation.  The script that builds this is about to be uploaded to
+% the repository by JRG.
+% bipolarFilt = -mean(data.bipolarFiltMat)';
+% TODO: Remove bipolar.filterType parameter from object
+%
+%
+% BW removed: Zero-mean the input signal.
+%
+% Why?
+%
+% Shouldn't the receptive field should govern how we map the input current
+% to the output current (BW)?   If the RF has a zero mean, then spatial
+% mean maps to 0. If the RF has a unit mean then spatial mean maps to mean
+%
+% if size(osSig,2) > 1
+%     % Typical case.  Substract the mean over time of each cone signal from
+%     % itself.
+%     osSig = bsxfun(@minus, osSig, mean(osSig, 2));
+% end
+
+
 %% parse input parameters
 
 p = inputParser;
@@ -54,17 +93,6 @@ p.parse(obj, cmosaic, varargin{:});
 % This places the cone 3D matrix into a coneNumber x time matrix
 osSig = RGB2XWFormat(cmosaic.current);
 
-%% Zero-mean the input signal.
-%
-% BW thinks that the receptive field should govern how we map the input
-% current to the output current.   If the RF has a zero mean, then spatial
-% mean maps to 0. If the RF has a unit mean then spatial mean maps to mean
-%
-if size(osSig,2) > 1
-    % Typical case.  Substract the mean over time of each cone signal from
-    % itself. 
-    osSig = bsxfun(@minus, osSig, mean(osSig, 2));
-end
 
 %% Enfoce anatomical rules on cone to bipolar connections
 
@@ -76,10 +104,10 @@ end
 %
 % Citations:  See bipolar.m.  Wiki page <>
 
-% TODO:  In the future we should set this up as a structure that we use to
-% implement the anatomical rules.  Let's send in a struct that defines the
-% anatomical rules (e.g., aRules) with slots that implement the kind of
-% stuff listed above.
+% TODO:  We should set this up as a structure that we use to implement the
+% anatomical rules.  Let's send in a struct that defines the anatomical
+% rules (e.g., aRules) with slots that implement the kind of stuff listed
+% above.
 %
 switch obj.cellType
     case{'offDiffuse','onDiffuse','onMidget'}
@@ -137,91 +165,40 @@ osSigSurround = reshape(osSigSurround,size(cmosaic.current));
 %% Spatial convolution
 
 % Full spatial convolution for every frame
-spatialResponseCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
-spatialResponseSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
+bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
+bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
 
-% Subsample in space to the resolution we expect for this bipolar mosaic
+% Subsample in space to the resolution for this bipolar mosaic.
 % The spacing is equal to the number of pixels that make up the center of
 % the spatial receptive field.  This could be a settable parameter for
-% others to experiment with, too.
+% others to experiment with, too.  We need a reference.
 spacing = size(obj.sRFcenter,1);
-spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, spacing);
-spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, spacing);
+bipolarCenter   = ieImageSubsample(bipolarCenter, spacing);
+bipolarSurround = ieImageSubsample(bipolarSurround, spacing);
 
 %% Temporal filtering
 
-timeAxis = cmosaic.timeAxis;
-
 % Reshape for temporal convolution
-szSubSample = size(spatialSubsampleCenter);
+[bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
+bipolarSurround = RGB2XWFormat(bipolarSurround); 
 
-if numel(szSubSample)<3; szSubSample(3) = 1; end;
-spatialSubsampleCenterRS = reshape(spatialSubsampleCenter,szSubSample(1)*szSubSample(2),szSubSample(3));
-spatialSubsampleSurroundRS = reshape(spatialSubsampleSurround,szSubSample(1)*szSubSample(2),szSubSample(3));
-
-spatialSubsampleCenterRS = [repmat(spatialSubsampleCenterRS(:,1),1,1).*ones(size(spatialSubsampleCenterRS,1),1) spatialSubsampleCenterRS];
-spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(size(spatialSubsampleSurroundRS,1),1) spatialSubsampleSurroundRS];    
-
-%% Load bipolar temporal filter
-
-% TODO:  Do the temporal interpolation of the bipolar time filter
-
-% Bipolar filters were deconvolved from the measured temporal impulse response of each
-% cell in the mosaic and the linear cone temporal response. The
-% mean of the bipolar temporal filters for the whole mosaic is used
-% as the ideal bipolar filter.
-% 
-% There are different bipolar filters for on p/m and off p/m cells
-% if strcmpi(obj.cellType,'offDiffuse')
-%     % Off parasol (off diffuse) only
-%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
-% else
-%     % On parasol and all others
-%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
-% end
-
-% The bipolarFiltMat is 100 different filters.  Fix that in the
-% representation.  The script that builds this is about to be uploaded to
-% the repository by JRG.
-% bipolarFilt = -mean(data.bipolarFiltMat)';
-% TODO: Remove bipolar.filterType parameter from object
+%% New method
 
 bipolarFilt = bipolarFilter(obj, cmosaic);
-warning('filter created here, see bipolarFilter.m; looks noncausal?');
+
 %% Compute the temporal response of the bipolar mosaic
-
-% Compute with convn (includes transient response). This is important for
-% handling the one-frame stimulus case. 
-
-% % Could problem be ordering of filter and input signal? Doesn't seem like
-% % it.
-% bipolarOutputCenterRSlong   = convn(spatialSubsampleCenterRS,  bipolarFilt','full');
-% bipolarOutputSurroundRSlong = convn(spatialSubsampleSurroundRS,bipolarFilt','full');
-    
-bipolarOutputCenterRSlong   = convn(bipolarFilt',spatialSubsampleCenterRS,  'full');
-bipolarOutputSurroundRSlong = convn(bipolarFilt',spatialSubsampleSurroundRS,'full');
-
-warning('some sort of wrapping around end of time axis...');
-bipolarOutputCenterRS   = bipolarOutputCenterRSlong(:,1:size(spatialSubsampleCenterRS,2));
-bipolarOutputSurroundRS = bipolarOutputSurroundRSlong(:,1:size(spatialSubsampleCenterRS,2));
-%% Format data
-
-% Rezero
-bipolarOutputCenterRSRZ = ((bipolarOutputCenterRS-repmat(mean(bipolarOutputCenterRS,2),1,size(bipolarOutputCenterRS,2))));
-bipolarOutputSurroundRSRZ = ((bipolarOutputSurroundRS-repmat(mean(bipolarOutputSurroundRS,2),1,size(bipolarOutputSurroundRS,2))));
-
-% Back to original shape
-bipolarOutputLinearCenter = reshape(bipolarOutputCenterRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputCenterRS,2));
-bipolarOutputLinearSurround = reshape(bipolarOutputSurroundRSRZ,szSubSample(1),szSubSample(2),size(bipolarOutputSurroundRS,2));
-
-% TODO: Calculate contrast gain adjustment
-
-%% Apply rectification function and to the center and surround separately
-
+%
+% Deal with rectification, next. Need a plan
+%
 % obj.rectify(input,'rType',{hw,fw,none})
-obj.responseCenter   = obj.rectificationCenter(bipolarOutputLinearCenter);
-obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
+% obj.responseCenter   = obj.rectificationCenter(bipolarOutputLinearCenter);
+% obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
+%
 
-% Should we be rectifying the sum of the center/surround or should the two
-% terms separately?
+tmp = conv2(bipolarFilt,bipolarCenter);
+obj.responseCenter = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
+
+tmp = conv2(bipolarFilt,bipolarSurround);
+obj.responseSurround = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
+
 end

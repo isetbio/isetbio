@@ -67,7 +67,7 @@ rgcFilt = innerRetina.mosaic{1}.tCenter{cellNum};
 rgcTime = innerRetina.mosaic{1}.timeAxis;
 
 % Put the two IR functions on the same very fine time base
-timeBase = (0:4095)*1e-4;
+timeBase = (0:4095)*1e-4;    % Time samples in seconds.  About 400 ms total
 rgcFilt = interp1(rgcTime,rgcFilt,timeBase,'linear',0);
 osFilt  = interp1(osTime, osFilt,timeBase,'linear',0);
 

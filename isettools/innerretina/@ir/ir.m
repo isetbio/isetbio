@@ -86,55 +86,38 @@ classdef ir < handle
     
     % Public methods
     methods
-        function obj = ir(inputObj, varargin)
+        function obj = ir(bp, varargin)
+            % Constructor
+            %
+            % We now require an inner retina to receive its inputs from a
+            % bipolar object.  Users who want to skip the bipolar model
+            % should create a bpIdentity object.
             
             % parse input
             p = inputParser;
-            p.addRequired('inputObj');
+            p.addRequired('inputObj',@(x)(isa(bp,'bipolar')));
             p.addParameter('eyeSide','left',@ischar);
             p.addParameter('eyeRadius',0,@isnumeric);
             p.addParameter('eyeAngle',0,@isnumeric);
             p.addParameter('name','ir1',@ischar);
             p.addParameter('species','macaque',@ischar);
             p.KeepUnmatched = true;
-            p.parse(inputObj,varargin{:});
+            
+            p.parse(bp,varargin{:});
             
             obj.eyeSide   = p.Results.eyeSide;
             obj.eyeRadius = p.Results.eyeRadius;
             obj.eyeAngle  = p.Results.eyeAngle;
             obj.name      = p.Results.name;            
             
-            if length(inputObj) == 1
-                inputObjType = class(inputObj);
-                inputObjComponent = inputObj;
-            else
-                inputObjType = class(inputObj{1});
-                inputObjComponent = inputObj{1};
-            end
-            
-            switch inputObjType
-                case{'osDisplayRGB'}
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(osGet(inputObj,'rgbData'));
-                case{'osIdentity'}
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(osGet(inputObjComponent,'photonRate'));
-                case{'bipolar'}
-                    obj.spacing = bipolarGet(inputObjComponent,'patch size'); % Bipolar width
-                    obj.timing  = bipolarGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(bipolarGet(inputObjComponent,'bipolarResponseCenter'));
-                otherwise
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~] = size(osGet(inputObjComponent,'coneCurrentSignal'));
-            end
-            
-            % Initialize the mosaic property but do not generate any mosaics
+            obj.spacing = bipolarGet(bp,'patch size'); % Bipolar width
+            obj.timing  = bipolarGet(bp,'time step'); % Temporal sampling
+            [obj.row, obj.col, ~, ~] = size(bipolarGet(bp,'bipolarResponseCenter'));
+
+            % Initialize the mosaic property with an empty cell.
             obj.mosaic = cell(1); % populated by mosaicCreate method
             
-            % Get the TEE.
+            % Get the temporal equivalent eccentricity 
             obj.temporalEquivEcc = retinalLocationToTEE(obj.eyeAngle, obj.eyeRadius, obj.eyeSide);
             
         end

@@ -1,6 +1,8 @@
-function rgcInitTime(rgcM, innerRetina, mosaicInd)
+function timeAxis = rgcInitTime(rgcM, innerRetina, mosaicInd)
 % Generate temporal impulse response functions for R, G, B channels
-
+%
+%
+% 
 
 %%
 % ir = rgcM.parent;
@@ -13,7 +15,7 @@ function rgcInitTime(rgcM, innerRetina, mosaicInd)
 % Bistratified Ganglion Cells in Primate Retina", Field, et al.,
 % J. Neuroscience, 2007, Fig. 1.
 
-rfTempMult = [1 -1 1 -1 1];       % invert IR for OFF paraosl and midget
+rfTempMult = [1 -1 1 -1 1];       % invert sign for OFF types
 
 % The temopral impulse response function for each cell consists of three
 % vectors, one for each RGB channel. They have similar shapes but different
@@ -34,9 +36,10 @@ for rgbInd = 1:3
     multFactor = rgbTempMult(rgbInd)*rfTempMult(mosaicInd);
     % Build the separate impulse responses for center and surround; usually
     % the same.
-    rgcM.tCenter{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
+    [tmp, timeAxis] = buildTemporalImpulseResponse(integrationTime);
+    rgcM.tCenter{rgbInd,1} = multFactor*tmp;
     rgcM.tSurround{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
-    
+    % plot(timeAxis,tmp);
 end
 
 end
