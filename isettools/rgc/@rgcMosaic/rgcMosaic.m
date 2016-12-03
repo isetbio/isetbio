@@ -81,7 +81,7 @@ classdef rgcMosaic < handle
         
         % Constructor
         function obj = rgcMosaic(ir, mosaicInd)
-             %% Initialize an rgcMosaic for a particular cell type
+            %% Initialize an rgcMosaic for a particular cell type
             %
             %       initialize(obj, innerRetina, cellType)
             %           [only called internally from rgcMosaic.m]
@@ -94,7 +94,7 @@ classdef rgcMosaic < handle
             % size are generated for the array of RGCs of that particular type. Then
             % the RGB temporal impulse responses for the center and surround are
             % generated.
-            %            
+            %
             % Switch cell type string to index number
             % The index number helps with the generation of the receptive fields and
             % impulse responses of the appropriate parameters for the cell type.
@@ -142,6 +142,11 @@ classdef rgcMosaic < handle
             % Tip: Retrieve guidata using
             %    gui = guidata(obj.figureHandle);
             %
+        end
+        
+        function val = timeAxis(obj)
+            % Time steps in seconds.  Usually, dt is in 0.1 ms
+            val = obj.dt*(1:length(obj.tCenter{1}))*1e-3;
         end
         
         function str= describe(obj)

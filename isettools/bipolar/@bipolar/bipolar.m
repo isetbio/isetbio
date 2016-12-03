@@ -51,10 +51,10 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(inputObj, varargin)     
+    function obj = bipolar(cmosaic, varargin)     
         
         p = inputParser;
-        addRequired(p, 'inputObj');
+        addRequired(p,  'cmosaic');
         addParameter(p, 'cellType', 'offDiffuse', @ischar);
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
@@ -62,28 +62,17 @@ methods
         addParameter(p, 'ecc',  1, @isnumeric);
         addParameter(p, 'coneType',  -1, @isnumeric);
         
-        p.parse(inputObj, varargin{:});  
+        p.parse(cmosaic, varargin{:});  
         
-        % The input object should be coneMosaic, but it can also be an OS for
-        % backwards compatibility for now.
-        if isa(inputObj,'coneMosaic')
-            os = inputObj.os;
-            obj.coneType = inputObj.pattern;
-        else
-            os = inputObj;
-            if p.Results.coneType(1,1) == -1;
-                obj.coneType = ones(size(os.coneCurrentSignal,1),size(os.coneCurrentSignal,2));
-            else
-                obj.coneType = p.Results.coneType;
-            end
-            
-        end
+        % Store the spatial pattern of input cones
+        obj.coneType  = cmosaic.pattern;
         
+        % Match the time step of the cone mosaic
+        os = cmosaic.os;
         obj.patchSize = osGet(os,'patchSize');
-        obj.timeStep = osGet(os,'timeStep');
+        obj.timeStep  = cmosaic.integrationTime;
         
         obj.cellType = p.Results.cellType;
-        % obj.coneType = p.Results.coneType;
         
         switch p.Results.rectifyType
             case 1
@@ -177,17 +166,17 @@ methods
         end
     end
     
-    % set function, see bipolarSet for details
+    % see bipolarSet for details
     function obj = set(obj, varargin)
         bipolarSet(obj, varargin{:});
     end
     
-    % get function, see bipolarGet for details
+    % see bipolarGet for details
     function val = get(obj, varargin)
         val = bipolarGet(obj, varargin{:});
     end
     
-    % compute function, see bipolarCompute for details
+    % see bipolarCompute for details
     function val = compute(obj, varargin)
         val = bipolarCompute(obj, varargin{:});
     end

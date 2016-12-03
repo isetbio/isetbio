@@ -58,12 +58,12 @@ osSig = RGB2XWFormat(cmosaic.current);
 %
 % BW thinks that the receptive field should govern how we map the input
 % current to the output current.   If the RF has a zero mean, then spatial
-% mean -> 0. If the RF has a unit mean then spatial mean -> mean
+% mean maps to 0. If the RF has a unit mean then spatial mean maps to mean
 %
 if size(osSig,2) > 1
     % Typical case.  Substract the mean over time of each cone signal from
     % itself. 
-    osSigRSZM = bsxfun(@minus, osSig, mean(osSig, 2));
+    osSig = bsxfun(@minus, osSig, mean(osSig, 2));
 end
 
 %% Enfoce anatomical rules on cone to bipolar connections
@@ -84,8 +84,8 @@ end
 switch obj.cellType
     case{'offDiffuse','onDiffuse','onMidget'}
 
-        osSigRSZMCenter   = osSigRSZM;
-        osSigRSZMSurround = osSigRSZM;
+        osSigCenter   = osSig;
+        osSigSurround = osSig;
 
         % Remove S cone input for these types of bipolars
 
@@ -94,9 +94,9 @@ switch obj.cellType
         
         % Zero the photocurrent of the S cones. Do this for both the center
         % and the surround.
-        z = zeros(length(S),size(osSigRSZM,2));
-        osSigRSZMCenter(S(:),:)   = z;
-        osSigRSZMSurround(S(:),:) = z;
+        z = zeros(length(S),size(osSig,2));
+        osSigCenter(S(:),:)   = z;
+        osSigSurround(S(:),:) = z;
         
     case{'offMidget'}
         % Keep S cone input for off Midget but only weight by 0.25
@@ -104,13 +104,13 @@ switch obj.cellType
         % Find the locations (row, col) of the different cone types
         [~,~,S] = coneTypeLocations(cmosaic,'val','index');
         
-        minval = min(osSigRSZM(:));
+        minval = min(osSig(:));
         
-        osSigRSZMCenter   = osSigRSZM;
-        osSigRSZMCenter(S,:)   = 0.25*(osSigRSZMCenter(S,:)-minval)+minval;
+        osSigCenter   = osSig;
+        osSigCenter(S,:)   = 0.25*(osSigCenter(S,:)-minval)+minval;
         
-        osSigRSZMSurround   = osSigRSZM;
-        osSigRSZMSurround(S,:) = 0.25*(osSigRSZMSurround(S,:)-minval)+minval;
+        osSigSurround   = osSig;
+        osSigSurround(S,:) = 0.25*(osSigSurround(S,:)-minval)+minval;
 
     case{'onSBC'}  
         % Set L and M cones to zero in SBC center, set S cones to zero in
@@ -119,26 +119,26 @@ switch obj.cellType
         [L,M,S] = coneTypeLocations(cmosaic,'val','index');
         LM = [L; M];
                 
-        minval = min(osSigRSZM(:));
+        minval = min(osSig(:));
         % Set center to only have S cones
         
-        osSigRSZMCenter   = osSigRSZM;
-        osSigRSZMCenter(LM,:)   = minval*ones(size(osSigRSZMCenter(LM,:)));
+        osSigCenter   = osSig;
+        osSigCenter(LM,:)   = minval*ones(size(osSigCenter(LM,:)));
         
-        osSigRSZMSurround   = osSigRSZM;
-        osSigRSZMSurround(S,:)   = minval*ones(size(osSigRSZMSurround(S,:)));
+        osSigSurround   = osSig;
+        osSigSurround(S,:)   = minval*ones(size(osSigSurround(S,:)));
                        
 end
 
 % Put the data back into RGB format, like RGB2XW()
-osSigZMCenter = reshape(osSigRSZMCenter,size(cmosaic.current));
-osSigZMSurround = reshape(osSigRSZMSurround,size(cmosaic.current));
+osSigCenter   = reshape(osSigCenter,size(cmosaic.current));
+osSigSurround = reshape(osSigSurround,size(cmosaic.current));
 
 %% Spatial convolution
 
 % Full spatial convolution for every frame
-spatialResponseCenter   = ieSpaceTimeFilter(osSigZMCenter, obj.sRFcenter);
-spatialResponseSurround = ieSpaceTimeFilter(osSigZMSurround, obj.sRFsurround);
+spatialResponseCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
+spatialResponseSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
 
 % Subsample in space to the resolution we expect for this bipolar mosaic
 % The spacing is equal to the number of pixels that make up the center of
@@ -149,6 +149,8 @@ spatialSubsampleCenter = ieImageSubsample(spatialResponseCenter, spacing);
 spatialSubsampleSurround = ieImageSubsample(spatialResponseSurround, spacing);
 
 %% Temporal filtering
+
+timeAxis = cmosaic.timeAxis;
 
 % Reshape for temporal convolution
 szSubSample = size(spatialSubsampleCenter);
@@ -170,13 +172,13 @@ spatialSubsampleSurroundRS = [repmat(spatialSubsampleSurroundRS(:,1),1,1).*ones(
 % as the ideal bipolar filter.
 % 
 % There are different bipolar filters for on p/m and off p/m cells
-if strcmpi(obj.cellType,'offDiffuse')
-    % Off parasol (off diffuse) only
-    data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
-else
-    % On parasol and all others
-    data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
-end
+% if strcmpi(obj.cellType,'offDiffuse')
+%     % Off parasol (off diffuse) only
+%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_OFFP_2013_08_19_6_all.mat']);
+% else
+%     % On parasol and all others
+%     data = load([isetRootPath '/data/bipolar/bipolarFilt_200_ONP_2013_08_19_6_all.mat']);
+% end
 
 % The bipolarFiltMat is 100 different filters.  Fix that in the
 % representation.  The script that builds this is about to be uploaded to

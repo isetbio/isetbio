@@ -1,7 +1,24 @@
 classdef coneMosaic < hiddenHandle
     % Create a cone mosaic class
     %
-    %   cMosaic =  coneMosaic('pigment', photoPigment, 'os', os);
+    %   cMosaic =  coneMosaic( ... many parameters ...);
+    %
+    % Parameters
+    %    name    - Mosaic name
+    %    wave    - Wavelength samples
+    %    pigment - Cone photopigment object
+    %    os      - Outer segment
+    %
+    %    size    - Spatial size (number of row/col cones)
+    %    pattern - Cone type at each position (1-4, K,L,M,S)
+    %    center  - Position of center in the retina
+    %
+    %    spatialDensity  - Relative density of cone types, K,L,M,S
+    %    integrationTime - Temporal integration in sec
+    %
+    %    emPositions - Eye movement positions (Nx2)
+    %
+    %    noiseFlag  = logical, add photon noise (default) or not
     %
     % The cone mosaic defines the absorptions and photocurrent in an array
     % of cones. The default cone mosaic is rectangular.  There is a
