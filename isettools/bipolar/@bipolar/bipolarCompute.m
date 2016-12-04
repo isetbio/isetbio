@@ -184,6 +184,7 @@ bipolarSurround = RGB2XWFormat(bipolarSurround);
 
 %% New method
 
+% The filter isn't right.  Time base is off.  Let's deal with it.
 bipolarFilt = bipolarFilter(obj, cmosaic);
 
 %% Compute the temporal response of the bipolar mosaic
