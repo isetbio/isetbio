@@ -22,19 +22,16 @@ function ValidationFunction(runTimeParams)
 %%
 ieInit;
 
-% Reproduce identical random number
-rng('default'); rng(1);
-
 % Zero testing tolerance
 tolerance = 1e-4;
 
 %% Impulse on a 1 ms time axis.
 integrationTime = 5e-3;
-tSamples = 100;
+tSamples = 25;
 
 sampleTimes = (1:tSamples)*integrationTime;
 weights = zeros(tSamples,1);
-weights(20:21) = 1;
+weights(10:11) = 1;
 
 % Scene parameters in general
 sparams.fov       = 0.5;   % Half a degree
@@ -48,33 +45,34 @@ oiImpulse = oisCreate('impulse','add',weights,...
 
 %% Set the cone mosaic parameters
 
-cMosaic = coneMosaic;    % Default is osLinear
+cMosaic = coneMosaic;           % Default is osLinear
+cMosaic.noiseFlag = 'none';     % Turn off photon noise
+cMosaic.os.noiseFlag = 'none';  % Turn off photocurrent noise
 cMosaic.integrationTime = integrationTime;
 cMosaic.setSizeToFOV(oiGet(oiImpulse.oiFixed,'fov')*0.8);
-cMosaic.emGenSequence(tSamples);
+cMosaic.emPositions = zeros(tSamples,2);
 
 %%  Compute the absorptions
 
 cMosaic.compute(oiImpulse);
 sumA = sum(cMosaic.absorptions(:));
 
-
-v = 18996576;
+v = 5.0436e+06;
 test = (sumA - v)/v;
 UnitTest.assertIsZero(test,'Total absorptions test',tolerance);
 
 %% Compute the current and get the interpolated filters
 
 % No noise, compute the filters
-cMosaic.os.noiseFlag = false;
+cMosaic.os.noiseFlag = 'none';
 interpFilters = cMosaic.computeCurrent;
 sumF = sum(interpFilters(:));
-test = (sumF - 1.4302)/sumF;
+test = (sumF - 1.7051)/sumF;
 UnitTest.assertIsZero(test,'Linear filters test',tolerance);
 
 % and then the photocurrent 
 sumC = sum(cMosaic.current(:));
-test = (sumC - -3.8808e+07)/sumC;
+test = (sumC - -9.5823e+06)/sumC;
 UnitTest.assertIsZero(test,'Photocurrent test',tolerance);
 
 % cMosaic.window;
