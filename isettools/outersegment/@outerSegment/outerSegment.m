@@ -55,7 +55,7 @@ classdef outerSegment < handle
     % Public methods
     methods
         function obj = outerSegment(varargin)
-            obj.noiseFlag = 0;
+            obj.noiseFlag = 'random';
             % obj.coneCurrentSignal = [];
             obj.timeStep = 1e-4;
         end

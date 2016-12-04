@@ -138,7 +138,10 @@ classdef coneMosaic < hiddenHandle
             
             % Computational features
             p.addParameter('emPositions', [0 0], @isnumeric);
-            p.addParameter('noiseFlag', 1, @isscalar);
+            
+            % How we handle coneMosaic noise
+            vFunc = @(x)(ismember(lower(x),{'random','none','frozen'}));
+            p.addParameter('noiseFlag', 'random', vFunc);
             
             p.parse(varargin{:});
             
@@ -151,7 +154,6 @@ classdef coneMosaic < hiddenHandle
             obj.center = p.Results.center(:)';
             obj.wave   = p.Results.wave;
             obj.spatialDensity_ = p.Results.spatialDensity(:);
-            % obj.sampleTime      = p.Results.sampleTime;
             obj.integrationTime = p.Results.integrationTime;
             
             obj.noiseFlag = p.Results.noiseFlag;

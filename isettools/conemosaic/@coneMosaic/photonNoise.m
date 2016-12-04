@@ -1,32 +1,54 @@
-function [noisyImage, theNoise] = photonNoise(absorptions,varargin)
-% Photon noise at the absorptions is Poisson.
+function [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
+% Add photon noise to the absorptions 
 %
-% This is defined without the 'obj' at the front in coneMosaic as a static
-% method.  There are probably reasons for this in the compute() function.
+%  [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
 %
-% The Poisson variance is equal to the mean. For moderate mean levels,
-% Poisson is very close to Normal
+% Photon noise is Poisson.  The Poisson variance is equal to the mean. We trap
+% the cases when the value is small (less than 25) and use
+% real Poisson random value, which is slower to compute. At
+% levels above lambda = 25, we approximate the noise as Gaussian.
 %
-% We multiply each point in the absorption data by the square root of its
-% mean value to create the noise standard deviation. For most cases the
-% Normal approximation is adequate. We trap (below) the cases when the
-% value is small (less than 25) and replace it with the real Poisson random
-% value, which is slower to compute.
-% 
-% HJ ISETBIO Team 2016
+% The decision to add noise is set in the coneMosaic.noiseFlag.  We are
+% only here if noiseFlag is 'random' or 'frozen'
+%
+% Inputs:  
+%   absorptions - typically coneMosaic.absorptions
+%
+% Parameters
+%   noiseFlag - 'random' or 'frozen'
+%   seed - When using frozen noise, you can set a seed. Default = 1
+%
+% Returns
+%   noiseImage - absorptions plus noise
+%   theNoise   - the noise that was added to the absorptions
+%   seed       - The rng(seed) we used
+%
+% HJ/BW ISETBIO Team 2016
 
 %%
 p = inputParser;
-p.addRequired('absorptions',@isnumeric);  % Frozen or new random noise
-p.addParameter('newNoise',true,@islogical);  % Frozen or new random noise
+p.addRequired('absorptions',@isnumeric); 
+
+vFunc = @(x)(ismember(x,{'random','frozen'}));
+p.addParameter('noiseFlag','random',vFunc);
+p.addParameter('seed',1,@isnumeric);      % Seed for frozen noise
 
 p.parse(absorptions,varargin{:});
 
 absorptions  = p.Results.absorptions;
-newNoise     = p.Results.newNoise;
+seed         = p.Results.seed;
+noiseFlag    = p.Results.noiseFlag;
 
-%%
-% This is std * N(0,1)
+%% Set up RNG depending on noiseFlag
+
+switch noiseFlag
+    case 'frozen'
+        rng(seed);
+    case 'random'
+        rng('shuffle');
+end
+
+%% This is std * N(0,1)
 theNoise = sqrt(absorptions) .* randn(size(absorptions));
 
 % We add the mean electron and noise electrons together.
@@ -42,7 +64,8 @@ poissonCriterion = 25;
 idx = find(absorptions(:) < poissonCriterion);
 v = absorptions(absorptions < poissonCriterion);
 if ~isempty(v)
-    vn = iePoisson(v, 1, newNoise);  % Poisson samples
+    % If noiseFlag is 'random', this routine ignores the seed.
+    vn = iePoisson(v,'noiseFlag',noiseFlag,'seed',seed);  % Poisson samples
     theNoise(idx) = vn - absorptions(idx);
     noisyImage(idx) = vn;
 end

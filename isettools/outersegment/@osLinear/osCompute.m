@@ -11,6 +11,7 @@ function [current, interpFilters] = osCompute(obj, cMosaic, varargin)
 % Inputs: 
 %   obj       - osLinear class object
 %   cMosaic   - parent object of the outerSegment
+%   seed      - for frozen noise, you can send in a seed (default is 1)
 %
 % Output:
 %   current       - outer segment photocurrent current in pA
@@ -35,9 +36,10 @@ function [current, interpFilters] = osCompute(obj, cMosaic, varargin)
 %
 %  (mean current) + convolve((absorptions - meanAbsorptions),impulseResponse) 
 %
-% If the os.noiseFlag is true, the method adds noise to the current output
-% signal. See osAddNoise() for specification and validation of the noise
-% model. See Angueyra and Rieke (2013, Nature Neuroscience) for details.
+% If the os.noiseFlag is 'random' or 'frozen', the method adds noise to the
+% current output signal. See osAddNoise() for specification and validation
+% of the noise model. See Angueyra and Rieke (2013, Nature Neuroscience)
+% for details.
 %
 % JRG/HJ/BW, ISETBIO TEAM, 2016
 
@@ -46,8 +48,12 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addParameter('seed',1,@isnumeric);
 
 p.parse(obj,cMosaic);
+
+% Frozen noise seed
+seed = p.Results.seed;
 
 coneType   = cMosaic.pattern;
 meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
@@ -124,13 +130,17 @@ end
 current = XW2RGBFormat(current, r, c);
 
 % Noise anyone?
-if osGet(obj,'noiseFlag') == 1
-    % The osAddNoise function expects the input to be current and it needs to
-    % know the time sampling.
-    disp('Current noise added.')
-    current = osAddNoise(current, 'sampTime',obj.timeStep);
-else
-    disp('No current noise added.')
+switch obj.noiseFlag
+    case 'none'
+        fprintf('No current noise added.\n')
+    case 'random'
+        fprintf('Random noise added.\n')
+        current = osAddNoise(current, 'sampTime',obj.timeStep);
+    case 'frozen'
+        fprintf('Frozen noise added:  seed %d\n',seed)
+        current = osAddNoise(current, 'sampTime',obj.timeStep,'seed',seed);
+    otherwise
+        error('Noise flag %s\n',obj.noiseFlag);
 end
 
 end
