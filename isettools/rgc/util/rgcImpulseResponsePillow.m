@@ -1,11 +1,14 @@
 function [rgcFilter,timeAxis]  = rgcImpulseResponsePillow(varargin)
 % Build the temporal impulse response used by Pillow et l.
 % 
-%    [rgcFilter, params] = ieRGCTIRPillow([params])
+%    [rgcFilter, timeAxis] = ieRGCTIRPillow([params])
 %
-% As written, the Pillow impulse response function produces a fixed shape,
-% and the time axis shifts depending on the filter duration.  It could be
+% At present, the Pillow impulse response function produces a fixed shape,
+% but the time axis scales depending on the filter duration.  It could be
 % written to produce the same curve.  Not sure what is intended.
+%
+% The default parameters in the code from Pillow has filterLength (which
+% means duration) of 200ms.
 %
 % Inputs
 %  filterDuration - Duration in seconds
@@ -39,10 +42,10 @@ samplingTime = p.Results.samplingTime;
 %% Compute the curve, respecting temporal sample
 
 nkt = ceil(filterDuration/samplingTime);  % Number of time bins
-timeAxis = 0:samplingTime:(filterDuration-samplingTime);
 
 % tk = timeAxis;
 tk = (0:nkt-1)';
+timeAxis = tk*samplingTime;
 
 b1 = nkt/32; b2 = nkt/16;
 k1 = 1/(gamma(6)*b1)*(tk/b1).^5 .* exp(-tk/b1);  % Gamma pdfn
@@ -69,3 +72,4 @@ end
 % k = (k1-k2./1.5);
 % k = 1.2*(k./max(k));
 % plot(k)
+%
