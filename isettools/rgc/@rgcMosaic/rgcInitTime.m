@@ -34,12 +34,17 @@ integrationTime = innerRetina.timing;
 for rgbInd = 1:3
     % scale for differences in RGB channel and ON/OFF type
     multFactor = rgbTempMult(rgbInd)*rfTempMult(mosaicInd);
-    % Build the separate impulse responses for center and surround; usually
-    % the same.
-    [tmp, timeAxis] = buildTemporalImpulseResponse(integrationTime);
+    % Build impulse responses for center and surround; usually the same.
+    params.filterDuration = 0.2;  % 200 ms
+    params.samplingTime   = innerRetina.timing;  % Time step.  Usually 1 or 2 ms
+    [tmp, timeAxis] = rgcImpulseResponsePillow(params);
+    % Old code:
+    % [tmp, timeAxis] = buildTemporalImpulseResponse(integrationTime);
+    
     rgcM.tCenter{rgbInd,1} = multFactor*tmp;
     rgcM.tSurround{rgbInd,1} = multFactor*buildTemporalImpulseResponse(integrationTime);
-    % plot(timeAxis,tmp);
+    
+    % vcNewGraphWin; plot(timeAxis,tmp);
 end
 
 end
