@@ -12,11 +12,8 @@ os = obj.os;
 % Which type of outer segment
 str = sprintf('OS:     %s\n',class(os));
 
-% Noise flag status
-if os.noiseFlag, noiseFlag = 'on';
-else noiseFlag = 'off';
-end
-txt = sprintf('noise:  %s',noiseFlag);
+% Noise flag status (random, frozen, none);
+txt = sprintf('noise:  %s',os.noiseFlag);
 str = addText(str,txt);
 
 end

@@ -836,6 +836,7 @@ function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
 handles.cMosaic.computeCurrent;
 set(handles.popupImageType, 'Value', 4); % mean current
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+
 end
 
 % --------------------------------------------------------------------
@@ -846,17 +847,17 @@ function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
 set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
 
 % Flip from whatever state to the other
-handles.cMosaic.os.noiseFlag = 1 - handles.cMosaic.os.noiseFlag;
-
-% Set check when on, clear check when off
-if handles.cMosaic.os.noiseFlag
-    handles.menuConePhotocurrentNoise.Checked = 'on';
-else
-    handles.menuConePhotocurrentNoise.Checked = 'off';
+switch handles.cMosaic.os.noiseFlag
+    case 'random'
+        handles.cMosaic.os.noiseFlag = 'none';
+    case 'frozen'
+        handles.cMosaic.os.noiseFlag = 'random';
+    case 'none'
+        handles.cMosaic.os.noiseFlag = 'frozen';
 end
 
-handles.cMosaic.computeCurrent;
-set(handles.popupImageType, 'Value', 4); % mean current
+% We used to use this.  But now, I think it should always be off.
+handles.menuConePhotocurrentNoise.Checked = 'off';
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -971,7 +972,8 @@ if get(handles.btnPlayPause, 'Value')
         % Plays the movie until the pause button is pushed.
         % I removed the slider and counter for now.  We could pass the pause button into
         % the ieMovie routine.  Say, ('hdlCounter',XXX,'hdlPause',yyy)
-        ieMovie(mov,'gamma',gam);
+        ieMovie(mov,'gamma',gam); 
+        pause(0.2);  % The brief pause identifies the end of the movie.
     end
     
 else
