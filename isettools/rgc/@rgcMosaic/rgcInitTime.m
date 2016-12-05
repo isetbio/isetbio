@@ -1,20 +1,31 @@
 function timeAxis = rgcInitTime(rgcM, innerRetina, mosaicInd)
-% Generate temporal impulse response functions for R, G, B channels
+% Initialize a temporal impulse response function for a mosaic
 %
-%
+%   timeAxis = rgcInitTime(rgcM, innerRetina, mosaicInd)
 % 
-
-%%
-% ir = rgcM.parent;
-
+% Build a temporal impulse response function for an rgc mosaic
+%
+% Inputs:
+%   rgcM:         The calling RGC Mosaic object
+%   innerRetina:  The parent inner retina object 
+%   mosaicInd:    Which mosaic in innerRetina.mosaic{} we are initializing
+%
+% Temporal impulse response peak magnitude scale parameters. see "Spatial
+% Properties and Functional Organization of Small Bistratified Ganglion
+% Cells in Primate Retina", Field, et al., J. Neuroscience, 2007, Fig. 1.
+%
+% See also:
+%  
+%
+% JRG/BW ISETBIO Team, 2016
 
 %%  Do we allow other parameters?
+p = inputParser;
+p.addRequired('rgcM')
+p.addRequired('innerRetina')
+p.addRequired('mosaicInd',1,@isscalar);
 
-% Temporal impulse response peak magnitude scale parameters.
-% see "Spatial Properties and Functional Organization of Small
-% Bistratified Ganglion Cells in Primate Retina", Field, et al.,
-% J. Neuroscience, 2007, Fig. 1.
-
+%%
 rfTempMult = [1 -1 1 -1 1];       % invert sign for OFF types
 
 % The temopral impulse response function for each cell consists of three

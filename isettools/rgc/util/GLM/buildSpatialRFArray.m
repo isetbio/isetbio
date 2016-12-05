@@ -1,5 +1,6 @@
-function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = buildSpatialRFArray(spacing, inRow, inCol, rfDiameter)
-% Builds the spatial RF center and surround arrays for each cell.
+function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = ...
+    buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter)
+% Builds the spatial RF center and surround for the cells in 
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
 % bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
@@ -21,7 +22,8 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %       cellCenterLocations cell array.
 % 
 % Example:
-% Build spatial RFs of all RGCs in this mosaic
+%   Build spatial RFs of the RGCs in this mosaic
+%
 % [obj.sRFcenter, obj.sRFsurround, obj.rfDiaMagnitude, obj.cellLocation] = ...
 %     buildSpatialRFArray(innerRetina.spacing, innerRetina.row, innerRetina.col, obj.rfDiameter);
 % 
@@ -30,15 +32,20 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 
 %% Manage parameters
 
-% Spacing must be in microns
-if spacing < 1e-2, spacing = spacing * 1e6; end
-patchSize = [spacing*inRow/inCol spacing];  % width / height in um
+% I think JRG build this assuming the patch size referred to a region of
+% the cone mosaic.  But the inputs
+%
+% Size of bipolar patch arrives in meters, which apparently is the width of
+% the patch.  We convert to microns and build up a height/width
+% representation (row,col)
+patchSize = patchSize * 1e6;                      % Column (width) in um
+patchSize = [patchSize*(inRow/inCol), patchSize]; % Row/Col in um
 
-% Determine the number of RGCs in the mosaic
+% Determine the number of RGC samples in the mosaic
 nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 
-% Convert rf diameter in units of number of cones
-% Notice this is based only columns, assuming the 
+% The rfDiameter comes here in units of ??, and this 
+% converts the rf diameter to units of number of cones
 rfDiameter = rfDiameter / (patchSize(2) / inCol);
 
 extent = 2.5;    % ratio between sampling size and spatial RF

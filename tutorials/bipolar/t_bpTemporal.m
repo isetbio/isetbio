@@ -17,8 +17,8 @@ bp = bipolarCreate(cMosaic);
 % with bipolar matches the Pillow filter.
 bpFilter = bipolarFilter(bp, cMosaic,'graph',true);
 
-
 % If you used a cMosaic with a real time varying signal, then you can do
 % this.  See t_bpTemporal
-
 vcNewGraphWin; plot(cMosaic.timeAxis,bpFilter,'o-');
+
+%%

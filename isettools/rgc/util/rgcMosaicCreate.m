@@ -24,7 +24,7 @@ function ir = rgcMosaicCreate(ir, varargin)
 % Often, we call it as a method of the inner retina class. In that case,
 % the call looks like: 
 %
-%     ir = irCreate(osCreate('identity'));
+%     ir = irCreate(bipolar(coneMosaic));
 %     ir.mosaicCreate('model','lnp','type','on parasol');
 %     ir.mosaicCreate('model','GLM','type','on midget');
 %

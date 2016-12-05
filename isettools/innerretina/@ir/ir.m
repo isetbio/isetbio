@@ -74,7 +74,7 @@ classdef ir < handle
 
         row;        % N Stimulus row samples (from bipolar)
         col;        % N Stimulus col samples (from bipolar)
-        size;       % Bipolar patch size (m)
+        size;       % Patch size (m) measured at the cone mosaic
         timeStep;   % Stimulus temporal sampling (sec) from bipolar
                     % This is the same for all mosaics
                         
@@ -122,7 +122,7 @@ classdef ir < handle
 
             obj.size      = bipolarGet(bp,'patch size'); % Bipolar patch
             obj.timeStep  = bipolarGet(bp,'time step');  % Temporal sampling
-            [obj.row, obj.col, ~, ~] = size(bipolarGet(bp,'bipolarResponseCenter'));
+            [obj.row, obj.col] = size(bipolarGet(bp,'bipolarResponseCenter'));
 
             obj.mosaic = cell(1); % Cells are added by mosaicCreate method
             

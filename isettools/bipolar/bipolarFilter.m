@@ -41,30 +41,37 @@ graph = p.Results.graph;
 osFilt   = cmosaic.os.lmsConeFilter(:,1);
 osTime   = cmosaic.os.timeAxis;
 
-%% Create the RGC mosaic that we match
+%% Create the Pillow impulse response function that we match
 
 % We match the impulse response of an inner retina type irPhys, the values
 % for eyeSide, eyeRadius and eyeAngle have no effect, because those are not
 % dependent on the properties of the retinal piece used in the Chichilnisky
 % Lab experiment.
-clear params
-params.name = 'dummy';
-params.eyeSide = 'left'; 
-params.eyeRadius = 0; 
-params.eyeAngle  = 0; 
-cellType = 'onParasol';   % Could be offParasol, or ...
+% clear params
+% params.name = 'dummy';
+% params.eyeSide = 'left'; 
+% params.eyeRadius = 0; 
+% params.eyeAngle  = 0; 
+% cellType = 'onParasol';   % Could be offParasol, or ...
+% 
+% % First the inner retina and then a mosaic
+% % The inner retina seems to use the obj (bipolar) time base to set up the
+% % impulse response in the mosaicCreate.  Look into this and get it right,
+% % sigh.
+% innerRetina = ir(obj, params);
+% innerRetina.mosaicCreate('type',cellType,'model','GLM');
+% 
+% % The temporal impulse response function of the mosaic.
+% cellNum = 1;
+% rgcFilt = innerRetina.mosaic{1}.tCenter{cellNum};
+% rgcTime = innerRetina.mosaic{1}.timeAxis;
 
-% First the inner retina and then a mosaic
-% The inner retina seems to use the obj (bipolar) time base to set up the
-% impulse response in the mosaicCreate.  Look into this and get it right,
-% sigh.
-innerRetina = ir(obj, params);
-innerRetina.mosaicCreate('type',cellType,'model','GLM');
-
-% The temporal impulse response function of the mosaic.
-cellNum = 1;
-rgcFilt = innerRetina.mosaic{1}.tCenter{cellNum};
-rgcTime = innerRetina.mosaic{1}.timeAxis;
+% I chose these parameters so that the bipolar IR would be delayed past the
+% OS impulse response.
+params.filterDuration = 0.4; 
+params.samplingTime = 0.001;
+[rgcFilt,rgcTime ] = rgcImpulseResponsePillow(params);
+% vcNewGraphWin; plot(rgcTime,rgcFilt);
 
 % Put the two IR functions on the same very fine time base
 timeBase = (0:4095)*1e-4;    % Time samples in seconds.  About 400 ms total
@@ -90,11 +97,12 @@ bipolarFilt = ifft(fft(gw1) .* fft((rgcFilt)) ./ fft((osFilt)));
 if graph
     vcNewGraphWin([],'wide'); 
     subplot(1,2,1)
-    plot(timeBase,osFilt,'b-',...
-        timeBase,rgcFilt,'r-',...
-        timeBase,bipolarFilt,'g-','linewidth',1);
+    plot(timeBase,osFilt/max(osFilt(:)),'b-',...
+        timeBase,rgcFilt/max(rgcFilt(:)),'r-',...
+        timeBase,bipolarFilt/max(bipolarFilt(:)),'g-','linewidth',1);
     grid on; set(gca,'xlim',[-0.05 0.4]); xlabel('Time (sec)');
     set(gca,'fontsize',14); legend({'os','rgc','bipolar'})
+    title('Normalized peak filters')
     
     % Estimate the rgcFilt from the osFilt and bipolarFilt
     subplot(1,2,2)
