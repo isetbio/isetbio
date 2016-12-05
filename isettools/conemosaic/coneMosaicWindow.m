@@ -98,7 +98,7 @@ varargout{1} = handles.output;
 end
 
 function btnComputeImage_Callback(hObject, eventdata, handles)
-% Button press computes the image from the optics data
+% Computes the image from the optics data - button at the bottom
 oi = vcGetObject('OI');
 if isempty(oi) || isempty(oiGet(oi, 'photons'))
     warning('No optical image.  Use ieAddObject(oi) to store.');
@@ -114,11 +114,14 @@ coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 function menuAnComputeFromOI_Callback(hObject, eventdata, handles)
+% Cones | Compute absorptions 
+% Computes from an OI in the database
 btnComputeImage_Callback(hObject, eventdata, handles);
 end
 
 % Edit box - adjust number of rows
 function editRows_Callback(hObject, eventdata, handles)
+% Columns text box
 handles.cMosaic.rows = str2double(get(hObject, 'String'));
 menuEditClearData_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject, eventdata, handles);
@@ -126,6 +129,7 @@ end
 
 % Edit box - adjust number of columns
 function editCols_Callback(hObject, eventdata, handles)
+% Columns text box
 handles.cMosaic.cols = str2double(get(hObject, 'String'));
 menuEditClearData_Callback(hObject, eventdata, handles)
 coneMosaicGUIRefresh(hObject, eventdata, handles);
@@ -162,12 +166,14 @@ function menuEdit_Callback(hObject, eventdata, handles)
 end
 
 function menuEditName_Callback(hObject, eventdata, handles)
+% Edit | Rename
 str = ieReadString('New name', handles.cMosaic.name);
 if ~isempty(str), handles.cMosaic.name = str; end
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 function menuEditClearData_Callback(hObject, eventdata, handles)
+% Edit | Clear data
 handles.cMosaic.clearData();
 handles.mov = [];
 handles.curMov = [];
@@ -181,12 +187,11 @@ set(hObject,'BackgroundColor', get(0,'defaultUicontrolBackgroundColor'));
 end
 
 function editGam_Callback(hObject, eventdata, handles)
-handles.mov    = [];
-handles.curMov = [];
+% Text book Gamm
 
 set(handles.editGam,'value',str2double(get(handles.editGam,'string')));
-
 coneMosaicGUIRefresh(hObject,eventdata,handles);
+
 end
 
 function coneMosaicGUIRefresh(hObject, eventdata, handles)
@@ -266,149 +271,79 @@ plotType = str{index};
 set(handles.popupImageType, 'Value', index);
 set(handles.popupImageType, 'String', str);
 
+%% Here are the different window options
 
 switch plotType
     case 'Cone mosaic'
         % cone mosaic image
-        resetMovieControl(handles);
         cm.plot('cone mosaic', 'hf', handles.axes2);
+
+        resetMovieControl(handles,'off');
         
-        set(handles.menuPlotHLine, 'Enable', 'off');
-        set(handles.menuPlotVLine, 'Enable', 'off');
-        set(handles.menuPlotHLineLMS, 'Enable', 'off');
-        set(handles.menuPlotVLineLMS, 'Enable', 'off');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
+        % enable plot options in menu
+        enable.hLine = 'off';    enable.vLine = 'off';
+        enable.hLineLMS = 'off'; enable.vLineLMS = 'off';
+        enable.timeSeries = 'off';
+        contextMenuEnable(handles,enable);
+
 
     case 'Mean absorptions'
         % mean cone absorptions
-        resetMovieControl(handles);
         cm.plot('mean absorptions', 'hf', handles.axes2);
-        
-        % set up right click menu (context menu)
-        c = uicontextmenu;
-        if ~isempty(handles.axes2.Children)
-            for ichild = 1:size(handles.axes2.Children,1)
-                handles.axes2.Children(ichild).UIContextMenu = c;
-            end
-            uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-            uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        end
-        
-        % Make the axis look like an image
         axis image
+        resetMovieControl(handles,'off');
+
+        % Why isn't axis image in the plot() routine?
         
         % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
-
-    case 'Absorption movie'
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'off';
+        contextMenuInit(handles);
+        contextMenuEnable(handles,enable);
         
-        if isempty(handles.mov)
-            % Alert to movie build
-            ieInWindowMessage('Building absorptions movie',handles);
-            
-            % generate movie - This is fast and the actual display is slow.
-            % Let's use one bit of code and make it the same.
-            handles.mov = cm.plot('movie absorptions', 'hf','none',...
-                'show',true, ...
-                'gamma', str2double(get(handles.editGam, 'String')));
-            
-            % Clear message
-            ieInWindowMessage('',handles);
-            guidata(hObject, handles);
-        end
+    case 'Absorption movie'
+        resetMovieControl(handles,'on');  %Turn off the movie controller
+
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'on';
+        contextMenuEnable(handles,enable);
         
         % Initiate movie display GUI elements.
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
+        set(handles.sliderMovieProgress, 'Visible', 'off');
         
-        % set up right click menu (context menu)
-        c = uicontextmenu;        
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
-        
-        % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        set(handles.txtMovieFrame,'Visible','on');
-
         % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
     case 'Mean photocurrent'
-        resetMovieControl(handles);
         cm.plot('mean current', 'hf', handles.axes2);
-        
-        % set up right click menu (context menu)
-        c = uicontextmenu;       
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
         axis image
         
-        % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'off');
-        set(handles.txtMovieFrame,'Visible','off');
+        resetMovieControl(handles,'off');  %Turn off the movie controller
+        
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'off';
+        contextMenuInit(handles);
+        contextMenuEnable(handles,enable);
 
     case 'Photocurrent movie'
-        
-        if isempty(handles.curMov) % generate movie for photocurrent
-            ieInWindowMessage('Building photocurrent movie',handles);
-            handles.curMov = cm.plot('movie current', 'hf','none', ...
-                'show', true, ...
-                'gamma', str2double(get(handles.editGam, 'String')));
-            guidata(hObject, handles);
-            ieInWindowMessage('',handles);
-        end
-        
+        resetMovieControl(handles,'on');  %Turn off the movie controller
+
         % Graphics elements
         set(handles.btnPlayPause, 'Visible', 'on');
         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'on');
-        
-        % set up right click menu (context menu)
-        c = uicontextmenu;
-        for ichild = 1:size(handles.axes2.Children,1)
-            handles.axes2.Children(ichild).UIContextMenu = c;
-        end
-        uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-        uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+        set(handles.sliderMovieProgress, 'Visible', 'off');
         
         % enable plot options in menu
-        set(handles.menuPlotHLine, 'Enable', 'on');
-        set(handles.menuPlotVLine, 'Enable', 'on');
-        set(handles.menuPlotHLineLMS, 'Enable', 'on');
-        set(handles.menuPlotVLineLMS, 'Enable', 'on');
-        set(handles.menuPlotTimeSeries, 'Enable', 'on');
-        set(handles.txtMovieFrame,'Visible','on');
-
+        enable.hLine = 'on';    enable.vLine = 'on';
+        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+        enable.timeSeries = 'on';
+        contextMenuInit(handles);
+        contextMenuEnable(handles,enable);
+        
         % play movie
         btnPlayPause_Callback(hObject, eventdata, handles);
     otherwise
@@ -418,13 +353,62 @@ end
 
 end
 
+function c = contextMenuInit(handles)
+% Set up right click menu (context menu)
+% 
+%  Typical sequence is 
+%    Set up enable.XXX
+%    c = contextMenuInit(handles,enable)
+%    contextMenuEnable(enable)
+%
+
+c = uicontextmenu;
+if ~isempty(handles.axes2.Children)
+    for ichild = 1:size(handles.axes2.Children,1)
+        handles.axes2.Children(ichild).UIContextMenu = c;
+    end
+    uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+end
+
+end
+
+function contextMenuEnable(handles,enable)
+% enable plot options in menu
+%
+%    c = contextMenuInit(handles,enable)
+%    % Set up enable.XXX
+%    contextMenuEnable(enable)
+%
+% enable is a structure of 'on' and 'off' values
+%
+%   enable.hLine
+%   enable.hLineLMS
+%   enable.vLine
+%   enable.vLineLMS
+%   enable.timeSeries
+%
+
+set(handles.menuPlotHLine, 'Enable', enable.hLine);
+set(handles.menuPlotVLine, 'Enable', enable.vLine);
+set(handles.menuPlotHLineLMS, 'Enable',enable.hLineLMS);
+set(handles.menuPlotVLineLMS, 'Enable', enable.vLineLMS);
+set(handles.menuPlotTimeSeries, 'Enable', enable.timeSeries);
+
+end
+
 function contextMenuPlot(source, callbackdata)
 % call back function for context menu
+%
+% Source is a Menu object 
+% The guidata of source contains all the gui objects
 handles = guidata(source);
 
 % determine which data to use (absorption or current)
 contents = get(handles.popupImageType, 'String');
-index = get(handles.popupImageType, 'Value');
+index    = get(handles.popupImageType, 'Value');
 if index > length(contents), index = 1; end
 plotType = contents{index};
 
@@ -442,15 +426,12 @@ switch plotType
         else
             data = handles.cMosaic.absorptions(:, :, cnt);
         end
-        
-        % Not necessary (BW)
-        % map x, y to cone positions
-        %         x = x / size(handles.mov, 2) * size(data, 2);
-        %         y = y / size(handles.mov, 1) * size(data, 1);
         yStr = 'Absorptions';
+        
     case 'Mean photocurrent'
         data = mean(handles.cMosaic.current, 3);
         yStr = 'Photocurrent (pA)';
+        
     case 'Photocurrent movie'
         cnt = round(get(handles.sliderMovieProgress, 'Value'));
         if strcmp(source.Label, 'time series')
@@ -458,18 +439,13 @@ switch plotType
         else
             data = handles.cMosaic.current(:, :, cnt);
         end
-        
-        % Not necessary (BW)
-        % map x, y to cone positions
-        %         x = x / size(handles.curMov, 2) * size(data, 2);
-        %         y = y / size(handles.curMov, 1) * size(data, 1);
         yStr = 'Photocurrent (pA)';
 end
 x = ieClip(round(x), 1, size(data, 2));
 y = ieClip(round(y), 1, size(data, 1));
 
 % Draw a circle around the selected point.
-c = viscircles([x,y],0.7);
+viscircles([x,y],0.7);
 
 switch source.Label
     case 'hLine response'
@@ -487,6 +463,7 @@ switch source.Label
             plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Horizontal Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
+            set(gca,'xlim',[1 size(data,2)]);
         end
     case 'vLine LMS'
         vcNewGraphWin([],'tall'); names = 'LMS';
@@ -497,6 +474,7 @@ switch source.Label
             plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
             xlabel('Vertical Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
+            set(gca,'xlim',[1 size(data,1)]);
         end
     case 'time series'
         % Time series is enabled for the absorption and current movie modes
@@ -511,7 +489,6 @@ switch source.Label
             mn = min(handles.cMosaic.current(:));
             t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
         end
-        
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
@@ -522,13 +499,25 @@ end
 
 end
 
-function resetMovieControl(handles)
-% reset movie control
-set(handles.btnPlayPause, 'Visible', 'off');
-set(handles.sliderMovieProgress, 'Visible', 'off');
+function resetMovieControl(handles,status)
+% reset movie controls for playing a movie
 
-set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
-set(handles.sliderMovieProgress, 'Value', 1);
+switch status
+    case 'off'
+        set(handles.btnPlayPause, 'Visible', 'off');
+        set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
+
+        set(handles.sliderMovieProgress, 'Visible', 'off');
+        set(handles.sliderMovieProgress, 'Value', 1);
+    case 'on'
+        set(handles.btnPlayPause, 'Visible', 'on');
+        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+
+        set(handles.sliderMovieProgress, 'Visible', 'off');
+        set(handles.sliderMovieProgress, 'Value', 1);
+
+end
+        
 end
 
 function menuPlot_Callback(hObject, eventdata, handles)
@@ -733,7 +722,8 @@ function menuPlotMosaicConeMosaic_Callback(~, ~, handles)
 % hObject    handle to menuPlotMosaicConeMosaic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.cMosaic.plot('cone mosaic','showCorrespondingRectangularMosaicInstead',false);
+handles.cMosaic.plot('cone mosaic',...
+    'showCorrespondingRectangularMosaicInstead',false);
 end
 
 function menuPlotMosaicMeanAbsorptions_Callback(~, ~, handles)
@@ -769,6 +759,8 @@ handles.cMosaic.plot('macular transmittance');
 end
 
 function menuPlotMacularAbsorptance_Callback(~, ~, handles)
+% Plot | Macular | Absorptance
+%
 % hObject    handle to menuPlotMacularAbsorptance (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -844,6 +836,7 @@ function menuConesPhotocurrent_Callback(hObject, eventdata, handles)
 handles.cMosaic.computeCurrent;
 set(handles.popupImageType, 'Value', 4); % mean current
 coneMosaicGUIRefresh(hObject, eventdata, handles);
+
 end
 
 % --------------------------------------------------------------------
@@ -854,17 +847,17 @@ function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
 set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
 
 % Flip from whatever state to the other
-handles.cMosaic.os.noiseFlag = 1 - handles.cMosaic.os.noiseFlag;
-
-% Set check when on, clear check when off
-if handles.cMosaic.os.noiseFlag
-    handles.menuConePhotocurrentNoise.Checked = 'on';
-else
-    handles.menuConePhotocurrentNoise.Checked = 'off';
+switch handles.cMosaic.os.noiseFlag
+    case 'random'
+        handles.cMosaic.os.noiseFlag = 'none';
+    case 'frozen'
+        handles.cMosaic.os.noiseFlag = 'random';
+    case 'none'
+        handles.cMosaic.os.noiseFlag = 'frozen';
 end
 
-handles.cMosaic.computeCurrent;
-set(handles.popupImageType, 'Value', 4); % mean current
+% We used to use this.  But now, I think it should always be off.
+handles.menuConePhotocurrentNoise.Checked = 'off';
 coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
@@ -897,16 +890,23 @@ function sliderMovieProgress_Callback(~, ~, handles)
 % hObject    handle to sliderMovieProgress (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 index = get(handles.popupImageType, 'Value');
-if index == 3  % absorption movie
-    mov = handles.mov;
-elseif index == 5  % photocurrent movie
-    mov = handles.curMov;
+if index == 3,     mov = handles.cMosaic.absorptions;
+elseif index == 5, mov = handles.cMosaic.current;
 end
+
+gam = get(handles.editGam,'value');
+
+mov = ieScale(mov,0,1) .^ gam;
+mind = min(mov(:)); maxd = max(mov(:));
 
 cnt = round(get(handles.sliderMovieProgress, 'Value'));
 assert(cnt <= size(mov, ndims(mov)), 'slider choice out of range');
-axes(handles.axes2); imshow(mov(:, :, cnt)); drawnow;
+axes(handles.axes2); 
+imagesc(mov(:,:,cnt)); 
+axis image; set(gca,'xticklabel','','yticklabel',''); caxis([mind maxd]); 
+drawnow;
 set(handles.txtMovieFrame,'string',cnt);
 
 % register right click menu
@@ -930,79 +930,78 @@ end
 end
 
 function btnPlayPause_Callback(~, ~, handles)
-% hObject    handle to btnPlayPause (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-index = get(handles.popupImageType, 'Value');
+% Play/Pause button near slider
 
-if index == 3, 
-    mov = handles.mov;    % absorption movie
-    mx = sprintf('%d',max(handles.cMosaic.absorptions(:)));
-    mn = '0';
-elseif index == 5, 
-    mov = handles.curMov; % photocurrent movie
-    mx = sprintf('%d',round(max(handles.cMosaic.current(:))));
-    mn = sprintf('%d',round(min(handles.cMosaic.current(:))));
+% We don't want the numbers during the movie, I think.
+axis off;
+
+% Which type of data, absorptions or current
+index = get(handles.popupImageType, 'Value');
+if index == 3,       mov = handles.cMosaic.absorptions;
+elseif index == 5,   mov = handles.cMosaic.current;
 end
 
 % Gamma for display
 gam = get(handles.editGam,'value');
 
+% Check that there are some frames for a movie
 if ismatrix(mov), nFrames = 1;
 else              nFrames = size(mov, ndims(mov));
 end
-
 if nFrames == 1, 
     str = sprintf('Only one frame. No movie to show.'); 
     ieInWindowMessage(str,handles,3);
     return; 
 end
 
+% Display up the slider
 set(handles.sliderMovieProgress, 'Min', 1);
 set(handles.sliderMovieProgress, 'Max', nFrames);
 set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
 
+% If play, then play.
 if get(handles.btnPlayPause, 'Value')
     % play video if  value is not zero
     set(handles.btnPlayPause, 'String', 'Pause');
-    cnt = round(get(handles.sliderMovieProgress, 'Value'));
-    
+    set(handles.sliderMovieProgress, 'Visible', 'off');
+    set(handles.txtMovieFrame,'Visible','off');
+
     gData = guidata(handles.coneMosaicWindow);
     axes(gData.axes2);
-    
-    
     while get(handles.btnPlayPause, 'Value')
-        % This is very slow compared to the cm.plot() call.
-        % Not sure what to do, if anything (BW).
-        if ndims(mov)     == 3,         imshow(mov(:, :, cnt).^gam); 
-        elseif ndims(mov) == 4,         imshow(mov(:, :, :, cnt).^gam);
-        end 
-        
-        % Show a color bar up to align with 'mean' windows
-        colorbar('ticks',[0,1],'ticklabels',{mn,mx});
-
-        set(handles.sliderMovieProgress, 'Value', cnt);
-        set(handles.txtMovieFrame,'string',cnt);
-        drawnow; 
-        
-        % Cycle the cnt
-        cnt = cnt + 1; if cnt > nFrames, cnt = 1; end
+        % Plays the movie until the pause button is pushed.
+        % I removed the slider and counter for now.  We could pass the pause button into
+        % the ieMovie routine.  Say, ('hdlCounter',XXX,'hdlPause',yyy)
+        ieMovie(mov,'gamma',gam); 
+        pause(0.2);  % The brief pause identifies the end of the movie.
     end
+    
 else
-    % pause video when the value is zero
+    % pause video when the value is false (zero)
     set(handles.btnPlayPause, 'String', 'Play');
-
-    % register right click menu
-    c = uicontextmenu;
-    for ichild = 1:size(handles.axes2.Children,1)
-        handles.axes2.Children(ichild).UIContextMenu = c;
-    end
-    uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-    uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
+    
+    % Turn on the slider and frame counter
+    set(handles.txtMovieFrame,'Visible','on');
+    val = str2double(get(handles.txtMovieFrame,'String'));
+    val = max(1,val);
+    set(handles.sliderMovieProgress, 'Value', val);
+    set(handles.sliderMovieProgress, 'Visible', 'on');
+    
+    % We should show the right image frame here
+    % TODO
+    
 end
+
+% register right click menu
+c = uicontextmenu;
+for ichild = 1:size(handles.axes2.Children,1)
+    handles.axes2.Children(ichild).UIContextMenu = c;
+end
+uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
 
 end
 
