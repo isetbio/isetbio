@@ -55,6 +55,10 @@ obj.state.timeStep = obj.timeStep;
 [current, obj.state]  = osAdaptTemporal(pRate, obj);
 
 % The outer segment noise flag
-if obj.noiseFlag, current = osAddNoise(current); end
+switch obj.noiseFlag
+    case {'random','frozen'}
+        current = osAddNoise(current); 
+    case {'none'}
+end
 
 end

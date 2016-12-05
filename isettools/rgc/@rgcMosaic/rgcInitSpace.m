@@ -42,13 +42,21 @@ p.addRequired('innerRetina');
 vFunc = @(x)(ismember(ieParamFormat(x),{'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
 
-%% Set up defaults for the sizes and weights.
+p.parse(rgcM,innerRetina,cellType);
 
-rfSizeMult(1) = 1;      % On Parasol RF size multiplier
-rfSizeMult(2) = 0.85;   % Off Parasol RF size multiplier
-rfSizeMult(3) = 0.5;    % On Midget RF size multiplier
-rfSizeMult(4) = 0.425;  % Off Midget RF size multiplier
-rfSizeMult(5) = 1.1;    % SBC RF size multiplier
+%% Set up defaults for the sizes and weights.
+switch ieParamFormat(cellType)
+    case 'onparasol'
+        rfSizeMult = 1;      % On Parasol RF size multiplier
+    case 'offparasol'
+        rfSizeMult = 0.85;   % Off Parasol RF size multiplier
+    case 'onmidget'
+        rfSizeMult = 0.5;    % On Midget RF size multiplier
+    case 'offmidget'
+        rfSizeMult = 0.425;  % Off Midget RF size multiplier
+    case 'smallbistratified'
+        rfSizeMult = 1.1;    % SBC RF size multiplier
+end
 
 % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
@@ -62,7 +70,7 @@ receptiveFieldDiameterParasol2STD = ...
 % the factor determined by the type of mosaic that is being created.
 
 % in micrometers; divide by umPerScenePx to get pixels
-rgcM.rfDiameter = rfSizeMult(cellType)*(receptiveFieldDiameterParasol2STD/2); 
+rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2); 
 
 % Build spatial RFs of all RGCs in this mosaic
 [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive] = ...

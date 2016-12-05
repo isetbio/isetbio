@@ -30,7 +30,7 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Generate the cone mosaics
 osCM = osBioPhys();            % peripheral (fast) cone dynamics
-osCM.set('noise flag',0);
+osCM.set('noise flag','none');
 cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;
@@ -57,7 +57,7 @@ plot(tme,squeeze(currentScaled./max(currentScaled(:))),'r','LineWidth',2);
 %% osLinear impulse response
 
 osCML = osLinear('osType',false);            % linear cone dynamics
-osCML.set('noise flag',0);
+osCML.set('noise flag','none');
 cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
 cmL.integrationTime = timeStep;
 cmL.os.timeStep = timeStep;

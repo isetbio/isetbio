@@ -4,9 +4,9 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
 % bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
-% as determined by the TEE of the retial patch.
+% as determined by the TEE of the retinal patch.
 % 
-%   [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations] = 
+%  [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations] = 
 %      buildSpatialRFArray(spacing, row, col, rfDiameter)
 % 
 % Inputs: 
@@ -20,6 +20,8 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %       spatialRFsurround cell array,
 %       rfDiaMagnitude at 1 std, 
 %       cellCenterLocations cell array.
+%  
+%    WHAT IS TONIC DRIVE, and why is it here?
 % 
 % Example:
 %   Build spatial RFs of the RGCs in this mosaic
@@ -32,8 +34,8 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 
 %% Manage parameters
 
-% I think JRG build this assuming the patch size referred to a region of
-% the cone mosaic.  But the inputs
+% I think JRG built this assuming the patch size referred to a region of
+% the cone mosaic.  
 %
 % Size of bipolar patch arrives in meters, which apparently is the width of
 % the patch.  We convert to microns and build up a height/width

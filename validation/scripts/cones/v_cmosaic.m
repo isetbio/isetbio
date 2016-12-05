@@ -28,7 +28,8 @@ oi = oiCompute(oi,scene);
 
 %%
 cMosaic = coneMosaic;
-cMosaic.setSizeToFOV(0.5*sceneGet(scene,'fov'));
+cMosaic.setSizeToFOV(0.5); 
+cMosaic.integrationTime = 0.050;    % Important in case defaults change
 cMosaic.compute(oi);
 
 % A = 0;

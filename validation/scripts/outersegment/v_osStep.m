@@ -61,7 +61,7 @@ function ValidationFunction(runTimeParams)
         stimulusPhotonRate(stimPeriod(1):stimPeriod(2)) = stimulusPhotonRateAmplitude;
     %% Linear model
         osCML = osLinear();            
-        osCML.set('noise flag',0);
+        osCML.set('noise flag','none');
         cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
@@ -71,7 +71,7 @@ function ValidationFunction(runTimeParams)
         currentL = (cmL.current);
     %% Biophys model        
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
-        osCM.set('noise flag',0);
+        osCM.set('noise flag','none');
         cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
         cm.integrationTime = simulationTimeIntervalInSeconds;
         cm.os.timeStep = simulationTimeIntervalInSeconds;

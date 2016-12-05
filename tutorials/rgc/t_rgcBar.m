@@ -33,7 +33,11 @@ end
  
 % We are only using the cMosaic
 sceneRGB = data.iStim.sceneRGB;
+
 cMosaic = data.iStim.cMosaic;
+cMosaic.noiseFlag = 'random';   % Needs to be updated
+cMosaic.os.noiseFlag = 'random';
+
 cMosaic.computeCurrent;
 clear data;
  

@@ -38,8 +38,7 @@ classdef rgcMosaic < handle
 % JRG/BW ISETBIO team, 2015
 
     
-    %% Define object
-    % Public, read-only properties.
+    %% Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
         Parent;
     end
@@ -76,7 +75,7 @@ classdef rgcMosaic < handle
     properties(Access = private)
     end
     
-    % Public methods
+    %% Public methods
     methods
         
         % Constructor
@@ -99,24 +98,10 @@ classdef rgcMosaic < handle
             % The index number helps with the generation of the receptive fields and
             % impulse responses of the appropriate parameters for the cell type.
             obj.cellType = mosaicInd;
-            switch ieParamFormat(mosaicInd)
-                case{'onparasol'}
-                    mosaicInd = 1;
-                case{'offparasol'}
-                    mosaicInd = 2;
-                case{'onmidget'}
-                    mosaicInd = 3;
-                case{'offmidget'}
-                    mosaicInd = 4;
-                case{'smallbistratified','sbc'}
-                    mosaicInd = 5;
-                otherwise
-                    error('Unknown cell type');
-            end
             
             % Generate spatial RFs of the approrpiate size for the cell type and TEE
-            obj.rgcInitSpace(ir, mosaicInd);
-            obj.rgcInitTime(ir, mosaicInd);
+            obj.rgcInitSpace(ir, mosaicInd); % Sets sRFcenter, sRFsurround
+            obj.rgcInitTime(ir);             % Sets tCenter/tSurround
             
             % We need the parameters in the parent often enough.  So put in
             % a pointer to it here.
@@ -135,7 +120,7 @@ classdef rgcMosaic < handle
         
     end
     
-    % Methods that must only be implemented (Abstract in parent class).
+    %% Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function window(obj)
             obj.figureHandle = mosaicWindow(obj);
