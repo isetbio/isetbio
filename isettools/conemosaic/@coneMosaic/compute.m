@@ -90,16 +90,19 @@ switch obj.noiseFlag
             absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
             absorptionsCopy = absorptions;
             absorptions = absorptions(:, nonNullConeIndices);
-            absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'newNoise', newNoise);
+            absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions);
             absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
             clear 'absorptionsCopy'
         else % Rectangular mosaic
             % Noisy absorptions.  Notice, this does not set the absorptions in
-            % the object yet.  We do that below.
-            absorptions = obj.photonNoise(absorptions,'noiseFlag', 'random');
+            % the object yet.  We do that below.  Also, for some reason the
+            % method does not have photonNoise(obj,...).  If this is the
+            % only place we call it, we should change this!
+            absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag);
             % vcNewGraphWin; imagesc(absorptions);
         end
     otherwise
+        % No noise.
 end
 
 % In the single sample case, we set the absorptions in the object.

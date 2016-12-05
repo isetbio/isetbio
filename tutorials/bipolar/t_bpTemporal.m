@@ -15,10 +15,6 @@ cMosaic.absorptions = single(randi(10,rows,cols,tSamples));
 cMosaic.integrationTime = 0.002;
 cMosaic.emGenSequence(tSamples);
 
-%% Show them if you like
-cMosaic.computeCurrent;
-cMosaic.window;
-
 %%  Compute the os linear filters and then make the bipolar
 
 cMosaic.os.linearFilters(cMosaic);
