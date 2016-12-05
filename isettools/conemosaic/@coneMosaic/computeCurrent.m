@@ -17,12 +17,14 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
+interpFilters = [];
+
 % Check that the absorptions have been computed
-if isempty(cMosaic.absorptions)
-    disp('You must compute isomerizations (absorptions) prior to the current.');
+if isempty(cMosaic.absorptions)  || size(cMosaic.absorptions,3) == 1
+    disp('You must compute isomerizations (absorptions) time series prior to the current.');
+    return;
 end
 
-interpFilters = [];
 
 %% Call the relevant outer segment photocurrent computation
 

@@ -45,13 +45,14 @@ p = inputParser;
 p.addRequired('oi',@isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
-p.addParameter('emPath', [0 0], @isnumeric);
+p.addParameter('emPath', obj.emPositions, @isnumeric);
 
 p.parse(oi,varargin{:});
 
 oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
-seed    = p.Results.seed;
+seed        = p.Results.seed;
+emPath      = p.Results.emPath;
 
 obj.absorptions = [];
 obj.current = [];
@@ -59,8 +60,14 @@ obj.current = [];
 %% set eye movement path
 
 % I would prefer to delete this parameter altogether and force people to
-% set the emPositions prior to calling this compute.
-emPath = p.Results.emPath;   
+% set the emPositions prior to calling this compute.  But when we have
+% multiple trials, emPath is (nTrials x row x col), and emGenSequence
+% doesn't have an nTrials parameter.  
+%
+% So, perhaps we can modify to be
+%
+%    emGenSequence(nPositions,'nTrials',nTrials);
+%
 obj.emPositions = emPath;
 
 %% extend sensor size
@@ -90,16 +97,19 @@ switch obj.noiseFlag
             absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
             absorptionsCopy = absorptions;
             absorptions = absorptions(:, nonNullConeIndices);
-            absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'newNoise', newNoise);
+            absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions);
             absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
             clear 'absorptionsCopy'
         else % Rectangular mosaic
             % Noisy absorptions.  Notice, this does not set the absorptions in
-            % the object yet.  We do that below.
-            absorptions = obj.photonNoise(absorptions,'noiseFlag', 'random');
+            % the object yet.  We do that below.  Also, for some reason the
+            % method does not have photonNoise(obj,...).  If this is the
+            % only place we call it, we should change this!
+            absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag,'seed',seed);
             % vcNewGraphWin; imagesc(absorptions);
         end
     otherwise
+        % No noise.
 end
 
 % In the single sample case, we set the absorptions in the object.
