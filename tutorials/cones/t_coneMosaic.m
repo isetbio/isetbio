@@ -7,41 +7,21 @@ ieInit
 
 %% Build a scene and oi for computing
 
-% s = sceneCreate('vernier');
-% s.distance = 1;
-
 s = sceneCreate('rings rays');
-vcAddObject(s);
-% s = sceneCreate('slanted bar');
-% fname = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
-% s = sceneFromFile(fname,'rgb');
-
 s = sceneSet(s,'fov',2);
+ieAddObject(s);
 
+%%
 oi = oiCreate;
 oi = oiCompute(oi,s);
-vcAddObject(oi); % oiWindow;
+ieAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
 
 cMosaic = coneMosaic;  % Create the object
-% cMosaic.rows = 100; cMosaic.cols = 120;
-cMosaic.rows = 144; cMosaic.cols = 176;
-cMosaic.emGenSequence(500);
-
-cMosaic.compute(oi,'currentFlag',true);
-
-% @BW/@HJ
-% There appears to be a mismatch between the oi field of view and the size
-% of the cone mosaic.  The cone mosaic is smaller than the field of view
-% set in the scene and oi.
-
-
-% Show the window
-% cMosaic.window;
-
-% Examine the outer segment current
-% cMosaic.plot('movie absorptions','vname','deleteme.avi','step',5);
+cMosaic.emGenSequence(100);
+cMosaic.compute(oi);
+cMosaic.window;
 
 %% To compute the bipolar response
 bp = bipolar(cMosaic.os);

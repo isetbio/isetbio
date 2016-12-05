@@ -45,13 +45,14 @@ p = inputParser;
 p.addRequired('oi',@isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
-p.addParameter('emPath', [0 0], @isnumeric);
+p.addParameter('emPath', obj.emPositions, @isnumeric);
 
 p.parse(oi,varargin{:});
 
 oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
-seed    = p.Results.seed;
+seed        = p.Results.seed;
+emPath      = p.Results.emPath;
 
 obj.absorptions = [];
 obj.current = [];
@@ -59,8 +60,14 @@ obj.current = [];
 %% set eye movement path
 
 % I would prefer to delete this parameter altogether and force people to
-% set the emPositions prior to calling this compute.
-emPath = p.Results.emPath;   
+% set the emPositions prior to calling this compute.  But when we have
+% multiple trials, emPath is (nTrials x row x col), and emGenSequence
+% doesn't have an nTrials parameter.  
+%
+% So, perhaps we can modify to be
+%
+%    emGenSequence(nPositions,'nTrials',nTrials);
+%
 obj.emPositions = emPath;
 
 %% extend sensor size
@@ -98,7 +105,7 @@ switch obj.noiseFlag
             % the object yet.  We do that below.  Also, for some reason the
             % method does not have photonNoise(obj,...).  If this is the
             % only place we call it, we should change this!
-            absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag);
+            absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag,'seed',seed);
             % vcNewGraphWin; imagesc(absorptions);
         end
     otherwise
