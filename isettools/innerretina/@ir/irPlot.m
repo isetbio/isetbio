@@ -81,7 +81,7 @@ switch ieParamFormat(type)
             
             % Get contour lines for mosaic RFs
             spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.size, obj.col);
-            
+            figure(hf);
             % Subplot if more than one mosaic is being plotted
             if length(mosaicIndices)>1; subplot(ceil(length(mosaicIndices)/2),2,cellTypeInd); end;
             
@@ -90,7 +90,7 @@ switch ieParamFormat(type)
             % Convert RGC position to distance
             patchSizeX = obj.size;
             numberCellsX = obj.col;            
-            umPerCell = 1e6*patchSizeX/numberCellsX;
+            umPerCell = 1e0*patchSizeX/numberCellsX;
             
             cmap = parula(16);
             for xcell = 1:nCells(1)
@@ -99,18 +99,18 @@ switch ieParamFormat(type)
                     % center
                     plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
                         umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-                        'color',cmap(cellTypeInd,:));
+                        'color','r','linewidth',3);%cmap(cellTypeInd,:));
                     hold on;
                     % surround
                     plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
                         umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-                        'color',cmap(cellTypeInd+8,:));
+                        'color','m','linewidth',3);%cmap(cellTypeInd+8,:));
                 end
             end
             axis equal
             title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
-            xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
-            ylabel(sprintf('Distance (\\mum)'),'fontsize',14);
+            xlabel(sprintf('Distance (m)'),'fontsize',14);
+            ylabel(sprintf('Distance (m)'),'fontsize',14);
           
         end
         
