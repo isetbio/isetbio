@@ -24,7 +24,7 @@ nCells = size(obj.sRFcenter);
 metersPerPixel = (spacing/1e-6)/col;
 rfPixels = obj.rfDiameter/metersPerPixel;
 extent = .5*round(size(obj.sRFcenter{1,1},1)/rfPixels);
-
+vcNewGraphWin;
 % Replace this code with multiple circle draws, I think.
 contourCell = cell(nCells(1),nCells(2),2);
 for xcell = 1:nCells(1)
@@ -46,5 +46,6 @@ for xcell = 1:nCells(1)
         
     end
 end
+close;
 
 end

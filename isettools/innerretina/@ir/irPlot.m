@@ -80,7 +80,7 @@ switch ieParamFormat(type)
         for cellTypeInd = mosaicIndices
             
             % Get contour lines for mosaic RFs
-            spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.spacing, obj.col);
+            spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.size, obj.col);
             
             % Subplot if more than one mosaic is being plotted
             if length(mosaicIndices)>1; subplot(ceil(length(mosaicIndices)/2),2,cellTypeInd); end;
@@ -88,7 +88,7 @@ switch ieParamFormat(type)
             nCells = obj.mosaic{cellTypeInd}.get('mosaic size');
             
             % Convert RGC position to distance
-            patchSizeX = obj.spacing;
+            patchSizeX = obj.size;
             numberCellsX = obj.col;            
             umPerCell = 1e6*patchSizeX/numberCellsX;
             
@@ -122,7 +122,7 @@ switch ieParamFormat(type)
             if length(obj.mosaic)>1; subplot(ceil(length(obj.mosaic)/2),2,cellTypeInd); end;
             
             % Convert RGC position to distance
-            patchSizeX = obj.spacing;
+            patchSizeX = obj.size;
             numberCellsX = obj.col;
             umPerCell = 1e6*patchSizeX/numberCellsX;
             
