@@ -1,7 +1,7 @@
-function [absorptions, photocurrents] = computeForOISequence(obj, oiSequence, varargin)
-% Compute cone absorptions and (optionally) photocurrents for a @oiSequence
+function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
+% Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
-%    [absorptions, photocurrents] = cMosaic.compute(oiSequence, varargin);
+%    [absorptions, photocurrents, LMSfilters] = cMosaic.compute(oiSequence, varargin);
 %
 % Inputs:
 %   obj         - @coneMosaic object
@@ -364,7 +364,7 @@ if (currentFlag)
         for ii=1:nTrials
             % Reshape to full 3D matrix for obj.computeCurrent
             obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
-            obj.computeCurrent;
+            LMSfilters = obj.computeCurrent;
             % Back to 2D matrix to save space
             photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
         end
@@ -372,7 +372,7 @@ if (currentFlag)
         photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
             obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
-            obj.computeCurrent;
+            LMSfilters = obj.computeCurrent;
             photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
         end
     end
