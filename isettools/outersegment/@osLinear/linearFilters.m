@@ -100,7 +100,7 @@ for meanInd = 1:length(meanRate)
     % Store the impulse response.  We put flashIntens in for completeness,
     % but it is 1 so really, no need.
     os.lmsConeFilter(:,meanInd) = ...
-        (currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1) ./ flashIntens;
+        ((currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1))/flashIntens;
     % vcNewGraphWin; 
     % plot(stimulus - meanIntens); hold on; 
     % plot(currentImpulse-currentConstant); grid on
