@@ -1,12 +1,12 @@
 function t_osCurrentsVsLuminanceLevel
 
     % Define the time axis for the simulation
-    stimulusSamplingInterval = 50/1000;
-    oiTimeAxis = 0:stimulusSamplingInterval:2.0;
+    stimulusSamplingInterval = 1/1000;             % 50/1000
+    oiTimeAxis = 0:stimulusSamplingInterval:0.3;   % 2.0
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
-    stimulusRampTau = 180/1000;  % 0.18;
+    stimulusRampTau = 5/1000;  % 0.18;
     modulationGain = 1.0;
     modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
     
@@ -72,7 +72,7 @@ function t_osCurrentsVsLuminanceLevel
     subplotPosVectors2 = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 3, ...
            'colsNum', 1+numel(osTimeSteps), ...
-           'heightMargin',   0.02, ...
+           'heightMargin',   0.08, ...
            'widthMargin',    0.07, ...
            'leftMargin',     0.08, ...
            'rightMargin',    0.00, ...
@@ -183,7 +183,7 @@ function t_osCurrentsVsLuminanceLevel
     
 
     hFig2 = figure(2); clf;
-    set(hFig2, 'Position', [10 10 900 1200], 'Color', [1 1 1]);
+    set(hFig2, 'Position', [10 10 900 1290], 'Color', [1 1 1]);
     
     modelRegime = [500 20000];
     modelRegimeY = [modelRegime(1) modelRegime(1) modelRegime(2) modelRegime(2) modelRegime(1)];
@@ -227,7 +227,7 @@ function t_osCurrentsVsLuminanceLevel
     plot(isomerizationRateModulation(:,2), photoCurrentModulation(:,2), 'gs-', 'LineWidth', 2.0, 'MarkerSize', 9, 'Color', [0 0.7 0.0]);
     plot(isomerizationRateModulation(:,3), photoCurrentModulation(:,3), 'bs-', 'LineWidth', 2.0, 'MarkerSize', 6);
     
-    set(gca, 'FontSize', 14, 'XLim', [min(isomerizationRateModulation(:)) max(isomerizationRateModulation(:))],'FontSize', 12);
+    set(gca, 'XLim', [min(isomerizationRateModulation(:)) max(isomerizationRateModulation(:))],'FontSize', 12);
     set(gca, 'YLim', pCurrentModulationRange);
     xlabel('isomerization rate modulation (R*/cone/sec) ', 'FontSize', 14, 'FontWeight', 'bold');
     ylabel('current modulation (pAmps)', 'FontSize', 14, 'FontWeight', 'bold');
@@ -240,8 +240,19 @@ function t_osCurrentsVsLuminanceLevel
     lumColors = jet(numel(luminancesExamined));
     for coneIndex = 1:3
         for osTimeStepIndex = 1:numel(osTimeSteps)
-            legends = {};
+            legends = {'stimulus'};
             subplot('Position', subplotPosVectors2(coneIndex, osTimeStepIndex+1).v);
+            
+            if (coneIndex == 1)
+                oiTimeAxisShift = 0.028;
+            elseif (coneIndex == 2)
+                oiTimeAxisShift = 0.024;
+            else
+                oiTimeAxisShift = 0.021;
+            end
+            oiTimeAxisShift = (oiTimeAxis(2)-oiTimeAxis(1))/2;
+            bar(oiTimeAxis+oiTimeAxisShift, modulationFunction, 1, 'EdgeColor', 'none', 'FaceColor', [0.75 0.75 0.75]);
+            
             hold on;
             for lumIndex = 1:size(timeAxisLMSfilters,1)
                 legends{numel(legends)+1} = sprintf('%d cd/m2', luminancesExamined(lumIndex));
@@ -250,15 +261,23 @@ function t_osCurrentsVsLuminanceLevel
                 normFactor = max(IR);
                 plot(squeeze(timeAxisLMSfilters(lumIndex, osTimeStepIndex,:)), IR/normFactor, 'k-', 'MarkerSize', 10-2*coneIndex, 'LineWidth', 1.5, 'Color', 0.7*squeeze(lumColors(lumIndex,:))); hold on;
             end
+            
+            
+            
             plot(squeeze(timeAxisLMSfilters(lumIndex, osTimeStepIndex,:)), IR*0, 'k-');
+            
             hold off;
-            set(gca, 'XLim', [0 0.3], 'YLim', [-0.2 1]);
+            grid on; box on;
+            
+            set(gca, 'XLim', [0 0.5], 'YLim', [-0.2 1], 'FontSize', 12);
             hL = legend(legends, 'Location', 'NorthEast');
             set(hL, 'FontSize', 12);
             set(gca, 'FontSize', 14);
             title(sprintf('%s-cone (timeStep: %2.2f ms)', coneNames{coneIndex}, osTimeSteps(osTimeStepIndex)*1000));
             if (coneIndex < 3)
                 set(gca, 'XTickLabel', {});
+            else
+                xlabel('time (sec)', 'FontWeight', 'bold', 'FontSize', 14);
             end
             if (osTimeStepIndex > 1)
                 set(gca, 'YTickLabel', {});
