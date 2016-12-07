@@ -52,12 +52,26 @@ classdef outerSegment < handle
         timeStep;             % sampling interval in sec
     end
     
+    properties (Constant)
+        validNoiseFlags = {'random','none','frozen'};
+    end
+    
     % Public methods
     methods
         function obj = outerSegment(varargin)
             obj.noiseFlag = 'random';
             % obj.coneCurrentSignal = [];
             obj.timeStep = 1e-4;
+        end
+        
+        function set.noiseFlag(obj, val)
+            if ischar(val) && (ismember(lower(val), outerSegment.validNoiseFlags))
+                obj.noiseFlag = val;
+            else
+                validNoiseFlags = outerSegment.validNoiseFlags
+                illegalValueForNoiseFlag = val
+                error('This is an invalid value for os.noiseFlag');
+            end
         end
         
         % see osSet in @osLinear and @osBioPhys for details
