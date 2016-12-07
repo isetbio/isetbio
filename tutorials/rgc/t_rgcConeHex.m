@@ -18,6 +18,15 @@ params.barWidth = 10;
 params.fov      = 0.3;
 % params.os = 'biophys';
 params.os = 'hex';
+
+% Alternatively, we will be able to do this:
+%
+%   rd = RdtClient('isetbio');
+%   rd.crp('/resources/data/istim');
+%   rd.listArtifacts('print',true);
+%  And then upload the relevant one
+%
+
 iStim = ieStimulusBar(params);  % Full params are returned in iStim
 
 %% Visualize coneMosaicHex responses
@@ -26,21 +35,25 @@ iStim = ieStimulusBar(params);  % Full params are returned in iStim
 
 isomerizationsBar = iStim.cMosaic.absorptions;
 iStim.cMosaic.visualizeActivationMaps(...
-    isomerizationsBar(:,:,100), ...                                         % the response matrix
+    isomerizationsBar(:,:,100), ...                                  % the response matrix
        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
       'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
-%% Compute bipolar response
-bp = bipolar(iStim.cMosaic);
-bp.compute(iStim.cMosaic.os);
 
+% iStim.cMosaic.window;
+
+%% Compute bipolar response
+
+bpParams.cellType = 'offMidget';
+bp = bipolar(iStim.cMosaic, bpParams);
+bp.compute(iStim.cMosaic);
 bp.plot('movie response')
 
 %% Compute RGC response
 clear params innerRetinaSU
-cellType = 'onParasol';
+cellType = 'offMidget';
 % cellType = 'offParasol';
 params.name = 'macaque phys';
 params.eyeSide = 'left';
@@ -78,3 +91,5 @@ if showMovieFlag
     vcNewGraphWin;
     ieMovie(psthTest(:,:,steadyStateFrame:end),vParams);
 end
+
+%%
