@@ -119,20 +119,27 @@ methods
         % spread and support as a function of eccentricity.  For now we
         % just put in some placeholder numbers.
         
+        % These numbers don't make sense to BW at this time.  We
+        % need to write a script showing how big they are with
+        % respect to the cone mosaic, and we need to check how they
+        % vary with eccentricity.  Comparing with the curves in the
+        % cited data would be best.
+        
         switch obj.cellType
             case{'onDiffuse','offDiffuse'}
-                % Diffus bipolars that carry parasol signals
+                % Diffuse bipolars that carry parasol signals
                 % ecc = 0 mm yields 2x2 cone input to bp
                 % ecc = 30 mm yields 5x5 cone input to bp
                 
+                % BW, screwing around.  Just made spatial spread up here.
                 % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-                support = floor(2 + 3/10*(p.Results.ecc)); 
-                spread = 2;  % Standard deviation of the Gaussian - will be a function
-                rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
+                support = max(7,floor(2 + 3/10*(p.Results.ecc))); 
+                spread = 1;  % Standard deviation of the Gaussian - will be a function
+                rfCenterBig   = fspecial('gaussian',[support, support],spread);     % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support], 1.3*spread); % convolutional for now
                 
-                obj.sRFcenter = rfCenterBig(:,:);
-                obj.sRFsurround = rfSurroundBig(:,:);
+                obj.sRFcenter   = rfCenterBig(:,:);
+                obj.sRFsurround = 0.7*rfSurroundBig(:,:);
                 
             case {'onSBC'}
                 % Small bistratified cells - handle S-cone signals
@@ -143,7 +150,7 @@ methods
                 
                 spread = 3;  % Standard deviation of the Gaussian - will be a function
                 rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support],1.5*spread); % convolutional for now
                 
                 obj.sRFcenter = rfCenterBig(:,:);
                 obj.sRFsurround = rfSurroundBig(:,:);
@@ -158,7 +165,7 @@ methods
                 support = floor(1 + (2/10)*(p.Results.ecc)); 
                 spread = 1;
                 obj.sRFcenter   = fspecial('gaussian',[support,support], spread); % convolutional for now
-                obj.sRFsurround = fspecial('gaussian',[support,support], spread); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[support,support], 1.5*spread); % convolutional for now
              
         end
         if isfield(p.Results,'cellLocation')

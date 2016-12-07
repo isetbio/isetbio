@@ -86,6 +86,9 @@ p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));
 % parse - no options at this opint
 p.parse(obj, cmosaic, varargin{:});
 
+if isempty(cmosaic.current), 
+    error('No cone photocurrent.  Use cmosaic.computeCurrent.'); 
+end
 %% Spatial filtering and subsampling
 
 % Convolve spatial RFs across the photo current of the cones in the mosaic

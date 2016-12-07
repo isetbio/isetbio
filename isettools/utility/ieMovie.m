@@ -84,8 +84,8 @@ if isequal(tDim,4)
     end
 elseif isequal(tDim,3)
     % Monochrome data
-    colormap(gray); 
-    for ii = 1:step:nFrames
+    colormap(gray(256)); 
+    for ii = 1:nFrames
         imagesc(data(:,:,ii)); axis image; set(gca,'xticklabel','','yticklabel','');
         caxis([mind maxd]); drawnow;
         if ii == 1 && ~show, set(gcf,'Visible','off'); end
