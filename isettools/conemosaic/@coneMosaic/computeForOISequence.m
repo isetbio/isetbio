@@ -67,7 +67,7 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-
+p.addParameter('seed',1, @isnumeric);                   % Seed for frozen noise
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
 
@@ -75,12 +75,13 @@ p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
 p.parse(oiSequence, varargin{:});
 
-oiSequence  = p.Results.oiSequence;
-emPaths     = p.Results.emPaths;
-currentFlag = p.Results.currentFlag;
-workerID    = p.Results.workerID;
+currentSeed     = p.Results.seed;
+oiSequence      = p.Results.oiSequence;
+emPaths         = p.Results.emPaths;
+currentFlag     = p.Results.currentFlag;
+workerID        = p.Results.workerID;
 workDescription = p.Results.workDescription;
-oiTimeAxis  = oiSequence.timeAxis;
+oiTimeAxis      = oiSequence.timeAxis;
 
 nTimes = numel(oiTimeAxis);
 if (oiSequence.length ~= nTimes)
@@ -115,7 +116,6 @@ if (numel(oiTimeAxis) == 1)
 else
     oiRefreshInterval = oiTimeAxis(2)-oiTimeAxis(1);
 end
-
 
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
@@ -177,8 +177,10 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             % Compute partial absorptions
             emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
             obj.absorptions = [];
+            currentSeed = currentSeed  + 1;
             absorptionsDuringPreviousFrame = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex-1), ...
+                'seed', currentSeed , ...
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
                 );
@@ -194,8 +196,10 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         % Compute partial absorptions
         emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
         obj.absorptions = [];
+        currentSeed = currentSeed  + 1;
         absorptionsDuringCurrentFrame =  obj.compute(...
             oiSequence.frameAtIndex(oiIndex), ...
+            'seed', currentSeed, ...
             'emPath', emSubPath, ...
             'currentFlag', false ...
             );
@@ -218,8 +222,10 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             idx = indices(2:end);
             emSubPath = reshape(emPaths(1:nTrials, idx,:), [nTrials*numel(idx) 2]);
             obj.absorptions = [];
+            currentSeed = currentSeed  + 1;
             absorptionsAllTrials = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex), ...
+                'seed', currentSeed, ...
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
                 );
@@ -281,8 +287,10 @@ else
         % Compute absorptions
         emSubPath = reshape(emPaths(1:nTrials, emIndex,:), [nTrials 2]);
         obj.absorptions = [];
+        currentSeed = currentSeed  + 1;
         absorptionsAllTrials = obj.compute(...
             oiSequence.frameAtIndex(idx), ...
+            'seed', currentSeed, ...
             'emPath', emSubPath, ...
             'currentFlag', false ...
             );
@@ -305,8 +313,10 @@ else
                 % Compute absorptions
                 emSubPath = reshape(emPaths(1:nTrials, emIndex,:), [nTrials 2]);
                 obj.absorptions = [];
+                currentSeed = currentSeed  + 1;
                 absorptionsAllTrials = absorptionsAllTrials + obj.compute(...
                     oiSequence.frameAtIndex(indices(k)), ...
+                    'seed', currentSeed, ...
                     'emPath', emSubPath, ...
                     'currentFlag', false ...
                     );
@@ -362,7 +372,8 @@ if (currentFlag)
         for ii=1:nTrials
             % Reshape to full 3D matrix for obj.computeCurrent
             obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
-            LMSfilters = obj.computeCurrent;
+            currentSeed = currentSeed  + 1;
+            LMSfilters = obj.computeCurrent('seed', currentSeed);
             % Back to 2D matrix to save space
             photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
         end
@@ -370,7 +381,8 @@ if (currentFlag)
         photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
             obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
-            LMSfilters = obj.computeCurrent;
+            currentSeed = currentSeed  + 1;
+            LMSfilters = obj.computeCurrent('seed', currentSeed);
             photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
         end
     end
