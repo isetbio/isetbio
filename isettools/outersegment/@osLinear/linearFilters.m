@@ -66,7 +66,7 @@ meanCurrent = zeros(1,3);
 % We turn off the noise and use the biophysical coneMosaic model to
 % calculate an impulse response.
 osCM = osBioPhys('osType',eccentricity);   % Will become eccentricity some day
-osCM.set('noise flag',0);                  % Run it without noise
+osCM.set('noise flag', 'none');            % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;
@@ -101,9 +101,9 @@ for meanInd = 1:length(meanRate)
     % but it is 1 so really, no need.
     os.lmsConeFilter(:,meanInd) = ...
         ((currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1))/flashIntens;
-    % vcNewGraphWin; 
-    % plot(stimulus - meanIntens); hold on; 
-    % plot(currentImpulse-currentConstant); grid on
+    %vcNewGraphWin; 
+    %plot(stimulus - meanIntens); hold on; 
+    %plot(currentImpulse-currentConstant); grid on
     
     % We are a tiny bit worried about the edges; so we set a few steps
     % before the very end to the mean current from the constant stimulus
