@@ -13,17 +13,13 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %   modulation:   Vector of weights describing the add or blend parameters.
 %
 % Parameters:
-%    tparams:  Parameters for the test scenes.  This structure contents
-%    depend on the oisType.
-%    sparams:  Parameters applied to the scene
+%    testParameters:  Parameters for the test targets.  This structure contents
+%                     depend on the oisType.
+%    sceneParameters: General scene parameters (e.g., fov, luminance)
 %   
-% Examples
-%
-% We build the stimulus using a time series of weights. We have the mean
-% field on for a while, then rise/fall, then mean field.
-%
-% 
-% Example:
+% Examples:
+%  We build the stimulus using a time series of weights. We have the mean
+%  field on for a while, then rise/fall, then mean field.
 %
 % Harmonics
 %   clear hparams
@@ -58,8 +54,8 @@ p.addRequired('composition',@ischar);
 p.addRequired('modulation');
 
 p.addParameter('sampleTimes',[],@isvector);
-p.addParameter('tparams',[],@isstruct);
-p.addParameter('sparams',[],@isstruct);
+p.addParameter('testParameters',[],@isstruct);
+p.addParameter('sceneParameters',[],@isstruct);
 
 p.parse(oisType,composition,modulation,varargin{:});
 
@@ -73,8 +69,8 @@ if isempty(sampleTimes)
 end
 
 % Many of the types have a params structure that we will pass along
-tparams = p.Results.tparams;   % Test stimulus parameters (two structs needed)
-sparams = p.Results.sparams;   % Scene parameters, only one set.
+tparams = p.Results.testParameters;   % Test stimulus parameters (two structs needed)
+sparams = p.Results.sceneParameters;   % Scene parameters, only one set.
 
 %%
 switch oisType

@@ -34,7 +34,7 @@ weights = [zeros(1, 5), stimWeights, zeros(1, 5)];
 hparams(1) = harmonicP;
 hparams(2) = hparams(1); hparams(2).contrast = 0;
 sparams.fov = 0.3;
-ois = oisCreate('harmonic','blend',weights, 'tparams',hparams,'sparams',sparams);
+ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParameters',sparams);
 % ois.visualize;
 
 % Assert values from November 19, 2016 (BW)
