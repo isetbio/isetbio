@@ -44,8 +44,8 @@ end
 %% Whether to plot data that do not agree with the ground truth
 UnitTest.setPref('graphMismatchedData', true);
 
-fullValidationMode = 'FULLONLY';
 %% Adjust parameters based on input arguments
+fullValidationMode = 'FULLONLY';
 if ~isempty(varargin)
     if ~isodd(length(varargin))
         for ii=1:2:length(varargin)
@@ -80,7 +80,6 @@ UnitTest.listPrefs();
 %% Print all existing validation scripts and ask the user to select one for validation
 singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
 
-fullValidationMode
 %% Validate
 UnitTest.runValidationSession({{singleScriptToValidate, []}}, fullValidationMode);
 
