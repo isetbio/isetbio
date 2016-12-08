@@ -13,10 +13,10 @@ end
 function ValidationFunction(runTimeParams)
 
 
-%% 
-ieInit
+%% Initialize
+ieInit;
 
-% Reproduce identical random number
+%% Reproduce identical random numbers
 rng('default'); rng(1);
 
 %% Create appropriate structures
@@ -26,32 +26,29 @@ scene = sceneAdjustLuminance(scene,200);
 oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 
-%%
+%% Creat the mosaic and compute isomerizations (which are sometimes called absorptions)
+%
+% This doesn't use the default integration time.
 cMosaic = coneMosaic;
-cMosaic.setSizeToFOV(0.5); 
-cMosaic.integrationTime = 0.050;    % Important in case defaults change
+cMosaic.setSizeToFOV(0.5*sceneGet(scene,'fov'));
+cMosaic.integrationTime = 0.050;    
 cMosaic.compute(oi);
 
-% A = 0;
-% for ii=1:10; cMosaic.compute(oi); A = A + sum(cMosaic.absorptions(:)); end
-% v = A/10;
-
+%% Check that they are within Poisson noise of what we expected at some point when this was created.
 sumA = sum(cMosaic.absorptions(:));
-v = 3738338;
-UnitTest.assert((sumA < (v + 4*sqrt(v))),'Not too hot... ');
-UnitTest.assert((sumA > (v - 4*sqrt(v))),'Not too cold.. ');
+expectedSumA = 3738338;
+UnitTest.assert((sumA < (expectedSumA + 4*sqrt(expectedSumA))),'Not too hot... ');
+UnitTest.assert((sumA > (expectedSumA - 4*sqrt(expectedSumA))),'Not too cold.. ');
 
 %% Do the whole thing again, but with the macular pigment set to zero
-cMosaic.macular.density=0;
+cMosaic.macular.density = 0;
 cMosaic.compute(oi);
-% cMosaic.window;
-
 sumA = sum(cMosaic.absorptions(:));
-v = 4.1820e+06;
-UnitTest.assert((sumA < (v + 4*sqrt(v))),'Not too many.. ');
-UnitTest.assert((sumA > (v - 4*sqrt(v))),'Not too few... ');
+expectedSumA = 4.1820e+06;
+UnitTest.assert((sumA < (expectedSumA + 4*sqrt(expectedSumA))),'Not too many.. ');
+UnitTest.assert((sumA > (expectedSumA - 4*sqrt(expectedSumA))),'Not too few... ');
 
-%% Plot
+%% Plot if there are any
 if (runTimeParams.generatePlots)
     
 end
