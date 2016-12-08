@@ -108,7 +108,7 @@ classdef coneMosaic < hiddenHandle
     end
     
     properties (Constant)
-        validNoiseFlags = {'random','none','frozen'};
+        validNoiseFlags = {'none','frozen','random'};
     end
     
     methods    
@@ -343,12 +343,11 @@ classdef coneMosaic < hiddenHandle
             if ischar(val) && (ismember(lower(val), coneMosaic.validNoiseFlags))
                 obj.noiseFlag = val;
             else
-                validNoiseFlags = coneMosaic.validNoiseFlags
-                illegalValueForNoiseFlag = val
-                error('This is an invalid value for coneMosaic.noiseFlag');
+                s = sprintf('%s ', coneMosaic.validNoiseFlags{:});
+                error('''%s'' is an invalid value for coneMosaic.noiseFlag. Choose one from: %s ', val,s);
             end
         end
-    end
+end
     
     methods (Access=public)
         % Declare the compute method
