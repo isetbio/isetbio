@@ -124,6 +124,10 @@ classdef coneMosaic < hiddenHandle
         spatialDensity_;
     end
     
+    properties (Constant)
+        validNoiseFlags = {'none','frozen','random'};
+    end
+    
     methods    
         % Constructor
         function obj = coneMosaic(varargin)
@@ -153,9 +157,9 @@ classdef coneMosaic < hiddenHandle
             
             p.addParameter('emPositions', [0 0], @isnumeric);     % Eye movement positions
             
-            vFunc = @(x)(ismember(lower(x),{'random','none','frozen'}));
-            p.addParameter('noiseFlag', 'random', vFunc);         % Photon noise control
-            
+            % How we handle coneMosaic noise
+            vFunc = @(x)(ismember(lower(x), coneMosaic.validNoiseFlags));
+            p.addParameter('noiseFlag', 'random', vFunc);            
             p.parse(varargin{:});
             
             % set properties
@@ -347,7 +351,16 @@ classdef coneMosaic < hiddenHandle
         function set.cols(obj, val)
             obj.mosaicSize = [obj.rows val];
         end
-    end
+        
+        function set.noiseFlag(obj, val)
+            if ischar(val) && (ismember(lower(val), coneMosaic.validNoiseFlags))
+                obj.noiseFlag = val;
+            else
+                s = sprintf('%s ', coneMosaic.validNoiseFlags{:});
+                error('''%s'' is an invalid value for coneMosaic.noiseFlag. Choose one from: %s ', val,s);
+            end
+        end
+end
     
     methods (Access=public)
         % Declare the compute method

@@ -80,8 +80,7 @@ function [theConeMosaic, theOIsequence, ...
     
     [absorptionsCountSequence, photoCurrentSequence] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
-            'currentFlag', true, ...
-            'newNoise', true ...
+            'currentFlag', true ...
             );
     absorptionsTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);  
     photoCurrentTimeAxis = absorptionsTimeAxis;
@@ -172,7 +171,7 @@ function plotEverything(theConeMosaic, theOIsequence, isomerizationRateSequence,
     % Plot the sequence of OIs with the eye movements 
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10+figNo*50 10+figNo*100 1920 760], 'Color', [1 1 1]);
-    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Integration Time: %2.1f ms,   osTimeStep: %2.1f ms,      PhotonNoise: %g,      osNoise: %g', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.integrationTime*1000, condData.osTimeStep*1000, condData.photonNoise, condData.osNoise));
+    set(hFig, 'Name', sprintf('Scene Mean Luminance: %2.1f cd/m2,     Modulation: %2.2f,     Stimulus Sampling: %2.1f ms,     Integration Time: %2.1f ms,   osTimeStep: %2.1f ms,      PhotonNoise: %s,      osNoise: %s', condData.meanLuminance, condData.modulation, condData.stimulusSamplingInterval*1000, condData.integrationTime*1000, condData.osTimeStep*1000, condData.photonNoise, condData.osNoise));
 
     tabGroup = uitabgroup('Parent', hFig);
     
@@ -371,8 +370,8 @@ function condData = makeConditionSet(conditionSet)
                 'stimulusSamplingInterval',  1/50, ...      % 50 Hz stimulus refresh, e.g., 20 msec per optical image
                 'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
                 'integrationTime', nan, ...                 % we will vary this one
-                'photonNoise', true, ...
-                'osNoise', false);
+                'photonNoise', 'random', ...                % select from {'random', 'frozen', 'none'}
+                'osNoise', 'none');                         % select from {'random', 'frozen', 'none'}
             
             % Varied params
             c0.integrationTime = 100/1000;                  % 100 ms (longer than the stimulus sampling interval, so < 1 eye movement / oi)
@@ -395,8 +394,8 @@ function condData = makeConditionSet(conditionSet)
                 'stimulusSamplingInterval',  1/10, ...      % 100 Hz stimulus refresh
                 'integrationTime', 20/1000, ...             % 20 milliseconds
                 'osTimeStep', nan, ...                      % we'll vary that one
-                'photonNoise', true, ...
-                'osNoise', false);
+                'photonNoise', 'random', ...                    % select from {'random', 'frozen', 'none'}
+                'osNoise', 'none');                         % select from {'random', 'frozen', 'none'}
 
             % Varied params
             c0.osTimeStep = 1/1000;                    % 1 milliseconds
@@ -430,23 +429,23 @@ function condData = makeConditionSet(conditionSet)
             
             % Varied params
             % No noise
-            c0.photonNoise = false;
-            c0.osNoise = false;
+            c0.photonNoise = 'none';        % select from {'random', 'frozen', 'none'}
+            c0.osNoise = 'none';            % select from {'random', 'frozen', 'none'}
             condData{numel(condData)+1} = c0;
             
             % Photon noise
-            c0.photonNoise = true;
-            c0.osNoise = false;
+            c0.photonNoise = 'random';      % select from {'random', 'frozen', 'none'}
+            c0.osNoise = 'none';            % select from {'random', 'frozen', 'none'}
             condData{numel(condData)+1} = c0;
             
             % OS noise 
-            c0.photonNoise = false;
-            c0.osNoise = true;
+            c0.photonNoise = 'none';        % select from {'random', 'frozen', 'none'}
+            c0.osNoise = 'random';          % select from {'random', 'frozen', 'none'}
             condData{numel(condData)+1} = c0;
             
             % Both photon noise and OS noise
-            c0.photonNoise = true;
-            c0.osNoise = true;
+            c0.photonNoise = 'random';      % select from {'random', 'frozen', 'none'}
+            c0.osNoise = 'random';          % select from {'random', 'frozen', 'none'}
             condData{numel(condData)+1} = c0;
             
         % Custom condition - customize it !
@@ -464,9 +463,9 @@ function condData = makeConditionSet(conditionSet)
                 'modulationRegion', 'CENTER', ...                                % modulate the center only  (choose b/n 'FULL', and 'CENTER')
                 'stimulusSamplingInterval',  1/stimulusRefreshRateInHz, ...      
                 'integrationTime', integrationTime, ...     
-                'osTimeStep', 0.1/1000, ...                                       % 0.1 millisecond
-                'photonNoise', false, ...
-                'osNoise', false);
+                'osTimeStep', 0.1/1000, ...                                      % 0.1 millisecond
+                'photonNoise', 'none', ...                                       % select from {'random', 'frozen', 'none'}
+                'osNoise', 'none');                                              % select from {'random', 'frozen', 'none'}
             
            condData{numel(condData)+1} = c0;
     end

@@ -14,6 +14,7 @@ function current = osCompute(obj, cMosaic, varargin)
 %   cMosaic  - The parent of the outersegment object
 % 
 % Optional paramters (key-value pairs)
+%    seed    - Seed to use when obj.noiseFlag is 'frozen' (default = 1)
 %   'bgR'    - background (initial state) cone isomerization rate
 %
 % Outputs:
@@ -31,9 +32,12 @@ p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('bgR',0,@isnumeric);
+p.addParameter('seed', 1, @isnumeric);
 
 % The background absorption rate
 p.parse(obj, cMosaic, varargin{:});
+
+seed  = p.Results.seed;
 
 % This is the background isomerization rate mean for each cone class
 % (R*/sec). It could be calculated here using coneMeanIsomerizations.  Not
@@ -55,10 +59,15 @@ obj.state.timeStep = obj.timeStep;
 [current, obj.state]  = osAdaptTemporal(pRate, obj);
 
 % The outer segment noise flag
-switch obj.noiseFlag
-    case {'random','frozen'}
-        current = osAddNoise(current); 
-    case {'none'}
+if (~strcmp(obj.noiseFlag, 'none'))  
+    switch obj.noiseFlag
+        case 'frozen'
+            rng(seed);
+        case 'random'
+            rng('shuffle');
+    end
+    current = osAddNoise(current); 
+    fprintf('Added osBiophys noise (''%s'')', obj.noiseFlag);
 end
 
 end

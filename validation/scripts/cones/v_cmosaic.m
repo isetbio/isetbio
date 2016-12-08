@@ -27,8 +27,8 @@ oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 
 %% Creat the mosaic and compute isomerizations (which are sometimes called absorptions)
-%
 % This doesn't use the default integration time.
+
 cMosaic = coneMosaic;
 cMosaic.setSizeToFOV(0.5*sceneGet(scene,'fov'));
 cMosaic.integrationTime = 0.050;    

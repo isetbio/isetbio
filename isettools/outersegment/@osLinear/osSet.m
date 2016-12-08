@@ -38,13 +38,17 @@ p.addRequired('value');
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-
 %% Set all the key-value pairs.
 
     switch ieParamFormat(params.what);  % Lower case and remove spaces
         
         case {'noiseflag'}
-            obj.noiseFlag = params.value;
+            if ischar(params.value) && (ismember(lower(params.value), outerSegment.validNoiseFlags))
+                obj.noiseFlag = params.value;
+            else
+                illegalValueForNoiseFlag = params.value
+                error('Illegal value for os.noiseFlag');
+            end
             
         case {'sconefilter'}
             % Temporal impulse response

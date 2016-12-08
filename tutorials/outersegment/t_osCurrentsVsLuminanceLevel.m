@@ -1,13 +1,13 @@
 function t_osCurrentsVsLuminanceLevel
 
     % Define the time axis for the simulation
-    stimulusSamplingInterval = 50/1000;
-    oiTimeAxis = 0:stimulusSamplingInterval:2.0;
+    stimulusSamplingInterval = 1/1000;             % 50/1000
+    oiTimeAxis = 0:stimulusSamplingInterval:0.3;   % 2.0
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function
-    stimulusRampTau = 10/1000;  % 0.18;
-    modulationGain = 0.1;
+    stimulusRampTau = 5/1000;  % 0.18;
+    modulationGain = 1.0;
     modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
     
     % Generate optics
@@ -15,10 +15,10 @@ function t_osCurrentsVsLuminanceLevel
     theOI = oiGenerate(noOptics);
     
     % Background luminance levels to be examined
-    luminancesExamined = [100 300 500 1000 1500 2000 3000 4000 8000];
+    luminancesExamined = [50:50:1000]; %  1500 2000 3000];
 
     % Outer segment time steps to be examined
-    osTimeSteps = [0.001 0.01 0.1 0.3 0.5 1 3]/1000;
+    osTimeSteps = [0.1]/1000;
 
     % Generate a number of oiSequences, one for each luminance examined
     for lumIndex = 1:numel(luminancesExamined)
@@ -40,10 +40,10 @@ function t_osCurrentsVsLuminanceLevel
     
     % Generate a cone mosaic with 1 L-, 1 M-, and 1 S-cone only
     mosaicSize =  nan;                    
-    integrationTime = 10/1000;            
-    photonNoise = false;                     
+    integrationTime = 1/1000;            
+    photonNoise = 'none';                     
     osTimeStep = 1/1000;                    
-    osNoise = false;                        
+    osNoise = 'none';                        
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
     
     % Generate eye movement path
@@ -58,9 +58,7 @@ function t_osCurrentsVsLuminanceLevel
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1800 1200]);
      
-    hFig2 = figure(2); clf;
-    set(hFig2, 'Position', [10 10 900 1200]);
-    
+
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', numel(luminancesExamined), ...
            'colsNum', numel(osTimeSteps)+1, ...
@@ -72,35 +70,45 @@ function t_osCurrentsVsLuminanceLevel
            'topMargin',      0.01);
       
     subplotPosVectors2 = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', numel(luminancesExamined), ...
-           'colsNum', 4, ...
-           'heightMargin',   0.02, ...
+           'rowsNum', 3, ...
+           'colsNum', 1+numel(osTimeSteps), ...
+           'heightMargin',   0.08, ...
            'widthMargin',    0.07, ...
            'leftMargin',     0.08, ...
            'rightMargin',    0.00, ...
            'bottomMargin',   0.04, ...
            'topMargin',      0.01);
        
-    isomerizationsRange =  [0 2000];
-    luminanceRange = [90 9000];
-    pCurrentRange = [-70 5];
-    
+    isomerizationsRange =  [0 200];
+    luminanceRange = [0 1100];
+    luminanceTicks = [0:200:1100];
+    pCurrentRange = [-85 0];
+    pCurrentModulationRange = [0 30];
     
     for lumIndex = 1: numel(luminancesExamined) 
         for osTimeStepIndex = 0:numel(osTimeSteps)
             if (osTimeStepIndex > 0)
                 theConeMosaic.os.timeStep = osTimeSteps(osTimeStepIndex);
             end
-            [isomerizations, photocurrents] = ...
+
+            [isomerizations, photocurrents, tmpLMSfilters] = ...
                 theConeMosaic.computeForOISequence(theOIsequenceArray{lumIndex}, ...
                 'emPaths', emPaths, ...
-                'currentFlag', true, ...
-                'newNoise', true);
+                'currentFlag', true);
 
+            
             timeAxis = theConeMosaic.timeAxis + theOIsequenceArray{lumIndex}.timeAxis(1);
             timeRange = [timeAxis(1) timeAxis(end)];
-            timeRange = [-300 300]/1000;
+            timeRange = [-500 500]/1000;
     
+            if (lumIndex == 1) && (osTimeStepIndex == 1)
+                LMSfilters = zeros(numel(luminancesExamined), numel(osTimeSteps), size(tmpLMSfilters,1), size(tmpLMSfilters,2));
+            end
+            if (osTimeStepIndex > 0)
+               LMSfilters(lumIndex, osTimeStepIndex, :,:) = tmpLMSfilters;
+               timeAxisLMSfilters(lumIndex, osTimeStepIndex,:) = (1:size(tmpLMSfilters,1)) * (timeAxis(2)-timeAxis(1));
+            end
+            
             % Plot the isomerization signals
             if (osTimeStepIndex == 0)
                 figure(hFig);
@@ -122,28 +130,6 @@ function t_osCurrentsVsLuminanceLevel
                 grid on; box on;
                 drawnow;
                 
-                
-                figure(hFig2);
-                subplot('Position', subplotPosVectors2(lumIndex, 1).v);
-                plot(timeAxis, squeeze(isomerizations(1,1,1,:)), 'r-', 'LineWidth', 1.5);
-                hold on;
-                plot(timeAxis, squeeze(isomerizations(1,1,2,:)), 'g-', 'LineWidth', 1.5);
-                plot(timeAxis, squeeze(isomerizations(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                set(gca, 'XLim', timeRange);
-                set(gca, 'FontSize', 14);
-                title(sprintf('%d cd/m2', luminancesExamined(lumIndex)));
-                if (lumIndex == numel(luminancesExamined))
-                    ylabel(sprintf('absorptions / %d ms', theConeMosaic.integrationTime*1000), 'FontSize', 14, 'FontWeight', 'bold');
-                end
-                set(gca, 'YLim', isomerizationsRange, 'FontSize', 14);
-                
-                if (lumIndex <  numel(luminancesExamined))
-                    set(gca, 'XTickLabel', {});
-                else
-                    xlabel('time (sec)', 'FontSize', 14, 'FontWeight', 'bold');
-                end
-                grid on; box on;
-                drawnow;
             % Plot the photocurrent signals
             else
                 figure(hFig);
@@ -171,109 +157,134 @@ function t_osCurrentsVsLuminanceLevel
                 set(gca, 'FontSize', 10);
                 grid on; box on;
                 drawnow;
-                
-                if (osTimeStepIndex == 1)
-                    figure(hFig2);
-                    subplot('Position', subplotPosVectors2(lumIndex, osTimeStepIndex+1).v);
-                    plot(timeAxis, squeeze(photocurrents(1,1,1,:)), 'r-', 'LineWidth', 1.5);
-                    hold on;
-                    plot(timeAxis, squeeze(photocurrents(1,1,2,:)), 'g-', 'LineWidth', 1.5);
-                    plot(timeAxis, squeeze(photocurrents(1,1,3,:)), 'b-', 'LineWidth', 1.5);
-                    set(gca, 'XLim', timeRange);
-                    set(gca, 'FontSize', 14);
-                    
-                    if (lumIndex == numel(luminancesExamined))
-                        ylabel('current (pAmps)', 'FontSize', 14, 'FontWeight', 'bold');
-                    end
-                    set(gca, 'YLim', pCurrentRange);
-
-                    if (osTimeStepIndex > 1)
-                        set(gca, 'YTickLabel', {});
-                    end
-
-                    if (lumIndex == numel(luminancesExamined))
-                        xlabel('time (sec)', 'FontSize', 14, 'FontWeight', 'bold');
-                    else
-                        set(gca, 'XTickLabel', {});
-                    end
-                    
-                    grid on; box on;
-                    drawnow;
-                end
             end        
             
             
             if (osTimeStepIndex == 1)
                 % Compute modulation of photocurrents at different background luminance levels
+                
                 for coneIndex = 1:3
                     photocurrent = squeeze(photocurrents(1,1,coneIndex,:));
                     isomerizationRate = squeeze(isomerizations(1,1,coneIndex,:)) / theConeMosaic.integrationTime;
                     baselineP = photocurrent(end);
                     baselineIR = isomerizationRate(end);
                     if (baselineP < 0)
-                        deltaPhotocurrent = max(photocurrent - baselineP);
+                        deltaPhotocurrent = max(photocurrent(:)) - baselineP;
                     else
                         deltaPhotocurrent = 0;
                     end
                     photoCurrentModulation(lumIndex,coneIndex) = deltaPhotocurrent;
-                    isomerizationRateModulation(lumIndex,coneIndex) = max(isomerizationRate-baselineIR);
+                    isomerizationRateModulation(lumIndex,coneIndex) = max(isomerizationRate(:))-baselineIR;
                 end % coneIndex
             end
                 
         end % osTimeStepIndex
     end % lumIndex
     
-    figure(hFig2);
-    % Plot the dynamic range as a function of background luminance
-    posTL = subplotPosVectors2(1,3).v;
-    posTR = subplotPosVectors2(1,4).v;
-    posBL = subplotPosVectors2(3,3).v;
-    posBR = subplotPosVectors2(3,4).v;
-    width = 0.42;
-    height = 0.29;
-    subplot('Position', [posBL(1) posBL(2)+0.02 width height]);
+
+    hFig2 = figure(2); clf;
+    set(hFig2, 'Position', [10 10 900 1290], 'Color', [1 1 1]);
+    
+    modelRegime = [500 20000];
+    modelRegimeY = [modelRegime(1) modelRegime(1) modelRegime(2) modelRegime(2) modelRegime(1)];
+    modelRegimeX = [luminanceRange(1) luminanceRange(2) luminanceRange(2) luminanceRange(1) pCurrentModulationRange(1)];
+    
+    subplot('Position', subplotPosVectors2(1,1).v);
     hold on
+    patch(modelRegimeX, modelRegimeY, [0.83 0.83 0.63]);
+    plot(modelRegimeX, modelRegimeY, 'k--', 'LineWidth', 1.0);
     plot(luminancesExamined, isomerizationRateModulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); 
     plot(luminancesExamined, isomerizationRateModulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
     plot(luminancesExamined, isomerizationRateModulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
-    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
+    
+    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'XTick', luminanceTicks, 'XScale', 'linear', 'FontSize', 12);
     xlabel('background luminance (cd/m2)', 'FontSize', 14, 'FontWeight', 'bold');
-    ylabel('isomerization rate modulation (R*/cone/sec) [peak - baseline]', 'FontSize', 14, 'FontWeight', 'bold');
-    hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'Location', 'NorthWest');
+    ylabel('isomerization rate modulation (R*/cone/sec)', 'FontSize', 14, 'FontWeight', 'bold');
+    %hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'Location', 'NorthWest');
     grid on; box on;
     
-    
-    posTL = subplotPosVectors2(4,3).v;
-    posTR = subplotPosVectors2(4,4).v;
-    posBL = subplotPosVectors2(6,3).v;
-    posBR = subplotPosVectors2(6,4).v;
-    subplot('Position', [posBL(1) posBL(2)+0.01 width height]);
+
+    subplot('Position', subplotPosVectors2(2,1).v);
     hold on
     plot(luminancesExamined, photoCurrentModulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); 
     plot(luminancesExamined, photoCurrentModulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
     plot(luminancesExamined, photoCurrentModulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
-    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'XTick', [100 300 1000 3000], 'XScale', 'log', 'FontSize', 12);
+
+    set(gca, 'FontSize', 14, 'XLim', luminanceRange, 'YLim', pCurrentModulationRange, 'XTick', luminanceTicks, 'XScale', 'linear', 'FontSize', 12);
     xlabel('background luminance (cd/m2)', 'FontSize', 14, 'FontWeight', 'bold');
-    ylabel('current modulation (pAmps) [peak - baseline]', 'FontSize', 14, 'FontWeight', 'bold');
+    ylabel('current modulation (pAmps)', 'FontSize', 14, 'FontWeight', 'bold');
     hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'Location', 'NorthWest');
     grid on; box on;
     
     
-    posTL = subplotPosVectors2(7,3).v;
-    posTR = subplotPosVectors2(7,4).v;
-    posBL = subplotPosVectors2(9,3).v;
-    posBR = subplotPosVectors2(9,4).v;
-    subplot('Position', [posBL(1) posBL(2) width height]);
+    subplot('Position', subplotPosVectors2(3,1).v);
     hold on
-    plot(isomerizationRateModulation(:,1), photoCurrentModulation(:,1), 'rs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12); 
-    plot(isomerizationRateModulation(:,2), photoCurrentModulation(:,2), 'gs-', 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 2.0, 'MarkerSize', 12);
-    plot(isomerizationRateModulation(:,3), photoCurrentModulation(:,3), 'bs-', 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 2.0, 'MarkerSize', 12);
-    set(gca, 'FontSize', 14, 'XLim', [min(isomerizationRateModulation(:)) max(isomerizationRateModulation(:))],'FontSize', 12);
+    modelRegimeX = [modelRegime(1) modelRegime(1) modelRegime(2) modelRegime(2) modelRegime(1)];
+    modelRegimeY = [pCurrentModulationRange(1) pCurrentModulationRange(2) pCurrentModulationRange(2) pCurrentModulationRange(1) pCurrentModulationRange(1)];
+    patch(modelRegimeX, modelRegimeY, [0.83 0.83 0.63]);
+    plot(modelRegimeX, modelRegimeY, 'k--', 'LineWidth', 1.0);
+    plot(isomerizationRateModulation(:,1), photoCurrentModulation(:,1), 'rs-', 'LineWidth', 2.0, 'MarkerSize', 12); 
+    plot(isomerizationRateModulation(:,2), photoCurrentModulation(:,2), 'gs-', 'LineWidth', 2.0, 'MarkerSize', 9, 'Color', [0 0.7 0.0]);
+    plot(isomerizationRateModulation(:,3), photoCurrentModulation(:,3), 'bs-', 'LineWidth', 2.0, 'MarkerSize', 6);
+    
+    set(gca, 'XLim', [min(isomerizationRateModulation(:)) max(isomerizationRateModulation(:))],'FontSize', 12);
+    set(gca, 'YLim', pCurrentModulationRange);
     xlabel('isomerization rate modulation (R*/cone/sec) ', 'FontSize', 14, 'FontWeight', 'bold');
     ylabel('current modulation (pAmps)', 'FontSize', 14, 'FontWeight', 'bold');
-    hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'FontWeight', 'bold');
+    %hL = legend({'L', 'M', 'S'});set(hL, 'FontSize', 14, 'FontWeight', 'bold');
     grid on; box on;
     
+    
+
+    coneNames = {'L', 'M', 'S'};
+    lumColors = jet(numel(luminancesExamined));
+    for coneIndex = 1:3
+        for osTimeStepIndex = 1:numel(osTimeSteps)
+            legends = {'stimulus'};
+            subplot('Position', subplotPosVectors2(coneIndex, osTimeStepIndex+1).v);
+            
+            if (coneIndex == 1)
+                oiTimeAxisShift = 0.028;
+            elseif (coneIndex == 2)
+                oiTimeAxisShift = 0.024;
+            else
+                oiTimeAxisShift = 0.021;
+            end
+            oiTimeAxisShift = (oiTimeAxis(2)-oiTimeAxis(1))/2;
+            bar(oiTimeAxis+oiTimeAxisShift, modulationFunction, 1, 'EdgeColor', 'none', 'FaceColor', [0.75 0.75 0.75]);
+            
+            hold on;
+            for lumIndex = 1:size(timeAxisLMSfilters,1)
+                legends{numel(legends)+1} = sprintf('%d cd/m2', luminancesExamined(lumIndex));
+                IR = squeeze(LMSfilters(lumIndex, osTimeStepIndex, :, coneIndex));
+                normFactor = max(max(abs(LMSfilters(:, osTimeStepIndex,:,coneIndex))));
+                normFactor = max(IR);
+                plot(squeeze(timeAxisLMSfilters(lumIndex, osTimeStepIndex,:)), IR/normFactor, 'k-', 'MarkerSize', 10-2*coneIndex, 'LineWidth', 1.5, 'Color', 0.7*squeeze(lumColors(lumIndex,:))); hold on;
+            end
+            
+            
+            
+            plot(squeeze(timeAxisLMSfilters(lumIndex, osTimeStepIndex,:)), IR*0, 'k-');
+            
+            hold off;
+            grid on; box on;
+            
+            set(gca, 'XLim', [0 0.5], 'YLim', [-0.2 1], 'FontSize', 12);
+            hL = legend(legends, 'Location', 'NorthEast');
+            set(hL, 'FontSize', 12);
+            set(gca, 'FontSize', 14);
+            title(sprintf('%s-cone (timeStep: %2.2f ms)', coneNames{coneIndex}, osTimeSteps(osTimeStepIndex)*1000));
+            if (coneIndex < 3)
+                set(gca, 'XTickLabel', {});
+            else
+                xlabel('time (sec)', 'FontWeight', 'bold', 'FontSize', 14);
+            end
+            if (osTimeStepIndex > 1)
+                set(gca, 'YTickLabel', {});
+            end
+        end
+    end
+        
 end
 
 
