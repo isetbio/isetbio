@@ -49,8 +49,7 @@ p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('seed',1,@isnumeric);
-
-p.parse(obj,cMosaic);
+p.parse(obj,cMosaic, varargin{:});
 
 % Frozen noise seed
 seed = p.Results.seed;
