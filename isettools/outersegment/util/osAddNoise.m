@@ -43,13 +43,14 @@ function [adaptedCur, freq] = osAddNoise(curNF, varargin)
 p = inputParser;
 p.addRequired('curNF',@isnumeric);
 p.addParameter('sampTime',0.001,@isscalar);
-p.addParameter('seed',rng,@isstruct);
+p.addParameter('seed', 1 ,@isscalar);
 p.parse(curNF,varargin{:});
 
 sampTime = p.Results.sampTime;
 
 % We do not seem to be handling this correctly!
-% seed = p.Results.seed;
+seed = p.Results.seed;
+rng(seed);
 
 %% Build model and generate noise
 

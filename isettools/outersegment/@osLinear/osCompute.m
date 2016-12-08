@@ -137,7 +137,7 @@ switch obj.noiseFlag
         fprintf('Random noise added.\n')
         current = osAddNoise(current, 'sampTime',obj.timeStep);
     case 'frozen'
-        fprintf('Frozen noise added:  seed %d\n',seed)
+        fprintf('Frozen noise added: seed %d\n',seed)
         current = osAddNoise(current, 'sampTime',obj.timeStep,'seed',seed);
     otherwise
         error('Noise flag %s\n',obj.noiseFlag);

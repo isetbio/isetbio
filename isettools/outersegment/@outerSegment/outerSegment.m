@@ -68,9 +68,8 @@ classdef outerSegment < handle
             if ischar(val) && (ismember(lower(val), outerSegment.validNoiseFlags))
                 obj.noiseFlag = val;
             else
-                validNoiseFlags = outerSegment.validNoiseFlags
-                illegalValueForNoiseFlag = val
-                error('This is an invalid value for os.noiseFlag');
+                s = sprintf('%s ', outerSegment.validNoiseFlags{:});
+                error('''%s'' is an invalid value for os.noiseFlag. Choose one from: %s ', val,s);
             end
         end
         
