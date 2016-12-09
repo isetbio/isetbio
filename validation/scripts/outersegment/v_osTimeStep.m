@@ -31,7 +31,7 @@ ieInit;
 rng('default'); rng(1);
 
 % Define number of response instances
-instancesNum = 10; 
+instancesNum = 50; 
     
 % Steady params
 c0 = struct(...
@@ -40,10 +40,10 @@ c0 = struct(...
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
-    'integrationTime', 0.010, ...               %  
-    'photonNoise', 'random', ...                % add Poisson noise
-    'osTimeStep', 0.0005, ...                   % 0.5 millisecond
-    'osNoise', 'none' ...                       % no photocurrent noise
+    'integrationTime', 10/1000, ...             % 10 msec integrationTime 
+    'photonNoise', 'frozen', ...                % add Poisson noise
+    'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
+    'osNoise', 'frozen' ...                     % photocurrent noise
     );
 
 
@@ -62,7 +62,7 @@ c{stimulusConditionIndex} = theCondition;
 % Stimulus sampling interval > integration time
 stimulusConditionIndex = 3;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 66/1000;
+theCondition.stimulusSamplingInterval = 16/1000;
 c{stimulusConditionIndex} = theCondition;
 
 
@@ -100,7 +100,6 @@ UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstance
 UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 5));
 
-if (1==2)
 UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
 UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
 UnitTest.validationData('photoCurrentTimeAxisCond2', photocurrentsTimeAxis{2});
@@ -122,7 +121,6 @@ UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
 UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
 UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
 UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
-end
 
 end
 
@@ -146,7 +144,7 @@ function [theConeMosaic, theOIsequence, ...
     osNoise = condData.osNoise;
     
     % Define the time axis for the simulation
-    oiTimeAxis = 0:stimulusSamplingInterval:0.6;
+    oiTimeAxis = 0:stimulusSamplingInterval:0.4;
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     % Compute the stimulus modulation function

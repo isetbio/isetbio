@@ -78,7 +78,7 @@ function t_linearFilters
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1380 1010], 'Color', [1 1 1]);
     
-    videoOBJ = VideoWriter('IRsPhotonRate.mp4', 'MPEG-4'); % H264 format
+    videoOBJ = VideoWriter('IRs.mp4', 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 5; 
     videoOBJ.Quality = 100;
     videoOBJ.open();
