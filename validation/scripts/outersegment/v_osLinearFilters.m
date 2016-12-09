@@ -63,7 +63,6 @@ for iLum = 1:numel(backgroundLuminances)
 end
 
 filterTimeAxis = (1:size(LMSfilters{1,1},1))*theConeMosaic.integrationTime;
-photocurrentTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
 
 % Unit test validation data
 UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_osLinearFilters *****');

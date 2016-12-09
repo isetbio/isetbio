@@ -41,12 +41,12 @@ ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParam
 tolerance = 1E-3;
 
 % Check the oiCreate part
-photons = oiGet(ois.oiFixed,'photons');
-quantityOfInterest = sum(photons(:))/1.3379e+19 - 1;
+photonsFixed = oiGet(ois.oiFixed,'photons');
+quantityOfInterest = sum(photonsFixed(:))/1.3379e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiFixed photons',tolerance);
 
-photons = oiGet(ois.oiModulated,'photons');
-quantityOfInterest = sum(photons(:))/1.3379e+19 - 1;
+photonsModulated = oiGet(ois.oiModulated,'photons');
+quantityOfInterest = sum(photonsModulated(:))/1.3379e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 
 % This tests the generation of the sequence because the sequence is built
@@ -58,10 +58,17 @@ cMosaic.emGenSequence(length(ois.timeAxis));
 cMosaic.compute(ois);
 
 tolerance = 1E-2;
-quantityOfInterest = (sum(cMosaic.absorptions(:))/121450) - 1;
-UnitTest.assertIsZero(quantityOfInterest,'coneMosaic abosprtions',tolerance);
+totalAbsorptions = sum(cMosaic.absorptions(:));
+quantityOfInterest = (totalAbsorptions/121450) - 1;
+UnitTest.assertIsZero(quantityOfInterest,'coneMosaic absorptions',tolerance);
 
 % assert((sum(cMosaic.absorptions(:))/121450) - 1 < 1e-3);
+
+% Unit test validation data
+UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_oiSequence *****');
+UnitTest.validationData('photonsFixed', photonsFixed);
+UnitTest.validationData('photonsModulated', photonsModulated);
+UnitTest.validationData('totalAbsorptions', totalAbsorptions);
 
 end
 
