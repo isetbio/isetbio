@@ -96,81 +96,9 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
+        obj.spatialRF;
         
-        % The data for the size of the support is based off of this passage
-        % from Dacey, Brainard, Lee, et al., Vision Research, 2000, page
-        % 1808 bottom right.
-        % (http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf)
-        %
-        % Also see Boycott & Wassle, 1991,  (European Journal of
-        % Neuroscience), Table 1.
-        %
-        % Likely the larger RF sizes measured physiological (Dacey et al.)
-        % vs anatomically (B&W) reflect spread of signals among cones (via
-        % direct gap junctions) and probably more important among cone
-        % bipolars (via gap junctions with AII amacrine cells). - Fred
-        
-        % @JRG included  preferential cone selection to bipolar rfs. These
-        % set the basic parameters of the spatial receptive fields. There
-        % are some detailed modifications about the type of cone inputs (no
-        % S-cones to the on midget or the diffuse systems).
-        % 
-        % We will also incorporate a function that changes the size of the
-        % spread and support as a function of eccentricity.  For now we
-        % just put in some placeholder numbers.
-        
-        % These numbers don't make sense to BW at this time.  We
-        % need to write a script showing how big they are with
-        % respect to the cone mosaic, and we need to check how they
-        % vary with eccentricity.  Comparing with the curves in the
-        % cited data would be best.
-        
-        switch obj.cellType
-            case{'onDiffuse','offDiffuse'}
-                % Diffuse bipolars that carry parasol signals
-                % ecc = 0 mm yields 2x2 cone input to bp
-                % ecc = 30 mm yields 5x5 cone input to bp
-                
-                % BW, screwing around.  Just made spatial spread up here.
-                % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-                support = max(7,floor(2 + 3/10*(p.Results.ecc))); 
-                spread = 1;  % Standard deviation of the Gaussian - will be a function
-                rfCenterBig   = fspecial('gaussian',[support, support],spread);     % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support], 1.3*spread); % convolutional for now
-                
-                obj.sRFcenter   = rfCenterBig(:,:);
-                obj.sRFsurround = 0.7*rfSurroundBig(:,:);
-                
-            case {'onSBC'}
-                % Small bistratified cells - handle S-cone signals
-                
-                % Needs to be checked and thought through some more @JRG
-                % for this particular cell type.
-                support = floor(2 + 3/10*(p.Results.ecc));
-                
-                spread = 3;  % Standard deviation of the Gaussian - will be a function
-                rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support],1.5*spread); % convolutional for now
-                
-                obj.sRFcenter = rfCenterBig(:,:);
-                obj.sRFsurround = rfSurroundBig(:,:);
-                
-            case{'onMidget','offMidget'}
-                % Midget bipolars to midget RGCs
-                
-                % ecc = 0 mm yields 1x1 cone input to bp
-                % ecc = 30 mm yields 3x3 cone input to bp
-                % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-
-                support = floor(1 + (2/10)*(p.Results.ecc)); 
-                spread = 1;
-                obj.sRFcenter   = fspecial('gaussian',[support,support], spread); % convolutional for now
-                obj.sRFsurround = fspecial('gaussian',[support,support], 1.5*spread); % convolutional for now
-             
-        end
-        if isfield(p.Results,'cellLocation')
-            obj.cellLocation = p.Results.cellLocation;
-        end
+       
     end
     
     % see bipolarSet for details
@@ -191,6 +119,10 @@ methods
     function plot(obj, varargin)
         bipolarPlot(obj, varargin{:});
     end
+end
+
+properties (Constant)
+    validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
 end
 
 % Methods that must only be implemented (Abstract in parent class).
