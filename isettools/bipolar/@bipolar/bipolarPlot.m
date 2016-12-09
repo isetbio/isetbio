@@ -56,6 +56,7 @@ switch ieParamFormat(pType)
         % bp.plot('mosaic') - Shows RF array
         % At some point we will allow the sRF parameters to vary across the
         % array.
+        % See irPlot.m for an example.
         % Get contour lines for mosaic RFs
         
         spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.size, obj.col);
