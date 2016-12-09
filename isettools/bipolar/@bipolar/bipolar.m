@@ -55,7 +55,7 @@ methods
         
         p = inputParser;
         addRequired(p,  'cmosaic');
-        addParameter(p, 'cellType', 'offDiffuse', @ischar);
+        addParameter(p, 'cellType', 'offdiffuse', @(x)(ismember(x,obj.validCellTypes)));
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
@@ -96,7 +96,7 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
-        obj.spatialRF;
+        obj.spatialRFInit;
         
        
     end

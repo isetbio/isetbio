@@ -27,8 +27,7 @@ p.KeepUnmatched = true;
 allowableFields = {...
     'response','responseCenter','responseSurround',...
     'movieresponse', ...
-    'spatialrf'
-    };
+    'spatialrf','mosaic'};
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 % Parse pType
