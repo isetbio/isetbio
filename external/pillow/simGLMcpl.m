@@ -123,7 +123,7 @@ while jbin <= rlen
             
             % CHANGED FOR ISETBIO to reduce toolbox dependence
             % tspnext(icell) = ieExprnd(1,1); % draw RV for next spike in this cell            
-            tspnext = -log(rand(1));
+            tspnext(icell) = -log(rand(1));
         end
         jbin = ispk+1;  % Move to next bin
         % --  Update # of samples per iter ---

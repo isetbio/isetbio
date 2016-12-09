@@ -51,10 +51,10 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(inputObj, varargin)     
+    function obj = bipolar(cmosaic, varargin)     
         
         p = inputParser;
-        addRequired(p, 'inputObj');
+        addRequired(p,  'cmosaic');
         addParameter(p, 'cellType', 'offDiffuse', @ischar);
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
@@ -62,28 +62,17 @@ methods
         addParameter(p, 'ecc',  1, @isnumeric);
         addParameter(p, 'coneType',  -1, @isnumeric);
         
-        p.parse(inputObj, varargin{:});  
+        p.parse(cmosaic, varargin{:});  
         
-        % The input object should be coneMosaic, but it can also be an OS for
-        % backwards compatibility for now.
-        if isa(inputObj,'coneMosaic')
-            os = inputObj.os;
-            obj.coneType = inputObj.pattern;
-        else
-            os = inputObj;
-            if p.Results.coneType(1,1) == -1;
-                obj.coneType = ones(size(os.coneCurrentSignal,1),size(os.coneCurrentSignal,2));
-            else
-                obj.coneType = p.Results.coneType;
-            end
-            
-        end
+        % Store the spatial pattern of input cones
+        obj.coneType  = cmosaic.pattern;
         
+        % Match the time step of the cone mosaic
+        os = cmosaic.os;
         obj.patchSize = osGet(os,'patchSize');
-        obj.timeStep = osGet(os,'timeStep');
+        obj.timeStep  = cmosaic.integrationTime;
         
         obj.cellType = p.Results.cellType;
-        % obj.coneType = p.Results.coneType;
         
         switch p.Results.rectifyType
             case 1
@@ -130,20 +119,27 @@ methods
         % spread and support as a function of eccentricity.  For now we
         % just put in some placeholder numbers.
         
+        % These numbers don't make sense to BW at this time.  We
+        % need to write a script showing how big they are with
+        % respect to the cone mosaic, and we need to check how they
+        % vary with eccentricity.  Comparing with the curves in the
+        % cited data would be best.
+        
         switch obj.cellType
             case{'onDiffuse','offDiffuse'}
-                % Diffus bipolars that carry parasol signals
+                % Diffuse bipolars that carry parasol signals
                 % ecc = 0 mm yields 2x2 cone input to bp
                 % ecc = 30 mm yields 5x5 cone input to bp
                 
+                % BW, screwing around.  Just made spatial spread up here.
                 % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-                support = floor(2 + 3/10*(p.Results.ecc)); 
-                spread = 2;  % Standard deviation of the Gaussian - will be a function
-                rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
+                support = max(7,floor(2 + 3/10*(p.Results.ecc))); 
+                spread = 1;  % Standard deviation of the Gaussian - will be a function
+                rfCenterBig   = fspecial('gaussian',[support, support],spread);     % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support], 1.3*spread); % convolutional for now
                 
-                obj.sRFcenter = rfCenterBig(:,:);
-                obj.sRFsurround = rfSurroundBig(:,:);
+                obj.sRFcenter   = rfCenterBig(:,:);
+                obj.sRFsurround = 0.7*rfSurroundBig(:,:);
                 
             case {'onSBC'}
                 % Small bistratified cells - handle S-cone signals
@@ -154,7 +150,7 @@ methods
                 
                 spread = 3;  % Standard deviation of the Gaussian - will be a function
                 rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-                rfSurroundBig = fspecial('gaussian',[support,support],spread); % convolutional for now
+                rfSurroundBig = fspecial('gaussian',[support,support],1.5*spread); % convolutional for now
                 
                 obj.sRFcenter = rfCenterBig(:,:);
                 obj.sRFsurround = rfSurroundBig(:,:);
@@ -169,7 +165,7 @@ methods
                 support = floor(1 + (2/10)*(p.Results.ecc)); 
                 spread = 1;
                 obj.sRFcenter   = fspecial('gaussian',[support,support], spread); % convolutional for now
-                obj.sRFsurround = fspecial('gaussian',[support,support], spread); % convolutional for now
+                obj.sRFsurround = fspecial('gaussian',[support,support], 1.5*spread); % convolutional for now
              
         end
         if isfield(p.Results,'cellLocation')
@@ -177,17 +173,17 @@ methods
         end
     end
     
-    % set function, see bipolarSet for details
+    % see bipolarSet for details
     function obj = set(obj, varargin)
         bipolarSet(obj, varargin{:});
     end
     
-    % get function, see bipolarGet for details
+    % see bipolarGet for details
     function val = get(obj, varargin)
         val = bipolarGet(obj, varargin{:});
     end
     
-    % compute function, see bipolarCompute for details
+    % see bipolarCompute for details
     function val = compute(obj, varargin)
         val = bipolarCompute(obj, varargin{:});
     end

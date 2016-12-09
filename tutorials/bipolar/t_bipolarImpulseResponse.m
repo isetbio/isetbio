@@ -1,4 +1,4 @@
-% t_bipolar
+%% t_bipolarImpulseResponse
 % 
 % Implement full retinal pathway with sequential computations of the cone,
 % bipolar and RGC responses.
@@ -9,36 +9,13 @@
 % 5/2016 JRG (c) isetbio team
 
 %% Initialize
-clear
-% ieInit
+ieInit
 
-%% Load image sequence
-% Fred's code for examining impulse response
-osModelType = 'linear';
-% osModelType = 'biophys';
+%% Create impulse ois
 
-% Set up parameters for stimulus.
-timeStep = 1e-3;        % time step
-nSamples = .4/timeStep;        % 2000 samples
 
-flashIntens = 5000;    % flash intensity in R*/cone/sec (maintained for 1 bin only)
 
-% Create human sensor.
-sensor = sensorCreate('human');
-% sensor = sensorSet(sensor, 'size', [1 1]); % only 1 cone
-sensor = sensorSet(sensor, 'size', [64 64]); % only 1 cone
-sensor = sensorSet(sensor, 'time interval', timeStep);
 
-% Create stimulus.
-stimulus = zeros(nSamples, 1);
-if strcmp(osModelType,'linear')
-    stimulus = zeros(64,64,nSamples);
-    stimulus(31,31,round(23*.001/timeStep)) = flashIntens;
-else
-    stimulus = zeros(64,64,nSamples);
-    stimulus(round(24*.001/timeStep)) = flashIntens;
-end
-% stimulus = reshape(stimulus, [1 1 nSamples]);
 
 % Set photon rates. This is a kluge that appeared
 % just for this test, and that should probably go
@@ -229,27 +206,3 @@ os1 = osSet(os1, 'timeStep', 1/120);
 
 % Attach the movie to the object
 os1 = osSet(os1, 'rgbData', sceneRGB);
-
-%% Generate RGC object for simulated GLM prediction of response
-% Set the parameters for the inner retina RGC mosaic. For the inner retina
-% type irPhys, the values for eyeSide, eyeRadius and eyeAngle have no
-% effect, because those are dependent on the properties of the retinal
-% piece used in the Chichilnisky Lab experiment.
-
-% Set parameters
-params.name = 'macaque phys';
-params.eyeSide = 'left'; 
-params.eyeRadius = 12; 
-params.eyeAngle = 0; ntrials = 0;
-
-% Determined at beginning to allow looping
-params.experimentID = '2013-08-19-6'; % Experimental dataset
-params.stimulusTest = 'WN'; % WN or NSEM
-params.cellType = 'on parasol';         % ON or OFF Parasol
-
-% Create object
-innerRetina = irPhys(os1, params);
-nTrials = 57; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
-
-innerRetina = irCompute(innerRetina,os1);
-irPlot(innerRetina,'linear')

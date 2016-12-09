@@ -67,7 +67,8 @@ cMosaic.emGenSequence(emLength);
 cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
     'sceneDist',sceneGet(s,'distance'),...
     'focallength',oiGet(oi,'optics focal length'));
-cMosaic.compute(oi,'currentFlag',true);
+cMosaic.compute(oi);
+cMosaic.computeCurrent;
 
 % Show the window
 % cMosaic.window;
@@ -77,10 +78,10 @@ cMosaic.compute(oi,'currentFlag',true);
 
 %% Compute the bipolar response
 
-bp = bipolar(cMosaic.os);
+bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
-bp.compute(cMosaic.os);
+bp.compute(cMosaic);
 % bp.plot('movie response')
 
 %% Set other RGC mosaic parameters

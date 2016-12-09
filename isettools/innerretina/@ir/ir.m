@@ -15,27 +15,34 @@ classdef ir < handle
     % Neuroscience 22.7 (2002).
     %
     % Properties:
+    %
+    %  Established by constructor parameters
     %     name:      animal, ir; example: 'macaque ir'
-    %     row:       N Stimulus row samples
-    %     col:       N Stimulus col samples
-    %     spacing:   Stimulus input spacing (um)
-    %     timing:    Stimulus input time step (sec)
     %     eyeSide:   Left or right eye
     %     eyeRadius: Position of patch in radius
     %     eyeAngle:  Angle (degrees)
-    %     temporalEquivEcc: calculated from retinal position, see retinalLocationToTEE
+    %     temporalEquivEcc: calculated from retinal position, see
+    %     retinalLocationToTEE 
     %     numberTrials: number of trials for spike generation
-    %     mosaic: a cell array, where each cell is an rgcMosaic object,
-    %               which is a subclass of the ir object.
     %
-    % Methods: set, get, compute, plot
-    %       c
+    %   Inherited from bipolar input
+    %     row:       N Stimulus row samples
+    %     col:       N Stimulus col samples
+    %     size:   Stimulus input spacing (m)
+    %     timing:    Stimulus input time step (sec)
+    %
+    %  Established by the mosaicCreate method
+    %     mosaic: cell array of rgc mosaics 
+    %
+    % Methods: 
+    %   set, get, compute, plot
     %
     % Examples:
-    %
+    %   bp = bipolar(coneMosaic);
     %   innerRetina1 = irCreate(bp,'name','myRGC');
     %
-    %   params.name = 'Macaque inner retina 1'; %
+    %   params.name = 'Macaque inner retina 1';
+    %   params.eyeSide = 'left'; params.eyeRadius = 2;
     %   innerRetina2 = ir(bp, params);
     %
     % (c) isetbio team
@@ -51,32 +58,30 @@ classdef ir < handle
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
         
-        % We typically run a single trial
-        numberTrials = 1;
-        
-        % The ganglion cell types as a cell array
-        mosaic;
+        numberTrials;  % Number of trials when computing
+        mosaic;        % Cell array containing ganglion cell mosaics
+                       % The spatial sampling differs for each mosaic
     end
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        % The type of computation is specified by the ir
-        % subclass
-        % These are the general inner retina parameters
-        name;                  % Name of innerRetina, typically species name
         
-        % Input spacing and count
-        row;                   % N Stimulus row samples
-        col;                   % N Stimulus col samples
-        spacing;               % Stimulus input spacing (um)
-        timing;                % Stimulus temporal sampling (sec)
-        
-        % Eye properties
-        eyeSide;               % Left or right eye
-        eyeRadius;             % Position of patch in radius
-        eyeAngle;              % and angle (degrees)
-        temporalEquivEcc;      % Temporal equivalent eccentricity
+        name;       % Name of this innerRetina
+                    % Note: The computation is specified by the ir subclass
+                    % Is the spatial sampling is determined by the bipolar
+                    % input?
+
+        row;        % N Stimulus row samples (from bipolar)
+        col;        % N Stimulus col samples (from bipolar)
+        size;       % Patch size (m) measured at the cone mosaic
+        timeStep;   % Stimulus temporal sampling (sec) from bipolar
+                    % This is the same for all mosaics
+                        
+        eyeSide;          % Left or right eye
+        eyeRadius;        % Position of patch in radius
+        eyeAngle;         % and angle (degrees)
+        temporalEquivEcc; % Temporal equivalent eccentricity (mm, I think)
         
     end
     
@@ -86,55 +91,44 @@ classdef ir < handle
     
     % Public methods
     methods
-        function obj = ir(inputObj, varargin)
+        function obj = ir(bp, varargin)
+            % Constructor
+            %
+            % We require an inner retina to receive its inputs from a
+            % bipolar object.  To skip the bipolar model use a bpIdentity
+            % object.
             
             % parse input
             p = inputParser;
-            p.addRequired('inputObj');
+            p.addRequired('inputObj',@(x)(isa(bp,'bipolar')));
+            
+            p.addParameter('name','ir1',@ischar);
             p.addParameter('eyeSide','left',@ischar);
             p.addParameter('eyeRadius',0,@isnumeric);
             p.addParameter('eyeAngle',0,@isnumeric);
-            p.addParameter('name','ir1',@ischar);
             p.addParameter('species','macaque',@ischar);
+            p.addParameter('nTrials',1,@isscalar);
+            
             p.KeepUnmatched = true;
-            p.parse(inputObj,varargin{:});
+            
+            p.parse(bp,varargin{:});
             
             obj.eyeSide   = p.Results.eyeSide;
             obj.eyeRadius = p.Results.eyeRadius;
             obj.eyeAngle  = p.Results.eyeAngle;
-            obj.name      = p.Results.name;            
+            obj.name      = p.Results.name;
             
-            if length(inputObj) == 1
-                inputObjType = class(inputObj);
-                inputObjComponent = inputObj;
-            else
-                inputObjType = class(inputObj{1});
-                inputObjComponent = inputObj{1};
-            end
+            obj.numberTrials = p.Results.nTrials;
+
+            obj.size      = bipolarGet(bp,'patch size'); % Bipolar patch
+            obj.timeStep  = bipolarGet(bp,'time step');  % Temporal sampling
             
-            switch inputObjType
-                case{'osDisplayRGB'}
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(osGet(inputObj,'rgbData'));
-                case{'osIdentity'}
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(osGet(inputObjComponent,'photonRate'));
-                case{'bipolar'}
-                    obj.spacing = bipolarGet(inputObjComponent,'patch size'); % Bipolar width
-                    obj.timing  = bipolarGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~, ~] = size(bipolarGet(inputObjComponent,'bipolarResponseCenter'));
-                otherwise
-                    obj.spacing = osGet(inputObjComponent,'patch size'); % Cone width
-                    obj.timing  = osGet(inputObjComponent,'time step'); % Temporal sampling
-                    [obj.row, obj.col, ~] = size(osGet(inputObjComponent,'coneCurrentSignal'));
-            end
+            bpC = bipolarGet(bp,'bipolarResponseCenter');
+            obj.row = size(bpC,1);  obj.col = size(bpC,2);
+
+            obj.mosaic = cell(1); % Cells are added by mosaicCreate method
             
-            % Initialize the mosaic property but do not generate any mosaics
-            obj.mosaic = cell(1); % populated by mosaicCreate method
-            
-            % Get the TEE.
+            % Temporal equivalent eccentricity in deg
             obj.temporalEquivEcc = retinalLocationToTEE(obj.eyeAngle, obj.eyeRadius, obj.eyeSide);
             
         end

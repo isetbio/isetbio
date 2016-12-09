@@ -156,8 +156,8 @@ switch str
         psthTest = handles.rgcMosaic.get('spikes');
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
-        
-        uData = ieMovie(psthTest,vParams);    
+        frameSkip = round(1./handles.rgcMosaic.get('dt'));
+        uData = ieMovie(psthTest(:,:,1:frameSkip:end),vParams);    
     case 'Linear movie'
         disp(str)
         
@@ -205,8 +205,8 @@ switch str
         responsePsth = handles.rgcMosaic.get('psth');
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
-%         
-        uData = ieMovie(responsePsth,vParams);
+        frameSkip = round(1./handles.rgcMosaic.get('dt'));
+        uData = ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
         
 %         
 %         set(handles.btnPlayPause, 'Visible', 'on');

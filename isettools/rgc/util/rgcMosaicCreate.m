@@ -20,12 +20,11 @@ function ir = rgcMosaicCreate(ir, varargin)
 %   GLM     - Pillow et al. coupled generalized line
 %   LNP     - Linear, nonlinear, poisson (EJ 2002 reference)
 %   Phys    - Fitting the physiology data from EJ
-%   Deprecated: Linear  - Straight linear convolution
 %
 % Often, we call it as a method of the inner retina class. In that case,
 % the call looks like: 
 %
-%     ir = irCreate(osCreate('identity'));
+%     ir = irCreate(bipolar(coneMosaic));
 %     ir.mosaicCreate('model','lnp','type','on parasol');
 %     ir.mosaicCreate('model','GLM','type','on midget');
 %
@@ -55,13 +54,6 @@ model             = p.Results.model;
 % There is a separate mosaic class for each ir computational model.  
 % These are rgcMosaicLinear, rgcMosaicLNP, rgcMosaicGLM,...
 switch ieParamFormat(model)
-%     case {'linear','rgclinear'}
-%         % Straight linear convolution, no spikes
-%         % Chichilnisky & Kalmar, J. Neurosci (2002)
-%         % deprecated?  (BW).
-%         % 
-%         obj = rgcLinear(ir, mosaicType);
-%         irSet(ir, 'mosaic', obj);
     case {'lnp', 'rgclnp'}
         % Standard linear nonlinear poisson        
         % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
@@ -79,4 +71,6 @@ switch ieParamFormat(model)
         irSet(ir, 'mosaic', obj);
     otherwise
         error('Unknown inner retina class: %s\n',class(ir));
+end
+
 end

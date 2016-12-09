@@ -84,6 +84,7 @@ for flagInd = 1:length(osFlag)
         case 1 % osBioPhys
             cMosaic = cMosaic_osBioPhys;
     end
+    cMosaic.computeCurrent();
     
     % Compute the bipolar response
     fprintf('Bipolar compute ...');
@@ -100,7 +101,7 @@ for flagInd = 1:length(osFlag)
             bp = bipolar(cMosaic,'rectifyType',2);
     end
     
-    bp.compute(cMosaic.os);
+    bp.compute(cMosaic);
     
     % bp.plot('movie response')
     

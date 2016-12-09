@@ -25,10 +25,9 @@ p.KeepUnmatched = true;
 % Make key properties that can be set required arguments, and require
 % values along with key names.
 allowableFields = {...
-    'response',...
-    'responseCenter','bipolarresponsecenter',...    
-    'responseSurround','bipolarresponsesurround'...
-    'movieresponse'
+    'response','responseCenter','responseSurround',...
+    'movieresponse', ...
+    'spatialrf'
     };
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
@@ -44,9 +43,17 @@ sz = size(obj.responseCenter);
 % We need to get the units of time from the object, not as per below.
 
 % Options
-switch ieParamFormat(pType);  
+switch ieParamFormat(pType)
+    case 'spatialrf'
+        % bp.plot('spatial rf')
+        srf = obj.sRFcenter - obj.sRFsurround;
+        sz = size(srf); 
+        x = (1:sz(2)) - mean(1:sz(2));    
+        y = (1:sz(1)) - mean(1:sz(1)); 
+        surf(x,y,srf); colormap(parula);
+        xlabel('Cone position re: center'); zlabel('Responsivity')
     case{'responsecenter'}
-        
+        % bp.plot('response center')
         responseRS = reshape(obj.responseCenter,sz(1)*sz(2),sz(3));
         plot(.001*(1:sz(3)),responseRS);
         xlabel('Time (sec)');
@@ -54,7 +61,7 @@ switch ieParamFormat(pType);
         title('Bipolar Mosaic Response');
         
     case{'responsesurround'}
-        
+        % bp.plot('response surround')
         responseRS = reshape(obj.responseSurround,sz(1)*sz(2),sz(3));
         plot(.001*(1:sz(3)),responseRS);
         xlabel('Time (sec)');
@@ -62,7 +69,7 @@ switch ieParamFormat(pType);
         title('Bipolar Mosaic Response');
         
     case{'response'}
-        
+        % bp.plot('response')
         response = reshape(obj.get('response'),sz(1)*sz(2),sz(3));
         plot(.001*(1:sz(3)),response);
         xlabel('Time (sec)');
@@ -77,7 +84,8 @@ switch ieParamFormat(pType);
             ieMovie(obj.get('response'),varargin{:});
         else
             % List of params
-            ieMovie(obj.get('response'),'hf',hdl,varargin{:});
+            r = obj.get('response');
+            ieMovie(r,'hf',hdl,varargin{:});
         end
 end
 

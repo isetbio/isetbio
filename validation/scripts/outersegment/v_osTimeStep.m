@@ -20,6 +20,9 @@ end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
+%%
+% The ground truth data are no longer consistent.
+% This code is too long, needs some attention and simplification.
 
 %% Init
 ieInit;
@@ -28,7 +31,7 @@ ieInit;
 rng('default'); rng(1);
 
 % Define number of response instances
-instancesNum = 50; 
+instancesNum = 10; 
     
 % Steady params
 c0 = struct(...
@@ -37,10 +40,10 @@ c0 = struct(...
     'modulationGain', 1.0, ...                  % 100%  modulation against background
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
-    'integrationTime', 10/1000, ...             % 15 msec
-    'photonNoise', 'random', ...                % add Poisson noise, select from {'random', 'frozen', 'none'}
-    'osTimeStep', 0.5/1000, ...                 % 0.5 millisecond
-    'osNoise', 'random' ...                     % add outer segment noise, select from {'random', 'frozen', 'none'}
+    'integrationTime', 0.010, ...               %  
+    'photonNoise', 'random', ...                % add Poisson noise
+    'osTimeStep', 0.0005, ...                   % 0.5 millisecond
+    'osNoise', 'none' ...                       % no photocurrent noise
     );
 
 

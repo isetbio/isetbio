@@ -36,7 +36,7 @@ sensor = sensorSet(sensor, 'photon rate', stimulus);
 
 %% Instantiate an osLinear object.
 linearOS = osCreate('linear');%,'noiseFlag', 1);
-linearOS = osSet(linearOS, 'noise flag', 0);
+linearOS = osSet(linearOS, 'noise flag', 'none');
 % linearOS = osLinear('noiseFlag', 1); %osLinear
 
 %% Compute linear outer segment response.

@@ -127,6 +127,7 @@ end
 
 % Reshape the current back into (x,y,t) format
 current = XW2RGBFormat(current, r, c);
+% ieMovie(current);
 
 % Noise anyone?
 switch obj.noiseFlag
@@ -141,5 +142,5 @@ switch obj.noiseFlag
     otherwise
         error('Noise flag %s\n',obj.noiseFlag);
 end
-
+% ieMovie(current);
 end

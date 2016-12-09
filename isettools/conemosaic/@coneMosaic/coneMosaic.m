@@ -1,7 +1,24 @@
 classdef coneMosaic < hiddenHandle
     % Create a cone mosaic class
     %
-    %   cMosaic =  coneMosaic('pigment', photoPigment, 'os', os);
+    %   cMosaic =  coneMosaic( ... many parameters ...);
+    %
+    % Parameters
+    %    name    - Mosaic name
+    %    wave    - Wavelength samples
+    %    pigment - Cone photopigment object
+    %    os      - Outer segment
+    %
+    %    size    - Spatial size (number of row/col cones)
+    %    pattern - Cone type at each position (1-4, K,L,M,S)
+    %    center  - Position of center in the retina
+    %
+    %    spatialDensity  - Relative density of cone types, K,L,M,S
+    %    integrationTime - Temporal integration in sec
+    %
+    %    emPositions - Eye movement positions (Nx2)
+    %
+    %    noiseFlag  = logical, add photon noise (default) or not
     %
     % The cone mosaic defines the absorptions and photocurrent in an array
     % of cones. The default cone mosaic is rectangular.  There is a
@@ -121,32 +138,28 @@ classdef coneMosaic < hiddenHandle
             % parameter and create cones of the appropriate size for that
             % retinal location
             
-            % parse input
             p = inputParser;
             
             p.addParameter('name', 'cone mosaic', @ischar);
             
-            % Included objects
-            p.addParameter('pigment', photoPigment(), ...
-                @(x) isa(x, 'photoPigment'));
-            p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
-            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment')));
-
-            % Mosaic parameters
-            p.addParameter('center',[0 0], @(x)(numel(x) ==2));
-            p.addParameter('wave', 400:10:700, @isnumeric);
-            p.addParameter('pattern', [], @isnumeric);
-            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
-            p.addParameter('size', [72 88], @isnumeric);
-            p.addParameter('integrationTime', 0.05, @isscalar);
             
-            % Computational features
-            p.addParameter('emPositions', [0 0], @isnumeric);
+            p.addParameter('pigment', photoPigment(), ...
+                @(x) isa(x, 'photoPigment'));                              % Photopigment object
+            p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));   % Macular pigment object
+            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment'))); % outerSegement object
+
+            p.addParameter('center',[0 0], @(x)(numel(x) ==2));   % Center of the patch in the visual field
+            p.addParameter('wave', 400:10:700, @isnumeric);       % Wave in nm
+            p.addParameter('pattern', [], @isnumeric);            % Spatial array of cone types
+            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);  % Relative density (K,L,M,S)
+            p.addParameter('size', [72 88], @isnumeric);          % Number of cone samples (row,col)
+            p.addParameter('integrationTime', 0.005, @isscalar);  % Temporal integration in sec
+            
+            p.addParameter('emPositions', [0 0], @isnumeric);     % Eye movement positions
             
             % How we handle coneMosaic noise
             vFunc = @(x)(ismember(lower(x), coneMosaic.validNoiseFlags));
-            p.addParameter('noiseFlag', 'random', vFunc);
-            
+            p.addParameter('noiseFlag', 'random', vFunc);            
             p.parse(varargin{:});
             
             % set properties

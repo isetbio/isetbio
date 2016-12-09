@@ -2,13 +2,13 @@ function obj = osSet(obj, param, value)
 % Sets isetbio outersegment object properties for base class
 % 
 % Parameters:
-%   {'noise flag'} -  sets current as noise-free ('0') or noisy ('1')
+%   {'noise flag'} -  'random','frozen','none'
 %   {'time step'}  -  
 %   {'patch size'} -  
 %   {'cone current signal'} -  
 %
 % Example:
-%   adaptedOS = osSet(adaptedOS, 'noise flag', 0);
+%   adaptedOS = osSet(adaptedOS, 'noise flag', 'none');
 % 
 % 8/2015 JRG NC DHB
 

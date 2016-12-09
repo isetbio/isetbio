@@ -3,41 +3,47 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %
 %     ois = oisCreate(oisType,param/val)
 %
-% Examples
+% Create an oiSequence object that produces a small video of a simple
+% stimulus.
 %
-%  Harmonic -  TODO:  We can add parameters to the params(:) struct that
-%  specify the scene sets.
+% Required:
+%   oisType:  One of a collection of simple stimuli.  At present we have
+%     'vernier','harmonic','impulse'.
+%   composition: 'add' or 'blend'
+%   modulation:   Vector of weights describing the add or blend parameters.
+%
+% Parameters:
+%    testParameters:  Parameters for the test targets.  This structure contents
+%                     depend on the oisType.
+%    sceneParameters: General scene parameters (e.g., fov, luminance)
 %   
-% We need a way to send in the weights (modulationFunction)
-%
-% We build the stimulus using a time series of weights. We have the mean
-% field on for a while, then rise/fall, then mean field.
-%
-% stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-% weights = [zeros(1, 30), stimWeights, zeros(1, 30)];
-% 
-% Example:
+% Examples:
+%  We build the stimulus using a time series of weights. We have the mean
+%  field on for a while, then rise/fall, then mean field.
 %
 % Harmonics
-%
-%   hparams(1) = harmonicP; 
-%   hparams(2) = hparams(1); hparams(2).contrast = 0;
-%   sparams.fov = 0.3; 
-%   [ois, scenes] = oisCreate('harmonic','blend',weights, 'hparams',hparams,'sparams',sparams);
+%   clear hparams
+%   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
+%   hparams(1) = hparams(2); hparams(1).contrast = 0; sparams.fov = 1; 
+%   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
+%   ois = oisCreate('harmonic','blend',stimWeights, 'tparams',hparams,'sparams',sparams);
 %   ois.visualize;
 %
 %  Vernier
-%
-%   clear hparams; hparams(2) = vernierP; 
-%   hparams(2).name = 'offset'; hparams(2).bgColor = 0;
-%   hparams(1) = hparams(2); 
-%   hparams(1).barWidth = 0; hparams(1).bgColor = 0.5; hparams(1).name = 'uniform';
-%   [vernier, scenes] = oisCreate('vernier','add', weights,'hparams',hparams,'sparams',sparams);
+%   clear vparams; vparams(2) = vernierP; 
+%   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
+%   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
+%   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
+%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,'tparams',vparams,'sparams',sparams);
 %   vernier.visualize;
 %   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %
-% Impulse - Useful for testing photocurrent response
-%
+% Impulse 
+%   clear iparams
+%   sparams.fov = 1; sparams.luminance = 100;
+%   stimWeights = zeros(1,50); stimWeights(2:4) = 1;
+%   impulse = oisCreate('impulse','add', stimWeights,'sparams',sparams);
+%   impulse.visualize;
 %
 % BW ISETBIO Team, 2016
 
@@ -48,8 +54,8 @@ p.addRequired('composition',@ischar);
 p.addRequired('modulation');
 
 p.addParameter('sampleTimes',[],@isvector);
-p.addParameter('tparams',[],@isstruct);
-p.addParameter('sparams',[],@isstruct);
+p.addParameter('testParameters',[],@isstruct);
+p.addParameter('sceneParameters',[],@isstruct);
 
 p.parse(oisType,composition,modulation,varargin{:});
 
@@ -63,14 +69,13 @@ if isempty(sampleTimes)
 end
 
 % Many of the types have a params structure that we will pass along
-tparams = p.Results.tparams;   % Test stimulus parameters (two structs needed)
-sparams = p.Results.sparams;   % Scene parameters, only one set.
+tparams = p.Results.testParameters;   % Test stimulus parameters (two structs needed)
+sparams = p.Results.sceneParameters;   % Scene parameters, only one set.
 
 %%
 switch oisType
     case 'harmonic'
-        % oisCreate('harmonic',params);
-        % params:  A two element array as returned by harmonicP;
+        % oisCreate('harmonic', ...); % See examples
         if length(tparams) ~= 2, error('Specify two harmonic param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
@@ -88,7 +93,7 @@ switch oisType
         if ~isempty(fields)
             for ii=1:length(fields)
                 for jj=1:2
-                    val = eval(['sparams.',fields{ii}]);
+                    val = sparams.(fields{ii});
                     scene{jj} = sceneSet(scene{jj}, fields{ii},val);
                 end
             end
@@ -111,7 +116,7 @@ switch oisType
         % Return the cell array of scenes.
         varargout{1} = scene;
     case 'vernier'
-        % oisCreate('vernier', ...);
+        % oisCreate('vernier', ...);   % See examples
         if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
@@ -127,7 +132,7 @@ switch oisType
         if ~isempty(fields)
             for ii=1:length(fields)
                 for jj=1:2
-                    val = eval(['sparams.',fields{ii}]);
+                    val = sparams.(fields{ii});
                     scene{jj} = sceneSet(scene{jj}, fields{ii},val);
                 end
             end
@@ -149,11 +154,7 @@ switch oisType
         varargout{1} = scene;
         
     case 'impulse'
-        % oisCreate('impulse', ...);
-        % sparams sets 'fov' and luminance.
-        % The weights are expected to be [0 0 .... 1 ... 0 0];
-        % Composition:  Usually add
-        % tparams(2) could be uniform with equal intensity
+        % oisCreate('impulse', 'add', weights,'sparams',sparams); % See examples
         scene = cell(1,2);
         OIs = cell(1, 2);
         
@@ -167,13 +168,12 @@ switch oisType
             if ~isempty(fields)
                 for ii=1:length(fields)
                     for jj=1:2
-                        val = eval(['sparams.',fields{ii}]);
-                        scene{jj} = sceneSet(scene{jj}, fields{ii},val);
+                        val = sparams.(fields{ii});
+                        scene{jj} = sceneSet(scene{jj}, fields{ii}, val);
                     end
                 end
             end
         end
-        
         %ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
         
         % Compute optical images from the scene
@@ -187,7 +187,7 @@ switch oisType
             'composition', composition);
         % ois.visualize;  % Not working right.  Something about image scale
         
-        % Return the cell array of scenes.
+        % Potentially return the cell array of scenes.
         varargout{1} = scene;
         
     otherwise

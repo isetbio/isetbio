@@ -2,7 +2,7 @@ function val = osGet(obj, param)
 % Get base class outer segment parameters
 % 
 % Parameters:
-%  'noise flag' - noise-free ('0') or include noise ('1')
+%  'noise flag' - 'random','frozen','none'
 %  'timestep'   -  delta t
 %  'cone current signal' - cone current as a function of time
 %  'patch size'          - diameter of the cone mosaic patch

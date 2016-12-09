@@ -62,7 +62,7 @@ meanCurrent = zeros(1,3);
 % Generate the cone mosaic with biophysical model for the
 % impulse stimulus
 osCM = osBioPhys('osType',osType);
-osCM.set('noise flag',0);                  % Run it without noise
+osCM.set('noise flag','none');                  % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;

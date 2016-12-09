@@ -72,7 +72,7 @@ end
 cMosaic.rows = 144; cMosaic.cols = 176;
 cMosaic.emGenSequence(emLength);
 
-cMosaic.compute(oi,'currentFlag',false);
+cMosaic.compute(oi);
 cMosaic.computeCurrent();
 
 % Show the window
@@ -83,10 +83,10 @@ cMosaic.computeCurrent();
 
 %% Compute the bipolar response
 
-bp = bipolar(cMosaic.os);
+bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',1);
-bp.compute(cMosaic.os);
+bp.compute(cMosaic);
 
 %% Set other RGC mosaic parameters
 

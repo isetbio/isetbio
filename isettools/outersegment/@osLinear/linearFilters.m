@@ -66,7 +66,7 @@ meanCurrent = zeros(1,3);
 % We turn off the noise and use the biophysical coneMosaic model to
 % calculate an impulse response.
 osCM = osBioPhys('osType',eccentricity);   % Will become eccentricity some day
-osCM.set('noise flag', 'none');            % Run it without noise
+osCM.set('noise flag','none');            % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;
