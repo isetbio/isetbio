@@ -14,12 +14,12 @@ ieInit;
 
 % Define the time axis for the simulation
 stimulusSamplingInterval = 10/1000;            % 5 milliseconds
-oiTimeAxis = 0:stimulusSamplingInterval:0.3;   % 0.1 seconds
+oiTimeAxis = 0:stimulusSamplingInterval:0.1;   % 0.1 seconds
 oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
 
 FOV = 1.0;
-backgroundLuminances = [30 50 100 300 500]; 
-osTimeSteps = [0.01 0.05 0.1 0.5 1.0]/1000;
+backgroundLuminances = [30 100 300]; 
+osTimeSteps = [0.01 0.1 1.0]/1000;
 
 % Compute the stimulus modulation function
 stimulusRampTau = 180/1000;
@@ -55,7 +55,7 @@ for iLum = 1:numel(backgroundLuminances)
     for iStepIndex = 1:numel(osTimeSteps)
         theConeMosaic.os.timeStep = osTimeSteps(iStepIndex);
         % Compute all instances 
-        [isomerizations, photocurrents{iLum, iStepIndex}, LMSfilters{iLum, iStepIndex}] = ...
+        [~, ~, LMSfilters{iLum, iStepIndex}] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
             'emPaths', emPaths, ...
             'currentFlag', true);
@@ -69,27 +69,16 @@ photocurrentTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
 UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_osLinearFilters *****');
 UnitTest.validationData('LMSfilters', LMSfilters);
 UnitTest.validationData('filterTimeAxis', filterTimeAxis);
-UnitTest.validationData('photocurrentTimeAxis', photocurrentTimeAxis);
 UnitTest.validationData('backgroundLuminances', backgroundLuminances);
 UnitTest.validationData('osTimeSteps', osTimeSteps);
 
     
 if (runTimeParams.generatePlots)
-    plotIRs(osTimeSteps, backgroundLuminances, LMSfilters, filterTimeAxis, photocurrents, photocurrentTimeAxis)
+    plotIRs(osTimeSteps, backgroundLuminances, LMSfilters, filterTimeAxis)
 end
 end
 
-function plotIRs(osTimeSteps, backgroundLuminances, LMSfilters, filterTimeAxis, photocurrents, photocurrentTimeAxis)
-
-subplotPosVectors2 = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 1, ...
-           'colsNum', 3, ...
-           'heightMargin',   0.04, ...
-           'widthMargin',    0.05, ...
-           'leftMargin',     0.05, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.04, ...
-           'topMargin',      0.04);
+function plotIRs(osTimeSteps, backgroundLuminances, LMSfilters, filterTimeAxis)
        
 subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2, ...
@@ -145,41 +134,6 @@ for iLum = 1:numel(backgroundLuminances)
             set(hL, 'FontSize', 12);
             title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
                 'FontSize', 14, 'FontWeight', 'bold');
-        end % coneIndex
-        drawnow
-    end % iStepIndex
-end %iLum
-
-
-
-hFig = figure(2); clf;
-set(hFig, 'Position', [10 10 1380 500], 'Color', [1 1 1]);
-
-for iLum = 1:numel(backgroundLuminances)
-    legends = {};
-    for iStepIndex = 1:numel(osTimeSteps)
-        legends{numel(legends)+1} = sprintf('os.timeStep: %2.3fms', osTimeSteps(iStepIndex)*1000);
-        color = squeeze(colorIR(iStepIndex,:));
-        for coneIndex = 1:3  
-            subplot('Position', subplotPosVectors2(1,coneIndex).v);
-            photocurrent = squeeze(photocurrents{iLum, iStepIndex}(1,1,coneIndex,:));
-            plot(photocurrentTimeAxis, photocurrent , 'k-', 'Color', color, 'LineWidth', 1.5);
-            if (iStepIndex == 1) 
-                hold on;
-            end
-            if (iStepIndex == numel(osTimeSteps))
-                hold off;
-            end
-            set(gca, 'XLim', [photocurrentTimeAxis(1) photocurrentTimeAxis(end)], 'YLim', [-90 -30], 'YTick', (-100:10:0), 'XTick', (photocurrentTimeAxis(1):0.05:photocurrentTimeAxis(end)), 'FontSize', 12);
-            if (coneIndex == 1)
-                ylabel('photocurrent (pAmps)');
-            end
-            grid on; box on;
-            hL = legend(legends);
-            set(hL, 'FontSize', 12);
-            title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
-                'FontSize', 14, 'FontWeight', 'bold');
-
         end % coneIndex
         drawnow
     end % iStepIndex
