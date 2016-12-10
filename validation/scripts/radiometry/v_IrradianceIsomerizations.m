@@ -46,7 +46,10 @@ function ValidationFunction(runTimeParams)
     s_initISET;
        
     %% Set computation params
-    fov     = 20;  % need large field
+    %
+    % Need a large field of view for this check to avoid edge
+    % artifacts from optical blurring.
+    fov = 20; 
     roiSize = 5;
         
     %% Create a radiance image in ISETBIO
@@ -201,11 +204,17 @@ function ValidationFunction(runTimeParams)
     
     % Create isetbio sensor object with human cones, and pull out quantal
     % efficiencies. 
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor,'size',oiGet(oi,'size'));
-    sensor = sensorSet(sensor,'noise flag',0);
-    isetbioCones = sensorGet(sensor,'spectral qe');
-    isetbioCones = isetbioCones(:,2:4);
+    cMosaic = coneMosaic;
+    cMosaic.setSizeToFOV(fov);
+    cMosaic.noiseFlag = 'none';
+    cMosaic.rows = oiGet(oi,'rows'); 
+    cMosaic.cols = oiGet(oi,'cols');
+    isetbioCones = cMosaic.qe(:,2:4);
+%     sensor = sensorCreate('human');
+%     sensor = sensorSet(sensor,'size',oiGet(oi,'size'));
+%     sensor = sensorSet(sensor,'noise flag',0);
+%     isetbioCones = sensorGet(sensor,'spectral qe');
+%     isetbioCones = isetbioCones(:,2:4);
     
     % Multiply by the lens transmittance, to agree with old validations 
     % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
