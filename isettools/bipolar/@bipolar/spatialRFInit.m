@@ -12,7 +12,7 @@ function spatialRFInit(obj,varargin)
 %
 %  "For midget bipolar cells, it is known that at retinal eccentricities up
 %  to 10 mm virtually all cells restrict dendritic contact to single cones
-%  (Milam et al., 1993; Wa¨ssle et al., 1994); this was confirmed for the
+%  (Milam et al., 1993; Wassle et al., 1994); this was confirmed for the
 %  cell whose light response is illustrated in Fig. 4. B) Also see Boycott
 %  & Wassle, 1991,  (European Journal of Neuroscience), Table 1."
 %
