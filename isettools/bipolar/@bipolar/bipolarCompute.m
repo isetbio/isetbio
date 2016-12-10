@@ -113,7 +113,7 @@ osSig = RGB2XWFormat(cmosaic.current);
 % above.
 %
 switch obj.cellType
-    case{'offDiffuse','onDiffuse','onMidget'}
+    case{'offdiffuse','ondiffuse','onmidget'}
 
         osSigCenter   = osSig;
         osSigSurround = osSig;
@@ -129,7 +129,7 @@ switch obj.cellType
         osSigCenter(S(:),:)   = z;
         osSigSurround(S(:),:) = z;
         
-    case{'offMidget'}
+    case{'offmidget'}
         % Keep S cone input for off Midget but only weight by 0.25
         
         % Find the locations (row, col) of the different cone types
@@ -143,7 +143,7 @@ switch obj.cellType
         osSigSurround   = osSig;
         osSigSurround(S,:) = 0.25*(osSigSurround(S,:)-minval)+minval;
 
-    case{'onSBC'}  
+    case{'onsbc'}  
         % Set L and M cones to zero in SBC center, set S cones to zero in
         % SBC surround.
         % Find the locations (row, col) of the different cone types
