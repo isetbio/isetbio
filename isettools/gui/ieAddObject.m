@@ -49,8 +49,6 @@ if exist('obj','var')
             oi = vcSESSION.OPTICALIMAGE{val};
             oi = oiSet(oi,'optics',obj);
             vcSESSION.OPTICALIMAGE{val} = oi;
-        case {'sensor'}
-            vcSESSION.ISA{val} = obj;
         case {'pixel'}
             sensor = vcSESSION.ISA{val};
             sensor = sensorSet(sensor,'pixel',obj);
