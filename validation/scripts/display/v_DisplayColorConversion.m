@@ -18,21 +18,6 @@ close all; ieInit;
 %% Some informative text
 UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display color conversion.');
 
-%% Remove the Brainard lab PTB overrides folder from the path
-%
-% This prevents this code from using the new BL object oriented PTB
-% overrides.  We could include these inside of isetbio, but the risk is
-% that whether this program worked or not would depend on whether isetbio
-% was before or after PTB on the user's path, something we don't want to
-% have to deal with.  Elsewhere (not in isetbio), we have established that
-% the PTB and BrainardLab routines do the same thing (which is not
-% surprising, as the actual calculations are done by the same underlying
-% code in each case, just accessed differently.)
-%
-% But, we don't think we need this.
-%[removedFolderFromCurrentPath, originalPath] = removeBrainardLabPTBOverrides();
-
-
 try
     %% Overview
     %
@@ -126,7 +111,7 @@ try
             nSummed(coneType) = nSummed(coneType) + 1;
         end
     end
-    isetbioLMSIsomerizations = sumIsomerizations ./ nSummed;
+    isetbioLMSIsomerizationsRaw = sumIsomerizations ./ nSummed;
     
     %% Get cone fundamentals that ISETBIO is using, for use with PTB routines.
     %
@@ -255,9 +240,11 @@ try
     % used to for foveal cones.  You can get this area via the call
     %   coneCollectingArea = cMosaic.pigment.pdArea;
     % But to stay with the old validation data, we just put in the value of
-    % 4e-12 (area expressed as M^2) here.
+    % 4e-12 (area expressed as M^2) here and reference both sets of
+    % isomerizations to that value.
     coneCollectingArea = 4e-12;
     ptbLMSIsomerizations = coneCollectingArea*ptbLMSIsomerizationsRaw;
+    isetbioLMSIsomerizations = (coneCollectingArea/cMosaic.pigment.pdArea)*isetbioLMSIsomerizationsRaw;
      
     %% Compare the two methods.
     % 
@@ -265,7 +252,7 @@ try
     % will be wonky.
     %
     % Agreement is better than 1% 
-    isomerizationRatios = (cMosaic.pigment.pdArea*ptbLMSIsomerizationsRaw) ./ isetbioLMSIsomerizations;
+    isomerizationRatios = ptbLMSIsomerizations ./ isetbioLMSIsomerizations;
     fprintf('PTB/ISETBIO LMS isomerization ratios: %0.3f, %0.3f, %0.3f\n',isomerizationRatios(1),isomerizationRatios(2),isomerizationRatios(3));
     tolerance = 0.01;
     UnitTest.assertIsZero(abs(isomerizationRatios(1)-1),'L isomerization comparison',tolerance);
