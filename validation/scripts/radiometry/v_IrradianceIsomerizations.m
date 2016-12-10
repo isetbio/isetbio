@@ -208,7 +208,8 @@ function ValidationFunction(runTimeParams)
     cMosaic.setSizeToFOV(fov);
     cMosaic.noiseFlag = 'none';
     cMosaic.rows = oiGet(oi,'rows'); 
-    cMosaic.cols = oiGet(oi,'cols');    
+    cMosaic.cols = oiGet(oi,'cols'); 
+    cMosaic.integrationTime = integrationTimeSec;
     isetbioCones = cMosaic.qe;
 %     sensor = sensorCreate('human');
 %     sensor = sensorSet(sensor,'size',oiGet(oi,'size'));
@@ -235,9 +236,8 @@ function ValidationFunction(runTimeParams)
     %  2) Compare with PTB computation done above.
     %  3) Work through parameters that might lead to differences
     %    e.g., cone aperture, integration time, ...
-    cMosaic.integrationTime = integrationTimeSec;
     cMosaic.compute(oi);
-    %sensor = sensorSet(sensor, 'exp time', );
+    %sensor = sensorSet(sensor, 'exp time',integrationTimeSecs );
     %sensor = sensorCompute(sensor, oi);
     isetbioIsomerizationsArray = cMosaic.absorptions;
     
@@ -280,10 +280,11 @@ function ValidationFunction(runTimeParams)
     end
     ptbConeArea = pi*((ptbConeDiameter/2)^2);
     %pixel = sensorGet(sensor,'pixel');
-    isetbioConeArea = cMosaic.patternSampleSize(1)*cMosaic.patternSampleSize(2)*1e12;
+    isetbioConeArea = cMosaic.pigment.pdArea*1e12;
     ptbAreaCorrectedIsomerizations = (isetbioConeArea/ptbConeArea)*ptbIsomerizations;
     
     %% Also need to correct for magnification difference
+    %
     % This follows irradiance correction above.
     ptbCorrectedIsomerizations = ptbAreaCorrectedIsomerizations/(1+abs(m))^2;
 
