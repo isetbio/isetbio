@@ -75,9 +75,6 @@ try
     scene = sceneFromFile(theRGBImage,'rgb',[],d);
     scene = sceneSet(scene,'fov', sceneDegrees);
     sceneSize = sceneGet(scene,'size');
-    if (runTimeParams.generatePlots)
-        vcAddAndSelectObject(scene); sceneWindow;
-    end
     
     %% Compute optial image, for delta function optics.
     oi = oiCreate('human');
@@ -87,52 +84,45 @@ try
     oi = oiSet(oi,'optics',optics);
     oi = oiCompute(scene,oi);
     oi = oiSet(oi,'fov',sceneDegrees);
-    if (runTimeParams.generatePlots)
-        vcAddObject(oi); oiWindow;
-    end
     
-    %% Compute sensor image
+    %% Compute mosaic responses
     % 
     % Integration time is set to 1 second, so this comes out as
     % isomserizations per second.  The run without photon/shot noise, so
     % that the comparison will not be stochastic.
-    sensorDegrees = 2;
+    mosaicDegrees = 2;
     roiPixels = 10;
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor,'wave',displayGet(d,'wave'));
-    sensor = sensorSet(sensor, 'noise flag', 0);
-    sensor = sensorSet(sensor,'exp time',1);
-    sensor = sensorSet(sensor,'rows',128);
-    sensor = sensorSet(sensor,'cols',128);
-    [sensor, ~] = sensorSetSizeToFOV(sensor,sensorDegrees,scene,oi);
-    
-    
-    sensor = sensorCompute(sensor,oi);
-    if (runTimeParams.generatePlots)
-        vcAddObject(sensor); sensorWindow('scale',1);
-    end
+    cMosaic = coneMosaic;
+    cMosaic.wave = displayGet(d,'wave');
+    cMosaic.noiseFlag = 'none';
+    cMosaic.integrationTime = 1;
+    cMosaic.rows = 128;
+    cMosaic.cols = 128;
+    cMosaic.setSizeToFOV(mosaicDegrees);
     
     %% Get the LMS isomerization rates out of the sensor image
     %
     % Pull out responses of each cone type within ROI. I am doing this by
     % brute force, because I can't find quite the right combination of ROI
     % gets from the sensor image.
-    isetbioIsomerizationsArray = sensorGet(sensor,'photons');    
-    sensorCFA = sensorGet(sensor,'cfa');
-    sensorSizePixels = sensorGet(sensor,'size');
-    rect = round([sensorSizePixels(2)/2,sensorSizePixels(1)/2,roiPixels,roiPixels]);
-    sensorRoiLocs = ieRoi2Locs(rect);
-    nLocs = size(sensorRoiLocs,1);
+    cMosaic.compute(oi);
+    isetbioIsomerizationsArray = cMosaic.absorptions;
+    
+    % Get the isomerizations in an ROI
+    mosaicCFA = cMosaic.pattern;
+    rect = round([cMosaic.cols/2,cMosaic.rows/2,roiPixels,roiPixels]);
+    mosaicRoiLocs = ieRoi2Locs(rect);
+    nLocs = size(mosaicRoiLocs,1);
     sumIsomerizations = zeros(3,1);
     nSummed = zeros(3,1);    
     for jj = 1:nLocs
         % A type of 1 in the CFA is blank, so we subtract 1 from the number
         % in the CFA and skip any that end up as 0.  This is just one of
         % those things about ISETBIO that you have to know.  
-        coneType = sensorCFA.pattern(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2))-1;
+        coneType = mosaicCFA(mosaicRoiLocs(jj,1),mosaicRoiLocs(jj,2))-1;
         if (coneType > 0)
             sumIsomerizations(coneType) = sumIsomerizations(coneType) + ...
-                isetbioIsomerizationsArray(sensorRoiLocs(jj,1),sensorRoiLocs(jj,2));
+                isetbioIsomerizationsArray(mosaicRoiLocs(jj,1),mosaicRoiLocs(jj,2));
             nSummed(coneType) = nSummed(coneType) + 1;
         end
     end
@@ -140,20 +130,17 @@ try
     
     %% Get cone fundamentals that ISETBIO is using, for use with PTB routines.
     %
-    % Get cone fundamentals out of isetbio sensor.  We keep these as
+    % Get cone fundamentals out of isetbio mosaic.  We keep these as
     % quantal efficiencies, because it is easier to think about how light
     % produces isomerizations if we work in quantal units.
-    S_cones   = WlsToS(sensorGet(sensor,'wave'));
-    T_conesQE = sensorGet(sensor,'spectral qe')';
-    T_conesQE = T_conesQE(2:4,:);
-    
+    %
     % Multiply by the lens transmittance, to agree with old validations 
-    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
-    lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
+    S_cones   = WlsToS(cMosaic.wave);
+    T_conesQE = cMosaic.qe';   
+    lens = oiGet(oi,'lens');
+    lensTransmittance = lens.transmittance;
     T_conesQE = bsxfun(@times, T_conesQE, lensTransmittance');
  
-    
-    
     %% Create PTB calibration structure from ISETBIO display object
     %
     % Specify parameters.  Screen dot pitch and pixel size have no effect
@@ -241,7 +228,7 @@ try
     % inversion.
     rect = [sceneSize(2)/2,sceneSize(1)/2,roiPixels,roiPixels];
     roiRoiLocs = ieRoi2Locs(rect);
-    isetbioIrradianceSpdPhotons  = oiGet(oi,'roi mean photons',  roiRoiLocs);
+    isetbioIrradianceSpdPhotons  = oiGet(oi,'roi mean photons',roiRoiLocs);
     
     % Divide by lens transmittance, to agree with old validations 
     % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
@@ -262,17 +249,23 @@ try
     % one square meter.
     ptbLMSIsomerizationsRaw = SettingsToSensor(PTBcal,RGBToTest);
     
-    % Adjust by cone size used in isetbio
-    pixel = sensorGet(sensor,'pixel');
-    sensorHeight = pixelGet(pixel,'height');
-    sensorWidth = pixelGet(pixel,'width');
-    sensorArea = sensorHeight*sensorWidth;
-    ptbLMSIsomerizations = sensorArea*ptbLMSIsomerizationsRaw;
+    % Adjust to match old isetbio computation per cone, which was 4 uM^2.
+    %
+    % As of this writing, isetbio uses a smaller collecting area that it
+    % used to for foveal cones.  You can get this area via the call
+    %   coneCollectingArea = cMosaic.pigment.pdArea;
+    % But to stay with the old validation data, we just put in the value of
+    % 4e-12 (area expressed as M^2) here.
+    coneCollectingArea = 4e-12;
+    ptbLMSIsomerizations = coneCollectingArea*ptbLMSIsomerizationsRaw;
      
-    %% Compare the two methods. 
+    %% Compare the two methods.
+    % 
+    % Here we use the current isetbio collecting area, otherwise the ratio
+    % will be wonky.
     %
     % Agreement is better than 1% 
-    isomerizationRatios = ptbLMSIsomerizations ./ isetbioLMSIsomerizations;
+    isomerizationRatios = (cMosaic.pigment.pdArea*ptbLMSIsomerizationsRaw) ./ isetbioLMSIsomerizations;
     fprintf('PTB/ISETBIO LMS isomerization ratios: %0.3f, %0.3f, %0.3f\n',isomerizationRatios(1),isomerizationRatios(2),isomerizationRatios(3));
     tolerance = 0.01;
     UnitTest.assertIsZero(abs(isomerizationRatios(1)-1),'L isomerization comparison',tolerance);
