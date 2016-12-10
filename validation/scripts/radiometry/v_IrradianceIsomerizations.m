@@ -202,8 +202,8 @@ function ValidationFunction(runTimeParams)
     coneTolerance = 0.01;
     ptbCones = ptbPhotoreceptors.isomerizationAbsorptance';
     
-    % Create isetbio sensor object with human cones, and pull out quantal
-    % efficiencies/ 
+    % Create isetbio coneMosaic object, and pull out quantal
+    % efficiencies. 
     cMosaic = coneMosaic;
     cMosaic.setSizeToFOV(fov);
     cMosaic.noiseFlag = 'none';
@@ -211,11 +211,6 @@ function ValidationFunction(runTimeParams)
     cMosaic.cols = oiGet(oi,'cols'); 
     cMosaic.integrationTime = integrationTimeSec;
     isetbioCones = cMosaic.qe;
-%     sensor = sensorCreate('human');
-%     sensor = sensorSet(sensor,'size',oiGet(oi,'size'));
-%     sensor = sensorSet(sensor,'noise flag',0);
-%     isetbioCones = sensorGet(sensor,'spectral qe');
-%     isetbioCones = isetbioCones(:,2:4);
     
 	% Multiply by the lens transmittance, to agree with old validations 
     isetbioCones = bsxfun(@times, isetbioCones, lensTransmittance);
@@ -237,17 +232,14 @@ function ValidationFunction(runTimeParams)
     %  3) Work through parameters that might lead to differences
     %    e.g., cone aperture, integration time, ...
     cMosaic.compute(oi);
-    %sensor = sensorSet(sensor, 'exp time',integrationTimeSecs );
-    %sensor = sensorCompute(sensor, oi);
     isetbioIsomerizationsArray = cMosaic.absorptions;
     
     % Pull out responses of each cone type within ROI. I am doing this by
     % brute force, because I can't find quite the right combination of ROI
-    % gets from the sensor image.
+    % gets from the isomerizations image.
     %
     % This code should be slicked up by an isetbio pro.  Do I have the
     % row/col indexing convention of the RoiLocs correct, or reversed?
-    %mosaicCFA = sensorGet(sensor,'cfa');
     nLocs = size(oiRoiLocs,1);
     sumIsomerizations = zeros(3,1);
     nSummed = zeros(3,1);
@@ -279,7 +271,6 @@ function ValidationFunction(runTimeParams)
         return;
     end
     ptbConeArea = pi*((ptbConeDiameter/2)^2);
-    %pixel = sensorGet(sensor,'pixel');
     isetbioConeArea = cMosaic.pigment.pdArea*1e12;
     ptbAreaCorrectedIsomerizations = (isetbioConeArea/ptbConeArea)*ptbIsomerizations;
     
@@ -334,7 +325,7 @@ function ValidationFunction(runTimeParams)
         legend({'PTB','ISETBIO'}, 'Location','SouthEast','FontSize',12)
         title('Magnification-corrected comparison', 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'bold');
         
-        % Compare PTB sensor spectral responses with ISETBIO
+        % Compare PTB cone spectral responses with ISETBIO
         vcNewGraphWin; hold on; 
         set(gca, 'FontName', 'Helvetica', 'FontSize', 14,  'FontWeight', 'bold');
         plot(wave, isetbioCones(:,1),'ro', 'MarkerFaceColor', [1.0 0.8 0.8], 'MarkerSize', 10);
