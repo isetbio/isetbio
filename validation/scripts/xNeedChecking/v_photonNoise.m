@@ -1,7 +1,6 @@
 % v_photonNoise
 %
-% Check the routines that generate photon noise for oiPhotonNoise and
-% noiseShot
+% Check the routines that generate photon noise for oiPhotonNoise.
 %
 % Copyright 2013, Imageval, LLC
 
