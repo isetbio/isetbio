@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_wvfPupilSize</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_wvfPupilSize.m"><style type="text/css">
+      --><title>t_wvfPupilSize</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_wvfPupilSize.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialize</a></li><li><a href="#4">Load the Thibos data for one of the pupil diameter sizes</a></li><li><a href="#5">Calculate the effect of varying the pupil diameter</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfPupilSize
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Load the Thibos data for one of the pupil diameter sizes</a></li><li><a href="#4">Calculate the effect of varying the pupil diameter</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfPupilSize
 </pre><pre class="codeinput"><span class="comment">%</span>
 <span class="comment">% Explore the effect of changing the pupil size in the calculation.</span>
 <span class="comment">%</span>
@@ -79,15 +79,17 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 <span class="comment">% smaller.</span>
 <span class="comment">%</span>
 <span class="comment">% (BW) (c) Wavefront Toolbox Team, 2014</span>
-</pre><h2>Initialize<a name="3"></a></h2><pre class="codeinput">close <span class="string">all</span>; ieInit;
-</pre><h2>Load the Thibos data for one of the pupil diameter sizes<a name="4"></a></h2><pre class="codeinput">pupilMM = 7.5;   <span class="comment">% Could be 6, 4.5, or 3</span>
+
+<span class="comment">% Initialize</span>
+ieInit;
+</pre><h2>Load the Thibos data for one of the pupil diameter sizes<a name="3"></a></h2><pre class="codeinput">pupilMM = 7.5;   <span class="comment">% Could be 6, 4.5, or 3</span>
 zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 
 <span class="comment">% Create the wvf parameter structure with the appropriate values</span>
 wave = (400:10:700)';
 wvfP = wvfCreate(<span class="string">'wave'</span>,wave,<span class="string">'zcoeffs'</span>,zCoefs,<span class="string">'name'</span>,sprintf(<span class="string">'%d-pupil'</span>,pupilMM));
 wvfP = wvfSet(wvfP,<span class="string">'measured pupil'</span>,pupilMM);
-</pre><h2>Calculate the effect of varying the pupil diameter<a name="5"></a></h2><pre class="codeinput">cPupil = [2,3,4,5,6,7];
+</pre><h2>Calculate the effect of varying the pupil diameter<a name="4"></a></h2><pre class="codeinput">cPupil = [2,3,4,5,6,7];
 <span class="keyword">for</span> ii=1:sum(cPupil&lt;=pupilMM)
     wvfP = wvfSet(wvfP,<span class="string">'calculated pupil'</span>,cPupil(ii));
     wvfP = wvfComputePSF(wvfP);
@@ -136,8 +138,8 @@ ans =
     y: [1x63 double]
     z: [63x63 double]
 
-</pre><img vspace="5" hspace="5" src="t_wvfPupilSize_01.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_02.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_03.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_04.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_05.png" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_06.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="t_wvfPupilSize_01.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_02.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_03.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_04.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_05.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_wvfPupilSize_06.png" style="width:717px;height:518px;" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function t_wvfPupilSize
 %
@@ -153,8 +155,8 @@ function t_wvfPupilSize
 %
 % (BW) (c) Wavefront Toolbox Team, 2014
 
-%% Initialize
-close all; ieInit;
+% Initialize
+ieInit;
 
 %% Load the Thibos data for one of the pupil diameter sizes 
 pupilMM = 7.5;   % Could be 6, 4.5, or 3

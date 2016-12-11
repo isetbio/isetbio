@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_wvfAstigmatism</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_wvfAstigmatism.m"><style type="text/css">
+      --><title>t_wvfAstigmatism</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_wvfAstigmatism.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,17 +66,15 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialize and set parameters</a></li><li><a href="#4">Ranges for plotting</a></li><li><a href="#5">Set up default parameters structure with diffraction limited default</a></li><li><a href="#6">Alter defocus and astigmatism</a></li><li><a href="#7">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfAstigmatism
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialize and set parameters</a></li><li><a href="#4">Ranges for plotting</a></li><li><a href="#5">Set up default parameters structure with diffraction limited default</a></li><li><a href="#6">Alter defocus and astigmatism</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> t_wvfAstigmatism
 </pre><pre class="codeinput"><span class="comment">%</span>
 <span class="comment">% Compute the wavefront-based PSF for various astigmatism and blur levels.</span>
 <span class="comment">%</span>
 <span class="comment">% This illustrates the effect of Zernicke coefficients 4 and 5.</span>
 <span class="comment">%</span>
 <span class="comment">% (c) Wavefront Toolbox Team, 2012</span>
-</pre><h2>Initialize and set parameters<a name="3"></a></h2><pre class="codeinput">s_initISET;
-</pre><h2>Ranges for plotting<a name="4"></a></h2><pre class="codeinput">maxMIN = 2;
-maxMM  = 1;
-maxUM  = 20;
+</pre><h2>Initialize and set parameters<a name="3"></a></h2><pre class="codeinput">ieInit;
+</pre><h2>Ranges for plotting<a name="4"></a></h2><p>maxMIN = 2; maxMM  = 1;</p><pre class="codeinput">maxUM  = 20;
 </pre><h2>Set up default parameters structure with diffraction limited default<a name="5"></a></h2><pre class="codeinput">wvfP = wvfCreate;
 wvfParams = wvfComputePSF(wvfP);
 z = wvfGet(wvfParams,<span class="string">'zcoeffs'</span>);
@@ -96,7 +94,7 @@ wList = wvfGet(wvfParams,<span class="string">'calc wave'</span>);
     wvfPlot(wvfParams,<span class="string">'2d psf space'</span>,<span class="string">'um'</span>,wList,maxUM,<span class="string">'nowindow'</span>);
     title(sprintf(<span class="string">'Defocus = %.1f Astig == %.1f\n'</span>,Zvals(ii,1),Zvals(ii,2)));
 <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="t_wvfAstigmatism_01.png" alt=""> <h2>End<a name="7"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="t_wvfAstigmatism_01.png" style="width:1152px;height:648px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function t_wvfAstigmatism
 %
@@ -107,11 +105,11 @@ function t_wvfAstigmatism
 % (c) Wavefront Toolbox Team, 2012
 
 %% Initialize and set parameters
-s_initISET;
+ieInit;
 
 %% Ranges for plotting
-maxMIN = 2;
-maxMM  = 1;
+% maxMIN = 2;
+% maxMM  = 1;
 maxUM  = 20;
 
 %% Set up default parameters structure with diffraction limited default
@@ -139,7 +137,7 @@ for ii=1:size(Zvals,1)
     title(sprintf('Defocus = %.1f Astig == %.1f\n',Zvals(ii,1),Zvals(ii,2)));
 end
 
-%% End
+%%
 
 
 

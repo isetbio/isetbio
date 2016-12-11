@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_oiCompute</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_oiCompute.m"><style type="text/css">
+      --><title>t_oiCompute</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_oiCompute.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -83,7 +83,7 @@ oi = oiCreate;
 <span class="comment">% Compute optical image and show it</span>
 oi = oiCompute(scene,oi);
 vcAddAndSelectObject(oi); oiWindow;
-</pre><img vspace="5" hspace="5" src="t_oiCompute_01.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_02.png" alt=""> <h2>Make a bigger f-number, compute and show<a name="3"></a></h2><pre class="codeinput">optics = oiGet(oi,<span class="string">'optics'</span>);
+</pre><img vspace="5" hspace="5" src="t_oiCompute_01.png" style="width:1024px;height:621px;" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_02.png" style="width:1152px;height:649px;" alt=""> <h2>Make a bigger f-number, compute and show<a name="3"></a></h2><pre class="codeinput">optics = oiGet(oi,<span class="string">'optics'</span>);
 fnSmall = opticsGet(optics,<span class="string">'f number'</span>);
 fnBig   = 3* fnSmall;
 
@@ -92,28 +92,28 @@ optics = opticsSet(optics,<span class="string">'fNumber'</span>,fnBig);
 oi2 = oiSet(oi,<span class="string">'optics'</span>,optics);
 oi2 = oiCompute(scene,oi2);
 vcAddAndSelectObject(oi2); oiWindow;
-</pre><img vspace="5" hspace="5" src="t_oiCompute_03.png" alt=""> <h2>Plot the psf of the optics<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
+</pre><img vspace="5" hspace="5" src="t_oiCompute_03.png" style="width:1152px;height:649px;" alt=""> <h2>Plot the psf of the optics<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
 thisWave = 600;
 oiPlot(oi,<span class="string">'psf'</span>,[],thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20]);
 colormap(0.5*copper + 0.5*ones(size(copper)));
-</pre><img vspace="5" hspace="5" src="t_oiCompute_04.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_05.png" alt=""> <h2>Plot irradiance image<a name="5"></a></h2><pre class="codeinput">vcNewGraphWin;
+</pre><img vspace="5" hspace="5" src="t_oiCompute_04.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_05.png" style="width:717px;height:518px;" alt=""> <h2>Plot irradiance image<a name="5"></a></h2><pre class="codeinput">vcNewGraphWin;
 gridSpacing = 5; <span class="comment">% um</span>
 oiPlot(oi,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 title(sprintf(<span class="string">'F-number = %d'</span>,fnSmall))
-</pre><img vspace="5" hspace="5" src="t_oiCompute_06.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_07.png" alt=""> <h2>What happens if we change the f/# of the optics and replot?<a name="6"></a></h2><pre class="codeinput">vcNewGraphWin;
+</pre><img vspace="5" hspace="5" src="t_oiCompute_06.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_07.png" style="width:717px;height:518px;" alt=""> <h2>What happens if we change the f/# of the optics and replot?<a name="6"></a></h2><pre class="codeinput">vcNewGraphWin;
 oiPlot(oi2,<span class="string">'psf'</span>,[],thisWave);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 
 colormap(0.5*copper + 0.5*ones(size(copper)))
 title(sprintf(<span class="string">'F-number = %d'</span>,fnBig))
-</pre><img vspace="5" hspace="5" src="t_oiCompute_08.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_09.png" alt=""> <h2>Plot new irradiance image<a name="7"></a></h2><pre class="codeinput">vcNewGraphWin;
+</pre><img vspace="5" hspace="5" src="t_oiCompute_08.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_09.png" style="width:717px;height:518px;" alt=""> <h2>Plot new irradiance image<a name="7"></a></h2><pre class="codeinput">vcNewGraphWin;
 gridSpacing = 5;
 oiPlot(oi2,<span class="string">'irradiance image with grid'</span>,[],gridSpacing);
 set(gca,<span class="string">'xlim'</span>,[-20 20],<span class="string">'ylim'</span>,[-20 20])
 title(sprintf(<span class="string">'F-number = %d'</span>,fnBig))
-</pre><img vspace="5" hspace="5" src="t_oiCompute_10.png" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_11.png" alt=""> <h2>Here is the psf plot method, including the OTF and PSF<a name="8"></a></h2><p>This is just copied from the oiPlot code, really.</p><pre class="codeinput"><span class="comment">% Specify units</span>
+</pre><img vspace="5" hspace="5" src="t_oiCompute_10.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_oiCompute_11.png" style="width:717px;height:518px;" alt=""> <h2>Here is the psf plot method, including the OTF and PSF<a name="8"></a></h2><p>This is just copied from the oiPlot code, really.</p><pre class="codeinput"><span class="comment">% Specify units</span>
 units = <span class="string">'um'</span>;
 
 <span class="comment">% Calling conventions should be specified here.</span>
@@ -151,7 +151,10 @@ fNumber = opticsGet(optics,<span class="string">'fNumber'</span>);
 
 <span class="comment">% First zero crossing</span>
 radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor(units);
-[adX,adY,adZ] = ieShape(<span class="string">'circle'</span>,200,radius);
+
+nCircleSamples = 200;
+[~, ptsXY]=ieShape(<span class="string">'circle'</span>,<span class="string">'nSamp'</span>,nCircleSamples,<span class="string">'radius'</span>,radius);
+adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
 
 x = sSupport(:,:,1); y = sSupport(:,:,2);
 <span class="comment">% We used to choose a size to show that illustrates the PS down to</span>
@@ -166,7 +169,7 @@ mesh(x,y,psf);
 <span class="comment">% For the diffraction limited case, we draw the Airy disk</span>
 hold <span class="string">on</span>; plot3(adX,adY,adZ,<span class="string">'k.'</span>); hold <span class="string">off</span>;
 colormap(0.5*copper + 0.5*ones(size(copper)))
-</pre><img vspace="5" hspace="5" src="t_oiCompute_12.png" alt=""> <h2>End<a name="9"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="t_oiCompute_12.png" style="width:717px;height:518px;" alt=""> <h2>End<a name="9"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % t_oiCompute
 %
@@ -271,7 +274,10 @@ fNumber = opticsGet(optics,'fNumber');
 
 % First zero crossing
 radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor(units);
-[adX,adY,adZ] = ieShape('circle',200,radius);
+
+nCircleSamples = 200;
+[~, ptsXY]=ieShape('circle','nSamp',nCircleSamples,'radius',radius);
+adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
 
 x = sSupport(:,:,1); y = sSupport(:,:,2);
 % We used to choose a size to show that illustrates the PS down to

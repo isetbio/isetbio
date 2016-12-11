@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_EnergyQuanta</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_colorEnergyQuanta.m"><style type="text/css">
+      --><title>t_EnergyQuanta</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_colorEnergyQuanta.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -78,7 +78,7 @@ E = Quanta2Energy(wave,photons);
 <span class="comment">% wavelengths.</span>
 vcNewGraphWin; plot(wave,E); grid <span class="string">on</span>
 xlabel(<span class="string">'Wavelength (nm)'</span>);ylabel(<span class="string">'Energy (watts/sr/nm/m2)'</span>)
-</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_01.png" alt=""> <h2>The spectral power distribution (SPD) in energy and quanta<a name="2"></a></h2><p>This is a standard Daylight 6500 light source.  We read it and set its luminance to 100 cd/m2.</p><pre class="codeinput">d65Energy = ieReadSpectra(<span class="string">'D65'</span>,wave);
+</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_01.png" style="width:717px;height:518px;" alt=""> <h2>The spectral power distribution (SPD) in energy and quanta<a name="2"></a></h2><p>This is a standard Daylight 6500 light source.  We read it and set its luminance to 100 cd/m2.</p><pre class="codeinput">d65Energy = ieReadSpectra(<span class="string">'D65'</span>,wave);
 d65XYZ = ieXYZFromEnergy(d65Energy(:)',wave);
 d65Energy = d65Energy*100/d65XYZ(2);
 
@@ -97,7 +97,7 @@ d65Photons = Energy2Quanta(wave(:),d65Energy(:));
 <span class="comment">% in the middle wavelength photons.</span>
 vcNewGraphWin; plot(wave,d65Photons); grid <span class="string">on</span>
 xlabel(<span class="string">'Wavelength (nm)'</span>); ylabel(<span class="string">'Photons (q/sr/nm/m2)'</span>)
-</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_02.png" alt=""> <img vspace="5" hspace="5" src="t_colorEnergyQuanta_03.png" alt=""> <h2>t_EnergyQuanta - Energy, Photons, and the CIE XYZ functions<a name="3"></a></h2><p>The CIE 1931 standard curves for XYZ are defined assuming that the input signal is specified in terms of energy.</p><pre class="codeinput">XYZEnergy = ieReadSpectra(<span class="string">'XYZ'</span>,wave);
+</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_02.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_colorEnergyQuanta_03.png" style="width:717px;height:518px;" alt=""> <h2>t_EnergyQuanta - Energy, Photons, and the CIE XYZ functions<a name="3"></a></h2><p>The CIE 1931 standard curves for XYZ are defined assuming that the input signal is specified in terms of energy.</p><pre class="codeinput">XYZEnergy = ieReadSpectra(<span class="string">'XYZ'</span>,wave);
 vcNewGraphWin;
 subplot(1,2,1), plot(wave,XYZEnergy); grid <span class="string">on</span>; title(<span class="string">'XYZ standard (energy)'</span>);
 
@@ -110,7 +110,7 @@ subplot(1,2,1), plot(wave,XYZEnergy); grid <span class="string">on</span>; title
 <span class="comment">% type XYZQuanta.m</span>
 XYZPhotons = ieReadSpectra(<span class="string">'XYZQuanta'</span>,wave);
 subplot(1,2,2), plot(wave,XYZPhotons); grid <span class="string">on</span>; title(<span class="string">'XYZ Photons'</span>)
-</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_04.png" alt=""> <h2>Calculating XYZ for a D65 light<a name="4"></a></h2><p>We read a standard light (Daylight 6500 K) and scale it to have a luminance of 100 cd/m2.</p><pre class="codeinput">d65Energy = ieReadSpectra(<span class="string">'D65'</span>,wave);
+</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_04.png" style="width:717px;height:518px;" alt=""> <h2>Calculating XYZ for a D65 light<a name="4"></a></h2><p>We read a standard light (Daylight 6500 K) and scale it to have a luminance of 100 cd/m2.</p><pre class="codeinput">d65Energy = ieReadSpectra(<span class="string">'D65'</span>,wave);
 d65XYZ    = ieXYZFromEnergy(d65Energy(:)',wave);
 d65Energy = d65Energy*100/d65XYZ(2);
 
@@ -130,31 +130,39 @@ d65XYZ = ieXYZFromEnergy(d65Energy(:)',wave)
 </pre><pre class="codeoutput">
 d65XYZ =
 
-   94.9402  100.0000  108.6629
+   1.0e+02 *
+
+   0.949402206278153   1.000000000000000   1.086629389370504
 
 
 d65XYZ =
 
-   94.9402  100.0000  108.6629
+   1.0e+02 *
 
-</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_05.png" alt=""> <img vspace="5" hspace="5" src="t_colorEnergyQuanta_06.png" alt=""> <h2>CIE Luminance (Y)<a name="5"></a></h2><p>For those of you interested, the relationship between the XYZ curves and the luminance level (Y) is a simple relationship:</p><p>The 683 value is a constant used by the CIE having to do with certain material standards.  The two formula return the same values.</p><p>We take the size of the wavelength step into account in computing the summation approximation to the integral over wavelength, since the isetbio convention is to specify power on a per nm basis.  If you're used to using PTB, this convention differs from PTB's.  PTB specifies spectral power distributions on a power per wavelength sample basis.</p><pre class="codeinput">dnm = wave(2)-wave(1);   <span class="comment">% Wavelength step</span>
+   0.949402206278153   1.000000000000000   1.086629389370504
+
+</pre><img vspace="5" hspace="5" src="t_colorEnergyQuanta_05.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_colorEnergyQuanta_06.png" style="width:717px;height:518px;" alt=""> <h2>CIE Luminance (Y)<a name="5"></a></h2><p>For those of you interested, the relationship between the XYZ curves and the luminance level (Y) is a simple relationship:</p><p>The 683 value is a constant used by the CIE having to do with certain material standards.  The two formula return the same values.</p><p>We take the size of the wavelength step into account in computing the summation approximation to the integral over wavelength, since the isetbio convention is to specify power on a per nm basis.  If you're used to using PTB, this convention differs from PTB's.  PTB specifies spectral power distributions on a power per wavelength sample basis.</p><pre class="codeinput">dnm = wave(2)-wave(1);   <span class="comment">% Wavelength step</span>
 d65XYZ = dnm*683*XYZPhotons'*d65Photons(:)
 d65XYZ = dnm*683*XYZEnergy'*d65Energy(:)
 </pre><pre class="codeoutput">
 d65XYZ =
 
-   94.9402
-  100.0000
-  108.6629
+   1.0e+02 *
+
+   0.949402206278153
+   1.000000000000000
+   1.086629389370505
 
 
 d65XYZ =
 
-   94.9402
-  100.0000
-  108.6629
+   1.0e+02 *
 
-</pre><h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+   0.949402206278153
+   1.000000000000000
+   1.086629389370504
+
+</pre><h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_EnergyQuanta
 %

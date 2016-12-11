@@ -1,0 +1,201 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_osLinearize</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_osLinearize.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Background levels</a></li><li><a href="#4">Loop on different background rates and plot</a></li></ul></div><pre class="codeinput"><span class="comment">% t_osLinearize</span>
+<span class="comment">%</span>
+<span class="comment">%   Illustrates the foveal and peripheral cone outer segment temporal</span>
+<span class="comment">%   impulse responses using the osBioPhys object at different mean</span>
+<span class="comment">%   intensities.</span>
+<span class="comment">%</span>
+<span class="comment">% JRG/BW 11/2016 (c) isetbio team</span>
+</pre><pre class="codeinput">ieInit;
+
+cMosaic = coneMosaic(<span class="string">'os'</span>,osLinear,<span class="string">'pattern'</span>,[2 2 2]);
+</pre><h2>Background levels<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Mean of isomerization stimulus in R*/sec (scaled by time step to be</span>
+<span class="comment">% placed in bins of photons). The mean rate affects the magnitude of</span>
+<span class="comment">% the impulse response due to adaptation.</span>
+meanIsoArray = [100 500 1000 2000 5000 10000]*cMosaic.integrationTime;
+
+<span class="comment">% This should be a function that gets tSamples from osLinear class</span>
+tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+</pre><h2>Loop on different background rates and plot<a name="4"></a></h2><pre class="codeinput">fovea     = zeros(tSamples,length(meanIsoArray));
+periphery = zeros(tSamples,length(meanIsoArray));
+
+os = cMosaic.os;
+
+<span class="keyword">for</span> ii = 1:length(meanIsoArray)
+
+    <span class="comment">% Set mean background for start of current output</span>
+    cMosaic.absorptions = repmat(meanIsoArray(ii),1,3);
+
+    <span class="comment">% Compute outer segment currents.</span>
+    tmp     = os.linearFilters(cMosaic,<span class="string">'eccentricity'</span>,true);
+    fovea(:,ii) = tmp(:,1);
+
+    tmp = os.linearFilters(cMosaic,<span class="string">'eccentricity'</span>,false);
+    periphery(:,ii) = tmp(:,1);
+
+<span class="keyword">end</span>
+</pre><pre class="codeinput">vcNewGraphWin([],<span class="string">'wide'</span>);
+T = os.timeAxis;
+subplot(1,2,1); hold <span class="string">on</span>;
+plot(T,fovea,<span class="string">'LineWidth'</span>,3);
+grid <span class="string">on</span>; <span class="comment">% legend('Peripheral','Foveal');</span>
+
+<span class="comment">% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);</span>
+xlabel(<span class="string">'Time (sec)'</span>,<span class="string">'FontSize'</span>,14);
+ylabel(<span class="string">'pA'</span>,<span class="string">'FontSize'</span>,14);
+set(gca,<span class="string">'fontsize'</span>,14);
+title(sprintf(<span class="string">'Foveal IR (R*/sec)'</span>));
+
+<span class="comment">%</span>
+subplot(1,2,2); hold <span class="string">on</span>;
+plot(T,periphery,<span class="string">'LineWidth'</span>,3);
+grid <span class="string">on</span>; <span class="comment">% legend('Peripheral','Foveal');</span>
+<span class="comment">% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);</span>
+xlabel(<span class="string">'Time (sec)'</span>,<span class="string">'FontSize'</span>,14);
+ylabel(<span class="string">'pA'</span>,<span class="string">'FontSize'</span>,14);
+set(gca,<span class="string">'fontsize'</span>,14);
+title(sprintf(<span class="string">'Peripheral IR (R*/sec)'</span>));
+
+<span class="comment">% legend(num2str(meanIsoArray));</span>
+legend(<span class="string">'100'</span>, <span class="string">'500'</span>, <span class="string">'1000'</span>, <span class="string">'2000'</span>, <span class="string">'5000'</span>, <span class="string">'10000'</span>)
+</pre><img vspace="5" hspace="5" src="t_osLinearize_01.png" style="width:1792px;height:432px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% t_osLinearize
+%
+%   Illustrates the foveal and peripheral cone outer segment temporal
+%   impulse responses using the osBioPhys object at different mean
+%   intensities.
+%
+% JRG/BW 11/2016 (c) isetbio team
+
+%%
+ieInit;
+
+cMosaic = coneMosaic('os',osLinear,'pattern',[2 2 2]);
+
+%% Background levels
+
+% Mean of isomerization stimulus in R*/sec (scaled by time step to be
+% placed in bins of photons). The mean rate affects the magnitude of
+% the impulse response due to adaptation.
+meanIsoArray = [100 500 1000 2000 5000 10000]*cMosaic.integrationTime;
+
+% This should be a function that gets tSamples from osLinear class
+tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+
+%%  Loop on different background rates and plot
+
+fovea     = zeros(tSamples,length(meanIsoArray));
+periphery = zeros(tSamples,length(meanIsoArray));
+
+os = cMosaic.os;
+
+for ii = 1:length(meanIsoArray)
+    
+    % Set mean background for start of current output
+    cMosaic.absorptions = repmat(meanIsoArray(ii),1,3);
+        
+    % Compute outer segment currents.
+    tmp     = os.linearFilters(cMosaic,'eccentricity',true);
+    fovea(:,ii) = tmp(:,1);
+    
+    tmp = os.linearFilters(cMosaic,'eccentricity',false);
+    periphery(:,ii) = tmp(:,1);
+    
+end
+
+%%
+vcNewGraphWin([],'wide'); 
+T = os.timeAxis;
+subplot(1,2,1); hold on;
+plot(T,fovea,'LineWidth',3);
+grid on; % legend('Peripheral','Foveal');
+
+% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+xlabel('Time (sec)','FontSize',14);
+ylabel('pA','FontSize',14);
+set(gca,'fontsize',14);
+title(sprintf('Foveal IR (R*/sec)'));
+
+%
+subplot(1,2,2); hold on;
+plot(T,periphery,'LineWidth',3);
+grid on; % legend('Peripheral','Foveal');
+% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+xlabel('Time (sec)','FontSize',14);
+ylabel('pA','FontSize',14);
+set(gca,'fontsize',14);
+title(sprintf('Peripheral IR (R*/sec)'));
+
+% legend(num2str(meanIsoArray));
+legend('100', '500', '1000', '2000', '5000', '10000')
+
+##### SOURCE END #####
+--></body></html>

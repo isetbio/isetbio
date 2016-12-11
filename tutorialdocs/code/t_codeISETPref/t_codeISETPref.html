@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_codeISETPref.m</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_codeISETPref.m"><style type="text/css">
+      --><title>t_codeISETPref.m</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_codeISETPref.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -79,12 +79,12 @@ ieSessionGet(<span class="string">'font size'</span>)
 </pre><pre class="codeoutput">
 ans =
 
-     1
+     0
 
 
 ans =
 
-    12
+     0
 
 </pre><h2>The (logical) waitbar preference<a name="2"></a></h2><pre class="codeinput"><span class="comment">% The waitbar preference determines whether or not a waitbar is shown</span>
 <span class="comment">% during certain potentially long computations.  Examples are various</span>
@@ -139,9 +139,9 @@ pause(2)
 </pre><pre class="codeoutput">
 ans =
 
-    12
+     0
 
-</pre><img vspace="5" hspace="5" src="t_codeISETPref_01.png" alt=""> <h2>Finally, you can see the pref list using the Matlab command getpref<a name="5"></a></h2><pre class="codeinput">iePref = getpref(<span class="string">'ISET'</span>)
+</pre><img vspace="5" hspace="5" src="t_codeISETPref_01.png" style="width:1024px;height:621px;" alt=""> <h2>Finally, you can see the pref list using the Matlab command getpref<a name="5"></a></h2><pre class="codeinput">iePref = getpref(<span class="string">'ISET'</span>)
 
 <span class="comment">% But don't do it directly.  Use ieSessionSet/Get as above.</span>
 ieSessionGet(<span class="string">'waitbar'</span>)
@@ -151,15 +151,14 @@ ieSessionSet(<span class="string">'waitbar'</span>,<span class="string">'on'</sp
 iePref = 
 
       waitbar: 0
-    fontDelta: 12
-       remote: [1x1 struct]
+    fontDelta: 0
 
 
 ans =
 
      0
 
-</pre><h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_codeISETPref.m
 %

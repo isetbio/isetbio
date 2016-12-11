@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_codeRendering</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_codeRendering.m"><style type="text/css">
+      --><title>t_codeRendering</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_codeRendering.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -76,7 +76,7 @@ vcNewGraphWin; plot(wave,spd);
 xlabel(<span class="string">'Wavelength (nm)'</span>);
 ylabel(<span class="string">'Energy (watts/sr/m2/nm)'</span>);
 grid <span class="string">on</span>;
-</pre><img vspace="5" hspace="5" src="t_codeRendering_01.png" alt=""> <h2>C%%onvert the spd into an sRGB value<a name="3"></a></h2><pre class="codeinput"><span class="comment">% We calculate the XYZ values from the spd</span>
+</pre><img vspace="5" hspace="5" src="t_codeRendering_01.png" style="width:717px;height:518px;" alt=""> <h2>C%%onvert the spd into an sRGB value<a name="3"></a></h2><pre class="codeinput"><span class="comment">% We calculate the XYZ values from the spd</span>
 XYZ = ieXYZFromEnergy(spd',wave);
 
 <span class="comment">% We want the data to be in (row,col,wave) format</span>
@@ -88,7 +88,7 @@ sRGB = xyz2srgb(XYZ);
 vcNewGraphWin;
 imagesc(sRGB)
 axis <span class="string">off</span>; axis <span class="string">image</span>
-</pre><img vspace="5" hspace="5" src="t_codeRendering_02.png" alt=""> <h2>3D Format for images<a name="4"></a></h2><pre class="codeinput"><span class="comment">% We treat represent images using a 3D format (row,col,channels)</span>
+</pre><img vspace="5" hspace="5" src="t_codeRendering_02.png" style="width:717px;height:518px;" alt=""> <h2>3D Format for images<a name="4"></a></h2><pre class="codeinput"><span class="comment">% We treat represent images using a 3D format (row,col,channels)</span>
 <span class="comment">% RGB images have three channels.  SPD images have more channels, equal to</span>
 <span class="comment">% the number of wavelength samples.</span>
 
@@ -101,13 +101,13 @@ spd3D = XW2RGBFormat(spd(:)',1,1);
 <span class="comment">% make it bigger</span>
 spd3D = imageIncreaseImageRGBSize(spd3D,40);
 imageSPD(spd3D,wave);
-</pre><img vspace="5" hspace="5" src="t_codeRendering_03.png" alt=""> <h2>Here is a bluish blackbody radiator<a name="5"></a></h2><pre class="codeinput">spd   = blackbody(wave,8000);
+</pre><img vspace="5" hspace="5" src="t_codeRendering_03.png" style="width:717px;height:518px;" alt=""> <h2>Here is a bluish blackbody radiator<a name="5"></a></h2><pre class="codeinput">spd   = blackbody(wave,8000);
 spd3D = XW2RGBFormat(spd',1,1);
 
 <span class="comment">% It is only one point, which is hard to see.  So, let's make it bigger</span>
 spd3D = imageIncreaseImageRGBSize(spd3D,40);
 imageSPD(spd3D,wave);
-</pre><img vspace="5" hspace="5" src="t_codeRendering_04.png" alt=""> <h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="t_codeRendering_04.png" style="width:717px;height:518px;" alt=""> <h2>End<a name="6"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_codeRendering
 %

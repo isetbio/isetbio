@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_opticsDiffraction</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="t_opticsDiffraction.m"><style type="text/css">
+      --><title>t_opticsDiffraction</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_opticsDiffraction.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -85,9 +85,9 @@ opticsGet(optics,<span class="string">'f number'</span>)
 </pre><pre class="codeoutput">
 ans =
 
-     4
+   5.666666666666667
 
-</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_01.png" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_02.png" alt=""> <h2>Now, create diffraction limited optics with f/# of 12<a name="3"></a></h2><p>The larger f/# blurs the image more It has larger depth of field, however, because the aperture is smaller.</p><pre class="codeinput">optics = opticsSet(optics,<span class="string">'f number'</span>,12);
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_01.png" style="width:1024px;height:621px;" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_02.png" style="width:1152px;height:649px;" alt=""> <h2>Now, create diffraction limited optics with f/# of 12<a name="3"></a></h2><p>The larger f/# blurs the image more It has larger depth of field, however, because the aperture is smaller.</p><pre class="codeinput">optics = opticsSet(optics,<span class="string">'f number'</span>,12);
 oi = oiSet(oi,<span class="string">'optics'</span>,optics);
 oi = oiCompute(oi,scene);
 oi = oiSet(oi,<span class="string">'name'</span>,<span class="string">'Large f/#'</span>);
@@ -102,19 +102,19 @@ f/p
 </pre><pre class="codeoutput">
 p =
 
-    0.3219
+   1.416666666666667
 
 
 f =
 
-    3.8628
+    17
 
 
 ans =
 
     12
 
-</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_03.png" alt=""> <h2>How the diffraction-limited blur depends on wavelength<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_03.png" style="width:1152px;height:649px;" alt=""> <h2>How the diffraction-limited blur depends on wavelength<a name="4"></a></h2><pre class="codeinput">vcNewGraphWin;
 uData = oiPlot(oi,<span class="string">'ls wavelength'</span>);
 title(sprintf(<span class="string">'F/# = %.0d'</span>,opticsGet(optics,<span class="string">'f number'</span>)))
 
@@ -127,7 +127,7 @@ uData =
     wavelength: [31x1 double]
         lsWave: [31x41 double]
 
-</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_04.png" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_05.png" alt=""> <h2>End<a name="5"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="t_opticsDiffraction_04.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="t_opticsDiffraction_05.png" style="width:717px;height:518px;" alt=""> <h2>End<a name="5"></a></h2><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% t_opticsDiffraction
 %

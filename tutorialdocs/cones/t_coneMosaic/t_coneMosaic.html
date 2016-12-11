@@ -1,0 +1,223 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Cone mosaic object - introduction</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_coneMosaic.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Cone mosaic object - introduction</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Build a scene and oi for computing</a></li><li><a href="#4">Build a default cone mosaic and compute the OI</a></li><li><a href="#5">To compute the bipolar response</a></li></ul></div><pre class="codeinput">ieInit
+<span class="comment">% clear variables</span>
+</pre><h2>Build a scene and oi for computing<a name="2"></a></h2><pre class="codeinput">s = sceneCreate(<span class="string">'rings rays'</span>);
+s = sceneSet(s,<span class="string">'fov'</span>,1);
+ieAddObject(s);
+</pre><pre class="codeinput">oi = oiCreate;
+oi = oiCompute(oi,s);
+ieAddObject(oi); <span class="comment">% oiWindow;</span>
+</pre><h2>Build a default cone mosaic and compute the OI<a name="4"></a></h2><pre class="codeinput">cMosaic = coneMosaic;  <span class="comment">% Create the object</span>
+cMosaic.setSizeToFOV(0.5*sceneGet(s,<span class="string">'fov'</span>));   <span class="comment">% Show about half the scene</span>
+cMosaic.emGenSequence(100);
+cMosaic.compute(oi);
+cMosaic.window;
+</pre><img vspace="5" hspace="5" src="t_coneMosaic_01.png" style="width:890px;height:645px;" alt=""> <h2>To compute the bipolar response<a name="5"></a></h2><p>bp = bipolar(cMosaic); bp.set('sRFcenter',1); bp.set('sRFsurround',1); bp.compute(cMosaic);</p><p>% bp.plot('response'); % bp.plot('movie response');</p><p>%% To compute an RGC response % Build rgc clear params params.name      = 'Macaque inner retina 1'; % This instance params.eyeSide   = 'left';   % Which eye params.eyeRadius = 1;        % Radius in mm params.eyeAngle  = 90;       % Polar angle in degrees</p><p>% ir = irCreate(bp, params); ir.mosaicCreate('model','GLM','type','on midget'); % Some testing of the new rgc get and set organization % ir.mosaic{1}.get('cell type') % ir.mosaic{1}.get('rf diameter') % ir.mosaic{1}.get('srf center') % ir.mosaic{1}.get('srf surround') % ir.mosaic{1}.get('generator function') % % ir.mosaic{1}.set('number trials',1)</p><p>% Number of repeated trials % ir.mosaicCreate('model','lnp','type','on midget'); % ir.mosaic{1}.set('numberTrials',3);</p><p>fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));</p><p>%% Compute RGC response tic; ir = irCompute(ir, bp, 'coupling',false); toc</p><p>% tic; % ir = irCompute(ir, bp, 'coupling',true); % toc</p><p>lastTime = ir.mosaic{1}.get('last spike time');</p><p>ir.mosaic{1}.set('dt',1); psth = ir.mosaic{1}.get('psth');</p><p>clear params params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); param.FrameRate = 5; params.step = 2; params.show = false; ieMovie(psth,params);</p><p>%% % irPlot(ir, 'mosaic'); % irPlot(ir, 'linear'); irPlot(ir, 'raster','cell',[5,7]); % irPlot(ir, 'raster');   % Can be very long and painful.  Fix it in the plot % irPlot(ir, 'mosaic');</p><p>% irPlot(ir, 'psth');</p><p>%% Download an absorption movie and compute</p><p>rd = RdtClient('isetbio'); rd.crp('/resources/data/istim');</p><p>% Test for download data = rd.readArtifact('barMovie','type','mat'); cMosaic = data.iStim.cMosaic; cMosaic.computeCurrent;</p><p>cMosaic.window;</p><p>% The object is stored without the current.  So compute it now. cMosaic.computeCurrent;</p><p>bp = bipolar(cMosaic.os); bp.compute(cMosaic.os); bp.plot('movie response')</p><p>%% Inner retina clear params params.name      = 'Macaque inner retina 1'; % This instance params.eyeSide   = 'left';   % Which eye params.eyeRadius = 1;        % Radius in mm params.eyeAngle  = 90;       % Polar angle in degrees</p><p>% % Fix this. % Fix the other ganglion cell classes (e.g. off midget doesn't run). % Error using rgcLNP % Cannot define property 'responseSpikes' in class 'rgcLNP' because the property has already been defined in the superclass % 'rgcMosaic'.</p><p>ir = irCreate(bp, params); ir.mosaicCreate('model','GLM','type','on midget');</p><p>tic; ir = irCompute(ir, bp, 'coupling',false); toc</p><p>ir.mosaic{1}.set('dt',1); psth = ir.mosaic{1}.get('psth');</p><p>clear params params.vname = fullfile(isetbioRootPath,'local','barmovie.avi'); param.FrameRate = 1; params.step = 1; params.show = false; ieMovie(psth,params);</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Cone mosaic object - introduction
+%
+%
+
+%%
+ieInit
+% clear variables
+
+%% Build a scene and oi for computing
+
+s = sceneCreate('rings rays');
+s = sceneSet(s,'fov',1);
+ieAddObject(s);
+
+%%
+oi = oiCreate;
+oi = oiCompute(oi,s);
+ieAddObject(oi); % oiWindow;
+
+%% Build a default cone mosaic and compute the OI
+
+cMosaic = coneMosaic;  % Create the object
+cMosaic.setSizeToFOV(0.5*sceneGet(s,'fov'));   % Show about half the scene
+cMosaic.emGenSequence(100);
+cMosaic.compute(oi);
+cMosaic.window;
+
+%% To compute the bipolar response
+% bp = bipolar(cMosaic);
+% bp.set('sRFcenter',1);
+% bp.set('sRFsurround',1);
+% bp.compute(cMosaic);
+% 
+% % bp.plot('response');
+% % bp.plot('movie response');
+% 
+% %% To compute an RGC response
+% % Build rgc
+% clear params
+% params.name      = 'Macaque inner retina 1'; % This instance
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 1;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
+% 
+% %
+% ir = irCreate(bp, params);
+% ir.mosaicCreate('model','GLM','type','on midget');
+% % Some testing of the new rgc get and set organization
+% % ir.mosaic{1}.get('cell type')
+% % ir.mosaic{1}.get('rf diameter')
+% % ir.mosaic{1}.get('srf center')
+% % ir.mosaic{1}.get('srf surround')
+% % ir.mosaic{1}.get('generator function')
+% %
+% % ir.mosaic{1}.set('number trials',1)
+% 
+% % Number of repeated trials
+% % ir.mosaicCreate('model','lnp','type','on midget');
+% % ir.mosaic{1}.set('numberTrials',3);
+% 
+% fprintf('Cell array size: %d x %d\n',ir.mosaic{1}.get('mosaic size'));
+% 
+% %% Compute RGC response
+% tic;
+% ir = irCompute(ir, bp, 'coupling',false);
+% toc
+% 
+% % tic;
+% % ir = irCompute(ir, bp, 'coupling',true);
+% % toc
+% 
+% lastTime = ir.mosaic{1}.get('last spike time');
+% 
+% ir.mosaic{1}.set('dt',1);
+% psth = ir.mosaic{1}.get('psth');
+% 
+% clear params
+% params.vname = fullfile(isetbioRootPath,'local','vernier.avi'); 
+% param.FrameRate = 5; params.step = 2; params.show = false;
+% ieMovie(psth,params);
+% 
+% %%
+% % irPlot(ir, 'mosaic');
+% % irPlot(ir, 'linear');
+% irPlot(ir, 'raster','cell',[5,7]);
+% % irPlot(ir, 'raster');   % Can be very long and painful.  Fix it in the plot
+% % irPlot(ir, 'mosaic'); 
+% 
+% % irPlot(ir, 'psth');
+% 
+% %% Download an absorption movie and compute
+% 
+% rd = RdtClient('isetbio');
+% rd.crp('/resources/data/istim');
+% 
+% % Test for download
+% data = rd.readArtifact('barMovie','type','mat');
+% cMosaic = data.iStim.cMosaic;
+% cMosaic.computeCurrent;
+% 
+% cMosaic.window;
+% 
+% % The object is stored without the current.  So compute it now.
+% cMosaic.computeCurrent;
+% 
+% bp = bipolar(cMosaic.os);
+% bp.compute(cMosaic.os);
+% bp.plot('movie response')
+% 
+% %% Inner retina
+% clear params
+% params.name      = 'Macaque inner retina 1'; % This instance
+% params.eyeSide   = 'left';   % Which eye
+% params.eyeRadius = 1;        % Radius in mm
+% params.eyeAngle  = 90;       % Polar angle in degrees
+% 
+% %
+% % Fix this.
+% % Fix the other ganglion cell classes (e.g. off midget doesn't run).
+% % Error using rgcLNP
+% % Cannot define property 'responseSpikes' in class 'rgcLNP' because the property has already been defined in the superclass
+% % 'rgcMosaic'.
+% 
+% ir = irCreate(bp, params);
+% ir.mosaicCreate('model','GLM','type','on midget');
+% 
+% tic;
+% ir = irCompute(ir, bp, 'coupling',false);
+% toc
+% 
+% ir.mosaic{1}.set('dt',1);
+% psth = ir.mosaic{1}.get('psth');
+% 
+% clear params
+% params.vname = fullfile(isetbioRootPath,'local','barmovie.avi'); 
+% param.FrameRate = 1; params.step = 1; params.show = false;
+% ieMovie(psth,params);
+
+##### SOURCE END #####
+--></body></html>
