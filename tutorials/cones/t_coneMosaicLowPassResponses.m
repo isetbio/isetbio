@@ -15,7 +15,7 @@ function t_coneMosaicLowPassResponses()
     % Set up mosaic
     cMosaicOBJ = coneMosaic();
     cMosaicOBJ.setSizeToFOV([sceneGet(scene, 'h fov'), sceneGet(scene, 'v fov')]);
-    cMosaicOBJ.noiseFlag = false;
+    cMosaicOBJ.noiseFlag = 'none';
     [isomerizationsMap, currentsMap] = cMosaicOBJ.compute(oi,'currentFlag', true);
     
     % Low-pass the isomerizations map

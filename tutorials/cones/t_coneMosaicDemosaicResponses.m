@@ -9,7 +9,7 @@ function t_coneMosaicDemosaicResponses
     % Set up mosaic
     cMosaicOBJ = coneMosaic();
     cMosaicOBJ.setSizeToFOV([sceneGet(scene, 'h fov'), sceneGet(scene, 'v fov')]);
-    cMosaicOBJ.noiseFlag = false;
+    cMosaicOBJ.noiseFlag = 'none';
     [~, currentsMap] = cMosaicOBJ.compute(oi,'currentFlag', true);
 
     % Call demosaicing methods
