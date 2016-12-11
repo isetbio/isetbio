@@ -13,7 +13,7 @@ function [adaptedCur, freq] = osAddNoise(curNF, varargin)
 % Inputs:
 %    curNF  - noise free cone adapted membrane photo current.  The units
 %             are pA (picoAmps) (CHECK!).
-%   sampTime - sample time interval (secs), see sensorGet(s, 'time interval');
+%   sampTime - sample time interval (secs)
 %   **NYI**  seed     - noise seed for reproducibility
 %
 %  Outputs:

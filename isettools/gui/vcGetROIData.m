@@ -20,7 +20,6 @@ function roiData = vcGetROIData(obj,roiLocs,dataType)
 %                  'illuminant photons' or 'illuminant energy'
 %                  reflectance
 %   opticalimage:  photons (default) or energy
-%   sensor:        volts   (default) or electrons 
 %   vcimage:       results (default) or input
 %
 % The data are returned in a matrix (XW format), roiData.  The rows
@@ -35,12 +34,6 @@ function roiData = vcGetROIData(obj,roiLocs,dataType)
 %  vci = vcGetObject('vci');
 %  roiLocs = vcROISelect(vci);
 %  result = vcGetROIData(vci,roiLocs,'result');          % Nx3
-%
-%  For sensor, data are Nx3 and missing values are NaNs
-%
-%  sensor = vcGetObject('isa');
-%  roiLocs = vcROISelect(sensor);
-%  electrons = vcGetROIData(sensor,roiLocs,'electrons'); % Nx3
 %
 %  scene = vcGetObject('scene');
 %  roiLocs = vcROISelect(scene);
@@ -125,30 +118,6 @@ switch lower(objType)
 
         imgLocs = sub2ind([r,c],roiLocs(:,1),roiLocs(:,2));
         roiData = img(imgLocs,:);
-
-    case {'isa','sensor'}
-        if notDefined('dataType'), dataType = 'volts'; end
-
-        data = sensorGet(obj,dataType);  % volts or dv
-
-        nSensors = sensorGet(obj,'nSensors');
-        if nSensors > 1, data = plane2rgb(data,obj); end
-
-        [r,c,w] = size(data);
-
-        % Should we keep the data in bounds?
-        roiLocs(:,1) = ieClip(roiLocs(:,1),1,r);
-        roiLocs(:,2) = ieClip(roiLocs(:,2),1,c);
-
-        ind = sub2ind(size(data(:,:,1)),roiLocs(:,1),roiLocs(:,2));
-
-        nPoints = size(roiLocs,1);
-        roiData = zeros(nPoints,nSensors);
-        for ii=1:nSensors
-            tmp = data(:,:,ii);
-            tmp = tmp(ind);
-            roiData(:,ii) = tmp(:);
-        end
 
     case 'vcimage'
         if notDefined('dataType'), dataType = 'results'; end
