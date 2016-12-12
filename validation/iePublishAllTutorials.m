@@ -15,7 +15,9 @@ function iePublishAllTutorials
 
     % list of scripts to be skipped from automatic publishing
     scriptsToSkip = {...
-        't_coneAdapt.m' ...    % takes too long to run, now deprecated.
+        't_coneMosaicLowPassResponses' ...  % this works stand-alone but freezes when run from the script
+        't_coneMosaicDemosaicResponses' ... % this works stand-alone but freezes when run from the script
+        't_osCurrentsVsLuminanceLevel' ...  % takes too long to run.
         };
     % ----------------------- end of script customization -----------------
     
