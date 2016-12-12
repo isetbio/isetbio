@@ -79,7 +79,6 @@ p.addParameter('workDescription', '', @ischar);
 p.parse(oiSequence, varargin{:});
 
 currentSeed     = p.Results.seed;
-oiSequence      = p.Results.oiSequence;
 emPaths         = p.Results.emPaths;
 currentFlag     = p.Results.currentFlag;
 workerID        = p.Results.workerID;
