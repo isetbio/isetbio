@@ -19,6 +19,9 @@ function iePublishAllTutorials
         't_coneMosaicDemosaicResponses' ... % this works stand-alone but freezes when run from this script
         't_osCurrentsVsLuminanceLevel' ...  % takes too long to run.
         't_rgcConeHex' ...                  % Calls ieStimulusBar, which calls the compute method with an 'append' flag, that is not allowed anymore
+        't_displayCreation' ...             % Runs stand-alone but throws an error when run from here.
+        't_linearFilters' ...               % Runs stand-alone but throws an error when run from here.
+        't_rgcGabor' ...                    % Broken because it relies on stale cached data, and it isn't clear what should be in the cache.
         };
     % ----------------------- end of script customization -----------------
     
