@@ -1,0 +1,580 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_linearFilters</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-12"><meta name="DC.source" content="t_linearFilters.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> t_linearFilters
+
+    <span class="comment">% Define the time axis for the simulation</span>
+    stimulusSamplingInterval = 10/1000;             <span class="comment">% 5 milliseconds</span>
+    oiTimeAxis = 0:stimulusSamplingInterval:0.3;   <span class="comment">% 0.1 seconds</span>
+    oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
+
+    FOV = 1.0;
+    backgroundLuminances = [1 3 5 10 30 50 100 300 500];
+    osTimeSteps = [0.01 0.05 0.1 0.5 1.0]/1000;
+
+    <span class="comment">% Compute the stimulus modulation function</span>
+    stimulusRampTau = 180/1000;
+    modulationGain = 1.0;
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+
+    <span class="comment">% Generate optics</span>
+    noOptics = false;
+    theOI = oiGenerate(noOptics);
+
+    <span class="comment">% Generate a cone mosaic with 1 L-, 1 M-, and 1 S-cone only</span>
+    mosaicSize =  nan;
+    integrationTime = 0.1/1000;
+    photonNoise = <span class="string">'none'</span>;
+    osNoise = <span class="string">'none'</span>;
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeSteps(1));
+
+    subplotPosVectors2 = NicePlot.getSubPlotPosVectors(<span class="keyword">...</span>
+           <span class="string">'rowsNum'</span>, 1, <span class="keyword">...</span>
+           <span class="string">'colsNum'</span>, 3, <span class="keyword">...</span>
+           <span class="string">'heightMargin'</span>,   0.04, <span class="keyword">...</span>
+           <span class="string">'widthMargin'</span>,    0.05, <span class="keyword">...</span>
+           <span class="string">'leftMargin'</span>,     0.05, <span class="keyword">...</span>
+           <span class="string">'rightMargin'</span>,    0.00, <span class="keyword">...</span>
+           <span class="string">'bottomMargin'</span>,   0.04, <span class="keyword">...</span>
+           <span class="string">'topMargin'</span>,      0.04);
+
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(<span class="keyword">...</span>
+           <span class="string">'rowsNum'</span>, 2, <span class="keyword">...</span>
+           <span class="string">'colsNum'</span>, 3, <span class="keyword">...</span>
+           <span class="string">'heightMargin'</span>,   0.04, <span class="keyword">...</span>
+           <span class="string">'widthMargin'</span>,    0.05, <span class="keyword">...</span>
+           <span class="string">'leftMargin'</span>,     0.05, <span class="keyword">...</span>
+           <span class="string">'rightMargin'</span>,    0.00, <span class="keyword">...</span>
+           <span class="string">'bottomMargin'</span>,   0.04, <span class="keyword">...</span>
+           <span class="string">'topMargin'</span>,      0.04);
+
+
+    <span class="keyword">for</span> iLum = 1:numel(backgroundLuminances)
+        fprintf(<span class="string">'Computing os linear filters for background luminance %2.1f cd/m2  [%d/%d]\n'</span>,  backgroundLuminances(iLum), iLum, numel(backgroundLuminances));
+        theScene = uniformFieldSceneCreate(FOV, backgroundLuminances(iLum));
+        <span class="comment">% Compute the optical images</span>
+        oiBackground = oiCompute(theOI, theScene);
+        oiModulated  = oiBackground;
+
+        <span class="comment">% Generate the sequence of optical images</span>
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction);
+
+        <span class="comment">% Generate eye movement path</span>
+        eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
+        instancesNum = 1;
+        emPaths = zeros(instancesNum, eyeMovementsNum,2);
+
+        <span class="keyword">for</span> iStepIndex = 1:numel(osTimeSteps)
+            theConeMosaic.os.timeStep = osTimeSteps(iStepIndex);
+            <span class="comment">% Compute all instances</span>
+            [isomerizations, photocurrents{iLum, iStepIndex}, LMSfilters{iLum, iStepIndex}] = <span class="keyword">...</span>
+                theConeMosaic.computeForOISequence(theOIsequence, <span class="keyword">...</span>
+                <span class="string">'emPaths'</span>, emPaths, <span class="keyword">...</span>
+                <span class="string">'currentFlag'</span>, true);
+            photocurrentTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+        <span class="keyword">end</span> <span class="comment">% iStepIndex</span>
+    <span class="keyword">end</span>
+
+    timeAxis = (1:size(LMSfilters{1,1},1))*theConeMosaic.integrationTime;
+    coneNames = {<span class="string">'L'</span>, <span class="string">'M'</span>, <span class="string">'S'</span>};
+
+    hFig = figure(1); clf;
+    set(hFig, <span class="string">'Position'</span>, [10 10 1380 1010], <span class="string">'Color'</span>, [1 1 1]);
+
+    videoOBJ = VideoWriter(<span class="string">'IRs.mp4'</span>, <span class="string">'MPEG-4'</span>); <span class="comment">% H264 format</span>
+    videoOBJ.FrameRate = 5;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    colorIR = (jet(numel(osTimeSteps))).^2;
+    <span class="keyword">for</span> iLum = 1:numel(backgroundLuminances)
+        legends = {};
+        <span class="keyword">for</span> iStepIndex = 1:numel(osTimeSteps)
+            legends{numel(legends)+1} = sprintf(<span class="string">'os.timeStep: %2.3fms'</span>, osTimeSteps(iStepIndex)*1000);
+            color = squeeze(colorIR(iStepIndex,:));
+            <span class="keyword">for</span> coneIndex = 1:3
+                subplot(<span class="string">'Position'</span>, subplotPosVectors(1,coneIndex).v);
+                normFilter = squeeze(LMSfilters{iLum, iStepIndex}(:,coneIndex));
+                normFilter = normFilter / max(normFilter);
+                plot(timeAxis, normFilter, <span class="string">'k-'</span>, <span class="string">'Color'</span>, color, <span class="string">'LineWidth'</span>, 1.5);
+                <span class="keyword">if</span> (iStepIndex == 1)
+                    hold <span class="string">on</span>;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> (iStepIndex == numel(osTimeSteps))
+                    hold <span class="string">off</span>;
+                <span class="keyword">end</span>
+                set(gca, <span class="string">'XLim'</span>, [timeAxis(1) timeAxis(end)], <span class="string">'YLim'</span>, [-0.1 1.05], <span class="string">'YTick'</span>, (0:0.1:1.0), <span class="string">'XTick'</span>, (0:0.05:0.5), <span class="string">'FontSize'</span>, 12);
+                grid <span class="string">on</span>; box <span class="string">on</span>;
+                hL = legend(legends);
+                set(hL, <span class="string">'FontSize'</span>, 12);
+                title(sprintf(<span class="string">'%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2'</span>, coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), <span class="keyword">...</span>
+                    <span class="string">'FontSize'</span>, 14, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+
+                subplot(<span class="string">'Position'</span>, subplotPosVectors(2,coneIndex).v);
+                filter = squeeze(LMSfilters{iLum, iStepIndex}(:,coneIndex));
+                plot(timeAxis, filter, <span class="string">'k-'</span>, <span class="string">'Color'</span>, color, <span class="string">'LineWidth'</span>, 1.5);
+                <span class="keyword">if</span> (iStepIndex == 1)
+                    hold <span class="string">on</span>;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> (iStepIndex == numel(osTimeSteps))
+                    hold <span class="string">off</span>;
+                <span class="keyword">end</span>
+                set(gca, <span class="string">'XLim'</span>, [timeAxis(1) timeAxis(end)], <span class="string">'YLim'</span>, [-0.1 1.0]*0.18, <span class="string">'YTick'</span>, (0:0.1:1.0)*0.2, <span class="string">'XTick'</span>, (0:0.05:0.5), <span class="string">'FontSize'</span>, 12);
+                grid <span class="string">on</span>; box <span class="string">on</span>;
+                hL = legend(legends);
+                set(hL, <span class="string">'FontSize'</span>, 12);
+                title(sprintf(<span class="string">'%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2'</span>, coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), <span class="keyword">...</span>
+                    <span class="string">'FontSize'</span>, 14, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+            <span class="keyword">end</span> <span class="comment">% coneIndex</span>
+            drawnow
+            videoOBJ.writeVideo(getframe(hFig));
+        <span class="keyword">end</span> <span class="comment">% iStepIndex</span>
+    <span class="keyword">end</span> <span class="comment">%iLum</span>
+    videoOBJ.close();
+
+
+    hFig = figure(2); clf;
+    set(hFig, <span class="string">'Position'</span>, [10 10 1380 500], <span class="string">'Color'</span>, [1 1 1]);
+
+    videoOBJ = VideoWriter(<span class="string">'Photocurrents.mp4'</span>, <span class="string">'MPEG-4'</span>); <span class="comment">% H264 format</span>
+    videoOBJ.FrameRate = 5;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    colorIR = (jet(numel(osTimeSteps))).^2;
+    <span class="keyword">for</span> iLum = 1:numel(backgroundLuminances)
+        legends = {};
+        <span class="keyword">for</span> iStepIndex = 1:numel(osTimeSteps)
+            legends{numel(legends)+1} = sprintf(<span class="string">'os.timeStep: %2.3fms'</span>, osTimeSteps(iStepIndex)*1000);
+            color = squeeze(colorIR(iStepIndex,:));
+            <span class="keyword">for</span> coneIndex = 1:3
+                subplot(<span class="string">'Position'</span>, subplotPosVectors2(1,coneIndex).v);
+                photocurrent = squeeze(photocurrents{iLum, iStepIndex}(1,1,coneIndex,:));
+                plot(photocurrentTimeAxis, photocurrent , <span class="string">'k-'</span>, <span class="string">'Color'</span>, color, <span class="string">'LineWidth'</span>, 1.5);
+                <span class="keyword">if</span> (iStepIndex == 1)
+                    hold <span class="string">on</span>;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> (iStepIndex == numel(osTimeSteps))
+                    hold <span class="string">off</span>;
+                <span class="keyword">end</span>
+                set(gca, <span class="string">'XLim'</span>, [photocurrentTimeAxis(1) photocurrentTimeAxis(end)], <span class="string">'YLim'</span>, [-90 -30], <span class="string">'YTick'</span>, (-100:10:0), <span class="string">'XTick'</span>, (photocurrentTimeAxis(1):0.05:photocurrentTimeAxis(end)), <span class="string">'FontSize'</span>, 12);
+                <span class="keyword">if</span> (coneIndex == 1)
+                    ylabel(<span class="string">'photocurrent (pAmps)'</span>);
+                <span class="keyword">end</span>
+                grid <span class="string">on</span>; box <span class="string">on</span>;
+                hL = legend(legends);
+                set(hL, <span class="string">'FontSize'</span>, 12);
+                title(sprintf(<span class="string">'%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2'</span>, coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), <span class="keyword">...</span>
+                    <span class="string">'FontSize'</span>, 14, <span class="string">'FontWeight'</span>, <span class="string">'bold'</span>);
+
+            <span class="keyword">end</span> <span class="comment">% coneIndex</span>
+            drawnow
+            videoOBJ.writeVideo(getframe(hFig));
+        <span class="keyword">end</span> <span class="comment">% iStepIndex</span>
+    <span class="keyword">end</span> <span class="comment">%iLum</span>
+    videoOBJ.close();
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
+    <span class="comment">% Default human mosaic</span>
+    theConeMosaic = coneMosaic;
+
+    <span class="comment">% Adjust size</span>
+    <span class="keyword">if</span> isnan(mosaicSize)
+        <span class="comment">% Generate a human cone mosaic with 1L, 1M and 1S cone</span>
+        theConeMosaic.rows = 1;
+        theConeMosaic.cols = 3;
+        theConeMosaic.pattern = [2 3 4];
+    <span class="keyword">else</span>
+        theConeMosaic.setSizeToFOV(mosaicSize);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Set the noise</span>
+    theConeMosaic.noiseFlag = photonNoise;
+
+    <span class="comment">% Set the integrationTime</span>
+    theConeMosaic.integrationTime = integrationTime;
+
+    <span class="comment">% Generate the outer-segment object to be used by the coneMosaic</span>
+    theOuterSegment = osLinear();
+    theOuterSegment.noiseFlag = osNoise;
+
+    <span class="comment">% Set a custom timeStep, for @osLinear we do not need the default 0.1 msec</span>
+    theOuterSegment.timeStep = osTimeStep;
+
+    <span class="comment">% Couple the outersegment object to the cone mosaic object</span>
+    theConeMosaic.os = theOuterSegment;
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> theOI = oiGenerate(noOptics)
+    <span class="comment">% Generate optics</span>
+    <span class="keyword">if</span> (noOptics)
+        theOI = oiCreate(<span class="string">'diffraction limited'</span>);
+        optics = oiGet(theOI,<span class="string">'optics'</span>);
+        optics = opticsSet(optics,<span class="string">'fnumber'</span>,0);
+        optics = opticsSet(optics, <span class="string">'off axis method'</span>, <span class="string">'skip'</span>);
+        theOI = oiSet(theOI,<span class="string">'optics'</span>, optics);
+    <span class="keyword">else</span>
+        theOI = oiCreate(<span class="string">'human'</span>);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
+    uniformScene = sceneCreate(<span class="string">'uniform equal photon'</span>, 128);
+    <span class="comment">% square scene with desired FOV</span>
+    uniformScene = sceneSet(uniformScene, <span class="string">'wAngular'</span>, FOV);
+    <span class="comment">% 1 meter away</span>
+    uniformScene = sceneSet(uniformScene, <span class="string">'distance'</span>, 1.0);
+    <span class="comment">% adjust radiance according to desired  mean luminance</span>
+    uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Computing os linear filters for background luminance 1.0 cd/m2  [1/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 3.0 cd/m2  [2/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 5.0 cd/m2  [3/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 10.0 cd/m2  [4/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 30.0 cd/m2  [5/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 50.0 cd/m2  [6/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 100.0 cd/m2  [7/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 300.0 cd/m2  [8/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+Computing os linear filters for background luminance 500.0 cd/m2  [9/9]
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+No current noise added.
+</pre><img vspace="5" hspace="5" src="t_linearFilters_01.png" style="width:1380px;height:1010px;" alt=""> <img vspace="5" hspace="5" src="t_linearFilters_02.png" style="width:1380px;height:500px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function t_linearFilters
+
+    % Define the time axis for the simulation
+    stimulusSamplingInterval = 10/1000;             % 5 milliseconds
+    oiTimeAxis = 0:stimulusSamplingInterval:0.3;   % 0.1 seconds
+    oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
+    
+    FOV = 1.0;
+    backgroundLuminances = [1 3 5 10 30 50 100 300 500]; 
+    osTimeSteps = [0.01 0.05 0.1 0.5 1.0]/1000;
+    
+    % Compute the stimulus modulation function
+    stimulusRampTau = 180/1000;
+    modulationGain = 1.0;
+    modulationFunction = modulationGain * exp(-0.5*(oiTimeAxis/stimulusRampTau).^2);
+    
+    % Generate optics
+    noOptics = false;
+    theOI = oiGenerate(noOptics);
+    
+    % Generate a cone mosaic with 1 L-, 1 M-, and 1 S-cone only
+    mosaicSize =  nan;                    
+    integrationTime = 0.1/1000;            
+    photonNoise = 'none';                                        
+    osNoise = 'none';                        
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeSteps(1));
+        
+    subplotPosVectors2 = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 3, ...
+           'heightMargin',   0.04, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.04);
+       
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 2, ...
+           'colsNum', 3, ...
+           'heightMargin',   0.04, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.04);
+       
+ 
+    for iLum = 1:numel(backgroundLuminances)
+        fprintf('Computing os linear filters for background luminance %2.1f cd/m2  [%d/%d]\n',  backgroundLuminances(iLum), iLum, numel(backgroundLuminances));
+        theScene = uniformFieldSceneCreate(FOV, backgroundLuminances(iLum));
+        % Compute the optical images
+        oiBackground = oiCompute(theOI, theScene);
+        oiModulated  = oiBackground;
+
+        % Generate the sequence of optical images
+        theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction);
+    
+        % Generate eye movement path
+        eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
+        instancesNum = 1;
+        emPaths = zeros(instancesNum, eyeMovementsNum,2);
+    
+        for iStepIndex = 1:numel(osTimeSteps)
+            theConeMosaic.os.timeStep = osTimeSteps(iStepIndex);
+            % Compute all instances 
+            [isomerizations, photocurrents{iLum, iStepIndex}, LMSfilters{iLum, iStepIndex}] = ...
+                theConeMosaic.computeForOISequence(theOIsequence, ...
+                'emPaths', emPaths, ...
+                'currentFlag', true);
+            photocurrentTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+        end % iStepIndex
+    end
+    
+    timeAxis = (1:size(LMSfilters{1,1},1))*theConeMosaic.integrationTime;
+    coneNames = {'L', 'M', 'S'};
+    
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1380 1010], 'Color', [1 1 1]);
+    
+    videoOBJ = VideoWriter('IRs.mp4', 'MPEG-4'); % H264 format
+    videoOBJ.FrameRate = 5; 
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    colorIR = (jet(numel(osTimeSteps))).^2;
+    for iLum = 1:numel(backgroundLuminances)
+        legends = {};
+        for iStepIndex = 1:numel(osTimeSteps)
+            legends{numel(legends)+1} = sprintf('os.timeStep: %2.3fms', osTimeSteps(iStepIndex)*1000);
+            color = squeeze(colorIR(iStepIndex,:));
+            for coneIndex = 1:3  
+                subplot('Position', subplotPosVectors(1,coneIndex).v);
+                normFilter = squeeze(LMSfilters{iLum, iStepIndex}(:,coneIndex));
+                normFilter = normFilter / max(normFilter);
+                plot(timeAxis, normFilter, 'k-', 'Color', color, 'LineWidth', 1.5);
+                if (iStepIndex == 1) 
+                    hold on;
+                end
+                if (iStepIndex == numel(osTimeSteps))
+                    hold off;
+                end
+                set(gca, 'XLim', [timeAxis(1) timeAxis(end)], 'YLim', [-0.1 1.05], 'YTick', (0:0.1:1.0), 'XTick', (0:0.05:0.5), 'FontSize', 12);
+                grid on; box on;
+                hL = legend(legends);
+                set(hL, 'FontSize', 12);
+                title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
+                    'FontSize', 14, 'FontWeight', 'bold');
+                
+                subplot('Position', subplotPosVectors(2,coneIndex).v);
+                filter = squeeze(LMSfilters{iLum, iStepIndex}(:,coneIndex));
+                plot(timeAxis, filter, 'k-', 'Color', color, 'LineWidth', 1.5);
+                if (iStepIndex == 1) 
+                    hold on;
+                end
+                if (iStepIndex == numel(osTimeSteps))
+                    hold off;
+                end
+                set(gca, 'XLim', [timeAxis(1) timeAxis(end)], 'YLim', [-0.1 1.0]*0.18, 'YTick', (0:0.1:1.0)*0.2, 'XTick', (0:0.05:0.5), 'FontSize', 12);
+                grid on; box on;
+                hL = legend(legends);
+                set(hL, 'FontSize', 12);
+                title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
+                    'FontSize', 14, 'FontWeight', 'bold');
+            end % coneIndex
+            drawnow
+            videoOBJ.writeVideo(getframe(hFig));  
+        end % iStepIndex
+    end %iLum
+    videoOBJ.close();
+    
+    
+    hFig = figure(2); clf;
+    set(hFig, 'Position', [10 10 1380 500], 'Color', [1 1 1]);
+    
+    videoOBJ = VideoWriter('Photocurrents.mp4', 'MPEG-4'); % H264 format
+    videoOBJ.FrameRate = 5; 
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    colorIR = (jet(numel(osTimeSteps))).^2;
+    for iLum = 1:numel(backgroundLuminances)
+        legends = {};
+        for iStepIndex = 1:numel(osTimeSteps)
+            legends{numel(legends)+1} = sprintf('os.timeStep: %2.3fms', osTimeSteps(iStepIndex)*1000);
+            color = squeeze(colorIR(iStepIndex,:));
+            for coneIndex = 1:3  
+                subplot('Position', subplotPosVectors2(1,coneIndex).v);
+                photocurrent = squeeze(photocurrents{iLum, iStepIndex}(1,1,coneIndex,:));
+                plot(photocurrentTimeAxis, photocurrent , 'k-', 'Color', color, 'LineWidth', 1.5);
+                if (iStepIndex == 1) 
+                    hold on;
+                end
+                if (iStepIndex == numel(osTimeSteps))
+                    hold off;
+                end
+                set(gca, 'XLim', [photocurrentTimeAxis(1) photocurrentTimeAxis(end)], 'YLim', [-90 -30], 'YTick', (-100:10:0), 'XTick', (photocurrentTimeAxis(1):0.05:photocurrentTimeAxis(end)), 'FontSize', 12);
+                if (coneIndex == 1)
+                    ylabel('photocurrent (pAmps)');
+                end
+                grid on; box on;
+                hL = legend(legends);
+                set(hL, 'FontSize', 12);
+                title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
+                    'FontSize', 14, 'FontWeight', 'bold');
+
+            end % coneIndex
+            drawnow
+            videoOBJ.writeVideo(getframe(hFig));  
+        end % iStepIndex
+    end %iLum
+    videoOBJ.close();
+end
+
+function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
+    % Default human mosaic
+    theConeMosaic = coneMosaic;
+    
+    % Adjust size
+    if isnan(mosaicSize)
+        % Generate a human cone mosaic with 1L, 1M and 1S cone
+        theConeMosaic.rows = 1;
+        theConeMosaic.cols = 3;
+        theConeMosaic.pattern = [2 3 4];
+    else
+        theConeMosaic.setSizeToFOV(mosaicSize);
+    end
+    
+    % Set the noise
+    theConeMosaic.noiseFlag = photonNoise;
+
+    % Set the integrationTime
+    theConeMosaic.integrationTime = integrationTime;
+    
+    % Generate the outer-segment object to be used by the coneMosaic
+    theOuterSegment = osLinear();
+    theOuterSegment.noiseFlag = osNoise;
+    
+    % Set a custom timeStep, for @osLinear we do not need the default 0.1 msec
+    theOuterSegment.timeStep = osTimeStep;
+
+    % Couple the outersegment object to the cone mosaic object
+    theConeMosaic.os = theOuterSegment;
+end
+
+
+function theOI = oiGenerate(noOptics)
+    % Generate optics
+    if (noOptics)
+        theOI = oiCreate('diffraction limited');
+        optics = oiGet(theOI,'optics');           
+        optics = opticsSet(optics,'fnumber',0);
+        optics = opticsSet(optics, 'off axis method', 'skip');
+        theOI = oiSet(theOI,'optics', optics);
+    else
+        theOI = oiCreate('human');
+    end
+end
+
+function uniformScene = uniformFieldSceneCreate(FOV, meanLuminance)
+    uniformScene = sceneCreate('uniform equal photon', 128);
+    % square scene with desired FOV
+    uniformScene = sceneSet(uniformScene, 'wAngular', FOV);
+    % 1 meter away
+    uniformScene = sceneSet(uniformScene, 'distance', 1.0);
+    % adjust radiance according to desired  mean luminance
+    uniformScene = sceneAdjustLuminance(uniformScene, meanLuminance);
+end
+
+
+##### SOURCE END #####
+--></body></html>
