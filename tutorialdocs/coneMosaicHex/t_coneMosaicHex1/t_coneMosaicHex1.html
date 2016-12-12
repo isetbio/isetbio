@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>t_coneMosaicHex1</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-11"><meta name="DC.source" content="t_coneMosaicHex1.m"><style type="text/css">
+      --><title>t_coneMosaicHex1</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-12"><meta name="DC.source" content="t_coneMosaicHex1.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,6 +68,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>t_coneMosaicHex1</h1><!--introduction--><p>Shows how to generate a default hexagonal mosaic, and how to customize it (FOV, resamplingFactor).</p><p>NPC ISETBIO Team, Copyright 2016</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)</a></li><li><a href="#3">Unit test 2: generate a custom hex mosaic</a></li><li><a href="#4">Unit test 3: change the field of view to 0.4 x 0.4 deg</a></li><li><a href="#5">Unit test 3: change the field of view to 0.2 x 0.4 deg</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit; clear; close <span class="string">all</span>;
 
+<span class="comment">% Interactive mode. Set to true to have it pause at useful places.</span>
+<span class="comment">% Default is false so we can autopublish without user input</span>
+interactiveMode = false;
+
+<span class="comment">% Freeze random number generator</span>
 rng(<span class="string">'default'</span>); rng(219347);
 </pre><h2>Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)<a name="2"></a></h2><p>Mosaic Parameters</p><pre class="codeinput">mosaicParams = struct(<span class="keyword">...</span>
             <span class="string">'resamplingFactor'</span>, 3,  <span class="keyword">...</span><span class="comment">        % controls the accuracy of the hex mosaic grid</span>
@@ -93,9 +98,13 @@ Mosaic info:
         Cone density (all cones): 2250000.0 cones/mm^2
      Cone density (active cones): 246646.1 cones/mm^2
 
-</pre><img vspace="5" hspace="5" src="t_coneMosaicHex1_01.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 2: generate a custom hex mosaic<a name="3"></a></h2><pre class="codeinput">commandwindow;
-fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n&lt;/strong&gt;'</span>);
-fprintf(<span class="string">'&lt;strong&gt;Here we use a high resamplingFactor (10) to get a near perfect hex grid\n&lt;/strong&gt;'</span>); pause
+</pre><img vspace="5" hspace="5" src="t_coneMosaicHex1_01.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 2: generate a custom hex mosaic<a name="3"></a></h2><pre class="codeinput"><span class="keyword">if</span> (interactiveMode)
+    commandwindow;
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n&lt;/strong&gt;'</span>);
+    fprintf(<span class="string">'&lt;strong&gt;Here we use a high resamplingFactor (10) to get a near perfect hex grid\n&lt;/strong&gt;'</span>);
+    pause
+<span class="keyword">end</span>
+
 <span class="comment">% Mosaic Parameters</span>
 mosaicParams = struct(<span class="keyword">...</span>
             <span class="string">'resamplingFactor'</span>, 10, <span class="keyword">...</span><span class="comment">              % controls the accuracy of the hex mosaic grid</span>
@@ -114,9 +123,6 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatial
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
 </pre><pre class="codeoutput">
-&lt;strong&gt;Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions
-&lt;/strong&gt;&lt;strong&gt;Here we use a high resamplingFactor (10) to get a near perfect hex grid
-&lt;/strong&gt;
 Resampling grid. Please wait ... Done !
 
 Mosaic info:
@@ -132,15 +138,16 @@ Mosaic info:
      Cone density (active cones): 29199.9 cones/mm^2
 
 </pre><img vspace="5" hspace="5" src="t_coneMosaicHex1_02.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 3: change the field of view to 0.4 x 0.4 deg<a name="4"></a></h2><pre class="codeinput">newFOV = [0.4 0.4];
-commandwindow
-fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to change FOV to [%2.2f, %2.2f]\n&lt;/strong&gt;'</span>, newFOV(1), newFOV(2)); pause
+<span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to change FOV to [%2.2f, %2.2f]\n&lt;/strong&gt;'</span>, newFOV(1), newFOV(2));
+    pause
+<span class="keyword">end</span>
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 <span class="comment">% Print some grid info and visualize it</span>
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
 </pre><pre class="codeoutput">
-&lt;strong&gt;Hit enter to change FOV to [0.40, 0.40]
-&lt;/strong&gt;
 Resampling grid. Please wait ... Done !
 
 Mosaic info:
@@ -156,15 +163,16 @@ Mosaic info:
      Cone density (active cones): 26451.5 cones/mm^2
 
 </pre><img vspace="5" hspace="5" src="t_coneMosaicHex1_03.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 3: change the field of view to 0.2 x 0.4 deg<a name="5"></a></h2><pre class="codeinput">newFOV = [0.2 0.4];
-commandwindow
-fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to change FOV to [%2.2f, %2.2f]\n&lt;/strong&gt;'</span>, newFOV(1), newFOV(2)); pause
+<span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to change FOV to [%2.2f, %2.2f]\n&lt;/strong&gt;'</span>, newFOV(1), newFOV(2));
+    pause
+<span class="keyword">end</span>
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 <span class="comment">% Print some grid info and visualize it</span>
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
 </pre><pre class="codeoutput">
-&lt;strong&gt;Hit enter to change FOV to [0.20, 0.40]
-&lt;/strong&gt;
 Resampling grid. Please wait ... Done !
 
 Mosaic info:
@@ -189,7 +197,12 @@ Mosaic info:
 
 %% Initialize
 ieInit; clear; close all;
-    
+
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze random number generator      
 rng('default'); rng(219347);
 
 %% Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)
@@ -205,9 +218,13 @@ theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
 
 %% Unit test 2: generate a custom hex mosaic
-commandwindow;
-fprintf('\n<strong>Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n</strong>');
-fprintf('<strong>Here we use a high resamplingFactor (10) to get a near perfect hex grid\n</strong>'); pause
+if (interactiveMode)
+    commandwindow;
+    fprintf('\n<strong>Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n</strong>');
+    fprintf('<strong>Here we use a high resamplingFactor (10) to get a near perfect hex grid\n</strong>');
+    pause
+end
+
 % Mosaic Parameters
 mosaicParams = struct(...
             'resamplingFactor', 10, ...              % controls the accuracy of the hex mosaic grid
@@ -228,8 +245,11 @@ theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.4 x 0.4 deg
 newFOV = [0.4 0.4];
-commandwindow
-fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
+    pause
+end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
@@ -237,8 +257,11 @@ theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.2 x 0.4 deg
 newFOV = [0.2 0.4];
-commandwindow
-fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
+    pause
+end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
