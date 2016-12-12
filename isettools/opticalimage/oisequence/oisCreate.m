@@ -59,9 +59,7 @@ p.addParameter('sceneParameters',[],@isstruct);
 
 p.parse(oisType,composition,modulation,varargin{:});
 
-oisType = ieParamFormat(p.Results.oisType);
-composition = p.Results.composition;
-modulation  = p.Results.modulation;
+oisType = ieParamFormat(oisType);
 
 sampleTimes = p.Results.sampleTimes;
 if isempty(sampleTimes)

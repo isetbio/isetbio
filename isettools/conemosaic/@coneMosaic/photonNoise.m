@@ -35,7 +35,7 @@ p.addParameter('seed',1,@isnumeric);      % Seed for frozen noise
 
 p.parse(absorptions,varargin{:});
 
-absorptions  = p.Results.absorptions;
+% absorptions  = p.Results.absorptions;
 seed         = p.Results.seed;
 noiseFlag    = p.Results.noiseFlag;
 
@@ -66,8 +66,11 @@ v = absorptions(absorptions < poissonCriterion);
 if ~isempty(v)
     % If noiseFlag is 'random', this routine ignores the seed.
     vn = iePoisson(v,'noiseFlag',noiseFlag,'seed',seed);  % Poisson samples
-    theNoise(idx) = vn - absorptions(idx);
     noisyImage(idx) = vn;
+    if nargout > 1
+        % Saves time
+        theNoise(idx) = vn - absorptions(idx);
+    end
 end
 
 % Find the highly unusual case in which the sum of the mean and noise are
@@ -77,6 +80,9 @@ end
 % imperfection but it isn't the worst thing we do.
 idx = (noisyImage < 0);
 noisyImage(idx)  = 0;
-theNoise(idx)    = noisyImage(idx) - absorptions(idx);
+if nargout > 1
+    % Saves time
+    theNoise(idx)    = noisyImage(idx) - absorptions(idx);
+end
 
 end

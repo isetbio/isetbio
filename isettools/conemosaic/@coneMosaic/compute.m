@@ -71,7 +71,7 @@ p.addParameter('emPath', obj.emPositions, @isnumeric);
 
 p.parse(oi,varargin{:});
 
-oi          = p.Results.oi;
+% oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
 emPath      = p.Results.emPath;
