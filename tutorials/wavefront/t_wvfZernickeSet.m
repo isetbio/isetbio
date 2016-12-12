@@ -14,7 +14,7 @@ scene = sceneCreate('slanted bar');
 wvf = wvfCreate;
 wvf = wvfComputePSF(wvf);
 wvfPlot(wvf,'2d psf space','um',550,20);
-oi = wvf2oi(wvf,'human');
+oi = wvf2oi(wvf);
 
 %% Make an ISET optical image
 oi = oiCompute(oi,scene);
