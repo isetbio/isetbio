@@ -1,17 +1,38 @@
 function [absorptions, current] = compute(obj, oi, varargin)
-% Compute the cone absorptions
+% Compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%  [absorptions, current] = cMosaic.compute(oi);
+%  [absorptions, current] = cMosaic.compute(oi or oiSequence);
 %
-% The cone photon absorptions, which we treat as isomerization (R*), can be
-% computed with or without noise, according to obj.noiseFlag.  This can be
-% 'random','frozen', or 'none'.  If 'frozen', then you can set the 'seed'
-% parameter.  The default is 1.
+% Compute the temporal sequence of cone absorptions, which we treat as
+% isomerization R*.  The computation can executed on
 %
-% The absorptions for a single oi can be computed with eye movements, as
-% well.  In that case you can send in 'emPath', which defines the eye
-% positions.  We recommend, however, simply setting coneMosaic.emPositions,
-% say by using coneMosaic.emGenSequence or by an explicit set.
+%   * a single optical image (snapshot)
+%   * a single optical image with a series of eye movements, or
+%   * an optical image sequence with a series of eye movements.
+%
+% The eye movement path (emPath) can be generated using
+% coneMosaic.emGenSequence, or it can be sent in as the 'emPath' variable.
+% For a single trial, the emPath is a series of (row,col) positions with
+% respect to the cone mosaic.  For the single trial case, we recommend
+% setting the coneMosaic.emPositions or using coneMosaic.emGenSequence.
+%
+% You can execute a multiple trial ccalculation by setting the eye movement
+% variable to a 3D array
+%
+%          emPath: (nTrials , row , col)
+% 
+% In that case, we return the absorptions and possibly photocurrent for
+% nTrials in a 2D matrix of dimension (nTrials x nTime, nPixels).  If you
+% set the currentFlag to true, then the current is also returned in a
+% matrix of the same size.
+%
+% The cone photon absorptions is computed according to obj.noiseFlag,
+% which can be 'random','frozen', or 'none'.  If 'frozen', then you can set
+% the 'seed' parameter.  The default is 'random'.
+%
+% The cone photocurrent is computed according to obj.os.noiseFlag, which
+% can also be set to 'random','frozen', or 'none', as above. The default is
+% 'random'. 
 %
 % Inputs:
 %   oi  - optical image, or oiSequence.  See oiCreate for more details
@@ -23,12 +44,13 @@ function [absorptions, current] = compute(obj, oi, varargin)
 %                  coneMosaic.emPositions, but at present we do different
 %                  things depending on whether absorptions is empty. BW is
 %                  complaining about this.
-%   currentFlag  - logical, also compute photocurrent.  Not recommended. We
-%                  prefer that you use coneMosaic.computeCurrent.
+%   currentFlag  - logical, also compute photocurrent
 %
 % Outputs:
 %   absorptions  - cone photon absorptions
 %   current      - cone photocurrent
+%
+% See also:  computeForOISequence
 %
 % HJ ISETBIO Team 2016
 

@@ -31,7 +31,8 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 %   [absorptions, photocurrents] = cMosaic.computeForOISequence(oiSequence);
 %
 % We control the photon noise by cmosaic.noiseFlag, and the photocurrent
-% noise by cmosaic.os.noiseFlag.  These have the options 
+% noise by cmosaic.os.noiseFlag.  These have the options
+%
 %    'random','frozen','none'
 %
 % We should allo that when 'frozen', you can send in a 'seed'.  May not be
@@ -59,6 +60,8 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 %
 % The coneMosaic object (obj) has the absorptions from the last trial and
 % dimensions (row,col,time).
+%
+% The same is true for the photocurrent return.
 %
 % See also: coneMosaic.compute, v_cmosaic, 
 %
