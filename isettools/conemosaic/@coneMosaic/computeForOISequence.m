@@ -90,10 +90,8 @@ if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
 end
 
-if (isempty(emPaths))  && ismatrix(obj.emPositions)
+if (isempty(emPaths))
     emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
-else
-    emPaths = obj.emPositions;
 end
 
 if (isempty(emPaths))
@@ -103,8 +101,6 @@ end
 %% Get ready for output variables
 
 photocurrents = [];
-% varargout{1} = [];
-% varargout{2} = [];
 
 %% Save default integration time
 defaultIntegrationTime = obj.integrationTime;
@@ -148,6 +144,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
     wb = waitbar(0,sprintf('Sequence %d',oiSequence.length));
     for oiIndex = 1:oiSequence.length
         waitbar(oiIndex/oiSequence.length,wb);
+        if obj.integrationTime < 0.001
+            pause
+        end
         
         if (~isempty(workerID))
             % Update progress in command window
@@ -184,6 +183,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
             obj.absorptions = [];
             currentSeed = currentSeed  + 1;
+            % Compute for all the eye movements, but just one frame
             absorptionsDuringPreviousFrame = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex-1), ...
                 'seed', currentSeed , ...
