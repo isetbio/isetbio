@@ -16,6 +16,8 @@ a = rd.listArtifacts('print',true); % Maybe not needed.
 
 assert(~isempty(a));                % There are a couple of things in there
 
+foo = rd.readArtifact(a(1));
+
 end
 
     

@@ -90,8 +90,10 @@ if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
 end
 
-if (isempty(emPaths))
+if (isempty(emPaths))  && ismatrix(obj.emPositions) == 2
     emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
+else
+    emPaths = obj.emPositions;
 end
 
 if (isempty(emPaths))
