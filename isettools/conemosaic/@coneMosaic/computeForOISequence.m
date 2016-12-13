@@ -90,7 +90,7 @@ if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
 end
 
-if (isempty(emPaths))  && ismatrix(obj.emPositions) == 2
+if (isempty(emPaths))  && ismatrix(obj.emPositions)
     emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
 else
     emPaths = obj.emPositions;
@@ -145,7 +145,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
     %
     
     % Loop over the optical images
+    wb = waitbar(0,sprintf('Sequence %d',oiSequence.length));
     for oiIndex = 1:oiSequence.length
+        waitbar(oiIndex/oiSequence.length,wb);
         
         if (~isempty(workerID))
             % Update progress in command window
@@ -239,7 +241,8 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
         end
     end  % oiIndex
-    
+    delete(wb);
+
     % oiRefreshInterval > defaultIntegrationTime
 else
     % There are two main time sampling scenarios.  This one is when the oi
