@@ -4,7 +4,8 @@
 %       % Synchronize ISETBIO's external PTB routines
 %       synchronizeISETBIOWithRepository('PTB_DHB');
 %
-%       % Synchronize ISETBIO's external RT-3 routines
+%       % Synchronize ISETBIO's external RTB-3 routines
+%       % THIS SHOULD BE UPDATED TO RTB-4
 %       synchronizeISETBIOWithRepository('RT3_DHB');
 %
 %       % Synchronize ISETBIO's external BrainardLab Toolbox routines
