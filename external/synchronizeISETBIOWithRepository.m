@@ -2,13 +2,13 @@
 % 
 % Usage:
 %       % Synchronize ISETBIO's external PTB routines
-%       synchronizeISETBIOWithRepository('PTB');
+%       synchronizeISETBIOWithRepository('PTB_DHB');
 %
 %       % Synchronize ISETBIO's external RT-3 routines
-%       synchronizeISETBIOWithRepository('RT3');
+%       synchronizeISETBIOWithRepository('RT3_DHB');
 %
 %       % Synchronize ISETBIO's external BrainardLab Toolbox routines
-%       synchronizeISETBIOWithRepository('BLTB');
+%       synchronizeISETBIOWithRepository('BLTB_DHB');
 %
 % 11/20/2014 npc    Wrote it.
 %  4/27/2015 npc    Modification to support synchronization of any repository with isetbio, not just PTB 
@@ -21,13 +21,13 @@ function synchronizeISETBIOWithRepository(repositoryName)
     end
 
     switch repositoryName
-        case 'PTB'
-            srcDir = '/Users/Shared/Matlab/Toolboxes/Psychtoolbox-3/Psychtoolbox';
-            dstDir = '/Users/Shared/Matlab/Toolboxes/isetbio/external/psychtoolbox';
-        case 'RT3'
+        case 'PTB_DHB'
+            srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/Psychtoolbox-3/Psychtoolbox';
+            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/psychtoolbox';
+        case 'RT3_DHB'
             srcDir = '/Users/Shared/Matlab/Toolboxes/RenderToolbox3';
-            dstDir = '/Users/Shared/Matlab/Toolboxes/isetbio/external/rendertoolbox3';
-        case 'BLTB'
+            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/rendertoolbox3';
+        case 'BLTB_DHB'
             srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/BrainardLabToolbox';
             dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/brainardlabtoolbox';
         otherwise
