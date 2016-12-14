@@ -41,27 +41,38 @@ ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParam
 tolerance = 1E-3;
 
 % Check the oiCreate part
-photons = oiGet(ois.oiFixed,'photons');
-quantityOfInterest = sum(photons(:))/1.3379e+19 - 1;
+photonsFixed = oiGet(ois.oiFixed,'photons');
+quantityOfInterest = sum(photonsFixed(:))/1.3379e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiFixed photons',tolerance);
 
-photons = oiGet(ois.oiModulated,'photons');
-quantityOfInterest = sum(photons(:))/1.3379e+19 - 1;
+photonsModulated = oiGet(ois.oiModulated,'photons');
+quantityOfInterest = sum(photonsModulated(:))/1.3379e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 
 % This tests the generation of the sequence because the sequence is built
 % by coneMosaic.compute
 cMosaic = coneMosaic;
+cMosaic.noiseFlag = 'frozen';
+cMosiac.os.noiseFlag = 'frozen';
 cMosaic.setSizeToFOV(0.2);
 cMosaic.integrationTime = ois.timeAxis(2);  % This is the integration time
-cMosaic.emGenSequence(length(ois.timeAxis));
+cMosaic.emGenSequence(length(ois.timeAxis),'rseed',1);
 cMosaic.compute(ois);
 
-tolerance = 1E-2;
-quantityOfInterest = (sum(cMosaic.absorptions(:))/121450) - 1;
-UnitTest.assertIsZero(quantityOfInterest,'coneMosaic abosprtions',tolerance);
+tolerance = 2E-2;
+totalAbsorptions = sum(cMosaic.absorptions(:));
+quantityOfInterest = (totalAbsorptions/120009) - 1;
+UnitTest.assertIsZero(quantityOfInterest,'coneMosaic absorptions',tolerance);
 
 % assert((sum(cMosaic.absorptions(:))/121450) - 1 < 1e-3);
+
+% Unit test validation data
+UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_oiSequence *****');
+UnitTest.validationData('photonsFixed', photonsFixed);
+UnitTest.validationData('photonsModulated', photonsModulated);
+UnitTest.validationData('totalAbsorptions', totalAbsorptions, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'totalAbsorptions', 600);
 
 end
 
