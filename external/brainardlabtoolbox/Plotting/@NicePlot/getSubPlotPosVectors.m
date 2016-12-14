@@ -32,23 +32,10 @@ function posVectors = getSubPlotPosVectors(varargin)
     plotWidth  = ((1.0-self.leftMargin-self.rightMargin) - self.widthMargin*(self.colsNum-1) - 0.01)/self.colsNum;
     plotHeight = ((1.0-self.bottomMargin-self.topMargin) - self.heightMargin*(self.rowsNum-1) - 0.01)/self.rowsNum;
     
-    if (plotHeight < 0)
-        error('Plot height < 0. Decrease top/bottom/height margins');
-    end
-    if (plotWidth < 0)
-        error('Plot width < 0. Decrease left/right/width margins');
-    end
-    
     for row = 1:self.rowsNum
         yo = 0.99 - self.topMargin - (row)*(plotHeight+self.heightMargin) + self.heightMargin;
-        if (yo < 0) 
-            yo = 0;
-        end
         for col = 1:self.colsNum
             xo = self.leftMargin + (col-1)*(plotWidth+self.widthMargin);
-            if (xo < 0)
-                xo = 0;
-            end
             posVectors(row,col).v = [xo yo plotWidth plotHeight];
         end
     end

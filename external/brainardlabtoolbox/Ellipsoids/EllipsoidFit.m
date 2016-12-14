@@ -1,5 +1,5 @@
-function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0)
-% [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,[ellParams0])
+function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,offset)
+% [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,[ellParams0],[offset])
 %
 % Find the ellipsoid that goes through a set of passed points in the
 % columns of matrix x.  The method follows that described in:
@@ -13,16 +13,37 @@ function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0)
 % 
 % 7/4/16  dhb  Wrote it.
 
+% Offset?
+if (nargin < 3 || isempty(offset))
+    OFFSET = false;
+else
+    OFFSET = true;
+end
 
+% Get infor on ellipse location
+maxX = max(x,[],2);
+minX = min(x,[],2);
+meanX = mean(x,2);
 
-% Set reasonable bounds on parameters
 % Have a go at reasonable initial values
 if (nargin < 2 || isempty(ellParams0))
-    ellRanges = max(x,[],2)-min(x,[],2);
+    ellRanges = maxX-minX;
     ellParams0 = [ellRanges' 0 0 0]';
 end
 vlb = [1e-3 1e-3 1e-3 0 0 0]';
 vub = [1e3 1e3 1e3 2*pi 2*pi 2*pi]';
+
+% Add on offset parameters if we're searching on an offset.
+% Bound reasonably based on data range, to prevent really nutty
+% fits.
+if (OFFSET)
+
+    
+    % Use these to initialize and set bounds
+    ellParams0 = [ellParams0 ; [meanX(1) meanX(2) meanX(3)]' ];
+    vlb = [vlb ; [minX(1) minX(2) minX(3)]' ];
+    vub = [vub ; [maxX(1) maxX(2) maxX(3)]' ];
+end
 
 %% Fit that sucker
 %
@@ -49,6 +70,14 @@ end
 
 %% Error function for the fit
 function f = FitEllipseFunction(ellParams,x)
+
+% Handle offset case
+if (length(ellParams) == 9)
+    x(1,:) = x(1,:) - ellParams(7);
+    x(2,:) = x(2,:) - ellParams(8);
+    x(3,:) = x(3,:) - ellParams(9);
+    ellParams = ellParams(1:6);
+end
 
 [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams);
 vectorLengths = diag(x'*Q*x);

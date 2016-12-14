@@ -8,6 +8,9 @@ function [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams)
 % The column vector ellParams are the the diagonal entries of a 3 by 3 matrix D
 % and the Euler rotation angles (in radians) for a 3D rotation matrix R.
 %
+% The parameter matrix can optionally by 9 entries long, in which case the
+% last three entries are the coordinates of the center of the ellipsoid.
+%
 % The matrix D stretches the x, y, and z axes in the coordinate system of the unit sphere,
 % producing the three princple axes of the ellipsoid aligned to x, y, z.
 %
@@ -20,6 +23,11 @@ function [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams)
 % 'ZYX' order.  Thus the Euler angles are in radians.
 %
 % 6/27/16  dhb  Back to the future.  Wrote this.  It feels like 1988.
+
+% Handle offset case
+if (length(ellParams == 9))
+    ellParams = ellParams(1:6);
+end
 
 D = diag(ellParams(1:3));
 R = eul2rotm(ellParams(4:6)');
