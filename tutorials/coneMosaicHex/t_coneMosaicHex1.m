@@ -6,7 +6,12 @@
 
 %% Initialize
 ieInit; clear; close all;
-    
+
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze random number generator      
 rng('default'); rng(219347);
 
 %% Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)
@@ -22,9 +27,13 @@ theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
 
 %% Unit test 2: generate a custom hex mosaic
-commandwindow;
-fprintf('\n<strong>Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n</strong>');
-fprintf('<strong>Here we use a high resamplingFactor (10) to get a near perfect hex grid\n</strong>'); pause
+if (interactiveMode)
+    commandwindow;
+    fprintf('\n<strong>Hit enter to generate a customized hex mosaic based on an 11x16 rect mosaic with equal LMS proportions\n</strong>');
+    fprintf('<strong>Here we use a high resamplingFactor (10) to get a near perfect hex grid\n</strong>');
+    pause
+end
+
 % Mosaic Parameters
 mosaicParams = struct(...
             'resamplingFactor', 10, ...              % controls the accuracy of the hex mosaic grid
@@ -45,8 +54,11 @@ theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.4 x 0.4 deg
 newFOV = [0.4 0.4];
-commandwindow
-fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
+    pause
+end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
@@ -54,8 +66,11 @@ theHexMosaic.visualizeGrid();
 
 %% Unit test 3: change the field of view to 0.2 x 0.4 deg
 newFOV = [0.2 0.4];
-commandwindow
-fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2)); pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
+    pause
+end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();

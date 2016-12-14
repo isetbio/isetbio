@@ -8,8 +8,6 @@ function sformatted = ieParamFormat(s)
 % Example:
 %     ieParamFormat('Exposure Time')
 %
-% See also: sensorGet, and so forth
-%
 % Copyright ImagEval Consultants, LLC, 2010
 
 if ~ischar(s), error('s has to be a string'); end

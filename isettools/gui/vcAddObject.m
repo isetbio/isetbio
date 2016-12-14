@@ -19,7 +19,7 @@ function val = vcAddObject(obj)
 %  newObjVal = vcAddObject(scene);
 %  sceneWindow;
 %
-% See also:  vcAddAndSelectObject.m (
+% See also:  vcAddAndSelectObject.m
 %  
 % Copyright ImagEval Consultants, LLC, 2013
 
@@ -51,10 +51,6 @@ if exist('obj','var')
             vcSESSION.OPTICALIMAGE{val} = oi;
         case {'sensor'}
             vcSESSION.ISA{val} = obj;
-        case {'pixel'}
-            sensor = vcSESSION.ISA{val};
-            sensor = sensorSet(sensor,'pixel',obj);
-            vcSESSION.ISA{val} = sensor;
         case {'vcimage'}
             vcSESSION.VCIMAGE{val} = obj;
         case {'display'}

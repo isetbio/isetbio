@@ -6,7 +6,7 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 % This routine lets the user compare the images side by side, rather than
 % flipping through them in the GUI window.
 %
-% objType:       Which window (scene, oi, sensor, or vcimage)
+% objType:       Which window (scene, oi, or vcimage)
 % selectedObjs:  List of the selected object numbers, e.g., [1 3 5]
 % singlewindow:  Put the images in subplots of a single figure (true) or in
 %                different figures (default = false);
@@ -71,11 +71,6 @@ for ii=selectedObjs
         case 'OPTICALIMAGE'
             oiShowImage(objList{ii},true,gam);
             t =sprintf('OI %d - %s',ii,oiGet(objList{ii},'name'));
-            
-        case 'ISA'
-            scaleMax = 1;
-            sensorShowImage(objList{ii},gam,scaleMax);
-            t = sprintf('Sensor %d - %s',ii,sensorGet(objList{ii},'name'));
             
         case 'VCIMAGE'
             imageShowImage(objList{ii},gam,true,f);

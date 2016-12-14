@@ -27,11 +27,6 @@ if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
     sensorClose;
 end
 
-if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
-    sensorImageWindow;
-    sensorClose;
-end
-
 if checkfields(vcSESSION.GUI,'vcConeImgWindow','hObject')
     try
         delete(vcSESSION.GUI.vcConeImgWindow.hObject);

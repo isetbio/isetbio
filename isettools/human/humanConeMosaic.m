@@ -8,7 +8,7 @@ function [xy,coneType,densities,rSeed] = humanConeMosaic(sz,densities,umConeWidt
 % densities:  The sum of the densities. If sum < 1, some locations will
 %   have a 0, meaning the receptor at that location has zero spectralQE
 %   However, it does respond with noise in the sensor image.
-% umConeWidth: Cone width in microns (pixelGet(pixel,'width','um'))
+% umConeWidth: Cone width in microns 
 % rSeed:      Set the random number seed (for repeatability)
 %
 % Returns
@@ -19,9 +19,7 @@ function [xy,coneType,densities,rSeed] = humanConeMosaic(sz,densities,umConeWidt
 %
 % The order of the vector densities should K,L,M,S -> 1,2,3,4, but we patch
 % up some cases when only (L,M,S) are sent in.  Not preferred.
-%
-% See also: sensorCreateConeMosaic
-%
+%%
 % Examples
 %   sz        = [50,50];
 %   densities = [0.14 .5 .3 .06];

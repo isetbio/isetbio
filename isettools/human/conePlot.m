@@ -31,6 +31,7 @@ function [support, spread, delta, coneMosaicImage] = ...
 %
 % See also:  sensorConePlot, humanConeMosaic
 %
+% [EXAMPLE NEEDS UPDATING NOW THAT SENSOR IS GONE.]
 % Example:
 %  [sensor, xy, coneType] = sensorCreateConeMosaic;
 %  conePlot(xy,coneType);

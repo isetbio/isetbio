@@ -46,7 +46,10 @@ function ValidationFunction(runTimeParams)
     s_initISET;
        
     %% Set computation params
-    fov     = 20;  % need large field
+    %
+    % Need a large field of view for this check to avoid edge
+    % artifacts from optical blurring.
+    fov = 20; 
     roiSize = 5;
         
     %% Create a radiance image in ISETBIO
@@ -102,12 +105,12 @@ function ValidationFunction(runTimeParams)
         return;
     end
     isetbioIrradianceEnergy = oiGet(oi,'roi mean energy', oiRoiLocs);
-    
-    lensTransmittance = lensGet(oiGet(oi,'lens'),'transmittance');
-    % Divide by lens transmittance, to agree with old validations 
-    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
-    isetbioIrradianceEnergy = isetbioIrradianceEnergy ./ lensTransmittance';
-    
+
+    % Get lens transmittance and divide this out, for compatibility with a
+    % time where the lens was in the sensor and not in the oi.
+    lens = oiGet(oi,'lens');
+    lensTransmittance = lens.transmittance;
+    isetbioIrradianceEnergy = isetbioIrradianceEnergy ./ lensTransmittance';    
 
     %% Check spatial uniformity of optical image irradiance data.
     % With optics turned off, we think this should be perfect but it isn't.
@@ -117,8 +120,8 @@ function ValidationFunction(runTimeParams)
     % This also verifies that two ways of getting the same information out
     % in isetbio give the same answer.
     irradianceData = vcGetROIData(oi,oiRoiLocs,'energy');
-    % Divide by lens transmittance, to agree with old validations 
-    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+    
+	% Divide by lens transmittance, to agree with old validations 
     irradianceData = bsxfun(@times, irradianceData, 1./lensTransmittance');
 
     irradianceEnergyCheck = mean(irradianceData,1);
@@ -199,18 +202,18 @@ function ValidationFunction(runTimeParams)
     coneTolerance = 0.01;
     ptbCones = ptbPhotoreceptors.isomerizationAbsorptance';
     
-    % Create isetbio sensor object with human cones, and pull out quantal
+    % Create isetbio coneMosaic object, and pull out quantal
     % efficiencies. 
-    sensor = sensorCreate('human');
-    sensor = sensorSet(sensor,'size',oiGet(oi,'size'));
-    sensor = sensorSet(sensor,'noise flag',0);
-    isetbioCones = sensorGet(sensor,'spectral qe');
-    isetbioCones = isetbioCones(:,2:4);
+    cMosaic = coneMosaic;
+    cMosaic.setSizeToFOV(fov);
+    cMosaic.noiseFlag = 'none';
+    cMosaic.rows = oiGet(oi,'rows'); 
+    cMosaic.cols = oiGet(oi,'cols'); 
+    cMosaic.integrationTime = integrationTimeSec;
+    isetbioCones = cMosaic.qe;
     
-    % Multiply by the lens transmittance, to agree with old validations 
-    % This is a temporary solution until we update this script to use the coneMosaic object. Nicolas
+	% Multiply by the lens transmittance, to agree with old validations 
     isetbioCones = bsxfun(@times, isetbioCones, lensTransmittance);
-    
     
     % Compare with PTB
     coneDifference = ptbCones-isetbioCones;
@@ -228,22 +231,20 @@ function ValidationFunction(runTimeParams)
     %  2) Compare with PTB computation done above.
     %  3) Work through parameters that might lead to differences
     %    e.g., cone aperture, integration time, ...
-    sensor = sensorSet(sensor, 'exp time', integrationTimeSec);
-    sensor = sensorCompute(sensor, oi);
-    isetbioIsomerizationsArray = sensorGet(sensor,'photons');
+    cMosaic.compute(oi);
+    isetbioIsomerizationsArray = cMosaic.absorptions;
     
     % Pull out responses of each cone type within ROI. I am doing this by
     % brute force, because I can't find quite the right combination of ROI
-    % gets from the sensor image.
+    % gets from the isomerizations image.
     %
     % This code should be slicked up by an isetbio pro.  Do I have the
     % row/col indexing convention of the RoiLocs correct, or reversed?
-    sensorCFA = sensorGet(sensor,'cfa');
     nLocs = size(oiRoiLocs,1);
     sumIsomerizations = zeros(3,1);
     nSummed = zeros(3,1);
     for jj = 1:nLocs
-        coneType = sensorCFA.pattern(oiRoiLocs(jj,1),oiRoiLocs(jj,2))-1;
+        coneType = cMosaic.pattern(oiRoiLocs(jj,1),oiRoiLocs(jj,2))-1;
         sumIsomerizations(coneType) = sumIsomerizations(coneType)+isetbioIsomerizationsArray(oiRoiLocs(jj,1),oiRoiLocs(jj,2));
         nSummed(coneType) = nSummed(coneType) + 1;
     end
@@ -270,11 +271,11 @@ function ValidationFunction(runTimeParams)
         return;
     end
     ptbConeArea = pi*((ptbConeDiameter/2)^2);
-    pixel = sensorGet(sensor,'pixel');
-    isetbioConeArea = pixelGet(pixel,'width')*pixelGet(pixel,'width')*1e12;
+    isetbioConeArea = cMosaic.pigment.pdArea*1e12;
     ptbAreaCorrectedIsomerizations = (isetbioConeArea/ptbConeArea)*ptbIsomerizations;
     
     %% Also need to correct for magnification difference
+    %
     % This follows irradiance correction above.
     ptbCorrectedIsomerizations = ptbAreaCorrectedIsomerizations/(1+abs(m))^2;
 
@@ -294,7 +295,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.extraData('ptbPhotoreceptors',ptbPhotoreceptors);
     
     % Add extra data
-    UnitTest.extraData('sensor',sensor);    
+    UnitTest.extraData('cMosaic',cMosaic);    
  
     %% Plotting
     if (runTimeParams.generatePlots)
@@ -324,7 +325,7 @@ function ValidationFunction(runTimeParams)
         legend({'PTB','ISETBIO'}, 'Location','SouthEast','FontSize',12)
         title('Magnification-corrected comparison', 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'bold');
         
-        % Compare PTB sensor spectral responses with ISETBIO
+        % Compare PTB cone spectral responses with ISETBIO
         vcNewGraphWin; hold on; 
         set(gca, 'FontName', 'Helvetica', 'FontSize', 14,  'FontWeight', 'bold');
         plot(wave, isetbioCones(:,1),'ro', 'MarkerFaceColor', [1.0 0.8 0.8], 'MarkerSize', 10);
