@@ -42,17 +42,18 @@ end
 
 %% parse inputs
 p = inputParser;
-p.addRequired('oi',@isstruct);
+p.addRequired('oi', @isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
-
+p.addParameter('theExpandedMosaic', []);
 p.parse(oi,varargin{:});
 
 oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
 emPath      = p.Results.emPath;
+theExpandedMosaic = p.Results.theExpandedMosaic;
 
 obj.absorptions = [];
 obj.current = [];
@@ -70,19 +71,27 @@ obj.current = [];
 %
 obj.emPositions = emPath;
 
-%% extend sensor size
-padRows = max(abs(emPath(:, 2)));
-padCols = max(abs(emPath(:, 1)));
-
-% We need a copy of the object because ...
-cpObj = obj.copy();
-
-% Perhaps because of eye movements?
-cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
+% We need a copy of the object because of eye movements.
+if (isempty(theExpandedMosaic))
+    % We are not passed theExpandedMosaic. 
+    % Generate it here.
+    padRows = max(abs(emPath(:, 2)));
+    padCols = max(abs(emPath(:, 1)));
+    theExpandedMosaic = obj.copy();
+    theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
+elseif isa(theExpandedMosaic, 'coneMosaic')
+    % OK, we are passed theExpandedMosaic. 
+    % Set the current path and integrationTime and use it.
+    theExpandedMosaic.emPositions = obj.emPositions;
+    theExpandedMosaic.integrationTime = obj.integrationTime;
+    theExpandedMosaic.absorptions = [];
+else
+    error('theExpandedMosaic passed is not a @coneMosaic');
+end
 
 % compute full LMS noise free absorptions
-LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
-
+LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
+    
 % deal with eye movements
 absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
 % vcNewGraphWin; imagesc(absorptions);
