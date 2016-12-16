@@ -92,21 +92,32 @@ obj.current = [];
 %
 obj.emPositions = emPath;
 
-%% extend sensor size
+%% Extend cone mosaic size
 padRows = max(abs(emPath(:, 2)));
 padCols = max(abs(emPath(:, 1)));
 
-% We need a copy of the object because ...
-cpObj = obj.copy();
+% This code efficiently calculates the effects of eye movements by enabling
+% us to calculate the cone absorptions once, and then to account for the
+% effect of eye movements. The logic is this:
+%
+% We make a full LMS calculation so that we know the LMS absorptions at
+% every cone mosaic position.  We need to do this only once.
+%
+% We then move the eye to a position and pull out the LMS values that match
+% the spatial pattern of the cones in the grid, but centered at the next
+% eye movement location.
+%
+% We base this calculation on a copy for the cone mosaic.
 
-% Perhaps because of eye movements?
+% Make the copy
+cpObj = obj.copy();    
+% Expand the mosaic to allow for the eye movement
 cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
-
-% compute full LMS noise free absorptions
-LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);
-
-% deal with eye movements
+% Compute the full LMS
+LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);   
+% Pull out the appropriate LMS absorptions given the eye movements
 absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
+
 % vcNewGraphWin; imagesc(absorptions);
 
 % Add photon noise to the whole volume

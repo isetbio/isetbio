@@ -6,7 +6,7 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % 
 % HJ ISETBIO Team 2016
 
-% parse inputs
+%% parse inputs
 p = inputParser();
 p.addRequired('oi', @isstruct);
 p.addParameter('fullLMS', false, @islogical); % full LMS images
@@ -15,12 +15,12 @@ p.parse(oi, varargin{:});
 
 fullLMS = p.Results.fullLMS;  % Logical
 
-% make a copy of current obj and set cone wavelength samples to
+%% make a copy of current obj and set cone wavelength samples to
 % be same as oi
 obj = obj.copy();
 obj.wave = oiGet(oi, 'wave');
 
-% get scaled spectral qe, which includes cone pigment and
+%% get scaled spectral qe, which includes cone pigment and
 % macular pigment properties. (Lens is in oi).
 sQE = obj.qe * oiGet(oi, 'bin width');
 
@@ -54,10 +54,11 @@ for ii = 2 : 4  % loop through L, M and S, 1 = Blank/Black
 end
 warning('on','MATLAB:interp1:NaNinY');
 
-% Sometimes we don't have the cone type so we have a bad
+%% Sometimes we don't have the cone type so we have a bad
 % number. Set the missing values to 0
 absDensity(isnan(absDensity)) = 0;
 
 % compute expected cone absorptions
 absorptions=absDensity*obj.pigment.pdArea*obj.integrationTime;
+
 end
