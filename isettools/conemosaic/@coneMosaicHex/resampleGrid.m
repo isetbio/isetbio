@@ -26,6 +26,16 @@ function hexLocs = computeHexGridNodes(obj)
     obj.lambdaMid = midConeSpacing(obj);
     grid.lambdaMin = obj.lambdaMin;
     grid.lambdaMid = obj.lambdaMid;
+    if (~isempty(obj.customLambda))
+        grid.lambdaMid = obj.customLambda;
+        customRadius = (obj.customLambda*1e-6)/2;
+        % Adjust the geometric size of the pigment.
+        % Note: we are not adjusting the area-collecting pigment size
+        % The user has to do this
+        obj.pigment.width = 2*customRadius;
+        obj.pigment.height = 2*customRadius;  
+    end
+    
     grid.coneSpacingFunction = @coneSpacingFunction;
     grid.domainFunction = @circularDomainFunction;
     grid.center = obj.center*1e6;

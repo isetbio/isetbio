@@ -370,8 +370,13 @@ end
 if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
    
     if (isa(obj, 'coneMosaicHex'))
+        tmp  = squeeze(absorptions(nTrials,:,:));
+        if (numel(eyeMovementTimeAxis == 1))
+            tmp = tmp';    
+        end
+        
         % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
+        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);  
     else
         % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
         absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
@@ -415,7 +420,17 @@ end
 % obj.absorptions in the current computation)
 if (isa(obj, 'coneMosaicHex'))
     % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
+    fprintf('hit enter to get here')
+    pause
+    tmp = squeeze(absorptions(nTrials,:,:));
+     fprintf('hit enter to get here too')
+    pause
+    if (numel(eyeMovementTimeAxis) == 1)
+        tmp = tmp';
+    end
+    tmp = squeeze(absorptions(nTrials,:,:));
+     fprintf('hit enter to get here too2')
+    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);
 else
     % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
     absorptions = reshape(absorptions, [nTrials obj.rows obj.cols numel(eyeMovementTimeAxis)]);

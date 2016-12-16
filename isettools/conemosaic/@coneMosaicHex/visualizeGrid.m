@@ -22,6 +22,7 @@ p = inputParser;
 p.addParameter('generateNewFigure', false, @islogical);
 p.addParameter('panelPosition', [1 1]);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
+p.addParameter('visualizedConeAperture', 'lightCollectingArea', @ischar);
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
@@ -35,28 +36,33 @@ showConeDensityContour = p.Results.overlayConeDensityContour;
 generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
+visualizedConeAperture = p.Results.visualizedConeAperture;
 
 %% Set up cone coordinates and outline
+
+
+
+sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
+sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
+
+% Choose the radius of the aperture obj.pigment.pdWidth or obj.pigment.width
+if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
+    dx = obj.pigment.pdWidth;
+elseif (strcmp(visualizedConeAperture, 'geometricArea'))
+    dx = obj.pigment.width;
+else
+    visualizedConeAperture
+    error('visualizedConeAperture must be set to either ''lightCollectingArea'' or ''geometricArea''.\n');
+end
 
 if (showCorrespondingRectangularMosaicInstead)
     titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
 else
-    titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d', ...
+    titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d, visualized aperture: %s', ...
         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
         numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-        obj.resamplingFactor);
-end
-
-sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
-sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
-
-% Choose the radius of the aperture obj.pigment.pdWidth vs obj.pigment.width
-radiusComesFrom = 'ConeAperture';
-if (strcmp(radiusComesFrom, 'ConeAperture'))
-    dx = obj.pigment.pdWidth;
-else
-    dx = obj.pigment.width;
+        obj.resamplingFactor, visualizedConeAperture);
 end
 
 pixelOutline.x = [-1 -1 1 1 -1]*dx/2;
@@ -91,9 +97,9 @@ else
     end
 end
 cla;
-set(hFig, 'Position', figPosition, 'Color', [1 1 1], 'MenuBar', 'none', 'NumberTitle', 'off');
+set(hFig, 'Position', figPosition, 'Color', [1 1 1]); % , 'MenuBar', 'none', 'NumberTitle', 'off');
 set(hFig, 'Name', titleString);
-subplot('Position', [0.06 0.06 0.91 0.91]);
+subplot('Position', [0.04 0.04 0.94 0.94]);
 hold on;
 
 %% Do the display

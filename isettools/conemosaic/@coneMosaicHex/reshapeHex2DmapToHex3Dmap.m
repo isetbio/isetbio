@@ -1,7 +1,6 @@
 function hex3Dmap = reshapeHex2DmapToHex3Dmap(obj, hex2Dmap)
 
 nonNullCones = obj.pattern(obj.pattern>1);
-
 iLsource = nonNullCones==2;
 iMsource = nonNullCones==3;
 iSsource = nonNullCones==4;
