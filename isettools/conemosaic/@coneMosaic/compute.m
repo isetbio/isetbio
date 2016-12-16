@@ -85,6 +85,8 @@ elseif isa(theExpandedMosaic, 'coneMosaic')
     theExpandedMosaic.emPositions = obj.emPositions;
     theExpandedMosaic.integrationTime = obj.integrationTime;
     theExpandedMosaic.absorptions = [];
+    padRows = round((theExpandedMosaic.rows-obj.rows)/2);
+    padCols = round((theExpandedMosaic.cols-obj.cols)/2);
 else
     error('theExpandedMosaic passed is not a @coneMosaic');
 end
@@ -93,7 +95,7 @@ end
 LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
     
 % deal with eye movements
-absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
+absorptions = obj.applyEMPath(LMS, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
 % vcNewGraphWin; imagesc(absorptions);
 
 % Add photon noise to the whole volume
