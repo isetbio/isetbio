@@ -9,25 +9,27 @@ ieInit; clear; close all;
 
 % Interactive mode. Set to true to have it pause at useful places.
 % Default is false so we can autopublish without user input
-interactiveMode = true;
+interactiveMode = false;
 
-% Freeze random number generator      
+% Freeze random number generator
 rng('default'); rng(219347);
 
 %% Unit test 1: generate a hex mosaic using defaults params of the superclass (coneMosaic)
+%
 % Mosaic Parameters
 mosaicParams = struct(...
-            'resamplingFactor', 5,  ...        % controls the accuracy of the hex mosaic grid
- 'spatiallyVaryingConeDensity', false ...      % whether to have an eccentricity based, spatially - varying density
-  );
+    'resamplingFactor', 5,  ...                 % controls the accuracy of the hex mosaic grid
+    'spatiallyVaryingConeDensity', false, ...   % whether to have an eccentricity based, spatially - varying density
+    'customLambda', []  ...                     % custom spacing?
+    );
+
 % Generate the hex grid
-customLambda = [];
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, customLambda); 
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, mosaicParams.customLambda);
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid('visualizedConeAperture', 'lightCollectingArea');
 theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', 'generateNewFigure', true);
-
 
 %% Unit test 2a: generate a custom hex mosaic
 if (interactiveMode)
@@ -39,9 +41,10 @@ end
 
 % Generate the hex grid
 mosaicParams.resamplingFactor = 10;
-customLambda = 3;  % 2 microns
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, customLambda, ...
-    'size', [16 16]); 
+mosaicParams.customLambda = 3;          % 2 microns
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, mosaicParams.customLambda, ...
+    'size', [16 16]);
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid('visualizedConeAperture', 'lightCollectingArea');
@@ -57,12 +60,12 @@ end
 
 % Generate the hex grid
 customLambda = 6;  % 6 microns
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, customLambda, ...
-    'size', [16 16]); 
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, mosaicParams.customLambda, ...
+    'size', [16 16]);
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
-
 
 %% Unit test 3: generate a custom hex mosaic
 if (interactiveMode)
@@ -74,19 +77,20 @@ end
 
 % Mosaic Parameters
 mosaicParams = struct(...
-            'resamplingFactor', 10, ...              % controls the accuracy of the hex mosaic grid
-'spatiallyVaryingConeDensity', false, ...            % whether to have an eccentricity based, spatially - varying density
-                 'centerInMM', [0.5 0.5], ...        % mosaic eccentricity
-                       'size', [11 16], ...          % generate from a rectangular mosaic of 11 x 16 cones
-             'spatialDensity', [0 1/3 1/3 1/3]...    % with a LMS density of of 0.33:0.33:0.33
+    'resamplingFactor', 10, ...                     % controls the accuracy of the hex mosaic grid
+    'spatiallyVaryingConeDensity', false, ...       % whether to have an eccentricity based, spatially - varying density
+    'customLambda', [], ...                         % custom spacing?
+    'centerInMM', [0.5 0.5], ...                    % mosaic eccentricity
+    'size', [11 16], ...                            % generate from a rectangular mosaic of 11 x 16 cones
+    'spatialDensity', [0 1/3 1/3 1/3]...            % with a LMS density of of 0.33:0.33:0.33
     );
-customLambda = [];
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, customLambda, ...
-                   'name', 'the hex mosaic', ...
-                 'center', mosaicParams.centerInMM*1e-3, ...
-                   'size', mosaicParams.size, ...
-         'spatialDensity', mosaicParams.spatialDensity ...
+theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, mosaicParams.spatiallyVaryingConeDensity, mosaicParams.customLambda, ...
+    'name', 'the hex mosaic', ...
+    'center', mosaicParams.centerInMM*1e-3, ...
+    'size', mosaicParams.size, ...
+    'spatialDensity', mosaicParams.spatialDensity ...
     );
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
@@ -99,6 +103,7 @@ if (interactiveMode)
     pause
 end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
@@ -111,6 +116,7 @@ if (interactiveMode)
     pause
 end
 theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
+
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();

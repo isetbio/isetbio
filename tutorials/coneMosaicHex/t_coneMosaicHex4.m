@@ -17,19 +17,22 @@ rng('default'); rng(219347);
 
 % Generate a hex mosaic with a medium resamplingFactor
 mosaicParams = struct(...
-            'resamplingFactor', 9, ...                  % controls the accuracy of the hex mosaic grid
- 'spatiallyVaryingConeDensity', false, ...              % whether to have an eccentricity based, spatially - varying density
-                  'centerInMM', [0.5 0.3], ...          % mosaic eccentricity
-              'spatialDensity', [0 0.62 0.31 0.07],...
-                   'noiseFlag', 'none' ...
+    'resamplingFactor', 9, ...                             % controls the accuracy of the hex mosaic grid
+    'spatiallyVaryingConeDensity', false, ...              % whether to have an eccentricity based, spatially - varying density
+    'customLambda', [], ...                                % custom spacing?
+    'centerInMM', [0.5 0.3], ...                           % mosaic eccentricity
+    'spatialDensity', [0 0.62 0.31 0.07],...
+    'noiseFlag', 'none' ...
     );
+
 theHexMosaic = coneMosaicHex(...
-                    mosaicParams.resamplingFactor, ...
-                    mosaicParams.spatiallyVaryingConeDensity, ...
-          'center', mosaicParams.centerInMM*1e-3, ...
-  'spatialDensity', mosaicParams.spatialDensity, ...
-       'noiseFlag', mosaicParams.noiseFlag ...
-);
+    mosaicParams.resamplingFactor, ...
+    mosaicParams.spatiallyVaryingConeDensity, ...
+    mosaicParams.customLambda, ...
+    'center', mosaicParams.centerInMM*1e-3, ...
+    'spatialDensity', mosaicParams.spatialDensity, ...
+    'noiseFlag', mosaicParams.noiseFlag ...
+    );
 
 % Set the mosaic's FOV to a wide aspect ratio
 theHexMosaic.setSizeToFOVForHexMosaic([0.9 0.6]);
@@ -43,7 +46,7 @@ gaborScene = sceneSet(gaborScene,'fov', 1.0);
 
 % Compute the optical image
 oi = oiCreate;
-oi = oiCompute(gaborScene,oi);  
+oi = oiCompute(gaborScene,oi);
 
 % Compute isomerizations
 tic
@@ -51,15 +54,15 @@ fprintf('\nComputing isomerizations ...');
 isomerizationsGabor = theHexMosaic.compute(oi,'currentFlag',false);
 fprintf('Isomerization computation took %2.1f seconds\n', toc);
 
-%% Display isomerizations using coneMosaicHex's own 
+%% Display isomerizations using coneMosaicHex's own
 %% mosaic activation visualization method
 tic
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
     isomerizationsGabor, ...                                         % the response matrix
-       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
+    'colorMap', jet(1024), ...                                     % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
@@ -80,17 +83,17 @@ vcAddObject(scene); sceneWindow
 
 % Compute the optical image
 oi = oiCreate;
-oi = oiCompute(scene,oi);  
+oi = oiCompute(scene,oi);
 
 % Compute isomerizations for both mosaics
 isomerizationsVernier = theHexMosaic.compute(oi,'currentFlag',false);
 
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-     isomerizationsVernier, ...                                      % the response matrix
-       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    isomerizationsVernier, ...                                      % the response matrix
+    'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
+    'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);
@@ -110,17 +113,17 @@ vcAddObject(scene); sceneWindow
 
 % Compute the optical image
 oi = oiCreate;
-oi = oiCompute(scene,oi);  
+oi = oiCompute(scene,oi);
 
 % Compute isomerizations for both mosaics
 isomerizationsRays = theHexMosaic.compute(oi,'currentFlag',false);
 
 fprintf('\nVisualizing responses ... ');
 theHexMosaic.visualizeActivationMaps(...
-     isomerizationsRays, ...                                         % the response matrix
-       'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    isomerizationsRays, ...                                         % the response matrix
+    'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
     'signalName', 'isomerizations (R*/cone/integration time)', ...   % colormap title (signal name and units)
-      'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
+    'colorMap', bone(1024), ...                                    % colormap to use for displaying activation level
     'figureSize', [1550 950] ...                                     % figure size in pixels
     );
 fprintf('Isomerization visualization took %2.1f seconds\n', toc);

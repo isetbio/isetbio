@@ -1,7 +1,7 @@
 classdef coneMosaicHex < coneMosaic
     % Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, varargin);
+    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, customLambda, varargin);
     %
     % The cone mosaic HEX is a subclass of coneMosaic. It differs because
     % the array of cones is placed on a hexagonal, rather than rectangular,
@@ -10,13 +10,18 @@ classdef coneMosaicHex < coneMosaic
     % The hex mosaic is sampled according to the resamplingFactor. The cone
     % density can be spatially-varying if varyingDensity is set to true.
     %
+    % The customLambda argument is empty to obtain default performance, but
+    % may be set to set the spacing for regularly spaced hexagonal mosaics.
+    % The units of customLambda are [PLEASE REVEAL TO US!!!]
+    %
     % Name-Value parameter pairs used with coneMosaic also can be used with
-    % coneMosaicHex, e.g., 
+    % coneMosaicHex 
     %
     % Example:
     %      resamplingFactor = 8;
     %      varyingDensity = false;
-    % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, ...
+    %      customLambda = [];
+    % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
     %                          'name', 'the hex mosaic', ...
     %                          'size', [48 32], ...
     %                     'noiseFlag', 0,  ...
