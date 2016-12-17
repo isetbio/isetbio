@@ -6,7 +6,7 @@ function [sOBJECT,val] = vcGetObject(objType,val)
 % Find the currently selected object of the various possible types:
 %
 %  SCENE, PIXEL, OPTICS, {OPTICALIMAGE,OI}, {IMGPROC,VCIMAGE,VCI},
-%  GRAPHWIN, {ISA,SENSOR}
+%  GRAPHWIN, 
 %
 % This routine replaces: [val,sOBJECT] = vcGetSelectedObject('SCENE');
 %
@@ -38,8 +38,6 @@ if ~isempty(val)
     switch(lower(objType))
         case {'scene','isa','opticalimage','vcimage', 'display'}
             eval(['sOBJECT = vcSESSION.',objType,'{val};']);
-        case {'pixel'}
-            sOBJECT = sensorGet(vcSESSION.ISA{val},'pixel');
         case {'optics'}
             sOBJECT = oiGet(vcSESSION.OPTICALIMAGE{val},'optics');
         otherwise

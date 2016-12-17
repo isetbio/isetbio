@@ -10,7 +10,12 @@
 
 %% Initialize
 ieInit; clear; close all;
-    
+
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze random number generator    
 rng('default'); rng(219347);
 
 %% Unit test 1: display different aspects of a hex mosaic in a 4 panel display, including 
@@ -53,7 +58,7 @@ theHexMosaic.visualizeGrid(...
     'overlayPerfectHexMesh', true...
     );
 
-keepGoing = true;
+keepGoing = interactiveMode;
 while (keepGoing)
     commandwindow
     resamplingFactor = input(sprintf('\n<strong>Enter a new resampling factor [>= 1]. A negative exits the loop. New resampling Factor: </strong>'));
@@ -66,10 +71,10 @@ while (keepGoing)
         continue;
     end
     theHexMosaic.resampleGrid(resamplingFactor);
+    
     % Print some grid info and visualize it
     theHexMosaic.displayInfo();
     theHexMosaic.visualizeGrid();
-
 
     % Display the corresponding rectangular grid instead
     theHexMosaic.visualizeGrid(...

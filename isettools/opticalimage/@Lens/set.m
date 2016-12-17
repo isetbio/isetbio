@@ -38,7 +38,7 @@ switch ieParamFormat(param)
         % Sampling wavelength
         lens.wave = val(:);
     case {'absorbance','unitdensity'}
-            assert(length(val) == length(lensGet(lens, 'wave')), ...
+            assert(length(val) == length(lens.wave), ...
                 'Val should have same length as lens wavelength');
             lens.unitDensity = val;
     case 'density'

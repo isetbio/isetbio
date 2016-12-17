@@ -62,7 +62,14 @@ switch ieParamFormat(type);
         % It brings the image up in the wrong window because we didn't pass
         % the hf and set the axis.  But the good news is, it gets here and
         % runs.  Next, on to fixing the varargin{} and such.
-        plotHexMosaic(obj,'hf',hf,varargin{:});  % Default arguments for now
+        %
+        % I'm not sure I had to change this, but passing varargin{:}
+        % onwards is a bit confusing to me, as hf can get passed to the
+        % next routine twice if you're not careful.  Probably should
+        % explicitly set anything that we want plotHexMosaic to inherit
+        % here.  DHB
+        %plotHexMosaic(obj,'hf',hf,varargin{:});  % Default arguments for now
+        plotHexMosaic(obj,'hf',hf);
     case 'meanabsorptions'
 
         plotHexMeanImage(obj,'type','absorptions');

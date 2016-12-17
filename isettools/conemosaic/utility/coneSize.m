@@ -1,20 +1,28 @@
 function [spacing, aperture, density] = coneSize(ecc,ang, varargin)
-% Calculate expected cone spacing and aperture size at this eccentricity.
+% [spacing, aperture, density] = coneSize(ecc,ang, varargin)
+%
+% Calculate expected cone spacing and aperture size at this eccentricity and angle.
 %
 %  [spacing, aperture, density] = coneSize(ecc,ang, varargin)
 %
 % Inputs
 %  ecc - eccentricity in meters
 %  ang - angle in deg (0 on x axis, 90 on y axis)
-%' density - cones per mm2
+%  density - cones per mm2
+%
+% Key/value pairs
+%  'whichEye' - 'left','right' [default 'left'] - which eye to compute for.
+%     Passed into coneDensity.
 %
 % Returns
 %  spacing - center to center spacing in meters
-%  aperture - inner segment capture size in meters
+%  aperture - inner segment linear capture size in meters.  Typically, we
+%    set the photoPigment pdHeight and pdWidth both equal to this.
 %
-% Dummy routine to get cone spacing and size at different eccentricities.
-% We will set the photoPigment pdSize,pdWidth based on this.  We will set
-% the cone size and width
+% By default, the aperature is set to 0.7*spacing.  We are not sure this is
+% a perfect number.
+%
+% See also: coneDensity.
 %
 % BW ISETBIO Team, 2016
 
@@ -39,6 +47,6 @@ conesPerM = conesPerMM*1e3;
 
 % Made up for now
 spacing = 1./conesPerM;
-aperture = 0.7*spacing;   % Rods .... need to get the right value for this
+aperture = 0.7*spacing;  
 
 end

@@ -8,6 +8,11 @@
 %% Initialize
 ieInit; clear; close all;
 
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze random number generator
 rng('default'); rng(219347);
 
 mosaicParams = struct(...
@@ -16,7 +21,7 @@ mosaicParams = struct(...
                   'centerInMM', [0.0 0.0], ...            % mosaic eccentricity
                         'size', [64 64], ...              % generate from a rectangular mosaic of 64 x 64 cones
               'spatialDensity', [0 0.62 0.31 0.07],...    % with a LMS density of of 0.62:0.31:0.07
-                   'noiseFlag', false ...
+                   'noiseFlag', 'none' ...
     );
     
 %% Unit test 1: Generate two mosaics, a rectangular one and a hexagonal one. 
@@ -41,9 +46,11 @@ theHexMosaic = coneMosaicHex(...
 theHexMosaic.displayInfo();
 
 %% Unit test 2: use the superclass (coneMosaic) plotting routine to visualize the two mosaics
-commandwindow
-fprintf('\n<strong>Hit enter to display the two mosaics using the superclass plotting routines. </strong>');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to display the two mosaics using the superclass plotting routines. </strong>');
+    pause
+end
 hFig1 = figure(1);
 set(hFig1, 'Position', [10 100 400 400], 'Name', 'Rect mosaic');
 hFig2 = figure(2);
@@ -54,9 +61,11 @@ theHexMosaic.plot('cone mosaic', 'hf', hFig2);
 
 
 %% Unit test 3: compare isomerizations between rect and hex mosaics for the ring rays scene
-commandwindow
-fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the ring rays scene. </strong>');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the ring rays scene. </strong>');
+    pause
+end
 
 % Generate ring rays stimulus
 scene = sceneCreate('rings rays');
@@ -120,9 +129,11 @@ colormap(gray(1024));
 
 
 %% Unit test 4: compare isomerizations between rect and hex mosaics for the Vernier scene
-commandwindow
-fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the Vernier scene. </strong>');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the Vernier scene. </strong>');
+    pause
+end
 
 % Generate the vernier scene
 scene = sceneCreate('vernier');
@@ -182,9 +193,11 @@ colormap(gray(1024));
 
 
 %% Unit test 5: compare isomerizations between rect and hex mosaics for the slanted bar scene
-commandwindow
-fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the slanted bar scene.</strong>\n\n');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to compare isomerizations between the rect and hex mosaics for the slanted bar scene.</strong>\n\n');
+    pause
+end
 
 % Generate the slanted bar scene
 scene = sceneCreate('slanted bar');

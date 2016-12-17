@@ -25,7 +25,14 @@ p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
 p.addParameter('coneDensityContourLevelStep', 5000, @isnumeric);
-p.addParameter('hf',obj.hdl.CurrentAxes,@isgraphics);
+
+% The commented out line failes because referencing obj.hdl.CurrentAxes
+% generates a "Struct contents reference from a non-struct array object"
+% error.  I commented out and made the default empty.  This, at least,
+% gets the tutorials to run.  DHB
+%p.addParameter('hf',obj.hdl.CurrentAxes,@isgraphics);
+p.addParameter('hf',[],@isgraphics);
+
 p.parse(varargin{:});
 
 

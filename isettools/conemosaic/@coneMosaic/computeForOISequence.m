@@ -82,7 +82,7 @@ p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
 p.addParameter('seed',1, @isnumeric);                   % Seed for frozen noise
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
-
+p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
 p.parse(oiSequence, varargin{:});
@@ -92,8 +92,9 @@ emPaths         = p.Results.emPaths;
 currentFlag     = p.Results.currentFlag;
 workerID        = p.Results.workerID;
 workDescription = p.Results.workDescription;
-oiTimeAxis      = oiSequence.timeAxis;
+theExpandedMosaic = p.Results.theExpandedMosaic;
 
+oiTimeAxis      = oiSequence.timeAxis;
 nTimes = numel(oiTimeAxis);
 if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
@@ -109,6 +110,22 @@ if (isempty(emPaths))
     error('Either supply an ''emPaths'' key-value pair, or preload coneMosaic.emPositions');
 end
 
+
+if (isempty(theExpandedMosaic))
+    %tic
+    padRows = max(max(abs(emPaths(:,:,2))));
+    padCols = max(max(abs(emPaths(:,:,1))));
+    
+    % We need a copy of the object because of eye movements.
+    % Make it here instead of in coneMosaic.compute(), which is called multiple times.
+    obj.absorptions = [];
+    obj.current = [];
+    obj.os.lmsConeFilter = [];
+    theExpandedMosaic = obj.copy();
+    theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
+    %fprintf('Expanded mosaic copy took %d seconds. \n', toc);
+end
+    
 %% Get ready for output variables
 
 photocurrents = [];
@@ -117,7 +134,7 @@ photocurrents = [];
 defaultIntegrationTime = obj.integrationTime;
 
 %% Compute eye movement time axis
-nTrials         = size(emPaths,1);
+nTrials       = size(emPaths,1);
 nEyeMovements = size(emPaths,2);
 eyeMovementTimeAxis = oiTimeAxis(1) + (0:1:(nEyeMovements-1)) * obj.integrationTime;
 
@@ -207,6 +224,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             % Compute for all the eye movements, but just one frame
             absorptionsAllTrials = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex-1), ...
+                'theExpandedMosaic', theExpandedMosaic, ...
                 'seed', currentSeed , ...
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
@@ -238,7 +256,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             absorptionsAllTrials = ...
                 absorptionsAllTrials + absorptionsDuringCurrentFrame;
         end
-        
+
         % Reformat and insert to time series
         insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
         reformatAbsorptionsAllTrialsMatrix(nTrials, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
@@ -257,6 +275,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             currentSeed = currentSeed  + 1;
             absorptionsAllTrials = obj.compute(...
                 oiSequence.frameAtIndex(oiIndex), ...
+                'theExpandedMosaic', theExpandedMosaic, ...
                 'seed', currentSeed, ...
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
@@ -325,6 +344,7 @@ else
         currentSeed = currentSeed  + 1;
         absorptionsAllTrials = obj.compute(...
             oiSequence.frameAtIndex(idx), ...
+            'theExpandedMosaic', theExpandedMosaic, ...
             'seed', currentSeed, ...
             'emPath', emSubPath, ...
             'currentFlag', false ...
@@ -349,8 +369,10 @@ else
                 emSubPath = reshape(emPaths(1:nTrials, emIndex,:), [nTrials 2]);
                 obj.absorptions = [];
                 currentSeed = currentSeed  + 1;
-                absorptionsAllTrials = absorptionsAllTrials + ...
-                    obj.compute(oiSequence.frameAtIndex(indices(k)), ...
+
+                absorptionsAllTrials = absorptionsAllTrials + obj.compute(...
+                    oiSequence.frameAtIndex(indices(k)), ...
+                    'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed, ...
                     'emPath', emSubPath, ...
                     'currentFlag', false ...
@@ -383,8 +405,13 @@ end
 if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
    
     if (isa(obj, 'coneMosaicHex'))
+        tmp  = squeeze(absorptions(nTrials,:,:));
+        if (numel(eyeMovementTimeAxis == 1))
+            tmp = tmp';    
+        end
+        
         % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
+        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);  
     else
         % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
         absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
@@ -427,7 +454,11 @@ end
 % obj.absorptions in the current computation)
 if (isa(obj, 'coneMosaicHex'))
     % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(nTrials,:,:)));
+    tmp = squeeze(absorptions(nTrials,:,:));
+    if (numel(eyeMovementTimeAxis) == 1)
+        tmp = tmp';
+    end
+    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);
 else
     % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
     absorptions = reshape(absorptions, [nTrials obj.rows obj.cols numel(eyeMovementTimeAxis)]);

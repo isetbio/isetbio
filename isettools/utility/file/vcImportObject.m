@@ -11,9 +11,9 @@ function [newVal,fullName] = vcImportObject(objType,fullName,preserveDataFlag)
 % must be recomputed.  This is done to assure consistency between the data
 % and the structure parameters.   
 %
-% This function also loads pixel and optics, attaching them to the current
-% sensor or optical image. The default for optics and pixels is to PRESERVE
-% the data.  The default for sensors and other objects is to CLEAR the
+% This function also loads optics, attaching them to the current
+% optical image. The default for optics is to PRESERVE
+% the data.  The default for other objects is to CLEAR the
 % data.
 %
 % Examples:
@@ -28,7 +28,7 @@ if notDefined('objType'), objType = 'SCENE'; end
 if notDefined('fullName'), fullName = []; end
 if notDefined('preserveDataFlag')
     switch lower(objType)
-        case {'scene','opticalimage','oi','isa','sensor','vcimage'}
+        case {'scene','opticalimage','oi','isa','vcimage'}
             preserveDataFlag = 0;
         otherwise
             % optics and pixel case, but I don't think the pixel has data.
@@ -39,21 +39,10 @@ end
 % Note that there is vcLoad in this file and vcLoadObject is a different
 % function.  Should be unified some day, sigh.
 switch lower(objType)
-    case {'scene','opticalimage','oi','isa','sensor','vcimage'}
+    case {'scene','opticalimage','oi','isa','vcimage'}
         % Load the object into a new value assigned by vcLoadObject.
         [newVal,fullName] = vcLoadObject(objType,fullName);
         if isempty(newVal), return; end
-
-    case {'pixel'}
-        [newVal,isa] = vcGetSelectedObject('ISA');
-        [pixel,fullName] = vcLoad(objType,fullName);
-        if ~isempty(pixel)
-            sensorSet(isa,'pixel',pixel);
-            if ~preserveDataFlag
-                isa = sensorClearData(isa);
-            end
-            vcReplaceAndSelectObject(isa,newVal);
-        end
     case {'optics'}
         [newVal,oi] = vcGetSelectedObject('OPTICALIMAGE');
         [optics,fullName] = vcLoad(objType,fullName);
@@ -86,11 +75,7 @@ if notDefined('fullName')
     if isempty(fullName), return; end
 end
 
-switch(lower(objType))
-    case 'pixel'
-        data = load(fullName,'pixel');
-        obj = data.pixel;
-        
+switch(lower(objType))      
     case 'optics'
         data = load(fullName,'optics');
         obj = data.optics;

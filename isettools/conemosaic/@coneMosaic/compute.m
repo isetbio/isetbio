@@ -64,17 +64,18 @@ end
 
 %% parse inputs
 p = inputParser;
-p.addRequired('oi',@isstruct);
+p.addRequired('oi', @isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
-
+p.addParameter('theExpandedMosaic', []);
 p.parse(oi,varargin{:});
 
 % oi          = p.Results.oi;
 currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
 emPath      = p.Results.emPath;
+theExpandedMosaic = p.Results.theExpandedMosaic;
 
 obj.absorptions = [];
 obj.current = [];
@@ -92,10 +93,6 @@ obj.current = [];
 %
 obj.emPositions = emPath;
 
-%% Extend cone mosaic size
-padRows = max(abs(emPath(:, 2)));
-padCols = max(abs(emPath(:, 1)));
-
 % This code efficiently calculates the effects of eye movements by enabling
 % us to calculate the cone absorptions once, and then to account for the
 % effect of eye movements. The logic is this:
@@ -109,15 +106,31 @@ padCols = max(abs(emPath(:, 1)));
 %
 % We base this calculation on a copy for the cone mosaic.
 
-% Make the copy
-cpObj = obj.copy();    
-% Expand the mosaic to allow for the eye movement
-cpObj.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
-% Compute the full LMS
-LMS = cpObj.computeSingleFrame(oi, 'fullLMS', true);   
-% Pull out the appropriate LMS absorptions given the eye movements
-absorptions = obj.applyEMPath(LMS, 'emPath', emPath);
+% We need a copy of the object because of eye movements.
+if (isempty(theExpandedMosaic))
+    % We are not passed theExpandedMosaic. 
+    % Generate it here.
+    padRows = max(abs(emPath(:, 2)));
+    padCols = max(abs(emPath(:, 1)));
+    theExpandedMosaic = obj.copy();
+    theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
+elseif isa(theExpandedMosaic, 'coneMosaic')
+    % OK, we are passed theExpandedMosaic. 
+    % Set the current path and integrationTime and use it.
+    theExpandedMosaic.emPositions = obj.emPositions;
+    theExpandedMosaic.integrationTime = obj.integrationTime;
+    theExpandedMosaic.absorptions = [];
+    padRows = round((theExpandedMosaic.rows-obj.rows)/2);
+    padCols = round((theExpandedMosaic.cols-obj.cols)/2);
+else
+    error('theExpandedMosaic passed is not a @coneMosaic');
+end
 
+% compute full LMS noise free absorptions
+LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
+    
+% deal with eye movements
+absorptions = obj.applyEMPath(LMS, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
 % vcNewGraphWin; imagesc(absorptions);
 
 % Add photon noise to the whole volume

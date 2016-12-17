@@ -8,6 +8,11 @@
 %% Initialize
 ieInit; clear; close all;
 
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze rng
 rng('default'); rng(219347);
 
 % Generate a hex mosaic with a medium resamplingFactor
@@ -16,7 +21,7 @@ mosaicParams = struct(...
  'spatiallyVaryingConeDensity', false, ...              % whether to have an eccentricity based, spatially - varying density
                   'centerInMM', [0.5 0.3], ...          % mosaic eccentricity
               'spatialDensity', [0 0.62 0.31 0.07],...
-                   'noiseFlag', false ...
+                   'noiseFlag', 'none' ...
     );
 theHexMosaic = coneMosaicHex(...
                     mosaicParams.resamplingFactor, ...
@@ -61,9 +66,11 @@ fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 
 
 %% Unit test 2: Vernier scene
-commandwindow
-fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the vernier scene. </strong>');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the vernier scene. </strong>');
+    pause
+end
 
 % Generate the vernier scene
 scene = sceneCreate('vernier');
@@ -90,9 +97,11 @@ fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 
 
 %% Unit test 3: Rays scene
-commandwindow
-fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the rays scene. </strong>');
-pause
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to visualize the hex mosaic activation maps for the rays scene. </strong>');
+    pause
+end
 
 % Generate ring rays stimulus
 scene = sceneCreate('rings rays');

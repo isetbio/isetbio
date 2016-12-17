@@ -1,79 +1,98 @@
 function t_coneMosaicDemosaicResponses
+% t_coneMosaicDemosaicResponses
+%
+% Show how to demosaic, either at isomerizations or photocurrent.
+%
+% Photocurrent is currently broken, becuause it tries to compute
+% photocurrent for a single frame.  So, this needs some updating.
+% Currently turned off by default.
 
-    % Set up scene
-    scene = sceneCreate; 
-    scene = sceneSet(scene, 'h fov', 1.0);
-    oi = oiCreate('human'); 
-    oi = oiCompute(oi, scene);
-   
-    % Set up mosaic
-    cMosaicOBJ = coneMosaic();
-    cMosaicOBJ.setSizeToFOV([sceneGet(scene, 'h fov'), sceneGet(scene, 'v fov')]);
-    cMosaicOBJ.noiseFlag = false;
-    [~, currentsMap] = cMosaicOBJ.compute(oi,'currentFlag', true);
+% Options
+doPhotocurrent = false;
+if (doPhotocurrent)
+    subplotRows = 2;
+else
+    subplotRows = 1;
+end
 
-    % Call demosaicing methods
-    [demosaicedIsomerizationsMaps, sRGB] = cMosaicOBJ.demosaicedIsomerizationMaps();
+% Set up scene
+scene = sceneCreate;
+scene = sceneSet(scene, 'h fov', 1.0);
+oi = oiCreate('human');
+oi = oiCompute(oi, scene);
+
+% Set up mosaic
+cMosaicOBJ = coneMosaic();
+cMosaicOBJ.setSizeToFOV([sceneGet(scene, 'h fov'), sceneGet(scene, 'v fov')]);
+cMosaicOBJ.noiseFlag = 'none';
+[~, currentsMap] = cMosaicOBJ.compute(oi,'currentFlag',doPhotocurrent);
+
+% Call demosaicing methods
+[demosaicedIsomerizationsMaps, sRGB] = cMosaicOBJ.demosaicedIsomerizationMaps();
+if (doPhotocurrent)
     demosaicedPhotoCurrentMaps = cMosaicOBJ.demosaicedPhotoCurrentMaps(currentsMap);
-  
-    % Display results
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1340 470]);
-    cLims = [min(demosaicedIsomerizationsMaps(:)) max(demosaicedIsomerizationsMaps(:))];
-    subplot(2,3,1);
-    imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,1,1)), cLims);
-    title('Lcone isomerization demosaiced map');
-    colorbar()
-    axis 'image';
-   
-    subplot(2,3,2);
-    imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,2,1)), cLims);
-    title('Mcone isomerization demosaiced map');
-    colorbar()
-    axis 'image';
-   
-    subplot(2,3,3);
-    imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,3,1)), cLims);
-    title('Scone isomerization demosaiced map');
-    colorbar()
-    axis 'image';
-  
+end
 
+% Display results
+hFig = figure(1); clf;
+set(hFig, 'Position', [10 10 1340 470]);
+cLims = [min(demosaicedIsomerizationsMaps(:)) max(demosaicedIsomerizationsMaps(:))];
+subplot(subplotRows,3,1);
+imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,1,1)), cLims);
+title('Lcone isomerization demosaiced map');
+colorbar()
+axis 'image';
+
+subplot(subplotRows,3,2);
+imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,2,1)), cLims);
+title('Mcone isomerization demosaiced map');
+colorbar()
+axis 'image';
+
+subplot(subplotRows,3,3);
+imagesc(squeeze(demosaicedIsomerizationsMaps(:,:,3,1)), cLims);
+title('Scone isomerization demosaiced map');
+colorbar()
+axis 'image';
+
+if (doPhotocurrent)
     cLims = [min(demosaicedPhotoCurrentMaps(:)) max(demosaicedPhotoCurrentMaps(:))];
-    subplot(2,3,4);
+    subplot(subplotRows,3,4);
     imagesc(squeeze(demosaicedPhotoCurrentMaps(:,:,1,1)), cLims);
     title('Lcone photocurrent demosaiced map');
     colorbar()
     axis 'image';
-   
-    subplot(2,3,5);
+    
+    subplot(subplotRows,3,5);
     imagesc(squeeze(demosaicedPhotoCurrentMaps(:,:,2,1)), cLims);
     title('Mcone photocurrent demosaiced map');
     colorbar()
     axis 'image';
-   
-    subplot(2,3,6);
+    
+    subplot(subplotRows,3,6);
     imagesc(squeeze(demosaicedPhotoCurrentMaps(:,:,3,1)), cLims);
     title('Scone photocurrent demosaiced map');
     colorbar()
     axis 'image';
-   
-    colormap(gray);
-    drawnow;
-   
-    hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1470 990])
-    subplot(2,2,1);
-    imshow(sceneGet(scene, 'RGB'));
-    title('input scene RGB rendition');
-   
-    subplot(2,2,2);
-    imshow(sRGB(:,:,:,1));
-    title('photoisomerization RGB rendition');
-    
-    subplot(2,2,4);
-    uData = cMosaicOBJ.plot('cone mosaic', 'hf', 'none');
-    imagesc(uData.mosaicImage); axis off; axis image;
-    title('cone mosaic');
 end
+
+colormap(gray);
+drawnow;
+
+hFig = figure(2); clf;
+set(hFig, 'Position', [10 10 1470 990])
+subplot(2,2,1);
+imshow(sceneGet(scene, 'RGB'));
+title('input scene RGB rendition');
+
+subplot(2,2,2);
+imshow(sRGB(:,:,:,1));
+title('photoisomerization RGB rendition');
+
+subplot(2,2,4);
+uData = cMosaicOBJ.plot('cone mosaic', 'hf', 'none');
+imagesc(uData.mosaicImage); axis off; axis image;
+title('cone mosaic');
+end
+
 

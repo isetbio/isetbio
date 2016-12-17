@@ -140,10 +140,6 @@ barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
 scene    = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
 oiMean   = oiCompute(oi,scene);
 
-% % Adjust aspect ratio
-% aspectRatioMovie = size(movieInput,1)/size(movieInput,2);
-% sensor = sensorSet(sensor,'size',[aspectRatioMovie*sensorSize(2) sensorSize(2)]);
-
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
 stimFrames = size(movieInput,3);
 nSteps = startFrames + stimFrames + endFrames;

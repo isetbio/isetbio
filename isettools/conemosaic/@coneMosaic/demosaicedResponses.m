@@ -2,7 +2,7 @@ function varargout = demosaicedResponses(obj, varargin)
 % Return demosaiced response maps (absorptions or currents) from a coneMosaic object
 % 
 % NPC, ISETBIO Team, 2016  
-%
+
     if (isempty(varargin))
         responses = obj.absorptions;
     else
@@ -45,7 +45,8 @@ function varargout = demosaicedResponses(obj, varargin)
         sRGB = demosaicedResponses*0;
         
         % Compute quantal efficiencies at the cornea
-        lensTransmittance = lensGet(Lens(),'transmittance');
+        lens = Lens;
+        lensTransmittance = lens.transmittance;
         cornealQuantalEfficiencies = bsxfun(@times, obj.qe, lensTransmittance);
    
         % Find scaling so that conversion to sRGB is correct. That conversion

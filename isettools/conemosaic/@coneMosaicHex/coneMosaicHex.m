@@ -31,6 +31,7 @@ classdef coneMosaicHex < coneMosaic
     properties (SetAccess=private)
         lambdaMin                               % min cone separation in the mosaic
         lambdaMid                               % the cone separation at the middle of the mosaic
+        customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics
         varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)
@@ -44,7 +45,7 @@ classdef coneMosaicHex < coneMosaic
     methods
         
         % Constructor
-        function obj = coneMosaicHex(upSampleFactor, varyingDensity, varargin)
+        function obj = coneMosaicHex(upSampleFactor, varyingDensity, customLambda, varargin)
             % Initialize the hex cone mosaic class
             %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, ['cone',cone,'os','os]);
             
@@ -58,10 +59,12 @@ classdef coneMosaicHex < coneMosaic
             p = inputParser;
             p.addRequired('resamplingFactor', @isnumeric);
             p.addRequired('varyingDensity', @islogical);
+            p.addRequired('customLambda', @isnumeric);
             
-            p.parse(upSampleFactor, varyingDensity);
+            p.parse(upSampleFactor, varyingDensity, customLambda);
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.varyingDensity = p.Results.varyingDensity;
+            obj.customLambda = p.Results.customLambda;
             
             % Generate sampled hex grid
             obj.resampleGrid(obj.resamplingFactor);
