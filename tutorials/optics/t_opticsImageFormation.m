@@ -116,8 +116,14 @@ im(1:dotSpacing:length(im)) = ones(size(im(1:dotSpacing:length(im))));
 
 % Here is an image showing the sampled line positions
 % (The lines represent a printer dot)
+%
+% It is not immediately clear why the call to imshow throws a negative
+% axis warning.  The plot looks fine.  So we just switch off the warning to
+% avoid reducing the confidence of the user about the quality of our code.
 vcNewGraphWin;
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(im(ones(1,128),1:512))
+warning(S);
 title('Image of line stimulus'); 
 
 % Each line in the physical image adds a unit linespread to the retinal
