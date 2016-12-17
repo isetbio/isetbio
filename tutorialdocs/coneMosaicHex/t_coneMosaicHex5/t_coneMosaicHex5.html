@@ -1,0 +1,390 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>t_coneMosaicHex5</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-17"><meta name="DC.source" content="t_coneMosaicHex5.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>t_coneMosaicHex5</h1><!--introduction--><p>Shows how to generate hexagonal mosaic with spatially-varying cone density.</p><p>NPC ISETBIO Team, Copyright 2016</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Unit test 1: generate a hex mosaic with spatially-varying cone density positioned at (0.5mm, 0.0mm)</a></li><li><a href="#3">Unit test 2: generate a hex mosaic with spatially-uniform cone density positioned</a></li><li><a href="#4">Unit test 3: compute and display activation maps to a Gabor stimulus</a></li><li><a href="#5">Unit test 4: compute and display activation maps to the Rays stimulus</a></li></ul></div><h2>Initialize<a name="1"></a></h2><pre class="codeinput">ieInit; clear; close <span class="string">all</span>;
+
+<span class="comment">% Interactive mode. Set to true to have it pause at useful places.</span>
+<span class="comment">% Default is false so we can autopublish without user input</span>
+interactiveMode = false;
+
+<span class="comment">% Freeze random number generator</span>
+rng(<span class="string">'default'</span>); rng(219347);
+</pre><h2>Unit test 1: generate a hex mosaic with spatially-varying cone density positioned at (0.5mm, 0.0mm)<a name="2"></a></h2><p>Mosaic Parameters</p><pre class="codeinput">mosaicParams = struct(<span class="keyword">...</span>
+    <span class="string">'resamplingFactor'</span>, 7, <span class="keyword">...</span><span class="comment">                  % controls the accuracy of the hex mosaic grid</span>
+    <span class="string">'spatiallyVaryingConeDensity'</span>, true, <span class="keyword">...</span><span class="comment">    % whether to have an eccentricity based, spatially - varying density</span>
+    <span class="string">'customLambda'</span>, [], <span class="keyword">...</span><span class="comment">                     % custom spacing?</span>
+    <span class="string">'centerInMM'</span>, [0.2 -0.2], <span class="keyword">...</span><span class="comment">               % 0.2 mm horizontal, 0.1 vertical</span>
+    <span class="string">'size'</span>, [60 60] <span class="keyword">...</span><span class="comment">                         % generate from a rectangular mosaic of 60x60 cones</span>
+    );
+<span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.2f mm, y = %2.2fmm. &lt;/strong&gt;'</span>, mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+    pause
+<span class="keyword">end</span>
+
+<span class="comment">% Generate the hex grid</span>
+theHexMosaic1 = coneMosaicHex(<span class="keyword">...</span>
+    mosaicParams.resamplingFactor, <span class="keyword">...</span>
+    mosaicParams.spatiallyVaryingConeDensity, <span class="keyword">...</span>
+    mosaicParams.customLambda, <span class="keyword">...</span>
+    <span class="string">'center'</span>, mosaicParams.centerInMM*1e-3, <span class="keyword">...</span><span class="comment">.</span>
+    <span class="string">'size'</span>, mosaicParams.size <span class="keyword">...</span>
+    );
+<span class="comment">% Print some grid info and visualize it</span>
+theHexMosaic1.displayInfo();
+theHexMosaic1.visualizeGrid(<span class="keyword">...</span>
+    <span class="string">'overlayConeDensityContour'</span>, <span class="string">'measured'</span>, <span class="keyword">...</span><span class="comment">     % choose between 'measured', 'theoretical', 'none'</span>
+    <span class="string">'coneDensityContourLevelStep'</span>, 5000, <span class="keyword">...</span><span class="comment">         % draw contours every 5000 cones/mm2</span>
+    <span class="string">'generateNewFigure'</span>, true<span class="keyword">...</span>
+    );
+
+theHexMosaic1.visualizeGrid(<span class="keyword">...</span>
+    <span class="string">'overlayConeDensityContour'</span>, <span class="string">'theoretical'</span>, <span class="keyword">...</span><span class="comment">    % choose between 'measured', 'theoretical', 'none'</span>
+    <span class="string">'coneDensityContourLevelStep'</span>, 5000, <span class="keyword">...</span><span class="comment">           % draw contours every 5000 cones/mm2</span>
+    <span class="string">'generateNewFigure'</span>, true<span class="keyword">...</span>
+    );
+</pre><pre class="codeoutput">
+Iteration: 0
+Iteration: 50
+Iteration: 100
+Done with iterative adjustment in 12.2 seconds
+
+Resampling grid. Please wait ... Done !
+
+Mosaic info:
+                                      Size (microns): 248.4 (w) x 248.4 (h)
+                                           FOV (deg): 0.84 (w) x 0.84 (h) 
+                              Grid resampling factor: 7
+       Cone geometric aperture (diameter in microns): 4.14 (w) x 4.14 (h)
+ Cone light colleting aperture (diameter in microns): 2.90 (w) x 2.90 (h)
+                     Cone geometric area (microns^2): 17.142 
+               Cone light colleting area (microns^2): 8.399
+                                    Rectangular grid: 60 cols x 60 rows
+                                      Resampled grid: 420 cols x 420 rows
+                                         Total cones: 176400
+                                        Active cones: 3817
+                            Cone density (all cones): 2858523.0 cones/mm^2
+                         Cone density (active cones): 61853.6 cones/mm^2
+
+</pre><img vspace="5" hspace="5" src="t_coneMosaicHex5_01.png" style="width:980px;height:670px;" alt=""> <img vspace="5" hspace="5" src="t_coneMosaicHex5_02.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 2: generate a hex mosaic with spatially-uniform cone density positioned<a name="3"></a></h2><pre class="codeinput"><span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to create a hex mosaic with spatially-uniform cone density positioned at x = %2.2f mm, y = %2.2f mm. &lt;/strong&gt;'</span>, mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+    pause
+<span class="keyword">end</span>
+mosaicParams.eccentricityBasedConeDensity = false;
+theHexMosaic2 = coneMosaicHex(<span class="keyword">...</span>
+    mosaicParams.resamplingFactor, <span class="keyword">...</span>
+    mosaicParams.eccentricityBasedConeDensity, <span class="keyword">...</span>
+    mosaicParams.customLambda, <span class="keyword">...</span>
+    <span class="string">'center'</span>, mosaicParams.centerInMM*1e-3, <span class="keyword">...</span><span class="comment">.</span>
+    <span class="string">'size'</span>, mosaicParams.size <span class="keyword">...</span>
+    );
+
+<span class="comment">% Print some grid info and visualize it</span>
+theHexMosaic2.displayInfo();
+theHexMosaic2.visualizeGrid(<span class="keyword">...</span>
+    <span class="string">'generateNewFigure'</span>, true<span class="keyword">...</span>
+    );
+</pre><pre class="codeoutput">
+Resampling grid. Please wait ... Done !
+
+Mosaic info:
+                                      Size (microns): 248.4 (w) x 248.4 (h)
+                                           FOV (deg): 0.84 (w) x 0.84 (h) 
+                              Grid resampling factor: 7
+       Cone geometric aperture (diameter in microns): 4.14 (w) x 4.14 (h)
+ Cone light colleting aperture (diameter in microns): 2.90 (w) x 2.90 (h)
+                     Cone geometric area (microns^2): 17.142 
+               Cone light colleting area (microns^2): 8.399
+                                    Rectangular grid: 60 cols x 60 rows
+                                      Resampled grid: 420 cols x 420 rows
+                                         Total cones: 176400
+                                        Active cones: 3520
+                            Cone density (all cones): 2858523.0 cones/mm^2
+                         Cone density (active cones): 57040.8 cones/mm^2
+
+</pre><img vspace="5" hspace="5" src="t_coneMosaicHex5_03.png" style="width:980px;height:670px;" alt=""> <h2>Unit test 3: compute and display activation maps to a Gabor stimulus<a name="4"></a></h2><pre class="codeinput"><span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to compute and visualize isomerizations maps for the 2 mosaics for an achromatic Gabor scene. &lt;/strong&gt;'</span>);
+    pause
+<span class="keyword">end</span>
+
+<span class="comment">% Load acrhomatic Gabor scene</span>
+[dirName,~] = fileparts(which(mfilename()));
+load(fullfile(dirName,<span class="string">'GaborAchromScene.mat'</span>))
+gaborScene = sceneSet(gaborScene,<span class="string">'fov'</span>, 1.0);
+
+<span class="comment">% Compute the optical image</span>
+oi = oiCreate;
+oi = oiCompute(gaborScene,oi);
+
+<span class="comment">% Compute isomerizations for the different mosaics and display the results</span>
+isomerizationsGabor1 = theHexMosaic1.compute(oi,<span class="string">'currentFlag'</span>,false);
+isomerizationsGabor2 = theHexMosaic2.compute(oi,<span class="string">'currentFlag'</span>,false);
+
+activationLUT = jet(1024);
+theHexMosaic1.visualizeActivationMaps(<span class="keyword">...</span>
+    isomerizationsGabor1, <span class="keyword">...</span><span class="comment">                                       % the signal matrix</span>
+    <span class="string">'mapType'</span>, <span class="string">'modulated hexagons'</span>, <span class="keyword">...</span><span class="comment">                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'</span>
+    <span class="string">'signalName'</span>, <span class="string">'isomerizations (R*/cone/integration time)'</span>, <span class="keyword">...</span><span class="comment">  % colormap title (signal name and units)</span>
+    <span class="string">'colorMap'</span>, activationLUT, <span class="keyword">...</span><span class="comment">                                  % colormap to use for displaying activation level</span>
+    <span class="string">'figureSize'</span>, [1550 950] <span class="keyword">...</span><span class="comment">                                    % figure size in pixels</span>
+    );
+
+theHexMosaic2.visualizeActivationMaps(<span class="keyword">...</span>
+    isomerizationsGabor2, <span class="keyword">...</span><span class="comment">                                       % the signal matrix</span>
+    <span class="string">'mapType'</span>, <span class="string">'modulated hexagons'</span>, <span class="keyword">...</span><span class="comment">                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'</span>
+    <span class="string">'signalName'</span>, <span class="string">'isomerizations (R*/cone/integration time)'</span>, <span class="keyword">...</span><span class="comment">  % colormap title (signal name and units)</span>
+    <span class="string">'colorMap'</span>, activationLUT, <span class="keyword">...</span><span class="comment">                                  % colormap to use for displaying activation level</span>
+    <span class="string">'figureSize'</span>, [1550 950] <span class="keyword">...</span><span class="comment">                                     % figure size in pixels</span>
+    );
+</pre><img vspace="5" hspace="5" src="t_coneMosaicHex5_04.png" style="width:1550px;height:950px;" alt=""> <img vspace="5" hspace="5" src="t_coneMosaicHex5_05.png" style="width:1550px;height:950px;" alt=""> <h2>Unit test 4: compute and display activation maps to the Rays stimulus<a name="5"></a></h2><pre class="codeinput"><span class="keyword">if</span> (interactiveMode)
+    commandwindow
+    fprintf(<span class="string">'\n&lt;strong&gt;Hit enter to compute and visualize isomerizations maps for the 2 mosaics for the rays scene. &lt;/strong&gt;'</span>);
+    pause
+<span class="keyword">end</span>
+<span class="comment">% Generate ring rays stimulus</span>
+raysScene = sceneCreate(<span class="string">'rings rays'</span>);
+raysScene= sceneSet(raysScene,<span class="string">'fov'</span>, 1.0);
+
+<span class="comment">% Compute the optical image</span>
+oi = oiCreate;
+oi = oiCompute(raysScene,oi);
+
+<span class="comment">% Compute isomerizations for the different mosaics and display the results</span>
+isomerizationsRays1 = theHexMosaic1.compute(oi,<span class="string">'currentFlag'</span>,false);
+isomerizationsRays2 = theHexMosaic2.compute(oi,<span class="string">'currentFlag'</span>,false);
+
+activationLUT = bone(1024);
+theHexMosaic1.visualizeActivationMaps(<span class="keyword">...</span>
+    isomerizationsRays1, <span class="keyword">...</span><span class="comment">                                        % the signal matrix</span>
+    <span class="string">'mapType'</span>, <span class="string">'modulated hexagons'</span>, <span class="keyword">...</span><span class="comment">                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'</span>
+    <span class="string">'signalName'</span>, <span class="string">'isomerizations (R*/cone/integration time)'</span>, <span class="keyword">...</span><span class="comment">  % colormap title (signal name and units)</span>
+    <span class="string">'colorMap'</span>, activationLUT, <span class="keyword">...</span><span class="comment">                                  % colormap to use for displaying activation level</span>
+    <span class="string">'figureSize'</span>, [1550 950] <span class="keyword">...</span><span class="comment">                                    % figure size in pixels</span>
+    );
+
+theHexMosaic2.visualizeActivationMaps(<span class="keyword">...</span>
+    isomerizationsRays2, <span class="keyword">...</span><span class="comment">                                        % the signal matrix</span>
+    <span class="string">'mapType'</span>, <span class="string">'modulated hexagons'</span>, <span class="keyword">...</span><span class="comment">                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'</span>
+    <span class="string">'signalName'</span>, <span class="string">'isomerizations (R*/cone/integration time)'</span>, <span class="keyword">...</span><span class="comment">  % colormap title (signal name and units)</span>
+    <span class="string">'colorMap'</span>, activationLUT, <span class="keyword">...</span><span class="comment">                                  % colormap to use for displaying activation level</span>
+    <span class="string">'figureSize'</span>, [1550 950] <span class="keyword">...</span><span class="comment">                                    % figure size in pixels</span>
+    );
+</pre><img vspace="5" hspace="5" src="t_coneMosaicHex5_06.png" style="width:1550px;height:950px;" alt=""> <img vspace="5" hspace="5" src="t_coneMosaicHex5_07.png" style="width:1550px;height:950px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% t_coneMosaicHex5
+%
+% Shows how to generate hexagonal mosaic with spatially-varying cone density.
+%
+% NPC ISETBIO Team, Copyright 2016
+
+%% Initialize
+ieInit; clear; close all;
+
+% Interactive mode. Set to true to have it pause at useful places.
+% Default is false so we can autopublish without user input
+interactiveMode = false;
+
+% Freeze random number generator
+rng('default'); rng(219347);
+
+%% Unit test 1: generate a hex mosaic with spatially-varying cone density positioned at (0.5mm, 0.0mm)
+% Mosaic Parameters
+mosaicParams = struct(...
+    'resamplingFactor', 7, ...                  % controls the accuracy of the hex mosaic grid
+    'spatiallyVaryingConeDensity', true, ...    % whether to have an eccentricity based, spatially - varying density
+    'customLambda', [], ...                     % custom spacing?
+    'centerInMM', [0.2 -0.2], ...               % 0.2 mm horizontal, 0.1 vertical
+    'size', [60 60] ...                         % generate from a rectangular mosaic of 60x60 cones
+    );
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-varying cone density positioned at x = %2.2f mm, y = %2.2fmm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+    pause
+end
+
+% Generate the hex grid
+theHexMosaic1 = coneMosaicHex(...
+    mosaicParams.resamplingFactor, ...
+    mosaicParams.spatiallyVaryingConeDensity, ...
+    mosaicParams.customLambda, ...
+    'center', mosaicParams.centerInMM*1e-3, ....
+    'size', mosaicParams.size ...
+    );
+% Print some grid info and visualize it
+theHexMosaic1.displayInfo();
+theHexMosaic1.visualizeGrid(...
+    'overlayConeDensityContour', 'measured', ...     % choose between 'measured', 'theoretical', 'none'
+    'coneDensityContourLevelStep', 5000, ...         % draw contours every 5000 cones/mm2
+    'generateNewFigure', true...
+    );
+
+theHexMosaic1.visualizeGrid(...
+    'overlayConeDensityContour', 'theoretical', ...    % choose between 'measured', 'theoretical', 'none'
+    'coneDensityContourLevelStep', 5000, ...           % draw contours every 5000 cones/mm2
+    'generateNewFigure', true...
+    );
+
+%% Unit test 2: generate a hex mosaic with spatially-uniform cone density positioned
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to create a hex mosaic with spatially-uniform cone density positioned at x = %2.2f mm, y = %2.2f mm. </strong>', mosaicParams.centerInMM(1), mosaicParams.centerInMM(2));
+    pause
+end
+mosaicParams.eccentricityBasedConeDensity = false;
+theHexMosaic2 = coneMosaicHex(...
+    mosaicParams.resamplingFactor, ...
+    mosaicParams.eccentricityBasedConeDensity, ...
+    mosaicParams.customLambda, ...
+    'center', mosaicParams.centerInMM*1e-3, ....
+    'size', mosaicParams.size ...
+    );
+
+% Print some grid info and visualize it
+theHexMosaic2.displayInfo();
+theHexMosaic2.visualizeGrid(...
+    'generateNewFigure', true...
+    );
+
+%% Unit test 3: compute and display activation maps to a Gabor stimulus
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to compute and visualize isomerizations maps for the 2 mosaics for an achromatic Gabor scene. </strong>');
+    pause
+end
+
+% Load acrhomatic Gabor scene
+[dirName,~] = fileparts(which(mfilename()));
+load(fullfile(dirName,'GaborAchromScene.mat'))
+gaborScene = sceneSet(gaborScene,'fov', 1.0);
+
+% Compute the optical image
+oi = oiCreate;
+oi = oiCompute(gaborScene,oi);
+
+% Compute isomerizations for the different mosaics and display the results
+isomerizationsGabor1 = theHexMosaic1.compute(oi,'currentFlag',false);
+isomerizationsGabor2 = theHexMosaic2.compute(oi,'currentFlag',false);
+
+activationLUT = jet(1024);
+theHexMosaic1.visualizeActivationMaps(...
+    isomerizationsGabor1, ...                                       % the signal matrix
+    'mapType', 'modulated hexagons', ...                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...  % colormap title (signal name and units)
+    'colorMap', activationLUT, ...                                  % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                    % figure size in pixels
+    );
+
+theHexMosaic2.visualizeActivationMaps(...
+    isomerizationsGabor2, ...                                       % the signal matrix
+    'mapType', 'modulated hexagons', ...                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...  % colormap title (signal name and units)
+    'colorMap', activationLUT, ...                                  % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                     % figure size in pixels
+    );
+
+
+%% Unit test 4: compute and display activation maps to the Rays stimulus
+if (interactiveMode)
+    commandwindow
+    fprintf('\n<strong>Hit enter to compute and visualize isomerizations maps for the 2 mosaics for the rays scene. </strong>');
+    pause
+end
+% Generate ring rays stimulus
+raysScene = sceneCreate('rings rays');
+raysScene= sceneSet(raysScene,'fov', 1.0);
+
+% Compute the optical image
+oi = oiCreate;
+oi = oiCompute(raysScene,oi);
+
+% Compute isomerizations for the different mosaics and display the results
+isomerizationsRays1 = theHexMosaic1.compute(oi,'currentFlag',false);
+isomerizationsRays2 = theHexMosaic2.compute(oi,'currentFlag',false);
+
+activationLUT = bone(1024);
+theHexMosaic1.visualizeActivationMaps(...
+    isomerizationsRays1, ...                                        % the signal matrix
+    'mapType', 'modulated hexagons', ...                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...  % colormap title (signal name and units)
+    'colorMap', activationLUT, ...                                  % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                    % figure size in pixels
+    );
+
+theHexMosaic2.visualizeActivationMaps(...
+    isomerizationsRays2, ...                                        % the signal matrix
+    'mapType', 'modulated hexagons', ...                            % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+    'signalName', 'isomerizations (R*/cone/integration time)', ...  % colormap title (signal name and units)
+    'colorMap', activationLUT, ...                                  % colormap to use for displaying activation level
+    'figureSize', [1550 950] ...                                    % figure size in pixels
+    );
+
+
+##### SOURCE END #####
+--></body></html>
