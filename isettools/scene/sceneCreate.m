@@ -503,7 +503,8 @@ scene = sceneInitSpatial(scene);
 % (in photons) produces the appropriate peak reflectance (default = 1).
 %
 % Also, a best guess is made about one known reflectance.
-if ~notDefined('scene.data.photons')
+% if isfield(scene,'data')
+if checkfields(scene,'data','photons')
     if isempty(sceneGet(scene,'knownReflectance')) && ...
             checkfields(scene,'data','photons')       
         % If there is no illuminant yet, set the illuminant to equal

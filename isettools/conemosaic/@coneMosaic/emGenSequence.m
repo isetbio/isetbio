@@ -1,7 +1,7 @@
-function pos = emGenSequence(obj, nFrames, varargin)
+function nTrialsPos = emGenSequence(obj, nFrames, varargin)
 % Generate eye movement path
 %
-%    coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emCreate);
+%    nTrialsPos = coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emCreate);
 %
 % Inputs
 %   obj     - cone mosaic object
@@ -13,8 +13,8 @@ function pos = emGenSequence(obj, nFrames, varargin)
 %   'nTrials' - Multiple trial case, default = 1
 %
 % Ouputs
-%   pos     - nFramesx2 matrix of eye positions in units of
-%             cone positions, or nTrials x nFrames x 2 matrix of eye positions.
+%   nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of
+%             cone positions
 %
 % See also:
 %   emCreate
@@ -124,6 +124,7 @@ for nn=1:nTrials
         end
     end
     nTrialsPos(nn,:,:) = pos;
+    pos = zeros(nFrames, 2);
 end
 
 %% Adjustments for the return
@@ -136,7 +137,7 @@ end
 % Round to discrete cone steps
 nTrialsPos = round(nTrialsPos);
 
-% Squeeze for case in which there is only 1 trial.
-obj.emPositions = squeeze(nTrialsPos); 
+% The positions in the mosaic is always just 1 sequence of eye movements
+obj.emPositions = squeeze(nTrialsPos(1,:,:)); 
 
 end
