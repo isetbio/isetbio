@@ -171,7 +171,8 @@ im(1:dotSpacing:length(im)) = ones(size(im(1:dotSpacing:length(im))));
 <span class="comment">%</span>
 <span class="comment">% It is not immediately clear why the call to imshow throws a negative</span>
 <span class="comment">% axis warning.  The plot looks fine.  So we just switch off the warning to</span>
-<span class="comment">% avoid reducing the confidence of the user about the quality of our code.</span>
+<span class="comment">% avoid reducing the confidence of the user about the quality of our code,</span>
+<span class="comment">% both here and below.</span>
 vcNewGraphWin;
 S = warning(<span class="string">'off'</span>,<span class="string">'MATLAB:Axes:NegativeLimitsInLogAxis'</span>);
 imshow(im(ones(1,128),1:512))
@@ -209,7 +210,9 @@ blurIm = ieScale(blurIm,1,32);
 retIm = conv2(blurIm,ls,<span class="string">'full'</span>);
 
 vcNewGraphWin;
+S = warning(<span class="string">'off'</span>,<span class="string">'MATLAB:Axes:NegativeLimitsInLogAxis'</span>);
 imshow(blurIm(ones(1,128),1:512),[]);
+warning(S);
 title(<span class="string">'Image of line stimulus blurred by ink width'</span>);
 
 <span class="comment">% Notice the very small ripples left in the curve after taking</span>
@@ -392,7 +395,9 @@ ylabel(<span class="string">'wavelength (nm)'</span>); xlabel(<span class="strin
 
 <span class="comment">% Here, we create and display the image of sample lines.</span>
 im = reshape([0 0 0 1 0 0 0 0]' * ones(1, 16), 1, 128);
+S = warning(<span class="string">'off'</span>,<span class="string">'MATLAB:Axes:NegativeLimitsInLogAxis'</span>);
 imshow(im(ones(100,1), 1:128));
+warning(S);
 
 <span class="comment">% To calculate the retinal image for this pattern, we</span>
 <span class="comment">% convolve each wavelength component of the image with the</span>
@@ -690,7 +695,8 @@ im(1:dotSpacing:length(im)) = ones(size(im(1:dotSpacing:length(im))));
 %
 % It is not immediately clear why the call to imshow throws a negative
 % axis warning.  The plot looks fine.  So we just switch off the warning to
-% avoid reducing the confidence of the user about the quality of our code.
+% avoid reducing the confidence of the user about the quality of our code,
+% both here and below.
 vcNewGraphWin;
 S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(im(ones(1,128),1:512))
@@ -728,7 +734,9 @@ blurIm = ieScale(blurIm,1,32);
 retIm = conv2(blurIm,ls,'full');
 
 vcNewGraphWin;
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(blurIm(ones(1,128),1:512),[]);
+warning(S);
 title('Image of line stimulus blurred by ink width');
 
 % Notice the very small ripples left in the curve after taking
@@ -896,7 +904,9 @@ ylabel('wavelength (nm)'); xlabel('degrees'); zlabel('intensity');
 
 % Here, we create and display the image of sample lines.
 im = reshape([0 0 0 1 0 0 0 0]' * ones(1, 16), 1, 128);
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(im(ones(100,1), 1:128));
+warning(S);
 
 % To calculate the retinal image for this pattern, we
 % convolve each wavelength component of the image with the
