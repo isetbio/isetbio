@@ -1,0 +1,549 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_osStepFlash</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_osStepFlash.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Init</a></li><li><a href="#5">Build stimuli</a></li><li><a href="#6">Compute os responses</a></li><li><a href="#7">Step stimulus</a></li><li><a href="#8">Flash stimulus</a></li><li><a href="#9">Compute differences between flash and step stimuli</a></li><li><a href="#10">Plot each step and flash level</a></li><li><a href="#12">Plot summary ratios</a></li><li><a href="#13">Save validation data</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_osStepFlash(varargin)
+<span class="comment">%</span>
+<span class="comment">% Validate the os models for very brief flashes on different pedestals.</span>
+<span class="comment">%</span>
+<span class="comment">% This script tests the linear and biophysical outer segment models of</span>
+<span class="comment">% photon isomerizations to photocurrent transduction that occurs in the</span>
+<span class="comment">% cone outer segments.  It computes responses for brief flashes of fixed</span>
+<span class="comment">% amplitude, but presented on step pedestals of different intensities.</span>
+<span class="comment">%</span>
+<span class="comment">% STATUS as of 2/10/16. We don't have direct outer segment data for this</span>
+<span class="comment">% simulated experiment.  What we do have is the parameters for a curve that</span>
+<span class="comment">% describes the measured relation between the amplitude of the transient</span>
+<span class="comment">% response to the flash on pedestal (that is the incremental response</span>
+<span class="comment">% estimated as being due to the flash.  In the model, this is obtained by</span>
+<span class="comment">% simulating the response to the pedestal alone and subtracting it out.</span>
+<span class="comment">% The model (pedestal intensity versus flash response curve is reasonably close</span>
+<span class="comment">% to the one computed from the parametric curve.  It would be nice to have</span>
+<span class="comment">% actual time course data to compare as well, since presumably that exists</span>
+<span class="comment">% somewhere and was used in the generation of the parametric curve.</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">% 1/12/16      npc   Created after separating the relevant</span>
+<span class="comment">%                    components from s_coneModelValidate.</span>
+<span class="comment">% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and</span>
+<span class="comment">%                    biophysical os models.</span>
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+<span class="keyword">end</span>
+</pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Init<a name="4"></a></h2><pre class="codeinput">    ieInit;
+</pre><h2>Build stimuli<a name="5"></a></h2><pre class="codeinput">    <span class="comment">% Set the simulation time interval. In general, the stimulation time interval should</span>
+    <span class="comment">% be set to a small enough value so as to avoid overflow errors.</span>
+    simulationTimeIntervalInSeconds = 1e-4;
+
+    <span class="comment">% Compute the simulation time axis</span>
+    stepOnset  = 4000;             <span class="comment">% step onset</span>
+    stepOffset = 22000;            <span class="comment">% step offset</span>
+
+    stimPeriod = [stepOnset stepOffset];
+    nSamples   = stepOffset+4000;
+
+    flashTime = [stepOnset-3000 stepOnset+6000 stepOffset-3000];      <span class="comment">% time of flashes</span>
+    flashDur = 10;                      <span class="comment">% flash duration (bins)</span>
+    flashIntensity = 10000;             <span class="comment">% flash intensity R*/cone/sec</span>
+    simulationTime = (1:nSamples)*simulationTimeIntervalInSeconds;
+
+    nStepIntensities = 11;
+    stepIntensities = 50 * 2.^(1:nStepIntensities);
+</pre><h2>Compute os responses<a name="6"></a></h2><pre class="codeinput">    <span class="keyword">for</span> stepIndex = 1:nStepIntensities
+</pre><h2>Step stimulus<a name="7"></a></h2><p>create step stimulus temporal profile</p><pre class="codeinput">        stepStimulusPhotonRate = zeros(nSamples, 1);
+        stepStimulusPhotonRate(stimPeriod(1):stimPeriod(2),1) = stepIntensities(stepIndex);
+    <span class="comment">% Linear os</span>
+        osCML = osLinear();
+        osCML.set(<span class="string">'noise flag'</span>,<span class="string">'none'</span>);
+        cmL = coneMosaic(<span class="string">'os'</span>,osCML,<span class="string">'pattern'</span>, 2); <span class="comment">% a single cone</span>
+        cmL.integrationTime = simulationTimeIntervalInSeconds;
+        cmL.os.timeStep = simulationTimeIntervalInSeconds;
+        cmL.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        <span class="comment">% Compute outer segment currents.</span>
+        cmL.computeCurrent(<span class="string">'bgR'</span>,stepStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
+        stepCurrentLinear(stepIndex,:)  = squeeze(cmL.current);
+
+    <span class="comment">% Biophys os</span>
+        osCM = osBioPhys();            <span class="comment">% peripheral (fast) cone dynamics</span>
+        osCM.set(<span class="string">'noise flag'</span>,<span class="string">'none'</span>);
+        cm = coneMosaic(<span class="string">'os'</span>,osCM,<span class="string">'pattern'</span>, 2); <span class="comment">% a single cone</span>
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        <span class="comment">% Compute outer segment currents.</span>
+        cm.computeCurrent();
+        stepCurrent(stepIndex,:)  = squeeze(cm.current);
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><h2>Flash stimulus<a name="8"></a></h2><p>create step+flash stimulus temporal profile add first pulse before the onset of the light step</p><pre class="codeinput">        stepFlashStimulusPhotonRate = stepStimulusPhotonRate;
+        stepFlashStimulusPhotonRate(flashTime(1):flashTime(1)+flashDur) = stepFlashStimulusPhotonRate (flashTime(1):flashTime(1)+flashDur) + flashIntensity;
+        <span class="comment">% add second pulse (light decrement) during the light step</span>
+        stepFlashStimulusPhotonRate(flashTime(2):flashTime(2)+flashDur) = stepFlashStimulusPhotonRate (flashTime(2):flashTime(2)+flashDur) - flashIntensity;
+        <span class="comment">% add third pulse (light increment) during the light step</span>
+        stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;
+
+    <span class="comment">% Linear os</span>
+        osCML = osLinear();
+        osCML.set(<span class="string">'noise flag'</span>,<span class="string">'none'</span>);
+        cmL = coneMosaic(<span class="string">'os'</span>,osCML,<span class="string">'pattern'</span>, 2); <span class="comment">% a single cone</span>
+        cmL.integrationTime = simulationTimeIntervalInSeconds;
+        cmL.os.timeStep = simulationTimeIntervalInSeconds;
+        cmL.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        <span class="comment">% Compute outer segment currents.</span>
+
+        cmL.computeCurrent(<span class="string">'bgR'</span>,stepFlashStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
+        stepFlashCurrentLinear(stepIndex,:)  = squeeze(cmL.current);
+
+    <span class="comment">% Biophys os</span>
+        osCM = osBioPhys();            <span class="comment">% peripheral (fast) cone dynamics</span>
+        osCM.set(<span class="string">'noise flag'</span>,<span class="string">'none'</span>);
+        cm = coneMosaic(<span class="string">'os'</span>,osCM,<span class="string">'pattern'</span>, 2); <span class="comment">% a single cone</span>
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        <span class="comment">% Compute outer segment currents.</span>
+        cm.computeCurrent();
+        stepFlashCurrent(stepIndex,:)  = squeeze(cm.current);
+        <span class="comment">% get the computed current</span>
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><pre class="codeoutput">No current noise added.
+</pre><h2>Compute differences between flash and step stimuli<a name="9"></a></h2><p>compute flash responses</p><pre class="codeinput">        flashOnlyLinearCurrent = squeeze(stepFlashCurrentLinear(stepIndex,:))-squeeze(stepCurrentLinear(stepIndex,:));
+        darkFlashLinearResponse = max(flashOnlyLinearCurrent(find((simulationTime &gt; flashTime(1)*simulationTimeIntervalInSeconds) &amp; (simulationTime &lt; flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
+        lightDecrementFlashLinearResponse(stepIndex) = min(flashOnlyLinearCurrent(find((simulationTime&gt;flashTime(2)*simulationTimeIntervalInSeconds-0.2) &amp; (simulationTime&lt;flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
+        lightIncrementFlashLinearResponse(stepIndex) = max(flashOnlyLinearCurrent(find(simulationTime&gt;1.5)));
+
+        flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
+        darkFlashResponse = max(flashOnlyCurrent(find((simulationTime &gt; flashTime(1)*simulationTimeIntervalInSeconds) &amp; (simulationTime &lt; flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
+        lightDecrementFlashResponse(stepIndex) = min(flashOnlyCurrent(find((simulationTime&gt;flashTime(2)*simulationTimeIntervalInSeconds-0.2) &amp; (simulationTime&lt;flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
+        lightIncrementFlashResponse(stepIndex) = max(flashOnlyCurrent(find(simulationTime&gt;1.5)));
+</pre><h2>Plot each step and flash level<a name="10"></a></h2><pre class="codeinput">        <span class="keyword">if</span> (runTimeParams.generatePlots)
+            <span class="keyword">if</span> (stepIndex == 1)
+                h = figure(1); clf;
+                set(h, <span class="string">'Position'</span>, [10 10 900 1200]);
+            <span class="keyword">end</span>
+
+            <span class="comment">% plot stimulus on the left</span>
+            subplot(nStepIntensities,3,(stepIndex-1)*3+1);
+            plot(simulationTime, stepFlashStimulusPhotonRate, <span class="string">'r-'</span>, <span class="string">'LineWidth'</span>, 2.0);
+            set(gca, <span class="string">'XLim'</span>, [simulationTime(1) simulationTime(end)], <span class="string">'YLim'</span>, [0 12e4], <span class="string">'YTick'</span>, []);
+            <span class="keyword">if</span> (stepIndex == nStepIntensities)
+                xlabel(<span class="string">'time (sec)'</span>,<span class="string">'FontSize'</span>,12);
+            <span class="keyword">else</span>
+                set(gca, <span class="string">'XTickLabel'</span>, {});
+            <span class="keyword">end</span>
+            ylabel(<span class="string">'isomer. rate'</span>,<span class="string">'FontSize'</span>,12);
+            title(sprintf(<span class="string">'step: %d R*/sec'</span>,stepIntensities(stepIndex)), <span class="string">'FontSize'</span>,12);
+
+            <span class="comment">% plot compound response in the middle</span>
+            subplot(nStepIntensities,3,(stepIndex-1)*3+2);
+            plot(simulationTime, squeeze(stepFlashCurrentLinear(stepIndex,:)), <span class="string">'g-'</span>, <span class="string">'LineWidth'</span>, 2.0); hold <span class="string">on</span>
+            plot(simulationTime, squeeze(stepCurrentLinear(stepIndex,:)), <span class="string">'b:'</span>, <span class="string">'LineWidth'</span>, 2.0);
+
+            plot(simulationTime, squeeze(stepFlashCurrent(stepIndex,:)), <span class="string">'k-'</span>, <span class="string">'LineWidth'</span>, 2.0); hold <span class="string">on</span>
+            plot(simulationTime, squeeze(stepCurrent(stepIndex,:)), <span class="string">'m:'</span>, <span class="string">'LineWidth'</span>, 2.0);
+
+            set(gca, <span class="string">'XLim'</span>, [simulationTime(1) simulationTime(end)]);
+            <span class="keyword">if</span> (stepIndex == nStepIntensities)
+                xlabel(<span class="string">'time (sec)'</span>,<span class="string">'FontSize'</span>,12);
+            <span class="keyword">else</span>
+                set(gca, <span class="string">'XTickLabel'</span>, {});
+            <span class="keyword">end</span>
+            ylabel(<span class="string">'pAmps'</span>,<span class="string">'FontSize'</span>,12);
+            title(<span class="string">'compound response'</span>, <span class="string">'FontSize'</span>,12);
+
+            <span class="comment">% plot flash-only response on the right</span>
+            subplot(nStepIntensities,3,(stepIndex-1)*3+3); hold <span class="string">on</span>;
+
+            plot(simulationTime, flashOnlyLinearCurrent, <span class="string">'g-'</span>, <span class="string">'LineWidth'</span>, 2.0);
+            plot(simulationTime, flashOnlyCurrent, <span class="string">'k-'</span>, <span class="string">'LineWidth'</span>, 2.0);
+            set(gca, <span class="string">'XLim'</span>, [simulationTime(1) simulationTime(end)], <span class="string">'YLim'</span>, [-2.2 2.2]);
+            <span class="keyword">if</span> (stepIndex == nStepIntensities)
+                xlabel(<span class="string">'time (sec)'</span>,<span class="string">'FontSize'</span>,12);
+            <span class="keyword">else</span>
+                set(gca, <span class="string">'XTickLabel'</span>, {});
+            <span class="keyword">end</span>
+            ylabel(<span class="string">'pAmps'</span>,<span class="string">'FontSize'</span>,12);
+            title(<span class="string">'flash responses'</span>, <span class="string">'FontSize'</span>,12);
+
+            drawnow;
+        <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="v_osStepFlash_01.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_02.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_03.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_04.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_05.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_06.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_07.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_08.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_09.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_10.png" style="width:900px;height:1200px;" alt=""> <img vspace="5" hspace="5" src="v_osStepFlash_11.png" style="width:900px;height:1200px;" alt=""> <pre class="codeinput">    <span class="keyword">end</span> <span class="comment">% stepIndex</span>
+</pre><h2>Plot summary ratios<a name="12"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        <span class="comment">% compute sensitivity vs background intensity relation for neural data</span>
+        <span class="comment">% with half desens around 2500 (Angueyra and Rieke, 2013)</span>
+        coef = [2500];
+        neuralDataFit = 10.^(weberFechner(coef, stepIntensities));
+
+        <span class="comment">% can also fit the same model to the simulated data, but we are not</span>
+        <span class="comment">% currently plotting this.</span>
+        wfcoefLinear = nlinfit(stepIntensities, log10(lightIncrementFlashLinearResponse/darkFlashLinearResponse), <span class="string">'weberFechner'</span>, coef);
+        modelLinearDataFit = 10.^(weberFechner(wfcoefLinear, stepIntensities));
+
+        wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashResponse/darkFlashResponse), <span class="string">'weberFechner'</span>, coef);
+        modelDataFit = 10.^(weberFechner(wfcoef, stepIntensities));
+
+        h = figure(2); clf;
+        set(h, <span class="string">'Position'</span>, [10 10 1000 500]);
+        subplot(1,2,1);
+        loglog(stepIntensities, -lightDecrementFlashLinearResponse/darkFlashLinearResponse, <span class="string">'go-'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'MarkerFaceColor'</span>, [1 0.8 0.8]); hold <span class="string">on</span>
+        loglog(stepIntensities, -lightDecrementFlashResponse/darkFlashResponse, <span class="string">'ro-'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'MarkerFaceColor'</span>, [1 0.8 0.8]);
+        title(<span class="string">'light decrement flash sensitivity'</span>);
+        <span class="comment">% set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);</span>
+        xlabel(<span class="string">'step intensity (R*/sec)'</span>, <span class="string">'FontSize'</span>, 12);
+        ylabel(<span class="string">'flash response / dark flash response'</span>,<span class="string">'FontSize'</span>, 12);
+
+        <span class="comment">% Likely some sort of problem with the linear model and its initial</span>
+        <span class="comment">% current, see darkFlashResponse vs. darkFlashResponseLinear.</span>
+        <span class="comment">% figure; plot(flashOnlyLinearCurrent); hold on; plot(flashOnlyCurrent);</span>
+        <span class="comment">% figure; plot(stepFlashCurrentLinear(1,:)); hold on; plot(stepFlashCurrent(1,:))</span>
+
+        subplot(1,2,2);
+        loglog(stepIntensities, lightIncrementFlashLinearResponse/darkFlashLinearResponse, <span class="string">'ko-'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'MarkerFaceColor'</span>, [0.8 1 0.8]); hold <span class="string">on</span>;
+        loglog(stepIntensities, lightIncrementFlashResponse/darkFlashResponse, <span class="string">'bo-'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'MarkerFaceColor'</span>, [0.8 0.8 1.0]);
+        <span class="comment">%loglog(stepIntensities, modelDataFit, 'b-', 'LineWidth', 2.0);</span>
+        <span class="comment">%loglog(stepIntensities, modelLinearDataFit, 'b-', 'LineWidth', 2.0);</span>
+        loglog(stepIntensities, neuralDataFit, <span class="string">'m-'</span>, <span class="string">'LineWidth'</span>, 2.0);
+
+        title(<span class="string">'light increment flash'</span>);
+        legend(<span class="string">'lienar model'</span>, <span class="string">'biophys model'</span>, <span class="string">'neural data'</span>);
+        <span class="comment">% set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);</span>
+        xlabel(<span class="string">'step intensity (R*/sec)'</span>, <span class="string">'FontSize'</span>, 12);
+        ylabel(<span class="string">'flash response / dark flash response'</span>,<span class="string">'FontSize'</span>, 12);
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput">Warning: Negative data ignored 
+</pre><img vspace="5" hspace="5" src="v_osStepFlash_12.png" style="width:1000px;height:500px;" alt=""> <h2>Save validation data<a name="13"></a></h2><pre class="codeinput">    UnitTest.validationData(<span class="string">'stepCurrentLinear'</span>, stepCurrentLinear);
+    UnitTest.validationData(<span class="string">'stepFlashCurrentLinear'</span>,stepFlashCurrentLinear);
+    UnitTest.validationData(<span class="string">'stepCurrent'</span>, stepCurrent);
+    UnitTest.validationData(<span class="string">'stepFlashCurrent'</span>,stepFlashCurrent);
+    UnitTest.validationData(<span class="string">'simulationTime'</span>, simulationTime);
+    UnitTest.validationData(<span class="string">'stimPeriod'</span>, stimPeriod);
+    UnitTest.validationData(<span class="string">'flashTime'</span>, flashTime);
+    UnitTest.validationData(<span class="string">'flashDur'</span>, flashDur);
+    UnitTest.validationData(<span class="string">'flashIntensity'</span>, flashIntensity);
+    UnitTest.validationData(<span class="string">'stepIntensities'</span>,stepIntensities);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_osStepFlash(varargin)
+%
+% Validate the os models for very brief flashes on different pedestals.
+%
+% This script tests the linear and biophysical outer segment models of 
+% photon isomerizations to photocurrent transduction that occurs in the
+% cone outer segments.  It computes responses for brief flashes of fixed
+% amplitude, but presented on step pedestals of different intensities.
+%
+% STATUS as of 2/10/16. We don't have direct outer segment data for this
+% simulated experiment.  What we do have is the parameters for a curve that
+% describes the measured relation between the amplitude of the transient
+% response to the flash on pedestal (that is the incremental response
+% estimated as being due to the flash.  In the model, this is obtained by
+% simulating the response to the pedestal alone and subtracting it out.
+% The model (pedestal intensity versus flash response curve is reasonably close
+% to the one computed from the parametric curve.  It would be nice to have
+% actual time course data to compare as well, since presumably that exists
+% somewhere and was used in the generation of the parametric curve.
+%
+%
+% 1/12/16      npc   Created after separating the relevant 
+%                    components from s_coneModelValidate.
+% 11/17/2016   jrg   Converted to cone mosaic, incorporated both linear and
+%                    biophysical os models.
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+    %% Init
+    ieInit;
+    %% Build stimuli
+    
+    % Set the simulation time interval. In general, the stimulation time interval should 
+    % be set to a small enough value so as to avoid overflow errors.
+    simulationTimeIntervalInSeconds = 1e-4;   
+        
+    % Compute the simulation time axis
+    stepOnset  = 4000;             % step onset
+    stepOffset = 22000;            % step offset
+    
+    stimPeriod = [stepOnset stepOffset];      
+    nSamples   = stepOffset+4000;
+
+    flashTime = [stepOnset-3000 stepOnset+6000 stepOffset-3000];      % time of flashes
+    flashDur = 10;                      % flash duration (bins)
+    flashIntensity = 10000;             % flash intensity R*/cone/sec
+    simulationTime = (1:nSamples)*simulationTimeIntervalInSeconds;
+    
+    nStepIntensities = 11;
+    stepIntensities = 50 * 2.^(1:nStepIntensities);
+    
+%% Compute os responses
+    for stepIndex = 1:nStepIntensities
+    %% Step stimulus    
+        % create step stimulus temporal profile
+        stepStimulusPhotonRate = zeros(nSamples, 1);
+        stepStimulusPhotonRate(stimPeriod(1):stimPeriod(2),1) = stepIntensities(stepIndex);
+    % Linear os
+        osCML = osLinear();            
+        osCML.set('noise flag','none');
+        cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+        cmL.integrationTime = simulationTimeIntervalInSeconds;
+        cmL.os.timeStep = simulationTimeIntervalInSeconds;
+        cmL.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cmL.computeCurrent('bgR',stepStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
+        stepCurrentLinear(stepIndex,:)  = squeeze(cmL.current);      
+        
+    % Biophys os
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag','none');
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        stepCurrent(stepIndex,:)  = squeeze(cm.current);            
+        
+    %% Flash stimulus
+        % create step+flash stimulus temporal profile
+        % add first pulse before the onset of the light step
+        stepFlashStimulusPhotonRate = stepStimulusPhotonRate;
+        stepFlashStimulusPhotonRate(flashTime(1):flashTime(1)+flashDur) = stepFlashStimulusPhotonRate (flashTime(1):flashTime(1)+flashDur) + flashIntensity;
+        % add second pulse (light decrement) during the light step 
+        stepFlashStimulusPhotonRate(flashTime(2):flashTime(2)+flashDur) = stepFlashStimulusPhotonRate (flashTime(2):flashTime(2)+flashDur) - flashIntensity;
+        % add third pulse (light increment) during the light step 
+        stepFlashStimulusPhotonRate(flashTime(3):flashTime(3)+flashDur) = stepFlashStimulusPhotonRate (flashTime(3):flashTime(3)+flashDur) + flashIntensity;  
+    
+    % Linear os        
+        osCML = osLinear();            
+        osCML.set('noise flag','none');
+        cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+        cmL.integrationTime = simulationTimeIntervalInSeconds;
+        cmL.os.timeStep = simulationTimeIntervalInSeconds;
+        cmL.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        
+        cmL.computeCurrent('bgR',stepFlashStimulusPhotonRate(1,1,1)./simulationTimeIntervalInSeconds);
+        stepFlashCurrentLinear(stepIndex,:)  = squeeze(cmL.current); 
+
+    % Biophys os        
+        osCM = osBioPhys();            % peripheral (fast) cone dynamics
+        osCM.set('noise flag','none');
+        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm.integrationTime = simulationTimeIntervalInSeconds;
+        cm.os.timeStep = simulationTimeIntervalInSeconds;
+        cm.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
+        % Compute outer segment currents.
+        cm.computeCurrent();
+        stepFlashCurrent(stepIndex,:)  = squeeze(cm.current);      
+        % get the computed current
+
+    %% Compute differences between flash and step stimuli
+        % compute flash responses        
+        flashOnlyLinearCurrent = squeeze(stepFlashCurrentLinear(stepIndex,:))-squeeze(stepCurrentLinear(stepIndex,:));
+        darkFlashLinearResponse = max(flashOnlyLinearCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
+        lightDecrementFlashLinearResponse(stepIndex) = min(flashOnlyLinearCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
+        lightIncrementFlashLinearResponse(stepIndex) = max(flashOnlyLinearCurrent(find(simulationTime>1.5)));
+         
+        flashOnlyCurrent = squeeze(stepFlashCurrent(stepIndex,:))-squeeze(stepCurrent(stepIndex,:));
+        darkFlashResponse = max(flashOnlyCurrent(find((simulationTime > flashTime(1)*simulationTimeIntervalInSeconds) & (simulationTime < flashTime(1)*simulationTimeIntervalInSeconds+0.1))));
+        lightDecrementFlashResponse(stepIndex) = min(flashOnlyCurrent(find((simulationTime>flashTime(2)*simulationTimeIntervalInSeconds-0.2) & (simulationTime<flashTime(2)*simulationTimeIntervalInSeconds+0.2))));
+        lightIncrementFlashResponse(stepIndex) = max(flashOnlyCurrent(find(simulationTime>1.5)));
+        
+    %% Plot each step and flash level
+        if (runTimeParams.generatePlots)  
+            if (stepIndex == 1)
+                h = figure(1); clf;
+                set(h, 'Position', [10 10 900 1200]);
+            end
+        
+            % plot stimulus on the left
+            subplot(nStepIntensities,3,(stepIndex-1)*3+1); 
+            plot(simulationTime, stepFlashStimulusPhotonRate, 'r-', 'LineWidth', 2.0);
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [0 12e4], 'YTick', []);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('isomer. rate','FontSize',12);
+            title(sprintf('step: %d R*/sec',stepIntensities(stepIndex)), 'FontSize',12);
+        
+            % plot compound response in the middle
+            subplot(nStepIntensities,3,(stepIndex-1)*3+2);             
+            plot(simulationTime, squeeze(stepFlashCurrentLinear(stepIndex,:)), 'g-', 'LineWidth', 2.0); hold on
+            plot(simulationTime, squeeze(stepCurrentLinear(stepIndex,:)), 'b:', 'LineWidth', 2.0);
+        
+            plot(simulationTime, squeeze(stepFlashCurrent(stepIndex,:)), 'k-', 'LineWidth', 2.0); hold on
+            plot(simulationTime, squeeze(stepCurrent(stepIndex,:)), 'm:', 'LineWidth', 2.0);
+        
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)]);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('pAmps','FontSize',12);
+            title('compound response', 'FontSize',12);
+        
+            % plot flash-only response on the right
+            subplot(nStepIntensities,3,(stepIndex-1)*3+3); hold on;
+            
+            plot(simulationTime, flashOnlyLinearCurrent, 'g-', 'LineWidth', 2.0);
+            plot(simulationTime, flashOnlyCurrent, 'k-', 'LineWidth', 2.0);
+            set(gca, 'XLim', [simulationTime(1) simulationTime(end)], 'YLim', [-2.2 2.2]);
+            if (stepIndex == nStepIntensities)
+                xlabel('time (sec)','FontSize',12);
+            else
+                set(gca, 'XTickLabel', {});
+            end
+            ylabel('pAmps','FontSize',12);
+            title('flash responses', 'FontSize',12);
+
+            drawnow;
+        end
+    end % stepIndex
+
+    %% Plot summary ratios
+    if (runTimeParams.generatePlots)    
+        % compute sensitivity vs background intensity relation for neural data
+        % with half desens around 2500 (Angueyra and Rieke, 2013)
+        coef = [2500];
+        neuralDataFit = 10.^(weberFechner(coef, stepIntensities));
+
+        % can also fit the same model to the simulated data, but we are not
+        % currently plotting this.
+        wfcoefLinear = nlinfit(stepIntensities, log10(lightIncrementFlashLinearResponse/darkFlashLinearResponse), 'weberFechner', coef);
+        modelLinearDataFit = 10.^(weberFechner(wfcoefLinear, stepIntensities));
+
+        wfcoef = nlinfit(stepIntensities, log10(lightIncrementFlashResponse/darkFlashResponse), 'weberFechner', coef);
+        modelDataFit = 10.^(weberFechner(wfcoef, stepIntensities));
+
+        h = figure(2); clf;
+        set(h, 'Position', [10 10 1000 500]);
+        subplot(1,2,1); 
+        loglog(stepIntensities, -lightDecrementFlashLinearResponse/darkFlashLinearResponse, 'go-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]); hold on      
+        loglog(stepIntensities, -lightDecrementFlashResponse/darkFlashResponse, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.8 0.8]);
+        title('light decrement flash sensitivity');
+        % set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
+        xlabel('step intensity (R*/sec)', 'FontSize', 12);
+        ylabel('flash response / dark flash response','FontSize', 12);
+        
+        % Likely some sort of problem with the linear model and its initial
+        % current, see darkFlashResponse vs. darkFlashResponseLinear.
+        % figure; plot(flashOnlyLinearCurrent); hold on; plot(flashOnlyCurrent);
+        % figure; plot(stepFlashCurrentLinear(1,:)); hold on; plot(stepFlashCurrent(1,:))
+        
+        subplot(1,2,2); 
+        loglog(stepIntensities, lightIncrementFlashLinearResponse/darkFlashLinearResponse, 'ko-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 1 0.8]); hold on;
+        loglog(stepIntensities, lightIncrementFlashResponse/darkFlashResponse, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 1.0]);       
+        %loglog(stepIntensities, modelDataFit, 'b-', 'LineWidth', 2.0);
+        %loglog(stepIntensities, modelLinearDataFit, 'b-', 'LineWidth', 2.0);
+        loglog(stepIntensities, neuralDataFit, 'm-', 'LineWidth', 2.0);
+
+        title('light increment flash');
+        legend('lienar model', 'biophys model', 'neural data');
+        % set(gca, 'XLim', [stepIntensities(1) stepIntensities(end)], 'YLim', [0 1.1], 'FontSize', 12);
+        xlabel('step intensity (R*/sec)', 'FontSize', 12);
+        ylabel('flash response / dark flash response','FontSize', 12);
+    end
+    
+    %% Save validation data
+    UnitTest.validationData('stepCurrentLinear', stepCurrentLinear);
+    UnitTest.validationData('stepFlashCurrentLinear',stepFlashCurrentLinear);
+    UnitTest.validationData('stepCurrent', stepCurrent);
+    UnitTest.validationData('stepFlashCurrent',stepFlashCurrent);
+    UnitTest.validationData('simulationTime', simulationTime);
+    UnitTest.validationData('stimPeriod', stimPeriod);
+    UnitTest.validationData('flashTime', flashTime);
+    UnitTest.validationData('flashDur', flashDur);
+    UnitTest.validationData('flashIntensity', flashIntensity);
+    UnitTest.validationData('stepIntensities',stepIntensities);
+end
+
+##### SOURCE END #####
+--></body></html>

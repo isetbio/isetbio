@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_sceneFromRGB</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="v_sceneFromRGB.m"><style type="text/css">
+      --><title>v_sceneFromRGB</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_sceneFromRGB.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -113,7 +113,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'wave'</span>, wave);
     UnitTest.validationData(<span class="string">'spd'</span>, spd);
-</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_01.png" alt=""> <h2>Analyze the display properties: Chromaticity<a name="6"></a></h2><pre class="codeinput">    d = displayCreate(displayCalFile);
+</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_01.png" style="width:717px;height:518px;" alt=""> <h2>Analyze the display properties: Chromaticity<a name="6"></a></h2><pre class="codeinput">    d = displayCreate(displayCalFile);
     whtSPD = displayGet(d,<span class="string">'white spd'</span>);
     wave   = displayGet(d,<span class="string">'wave'</span>);
     whiteXYZ = ieXYZFromEnergy(whtSPD',wave);
@@ -122,14 +122,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'wave1'</span>, wave);
     UnitTest.validationData(<span class="string">'spd1'</span>, spd);
-</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_02.png" alt=""> <h2>Read in an rgb file and create calibrated display values<a name="7"></a></h2><pre class="codeinput">    rgbFile = fullfile(isetRootPath,<span class="string">'data'</span>,<span class="string">'images'</span>,<span class="string">'rgb'</span>,<span class="string">'eagle.jpg'</span>);
+</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_02.png" style="width:717px;height:518px;" alt=""> <h2>Read in an rgb file and create calibrated display values<a name="7"></a></h2><pre class="codeinput">    rgbFile = fullfile(isetRootPath,<span class="string">'data'</span>,<span class="string">'images'</span>,<span class="string">'rgb'</span>,<span class="string">'eagle.jpg'</span>);
     scene   = sceneFromFile(rgbFile,<span class="string">'rgb'</span>,[],displayCalFile);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'scene'</span>, scene);
 </pre><pre class="codeoutput">[vcReadImage] Assuming 8bit image and 10 bit LUT
-</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_03.png" alt=""> <h2>Internal validation<a name="8"></a></h2><p>We are having cross-platform issues with the horizontal angular extent of the scene varying.  So we'll compute it from first principles here.</p><pre class="codeinput">    testByHand.hFovDegreesFromScene = sceneGet(scene,<span class="string">'hfov'</span>);
+</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_03.png" style="width:1024px;height:621px;" alt=""> <h2>Internal validation<a name="8"></a></h2><p>We are having cross-platform issues with the horizontal angular extent of the scene varying.  So we'll compute it from first principles here.</p><pre class="codeinput">    testByHand.hFovDegreesFromScene = sceneGet(scene,<span class="string">'hfov'</span>);
     testByHand.displayDPI = displayGet(d,<span class="string">'dpi'</span>);
     testByHand.displayMetersPerDot = displayGet(d,<span class="string">'meters per dot'</span>);
     testByHand.distance = sceneGet(scene,<span class="string">'distance'</span>);
@@ -148,10 +148,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(scene); sceneWindow;
     <span class="keyword">end</span>
-    UnitTest.validationData(<span class="string">'bb'</span>, bb);
-    UnitTest.validationData(<span class="string">'scene1'</span>, scene);
-</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_04.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+
+    <span class="comment">% * OLD * UnitTest.validationData('bb', bb);</span>
+    <span class="comment">% * OLD * UnitTest.validationData('scene1', scene);</span>
+
+    UnitTest.validationData(<span class="string">'bb'</span>, bb, <span class="keyword">...</span>
+        <span class="string">'UsingTheFollowingVariableTolerancePairs'</span>, <span class="keyword">...</span>
+        <span class="string">'bb'</span>, 1e-5);
+
+    <span class="comment">%scene.data.photons = [];</span>
+    UnitTest.validationData(<span class="string">'scene1'</span>, scene, <span class="keyword">...</span>
+        <span class="string">'UsingTheFollowingVariableTolerancePairs'</span>, <span class="keyword">...</span>
+          <span class="string">'scene1.data.meanL'</span>, 1e-6 , <span class="keyword">...</span>
+        <span class="string">'scene1.data.photons'</span>, 1.7e+9);
+</pre><pre class="codeoutput">	Validating using custom tolerance for field bb: 1e-05
+	Validating using custom tolerance for field scene1.data.photons: 1.7e+09
+	Validating using custom tolerance for field scene1.data.meanL: 1e-06
+</pre><img vspace="5" hspace="5" src="v_sceneFromRGB_04.png" style="width:1024px;height:621px;" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_sceneFromRGB(varargin)
 % Test creating a scene from image rgb data using the sceneFromFile
@@ -252,8 +266,19 @@ function ValidationFunction(runTimeParams)%% s_sceneFromRGB
     if (runTimeParams.generatePlots)   
         vcAddAndSelectObject(scene); sceneWindow;
     end
-    UnitTest.validationData('bb', bb);
-    UnitTest.validationData('scene1', scene);
+    
+    % * OLD * UnitTest.validationData('bb', bb);
+    % * OLD * UnitTest.validationData('scene1', scene);
+    
+    UnitTest.validationData('bb', bb, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'bb', 1e-5);
+    
+    %scene.data.photons = [];
+    UnitTest.validationData('scene1', scene, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+          'scene1.data.meanL', 1e-6 , ...
+        'scene1.data.photons', 1.7e+9);
 
 end
 ##### SOURCE END #####

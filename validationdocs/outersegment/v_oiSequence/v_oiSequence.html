@@ -1,0 +1,222 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>v_oiSequence</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_oiSequence.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Init</a></li><li><a href="#5">Produces the harmonic.  Need to lock this down as a function.</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_oiSequence(varargin)
+<span class="comment">% Validate simulations using the oiSequence method</span>
+<span class="comment">%</span>
+<span class="comment">%  * Create a small oiSequence</span>
+<span class="comment">%  * Check the coneMosaic</span>
+<span class="comment">%  * Adjust the time base of the oiSequence and repeat</span>
+<span class="comment">%</span>
+<span class="comment">% The purpose is to show that we can vary the oiSequence time base and the</span>
+<span class="comment">% cMosaic integration time and have things roughly work out.</span>
+<span class="comment">%</span>
+<span class="comment">% This script test oiSequence and computeForOISequence() as well as their</span>
+<span class="comment">% dependent functions.</span>
+<span class="comment">%</span>
+<span class="comment">% NPC, ISETBIO TEAM, 2016</span>
+
+varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+
+<span class="keyword">end</span>
+</pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
+</pre><h2>Init<a name="4"></a></h2><pre class="codeinput">ieInit;
+
+<span class="comment">% Reproduce identical random number</span>
+rng(<span class="string">'default'</span>); rng(1);
+</pre><h2>Produces the harmonic.  Need to lock this down as a function.<a name="5"></a></h2><pre class="codeinput">stimWeights = ieScale(fspecial(<span class="string">'gaussian'</span>,[1,10],3),0,1);
+weights = [zeros(1, 5), stimWeights, zeros(1, 5)];
+
+hparams(1) = harmonicP;
+hparams(2) = hparams(1); hparams(2).contrast = 0;
+sparams.fov = 0.3;
+ois = oisCreate(<span class="string">'harmonic'</span>,<span class="string">'blend'</span>,weights, <span class="string">'testParameters'</span>,hparams,<span class="string">'sceneParameters'</span>,sparams);
+<span class="comment">% ois.visualize;</span>
+
+<span class="comment">% Assert values from November 19, 2016 (BW)</span>
+tolerance = 1E-3;
+
+<span class="comment">% Check the oiCreate part</span>
+photonsFixed = oiGet(ois.oiFixed,<span class="string">'photons'</span>);
+quantityOfInterest = sum(photonsFixed(:))/1.3379e+19 - 1;
+UnitTest.assertIsZero(quantityOfInterest,<span class="string">'oiFixed photons'</span>,tolerance);
+
+photonsModulated = oiGet(ois.oiModulated,<span class="string">'photons'</span>);
+quantityOfInterest = sum(photonsModulated(:))/1.3379e+19 - 1;
+UnitTest.assertIsZero(quantityOfInterest,<span class="string">'oiModulated photons'</span>,tolerance);
+
+<span class="comment">% This tests the generation of the sequence because the sequence is built</span>
+<span class="comment">% by coneMosaic.compute</span>
+cMosaic = coneMosaic;
+cMosaic.noiseFlag = <span class="string">'frozen'</span>;
+cMosiac.os.noiseFlag = <span class="string">'frozen'</span>;
+cMosaic.setSizeToFOV(0.2);
+cMosaic.integrationTime = ois.timeAxis(2);  <span class="comment">% This is the integration time</span>
+cMosaic.emGenSequence(length(ois.timeAxis),<span class="string">'rseed'</span>,1);
+cMosaic.compute(ois);
+
+tolerance = 2E-2;
+totalAbsorptions = sum(cMosaic.absorptions(:));
+quantityOfInterest = (totalAbsorptions/120009) - 1;
+UnitTest.assertIsZero(quantityOfInterest,<span class="string">'coneMosaic absorptions'</span>,tolerance);
+
+<span class="comment">% assert((sum(cMosaic.absorptions(:))/121450) - 1 &lt; 1e-3);</span>
+
+<span class="comment">% Unit test validation data</span>
+UnitTest.validationRecord(<span class="string">'SIMPLE_MESSAGE'</span>, <span class="string">'***** v_oiSequence *****'</span>);
+UnitTest.validationData(<span class="string">'photonsFixed'</span>, photonsFixed);
+UnitTest.validationData(<span class="string">'photonsModulated'</span>, photonsModulated);
+UnitTest.validationData(<span class="string">'totalAbsorptions'</span>, totalAbsorptions, <span class="keyword">...</span>
+    <span class="string">'UsingTheFollowingVariableTolerancePairs'</span>, <span class="keyword">...</span>
+    <span class="string">'totalAbsorptions'</span>, 600);
+</pre><pre class="codeoutput">	Validating using custom tolerance for field totalAbsorptions: 600
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function varargout = v_oiSequence(varargin)
+% Validate simulations using the oiSequence method
+%  
+%  * Create a small oiSequence
+%  * Check the coneMosaic
+%  * Adjust the time base of the oiSequence and repeat
+%
+% The purpose is to show that we can vary the oiSequence time base and the
+% cMosaic integration time and have things roughly work out.
+%
+% This script test oiSequence and computeForOISequence() as well as their
+% dependent functions.
+%
+% NPC, ISETBIO TEAM, 2016
+
+varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
+
+%% Init
+ieInit;
+
+% Reproduce identical random number
+rng('default'); rng(1);
+
+%% Produces the harmonic.  Need to lock this down as a function.
+
+stimWeights = ieScale(fspecial('gaussian',[1,10],3),0,1);
+weights = [zeros(1, 5), stimWeights, zeros(1, 5)];
+ 
+hparams(1) = harmonicP;
+hparams(2) = hparams(1); hparams(2).contrast = 0;
+sparams.fov = 0.3;
+ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParameters',sparams);
+% ois.visualize;
+
+% Assert values from November 19, 2016 (BW)
+tolerance = 1E-3;
+
+% Check the oiCreate part
+photonsFixed = oiGet(ois.oiFixed,'photons');
+quantityOfInterest = sum(photonsFixed(:))/1.3379e+19 - 1;
+UnitTest.assertIsZero(quantityOfInterest,'oiFixed photons',tolerance);
+
+photonsModulated = oiGet(ois.oiModulated,'photons');
+quantityOfInterest = sum(photonsModulated(:))/1.3379e+19 - 1;
+UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
+
+% This tests the generation of the sequence because the sequence is built
+% by coneMosaic.compute
+cMosaic = coneMosaic;
+cMosaic.noiseFlag = 'frozen';
+cMosiac.os.noiseFlag = 'frozen';
+cMosaic.setSizeToFOV(0.2);
+cMosaic.integrationTime = ois.timeAxis(2);  % This is the integration time
+cMosaic.emGenSequence(length(ois.timeAxis),'rseed',1);
+cMosaic.compute(ois);
+
+tolerance = 2E-2;
+totalAbsorptions = sum(cMosaic.absorptions(:));
+quantityOfInterest = (totalAbsorptions/120009) - 1;
+UnitTest.assertIsZero(quantityOfInterest,'coneMosaic absorptions',tolerance);
+
+% assert((sum(cMosaic.absorptions(:))/121450) - 1 < 1e-3);
+
+% Unit test validation data
+UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_oiSequence *****');
+UnitTest.validationData('photonsFixed', photonsFixed);
+UnitTest.validationData('photonsModulated', photonsModulated);
+UnitTest.validationData('totalAbsorptions', totalAbsorptions, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'totalAbsorptions', 600);
+
+end
+
+
+
+##### SOURCE END #####
+--></body></html>

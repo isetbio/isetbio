@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_oi</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="v_oi.m"><style type="text/css">
+      --><title>v_oi</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_oi.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,78 +66,110 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISETBIO</a></li><li><a href="#5">Diffraction limited simulation properties</a></li><li><a href="#6">Human optics</a></li><li><a href="#7">Make a scene and show some oiGets and oiCompute work</a></li><li><a href="#8">Check GUI control</a></li><li><a href="#9">End</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_oi(varargin)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Function implementing the isetbio validation code</a></li><li><a href="#4">Initialize ISETBIO</a></li><li><a href="#5">Diffraction limited simulation properties</a></li><li><a href="#6">Human optics (MW)</a></li><li><a href="#7">Wavefront (Thibos) human optics</a></li><li><a href="#8">A simple case used for testing</a></li><li><a href="#9">Make a scene and show some oiGets and oiCompute work</a></li><li><a href="#10">Check GUI control</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> varargout = v_oi(varargin)
 <span class="comment">%</span>
-<span class="comment">% Test optical image functions</span>
-<span class="comment">%</span>
+<span class="comment">% Test optical image creating functions</span>
+<span class="comment">% Implicitly tests the opticsCreate functions, as well.</span>
 <span class="comment">%</span>
 <span class="comment">% Copyright Imageval LLC, 2009</span>
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+
 <span class="keyword">end</span>
 </pre><h2>Function implementing the isetbio validation code<a name="2"></a></h2><pre class="codeinput"><span class="keyword">function</span> ValidationFunction(runTimeParams)
-</pre><h2>Initialize ISETBIO<a name="4"></a></h2><pre class="codeinput">    s_initISET;
-</pre><h2>Diffraction limited simulation properties<a name="5"></a></h2><pre class="codeinput">    oi = oiCreate;
+</pre><h2>Initialize ISETBIO<a name="4"></a></h2><pre class="codeinput">    ieInit;
+</pre><h2>Diffraction limited simulation properties<a name="5"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'diffraction limited'</span>);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         oiPlot(oi,<span class="string">'otf'</span>,[],550);
         oiPlot(oi,<span class="string">'otf'</span>,[],450);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'diffractionOI'</span>, oi);
-</pre><img vspace="5" hspace="5" src="v_oi_01.png" alt=""> <img vspace="5" hspace="5" src="v_oi_02.png" alt=""> <h2>Human optics<a name="6"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
+</pre><img vspace="5" hspace="5" src="v_oi_01.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="v_oi_02.png" style="width:717px;height:518px;" alt=""> <h2>Human optics (MW)<a name="6"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'human'</span>);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         oiPlot(oi,<span class="string">'psf'</span>,[],420);
         oiPlot(oi,<span class="string">'psf'</span>,[],550);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'humanOI'</span>, oi);
-</pre><img vspace="5" hspace="5" src="v_oi_03.png" alt=""> <img vspace="5" hspace="5" src="v_oi_04.png" alt=""> <h2>Make a scene and show some oiGets and oiCompute work<a name="7"></a></h2><pre class="codeinput">    scene = sceneCreate;
+</pre><pre class="codeoutput">Will not round param 'humanOI.optics.lens', which is of  class type:'Lens'. </pre><img vspace="5" hspace="5" src="v_oi_03.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="v_oi_04.png" style="width:717px;height:518px;" alt=""> <h2>Wavefront (Thibos) human optics<a name="7"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'wvf human'</span>);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        oiPlot(oi,<span class="string">'psf'</span>,[],420);
+        oiPlot(oi,<span class="string">'psf'</span>,[],550);
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'humanWVF'</span>, oi);
+</pre><pre class="codeoutput">Will not round param 'humanWVF.optics.lens', which is of  class type:'Lens'. </pre><img vspace="5" hspace="5" src="v_oi_05.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="v_oi_06.png" style="width:717px;height:518px;" alt=""> <h2>A simple case used for testing<a name="8"></a></h2><pre class="codeinput">    oi = oiCreate(<span class="string">'uniform ee'</span>);
+    <span class="keyword">if</span> (runTimeParams.generatePlots)
+        oiPlot(oi,<span class="string">'psf'</span>,[],420);
+        oiPlot(oi,<span class="string">'psf'</span>,[],550);
+    <span class="keyword">end</span>
+    UnitTest.validationData(<span class="string">'EEoi'</span>, oi);
+</pre><img vspace="5" hspace="5" src="v_oi_07.png" style="width:717px;height:518px;" alt=""> <img vspace="5" hspace="5" src="v_oi_08.png" style="width:717px;height:518px;" alt=""> <h2>Make a scene and show some oiGets and oiCompute work<a name="9"></a></h2><pre class="codeinput">    scene = sceneCreate;
+    oi = oiCreate(<span class="string">'human'</span>);
     oi = oiCompute(oi,scene);
     <span class="keyword">if</span> (runTimeParams.generatePlots)
         oiPlot(oi,<span class="string">'illuminance mesh linear'</span>);
     <span class="keyword">end</span>
     UnitTest.validationData(<span class="string">'theScene'</span>,scene);
     UnitTest.validationData(<span class="string">'humanOIFromScene'</span>, oi);
-</pre><img vspace="5" hspace="5" src="v_oi_05.png" alt=""> <h2>Check GUI control<a name="8"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+</pre><pre class="codeoutput">Will not round param 'humanOIFromScene.optics.lens', which is of  class type:'Lens'. </pre><img vspace="5" hspace="5" src="v_oi_09.png" style="width:717px;height:518px;" alt=""> <h2>Check GUI control<a name="10"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcAddAndSelectObject(oi);
         oiWindow;
         oiSet([],<span class="string">'gamma'</span>,1);
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_oi_06.png" alt=""> <h2>End<a name="9"></a></h2><pre class="codeinput"><span class="keyword">end</span>
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="v_oi_10.png" style="width:1152px;height:649px;" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_oi(varargin)
 %
-% Test optical image functions
-%
+% Test optical image creating functions
+% Implicitly tests the opticsCreate functions, as well.
 %
 % Copyright Imageval LLC, 2009
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+    
 end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    s_initISET;
+    ieInit;
 
     %% Diffraction limited simulation properties
-    oi = oiCreate;
+    oi = oiCreate('diffraction limited');
     if (runTimeParams.generatePlots)
         oiPlot(oi,'otf',[],550);
         oiPlot(oi,'otf',[],450);
     end
     UnitTest.validationData('diffractionOI', oi);
 
-    %% Human optics
+    %% Human optics (MW)
     oi = oiCreate('human');
     if (runTimeParams.generatePlots)
         oiPlot(oi,'psf',[],420);
         oiPlot(oi,'psf',[],550);
     end
     UnitTest.validationData('humanOI', oi);
-
+    
+    %% Wavefront (Thibos) human optics
+    oi = oiCreate('wvf human');
+    if (runTimeParams.generatePlots)
+        oiPlot(oi,'psf',[],420);
+        oiPlot(oi,'psf',[],550);
+    end
+    UnitTest.validationData('humanWVF', oi);
+    
+    %% A simple case used for testing
+    oi = oiCreate('uniform ee');
+    if (runTimeParams.generatePlots)
+        oiPlot(oi,'psf',[],420);
+        oiPlot(oi,'psf',[],550);
+    end
+    UnitTest.validationData('EEoi', oi);
+    
     %% Make a scene and show some oiGets and oiCompute work
     scene = sceneCreate;
+    oi = oiCreate('human');
     oi = oiCompute(oi,scene);
     if (runTimeParams.generatePlots)
         oiPlot(oi,'illuminance mesh linear');
@@ -153,7 +185,6 @@ function ValidationFunction(runTimeParams)
         oiSet([],'gamma',1);
     end
 
-    %% End
 end
 ##### SOURCE END #####
 --></body></html>

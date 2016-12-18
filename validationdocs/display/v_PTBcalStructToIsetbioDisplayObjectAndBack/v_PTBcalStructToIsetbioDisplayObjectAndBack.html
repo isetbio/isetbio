@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_PTBcalStructToIsetbioDisplayObjectAndBack</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="v_PTBcalStructToIsetbioDisplayObjectAndBack.m"><style type="text/css">
+      --><title>v_PTBcalStructToIsetbioDisplayObjectAndBack</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_PTBcalStructToIsetbioDisplayObjectAndBack.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -90,7 +90,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     saveDisplayObject = false;
     isetbioDisplayObject = ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct(<span class="string">'SonyPVM2541'</span>, PTBcal, extraData, saveDisplayObject);
 </pre><pre class="codeoutput">Will not subsample SPDs
-Changing wave and interpolating SPD, for consistency
 </pre><h2>Now go back into PTB format from the isetbio version<a name="9"></a></h2><pre class="codeinput">    reconstructedPTBcal  = ptb.GeneratePTCalStructFromIsetbioDisplayObject(isetbioDisplayObject);
 </pre><h2>Comparisons<a name="10"></a></h2><p>Display size</p><pre class="codeinput">    tolerance = 1e-6;
     UnitTest.assertIsZero(abs(PTBcal.describe.displayDescription.screenSizeMM-reconstructedPTBcal.describe.displayDescription.screenSizeMM),<span class="string">'Display size mm'</span>,tolerance);
@@ -128,7 +127,7 @@ Changing wave and interpolating SPD, for consistency
 </pre><h2>Plots<a name="11"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
     <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_PTBcalStructToIsetbioDisplayObjectAndBack(varargin)
 %

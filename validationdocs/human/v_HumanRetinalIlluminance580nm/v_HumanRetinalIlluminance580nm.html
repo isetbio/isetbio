@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>v_HumanRetinalIlluminance580nm</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-13"><meta name="DC.source" content="v_HumanRetinalIlluminance580nm.m"><style type="text/css">
+      --><title>v_HumanRetinalIlluminance580nm</title><meta name="generator" content="MATLAB 9.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-18"><meta name="DC.source" content="v_HumanRetinalIlluminance580nm.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -102,7 +102,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>Create a uniform monochromatic scene<a name="6"></a></h2><pre class="codeinput">    scene = sceneCreate(<span class="string">'uniform monochromatic'</span>,monoChromaticWavelength);
     scene = sceneSet(scene,<span class="string">'mean luminance'</span>, sceneMeanLuminance);   <span class="comment">% Cd/m2</span>
     scene = sceneSet(scene,<span class="string">'fov'</span>, sceneFOV);
-</pre><pre class="codeoutput">ieLuminanceFromEnergy monochrome: 10 nm band assumed
 </pre><h2>Create human optics with desired pupil size<a name="7"></a></h2><pre class="codeinput">    pupilRadiusInMeters = pupilDiameterInMM / 2 / 1000;
     optics  = opticsCreate(<span class="string">'human'</span>, pupilRadiusInMeters);
     oi      = oiCreate(<span class="string">'human'</span>);
@@ -110,6 +109,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 </pre><h2>Compute optical image from the scene<a name="8"></a></h2><pre class="codeinput">    oi = oiCompute(scene,oi);
 </pre><h2>Get irradiance in the center<a name="9"></a></h2><pre class="codeinput">    roi = oiGet(oi,<span class="string">'size'</span>) ./2;
     photonIrradiance = oiGet(oi,<span class="string">'roi mean photons'</span>,roi);
+
+    <span class="comment">% divide by lens transmittance, to agree with old validations</span>
+    lens = oiGet(oi,<span class="string">'lens'</span>);
+    lensTransmittance = lens.transmittance;
+    photonIrradiance = photonIrradiance ./ lensTransmittance';
 </pre><h2>Compute difference from expected value<a name="10"></a></h2><pre class="codeinput">    expectedPhotonIrradiance = 10^19;
     percentDifference = (photonIrradiance - expectedPhotonIrradiance)/expectedPhotonIrradiance;
 </pre><h2>Validate against a 3 percent tolerance<a name="11"></a></h2><pre class="codeinput">    tolerance = 0.03;  <span class="comment">% 3 percent error</span>
@@ -123,7 +127,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
     UnitTest.validationData(<span class="string">'tolerance'</span>, tolerance);
     UnitTest.validationData(<span class="string">'scene'</span>, scene);
     UnitTest.validationData(<span class="string">'oi'</span>, oi);
-</pre><h2>Plotting<a name="12"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
+</pre><pre class="codeoutput">Will not round param 'oi.optics.lens', which is of  class type:'Lens'. </pre><h2>Plotting<a name="12"></a></h2><pre class="codeinput">    <span class="keyword">if</span> (runTimeParams.generatePlots)
         vcNewGraphWin;
         <span class="comment">% set(h, 'Position', [100 100 840 430]);</span>
         <span class="comment">% clf;</span>
@@ -137,8 +141,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         xlabel(<span class="string">''</span>, <span class="string">'FontName'</span>, <span class="string">'Helvetica'</span>, <span class="string">'FontSize'</span>, 14);
         ylabel(<span class="string">'Irradiance (q/s/nm/m^2)'</span>, <span class="string">'FontName'</span>, <span class="string">'Helvetica'</span>, <span class="string">'FontSize'</span>, 14)
     <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="v_HumanRetinalIlluminance580nm_01.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="v_HumanRetinalIlluminance580nm_01.png" style="width:717px;height:518px;" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function varargout = v_HumanRetinalIlluminance580nm(varargin)
 %
@@ -199,6 +203,11 @@ function ValidationFunction(runTimeParams)
     %% Get irradiance in the center
     roi = oiGet(oi,'size') ./2; 
     photonIrradiance = oiGet(oi,'roi mean photons',roi);
+    
+    % divide by lens transmittance, to agree with old validations
+    lens = oiGet(oi,'lens');
+    lensTransmittance = lens.transmittance;
+    photonIrradiance = photonIrradiance ./ lensTransmittance';
     
     %% Compute difference from expected value
     expectedPhotonIrradiance = 10^19;
