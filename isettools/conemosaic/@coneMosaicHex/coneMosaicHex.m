@@ -20,7 +20,12 @@ classdef coneMosaicHex < coneMosaic
     % Example:
     %      resamplingFactor = 8;
     %      varyingDensity = false;
-    %      customLambda = [];
+    %      customLambda = [];       % If set to empty, @coneMosaiHex chooses
+    %                                 the cone spacing based on the eccentricity of the mosaic
+    %                                 using the coneSize() function.
+    %                                 If set to a value (specified in microns), cone spacing
+    %                                 will is set to that value. Note that if varyingDensity is 
+    %                                 set to true, the customLambda is ignored
     % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
     %                          'name', 'the hex mosaic', ...
     %                          'size', [48 32], ...
@@ -36,7 +41,7 @@ classdef coneMosaicHex < coneMosaic
     properties (SetAccess=private)
         lambdaMin                               % min cone separation in the mosaic
         lambdaMid                               % the cone separation at the middle of the mosaic
-        customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics
+        customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics (in microns)
         varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)
@@ -52,7 +57,7 @@ classdef coneMosaicHex < coneMosaic
         % Constructor
         function obj = coneMosaicHex(upSampleFactor, varyingDensity, customLambda, varargin)
             % Initialize the hex cone mosaic class
-            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, ['cone',cone,'os','os]);
+            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, customLambda, ['cone',cone,'os','os]);
             
             % Call the super-class constructor.
             obj = obj@coneMosaic(varargin{:});
