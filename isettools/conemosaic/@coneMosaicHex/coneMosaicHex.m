@@ -21,11 +21,13 @@ classdef coneMosaicHex < coneMosaic
     %      resamplingFactor = 8;
     %      varyingDensity = false;
     %      customLambda = [];       % If set to empty, @coneMosaiHex chooses
-    %                                 the cone spacing based on the eccentricity of the mosaic
-    %                                 using the coneSize() function.
-    %                                 If set to a value (specified in microns), cone spacing
-    %                                 will is set to that value. Note that if varyingDensity is 
-    %                                 set to true, the customLambda is ignored
+    %                                 the cone spacing based on the eccentricity 
+    %                                 of the mosaic as determined by the 
+    %                                 coneSize(eccentricityInMeters,ang) function.
+    %                                 If set to a value (specified in microns), 
+    %                                 cone spacing is set to that value. Note that
+    %                                 if the ?varyingDensity? param is  set to true, 
+    %                                 the 'customLambda' param is ignored.
     % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
     %                          'name', 'the hex mosaic', ...
     %                          'size', [48 32], ...
