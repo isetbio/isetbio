@@ -36,7 +36,7 @@ classdef coneMosaicHex < coneMosaic
     %       );
     %   cMosaicHex.window;
     %
-    % See also: coneMosaic.
+    % See also: coneMosaic, t_coneMosaicHex1
     %
     % NPC ISETBIO Team, 2016
     
