@@ -66,7 +66,9 @@ filterTimeAxis = (1:size(LMSfilters{1,1},1))*theConeMosaic.integrationTime;
 
 % Unit test validation data
 UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_osLinearFilters *****');
-UnitTest.validationData('LMSfilters', LMSfilters);
+UnitTest.validationData('LMSfilters', LMSfilters, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'LMSFilters', 1e-4);
 UnitTest.validationData('filterTimeAxis', filterTimeAxis);
 UnitTest.validationData('backgroundLuminances', backgroundLuminances);
 UnitTest.validationData('osTimeSteps', osTimeSteps);
