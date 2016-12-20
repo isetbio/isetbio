@@ -1,7 +1,7 @@
 classdef coneMosaicHex < coneMosaic
     % Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, varargin);
+    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, customLambda, varargin);
     %
     % The cone mosaic HEX is a subclass of coneMosaic. It differs because
     % the array of cones is placed on a hexagonal, rather than rectangular,
@@ -10,13 +10,25 @@ classdef coneMosaicHex < coneMosaic
     % The hex mosaic is sampled according to the resamplingFactor. The cone
     % density can be spatially-varying if varyingDensity is set to true.
     %
+    % The customLambda argument is empty to obtain default performance, but
+    % may be set to set the spacing for regularly spaced hexagonal mosaics.
+    % The units of customLambda are [PLEASE REVEAL TO US!!!]
+    %
     % Name-Value parameter pairs used with coneMosaic also can be used with
-    % coneMosaicHex, e.g., 
+    % coneMosaicHex 
     %
     % Example:
     %      resamplingFactor = 8;
     %      varyingDensity = false;
-    % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, ...
+    %      customLambda = [];       % If set to empty, @coneMosaiHex chooses
+    %                                 the cone spacing based on the eccentricity 
+    %                                 of the mosaic as determined by the 
+    %                                 coneSize(eccentricityInMeters,ang) function.
+    %                                 If set to a value (specified in microns), 
+    %                                 cone spacing is set to that value. Note that
+    %                                 if the ?varyingDensity? param is  set to true, 
+    %                                 the 'customLambda' param is ignored.
+    % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
     %                          'name', 'the hex mosaic', ...
     %                          'size', [48 32], ...
     %                     'noiseFlag', 0,  ...
@@ -24,14 +36,14 @@ classdef coneMosaicHex < coneMosaic
     %       );
     %   cMosaicHex.window;
     %
-    % See also: coneMosaic.
+    % See also: coneMosaic, t_coneMosaicHex1
     %
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
         lambdaMin                               % min cone separation in the mosaic
         lambdaMid                               % the cone separation at the middle of the mosaic
-        customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics
+        customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics (in microns)
         varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
         coneLocsHexGrid                         % computed coneLocs (hex grid)
@@ -47,7 +59,7 @@ classdef coneMosaicHex < coneMosaic
         % Constructor
         function obj = coneMosaicHex(upSampleFactor, varyingDensity, customLambda, varargin)
             % Initialize the hex cone mosaic class
-            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, ['cone',cone,'os','os]);
+            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, customLambda, ['cone',cone,'os','os]);
             
             % Call the super-class constructor.
             obj = obj@coneMosaic(varargin{:});

@@ -2,18 +2,14 @@
 %
 % Apply color methods to render an approximation to the visible spectrum
 % 
-% PURPOSE: This tutorial uses the color-matching tools we have developed to
+% This tutorial uses the color-matching tools we have developed to
 % create an image approaching the appearance the rainbow (the spectral
 % colors) on your display.
-%
-% Class:       Psych 221 - Applied Vision and Image Systems
-% Tutorial:    Color Spectrum 
-% Author:      Wandell
-% Purpose:     An example calculation: making a desaturated rainbow
-% Last Update: 01.05.15 (HJ)
-% Duration:    20 minutes
-%
+
 % 12/29/14  dhb  Updated for isetbio, and cleaned a bit.
+% 01/05/15  hj   HJ did something for class usage. 
+% 12/17/16  dhb  Pass key/value wavelength pair to displayCreate, that's
+%                the modern way.  Remove Psych 221 comments.
 
 %% Initialize
 ieInit;
@@ -25,7 +21,7 @@ ieInit;
 % display description provided with isetbio.
 wave = (400:5:700)'; % wavelength samples
 dWave = wave(2) - wave(1); % bin size
-d = displayCreate('LCD-Apple', wave);
+d = displayCreate('LCD-Apple', 'wave', wave);
 wave = displayGet(d,'wave');
 primaries = displayGet(d, 'spd primaries');
 

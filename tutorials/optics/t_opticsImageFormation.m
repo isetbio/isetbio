@@ -116,8 +116,15 @@ im(1:dotSpacing:length(im)) = ones(size(im(1:dotSpacing:length(im))));
 
 % Here is an image showing the sampled line positions
 % (The lines represent a printer dot)
+%
+% It is not immediately clear why the call to imshow throws a negative
+% axis warning.  The plot looks fine.  So we just switch off the warning to
+% avoid reducing the confidence of the user about the quality of our code,
+% both here and below.
 vcNewGraphWin;
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(im(ones(1,128),1:512))
+warning(S);
 title('Image of line stimulus'); 
 
 % Each line in the physical image adds a unit linespread to the retinal
@@ -151,7 +158,9 @@ blurIm = ieScale(blurIm,1,32);
 retIm = conv2(blurIm,ls,'full');
 
 vcNewGraphWin;
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(blurIm(ones(1,128),1:512),[]);
+warning(S);
 title('Image of line stimulus blurred by ink width');
 
 % Notice the very small ripples left in the curve after taking
@@ -319,7 +328,9 @@ ylabel('wavelength (nm)'); xlabel('degrees'); zlabel('intensity');
 
 % Here, we create and display the image of sample lines.
 im = reshape([0 0 0 1 0 0 0 0]' * ones(1, 16), 1, 128);
+S = warning('off','MATLAB:Axes:NegativeLimitsInLogAxis');
 imshow(im(ones(100,1), 1:128));
+warning(S);
 
 % To calculate the retinal image for this pattern, we
 % convolve each wavelength component of the image with the

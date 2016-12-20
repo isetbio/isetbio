@@ -1,5 +1,7 @@
 function t_linearFilters
 
+    saveVideos = false;
+    
     % Define the time axis for the simulation
     stimulusSamplingInterval = 10/1000;             % 5 milliseconds
     oiTimeAxis = 0:stimulusSamplingInterval:0.3;   % 0.1 seconds
@@ -78,10 +80,13 @@ function t_linearFilters
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1380 1010], 'Color', [1 1 1]);
     
-    videoOBJ = VideoWriter('IRs.mp4', 'MPEG-4'); % H264 format
-    videoOBJ.FrameRate = 5; 
-    videoOBJ.Quality = 100;
-    videoOBJ.open();
+    if (saveVideos)
+        videoOBJ = VideoWriter('IRs.mp4', 'MPEG-4'); % H264 format
+        videoOBJ.FrameRate = 5; 
+        videoOBJ.Quality = 100;
+        videoOBJ.open();
+    end
+    
     colorIR = (jet(numel(osTimeSteps))).^2;
     for iLum = 1:numel(backgroundLuminances)
         legends = {};
@@ -122,20 +127,26 @@ function t_linearFilters
                 title(sprintf('%s-cone, os.timeStep: %2.3fms, lum: %2.1f cd/m2', coneNames{coneIndex}, osTimeSteps(iStepIndex)*1000, backgroundLuminances(iLum)), ...
                     'FontSize', 14, 'FontWeight', 'bold');
             end % coneIndex
-            drawnow
-            videoOBJ.writeVideo(getframe(hFig));  
+            drawnow;
+            if (saveVideos)
+                videoOBJ.writeVideo(getframe(hFig));  
+            end
         end % iStepIndex
     end %iLum
-    videoOBJ.close();
-    
+    if (saveVideos)
+        videoOBJ.close();
+    end
     
     hFig = figure(2); clf;
     set(hFig, 'Position', [10 10 1380 500], 'Color', [1 1 1]);
     
-    videoOBJ = VideoWriter('Photocurrents.mp4', 'MPEG-4'); % H264 format
-    videoOBJ.FrameRate = 5; 
-    videoOBJ.Quality = 100;
-    videoOBJ.open();
+    if (saveVideos)
+        videoOBJ = VideoWriter('Photocurrents.mp4', 'MPEG-4'); % H264 format
+        videoOBJ.FrameRate = 5; 
+        videoOBJ.Quality = 100;
+        videoOBJ.open();
+    end
+    
     colorIR = (jet(numel(osTimeSteps))).^2;
     for iLum = 1:numel(backgroundLuminances)
         legends = {};
@@ -163,11 +174,15 @@ function t_linearFilters
                     'FontSize', 14, 'FontWeight', 'bold');
 
             end % coneIndex
-            drawnow
-            videoOBJ.writeVideo(getframe(hFig));  
+            drawnow;
+            if (saveVideos)
+                videoOBJ.writeVideo(getframe(hFig));  
+            end
         end % iStepIndex
     end %iLum
-    videoOBJ.close();
+    if (saveVideos)
+        videoOBJ.close();
+    end
 end
 
 function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
