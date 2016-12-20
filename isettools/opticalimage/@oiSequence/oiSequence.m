@@ -17,7 +17,8 @@ classdef oiSequence
     %  NPC, ISETBIO TEAM, 2016
     
     properties
-        
+        photonsFixed;         % Photons stored as double
+        photonsModulated;     % Photons stored as double
     end
     
     properties (Dependent)

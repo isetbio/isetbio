@@ -193,7 +193,9 @@ if ieSessionGet('gpu compute')
     photons = gpuArray(photons);
 end
 
-scene = sceneSet(scene, 'filename', I);
+if ischar(I), scene = sceneSet(scene, 'filename', I); 
+else scene = sceneSet(scene, 'filename', 'numeric input');
+end
 scene = sceneSet(scene, 'photons', photons);
 scene = sceneSet(scene, 'illuminant', il);
 

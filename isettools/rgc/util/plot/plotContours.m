@@ -1,21 +1,21 @@
 function contourCell = plotContours(obj, spacing, col)
 % Plots spatial receptive field center and surround contours
 %
-% Inputs: 
+% Inputs:
 %   obj:  an rgcMosaic object.
 %   spacing:   Apparently, patch size of the inner retina is meant
 %   col:  Number of columns in the mosaic
 %
-% Outputs: 
+% Outputs:
 %   contourCell, a cell array containing the RF coordinates
 %                contourCell{:,:,1} - center
 %                contourCell{:,:,2} - surround
-% 
+%
 % Example:
 %  for cellTypeInd = 1:length(obj.mosaic)
 %     spatialRFcontours{:,:,:,cellTypeInd} = plotContours(obj.mosaic{cellTypeInd});
 %  end
-% 
+%
 % JRG (c) isetbio team, 2015
 
 nCells = size(obj.sRFcenter);
@@ -29,7 +29,7 @@ vcNewGraphWin;
 contourCell = cell(nCells(1),nCells(2),2);
 for xcell = 1:nCells(1)
     for ycell = 1:nCells(2)
-                
+        
         hold on;
         cc = contour(obj.sRFcenter{xcell,ycell},[obj.rfDiaMagnitude{xcell,ycell,1} obj.rfDiaMagnitude{xcell,ycell,1}]);% close;
         cc = bsxfun(@plus,cc,obj.cellLocation{xcell,ycell}' - [1; 1]*extent*rfPixels);
@@ -41,7 +41,7 @@ for xcell = 1:nCells(1)
         % NOT SURE IF THIS IS RIGHT, bc contours are the same if so_surr
         cc = contour(obj.sRFcenter{xcell,ycell},[obj.rfDiaMagnitude{xcell,ycell,2} obj.rfDiaMagnitude{xcell,ycell,2}]);% close;
         cc(:,1) = [NaN; NaN];
-         cc = bsxfun(@plus,cc,obj.cellLocation{xcell,ycell}' - [1; 1]*extent*rfPixels);
+        cc = bsxfun(@plus,cc,obj.cellLocation{xcell,ycell}' - [1; 1]*extent*rfPixels);
         contourCell{xcell,ycell,2} = cc;
         
     end
