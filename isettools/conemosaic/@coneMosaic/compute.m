@@ -1,7 +1,8 @@
-function [absorptions, current] = compute(obj, oi, varargin)
+function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%  [absorptions, current] = cMosaic.compute(oi or oiSequence);
+%  [absorptions, current, interpFilters, meanCur] = ...
+%             cMosaic.compute(oi or oiSequence);
 %
 % Compute the temporal sequence of cone absorptions, which we treat as
 % isomerization R*.  The computation can executed on
@@ -58,12 +59,14 @@ function [absorptions, current] = compute(obj, oi, varargin)
 
 % Send to the specialized compute in that case.
 if isequal(class(oi),'oiSequence')
-    [absorptions, current] = obj.computeForOISequence(oi,varargin{:});
+    [absorptions, current, interpFilters, meanCur] = obj.computeForOISequence(oi,varargin{:});
     return;
 end
 
 %% parse inputs
 p = inputParser;
+p.KeepUnmatched = true;
+
 p.addRequired('oi', @isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
@@ -159,20 +162,19 @@ end
 % Set the absorptions in the object.
 obj.absorptions = absorptions;
 
-%% If we want the photo current, use the os model
+%% If we want the photo current
 
-% We recommend that you calculate the photocurrent later using
-%   coneMosaic.computeCurrent;
-% rather than by setting this flag.
+current       = [];
+interpFilters = [];
+meanCur       = [];
 
-current = [];
 if currentFlag
     warning('Suggest using coneMosaic.computeCurrent');
     if size(obj.absorptions,3) == 1
         disp('Absorptions are a single frame.  No current to calculate.')        
         return;
     else
-        obj.current = obj.os.osCompute(cMosaic);
+        [obj.current, interpFilters, meanCur] = obj.os.osCompute(cMosaic);
     end
 end
 

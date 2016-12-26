@@ -1,7 +1,8 @@
-function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
+function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
 % Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
-%  [absorptions, photocurrents, LMSfilters] = cMosaic.compute(oiSequence, varargin);
+%  [absorptions, photocurrents, LMSfilters, meanCur] = ...
+%        cMosaic.compute(oiSequence, varargin);
 %
 % Inputs:
 %   obj         - @coneMosaic object
@@ -10,16 +11,20 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 % Optional inputs:
 %   emPaths      - [N x M x 2] matrix of N eye movement paths, each with
 %                  Mx2 eye positions
-%   currentFlag  - logical, whether to compute photocurrent
 %   noiseFlag    - 'random','frozen','none'
 %   seed         - noise seed
+%
+%   currentFlag  - logical, whether to compute photocurrent
+%   inpterpFilters - LMS filters for photocurrent impulse response
+%   meanCur        - Mean current level for photocurrent impulse response
 %
 % Outputs:
 %   absorptions          - cone photon absorptions (photon counts per integrationTime)
 %   photocurrent         - cone photocurrent (per integrationTime steps_
 %   LMSfilters           - impulse response functions for the LMS cones
-%                          these are temporally sampled for the cone
-%                          integrationTime
+%                          when using the osLinear model. These are
+%                          temporally sampled for the cone integrationTime
+%                          and the mean absorption level.
 %
 % There are several ways to use this function.  The simplest is to send in
 % a single oiSequence and a single eye movement sequence.
@@ -70,12 +75,18 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-p.addParameter('seed',1, @isnumeric);                   % Seed for frozen noise
-p.addParameter('emPaths', [], @isnumeric);
-p.addParameter('currentFlag', false, @islogical);
+
+p.addParameter('seed',1, @isnumeric);             % Seed for frozen noise
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
+
+p.addParameter('emPaths', [], @isnumeric);        % Eye movement paths
+p.addParameter('interpFilters',[],@isnumeric);    % Used to match filters for classifiers
+p.addParameter('meanCur',[],@isnumeric);          % in SVM calculations
+
+p.addParameter('currentFlag', false, @islogical); % Calculate photocurrent
+
 p.parse(oiSequence, varargin{:});
 
 currentSeed     = p.Results.seed;
@@ -85,6 +96,8 @@ currentFlag     = p.Results.currentFlag;
 workerID        = p.Results.workerID;
 workDescription = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
+LMSfilters        = p.Results.interpFilters;
+meanCur           = p.Results.meanCur;
 
 oiTimeAxis      = oiSequence.timeAxis;
 nTimes = numel(oiTimeAxis);
@@ -140,8 +153,6 @@ end
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
-disp('Absorption calculation')
-tic
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
@@ -371,7 +382,6 @@ else
         absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
     end % emIndex
 end % oiRefreshInterval > defaultIntegrationTime
-toc
 
 % Restore default integrationTime
 obj.integrationTime = defaultIntegrationTime;
@@ -409,16 +419,23 @@ end
 % compute. 
 %
 
+% N.B.  Not adequately checked for osBioPhys model.  Runs ok for osLinear
+% model.
+
 if (currentFlag)
-    disp('Current calculation')
-    tic
     if (isa(obj, 'coneMosaicHex'))
         photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
             % Reshape to full 3D matrix for obj.computeCurrent
             obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
             currentSeed = currentSeed  + 1;
-            LMSfilters = obj.computeCurrent('seed', currentSeed);
+            if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
+                % On the first trial, compute the interpolated linear
+                % filters and the mean current, unless they were passed in
+                [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
+            else
+                LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
+            end
             % Back to 2D matrix to save space
             photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
         end
@@ -428,7 +445,7 @@ if (currentFlag)
             % Put this trial of absorptions into the cone mosaic
             obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
             currentSeed = currentSeed  + 1;
-            if ii == 1
+            if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
                 % On the first trial, compute the interpolated linear
                 % filters and the mean current
                 [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
@@ -440,14 +457,14 @@ if (currentFlag)
             photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
         end
     end
-    toc
 end
 
 
 % Reload the absorptions from the last instance (again, since we destroyed
 % obj.absorptions in the current computation)
 if (isa(obj, 'coneMosaicHex'))
-    % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
+    % Return the absorptions from the last triale after reshaping to full
+    % 3D matrix [cone_rows, cone_cols, time]
     tmp = squeeze(absorptions(nTrials,:,:));
     if (numel(eyeMovementTimeAxis) == 1)
         tmp = tmp';
