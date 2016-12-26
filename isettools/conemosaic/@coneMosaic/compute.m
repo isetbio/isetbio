@@ -5,17 +5,42 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %             cMosaic.compute(oi or oiSequence);
 %
 % Compute the temporal sequence of cone absorptions, which we treat as
-% isomerization R*.  The computation can executed on
+% isomerizations, R*.  The computation can executed on
 %
 %   * a single optical image (snapshot)
 %   * a single optical image with a series of eye movements, or
 %   * an optical image sequence with a series of eye movements.
 %
+% Inputs:
+%   obj - a coneMosaic
+%   oi  - optical image, or oiSequence.  See oiCreate for more details
+%
+% Optional inputs:
+%   seed         - Seed to use when obj.noiseFlag is 'frozen' (default = 1)
+%   emPath       - eye movement path (nx2 matrix). 
+%                  I believe this should just be set to
+%                  coneMosaic.emPositions, but at present we do different
+%                  things depending on whether absorptions is empty. BW is
+%                  complaining about this.
+%   currentFlag  - logical, also compute photocurrent
+%   theExpandedMosaic - Nicolas to fill-in
+%
+%   Additional parameters are sometimes included to be passed on to
+%   osCompute().  These include the interpFilters and meanCur.
+%
+% Outputs:
+%   absorptions  - cone photon absorptions
+%   current      - cone photocurrent
+%   interpFilters - Photon to photocurrent impulse response functions
+%   meanCur       - mean current level
+%
 % The eye movement path (emPath) can be generated using
-% coneMosaic.emGenSequence, or it can be sent in as the 'emPath' variable.
-% For a single trial, the emPath is a series of (row,col) positions with
-% respect to the cone mosaic.  For the single trial case, we recommend
-% setting the coneMosaic.emPositions or using coneMosaic.emGenSequence.
+%             coneMosaic.emGenSequence
+%
+% or it can be sent in as the 'emPath' variable. For a single trial, the
+% emPath is a series of (row,col) positions with respect to the cone
+% mosaic.  For the single trial case, we recommend setting the
+% coneMosaic.emPositions or using coneMosaic.emGenSequence.
 %
 % You can execute a multiple trial ccalculation by setting the eye movement
 % variable to a 3D array
@@ -34,22 +59,6 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 % The cone photocurrent is computed according to obj.os.noiseFlag, which
 % can also be set to 'random','frozen', or 'none', as above. The default is
 % 'random'. 
-%
-% Inputs:
-%   oi  - optical image, or oiSequence.  See oiCreate for more details
-%
-% Optional inputs:
-%   seed         - Seed to use when obj.noiseFlag is 'frozen' (default = 1)
-%   emPath       - eye movement path (nx2 matrix). 
-%                  I believe this should just be set to
-%                  coneMosaic.emPositions, but at present we do different
-%                  things depending on whether absorptions is empty. BW is
-%                  complaining about this.
-%   currentFlag  - logical, also compute photocurrent
-%
-% Outputs:
-%   absorptions  - cone photon absorptions
-%   current      - cone photocurrent
 %
 % See also:  computeForOISequence
 %
