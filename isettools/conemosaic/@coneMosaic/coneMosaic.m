@@ -387,7 +387,7 @@ end
         [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassActivationMap(response, theMosaic, spaceConstants);
         
         % Declare the computeCurrent method
-        interpFilters = computeCurrent(obj, varargin);
+        [interpFilters, meanCur] = computeCurrent(obj, varargin);
 
         function val = timeAxis(obj)
             % Call:  obj.timeAxis;

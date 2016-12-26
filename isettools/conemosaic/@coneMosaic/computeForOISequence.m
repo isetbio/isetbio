@@ -1,7 +1,7 @@
 function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
 % Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
-%    [absorptions, photocurrents, LMSfilters] = cMosaic.compute(oiSequence, varargin);
+%  [absorptions, photocurrents, LMSfilters] = cMosaic.compute(oiSequence, varargin);
 %
 % Inputs:
 %   obj         - @coneMosaic object
@@ -15,8 +15,11 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 %   seed         - noise seed
 %
 % Outputs:
-%   absorptions          - cone photon absorptions (photon counts in integrationTime)
-%   photocurrent         - cone photocurrent
+%   absorptions          - cone photon absorptions (photon counts per integrationTime)
+%   photocurrent         - cone photocurrent (per integrationTime steps_
+%   LMSfilters           - impulse response functions for the LMS cones
+%                          these are temporally sampled for the cone
+%                          integrationTime
 %
 % There are several ways to use this function.  The simplest is to send in
 % a single oiSequence and a single eye movement sequence.
@@ -137,7 +140,8 @@ end
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
-
+disp('Absorption calculation')
+tic
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
@@ -367,6 +371,7 @@ else
         absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
     end % emIndex
 end % oiRefreshInterval > defaultIntegrationTime
+toc
 
 % Restore default integrationTime
 obj.integrationTime = defaultIntegrationTime;
@@ -405,6 +410,8 @@ end
 %
 
 if (currentFlag)
+    disp('Current calculation')
+    tic
     if (isa(obj, 'coneMosaicHex'))
         photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
@@ -418,12 +425,22 @@ if (currentFlag)
     else
         photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
         for ii=1:nTrials
+            % Put this trial of absorptions into the cone mosaic
             obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
             currentSeed = currentSeed  + 1;
-            LMSfilters = obj.computeCurrent('seed', currentSeed);
+            if ii == 1
+                % On the first trial, compute the interpolated linear
+                % filters and the mean current
+                [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
+            else
+                % On the remaining trials, use the same interpolated
+                % filters and mean current
+                LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
+            end
             photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
         end
     end
+    toc
 end
 
 

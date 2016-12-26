@@ -1,22 +1,31 @@
-function [current, interpFilters] = osCompute(obj, cMosaic, varargin)
+function [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 % Linear model computing outer segment photocurrent from isomerizations (R*) 
 %
-%    [current, interpFilters] = osCompute(obj, cMosaic, varargin)
+%  [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 %
-% We use  osLinear.osCompute (linear model) for experiments in which there
-% is a uniform background, as we often find in psychophysical experiments.
-% When the images are more complex (e.g., natural scenes), use the
-% osBioPhys model, not the linear model.
+% We use  osLinear.osCompute (linear model) for experiments with a uniform
+% background, as we often find in psychophysical experiments. When the
+% images are more complex (e.g., natural scenes), use the osBioPhys model,
+% not the linear model.
 %
-% Inputs: 
+% Inputs required: 
 %   obj       - osLinear class object
 %   cMosaic   - parent object of the outerSegment
+%
+% Input parameters
 %   seed      - for frozen noise, you can send in a seed (default is 1)
+%
+%  When the current is computed for many trials, we can save computation
+%  time by returning these values on the first call and reusing.
+%
+%     interpFilters - Used to save computation time in loops
+%     meanCur       - Used to save computation time in loops
 %
 % Output:
 %   current       - outer segment photocurrent current in pA
 %   interpFilters - Interpolated impulse response functions (to integration
 %                   time samples)
+%   meanCur       - mean value of the output current
 %
 % The linear model impulse response function is the small signal of the
 % osBioPhys model. The impulse response depends on the on mean
@@ -49,10 +58,15 @@ p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('seed',1,@isnumeric);
+p.addParameter('interpFilters',[],@isnumeric);
+p.addParameter('meanCur',[],@isnumeric);
+
 p.parse(obj,cMosaic, varargin{:});
 
 % Frozen noise seed
 seed = p.Results.seed;
+interpFilters = p.Results.interpFilters;
+meanCur       = p.Results.meanCur; 
 
 coneType   = cMosaic.pattern;
 meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
@@ -60,23 +74,25 @@ tSamples   = size(cMosaic.absorptions,3);
 
 %% Get the linear filters for the mean rate
 
-% These convert a single photon increment on mean to a photocurrent impulse
-% response function
-[lmsFilters, meanCur] = obj.linearFilters(cMosaic);
-
-% obj.plot('current filters','meancurrent',meanCur)
-
-%% Interpolate the stored lmsFilters to the time base of the absorptions
-
-absTimeAxis   = cMosaic.timeAxis;
-osTimeAxis    = obj.timeAxis;
-interpFilters = zeros(cMosaic.tSamples,3);
-for ii=1:3
-    % Interpolation assumes that we are accounting for the time sample bin
-    % width elsewhere.  Also, we extrapolate the filters with zeros to make
-    % sure that they extend all the way through the absorption time axis.
-    % See the notes in s_matlabConv2.m for an explanation of why.
-    interpFilters(:,ii) = interp1(osTimeAxis(:),lmsFilters(:,ii),absTimeAxis(:),'linear',0);
+if isempty(interpFilters) || isempty(meanCur)
+    % These convert a single photon increment on mean to a photocurrent impulse
+    % response function
+    [lmsFilters, meanCur] = obj.linearFilters(cMosaic);
+    
+    % obj.plot('current filters','meancurrent',meanCur)
+    
+    %% Interpolate the stored lmsFilters to the time base of the absorptions
+    
+    absTimeAxis   = cMosaic.timeAxis;
+    osTimeAxis    = obj.timeAxis;
+    interpFilters = zeros(cMosaic.tSamples,3);
+    for ii=1:3
+        % Interpolation assumes that we are accounting for the time sample bin
+        % width elsewhere.  Also, we extrapolate the filters with zeros to make
+        % sure that they extend all the way through the absorption time axis.
+        % See the notes in s_matlabConv2.m for an explanation of why.
+        interpFilters(:,ii) = interp1(osTimeAxis(:),lmsFilters(:,ii),absTimeAxis(:),'linear',0);
+    end
 end
 
 %%  The predicted photocurrent is
