@@ -148,7 +148,7 @@ current = XW2RGBFormat(current, r, c);
 % Noise anyone?
 switch obj.noiseFlag
     case 'none'
-        fprintf('No current noise added.\n')
+        % fprintf('No current noise added.\n')
     case 'random'
         % fprintf('Random noise added.\n')
         current = osAddNoise(current, 'sampTime',obj.timeStep);
