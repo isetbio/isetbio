@@ -1,4 +1,5 @@
 function varargout = v_oiSequence(varargin)
+%
 % Validate simulations using the oiSequence method
 %  
 %  * Create a small oiSequence

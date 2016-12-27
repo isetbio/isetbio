@@ -1,4 +1,5 @@
 function varargout = v_osIncDec(varargin)
+%
 % Validate the os models for light increment and decrement stimuli
 %
 % This script tests the linear and biophysical outer segment models of 
