@@ -16,6 +16,13 @@ function nTrialsPos = emGenSequence(obj, nFrames, varargin)
 %   nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of
 %             cone positions
 %
+% Examples:
+%  
+%  To control the eye movement parameters, use
+%     emParameters = emCreate;
+%     <Set em parameters, say emParameters.emFlag or others>
+%     coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emParameters);
+%
 % See also:
 %   emCreate
 %
