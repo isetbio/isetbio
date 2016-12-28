@@ -1,18 +1,19 @@
 function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
-% Compute cone absorptions and optionally photocurrents for a @oiSequence
+% [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
 %
-%    [absorptions, photocurrents, LMSfilters] = cMosaic.compute(oiSequence, varargin);
+% Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
 % Inputs:
 %   obj         - @coneMosaic object
 %   oiSequence  - @oiSequence object
 %
-% Optional inputs:
-%   emPaths      - [N x M x 2] matrix of N eye movement paths, each with
-%                  Mx2 eye positions
-%   currentFlag  - logical, whether to compute photocurrent
-%   noiseFlag    - 'random','frozen','none'
-%   seed         - noise seed
+% Optional key/value pairs:
+%   'seed' - value (default 1). Value of random noise seed.
+%   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
+%   'currentFlag' - true/false (default false). Whether to compute photocurrent
+%   'theExpandedMosaic' - (default empty).  [WHAT AM I?] 
+%   'workerID' - (default empty).  [WHAT AM I?]
+%   'workDescription' - (default empty).  [WHAT AM I?]
 %
 % Outputs:
 %   absorptions          - cone photon absorptions (photon counts in integrationTime)
@@ -33,9 +34,7 @@ function [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oi
 % We control the photon noise by cmosaic.noiseFlag, and the photocurrent
 % noise by cmosaic.os.noiseFlag.  These have the options 
 %    'random','frozen','none'
-%
-% We should allo that when 'frozen', you can send in a 'seed'.  May not be
-% fully implemented yet.
+% When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
 %
 % Examples:
 %  This is an example of how to do this for 1,000 eye movement paths
@@ -96,7 +95,6 @@ end
 if (isempty(emPaths))
     error('Either supply an ''emPaths'' key-value pair, or preload coneMosaic.emPositions');
 end
-
 
 if (isempty(theExpandedMosaic))
     %tic
