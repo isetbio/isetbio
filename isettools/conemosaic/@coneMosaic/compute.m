@@ -1,20 +1,46 @@
-function [absorptions, current] = compute(obj, oi, varargin)
+function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%  [absorptions, current] = cMosaic.compute(oi or oiSequence);
+%  [absorptions, current, interpFilters, meanCur] = ...
+%             cMosaic.compute(oi or oiSequence);
 %
 % Compute the temporal sequence of cone absorptions, which we treat as
-% isomerization R*.  The computation can executed on
+% isomerizations, R*.  The computation can executed on
 %
 %   * a single optical image (snapshot)
 %   * a single optical image with a series of eye movements, or
 %   * an optical image sequence with a series of eye movements.
 %
+% Inputs:
+%   obj - a coneMosaic
+%   oi  - optical image, or oiSequence.  See oiCreate for more details
+%
+% Optional inputs:
+%   seed         - Seed to use when obj.noiseFlag is 'frozen' (default = 1)
+%   emPath       - eye movement path (nx2 matrix). 
+%                  I believe this should just be set to
+%                  coneMosaic.emPositions, but at present we do different
+%                  things depending on whether absorptions is empty. BW is
+%                  complaining about this.
+%   currentFlag  - logical, also compute photocurrent
+%   theExpandedMosaic - Nicolas to fill-in
+%
+%   Additional parameters are sometimes included to be passed on to
+%   osCompute().  These include the interpFilters and meanCur.
+%
+% Outputs:
+%   absorptions  - cone photon absorptions
+%   current      - cone photocurrent
+%   interpFilters - Photon to photocurrent impulse response functions
+%   meanCur       - mean current level
+%
 % The eye movement path (emPath) can be generated using
-% coneMosaic.emGenSequence, or it can be sent in as the 'emPath' variable.
-% For a single trial, the emPath is a series of (row,col) positions with
-% respect to the cone mosaic.  For the single trial case, we recommend
-% setting the coneMosaic.emPositions or using coneMosaic.emGenSequence.
+%             coneMosaic.emGenSequence
+%
+% or it can be sent in as the 'emPath' variable. For a single trial, the
+% emPath is a series of (row,col) positions with respect to the cone
+% mosaic.  For the single trial case, we recommend setting the
+% coneMosaic.emPositions or using coneMosaic.emGenSequence.
 %
 % You can execute a multiple trial ccalculation by setting the eye movement
 % variable to a 3D array
@@ -34,22 +60,6 @@ function [absorptions, current] = compute(obj, oi, varargin)
 % can also be set to 'random','frozen', or 'none', as above. The default is
 % 'random'. 
 %
-% Inputs:
-%   oi  - optical image, or oiSequence.  See oiCreate for more details
-%
-% Optional inputs:
-%   seed         - Seed to use when obj.noiseFlag is 'frozen' (default = 1)
-%   emPath       - eye movement path (nx2 matrix). 
-%                  I believe this should just be set to
-%                  coneMosaic.emPositions, but at present we do different
-%                  things depending on whether absorptions is empty. BW is
-%                  complaining about this.
-%   currentFlag  - logical, also compute photocurrent
-%
-% Outputs:
-%   absorptions  - cone photon absorptions
-%   current      - cone photocurrent
-%
 % See also:  computeForOISequence
 %
 % HJ ISETBIO Team 2016
@@ -58,12 +68,14 @@ function [absorptions, current] = compute(obj, oi, varargin)
 
 % Send to the specialized compute in that case.
 if isequal(class(oi),'oiSequence')
-    [absorptions, current] = obj.computeForOISequence(oi,varargin{:});
+    [absorptions, current, interpFilters, meanCur] = obj.computeForOISequence(oi,varargin{:});
     return;
 end
 
 %% parse inputs
 p = inputParser;
+p.KeepUnmatched = true;
+
 p.addRequired('oi', @isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
@@ -159,20 +171,19 @@ end
 % Set the absorptions in the object.
 obj.absorptions = absorptions;
 
-%% If we want the photo current, use the os model
+%% If we want the photo current
 
-% We recommend that you calculate the photocurrent later using
-%   coneMosaic.computeCurrent;
-% rather than by setting this flag.
+current       = [];
+interpFilters = [];
+meanCur       = [];
 
-current = [];
 if currentFlag
     warning('Suggest using coneMosaic.computeCurrent');
     if size(obj.absorptions,3) == 1
         disp('Absorptions are a single frame.  No current to calculate.')        
         return;
     else
-        obj.current = obj.os.osCompute(cMosaic);
+        [obj.current, interpFilters, meanCur] = obj.os.osCompute(cMosaic);
     end
 end
 

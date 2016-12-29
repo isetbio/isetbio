@@ -71,10 +71,10 @@ classdef osLinear < outerSegment
         matchSensor(obj, varargin);
         
         % We need to implement compute because it is part of the abstract
-        % outerSegment class.  We should probably do it more simply and
-        % clearly than this approach (BW).
-        function obj = compute(obj, pRate, coneType, varargin)
-            obj = osCompute(obj, pRate, coneType, varargin{:});
+        % outerSegment class.  We should probably rename osCompute to
+        % compute (BW).
+        function [current, interpFilters, meanCur] = compute(obj, cMosaic, varargin)
+         [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin{:});
         end
         
         % Declaration for functions in the directory

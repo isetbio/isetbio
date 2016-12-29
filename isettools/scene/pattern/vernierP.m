@@ -19,6 +19,7 @@ function params = vernierP(varargin)
 %  offset    - Pixels on display
 %  bgColor   - Background color, e.g., [.6 .4 .2]
 %  barLength - Pixels
+%  gap       - Gap between upper and lower pattern (filled with bgColor)
 %  barColor  - Bar color, e.g., [.6 .4 .2]
 %  pattern   - Spatial pattern
 %
@@ -58,28 +59,33 @@ p.addParameter('barWidth',1,@isnumeric);
 p.addParameter('barLength',[],@isscalar);
 p.addParameter('barColor',1,@isscalar);
 
+p.addParameter('gap',0,@isscalar);
+
 p.addParameter('pattern',[],@ismatrix);
 
 p.parse(varargin{:});
 
 %% Assign parameters
 
-% Identifier
-params.name  = p.Results.name;           % Char
+params = p.Results;
 
-% Display scene
-params.display  = p.Results.display;     % Display structure
-params.sceneSz  = p.Results.sceneSz;     % Pixels
-
-% General
-params.offset   = p.Results.offset;      % Pixels
-params.bgColor  = p.Results.bgColor;     % 0 to 1?
-
-% Bar properties.  Define better
-params.barWidth  = p.Results.barWidth;    % Pixels
-params.barLength = p.Results.barLength;   % Pixels?
-params.barColor  = p.Results.barColor;    % (rgb?)
-
-params.pattern   = p.Results.pattern;    % Spatial
+% % Identifier
+% params.name  = p.Results.name;           % Char
+% 
+% % Display scene
+% params.display  = p.Results.display;     % Display structure
+% params.sceneSz  = p.Results.sceneSz;     % Pixels
+% 
+% % General
+% params.offset   = p.Results.offset;      % Pixels
+% params.bgColor  = p.Results.bgColor;     % 0 to 1?
+% 
+% % Bar properties.  Define better
+% params.barWidth  = p.Results.barWidth;    % Pixels
+% params.barLength = p.Results.barLength;   % Pixels?
+% params.barColor  = p.Results.barColor;    % (rgb?)
+% 
+% params.pattern   = p.Results.pattern;    % Spatial
+% params.gap       = p.Results.gap;
 
 end
