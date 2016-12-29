@@ -1,7 +1,8 @@
 function varargout = v_cmCurrentImpulse(varargin)
 %
-% Cone mosaic calculation.  We will systematically change parameters and
-% see that the results are stable.
+% Cone mosaic photocurrent impulse response calculations.
+%
+% We will systematically change parameters and see that the results are stable.
 %
 % BW, ISETBIO Team Copyright 2016
 

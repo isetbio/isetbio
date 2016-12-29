@@ -1,4 +1,4 @@
-function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,offset)
+function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,fitCenterOffset,isXYEllipse)
 % [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,[ellParams0],[offset])
 %
 % Find the ellipsoid that goes through a set of passed points in the
@@ -6,23 +6,33 @@ function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,offset)
 %   Poirson AB, Wandell BA, Varner DC, Brainard DH. 1990. Surface
 %   characterizations of color thresholds. J. Opt. Soc. Am. A 7: 783-89
 % 
-% You can pass an initial set of parameters.  If this argument is missing
+% You can pass an initial set of ellipse parameters.  If this argument is missing
 % or empty, the routine tries to do something sensible.
+%
+% If isXYEllipse is true, the z dimension center position is locked to
+% zero.  This is useful when we are using the ellipsoid code to fit data
+% which is restricted to the xy plane.  This is a bit of hack, and may not
+% be completely robust.
 % 
 % See EllipsoidMatricesGenerate for the parameter convention.
 % 
 % 7/4/16  dhb  Wrote it.
 
 % Offset?
-if (nargin < 3 || isempty(offset))
-    OFFSET = false;
+if (nargin < 3 || isempty(fitCenterOffset))
+    fitCenterOffset = false;
 else
-    OFFSET = true;
+    fitCenterOffset = true;
+end
+
+if (nargin < 4 || isempty(isXYEllipse))
+    isXYEllipse = false;
 end
 
 % Get infor on ellipse location
 maxX = max(x,[],2);
 minX = min(x,[],2);
+meanX = mean([maxX minX],2);
 meanX = mean(x,2);
 
 % Have a go at reasonable initial values
@@ -36,13 +46,25 @@ vub = [1e3 1e3 1e3 2*pi 2*pi 2*pi]';
 % Add on offset parameters if we're searching on an offset.
 % Bound reasonably based on data range, to prevent really nutty
 % fits.
-if (OFFSET)
-
+if (fitCenterOffset)
     
-    % Use these to initialize and set bounds
-    ellParams0 = [ellParams0 ; [meanX(1) meanX(2) meanX(3)]' ];
-    vlb = [vlb ; [minX(1) minX(2) minX(3)]' ];
-    vub = [vub ; [maxX(1) maxX(2) maxX(3)]' ];
+    % Set initial values and bounds on center
+    rectFactor = 2;
+    minFactor = 1;
+    maxFactor = rectFactor-1;
+    meanFactor = 0.05;
+    if (~isXYEllipse)
+        ellParams0 = [ellParams0 ; [meanX(1) meanX(2) meanX(3)]' ]; 
+        vlb = [vlb ; [minX(1)+minFactor*(maxX(1)-minX(1))/rectFactor minX(2)+minFactor*(maxX(2)-minX(2))/rectFactor minX(3)+minFactor*(maxX(3)-minX(3))/rectFactor]' ];
+        vub = [vub ; [minX(1)+maxFactor*(maxX(1)-minX(1))/rectFactor minX(2)+maxFactor*(maxX(2)-minX(2))/rectFactor minX(3)+maxFactor*(maxX(3)-minX(3))/rectFactor]' ];
+    else
+        ellParams0 = [ellParams0 ; [meanX(1) meanX(2) 0]' ];
+        %vlb = [vlb ; [minX(1)+minFactor*(maxX(1)-minX(1))/rectFactor minX(2)+minFactor*(maxX(2)-minX(2))/rectFactor 0]' ];
+        %vub = [vub ; [minX(1)+maxFactor*(maxX(1)-minX(1))/rectFactor minX(2)+maxFactor*(maxX(2)-minX(2))/rectFactor 0]' ];
+        
+        vlb = [vlb ; [meanX(1)-meanFactor*(maxX(1)-minX(1)) meanX(2)-meanFactor*(maxX(2)-minX(2)) 0]' ];
+        vub = [vub ; [meanX(1)+meanFactor*(maxX(1)-minX(1)) meanX(2)+meanFactor*(maxX(2)-minX(2)) 0]' ];
+    end
 end
 
 %% Fit that sucker

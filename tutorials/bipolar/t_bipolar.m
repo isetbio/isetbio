@@ -1,4 +1,6 @@
-%% Illustrate bipolar calculations and plots
+%% t_bipolar
+%
+% Illustrate bipolar calculations and plots.
 
 %%
 ieInit

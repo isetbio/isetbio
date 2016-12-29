@@ -1,6 +1,7 @@
 function varargout = v_oi(varargin)
 %
 % Test optical image creating functions
+%
 % Implicitly tests the opticsCreate functions, as well.
 %
 % Copyright Imageval LLC, 2009

@@ -12,9 +12,13 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %   emPaths      - [N x M x 2] matrix of N eye movement paths, each with
 %                  Mx2 eye positions
 %   noiseFlag    - 'random','frozen','none'
-%   seed         - noise seed
+%   seed - value (default 1). Value of random noise seed.
 %
-%   currentFlag  - logical, whether to compute photocurrent
+%   currentFlag        - logical (default false). Compute photocurrent
+%   theExpandedMosaic' - (default empty).  [WHAT AM I?] 
+%   workerID        - (default empty).     [WHAT AM I?]
+%   workDescription - (default empty).     [WHAT AM I?]
+%
 %   inpterpFilters - LMS filters for photocurrent impulse response
 %   meanCur        - Mean current level for photocurrent impulse response
 %
@@ -25,6 +29,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %                          when using the osLinear model. These are
 %                          temporally sampled for the cone integrationTime
 %                          and the mean absorption level.
+%   meanCur              - Mean photocurrent level, used for osLinear model
 %
 % There are several ways to use this function.  The simplest is to send in
 % a single oiSequence and a single eye movement sequence.
@@ -41,9 +46,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % We control the photon noise by cmosaic.noiseFlag, and the photocurrent
 % noise by cmosaic.os.noiseFlag.  These have the options 
 %    'random','frozen','none'
-%
-% We should allo that when 'frozen', you can send in a 'seed'.  May not be
-% fully implemented yet.
+% When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
 %
 % Examples:
 %  This is an example of how to do this for 1,000 eye movement paths
@@ -112,7 +115,6 @@ end
 if (isempty(emPaths))
     error('Either supply an ''emPaths'' key-value pair, or preload coneMosaic.emPositions');
 end
-
 
 if (isempty(theExpandedMosaic))
     %tic

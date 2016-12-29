@@ -1,6 +1,7 @@
 function varargout = v_oiTransmittance(varargin)
-%% Validate some of the transmittance calculations
 %
+% Validate some of the optical image transmittance calculations
+
 varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 
 end

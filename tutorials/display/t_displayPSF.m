@@ -1,5 +1,7 @@
 %% t_displayPSF
 %
+% Account for display PSFs.
+%
 % HJ is updating the display structure calls to account for display point
 % spread functions.  The purpose of the updated structures is to allow us
 % to have more spatially accurate descriptions of the display spectral

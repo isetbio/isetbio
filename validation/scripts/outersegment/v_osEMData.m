@@ -1,4 +1,5 @@
 function varargout = v_osEMData(varargin)
+%
 % Check os models against neural data (simulating eye movements)
 %
 % This script tests the linear and biophysical outer segment models of photon
