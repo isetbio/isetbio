@@ -16,20 +16,32 @@ p.addParameter('fullLMS', false, @islogical);
 p.parse(oi, varargin{:});
 fullLMS = p.Results.fullLMS;  
 
-%% Make a copy of current obj and set cone wavelength samples to
-% be same as oi
+%% Get wavelength sampling consistent
+%
+% Do this by making a copy of current obj and setting wavelength samples to
+% be same as oi.
 obj = obj.copy();
 obj.wave = oiGet(oi,'wave');
 
-%% get scaled spectral qe, which includes cone pigment and
-% macular pigment properties. (Lens is in oi).
+%% Get scaled spectral qe
+%
+% This which includes cone pigment and macular pigment properties. (Lens is
+% in oi).  Scale this by the wavelength sample spacing, so that spacing is
+% taken into account when we compute isomerizations (aka absorptions in the
+% isetbio world.)
 sQE = obj.qe * oiGet(oi, 'bin width');
 
-% compute cone absorption density at oi sampled locations
+%% Compute cone isomerization density oi sampled locations for each class of cones
+%
+% These need to be scaled by cone integration area and time to get actual
+% absorptions.
+%
+% Also, there are not necessarily cones at all of these locations, we'll
+% sample below.
 [photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
 absDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 
-% regrid the density from oi sample locations to cone locations
+% Regrid the isomerizatoin density from oi sample locations to cone locations
 [oiR, oiC] = sample2space(0:r-1, 0:c-1, ...
     oiGet(oi, 'height spatial resolution'), ...
     oiGet(oi, 'width spatial resolution'));
@@ -41,6 +53,7 @@ if fullLMS
 else
     absDensity = 0;
 end
+
 warning('off','MATLAB:interp1:NaNinY');
 for ii = 2 : 4  % loop through L, M and S, 1 = Blank/Black
     curDensity = interp1(oiR, absDensityLMS(:,:,ii-1), ...

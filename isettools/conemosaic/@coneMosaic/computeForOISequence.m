@@ -1,33 +1,23 @@
 function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
-% Compute cone absorptions and optionally photocurrents for a @oiSequence
+% [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
 %
-%  [absorptions, photocurrents, LMSfilters, meanCur] = ...
-%        cMosaic.compute(oiSequence, varargin);
+% Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
 % Inputs:
 %   obj         - @coneMosaic object
 %   oiSequence  - @oiSequence object
 %
 % Optional key/value pairs:
-%   emPaths - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions
-%   noiseFlag - 'random','frozen','none'
-%   seed - value (default 1). Value of random noise seed.
-%   currentFlag        - logical (default false). Compute photocurrent
-%   theExpandedMosaic' - (default empty).  [WHAT AM I?] 
-%   workerID        - (default empty).     [WHAT AM I?]
-%   workDescription - (default empty).     [WHAT AM I?]
-%
-%   inpterpFilters - LMS filters for photocurrent impulse response
-%   meanCur        - Mean current level for photocurrent impulse response
+%   'seed' - value (default 1). Value of random noise seed.
+%   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
+%   'currentFlag' - true/false (default false). Whether to compute photocurrent
+%   'theExpandedMosaic' - (default empty).  [WHAT AM I?] 
+%   'workerID' - (default empty).  [WHAT AM I?]
+%   'workDescription' - (default empty).  [WHAT AM I?]
 %
 % Outputs:
-%   absorptions          - cone photon absorptions (photon counts per integrationTime)
-%   photocurrent         - cone photocurrent (per integrationTime steps_
-%   LMSfilters           - impulse response functions for the LMS cones
-%                          when using the osLinear model. These are
-%                          temporally sampled for the cone integrationTime
-%                          and the mean absorption level.
-%   meanCur              - Mean photocurrent level, used for osLinear model
+%   absorptions          - cone photon absorptions (photon counts in integrationTime)
+%   photocurrent         - cone photocurrent
 %
 % There are several ways to use this function.  The simplest is to send in
 % a single oiSequence and a single eye movement sequence.
@@ -70,7 +60,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % dimensions (row,col,time).
 %
 % See also: coneMosaic.compute, v_cmosaic, 
-%
+
 % NPC ISETBIO Team 2016
 
 %% Parse inputs
