@@ -8,12 +8,10 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %   obj         - @coneMosaic object
 %   oiSequence  - @oiSequence object
 %
-% Optional inputs:
-%   emPaths      - [N x M x 2] matrix of N eye movement paths, each with
-%                  Mx2 eye positions
-%   noiseFlag    - 'random','frozen','none'
+% Optional key/value pairs:
+%   emPaths - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions
+%   noiseFlag - 'random','frozen','none'
 %   seed - value (default 1). Value of random noise seed.
-%
 %   currentFlag        - logical (default false). Compute photocurrent
 %   theExpandedMosaic' - (default empty).  [WHAT AM I?] 
 %   workerID        - (default empty).     [WHAT AM I?]
@@ -78,18 +76,14 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-
 p.addParameter('seed',1, @isnumeric);             % Seed for frozen noise
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
-
 p.addParameter('emPaths', [], @isnumeric);        % Eye movement paths
 p.addParameter('interpFilters',[],@isnumeric);    % Used to match filters for classifiers
 p.addParameter('meanCur',[],@isnumeric);          % in SVM calculations
-
 p.addParameter('currentFlag', false, @islogical); % Calculate photocurrent
-
 p.parse(oiSequence, varargin{:});
 
 currentSeed     = p.Results.seed;

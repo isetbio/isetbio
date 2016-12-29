@@ -3,22 +3,23 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % 
 % This function computes mean expected photon absorptions for
 % one frame, without including eye movements or noise.
-% 
+%
+% Key/value pairs
+%  'fullLMS' - true/false (default false). [WHAT DOES THIS DO?]
+
 % HJ ISETBIO Team 2016
 
-%% parse inputs
+%% Parse inputs
 p = inputParser();
 p.addRequired('oi', @isstruct);
-p.addParameter('fullLMS', false, @islogical); % full LMS images
-
+p.addParameter('fullLMS', false, @islogical);
 p.parse(oi, varargin{:});
+fullLMS = p.Results.fullLMS;  
 
-fullLMS = p.Results.fullLMS;  % Logical
-
-%% make a copy of current obj and set cone wavelength samples to
+%% Make a copy of current obj and set cone wavelength samples to
 % be same as oi
 obj = obj.copy();
-obj.wave = oiGet(oi, 'wave');
+obj.wave = oiGet(oi,'wave');
 
 %% get scaled spectral qe, which includes cone pigment and
 % macular pigment properties. (Lens is in oi).
