@@ -1,3 +1,6 @@
+function isetbioLocalHook
+% isetbioLocalHook
+%
 % Method to set ISETBIO-specific preferences. 
 %
 % Generally, this function should be edited for your site and then run once.
@@ -9,7 +12,9 @@
 % Note that you still want to have the remoteDataToolboxConfig set up even
 % if you aren't using the RemoteDataToolbox for validations.
 %
-% ISETBIO Team, 2015
+% If you are using the ToolboxToolbox, the copy this file to your local
+% hooks folder and delete "Template" from the filename.  The TbTb will then
+% run it when you deploy isetbio.
 
 function ieSetPreferencesTemplate
 
