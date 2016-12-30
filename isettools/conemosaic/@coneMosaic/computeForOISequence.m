@@ -495,10 +495,10 @@ end
 %%
 function displayProgress(workerID, workDescription, progress)
 
-maxStarsNum = 60;
+maxStarsNum = 32;
 if (isnan(progress))
     fprintf('worker-%02d: %s |', workerID, workDescription);
-    for k = 1:60
+    for k = 1:maxStarsNum
         fprintf('*');
     end
     fprintf('|');
