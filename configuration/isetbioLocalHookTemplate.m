@@ -16,8 +16,6 @@ function isetbioLocalHook
 % hooks folder and delete "Template" from the filename.  The TbTb will then
 % run it when you deploy isetbio.
 
-function ieSetPreferencesTemplate
-
     % Specify project-specific preferences
     p = struct(...
             'projectName',           'isetbio', ...                                                                                   % The project's name (also the preferences group name)
