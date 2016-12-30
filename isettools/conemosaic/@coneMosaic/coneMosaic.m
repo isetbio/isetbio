@@ -3,7 +3,6 @@ classdef coneMosaic < hiddenHandle
     %
     %   cMosaic =  coneMosaic( ... many parameters ...);
     %
-    
     % The cone mosaic defines the absorptions and photocurrent in an array
     % of cones. The default cone mosaic is rectangular.  There is a
     % subclass of coneMosaicHex (hexagonal sampling). That is implemented
@@ -34,7 +33,9 @@ classdef coneMosaic < hiddenHandle
     %   emPositions - Nx2 matrix (default [0 0]. Eye movement positions. [RELATIVE TO WHAT COORDINATE SYSTEM?]
     %   apertureBlur - true/false (default false). Blur by cone aperture?
     %   noiseFlag - String (default 'random'). Add photon noise (default) or not.
-    %     Valid values are 'random', 'frozen', or 'none'.     
+    %     Valid values are 'random', 'frozen', or 'none'.  
+    %
+    % NEED TO DOCUMENT SET AND GETTABLE PROPERTIES.
 
     % HJ/JRG/BW ISETBIO Team, 2016
     
@@ -70,6 +71,8 @@ classdef coneMosaic < hiddenHandle
                             % The number of positions controls number of
                             % frames to be computed
         noiseFlag;          % Absorption calculation noise (usually photon noise is on)
+        
+        apertureBlur;       % Blur by cone aperture when computing isomerizations (true/false)?
         
         hdl;                % handle of the coneMosaic window
     end
@@ -146,7 +149,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('integrationTime', 0.005, @isscalar);  
             p.addParameter('emPositions', [0 0], @isnumeric);
             p.addParameter('apertureBlur', false, @islogical);
-            p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), coneMosaic.validNoiseFlags));
+            p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
             p.parse(varargin{:});
             
             % Set properties
@@ -192,6 +195,9 @@ classdef coneMosaic < hiddenHandle
             % Initialize the mosaic properties
             % obj.os.timeStep = obj.sampleTime;
             obj.os.patchSize = obj.width;
+            
+            % Blur by aperture
+            obj.apertureBlur = p.Results.apertureBlue;
             
             % Initialize listener
             %

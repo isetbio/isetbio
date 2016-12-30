@@ -6,7 +6,6 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % noise.
 %
 % Key/value pairs
-%  'apertureBlur' - true/false (default false).  Blur by the cone aperture.
 %  'fullLMS' - true/false (default false). Return values for a full mosaic,
 %    that is for mosaic with L, M, and S cones at each cone position.  This
 %    is row by col by 3 matrix, where row and column are the mosaic
@@ -18,7 +17,6 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 %% Parse inputs
 p = inputParser();
 p.addRequired('oi',@isstruct);
-p.addParameter('apertureBlur',false,@islogical);
 p.addParameter('fullLMS', false,@islogical);
 p.parse(oi, varargin{:});
 fullLMS = p.Results.fullLMS;  
@@ -56,7 +54,7 @@ absorbDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 % summation over wavelength used above to get the isomerization density for
 % each class of cone.  It's faster to convolve here, since there are fewer
 % bands to deal with.
-if (p.Results.apertureBlur)
+if (obj.apertureBlur)
     % Make the blur kernal.
     %
     % First convert area of cone aperture to a radius

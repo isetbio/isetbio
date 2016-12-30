@@ -20,7 +20,6 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %   seed - Value (default 1). Seed to use when obj.noiseFlag is 'frozen'
 %   emPath - Nx2 matrix (default obj.emPositions). Eye movement path (see below). 
 %   theExpandedMosaic - [NICOLAS TO FILL IN]
-%   apertureBlur - true/false (default false). Blur by cone aperture?
 %
 % Additional parameters are sometimes included to be passed on to
 % osCompute().  These include the interpFilters and meanCur.
@@ -75,7 +74,6 @@ p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
 p.addParameter('theExpandedMosaic', []);
-p.addParameter('apertureBlur', false, @islogical);
 p.parse(oi,varargin{:});
 currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
@@ -130,7 +128,7 @@ else
 end
 
 % Compute full LMS noise free absorptions
-LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true, 'apertureBlur', p.Results.apertureBlur);
+LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
     
 % Deal with eye movements
 absorptions = obj.applyEMPath(LMS, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
