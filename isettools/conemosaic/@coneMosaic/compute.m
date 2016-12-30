@@ -23,7 +23,9 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %                  things depending on whether absorptions is empty. BW is
 %                  complaining about this.
 %   currentFlag  - logical, also compute photocurrent
-%   theExpandedMosaic - Nicolas to fill-in
+%   theExpandedMosaic - [NICOLAS TO FILL IN]
+%   apertureBlur - true/false (default false). Blur by cone aperture?
+
 %
 %   Additional parameters are sometimes included to be passed on to
 %   osCompute().  These include the interpFilters and meanCur.

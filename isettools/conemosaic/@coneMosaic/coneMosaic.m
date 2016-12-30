@@ -3,23 +3,7 @@ classdef coneMosaic < hiddenHandle
     %
     %   cMosaic =  coneMosaic( ... many parameters ...);
     %
-    % Parameters
-    %    name    - Mosaic name
-    %    wave    - Wavelength samples
-    %    pigment - Cone photopigment object
-    %    os      - Outer segment
-    %
-    %    size    - Spatial size (number of row/col cones)
-    %    pattern - Cone type at each position (1-4, K,L,M,S)
-    %    center  - Position of center in the retina
-    %
-    %    spatialDensity  - Relative density of cone types, K,L,M,S
-    %    integrationTime - Temporal integration in sec
-    %
-    %    emPositions - Eye movement positions (Nx2)
-    %
-    %    noiseFlag  = logical, add photon noise (default) or not
-    %
+    
     % The cone mosaic defines the absorptions and photocurrent in an array
     % of cones. The default cone mosaic is rectangular.  There is a
     % subclass of coneMosaicHex (hexagonal sampling). That is implemented
@@ -36,27 +20,43 @@ classdef coneMosaic < hiddenHandle
     % in the outerSegment class, coneMosaic.os.  The compute for current is
     % coneMosaic.computeCurrent.
     %
+    % Optional key/value pairs
+    %   name  - Mosaic name
+    %   pigment - Cone photopigment object (defaults to what photoPigment() sets up).
+    %   macular - Macular pigment object (defaults to what Macular() sets up).
+    %   os - Outer segment object (defauls to what osLinear() sets up).
+    %   center - Vector (default [0,0]. Position of center of mosaic on the retina
+    %   wave - Vector (default 400:10:700). Wavelength samples in nm.
+    %   pattern - Matrix (default []). Cone type at each position (1-4, K,L,M,S)
+    %   spatialDensity - Vector (default [0 0.6 0.3 0.1]). Relative density of cone types, K,L,M,S
+    %   size - Vector (default [72 88]). Spatial size of mosaic (number of row/col cones)
+    %   integrationTime - Value (default 0.005). Temporal integration in sec
+    %   emPositions - Nx2 matrix (default [0 0]. Eye movement positions. [RELATIVE TO WHAT COORDINATE SYSTEM?]
+    %   apertureBlur - true/false (default false). Blur by cone aperture?
+    %   noiseFlag - String (default 'random'). Add photon noise (default) or not.
+    %     Valid values are 'random', 'frozen', or 'none'.     
+
     % HJ/JRG/BW ISETBIO Team, 2016
     
     % Keep the format for the comments.  This is used in doc coneMosaic
-    properties (GetAccess=public, SetAccess=public) 
-
+    properties (GetAccess=public, SetAccess=public)
+        
         name                % the name of the object
         
         pigment;            % Cone photopigment class
         macular;            % Macular class
         os;                 % outerSegment class
-
+        
         absorptions;        % The spatial array of cone absorptions
                             % must be consistent with pattern
         current;            % The (x,y,t) of photocurrent, stored in os
-
+        
         center;             % Center position of patch (x,y - meters)
         
         pattern;            % Pattern of K-LMS cones in the mosaic%
-                            % Defines rows and cols, too 
+                            % Defines rows and cols, too
         
-        patternSampleSize;  % Separation between K-LMS pattern samples 
+        patternSampleSize;  % Separation between K-LMS pattern samples
                             % For rectangular grid mosaics, this is set to
                             % the pigment width/height, i.e., the actual
                             % cone separation; For hexagonal grid mosaics
@@ -70,10 +70,9 @@ classdef coneMosaic < hiddenHandle
                             % The number of positions controls number of
                             % frames to be computed
         noiseFlag;          % Absorption calculation noise (usually photon noise is on)
-                            
+        
         hdl;                % handle of the coneMosaic window
     end
-    
     
     properties (Dependent)
         % Dependency shown in parenthesis
@@ -87,7 +86,7 @@ classdef coneMosaic < hiddenHandle
         
         width;          % width of cone mosaic in meters (patternSampleSize)
         height;         % height of cone mosaic in meters (patternSampleSize)
-        fov;            % horizontal/vertical field of view assuming inf 
+        fov;            % horizontal/vertical field of view assuming inf
                         % scene distance and 17mm optics focal length
                         % (patternSampleSize, via height and width)
         tSamples        % Number of temporal samples
@@ -98,10 +97,7 @@ classdef coneMosaic < hiddenHandle
                         % (pigment and macular)
         
         spatialDensity; % spatial density (ratio) of the K-LMS cones
-        
-        % absorptionsTimeAxis; % Time samples (absorptions and integrationTime) 
     end
-    
     
     properties (Access=private)
         % spatial density (ratio) of the K-LMS cones
@@ -128,41 +124,32 @@ classdef coneMosaic < hiddenHandle
         validNoiseFlags = {'none','frozen','random'};
     end
     
-    methods    
+    methods
         % Constructor
         function obj = coneMosaic(varargin)
             % Initialize the cone mosaic class
             %   cMosaic =  coneMosaic('cone',cone,'os','os);
-            
+            %
             % TODO:  We should take eccentricity and angle as an input
             % parameter and create cones of the appropriate size for that
             % retinal location
-            
             p = inputParser;
-            
             p.addParameter('name', 'cone mosaic', @ischar);
-            
-            
-            p.addParameter('pigment', photoPigment(), ...
-                @(x) isa(x, 'photoPigment'));                              % Photopigment object
-            p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));   % Macular pigment object
-            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment'))); % outerSegement object
-
-            p.addParameter('center',[0 0], @(x)(numel(x) ==2));   % Center of the patch in the visual field
-            p.addParameter('wave', 400:10:700, @isnumeric);       % Wave in nm
-            p.addParameter('pattern', [], @isnumeric);            % Spatial array of cone types
-            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);  % Relative density (K,L,M,S)
-            p.addParameter('size', [72 88], @isnumeric);          % Number of cone samples (row,col)
-            p.addParameter('integrationTime', 0.005, @isscalar);  % Temporal integration in sec
-            
-            p.addParameter('emPositions', [0 0], @isnumeric);     % Eye movement positions
-            
-            % How we handle coneMosaic noise
-            vFunc = @(x)(ismember(lower(x), coneMosaic.validNoiseFlags));
-            p.addParameter('noiseFlag', 'random', vFunc);            
+            p.addParameter('pigment', photoPigment(),@(x) isa(x, 'photoPigment'));
+            p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));  
+            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment'))); 
+            p.addParameter('center',[0 0], @(x)(numel(x) ==2));   
+            p.addParameter('wave', 400:10:700, @isnumeric);       
+            p.addParameter('pattern', [], @isnumeric);            
+            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);  
+            p.addParameter('size', [72 88], @isnumeric);         
+            p.addParameter('integrationTime', 0.005, @isscalar);  
+            p.addParameter('emPositions', [0 0], @isnumeric);
+            p.addParameter('apertureBlur', false, @islogical);
+            p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), coneMosaic.validNoiseFlags));
             p.parse(varargin{:});
             
-            % set properties
+            % Set properties
             obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
@@ -179,12 +166,12 @@ classdef coneMosaic < hiddenHandle
             % Set the cone spacing and aperture given its eccentricity and
             % angle.  We could specify eye, but are we really sure about
             % the left right thing in human?
-            % 
+            %
             % Units of returns are meters
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
             [spacing, aperture] = coneSize(ecc,ang);
-
+            
             obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
             obj.pigment.height = spacing;
@@ -206,21 +193,21 @@ classdef coneMosaic < hiddenHandle
             % obj.os.timeStep = obj.sampleTime;
             obj.os.patchSize = obj.width;
             
-            % initialize listener
-            % these listeners make sure the wavelength samples
+            % Initialize listener
+            %
+            % These listeners make sure the wavelength samples
             % in obj.pigment and obj.macular match
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
-
+            
         end
         
-        
-        %% get methods for dependent variables
+        %% Get methods for dependent variables
         % http://www.mathworks.com/help/matlab/matlab_oop/specifying-methods-and-functions.html#bu4wzba
         % All functions that use dots in their names must be defined in the
         % classdef file, including:
         %   -  Converter methods that must use the package name as part of
-        %      the class name because the class is contained in packages 
+        %      the class name because the class is contained in packages
         %   -  Property set and get access methods
         
         function val = get.wave(obj)
@@ -260,7 +247,6 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
-            %
             x = (1:obj.cols) * obj.pigment.width; x = x - mean(x) + obj.center(1);
             y = (1:obj.rows) * obj.pigment.height; y = y - mean(y) + obj.center(2);
             
@@ -279,22 +265,15 @@ classdef coneMosaic < hiddenHandle
             % The eye quantum efficiency, called in plot, includes the lens
             % transmittance.
             val = bsxfun(@times, obj.pigment.absorptance, ...
-               obj.macular.transmittance)*diag(obj.pigment.peakEfficiency);
+                obj.macular.transmittance)*diag(obj.pigment.peakEfficiency);
         end
         
         function val = get.spatialDensity(obj)
             val = obj.spatialDensity_;
         end
         
-        function val = get.absorptions(obj)           
+        function val = get.absorptions(obj)
             val = double(obj.absorptions);
-        end
-        
-        function val = get.current(obj)
-            % Shouldn't have to do this any more, right?
-            if isempty(obj.current), val = [];
-            else                     val = double(obj.current);
-            end
         end
         
         function val = get.tSamples(obj)
@@ -303,19 +282,14 @@ classdef coneMosaic < hiddenHandle
             
             % The number of eye positions defines the number of samples
             val = size(obj.emPositions,1);
-
-            % If you want the number of time steps in sec as an axis:
-            %
-            %   val = (0:1:(tSamps-1)) * obj.integrationTime;
-
-        end        
+        end
         
-        %% set method for class properties
+        %% Set method for class properties
         function set.spatialDensity(obj, val)
             if all(obj.spatialDensity_(:) == val(:)), return; end
             obj.spatialDensity_ = val;
             [~, obj.pattern] = humanConeMosaic(obj.mosaicSize, ...
-                    val, obj.patternSampleSize(1));
+                val, obj.patternSampleSize(1));
             obj.clearData();
         end
         
@@ -323,7 +297,7 @@ classdef coneMosaic < hiddenHandle
             obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
         end
-       
+        
         function set.absorptions(obj, val)
             obj.absorptions = single(val);
         end
@@ -361,7 +335,7 @@ classdef coneMosaic < hiddenHandle
                 error('''%s'' is an invalid value for coneMosaic.noiseFlag. Choose one from: %s ', val,s);
             end
         end
-end
+    end
     
     methods (Access=public)
         % Declare the compute method
@@ -382,26 +356,26 @@ end
         
         % Demosaicing method
         varargout = demosaicedResponses(obj, varargin);
-
+        
         % Method that low-passes a mosaic's response using different space
         % constants for each of the L,M, and S-cone submosaic.
         [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassActivationMap(response, theMosaic, spaceConstants);
         
         % Declare the computeCurrent method
         [interpFilters, meanCur] = computeCurrent(obj, varargin);
-
+        
         function val = timeAxis(obj)
             % Call:  obj.timeAxis;
             val = (0:1:(obj.tSamples-1)) * obj.integrationTime;
         end
         
     end
-
+    
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
         resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis);
     end
-
+    
     % Methods may be called by the subclasses, but are otherwise private
     methods (Access = protected)
         cpObj = copyElement(obj);
@@ -410,10 +384,10 @@ end
     methods (Access = public, Hidden)
         absorptions = computeSingleFrame(obj, oi, varargin);
         absorptions = applyEMPath(obj, LMS, varargin);
-    end        
+    end
     
     methods (Access = private)
         setWave(obj, src, ~)
     end
-
+    
 end
