@@ -11,9 +11,14 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %   'seed' - value (default 1). Value of random noise seed.
 %   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
 %   'currentFlag' - true/false (default false). Whether to compute photocurrent
-%   'theExpandedMosaic' - (default empty).  [WHAT AM I?] 
-%   'workerID' - (default empty).  [WHAT AM I?]
-%   'workDescription' - (default empty).  [WHAT AM I?]
+%   'theExpandedMosaic' - (default empty).  We need an expanded version of the coneMosaic to deal with eye
+%            movements. For multiple calls to computeForOISequence, we may want to generate it once and pass it.
+%            If it is empty (default), the expanded version is generated here.
+%   'workerID' - (default empty).  If this field is non-empty, the progress of
+%            the computation is printed in the command window along with the
+%            workerID (from a parfor loop).
+%   'workDescription' - (default empty).  A string describing the condition
+%            computed. Used only when workerID is non-empty.
 %
 % Outputs:
 %   absorptions          - cone photon absorptions (photon counts in integrationTime)
@@ -488,10 +493,10 @@ end
 %%
 function displayProgress(workerID, workDescription, progress)
 
-maxStarsNum = 60;
+maxStarsNum = 32;
 if (isnan(progress))
     fprintf('worker-%02d: %s |', workerID, workDescription);
-    for k = 1:60
+    for k = 1:maxStarsNum
         fprintf('*');
     end
     fprintf('|');
