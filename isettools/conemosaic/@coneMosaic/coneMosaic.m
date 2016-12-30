@@ -272,6 +272,15 @@ classdef coneMosaic < hiddenHandle
             val = obj.spatialDensity_;
         end
         
+        % Shouldn't have to do this any more, right?
+        function val = get.current(obj)
+            if isempty(obj.current)
+                val = [];
+            else
+                val = double(obj.current);
+            end
+        end
+        
         function val = get.absorptions(obj)
             val = double(obj.absorptions);
         end
