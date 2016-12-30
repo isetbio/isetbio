@@ -171,8 +171,10 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         tFrameEnd   = tFrameStart + oiRefreshInterval;
         
         % Find eye movement indices withing the oi limits
-        indices = find( (eyeMovementTimeAxis >=  tFrameStart-defaultIntegrationTime) & ...
-            (eyeMovementTimeAxis < tFrameEnd - defaultIntegrationTime + eps(tFrameEnd-defaultIntegrationTime)) );
+        indices = find( ...
+            (eyeMovementTimeAxis >= tFrameStart - defaultIntegrationTime - eps(tFrameStart-defaultIntegrationTime)) & ...
+            (eyeMovementTimeAxis <= tFrameEnd -   defaultIntegrationTime + eps(tFrameEnd-defaultIntegrationTime)) );
+        
         
         if (isempty(indices))
             % time samples in
@@ -237,9 +239,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         absorptionsAllTrials = absorptionsDuringPreviousFrame + absorptionsDuringCurrentFrame;
         
         % Reformat and insert to time series
-        insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-        reformatAbsorptionsAllTrialsMatrix(nTrials, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
-        absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
+        firstEMinsertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+        reformatAbsorptionsAllTrialsMatrix(nTrials, 1, size(obj.pattern,1), size(obj.pattern,2));
+        absorptions(1:nTrials, :, firstEMinsertionIndex) = absorptionsAllTrials;
         
         % Full absorptions with current oi and default integration time
         if (numel(indices)>1)
@@ -258,9 +260,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 'currentFlag', false ...
                 );
             % Reformat and insert to time series
-            insertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-            reformatAbsorptionsAllTrialsMatrix(nTrials, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
-            absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
+            remainingEMinsertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+            reformatAbsorptionsAllTrialsMatrix(nTrials, numel(remainingEMinsertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+            absorptions(1:nTrials, :, remainingEMinsertionIndices) = absorptionsAllTrials;
         end
     end  % oiIndex
     
@@ -296,7 +298,9 @@ else
         actualIntegrationTime = 0;
         
         % Find oi indices withing the eye movement frame time limits
-        indices = find( (oiTimeAxis >= emStart-oiRefreshInterval) & (oiTimeAxis < emEnd + eps(emEnd)));
+        indices = find( ...
+            (oiTimeAxis >= emStart - oiRefreshInterval - eps(emStart - oiRefreshInterval)) & ...
+            (oiTimeAxis <= emEnd + eps(emEnd)) );
         
         if (isempty(indices))
             fprintf('No OIs within emIndex #%d\n', emIndex);
