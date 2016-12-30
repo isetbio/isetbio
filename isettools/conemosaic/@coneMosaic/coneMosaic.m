@@ -222,6 +222,7 @@ classdef coneMosaic < hiddenHandle
         %   -  Converter methods that must use the package name as part of
         %      the class name because the class is contained in packages 
         %   -  Property set and get access methods
+        
         function val = get.wave(obj)
             val = obj.pigment.wave;
         end
