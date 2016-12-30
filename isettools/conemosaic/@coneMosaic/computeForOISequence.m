@@ -10,6 +10,8 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % Optional key/value pairs:
 %   'seed' - value (default 1). Value of random noise seed.
 %   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
+%   'interpFilters - [WHAT AM I?]
+%   'meanCur' = [WHAT AM I?]
 %   'currentFlag' - true/false (default false). Whether to compute photocurrent
 %   'theExpandedMosaic' - (default empty).  We need an expanded version of the coneMosaic to deal with eye
 %            movements. For multiple calls to computeForOISequence, we may want to generate it once and pass it.
@@ -71,14 +73,14 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-p.addParameter('seed',1, @isnumeric);             % Seed for frozen noise
+p.addParameter('seed',1, @isnumeric);             
+p.addParameter('emPaths', [], @isnumeric);        
+p.addParameter('interpFilters',[],@isnumeric);    
+p.addParameter('meanCur',[],@isnumeric);          
+p.addParameter('currentFlag', false, @islogical); 
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
-p.addParameter('emPaths', [], @isnumeric);        % Eye movement paths
-p.addParameter('interpFilters',[],@isnumeric);    % Used to match filters for classifiers
-p.addParameter('meanCur',[],@isnumeric);          % in SVM calculations
-p.addParameter('currentFlag', false, @islogical); % Calculate photocurrent
 p.parse(oiSequence, varargin{:});
 
 currentSeed     = p.Results.seed;
