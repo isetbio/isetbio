@@ -117,6 +117,8 @@ function I = insertGap(I,gap)
 % The even and odd cases are handled separately
 
 sz = size(I);
+if gap == 0, return; end
+
 if isodd(sz(1)) && isodd(gap)
     % We put NaNs in the middle row and the appropriate number above and
     % below that row 
