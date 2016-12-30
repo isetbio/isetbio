@@ -18,7 +18,7 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 %% Parse inputs
 p = inputParser();
 p.addRequired('oi',@isstruct);
-p.addParameter('apertureBlur',true,@islogical);
+p.addParameter('apertureBlur',false,@islogical);
 p.addParameter('fullLMS', false,@islogical);
 p.parse(oi, varargin{:});
 fullLMS = p.Results.fullLMS;  
