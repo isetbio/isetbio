@@ -197,7 +197,7 @@ classdef coneMosaic < hiddenHandle
             obj.os.patchSize = obj.width;
             
             % Blur by aperture
-            obj.apertureBlur = p.Results.apertureBlue;
+            obj.apertureBlur = p.Results.apertureBlur;
             
             % Initialize listener
             %
