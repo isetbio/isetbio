@@ -148,6 +148,7 @@ end
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
+
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
@@ -168,7 +169,8 @@ if (oiRefreshInterval >= defaultIntegrationTime)
     %
     
     if (debugTiming)
-        figure(9000); clf;
+        hFig = figure(9000); clf;
+        set(hFig, 'Name', 'Visual Timing Debug Window', 'Position', [10 10 1600 200]);
         subplot('Position', [0.01 0.01 0.98 0.98]);
         hold on
     end
