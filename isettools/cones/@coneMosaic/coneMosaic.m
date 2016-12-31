@@ -1,84 +1,121 @@
 classdef coneMosaic < hiddenHandle
-    %CONEMOSAIC Create a cone mosaic class
+    %CONEMOSAIC Create a cone mosaic object
+    %   An object of the cone mosaic class defines parameters of the
+    %   retinal cone mosaic, and enables computation of cone isomerizations
+    %   and photocurrent response in an array of cones.
     %
-    %   cMosaic =  CONEMOSAIC( ... many parameters ...);
+    %   cMosaic =  CONEMOSAIC(...,'PARAM1',val1,'PARAM2',val2,...) creates
+    %   the cone mosaic object. Optional parameter name/value pairs are
+    %   listed below.
     %
-    % The cone mosaic defines the absorptions and photocurrent in an array
-    % of cones. The default cone mosaic is rectangular.  There is a
-    % subclass of coneMosaicHex (hexagonal sampling). That is implemented
-    % by using a finer grid and placing the cones on a submosaic within the
-    % larger rectangular mosaic.
+    %   The cone mosaic defines the absorptions and photocurrent in an array
+    %   of cones. The default cone mosaic is rectangular.  There is a
+    %   subclass CONEMOSAICHEX that allows more realistic hexagonal and
+    %   variable spacing mosaics. That subclass is implemented by using a
+    %   finer grid and placing the cones at a subset of locations on the
+    %   grid.
     %
-    % The cone quantum efficiencies are defined by both the macular pigment
-    % and the pigment. The lens is incoporated as part of the optics.
+    %   The cone quantum efficiencies are defined by both the macular pigment
+    %   and the pigment. The lens is incoporated as part of the optics.
     %
-    % The isomerizations (absorptions, R*) are calculated using
-    % coneMosaic.compute.
+    %   The isomerizations (absorptions, R*) are calculated using
+    %   coneMosaic.compute.
     %
-    % The absorptions are converted to photocurrent by the method defined
-    % in the outerSegment class, coneMosaic.os.  The compute for current is
-    % coneMosaic.computeCurrent.
+    %   The isomerizations are converted to photocurrent by the method defined
+    %   in the outerSegment class, coneMosaic.os.  The compute for current is
+    %   coneMosaic.computeCurrent.
     %
-    % Optional key/value pairs
-    %   name  - Mosaic name
-    %   pigment - Cone photopigment object (defaults to what photoPigment() sets up).
-    %   macular - Macular pigment object (defaults to what Macular() sets up).
-    %   os - Outer segment object (defauls to what osLinear() sets up).
-    %   center - Vector (default [0,0]). Position of center of mosaic on the retina
-    %   wave - Vector (default 400:10:700). Wavelength samples in nm.
-    %   pattern - Matrix (default []). Cone type at each position (1-4, K,L,M,S)
-    %   spatialDensity - Vector (default [0 0.6 0.3 0.1]). Relative density of cone types, K,L,M,S
-    %   size - Vector (default [72 88]). Spatial size of mosaic (number of row/col cones)
-    %   integrationTime - Value (default 0.005). Temporal integration in sec
-    %   emPositions - Nx2 matrix (default [0 0]. Eye movement positions. [RELATIVE TO WHAT COORDINATE SYSTEM?]
-    %   apertureBlur - true/false (default false). Blur by cone aperture?
-    %   noiseFlag - String (default 'random'). Add photon noise (default) or not.
-    %     Valid values are 'random', 'frozen', or 'none'.  
+    %   Optional parameter name/value pairs chosen from the following:
+    %
+    %   'name'            Mosaic name
+    %   'pigment'         Cone photopigment object (defaults to what photoPigment() sets up).
+    %   'macular'         Macular pigment object (defaults to what Macular() sets up).
+    %   'os'              Outer segment object (defauls to what osLinear() sets up).
+    %   'center'          Position of center of mosaic on the retina. Vector (default [0,0]). 
+    %   'wave'            Wavelength samples in nm. Vector (default 400:10:700).
+    %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []). 
+    %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]). 
+    %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]). 
+    %   'integrationTime' Value (default 0.005). Temporal integration in sec
+    %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0].
+    %                     [RELATIVE TO WHAT COORDINATE SYSTEM IS THIS SPECIFIED?]
+    %   'apertureBlur'    Blur by cone aperture? true/false (default false). 
+    %   'noiseFlag'       Add photon noise (default) or not. String (default
+    %                     'random').  Valid values are 'random', 'frozen', or 'none'.
+    %
+    %  See also CONEMOSAICHEX.
 
     % HJ/JRG/BW ISETBIO Team, 2016
     
-    % Keep the format for the comments.  This is used in doc coneMosaic
+    % Keep the format of the comments here.  They are used by the doc
+    % command to produce useful documentation of the properites.
     properties (GetAccess=public, SetAccess=public)
+        %NAME  The name of the object
+        name;
         
-        name                % the name of the object
+        %PIGMENT  Cone photopigment object for mosaic 
+        pigment;
         
-        pigment;            % Cone photopigment class
-        macular;            % Macular class
-        os;                 % outerSegment class
+        %MACULAR  Macular pigment object for mosaic
+        macular;
         
-        absorptions;        % The spatial array of cone absorptions
-                            % must be consistent with pattern
-        current;            % The (x,y,t) of photocurrent, stored in os
+        %OS  Outer segment object for mosaic
+        os;
         
-        center;             % Center position of patch (x,y - meters)
+        %ABSORPTIONS  The spatial array of cone absorptions 
+        %    This must be kept consistent with the mosaic pattern.
+        absorptions;
         
-        pattern;            % Pattern of K-LMS cones in the mosaic%
-                            % Defines rows and cols, too
+        %CURRENT  The (x,y,t) of photocurrent 
+        %    There is a comment that this is actually stored in the OS.
+        %    Should check and explain this more.
+        current;    
         
-        patternSampleSize;  % Separation between K-LMS pattern samples
-                            % For rectangular grid mosaics, this is set to
-                            % the pigment width/height, i.e., the actual
-                            % cone separation; For hexagonal grid mosaics
-                            % (instances of the coneMosaicHex class), this
-                            % is the separation between the rect grid nodes
-                            % over which the lower resolution hex grid is
-                            % sampled
+        %CENTER  Center position of patch (x,y - meters)
+        center;
         
-        integrationTime;    % Cone temporal integration time (secs)
-        emPositions;        % Eye movement positions (spatial units are number of cones).
-                            % The number of positions controls number of
-                            % frames to be computed
-        noiseFlag;          % Absorption calculation noise (usually photon noise is on)
+        %PATTERN Pattern of KLMS cones in the mosaic
+        %    K = 1, L = 2, M = 3, S = 4 (K means blank,no cone at that position)
+        %    This defines the row and column dimensions of the grid on
+        %    which the mosic is defined. 
+        pattern;
         
-        apertureBlur;       % Blur by cone aperture when computing isomerizations (true/false)?
+        %PATTERNSAMPLESIZE  Separation between K-LMS pattern samples
+        %    For rectangular grid mosaics, this is set to the width/heigh field
+        %    of the PIGMENT object, i.e., the actual cone separation.
+        %
+        %    For hexagonal grid mosaics (instances of the coneMosaicHex class), this is
+        %    the separation between the rect grid nodes on which the
+        %    cone positions are sampled.
+        patternSampleSize; 
         
-        hdl;                % handle of the coneMosaic window
+        %INTEGRATIONTIME  Cone temporal integration time (secs)  
+        integrationTime;
+        
+        %EMPOSITIONS  Eye movement positions
+        %    Spatial units are those of rectangular grid on which cones are
+        %    specified.
+        %
+        %    The number of positions controls number of frames to be
+        %    computed
+        emPositions;
+        
+        %NOISEFLAG  Add noise to isomerizations?
+        noiseFlag;
+        
+        %APERTUREBLUR  Blur by cone aperture when computing isomerizations (true/false)?
+        apertureBlur;
+        
+        %HDL  Handle of the CONEMOSAIC window
+        %    
+        hdl
     end
     
-    properties (Dependent)
-        % Dependency shown in parenthesis
-        
-        wave;           % Wavelength samples (pigment)
+    properties (Dependent)        
+        %WAVE  Wavelength samples
+        %    Depends on wavelength sampling in the PHOTOPIGMENT object
+        %    specified in the PIGMENT property.
+        wave;
         
         rows;           % number of rows in the cone mosaic (pattern)
         cols;           % number of cols in the cone mosaic (pattern)

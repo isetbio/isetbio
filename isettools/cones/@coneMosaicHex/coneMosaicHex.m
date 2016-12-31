@@ -1,7 +1,7 @@
 classdef coneMosaicHex < coneMosaic
-    % Create a hexagonal cone mosaic class
+    %CONEMOSAICHEX Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  coneMosaicHex(resamplingFactor, varyingDensity, customLambda, varargin);
+    %   cMosaicHex =  CONEMOSAICHEX(resamplingFactor, varyingDensity, customLambda, varargin);
     %
     % The cone mosaic HEX is a subclass of coneMosaic. It differs because
     % the array of cones is placed on a hexagonal, rather than rectangular,
@@ -36,8 +36,8 @@ classdef coneMosaicHex < coneMosaic
     %       );
     %   cMosaicHex.window;
     %
-    % See also: coneMosaic, t_coneMosaicHex1
-    %
+    % See also: CONEMOSAIC, t_coneMosaicHex1
+    
     % NPC ISETBIO Team, 2016
     
     properties (SetAccess=private)
