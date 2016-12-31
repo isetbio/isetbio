@@ -1,6 +1,5 @@
 classdef outerSegment < handle
-    % outerSegment parent class for computing cone photocurrent (pA) from
-    % isomerization rate (R*)
+    %OUTERSEGMENT  Parent class for computing cone photocurrent (pA) from isomerization rate (R*)
     %
     % This is an abstract class: it is a template but never creates a
     % computable object itself. The computable objects are the subclasses,
@@ -26,10 +25,10 @@ classdef outerSegment < handle
     %
     % See the subclasses:
     %       osLinear.m, osBioPhys.m
-    %
+    
     % JRG, NC, DHB, 8/2015
     
-    %     % Public read/write properties
+    % Public read/write properties
     %     properties
     %     end
     
