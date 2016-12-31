@@ -56,7 +56,7 @@ c{stimulusConditionIndex} = theCondition;
 % Stimulus sampling interval < integration time
 stimulusConditionIndex = 2;
 theCondition = c0;
-theCondition.stimulusSamplingInterval = 7/1000;               
+theCondition.stimulusSamplingInterval = 4/1000;               
 c{stimulusConditionIndex} = theCondition;
 
 % Stimulus sampling interval > integration time

@@ -93,7 +93,11 @@ theExpandedMosaic = p.Results.theExpandedMosaic;
 LMSfilters        = p.Results.interpFilters;
 meanCur           = p.Results.meanCur;
 
-oiTimeAxis      = oiSequence.timeAxis;
+% Set debugTiming to true to examine the timing between oiFrames and
+% partial/full absorptions
+debugTiming = false;
+
+oiTimeAxis = oiSequence.timeAxis;
 nTimes = numel(oiTimeAxis);
 if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
@@ -108,7 +112,6 @@ if (isempty(emPaths))
 end
 
 if (isempty(theExpandedMosaic))
-    %tic
     padRows = max(max(abs(emPaths(:,:,2))));
     padCols = max(max(abs(emPaths(:,:,1))));
     
@@ -119,7 +122,6 @@ if (isempty(theExpandedMosaic))
     obj.os.lmsConeFilter = [];
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
-    %fprintf('Expanded mosaic copy took %d seconds. \n', toc);
 end
     
 %% Get ready for output variables
@@ -165,6 +167,12 @@ if (oiRefreshInterval >= defaultIntegrationTime)
     %                   partial absorption_/      \_partial absorption  \_ full absorption
     %
     
+    if (debugTiming)
+        figure(9000); clf;
+        subplot('Position', [0.01 0.01 0.98 0.98]);
+        hold on
+    end
+    
     % Loop over the optical images
     for oiIndex = 1:oiSequence.length
         
@@ -177,15 +185,18 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         tFrameStart = oiTimeAxis(oiIndex);
         tFrameEnd   = tFrameStart + oiRefreshInterval;
         
+        if (debugTiming)
+            x = [tFrameStart tFrameStart tFrameEnd tFrameEnd tFrameStart];
+            y = [0 -10 -10 0 0];
+            plot(x,y, 'r-');
+        end
+        
         % Find eye movement indices withing the oi limits
         indices = find( ...
             (eyeMovementTimeAxis >= tFrameStart - defaultIntegrationTime - eps(tFrameStart-defaultIntegrationTime)) & ...
             (eyeMovementTimeAxis <= tFrameEnd -   defaultIntegrationTime + eps(tFrameEnd-defaultIntegrationTime)) );
         
-        
         if (isempty(indices))
-            % time samples in
-            % the mosaic than we have oi samples.  That should be OK.
             fprintf('No eye movements within oiIndex #%d\n', oiIndex);
             continue;
             %error('Empty indices. This should never happen.');
@@ -218,6 +229,11 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
                 );
+            if (debugTiming)
+                x = tFrameStart - [0 0 obj.integrationTime obj.integrationTime 0];
+                y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
+                plot(x,y, 'b--');
+            end
         else
             absorptionsDuringPreviousFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), nTrials);
         end
@@ -237,6 +253,11 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 'emPath', emSubPath, ...
                 'currentFlag', false ...
                 );
+            if (debugTiming)
+                x = tFrameStart + [0 0 obj.integrationTime obj.integrationTime 0];
+                y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
+                plot(x,y, 'm-');
+            end
             % vcNewGraphWin; imagesc(absorptionsDuringCurrentFrame);
         else
             absorptionsDuringCurrentFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), nTrials);
@@ -270,6 +291,26 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             remainingEMinsertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
             reformatAbsorptionsAllTrialsMatrix(nTrials, numel(remainingEMinsertionIndices), size(obj.pattern,1), size(obj.pattern,2));
             absorptions(1:nTrials, :, remainingEMinsertionIndices) = absorptionsAllTrials;
+            if (debugTiming)
+                for kk = 2:numel(indices)
+                    x = tFrameStart + integrationTimeForSecondPartialAbsorption + [0 0 (kk-1)*obj.integrationTime (kk-1)*obj.integrationTime 0];
+                    y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
+                    plot(x,y, 'k:');
+                    drawnow;
+                end
+            end
+        end
+        
+        if (debugTiming)
+            if (numel(indices) == 1)
+                fprintf('[%3d/%3d]: p1=%05.1fms p2=%05.1fms f=%05.1fms, i1=%03d, iR=[]      i1Time=%06.1fms, iRtime=[]                     (%d)\n', oiIndex, oiSequence.length, integrationTimeForFirstPartialAbsorption*1000, integrationTimeForSecondPartialAbsorption*1000, 0, firstEMinsertionIndex, eyeMovementTimeAxis(indices(1))*1000, numel(indices));
+            else
+                fprintf('[%3d/%3d]: p1=%05.1fms p2=%05.1fms f=%05.1fms, i1=%03d, iR=%03d-%03d i1Time=%06.1fms, iRtime=[%06.1fms .. %06.1fms] (%d)\n', oiIndex, oiSequence.length, integrationTimeForFirstPartialAbsorption*1000, integrationTimeForSecondPartialAbsorption*1000, obj.integrationTime*1000, firstEMinsertionIndex, remainingEMinsertionIndices(1), remainingEMinsertionIndices(end), eyeMovementTimeAxis(indices(1))*1000, eyeMovementTimeAxis(indices(2))*1000, eyeMovementTimeAxis(indices(end))*1000, numel(indices));
+            end
+            if (oiSequence.length > 1)
+                set(gca, 'XLim', [oiTimeAxis(1) oiTimeAxis(end)]); 
+                pause
+            end
         end
     end  % oiIndex
     
