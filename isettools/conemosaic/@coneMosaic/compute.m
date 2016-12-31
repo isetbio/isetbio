@@ -1,8 +1,7 @@
 function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
-% Compute the cone absorptions, possibly for multiple trials (repeats)
+% COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%  [absorptions, current, interpFilters, meanCur] = ...
-%             cMosaic.compute(oi or oiSequence);
+%  [absorptions, current, interpFilters, meanCur] = obj.COMPUTE(oi or oiSequence);
 %
 % Compute the temporal sequence of cone absorptions, which we treat as
 % isomerizations, R*.  The computation can executed on

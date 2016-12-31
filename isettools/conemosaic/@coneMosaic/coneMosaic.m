@@ -1,7 +1,7 @@
 classdef coneMosaic < hiddenHandle
-    % Create a cone mosaic class
+    %CONEMOSAIC Create a cone mosaic class
     %
-    %   cMosaic =  coneMosaic( ... many parameters ...);
+    %   cMosaic =  CONEMOSAIC( ... many parameters ...);
     %
     % The cone mosaic defines the absorptions and photocurrent in an array
     % of cones. The default cone mosaic is rectangular.  There is a
@@ -24,7 +24,7 @@ classdef coneMosaic < hiddenHandle
     %   pigment - Cone photopigment object (defaults to what photoPigment() sets up).
     %   macular - Macular pigment object (defaults to what Macular() sets up).
     %   os - Outer segment object (defauls to what osLinear() sets up).
-    %   center - Vector (default [0,0]. Position of center of mosaic on the retina
+    %   center - Vector (default [0,0]). Position of center of mosaic on the retina
     %   wave - Vector (default 400:10:700). Wavelength samples in nm.
     %   pattern - Matrix (default []). Cone type at each position (1-4, K,L,M,S)
     %   spatialDensity - Vector (default [0 0.6 0.3 0.1]). Relative density of cone types, K,L,M,S
@@ -34,8 +34,6 @@ classdef coneMosaic < hiddenHandle
     %   apertureBlur - true/false (default false). Blur by cone aperture?
     %   noiseFlag - String (default 'random'). Add photon noise (default) or not.
     %     Valid values are 'random', 'frozen', or 'none'.  
-    %
-    % NEED TO DOCUMENT SET AND GETTABLE PROPERTIES.
 
     % HJ/JRG/BW ISETBIO Team, 2016
     
@@ -64,7 +62,7 @@ classdef coneMosaic < hiddenHandle
                             % (instances of the coneMosaicHex class), this
                             % is the separation between the rect grid nodes
                             % over which the lower resolution hex grid is
-                            % sampled (NC)
+                            % sampled
         
         integrationTime;    % Cone temporal integration time (secs)
         emPositions;        % Eye movement positions (spatial units are number of cones).
@@ -95,7 +93,8 @@ classdef coneMosaic < hiddenHandle
         tSamples        % Number of temporal samples
         
         coneLocs;       % cone locations in meters (pigment)
-        qe;             % absorptance with macular pigment, but not lens
+        qe;             % absorptance with macular pigment
+                        % But not lens
                         % which is accounted for in the oi representation.
                         % (pigment and macular)
         
