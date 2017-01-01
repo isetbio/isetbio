@@ -83,16 +83,6 @@ classdef outerSegment < handle
             val = osGet(obj, varargin{:});
         end
         
-        function val = timeAxis(obj)
-            % The temporal samples for the lms filters
-            if isempty(obj.lmsConeFilter)
-                error('No filters computed');
-            else
-                val = ((1:size(obj.lmsConeFilter,1)) - 1) * obj.timeStep;
-            end
-            
-        end
-        
     end
     
     % Methods that must only be implemented in the subclasses.

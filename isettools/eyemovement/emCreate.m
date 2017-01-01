@@ -32,10 +32,6 @@ function em = emCreate(params, varargin)
 % Output Parameter:
 %   em       - eye movement structure
 %
-% Programming Notes:
-%   If one parameter are both specified in params and varargin, the value
-%   provided in varargin will be used (value in params will be overrided)
-%
 % Notes:
 %   1) For all eye-movements, we assume that the acceleration time is
 %      neglectable

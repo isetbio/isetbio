@@ -2,9 +2,9 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 % Returns the photocurrent impulse response for a single absorption 
 %
 % The LMS impulse response functions calculated here model the cone
-% photocurrent response to brief or low contrasts above and below a steady
-% background.  These experimental conditions are often found in
-% psychophysical or physiological experiment.
+% photocurrent response to brief or low contrasts with respect to a steady
+% background.  These experimental conditions (steady backgroynds, modest
+% contrasts) are often found in psychophysical or physiological experiment.
 %
 % The impulse response function is derived from Rieke's biophysical model.
 % It depends on the mean absorption rate, and exhibits adaptation behavior.

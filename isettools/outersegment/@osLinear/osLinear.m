@@ -68,6 +68,17 @@ classdef osLinear < outerSegment
             val = osGet(obj, varargin{:});
         end
         
+        function val = timeAxis(obj)
+            % The temporal samples for the lms filters
+            if isempty(obj.lmsConeFilter)
+                warning('No lms impulse response functions computed');
+            else
+                % Time axis is the length of the filters multiplied by the
+                % time step
+                val = ((1:size(obj.lmsConeFilter,1)) - 1) * obj.timeStep;
+            end
+        end
+        
         matchSensor(obj, varargin);
         
         % We need to implement compute because it is part of the abstract
@@ -81,6 +92,7 @@ classdef osLinear < outerSegment
         plot(obj, pType, varargin);
         
     end
+
     
     methods (Access = private)
     end
