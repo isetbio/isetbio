@@ -1,24 +1,21 @@
 classdef Lens
-    % Class for human lens pigment properties
+    % LENS  Class for human lens pigment properties
+    %     lens = LENS() returns a lens object with a variety of derived
+    %     properties.
     %
-    %     lens = Lens();
+    %     Useful factoids:
+    %     Absorbance spectra are normalized to a peak value of 1.
+    %     Absorptance spectra are the proportion of quanta actually absorbed.
+    %     Equation: absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
     %
-    % The returned class object includes a variety of derived terms. This
-    % should help to keep the relationship between entities straight.
+    %     The original lens densities values were taken from PTB and/or the
+    %     Stockman site. Go to http://cvision.ucsd.edu, then click on
+    %     Prereceptoral filters.
     %
-    % Useful formulae
+    %     Examples:
     %
-    %   Absorbance spectra are normalized to a peak value of 1.
-    %   Absorptance spectra are the proportion of quanta actually absorbed.
-    %   Equation: absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
-    %
-    % The original lens densities values were taken from PTB and/or the
-    % Stockman site. Go to http://cvision.ucsd.edu, then click on
-    % Prereceptoral filters.
-    %
-    % Examples:
-    %   lens = Lens();
-    %
+    %         lens = Lens();
+    
     % HJ/BW ISETBIO Team 2013.
     
     properties       % public properties

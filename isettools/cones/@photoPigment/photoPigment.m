@@ -1,7 +1,7 @@
 classdef photoPigment < hiddenHandle
-    % Class for single cone photopigment properties
+    %PHOTOPIGMENT Class for single cone photopigment properties
     %
-    %   pigment = photoPigment();
+    %   pigment = PHOTOPIGMENT();
     %
     % This class contains properties for the photopigment absorption
     % properties of a single cone cell. 
@@ -18,7 +18,7 @@ classdef photoPigment < hiddenHandle
     %
     % See t_photoPigment for more information and explanations about this
     % object.
-    % 
+    
     % HJ, ISETBIO Team, 2016
     
     % See BW queries below

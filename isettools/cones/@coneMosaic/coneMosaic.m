@@ -43,7 +43,7 @@ classdef coneMosaic < hiddenHandle
     %   'noiseFlag'       Add photon noise (default) or not. String (default
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
     %
-    %  See also CONEMOSAICHEX.
+    %  See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
 
     % HJ/JRG/BW ISETBIO Team, 2016
     
@@ -72,6 +72,8 @@ classdef coneMosaic < hiddenHandle
         current;    
         
         %CENTER  Center position of patch (x,y - meters)
+        %    This tells us where the mosaic is relative to the optical
+        %    image.
         center;
         
         %PATTERN Pattern of KLMS cones in the mosaic
@@ -80,7 +82,7 @@ classdef coneMosaic < hiddenHandle
         %    which the mosic is defined. 
         pattern;
         
-        %PATTERNSAMPLESIZE  Separation between K-LMS pattern samples
+        %PATTERNSAMPLESIZE  Separation between KLMS pattern samples
         %    For rectangular grid mosaics, this is set to the width/heigh field
         %    of the PIGMENT object, i.e., the actual cone separation.
         %
@@ -117,49 +119,89 @@ classdef coneMosaic < hiddenHandle
         %    specified in the PIGMENT property.
         wave;
         
-        rows;           % number of rows in the cone mosaic (pattern)
-        cols;           % number of cols in the cone mosaic (pattern)
-        mosaicSize;     % [rows, cols] (pattern)
-        patternSupport; % [X(:) Y(:)] axes (Pattern)
+        % ROWS  Number of rows in the cone mosaic
+        %    Depends on size of PATTERN property.
+        rows;  
         
-        width;          % width of cone mosaic in meters (patternSampleSize)
-        height;         % height of cone mosaic in meters (patternSampleSize)
-        fov;            % horizontal/vertical field of view assuming inf
-                        % scene distance and 17mm optics focal length
-                        % (patternSampleSize, via height and width)
-        tSamples        % Number of temporal samples
+        %COLS   Number of cols in the cone mosaic
+        %    Depends on size of PATTERN property.
+        cols;
         
-        coneLocs;       % cone locations in meters (pigment)
-        qe;             % absorptance with macular pigment
-                        % But not lens
-                        % which is accounted for in the oi representation.
-                        % (pigment and macular)
+        %MOSAICSIZE  Vector containing [rows cols]
+        %    Depends on size of PATTERN property via ROWS and COLS.
+        mosaicSize;
         
-        spatialDensity; % spatial density (ratio) of the K-LMS cones
+        %PATTERNSUPPORT  Matrix giving x,y positions of the underlying grid.
+        %    In form [x(:) y(:)] in units of meters.  These are positions
+        %    on the retina, relative to the center of the specified mosaic.
+        %    It does not take the CENTER property into account.  It is
+        %    based on the PATTERN and PATTERNSAMPLESIZE properties.
+        patternSupport;
+        
+        %WIDTH  Width of cone mosaic in meters
+        %    Depends on property patternSampleSize.
+        width; 
+        
+        %HEIGHT  Height of cone mosaic in meters
+        %    Depends on property patternSampleSize.
+        height;
+        
+        %FOV  Vector containing nominal [hfov vfov] (field of view) in degrees  
+        %    Computed assuming infiite scene distance and 17mm optics focal length
+        %
+        %    Depends on patternSampleSize via height and width properties.
+        fov;
+        
+        %TSAMPLES  Number of temporal samples  
+        tSamples
+        
+        %CONELOCS  Matrix giving x,y positions of the cone locations on the grid
+        %    In form [x(:) y(:)] in units of meters.  These are positions
+        %    on the retina, relative to the center of the specified mosaic,
+        %    and these are offset by the CENTER property. It is based on
+        %    the PATTERN and PIGMENT properties, as it uses the height and
+        %    width specfied in the pigment rather than the mosaic to
+        %    compute positions.
+        coneLocs;
+        
+        %QE  Cone quantal efficiency (absorptance)
+        %    The cone mosaic quantum efficiency is the product of the cone
+        %    photopigment absorptance times the macular pigment
+        %    transmittance times the cone photopigment peak efficientcy.
+        %
+        %    The quantum efficiency referred all the way to the cornea and
+        %    used in the plot function, also includes the lens
+        %    transmittance. The lens transmittance is specified by the LENS
+        %    object in the oi representation.
+        %
+        %    The QE depends on the PIGMENT and MACULAR properties.
+        qe;
+        
+        %SPATIALDENSITY  Spatial density of the KLMS cones  
+        spatialDensity; 
     end
     
     properties (Access=private)
-        % spatial density (ratio) of the K-LMS cones
+        %SPATIALDENSITY_  Ratio of KLMS cones used to generate pattern
         %
-        % There are two properties about this LMS ratio: sptailDensity_ and
-        % spatialDensity. spatialDensity_ is a private variable of the
-        % class while spatialDensity is a dependent variable.
+        %    There are two properties about this ratio: sptiallDensity_ and
+        %    spatialDensity. spatialDensity_ is a private variable of the
+        %    class while spatialDensity is a dependent variable.
         %
-        % When setting the spatialDensity_ inside the class, we just change
-        % this private property directly. When setting spatialDensity from
-        % outside, the set.spatialDensity is executed and the cone mosaic
-        % is regenerated.
+        %    When setting the spatialDensity_ inside the class, we just change
+        %    this private property directly. When setting spatialDensity from
+        %    outside, the set.spatialDensity is executed and the cone mosaic
+        %    is regenerated.
         %
-        % It's possible to have set function for spatialDensity directly.
-        % However, the current Matlab does not allow update other
-        % properties (e.g. mosaic pattern) in the set function for
-        % non-dependent properties.
-        %
-        % HJ
+        %    It's possible to have set function for spatialDensity directly.
+        %    However, the current Matlab does not allow update other
+        %    properties (e.g. mosaic pattern) in the set function for
+        %    non-dependent properties.
         spatialDensity_;
     end
     
     properties (Constant)
+        %VALIDNOISEFLAGS  Cell array of strings containing valid values for noise flags.
         validNoiseFlags = {'none','frozen','random'};
     end
     
@@ -240,8 +282,7 @@ classdef coneMosaic < hiddenHandle
             % These listeners make sure the wavelength samples
             % in obj.pigment and obj.macular match
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
-            addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
-            
+            addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);          
         end
         
         %% Get methods for dependent variables
@@ -256,11 +297,11 @@ classdef coneMosaic < hiddenHandle
             val = obj.pigment.wave;
         end
         
-        function val = get.rows(obj)  % number of rows
+        function val = get.rows(obj)
             val = size(obj.pattern, 1);
         end
         
-        function val = get.cols(obj)  % number of cols
+        function val = get.cols(obj)
             val = size(obj.pattern, 2);
         end
         
@@ -276,15 +317,15 @@ classdef coneMosaic < hiddenHandle
             val(:,:,2) = yy;
         end
         
-        function val = get.width(obj)  % width of cone mosaic in meters
+        function val = get.width(obj)
             val = obj.cols * obj.patternSampleSize(1);
         end
         
-        function val = get.height(obj)  % height of cone mosaic in meters
+        function val = get.height(obj)
             val = obj.rows * obj.patternSampleSize(2);
         end
         
-        function val = get.fov(obj)  % horizontal/vertical field of view
+        function val = get.fov(obj)
             val = 2 * atand([obj.width obj.height]/2/0.017);
         end
         
@@ -297,15 +338,7 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.qe(obj)
-            % cMosaic.qe
-            % compute effective absorptance with macular pigments
-            %
-            % The cone mosaic quantum efficiency is the product of the cone
-            % photopigment absorptance times the macular pigment
-            % transmittance times the cone photopigment peak absorption.
-            %
-            % The eye quantum efficiency, called in plot, includes the lens
-            % transmittance.
+            % obj.qe  Compute effective absorptance including macular pigment
             val = bsxfun(@times, obj.pigment.absorptance, ...
                 obj.macular.transmittance)*diag(obj.pigment.peakEfficiency);
         end
@@ -335,7 +368,7 @@ classdef coneMosaic < hiddenHandle
             val = size(obj.emPositions,1);
         end
         
-        %% Set method for class properties
+        %% Set methods for class properties
         function set.spatialDensity(obj, val)
             if all(obj.spatialDensity_(:) == val(:)), return; end
             obj.spatialDensity_ = val;

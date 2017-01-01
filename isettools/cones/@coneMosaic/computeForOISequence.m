@@ -10,6 +10,9 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % Optional key/value pairs:
 %   'seed' - value (default 1). Value of random noise seed.
 %   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
+%   'trialBlocks' - How many blocks to split the trials in. Default: 1 (no blocking). 
+%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
+%               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %   'interpFilters - [WHAT AM I?]
 %   'meanCur' = [WHAT AM I?]
 %   'currentFlag' - true/false (default false). Whether to compute photocurrent
@@ -74,7 +77,8 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
 p.addParameter('seed',1, @isnumeric);             
-p.addParameter('emPaths', [], @isnumeric);        
+p.addParameter('emPaths', [], @isnumeric);  
+p.addParameter('trialBlocks', 1, @isnumeric);
 p.addParameter('interpFilters',[],@isnumeric);    
 p.addParameter('meanCur',[],@isnumeric);          
 p.addParameter('currentFlag', false, @islogical); 
@@ -86,6 +90,7 @@ p.parse(oiSequence, varargin{:});
 currentSeed     = p.Results.seed;
 oiSequence      = p.Results.oiSequence;
 emPaths         = p.Results.emPaths;
+trialBlocks     = p.Results.trialBlocks;
 currentFlag     = p.Results.currentFlag;
 workerID        = p.Results.workerID;
 workDescription = p.Results.workDescription;
@@ -94,7 +99,8 @@ LMSfilters        = p.Results.interpFilters;
 meanCur           = p.Results.meanCur;
 
 % Set debugTiming to true to examine the timing between oiFrames and
-% partial/full absorptions
+% partial/full absorptions. In this mode, the computation stops and
+% waits for the uaer to hit enter during each step.
 debugTiming = false;
 
 oiTimeAxis = oiSequence.timeAxis;
@@ -148,6 +154,30 @@ end
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
+
+% Organize trials in blocks if we have a hex mosaic
+if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
+    trialBlockSize = floor(nTrials/trialBlocks);
+    if (trialBlockSize >= 1)
+        blockedTrialIndices = {};
+        for iTrialBlock = 1:trialBlocks
+            firstTrial = trialBlockSize*(iTrialBlock-1) + 1;
+            lastTrial = trialBlockSize*(iTrialBlock-1) + trialBlockSize;
+            blockedTrialIndices{iTrialBlock} = firstTrial:lastTrial;
+        end
+        if (lastTrial < nTrials)
+            firstTrial = lastTrial+1;
+            lastTrial = nTrials;
+            iTrialBlock = numel(blockedTrialIndices)+1;
+            blockedTrialIndices{iTrialBlock} = firstTrial:lastTrial;
+        end
+    else
+        blockedTrialIndices{1} = 1:nTrials;
+    end
+else
+    blockedTrialIndices{1} = 1:nTrials;
+end
+
 
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
@@ -203,105 +233,104 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             continue;
             %error('Empty indices. This should never happen.');
         end
-        % the first eye movement requires special treatment as it may have started before the current frame,
-        % so we need to compute partial absorptions over the previous frame and over the current frame
-        idx = indices(1);
-        integrationTimeForFirstPartialAbsorption = tFrameStart-eyeMovementTimeAxis(idx);
-        integrationTimeForSecondPartialAbsorption = eyeMovementTimeAxis(idx)+defaultIntegrationTime-tFrameStart;
         
-        if (integrationTimeForFirstPartialAbsorption < eps(tFrameStart))
-            integrationTimeForFirstPartialAbsorption = 0;
-        elseif (integrationTimeForSecondPartialAbsorption < eps(eyeMovementTimeAxis(idx)+defaultIntegrationTime))
-            integrationTimeForSecondPartialAbsorption = 0;
-        end
-        
-        % Partial absorptions (p1 in graph above) with previous oi
-        % (across all instances)
-        if (oiIndex > 1) && (integrationTimeForFirstPartialAbsorption > 0)
-            % Update the @coneMosaic with the partial integration time
-            obj.integrationTime = integrationTimeForFirstPartialAbsorption; 
-            % Compute partial absorptions
-            emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
-            obj.absorptions = [];
-            currentSeed = currentSeed  + 1;
-            absorptionsDuringPreviousFrame = obj.compute(...
-                oiSequence.frameAtIndex(oiIndex-1), ...
-                'theExpandedMosaic', theExpandedMosaic, ...
-                'seed', currentSeed , ...
-                'emPath', emSubPath, ...
-                'currentFlag', false ...
-                );
-            if (debugTiming)
-                x = tFrameStart - [0 0 obj.integrationTime obj.integrationTime 0];
-                y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
-                plot(x,y, 'b--');
+        for iTrialBlock = 1:numel(blockedTrialIndices)
+ 
+            % Obtain trials to be computed at this trial block
+            trialIndicesForBlock = blockedTrialIndices{iTrialBlock};
+            
+            % the first eye movement requires special treatment as it may have started before the current frame,
+            % so we need to compute partial absorptions over the previous frame and over the current frame
+            idx = indices(1);
+            integrationTimeForFirstPartialAbsorption = tFrameStart-eyeMovementTimeAxis(idx);
+            integrationTimeForSecondPartialAbsorption = eyeMovementTimeAxis(idx)+defaultIntegrationTime-tFrameStart;
+            
+            if (integrationTimeForFirstPartialAbsorption < eps(tFrameStart))
+                integrationTimeForFirstPartialAbsorption = 0;
+            elseif (integrationTimeForSecondPartialAbsorption < eps(eyeMovementTimeAxis(idx)+defaultIntegrationTime))
+                integrationTimeForSecondPartialAbsorption = 0;
             end
-        else
-            absorptionsDuringPreviousFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), nTrials);
-        end
-        
-        if (integrationTimeForSecondPartialAbsorption > 0)
-            % Partial absorptions (p2 in graph above) with current oi across all instances.
-            % Update the @coneMosaic with the partial integration time
-            obj.integrationTime = integrationTimeForSecondPartialAbsorption;
-            % Compute partial absorptions
-            emSubPath = reshape(squeeze(emPaths(1:nTrials,idx,:)), [nTrials 2]);
-            obj.absorptions = [];
-            currentSeed = currentSeed  + 1;
-            absorptionsDuringCurrentFrame =  obj.compute(...
-                oiSequence.frameAtIndex(oiIndex), ...
-                'theExpandedMosaic', theExpandedMosaic, ...
-                'seed', currentSeed, ...
-                'emPath', emSubPath, ...
-                'currentFlag', false ...
-                );
-            if (debugTiming)
-                x = tFrameStart + [0 0 obj.integrationTime obj.integrationTime 0];
-                y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
-                plot(x,y, 'm-');
-            end
-            % vcNewGraphWin; imagesc(absorptionsDuringCurrentFrame);
-        else
-            absorptionsDuringCurrentFrame = zeros(size(obj.pattern,1), size(obj.pattern,2), nTrials);
-        end
-        
-        % summed absorptions
-        absorptionsAllTrials = absorptionsDuringPreviousFrame + absorptionsDuringCurrentFrame;
-        
-        % Reformat and insert to time series
-        firstEMinsertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-        reformatAbsorptionsAllTrialsMatrix(nTrials, 1, size(obj.pattern,1), size(obj.pattern,2));
-        absorptions(1:nTrials, :, firstEMinsertionIndex) = absorptionsAllTrials;
-        
-        % Full absorptions with current oi and default integration time
-        if (numel(indices)>1)
-            % Update the @coneMosaic with the default integration time
-            obj.integrationTime = defaultIntegrationTime;
-            % Compute absorptions for all remaining the OIs
-            idx = indices(2:end);
-            emSubPath = reshape(emPaths(1:nTrials, idx,:), [nTrials*numel(idx) 2]);
-            obj.absorptions = [];
-            currentSeed = currentSeed  + 1;
-            absorptionsAllTrials = obj.compute(...
-                oiSequence.frameAtIndex(oiIndex), ...
-                'theExpandedMosaic', theExpandedMosaic, ...
-                'seed', currentSeed, ...
-                'emPath', emSubPath, ...
-                'currentFlag', false ...
-                );
-            % Reformat and insert to time series
-            remainingEMinsertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-            reformatAbsorptionsAllTrialsMatrix(nTrials, numel(remainingEMinsertionIndices), size(obj.pattern,1), size(obj.pattern,2));
-            absorptions(1:nTrials, :, remainingEMinsertionIndices) = absorptionsAllTrials;
-            if (debugTiming)
-                for kk = 2:numel(indices)
-                    x = tFrameStart + integrationTimeForSecondPartialAbsorption + [0 0 (kk-1)*obj.integrationTime (kk-1)*obj.integrationTime 0];
+
+            % Partial absorptions (p1 in graph above) with previous oi
+            % (across all instances)
+            if (oiIndex > 1) && (integrationTimeForFirstPartialAbsorption > 0)
+                % Update the @coneMosaic with the partial integration time
+                obj.integrationTime = integrationTimeForFirstPartialAbsorption;
+                % Compute partial absorptions
+                emSubPath = reshape(squeeze(emPaths(trialIndicesForBlock,idx,:)), [numel(trialIndicesForBlock) 2]);
+                currentSeed = currentSeed  + 1;
+                absorptionsAllTrials = obj.compute(...
+                    oiSequence.frameAtIndex(oiIndex-1), ...
+                    'theExpandedMosaic', theExpandedMosaic, ...
+                    'seed', currentSeed , ...
+                    'emPath', emSubPath, ...
+                    'currentFlag', false ...
+                    );
+                if (debugTiming)
+                    x = tFrameStart - [0 0 obj.integrationTime obj.integrationTime 0];
                     y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
-                    plot(x,y, 'k:');
-                    drawnow;
+                    plot(x,y, 'b--');
+                end
+            else
+                absorptionsAllTrials = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(trialIndicesForBlock));
+            end
+            
+            if (integrationTimeForSecondPartialAbsorption > 0)
+                % Partial absorptions (p2 in graph above) with current oi across all instances.
+                % Update the @coneMosaic with the partial integration time
+                obj.integrationTime = integrationTimeForSecondPartialAbsorption;
+                % Compute partial absorptions
+                emSubPath = reshape(squeeze(emPaths(trialIndicesForBlock,idx,:)), [numel(trialIndicesForBlock) 2]);
+                currentSeed = currentSeed  + 1;
+                absorptionsAllTrials =  absorptionsAllTrials + obj.compute(...
+                    oiSequence.frameAtIndex(oiIndex), ...
+                    'theExpandedMosaic', theExpandedMosaic, ...
+                    'seed', currentSeed, ...
+                    'emPath', emSubPath, ...
+                    'currentFlag', false ...
+                    );
+                if (debugTiming)
+                    x = tFrameStart + [0 0 obj.integrationTime obj.integrationTime 0];
+                    y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
+                    plot(x,y, 'm-');
+                end
+                % vcNewGraphWin; imagesc(absorptionsDuringCurrentFrame);
+            end
+            
+            % Reformat and insert to time series
+            firstEMinsertionIndex = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+            reformatAbsorptionsAllTrialsMatrix(numel(trialIndicesForBlock), 1, size(obj.pattern,1), size(obj.pattern,2));
+            absorptions(trialIndicesForBlock, :, firstEMinsertionIndex) = absorptionsAllTrials;
+            
+            % Full absorptions with current oi and default integration time
+            if (numel(indices)>1)
+                % Update the @coneMosaic with the default integration time
+                obj.integrationTime = defaultIntegrationTime;
+                % Compute absorptions for all remaining the OIs
+                idx = indices(2:end);
+                emSubPath = reshape(emPaths(trialIndicesForBlock, idx,:), [numel(trialIndicesForBlock)*numel(idx) 2]);
+                currentSeed = currentSeed  + 1;
+                absorptionsAllTrials = obj.compute(...
+                    oiSequence.frameAtIndex(oiIndex), ...
+                    'theExpandedMosaic', theExpandedMosaic, ...
+                    'seed', currentSeed, ...
+                    'emPath', emSubPath, ...
+                    'currentFlag', false ...
+                    );
+                % Reformat and insert to time series
+                remainingEMinsertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+                reformatAbsorptionsAllTrialsMatrix(numel(trialIndicesForBlock), numel(remainingEMinsertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+                absorptions(trialIndicesForBlock, :, remainingEMinsertionIndices) = absorptionsAllTrials;
+                if (debugTiming)
+                    for kk = 2:numel(indices)
+                        x = tFrameStart + integrationTimeForSecondPartialAbsorption + [0 0 (kk-1)*obj.integrationTime (kk-1)*obj.integrationTime 0];
+                        y = [-1 -2 -2 -1 -1] - (oiIndex-1)*0.1;
+                        plot(x,y, 'k:');
+                        drawnow;
+                    end
                 end
             end
-        end
+        end % iTrialBlock
         
         if (debugTiming)
             if (numel(indices) == 1)
@@ -344,9 +373,6 @@ else
         emStart = eyeMovementTimeAxis(emIndex);
         emEnd   = emStart + defaultIntegrationTime;
         
-        % sum the partial integration times
-        actualIntegrationTime = 0;
-        
         % Find oi indices withing the eye movement frame time limits
         indices = find( ...
             (oiTimeAxis >= emStart - oiRefreshInterval - eps(emStart - oiRefreshInterval)) & ...
@@ -357,69 +383,76 @@ else
             continue;
         end
         
-        % Partial absorptions during the ovelap with the OI that started before the emStart
-        idx = indices(1);
-        integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
-        if (integrationTimeForFirstPartialAbsorption > eps(oiTimeAxis(idx)+oiRefreshInterval))
-            % Update the @coneMosaic with the partial integration time
-            obj.integrationTime = integrationTimeForFirstPartialAbsorption;
-            % Update the sum of partial integration times
-            actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
-            % Compute absorptions
-            emSubPath = reshape(emPaths(1:nTrials, emIndex,:), [nTrials 2]);
-            obj.absorptions = [];
-            currentSeed = currentSeed  + 1;
-            absorptionsAllTrials = obj.compute(...
-                oiSequence.frameAtIndex(idx), ...
-                'theExpandedMosaic', theExpandedMosaic, ...
-                'seed', currentSeed, ...
-                'emPath', emSubPath, ...
-                'currentFlag', false ...
-                );
-        else
-            absorptionsAllTrials = zeros(size(obj.pattern,1), size(obj.pattern,2), nTrials);
-        end
+        for iTrialBlock = 1:numel(blockedTrialIndices)
+ 
+            % Obtain trials to be computed at this trial block
+            trialIndicesForBlock = blockedTrialIndices{iTrialBlock};
+            
+            % sum the partial integration times
+            actualIntegrationTime = 0;
         
-        
-        % Next, compute full absorptions for the remaining OIs
-        if (numel(indices)>1)
-            for k = 2:numel(indices)
+             % Partial absorptions during the ovelap with the OI that started before the emStart
+            idx = indices(1);
+            integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
+            if (integrationTimeForFirstPartialAbsorption > eps(oiTimeAxis(idx)+oiRefreshInterval))
                 % Update the @coneMosaic with the partial integration time
-                if (k < numel(indices))
-                    % full absorption during the duration of the OI
-                    obj.integrationTime = oiRefreshInterval;
-                else
-                    % partial absorption during the last OI
-                    idx = indices(end);
-                    integrationTimeForLastPartialAbsorption = emEnd - oiTimeAxis(idx);
-                    obj.integrationTime = integrationTimeForLastPartialAbsorption;
-                end
-                
+                obj.integrationTime = integrationTimeForFirstPartialAbsorption;
                 % Update the sum of partial integration times
                 actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
                 % Compute absorptions
-                emSubPath = reshape(emPaths(1:nTrials, emIndex,:), [nTrials 2]);
-                obj.absorptions = [];
+                emSubPath = reshape(emPaths(trialIndicesForBlock, emIndex,:), [numel(trialIndicesForBlock) 2]);
                 currentSeed = currentSeed  + 1;
-                absorptionsAllTrials = absorptionsAllTrials + obj.compute(...
-                    oiSequence.frameAtIndex(indices(k)), ...
+                absorptionsAllTrials = obj.compute(...
+                    oiSequence.frameAtIndex(idx), ...
                     'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed, ...
                     'emPath', emSubPath, ...
                     'currentFlag', false ...
                     );
-            end  % for k
-        end
+            else
+                absorptionsAllTrials = zeros(size(obj.pattern,1), size(obj.pattern,2), numel(trialIndicesForBlock));
+            end
+            
+            % Next, compute full absorptions for the remaining OIs
+            if (numel(indices)>1)
+                for k = 2:numel(indices)
+                    % Update the @coneMosaic with the partial integration time
+                    if (k < numel(indices))
+                        % full absorption during the duration of the OI
+                        obj.integrationTime = oiRefreshInterval;
+                    else
+                        % partial absorption during the last OI
+                        idx = indices(end);
+                        integrationTimeForLastPartialAbsorption = emEnd - oiTimeAxis(idx);
+                        obj.integrationTime = integrationTimeForLastPartialAbsorption;
+                    end
+                    
+                    % Update the sum of partial integration times
+                    actualIntegrationTime = actualIntegrationTime + obj.integrationTime;
+                    % Compute absorptions
+                    emSubPath = reshape(emPaths(trialIndicesForBlock, emIndex,:), [numel(trialIndicesForBlock) 2]);
+                    currentSeed = currentSeed  + 1;
+                    absorptionsAllTrials = absorptionsAllTrials + obj.compute(...
+                        oiSequence.frameAtIndex(indices(k)), ...
+                        'theExpandedMosaic', theExpandedMosaic, ...
+                        'seed', currentSeed, ...
+                        'emPath', emSubPath, ...
+                        'currentFlag', false ...
+                        );
+                end  % for k
+            end
+            
+            % Check the sum of partial absorptions equal the default absorption time
+            if (abs(actualIntegrationTime-defaultIntegrationTime) > defaultIntegrationTime*0.0001) && (emIndex < numel(eyeMovementTimeAxis))
+                error('Actual integration time (%3.5f) not equal to desired value (%3.5f) [emIndex: %d / %d]\n', actualIntegrationTime, defaultIntegrationTime, emIndex, numel(eyeMovementTimeAxis));
+            end
+            
+            % Reformat and insert to time series
+            insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
+            reformatAbsorptionsAllTrialsMatrix(numel(trialIndicesForBlock), numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
+            absorptions(trialIndicesForBlock, :, insertionIndices) = absorptionsAllTrials;
+        end % iTrialBlock
         
-        % Check the sum of partial absorptions equal the default absorption time
-        if (abs(actualIntegrationTime-defaultIntegrationTime) > defaultIntegrationTime*0.0001) && (emIndex < numel(eyeMovementTimeAxis))
-            error('Actual integration time (%3.5f) not equal to desired value (%3.5f) [emIndex: %d / %d]\n', actualIntegrationTime, defaultIntegrationTime, emIndex, numel(eyeMovementTimeAxis));
-        end
-        
-        % Reformat and insert to time series
-        insertionIndices = round((eyeMovementTimeAxis(emIndex)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
-        reformatAbsorptionsAllTrialsMatrix(nTrials, numel(insertionIndices), size(obj.pattern,1), size(obj.pattern,2));
-        absorptions(1:nTrials, :, insertionIndices) = absorptionsAllTrials;
     end % emIndex
 end % oiRefreshInterval > defaultIntegrationTime
 
@@ -519,13 +552,13 @@ else
 end
 
 %% Nested function to reformat absorptions
-    function reformatAbsorptionsAllTrialsMatrix(nTrials, timePointsNum, coneRows, coneCols)
+    function reformatAbsorptionsAllTrialsMatrix(trialsNum, timePointsNum, coneRows, coneCols)
         % Save all absorptions as singles to save space
         absorptionsAllTrials = single(absorptionsAllTrials);
         
         % Reshape to cones x instances x timePoints. Note the 3rd dimension of
         % absorptionsAllTrials is traditionally time, but when we are doing multiple instances, it is instances * time
-        absorptionsAllTrials = reshape(absorptionsAllTrials, [coneRows*coneCols nTrials timePointsNum]);
+        absorptionsAllTrials = reshape(absorptionsAllTrials, [coneRows*coneCols trialsNum timePointsNum]);
         
         % Only get the absorptions for the non-null cones - this has an effect only for coneMosaicHex mosaics
         absorptionsAllTrials = absorptionsAllTrials(nonNullConesIndices,:,:);
