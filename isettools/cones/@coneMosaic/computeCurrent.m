@@ -34,7 +34,7 @@ bgR = coneMeanIsomerizations(cMosaic);
 %% Call the appropriate outer segment photocurrent computation
 if isa(cMosaic.os,'osLinear')
     [cMosaic.current, interpFilters, meanCur] = cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
-elseif(cMosaic.os,'osBioPhys')
+elseif isa(cMosaic.os,'osBioPhys')
     cMosaic.current = cMosaic.os.osCompute(cMosaic,'bgR',mean(bgR),varargin{:});
     interpFilters = [];
     meanCur       = [];
