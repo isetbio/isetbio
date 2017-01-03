@@ -1,5 +1,5 @@
 function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
-% COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
+%COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
 %
 %  [absorptions, current, interpFilters, meanCur] = obj.COMPUTE(oi or oiSequence);
 %
@@ -53,7 +53,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 % can also be set to 'random','frozen', or 'none', as above. The default
 % when an os object is created is 'random'. 
 %
-% See also:  computeForOISequence
+% See also:  COMPUTEFOROISEQUENCE
 %
 % HJ ISETBIO Team 2016
 

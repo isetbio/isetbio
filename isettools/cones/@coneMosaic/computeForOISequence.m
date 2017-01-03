@@ -1,7 +1,6 @@
 function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
-% [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
-%
-% Compute cone absorptions and optionally photocurrents for a @oiSequence
+%COMPUTEFOROISEQUENCE  Compute cone absorptions and optionally photocurrents for a @oiSequence
+%    [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
 %
 % Inputs:
 %   obj         - @coneMosaic object
