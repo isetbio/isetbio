@@ -1,6 +1,7 @@
 function absorptions = computeSingleFrame(obj, oi, varargin)
-% Compute function for single frame.
-% 
+% computeSingleFrame  Single frame compute function for coneMosaic object.
+%     absorptions = computeSingleFrame(obj, oi, varargin)
+%
 % This function computes mean expected photon isomerizations (also called
 % absorptions in isetbio) for one frame, without including eye movements or
 % noise.
