@@ -39,19 +39,17 @@ coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
 visualizedConeAperture = p.Results.visualizedConeAperture;
 
 %% Set up cone coordinates and outline
-
-
-
 sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
 sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
 
 % Choose the radius of the aperture obj.pigment.pdWidth or obj.pigment.width
 if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
-    dx = obj.pigment.pdWidth;
+    % Note that pigment.pdWidth defines the size of a square collective
+    % aperture. Here we compute the equivalent circular aperture
+    dx = sqrt((obj.pigment.pdWidth^2)/pi)*2;
 elseif (strcmp(visualizedConeAperture, 'geometricArea'))
     dx = obj.pigment.width;
 else
-    visualizedConeAperture
     error('visualizedConeAperture must be set to either ''lightCollectingArea'' or ''geometricArea''.\n');
 end
 
