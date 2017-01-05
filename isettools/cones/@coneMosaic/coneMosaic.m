@@ -44,7 +44,10 @@ classdef coneMosaic < hiddenHandle
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
     %
     %  See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
-
+    %
+    %  See the ISETBIO wiki: <a href="matlab:
+    %  web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
+    %
     % HJ/JRG/BW ISETBIO Team, 2016
     
     % Keep the format of the comments here.  They are used by the doc
