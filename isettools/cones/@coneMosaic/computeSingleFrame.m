@@ -135,8 +135,13 @@ for ii = 2:4
     % positions, so that we have the density at each cone position.
     absorbDensityOneConeClass = interp1(oiC, absorbDensityOneConeClass, coneC, 'linear', 0)';
     
-    % Add in dark noise
-    absorbDensityOneConeClass = absorbDensityOneConeClass + obj.meanConeDarkNoise(ii-1);
+    % Add in dark noise rate.  This comes to us as iso/[cone-sec] but right
+    % here we are computing the spatio-temporal density of cone
+    % absorptions.  So we convert the dark noise rate to a density in space
+    % as well, by dividing by the collection area.  Down below we multiply
+    % by that area (and by the integration time) so this factor comes and
+    % goes.
+    absorbDensityOneConeClass = absorbDensityOneConeClass + obj.coneDarkNoiseRate(ii-1)/pigment.pdArea;
     
     % Save density for each cone class.  Either the whole array of we're
     % returning the full LMS isomerizations, or one value for each cone

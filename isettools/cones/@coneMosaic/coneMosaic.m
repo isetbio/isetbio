@@ -70,8 +70,9 @@ classdef coneMosaic < hiddenHandle
         %    This must be kept consistent with the mosaic pattern.
         absorptions;
         
-        %MEANCONEDARKNOISE  Mean dark (thermal) isomerizations in each cone class.
-        meanConeDarkNoise;
+        %CONEDARKNOISERATE  Mean rate of dark (thermal) isomerizations for each cone class.
+        %    Expressed as a three-dimensional row vector.
+        coneDarkNoiseRate;
         
         %CURRENT  The (x,y,t) of photocurrent 
         %    There is a comment that this is actually stored in the OS.
