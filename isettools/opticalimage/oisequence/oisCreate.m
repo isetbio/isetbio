@@ -26,7 +26,9 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
 %   hparams(1) = hparams(2); hparams(1).contrast = 0; sparams.fov = 1; 
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   ois = oisCreate('harmonic','blend',stimWeights, 'tparams',hparams,'sparams',sparams);
+%   ois = oisCreate('harmonic','blend',stimWeights, ...
+%                   'testParameters',hparams, ...
+%                   'ssceneParams',sparams);
 %   ois.visualize;
 %
 %  Vernier
@@ -34,7 +36,9 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
 %   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,'tparams',vparams,'sparams',sparams);
+%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,...
+%                                 'testParameters',vparams,...
+%                                 'sceneParameters',sparams);
 %   vernier.visualize;
 %   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %
@@ -42,7 +46,8 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %   clear iparams
 %   sparams.fov = 1; sparams.luminance = 100;
 %   stimWeights = zeros(1,50); stimWeights(2:4) = 1;
-%   impulse = oisCreate('impulse','add', stimWeights,'sparams',sparams);
+%   impulse = oisCreate('impulse','add', stimWeights,...
+%                       'sceneParameters',sparams);
 %   impulse.visualize;
 %
 % BW ISETBIO Team, 2016
