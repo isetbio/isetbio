@@ -249,7 +249,7 @@ classdef coneMosaic < hiddenHandle
             obj.spatialDensity_ = p.Results.spatialDensity(:);
             obj.integrationTime = p.Results.integrationTime;
             
-            obj.meanConeDarkNoise = [0 0 0];
+            obj.coneDarkNoiseRate = [0 0 0];
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
             
