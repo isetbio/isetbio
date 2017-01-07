@@ -5,7 +5,7 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %
 %    [ois, scenes] = OISCREATE(oisType,composition,modulation,'PARAM1',val ...)
 %
-%  Required parameters 
+%  Required parameters
 %   'oisType'      - One of 'vernier','harmonic','impulse'.
 %   'composition'  - 'add' or 'blend'
 %   'modulation'   - Series of weights describing the add or blend
@@ -53,11 +53,11 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %                       'sceneParameters',sparams);
 %   impulse.visualize;
 %
-% See also SCENECREATE   
+% See also SCENECREATE
 %
-% See ISETBIO wiki <a "href=matlab:
-% web('https://github.com/isetbio/isetbio/wiki/OI Sequences','-browser')">,'Retinal
-% images'</a>
+% ISETBIO wiki: <a href="matlab:
+%    web('https://github.com/isetbio/isetbio/wiki/OI-Sequences','-browser')">Optical image sequences</a>.
+%
 % BW ISETBIO Team, 2016
 
 %% Inputs

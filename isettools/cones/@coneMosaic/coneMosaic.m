@@ -46,7 +46,7 @@ classdef coneMosaic < hiddenHandle
     %
     %  See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
     %
-    %  See the ISETBIO wiki: <a href="matlab:
+    %  ISETBIO wiki: <a href="matlab:
     %  web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
     %
     % HJ/JRG/BW ISETBIO Team, 2016
