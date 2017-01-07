@@ -135,6 +135,9 @@ for ii = 2:4
     % positions, so that we have the density at each cone position.
     absorbDensityOneConeClass = interp1(oiC, absorbDensityOneConeClass, coneC, 'linear', 0)';
     
+    % Add in dark noise
+    absorbDensityOneConeClass = absorbDensityOneConeClass + obj.meanConeDarkNoise(ii-1);
+    
     % Save density for each cone class.  Either the whole array of we're
     % returning the full LMS isomerizations, or one value for each cone
     % location if we are in the usual case of simulating the interleaved

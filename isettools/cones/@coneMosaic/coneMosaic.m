@@ -66,6 +66,9 @@ classdef coneMosaic < hiddenHandle
         %    This must be kept consistent with the mosaic pattern.
         absorptions;
         
+        %MEANCONEDARKNOISE  Mean dark (thermal) isomerizations in each cone class.
+        meanConeDarkNoise;
+        
         %CURRENT  The (x,y,t) of photocurrent 
         %    There is a comment that this is actually stored in the OS.
         %    Should check and explain this more.
@@ -241,6 +244,7 @@ classdef coneMosaic < hiddenHandle
             obj.spatialDensity_ = p.Results.spatialDensity(:);
             obj.integrationTime = p.Results.integrationTime;
             
+            obj.meanConeDarkNoise = [0 0 0];
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
             
