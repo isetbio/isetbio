@@ -141,7 +141,7 @@ for ii = 2:4
     % as well, by dividing by the collection area.  Down below we multiply
     % by that area (and by the integration time) so this factor comes and
     % goes.
-    absorbDensityOneConeClass = absorbDensityOneConeClass + obj.coneDarkNoiseRate(ii-1)/pigment.pdArea;
+    absorbDensityOneConeClass = absorbDensityOneConeClass + obj.coneDarkNoiseRate(ii-1)/obj.pigment.pdArea;
     
     % Save density for each cone class.  Either the whole array of we're
     % returning the full LMS isomerizations, or one value for each cone
