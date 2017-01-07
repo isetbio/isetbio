@@ -1,27 +1,24 @@
-function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
-% Create an oiSequence
+function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
+% OISCREATE - oi sequence creation
+%    oiSequence objects are used to specify certain simple stimuli that vary
+%    over time, such as stimuli used in typical psychophysical experiments.
 %
-%     ois = oisCreate(oisType,param/val)
+%    [ois, scenes] = OISCREATE(oisType,composition,modulation,'PARAM1',val ...)
 %
-% Create an oiSequence object that produces a small video of a simple
-% stimulus.
+%  Required parameters 
+%   'oisType'      - Stimulus type. One of 'vernier','harmonic','impulse'. 
+%   'composition'  - 'add' or 'blend'
+%   'modulation'   - Vector of weights describing the add or blend parameters.
 %
-% Required:
-%   oisType:  One of a collection of simple stimuli.  At present we have
-%     'vernier','harmonic','impulse'.
-%   composition: 'add' or 'blend'
-%   modulation:   Vector of weights describing the add or blend parameters.
+%  Optional parameter/val types chosen from the following 
+%    'testParameters'   Parameters for the test targets 
+%    'sceneParameters'  General scene parameters (e.g., fov, luminance)
+%    
+%    The sequence is a composition of a fixed OI and a modulated OI. The mixture
+%    is determined by a time series of weights.  The composition can be either
+%    an addition or a blend of the two OIs.
 %
-% Parameters:
-%    testParameters:  Parameters for the test targets.  This structure contents
-%                     depend on the oisType.
-%    sceneParameters: General scene parameters (e.g., fov, luminance)
-%   
-% Examples:
-%  We build the stimulus using a time series of weights. We have the mean
-%  field on for a while, then rise/fall, then mean field.
-%
-% Harmonics
+%  Harmonics
 %   clear hparams
 %   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
 %   hparams(1) = hparams(2); hparams(1).contrast = 0; sparams.fov = 1; 
@@ -50,6 +47,11 @@ function [ois, varargout] = oisCreate(oisType,composition, modulation, varargin)
 %                       'sceneParameters',sparams);
 %   impulse.visualize;
 %
+% See also SCENECREATE   
+%
+% See ISETBIO wiki <a "href=matlab:
+% web('https://github.com/isetbio/isetbio/wiki/OI Sequences','-browser')">,'Retinal
+% images'</a>
 % BW ISETBIO Team, 2016
 
 %% Inputs
@@ -116,8 +118,6 @@ switch oisType
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
         
-        % Return the cell array of scenes.
-        varargout{1} = scene;
     case 'vernier'
         % oisCreate('vernier', ...);   % See examples
         if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
@@ -152,9 +152,6 @@ switch oisType
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
         % ois.visualize;
-        
-        % Return the cell array of scenes.
-        varargout{1} = scene;
         
     case 'impulse'
         % oisCreate('impulse', 'add', weights,'sparams',sparams); % See examples
