@@ -1,22 +1,28 @@
 function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 % OISCREATE - oi sequence creation
-%    oiSequence objects are used to specify certain simple stimuli that vary
-%    over time, such as stimuli used in typical psychophysical experiments.
+%    An oiSequence specifies certain simple retinal images that vary over
+%    time, such as stimuli used in typical psychophysical experiments.
 %
 %    [ois, scenes] = OISCREATE(oisType,composition,modulation,'PARAM1',val ...)
 %
 %  Required parameters 
-%   'oisType'      - Stimulus type. One of 'vernier','harmonic','impulse'. 
+%   'oisType'      - One of 'vernier','harmonic','impulse'.
 %   'composition'  - 'add' or 'blend'
-%   'modulation'   - Vector of weights describing the add or blend parameters.
+%   'modulation'   - Series of weights describing the add or blend
 %
 %  Optional parameter/val types chosen from the following 
 %    'testParameters'   Parameters for the test targets 
 %    'sceneParameters'  General scene parameters (e.g., fov, luminance)
 %    
-%    The sequence is a composition of a fixed OI and a modulated OI. The mixture
-%    is determined by a time series of weights.  The composition can be either
-%    an addition or a blend of the two OIs.
+%    The sequence is a mixture of a fixed OI and a modulated OI. The
+%    mixture is determined by a time series of weights.  The weights are
+%    used for a mixture that is either an addition
+%
+%        oiFixed + w*oiModulated, 
+%
+%    or a blend
+%
+%        w*oiFixed + (1-w)*oiModulated 
 %
 %  Harmonics
 %   clear hparams
