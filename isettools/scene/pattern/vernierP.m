@@ -49,7 +49,7 @@ p = inputParser;
 
 p.addParameter('name','unknown',@ischar);
 
-p.addParameter('display',displayCreate('LCD-Apple'),@isstruct);
+p.addParameter('display',displayCreate('LCD-Apple','wave',400:10:700),@isstruct);
 p.addParameter('sceneSz',[50 50],@isnumeric);
 
 p.addParameter('offset',1,@isscalar);

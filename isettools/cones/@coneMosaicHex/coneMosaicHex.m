@@ -51,6 +51,7 @@ classdef coneMosaicHex < coneMosaic
         patternOriginatingRectGrid              % cone pattern of the originating rect grid
         patternSampleSizeOriginatingRectGrid    % pattern sample size of the originating rect grid
         fovOriginatingRectGrid                  % FOV of the originating rect grid
+        rotationDegs                            % rotation in degrees
     end
     
     % Public methods
@@ -62,7 +63,18 @@ classdef coneMosaicHex < coneMosaic
             %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, customLambda, ['cone',cone,'os','os]);
             
             % Call the super-class constructor.
-            obj = obj@coneMosaic(varargin{:});
+            vararginForConeMosaic = {};
+            vararginForConeHexMosaic = {};
+            for k = 1:2:numel(varargin)
+                if (strcmp(varargin{k}, 'rotationDegs'))
+                    vararginForConeHexMosaic{numel(vararginForConeHexMosaic)+1} = varargin{k};
+                    vararginForConeHexMosaic{numel(vararginForConeHexMosaic)+1} = varargin{k+1};
+                else
+                    vararginForConeMosaic{numel(vararginForConeMosaic)+1} = varargin{k};
+                    vararginForConeMosaic{numel(vararginForConeMosaic)+1} = varargin{k+1};
+                end
+            end
+            obj = obj@coneMosaic(vararginForConeMosaic{:});
             
             % Get a copy of the original coneLocs
             obj.saveOriginalResState();
@@ -72,11 +84,12 @@ classdef coneMosaicHex < coneMosaic
             p.addRequired('resamplingFactor', @isnumeric);
             p.addRequired('varyingDensity', @islogical);
             p.addRequired('customLambda', @isnumeric);
-            
-            p.parse(upSampleFactor, varyingDensity, customLambda);
+            p.addParameter('rotationDegs', 0, @isnumeric);
+            p.parse(upSampleFactor, varyingDensity, customLambda, vararginForConeHexMosaic{:});
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.varyingDensity = p.Results.varyingDensity;
             obj.customLambda = p.Results.customLambda;
+            obj.rotationDegs = p.Results.rotationDegs;
             
             % Generate sampled hex grid
             obj.resampleGrid(obj.resamplingFactor);

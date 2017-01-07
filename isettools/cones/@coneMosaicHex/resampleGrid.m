@@ -39,6 +39,7 @@ function hexLocs = computeHexGridNodes(obj)
     grid.coneSpacingFunction = @coneSpacingFunction;
     grid.domainFunction = @circularDomainFunction;
     grid.center = obj.center*1e6;
+    grid.rotationAngle = obj.rotationDegs/180*pi;
     grid.width = obj.width*1e6;
     grid.height = obj.height*1e6;
     grid.radius = 1.1*sqrt((grid.width/2)^2 + (grid.height/2)^2);
@@ -73,7 +74,7 @@ end
 function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridParams)
     
     % First generate perfect grid
-    conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMin);
+    conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMin, gridParams.rotationAngle);
     
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
@@ -244,16 +245,16 @@ end
 
 
 function conePositions = generateConePositionsOnConstantDensityGrid(gridParams)
-    conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMid);
+    conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMid, gridParams.rotationAngle);
     % Remove cones outside the desired region by applying the passed domainfunction
     d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius);
     conePositions = conePositions(d < gridParams.borderTolerance,:);
 end
 
-function conePositions = generateConePositionsOnPerfectGrid(center, radius, lambda)
+function conePositions = generateConePositionsOnPerfectGrid(center, radius, lambda, rotationAngle)
     rows = 2*radius;
     cols = 2*radius;
-    conePositions = computeHexGrid(rows, cols, lambda);
+    conePositions = computeHexGrid(rows, cols, lambda, rotationAngle);
     conePositions(:,1) = conePositions(:,1) + center(1);
     conePositions(:,2) = conePositions(:,2) + center(2);
 end
@@ -285,7 +286,7 @@ function lambda = minConeSpacing(obj)
     lambda = coneSpacingInMeters * 1e6;  % in microns
 end
 
-function hexLocs = computeHexGrid(rows, cols, lambda)
+function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
 
     extraCols = round(cols/(sqrt(3)/2)) - cols;
     rectXaxis2 = (1:(cols+extraCols));
@@ -308,7 +309,12 @@ function hexLocs = computeHexGrid(rows, cols, lambda)
     xHex = X2(indicesToKeep);
     yHex = Y2(indicesToKeep);
     
-    hexLocs = [xHex(:)-mean(xHex(:))   yHex(:)-mean(yHex(:))];
+    hexLocs = [xHex(:)-mean(xHex(:)) yHex(:)-mean(yHex(:))];
+    
+    % rotate
+    R = [cos(rotationAngle) -sin(rotationAngle); sin(rotationAngle) cos(rotationAngle)];
+    hexLocs = (R*(hexLocs)')';
+    
 end
 
 function distances = circularDomainFunction(conePositions, center, radius)

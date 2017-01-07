@@ -1,10 +1,10 @@
 classdef coneMosaic < hiddenHandle
-    %CONEMOSAIC Create a cone mosaic object
+    %coneMosaic Create a cone mosaic object
     %   An object of the cone mosaic class defines parameters of the
     %   retinal cone mosaic, and enables computation of cone isomerizations
     %   and photocurrent response in an array of cones.
     %
-    %   cMosaic =  CONEMOSAIC(...,'PARAM1',val1,'PARAM2',val2,...) creates
+    %   cMosaic =  coneMosaic(...,'PARAM1',val1,'PARAM2',val2,...) creates
     %   the cone mosaic object. Optional parameter name/value pairs are
     %   listed below.
     %
@@ -31,20 +31,24 @@ classdef coneMosaic < hiddenHandle
     %   'pigment'         Cone photopigment object (defaults to what photoPigment() sets up).
     %   'macular'         Macular pigment object (defaults to what Macular() sets up).
     %   'os'              Outer segment object (defauls to what osLinear() sets up).
-    %   'center'          Position of center of mosaic on the retina. Vector (default [0,0]). 
-    %   'wave'            Wavelength samples in nm. Vector (default 400:10:700).
-    %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []). 
-    %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]). 
-    %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]). 
+    %   'center'          Position of center of mosaic on the retina. Vector (default [0,0]).
+    %   'wave'            Wavelength samples in nm. Vector (default
+    %   400:10:700).h
+    %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []).
+    %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]).
+    %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]).
     %   'integrationTime' Value (default 0.005). Temporal integration in sec
     %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0].
     %                     [RELATIVE TO WHAT COORDINATE SYSTEM IS THIS SPECIFIED?]
-    %   'apertureBlur'    Blur by cone aperture? true/false (default false). 
+    %   'apertureBlur'    Blur by cone aperture? true/false (default false).
     %   'noiseFlag'       Add photon noise (default) or not. String (default
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
     %
     %  See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
-
+    %
+    %  See the ISETBIO wiki: <a href="matlab:
+    %  web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
+    %
     % HJ/JRG/BW ISETBIO Team, 2016
     
     % Keep the format of the comments here.  They are used by the doc
@@ -122,7 +126,7 @@ classdef coneMosaic < hiddenHandle
         %    specified in the PIGMENT property.
         wave;
         
-        % ROWS  Number of rows in the cone mosaic
+        %ROWS  Number of rows in the cone mosaic
         %    Depends on size of PATTERN property.
         rows;  
         
