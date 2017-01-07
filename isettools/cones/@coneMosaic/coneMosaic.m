@@ -1,5 +1,5 @@
 classdef coneMosaic < hiddenHandle
-    %coneMosaic Create a cone mosaic object
+    %CONEMOSAIC - Create a cone mosaic object
     %   An object of the cone mosaic class defines parameters of the
     %   retinal cone mosaic, and enables computation of cone isomerizations
     %   and photocurrent response in an array of cones.
