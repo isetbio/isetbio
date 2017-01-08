@@ -1,5 +1,5 @@
 function val = oiGet(oi,parm,varargin)
-%Get properties and derived quantities from an optical image structure
+%OIGET - Get properties and derived quantities from an optical image structure
 %
 %     val = oiGet(oi,parm,varargin)
 %
@@ -87,10 +87,10 @@ function val = oiGet(oi,parm,varargin)
 % Resolution
 %      {'hspatial resolution'}*   - height spatial resolution
 %      {'wspatial resolution'}*   - width spatial resolution    
-%      {'sample spacing'}*       - (width, height) spatial resolution
+%      {'sample spacing'}*        - (width, height) spatial resolution
 %      {'distance per sample'}*   - (row,col) distance per spatial sample
 %      {'distance per degree'}*   - Distance per degree of visual angle
-%      {'degreesper distance'}*
+%      {'degrees per distance'}*  -
 %      {'spatial sampling positions'}*   - Spatial locations of points
 %      {'hangular resolution'}     - angular degree per pixel in height
 %      {'wangular resolution'}     - angular degree per pixel in width
@@ -123,13 +123,6 @@ function val = oiGet(oi,parm,varargin)
 %
 % Misc
 %      {'rgb image'}         - RGB rendering of OI data
-%
-% 7/29/15  dhb  Changed 'photon noise' and 'energy noise' so that they
-%               return the noisy image for one pixel collection area and 50
-%               msec integration time.  A better person might make
-%               collection area and integration time things you could pass
-%               for this call.  But if you really want to do that, you
-%               might consider defining an appropriate sensor.
 %
 % Copyright ImagEval Consultants, LLC, 2003-2015.
 
