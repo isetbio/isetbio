@@ -153,6 +153,9 @@ end
 % Only allocate memory for the non-null cones in a 3D matrix [instances x numel(nonNullConesIndices) x time]
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
+s = whos('absorptions');
+warning('ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo',...
+       'absorptions for %d trials %d cones and %d timebins requires %2.2f GB of RAM', nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), s.bytes/(1024^3));
 
 % Organize trials in blocks if we have a hex mosaic
 if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
@@ -162,14 +165,13 @@ if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
         for iTrialBlock = 1:trialBlocks
             firstTrial = trialBlockSize*(iTrialBlock-1) + 1;
             lastTrial = trialBlockSize*(iTrialBlock-1) + trialBlockSize;
+            if (iTrialBlock == trialBlocks)
+                lastTrial = nTrials;
+            end
             blockedTrialIndices{iTrialBlock} = firstTrial:lastTrial;
         end
-        if (lastTrial < nTrials)
-            firstTrial = lastTrial+1;
-            lastTrial = nTrials;
-            iTrialBlock = numel(blockedTrialIndices)+1;
-            blockedTrialIndices{iTrialBlock} = firstTrial:lastTrial;
-        end
+        % flip order so that the last (possibly larger block) is first
+        blockedTrialIndices = fliplr(blockedTrialIndices);
     else
         blockedTrialIndices{1} = 1:nTrials;
     end
@@ -383,7 +385,6 @@ else
         end
         
         for iTrialBlock = 1:numel(blockedTrialIndices)
- 
             % Obtain trials to be computed at this trial block
             trialIndicesForBlock = blockedTrialIndices{iTrialBlock};
             
@@ -458,18 +459,82 @@ end % oiRefreshInterval > defaultIntegrationTime
 % Restore default integrationTime
 obj.integrationTime = defaultIntegrationTime;
 
-% Reload the full eye movement sequence for the first instance only
-if (ndims(emPaths) == 3), obj.emPositions = squeeze(emPaths(1,:,:));
+% Reload the full eye movement sequence for the last trial only
+if (ndims(emPaths) == 3), obj.emPositions = squeeze(emPaths(nTrials,:,:));
 else                      obj.emPositions = emPaths;
 end
 
 % If we don't compute the current, we return only the absorptions from the
 % last trial.  We never compute the current if there are no eye movements.
 if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
-   
+    returnAbsorptionsFromLastTrial();
+    return;
+end
+
+
+%% Photocurrent computation
+
+% The currentFlag must be on, and there must be a few eye movements. So we
+% compute. 
+%
+
+% N.B.  Not adequately checked for osBioPhys model.  Runs ok for osLinear
+% model.
+
+% free some RAM before procedding with allocating more RAM
+obj.absorptions = [];
+
+if (isa(obj, 'coneMosaicHex'))
+    photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
+    for ii=1:nTrials
+        if (~isempty(workerID))
+            displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
+        end
+        % Reshape to full 3D matrix for obj.computeCurrent
+        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
+        currentSeed = currentSeed  + 1;
+        if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
+            % On the first trial, compute the interpolated linear
+            % filters and the mean current, unless they were passed in
+            [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
+        else
+            LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
+        end
+        % Back to 2D matrix to save space
+        photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
+    end
+else
+    photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
+    for ii=1:nTrials
+        if (~isempty(workerID))
+            displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
+        end
+        % Put this trial of absorptions into the cone mosaic
+        obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
+        currentSeed = currentSeed  + 1;
+        if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
+            % On the first trial, compute the interpolated linear
+            % filters and the mean current
+            [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
+        else
+            % On the remaining trials, use the same interpolated
+            % filters and mean current
+            LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
+        end
+        photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
+    end
+end
+
+
+% Reload the absorptions from the last instance (again, since we destroyed
+% obj.absorptions in the current computation)
+returnAbsorptionsFromLastTrial();
+
+%% Nested function for returning absorptions from the last trial
+    function returnAbsorptionsFromLastTrial()
     if (isa(obj, 'coneMosaicHex'))
         tmp  = squeeze(absorptions(nTrials,:,:));
-        if (numel(eyeMovementTimeAxis == 1))
+        if (numel(eyeMovementTimeAxis) == 1)
             tmp = tmp';    
         end
         
@@ -482,72 +547,6 @@ if (~currentFlag) || (numel(eyeMovementTimeAxis) == 1)
         % Return the absorptions from the last trial.
         obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
     end
-    return;
-end
-
-%% Photocurrent computation
-
-% The currentFlag must be on, and there must be a few eye movements. So we
-% compute. 
-%
-
-% N.B.  Not adequately checked for osBioPhys model.  Runs ok for osLinear
-% model.
-
-if (currentFlag)
-    if (isa(obj, 'coneMosaicHex'))
-        photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
-        for ii=1:nTrials
-            % Reshape to full 3D matrix for obj.computeCurrent
-            obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
-            currentSeed = currentSeed  + 1;
-            if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
-                % On the first trial, compute the interpolated linear
-                % filters and the mean current, unless they were passed in
-                [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
-            else
-                LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
-            end
-            % Back to 2D matrix to save space
-            photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
-        end
-    else
-        photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
-        for ii=1:nTrials
-            % Put this trial of absorptions into the cone mosaic
-            obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
-            currentSeed = currentSeed  + 1;
-            if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
-                % On the first trial, compute the interpolated linear
-                % filters and the mean current
-                [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
-            else
-                % On the remaining trials, use the same interpolated
-                % filters and mean current
-                LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
-            end
-            photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(eyeMovementTimeAxis)]));
-        end
-    end
-end
-
-
-% Reload the absorptions from the last instance (again, since we destroyed
-% obj.absorptions in the current computation)
-if (isa(obj, 'coneMosaicHex'))
-    % Return the absorptions from the last triale after reshaping to full
-    % 3D matrix [cone_rows, cone_cols, time]
-    tmp = squeeze(absorptions(nTrials,:,:));
-    if (numel(eyeMovementTimeAxis) == 1)
-        tmp = tmp';
-    end
-    obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);
-else
-    % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
-    absorptions = reshape(absorptions, [nTrials obj.rows obj.cols numel(eyeMovementTimeAxis)]);
-    
-    % Return the absorptions from the last trial.
-    obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [obj.rows obj.cols numel(eyeMovementTimeAxis)]);
 end
 
 %% Nested function to reformat absorptions

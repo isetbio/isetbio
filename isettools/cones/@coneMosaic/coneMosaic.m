@@ -189,6 +189,20 @@ classdef coneMosaic < hiddenHandle
         spatialDensity; 
     end
     
+    properties (Constant)
+        % dictionary with all coneMosaic-specific warning labels 
+        % and their default states (either 'on', or 'off')
+        warnings = containers.Map(...
+            {...
+                'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo', ...    % whether computeForOISequence() should display the size of the absorptions matrix
+                'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed' ...         % whether osCompute() should display the seed for the frozen noise
+            }, ...
+            { ...
+                'off', ...               % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
+                'on' ...                % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
+            });
+    end
+    
     properties (Access=private)
         %SPATIALDENSITY_  Ratio of KLMS cones used to generate pattern
         %
@@ -466,6 +480,7 @@ classdef coneMosaic < hiddenHandle
     
     methods (Static)
         [noisyImage, theNoise] = photonNoise(absorptions,varargin);
+        allWarnings(state);        % valid state values : 'default', 'on', 'off'
         resampledAbsorptionsSequence = tResample(absorptionsSequence, pattern, originalTimeAxis, resampledTimeAxis);
     end
     
