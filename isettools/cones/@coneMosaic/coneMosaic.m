@@ -196,10 +196,12 @@ classdef coneMosaic < hiddenHandle
             {...
                 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo', ...    % whether computeForOISequence() should display the size of the absorptions matrix
                 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed' ...         % whether osCompute() should display the seed for the frozen noise
+                'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec' ...    % whether setting coneMosaic.integrationTime > 25 ms should display a warning
             }, ...
             { ...
                 'off', ...               % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
-                'on' ...                % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
+                'on' ...                 % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
+                'on' ...                 % default state for 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec'
             });
     end
     
@@ -407,6 +409,14 @@ classdef coneMosaic < hiddenHandle
         
         function set.absorptions(obj, val)
             obj.absorptions = single(val);
+        end
+        
+        function set.integrationTime(obj, val)
+            if (val > 25/1000)
+                warning('ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec', ...
+                    'Setting the coneMosaic.integrationTime > 25ms is not recommended if you are interested in photocurrent computations. Assigned value: %2.2fmsec.', val*1000);
+            end
+            obj.integrationTime = val;
         end
         
         function set.current(obj, val)
