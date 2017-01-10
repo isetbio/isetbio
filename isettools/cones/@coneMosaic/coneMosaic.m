@@ -199,9 +199,9 @@ classdef coneMosaic < hiddenHandle
                 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec' ...    % whether setting coneMosaic.integrationTime > 25 ms should display a warning
             }, ...
             { ...
-                'off', ...               % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
-                'on' ...                 % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
-                'on' ...                 % default state for 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec'
+                'off', ...                % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
+                'off' ...                 % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
+                'off' ...                 % default state for 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec'
             });
     end
     
