@@ -307,7 +307,10 @@ classdef coneMosaic < hiddenHandle
             % These listeners make sure the wavelength samples
             % in obj.pigment and obj.macular match
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
-            addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);          
+            addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);     
+            
+            % Set default warnings
+            coneMosaic.allWarnings('default');
         end
         
         %% Get methods for dependent variables
