@@ -32,14 +32,14 @@ classdef coneMosaic < hiddenHandle
     %   'macular'         Macular pigment object (defaults to what Macular() sets up).
     %   'os'              Outer segment object (defauls to what osLinear() sets up).
     %   'center'          Position of center of mosaic on the retina. Vector (default [0,0]).
-    %   'wave'            Wavelength samples in nm. Vector (default
-    %   400:10:700).h
+    %   'wave'            Wavelength samples in nm. Vector (default 400:10:700).
     %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []).
     %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]).
     %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]).
     %   'integrationTime' Value (default 0.005). Temporal integration in sec
-    %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0].
-    %                     [RELATIVE TO WHAT COORDINATE SYSTEM IS THIS SPECIFIED?]
+    %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
+    %                     middle or cone mosaic, 1 unit is 1 cone for rect
+    %                     (HEX?)
     %   'apertureBlur'    Blur by cone aperture? true/false (default false).
     %   'noiseFlag'       Add photon noise (default) or not. String (default
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
