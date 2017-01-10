@@ -159,22 +159,7 @@ warning('ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo',...
 
 % Organize trials in blocks if we have a hex mosaic
 if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
-    trialBlockSize = floor(nTrials/trialBlocks);
-    if (trialBlockSize >= 1)
-        blockedTrialIndices = {};
-        for iTrialBlock = 1:trialBlocks
-            firstTrial = trialBlockSize*(iTrialBlock-1) + 1;
-            lastTrial = trialBlockSize*(iTrialBlock-1) + trialBlockSize;
-            if (iTrialBlock == trialBlocks)
-                lastTrial = nTrials;
-            end
-            blockedTrialIndices{iTrialBlock} = firstTrial:lastTrial;
-        end
-        % flip order so that the last (possibly larger block) is first
-        blockedTrialIndices = fliplr(blockedTrialIndices);
-    else
-        blockedTrialIndices{1} = 1:nTrials;
-    end
+    [~, blockedTrialIndices] = computeBlockedTrialIndices(trialBlocks, nTrials);
 else
     blockedTrialIndices{1} = 1:nTrials;
 end
@@ -487,7 +472,7 @@ obj.absorptions = [];
 if (isa(obj, 'coneMosaicHex'))
     photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
     for ii=1:nTrials
-        if (~isempty(workerID))
+        if (~isempty(workerID)) && (mod(ii, round(nTrials/10)) == 0)
             displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
         end
         % Reshape to full 3D matrix for obj.computeCurrent
@@ -506,7 +491,7 @@ if (isa(obj, 'coneMosaicHex'))
 else
     photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
     for ii=1:nTrials
-        if (~isempty(workerID))
+        if (~isempty(workerID)) && (mod(ii, round(nTrials/10)) == 0)
             displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
         end
         % Put this trial of absorptions into the cone mosaic
