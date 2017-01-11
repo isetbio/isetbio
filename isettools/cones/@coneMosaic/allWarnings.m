@@ -1,4 +1,7 @@
 function allWarnings(state)
+
+    return;
+    
     if (nargin == 0) || ((nargin == 1) && (~ischar(state)))
         printWarningStates();
         return;

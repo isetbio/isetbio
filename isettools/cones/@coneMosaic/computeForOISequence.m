@@ -154,8 +154,8 @@ end
 nonNullConesIndices = find(obj.pattern>1);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
 s = whos('absorptions');
-warning('ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo',...
-       'absorptions for %d trials %d cones and %d timebins requires %2.2f GB of RAM', nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), s.bytes/(1024^3));
+% warning('ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo',...
+%        'absorptions for %d trials %d cones and %d timebins requires %2.2f GB of RAM', nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), s.bytes/(1024^3));
 
 % Organize trials in blocks if we have a hex mosaic
 if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
@@ -163,7 +163,6 @@ if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
 else
     blockedTrialIndices{1} = 1:nTrials;
 end
-
 
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi

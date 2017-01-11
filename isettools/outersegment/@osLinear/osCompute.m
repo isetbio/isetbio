@@ -153,8 +153,8 @@ switch obj.noiseFlag
         % fprintf('Random noise added.\n')
         current = osAddNoise(current, 'sampTime',obj.timeStep);
     case 'frozen'
-        warning('ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed', ...
-        	'Frozen noise (seed %d)\n',seed);
+        %warning('ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed', ...
+        %	'Frozen noise (seed %d)\n',seed);
         current = osAddNoise(current, 'sampTime',obj.timeStep,'seed',seed);
     otherwise
         error('Noise flag %s\n',obj.noiseFlag);

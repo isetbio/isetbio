@@ -36,7 +36,10 @@ classdef coneMosaic < hiddenHandle
     %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []).
     %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]).
     %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]).
-    %   'integrationTime' Value (default 0.005). Temporal integration in sec
+    %   'integrationTime' Value (default 0.005). Temporal integration in
+    %                     sec. Keep this under 25 ms (0.025) if you are
+    %                     computing photocurrent for decent numerical
+    %                     accuracy.
     %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
     %                     middle or cone mosaic, 1 unit is 1 cone for rect
     %                     (HEX?)
@@ -99,7 +102,9 @@ classdef coneMosaic < hiddenHandle
         %    cone positions are sampled.
         patternSampleSize; 
         
-        %INTEGRATIONTIME  Cone temporal integration time (secs)  
+        %INTEGRATIONTIME  Cone temporal integration time (secs).
+        %    Keep this under 25 ms (0.025) if you are computing
+        %    photocurrent and want reasonable numerical accuracy.
         integrationTime;
         
         %EMPOSITIONS  Eye movement positions
@@ -189,21 +194,21 @@ classdef coneMosaic < hiddenHandle
         spatialDensity; 
     end
     
-    properties (Constant)
-        % dictionary with all coneMosaic-specific warning labels 
-        % and their default states (either 'on', or 'off')
-        warnings = containers.Map(...
-            {...
-                'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo', ...    % whether computeForOISequence() should display the size of the absorptions matrix
-                'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed' ...         % whether osCompute() should display the seed for the frozen noise
-                'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec' ...    % whether setting coneMosaic.integrationTime > 25 ms should display a warning
-            }, ...
-            { ...
-                'off', ...                % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
-                'off' ...                 % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
-                'off' ...                 % default state for 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec'
-            });
-    end
+    % properties (Constant)
+    %     % dictionary with all coneMosaic-specific warning labels 
+    %     % and their default states (either 'on', or 'off')
+    %     warnings = containers.Map(...
+    %         {...
+    %             'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo', ...    % whether computeForOISequence() should display the size of the absorptions matrix
+    %             'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed' ...         % whether osCompute() should display the seed for the frozen noise
+    %             'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec' ...    % whether setting coneMosaic.integrationTime > 25 ms should display a warning
+    %         }, ...
+    %         { ...
+    %             'off', ...                % default state for 'ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo': 
+    %             'off' ...                 % default state for 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed'
+    %             'off' ...                 % default state for 'ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec'
+    %         });
+    % end
     
     properties (Access=private)
         %SPATIALDENSITY_  Ratio of KLMS cones used to generate pattern
@@ -310,7 +315,7 @@ classdef coneMosaic < hiddenHandle
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);     
             
             % Set default warnings
-            coneMosaic.allWarnings('default');
+            % coneMosaic.allWarnings('default');
         end
         
         %% Get methods for dependent variables
@@ -415,10 +420,10 @@ classdef coneMosaic < hiddenHandle
         end
         
         function set.integrationTime(obj, val)
-            if (val > 25/1000)
-                warning('ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec', ...
-                    'Setting the coneMosaic.integrationTime > 25ms is not recommended if you are interested in photocurrent computations. Assigned value: %2.2fmsec.', val*1000);
-            end
+            % if (val > 25/1000)
+            %     warning('ISETBIO:ConeMosaic:integrationTimeSetToGreaterThan25msec', ...
+            %         'Setting the coneMosaic.integrationTime > 25ms is not recommended if you are interested in photocurrent computations. Assigned value: %2.2fmsec.', val*1000);
+            % end
             obj.integrationTime = val;
         end
         
