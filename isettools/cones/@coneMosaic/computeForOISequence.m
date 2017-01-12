@@ -444,8 +444,10 @@ end % oiRefreshInterval > defaultIntegrationTime
 obj.integrationTime = defaultIntegrationTime;
 
 % Reload the full eye movement sequence for the last trial only
-if (ndims(emPaths) == 3), obj.emPositions = squeeze(emPaths(nTrials,:,:));
-else                      obj.emPositions = emPaths;
+if (ndims(emPaths) == 3), 
+    obj.emPositions = reshape(squeeze(emPaths(nTrials,:,:)),[nEyeMovements 2]);
+else
+    obj.emPositions = emPaths;
 end
 
 % If we don't compute the current, we return only the absorptions from the
