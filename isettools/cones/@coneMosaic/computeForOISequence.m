@@ -214,13 +214,13 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             (eyeMovementTimeAxis <= tFrameEnd -   defaultIntegrationTime + eps(tFrameEnd-defaultIntegrationTime)) );
         
         if (isempty(indices))
-            fprintf('No eye movements within oiIndex #%d\n', oiIndex);
+            if (debugTiming)
+                fprintf('No eye movements within oiIndex #%d\n', oiIndex);
+            end
             continue;
-            %error('Empty indices. This should never happen.');
         end
         
         for iTrialBlock = 1:numel(blockedTrialIndices)
- 
             % Obtain trials to be computed at this trial block
             trialIndicesForBlock = blockedTrialIndices{iTrialBlock};
             
@@ -235,7 +235,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             elseif (integrationTimeForSecondPartialAbsorption < eps(eyeMovementTimeAxis(idx)+defaultIntegrationTime))
                 integrationTimeForSecondPartialAbsorption = 0;
             end
-
+ 
             % Partial absorptions (p1 in graph above) with previous oi
             % (across all instances)
             if (oiIndex > 1) && (integrationTimeForFirstPartialAbsorption > 0)
@@ -291,7 +291,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             if (numel(indices)>1)
                 % Update the @coneMosaic with the default integration time
                 obj.integrationTime = defaultIntegrationTime;
-                % Compute absorptions for all remaining the OIs
+                % Compute absorptions for all remaining the eye movements
                 idx = indices(2:end);
                 emSubPath = reshape(emPaths(trialIndicesForBlock, idx,:), [numel(trialIndicesForBlock)*numel(idx) 2]);
                 currentSeed = currentSeed  + 1;
@@ -306,6 +306,14 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 remainingEMinsertionIndices = round((eyeMovementTimeAxis(idx)-eyeMovementTimeAxis(1))/defaultIntegrationTime)+1;
                 reformatAbsorptionsAllTrialsMatrix(numel(trialIndicesForBlock), numel(remainingEMinsertionIndices), size(obj.pattern,1), size(obj.pattern,2));
                 absorptions(trialIndicesForBlock, :, remainingEMinsertionIndices) = absorptionsAllTrials;
+                
+                % Take care of of special case in which the last em insertion index == numel(eyeMovementTimeAxis)-1
+                % This can happen due to a rounding-off error.
+                if (oiIndex == oiSequence.length) && (remainingEMinsertionIndices(end) == numel(eyeMovementTimeAxis)-1)
+                    absorptions(trialIndicesForBlock, :, numel(eyeMovementTimeAxis)) = ...
+                    absorptions(trialIndicesForBlock, :, numel(eyeMovementTimeAxis)-1);
+                end
+  
                 if (debugTiming)
                     for kk = 2:numel(indices)
                         x = tFrameStart + integrationTimeForSecondPartialAbsorption + [0 0 (kk-1)*obj.integrationTime (kk-1)*obj.integrationTime 0];
@@ -364,7 +372,9 @@ else
             (oiTimeAxis <= emEnd + eps(emEnd)) );
         
         if (isempty(indices))
-            fprintf('No OIs within emIndex #%d\n', emIndex);
+            if (debugTiming)
+                fprintf('No OIs within emIndex #%d\n', emIndex);
+            end
             continue;
         end
         
@@ -444,7 +454,7 @@ end % oiRefreshInterval > defaultIntegrationTime
 obj.integrationTime = defaultIntegrationTime;
 
 % Reload the full eye movement sequence for the last trial only
-if (ndims(emPaths) == 3), 
+if (ndims(emPaths) == 3)
     obj.emPositions = reshape(squeeze(emPaths(nTrials,:,:)),[nEyeMovements 2]);
 else
     obj.emPositions = emPaths;
