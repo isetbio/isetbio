@@ -9,9 +9,10 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % Optional key/value pairs:
 %   'seed' - value (default 1). Value of random noise seed.
 %   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
-%   'trialBlocks' - How many blocks to split the trials in. Default: 1 (no blocking). 
+%   'trialBlockSize' - How many trials each trialBlock should have. Default: [], which results in nTrials (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %   'interpFilters - [WHAT AM I?]
 %   'meanCur' = [WHAT AM I?]
 %   'currentFlag' - true/false (default false). Whether to compute photocurrent
@@ -77,7 +78,7 @@ p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
 p.addParameter('seed',1, @isnumeric);             
 p.addParameter('emPaths', [], @isnumeric);  
-p.addParameter('trialBlocks', 1, @isnumeric);
+p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('interpFilters',[],@isnumeric);    
 p.addParameter('meanCur',[],@isnumeric);          
 p.addParameter('currentFlag', false, @islogical); 
@@ -89,13 +90,14 @@ p.parse(oiSequence, varargin{:});
 currentSeed     = p.Results.seed;
 oiSequence      = p.Results.oiSequence;
 emPaths         = p.Results.emPaths;
-trialBlocks     = p.Results.trialBlocks;
+trialBlockSize  = p.Results.trialBlockSize;
 currentFlag     = p.Results.currentFlag;
 workerID        = p.Results.workerID;
 workDescription = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
 LMSfilters        = p.Results.interpFilters;
 meanCur           = p.Results.meanCur;
+
 
 % Set debugTiming to true to examine the timing between oiFrames and
 % partial/full absorptions. In this mode, the computation stops and
@@ -157,9 +159,14 @@ s = whos('absorptions');
 % warning('ISETBIO:ConeMosaic:computeForOISequence:displaySizeInfo',...
 %        'absorptions for %d trials %d cones and %d timebins requires %2.2f GB of RAM', nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), s.bytes/(1024^3));
 
+
+
 % Organize trials in blocks if we have a hex mosaic
-if (nTrials > 1) && (trialBlocks > 1) && (isa(obj, 'coneMosaicHex'))
-    [~, blockedTrialIndices] = computeBlockedTrialIndices(trialBlocks, nTrials);
+if (isempty(trialBlockSize))
+    trialBlockSize = nTrials;
+end
+if (nTrials > 1) && (trialBlockSize == -1) && (isa(obj, 'coneMosaicHex'))
+    blockedTrialIndices = computeBlockedTrialIndices(trialBlockSize, nTrials);
 else
     blockedTrialIndices{1} = 1:nTrials;
 end
