@@ -202,7 +202,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         
         if (~isempty(workerID))
             % Update progress in command window
-            displayProgress(workerID, workDescription, 0.5*oiIndex/oiSequence.length);
+            displayProgress(workerID, sprintf('%s-absorptions',workDescription), 0.5*oiIndex/oiSequence.length);     
         end
         
         % Current oi time limits
@@ -366,7 +366,7 @@ else
     for emIndex = 1:nEyeMovements
         
         if (~isempty(workerID))
-            displayProgress(workerID, workDescription, 0.5*emIndex/nEyeMovements);
+            displayProgress(workerID, sprintf('%s-absorptions',workDescription), 0.5*oiIndex/oiSequence.length);
         end
         
         % Current eye movement time limits
@@ -491,7 +491,7 @@ if (isa(obj, 'coneMosaicHex'))
     photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(eyeMovementTimeAxis), 'single');
     for ii=1:nTrials
         if (~isempty(workerID)) && (mod(ii, round(nTrials/10)) == 0)
-            displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
+            displayProgress(workerID, sprintf('%s-current',workDescription), 0.5 + 0.5*ii/nTrials);
         end
         % Reshape to full 3D matrix for obj.computeCurrent
         obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
@@ -510,7 +510,7 @@ else
     photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(eyeMovementTimeAxis), 'single');
     for ii=1:nTrials
         if (~isempty(workerID)) && (mod(ii, round(nTrials/10)) == 0)
-            displayProgress(workerID, workDescription, 0.5 + 0.5*ii/nTrials);
+            displayProgress(workerID, sprintf('%s-current',workDescription), 0.5 + 0.5*ii/nTrials);
         end
         % Put this trial of absorptions into the cone mosaic
         obj.absorptions = reshape(squeeze(absorptions(ii,:,:,:)), [obj.rows obj.cols, numel(eyeMovementTimeAxis)]);
@@ -572,23 +572,33 @@ end
 %%
 function displayProgress(workerID, workDescription, progress)
 
-maxStarsNum = 32;
-if (isnan(progress))
-    fprintf('worker-%02d: %s |', workerID, workDescription);
-    for k = 1:maxStarsNum
-        fprintf('*');
+displayFormat = 'numeric';
+if (strcmp(displayFormat,'numeric'))
+    if (isnan(progress))
+        fprintf('worker-%02d: %s \n', workerID, workDescription);
+    else
+        fprintf('worker-%02d: %s (%2.0f%%)\n', workerID, workDescription, progress*100);
     end
-    fprintf('|');
 else
-    fprintf('worker-%02d: %s |', workerID, workDescription);
-    if (progress>1)
-        progress = 1;
+    maxStarsNum = 32;
+    if (isnan(progress))
+        fprintf('worker-%02d: %s |', workerID, workDescription);
+        for k = 1:maxStarsNum
+            fprintf('*');
+        end
+        fprintf('|');
+    else
+        fprintf('worker-%02d: %s |', workerID, workDescription);
+        if (progress>1)
+            progress = 1;
+        end
+        starsNum = round(maxStarsNum*progress);
+        for k = 1:starsNum
+            fprintf('*');
+        end
     end
-    starsNum = round(maxStarsNum*progress);
-    for k = 1:starsNum
-        fprintf('*');
-    end
+    fprintf('\n');
 end
-fprintf('\n');
+
 end
 

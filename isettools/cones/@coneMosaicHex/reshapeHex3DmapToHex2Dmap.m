@@ -12,7 +12,7 @@ iSsource = obj.pattern==4;
 
 timePointsNum = size(hex3Dmap,3);
 hex3Dmap = reshape(hex3Dmap, [size(obj.pattern,1)*size(obj.pattern,2) timePointsNum]);
-hex2Dmap = zeros(numel(nonNullCones), timePointsNum);
+hex2Dmap = zeros(numel(nonNullCones), timePointsNum, class(hex3Dmap));
 hex2Dmap(iLdest,:) = hex3Dmap(iLsource,:);
 hex2Dmap(iMdest,:) = hex3Dmap(iMsource,:);
 hex2Dmap(iSdest,:) = hex3Dmap(iSsource,:);
