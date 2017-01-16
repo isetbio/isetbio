@@ -1,76 +1,74 @@
 function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
 %COMPUTEFOROISEQUENCE  Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
-%    [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
+%   [absorptions, photocurrents, LMSfilters] = COMPUTEFOROISEQUENCE(obj, oiSequence, varargin)
 %
-% Inputs:
+%   Inputs:
 %   obj         - @coneMosaic object
 %   oiSequence  - @oiSequence object
 %
-% Optional key/value pairs:
-%   'seed' - value (default 1). Value of random noise seed.
-%   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
-%   'trialBlockSize' - How many trials each trialBlock should have. Default: [], which results in nTrials (no blocking).
-%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with
-%               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
-%   'interpFilters - [WHAT AM I?]
-%   'meanCur' = [WHAT AM I?]
-%   'currentFlag' - true/false (default false). Whether to compute photocurrent
-%   'theExpandedMosaic' - (default empty).  We need an expanded version of the coneMosaic to deal with eye
-%            movements. For multiple calls to computeForOISequence, we may want to generate it once and pass it.
-%            If it is empty (default), the expanded version is generated here.
-%   'workerID' - (default empty).  If this field is non-empty, the progress of
-%            the computation is printed in the command window along with the
-%            workerID (from a parfor loop).
-%   'workDescription' - (default empty).  A string describing the condition
-%            computed. Used only when workerID is non-empty.
-%
-% Outputs:
+%   Outputs:
 %   absorptions          - cone photon absorptions (photon counts in integrationTime)
 %   photocurrent         - cone photocurrent
 %
-% There are several ways to use this function.  The simplest is to send in
-% a single oiSequence and a single eye movement sequence.
+%   Optional parameter name/value pairs chosen from the following:
 %
-%   coneMosaic.compute(oiSequence)
+%   'seed'              Value of random noise seed.(default 1). 
+%   'emPaths'           [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
+%   'trialBlockSize'    How many trials each trialBlock should have. Default: is emtpy, which results in nTrials (no blocking).
+%                       This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with
+%                       large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+%                       If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
+%   'interpFilters      [DHB NOTE: WHAT AM I?]
+%   'meanCur'           [DHB NOTE: WHAT AM I?]
+%   'currentFlag'       Whether to compute photocurrent(default false). 
+%   'theExpandedMosaic' We need an expanded version of the coneMosaic to deal with eye
+%                       movements. For multiple calls to computeForOISequence, we may want to generate it once and pass it.
+%                       If it is empty (default), the expanded version is generated here.
+%   'workerID'          If this field is non-empty (default is empty), the progress of
+%                       the computation is printed in the command window along with the
+%                       workerID (from a parfor loop).
+%   'workDescription'   A string describing the condition
+%                       computed. Used only when workerID is non-empty (default empty).
 %
-% It is also possible to run this for a multiple eye movement paths. In that
-% case, the coneMosaic object contains only the data from last eye movement
-% path. The full data set for all the computed eye movements paths are contained
-% in the function returns: absorptions and photocurrent.
+%   There are several ways to use this function.  The simplest is to send in
+%   a single oiSequence and a single eye movement sequence.
+%     coneMosaic.compute(oiSequence)
 %
-%   [absorptions, photocurrents] = cMosaic.computeForOISequence(oiSequence);
+%   It is also possible to run this for a multiple eye movement paths. In that
+%   case, the coneMosaic object contains only the data from last eye movement
+%   path. The full data set for all the computed eye movements paths are contained
+%   in the function returns: absorptions and photocurrent.
+%     [absorptions, photocurrents] = cMosaic.computeForOISequence(oiSequence);
 %
-% We control the photon noise by cmosaic.noiseFlag, and the photocurrent
-% noise by cmosaic.os.noiseFlag.  These have the options
+%   We control the photon noise by cmosaic.noiseFlag, and the photocurrent
+%   noise by cmosaic.os.noiseFlag.  These have the options
 %    'random','frozen','none'
-% When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
+%   When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
 %
-% Examples:
-%  This is an example of how to do this for 1,000 eye movement paths
-%  (trials), each consisting of 100 eye movements.
+%   Examples:
+%   This is an example of how to do this for 1,000 eye movement paths
+%   (trials), each consisting of 100 eye movements.
 %
 %   nTrials = 1000; nEyeMovements = 100;
 %   emPaths = zeros(instancesBlockSize, nEyeMovements, 2);
 %   for iTrial = 1:nTrials
-%    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
+%     theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
 %   end
 %   [absorptions, photocurrents] = cMosaic.computeForOISequence(...
 %       theOIsequence, ...
 %       'emPaths', theEMPaths, ...
 %       'currentFlag', true);
 %
-% The returned absorptions has an extra dimension (the first one) so that
-% we can calculate for multiple eye movement paths.  The absorptions from a
-% single eye movement case would be
-%
+%   The returned absorptions has an extra dimension (the first one) so that
+%   we can calculate for multiple eye movement paths.  The absorptions from a
+%   single eye movement case would be
 %    absorptions(thisTrial,:,:,:)
 %
-% The coneMosaic object (obj) has the absorptions from the last trial and
-% dimensions (row,col,time).
+%   The coneMosaic object (obj) has the absorptions from the last trial and
+%   dimensions (row,col,time).
 %
-% See also: coneMosaic.compute, v_cmosaic,
+%   See also CONEMOSAIC, COMPUTE
 
 % NPC ISETBIO Team 2016
 

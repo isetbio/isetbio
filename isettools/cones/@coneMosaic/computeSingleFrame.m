@@ -1,17 +1,27 @@
 function absorptions = computeSingleFrame(obj, oi, varargin)
-% computeSingleFrame  Single frame compute function for coneMosaic object.
-%     absorptions = computeSingleFrame(obj, oi, varargin)
+%COMPUTESINGLEFRAME  Single frame compute function for coneMosaic object.
+%   absorptions = COMPUTESINGLEFRAME(obj, oi, varargin)
 %
-% This function computes mean expected photon isomerizations (also called
-% absorptions in isetbio) for one frame, without including eye movements or
-% noise.
+%   This function computes mean expected photon isomerizations (also called
+%   absorptions in isetbio) for one frame, without including eye movements or
+%   noise.
+
+%   Inputs:
+%   obj     - cone mosaic object
+%   oi      - optical image
 %
-% Key/value pairs
-%  'fullLMS' - true/false (default false). Return values for a full mosaic,
-%    that is for mosaic with L, M, and S cones at each cone position.  This
-%    is row by col by 3 matrix, where row and column are the mosaic
-%    dimensions.  This is not biologically realistic but useful for some
-%    computations.
+%   Outputs:
+%   absorptions - cone absorptions
+
+%   Optional parameter name/value pairs chosen from the following:
+%
+%   'fullLMS'         Return values for a full mosaic,
+%                     that is for mosaic with L, M, and S cones at each cone position.  This
+%                     is row by col by 3 matrix, where row and column are the mosaic
+%                     dimensions.  This is not biologically realistic but useful for some
+%                     computations (default false).
+% 
+%   See also CONEMOSAIC, COMPUTE, COMPUTEFOROISEQUENCE.
   
 % HJ ISETBIO Team 2016
 

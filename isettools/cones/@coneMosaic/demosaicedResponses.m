@@ -1,6 +1,9 @@
 function varargout = demosaicedResponses(obj, varargin)
-% Return demosaiced response maps (absorptions or currents) from a coneMosaic object
-% 
+%DEMOSAICEDRESPONSES  Return demosaiced response maps (absorptions or currents) from a coneMosaic object
+%
+% [DHB NOTE: SOME HEADER COMMENTS HERE, PARTICULARLY ON THE INPUT OPTIONS
+% AND ALGORITHM, WOULD BE VERY HELPFUL.]
+ 
 % NPC, ISETBIO Team, 2016  
 
     if (isempty(varargin))

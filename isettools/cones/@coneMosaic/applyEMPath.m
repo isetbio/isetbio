@@ -1,22 +1,27 @@
 function absorptions = applyEMPath(obj, LMS, varargin)
 %APPLYEMPATH  Apply eye movement path and return absorptoins absorptions.
-%    absorptions = APPLYEMPATH(obj, LMS, emPath, varargin)
+%   absorptions = APPLYEMPATH(obj, LMS, emPath, varargin)
 %
-%    Inputs:
-%    obj     - cone mosaic object
-%    LMS     - full LMS noise free absorptions
+%   Inputs:
+%   obj     - cone mosaic object
+%   LMS     - full LMS noise free absorptions
 %
-%    Optional parameter name/value pairs chosen from the following:
+%   Outputs:
+%   absorptions - cone absorptions with eye movements
 %
-%    'name'            Mosaic name
-%    'padRows'         Rows padded
-%    'padCols'         Columns padded
-%    'emPath'          Eye movement path
+%   Optional parameter name/value pairs chosen from the following:
 %
-%    Outputs:
-%    absorptions - cone absorptions with eye movements
+%   'name'            Mosaic name
+%   'padRows'         Rows padded
+%   'padCols'         Columns padded
+%   'emPath'          Eye movement path
 %
-%    See also CONEMOSAIC.
+%   [DHB NOTE: SOME COMMENTS ABOUT HOW THIS EM STUFF WORKS, SOMEWHERE, WITH
+%   A POINTER HERE WOULD BE VERY HELPFUL.  WHAT ARE THE UNITS OF EM
+%   POSITIONS, WHO IS IN CHARGE OF MAKING SURE THE MOSAIC IS BIG ENOUGH,
+%   ETC.]
+%
+%   See also CONEMOSAIC.
 
 % HJ ISETBIO Team 2016
 

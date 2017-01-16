@@ -1,4 +1,5 @@
 function allWarnings(state)
+%ALLWARNINGS  Control warnings in object.  Deprecated.
 
     return;
     

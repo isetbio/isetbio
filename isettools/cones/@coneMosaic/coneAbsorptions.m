@@ -14,8 +14,7 @@ function a = coneAbsorptions(obj,varargin)
 
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
-p.addParameter('coneType','l',@ischar);
-p.addParameter('roi',[],@isvector);   % A rect in the array
+p.addParameter('coneType','L',@ischar);
 p.parse(obj,varargin{:});
 
 % Pull out the relevant cone type data
