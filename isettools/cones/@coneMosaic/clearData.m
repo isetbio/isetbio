@@ -1,6 +1,9 @@
 function obj = clearData(obj, varargin)
 %CLEARDATA  Clear computed data
-%    obj = clearData(obj, varargin)
+%    obj = CLEARDATA(obj, varargin)
+%
+%    Clear out data from object that is computed.  Useful to prevent use of
+%    stale data.
 
 % HJ ISETBIO Team 2016
 

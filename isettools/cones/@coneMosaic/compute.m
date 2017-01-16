@@ -1,18 +1,18 @@
 function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
 %COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%  [absorptions, current, interpFilters, meanCur] = obj.COMPUTE(oi or oiSequence);
+%    [absorptions, current, interpFilters, meanCur] = COMPUTE(obj,oi,varargin);
+%    [absorptions, current, interpFilters, meanCur] = COMPUTE(obj,oiSequence,varargin);
 %
-% Compute the temporal sequence of cone absorptions, which we treat as
-% isomerizations, R*.  The computation can executed on
+%    Compute the temporal sequence of cone absorptions, which we treat as
+%    isomerizations, R*.  The computation can executed on
+%    * a single optical image (snapshot)
+%    * a single optical image with a series of eye movements, or
+%    * an optical image sequence with a series of eye movements.
 %
-%   * a single optical image (snapshot)
-%   * a single optical image with a series of eye movements, or
-%   * an optical image sequence with a series of eye movements.
-%
-% Inputs:
-%   obj - a coneMosaic
-%   oi  - optical image, or oiSequence.  See oiCreate for more details
+%   Inputs:
+%     obj - a coneMosaic
+%     oi  - optical image, or oiSequence.  See oiCreate for more details
 %
 % Optional key/value pairs
 %   currentFlag - true/false (default false). Also compute photocurrent
