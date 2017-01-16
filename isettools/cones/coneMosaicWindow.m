@@ -957,7 +957,7 @@ end
 % Display up the slider
 set(handles.sliderMovieProgress, 'Min', 1);
 set(handles.sliderMovieProgress, 'Max', nFrames);
-set(handles.sliderMovieProgress, 'SliderStep', [1/nFrames, 10/nFrames]);
+set(handles.sliderMovieProgress, 'SliderStep', [1, round(max(nFrames/4,1))]);  %Minor step and major step
 
 % If play, then play.
 if get(handles.btnPlayPause, 'Value')

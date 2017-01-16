@@ -74,7 +74,10 @@ classdef coneMosaic < hiddenHandle
         absorptions;
         
         %CONEDARKNOISERATE  Mean rate of dark (thermal) isomerizations for each cone class.
-        %    Expressed as a three-dimensional row vector.
+        %    Expressed as a three-dimensional row vector,
+        %    isomerizations/sec.
+        %    Default values are [0 0 0] for backwards compatibility.
+        %    Reasonable values are about [300 300 300].
         coneDarkNoiseRate;
         
         %CURRENT  The (x,y,t) of photocurrent 

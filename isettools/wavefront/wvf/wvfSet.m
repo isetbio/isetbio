@@ -1,24 +1,18 @@
 function wvf = wvfSet(wvf,parm,val,varargin)
-% Set wavefront parameters to use for calculations
+% WVFSET - Set wavefront parameters to use for calculations
 %
 %     wvf = wvfSet(wvf,parm,val,varargin)
 %
-% Key wavefront properties are stored as parameters here.  Many other
-% properties are computed from these identifiable parameters using other
-% functions, such as wvfGet.
+%    Key wavefront properties are stored as parameters here.  Many other
+%    properties are computed from these identifiable parameters using other
+%    functions, such as wvfGet.
 %
-% Parameter names can be written with spaces and upper/lower case.  The
-% strings are converted to lower case and all the spaces are removed by
-% this routine.
+%    Parameter names can be written with spaces and upper/lower case.  The
+%    strings are converted to lower case and all the spaces are removed by
+%    this routine.
 %
 % When parameters that influence the pupil function are changed,
 % wvf.PUPILFUNCTION_STALE is set too true.
-%
-% Examples:
-%   wvf = wvfSet(wvf,'measured pupil',8);
-%   wvf = wvfSet(wvf,'stiles crawford',sce);
-%   wvf = wvfSet(wvf,'name','test wvf');
-%   wvf = wvfSet(wvf,'zcoeffs',z);
 %
 % Parameters:
 %
@@ -64,8 +58,11 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 % Stiles Crawford Effect
 %     'sce params' - The Stiles-Crawford Effect  structure
 %
-% See also: wvfGet, wvfCreate, wvfComputePupilFunction, wvfComputePSF,
-%           sceCreate, sceGet
+% Examples:
+%   wvf = wvfSet(wvf,'measured pupil',8);
+%   wvf = wvfSet(wvf,'stiles crawford',sce);
+%   wvf = wvfSet(wvf,'name','test wvf');
+%   wvf = wvfSet(wvf,'zcoeffs',z);
 %
 % Notes:
 %   5/17/12  dhb  When we pass fewer than 65 coefficients, should we zero
@@ -83,11 +80,14 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %                 function and psf are adequately sampled.
 %
 % (DHB/BW) (c) Wavefront Toolbox Team 2011, 2012
+%
+% See also WVFGET, WVFCREATE, WVFCOMPUTEPUPILEFUNCTION, WVFCOMPUTEPSF,
+%           SCECREATE, SCEGET
 
 % Programming Notes
 %   The Strehl ratio, http://en.wikipedia.org/wiki/Strehl_ratio
 
-% Arg checks and parse.
+%% Arg checks and parse.
 %
 % The switch on what we're setting is broken out into several pieces
 % below to allow use of cells, and so that autoindent does something
