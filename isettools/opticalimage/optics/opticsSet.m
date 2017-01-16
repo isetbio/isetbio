@@ -1,7 +1,7 @@
 function optics = opticsSet(optics,parm,val,varargin)
-% Set optics structure parameters
+% OPTICSSET - Set optics structure parameters
 %
-%   optics = opticsSet(optics,parm,val,varargin)
+%   optics = opticsSet(optics, paramName,val, ...)
 %
 % The optics structure contains the basic optics parameters used to control
 % image formation. The parameters define parameters used in the
@@ -54,7 +54,8 @@ function optics = opticsSet(optics,parm,val,varargin)
 %      {'cos4thdata'}       - Cached cos4th data
 %
 % Copyright ImagEval Consultants, LLC, 2005.
-
+%
+% See also OIGET OISET OPTICSGET
 
 if ~exist('optics','var') || isempty(optics),  error('No optics specified.'); end
 if ~exist('parm','var') || isempty(parm),      error('No parameter specified.'); end

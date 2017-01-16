@@ -1,20 +1,41 @@
 classdef oiSequence
-    % Class for generating a sequence of optical images
+    % OISEQUENCE - Class for generating a temporal sequence of optical images
     %
-    % Usage:
-    % (1) theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunctionTimeAxis, modulationFunction)
+    %   The stimuli for many psychophysical and physiological experiments can be
+    %   described as a fixed background image and combined with a time-varying
+    %   image. The oiSequence represents the these two images along with the
+    %   weights that define the composition of the two images across time.
     %
-    % (2) modulationRegion.radiusInMicrons = 300;
-    %     theOIsequence = oiSequence(oiBackground, oiModulated, modulationFunctionTimeAxis, modulationFunction, 'modulationRegion', modulationRegion);
+    %   The parameters and usage are
+    %
+    %    oiSeq = oiSequence(oiBackground, oiModulated, timeAxis, weightsTime, ...
+    %                       'PARAM1',val,'PARAM2', val,  ...) 
+    %
+    %    creates the oiSequence object.
+    %
+    %   Optional parameter name/value pairs chosen from the following:
+    %
+    %   'composition'     -  add or blend the fixed and modulated OIs
+    %   'modulationRegion'-  choose a region of interest for the modulation
+    %
+    % Examples
+    %   oiSequence = oiSequence(oiBackground, oiModulated, ...
+    %                      modulationFunctionTimeAxis, modulationFunction)
+    %
+    %   modulationRegion.radiusInMicrons = 300;
+    %   oiSequence = oiSequence(oiBackground, oiModulated, ...
+    %                  modulationFunctionTimeAxis, modulationFunction, ...
+    %                  'modulationRegion', modulationRegion);
     %
     % TODO:  Maybe set up some oiGet/Set routines with the syntax
     %        oiSequence.get('oiFixed mumble') and
     %        oiSequence.get('oiModulated mumble')???
     %        Maybe oiSequence.get('frame',val)???
     %
-    % See t_oiSequence for example usage.
-    %
     %  NPC, ISETBIO TEAM, 2016
+    %
+    % See also t_oiSequence
+    %
     
     properties
         photonsFixed;         % Photons stored as double

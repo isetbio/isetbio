@@ -132,6 +132,8 @@ LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
 % Deal with eye movements
 absorptions = obj.applyEMPath(LMS, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
 
+% dbstop in compute.m at 138 if sum(absorptions(:))<1
+
 % Add photon noise to the whole volume
 switch obj.noiseFlag
     case {'frozen','random'}

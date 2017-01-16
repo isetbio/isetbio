@@ -62,15 +62,21 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 
 %% Inputs
 p = inputParser;
+p.KeepUnmatched = true;
 p.addRequired('oisType',@ischar)
 p.addRequired('composition',@ischar);
 p.addRequired('modulation');
 
+% Parameters that can be passed
 p.addParameter('sampleTimes',[],@isvector);
 p.addParameter('testParameters',[],@isstruct);
 p.addParameter('sceneParameters',[],@isstruct);
+p.addParameter('oi',[],@isstruct);
 
 p.parse(oisType,composition,modulation,varargin{:});
+
+oi = p.Results.oi;
+if isempty(oi), oi = oiCreate('wvf human'); end
 
 oisType = ieParamFormat(oisType);
 
@@ -111,7 +117,6 @@ switch oisType
         end
         
         % Compute optical images from the scene
-        oi = oiCreate('wvf human');
         for ii = 1:2
             OIs{ii} = oiCompute(oi,scene{ii});
         end
@@ -149,7 +154,6 @@ switch oisType
         %ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
 
         % Compute optical images from the scene
-        oi = oiCreate('wvf human');
         for ii = 1:2
             OIs{ii} = oiCompute(oi,scene{ii});
         end
@@ -183,7 +187,6 @@ switch oisType
         %ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
         
         % Compute optical images from the scene
-        oi = oiCreate('wvf human');
         for ii = 1:2
             OIs{ii} = oiCompute(oi,scene{ii});
         end

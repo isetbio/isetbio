@@ -1,5 +1,6 @@
 function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
 %COMPUTEFOROISEQUENCE  Compute cone absorptions and optionally photocurrents for a @oiSequence
+%
 %    [absorptions, photocurrents, LMSfilters] = computeForOISequence(obj, oiSequence, varargin)
 %
 % Inputs:
@@ -9,8 +10,8 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % Optional key/value pairs:
 %   'seed' - value (default 1). Value of random noise seed.
 %   'emPaths' - [N x M x 2] matrix of N eye movement paths, each with Mx2 eye positions (default empty)
-%   'trialBlockSize' - How many trials each trialBlock should have. Default: [], which results in nTrials (no blocking). 
-%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
+%   'trialBlockSize' - How many trials each trialBlock should have. Default: [], which results in nTrials (no blocking).
+%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %   'interpFilters - [WHAT AM I?]
@@ -34,15 +35,15 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %
 %   coneMosaic.compute(oiSequence)
 %
-% It is also possible to run this for a multiple eye movement paths. In
-% that case, the coneMosaic object contains only the last trial.  The full
-% set of data for all the trial are contained in the returned outputs,
-% absorptions and photocurrent.
+% It is also possible to run this for a multiple eye movement paths. In that
+% case, the coneMosaic object contains only the data from last eye movement
+% path. The full data set for all the computed eye movements paths are contained
+% in the function returns: absorptions and photocurrent.
 %
 %   [absorptions, photocurrents] = cMosaic.computeForOISequence(oiSequence);
 %
 % We control the photon noise by cmosaic.noiseFlag, and the photocurrent
-% noise by cmosaic.os.noiseFlag.  These have the options 
+% noise by cmosaic.os.noiseFlag.  These have the options
 %    'random','frozen','none'
 % When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
 %
@@ -50,7 +51,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %  This is an example of how to do this for 1,000 eye movement paths
 %  (trials), each consisting of 100 eye movements.
 %
-%   nTrials = 1000; nEyeMovements = 100; 
+%   nTrials = 1000; nEyeMovements = 100;
 %   emPaths = zeros(instancesBlockSize, nEyeMovements, 2);
 %   for iTrial = 1:nTrials
 %    theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
@@ -59,7 +60,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %       theOIsequence, ...
 %       'emPaths', theEMPaths, ...
 %       'currentFlag', true);
-%                    
+%
 % The returned absorptions has an extra dimension (the first one) so that
 % we can calculate for multiple eye movement paths.  The absorptions from a
 % single eye movement case would be
@@ -69,19 +70,19 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 % The coneMosaic object (obj) has the absorptions from the last trial and
 % dimensions (row,col,time).
 %
-% See also: coneMosaic.compute, v_cmosaic, 
+% See also: coneMosaic.compute, v_cmosaic,
 
 % NPC ISETBIO Team 2016
 
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-p.addParameter('seed',1, @isnumeric);             
-p.addParameter('emPaths', [], @isnumeric);  
+p.addParameter('seed',1, @isnumeric);
+p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('trialBlockSize', [], @isnumeric);
-p.addParameter('interpFilters',[],@isnumeric);    
-p.addParameter('meanCur',[],@isnumeric);          
-p.addParameter('currentFlag', false, @islogical); 
+p.addParameter('interpFilters',[],@isnumeric);
+p.addParameter('meanCur',[],@isnumeric);
+p.addParameter('currentFlag', false, @islogical);
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
@@ -130,7 +131,7 @@ if (isempty(theExpandedMosaic))
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
 end
-    
+
 %% Get ready for output variables
 
 photocurrents = [];
@@ -174,8 +175,8 @@ end
 if (oiRefreshInterval >= defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
-    % equal to the eye movement update rate.  
-    % 
+    % equal to the eye movement update rate.
+    %
     
     % SCENARIO
     %              |----- oiRefreshInterval ----|----- oiRefreshInterval ----|----- oiRefreshInterval ----|
@@ -202,7 +203,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
         
         if (~isempty(workerID))
             % Update progress in command window
-            displayProgress(workerID, sprintf('%s-absorptions',workDescription), 0.5*oiIndex/oiSequence.length);     
+            displayProgress(workerID, sprintf('%s-absorptions',workDescription), 0.5*oiIndex/oiSequence.length);
         end
         
         % Current oi time limits
@@ -242,7 +243,8 @@ if (oiRefreshInterval >= defaultIntegrationTime)
             elseif (integrationTimeForSecondPartialAbsorption < eps(eyeMovementTimeAxis(idx)+defaultIntegrationTime))
                 integrationTimeForSecondPartialAbsorption = 0;
             end
- 
+
+            
             % Partial absorptions (p1 in graph above) with previous oi
             % (across all instances)
             if (oiIndex > 1) && (integrationTimeForFirstPartialAbsorption > 0)
@@ -318,9 +320,9 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 % This can happen due to a rounding-off error.
                 if (oiIndex == oiSequence.length) && (remainingEMinsertionIndices(end) == numel(eyeMovementTimeAxis)-1)
                     absorptions(trialIndicesForBlock, :, numel(eyeMovementTimeAxis)) = ...
-                    absorptions(trialIndicesForBlock, :, numel(eyeMovementTimeAxis)-1);
+                        absorptions(trialIndicesForBlock, :, numel(eyeMovementTimeAxis)-1);
                 end
-  
+                
                 if (debugTiming)
                     for kk = 2:numel(indices)
                         x = tFrameStart + integrationTimeForSecondPartialAbsorption + [0 0 (kk-1)*obj.integrationTime (kk-1)*obj.integrationTime 0];
@@ -339,7 +341,7 @@ if (oiRefreshInterval >= defaultIntegrationTime)
                 fprintf('[%3d/%3d]: p1=%05.1fms p2=%05.1fms f=%05.1fms, i1=%03d, iR=%03d-%03d i1Time=%06.1fms, iRtime=[%06.1fms .. %06.1fms] (%d)\n', oiIndex, oiSequence.length, integrationTimeForFirstPartialAbsorption*1000, integrationTimeForSecondPartialAbsorption*1000, obj.integrationTime*1000, firstEMinsertionIndex, remainingEMinsertionIndices(1), remainingEMinsertionIndices(end), eyeMovementTimeAxis(indices(1))*1000, eyeMovementTimeAxis(indices(2))*1000, eyeMovementTimeAxis(indices(end))*1000, numel(indices));
             end
             if (oiSequence.length > 1)
-                set(gca, 'XLim', [oiTimeAxis(1) oiTimeAxis(end)]); 
+                set(gca, 'XLim', [oiTimeAxis(1) oiTimeAxis(end)]);
                 pause
             end
         end
@@ -391,8 +393,8 @@ else
             
             % sum the partial integration times
             actualIntegrationTime = 0;
-        
-             % Partial absorptions during the ovelap with the OI that started before the emStart
+            
+            % Partial absorptions during the ovelap with the OI that started before the emStart
             idx = indices(1);
             integrationTimeForFirstPartialAbsorption = oiTimeAxis(idx)+oiRefreshInterval-emStart;
             if (integrationTimeForFirstPartialAbsorption > eps(oiTimeAxis(idx)+oiRefreshInterval))
@@ -478,7 +480,7 @@ end
 %% Photocurrent computation
 
 % The currentFlag must be on, and there must be a few eye movements. So we
-% compute. 
+% compute.
 %
 
 % N.B.  Not adequately checked for osBioPhys model.  Runs ok for osLinear
@@ -535,22 +537,22 @@ returnAbsorptionsFromLastTrial();
 
 %% Nested function for returning absorptions from the last trial
     function returnAbsorptionsFromLastTrial()
-    if (isa(obj, 'coneMosaicHex'))
-        tmp  = squeeze(absorptions(nTrials,:,:));
-        if (numel(eyeMovementTimeAxis) == 1)
-            tmp = tmp';    
+        if (isa(obj, 'coneMosaicHex'))
+            tmp  = squeeze(absorptions(nTrials,:,:));
+            if (numel(eyeMovementTimeAxis) == 1)
+                tmp = tmp';
+            end
+            
+            % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
+            obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);
+        else
+            % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
+            absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
+            
+            % Return the absorptions from the last trial.
+            obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
         end
-        
-        % Return the absorptions from the last triale after reshaping to full 3D matrix [cone_rows, cone_cols, time]
-        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(tmp);  
-    else
-        % Reshape to full 4D matrix [instances, cone_rows, cone_cols, time]
-        absorptions = reshape(absorptions, [nTrials size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
-        
-        % Return the absorptions from the last trial.
-        obj.absorptions = reshape(squeeze(absorptions(nTrials,:,:)), [size(obj.pattern,1) size(obj.pattern,2) numel(eyeMovementTimeAxis)]);
     end
-end
 
 %% Nested function to reformat absorptions
     function reformatAbsorptionsAllTrialsMatrix(trialsNum, timePointsNum, coneRows, coneCols)
