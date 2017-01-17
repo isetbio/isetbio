@@ -1,11 +1,28 @@
-% Method that low-passes a mosaic's response using different space
-% constants for each of the L,M, and S-cone submosaic.
+function [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, response, spaceConstants)
+%LOWPASSMOSAICRESPONSE  Low pass filter mosaic responses
+%   [lowPassedResponse, Lmap, Mmap, Smap] = LOWPASSMOSAICRESPONSE(obj, response, spaceConstants)
+%
+%   Spatially low pass filter a mosaic's response using different space
+%   constants for each of the L,M, and S-cone submosaic.
+%
+%   Inputs:
+%   obj               - cone mosaic object
+%   response          - [DHB NOTE: REVEAL WHAT I AM]
+%   spaceConstants    - [DHB NOTE: REVEAL WHAT I AM]
+%
+%   Outputs:
+%   lowPassedResponse - [DHB NOTE: REVEAL WHAT I AM]  
+%   Lmap              - [DHB NOTE: REVEAL WHAT I AM]  
+%   Mmap              - [DHB NOTE: REVEAL WHAT I AM]  
+%   Smap              - [DHB NOTE: REVEAL WHAT I AM]  
+%
+%   Optional parameter name/value pairs chosen from the following:
+%
+%   None currently.
+
 % 
 % NPC, ISETBIO Team, 2016  
-%
-
-function [lowPassedResponse,  Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, response, spaceConstants)
-    
+  
     demosaicedResponses = obj.demosaicedResponses(response);
     lowPassedResponse = 0*response;
     spaceAxis = obj.patternSupport(1,:,1)*1e6;

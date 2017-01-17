@@ -1,6 +1,6 @@
 function val = conePositions(obj)
 %CONEPOSITIONS  Return the cone sample positions in meters
-%   val = conePositions(obj)
+%   val = CONEPOSITIONS(obj)
 %
 %   For other objects, such as the bipolars or RGCs to have this grid, we
 %   only need to store the patternSampleSize and number of rows and cols
@@ -13,7 +13,7 @@ function val = conePositions(obj)
 %   And then we use this type of routine
 %     positions = samplePositions([row,col], sampleSize);
 %
-% [DHB NOTE: THIS HELP TEXT NEEDS HELP.  I CANNOT UNDERSTAND IT.  WHAT IS THE FORMAT
+% [DHB NOTE: THIS HELP TEXT NEEDS SOME HELP. I DONT' UNDERSTAND IT.  WHAT IS THE FORMAT
 % OF VAL?  WHAT IS THE ROUTINE SAMPLEPOSITIONS?  IT DOES NOT SEEM TO EXIST
 % IN ISETBIO AS OF 01/17/17.]
 

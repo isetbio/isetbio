@@ -1,31 +1,29 @@
 function nTrialsPos = emGenSequence(obj, nFrames, varargin)
-% Generate eye movement path
+%EMGENSEQUENCE  Generate sequence of eye movements
+%   nTrialsPos = EMGENSEQUENCE(obj,nFrames,'nTrials',1,'em',emCreate);
 %
-%    nTrialsPos = coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emCreate);
+%   Inputs:
+%   obj        - cone mosaic object
+%   nFrames    - number of frames to generate
+
+%   Ouputs:
+%   nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
 %
-% Inputs
-%   obj     - cone mosaic object
-%   nFrames - number of frames to generate
+%   Optional parameter name/value pairs chosen from the following:
 %
-% Optional inputs (key value pairs in varargin):
-%   'em'      - eye movement structure, see emCreate for details
-%   'rSeed'   - random seed to be used
-%   'nTrials' - Multiple trial case, default = 1
+%   'em'              Eye movement structure, see emCreate for details
+%   'rSeed'           Random seed to be used
+%   'nTrials'         Multiple trial case, default = 1
 %
-% Ouputs
-%   nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of
-%             cone positions
-%
-% Examples:
+%   Examples:
 %  
-%  To control the eye movement parameters, use
-%     emParameters = emCreate;
-%     <Set em parameters, say emParameters.emFlag or others>
-%     coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emParameters);
+%    To control the eye movement parameters, use
+%      emParameters = emCreate;
+%      <Set em parameters, say emParameters.emFlag or others>
+%      coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emParameters);
 %
-% See also:
-%   emCreate
-%
+% See also EMCREATE
+
 % HJ/BW ISETBIO Team, 2016
 
 %% parse input

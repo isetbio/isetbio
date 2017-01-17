@@ -1,15 +1,19 @@
 function str = description(obj, varargin)
-% Create string with key mosaic parameters
+%DESCRIPTION  Create string with key mosaic parameters
+%   str = DESCRIPTION(obj, varargin)
 %
-% We normally include these because they are part of the
-% mosaic object. But, we can skip if we like.
+%   Inputs:
+%   obj     - cone mosaic object
 %
-% Optional parameters (Name-Value pairs)
-%   'skipPigment'  - whether to include pigment description
-%   'skipMacular'  - whether to include macular description
+%   Outputs:
+%   str     - string describing some things about the mosaic.
 %
-% Output:
-%   str - description string
+%   Optional parameter name/value pairs chosen from the following:
+%
+%   'skipPigment'     Omit info about photopigment in string (default false).
+%   'skipMacular'     Omit info about maculular pigmetn in string (default false).
+%
+%   See also CONEMOSAIC, PHOTOPIGMENT, MACULAR.
 
 %% parse input
 p = inputParser;

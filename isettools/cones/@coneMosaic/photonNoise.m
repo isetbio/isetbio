@@ -1,28 +1,28 @@
 function [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
-% Add photon noise to the absorptions 
+%PHOTONNOISE  Add photon noise to the absorptions 
+%   [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
 %
-%  [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
+%   Photon noise is Poisson.  The Poisson variance is equal to the mean. We trap
+%   the cases when the value is small (less than 25) and use
+%   real Poisson random value, which is slower to compute. At
+%   levels above lambda = 25, we approximate the noise as Gaussian.
 %
-% Photon noise is Poisson.  The Poisson variance is equal to the mean. We trap
-% the cases when the value is small (less than 25) and use
-% real Poisson random value, which is slower to compute. At
-% levels above lambda = 25, we approximate the noise as Gaussian.
+%   The decision to add noise is set in the coneMosaic.noiseFlag.  We are
+%   only here if noiseFlag is 'random' or 'frozen'
 %
-% The decision to add noise is set in the coneMosaic.noiseFlag.  We are
-% only here if noiseFlag is 'random' or 'frozen'
-%
-% Inputs:  
+%   Inputs:  
 %   absorptions - typically coneMosaic.absorptions
 %
-% Parameters
-%   noiseFlag - 'random' or 'frozen'
-%   seed - When using frozen noise, you can set a seed. Default = 1
-%
-% Returns
+%   Outputs:
 %   noiseImage - absorptions plus noise
 %   theNoise   - the noise that was added to the absorptions
 %   seed       - The rng(seed) we used
 %
+%   Optional parameter name/value pairs chosen from the following:
+%
+%   'noiseFlag'       Specify frozen noise ('frozen') or not ('random', default)
+%   'seed'            When using frozen noise, you can set a seed (default 1)
+
 % HJ/BW ISETBIO Team 2016
 
 %%
