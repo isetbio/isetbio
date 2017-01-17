@@ -281,8 +281,15 @@ switch parm
         end
         if isempty(val)
             scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');
+            if ~isempty(val)
+                disp('** Optics wave sampling set by selected scene.');
+            end
         end
-        if isempty(val), val = 400:10:700; val = val(:); end
+        if isempty(val)
+            val = 400:10:700; 
+            val = val(:); 
+            disp('** Optics wave sampling set to 400:10:700 default.');
+        end
         
         if ~isempty(varargin)
             s = ieUnitScaleFactor(varargin{1})/ieUnitScaleFactor('nm');
