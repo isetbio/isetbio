@@ -497,7 +497,7 @@ obj.absorptions = [];
 if (isa(obj, 'coneMosaicHex'))
     photocurrents = zeros(nTrials, numel(nonNullConesIndices), numel(rounded.eyeMovementTimeAxis), 'single');
     for ii=1:nTrials
-        if (~isempty(workerID)) && (mod(ii, round(nTrials/10)) == 0)
+        if (~isempty(workerID)) && (mod(ii-1, round(nTrials/10)) == 0)
             displayProgress(workerID, sprintf('%s-current',workDescription), 0.5 + 0.5*ii/nTrials);
         end
         % Reshape to full 3D matrix for obj.computeCurrent
