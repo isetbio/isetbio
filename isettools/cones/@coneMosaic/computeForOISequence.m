@@ -204,6 +204,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
             displayProgress(workerID, sprintf('%s-absorptions',workDescription), 0.5*oiIndex/oiSequence.length);
         end
         
+        % Precompute the two OIs to save computation time
+        previousOI = [];
         if (oiIndex > 1)
             previousOI = oiSequence.frameAtIndex(oiIndex-1);
         end
@@ -356,6 +358,10 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
             end
         end
     end  % oiIndex
+    
+    % Clear OIs - not needed anymore
+    varsToClear = {'currentOI', 'previousOI'};
+    clear(varsToClear{:});
     
     % rounded.oiRefreshInterval > rounded.defaultIntegrationTime
 else
