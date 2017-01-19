@@ -103,7 +103,6 @@ switch oisType
             sname = sprintf('F %d C %.2f', tparams(ii).freq, tparams(ii).contrast);
             scene{ii} = sceneSet(scene{ii},'name',sname);
         end
-        % ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
         
         % Adjust both scenes based on sparams.
         fields = fieldnames(sparams);
@@ -115,7 +114,8 @@ switch oisType
                 end
             end
         end
-        
+        % ieAddObject(scene{1}); ieAddObject(scene{2}); sceneWindow;
+
         % Compute optical images from the scene
         for ii = 1:2
             OIs{ii} = oiCompute(oi,scene{ii});
@@ -128,7 +128,7 @@ switch oisType
         % of the line on the same constant background
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        
+        % ois.visualize;
     case 'vernier'
         % oisCreate('vernier', ...);   % See examples
         if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
@@ -196,8 +196,6 @@ switch oisType
             'composition', composition);
         % ois.visualize;  % Not working right.  Something about image scale
         
-        % Potentially return the cell array of scenes.
-        varargout{1} = scene;
         
     otherwise
         error('Unknown type %s\n',oisType);
