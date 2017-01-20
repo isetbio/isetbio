@@ -1,11 +1,10 @@
 function em = emCreate(params, varargin)
-%% Create eye movement structure
+%EMCREATE - Create eye movement structure
 %
-%   em = emCreate([params])
+%   em = emCreate(params, varargin)
 %
 % Inputs:
-%   params:  eye-movement parameters, optional, for default value see
-%            auxilary function emFillParams below
+%   params:  eye-movement parameters
 %     .emFlag   - 3x1 flag vector, indicating whether or not to include
 %                 tremor, drift and micro-saccade respectively
 %     .sampTime - sampling time in secs, e.g. 0.001 stands for 1ms per
@@ -26,18 +25,18 @@ function em = emCreate(params, varargin)
 %        .speed      = speed of micro-saccade (rad / sec)
 %        .speedSD    = standard deviation of speed
 %
-%   varargin: name value pair to be set for eye movement. See emSet for
+%   varargin: name value pair to be set for eye movement. See EMSET for
 %             supported parameter list
 %
-% Output Parameter:
+% Output:
 %   em       - eye movement structure
 %
 % Notes:
 %   1) For all eye-movements, we assume that the acceleration time is
-%      neglectable
+%      negligible
 %   2) Drift and tremor can be superimposed. However, during the 
 %      microsaccade, both drift and tremor are suppressed
-%   3) We assume that drift works like a 2D brownian motion. This is
+%   3) We assume that drift is a 2D brownian motion. This is
 %      reasonable when micro-saccade is present. However, when
 %      micro-saccade is suppressed, drift will somehow towards the fixation
 %      point. The actual pattern is unknown and this return-to-origin
@@ -59,10 +58,9 @@ function em = emCreate(params, varargin)
 % Example:
 %   em = emCreate;
 %
-% See also:
-%   emGenSequence, emSet, emGet
+% See also: EMGENSEQUENCE, EMSET, EMGET
 %
-% (HJ) Copyright PDCSOFT TEAM 2014
+% (HJ) Copyright ISETBIO TEAM 2014
 
 % Fill in default values for missing fields in params
 if notDefined('params'), params = []; end

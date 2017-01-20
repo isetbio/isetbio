@@ -54,7 +54,7 @@ UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 % by coneMosaic.compute
 cMosaic = coneMosaic;
 cMosaic.noiseFlag = 'frozen';
-cMosiac.os.noiseFlag = 'frozen';
+cMosaic.os.noiseFlag = 'frozen';
 cMosaic.setSizeToFOV(0.2);
 cMosaic.integrationTime = ois.timeAxis(2);  % This is the integration time
 cMosaic.emGenSequence(length(ois.timeAxis),'rseed',1);

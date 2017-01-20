@@ -81,6 +81,7 @@ if isequal(tDim,4)
         caxis([mind maxd]); drawnow;
         if ii == 1 && ~show, set(gcf,'Visible','off'); end
         if save,  F = getframe; writeVideo(vObj,F); end
+        pause(1/FrameRate);
     end
 elseif isequal(tDim,3)
     % Monochrome data
@@ -90,6 +91,7 @@ elseif isequal(tDim,3)
         caxis([mind maxd]); drawnow;
         if ii == 1 && ~show, set(gcf,'Visible','off'); end
         if save,  F = getframe; writeVideo(vObj,F); end
+        pause(1/FrameRate);
     end
 end
 
