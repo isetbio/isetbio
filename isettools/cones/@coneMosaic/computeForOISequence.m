@@ -475,6 +475,9 @@ else
     end % emIndex
 end % rounded.oiRefreshInterval > rounded.defaultIntegrationTime
 
+% Save some RAM
+clear 'oiSequence';
+
 % Restore default integrationTime
 obj.integrationTime = defaultIntegrationTime;
 
