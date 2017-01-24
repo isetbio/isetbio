@@ -43,7 +43,7 @@ c0 = struct(...
     'integrationTime', 10/1000, ...             % 10 msec integrationTime 
     'photonNoise', 'none', ...                % add Poisson noise
     'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
-    'osNoise', 'none' ...                     % photocurrent noise
+    'osNoise', 'frozen' ...                     % photocurrent noise
     );
 
 
