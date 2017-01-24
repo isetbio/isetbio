@@ -41,9 +41,9 @@ c0 = struct(...
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', 10/1000, ...             % 10 msec integrationTime 
-    'photonNoise', 'frozen', ...                % add Poisson noise
+    'photonNoise', 'none', ...                % add Poisson noise
     'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
-    'osNoise', 'frozen' ...                     % photocurrent noise
+    'osNoise', 'none' ...                     % photocurrent noise
     );
 
 
@@ -202,7 +202,6 @@ function [theConeMosaic, theOIsequence, ...
      
      % Compute photon rate from photon count
      allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
-    
      
      % Internal consistency checks
      % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence
