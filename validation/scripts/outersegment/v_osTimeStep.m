@@ -53,19 +53,17 @@ theCondition = c0;
 theCondition.stimulusSamplingInterval = 10/1000;  
 c{stimulusConditionIndex} = theCondition;
 
-if (1==2)
-    % Stimulus sampling interval < integration time
-    stimulusConditionIndex = 2;
-    theCondition = c0;
-    theCondition.stimulusSamplingInterval = 4/1000;               
-    c{stimulusConditionIndex} = theCondition;
+% Stimulus sampling interval < integration time
+stimulusConditionIndex = 2;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 4/1000;               
+c{stimulusConditionIndex} = theCondition;
 
-    % Stimulus sampling interval > integration time
-    stimulusConditionIndex = 3;
-    theCondition = c0;
-    theCondition.stimulusSamplingInterval = 16/1000;
-    c{stimulusConditionIndex} = theCondition;
-end
+% Stimulus sampling interval > integration time
+stimulusConditionIndex = 3;
+theCondition = c0;
+theCondition.stimulusSamplingInterval = 16/1000;
+c{stimulusConditionIndex} = theCondition;
 
 
 for stimulusConditionIndex = 1:numel(c)
