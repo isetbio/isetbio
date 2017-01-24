@@ -41,7 +41,7 @@ c0 = struct(...
     'modulationRegion', 'FULL', ...             % modulate the central image (choose b/n 'FULL', and 'CENTER')
     'stimulusSamplingInterval',  nan, ...       % we will vary this one
     'integrationTime', 10/1000, ...             % 10 msec integrationTime 
-    'photonNoise', 'none', ...                % add Poisson noise
+    'photonNoise', 'frozen', ...                % add Poisson noise
     'osTimeStep', 0.1/1000, ...                 % 0.1 millisecond
     'osNoise', 'frozen' ...                     % photocurrent noise
     );
