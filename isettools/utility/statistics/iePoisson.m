@@ -42,6 +42,9 @@ function [val, seed] = iePoisson(lambda, varargin)
 %
 % 6/3/15  xd  iePoissrnd now uses a randomly generated seed
 % 6/4/15  xd  added flag to determine if noise should be frozen
+% 1/24/17 npc Now checking first for Statistics Toolbox, and using 
+%             poissrnd if it exists. If not it uses the local equivalent,
+%             iePoissrnd
 
 %% Parse parameters
 p = inputParser;
@@ -61,21 +64,7 @@ nSamp     = p.Results.nSamp;
 noiseFlag = p.Results.noiseFlag;
 seed      = p.Results.seed;
 
-%% Check if we have MEX function
-if (exist('iePoissrnd','file')==3)
-    switch noiseFlag
-        case 'frozen'
-            val = iePoissrnd(lambda, nSamp, seed);
-        case 'random'
-            seed = rand * 12345701;
-            val = iePoissrnd(lambda, nSamp, rand * 12345701);
-    end
-    return;
-end
-
-%% TODO - Check for stats toolbox
-if checkToolbox('Statistics Toolbox')
-    
+if checkToolbox('Statistics and Machine Learning Toolbox')
     switch noiseFlag
         case 'frozen'
             rng(seed);
@@ -92,6 +81,20 @@ if checkToolbox('Statistics Toolbox')
        
     return;
 end
+
+%% Check if we have MEX function
+if (exist('iePoissrnd','file')==3)
+    switch noiseFlag
+        case 'frozen'
+            val = iePoissrnd(lambda, nSamp, seed);
+        case 'random'
+            seed = rand * 12345701;
+            val = iePoissrnd(lambda, nSamp, rand * 12345701);
+    end
+    return;
+end
+
+
 
 %% No toolbox, no mex file, making do with home grown Knuth code
 switch noiseFlag
