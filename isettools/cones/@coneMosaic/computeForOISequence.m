@@ -1,4 +1,4 @@
-function [absorptions, photocurrents, LMSfilters, meanCur, integrationTimeSequences] = computeForOISequence(obj, oiSequence, varargin)
+function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequence(obj, oiSequence, varargin)
 %COMPUTEFOROISEQUENCE  Compute cone absorptions and optionally photocurrents for a @oiSequence
 %
 %   [absorptions, photocurrents, LMSfilters] = COMPUTEFOROISEQUENCE(obj, oiSequence, varargin)
@@ -170,8 +170,6 @@ else
     blockedTrialIndices{1} = 1:nTrials;
 end
 
-integrationTimeSequences = [];
-
 if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
     % There are two main time sampling scenarios.  This one is when the oi
     % update rate is SLOWER than the cone integration time which is also
@@ -333,13 +331,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                         drawnow;
                     end
                 end
-                integrationTimeSequences(size(integrationTimeSequences,1)+1,:) = ...
-                    [integrationTimeForFirstPartialAbsorption integrationTimeForSecondPartialAbsorption rounded.defaultIntegrationTime];
-            else
-                integrationTimeSequences(size(integrationTimeSequences,1)+1,:) = ...
-                    [integrationTimeForFirstPartialAbsorption integrationTimeForSecondPartialAbsorption 0];
             end
-            integrationTimeSequences
         end % iTrialBlock
         
         % If we are in the last OIframe, and there are still some EmInsertionIndices that are
