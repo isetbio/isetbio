@@ -53,17 +53,19 @@ theCondition = c0;
 theCondition.stimulusSamplingInterval = 10/1000;  
 c{stimulusConditionIndex} = theCondition;
 
-% Stimulus sampling interval < integration time
-stimulusConditionIndex = 2;
-theCondition = c0;
-theCondition.stimulusSamplingInterval = 4/1000;               
-c{stimulusConditionIndex} = theCondition;
+if (1==2)
+    % Stimulus sampling interval < integration time
+    stimulusConditionIndex = 2;
+    theCondition = c0;
+    theCondition.stimulusSamplingInterval = 4/1000;               
+    c{stimulusConditionIndex} = theCondition;
 
-% Stimulus sampling interval > integration time
-stimulusConditionIndex = 3;
-theCondition = c0;
-theCondition.stimulusSamplingInterval = 16/1000;
-c{stimulusConditionIndex} = theCondition;
+    % Stimulus sampling interval > integration time
+    stimulusConditionIndex = 3;
+    theCondition = c0;
+    theCondition.stimulusSamplingInterval = 16/1000;
+    c{stimulusConditionIndex} = theCondition;
+end
 
 
 for stimulusConditionIndex = 1:numel(c)
@@ -94,12 +96,14 @@ end
 UnitTest.validationData('condParams', c);
 
 UnitTest.validationData('oiTimeAxisCond1', oiTimeAxis{1});
+UnitTest.validationData('oiModulationFunction1', theOIsequence{1}.modulationFunction);
 UnitTest.validationData('absorptionsTimeAxisCond1', absorptionsTimeAxis{1});
 UnitTest.validationData('photoCurrentTimeAxisCond1', photocurrentsTimeAxis{1});
 UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond1', allInstancesAbsorptionsCountSequence{1});
 UnitTest.validationData('allInstancesIsomerizationRateSequenceCond1', round(allInstancesIsomerizationRateSequence{1}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond1', round(allInstancesPhotoCurrents{1}, 5));
 
+if (1==2)
 UnitTest.validationData('oiTimeAxisCond2', oiTimeAxis{2});
 UnitTest.validationData('absorptionsTimeAxisCond2', absorptionsTimeAxis{2});
 UnitTest.validationData('photoCurrentTimeAxisCond2', photocurrentsTimeAxis{2});
@@ -113,14 +117,19 @@ UnitTest.validationData('photoCurrentTimeAxisCond3', photocurrentsTimeAxis{3});
 UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond3', allInstancesAbsorptionsCountSequence{3});
 UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', round(allInstancesIsomerizationRateSequence{3}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond3', round(allInstancesPhotoCurrents{3}, 5));
+end
 
 % Extra data: coneMosaics and oiSequences
 UnitTest.extraData('theConeMosaicCond1', theConeMosaic{1});
 UnitTest.extraData('theOIsequenceCond1', theOIsequence{1});
+
+if (1==2)
 UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
 UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
 UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
 UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
+end
+
 
 end
 
