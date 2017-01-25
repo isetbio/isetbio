@@ -76,7 +76,7 @@ for stimulusConditionIndex = 1:numel(c)
      allInstancesAbsorptionsCountSequence{stimulusConditionIndex}, ...
      allInstancesIsomerizationRateSequence{stimulusConditionIndex}, ...
      allInstancesPhotoCurrents{stimulusConditionIndex} ...
-   ] = runSimulation(c{stimulusConditionIndex}, instancesNum, runTimeParams);  
+    ] = runSimulation(c{stimulusConditionIndex}, instancesNum, runTimeParams);  
 
     if (runTimeParams.generatePlots)
         plotSNR(absorptionsTimeAxis{stimulusConditionIndex}, ...
@@ -114,6 +114,7 @@ UnitTest.validationData('allInstancesAbsorptionsCountSequenceCond3', allInstance
 UnitTest.validationData('allInstancesIsomerizationRateSequenceCond3', round(allInstancesIsomerizationRateSequence{3}, 4));
 UnitTest.validationData('allInstancesPhotoCurrentsCond3', round(allInstancesPhotoCurrents{3}, 5));
 
+
 % Extra data: coneMosaics and oiSequences
 UnitTest.extraData('theConeMosaicCond1', theConeMosaic{1});
 UnitTest.extraData('theOIsequenceCond1', theOIsequence{1});
@@ -121,6 +122,8 @@ UnitTest.extraData('theConeMosaicCond2', theConeMosaic{2});
 UnitTest.extraData('theOIsequenceCond2', theOIsequence{2});
 UnitTest.extraData('theConeMosaicCond3', theConeMosaic{3});
 UnitTest.extraData('theOIsequenceCond4', theOIsequence{3});
+
+
 
 end
 
@@ -192,7 +195,6 @@ function [theConeMosaic, theOIsequence, ...
      
      % Compute photon rate from photon count
      allInstancesIsomerizationRateSequence = allInstancesAbsorptionsCountSequence / theConeMosaic.integrationTime;
-    
      
      % Internal consistency checks
      % Check that the data in the absorptions property agrees with the data in the last instance of allInstancesAbsorptionsCountSequence

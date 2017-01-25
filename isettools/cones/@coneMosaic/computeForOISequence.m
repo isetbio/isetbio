@@ -196,6 +196,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
         hold on
     end
     
+    
     % Loop over the optical images
     for oiIndex = 1:oiSequence.length
         
@@ -248,7 +249,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
             elseif (integrationTimeForSecondPartialAbsorption < eps(rounded.eyeMovementTimeAxis(idx)+rounded.defaultIntegrationTime))
                 integrationTimeForSecondPartialAbsorption = 0;
             end
-
+            
             % Partial absorptions (p1 in graph above) with previous oi
             % (across all instances)
             if (oiIndex > 1) && (integrationTimeForFirstPartialAbsorption > 0)
