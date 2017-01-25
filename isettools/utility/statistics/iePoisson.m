@@ -9,10 +9,6 @@ function [val, seed] = iePoisson(lambda, varargin)
 % The noiseflag {'random' or 'frozen'} determines whether to generate a new
 % noise seed or to set the noise seed to a fixed value (default is 1).
 %
-% We first try to call the mex function iePoissonrnd.
-% If this does not exist, we try to use the statistics toolbox
-% If this fails, we use an algorithm  from Knuth.
-%
 % Examples (see Run Configuration in Debug):
 % % Matrix form
 %   nSamp = 128; lambda = round(rand(nSamp,nSamp)*10);
