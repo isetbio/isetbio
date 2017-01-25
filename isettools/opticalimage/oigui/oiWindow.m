@@ -22,7 +22,7 @@ function varargout = oiWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-% Last Modified by GUIDE v2.5 03-Jul-2016 23:08:35
+% Last Modified by GUIDE v2.5 25-Jan-2017 15:25:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1129,5 +1129,3 @@ function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 % Help | ISET functions
 web('http://www.imageval.com/public/ISET-Functions/','-browser');
 return;
-
-
