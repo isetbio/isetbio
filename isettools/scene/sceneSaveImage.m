@@ -1,9 +1,9 @@
 function fName = sceneSaveImage(scene,fName,gam)
-%Write tiff image approximating appearance of photon data
+%SCENESAVEIMAGE - Write png image approximating appearance of photon data
 %
 %   fullpathName = sceneSaveImage(scene,[fullpathname],[gam]);
 %
-% Save out an RGB image of the photon image as a tiff file.  If the name is
+% Save out an RGB image of the photon image as a png file.  If the name is
 % not passed in, then the user is queried to select the fullpath name of
 % the output file.  This routine is used for scenes.  oiSaveImage is used
 % for optical images.
@@ -20,7 +20,7 @@ if notDefined('scene'), scene = vcGetObject('scene'); end
 
 % Get RGB file name (tif)
 if notDefined('fName')
-    fName = vcSelectDataFile('session','w','tif','Image file (tif)');
+    fName = vcSelectDataFile('session','w','png','Image file (png)');
 end
 
 % open window.
@@ -30,6 +30,6 @@ else
     RGB = sceneGet(scene,'rgb image', gam);
 end
 
-imwrite(RGB, fName, 'tif');
+imwrite(RGB, fName, 'png');
 
 end
