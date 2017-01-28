@@ -1,29 +1,62 @@
 function nTrialsPos = emGenSequence(obj, nFrames, varargin)
 %EMGENSEQUENCE  Generate sequence of eye movements
+%
 %   nTrialsPos = EMGENSEQUENCE(obj,nFrames,'nTrials',1,'em',emCreate);
 %
-%   Inputs:
-%   obj        - cone mosaic object
-%   nFrames    - number of frames to generate
-
-%   Ouputs:
-%   nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
+% The eye movement samples are created at the same temporal sample rate as the
+% cone integration time.  We only update the position at the beginning of each
+% integration time.
 %
-%   Optional parameter name/value pairs chosen from the following:
+% This has some consequences for how we store and retrieve the eye movement
+% parameters. Consider the case of tremor. We need to store the amplitudes of
+% the tremor in a way that permits us to do the calculation correctly no matter
+% what the cone integration time is. The literature specifies that the maximum
+% frequency of tremor is 100 Hz. In that case, the typical sample time between
+% each tremor is 10 ms. The amplitude of the tremor at  100 Hz is about 1 cone
+% width (17e-3 radians/sample).
 %
-%   'em'              Eye movement structure, see emCreate for details
-%   'rSeed'           Random seed to be used
-%   'nTrials'         Multiple trial case, default = 1
+% Our calculations make a best estimate of the eye position at the start of
+% every cone integration period.  We assume the eye is fixed throughout the
+% integration period.  This approximation makes sense for calculations done at a
+% shorter cone integration time than 10 ms, which is the tremor rate.
 %
+% For an example, suppose the update time is 10 ms. We store the amplitude in
+% terms of radians per second, which is (17e-3)/(10 ms) = (17e-1/sec).  Thus,
+% when you  look at the amplitude value, it may appear frighteningly large -
+% 17e-1 radians is about 100 cones.  But remember this is the amplitude per
+% second. When we calculate the tremor amplitude at the proper update rate,
+% which is 10 ms, the amplitude is 100 times smaller (about 1 cone).
+%
+% In normal programming use, such as in this routine, dealing with the units is
+% simplified for you because you can ask for the amplitude in units of
+% cones/sample.  This takes into account the tremor parameters as well as the
+% cone integration time. See the code below.
+%
+% Inputs:
+%     obj        - cone mosaic object
+%     nFrames    - number of frames to generate
+%
+% Ouputs:
+%     nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
+%
+% Optional parameter name/value pairs chosen from the following:
+%    'em'              Eye movement structure, see emCreate for details
+%    'rSeed'           Random seed to be used
+%    'nTrials'         Multiple trial case, default = 1
+%
+% The eye movement model combines tremor, drift and microsaccades.
+% 
 %   Examples:
 %  
-%    To control the eye movement parameters, use
+%    To control the eye movement parameters, set the eye movement parameters
+%    structure, say ..
+%
 %      emParameters = emCreate;
-%      <Set em parameters, say emParameters.emFlag or others>
+%      <Set em parameters> 
 %      coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emParameters);
 %
-% See also EMCREATE
-
+% See also EMCREATE, EMSET, EMGET
+%
 % HJ/BW ISETBIO Team, 2016
 
 %% parse input

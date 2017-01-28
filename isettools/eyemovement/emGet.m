@@ -1,6 +1,10 @@
 function val = emGet(em, params, varargin)
-%% function emGet(em, params, [varargin])
-%    Get properties from cones
+%EMGET - Get eye movement properties
+% 
+%    val = emGet(em, params, [varargin])
+%
+% The model for generating an eye movement sequence is defined in
+% @coneMosaic.emGenSequence.
 %
 %  Inputs:
 %    em       - eye movement structure, created by emCreate
@@ -24,7 +28,7 @@ function val = emGet(em, params, varargin)
 %
 %    {'tremor interval'}      - time between tremors ([sec], ms, samples)
 %    {'tremor interval SD'}   - standard deviation of tremor interval
-%    {'tremor amplitude'}     - amplitude of tremor ([rad], deg, cones)
+%    {'tremor amplitude'}     - amplitude of tremor per sec ([rad], deg, cones)
 %
 %    {'drift speed'}          - drift speed ([rad/s], cones/sample time)
 %    {'drift speed SD'}       - standard deviation of drift speed
@@ -41,8 +45,7 @@ function val = emGet(em, params, varargin)
 %    params.f = 0.017; params.w = 1.5e-6;
 %    amp = emGet(em, 'tremor amplitude', 'cones', params);
 %
-%  See also:
-%    emSet, emCreate
+%  See also: emSet, emCreate, @coneMosaic.emGenSequence
 %
 %
 %  HJ/BW (c) ISETBIO Team, 2014
@@ -89,6 +92,11 @@ switch params
         if isfield(em, 'msaccade'), val = em.msaccade; end
         
     % tremor parameters
+    % The tremor sample times are spaced on average by tremor interval with a
+    % standard devation of tremoral interval sd.  The standard deviation of the
+    % tremor size is stored in tremoral interval sd.  The value of this standard
+    % deviation is stored per second, so the standard deviaton for a particular
+    % tremor interval is (interval * sd).
     case {'tremorinterval'}
         % interval = emGet(em, 'tremor interval');
         if checkfields(em, 'tremor', 'interval')
@@ -108,6 +116,7 @@ switch params
     case {'tremoramplitude'}
         % amp = emGet(em, 'tremor amplitude');
         if checkfields(em, 'tremor', 'amplitude')
+            % Default unit is radians
             val = em.tremor.amplitude;
         end
         if length(varargin) > 1
