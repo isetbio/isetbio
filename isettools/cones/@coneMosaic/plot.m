@@ -47,8 +47,7 @@ function [uData, hf] = plot(obj, pType, varargin)
 % When you present 'os ' or 'outersegment ' then we pass the arguments
 % along to os.plot()
 %
-% Example:
-%    rgc.mosaic{1}.plot(type)
+% Example: coneMosaic.plot(type)
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
