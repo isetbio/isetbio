@@ -450,7 +450,7 @@ viscircles([x,y],0.7);
 switch source.Label
     case 'hLine response'
         vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); grid on;
-        xlabel('Horionzal position (cones)'); ylabel(yStr);
+        xlabel('Horizontal position (cones)'); ylabel(yStr);
     case 'vLine response'
         vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); grid on;
         xlabel('Vertical position (cones)'); ylabel(yStr);
