@@ -104,6 +104,9 @@ classdef coneMosaicHex < coneMosaic
         % Visualize different aspects of the hex grid
         visualizeGrid(obj, varargin);
         
+        % Method to compute the cone density of @coneMosaicHex
+        [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, computeConeDensityMap)
+        
         % Reshape a full 3D hex activation map (coneRows x coneCols x time] to a 2D map (non-null cones x time)
         hex2Dmap = reshapeHex3DmapToHex2Dmap(obj, hex3Dmap);
         
