@@ -449,33 +449,41 @@ viscircles([x,y],0.7);
 
 switch source.Label
     case 'hLine response'
-        vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); grid on;
-        xlabel('Horizontal position (cones)'); ylabel(yStr);
+        vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); 
+        grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
+        set(gca,'userdata',data(y,:));
     case 'vLine response'
-        vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); grid on;
-        xlabel('Vertical position (cones)'); ylabel(yStr);
+        vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); 
+        grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
+        set(gca,'userdata',data(:,x));
     case 'hLine LMS'
+        % Save the work more completely in the window, please!
         vcNewGraphWin([],'tall'); names = 'LMS';
         c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(y, :) == ii);
             plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
+            uData.pos{ii-1} = pos; uData.data{ii-1}=data(y,pos);
             xlabel('Horizontal Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
             set(gca,'xlim',[1 size(data,2)]);
         end
+        set(gca,'userdata',uData);
     case 'vLine LMS'
+        % Save the work more completely in the window, please!
         vcNewGraphWin([],'tall'); names = 'LMS';
         c = {'ro-','go-','bo-'};
         for ii = 2 : 4 % L, M, S
             subplot(3, 1, ii-1);
             pos = find(handles.cMosaic.pattern(:, x) == ii);
             plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
+            uData.pos{ii-1} = pos; uData.data{ii-1}=data(pos,x);
             xlabel('Vertical Position (cones');
             ylabel([names(ii-1) ' ' yStr]);
             set(gca,'xlim',[1 size(data,1)]);
         end
+        set(gca,'userdata',uData);
     case 'time series'
         % Time series is enabled for the absorption and current movie modes
         vcNewGraphWin;
@@ -490,9 +498,10 @@ switch source.Label
             t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
         end
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
+        uData.t = t; uData = squeeze(data(y, x, :));
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
-        
+        set(gca,'userdata',uData);
     otherwise
         error('Unknown label type');
 end
