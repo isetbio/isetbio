@@ -9,6 +9,7 @@ function ieValidateFullAll(varargin)
 %    'graph mismatched data' - true/false
 %    'generate plots' - true, false
 %    'doFullAndFastValidation'  - true, false
+%    'asAssertion' - true/false
 %
 % Examples:
 %   validateFullAll('verbosity','high');
@@ -18,7 +19,7 @@ function ieValidateFullAll(varargin)
 % NC, ISETBIO Team, Copyright 2015
 
 %% Close all figures so that we start with a clean slate
-close all; 
+close all;
 
 %% We will use preferences for the 'isetbioValidation' project
 thisProject = 'isetbio';
@@ -46,6 +47,9 @@ end
 %% Whether to plot data that do not agree with the ground truth
 UnitTest.setPref('graphMismatchedData', true);
 
+%% Whether to throw an error when a validation fails.
+asAssertion = false;
+
 %% Adjust parameters based on input arguments
 fullValidationMode = 'FULLONLY';
 if ~isempty(varargin)
@@ -66,13 +70,15 @@ if ~isempty(varargin)
                     if val
                         fullValidationMode = 'FULL';
                     end
+                case 'asassertion'
+                    asAssertion = val;
                 otherwise
                     error('Unknown validation string %s\n',varargin{ii+1});
             end
         end
-     else
+    else
         error('Odd number of arguments, must be param/val pairs');
-     end
+    end
 end
 
 %% Print current values of isetbioValidation prefs
@@ -84,6 +90,13 @@ vScriptsList = eval(listingScript);
 
 %% How to validate
 % Run a FULL validation session (comparing actual data)
-UnitTest.runValidationSession(vScriptsList, fullValidationMode);
+obj = UnitTest.runValidationSession(vScriptsList, fullValidationMode);
+
+if asAssertion
+    % assert no failed validations
+    summary = [obj.summaryReport{:}];
+    success = ~any([summary.fullFailed]);
+    assert(success, 'One or more validations failed.');
+end
 
 end
