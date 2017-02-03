@@ -82,7 +82,7 @@ cMosaic.computeCurrent;
 
 bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
-bp.set('sRFsurround',1);
+bp.set('sRFsurround',0);
 bp.compute(cMosaic);
 % bp.plot('movie response')
 

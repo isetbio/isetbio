@@ -84,8 +84,8 @@ cMosaic.computeCurrent();
 %% Compute the bipolar response
 
 bp = bipolar(cMosaic);
-bp.set('sRFcenter',1);
-bp.set('sRFsurround',1);
+bp.set('sRFcenter',10);
+bp.set('sRFsurround',0);
 bp.compute(cMosaic);
 
 %% Set other RGC mosaic parameters

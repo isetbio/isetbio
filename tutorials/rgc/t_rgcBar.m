@@ -34,9 +34,9 @@ end
 % We are only using the cMosaic
 sceneRGB = data.iStim.sceneRGB;
 
-cMosaic = data.iStim.cMosaic;
-cMosaic.noiseFlag = 'random';   % Needs to be updated
-cMosaic.os.noiseFlag = 'random';
+cMosaic = data.iStim.cm;
+cMosaic.noiseFlag = 'none';   % Needs to be updated
+cMosaic.os.noiseFlag = 'none';
 
 cMosaic.computeCurrent;
 clear data;
@@ -44,8 +44,8 @@ clear data;
 %% Compute the bipolar response
  
 bp = bipolar(cMosaic);
-bp.set('sRFcenter',1);
-bp.set('sRFsurround',1);
+bp.set('sRFcenter',10);
+bp.set('sRFsurround',0);
 bp.compute(cMosaic);
  
 % bp.plot('movie response')
@@ -113,16 +113,16 @@ for fr = 1:szPsth(3)-frStart-frEnd
     % Find indicies of true bar pixels for each frame
     [barPx1 barPx2] = find(sceneRGB(:,:,fr+frStart)>.75);
     % Find average column position
-    trueLocation(fr) = mean(barPx2)*sizeMosaic(2)./sizeRGB(2);
+    trueLocation(fr+55) = mean(barPx2)*sizeMosaic(2)./sizeRGB(2);
 end
  
  
 vcNewGraphWin; scatter(1:szPsth(3)-frStart-frEnd,colLocation-0*min(colLocation),'x');
-hold on; plot(1:szPsth(3)-frStart-frEnd,trueLocation);
+hold on; plot(1:szPsth(3)-frStart-frEnd+55,trueLocation);
 xlabel('Time (msec)');
-ylabel('Position estimate (mm)');
+ylabel('Position (mm)');
 legend('Estimated Position','True Position','location','NW');
- 
+set(gca,'fontsize',16);
 %% Make GIF
 params.vname = [isetbioRootPath '/local/barMovieTest.gif'];
 % ieGIF(psth(:,:,steadyStateFrame:end),params);

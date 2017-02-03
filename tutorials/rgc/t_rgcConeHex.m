@@ -33,7 +33,7 @@ iStim = ieStimulusBar(params);  % Full params are returned in iStim
 
 % iStim.cMosaic.visualizeGrid();
 
-isomerizationsBar = iStim.cMosaic.absorptions;
+isomerizationsBar = iStim.cm.absorptions;
 % iStim.cMosaic.visualizeActivationMaps(...
 %     isomerizationsBar(:,:,1), ...                                  % the response matrix
 %        'mapType', 'modulated hexagons', ...                          % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
@@ -46,9 +46,11 @@ isomerizationsBar = iStim.cMosaic.absorptions;
 
 %% Compute bipolar response
 
-bpParams.cellType = 'offMidget';
-bp = bipolar(iStim.cMosaic, bpParams);
-bp.compute(iStim.cMosaic);
+bpParams.cellType = 'offmidget';
+bp = bipolar(iStim.cm, bpParams);
+bp.set('sRFcenter',10);
+bp.set('sRFsurround',0);
+bp.compute(iStim.cm);
 bp.plot('movie response')
 
 %% Compute RGC response

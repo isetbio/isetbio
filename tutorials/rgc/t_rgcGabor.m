@@ -30,9 +30,11 @@ rdt.crp('/resources/data/istim');
 
 switch osFlag
     case 0 % osLinear
-        data = rdt.readArtifact('gaborDrifting_cMosaic', 'type', 'mat');
+%         data = rdt.readArtifact('gaborDrifting_cMosaic', 'type', 'mat');        
+        data = rdt.readArtifact('gaborMovie', 'type', 'mat');
     case 1 % osBioPhys
-        data = rdt.readArtifact('gaborDrifting_cMosaic_osBioPhys', 'type', 'mat');
+%         data = rdt.readArtifact('gaborDrifting_cMosaic_osBioPhys', 'type', 'mat');
+        data = rdt.readArtifact('gaborMovie_osBioPhys', 'type', 'mat');
 end
 
 iStim = data.iStim; clear data;
@@ -42,7 +44,7 @@ cMosaic.computeCurrent;
 
 bp = bipolar(cMosaic);
 bp.set('sRFcenter',1);
-bp.set('sRFsurround',1);
+bp.set('sRFsurround',0);
 bp.compute(cMosaic);
 % bp.plot('movie response')
 
