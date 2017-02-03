@@ -38,8 +38,15 @@ graph = p.Results.graph;
 
 % Get the finest time sampling from the os for the calculation.  We
 % downsample in time at the end, using cmosaic.timeAxis
-osFilt   = cmosaic.os.lmsConeFilter(:,1);
-osTime   = cmosaic.os.timeAxis;
+if isa(cmosaic.os,'osLinear')
+    osFilt   = cmosaic.os.lmsConeFilter(:,1);
+    osTime   = cmosaic.os.timeAxis;
+else
+    osFiltTemp = linearFilters(cmosaic.os, cmosaic);
+    osFilt = osFiltTemp(:,1);
+    osTime   = ((1:size(osFilt,1)) - 1) * cmosaic.os.timeStep;
+end
+
 
 %% Create the Pillow impulse response function that we match
 

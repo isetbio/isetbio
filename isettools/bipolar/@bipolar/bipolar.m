@@ -1,13 +1,14 @@
 classdef bipolar < handle
-% Define the bipolar cell class.
-% 
+%BIPOLAR - Create a bipolar object
 % The bipolar class allows the simulation of retinal processing from the
 % cone outer segment current to the retinal ganglion cell spike response.
+% 
+% bp = bipolar(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) creates the bipolar
+% object. Optional parameter name/value pairs are listed below.
+% 
 % Although we do not yet have a fully validated model of this architecture,
 % this represents a first attempt at simulating RGC responses from the cone
-% photocurrent. 
-% 
-% In order to achieve this, the bipolar temporal impulse response (IR)
+% photocurrent. In order to achieve this, the bipolar temporal impulse response (IR)
 % is the result of deconvolution of the cone IR from the RGC IR.
 %
 % The bipolar object also allows for the simulation of nonlinear subunits
@@ -18,6 +19,21 @@ classdef bipolar < handle
 % Output: the bipolar response over time, which can be fed into an inner
 % retina object.
 % 
+%     cellLocation;                    % location of bipolar RF center
+%     cellType;                        % diffuse on or off
+%     patchSize;                       % size of retinal patch from sensor
+%     timeStep;                        % time step of simulation from sensor
+%     filterType;                      % bipolar temporal filter type
+%     sRFcenter;                       % spatial RF of the center on the receptor grid
+%     sRFsurround;                     % spatial RF of the surround on the receptor grid
+%     rectificationCenter              % nonlinear function for center
+%     rectificationSurround            % nonlinear function for surround
+%     responseCenter;                  % Store the linear response of the center after convolution
+%     responseSurround;                % Store the linear response of the surround after convolution  
+% 
+%  ISETBIO wiki: <a href="matlab:
+%  web('https://github.com/isetbio/isetbio/wiki/bipolar','-browser')">bipolar</a>.
+%   
 % 5/2016 JRG (c) isetbio team
 
 %% Define object
@@ -27,23 +43,47 @@ end
 
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
+    %CELLLOCATION location of bipolar RF center
+    cellLocation;
     
-    cellLocation;                    % location of bipolar RF center
-    cellType;                        % diffuse on or off
-    patchSize;                       % size of retinal patch from sensor
-    timeStep;                        % time step of simulation from sensor
-    filterType;                      % bipolar temporal filter type
-    sRFcenter;                       % spatial RF of the center on the receptor grid
-    sRFsurround;                     % spatial RF of the surround on the receptor grid
-    rectificationCenter              % nonlinear function for center
-    rectificationSurround            % nonlinear function for surround
-    responseCenter;                  % Store the linear response of the center after convolution
-    responseSurround;                % Store the linear response of the surround after convolution
+    % CELLTYPE diffuse on or off
+    cellType;                        
+    
+    % PATCHSIZE size of retinal patch from sensor
+    patchSize;                       
+    
+    % TIMESTEP time step of simulation from sensor
+    timeStep;       
+    
+    % FILTERTYPE bipolar temporal filter type
+    filterType; 
+    
+    % SRFCENTER spatial RF of the center on the receptor grid
+    sRFcenter;                       
+    
+    % SRFSURROUND spatial RF of the surround on the receptor grid
+    sRFsurround;                   
+    
+    % RECTIFICATIONCENTER nonlinear function for center
+    rectificationCenter              
+    
+    % RECTIFICATIONSURROUND nonlinear function for surround
+    rectificationSurround            
+    
+    % RESPONSECENTER Store the linear response of the center after convolution
+    responseCenter;                  
+    
+    % RESPONSESURROUND Store the linear response of the surround after convolution
+    responseSurround;                
 
 end
 
 % Private properties. Only methods of the parent class can set these
 properties(Access = private)
+    % CONETYPE  
+    % on diffuse, off diffuse and on midget bipolars get no S cone input
+    % off midget bipolars get L,M,S cone input to center
+    % on sbc bipolars get only S cone center and only L+M surround
     coneType;
 end
 
@@ -52,6 +92,8 @@ methods
     
     % Constructor
     function obj = bipolar(cmosaic, varargin)     
+        % Initialize the bipolar class
+        %   bp = bipolar(cMosaic,'cellType','ondiffuse');
         
         p = inputParser;
         addRequired(p,  'cmosaic');
@@ -74,6 +116,7 @@ methods
         
         obj.cellType = p.Results.cellType;
         
+        % Set the rectification operation
         switch p.Results.rectifyType
             case 1
                 obj.rectificationCenter = @(x) x;
@@ -122,6 +165,8 @@ methods
 end
 
 properties (Constant)
+    % VALIDCELLTYPES Cell array of strings containing valid values for the
+    % cell type.
     validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
 end
 

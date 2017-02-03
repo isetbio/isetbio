@@ -199,10 +199,12 @@ bipolarFilt = bipolarFilter(obj, cmosaic);
 % obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
 %
 
-tmp = conv2(bipolarFilt,bipolarCenter);
+% tmp = conv2(bipolarFilt,bipolarCenter);
+tmp = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
 obj.responseCenter = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
 
-tmp = conv2(bipolarFilt,bipolarSurround);
+% tmp = conv2(bipolarFilt,bipolarSurround);
+tmp = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
 obj.responseSurround = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
 
 end
