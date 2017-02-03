@@ -54,6 +54,7 @@ function iStim = ieStimulusGabor(varargin)
 %% Parse inputs
 p = inputParser;
 
+addParameter(p,'display',   'LCD-Apple',@ischar);
 addParameter(p,'meanLuminance',  100,   @isnumeric);
 addParameter(p,'nSteps',         60,    @isnumeric);
 addParameter(p,'row',             0,    @isnumeric);  
@@ -66,6 +67,10 @@ addParameter(p,'GaborFlag',       1,    @isnumeric);
 addParameter(p,'expTime',        0.005, @isnumeric);
 addParameter(p,'nCycles',        4, @isnumeric);
 addParameter(p,'os',            'linear',@ischar);
+addParameter(p,'integrationTime',    .001,    @isnumeric); % ms 
+
+addParameter(p,'cmNoiseFlag',      'none',    @ischar); % 'none','random','frozen' 
+addParameter(p,'osNoiseFlag',      'none',    @ischar); % 'none','random','frozen' 
 
 % Viewing parameters
 addParameter(p,'fov',            0.6, @isnumeric);
@@ -76,10 +81,24 @@ addParameter(p,'radius',         0,  @isnumeric);
 addParameter(p,'theta',          0,  @isnumeric);
 addParameter(p,'side',           'left',  @ischar);
 
+addParameter(p,'startFrames',    120,    @isnumeric); % ms 
+addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
+addParameter(p,'endFrames',      60,    @isnumeric); % ms 
+
 % Field of view
 p.parse(varargin{:});
 params = p.Results;
 fov = params.fov;
+startFrames = params.startFrames;
+endFrames   = params.endFrames;
+
+conerows = p.Results.row;
+conecols = p.Results.col;
+
+integrationTime = p.Results.integrationTime;
+
+cmNoiseFlag = p.Results.cmNoiseFlag;
+osNoiseFlag = p.Results.osNoiseFlag;
 
 osType = p.Results.os;
 
@@ -91,6 +110,9 @@ if params.row == 0
 end
 
 %% Compute a scene
+
+% % Create display
+display = displayCreate(params.display);
 
 % Set up scene parameters
 scene = sceneCreate('harmonic', params);
@@ -108,10 +130,34 @@ coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 
 if strcmpi(osType, 'biophys');
-    osCM = osBioPhys();
+    osCM = osBioPhys();            % peripheral (fast) cone dynamics
+    osCM.set('noise flag','none');
+%     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
+    
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
+    cm.os.patchSize = cm.width;
+    cm.os.timeStep = cm.integrationTime;
+elseif strcmpi(osType,'hex')    
+    rng('default'); rng(219347);
+
+    resamplingFactor = 4;
+    varyingDensity = false;
+    customLambda = 0.6;       % If set to empty, @coneMosaiHex chooses
+    cm = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
+                             'name', 'the hex mosaic', ...
+                             'size', [conerows conecols], ...
+                        'noiseFlag', 'none',  ...
+                   'spatialDensity', [0 0.62 0.31 0.07] ...
+          );
+    
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
+    % Set the mosaic's FOV to a wide aspect ratio
+    cm.setSizeToFOVForHexMosaic([0.9 0.6]);
 else
     cm = coneMosaic;
+    
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
 end
 
 cm.pigment.width  = coneSz(1);
@@ -122,6 +168,8 @@ sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
 sceneDist = sceneGet(scene, 'distance');
 cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
+% Set the noise flag for the absorptions
+cm.noiseFlag = cmNoiseFlag;
 %% Compute a dynamic set of cone absorptions
 %
 % We produce a scene video that translates into an oi video that becomes a
@@ -139,6 +187,18 @@ wFlag = ieSessionGet('wait bar'); ieSessionSet('wait bar',false);
 
 wbar = waitbar(0,'Stimulus movie');
 grayStart = 50; grayEnd = 20;
+
+%%%%%%%%
+% This is the mean oi that we use at the start and end
+params.ph = 0
+scene    = sceneCreate('harmonic', params);
+oiMean   = oiCompute(oi,scene);
+
+% nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
+stimFrames = (sceneGet(scene,'cols'));
+nSteps = startFrames + stimFrames + endFrames;
+%%%%%%%%
+
 % Loop through frames to build movie
 for t = 1 : params.nSteps
     waitbar(t/params.nSteps,wbar);
@@ -163,14 +223,30 @@ for t = 1 : params.nSteps
     oi = oiCompute(oi, scene);    
     
     % Compute absorptions and photocurrent
-    cm.compute(oi, 'append', true, 'emPath', [0 0],'currentFlag',true);
+    % cm.compute(oi, 'append', true, 'emPath', [0 0]);
+    cm.compute(oi, 'emPath', [0 0]);
+    if t == 1; absorptionsMat = zeros([size(cm.pattern) nSteps]); end;
+    absorptionsMat(:,:,t) = cm.absorptions;
+    
+end
+% Need to compute current after otherwise osAddNoise is wrong
 
+cm.absorptions = absorptionsMat;
+cm.emPositions=zeros(nSteps,2);
+cm.os.noiseFlag = osNoiseFlag;
+
+if strcmpi(osType, 'biophys');
+    
+    cm.absorptions = cm.integrationTime*cm.absorptions;
+    osBParams.bgR = 10*mean(cm.absorptions(:)./cm.os.timeStep);
+    cm.computeCurrent(osBParams);
+%     cm.absorptions = cm.integrationTime*cm.absorptions;
+%     cm.computeCurrent();
+else    
+    cm.computeCurrent();
 end
 
 delete(wbar); ieSessionSet('wait bar',wFlag);
-
-% Compute the current
-cm.computeCurrent;
 
 % Save all the inputs to rerun 
 iStim.params   = params;     % Parameters to rerun this function

@@ -24,11 +24,11 @@ function iStim = ieStimulusBar(varargin)
 % Example:
 %   clear params; params.barWidth = 10; params.fov=1;
 %   iStim = ieStimulusBar(params);
-%   iStim.cMosaic.window;
+%   iStim.cm.window;
 %
 %  Returns the same 
 %   iStim = ieStimulusBar(iStim.params);
-%   iStim.cMosaic.window;
+%   iStim.cm.window;
 %
 % 3/2016 JRG (c) isetbio team
 
@@ -45,6 +45,9 @@ addParameter(p,'fov',            0.6,   @isnumeric); % Deg
 addParameter(p,'startFrames',    120,    @isnumeric); % ms 
 addParameter(p,'stimFrames',     inf,   @isnumeric); % determined by cols
 addParameter(p,'endFrames',      60,    @isnumeric); % ms 
+addParameter(p,'cmNoiseFlag',      'none',    @ischar); % 'none','random','frozen' 
+addParameter(p,'osNoiseFlag',      'none',    @ischar); % 'none','random','frozen'  
+addParameter(p,'integrationTime',    .001,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);
@@ -58,6 +61,12 @@ fov = params.fov;
 osType = p.Results.os;
 startFrames = params.startFrames;
 endFrames   = params.endFrames;
+integrationTime = p.Results.integrationTime;
+cmNoiseFlag = p.Results.cmNoiseFlag;
+osNoiseFlag = p.Results.osNoiseFlag;
+
+conerows = p.Results.row;
+conecols = p.Results.col;
 
 % We insist on turning off the wait bar
 wFlag = ieSessionGet('wait bar');
@@ -88,29 +97,30 @@ if strcmpi(osType, 'biophys');
 %     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
     
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
+    cm.os.patchSize = cm.width;
+    cm.os.timeStep = cm.integrationTime;
 elseif strcmpi(osType,'hex')    
     rng('default'); rng(219347);
     
-    % Generate a hex mosaic with a medium resamplingFactor
-    mosaicParams = struct(...
-        'resamplingFactor', 4, ...                 % controls the accuracy of the hex mosaic grid
-        'spatiallyVaryingConeDensity', false, ...  % whether to have an eccentricity based, spatially - varying density
-        'centerInMM', [0.5 0.3], ...               % mosaic eccentricity
-        'spatialDensity', [0 0.62 0.31 0.07],...
-        'noiseFlag', 'none' ...
-        );
-    cm = coneMosaicHex(...
-        mosaicParams.resamplingFactor, ...
-        mosaicParams.spatiallyVaryingConeDensity, ...
-        'center', mosaicParams.centerInMM*1e-3, ...
-        'spatialDensity', mosaicParams.spatialDensity, ...
-        'noiseFlag', mosaicParams.noiseFlag ...
-        );
+   
+    resamplingFactor = 4;
+    varyingDensity = false;
+    customLambda = 0.6;       % If set to empty, @coneMosaiHex chooses
+    cm = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
+                             'name', 'the hex mosaic', ...
+                             'size', [conerows conecols], ...
+                        'noiseFlag', 'none',  ...
+                   'spatialDensity', [0 0.62 0.31 0.07] ...
+          );
     
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
     % Set the mosaic's FOV to a wide aspect ratio
     cm.setSizeToFOVForHexMosaic([0.9 0.6]);
 else
     cm = coneMosaic;
+    
+    cm.integrationTime = integrationTime;% cm.os.timeStep;
 end
 
 % Set the cone aperture size
@@ -122,8 +132,8 @@ sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
 sceneDist = sceneGet(scene, 'distance');
 cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
-% Set the exposure time for each step
-cm.integrationTime = cm.os.timeStep;
+% Set the noise flag for the absorptions
+cm.noiseFlag = cmNoiseFlag;
 
 %% Compute a dynamic set of cone absorptions for moving bar
 fprintf('Computing cone isomerizations:    \n');
@@ -154,7 +164,7 @@ for t = 1 : nSteps
         colStart = t - startFrames + 1;
         colEnd   = colStart + params.barWidth - 1;
         % barMovie(:,t-startFrames + 1:(t-startFrames+1+params.barWidth-1),:) = 1;
-        barMovie(:,colStart:colEnd,:) = 1;
+        barMovie(:,colStart:colEnd,:) = 200;
 
         % Generate scene object from stimulus RGB matrix and display object
         scene = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
@@ -169,22 +179,29 @@ for t = 1 : nSteps
         
         % Compute optical image
         oi = oiCompute(oi, scene);
-    end
-    
-    
+    end   
+
     % Compute absorptions and photocurrent
-    cm.compute(oi, 'append', true, 'emPath', [0 0]);
-%     cm.compute(oi,'emPath', [0 0]);
-    
+    % cm.compute(oi, 'append', true, 'emPath', [0 0]);
+    cm.compute(oi, 'emPath', [0 0]);
+    if t == 1; absorptionsMat = zeros([size(cm.pattern) nSteps]); end;
+    absorptionsMat(:,:,t) = cm.absorptions;
 end
 
 % Need to compute current after otherwise osAddNoise is wrong
 
+cm.absorptions = absorptionsMat;
+cm.emPositions=zeros(nSteps,2);
+cm.os.noiseFlag = osNoiseFlag;
 
 if strcmpi(osType, 'biophys');
+    
+    cm.absorptions = cm.integrationTime*cm.absorptions;
     osBParams.bgR = 10*mean(cm.absorptions(:)./cm.os.timeStep);
     cm.computeCurrent(osBParams);
-else
+%     cm.absorptions = cm.integrationTime*cm.absorptions;
+%     cm.computeCurrent();
+else    
     cm.computeCurrent();
 end
 
@@ -201,5 +218,5 @@ iStim.display = display;
 iStim.scene   = scene;
 iStim.sceneRGB = sceneRGB;
 iStim.oi       = oi;
-iStim.cMosaic  = cm;
+iStim.cm  = cm;
 end
