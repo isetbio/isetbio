@@ -37,11 +37,14 @@ clear params iStim
 params.radius = 1e-3;
 params.barWidth = 10; 
 params.fov      = 0.6;
-% params.os = 'biophys';
+params.startFrames = 50;
+params.endFrames = 70;
+params.integrationTime = 0.001;
+params.os = 'linear';
 % params.os = 'hex';
 iStim = ieStimulusBar(params);  % Full params are returned in iStim
 %%
-fname = fullfile(isetbioRootPath,'local','barMovie_osBioPhys.mat');
+fname = fullfile(isetbioRootPath,'local','barMovie_osLinear.mat');
 save(fname,'iStim');
 
 % Publish to RDT
@@ -49,12 +52,19 @@ if publishFlag; rd.publishArtifact(fname); end;
 
 %% Create the file with the Gabor movie iStim in it
 
+clear params iStim
+params.radius = 1e-3;
+params.startFrames = 50;
+params.endFrames = 70;
 params.freq = 3;
 params.nSteps = 350;
 params.GaborFlag = 0.3;
+
+params.os = 'biophys';
+params.integrationTime = 0.001;
 iStim = ieStimulusGabor(params); %#ok<NASGU>
 
-fname = fullfile(isetbioRootPath,'local','gaborMovie.mat');
+fname = fullfile(isetbioRootPath,'local','gaborMovie_osBioPhys.mat');
 save(fname,'iStim');
 
 % Publish to RDT
@@ -138,7 +148,8 @@ cMosaic.emGenSequence(emLength);
 cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
     'sceneDist',sceneGet(s,'distance'),...
     'focallength',oiGet(oi,'optics focal length'));
-cMosaic.compute(oi,'currentFlag',true);
+cMosaic.compute(oi);
+cMosaic.computeCurrent();
 
 fname = fullfile(isetbioRootPath,'local','vernier_cMosaic.mat');
 save(fname,'cMosaic');
@@ -176,8 +187,8 @@ cMosaic.emGenSequence(emLength);
 cMosaic.setSizeToFOV(sceneGet(s,'fov'),...
     'sceneDist',sceneGet(s,'distance'),...
     'focallength',oiGet(oi,'optics focal length'));
-cMosaic.compute(oi,'currentFlag',true);
-
+cMosaic.compute(oi);
+cMosaic.computeCurrent();
 
 fname = fullfile(isetbioRootPath,'local','letter_cMosaic.mat');
 save(fname,'cMosaic');
