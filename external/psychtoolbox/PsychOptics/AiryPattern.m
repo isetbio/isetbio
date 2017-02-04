@@ -1,17 +1,20 @@
 function intensity = AiryPattern(angles,pupil,nm)
-% intensity = AiryPattern((angles,pupil,nm)
+%AIRYPATTERN  Comptue the radial Airy pattern
+%   intensity = AiryPattern((angles,pupil,nm)
 % 
-% Compute the radial Airy pattern for diffraction by
-% a circular aperature.
+%   Compute the radial Airy pattern for diffraction by
+%   a circular aperature.
 %
 %   "angles" visual angle in radians
 %   "pupil" diameter in mm
 %   "nm" is wavelength in nm
 %
-% Intensity is normalized to max of 1.
+%   Intensity is normalized to max of 1.
 %
-% Formulae from Hecht, Optics, 2cd edition, p. 419.
+%   Formulae from Hecht, Optics, 2cd edition, p. 419.
 %
+%   See also DIFFRACTIONMTF, PSYCHOPTICSTEST.
+
 % 1/13/04  dhb  Wrote it.
 % 12/27/04 dhb	Deal with case of input == 0.
 
