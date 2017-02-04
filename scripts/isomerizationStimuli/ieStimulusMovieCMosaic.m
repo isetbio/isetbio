@@ -55,6 +55,7 @@ addParameter(p,'radius',         0,  @isnumeric);  % Degrees?
 addParameter(p,'theta',          0,  @isnumeric);  % Degrees?
 addParameter(p,'side',           'left',  @ischar);% Left/right
 
+addParameter(p,'emFlag',         false, @islogical);
 p.parse(movieInput,varargin{:});
 params = p.Results;
 fov = params.fov;
@@ -68,6 +69,8 @@ conecols = p.Results.col;
 integrationTime = p.Results.integrationTime;
 cmNoiseFlag = p.Results.cmNoiseFlag;
 osNoiseFlag = p.Results.osNoiseFlag;
+
+emFlag = p.Results.emFlag;
 
 % We insist on turning off the wait bar
 wFlag = ieSessionGet('wait bar');
@@ -152,6 +155,12 @@ oiMean   = oiCompute(oi,scene);
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
 stimFrames = size(movieInput,3);
 nSteps = startFrames + stimFrames + endFrames;
+
+if emFlag
+    cm.emGenSequence(nSteps);
+    emPositions = cm.emPositions;
+end
+
 for t = 1 : nSteps
     waitbar(t/nSteps,wbar);
 
@@ -177,7 +186,11 @@ for t = 1 : nSteps
     
     % Compute absorptions and photocurrent
     % cm.compute(oi, 'append', true, 'emPath', [0 0]);
-    cm.compute(oi, 'emPath', [0 0]);
+    if emFlag
+        cm.compute(oi, 'emPath', [emPositions(t,:)]);
+    else
+        cm.compute(oi, 'emPath', [0 0]);
+    end
     if t == 1; absorptionsMat = zeros([size(cm.pattern) nSteps]); end;
     absorptionsMat(:,:,t) = cm.absorptions;
 end
@@ -185,7 +198,11 @@ end
 % Need to compute current after otherwise osAddNoise is wrong
 
 cm.absorptions = absorptionsMat;
-cm.emPositions=zeros(nSteps,2);
+if emFlag
+    cm.emPositions=emPositions;
+else
+    cm.emPositions=zeros(nSteps,2);
+end
 cm.os.noiseFlag = osNoiseFlag;
 
 if strcmpi(osType, 'biophys');
