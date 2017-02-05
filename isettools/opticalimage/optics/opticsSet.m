@@ -1,4 +1,4 @@
-function optics = opticsSet(optics,parm,val,varargin)
+whihfunction optics = opticsSet(optics,parm,val,varargin)
 % OPTICSSET - Set optics structure parameters
 %
 %   optics = opticsSet(optics, paramName,val, ...)

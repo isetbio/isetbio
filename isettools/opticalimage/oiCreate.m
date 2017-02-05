@@ -1,7 +1,7 @@
 function oi = oiCreate(oiType,varargin)
-%Create an optical image structure
+%OICREATE  Create an optical image structure
 %
-%   oi = oiCreate(oiType,varargin)
+%   oi = OICREATE(oiType,varargin)
 %
 % The optical image represents the spectral irradiance at the sensor. The
 % irradiance is computed from the scene radiance, using the information in
