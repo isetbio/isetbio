@@ -1,5 +1,5 @@
-function j = wvfOSAIndexToZernikeMN(n,m)
-% j = wvfOSAIndexToZernikeMN(n,m)
+function j = wvfZernikeMNToOSAIndex(n,m)
+% j = wvfZernikeMNToOSAIndex(n,m)
 %
 % Convert from the Zernike 2 index standard indexing
 % to the OSA single Zernike index (starting at j = 0)
