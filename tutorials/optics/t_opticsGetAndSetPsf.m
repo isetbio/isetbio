@@ -119,7 +119,12 @@ for ii = 1:length(wls)
 end
 optics = opticsSet(optics,'otf data',insertOtf);
 
-%% Make sure everything is hunky-dory by making the plot using isetbio's fcn\
+%% Make sure everything is hunky-dory by making the plot using isetbio's fcn
+%
+% It appears a little bit off.  I think the problem is that the psf support
+% returned by opticsGet(...,'psfsupport') is off by a little.  There is a
+% comment there that it should be replaced by the code in oiPlot for the
+% psf 550 case, and I think that is correct.  I will try to do this soon.
 oi = oiSet(oi,'optics',optics);
 udata = oiPlot(oi,'psf',[],theWl);
 
