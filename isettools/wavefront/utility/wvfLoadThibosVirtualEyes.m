@@ -16,6 +16,11 @@ function [sample_mean, sample_cov] = wvfLoadThibosVirtualEyes(pupilDiameterMM)
 %   Model of Ocular Wavefront Aberrations" published in Ophthalmological
 %   and Physiological Optics (2009).
 %
+% and in 
+%   Statistical variation of aberration structure and image quality in a
+%   normal population of healthy eyes Larry N. Thibos, Xin Hong, % Arthur
+%   Bradley, and Xu Cheng (2002, JOSA).
+%
 % Concerning the program, the authors write:
 %   Permission is granted to use this program for scientific research
 %   purposes.  Commercial users should contact Indiana University for
@@ -31,6 +36,9 @@ function [sample_mean, sample_cov] = wvfLoadThibosVirtualEyes(pupilDiameterMM)
 %   http://www.sciencedirect.com/science/article/pii/S0042698911003099
 %
 % DHB compared these calculations to the figures in the Autrusseau paper.
+% He also compared the values of the Zernike polynomial coefficients that
+% we load to the data shown in Figure 6 of the JOSA-A paper.  These align
+% as well.
 %
 % Example:
 %   pd = 6.0;
