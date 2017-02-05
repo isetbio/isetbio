@@ -19,10 +19,11 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 % Goodman, Intro to Fourier Optics, 3rd ed, p. 131. (MDL)
 %
 % The pupil function is calculated for 10 orders of Zernike coeffcients
-% specified to the OSA standard, with the convention that we assume that
-% the coefficient for j = 0 is 0, and that the first entry of the passed
-% coefficients corresponds to j = 1.  Adding in the j = 0 term does not
-% change the psf.  The spatial coordinate system is also OSA standard.
+% specified to the OSA standard, with the convention that we include the j
+% = 0 term, even though it does not affect the psf.  Thus the first entry
+% of the passed coefficients corresponds to j = 1.  Adding in the j = 0
+% term does not change the psf.  The spatial coordinate system is also OSA
+% standard.
 %
 % Note that this system is the same for both left and right eyes. If the
 % biology is left-right reflection symmetric, one might want to left-right
