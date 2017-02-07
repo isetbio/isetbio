@@ -13,6 +13,7 @@ clear; ieInit;
 %% Create the oi structure and pull out the optics
 %
 % Snag the wavelengths while we're at it.
+theWl = 550;
 oi = oiCreate('wvf human');
 optics = oiGet(oi,'optics');
 wls = opticsGet(optics,'wave');
@@ -67,15 +68,14 @@ xSfGridCyclesDegree = uMPerDegree*xSfGridCyclesMm/uMPerMm;
 ySfGridCyclesDegree = uMPerDegree*ySfGridCyclesMm/uMPerMm;
 
 %% Get isetbio format OTF at a specified wavelength
-theWl = 550;
 otf = opticsGet(optics,'otf data',theWl);
 
 %% Derive the psf from the otf
 %
 % We have to convert to the zero sf at center representation to use
 % OtfToPsf, using ifftshift.
-[xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDegree,ySfGridCyclesDegree,ifftshift(otf));
-centerPosition = length(sfValuesCyclesMm{1})/2+1;
+[xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDegree,ySfGridCyclesDegree,fftshift(otf));
+centerPosition = floor(length(sfValuesCyclesMm{1})/2)+1;
 position1DMinutes = xGridMinutes(centerPosition,:);
 wvfHuman1DPsf = psf(centerPosition,:);
 
