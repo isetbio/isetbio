@@ -1,6 +1,6 @@
-%% t_FFTinMatlab.m
+%% t_codeFFTinMatlab.m
 %
-% Explains the Matlab conventions for transforming from space to the frequency domain.  
+% Explains the Matlab conventions for transforming from space to the frequency domain.
 
 %% Initialize
 ieInit;
@@ -14,7 +14,7 @@ nSamples = 6;
 % this by calculating the inverse FFT for all zeros except t(1,1)
 t = zeros(nSamples,nSamples);
 t(1,1) = 1;
-ft = ifft2(t)
+ft = ifft2(t);
 isreal(ft)  % The entries are all 1/(6*6)
 
 %% FFT
@@ -26,11 +26,15 @@ s(1,1) = 1;
 fft2(s)     % This produces the output for an impulse at the center
 isreal(s)
 
-
 % The implications of these representations for using fft2 
 %
 % See Matlab documentation on fft2, ifft2, fftshift and ifftshift
 
+% [DHB Note]: I don't understand the initial comments about centering here.
+% I think the center is at floor(N/2)+1 for both odd and even dimension.
+% This makes no difference for even, but does change things for odd. Isn't
+% the center at [3,3] for N = 5?
+%
 % Image centering
 % The center of an image of size (N,N) is
 %  when N is odd,         ceil(N/2) + 1, 
@@ -58,28 +62,44 @@ isreal(s)
 %% PSF/OTF example
 %
 % Suppose we create a PSF.  In most coding, the natural way to create a
-% PSF is as an image.  The center is not in (1,1), but in the center.  
-g = fspecial('gaussian',128,2); axis equal
-figure(1); colormap(gray); mesh(g)
+% PSF is as an image.  The center is not in (1,1), but in the center. 
+theDim = 129;
+g = fspecial('gaussian',theDim,2);
+figure(1); subplot(1,3,1); colormap(gray); mesh(g);
 
+% [DHB Note]: I think this should be ifftshift here.  This doesn't matter
+% if the support has even dimension, but will matter if it has odd
+% dimension.  (fftshift moves the corner to the center, ifftshift moves the
+% center to the corner, as I understand it.)  That said, reversing the
+% order of the calls does not seem to have any effect.  Note for example
+% that in opticsGet, the code to return the center-centered psf from the
+% corner centered otf is: val = fftshift(ifft2(otf)); That is, fftshift is
+% applied to move the corner to the center.
+%
 % To calculate the OTF of the point spread function, we should place the
 % center of the image in the (1,1) position.  We do this using fftshift.
 % We can then take the fft2 of the result to produce the OTF.
 gFT = fft2(fftshift(g));
-figure(1); mesh(abs(gFT))
+subplot(1,3,2); mesh(abs(gFT)); 
+
+% And now show that you can go back to the original image
+gFTAndBack = ifftshift(ifft2(gFT)); 
+subplot(1,3,3); mesh(abs(gFTAndBack)); 
 
 %% Image example
 % Again, the image center is not in (1,1).  It is in the center.
 tmp = load('trees');
 cmap = gray(128);
 img = cmap(tmp.X);
-img = img(1:128,1:128);
-figure(1); colormap(gray); imagesc(img); axis image
+img = img(1:theDim,1:theDim);
+figure(2); subplot(1,4,1); colormap(gray); imagesc(img); axis image
 
+% [DHB Note]: Again, I think this should be ifftshift.
+%
 % Before we transform the image, we want to place its center in the (1,1)
 % position.
 imgC = fftshift(img);
-figure(1); imagesc(imgC); axis image
+subplot(1,4,2); imagesc(imgC); axis image
 
 % Then we compute the transform
 imgFT = fft2(imgC);
@@ -91,10 +111,12 @@ imgFTgFT = imgFT .* gFT;
 imgConvG = ifft2(imgFTgFT);
 
 % When we do, the image center is in the (1,1) position.
-figure(1); colormap(gray); imagesc(imgConvG); axis image
+subplot(1,4,3); colormap(gray); imagesc(imgConvG); axis image
 
-% We want the center in the center.  So we apply the ifftshift
+% [DHB Note]:  I think this should be fftshift, not ifftshift.
+%
+% We want the center in the center.  So we apply the ifftshift.
 imgConvGCentered = ifftshift(imgConvG);
-figure(1); imagesc(imgConvGCentered); axis image
+subplot(1,4,4); imagesc(imgConvGCentered); axis image
 
 %% End
