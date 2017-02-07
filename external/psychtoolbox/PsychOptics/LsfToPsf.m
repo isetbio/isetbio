@@ -20,14 +20,6 @@ function psf = LsfToPsf(lsf,varargin)
 %   The lsf must be spatially symmetric.  This makes sense given that we
 %   are going to recover a spatially symmetric psf.
 %
-%   The lsf must be defined on a support with an even number of samples
-%   that have the general feature that the zero position is at location
-%   n/2 + 1, where n is the number of samples. This means that there is one
-%   more negative position than positive position in the spatial support.
-%   Doing it this way is important because of the way the FFT works.
-%   Probably you could write code to do it with odd support, but that would
-%   require more fussing than I am willing to do.
-%
 %   You want to make sure that the spatial suport is large enough to
 %   capture the full lsf.
 %
@@ -35,14 +27,17 @@ function psf = LsfToPsf(lsf,varargin)
 %
 %   See also PSFTOLSF, PSYCHOPTICSTEST
 
-% Check for even support and symmetry
+% Handle even versus odd dimension of spatial support.
 n1D = length(lsf);
 if (mod(n1D,2) ~= 0)
-    error('LSF must be defined on spatial support with even dimension.');
+    centerPosition = floor(n1D/2) + 1;
+    negValues = lsf(centerPosition-1:-1:1);
+    posValues = lsf(centerPosition+1:end);
+else
+    centerPosition = n1D/2 + 1;
+    negValues = lsf(centerPosition-1:-1:2);
+    posValues = lsf(centerPosition+1:end);
 end
-centerPosition = n1D/2 + 1;
-negValues = lsf(centerPosition-1:-1:2);
-posValues = lsf(centerPosition+1:end);
 if (any(posValues ~= negValues))
     error('LSF is not spatially symmetric');
 end
@@ -71,8 +66,14 @@ lsfOTFCentered = abs(lsfMTFCenteredRaw);
 % Values outside the frequency support of the lsf-based OTF are set to
 % zero.  This should be fine as long as the spatial support is large enough
 % so that the MTF has fallen to zero at highest frequencies specified.
+%
+% Need to handle even versus odd spatial support here.
 radiusMatrix = MakeRadiusMat(n1D,n1D,centerPosition);
-psfOTFCentered = interp1(0:n1D/2-1,lsfOTFCentered(centerPosition:end),radiusMatrix,'linear',0);
+if (rem(n1D,2) == 0)
+    psfOTFCentered = interp1(0:n1D/2-1,lsfOTFCentered(centerPosition:end),radiusMatrix,'linear',0);
+else
+    psfOTFCentered = interp1(0:floor(n1D/2),lsfOTFCentered(centerPosition:end),radiusMatrix,'linear',0);
+end
 
 % Do inverse fft, now in 2D.  Again wrap with ifftshift and fftshift so that we
 % are working in 0 centered coordinates.

@@ -25,12 +25,16 @@ clear; close all;
 
 % Define spatial support.
 %
-% Number of samples must be even.
-nSpatialSamples = 512;
-centerPosition = nSpatialSamples/2+1;
+% Number of samples can be even or odd.
+nSpatialSamples = 513;
+centerPosition = floor(nSpatialSamples/2)+1;
+if (rem(nSpatialSamples,2) == 0)
+    integerSamples1D = -nSpatialSamples/2:nSpatialSamples/2-1;
+else
+    integerSamples1D = -floor(nSpatialSamples/2):floor(nSpatialSamples/2);
+end
 maxPositionMinutes = 8;
 maxSfCyclesPerDegree = 60*(nSpatialSamples/2)/(2*maxPositionMinutes);
-integerSamples1D = -nSpatialSamples/2:nSpatialSamples/2-1;
 positionMinutes1D = maxPositionMinutes*integerSamples1D/(centerPosition-1);
 
 % These produce two similar lsf's for the human eye, from the literature.
@@ -156,7 +160,8 @@ ylabel('OTF');
 title('Diffraction Limited OTFs');
 legend({'Derived from Anaytic PSF', 'Analytic OTF'},'Location','NorthEast');
 
-% Then the psfs
+% Then the psfs.  These are not exactly the same, although it is difficult
+% to tell just from looking at the graph.
 subplot(2,2,2); hold on
 plot(xGridMinutes(centerPosition,:),Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)/max(Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)),'r','LineWidth',4);
 plot(positionMinutes1D,Diffraction_3_633_PSFAnalytic(centerPosition,:)/max(Diffraction_3_633_PSFAnalytic(centerPosition,:)),'g-','LineWidth',2);

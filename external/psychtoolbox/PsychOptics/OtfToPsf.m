@@ -10,8 +10,8 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %    The input spatial frequencies should be specified in matlab's grid
 %    matrix format and sf for x and y should be specified over the same
 %    spatialfrequency extent and with the same number of evenly spaced
-%    samples.  The number of samples should be even. Position (0,0) should
-%    be at location n/2+1 in each dimension.
+%    samples. Position (0,0) should be at location floor(n/2)+1 in each
+%    dimension.
 %
 %    Positions are returned using the same conventions.
 %
@@ -34,15 +34,9 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 
 %% Reality checks on passed input
 [m,n] = size(xSfGridCyclesDeg);
-centerPosition = n/2 + 1;
+centerPosition = floor(n/2) + 1;
 if (m ~= n)
     error('psf must be passed on a square array');
-end
-if (mod(m,2) ~= 0)
-    error('Number of rows of spatial support must be even');
-end
-if (mod(n,2) ~= 0)
-    error('Number of cols of spatial support must be even');
 end
 [m1,n1] = size(ySfGridCyclesDeg);
 if (m1 ~= m || n1 ~= n)
@@ -76,9 +70,14 @@ end
 %% Generate position grids
 %
 % Samples are evenly spaced and the same for both x and y (checked above).
+% Handle even versus odd dimension properly for fft conventions.
 spatialFrequencyExtentCyclesDeg = xSfGridCyclesDeg(centerPosition,end)-xSfGridCyclesDeg(centerPosition,1);
 spatialFrequencyExtentCyclesMinute = spatialFrequencyExtentCyclesDeg/60;
-positionMinutes = (-n/2:n2/2-1)/spatialFrequencyExtentCyclesMinute;
+if (rem(n,2) == 0)
+    positionMinutes = (-n/2:n/2-1)/spatialFrequencyExtentCyclesMinute;
+else
+    positionMinutes = (-floor(n/2):floor(n/2))/spatialFrequencyExtentCyclesMinute;
+end
 [xGridMinutes,yGridMinutes] = meshgrid(positionMinutes,positionMinutes);
     
 %% Compute otf

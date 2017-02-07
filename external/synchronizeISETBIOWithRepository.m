@@ -11,7 +11,7 @@
 %       % Synchronize ISETBIO's external BrainardLab Toolbox routines
 %       synchronizeISETBIOWithRepository('BLTB_DHB');
 %
-% 11/20/2014 npc    Wrote it.
+%  11/20/2014 npc    Wrote it.
 %  4/27/2015 npc    Modification to support synchronization of any repository with isetbio, not just PTB 
 %
 
