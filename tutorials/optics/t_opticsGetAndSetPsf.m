@@ -18,41 +18,52 @@ oi = oiCreate('wvf human');
 optics = oiGet(oi,'optics');
 wls = opticsGet(optics,'wave');
 
-%% Make the support an even number of samples, if it is odd
-%
-% The PTB code for optics requires even number of samples, because at one
-% point we were more confident of how space and frequency got packed for
-% even samples than for odd.  That could be relaxed in the PTB code, but
-% the approach we take here is to work in isetbio with support that has an
-% even number of samples.
-%
-% Check is only on x spatial frequencies.  This is OK as long as support is square, 
-% which is almost surely true.  We do check that, though.
+%% Check that support is square
+% 
+% Almost surely true, and haven't thought through all the implications if
+% it is not.
 sfValuesCyclesMm = opticsGet(optics,'otf support','mm');
 if (length(sfValuesCyclesMm{1}) ~= length(sfValuesCyclesMm{2}))
     error('Our code assumes that sf support for otf is square, but it isn''t here.')
 end
-if (rem(length(sfValuesCyclesMm{1}),2) ~= 0)
-    % Lop off highest postive frequency in both x and y and put back.
-    sfValuesCyclesMm{1} = sfValuesCyclesMm{1}(1:end-1);
-    optics = opticsSet(optics,'otffx',sfValuesCyclesMm{1});
-    sfValuesCyclesMm{2} = sfValuesCyclesMm{2}(1:end-1);
-    optics = opticsSet(optics,'otffy',sfValuesCyclesMm{2});
-    
-    % Lop off highest postive frequency in the otf. Isetbio stores the otf
-    % in Matlab's first entry is zero freuqency format, but the lopping is
-    % easier to think about in the zero frequency at the center format.
-    % Use fftshift and ifftshift to go back and forth, and do the lopping
-    % in between.  We need to do all the wavelengths, and put the whole
-    % resized cube back in, in one fell swoop.
-    otfOddSupport = opticsGet(optics,'otf data');
-    for ii = 1:length(wls)
-        otfCentered = fftshift(otfOddSupport(:,:,ii));
-        otfCentered = otfCentered(1:end-1,1:end-1);
-        otfEvenSupport(:,:,ii) = ifftshift(otfCentered);
+
+%% Change even/odd support to odd/even support
+%
+% If dimension of otf/psf support is odd, make it even.  If it is even, 
+% make it odd.  This is a bit of a hack but lets us test that things work
+% for both odd and even dimension.
+%
+% The case where it starts off even is not yet handled.
+CHANGE_SUPPORTDIM = false;
+if (CHANGE_SUPPORTDIM)
+    % Case where it starts odd
+    if (rem(length(sfValuesCyclesMm{1}),2) ~= 0)
+        
+        % Lop off highest postive frequency in both x and y and put back.
+        sfValuesCyclesMm{1} = sfValuesCyclesMm{1}(1:end-1);
+        optics = opticsSet(optics,'otffx',sfValuesCyclesMm{1});
+        sfValuesCyclesMm{2} = sfValuesCyclesMm{2}(1:end-1);
+        optics = opticsSet(optics,'otffy',sfValuesCyclesMm{2});
+        
+        % If it starts out odd, lop off highest postive frequency in the otf.
+        % Isetbio stores the otf in Matlab's first entry is zero freuqency
+        % format, but the lopping is easier to think about in the zero
+        % frequency at the center format. Use fftshift and ifftshift to go back
+        % and forth, and do the lopping in between.  We need to do all the
+        % wavelengths, and put the whole resized cube back in, in one fell
+        % swoop.
+        otfOddSupport = opticsGet(optics,'otf data');
+        for ii = 1:length(wls)
+            otfCentered = fftshift(otfOddSupport(:,:,ii));
+            otfCentered = otfCentered(1:end-1,1:end-1);
+            otfEvenSupport(:,:,ii) = ifftshift(otfCentered);
+        end
+        optics = opticsSet(optics,'otf data',otfEvenSupport);
+        clear otfOddSupport otfEvenSupport otfCentered
+    % Case where it starts even
+    else
+        error('Not yet implemented.');
     end
-    optics = opticsSet(optics,'otf data',otfEvenSupport);
-    clear otfOddSupport otfEvenSupport otfCentered
 end
 
 %% Get the gridded spatial frequency support of the otf in cycles/deg.
@@ -100,8 +111,8 @@ title('PSF');
 DavilaGeislerLsf = DavilaGeislerLSFMinutes(position1DMinutes);
 DavilaGeislerPsf = LsfToPsf(DavilaGeislerLsf);
 psfFig = figure; clf; hold on
-plot(position1DMinutes,wvfHuman1DPsf/max(wvfHuman1DPsf),'r','LineWidth',3);
-plot(position1DMinutes,DavilaGeislerPsf(centerPosition,:)/max(DavilaGeislerPsf(centerPosition,:)),'g-','LineWidth',2);
+plot(position1DMinutes,wvfHuman1DPsf/max(wvfHuman1DPsf),'r','LineWidth',4);
+plot(position1DMinutes,DavilaGeislerPsf(centerPosition,:)/max(DavilaGeislerPsf(centerPosition,:)),'g-','LineWidth',4);
 xlim([-4 4]);
 xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
@@ -123,9 +134,14 @@ optics = opticsSet(optics,'otf data',insertOtf);
 oi = oiSet(oi,'optics',optics);
 udata = oiPlot(oi,'psf',[],theWl);
 figure(psfFig);
-plot(60*udata.x(centerPosition,:)/300,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k:','LineWidth',2);
+plot(60*udata.x(centerPosition,:)/300,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k-','LineWidth',3);
 
-
+%% Let's do this through the routine
+oi2 = oiCreate('wvf human');
+oi2 = ptb.oiSetPtbOptics(oi2);
+udata2 = oiPlot(oi2,'psf',[],theWl);
+figure(psfFig);
+plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'r:','LineWidth',2);
 
 
 

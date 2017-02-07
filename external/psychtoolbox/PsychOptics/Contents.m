@@ -11,9 +11,11 @@
 %   LsfToPsf            - Convert line spread function to point spread function.
 %   MakeRadiusMat       - Create a matrix whose entries are equal to their radius.
 %   OtfToPsf            - Convert optical transfer function to point spread function.
+%   PositionGridMinutesToSfGridCyclesDeg - Convert mess from position to sf.
 %   PsfToLsf            - Convert point spread function to line spread function.
 %   PsfToOtf            - Convert point spread function to optical transfer function.
 %   PsychOpticsTest     - Test script for some of the routines in this folder.
+%   SfGridCyclesDegToPositionGridMinutes - Convert mesh from sf to position.
 %   WestLSFMinutes      - Compute Westheimer's line spread function.
 %   WestPSFDegrees      - Compute Westheimer's point spread function, in degrees.
 %   WestPSFMinutes      - Compute Westheimer's point spread function, in minutes.

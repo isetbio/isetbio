@@ -71,14 +71,7 @@ end
 %
 % Samples are evenly spaced and the same for both x and y (checked above).
 % Handle even versus odd dimension properly for fft conventions.
-spatialFrequencyExtentCyclesDeg = xSfGridCyclesDeg(centerPosition,end)-xSfGridCyclesDeg(centerPosition,1);
-spatialFrequencyExtentCyclesMinute = spatialFrequencyExtentCyclesDeg/60;
-if (rem(n,2) == 0)
-    positionMinutes = (-n/2:n/2-1)/spatialFrequencyExtentCyclesMinute;
-else
-    positionMinutes = (-floor(n/2):floor(n/2))/spatialFrequencyExtentCyclesMinute;
-end
-[xGridMinutes,yGridMinutes] = meshgrid(positionMinutes,positionMinutes);
+[xGridMinutes,yGridMinutes] = SfGridCyclesDegToPositionGridMinutes(xSfGridCyclesDeg,ySfGridCyclesDeg);
     
 %% Compute otf
 psf = fftshift(ifft2(ifftshift(otf)));

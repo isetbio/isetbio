@@ -69,17 +69,7 @@ if (diffX(1) ~= diffY(1))
 end
 
 %% Generate spatial frequency grids
-%
-% Samples are evenly spaced and the same for both x and y (checked above).
-% Handle even versus odd dimension properly for fft conventions.
-spatialExtentMinutes = xGridMinutes(centerPosition,end)-xGridMinutes(centerPosition,1);
-if (rem(n,2) == 0)
-    sfCyclesDeg = 60*(-n/2:n/2-1)/spatialExtentMinutes;
-else
-    sfCyclesDeg = 60*(-floor(n/2):floor(n/2))/spatialExtentMinutes;
-end
-[xSfGridCyclesDeg,ySfGridCyclesDeg] = meshgrid(sfCyclesDeg,sfCyclesDeg);
-    
+[xSfGridCyclesDeg,ySfGridCyclesDeg] = PositionGridMinutesToSfGridCyclesDeg(xGridMinutes,yGridMinutes);
 %% Compute otf
 otf = fftshift(fft2(ifftshift(psf)));
 
