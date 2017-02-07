@@ -134,14 +134,34 @@ optics = opticsSet(optics,'otf data',insertOtf);
 oi = oiSet(oi,'optics',optics);
 udata = oiPlot(oi,'psf',[],theWl);
 figure(psfFig);
-plot(60*udata.x(centerPosition,:)/300,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k-','LineWidth',3);
+plot(60*udata.x(centerPosition,:)/300,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k-','LineWidth',2);
 
-%% Let's do this through the routine
+%% Let's do this through the routine and show that we get the same answer
 oi2 = oiCreate('wvf human');
 oi2 = ptb.oiSetPtbOptics(oi2);
 udata2 = oiPlot(oi2,'psf',[],theWl);
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'r:','LineWidth',2);
+
+%% Add Westheimer and Williams estimates for fun
+oi2 = ptb.oiSetPtbOptics(oi2,'opticsType','Westheimer');
+udata2 = oiPlot(oi2,'psf',[],theWl);
+figure(psfFig);
+plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'c','LineWidth',2);
+oi2 = ptb.oiSetPtbOptics(oi2,'opticsType','Williams');
+udata2 = oiPlot(oi2,'psf',[],theWl);
+figure(psfFig);
+plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'y','LineWidth',2);
+legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet Again','Westheimer','Williams'});
+
+%% And finally plot the Davila-Geisler lsf if we take it directly as the psf.
+oi2 = ptb.oiSetPtbOptics(oi2,'opticsType','DavilaGeislerLsfAsPsf');
+udata2 = oiPlot(oi2,'psf',[],theWl);
+figure(psfFig);
+plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'k:','LineWidth',2);
+legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet Again','Westheimer','Williams','D/G Lsf as Psf'});
+
+
 
 
 

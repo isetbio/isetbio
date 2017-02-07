@@ -22,8 +22,13 @@ function oi = oiSetPtbOptics(oi,varargin)
 %
 %   'opticsType'            Line spread type (default, DavilaGeisler)
 %                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
+%                             'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
 %                             'Westheimer'    - See PTB's WestheimerLSFMinutes
 %                             'Williams'      - See PTB's WilliamsMTF
+%
+%    The case of DavilaGeislerLsfAsPsf is to see if we better reproduce
+%    some of their results on the assumption that this is what they did.
+%    It is not meant as a good estimate of the human psf.
 
 %% Parse input
 p = inputParser;
@@ -69,13 +74,15 @@ switch (p.Results.opticsType)
     case 'DavilaGeisler'
         theLsf = DavilaGeislerLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
+    case 'DavilaGeislerLsfAsPsf'
+        thePsf = DavilaGeislerLSFMinutes(sqrt(xGridMinutes.^2 + yGridMinutes.^2));
     case 'Westheimer'
-        theLsf = WestheimerLSFMinutes(position1DMinutes);
+        theLsf = WestLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
     case 'Williams'
-        theMtf = WilliamsMtf(sqrt(xSfGridCyclesDeg.^2 + xSfGridCyclesDeg.^2))
-        [a,b,thePsf] = MtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,theMtf);
-        if (any(a ~= xGridMinutes || b ~= yGridMinutes))
+        theMtf = WilliamsMTF(sqrt(xSfGridCyclesDeg.^2 + ySfGridCyclesDeg.^2));
+        [a,b,thePsf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,theMtf);
+        if (any(a ~= xGridMinutes | b ~= yGridMinutes))
             error('Internal coordinate system transformation error');
         end
     otherwise
