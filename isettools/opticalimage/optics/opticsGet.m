@@ -33,9 +33,9 @@ function val = opticsGet(optics,parm,varargin)
 % function of a circular aperture.
 %
 % About the OTF and PSF
-%  We store the OTF data with DC at (1,1).  This is true throughout ISET.
-%  To understand the implications for certain calculations see the script
-%  and tutorial in s_FFTinMatlab.
+%  We store the OTF data with DC at (1,1).  This is true throughout
+%  isetbio. To understand the implications for certain calculations see the
+%  script and tutorial in t_codeFFTinMatlab.
 %
 %  Although Matlab uses this representation, when we make graphs and
 %  images we put the center of the image at the center -- of course -- and
