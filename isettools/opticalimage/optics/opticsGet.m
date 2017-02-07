@@ -121,7 +121,9 @@ function val = opticsGet(optics,parm,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-
+%% Control some printout
+RESPECT_THE_COMMAND_WINDOW = true;
+          
 val = [];
 if ~exist('optics','var') || isempty(optics), 
     error('No optics specified.'); 
@@ -282,13 +284,17 @@ switch parm
         if isempty(val)
             scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');
             if ~isempty(val)
-                disp('** Optics wave sampling set by selected scene.');
+                if (~RESPECT_THE_COMMAND_WINDOW)
+                    disp('** Optics wave sampling set by selected scene.');
+                end
             end
         end
         if isempty(val)
             val = 400:10:700; 
             val = val(:); 
-            disp('** Optics wave sampling set to 400:10:700 default.');
+            if (~RESPECT_THE_COMMAND_WINDOW)
+                disp('** Optics wave sampling set by selected scene.');
+            end
         end
         
         if ~isempty(varargin)
