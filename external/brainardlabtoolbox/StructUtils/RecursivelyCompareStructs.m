@@ -1,5 +1,5 @@
 function result = RecursivelyCompareStructs(struct1Name, struct1, struct2Name, struct2, varargin)
-% result = RecursivelyCompareStructsTests(struct1Name, struct1, struct2Name, struct2, defaultTolerance, customTolerances)
+% result = RecursivelyCompareStructsTests(struct1Name, struct1, struct2Name, struct2, varargin)
 %
 % Method to compare nested structs with arbitrary internal organization.
 % Key/value pairs
