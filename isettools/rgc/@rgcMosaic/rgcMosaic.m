@@ -1,6 +1,5 @@
 classdef rgcMosaic < handle
-% Generates an rgcMosaic 
-%
+%RGCMOSAIC - generates an rgcMosaic %
 % Each RGC mosaic has a particular model and a type.  The model specifies
 % how we compute the RGC response, and the type specifies the parameters of
 % the model given the type.
@@ -33,6 +32,9 @@ classdef rgcMosaic < handle
 %
 % Example: 
 % 
+%  ISETBIO wiki: <a href="matlab:
+%  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
+%  
 %   ir.mosaicCreate('model','LNP','type','on midget'); 
 % 
 % JRG/BW ISETBIO team, 2015
@@ -46,28 +48,43 @@ classdef rgcMosaic < handle
     % Protected properties.
     properties (SetAccess = protected, GetAccess = public)
         
-        % The type of computational model for the RGC
+        %CELLTYPE The type of computational model for the RGC
         cellType;           % Possible types are listed in header
-        rfDiameter;         % receptive field center diameter
-
-        % We should estimate the rf center sigma
-        % rfDiaMagnitude;
-        
-        % Cell array cellLocation{i}{j} = [x,y] position (microns)
+        % RFDIAMETER receptive field center diameter
+        rfDiameter;         % 
+               
+        %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
         cellLocation;
-        sRFcenter;          % spatial RF of the center on the receptor grid
-        sRFsurround;        % spatial RF of the surround
-        tCenter;            % temporal impulse response of the center
-        tSurround;          %    and of the surround (1 ms timing by default)
-        tonicDrive;         % DC term for linear response
-        rfDiaMagnitude;     % for making movies of response
-        responseLinear;     % Store the linear response after convolution
-        responseSpikes;     % Store the spike times of the responses
+        
+        %SRFCENTER spatial RF of the center on the receptor grid
+        sRFcenter;           
+        
+        %SRFSURROUND spatial RF of the surround
+        sRFsurround;        
+        
+        %TCENTER temporal impulse response of the center
+        tCenter;            
+        
+        %TSURROUND  and of the surround (1 ms timing by default)
+        tSurround;             
+        
+        %TONICDRIVE baseline term for linear response; if nonzero, cell
+        %spikes with no input
+        tonicDrive;          
+        
+        %RFDIAMAGNITUDE for making movies of response
+        rfDiaMagnitude;      
+        
+        %RESPONSELINEAR Store the linear response after convolution
+        responseLinear;     
+        
+        %RESPONSESPIKES Store the spike times of the responses
+        responseSpikes;     
 
     end
     
     properties (Access = public)
-        % When we open the figure for the mosaic, we store the handle here
+        %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
         figureHandle;
     end
     

@@ -1,4 +1,5 @@
 classdef ir < handle
+    %IR - Create an innerRetina object
     % The inner retina class stores general properties of the retinal patch 
     % and stores the rgcMosaic objects in its mosaic property field.
     %
@@ -22,7 +23,7 @@ classdef ir < handle
     %     eyeRadius: Position of patch in radius
     %     eyeAngle:  Angle (degrees)
     %     temporalEquivEcc: calculated from retinal position, see
-    %     retinalLocationToTEE 
+    %           retinalLocationToTEE 
     %     numberTrials: number of trials for spike generation
     %
     %   Inherited from bipolar input
@@ -45,6 +46,9 @@ classdef ir < handle
     %   params.eyeSide = 'left'; params.eyeRadius = 2;
     %   innerRetina2 = ir(bp, params);
     %
+    %  ISETBIO wiki: <a href="matlab:
+    %  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
+    %
     % (c) isetbio team
     %
     % 9/2015 JRG
@@ -57,31 +61,45 @@ classdef ir < handle
     
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
+        %NUMBERTRIALS Number of trials when computing
+        numberTrials;  
         
-        numberTrials;  % Number of trials when computing
-        mosaic;        % Cell array containing ganglion cell mosaics
-                       % The spatial sampling differs for each mosaic
+        %MOSAIC Cell array containing ganglion cell mosaics
+        mosaic;        % The spatial sampling differs for each mosaic
+                       
     end
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        
-        name;       % Name of this innerRetina
-                    % Note: The computation is specified by the ir subclass
+        %NAME Name of this innerRetina
+        name;       % Note: The computation is specified by the ir subclass
                     % Is the spatial sampling is determined by the bipolar
                     % input?
-
-        row;        % N Stimulus row samples (from bipolar)
-        col;        % N Stimulus col samples (from bipolar)
-        size;       % Patch size (m) measured at the cone mosaic
-        timeStep;   % Stimulus temporal sampling (sec) from bipolar
-                    % This is the same for all mosaics
-                        
-        eyeSide;          % Left or right eye
-        eyeRadius;        % Position of patch in radius
-        eyeAngle;         % and angle (degrees)
-        temporalEquivEcc; % Temporal equivalent eccentricity (mm, I think)
+                    
+        %ROW N Stimulus row samples (from bipolar)
+        row;        
+        
+        %COL N Stimulus col samples (from bipolar)
+        col;         
+        
+        %SIZE Patch size (m) measured at the cone mosaic
+        size;        
+        
+        %TIMESTEP Stimulus temporal sampling (sec) from bipolar
+        timeStep;   % This is the same for all mosaics
+        
+        %EYESIDE Left or right eye
+        eyeSide;           
+        
+        %EYERADIUS Position of patch in radius
+        eyeRadius;         
+        
+        %EYEANGLE and angle (degrees)
+        eyeAngle;         
+        
+        %TEMPORALEQUIVECC Temporal equivalent eccentricity (mm)
+        temporalEquivEcc; 
         
     end
     
