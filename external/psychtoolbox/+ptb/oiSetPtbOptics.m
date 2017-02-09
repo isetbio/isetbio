@@ -89,6 +89,11 @@ switch (p.Results.opticsType)
         error('Unknown opticsType specified');
 end
 
+%% Make sure psf has unit volume
+%
+% Not all the routines above guarantee this.
+thePsf = thePsf/sum(thePsf(:));
+
 %% Stick psf into the optics structure
 %
 % The ifftshift puts things into the isetbio format.  These are wavelength
