@@ -116,7 +116,7 @@ switch ieParamFormat(type)
         % Convert RGC position to distance
         % These calculations can't be right.  The RF size has to be
         % independent of the number of cells.... FIX.
-        patchSizeX      = obj.Parent.spacing;   % Meters
+        patchSizeX      = obj.Parent.size;   % Meters
         numberBipolarsX = obj.Parent.col;       % Bipolar cells
         umPerBipolar       = 1e6*patchSizeX/numberBipolarsX;   % Meters per Bipolar
         
