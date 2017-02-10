@@ -21,7 +21,7 @@ function oi = oiSetPtbOptics(oi,varargin)
 %
  %   Optional parameter name/value pairs chosen from the following:
 %
-%   'opticsModel'            Optics type (default, DavilaGeisler)
+%   'opticsModel'          Optics model (default, DavilaGeisler)
 %                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
 %                             'Westheimer'    - See PTB's WestheimerLSFMinutes
 %                             'Williams'      - See PTB's WilliamsMTF
