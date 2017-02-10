@@ -21,7 +21,7 @@ function oi = oiSetPtbOptics(oi,varargin)
 %
  %   Optional parameter name/value pairs chosen from the following:
 %
-%   'opticsType'            Optics type (default, DavilaGeisler)
+%   'opticsModel'            Optics type (default, DavilaGeisler)
 %                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
 %                             'Westheimer'    - See PTB's WestheimerLSFMinutes
 %                             'Williams'      - See PTB's WilliamsMTF
@@ -29,7 +29,7 @@ function oi = oiSetPtbOptics(oi,varargin)
 %% Parse input
 p = inputParser;
 p.addRequired('oi',@isstruct);
-p.addParameter('opticsType', 'DavilaGeisler', @ischar);
+p.addParameter('opticsModel', 'DavilaGeisler', @ischar);
 p.parse(oi,varargin{:});
 
 %% Pull out optics structure and get wls
@@ -66,12 +66,12 @@ centerPosition = floor(length(sfValuesCyclesMm{1})/2)+1;
 position1DMinutes = xGridMinutes(centerPosition,:);
 
 %% Get PTB optics as PSF
-switch (p.Results.opticsType)
+switch (p.Results.opticsModel)
     case 'DavilaGeisler'
         theLsf = DavilaGeislerLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
-    case 'DavilaGeislerLsfAsPsf'
-        thePsf = DavilaGeislerLSFMinutes(sqrt(xGridMinutes.^2 + yGridMinutes.^2));
+    %case 'DavilaGeislerLsfAsPsf'
+    %    thePsf = DavilaGeislerLSFMinutes(sqrt(xGridMinutes.^2 + yGridMinutes.^2));
     case 'Westheimer'
         theLsf = WestLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
@@ -82,7 +82,7 @@ switch (p.Results.opticsType)
             error('Internal coordinate system transformation error');
         end
     otherwise
-        error('Unknown opticsType specified');
+        error('Unknown opticsModel specified');
 end
 
 %% Make sure psf has unit volume
