@@ -152,7 +152,13 @@ oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','Williams');
 udata2 = oiPlot(oi2,'psf',[],theWl);
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'y','LineWidth',2);
-legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet Again','Westheimer','Williams'});
+
+%% And finally plot the Davila-Geisler lsf if we take it directly as the psf.
+oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','DavilaGeislerLsfAsPsf');
+udata2 = oiPlot(oi2,'psf',[],theWl);
+figure(psfFig);
+plot(60*udata2.x(centerPosition,:)/300,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'k:','LineWidth',2);
+legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet Again','Westheimer','Williams','D/G Lsf as Psf'});
 
 
 
