@@ -2,10 +2,11 @@ function oi = oiSetPtbOptics(oi,varargin)
 %oiSetPtbOptics  Put a line spread function from PTB into an oi.
 %    oi = oiSetPtbOptics(oi,varargin)
 % 
-%    Psychtoolbox has code to generate a number of standard line spread
-%    functions.  This routine takes one of those methods and does the
+%    Psychtoolbox has code to generate a number of standard estimates of
+%    human optics.  This routine takes one of those methods and does the
 %    apprpriate massaging to insert it into the optics structure of a
-%    passed isetbio oi object.
+%    passed isetbio oi object.  This includes converting lsf's to psf's
+%    when needed.
 %
 %    There is nothing terribly deep here, but this routine takes care of
 %    all the fussing.
@@ -20,15 +21,10 @@ function oi = oiSetPtbOptics(oi,varargin)
 %
  %   Optional parameter name/value pairs chosen from the following:
 %
-%   'opticsType'            Line spread type (default, DavilaGeisler)
+%   'opticsType'            Optics type (default, DavilaGeisler)
 %                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
-%                             'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
 %                             'Westheimer'    - See PTB's WestheimerLSFMinutes
 %                             'Williams'      - See PTB's WilliamsMTF
-%
-%    The case of DavilaGeislerLsfAsPsf is to see if we better reproduce
-%    some of their results on the assumption that this is what they did.
-%    It is not meant as a good estimate of the human psf.
 
 %% Parse input
 p = inputParser;
