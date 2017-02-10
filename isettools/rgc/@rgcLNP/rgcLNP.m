@@ -1,20 +1,21 @@
 classdef rgcLNP < rgcMosaic
-% rgcMosaic using a LNP (linear-nonlinear-Poisson) computational model
-
-% The LNP model is detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
-% Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-% and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
-% Nature (2008).
-% 
-%  The computational model implemented here relies on code by
-% <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
-% distributed under the GNU General Public License.
-%
+% RGCLNP - rgcMosaic using a LNP (linear-nonlinear-Poisson) computational model
 % rgcLNP is a subclass of rgcMosaic. It is called when creating a new LNP
 % model rgcMosaic for an inner retina object.  Typically we get here from
 % the inner retina object with the call:
 %
 %   ir.mosaicCreate('model','LNP','type','your type goes here')
+% 
+% The LNP model is detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
+% Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
+% and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
+% Nature (2008).
+% 
+% The computational model implemented here relies on code by
+%  the: <a href="matlab:
+%  web(http://pillowlab.princeton.edu/code_GLM.html','-browser')">Pillow Lab</a>.
+% , which is
+% distributed under the GNU General Public License.
 % 
 % See also: rgcMosaic.m, rgcLinear.m, rgcGLM.m
 %
@@ -32,7 +33,7 @@ classdef rgcLNP < rgcMosaic
         % Should this be in rgcMosaic or in each of the special types of
         % rgcMosaics? (BW)
         
-        % Number of repeats
+        % NUMBERTRIALS Number of repeats
         numberTrials = 10;
         
         % Parameter to specify the time bins Pillow uses for coupling and
@@ -47,16 +48,16 @@ classdef rgcLNP < rgcMosaic
         % See the properties in rgcMosaic 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%              
                
-        % Pillow promotes the linear input voltage using a nonlinear
+        % GENERATORFUNCTION Pillow promotes the linear input voltage using a nonlinear
         % function that he calls the generator function.  By default this
         % is an exponential.
         generatorFunction;       
         
-        % The nonlinear voltage response after application of the generator
+        % RESPONSEVOLTAGE The nonlinear voltage response after application of the generator
         % function and the spike coupling responses is represented here
         responseVoltage;
 
-        % These hold the parameters used in the computation.
+        % POSTSPIKEFILTER These hold the parameters used in the computation.
         % This is the response after a spike
         postSpikeFilter;
               

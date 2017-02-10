@@ -1,5 +1,5 @@
 classdef rgcMosaic < handle
-%RGCMOSAIC - generates an rgcMosaic %
+%RGCMOSAIC - generates an rgcMosaic 
 % Each RGC mosaic has a particular model and a type.  The model specifies
 % how we compute the RGC response, and the type specifies the parameters of
 % the model given the type.
@@ -32,11 +32,11 @@ classdef rgcMosaic < handle
 %
 % Example: 
 % 
+%   ir.mosaicCreate('model','LNP','type','on midget'); 
+% 
 %  ISETBIO wiki: <a href="matlab:
 %  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
 %  
-%   ir.mosaicCreate('model','LNP','type','on midget'); 
-% 
 % JRG/BW ISETBIO team, 2015
 
     
