@@ -1,7 +1,6 @@
 function optics = opticsCreate(opticsType,varargin)
-% Create an optics structure
-%
-%   optics = opticsCreate(opticsType,varargin)
+%OPTICSCREATE  Create an optics structure
+%   optics = OPTICSCREATE(opticsType,varargin)
 %
 % This function is typically called through oiCreate.  The optics structure
 % is attached to the oi and manipulated by oiSet and oiGet.

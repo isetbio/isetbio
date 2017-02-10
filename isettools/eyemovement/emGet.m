@@ -1,7 +1,7 @@
 function val = emGet(em, params, varargin)
 %EMGET - Get eye movement properties
 % 
-%    val = emGet(em, params, [varargin])
+%  val = emGet(em, params, [varargin])
 %
 % The model for generating an eye movement sequence is defined in
 % @coneMosaic.emGenSequence.
@@ -45,8 +45,19 @@ function val = emGet(em, params, varargin)
 %    params.f = 0.017; params.w = 1.5e-6;
 %    amp = emGet(em, 'tremor amplitude', 'cones', params);
 %
-%  See also: emSet, emCreate, @coneMosaic.emGenSequence
+%  Notes:
+%   1. The default drift speed in terms of cones per second is
 %
+%      emGet(emCreate,'drift speed','cones/sample')*1e+3  ~10
+% 
+%   This is slower than Rucci/Victor argue for in their 2015 TICS paper,
+%   where they say for natural vision the speed is 50'/sec which is about
+%   100 cones/sec.  The value here is consistent with the value reported
+%   for experienced psychophysical observers who fixate well (also
+%   according to Rucci and Victor, citing Ditchburn but also Susana
+%   Martinez Condes paper.
+%
+%  See also: emSet, emCreate, @coneMosaic.emGenSequence
 %
 %  HJ/BW (c) ISETBIO Team, 2014
 

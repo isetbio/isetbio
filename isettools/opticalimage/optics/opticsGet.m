@@ -33,9 +33,9 @@ function val = opticsGet(optics,parm,varargin)
 % function of a circular aperture.
 %
 % About the OTF and PSF
-%  We store the OTF data with DC at (1,1).  This is true throughout ISET.
-%  To understand the implications for certain calculations see the script
-%  and tutorial in s_FFTinMatlab.
+%  We store the OTF data with DC at (1,1).  This is true throughout
+%  isetbio. To understand the implications for certain calculations see the
+%  script and tutorial in t_codeFFTinMatlab.
 %
 %  Although Matlab uses this representation, when we make graphs and
 %  images we put the center of the image at the center -- of course -- and
@@ -121,7 +121,9 @@ function val = opticsGet(optics,parm,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-
+%% Control some printout
+RESPECT_THE_COMMAND_WINDOW = true;
+          
 val = [];
 if ~exist('optics','var') || isempty(optics), 
     error('No optics specified.'); 
@@ -282,13 +284,17 @@ switch parm
         if isempty(val)
             scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');
             if ~isempty(val)
-                disp('** Optics wave sampling set by selected scene.');
+                if (~RESPECT_THE_COMMAND_WINDOW)
+                    disp('** Optics wave sampling set by selected scene.');
+                end
             end
         end
         if isempty(val)
             val = 400:10:700; 
             val = val(:); 
-            disp('** Optics wave sampling set to 400:10:700 default.');
+            if (~RESPECT_THE_COMMAND_WINDOW)
+                disp('** Optics wave sampling set by selected scene.');
+            end
         end
         
         if ~isempty(varargin)
@@ -365,7 +371,10 @@ switch parm
         % 
         % Diffraction limited frequency support at a wavelength (i.e.,
         % support out to the incoherent cutoff frequency).  This can be
-        % used for plotting, for example.
+        % used for plotting, for example
+        %
+        % DHB NOTE: The returned array has dimension = 2*nSamp.  This is
+        % confusing, to me at least.
 
         if length(varargin) < 1, error('Must specify wavelength'); else thisWave = varargin{1}; end
         if length(varargin) < 2, units = 'mm'; else units = varargin{2}; end
@@ -684,20 +693,47 @@ switch parm
         % distance.
         val = 1/(2*peakF);
     case {'psfsupport'}
-        % opticsGet(optics,'psf support',unit)
-        % Returns mesh grid of X and Y values.  Used for mesh plotting
-        % often.
-        % X/Y could be mixed up in 1 and 2.
-        % This should be replaced by the code in oiPlot/OTF psf550 case.
-        
+        % opticsGet(optics,'psf support',unit) Returns mesh grid of X and Y
+        % values.  Used for mesh plotting often. X/Y could be mixed up in 1
+        % and 2.
+        %
+        % DHB: There was a comment that the code here should be updated to
+        % match what is in oiPlot/plotOTF, 'psf 550' case. I did this
+        % change, because the way it was caused some problems and confusion
+        % for me.  In the new code, 0 position will show up explicitly in
+        % the list of positions, not true of the old code.
+     
         if length(varargin) >= 1, units = varargin{1}; 
         else units = 'mm'; end
         
         sz = opticsGet(optics,'otf size');
         if isempty(sz), error('No optical image data'); end
+        if (sz(1) ~= sz(2)), error('OTF support not square'); end
         
-        x = (0:(sz(1)-1))*opticsGet(optics,'psfspacing',units);
-        x = x - mean(x);
+        % Create one-dimensional integer samples.
+        %
+        % This was the old code:
+        %   x = (0:(sz(1)-1))*opticsGet(optics,'psfspacing',units); x = x -
+        %   mean(x);
+        % This old code does not put a 0 anywhere in the spatial position
+        % array when the support is of even dimension, and there was a
+        % comment above that it should be replaced.  Below is the
+        % replacement.  It does the same thing for odd dimensional support,
+        % and I think now does the right thing for even dimensional
+        % support.
+        %
+        % Handle case of sz even versus sz odd.  I am more confident of the
+        % case where n is even.
+        if (rem(sz(1),2) == 0)
+            n = sz(1)/2;
+            x = -n:(n-1);
+        else
+            n = floor(sz(1)/2);
+            x = -n:n;
+        end
+        x = x*opticsGet(optics,'psfspacing',units);
+
+        % Make grids 
         [X,Y] = meshgrid(x,x);
         val{1} = X; val{2} = Y;
 
