@@ -1,4 +1,4 @@
-function ir = irComputeSpikes(ir, varargin)
+function [ir, nTrialsSpikeResponse] = irComputeSpikes(ir, varargin)
 % Generate spikes from the linear response
 %
 %   ir = irComputeSpikes(ir, varargin)
@@ -27,10 +27,13 @@ p = inputParser;
 p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
 p.addParameter('coupling',true,@islogical);
 
+p.addParameter('nTrialsLinearResponse',  [], @isnumeric);
+
 p.parse(ir,varargin{:});
 ir = p.Results.ir;
 coupling = p.Results.coupling;
 
+nTrialsLinearResponse = p.Results.nTrialsLinearResponse; 
 %% Required for Pillow code
 
 % The refresh rate refers to the subsampling of the linear response. Each
@@ -40,9 +43,19 @@ global RefreshRate
 RefreshRate = 10;
 
 % For every IR, this could be a vector in the future
-nTrials = ir.get('number trials');
+nRepeats = ir.get('number trials');
 
 %% Loop on the mosaics in the inner retina
+        
+if ~isempty(nTrialsLinearResponse)
+    nTrials = size(nTrialsLinearResponse,1);
+    nTrialsSpikeResponse = cell(nTrials,length(ir.mosaic));
+else
+    nTrials = 1;
+end
+
+for iTrial = 1:nTrials
+
 for ii = 1:length(ir.mosaic)
     if ~ismember(class(ir.mosaic{ii}), {'rgcGLM','rgcLNP'})
     else
@@ -52,10 +65,10 @@ for ii = 1:length(ir.mosaic)
         nCells = mosaic.get('mosaic size');
         
         % This is a vector of times that each cell spiked
-        spikeTimes = cell([nCells,nTrials]);
+        spikeTimes = cell([nCells,nRepeats]);
         
         % Temporal sample of the voltage response
-        respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nTrials);
+        respVolts  = zeros(nCells(1),nCells(2),RefreshRate*nSamples,nRepeats);
         
         glminput = RGB2XWFormat(responseLinear);
         
@@ -65,12 +78,12 @@ for ii = 1:length(ir.mosaic)
             % using the coupled GLM
             glmprs   = setGLMprs(mosaic,'coupling',coupling);
             
-            if ieSessionGet('wait bar'), wbar = waitbar(0,sprintf('Trial 1  of %d',nTrials)); end
-            for tt = 1:nTrials
+            if ieSessionGet('wait bar'), wbar = waitbar(0,sprintf('Trial 1  of %d',nRepeats)); end
+            for tt = 1:nRepeats
                 
                 % Run Pillow code
                 if ieSessionGet('wait bar')
-                    wbar = waitbar(0,sprintf('Coupled GLM (Trial %d of %d)',tt,nTrials));
+                    wbar = waitbar(0,sprintf('Coupled GLM (Trial %d of %d)',tt,nRepeats));
                 end
                 [responseSpikesVec, Vmem] = simGLMcpl(glmprs, glminput');
                 
@@ -85,9 +98,10 @@ for ii = 1:length(ir.mosaic)
                     end
                 end
                 if ieSessionGet('wait bar')
-                    waitbar(tt/nTrials,wbar,sprintf('Finished trial %d of %d',tt,nTrials));
+                    waitbar(tt/nRepeats,wbar,sprintf('Finished trial %d of %d',tt,nRepeats));
                 end
-            end
+            end           
+                            
             if ieSessionGet('wait bar'), delete(wbar); end
         else
             % Run without the slow coupling component by looping on the
@@ -96,7 +110,7 @@ for ii = 1:length(ir.mosaic)
             
             glmprs   = setGLMprs(mosaic,'coupling',coupling);
             
-            for tt = 1:nTrials
+            for tt = 1:nRepeats
                 
                 cellCtr = 0;   % Reset the cell counter
                 
@@ -122,19 +136,26 @@ for ii = 1:length(ir.mosaic)
         end
     end    
 
+    if ~isempty(nTrialsLinearResponse)
+        nTrialsSpikeResponse{iTrial,ii} =  spikeTimes;
+    end
     
-    % Set mosaic property
-    ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
-    
-    % The nonlinear voltage which is only set in the GLM model
-    if isa(ir.mosaic{ii},'rgcGLM')
-        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+    if iTrial == nTrials
+        
+        % Set mosaic property
+        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
+        
+        % The nonlinear voltage which is only set in the GLM model
+        if isa(ir.mosaic{ii},'rgcGLM')
+            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+        end
     end
     
 end
 
 end
 
+end
 
 
 

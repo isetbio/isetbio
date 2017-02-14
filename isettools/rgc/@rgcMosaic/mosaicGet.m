@@ -263,7 +263,7 @@ switch ieParamFormat(param)
         nSamples = round(1/dt);
         sigma    = nSamples/5;
         convolvewin = fspecial('gaussian',[nSamples,1],sigma);
-        convolvewin = convolvewin/max(convolvewin(:));
+        % convolvewin = convolvewin/sum(convolvewin(:));
         psth = zeros(size(spikes));
         
         for xcell = 1:nCells(1)

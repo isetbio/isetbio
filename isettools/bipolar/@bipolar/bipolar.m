@@ -155,8 +155,8 @@ methods
     end
     
     % see bipolarCompute for details
-    function val = compute(obj, varargin)
-        val = bipolarCompute(obj, varargin{:});
+    function [val, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
+        [val, nTrialsCenter, nTrialsSurround] = bipolarCompute(obj, varargin{:});
     end
     
     function plot(obj, varargin)

@@ -1,4 +1,4 @@
-function ir = irCompute(ir, input, varargin)
+function [ir, nTrialsSpikes] = irCompute(ir, input, varargin)
 % Computes the rgc mosaic responses to an input
 %
 %    ir = irCompute(ir, input, varargin)
@@ -49,12 +49,20 @@ else
 end
 p.addRequired('input',vFunc);
 p.addParameter('coupling',false,@islogical);
+p.addParameter('nTrialsInput',  [], @isnumeric);
 
 p.parse(ir,input,varargin{:});
 coupling = p.Results.coupling;
 
+nTrialsInput = p.Results.nTrialsInput; 
+
 %% Linear stage of the computation
-ir = irComputeLinearSTSeparable(ir, input);
+
+if ~isempty(nTrialsInput)  
+    [ir,nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, input, 'nTrialsInput',nTrialsInput);
+else
+    ir = irComputeLinearSTSeparable(ir, input);
+end
 % irPlot(ir,'response linear');
 
 %% Compute spikes for each trial
@@ -65,7 +73,7 @@ switch class(ir.mosaic{1})
     otherwise
         % Runs for rgcLNP, rgcGLM
         % Check the coupling field to decide on the coupling parameter
-        ir = irComputeSpikes(ir,'coupling',coupling);
+        [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling,'nTrialsLinearResponse',nTrialsLinearResponse);
 end
 
 end

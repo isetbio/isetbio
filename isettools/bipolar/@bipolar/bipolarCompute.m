@@ -1,4 +1,4 @@
-function obj = bipolarCompute(obj, cmosaic, varargin)
+function [obj, nTrialsCenter, nTrialsSurround] = bipolarCompute(obj, cmosaic, varargin)
 % Compute bipolar continuous current responses
 % 
 %    bipolar.compute(coneMosaic,varargin);
@@ -35,6 +35,14 @@ function obj = bipolarCompute(obj, cmosaic, varargin)
 %  The spatial filtering is followed by a temporal filter that is selected
 %  in order to match the impulse response that expect to find at the RGC
 %  input.  REFERENCE: Chichilnisky option
+% 
+%  The bipolar object also handles multiple trials. Only the last trial
+%  reponse is stored in the object itself. In order to capture the output
+%  of multiple trials, one must use the following syntax:
+% 
+%       [~, bpNTrialsCenter, bpNTrialsSurround] = bp.compute(cMosaic,'nTrialsInput',cMosaicCurrentMultipleTrials);
+% 
+%  where cMosaicCurrentMultipleTrials has dim (nTrials,row,col,nFrames). 
 % 
 % 5/2016 JRG (c) isetbio team
 
@@ -82,19 +90,35 @@ function obj = bipolarCompute(obj, cmosaic, varargin)
 p = inputParser;
 p.addRequired('obj', @(x) (isa(x, 'bipolar')));
 p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));  
+addParameter(p, 'nTrialsInput',  [], @isnumeric);
 
 % parse - no options at this opint
 p.parse(obj, cmosaic, varargin{:});
 
+nTrialsInput = p.Results.nTrialsInput; 
+
 if isempty(cmosaic.current), 
     error('No cone photocurrent.  Use cmosaic.computeCurrent.'); 
 end
+
+if ~isempty(nTrialsInput)    
+    nTrials = size(nTrialsInput,1);
+else
+    nTrials = 1;
+end
+    
 %% Spatial filtering and subsampling
+
+for iTrial = 1:nTrials
 
 % Convolve spatial RFs across the photo current of the cones in the mosaic
 
 % This places the cone 3D matrix into a coneNumber x time matrix
-osSig = RGB2XWFormat(cmosaic.current);
+if ~isempty(nTrialsInput) 
+    osSig = RGB2XWFormat(squeeze(nTrialsInput(iTrial,:,:,:)));
+else
+    osSig = RGB2XWFormat(cmosaic.current);
+end
 
 
 %% Enfoce anatomical rules on cone to bipolar connections
@@ -200,11 +224,30 @@ bipolarFilt = bipolarFilter(obj, cmosaic);
 %
 
 % tmp = conv2(bipolarFilt,bipolarCenter);
-tmp = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
-obj.responseCenter = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
+tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
 
 % tmp = conv2(bipolarFilt,bipolarSurround);
-tmp = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
-obj.responseSurround = XW2RGBFormat(tmp(:,1:cmosaic.tSamples),row,col);
+tmpSurround = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
+
+if ~isempty(nTrialsInput) 
+    
+    if iTrial == 1
+        nTrialsCenter = zeros([nTrials,size(XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col))]);
+        nTrialsSurround = zeros([nTrials,size(XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col))]);
+    end
+    
+    nTrialsCenter(iTrial,:,:,:) = XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col);    
+    nTrialsSurround(iTrial,:,:,:) = XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col);
+%     obj.responseCenter(iTrial,:,:,:) = tmpTrialCenter;
+%     obj.responseSurround(iTrial,:,:,:) = tmpTrialSurround;
+end
+
+if iTrial == nTrials
+    obj.responseCenter = XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col);
+    obj.responseSurround = XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col);
+end
+
+
+end
 
 end

@@ -166,8 +166,8 @@ classdef ir < handle
         end
         
         % IR Compute functions, that loop over the rgc mosaics
-        function obj = compute(obj, inputObj, varargin)
-            obj = irCompute(obj,  inputObj, varargin{:});
+        function [obj, nTrialsSpikes] = compute(obj, inputObj, varargin)
+            [obj, nTrialsSpikes] = irCompute(obj,  inputObj, varargin{:});
         end
         
         function obj = computeLinearSTSeparable(obj,varargin)
