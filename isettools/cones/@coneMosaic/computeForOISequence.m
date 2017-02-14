@@ -19,8 +19,8 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %                       This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with
 %                       large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %                       If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
-%   'interpFilters      [DHB NOTE: WHAT AM I?]
-%   'meanCur'           [DHB NOTE: WHAT AM I?]
+%   'interpFilters'     The L,M,S temporal impulse response functions to be employed for computing L, M, S photocurrent responses
+%   'meanCur'           The steady state current caused by the mean absorption rate.
 %   'currentFlag'       Whether to compute photocurrent(default false). 
 %   'theExpandedMosaic' We need an expanded version of the coneMosaic to deal with eye
 %                       movements. For multiple calls to computeForOISequence, we may want to generate it once and pass it.
