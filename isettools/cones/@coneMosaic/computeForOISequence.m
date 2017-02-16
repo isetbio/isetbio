@@ -515,18 +515,23 @@ if (isa(obj, 'coneMosaicHex'))
         if (~isempty(workerID)) && (mod(ii-1, round(nTrials/10)) == 0)
             displayProgress(workerID, sprintf('%s-current',workDescription), 0.5 + 0.5*ii/nTrials);
         end
-        % Reshape to full 3D matrix for obj.computeCurrent
-        obj.absorptions = obj.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(ii,:,:)));
+        
         currentSeed = currentSeed  + 1;
         if ii == 1 && (isempty(meanCur) || isempty(LMSfilters))
             % On the first trial, compute the interpolated linear
             % filters and the mean current, unless they were passed in
-            [LMSfilters, meanCur] = obj.computeCurrent('seed', currentSeed);
+            [LMSfilters, meanCur] = obj.computeCurrent(...
+                'seed', currentSeed, ...
+                'absorptionsInXWFormat', squeeze(absorptions(ii,:,:)));
         else
-            LMSfilters = obj.computeCurrent('seed', currentSeed,'interpFilters',LMSfilters,'meanCur',meanCur);
+            LMSfilters = obj.computeCurrent(...
+                'seed', currentSeed,...
+                'interpFilters',LMSfilters, ...
+                'meanCur',meanCur,  ...
+                'absorptionsInXWFormat', squeeze(absorptions(ii,:,:)));
         end
-        % Back to 2D matrix to save space
-        photocurrents(ii,:,:) = single(obj.reshapeHex3DmapToHex2Dmap(obj.current));
+        
+        photocurrents(ii,:,:) = obj.current;
     end
 else
     photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(rounded.eyeMovementTimeAxis), 'single');
