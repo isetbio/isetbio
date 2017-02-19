@@ -531,7 +531,7 @@ if (isa(obj, 'coneMosaicHex'))
                 'absorptionsInXWFormat', squeeze(absorptions(ii,:,:)));
         end
         
-        photocurrents(ii,:,:) = obj.current;
+        photocurrents(ii,:,:) = single(obj.current);
     end
 else
     photocurrents = zeros(nTrials, obj.rows, obj.cols, numel(rounded.eyeMovementTimeAxis), 'single');
