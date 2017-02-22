@@ -40,12 +40,12 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x,'coneMosaic')); 
-
+p.addParameter('absorptionsInXWFormat', [], @isnumeric);
 p.addParameter('eccentricity',false,@islogical);  % Needs updating - Foveal or peripheral
 p.parse(os, cMosaic, varargin{:})
 
 eccentricity   = p.Results.eccentricity;        % Needs updating
-meanRate = coneMeanIsomerizations(cMosaic);     % R*/sec
+meanRate = coneMeanIsomerizations(cMosaic, 'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);     % R*/sec
 
 %% Generate impulse responses for L, M or S cone
 

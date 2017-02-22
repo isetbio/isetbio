@@ -60,24 +60,30 @@ p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('seed',1,@isnumeric);
 p.addParameter('interpFilters',[],@isnumeric);
 p.addParameter('meanCur',[],@isnumeric);
-
+p.addParameter('absorptionsInXWFormat', [], @isnumeric);
 p.parse(obj,cMosaic, varargin{:});
 
 % Frozen noise seed
 seed = p.Results.seed;
 interpFilters = p.Results.interpFilters;
 meanCur       = p.Results.meanCur; 
+absorptionsInXWFormat = p.Results.absorptionsInXWFormat;
 
 coneType   = cMosaic.pattern;
-meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true);  % R*/sample
-tSamples   = size(cMosaic.absorptions,3);
+meanRate   = coneMeanIsomerizations(cMosaic,'perSample',true, 'absorptionsInXWFormat', absorptionsInXWFormat);  % R*/sample
+
+if (~isempty(p.Results.absorptionsInXWFormat))
+   tSamples =  size(absorptionsInXWFormat,2);
+else
+   tSamples = size(cMosaic.absorptions,3);
+end
 
 %% Get the linear filters for the mean rate
 
 if isempty(interpFilters) || isempty(meanCur)
     % These convert a single photon increment on mean to a photocurrent impulse
     % response function
-    [lmsFilters, meanCur] = obj.linearFilters(cMosaic);
+    [lmsFilters, meanCur] = obj.linearFilters(cMosaic, 'absorptionsInXWFormat', absorptionsInXWFormat);
     
     % obj.plot('current filters','meancurrent',meanCur)
     
@@ -85,7 +91,7 @@ if isempty(interpFilters) || isempty(meanCur)
     
     absTimeAxis   = cMosaic.timeAxis;
     osTimeAxis    = obj.timeAxis;
-    interpFilters = zeros(cMosaic.tSamples,3);
+    interpFilters = zeros(tSamples,3);
     for ii=1:3
         % Interpolation assumes that we are accounting for the time sample bin
         % width elsewhere.  Also, we extrapolate the filters with zeros to make
@@ -97,18 +103,38 @@ end
 
 %%  The predicted photocurrent is
 
-% Convert (x,y,t) to (space,t)
-[absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);   % Per sample
-% vcNewGraphWin; plot(absorptions(100,:));
+if (~isempty(p.Results.absorptionsInXWFormat))
+    % Already in (space,t) format
+    absorptions = p.Results.absorptionsInXWFormat;
+    
+    % We will store the current here
+    current = 0*absorptions;
+    
+    % Find LMS cone indices
+    nonNullConeIndices = find(cMosaic.pattern > 1);
+    nonNullConeTypes = coneType(nonNullConeIndices);
+    coneIndices{2} = find(nonNullConeTypes == 2);
+    coneIndices{3} = find(nonNullConeTypes == 3);
+    coneIndices{4} = find(nonNullConeTypes == 4);
+else
+    % Convert (x,y,t) to (space,t)
+    [absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);   % Per sample
+    % vcNewGraphWin; plot(absorptions(100,:));
 
-% We will store the current here
-current = zeros(r*c, tSamples);
+    % We will store the current here
+    current = zeros(r*c, tSamples);
+    
+    % Find LMS cone indices
+    coneIndices{2} = find(coneType == 2);
+    coneIndices{3} = find(coneType == 3);
+    coneIndices{4} = find(coneType == 4);
+end
 
 % convolve the filters with the isomerization data
 for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank, so we skip
     
     % locate cones with specific type and convolve with temporal filter
-    index = find(coneType==ii);
+    index = coneIndices{ii};
     if ~isempty(index)
         % The mean absorptions produces a mean current. This current level
         % was returned above when we calculated the lmsFilters (meanCur).
@@ -137,13 +163,8 @@ for ii = 2 : 4  % loop for LMS, cone type 1 is black / blank, so we skip
         
         % Store it
         current(index,:) = tmpCurrent(:,1:tSamples);
-        
     end
 end
-
-% Reshape the current back into (x,y,t) format
-current = XW2RGBFormat(current, r, c);
-% ieMovie(current);
 
 % Noise anyone?
 switch obj.noiseFlag
@@ -159,5 +180,11 @@ switch obj.noiseFlag
     otherwise
         error('Noise flag %s\n',obj.noiseFlag);
 end
-% ieMovie(current);
+
+if (isempty(p.Results.absorptionsInXWFormat))
+    % Reshape the current back into (x,y,t) format
+    current = XW2RGBFormat(current, r, c);
+    % ieMovie(current);
+end
+
 end

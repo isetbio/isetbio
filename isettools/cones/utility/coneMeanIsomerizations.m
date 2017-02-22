@@ -18,6 +18,8 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 p = inputParser; 
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
 p.addParameter('perSample',false,@islogical);
+p.addParameter('absorptionsInXWFormat', [], @isnumeric);
+
 
 p.parse(cMosaic,varargin{:});
 cMosaic    = p.Results.cMosaic;
@@ -28,18 +30,25 @@ lMean = 0; mMean = 0; sMean = 0;
 meanRate = [lMean, mMean, sMean];
 
 %% Locations of each cone type
-
 coneType = cMosaic.pattern;
-pRate    = cMosaic.absorptions;  % Absorptions per sample
-if isempty(pRate), return; end   % Return 0 when no absorptions
 
 %% Compute
-lConeIndices = find(coneType == 2);
-mConeIndices = find(coneType == 3);
-sConeIndices = find(coneType == 4);
-
-% Reshape from 3D (x,y,t) to space x nCones
-pRateXW = RGB2XWFormat(pRate);
+if (~isempty(p.Results.absorptionsInXWFormat))
+    pRateXW = p.Results.absorptionsInXWFormat;
+    nonNullConeIndices = find(cMosaic.pattern > 1);
+    nonNullConeTypes = coneType(nonNullConeIndices);
+    lConeIndices = find(nonNullConeTypes == 2);
+    mConeIndices = find(nonNullConeTypes == 3);
+    sConeIndices = find(nonNullConeTypes == 4);
+else
+    % Reshape from 3D (x,y,t) to space x nCones
+    pRate    = cMosaic.absorptions;  % Absorptions per sample
+    if isempty(pRate), return; end   % Return 0 when no absorptions
+    pRateXW = RGB2XWFormat(pRate);
+    lConeIndices = find(coneType == 2);
+    mConeIndices = find(coneType == 3);
+    sConeIndices = find(coneType == 4);
+end
 
 % Get the individual cones
 lConeAbsorptions = pRateXW(lConeIndices,:); %#ok<FNDSB>
