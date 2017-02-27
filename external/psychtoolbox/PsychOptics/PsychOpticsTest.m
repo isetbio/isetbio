@@ -37,8 +37,9 @@ maxPositionMinutes = 8;
 maxSfCyclesPerDegree = 60*(nSpatialSamples/2)/(2*maxPositionMinutes);
 positionMinutes1D = maxPositionMinutes*integerSamples1D/(centerPosition-1);
 
-% These produce two similar lsf's for the human eye, from the literature.
+% These produce similar lsf's for the human eye, from the literature.
 WestLSF = WestLSFMinutes(abs(positionMinutes1D));
+GeislerLSF = GeislerLSFMinutes(abs(positionMinutes1D));
 DavilaGeislerLSF = DavilaGeislerLSFMinutes(abs(positionMinutes1D));
 
 % Westheimer also gives a formula for the PSF (in addition to the LSF).
@@ -54,6 +55,7 @@ end
 
 %% Get PSFs from LSF
 WestPSFDerived = LsfToPsf(WestLSF);
+GeislerPSFDerived = LsfToPsf(GeislerLSF);
 DavilaGeislerPSFDerived = LsfToPsf(DavilaGeislerLSF);
 
 %% And get LSF back again.
@@ -108,7 +110,8 @@ ylabel('Normalized PSF Slice');
 legend({'Derived from LSF','Formula PSF'},'Location','NorthEast');
 
 subplot(2,2,4); hold on
-plot(positionMinutes1D,DavilaGeislerPSFDerived(centerPosition,:)/max(DavilaGeislerPSFDerived(centerPosition,:)),'r','LineWidth',4);
+plot(positionMinutes1D,GeislerPSFDerived(centerPosition,:)/max(GeislerPSFDerived(centerPosition,:)),'r','LineWidth',3);
+plot(positionMinutes1D,DavilaGeislerPSFDerived(centerPosition,:)/max(DavilaGeislerPSFDerived(centerPosition,:)),'b','LineWidth',3);
 xlim([-4 4]);
 xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
@@ -199,6 +202,7 @@ legend({'Derived PSF','Tabulated data'});
 % And stick the Williams PSF into Figure 1, for comparison to
 % Davila-Geisler.
 figure(fig1);
+subplot(2,2,4); hold on
 plot(xGridMinutes2(centerPosition,:),WilliamsPSF(centerPosition,:)/max(WilliamsPSF(centerPosition,:)),'g-','LineWidth',2);
-legend({'D-G Derived from LSF', 'Williams et al. from OTF'},'Location','NorthEast');
+legend({'G Derived from LSF', 'D-G Derived from LSF', 'Williams et al. from OTF'},'Location','NorthEast');
 

@@ -25,7 +25,7 @@ function [spd,xd,yd,M1,M2] = GenerateCIEDay(Temp,B)
 xd = zeros(1,m);
 yd = zeros(1,m);
 
-% Compute xd chromaticiites
+% Compute xd chromaticities
 index = find(Temp < 7000);
 if (length(index) > 0)
   xd(index) = -4.6070*1e9./(Temp(index).^3) + 2.9678*1e6./(Temp(index).^2) ...
