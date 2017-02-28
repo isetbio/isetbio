@@ -21,14 +21,18 @@ function oi = oiSetPtbOptics(oi,varargin)
  %   Optional parameter name/value pairs chosen from the following:
 %
 %   'opticsModel'            Line spread type (default, DavilaGeisler)
+%                             'Geisler'       - See PTB's GeislerLSFMinutes
+%                             'GeislerLsfAsPsf' - Take G lsf and treat it directly as psf
 %                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
 %                             'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
 %                             'Westheimer'    - See PTB's WestheimerLSFMinutes
 %                             'Williams'      - See PTB's WilliamsMTF
 %
-%    The case of DavilaGeislerLsfAsPsf is to see if we better reproduce
-%    some of their results on the assumption that this is what they did.
-%    It is not meant as a good estimate of the human psf.
+%    The cases of GeislerLsfAsPsf and DavilaGeislerLsfAsPsf are to see if
+%    we better reproduce some of the Geisler and colleagues results on the
+%    assumption that this is what they did. It is not meant as a good
+%    estimate of the human psf, although the difference between doing this
+%    and the right conversion from lsf to psf is fairly subtle.
 
 %% Parse input
 p = inputParser;
@@ -71,6 +75,11 @@ position1DMinutes = xGridMinutes(centerPosition,:);
 
 %% Get PTB optics as PSF
 switch (p.Results.opticsModel)
+    case 'Geisler'
+        theLsf = GeislerLSFMinutes(position1DMinutes);
+        thePsf = LsfToPsf(theLsf);
+    case 'GeislerLsfAsPsf'
+        thePsf = GeislerLSFMinutes(sqrt(xGridMinutes.^2 + yGridMinutes.^2));
     case 'DavilaGeisler'
         theLsf = DavilaGeislerLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
