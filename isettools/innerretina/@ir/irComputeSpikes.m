@@ -155,6 +155,10 @@ end
 
 end
 
+if isempty(nTrialsLinearResponse)
+    nTrialsSpikeResponse = 0;
+end
+
 end
 
 

@@ -240,6 +240,10 @@ if ~isempty(nTrialsInput)
     nTrialsSurround(iTrial,:,:,:) = XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col);
 %     obj.responseCenter(iTrial,:,:,:) = tmpTrialCenter;
 %     obj.responseSurround(iTrial,:,:,:) = tmpTrialSurround;
+
+else 
+    nTrialsCenter = 0;
+    nTrialsSurround = 0;
 end
 
 if iTrial == nTrials
