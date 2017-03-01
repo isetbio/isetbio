@@ -107,7 +107,7 @@ thePsf = thePsf/sum(thePsf(:));
 %
 % The ifftshift puts things into the isetbio format.  These are wavelength
 % indendent optical estimates.  Not realistic.  We're doing this to compare
-% with calculatoins in the literature that also didn't take chromatic
+% with calculations in the literature that also didn't take chromatic
 % aberration into account.
 [~,~,theOtfCentered] = PsfToOtf(xGridMinutes,yGridMinutes,thePsf);
 theOtfIsetbio = ifftshift(theOtfCentered);
