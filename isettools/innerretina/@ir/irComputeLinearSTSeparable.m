@@ -1,4 +1,4 @@
-function [ir, nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, input, varargin)
+function [ir, nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, varargin)
 % Computes the mosaic's linear response to an input
 %
 %   ir = irComputeLinearSTSeparable(ir, input, varargin)
@@ -55,23 +55,15 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
-
-% allowableInputs = {'osDisplayRGB','bipolar'};
-% p.addRequired('input',@(x) ismember(class(x),allowableInputs));
-if length(input) == 1
-    vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
-else
-    vFunc = @(x) ~isempty(validatestring(class(x{1}),{'osDisplayRGB','bipolar'}));
-end
-p.addRequired('input',vFunc);
+vFunc = @(x)(isequal(class(x),'bipolar'));
+p.addRequired('bp',vFunc);
 
 p.addParameter('bipolarTrials',  [], @isnumeric);
 
-p.parse(ir,input,varargin{:});
+p.parse(ir,bp,varargin{:});
 
-%
-ir    = p.Results.ir;
-input = p.Results.input;
+ir = p.Results.ir;
+bp = p.Results.bp;
 
 bipolarTrials = p.Results.bipolarTrials;
 
@@ -79,18 +71,19 @@ bipolarTrials = p.Results.bipolarTrials;
 
 % Possible osTypes are osIdentity, osLinear, and osBiophys
 % Only osIdentity is implemented now.
-if length(input) == 1
-    osType = class(input);
+if length(bp) == 1
+    osType = class(bp);
 else
-    osType = class(input{1});
+    osType = class(bp{1});
 end
 switch osType
     case 'osDisplayRGB'
         % Display RGB means straight from the frame buffer to your brain
         % @JRG:  Test cases are in EJ Figure reproduction
         % Others to be named!
+        warning('This bipolar case should be deprecated');
         
-        spTempStim = osGet(input, 'rgb data');
+        spTempStim = osGet(bp, 'rgb data');
         if isempty(spTempStim), error('No rgb data'); end
         
         % The Pillow code expects the input to be normalized to the mean of
@@ -140,10 +133,10 @@ switch osType
             for rgcType = 1:length(ir.mosaic)
                 
                 % Determine the range of the rgb input data
-                if length(input) == 1
-                    stim   = bipolarGet(input, 'response');
+                if length(bp) == 1
+                    stim   = bp.get('response');
                 else
-                    stim   = bipolarGet(input{rgcType}, 'response');
+                    stim   = bp.get(bp{rgcType}, 'response');
                 end
                 switch class(ir.mosaic{rgcType})
                     case 'rgcPhys'

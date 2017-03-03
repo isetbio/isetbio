@@ -138,10 +138,10 @@ classdef ir < handle
             
             obj.numberTrials = p.Results.nTrials;
 
-            obj.size      = bipolarGet(bp,'patch size'); % Bipolar patch
-            obj.timeStep  = bipolarGet(bp,'time step');  % Temporal sampling
+            obj.size      = bp.get('patch size'); % Bipolar patch
+            obj.timeStep  = bp.get('time step');  % Temporal sampling
             
-            bpC = bipolarGet(bp,'bipolarResponseCenter');
+            bpC = bp.get('bipolarResponseCenter');
             obj.row = size(bpC,1);  obj.col = size(bpC,2);
 
             obj.mosaic = cell(1); % Cells are added by mosaicCreate method

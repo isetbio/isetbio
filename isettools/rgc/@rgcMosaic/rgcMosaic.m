@@ -164,7 +164,7 @@ classdef rgcMosaic < handle
             parent = obj.Parent;
             txt = sprintf('Row,Col: %d, %d\n',parent.row,parent.col);
             str = addText(str,txt);
-            txt = sprintf('Patch size %d (um)\n',1e6*parent.spacing);
+            txt = sprintf('Patch size %d (um)\n',1e6*parent.size);
             str = addText(str,txt);
             
         end
