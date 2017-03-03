@@ -1,21 +1,18 @@
-function [ir, nTrialsSpikes] = irCompute(ir, input, varargin)
-% Computes the rgc mosaic responses to an input
+function [ir, nTrialsSpikes] = irCompute(ir, bp, varargin)
+% IRCOMPUTE - Computes the rgc mosaic responses to an input
 %
-%    ir = irCompute(ir, input, varargin)
+%   ir = irCompute(ir, bipolar, varargin)
 %
-% Inputs:
-%   ir: inner retina object
-%   input - There are two types of possible input objects.
+% Required inputs
+%  'ir' - inner retina object
+%  'bipolar' - the bipolar mosaic object
 %
-%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
-%           stored in an outer segment object.
-%      'bipolar' - the bipolar cell object with a signal that has gone
-%           through temporal filtering and possibly spatial subunit
-%           nonlinearities.
+% Optional inputs
+%   'bipolarTrials' -
 %
-% Computes the linear and spike responses for all the mosaics within the
-% inner retina object.  (Except: There are not spikes for the rgcLinear
-% class).
+% Computes the continuous (linear) and spike responses for each of the
+% mosaics within the inner retina object.  (Note: There are no spikes
+% for the rgcLinear class).
 % 
 % For each mosaic, a space-time separable linear response is computed. This
 % stage of the computation is stored in 'responseLinear'.  This is managed
@@ -28,10 +25,14 @@ function [ir, nTrialsSpikes] = irCompute(ir, input, varargin)
 %
 % Outputs:
 %  ir: the inner retina object with responses attached to each mosaic
+%  nTrialsSpikes:  (trials x xPos x yPos x Time)
+%     Binary matrix indicating the spike times for all the trials.
+%     The last one is stored in the mosaics of the inner retina object in
+%     the responseSpikes slot.
 %
 % Example:
-%   ir.compute(identityOS);
-%   irCompute(ir,identityOS);
+%   ir.compute(bipolar);
+%   irCompute(ir,bipolar);
 %
 % See also: rgcMosaic, irComputeSpikes, irComputeLinearSTSeparable
 %
@@ -42,26 +43,23 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-if length(input) == 1
-    vFunc = @(x) ~isempty(validatestring(class(x),{'osDisplayRGB','bipolar'}));
-else
-    vFunc = @(x) ~isempty(validatestring(class(x{1}),{'osDisplayRGB','bipolar'}));
-end
-p.addRequired('input',vFunc);
-p.addParameter('coupling',false,@islogical);
-p.addParameter('nTrialsInput',  [], @isnumeric);
+vFunc = @(x) isequal(class(x),'bipolar');
+p.addRequired('bp',vFunc);
 
-p.parse(ir,input,varargin{:});
+p.addParameter('coupling',false,@islogical);
+p.addParameter('bipolarTrials',  [], @isnumeric);  % Multiple bipolar trials
+
+p.parse(ir,bp,varargin{:});
 coupling = p.Results.coupling;
 
-nTrialsInput = p.Results.nTrialsInput; 
+bipolarTrials = p.Results.bipolarTrials; 
 
 %% Linear stage of the computation
 
-if ~isempty(nTrialsInput)  
-    [ir,nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, input, 'nTrialsInput',nTrialsInput);
+if ~isempty(bipolarTrials)  
+    [ir,nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, 'bipolarTrials',bipolarTrials);
 else
-    ir = irComputeLinearSTSeparable(ir, input);
+    ir = irComputeLinearSTSeparable(ir, bp);
 end
 % irPlot(ir,'response linear');
 
@@ -73,7 +71,7 @@ switch class(ir.mosaic{1})
     otherwise
         % Runs for rgcLNP, rgcGLM
         % Check the coupling field to decide on the coupling parameter
-        if ~isempty(nTrialsInput) 
+        if ~isempty(bipolarTrials) 
             [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling,'nTrialsLinearResponse',nTrialsLinearResponse);
         else
             [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling);

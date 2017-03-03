@@ -63,7 +63,7 @@ isreal(s)
 %
 % Suppose we create a PSF.  In most coding, the natural way to create a
 % PSF is as an image.  The center is not in (1,1), but in the center. 
-theDim = 129;
+theDim = 128;
 g = fspecial('gaussian',theDim,2);
 figure(1); subplot(1,3,1); colormap(gray); mesh(g);
 

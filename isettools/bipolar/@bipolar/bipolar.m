@@ -143,26 +143,15 @@ methods
         
        
     end
-    
-    % see bipolarSet for details
-    function obj = set(obj, varargin)
-        bipolarSet(obj, varargin{:});
-    end
-    
-    % see bipolarGet for details
-    function val = get(obj, varargin)
-        val = bipolarGet(obj, varargin{:});
-    end
-    
-    % see bipolarCompute for details
-    function [val, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
-        [val, nTrialsCenter, nTrialsSurround] = bipolarCompute(obj, varargin{:});
-    end
-    
-    function plot(obj, varargin)
-        bipolarPlot(obj, varargin{:});
-    end
+ 
 end
+
+% methods (Static)
+%     obj = set(obj, varargin);
+%     val = get(obj, varargin);
+%     [val, nTrialsCenter, nTrialsSurround] = compute(obj, varargin);
+%     plot(obj, varargin);
+% end
 
 properties (Constant)
     % VALIDCELLTYPES Cell array of strings containing valid values for the

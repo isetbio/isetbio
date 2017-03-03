@@ -1,19 +1,19 @@
 function d = displaySet(d,parm,val,varargin)
-%Set display parameter values
+%DISPLAYSET - Set display parameter values
 %
 %   d = displaySet(d,parm,val,varargin)
 %
 % Parameters
-%   name               - display name
-%   gTable             - gamma table
-%   wave               - sample wavelength
-%   spd                - spectral power distribution (average, not peak)
-%   dpi                - dots per inch
-%   size               - vector of [h, v] in meters
-%   dixel              - subpixel structure
-%   viewing distance   - viewing distance
-%   comment            - comments for this display
-%   img                - main display window image
+%   'name'               - display name
+%   'gTable'             - gamma table
+%   'wave'               - sample wavelength
+%   'spd'                - spectral power distribution (average, not peak)
+%   'dpi'                - dots per inch
+%   'size'               - vector of [h, v] in meters
+%   'dixel'              - subpixel structure
+%   'viewing distance'   - viewing distance
+%   'comment'            - comments for this display
+%   'main image'         - main display window image
 %
 % Examples:
 %

@@ -65,13 +65,15 @@ else
 end
 p.addRequired('input',vFunc);
 
-p.addParameter('nTrialsInput',  [], @isnumeric);
+p.addParameter('bipolarTrials',  [], @isnumeric);
 
 p.parse(ir,input,varargin{:});
-ir = p.Results.ir;
+
+%
+ir    = p.Results.ir;
 input = p.Results.input;
 
-nTrialsInput = p.Results.nTrialsInput;
+bipolarTrials = p.Results.bipolarTrials;
 
 %% Get the input data
 
@@ -126,8 +128,8 @@ switch osType
         % Bipolar test case in t_coneMosaic
         % t_rgcBar, others to be named.
         
-        if ~isempty(nTrialsInput)
-            nTrials = size(nTrialsInput,1);
+        if ~isempty(bipolarTrials)
+            nTrials = size(bipolarTrials,1);
         else
             nTrials = 1;
         end
@@ -168,12 +170,10 @@ switch osType
                 % ieMovie(respC - respS);
                 
                 
-                if ~isempty(nTrialsInput)
-                    
+                if ~isempty(bipolarTrials)
                     if iTrial == 1
                         nTrialsLinearResponse = zeros([nTrials,size(respC)]);
                     end
-                    
                     nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
                 end
                 
