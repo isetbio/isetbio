@@ -148,89 +148,94 @@ str = contents{get(hObject,'Value')};
 % Perform the action given the selection
 switch str
     case 'Receptive field mosaic'
-        disp(str)
+        % Should be ellipsoids
         handles.rgcMosaic.plot('mosaic')
-    case 'Spike movie'
-        disp(str)
+        axis image;
         
+    case 'Spike movie'
+        % Spike Movie pulldown
         psthTest = handles.rgcMosaic.get('spikes');
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
         frameSkip = round(1./handles.rgcMosaic.get('dt'));
-        uData = ieMovie(psthTest(:,:,1:frameSkip:end),vParams);    
-    case 'Linear movie'
-        disp(str)
+        ieMovie(psthTest(:,:,1:frameSkip:end),vParams);
+        axis image
         
+    case 'Linear movie'
+        % Linear movie, needs units if possible, colorbar if possible
         responseLinear = handles.rgcMosaic.get('responseLinear');
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
-%         
-        uData = ieMovie(responseLinear,vParams);
+        
+        % Should we add controls like the cone mosaic window, or just play
+        % it once?
+        ieMovie(responseLinear,vParams);
 
-%         set(handles.btnPlayPause, 'Visible', 'on');
-%         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-%         set(handles.sliderMovieProgress, 'Visible', 'on');
-%         if ~exist('handles.linearMov','var')
-% %         if isempty(handles.linearMov)
-% %             ieInWindowMessage('Building movie',handles,2);
-%             % generate movie
-% %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
-% %                 'show',true, ...
-% %                 'gamma', str2double(get(handles.editGam, 'String')));
-%             handles.linearMov = ieMovie(responseLinear,vParams);
-%             guidata(hObject, handles);
-%         end
-%                 
-%         % play movie if more than one frame
-%         btnPlayPause_Callback(hObject, eventdata, handles);
+        %         set(handles.btnPlayPause, 'Visible', 'on');
+        %         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        %         set(handles.sliderMovieProgress, 'Visible', 'on');
+        %         if ~exist('handles.linearMov','var')
+        % %         if isempty(handles.linearMov)
+        % %             ieInWindowMessage('Building movie',handles,2);
+        %             % generate movie
+        % %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
+        % %                 'show',true, ...
+        % %                 'gamma', str2double(get(handles.editGam, 'String')));
+        %             handles.linearMov = ieMovie(responseLinear,vParams);
+        %             guidata(hObject, handles);
+        %         end
+        %
+        %         % play movie if more than one frame
+        %         btnPlayPause_Callback(hObject, eventdata, handles);
         
     case 'Spike mean (image)'
         disp(str)
-        
-        spikesTest = handles.rgcMosaic.get('spikes');
-        imagesc(mean(spikesTest,3)); drawnow
+        spikes = handles.rgcMosaic.get('spikes');
+        imagesc(mean(spikes,3)); 
+        colorbar; axis image; set(gca,'xticklabels','','yticklabels','');
+        drawnow;
         
     case 'Linear plot'
-        disp(str)
-        
+        disp(str)        
         responseLinear = handles.rgcMosaic.get('responseLinear');
         plot(RGB2XWFormat(responseLinear)');
-    case 'PSTH plot'
         
+    case 'PSTH plot'
         responsePsth = handles.rgcMosaic.get('psth');
         plot(RGB2XWFormat(responsePsth)');
-    case 'PSTH movie'
-        disp(str)
         
+    case 'PSTH movie'
+        % PSTH movie shows all the cells as a PSTH
         responsePsth = handles.rgcMosaic.get('psth');
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
         frameSkip = round(1./handles.rgcMosaic.get('dt'));
-        uData = ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
         
-%         
-%         set(handles.btnPlayPause, 'Visible', 'on');
-%         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-%         set(handles.sliderMovieProgress, 'Visible', 'on');
-%         if ~exist('handles.psthMov','var')
-% %         if isempty(handles.psthMov)
-% %             ieInWindowMessage('Building movie',handles,2);
-%             % generate movie
-% %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
-% %                 'show',true, ...
-% %                 'gamma', str2double(get(handles.editGam, 'String')));
-%             handles.psthMov = ieMovie(responsePsth,vParams);
-%             guidata(hObject, handles);
-%         end
-%                 
-%         % play movie if more than one frame
-%         btnPlayPause_Callback(hObject, eventdata, handles);
+        % Same as above ... loop?  Control pause?
+        ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
+        
+        %         set(handles.btnPlayPause, 'Visible', 'on');
+        %         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
+        %         set(handles.sliderMovieProgress, 'Visible', 'on');
+        %         if ~exist('handles.psthMov','var')
+        % %         if isempty(handles.psthMov)
+        % %             ieInWindowMessage('Building movie',handles,2);
+        %             % generate movie
+        % %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
+        % %                 'show',true, ...
+        % %                 'gamma', str2double(get(handles.editGam, 'String')));
+        %             handles.psthMov = ieMovie(responsePsth,vParams);
+        %             guidata(hObject, handles);
+        %         end
+        %
+        %         % play movie if more than one frame
+        %         btnPlayPause_Callback(hObject, eventdata, handles);
         
     case 'PSTH mean (image)'
-        disp(str)
-        
+        % This is odd.  Maybe it should exist.
         psthTest = handles.rgcMosaic.get('psth');
         imagesc(mean(psthTest,3)); drawnow
+        
     otherwise
         error('Unknown string %s\n',str);
 end
