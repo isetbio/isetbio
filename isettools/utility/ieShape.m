@@ -1,16 +1,21 @@
 function [h,pts] = ieShape(shape,varargin)
-% Draw a shape on the current window
+%IESHAPE - Draw a shape on the current window
 %
 %    [h,pts] = ieShape(type,varargin)
 %
-% Inputs:
-%   shape: circle, rectangle, line - other stuff later.
+% Required input:
+%   shape: 'circle', 'rectangle', or 'line'
 %
-% Parameter/Vals for the specific shapes
-%   nSamp
-%   center, radius  (circle)
-%   rect (rectangle)
-%   lineX, lineY  (line)
+% Optional parameter for all shapes
+%   'color' (RGB)
+%
+% Optional Parameter/Vals for the specific shapes
+%   'circle':
+%       center, radius, nSamp
+%   'rectangle'
+%      rect
+%   'line'
+%      lineX, lineY
 %
 %Example:
 %
@@ -21,7 +26,7 @@ function [h,pts] = ieShape(shape,varargin)
 %  [h, pts] = ieShape('rectangle','rect',[10 10 9 9],'color','b');
 %  [h, pts] = ieShape('line','lineX',[0 10],'lineY',[1 3],'color','g');
 %
-% BW ISETBIO Team 2009
+% BW ISETBIO Team
 
 %%
 p = inputParser;

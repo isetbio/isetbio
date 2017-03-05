@@ -161,31 +161,33 @@ switch ieParamFormat(type)
                 % Generate x and y coordinates for spatial RF
                 % These are in units of bipolars ["the RGC RF is N bipolar
                 % wide"], converted to meters below
-                sRFx = (1:size(obj.sRFcenter{xcell,ycell},2));
-                sRFy = (1:size(obj.sRFcenter{xcell,ycell},1));
-                
-                % Shift to zero by subtracting half of size
-                sRFxZero = round(size(obj.sRFcenter{xcell,ycell},2)/2);
-                sRFyZero = round(size(obj.sRFcenter{xcell,ycell},1)/2);
+                %                 sRFx = (1:size(obj.sRFcenter{xcell,ycell},2));
+                %                 sRFy = (1:size(obj.sRFcenter{xcell,ycell},1));
+                %
+                %                 % Shift to zero by subtracting half of size
+                %                 sRFxZero = round(size(obj.sRFcenter{xcell,ycell},2)/2);
+                %                 sRFyZero = round(size(obj.sRFcenter{xcell,ycell},1)/2);
                 
                 % Get center coordinate
                 sRFxCenter = obj.cellLocation{xcell,ycell}(2);
                 sRFyCenter = obj.cellLocation{xcell,ycell}(1);
                 
                 % Combine for appropriate coordinates
-                plotX = sRFx-sRFxZero+sRFxCenter;
-                plotY = sRFy-sRFyZero+sRFyCenter;
+                %                 plotX = sRFx-sRFxZero+sRFxCenter;
+                %                 plotY = sRFy-sRFyZero+sRFyCenter;
                 
                 % Plot surface
                 % Convert coordinates from number of bipolar cells to
                 % meters
-                surf(umPerBipolar*plotX,umPerBipolar*plotY,obj.sRFcenter{xcell,ycell});
+                %surf(umPerBipolar*plotX,umPerBipolar*plotY,obj.sRFcenter{xcell,ycell});
                 
+                ieShape('circle','center',[sRFxCenter,sRFyCenter],'radius',obj.rfDiameter/2);
+                %
             end
         end
         
         axis equal
-        shading interp
+        % shading interp
         
         % Since we've plotted the surface, take a thin z slice for contours
         maxRF = max(obj.sRFcenter{1,1}(:));
