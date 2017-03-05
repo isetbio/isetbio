@@ -7,7 +7,7 @@ function [h,pts] = ieShape(shape,varargin)
 %   shape: 'circle', 'rectangle', or 'line'
 %
 % Optional parameter for all shapes
-%   'color' (RGB)
+%   'color'  - Colorspec (e.g., 'b', 'g')
 %
 % Optional Parameter/Vals for the specific shapes
 %   'circle':

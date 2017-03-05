@@ -181,7 +181,9 @@ switch ieParamFormat(type)
                 % meters
                 %surf(umPerBipolar*plotX,umPerBipolar*plotY,obj.sRFcenter{xcell,ycell});
                 
-                ieShape('circle','center',[sRFxCenter,sRFyCenter],'radius',obj.rfDiameter/2);
+                ieShape('circle','center',[sRFxCenter,sRFyCenter],...
+                    'radius',obj.rfDiameter/2, ...
+                    'color','b');
                 %
             end
         end
