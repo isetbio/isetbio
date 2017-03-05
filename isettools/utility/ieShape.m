@@ -33,7 +33,7 @@ p = inputParser;
 
 p.addRequired('shape',@isstr);
 p.addParameter('nSamp',200,@isnumeric);
-p.addParameter('center',[0 0],@isvector)
+p.addParameter('center',[0 0],@ismatrix)
 p.addParameter('radius',1,@isnumeric);
 p.addParameter('rect',[-1 -1 2 2],@isvector)
 p.addParameter('lineX',[0 1],@isvector);
@@ -51,9 +51,27 @@ switch shape
         hold on;
         center = p.Results.center;
         radius = p.Results.radius;
-        pts = circle(center,radius,nSamp);
+        nCircles = size(center,1);
         
-        h = plot(pts(:,2),pts(:,1),p.Results.color);
+        % It is OK to send in a single value for the radius
+        if isscalar(radius) && nCircles > 1
+            radius = repmat(radius,nCircles,1); 
+        end
+        % It is OK to send in a single color
+        if length(p.Results.color) == 1 && nCircles > 1
+            colors = repmat(p.Results.color,nCircles,1); 
+        end
+        
+        % We want a fill color, too, don't we.  Wonder how to do that?
+        % Also for multiple circles, keep hold on and make axis equal, of
+        % course.  Otherwise it's not a circle.
+        hold on
+        for ii=1:nCircles
+            pts = circle(center(ii,:),radius(ii),nSamp);
+            h = plot(pts(:,2),pts(:,1),colors(ii));
+        end
+        axis equal
+        hold off
 
     case 'rectangle'
         % rect = [10 10 50 50];

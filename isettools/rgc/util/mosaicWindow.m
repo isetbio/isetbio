@@ -22,7 +22,7 @@ function varargout = mosaicWindow(varargin)
 
 % Edit the above text to modify the response to help mosaicWindow
 
-% Last Modified by GUIDE v2.5 28-Oct-2016 13:46:57
+% Last Modified by GUIDE v2.5 05-Mar-2017 11:04:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,7 +62,7 @@ rgcM.figureHandle = hObject;   % Store this figure handle
 % Choose default command line output for mosaicWindow
 handles.output = hObject;
 handles.rgcMosaic = varargin{1};
-handles.spikes = [];  % spike movie
+handles.spikesMovie = [];  % spike movie
 
 % Update handles structure
 guidata(hObject, handles);
@@ -145,64 +145,37 @@ contents = cellstr(get(hObject,'String'));
 % This is the selected string
 str = contents{get(hObject,'Value')};
 
+% Clear the axis in the image
+cla
+
 % Perform the action given the selection
+% Some of the selections (e.g., PSTH mean image) are weird and should be
+% deleted, IMHO.
+% The PSTH movie seems good.  Spike movie less good, but OK.
 switch str
     case 'Receptive field mosaic'
-        % Should be ellipsoids
-        handles.rgcMosaic.plot('mosaic')
-        axis image;
+        % Should be extended to include case of ellipsoidal RFs
+        handles.rgcMosaic.plot('mosaic');
         
     case 'Spike movie'
-        % Spike Movie pulldown
-        psthTest = handles.rgcMosaic.get('spikes');
-        clear vParams; vParams = [];
-        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
-        frameSkip = round(1./handles.rgcMosaic.get('dt'));
-        ieMovie(psthTest(:,:,1:frameSkip:end),vParams);
-        axis image
+        % Spike movie pulldown
+        handles.rgcMosaic.plot('spike movie');
         
     case 'Linear movie'
-        % Linear movie, needs units if possible, colorbar if possible
-        responseLinear = handles.rgcMosaic.get('responseLinear');
-        clear vParams; vParams = [];
-        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2; 
-        
-        % Should we add controls like the cone mosaic window, or just play
-        % it once?
-        ieMovie(responseLinear,vParams);
+        % Linear movie, needs units if possible, colorbar if possible        
+        handles.rgcMosaic.plot('linear movie');
 
-        %         set(handles.btnPlayPause, 'Visible', 'on');
-        %         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        %         set(handles.sliderMovieProgress, 'Visible', 'on');
-        %         if ~exist('handles.linearMov','var')
-        % %         if isempty(handles.linearMov)
-        % %             ieInWindowMessage('Building movie',handles,2);
-        %             % generate movie
-        % %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
-        % %                 'show',true, ...
-        % %                 'gamma', str2double(get(handles.editGam, 'String')));
-        %             handles.linearMov = ieMovie(responseLinear,vParams);
-        %             guidata(hObject, handles);
-        %         end
-        %
-        %         % play movie if more than one frame
-        %         btnPlayPause_Callback(hObject, eventdata, handles);
-        
     case 'Spike mean (image)'
-        disp(str)
-        spikes = handles.rgcMosaic.get('spikes');
-        imagesc(mean(spikes,3)); 
-        colorbar; axis image; set(gca,'xticklabels','','yticklabels','');
-        drawnow;
-        
+        handles.rgcMosaic.plot('spike mean image');
+         
     case 'Linear plot'
         disp(str)        
         responseLinear = handles.rgcMosaic.get('responseLinear');
         plot(RGB2XWFormat(responseLinear)');
         
     case 'PSTH plot'
-        responsePsth = handles.rgcMosaic.get('psth');
-        plot(RGB2XWFormat(responsePsth)');
+        % Plots the psth of all the cells combined.  Kind of weird.
+        handles.rgcMosaic.plot('psth');
         
     case 'PSTH movie'
         % PSTH movie shows all the cells as a PSTH
@@ -211,30 +184,12 @@ switch str
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
         frameSkip = round(1./handles.rgcMosaic.get('dt'));
         
-        % Same as above ... loop?  Control pause?
+        % We might build in the movie control parameters as cone mosaic
         ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
-        
-        %         set(handles.btnPlayPause, 'Visible', 'on');
-        %         set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        %         set(handles.sliderMovieProgress, 'Visible', 'on');
-        %         if ~exist('handles.psthMov','var')
-        % %         if isempty(handles.psthMov)
-        % %             ieInWindowMessage('Building movie',handles,2);
-        %             % generate movie
-        % %             handles.mov = cm.plot('movie absorptions', 'hf','none',...
-        % %                 'show',true, ...
-        % %                 'gamma', str2double(get(handles.editGam, 'String')));
-        %             handles.psthMov = ieMovie(responsePsth,vParams);
-        %             guidata(hObject, handles);
-        %         end
-        %
-        %         % play movie if more than one frame
-        %         btnPlayPause_Callback(hObject, eventdata, handles);
         
     case 'PSTH mean (image)'
         % This is odd.  Maybe it should exist.
-        psthTest = handles.rgcMosaic.get('psth');
-        imagesc(mean(psthTest,3)); drawnow
+        handles.rgcMosaic.plot('psth mean image');
         
     otherwise
         error('Unknown string %s\n',str);
@@ -299,32 +254,44 @@ end
 
 function mosaicWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
-disp('Refresh')
 
 rgcM  = handles.rgcMosaic;
 fig   = figure(rgcM.figureHandle);
 gdata = guidata(fig);
+
 % Show the appropriate response axis plot
 axes(gdata.axisResponse);
 cla(gdata.axisResponse,'reset');
 
-% Switch depending on the state of the pull down
-spikes = rgcM.get('response spikes');
-img = mean(spikes(:,:,:,1),3);
-imagesc(img); colormap(gray); colorbar;
-xlabel('Distance (um)');
-
-% RF shape overlay on the response window
-% % Update the geometry axis plot
-% axes(gdata.axisGeometry);
-% cla(gdata.axisGeometry,'reset');
+% Selected string in the popup
+contents = cellstr(get(gdata.popupResponseSelect,'String'));
+str = contents{get(gdata.popupResponseSelect,'Value')};
+switch(str)
+    case 'Receptive field mosaic'
+        gdata.rgcMosaic.plot('mosaic');
+    case 'Spike mean (image)'
+        gdata.rgcMosaic.plot('spike mean image');
+    case 'PSTH mean (image)'
+        gdata.rgcMosaic.plot('psth mean image');
+    case 'PSTH plot'
+        gdata.rgcMosaic.plot('psth');
+    case 'Linear movie'
+        gdata.rgcMosaic.plot('linear movie');        
+    case 'Spoke movie'
+        gdata.rgcMosaic.plot('spike movie');
+    case 'PSTH movie'
+        %
+        disp('PSTH movie NYI.  Showing spike movie')
+        gdata.rgcMosaic.plot('spike movie');
+    otherwise
+        error('Unknown plot type %s\n',str);
+end
 
 % Make a button for rfOverlay
 rfOverlay = false;
 if rfOverlay
     rgcM.plot('mosaic');
 end
-
 
 % Text description
 str = rgcM.describe;

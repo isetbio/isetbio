@@ -1,9 +1,9 @@
-function [uData, hf] = plot(obj, type, varargin)
+function [uData, hf] = plot(obj, plotType, varargin)
 % Plot function for rgcMosaic
-%    [uData, hf] = rgcMosaic.plot(type, varargin)
+%    [uData, hf] = rgcMosaic.plot(plotType, varargin)
 %
 % Required input
-%   type - string, type of plot
+%   plotType - string, type of plot
 %
 % Optional input (key-val pairs in varargin):
 %   'hf' - figure or axis handle
@@ -19,9 +19,10 @@ function [uData, hf] = plot(obj, type, varargin)
 %   hf    - figure handle
 %
 % Plot type can be chosen from
-%   'rgc mosaic'          - Color image of the cone arrangement
-%   'spike mean image'     - Gray scale movie of current
-%   'spike movie'   - Cone photocurrent graphs
+%   'spike mean image'    - Gray scale image of mean spikes
+%   'mosaic'              - RGC mosaic as circles
+%   'linear movie'        - Linear voltages as movie
+%   'psth'                - Peristimulus time histogram as ...
 %
 % Example:
 %
@@ -32,10 +33,10 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 % What about obj?
-p.addRequired('type', @isstr);                        % Type of plot
+p.addRequired('plotType', @isstr);                        % Type of plot
 p.addParameter('hf', obj.figureHandle, @isgraphics);  % figure handle
 
-p.parse(type, varargin{:});
+p.parse(plotType, varargin{:});
 hf = p.Results.hf;
 
 uData = [];
@@ -47,163 +48,84 @@ elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
-% % set color order so that LMS plots as RGB
-% if ~isequal(hf, 'none')
-%     co = get(gca, 'ColorOrder');
-%     if isgraphics(hf,'axes')
-%         set(get(hf,'parent'),'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
-%     else  % Figure
-%         set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
-%     end
-% end
+fprintf('Plot %s for %s class\n',plotType,class(obj));
 
-fprintf('Plot %s for %s class\n',type,class(obj));
-
-switch ieParamFormat(type)
+switch ieParamFormat(plotType)
     case 'spikemeanimage'
         % Spike mean image
         g = guidata(hf);
         axes(g.axisResponse);
         
-        spikes = obj.get('responseSpikes');
+        spikes = obj.get('spikes');
         img = mean(spikes,3);
-        imagesc(img);
+        colormap(gray(256)); imagesc(img); axis image;
+        set(gca,'xticklabels','','yticklabels','');
+        colorbar; drawnow;
         
     case 'spikemovie'
-        disp('Spike Movie')
+        % Movie of spiking activity
+        % Should this work with the mosaic plot of circles?
+        psthTest = obj.get('spikes');
+        clear vParams; vParams = [];
+        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
+        frameSkip = round(1./obj.get('dt'));
+        ieMovie(psthTest(:,:,1:frameSkip:end),vParams);
         
-    case{'movielinear','linearmovie'}
-        resp = obj.get('response linear');
-        dFlag.FrameRate = 2;
-        g = guidata(hf);
-        axes(g.axisResponse);
-        ieMovie(resp,'dFlag',dFlag);
+    case{'linearmovie'}
+        % Continuous voltages prior to spike generation
+        responseLinear = obj.get('responseLinear');
         
+        clear vParams; 
+        vParams.FrameRate = 30; 
+        vParams.show = true;
+        
+        % Should we add controls like the cone mosaic window, or just play
+        % it once?
+        ieMovie(responseLinear,vParams);
+      
+        
+    case 'psthmeanimage'
+        psth = obj.get('psth');
+        imagesc(mean(psth,3));
+        axis image; colormap(gray(256)); colorbar;
+        set(gca,'xticklabels','','yticklabels','');
+        drawnow;
+
     case 'psth'
-        % Peri-stimulus time histogram
-        timeStep = obj.Parent.timing;
+        % Peri-stimulus time graph for all cells.
+        % Kind of a weird plot to make.
+        timeStep = obj.dt;
         psth = obj.get('psth');
         resp = RGB2XWFormat(psth);
         
         g = guidata(hf);
         axes(g.axisResponse);
         cla(g.axisResponse,'reset');
-        plot(g.axisResponse,timeStep:timeStep:timeStep*size(resp,1),sum(resp,2));
-        xlabel(sprintf('Time (sec)'));
-        % ylabel(sprintf('Conditional Intensity'));
-        % title(sprintf('%s',obj.cellType));
-        
+        plot(g.axisResponse,timeStep*(1:size(resp,1)),sum(resp,2));
+        xlabel('Time (sec)');
+        ylabel(sprintf('Spikes per %d ms',timeStep*1e3));
+        grid on; axis image
         
     case 'mosaic'
         % Plot the mosaic spatial receptive field geometry
-        % We should plot, say, 5x5 array just to illustrate, rather than
-        % the whole mosaic.  Only the whole mosaic on demand
-        % g = guidata(obj.figureHandle);
+        % We need to add the possibility of elliptical forms some day.
+        % And we should figure out how to do center/surround
         cla reset;
         
-        % Somehow, we need these variables, too.  Let's rethink the
-        % parameterization of the spatial receptive fields.
-        %
-        %         metersPerPixel = (spacing/1e-6)/col;
-        %         rfPixels = obj.rfDiameter/metersPerPixel;
-        %         extent = .5*round(size(obj.sRFcenter{1,1},1)/rfPixels);
-        %
+        % Oddly, the center is (row,col)
+        center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        radius = obj.rfDiameter/2;
+        ieShape('circle','center',center,...
+            'radius',radius, ...
+            'color','b');
         
-        % Get contour lines for mosaic RFs
-        % See below:  Replace this with ieShape()
-        % spatialRFcontours = plotContours(obj, obj.Parent.spacing, obj.Parent.col);
-        
-        
-        % Convert RGC position to distance
-        % These calculations can't be right.  The RF size has to be
-        % independent of the number of cells.... FIX.
-        patchSizeX      = obj.Parent.size;   % Meters
-        numberBipolarsX = obj.Parent.col;    % Bipolar cells
-        umPerBipolar    = 1e6*patchSizeX/numberBipolarsX;   % Meters per Bipolar
-        
-        % Replace with ieShape('circle','center',...,'radius',...)
-        % To draw the center and surround mosaic geometry
-        % Axis units should be um
-        
-        % New strategy: make surface plot of all RFs combined and take a
-        % thin z slice to show contours. This is useful for when RFs are
-        % not circular, and each has a different elliptical shape (JRG).
-        
-        nCells = obj.get('mosaic size');
-        %         nCell = 5;   % Central 5 cells
-        %         cellList = -2:2;
-        % I am noticing that the center of the sRF when the size is even
-        % is, well, not good.  We should probably always insist on odd
-        % row/col of the sRF images.
-        for xcell = 1:nCells(1)
-            for ycell = 1:nCells(2)
-                %         for xcell = cellList
-                %             for ycell = cellList
-                %                 center = [xcell*umPerCell, ycell*umPerCell];
-                %                 % This should be a real radius ... it appears to be just
-                %                 % the spacing ... must read the constructor (BW).
-                %                 radius = umPerCell;
-                %                 % Could be out of the loop ... or could be pulled from a
-                %                 % space varying rgc object.
-                %                 [h,pts] = ieShape('circle','center',center,'radius',radius,'color','b');
-                %                 fill(pts(:,1),pts(:,2),[1 0 1]);
-                %                 % center
-                %                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
-                %                 %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-                %                 %                     'color','b');
-                %                 %                 hold on;
-                %                 %                 % surround
-                %                 %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
-                %                 %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-                %                 %                     'color','y');
-                
-                hold on;
-                % Generate x and y coordinates for spatial RF
-                % These are in units of bipolars ["the RGC RF is N bipolar
-                % wide"], converted to meters below
-                %                 sRFx = (1:size(obj.sRFcenter{xcell,ycell},2));
-                %                 sRFy = (1:size(obj.sRFcenter{xcell,ycell},1));
-                %
-                %                 % Shift to zero by subtracting half of size
-                %                 sRFxZero = round(size(obj.sRFcenter{xcell,ycell},2)/2);
-                %                 sRFyZero = round(size(obj.sRFcenter{xcell,ycell},1)/2);
-                
-                % Get center coordinate
-                sRFxCenter = obj.cellLocation{xcell,ycell}(2);
-                sRFyCenter = obj.cellLocation{xcell,ycell}(1);
-                
-                % Combine for appropriate coordinates
-                %                 plotX = sRFx-sRFxZero+sRFxCenter;
-                %                 plotY = sRFy-sRFyZero+sRFyCenter;
-                
-                % Plot surface
-                % Convert coordinates from number of bipolar cells to
-                % meters
-                %surf(umPerBipolar*plotX,umPerBipolar*plotY,obj.sRFcenter{xcell,ycell});
-                
-                ieShape('circle','center',[sRFxCenter,sRFyCenter],...
-                    'radius',obj.rfDiameter/2, ...
-                    'color','b');
-                %
-            end
-        end
-        
-        axis equal
-        % shading interp
-        
-        % Since we've plotted the surface, take a thin z slice for contours
-        maxRF = max(obj.sRFcenter{1,1}(:));
-        ax1 = axis;
-        axis([ax1 exp(-1)*2*maxRF-.05 exp(-1)*2*maxRF]);
-        %         axis([-10-max(umPerBipolar*plotX) 10+max(umPerBipolar*plotX) -10-max(umPerBipolar*plotY) 10+max(umPerBipolar*plotY) .5*maxRF-.05 .5*maxRF]);
-        
-        
-        %         alim = 1.5*[-nCell*umPerCell, nCell*umPerCell]/2;
-        %         set(gca,'xlim',alim,'ylim',alim);
+        set(gca,...
+            'xlim',[min(center(:,2)) - radius, max(center(:,2)) + radius],...
+            'ylim',[min(center(:,1)) - radius, max(center(:,1)) + radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
-        %         grid on
-        hold off;
+        
     otherwise
+        error('Unknown plot type %s\n',plotType);
 end
 
 end
