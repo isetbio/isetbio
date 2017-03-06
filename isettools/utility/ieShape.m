@@ -60,6 +60,8 @@ switch shape
         % It is OK to send in a single color
         if length(p.Results.color) == 1 && nCircles > 1
             colors = repmat(p.Results.color,nCircles,1); 
+        else
+            colors = p.Results.color;
         end
         
         % We want a fill color, too, don't we.  Wonder how to do that?
