@@ -18,18 +18,19 @@ function [interpFilters, meanCur] = computeCurrent(obj, varargin)
 
 %% parse inputs
 p = inputParser;
+p.addParameter('absorptionsInXWFormat', [], @isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
 % Check that absorption time series has been computed
-if isempty(obj.absorptions)  || size(obj.absorptions,3) == 1
+if (isempty(obj.absorptions)  || size(obj.absorptions,3) == 1) && (isempty(p.Results.absorptionsInXWFormat))
     error('You must compute isomerizations (absorptions) time series prior to the current.');
 end
 
 % This is the background absorption rate.  We pass it in to 'warm up' the
 % biophysical model to reach steady state faster.  It is also used by the
 % linear os model to obtain the needed filters.
-bgR = coneMeanIsomerizations(obj);
+bgR = coneMeanIsomerizations(obj, 'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);
 
 %% Call the appropriate outer segment photocurrent computation
 if isa(obj.os,'osLinear')
@@ -41,5 +42,6 @@ elseif isa(obj.os,'osBioPhys')
 else
     error('Attempting to computer current with unsupported os class');
 end
+
 
 end

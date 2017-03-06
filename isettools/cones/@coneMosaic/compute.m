@@ -127,10 +127,10 @@ else
 end
 
 % Compute full LMS noise free absorptions
-LMS = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
+absorptions = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
     
 % Deal with eye movements
-absorptions = obj.applyEMPath(LMS, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
+absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
 
 % dbstop in compute.m at 138 if sum(absorptions(:))<1
 
