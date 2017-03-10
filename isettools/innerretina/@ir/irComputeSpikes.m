@@ -49,7 +49,6 @@ nRepeats = ir.get('number trials');
         
 if ~isempty(nTrialsLinearResponse)
     nTrials = size(nTrialsLinearResponse,1);
-    nTrialsSpikeResponse = cell(nTrials,length(ir.mosaic));
 else
     nTrials = 1;
 end
@@ -136,11 +135,9 @@ for ii = 1:length(ir.mosaic)
         end
     end    
 
-    if ~isempty(nTrialsLinearResponse)
-        nTrialsSpikeResponse{iTrial,ii} =  spikeTimes;
-    end
+
     
-    if iTrial == nTrials
+%     if iTrial == nTrials
         
         % Set mosaic property
         ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
@@ -149,7 +146,15 @@ for ii = 1:length(ir.mosaic)
         if isa(ir.mosaic{ii},'rgcGLM')
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
         end
-    end
+%     end
+    
+        if ~isempty(nTrialsLinearResponse)
+%         if iTrial == 1 && ii == 1
+%             nTrialsSpikeResponse = zeros([nTrials,length(ir.mosaic),size(ir.mosaic{ii}.get('spikes'))]);
+%         end
+%         nTrialsSpikeResponse{iTrial,ii} =  spikeTimes;
+        nTrialsSpikeResponse(iTrial,ii,:,:,:) = ir.mosaic{ii}.get('spikes');
+        end
     
 end
 
