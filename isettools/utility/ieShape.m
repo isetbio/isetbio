@@ -10,6 +10,8 @@ function [h,pts] = ieShape(shape,varargin)
 %   'color'  - Colorspec (e.g., 'b', 'g')
 %
 % Optional Parameter/Vals for the specific shapes
+%   'ellipse'
+%      center, ellipseParameters (A,B,rho) (major, minor, angle)
 %   'circle':
 %       center, radius, nSamp
 %   'rectangle'
@@ -17,7 +19,7 @@ function [h,pts] = ieShape(shape,varargin)
 %   'line'
 %      lineX, lineY
 %
-%Example:
+%Examples:
 %
 %  vcNewGraphWin; 
 %  [h, pts] = ieShape('circle','center',[10 10],'radius', 1,'nSamp',50,'color','r--');
@@ -25,6 +27,10 @@ function [h,pts] = ieShape(shape,varargin)
 %
 %  [h, pts] = ieShape('rectangle','rect',[10 10 9 9],'color','b');
 %  [h, pts] = ieShape('line','lineX',[0 10],'lineY',[1 3],'color','g');
+%
+%  [h, pts] = ieShape('ellipse');
+%  [h, pts] = ieShape('ellipse','ellipseParameters',[1 2 45]);
+%  [h, pts] = ieShape('ellipse','center',[0 0 ; 3 3],'ellipseParameters',[1 2 32; 2 1 70],'color','b');
 %
 % BW ISETBIO Team
 
@@ -39,7 +45,7 @@ p.addParameter('rect',[-1 -1 2 2],@isvector)
 p.addParameter('lineX',[0 1],@isvector);
 p.addParameter('lineY',[0 1],@isvector);
 p.addParameter('color','k',@ischar);
-p.addParameter('ellipseMatrix',[0 0; 0 0],@ismatrix)
+p.addParameter('ellipseParameters',[1 1 0],@ismatrix);  % y,x,rho
 
 p.parse(shape,varargin{:});
 
@@ -79,17 +85,17 @@ switch shape
     case 'ellipse'
         hold on;
         center = p.Results.center;
-        radius = p.Results.radius;
-        ellipseMatrix = p.Results.ellipseMatrix;
-        nCircles = size(center,1);
+        nEllipses = size(center,1);
         
-        % It is OK to send in a single value for the radius
-        if isscalar(radius) && nCircles > 1
-            radius = repmat(radius,nCircles,1); 
+        % It is OK to send in a single ellipse parameter.  The ellipse will
+        % be replicated at all the center locations.
+        ellipseParameters = p.Results.ellipseParameters;
+        if size(ellipseParameters,1)==1 && nEllipses > 1
+            ellipseParameters = repmat(ellipseParameters,nEllipses,1);
         end
         % It is OK to send in a single color
-        if length(p.Results.color) == 1 && nCircles > 1
-            colors = repmat(p.Results.color,nCircles,1); 
+        if length(p.Results.color) == 1 && nEllipses > 1
+            colors = repmat(p.Results.color,nEllipses,1); 
         else
             colors = p.Results.color;
         end
@@ -97,15 +103,22 @@ switch shape
         % We want a fill color, too, don't we.  Wonder how to do that?
         % Also for multiple circles, keep hold on and make axis equal, of
         % course.  Otherwise it's not a circle.
-        cla;
         hold on
-        szEllMatrix = [sqrt(nCircles) sqrt(nCircles)];
-        for ii=1:nCircles
-            [xc,yc] = ind2sub(szEllMatrix,ii);
-            ptsCircle = circle(center(ii,:),radius(ii),nSamp);
-            pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
-            h = plot(pts(:,2)+center(ii,2),pts(:,1)+center(ii,1),colors(ii));
+        ptsCircle = circle([0,0],1,nSamp);
+        % [xc,yc] = ind2sub(szEllMatrix,ii);
+        % szEllMatrix = [sqrt(nEllipses) sqrt(nEllipses)];
+        for ii=1:nEllipses
+            % ePts = pts*eMatrix;
+            % ePts = pts * diag(major/minor axis)* rotmat(third parameter)
+            D = diag(ellipseParameters(ii,1:2));
+            R = [cosd(ellipseParameters(ii,3)) -sind(ellipseParameters(ii,3));
+                sind(ellipseParameters(ii,3))   cosd(ellipseParameters(ii,3))];
+            pts = bsxfun(@plus,ptsCircle*D*R,center(ii,:));
+            %pts = ptsCircle*D*R + repmat(center,nSamp,1);
+            h = plot(pts(:,2),pts(:,1),colors(ii));
         end
+        % pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
+
         axis equal
         hold off
 

@@ -1,5 +1,5 @@
 function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive, Qout] = ...
-    buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter)
+    buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter,varargin)
 % Builds the spatial RF center and surround for the cells in 
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
@@ -37,6 +37,23 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 % 7/2016 JRG updated
 
 %% Manage parameters
+p = inputParser;
+p.addRequired('patchSize',@isscalar);
+p.addRequired('inRow',@isscalar);
+p.addRequired('inCol',@isscalar);
+p.addParameter('centerNoise',1.25,@isscalar);
+p.addParameter('ellipseParams',[1 1 0],@isvector);  % A,B,rho
+
+p.parse(patchSize,inRow,inCol,varargin{:});
+
+centerNoise = p.Results.centerNoise;
+
+% Hard coded for now.  To eliminate.
+extent = 2.5;    % ratio between sampling size and spatial RF standard dev 
+r = 0.75;        % radius ratio between center and surround for DoG
+k = 1.032 * r;   % scaling of magnitude of surround
+
+%%
 
 % I think JRG built this assuming the patch size referred to a region of
 % the cone mosaic.  
@@ -59,12 +76,7 @@ nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 % rfDiameter out: number bipolar cells per RGC
 rfDiameter = rfDiameter / (patchSize(2) / inCol);
 
-extent = 2.5;    % ratio between sampling size and spatial RF standard dev 
-r = 0.75;        % radius ratio between center and surround for DoG
-k = 1.032 * r;   % scaling of magnitude of surround
-
 % centers of receiptive fields
-centerNoise = 1.25;                                 % in number of bipolars; divide by 2 for mean offset
 centerX = (0:2:nRGC(1)-1)*rfDiameter + centerNoise; % RGC center row coords in um
 centerY = (0:2:nRGC(2)-1)*rfDiameter - centerNoise; % RGC center col coords in um
 rows = length(centerX); cols = length(centerY);     % number of RGCs
@@ -85,7 +97,6 @@ sRFsurround         = cell(rows, cols);
 spatialRFonedim     = cell(rows, cols);
 spatialRFFill       = cell(rows, cols);
 rfDiaMagnitude      = cell(rows, cols);
-% spatialContours     = cell(rows, cols, 2);
 tonicDrive          = cell(rows, cols);
 
 % s_center   =   exp(-0.5*(x-c)*Q*(x-c)') 
@@ -96,15 +107,20 @@ for ii = 1 : length(centerX)
     for jj = 1 : length(centerY)
         
         %% Compute 2D spatial RF
+        
         % Specify centers in um, offset even rows for hexagonal packing
+        % Add some jitter to the center positions.  The size of the jitter
+        % is the parameter centerNoise
         ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + 1*centerNoise*(2*rand(1,1)-1);
         jc = centerY(jj) + 1*centerNoise*(2*rand(1,1)-1);
    
         % Add some noise to deviate from circularity 
         % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
-        d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
-        Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-
+        %         d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
+        %         Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
+        Q = ellipseQuadratic([(1/rfDiameter)^2,(1/rfDiameter)^2,0]);
+        ieShape('ellipse','ellipseParameters',[rfDiameter,rfDiameter,0]);
+        
         % Calculate values for input to DoG function in an efficient way
         [i2, j2] = meshgrid(ic+pts, jc+pts); % um
         i = i2(:); j = j2(:);                % um
