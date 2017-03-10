@@ -33,12 +33,13 @@ p = inputParser;
 
 p.addRequired('shape',@isstr);
 p.addParameter('nSamp',200,@isnumeric);
-p.addParameter('center',[0 0],@ismatrix)
+p.addParameter('center',[0 0],@ismatrix);
 p.addParameter('radius',1,@isnumeric);
 p.addParameter('rect',[-1 -1 2 2],@isvector)
 p.addParameter('lineX',[0 1],@isvector);
 p.addParameter('lineY',[0 1],@isvector);
 p.addParameter('color','k',@ischar);
+p.addParameter('ellipseMatrix',[0 0; 0 0],@ismatrix)
 
 p.parse(shape,varargin{:});
 
@@ -71,6 +72,39 @@ switch shape
         for ii=1:nCircles
             pts = circle(center(ii,:),radius(ii),nSamp);
             h = plot(pts(:,2),pts(:,1),colors(ii));
+        end
+        axis equal
+        hold off
+        
+    case 'ellipse'
+        hold on;
+        center = p.Results.center;
+        radius = p.Results.radius;
+        ellipseMatrix = p.Results.ellipseMatrix;
+        nCircles = size(center,1);
+        
+        % It is OK to send in a single value for the radius
+        if isscalar(radius) && nCircles > 1
+            radius = repmat(radius,nCircles,1); 
+        end
+        % It is OK to send in a single color
+        if length(p.Results.color) == 1 && nCircles > 1
+            colors = repmat(p.Results.color,nCircles,1); 
+        else
+            colors = p.Results.color;
+        end
+        
+        % We want a fill color, too, don't we.  Wonder how to do that?
+        % Also for multiple circles, keep hold on and make axis equal, of
+        % course.  Otherwise it's not a circle.
+        cla;
+        hold on
+        szEllMatrix = [sqrt(nCircles) sqrt(nCircles)];
+        for ii=1:nCircles
+            [xc,yc] = ind2sub(szEllMatrix,ii);
+            ptsCircle = circle(center(ii,:),radius(ii),nSamp);
+            pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
+            h = plot(pts(:,2)+center(ii,2),pts(:,1)+center(ii,1),colors(ii));
         end
         axis equal
         hold off
