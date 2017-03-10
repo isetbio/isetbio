@@ -1,4 +1,4 @@
-function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive] = ...
+function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive, Qout] = ...
     buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter)
 % Builds the spatial RF center and surround for the cells in 
 % 
@@ -97,8 +97,8 @@ for ii = 1 : length(centerX)
         
         %% Compute 2D spatial RF
         % Specify centers in um, offset even rows for hexagonal packing
-        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + 3*centerNoise*(2*rand(1,1)-1);
-        jc = centerY(jj) + 3*centerNoise*(2*rand(1,1)-1);
+        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + 1*centerNoise*(2*rand(1,1)-1);
+        jc = centerY(jj) + 1*centerNoise*(2*rand(1,1)-1);
    
         % Add some noise to deviate from circularity 
         % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
@@ -164,6 +164,7 @@ for ii = 1 : length(centerX)
         % baseline firing rate even when the stimulus input is zero.
         % Units of conditional intensity
         tonicDrive{ii,jj} = 2.2702; % from ON Parasol 2013_08_19_6
+        Qout{ii,jj} = Q;
     end
 end
 

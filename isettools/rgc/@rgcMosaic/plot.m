@@ -115,6 +115,7 @@ switch ieParamFormat(plotType)
         % Oddly, the center is (row,col)
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
+        ellipseMatrix = obj.ellipseMatrix;
         ieShape('circle','center',center,...
             'radius',radius, ...
             'color','b');

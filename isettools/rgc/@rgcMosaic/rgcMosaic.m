@@ -90,6 +90,7 @@ classdef rgcMosaic < handle
     
     % Private properties. Only methods of the parent class can set these
     properties(Access = private)
+        ellipseMatrix;
     end
     
     %% Public methods
