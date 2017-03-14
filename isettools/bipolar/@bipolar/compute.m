@@ -90,19 +90,19 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
 p = inputParser;
 p.addRequired('obj', @(x) (isa(x, 'bipolar')));
 p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));  
-addParameter(p, 'nTrialsInput',  [], @isnumeric);
+addParameter(p, 'coneTrials',  [], @isnumeric);
 
 % parse - no options at this opint
 p.parse(obj, cmosaic, varargin{:});
 
-nTrialsInput = p.Results.nTrialsInput; 
+coneTrials = p.Results.coneTrials; 
 
 if isempty(cmosaic.current), 
     error('No cone photocurrent.  Use cmosaic.computeCurrent.'); 
 end
 
-if ~isempty(nTrialsInput)    
-    nTrials = size(nTrialsInput,1);
+if ~isempty(coneTrials)    
+    nTrials = size(coneTrials,1);
 else
     nTrials = 1;
 end
@@ -114,8 +114,8 @@ for iTrial = 1:nTrials
 % Convolve spatial RFs across the photo current of the cones in the mosaic
 
 % This places the cone 3D matrix into a coneNumber x time matrix
-if ~isempty(nTrialsInput) 
-    osSig = RGB2XWFormat(squeeze(nTrialsInput(iTrial,:,:,:)));
+if ~isempty(coneTrials) 
+    osSig = RGB2XWFormat(squeeze(coneTrials(iTrial,:,:,:)));
 else
     osSig = RGB2XWFormat(cmosaic.current);
 end
@@ -229,7 +229,7 @@ tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bi
 % tmp = conv2(bipolarFilt,bipolarSurround);
 tmpSurround = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
 
-if ~isempty(nTrialsInput) 
+if ~isempty(coneTrials) 
     
     if iTrial == 1
         nTrialsCenter = zeros([nTrials,size(XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col))]);
