@@ -85,6 +85,8 @@ switch shape
     case 'ellipse'
         hold on;
         center = p.Results.center;
+        
+        radius = p.Results.radius;
         nEllipses = size(center,1);
         
         % It is OK to send in a single ellipse parameter.  The ellipse will
@@ -104,7 +106,7 @@ switch shape
         % Also for multiple circles, keep hold on and make axis equal, of
         % course.  Otherwise it's not a circle.
         hold on
-        ptsCircle = circle([0,0],1,nSamp);
+        ptsCircle = circle([0,0],radius,nSamp);
         % [xc,yc] = ind2sub(szEllMatrix,ii);
         % szEllMatrix = [sqrt(nEllipses) sqrt(nEllipses)];
         for ii=1:nEllipses

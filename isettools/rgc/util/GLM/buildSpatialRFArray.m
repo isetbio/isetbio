@@ -42,14 +42,15 @@ p.addRequired('patchSize',@isscalar);
 p.addRequired('inRow',@isscalar);
 p.addRequired('inCol',@isscalar);
 p.addParameter('centerNoise',1.25,@isscalar);
-p.addParameter('ellipseParams',[1 1 0],@isvector);  % A,B,rho
+p.addParameter('ellipseParams',[],@isvector);  % A,B,rho
 
 p.parse(patchSize,inRow,inCol,varargin{:});
 
 centerNoise = p.Results.centerNoise;
+ellipseParams = p.Results.ellipseParams;
 
 % Hard coded for now.  To eliminate.
-extent = 2.5;    % ratio between sampling size and spatial RF standard dev 
+extent = 5;    % ratio between sampling size and spatial RF standard dev 
 r = 0.75;        % radius ratio between center and surround for DoG
 k = 1.032 * r;   % scaling of magnitude of surround
 
@@ -116,10 +117,19 @@ for ii = 1 : length(centerX)
    
         % Add some noise to deviate from circularity 
         % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
-        %         d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
-        %         Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-        Q = ellipseQuadratic([(1/rfDiameter)^2,(1/rfDiameter)^2,0]);
-        ieShape('ellipse','ellipseParameters',[rfDiameter,rfDiameter,0]);
+        % d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
+        % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
+
+        D = abs([.1*randn(1,2)+.5]);%(eye(2)*.2*(rand(2,1)-.5))'; 
+        angleRot = 180*(rand(1,1)-.5);
+        if isempty(ellipseParams)
+            ellipseParameters = [(1/rfDiameter)^2*D,angleRot];
+        else
+            ellipseParameters = [(1/rfDiameter)^2*ellipseParams(1:2), ellipseParams(3)];
+        end
+        Qe = ellipseQuadratic(ellipseParameters); Q = (1/rfDiameter^2)*Qe./norm(Qe);
+        
+        % ieShape('ellipse','ellipseParameters',[diag(Qe)'./norm(diag(Qe)),angleRot]);
         
         % Calculate values for input to DoG function in an efficient way
         [i2, j2] = meshgrid(ic+pts, jc+pts); % um
@@ -180,7 +190,7 @@ for ii = 1 : length(centerX)
         % baseline firing rate even when the stimulus input is zero.
         % Units of conditional intensity
         tonicDrive{ii,jj} = 2.2702; % from ON Parasol 2013_08_19_6
-        Qout{ii,jj} = Q;
+        Qout{ii,jj} =ellipseParameters;
     end
 end
 

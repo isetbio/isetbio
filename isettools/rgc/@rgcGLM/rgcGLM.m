@@ -73,10 +73,10 @@ classdef rgcGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcGLM(ir, mosaicType)
+        function obj = rgcGLM(ir, mosaicType, varargin)
             
             % Initialize the mosaic parent class
-            obj = obj@rgcMosaic(ir, mosaicType);
+            obj = obj@rgcMosaic(ir, mosaicType, varargin{:});
             
             % The Pillow generator function
             obj.generatorFunction = @exp;

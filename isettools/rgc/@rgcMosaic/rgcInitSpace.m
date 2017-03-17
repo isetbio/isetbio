@@ -1,4 +1,4 @@
-function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
+function rgcM = rgcInitSpace(rgcM,innerRetina,cellType,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
 %    rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
@@ -36,13 +36,14 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 %% All three arguments are required
 
 p = inputParser;
+p.KeepUnmatched = true;
 p.addRequired('rgcM');
 p.addRequired('innerRetina');
 
 vFunc = @(x)(ismember(ieParamFormat(x),{'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
-
-p.parse(rgcM,innerRetina,cellType);
+% p.addParameter('centerNoise');
+p.parse(rgcM,innerRetina,cellType,varargin{:});
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(cellType)
@@ -74,7 +75,7 @@ rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2);
 
 % Build spatial RFs of all RGCs in this mosaic
 [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
-    buildSpatialRFArray(innerRetina.size, innerRetina.row, innerRetina.col, rgcM.rfDiameter);
+    buildSpatialRFArray(innerRetina.size, innerRetina.row, innerRetina.col, rgcM.rfDiameter, p.Unmatched);
 
 % sRFcenter, sRFsurround and cellLocation are in units of the inputObj - scene pixels,
 % cones or bipolar cells.

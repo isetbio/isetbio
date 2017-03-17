@@ -97,7 +97,7 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(ir, mosaicInd)
+        function obj = rgcMosaic(ir, mosaicInd,varargin)
             %% Initialize an rgcMosaic for a particular cell type
             %
             %       initialize(obj, innerRetina, cellType)
@@ -118,7 +118,7 @@ classdef rgcMosaic < handle
             obj.cellType = mosaicInd;
             
             % Generate spatial RFs of the approrpiate size for the cell type and TEE
-            obj.rgcInitSpace(ir, mosaicInd); % Sets sRFcenter, sRFsurround
+            obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
             obj.rgcInitTime(ir);             % Sets tCenter/tSurround
             
             % We need the parameters in the parent often enough.  So put in
