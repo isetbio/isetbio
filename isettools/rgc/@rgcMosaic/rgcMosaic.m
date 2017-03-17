@@ -73,14 +73,16 @@ classdef rgcMosaic < handle
         tonicDrive;          
         
         %RFDIAMAGNITUDE for making movies of response
-        rfDiaMagnitude;      
+        % rfDiaMagnitude;      
         
         %RESPONSELINEAR Store the linear response after convolution
         responseLinear;     
         
         %RESPONSESPIKES Store the spike times of the responses
         responseSpikes;     
-
+        
+        %ELLIPSEMATRIX Store the parameters for the RGC sRF ellipses
+        ellipseMatrix;
     end
     
     properties (Access = public)
@@ -90,7 +92,7 @@ classdef rgcMosaic < handle
     
     % Private properties. Only methods of the parent class can set these
     properties(Access = private)
-        ellipseMatrix;
+        
     end
     
     %% Public methods

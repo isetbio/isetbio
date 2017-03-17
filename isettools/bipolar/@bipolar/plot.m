@@ -26,7 +26,7 @@ p.KeepUnmatched = true;
 % values along with key names.
 allowableFields = {...
     'response','responseCenter','responseSurround',...
-    'movieresponse', ...
+    'movieresponse','responseimage', ...
     'spatialrf','mosaic'};
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
@@ -34,7 +34,7 @@ p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields))
 p.parse(pType,varargin{:}); 
 
 %% Create window
-hdl = vcNewGraphWin([],'upperLeftBig');
+hdl = gcf;%vcNewGraphWin([],'upperLeftBig');
 
 sz = size(obj.responseCenter);
 
@@ -114,6 +114,14 @@ switch ieParamFormat(pType)
         xlabel('Time (sec)');
         ylabel('Response (AU)');
         title('Bipolar Mosaic Response');
+        
+    case{'responseimage'}
+        % bp.plot('response')
+        response = (obj.get('response'));
+        imagesc(mean(response,3));
+        xlabel('Time (sec)');
+        ylabel('Response (AU)');
+        title('Bipolar Mosaic Mean Response');
         
     case{'movieresponse'}
         % Pass the varargin along

@@ -87,6 +87,11 @@ properties(Access = private)
     coneType;
 end
 
+properties (Access = public)
+    %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
+    figureHandle;
+end
+
 % Public methods
 methods
     
@@ -143,7 +148,12 @@ methods
         
        
     end
- 
+    function window(obj)
+        obj.figureHandle = bipolarWindow(obj);
+        % Tip: Retrieve guidata using
+        %    gui = guidata(obj.figureHandle);
+        %
+    end
 end
 
 % methods (Static)
@@ -160,10 +170,8 @@ properties (Constant)
 end
 
 % Methods that must only be implemented (Abstract in parent class).
-methods (Access=public) 
-end
 
-% Methods may be called by the subclasses, but are otherwise private
+ % Methods may be called by the subclasses, but are otherwise private
 methods (Access = protected)
 end
 

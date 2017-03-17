@@ -1,5 +1,5 @@
-function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive, Qout] = ...
-    buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter,varargin)
+function [sRFcenter, sRFsurround, cellCenterLocations, tonicDrive, Qout] = ...
+    buildSpatialRFArray(patchSizeMeters, nRowBipolars, nColBipolars, rfDiameterMicrons, varargin)
 % Builds the spatial RF center and surround for the cells in a mosaic
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
@@ -18,14 +18,9 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 % Outputs: 
 %       spatialRFcenter cell array, 
 %       spatialRFsurround cell array,
-%       rfDiaMagnitude at 1 std, 
 %       cellCenterLocations cell array.
-%  
-%    WHAT IS TONIC DRIVE, and why is it here?
-%         Tonic drive is the bias or DC term for the linear output of the
-%         GLM. If the tonic drive term is greater than 0, then there is a
-%         baseline firing rate even when the stimulus input is zero. It was
-%         originally in the model and should not have been removed.
+%       tonicDrive cell array
+%           Tonic drive is the bias or DC term for the linear output of the GLM. 
 % 
 % Example:
 %   Build spatial RFs of the RGCs in this mosaic
@@ -39,23 +34,38 @@ function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDriv
 %% Manage parameters
 p = inputParser;
 p.addRequired('patchSize',@isscalar);
-p.addRequired('inRow',@isscalar);
-p.addRequired('inCol',@isscalar);
-p.addParameter('centerNoise',1.25,@isscalar);
-
-vFunc = @(x)(isvector(x) || isempty(x));
+p.addRequired('nRowBipolars',@isscalar);
+p.addRequired('nColBipolars',@isscalar);
+p.addRequired('rfDiameterMicrons',@isscalar);
+p.addParameter('centerNoise',1.25,@isscalar); % in units of nBipolars
+p.addParameter('baseLineFiringRate',2.2702,@isscalar); % JRG pulled from ON Parasol 2013_08_19_6
+vFunc = @(x)(ismatrix(x) || isempty(x));
 p.addParameter('ellipseParams',[],vFunc);  % A,B,rho
 
-p.parse(patchSize,inRow,inCol,varargin{:});
+p.parse(patchSizeMeters,nRowBipolars,nColBipolars,rfDiameterMicrons,varargin{:});
 
-centerNoise   = p.Results.centerNoise;  
-ellipseParams = p.Results.ellipseParams;  % (Major, Minor, Orientation)
+centerNoiseBipolars = p.Results.centerNoise;  
+ellipseParams       = p.Results.ellipseParams;  % (Major, Minor, Orientation)
+baseLineFiringRate  = p.Results.baseLineFiringRate;
+
+%% sRF Output Details
+% s_center   =   exp(-0.5 * (x-c)*Q * (x-c)') 
+% s_surround = k*exp(-0.5*r*(x-c)*Q*r*(x-c)') 
+
+% % Chichilnisky & Kalmar, 2002
+% Here x is a two-dimensional vector that specifies a spatial location, s(x)
+% indicates the sensitivity at that spatial location, c is a
+%  two-dimensional vector that specifies the midpoint of the RF, Q is a 2 x
+% 2 symmetric positive semi-definite matrix that specifies the elliptical
+% Gaussian shape of the RF center, k is a scalar that specifies the
+% relative strength of the surround, and 1/r is a scalar that specifies the
+% relative size of the surround.
 
 % Hard coded for now.  To eliminate.
 extent = 5;      % ratio between sampling size and spatial RF standard dev 
 r = 0.75;        % radius ratio between center and surround for DoG
 k = 1.032 * r;   % scaling of magnitude of surround
-baseLineFiringRate = 2.2702;   % JRG pulled from ON Parasol 2013_08_19_6
+  
 %%
 
 % I think JRG built this assuming the patch size referred to a region of
@@ -64,12 +74,14 @@ baseLineFiringRate = 2.2702;   % JRG pulled from ON Parasol 2013_08_19_6
 % Size of bipolar patch arrives in meters, which apparently is the width of
 % the patch.  We convert to microns and build up a height/width
 % representation (row,col)
-patchSize = patchSize * 1e6;                      % Column (width) in um
-patchSize = [patchSize*(inRow/inCol), patchSize]; % Row/Col in um
+patchSizeMicrons = patchSizeMeters * 1e6;                % Column (width) in um
+
+% Adjust aspect ratio of RGC array if bipolar mosaic is not square
+patchSizeMicronsXY = [patchSizeMicrons*(nRowBipolars/nColBipolars), patchSizeMicrons]; % Row/Col in um
 
 % Determine the number of RGC samples in the mosaic
-% patchSize: um; rfDiameter: um/RGC cell; nRGC: RGC cells 
-nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
+% patchSizeMicrons: um; rfDiameterMicrons: um/RGC cell; nRGC: RGC cells 
+nRGC = floor(patchSizeMicronsXY ./ rfDiameterMicrons); % number of RGCs in h, v direction
 
 % The rfDiameter comes here in units of um, and this 
 % converts the rf diameter to units of number of bipolars
@@ -77,38 +89,35 @@ nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 % patchSize: um, inCol: number bipolar cells
 % (patchSize(2) / inCol) : um/bipolar cell
 % rfDiameter out: number bipolar cells per RGC
-rfDiameter = rfDiameter / (patchSize(2) / inCol);
+rfDiameterBipolars = rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
-centerX = (0:2:nRGC(1)-1)*rfDiameter + centerNoise; % RGC center row coords in um
-centerY = (0:2:nRGC(2)-1)*rfDiameter - centerNoise; % RGC center col coords in um
+centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars + centerNoiseBipolars; % RGC center row coords in nBipolars
+centerY = (0:2:nRGC(2)-1)*rfDiameterBipolars - centerNoiseBipolars; % RGC center col coords in nBipolars
 rows = length(centerX); cols = length(centerY);     % number of RGCs
 
 % number bipolar cells out to the extent of the spatial RF
-pts = -extent*rfDiameter+1 : extent*rfDiameter;
+pts = -extent*rfDiameterBipolars+1 : extent*rfDiameterBipolars;
 
 %% Create spatial RFs
 % offset for zero centering in number of bipolars
-centerCorrectY = (centerY(end) - (centerY(1)))/2; % um
-centerCorrectX = (centerX(end) - (centerX(1)))/2; % um
+centerCorrectY = (centerY(end) - (centerY(1)))/2; % nBipolars
+centerCorrectX = (centerX(end) - (centerX(1)))/2; % nBipolars
 
 % pre-allocate space
 cellCenterLocations = cell(rows, cols);
 spatialRFArray      = cell(rows, cols);
 sRFcenter           = cell(rows, cols);
 sRFsurround         = cell(rows, cols);
-% spatialRFonedim     = cell(rows, cols);
-% spatialRFFill       = cell(rows, cols);
-rfDiaMagnitude      = cell(rows, cols);
 tonicDrive          = cell(rows, cols);
 
-
-% s_center   =   exp(-0.5*(x-c)*Q*(x-c)') 
-% s_surround = k*exp(-0.5*(x-c)*Q*(x-c)') 
-
 %% Set the tonic drive
-for ii = 1 : cols
-    for jj = 1 : rows
+% Tonic drive is the bias or DC term for the linear output of the
+% GLM. If the tonic drive term is greater than 0, then there is a
+% baseline firing rate even when the stimulus input is zero.
+% Units of conditional intensity
+for ii = 1 : rows
+    for jj = 1 : cols
         tonicDrive{ii,jj} = baseLineFiringRate; % from ON Parasol 2013_08_19_6
     end
 end
@@ -120,42 +129,47 @@ end
 % Compute the variation in the center position for every cell
 % This could flip the position occasionally.  We were using
 % rand(row,col)*2 - 1 to guarantee no flips.
-centerNoiseRow = centerNoise*(randn(rows,cols));
-centerNoiseCol = centerNoise*(randn(rows,cols));
+centerNoiseBipolarsRow = centerNoiseBipolars*(randn(rows,cols));
+centerNoiseBipolarsCol = centerNoiseBipolars*(randn(rows,cols));
 
-Qout = cell(cols,rows); 
-for ii = 1 : cols
-    for jj = 1 : rows
+Qout = cell(rows,cols); 
+for ii = 1 : rows
+    for jj = 1 : cols
         
         % Compute 2D spatial RF
         
         % Specify centers in um, offset even rows for hexagonal packing
         % Add some jitter to the center positions.  The size of the jitter
-        % is the parameter centerNoise
-        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + centerNoiseRow(ii,jj);
-        jc = centerY(jj) + centerNoiseCol(ii,jj); 
+        % is the parameter centerNoiseBipolars
+        ic = centerX(ii) + centerNoiseBipolarsRow(ii,jj) - (mod(jj, 2) - 0.5) * rfDiameterBipolars;
+        jc = centerY(jj) + centerNoiseBipolarsCol(ii,jj); 
    
         % Add some noise to deviate from circularity 
         % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
         % d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
         % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-
+        
+        % Get ellipse parameters 
         D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
         angleRot = 180*(rand(1,1)-.5);
+%         ellipseParams = ellipseGen(cols,rows);
         if isempty(ellipseParams)
-            ellipseParameters = [(1/rfDiameter)^2*D,angleRot];
+            ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
+        elseif size(ellipseParams,1)==1
+            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2), ellipseParams(3)];
         else
-            ellipseParameters = [(1/rfDiameter)^2*ellipseParams(1:2), ellipseParams(3)];
+            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams{ii,jj}(1:2), ellipseParams{ii,jj}(3)];
         end
-        Qe = ellipseQuadratic(ellipseParameters); Q = (1/rfDiameter^2)*Qe./norm(Qe);
+        Qe = ellipseQuadratic(ellipseParameters); Q = (1/rfDiameterBipolars^2)*Qe./norm(Qe);
         
         % ieShape('ellipse','ellipseParameters',[diag(Qe)'./norm(diag(Qe)),angleRot]);
         
-        % Calculate values for input to DoG function in an efficient way
-        [i2, j2] = meshgrid(ic+pts, jc+pts); % um
-        i = i2(:); j = j2(:);                % um
+        % Calculate (x,y) values for input to DoG function in an efficient way
+        [i2, j2] = meshgrid(pts, pts); % nBipolars
+        i = i2(:); j = j2(:);          % nBipolars
+        IJ = [i j];
         
-        IJ = bsxfun(@minus,[i j],[ic jc]); % um
+        % Scale by the r and Q
         QIJ = Q*IJ'; rQIJ = r*Q*IJ';       % unitless
         %  icrm = repmat([ic jc],length(i),1);
         
@@ -169,47 +183,13 @@ for ii = 1 : cols
         so_surround = reshape(k*exp(-0.5*p2), size(i2));
         so = so_center - so_surround;
         
-        %         %% Vectors (1D) instead of matrices (2D)
-        %         % conditional intensity, related by Poisson firing to spikes/sec
-        %         sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2);
-        %         sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
-        %         sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2);
-        %         sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);
-        %
-        %         % Store calculated parameters, units of conditional intensity
-        cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY]; % um
+        % Store calculated parameters, units of conditional intensity
+        cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY]; % nBipolars
         spatialRFArray{ii,jj} = so;
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
-        %
-        %         % units of conditional intensity
-        %         spatialRFonedim{ii,jj} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
-        %
-        %         %% Measure contour at 1 SD
-        %         % Choose random orientation of asymmetrical RF to measure 1 SD
-        %         % magnitude
-        %         xv = rand(1,2);
-        %         xvn = rfDiameter * xv./norm(xv);
-        %         x1 = xvn(1); y1 = xvn(2);
-        %
-        %         % Do some calculations to make plots where RFs are filled in
-        %         % Measure magnitude at 1 SD from center
-        %         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        %         % Find components of RF over that magnitude and store
-        %         spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
-        %         rfDiaMagnitude{ii,jj,1} = magnitude1STD;
-        %
-        %         % clear cc
-        %         magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        %
-        %         rfDiaMagnitude{ii,jj,2} = magnitude1STD;
-        %
-        %% Set tonic drive
-        % Tonic drive is the bias or DC term for the linear output of the
-        % GLM. If the tonic drive term is greater than 0, then there is a
-        % baseline firing rate even when the stimulus input is zero.
-        % Units of conditional intensity
-        Qout{ii,jj}       = ellipseParameters;
+
+        Qout{ii,jj} = ellipseParameters;
     end
 end
 
