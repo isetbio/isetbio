@@ -1,6 +1,6 @@
 function [sRFcenter, sRFsurround, rfDiaMagnitude, cellCenterLocations, tonicDrive, Qout] = ...
     buildSpatialRFArray(patchSize, inRow, inCol, rfDiameter,varargin)
-% Builds the spatial RF center and surround for the cells in 
+% Builds the spatial RF center and surround for the cells in a mosaic
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
 % bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
@@ -42,18 +42,20 @@ p.addRequired('patchSize',@isscalar);
 p.addRequired('inRow',@isscalar);
 p.addRequired('inCol',@isscalar);
 p.addParameter('centerNoise',1.25,@isscalar);
-p.addParameter('ellipseParams',[],@isvector);  % A,B,rho
+
+vFunc = @(x)(isvector(x) || isempty(x));
+p.addParameter('ellipseParams',[],vFunc);  % A,B,rho
 
 p.parse(patchSize,inRow,inCol,varargin{:});
 
-centerNoise = p.Results.centerNoise;
-ellipseParams = p.Results.ellipseParams;
+centerNoise   = p.Results.centerNoise;  
+ellipseParams = p.Results.ellipseParams;  % (Major, Minor, Orientation)
 
 % Hard coded for now.  To eliminate.
-extent = 5;    % ratio between sampling size and spatial RF standard dev 
+extent = 5;      % ratio between sampling size and spatial RF standard dev 
 r = 0.75;        % radius ratio between center and surround for DoG
 k = 1.032 * r;   % scaling of magnitude of surround
-
+baseLineFiringRate = 2.2702;   % JRG pulled from ON Parasol 2013_08_19_6
 %%
 
 % I think JRG built this assuming the patch size referred to a region of
@@ -77,7 +79,7 @@ nRGC = floor(patchSize ./ rfDiameter); % number of rgc in h, v direction
 % rfDiameter out: number bipolar cells per RGC
 rfDiameter = rfDiameter / (patchSize(2) / inCol);
 
-% centers of receiptive fields
+% centers of receptive fields
 centerX = (0:2:nRGC(1)-1)*rfDiameter + centerNoise; % RGC center row coords in um
 centerY = (0:2:nRGC(2)-1)*rfDiameter - centerNoise; % RGC center col coords in um
 rows = length(centerX); cols = length(centerY);     % number of RGCs
@@ -95,32 +97,50 @@ cellCenterLocations = cell(rows, cols);
 spatialRFArray      = cell(rows, cols);
 sRFcenter           = cell(rows, cols);
 sRFsurround         = cell(rows, cols);
-spatialRFonedim     = cell(rows, cols);
-spatialRFFill       = cell(rows, cols);
+% spatialRFonedim     = cell(rows, cols);
+% spatialRFFill       = cell(rows, cols);
 rfDiaMagnitude      = cell(rows, cols);
 tonicDrive          = cell(rows, cols);
+
 
 % s_center   =   exp(-0.5*(x-c)*Q*(x-c)') 
 % s_surround = k*exp(-0.5*(x-c)*Q*(x-c)') 
 
-% create spatial RFs for each cell
-for ii = 1 : length(centerX)
-    for jj = 1 : length(centerY)
+%% Set the tonic drive
+for ii = 1 : cols
+    for jj = 1 : rows
+        tonicDrive{ii,jj} = baseLineFiringRate; % from ON Parasol 2013_08_19_6
+    end
+end
+
+%% Create spatial RFs for each cell
+%  Effectively creates ellipse quadratic, 
+%  Center positions and general sRF() receptive field weightings functions
+
+% Compute the variation in the center position for every cell
+% This could flip the position occasionally.  We were using
+% rand(row,col)*2 - 1 to guarantee no flips.
+centerNoiseRow = centerNoise*(randn(rows,cols));
+centerNoiseCol = centerNoise*(randn(rows,cols));
+
+Qout = cell(cols,rows); 
+for ii = 1 : cols
+    for jj = 1 : rows
         
-        %% Compute 2D spatial RF
+        % Compute 2D spatial RF
         
         % Specify centers in um, offset even rows for hexagonal packing
         % Add some jitter to the center positions.  The size of the jitter
         % is the parameter centerNoise
-        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + 1*centerNoise*(2*rand(1,1)-1);
-        jc = centerY(jj) + 1*centerNoise*(2*rand(1,1)-1);
+        ic = centerX(ii) - (mod(jj, 2) - 0.5) * rfDiameter + centerNoiseRow(ii,jj);
+        jc = centerY(jj) + centerNoiseCol(ii,jj); 
    
         % Add some noise to deviate from circularity 
         % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
         % d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
         % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
 
-        D = abs([.1*randn(1,2)+.5]);%(eye(2)*.2*(rand(2,1)-.5))'; 
+        D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
         angleRot = 180*(rand(1,1)-.5);
         if isempty(ellipseParams)
             ellipseParameters = [(1/rfDiameter)^2*D,angleRot];
@@ -149,48 +169,47 @@ for ii = 1 : length(centerX)
         so_surround = reshape(k*exp(-0.5*p2), size(i2));
         so = so_center - so_surround;
         
-        %% Vectors (1D) instead of matrices (2D)        
-        % conditional intensity, related by Poisson firing to spikes/sec
-        sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2);
-        sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
-        sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2);
-        sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);       
-        
-        % Store calculated parameters, units of conditional intensity
+        %         %% Vectors (1D) instead of matrices (2D)
+        %         % conditional intensity, related by Poisson firing to spikes/sec
+        %         sx_cent = exp(-0.5*Q(1,1)*(0+pts).^2);
+        %         sy_cent = exp(-0.5*Q(2,2)*(0+pts).^2);
+        %         sx_surr = sqrt(k)*exp(-0.5*Q(1,1)*r*(0+pts).^2);
+        %         sy_surr = sqrt(k)*exp(-0.5*Q(2,2)*r*(0+pts).^2);
+        %
+        %         % Store calculated parameters, units of conditional intensity
         cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY]; % um
         spatialRFArray{ii,jj} = so;
         sRFcenter{ii,jj} = so_center;
-        sRFsurround{ii,jj} = so_surround;        
-
-        % units of conditional intensity
-        spatialRFonedim{ii,jj} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
-        
-        %% Measure contour at 1 SD
-        % Choose random orientation of asymmetrical RF to measure 1 SD
-        % magnitude
-        xv = rand(1,2);
-        xvn = rfDiameter * xv./norm(xv);
-        x1 = xvn(1); y1 = xvn(2);
-               
-        % Do some calculations to make plots where RFs are filled in
-        % Measure magnitude at 1 SD from center
-        magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        % Find components of RF over that magnitude and store
-        spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
-        rfDiaMagnitude{ii,jj,1} = magnitude1STD;        
-        
-        % clear cc
-        magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);       
-        
-        rfDiaMagnitude{ii,jj,2} = magnitude1STD;
-        
+        sRFsurround{ii,jj} = so_surround;
+        %
+        %         % units of conditional intensity
+        %         spatialRFonedim{ii,jj} = [(sx_cent - sx_surr); (sy_cent - sy_surr)];
+        %
+        %         %% Measure contour at 1 SD
+        %         % Choose random orientation of asymmetrical RF to measure 1 SD
+        %         % magnitude
+        %         xv = rand(1,2);
+        %         xvn = rfDiameter * xv./norm(xv);
+        %         x1 = xvn(1); y1 = xvn(2);
+        %
+        %         % Do some calculations to make plots where RFs are filled in
+        %         % Measure magnitude at 1 SD from center
+        %         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1]);% - k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+        %         % Find components of RF over that magnitude and store
+        %         spatialRFFill{ii,jj}  = find(abs(so_center)>magnitude1STD);
+        %         rfDiaMagnitude{ii,jj,1} = magnitude1STD;
+        %
+        %         % clear cc
+        %         magnitude1STD = k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+        %
+        %         rfDiaMagnitude{ii,jj,2} = magnitude1STD;
+        %
         %% Set tonic drive
         % Tonic drive is the bias or DC term for the linear output of the
         % GLM. If the tonic drive term is greater than 0, then there is a
         % baseline firing rate even when the stimulus input is zero.
         % Units of conditional intensity
-        tonicDrive{ii,jj} = 2.2702; % from ON Parasol 2013_08_19_6
-        Qout{ii,jj} =ellipseParameters;
+        Qout{ii,jj}       = ellipseParameters;
     end
 end
 
