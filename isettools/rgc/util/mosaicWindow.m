@@ -22,7 +22,7 @@ function varargout = mosaicWindow(varargin)
 
 % Edit the above text to modify the response to help mosaicWindow
 
-% Last Modified by GUIDE v2.5 05-Mar-2017 11:04:17
+% Last Modified by GUIDE v2.5 17-Mar-2017 17:31:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -167,16 +167,7 @@ switch str
 
     case 'Spike mean (image)'
         handles.rgcMosaic.plot('spike mean image');
-         
-    case 'Linear plot'
-        disp(str)        
-        responseLinear = handles.rgcMosaic.get('responseLinear');
-        plot(RGB2XWFormat(responseLinear)');
-        
-    case 'PSTH plot'
-        % Plots the psth of all the cells combined.  Kind of weird.
-        handles.rgcMosaic.plot('psth');
-        
+                         
     case 'PSTH movie'
         % PSTH movie shows all the cells as a PSTH
         responsePsth = handles.rgcMosaic.get('psth');
@@ -186,10 +177,6 @@ switch str
         
         % We might build in the movie control parameters as cone mosaic
         ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
-        
-    case 'PSTH mean (image)'
-        % This is odd.  Maybe it should exist.
-        handles.rgcMosaic.plot('psth mean image');
         
     otherwise
         error('Unknown string %s\n',str);
@@ -212,6 +199,7 @@ end
 end
 
 
+% Plot Menu
 % --------------------------------------------------------------------
 function menuPlotPSTH_Callback(hObject, eventdata, handles)
 % Plot | PSTH
@@ -219,14 +207,42 @@ function menuPlotPSTH_Callback(hObject, eventdata, handles)
 % hObject    handle to menuPlotPSTH (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp('Plot | PSTH')
+% disp('Plot | PSTH')
+    
+% Plots the psth of all the cells combined.  Kind of weird.
+rgcMosaic = handles.rgcMosaic;
+timeStep  = rgcMosaic.dt;
+psth      = rgcMosaic.get('psth');
+resp      = RGB2XWFormat(psth);    % Each cell is in a row
+
+vcNewGraphWin;
+plot(timeStep*(1:size(resp,2)),resp');
+grid on;
+xlabel('Time (sec)');
+ylabel(sprintf('Spikes per %d ms',timeStep*1e3));
+
 end
 
 % --------------------------------------------------------------------
-function menFileSave_Callback(hObject, eventdata, handles)
+function menuLinearPreSpike_Callback(hObject, eventdata, handles)
+% hObject    handle to menuLinearPreSpike (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Plots the psth of all the cells combined.  Kind of weird.
+responseLinear = handles.rgcMosaic.get('responseLinear');
+
+vcNewGraphWin;
+plot(RGB2XWFormat(responseLinear)');       
+
+end
+
+% File Menu
+% --------------------------------------------------------------------
+function menuFileSave_Callback(hObject, eventdata, handles)
 % File | Save
 %
-% hObject    handle to menFileSave (see GCBO)
+% hObject    handle to menuFileSave (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 disp('Save')
@@ -273,11 +289,11 @@ switch(str)
         gdata.rgcMosaic.plot('spike mean image');
     case 'PSTH mean (image)'
         gdata.rgcMosaic.plot('psth mean image');
-    case 'PSTH plot'
-        gdata.rgcMosaic.plot('psth');
+%     case 'PSTH plot'
+%         gdata.rgcMosaic.plot('psth');
     case 'Linear movie'
         gdata.rgcMosaic.plot('linear movie');        
-    case 'Spoke movie'
+    case 'Spike movie'
         gdata.rgcMosaic.plot('spike movie');
     case 'PSTH movie'
         %

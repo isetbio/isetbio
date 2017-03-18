@@ -8,8 +8,8 @@
 %% Initialize parameters
 
 % Initialize parameters of simulated retinal patch
-ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
-fov = 2;            % Scene Field of view in degrees
+ecc = [0,0]*1e-3;    % Cone mosaic eccentricity in meters from fovea
+fov = 1;             % Scene Field of view in degrees
 emLength = 100;      % Eye movement frames
 
 cellType = 'on parasol';
@@ -103,6 +103,7 @@ nTrials = 1; innerRetina = irSet(innerRetina,'numberTrials',nTrials);
 %% Compute the inner retina response
 
 innerRetina = irCompute(innerRetina, bp); 
+innerRetina.mosaic{1}.window;
 
 %% Make the PSTH movie
 innerRetina.mosaic{1}.set('dt',1);
@@ -127,3 +128,5 @@ subplot(121);
 oiShowImage(oi);
 subplot(122);
 imagesc(mean(psth,3)); axis image
+
+%%
