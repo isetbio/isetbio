@@ -1,5 +1,5 @@
 function varargout = bipolarWindow(varargin)
-% BIPOLARWINDOW MATLAB code for bipolarWindow.fig
+% BIPOLARWINDOW MATLAB code for bipolarwindow.fig
 %      BIPOLARWINDOW, by itself, creates a new BIPOLARWINDOW or raises the existing
 %      singleton*.
 %
@@ -20,9 +20,9 @@ function varargout = bipolarWindow(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help bipolarWindow
+% Edit the above text to modify the response to help bipolarwindow
 
-% Last Modified by GUIDE v2.5 17-Mar-2017 16:19:31
+% Last Modified by GUIDE v2.5 18-Mar-2017 13:28:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -44,13 +44,13 @@ end
 % End initialization code - DO NOT EDIT
 end
 
-% --- Executes just before bipolarWindow is made visible.
+% --- Executes just before bipolarwindow is made visible.
 function bipolarWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to bipolarWindow (see VARARGIN)
+% varargin   command line arguments to bipolarwindow (see VARARGIN)
 
 % check inputs and get the bipolar object
 if isempty(varargin) || ~isa(varargin{1}, 'bipolar')
@@ -59,7 +59,7 @@ end
 bp = varargin{1};
 bp.figureHandle = hObject;   % Store this figure handle
 
-% Choose default command line output for bipolarWindow
+% Choose default command line output for bipolarwindow
 handles.output = hObject;
 handles.bipolar = varargin{1};
 % handles.spikesMovie = [];  % spike movie
@@ -67,8 +67,8 @@ handles.bipolar = varargin{1};
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes bipolarWindow wait for user response (see UIRESUME)
-% uiwait(handles.bipolarWindow);
+% UIWAIT makes bipolarwindow wait for user response (see UIRESUME)
+% uiwait(handles.bipolarwindow);
 
 % Refresh/Initialize window information
 bipolarWindowRefresh(handles);
@@ -145,11 +145,12 @@ str = contents{get(hObject,'Value')};
 
 % Clear the axis in the image
 cla
+g = str2double(get(handles.editGamma,'string'));
 
 switch str
 
     case 'Bipolar mean (image)'
-        handles.bipolar.plot('response image');
+        handles.bipolar.plot('response image','gamma',g);
          
     case 'Bipolar plot'
         handles.bipolar.plot('response');
@@ -221,7 +222,7 @@ end
 function bipolarWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
-bp  = handles.bipolar;
+bp    = handles.bipolar;
 fig   = figure(bp.figureHandle);
 gdata = guidata(fig);
 
@@ -232,29 +233,22 @@ cla(gdata.axisResponse,'reset');
 % Selected string in the popup
 contents = cellstr(get(gdata.popupResponseSelect,'String'));
 str = contents{get(gdata.popupResponseSelect,'Value')};
+
+g = str2double(get(handles.editGamma,'string'));
+
 switch(str)
     case 'Bipolar mean (image)'
-        gdata.bipolar.plot('response image');
-         
-    case 'Bipolar plot'
-        gdata.bipolar.plot('response');
-        
+        gdata.bipolar.plot('response image','gamma',g);
+        colorbar;
     case 'Bipolar movie'
-        gdata.bipolar.plot('movieResponse');
-        
+        gdata.bipolar.plot('movieResponse','gamma',g);
     otherwise
         error('Unknown plot type %s\n',str);
 end
 
-% % Make a button for rfOverlay
-% rfOverlay = false;
-% if rfOverlay
-%     bp.plot('mosaic');
-% end
-
-% % Text description
-% str = bp.describe;
-% set(gdata.bipolarProperties,'string',str);
+% Text description
+str = bp.describe;
+set(gdata.txtBipolarProperties,'string',str);
 
 end
 
@@ -288,4 +282,28 @@ function sliderMovieProgress_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+end
+
+% --- Executes during object creation, after setting all properties.
+function editGamma_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editGamma (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+% --- Edit gamma for display.
+function editGamma_Callback(hObject, eventdata, handles)
+% hObject    handle to editGamma (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editGamma as text
+%        str2double(get(hObject,'String')) returns contents of editGamma as a double
+bipolarWindowRefresh(handles)
+%
 end

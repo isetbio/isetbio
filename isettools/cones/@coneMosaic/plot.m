@@ -99,8 +99,25 @@ switch ieParamFormat(pType)
     
     % ----   Images
     case 'conemosaic'
+        % Default for cone size
+        support = [4,4]; spread = 2; maxCones = 5e4;
+
+        % Speed things up
+        nCones = size(obj.coneLocs,1);
+        locs = obj.coneLocs; pattern = obj.pattern(:);
+        if  nCones > maxCones;
+            disp('Displaying subsampled (50K) version')
+            lst = randi(nCones,[maxCones,1]);
+            lst = unique(lst);
+            locs = locs(lst,:); pattern = pattern(lst,:);
+
+            % Brighten up in this case
+            support = round([nCones/maxCones,nCones/maxCones]); 
+            spread = 2*support(1);
+        end
+        
         [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
-            conePlot(obj.coneLocs * 1e6, obj.pattern);
+            conePlot(locs * 1e6, pattern, support, spread);
         imagesc(uData.mosaicImage); axis off; axis image;
     case 'meanabsorptions'
         % title('Mean number of absorptions');

@@ -276,6 +276,8 @@ set(handles.popupImageType, 'String', str);
 switch plotType
     case 'Cone mosaic'
         % cone mosaic image
+        % TODO:  For large mosaics, the computation is slow.  We should
+        % compute it once and store it.
         cm.plot('cone mosaic', 'hf', handles.axes2);
 
         resetMovieControl(handles,'off');

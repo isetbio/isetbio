@@ -9,7 +9,7 @@
 
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;    % Cone mosaic eccentricity in meters from fovea
-fov = 1;             % Scene Field of view in degrees
+fov = 3;             % Scene Field of view in degrees
 emLength = 100;      % Eye movement frames
 
 cellType = 'on parasol';
@@ -36,9 +36,10 @@ data = rdt.readArtifact('City_pinhole_7', 'type', 'mat');
 s = sceneCreate();
 
 % Hack to make reflectance about the right range
+sFactor = 2.5;
 ill = illuminantCreate('d65');
 mx = max(data.multispectralImage(:));
-data.multispectralImage = (data.multispectralImage/mx)*max(ill.data.photons(:))*2;
+data.multispectralImage = (data.multispectralImage/mx)*max(ill.data.photons(:))*sFactor;
 
 s = sceneSet(s,'photons',data.multispectralImage);
 s = sceneSet(s,'fov',fov);
@@ -68,6 +69,7 @@ cMosaic.emGenSequence(emLength);
 
 % Compute and show
 cMosaic.compute(oi);
+%
 cMosaic.computeCurrent();
 
 % Show the window
