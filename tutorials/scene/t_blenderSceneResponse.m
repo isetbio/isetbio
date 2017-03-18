@@ -10,7 +10,7 @@
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;   % Cone mosaic eccentricity in meters from fovea
 fov = 2;            % Scene Field of view in degrees
-emLength = 40;     % Eye movement frames
+emLength = 100;      % Eye movement frames
 
 cellType = 'on parasol';
 % cellType = 'off midget';
@@ -33,35 +33,40 @@ data = rdt.readArtifact('City_pinhole_7', 'type', 'mat');
 
 %% Build a scene and oi for computing
 
-s = sceneCreate('multispectral');
+s = sceneCreate();
+
+% Hack to make reflectance about the right range
+ill = illuminantCreate('d65');
+mx = max(data.multispectralImage(:));
+data.multispectralImage = (data.multispectralImage/mx)*max(ill.data.photons(:))*2;
 
 s = sceneSet(s,'photons',data.multispectralImage);
-s = sceneSet(s,'illuminant',[400:10:700]);
 s = sceneSet(s,'fov',fov);
-% s = sceneAdjustLuminance(s,10);
-vcAddObject(s);
+s = sceneSet(s,'illuminant',ill);
 
+s = sceneAdjustLuminance(s,100);
+vcAddObject(s); sceneWindow;
+
+%%
 oi = oiCreate;
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
 
 %% Build a default cone mosaic and compute the OI
+%
+% if osFlag % osBioPhys
+%     osCM = osBioPhys();
+%     cMosaic = coneMosaic('center',[0 0]*1e-3,'os',osCM);  % Create the object
+% else      % osLinear
+%         cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
+% end
 
-if osFlag % osBioPhys
-    osCM = osBioPhys(); 
-    cMosaic = coneMosaic('center',[0 0]*1e-3,'os',osCM);  % Create the object
-else      % osLinear
-    cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
-end
-
-
-% % Set cone mosaic size
-
-% cMosaic.rows = 50; cMosaic.cols = 60;
-cMosaic.rows = 100; cMosaic.cols = 120;
-% cMosaic.rows = 144; cMosaic.cols = 176;
+cMosaic = coneMosaic('center',[0 0]*1e-3);  % Create the object
+cMosaic.integrationTime = 0.005;            % Five ms integration time
+cMosaic.setSizeToFOV(fov*1.1);              % A little bigger for eye move
 cMosaic.emGenSequence(emLength);
 
+% Compute and show
 cMosaic.compute(oi);
 cMosaic.computeCurrent();
 
@@ -77,6 +82,8 @@ bp = bipolar(cMosaic);
 bp.set('sRFcenter',10);
 bp.set('sRFsurround',0);
 bp.compute(cMosaic);
+bp.window;
+
 
 %% Set other RGC mosaic parameters
 
