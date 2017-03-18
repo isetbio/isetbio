@@ -9,13 +9,12 @@
 
 % Initialize parameters of simulated retinal patch
 ecc = [0,0]*1e-3;    % Cone mosaic eccentricity in meters from fovea
-fov = 3;             % Scene Field of view in degrees
-emLength = 100;      % Eye movement frames
+fov = 2;             % Scene Field of view in degrees
+emLength = 20;      % Eye movement frames
 
 cellType = 'on parasol';
 % cellType = 'off midget';
 
-osFlag  = 0;        % 0 for osLinear, 1 for osBioPhys
 %% Save hyperspectral scene to RDT
 
 % rd = RdtClient('isetbio');
