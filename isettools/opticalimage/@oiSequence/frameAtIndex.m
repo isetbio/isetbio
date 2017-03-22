@@ -26,8 +26,16 @@ end
 
 if (strcmp(obj.composition, 'add'))
     retinalPhotons = fixedPhotons + obj.modulationFunction(index)*modulatedPhotons;
-else
+elseif (strcmp(obj.composition, 'blend'))
     retinalPhotons = fixedPhotons*(1-obj.modulationFunction(index)) + obj.modulationFunction(index)*modulatedPhotons;
+elseif (strcmp(obj.composition, 'xor'))
+    if (obj.modulationFunction(index) == 0)
+        retinalPhotons = fixedPhotons;
+    else
+        retinalPhotons = obj.modulationFunction(index)*modulatedPhotons;
+    end
+else
+    error('Unknown oiSequence composition: ''%s''.', obj.composition);
 end
 
 if (~isnan(obj.modulationRegion.radiusInMicrons))
