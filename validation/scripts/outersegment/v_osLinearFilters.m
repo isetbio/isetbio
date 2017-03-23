@@ -18,8 +18,11 @@ oiTimeAxis = 0:stimulusSamplingInterval:0.1;   % 0.1 seconds
 oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
 
 FOV = 1.0;
-backgroundLuminances = [30 100 300]; 
-osTimeSteps = [0.01 0.1 1.0]/1000;
+% Valid range of background luminances - result in 500 - 20,0000 isomerizations/cone/second
+% regime where photocurrent model was developed on
+
+backgroundLuminances = [3.3]; 
+osTimeSteps = [0.1]/1000;
 
 % Compute the stimulus modulation function
 stimulusRampTau = 180/1000;
@@ -32,7 +35,7 @@ theOI = oiGenerate(noOptics);
 
 % Generate a cone mosaic with 1 L-, 1 M-, and 1 S-cone only
 mosaicSize =  nan;                    
-integrationTime = 0.1/1000;            
+integrationTime = 2.5/1000;            
 photonNoise = 'none';                                        
 osNoise = 'none';                        
 theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeSteps(1));
@@ -55,14 +58,17 @@ for iLum = 1:numel(backgroundLuminances)
     for iStepIndex = 1:numel(osTimeSteps)
         theConeMosaic.os.timeStep = osTimeSteps(iStepIndex);
         % Compute all instances 
-        [~, ~, LMSfilters{iLum, iStepIndex}] = ...
+        [abosptionCountsPerIntegrationTime, ~, LMSfilters{iLum, iStepIndex}] = ...
             theConeMosaic.computeForOISequence(theOIsequence, ...
             'emPaths', emPaths, ...
             'currentFlag', true);
+
+         isomerizationsPerSecond = max(abosptionCountsPerIntegrationTime(:)) / theConeMosaic.integrationTime;
+         [backgroundLuminances(iLum) isomerizationsPerSecond 500 20000]
     end % iStepIndex
 end
 
-filterTimeAxis = (1:size(LMSfilters{1,1},1))*theConeMosaic.integrationTime;
+filterTimeAxis = theConeMosaic.interpFilterTimeAxis;
 
 % Unit test validation data
 UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_osLinearFilters *****');

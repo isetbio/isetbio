@@ -58,32 +58,25 @@ cMosaic.emPositions = zeros(nTemporalSamples,2);
 %
 % Compare to previously generated values with fractional tolerance.
 cMosaic.compute(oiImpulse);
-sumA = sum(cMosaic.absorptions(:));
-v = 5.0436e+06;
-test = (sumA - v)/v;
-UnitTest.assertIsZero(test,'Total absorptions test',tolerance);
 
 %% Compute the current and get the interpolated filters
 %
 % No noise, compute the filters
 cMosaic.os.noiseFlag = 'none';
 interpFilters = cMosaic.computeCurrent;
-sumF = sum(interpFilters(:));
-test = (sumF - 1.7051)/sumF;
-UnitTest.assertIsZero(test,'Linear filters test',tolerance);
 
-% and then the photocurrent and compare to previously generated value with
-% fractional tolerance
-sumC = sum(cMosaic.current(:));
-test = (sumC - -9.5823e+06)/sumC;
-UnitTest.assertIsZero(test,'Photocurrent test',tolerance);
-
+%% Save validation data
+absorptions = cMosaic.absorptions;
+photocurrents = cMosaic.current;
+UnitTest.validationData('absorptions', absorptions);
+UnitTest.validationData('photocurrents', photocurrents);
+UnitTest.validationData('interpFilters', interpFilters );
 
 %% Visually compare the interpolated and complete impulse response functions.
 if (runTimeParams.generatePlots)
     cMosaic.plot('os impulse response');
     hold on;
-    plot(cMosaic.timeAxis, interpFilters,'o');
+    plot(cMosaic.interpFilterTimeAxis, interpFilters,'o');
     grid on; xlabel('Time (sec)');
 end
 

@@ -88,10 +88,9 @@ if isempty(interpFilters) || isempty(meanCur)
     % obj.plot('current filters','meancurrent',meanCur)
     
     %% Interpolate the stored lmsFilters to the time base of the absorptions
-    
-    absTimeAxis   = cMosaic.timeAxis;
     osTimeAxis    = obj.timeAxis;
-    interpFilters = zeros(tSamples,3);
+    absTimeAxis   = cMosaic.interpFilterTimeAxis;
+    interpFilters = zeros(numel(absTimeAxis),3);
     for ii=1:3
         % Interpolation assumes that we are accounting for the time sample bin
         % width elsewhere.  Also, we extrapolate the filters with zeros to make

@@ -56,9 +56,9 @@ if ~isempty(varargin)
                     UnitTest.setPref('verbosity',val);
                 case 'numerictolerance'
                     UnitTest.setPref('numericTolerance', val);
-                case 'graphMismatchedData'
+                case 'graphmismatcheddata'
                     UnitTest.setPref('graphMismatchedData', val);
-                case 'generatePlots'
+                case 'generateplots'
                     UnitTest.setPref('generatePlots',  val);
                 case 'dofullandfastvalidation'
                     if val
