@@ -151,12 +151,13 @@ for ii = 1 : rows
         
         % Get ellipse parameters 
         D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
+        D = D./norm(D);
         angleRot = 180*(rand(1,1)-.5);
 %         ellipseParams = ellipseGen(cols,rows);
         if isempty(ellipseParams)
             ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
         elseif size(ellipseParams,1)==1
-            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2), ellipseParams(3)];
+            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
         else
             ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams{ii,jj}(1:2), ellipseParams{ii,jj}(3)];
         end
@@ -188,6 +189,13 @@ for ii = 1 : rows
         spatialRFArray{ii,jj} = so;
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
+        
+%         % Do some calculations to make plots where RFs are filled in
+%         % Measure magnitude at 1 SD from center
+%         xv = [1 0];%rand(1,2);
+%         xvn = rfDiameterBipolars * xv./norm(xv);
+%         x1 = xvn(1); y1 = xvn(2);
+%         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
 
         Qout{ii,jj} = ellipseParameters;
     end
