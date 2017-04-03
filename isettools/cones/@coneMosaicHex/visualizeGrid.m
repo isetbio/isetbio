@@ -21,7 +21,7 @@ p = inputParser;
 p.addParameter('generateNewFigure', false, @islogical);
 p.addParameter('panelPosition', [1 1]);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
-p.addParameter('visualizedConeAperture', 'lightCollectingArea', @ischar);
+p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);

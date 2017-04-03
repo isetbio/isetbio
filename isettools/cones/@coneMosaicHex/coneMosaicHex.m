@@ -98,6 +98,9 @@ classdef coneMosaicHex < coneMosaic
         % Change the FOV of the mosaic
         setSizeToFOVForHexMosaic(obj,fov);
         
+        % Change the cone identities according to arguments passed in varargin
+        reassignConeIdentities(obj, varargin)
+        
         % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
         resampleGrid(obj, resamplingFactor);
         

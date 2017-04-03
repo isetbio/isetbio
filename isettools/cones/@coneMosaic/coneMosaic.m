@@ -474,6 +474,16 @@ classdef coneMosaic < hiddenHandle
             val = (0:1:(obj.tSamples-1)) * obj.integrationTime;
         end
         
+        function val = interpFilterTimeAxis(obj)
+            osTimeAxis = obj.os.timeAxis;
+            if (isempty(osTimeAxis))
+                val = [];
+            else
+                dT  = obj.integrationTime;
+                val = (osTimeAxis(1):dT:osTimeAxis(end));
+            end
+        end
+        
     end
     
     methods (Static)

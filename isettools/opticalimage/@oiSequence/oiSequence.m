@@ -15,7 +15,7 @@ classdef oiSequence
     %
     %   Optional parameter name/value pairs chosen from the following:
     %
-    %   'composition'     -  add or blend the fixed and modulated OIs
+    %   'composition'     -  add or blend or xor the fixed and modulated OIs
     %   'modulationRegion'-  choose a region of interest for the modulation
     %
     % Examples
@@ -83,7 +83,7 @@ classdef oiSequence
             p.addRequired('oiTimeAxis', @isnumeric);
             p.addRequired('modulationFunction',  @isnumeric);
             p.addParameter('modulationRegion', defaultModulationRegion, @isstruct);
-            p.addParameter('composition', 'add', @ischar);
+            p.addParameter('composition', 'add', @(x)ismember(x, {'add', 'blend', 'xor'}));
             p.parse(oiFixed, oiModulated, oiTimeAxis, modulationFunction, varargin{:});
             
             obj.oiFixed = p.Results.oiFixed;
@@ -104,11 +104,6 @@ classdef oiSequence
                 obj.timeAxis = obj.timeAxis*(0:(length(modulationFunction))-1);
             elseif length(obj.timeAxis) ~= length(obj.modulationFunction)
                 error('Time axis does not match modulation function');
-            end
-            
-            % Set a validation function above, don't do this.
-            if (~strcmp(obj.composition, 'add')) && (~strcmp(obj.composition, 'blend'))
-                error('''composition'' must be set to either ''blend'' or ''add''.');
             end
             
             % Make sure that oiFixed and oiModulated have identical shape

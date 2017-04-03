@@ -18,6 +18,7 @@ p.addParameter('save',false,@islogical);
 p.addParameter('vname','videoName',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
+p.addParameter('showIlluminanceMap', false, @islogical);
 
 p.parse(obj,varargin{:});
 format     = p.Results.format;
@@ -104,17 +105,34 @@ switch format
             'bottomMargin',   0.03, ...
             'topMargin',      0.03);
         
-        XYZmax = 0;
-        for oiIndex = 1:obj.length
-            currentOI = obj.frameAtIndex(oiIndex);
-            XYZ = oiGet(currentOI, 'xyz');
-            if (max(XYZ(:)) > XYZmax)
-                XYZmax = max(XYZ(:));
+        if (p.Results.showIlluminanceMap)
+            minIllum = Inf;
+            maxIllum = -Inf;
+            for oiIndex = 1:obj.length
+                currentOI = obj.frameAtIndex(oiIndex);
+                [illuminanceMap, ~] = oiCalculateIlluminance(currentOI);
+                minIllum = min([minIllum min(illuminanceMap(:))]);
+                maxIllum = max([maxIllum max(illuminanceMap(:))]);
             end
+            if (minIllum == maxIllum)
+                illumRange = [minIllum*0.99 maxIllum*1.01];
+            else
+                illumRange = [minIllum maxIllum];
+            end
+        else
+            XYZmax = 0;
+            for oiIndex = 1:obj.length
+                currentOI = obj.frameAtIndex(oiIndex);
+                XYZ = oiGet(currentOI, 'xyz');
+                if (max(XYZ(:)) > XYZmax)
+                    XYZmax = max(XYZ(:));
+                end
+            end
+            % Do not exceed XYZ values of 0.5 (for correct rendering)
+            XYZmax = 2*XYZmax;
         end
-        % Do not exceed XYZ values of 0.5 (for correct rendering)
-        XYZmax = 2*XYZmax;
-        
+
+
         hFig = figure();
         set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]);
         
@@ -122,8 +140,8 @@ switch format
             if (oiIndex == 1)
                 % Plot the modulation function
                 subplot('Position', subplotPosVectors(1,1).v);
-                stairs(1:obj.length, obj.modulationFunction, 'r', 'LineWidth', 1.5);
-                set(gca, 'XLim', [1 obj.length], 'FontSize', 12);
+                stairs(obj.timeAxis, obj.modulationFunction, 'r', 'LineWidth', 1.5);
+                set(gca, 'XLim', [obj.timeAxis(1) obj.timeAxis(end)], 'FontSize', 12);
                 title(sprintf('composition: ''%s''', obj.composition));
                 xlabel('frame index');
                 ylabel('modulation');
@@ -131,16 +149,23 @@ switch format
             
             % Ask theOIsequence to return the oiIndex-th frame
             currentOI = obj.frameAtIndex(oiIndex);
+            [illuminanceMap, meanIlluminance] = oiCalculateIlluminance(currentOI);
             support = oiGet(currentOI, 'spatial support', 'microns');
-            [~, meanIlluminance] = oiCalculateIlluminance(currentOI);
             xaxis = support(1,:,1);
             yaxis = support(:,1,2);
             row = 1+floor((oiIndex)/(colsNum+1));
             col = 1+mod((oiIndex),(colsNum+1));
             
             subplot('Position', subplotPosVectors(row,col).v);
-            rgbImage = xyz2srgb(oiGet(currentOI, 'xyz')/XYZmax);
-            imagesc(xaxis, yaxis, rgbImage, [0 1]);
+            if (p.Results.showIlluminanceMap)
+                illuminanceMap = 0.5 + 0.5*(illuminanceMap-illumRange(1))/(illumRange(2)-illumRange(1));
+                imagesc(xaxis, yaxis, illuminanceMap);
+                set(gca, 'CLim', [0 1]);
+            else
+                rgbImage = xyz2srgb(oiGet(currentOI, 'xyz')/XYZmax);
+                imagesc(xaxis, yaxis, rgbImage, [0 1]);
+            end
+
             axis 'image'
             if (col == 1) && (row == rowsNum)
                 xticks = [xaxis(1) 0 xaxis(end)];
@@ -151,9 +176,14 @@ switch format
                 set(gca, 'XTick', [], 'YTick', [])
                 xlabel(sprintf('frame %d (%2.1fms)', oiIndex, 1000*obj.timeAxis(oiIndex)));
             end
-            title(sprintf('mean illum: %2.1f', meanIlluminance));
+            if (p.Results.showIlluminanceMap)
+                colormap(gray(1024));
+            end
+
+            title(sprintf('mean illum: %2.4f td', meanIlluminance));
             set(gca, 'FontSize', 12);
         end
+
     otherwise
         error('Unknown format %s\n',format);
 end
