@@ -158,7 +158,7 @@ classdef rgcMosaic < handle
             % Print the relevant text to a string
             % This is used in the display window
             
-            str =sprintf('Cell type: %s\n',obj.cellType);
+            str = sprintf('Cell type: %s\n',obj.cellType);
             txt = sprintf('Model: %s\n',class(obj));
             str = addText(str,txt);
             txt = sprintf('N Trials %d\n',obj.Parent.numberTrials);

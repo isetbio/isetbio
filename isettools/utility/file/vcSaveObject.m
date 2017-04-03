@@ -38,27 +38,27 @@ if isempty(fullName), return; end
 switch(lower(objType))
     case 'scene'
         scene = obj;
-        save fullName scene;
+        save(fullName,'scene');
         
     case 'optics'
         optics = obj;
-        save fullName optics;
+        save(fullName,'optics');
         
     case 'opticalimage'
         opticalimage = obj;
-        save fullName opticalimage;
+        save(fullName,'opticalimage');
         
     case 'isa'
-        isa = obj;
-        save fullName isa;
+        sensor = obj;
+        save(fullName,'sensor');
         
     case 'pixel'
         pixel = obj;
-        save fullName pixel;
+        save(fullName,'pixel');
         
     case 'vcimage'
         vcimage = obj;
-        save fullName vcimage;
+        save(fullName,'ip');
    
     otherwise
         error('Unknown object type');

@@ -1,4 +1,4 @@
-function hdl = plot(obj, pType,varargin)
+function hdl = plot(obj, pType, varargin)
 % Plot the values from the bipolar object
 % 
 %    hdl = bp.plot(parameter)
@@ -9,7 +9,9 @@ function hdl = plot(obj, pType,varargin)
 %   response
 %   movie response 
 %   Time series
-% 
+% Optional parameters
+%   gamma for image display
+%
 % Examples:
 %
 % 
@@ -29,6 +31,7 @@ allowableFields = {...
     'movieresponse','responseimage', ...
     'spatialrf','mosaic'};
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+p.addParameter('gamma',1,@isscalar);
 
 % Parse pType
 p.parse(pType,varargin{:}); 
@@ -107,35 +110,59 @@ switch ieParamFormat(pType)
         ylabel('Response (AU)');
         title('Bipolar Mosaic Response');
         
-    case{'response'}
-        % bp.plot('response')
-        response = reshape(obj.get('response'),sz(1)*sz(2),sz(3));
-        plot(.001*(1:sz(3)),response);
-        xlabel('Time (sec)');
+    case{'responsetimeseries','response'}
+        % bp.plot('response time series')
+        %
+        % Open a new window and show the time series, but not in any
+        % particular organized way. Only up to 200 samples are shown.
+        % Random draws.  We should allow this to be controlled.
+        %
+        
+        nCells = sz(1)*sz(2);
+        response = reshape(obj.get('response'),nCells,sz(3));
+        tSamples = obj.timeStep*(1:sz(3));
+        
+        vcNewGraphWin; 
+        if nCells > 100, 
+            cSamples = randi(nCells,[200,1]);
+            plot(tSamples,response(cSamples,:));
+            title('Bipolar current (200 samples)');
+        else
+            plot(tSamples,response);
+            title('Bipolar current');
+        end
+        xlabel(sprintf('Time (sec, \\Deltat %.0f ms)',obj.timeStep*1e3));
         ylabel('Response (AU)');
-        title('Bipolar Mosaic Response');
         
     case{'responseimage'}
         % bp.plot('response')
         response = (obj.get('response'));
-        imagesc(mean(response,3));
-        xlabel('Time (sec)');
-        ylabel('Response (AU)');
-        title('Bipolar Mosaic Mean Response');
+        patchSizeUM = obj.patchSize*1e6;
+        dx = patchSizeUM/size(response,1);  % Step in microns
+        samples = 1:dx:size(response,1);
+        samples = samples - mean(samples(:));
+        if p.Results.gamma ~= 1, img = mean(response,3).^p.Results.gamma;
+        else                     img = mean(response,3);
+        end
         
-    case{'movieresponse'}
+        imagesc(samples,samples,img);
+        axis image; colormap(gray(256));
+        xlabel(sprintf('Cell position (\\mum)'));
+        
+    case{'responsemovie','movieresponse'}
         % Pass the varargin along
         if ~isempty(varargin) && length(varargin) == 1
             % Params are coded in a single struct
             varargin{1}.hf = hdl;
+            if p.Results.gamma ~= 1
+                varargin{1}.gamma = p.Results.gamma;
+            end
             ieMovie(obj.get('response'),varargin{:});
         else
-            % List of params
-            r = obj.get('response');
-            ieMovie(r,'hf',hdl,varargin{:});
+            % Params are coded in param/value
+            varargin{end+1} = 'gamma'; varargin{end+1} = p.Results.gamma;
+            ieMovie(obj.get('response'),'hf',hdl,varargin{:});
         end
 end
-
-% set(gca,'fontsize',16);
 
 end
