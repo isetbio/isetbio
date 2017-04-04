@@ -1,6 +1,9 @@
 function t_wvfZernickeSet
 %
-% Illustrate the effects on the PSF of adjusting different Z-coefficients.
+% Illustrate the effects on the PSF of adjusting different Zernicke
+% polynomial coefficients.
+%
+% We create an image of the slanted bar and pass it through the optics.
 %
 % BW Wavefront Toolbox Team, 2014
 
