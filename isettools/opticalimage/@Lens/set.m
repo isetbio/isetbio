@@ -1,7 +1,7 @@
-function lens = set(lens, param, val, varargin)
+function set(lens, param, val, varargin)
 % Set parameters of the lens structure
 %
-%     val = set(lens,param,varargin)
+%     Lens.set(param,varargin)
 %
 % See Lens.get for notes about the properties in general and the
 % formulae relating absorbance and absorptance and transmittance.
