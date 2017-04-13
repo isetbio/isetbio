@@ -164,8 +164,13 @@ end
 
 if (~strcmp(showConeDensityContour, 'none'))
     contourLevels = coneDensityContourLevelStep: coneDensityContourLevelStep: 250000;
+    plotContoursOverHalfField = true;
+    if (plotContoursOverHalfField)
+        idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
+        densityMap(idx) = NaN;
+    end
     [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 3.0, 'ShowText', 'on', 'LabelSpacing', 500);
-    clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0])
+    clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0]);
     set(gca, 'CLim', [10000 250000]);
 end
 
@@ -177,7 +182,7 @@ xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', yTickLabels);
 set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], 'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
 box on; grid off;
 set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
@@ -216,5 +221,28 @@ for triangleIndex = 1:size(triangleConeIndices,1)
     end
 end
 patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle);
+end
+
+function Cout = getContourStruct(C)
+    K = 0; n0 = 1;
+    while n0<=size(C,2)
+       K = K + 1;
+       n0 = n0 + C(2,n0) + 1;
+    end
+
+    % initialize output struct
+    el = cell(K,1);
+    Cout = struct('level',el,'length',el,'x',el,'y',el);
+
+    % fill the output struct
+    n0 = 1;
+    for k = 1:K
+       Cout(k).level = C(1,n0);
+       idx = (n0+1):(n0+C(2,n0));
+       Cout(k).length = C(2,n0);
+       Cout(k).x = C(1,idx);
+       Cout(k).y = C(2,idx);
+       n0 = idx(end) + 1; % next starting index
+    end
 end
 
