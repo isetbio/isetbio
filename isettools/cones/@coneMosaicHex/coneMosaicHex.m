@@ -12,7 +12,7 @@ classdef coneMosaicHex < coneMosaic
     %
     % The customLambda argument is empty to obtain default performance, but
     % may be set to set the spacing for regularly spaced hexagonal mosaics.
-    % The units of customLambda are [PLEASE REVEAL TO US!!!]
+    % The units of customLambda are microns
     %
     % Name-Value parameter pairs used with coneMosaic also can be used with
     % coneMosaicHex 
@@ -26,7 +26,7 @@ classdef coneMosaicHex < coneMosaic
     %                                 coneSize(eccentricityInMeters,ang) function.
     %                                 If set to a value (specified in microns), 
     %                                 cone spacing is set to that value. Note that
-    %                                 if the ?varyingDensity? param is  set to true, 
+    %                                 if the 'varyingDensity' param is  set to true, 
     %                                 the 'customLambda' param is ignored.
     % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
     %                          'name', 'the hex mosaic', ...
@@ -105,7 +105,7 @@ classdef coneMosaicHex < coneMosaic
         resampleGrid(obj, resamplingFactor);
         
         % Visualize different aspects of the hex grid
-        visualizeGrid(obj, varargin);
+        hFig = visualizeGrid(obj, varargin);
         
         % Method to compute the cone density of @coneMosaicHex
         [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, computeConeDensityMap)

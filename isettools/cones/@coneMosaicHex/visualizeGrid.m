@@ -1,4 +1,4 @@
-function visualizeGrid(obj, varargin)
+function hFig = visualizeGrid(obj, varargin)
 % Visualize different aspects of the hex grid
 %
 % Name-Value options
@@ -79,18 +79,18 @@ hexCoords = obj.coneLocsHexGrid;
 if (generateNewFigure)
     hFig = figure(round(rand()*100000));
     if (isempty(panelPosition))
-        figPosition = [rand()*2000 rand()*1000 980 670];
+        figPosition = [rand()*2000 rand()*1000 790 718];
     else
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
+        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 790 718];
     end
 else
     % We want to use the coneMosaic window 
     if (isempty(panelPosition))
         hFig = figure(1);
-        figPosition = [rand()*2000 rand()*1000 980 670];
+        figPosition = [rand()*2000 rand()*1000 790 718];
     else
         hFig = figure(panelPosition(1)*10+panelPosition(2));
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 980 670];
+        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 790 718];
     end
 end
 cla;
