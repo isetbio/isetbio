@@ -141,7 +141,12 @@ switch format
                 % Plot the modulation function
                 subplot('Position', subplotPosVectors(1,1).v);
                 stairs(obj.timeAxis, obj.modulationFunction, 'r', 'LineWidth', 1.5);
-                set(gca, 'XLim', [obj.timeAxis(1) obj.timeAxis(end)], 'FontSize', 12);
+                if (numel(obj.timeAxis)>1)
+                    timeRange = [obj.timeAxis(1) obj.timeAxis(end)];
+                else
+                    timeRange = obj.timeAxis(1)+[-0.1 0.1];
+                end
+                set(gca, 'XLim', timeRange, 'FontSize', 12);
                 title(sprintf('composition: ''%s''', obj.composition));
                 xlabel('frame index');
                 ylabel('modulation');
