@@ -12,6 +12,6 @@ function maxEyeMovementsNum = maxEyeMovementsNumGivenIntegrationTime(obj,integra
     if (maxEyeMovementsNum < 1)
         error('Less than 1 eye movement per oiSequence !!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*integrationTime);
     else 
-        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', maxEyeMovementsNum, eyeMovementsNumPerOpticalImage);
+        %fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', maxEyeMovementsNum, eyeMovementsNumPerOpticalImage);
     end 
 end
