@@ -144,7 +144,7 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
-        obj.spatialRFInit;
+        obj.spatialRFInit('ecc',p.Results.ecc);
         
        
     end

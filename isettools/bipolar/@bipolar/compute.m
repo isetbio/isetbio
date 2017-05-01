@@ -224,9 +224,13 @@ bipolarFilt = bipolarFilter(obj, cmosaic);
 %
 
 % tmp = conv2(bipolarFilt,bipolarCenter);
-tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
+tmpCenter = conv2(bipolarFilt,obj.rectificationCenter(bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2)))));
 
 % tmp = conv2(bipolarFilt,bipolarSurround);
+tmpSurround = conv2(bipolarFilt,obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)))));
+
+
+tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
 tmpSurround = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
 
 if ~isempty(coneTrials) 

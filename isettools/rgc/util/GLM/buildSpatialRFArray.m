@@ -93,7 +93,7 @@ rfDiameterBipolars = rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
 centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars + centerNoiseBipolars; % RGC center row coords in nBipolars
-centerY = (0:2:nRGC(2)-1)*rfDiameterBipolars - centerNoiseBipolars; % RGC center col coords in nBipolars
+centerY = (sqrt(3)/2 ) *(0:2:nRGC(2)-1)*rfDiameterBipolars - centerNoiseBipolars; % RGC center col coords in nBipolars
 rows = length(centerX); cols = length(centerY);     % number of RGCs
 
 % number bipolar cells out to the extent of the spatial RF
@@ -150,18 +150,19 @@ for ii = 1 : rows
         % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
         
         % Get ellipse parameters 
-        D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
+        D = [1 1];%abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
         D = D./norm(D);
-        angleRot = 180*(rand(1,1)-.5);
+        angleRot = 0;%180*(rand(1,1)-.5);
 %         ellipseParams = ellipseGen(cols,rows);
         if isempty(ellipseParams)
             ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
+            ellipseParameters(1:2) = ellipseParameters(1:2)./norm(ellipseParameters(1:2));
         elseif size(ellipseParams,1)==1
             ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
         else
             ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams{ii,jj}(1:2), ellipseParams{ii,jj}(3)];
         end
-        Qe = ellipseQuadratic(ellipseParameters); Q = (1/rfDiameterBipolars^2)*Qe./norm(Qe);
+        Qe = ellipseQuadratic(ellipseParameters); Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
         
         % ieShape('ellipse','ellipseParameters',[diag(Qe)'./norm(diag(Qe)),angleRot]);
         
@@ -185,18 +186,22 @@ for ii = 1 : rows
         so = so_center - so_surround;
         
         % Store calculated parameters, units of conditional intensity
-        cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY]; % nBipolars
+        cellCenterLocations{ii,jj} = (patchSizeMicronsXY(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); % nBipolars
         spatialRFArray{ii,jj} = so;
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
         
-%         % Do some calculations to make plots where RFs are filled in
-%         % Measure magnitude at 1 SD from center
-%         xv = [1 0];%rand(1,2);
-%         xvn = rfDiameterBipolars * xv./norm(xv);
-%         x1 = xvn(1); y1 = xvn(2);
-%         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-
+        % Do some calculations to make plots where RFs are filled in
+        % Measure magnitude at 1 SD from center
+        if ii == 1 && jj == 1
+            xv = [1 0];%rand(1,2);
+            xvn = rfDiameterBipolars * xv./norm(xv);
+            x1 = xvn(1); y1 = xvn(2);
+            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+            rii = mr; cii = mc; im = 1;
+            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
+        end
         Qout{ii,jj} = ellipseParameters;
     end
 end

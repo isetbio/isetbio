@@ -138,7 +138,7 @@ cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
 % Set the exposure time for each step
 cm.integrationTime = integrationTime;
-
+cm.os.timeStep = integrationTime;
 % Set the noise flag for the absorptions
 cm.noiseFlag = cmNoiseFlag;
 %% Compute a dynamic set of cone absorptions for moving bar
