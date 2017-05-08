@@ -47,7 +47,7 @@ addParameter(p,'endFrames',      6,    @isnumeric); % ms
 
 addParameter(p,'cmNoiseFlag',      'none',    @ischar); % 'none','random','frozen' 
 addParameter(p,'osNoiseFlag',      'none',    @ischar); % 'none','random','frozen'  
-addParameter(p,'integrationTime',    .001,    @isnumeric); % ms 
+addParameter(p,'integrationTime',    .008,    @isnumeric); % ms 
 
 % OS and mosaic parameters
 addParameter(p,'os',            'linear',@ischar);
@@ -73,8 +73,8 @@ osNoiseFlag = p.Results.osNoiseFlag;
 emFlag = p.Results.emFlag;
 
 % We insist on turning off the wait bar
-wFlag = ieSessionGet('wait bar');
-ieSessionSet('wait bar',false);
+% wFlag = ieSessionGet('wait bar');
+% ieSessionSet('wait bar',false);
 %% Compute a Gabor patch scene as a placeholder for the bar image
 
 % Create display
@@ -132,7 +132,8 @@ cm.pigment.height = coneSz(2);
 
 % Set cone mosaic field of view to match the scene
 scene = sceneSet(scene, 'h fov', fov);
-sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'v fov')];
+% scene = sceneSet(scene, 'v fov', fov);
+sceneFOV = [sceneGet(scene, 'h fov') sceneGet(scene, 'h fov')];
 sceneDist = sceneGet(scene, 'distance');
 cm.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 
@@ -145,7 +146,7 @@ cm.noiseFlag = cmNoiseFlag;
 fprintf('Computing cone isomerizations:    \n');
 
 % ieSessionSet('wait bar',true);
-wbar = waitbar(0,'Stimulus movie');
+% wbar = waitbar(0,'Stimulus movie');
 
 % This is the mean oi that we use at the start and end
 barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
@@ -162,7 +163,7 @@ if emFlag
 end
 
 for t = 1 : nSteps
-    waitbar(t/nSteps,wbar);
+%     waitbar(t/nSteps,wbar);
 
     if ~(t > startFrames && t < (startFrames + stimFrames + 1))
         % Use uniform field oi for time prior to and after stimulus
@@ -212,10 +213,10 @@ else
     cm.computeCurrent();
 end
 
-delete(wbar);
+% delete(wbar);
 
 % Restore
-ieSessionSet('wait bar',wFlag);
+% ieSessionSet('wait bar',wFlag);
 
 % These are both the results and the data needed to run this
 % script. So calling isomerizationBar(iStim.params) should produce the same
