@@ -82,14 +82,14 @@ patchSizeMicronsXY = [patchSizeMicrons*(nRowBipolars/nColBipolars), patchSizeMic
 % Determine the number of RGC samples in the mosaic
 % patchSizeMicrons: um; rfDiameterMicrons: um/RGC cell; nRGC: RGC cells 
 nRGC = floor(patchSizeMicronsXY ./ rfDiameterMicrons); % number of RGCs in h, v direction
-
+nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 % The rfDiameter comes here in units of um, and this 
 % converts the rf diameter to units of number of bipolars
 % rfDiameter in: um/RGC, 
 % patchSize: um, inCol: number bipolar cells
 % (patchSize(2) / inCol) : um/bipolar cell
 % rfDiameter out: number bipolar cells per RGC
-rfDiameterBipolars = rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
+rfDiameterBipolars = .5*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
 centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars + centerNoiseBipolars; % RGC center row coords in nBipolars
@@ -191,17 +191,17 @@ for ii = 1 : rows
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
         
-        % Do some calculations to make plots where RFs are filled in
-        % Measure magnitude at 1 SD from center
-        if ii == 1 && jj == 1
-            xv = [1 0];%rand(1,2);
-            xvn = rfDiameterBipolars * xv./norm(xv);
-            x1 = xvn(1); y1 = xvn(2);
-            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-            rii = mr; cii = mc; im = 1;
-            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
-        end
+%         % Do some calculations to make plots where RFs are filled in
+%         % Measure magnitude at 1 SD from center
+%         if ii == 1 && jj == 1
+%             xv = [1 0];%rand(1,2);
+%             xvn = rfDiameterBipolars * xv./norm(xv);
+%             x1 = xvn(1); y1 = xvn(2);
+%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+%             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+%             rii = mr; cii = mc; im = 1;
+%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)];
+%         end
         Qout{ii,jj} = ellipseParameters;
     end
 end
