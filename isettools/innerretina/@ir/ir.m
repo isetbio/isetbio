@@ -118,7 +118,7 @@ classdef ir < handle
             
             % parse input
             p = inputParser;
-            p.addRequired('inputObj',@(x)(isa(bp,'bipolar')));
+            p.addRequired('inputObj',@(x)(isa(bp,'bipolar')||isa(bp{1},'bipolar')));
             
             p.addParameter('name','ir1',@ischar);
             p.addParameter('eyeSide','left',@ischar);
@@ -137,11 +137,19 @@ classdef ir < handle
             obj.name      = p.Results.name;
             
             obj.numberTrials = p.Results.nTrials;
-
-            obj.size      = bp.get('patch size'); % Bipolar patch
-            obj.timeStep  = bp.get('time step');  % Temporal sampling
             
-            bpC = bp.get('bipolarResponseCenter');
+            if length(bp) > 1                
+                obj.size      = bp{1}.get('patch size'); % Bipolar patch
+                obj.timeStep  = bp{1}.get('time step');  % Temporal sampling
+                
+                bpC = bp{1}.get('bipolarResponseCenter');
+            else
+                obj.size      = bp.get('patch size'); % Bipolar patch
+                obj.timeStep  = bp.get('time step');  % Temporal sampling
+                
+                bpC = bp.get('bipolarResponseCenter');
+            end
+            
             obj.row = size(bpC,1);  obj.col = size(bpC,2);
 
             obj.mosaic = cell(1); % Cells are added by mosaicCreate method

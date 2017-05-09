@@ -43,7 +43,7 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-vFunc = @(x) isequal(class(x),'bipolar');
+vFunc = @(x) (isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
 p.addParameter('coupling',false,@islogical);

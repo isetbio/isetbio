@@ -39,6 +39,7 @@ p.addRequired('nColBipolars',@isscalar);
 p.addRequired('rfDiameterMicrons',@isscalar);
 p.addParameter('centerNoise',1.25,@isscalar); % in units of nBipolars
 p.addParameter('baseLineFiringRate',2.2702,@isscalar); % JRG pulled from ON Parasol 2013_08_19_6
+
 vFunc = @(x)(ismatrix(x) || isempty(x));
 p.addParameter('ellipseParams',[],vFunc);  % A,B,rho
 
@@ -82,6 +83,7 @@ patchSizeMicronsXY = [patchSizeMicrons*(nRowBipolars/nColBipolars), patchSizeMic
 % Determine the number of RGC samples in the mosaic
 % patchSizeMicrons: um; rfDiameterMicrons: um/RGC cell; nRGC: RGC cells 
 nRGC = floor(patchSizeMicronsXY ./ rfDiameterMicrons); % number of RGCs in h, v direction
+nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 
 % The rfDiameter comes here in units of um, and this 
 % converts the rf diameter to units of number of bipolars
@@ -89,11 +91,11 @@ nRGC = floor(patchSizeMicronsXY ./ rfDiameterMicrons); % number of RGCs in h, v 
 % patchSize: um, inCol: number bipolar cells
 % (patchSize(2) / inCol) : um/bipolar cell
 % rfDiameter out: number bipolar cells per RGC
-rfDiameterBipolars = rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
+rfDiameterBipolars = 1*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
-centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars + centerNoiseBipolars; % RGC center row coords in nBipolars
-centerY = (0:2:nRGC(2)-1)*rfDiameterBipolars - centerNoiseBipolars; % RGC center col coords in nBipolars
+centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars; % RGC center row coords in nBipolars
+centerY = (sqrt(3)/2 ) *(0:2:nRGC(2)-1)*rfDiameterBipolars; % RGC center col coords in nBipolars
 rows = length(centerX); cols = length(centerY);     % number of RGCs
 
 % number bipolar cells out to the extent of the spatial RF
@@ -129,8 +131,8 @@ end
 % Compute the variation in the center position for every cell
 % This could flip the position occasionally.  We were using
 % rand(row,col)*2 - 1 to guarantee no flips.
-centerNoiseBipolarsRow = centerNoiseBipolars*(randn(rows,cols));
-centerNoiseBipolarsCol = centerNoiseBipolars*(randn(rows,cols));
+centerNoiseBipolarsRow = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols));
+centerNoiseBipolarsCol = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols));
 
 Qout = cell(rows,cols); 
 for ii = 1 : rows
@@ -153,15 +155,17 @@ for ii = 1 : rows
         D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
         D = D./norm(D);
         angleRot = 180*(rand(1,1)-.5);
-%         ellipseParams = ellipseGen(cols,rows);
+        %  ellipseParams = ellipseGen(cols,rows);
         if isempty(ellipseParams)
             ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
+            ellipseParameters(1:2) = ellipseParameters(1:2)./norm(ellipseParameters(1:2));
         elseif size(ellipseParams,1)==1
             ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
         else
             ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams{ii,jj}(1:2), ellipseParams{ii,jj}(3)];
         end
-        Qe = ellipseQuadratic(ellipseParameters); Q = (1/rfDiameterBipolars^2)*Qe./norm(Qe);
+        Qe = ellipseQuadratic(ellipseParameters); 
+        Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
         
         % ieShape('ellipse','ellipseParameters',[diag(Qe)'./norm(diag(Qe)),angleRot]);
         
@@ -171,12 +175,13 @@ for ii = 1 : rows
         IJ = [i j];
         
         % Scale by the r and Q
-        QIJ = Q*IJ'; rQIJ = r*Q*IJ';       % unitless
+        QIJ = Q*IJ'; 
+        rQIJ = r*Q*IJ';       % unitless
         %  icrm = repmat([ic jc],length(i),1);
         
         % (-0.5*(x-c)*Q*(x-c)'): unitless
-        p1 = prod([IJ(:,1) QIJ(1,:)'],2)+prod([IJ(:,2) QIJ(2,:)'],2);
-        p2 = prod([IJ(:,1) rQIJ(1,:)'],2)+prod([IJ(:,2) rQIJ(2,:)'],2);
+        p1 = prod([IJ(:,1) QIJ(1,:)'],2) + prod([IJ(:,2) QIJ(2,:)'],2);
+        p2 = prod([IJ(:,1) rQIJ(1,:)'],2)+ prod([IJ(:,2) rQIJ(2,:)'],2);
         
         % DoG calculation
         % conditional intensity, related by Poisson firing to spikes/sec
@@ -185,18 +190,22 @@ for ii = 1 : rows
         so = so_center - so_surround;
         
         % Store calculated parameters, units of conditional intensity
-        cellCenterLocations{ii,jj} = [ic jc] - [centerCorrectX centerCorrectY]; % nBipolars
+        cellCenterLocations{ii,jj} = (patchSizeMicronsXY(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); % nBipolars
         spatialRFArray{ii,jj} = so;
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
         
 %         % Do some calculations to make plots where RFs are filled in
 %         % Measure magnitude at 1 SD from center
-%         xv = [1 0];%rand(1,2);
-%         xvn = rfDiameterBipolars * xv./norm(xv);
-%         x1 = xvn(1); y1 = xvn(2);
-%         magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-
+%         if ii == 1 && jj == 1
+%             xv = [1 0];%rand(1,2);
+%             xvn = rfDiameterBipolars * xv./norm(xv);
+%             x1 = xvn(1); y1 = xvn(2);
+%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+%             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+%             rii = mr; cii = mc; im = 1;
+%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)];
+%         end
         Qout{ii,jj} = ellipseParameters;
     end
 end

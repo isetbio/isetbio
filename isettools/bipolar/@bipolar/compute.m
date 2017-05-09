@@ -87,7 +87,7 @@ p.parse(obj, cmosaic, varargin{:});
 
 coneTrials = p.Results.coneTrials;
 
-if isempty(cmosaic.current),
+if isempty(cmosaic.current)
     error('No cone photocurrent.  Use cmosaic.computeCurrent.');
 end
 
@@ -235,6 +235,58 @@ for iTrial = 1:nTrials
         nTrialsCenter = 0;
         nTrialsSurround = 0;
     end
+                       
+end
+
+% Put the data back into RGB format, like RGB2XW()
+osSigCenter   = reshape(osSigCenter,size(cmosaic.current));
+osSigSurround = reshape(osSigSurround,size(cmosaic.current));
+
+%% Spatial convolution
+
+% Full spatial convolution for every frame
+bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
+bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
+
+% Subsample in space to the resolution for this bipolar mosaic.
+% The spacing is equal to the number of pixels that make up the center of
+% the spatial receptive field.  This could be a settable parameter for
+% others to experiment with, too.  We need a reference.
+spacing = size(obj.sRFcenter,1);
+bipolarCenter   = ieImageSubsample(bipolarCenter, spacing);
+bipolarSurround = ieImageSubsample(bipolarSurround, spacing);
+
+%% Temporal filtering
+
+% Reshape for temporal convolution
+[bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
+bipolarSurround = RGB2XWFormat(bipolarSurround); 
+
+%% New method
+
+% The filter isn't right.  Time base is off.  Let's deal with it.
+bipolarFilt = bipolarFilter(obj, cmosaic);
+
+%% Compute the temporal response of the bipolar mosaic
+%
+% Deal with rectification, next. Need a plan
+%
+% obj.rectify(input,'rType',{hw,fw,none})
+% obj.responseCenter   = obj.rectificationCenter(bipolarOutputLinearCenter);
+% obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
+%
+
+% tmp = conv2(bipolarFilt,bipolarCenter);
+tmpCenter = conv2(bipolarFilt,obj.rectificationCenter(bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2)))));
+
+% tmp = conv2(bipolarFilt,bipolarSurround);
+tmpSurround = conv2(bipolarFilt,obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)))));
+
+
+tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
+tmpSurround = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
+
+if ~isempty(coneTrials) 
     
     if iTrial == nTrials
         obj.responseCenter = XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col);

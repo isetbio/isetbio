@@ -38,7 +38,7 @@ function [h,pts] = ieShape(shape,varargin)
 p = inputParser;
 
 p.addRequired('shape',@isstr);
-p.addParameter('nSamp',200,@isnumeric);
+p.addParameter('nSamp',20,@isnumeric);
 p.addParameter('center',[0 0],@ismatrix);
 p.addParameter('radius',1,@isnumeric);
 p.addParameter('rect',[-1 -1 2 2],@isvector)
@@ -117,7 +117,7 @@ switch shape
                 sind(ellipseParameters(ii,3))   cosd(ellipseParameters(ii,3))];
             pts = bsxfun(@plus,ptsCircle*D*R,center(ii,:));
             %pts = ptsCircle*D*R + repmat(center,nSamp,1);
-            h = plot(pts(:,2),pts(:,1),colors(ii));
+            h = plot(pts(:,2),pts(:,1),colors(ii),'linewidth',.2);
         end
         % pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
 

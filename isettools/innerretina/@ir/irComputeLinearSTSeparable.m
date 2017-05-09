@@ -55,7 +55,7 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
-vFunc = @(x)(isequal(class(x),'bipolar'));
+vFunc = @(x)(isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
 p.addParameter('bipolarTrials',  [], @isnumeric);
@@ -76,109 +76,65 @@ if length(bp) == 1
 else
     osType = class(bp{1});
 end
-switch osType
-    case 'osDisplayRGB'
-        % Display RGB means straight from the frame buffer to your brain
-        % @JRG:  Test cases are in EJ Figure reproduction
-        % Others to be named!
-        warning('This bipolar case should be deprecated');
+% Bipolar test case in t_coneMosaic
+% t_rgcBar, others to be named.
+
+if ~isempty(bipolarTrials)
+    nTrials = size(bipolarTrials,1);
+else
+    nTrials = 1;
+end
+
+for iTrial = 1:nTrials
+    
+    % Looping over the rgc mosaics
+    for rgcType = 1:length(ir.mosaic)
         
-        spTempStim = osGet(bp, 'rgb data');
-        if isempty(spTempStim), error('No rgb data'); end
+        % Determine the range of the rgb input data
+        if length(bp) == 1
+            stim   = bp.get('response');
+        else
+            stim   = bp{rgcType}.get('responseCenter');
+        end
+        switch class(ir.mosaic{rgcType})
+            case 'rgcPhys'
+                magFactor = 7.9; % due to bipolar filter
+                stim = magFactor*ieContrast(stim);
+            otherwise
+                stim = ieContrast(stim);
+        end
+        % ieMovie(stim);
         
-        % The Pillow code expects the input to be normalized to the mean of
-        % zero, like a contrast. In this way a frame buffer of 1024 or 512
-        % or 256 would all get scaled into the same [-0.5, 0.5] range.
-        stim = ieContrast(spTempStim);
-        %         range = max(spTempStim(:)) - min(spTempStim(:));
-        %         spTempStim = (spTempStim - mean(spTempStim(:)))/range;
+        % Set the rgc impulse response to an impulse
+        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
+        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);
         
-        % Looping over each rgc
-        for rgcType = 1:length(ir.mosaic)                  
-            
-            % We use a separable space-time receptive field.  This allows
-            % us to compute for space first and then time. Space.
-            [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
-            % ieMovie(respC);
-            
-            tResponse = ir.mosaic{rgcType}.tCenter{1,1};
-            
-            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', tResponse);
-            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);        
-            
-            % Convolve with the temporal impulse response
-            respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-            respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-            % Delete fullConvolve
-            % ieMovie(respC - respS);
-                        
-            % Store the linear response
-            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
-            
-        end       
+        % We use a separable space-time receptive field.  This allows
+        % us to compute for space first and then time. Space.
+        [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
+        % ieMovie(respC);
         
-    case {'bipolar'}
-        % Bipolar test case in t_coneMosaic
-        % t_rgcBar, others to be named.
+        % Convolve with the temporal impulse response
+        respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+        respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+        % Delete fullConvolve
+        % ieMovie(respC - respS);
+        
         
         if ~isempty(bipolarTrials)
-            nTrials = size(bipolarTrials,1);
-        else
-            nTrials = 1;
+            if iTrial == 1
+                nTrialsLinearResponse = zeros([nTrials,size(respC)]);
+            end
+            nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
         end
         
-        for iTrial = 1:nTrials
-            
-            % Looping over the rgc mosaics
-            for rgcType = 1:length(ir.mosaic)
-                
-                % Determine the range of the rgb input data
-                if length(bp) == 1
-                    stim   = bp.get('response');
-                else
-                    stim   = bp.get(bp{rgcType}, 'response');
-                end
-                switch class(ir.mosaic{rgcType})
-                    case 'rgcPhys'
-                        magFactor = 7.9; % due to bipolar filter
-                        stim = magFactor*ieContrast(stim);
-                    otherwise
-                        stim = ieContrast(stim);
-                end
-                % ieMovie(stim);
-                
-                % Set the rgc impulse response to an impulse
-                ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
-                ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);
-                
-                % We use a separable space-time receptive field.  This allows
-                % us to compute for space first and then time. Space.
-                [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
-                % ieMovie(respC);
-                
-                % Convolve with the temporal impulse response
-                respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-                respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-                % Delete fullConvolve
-                % ieMovie(respC - respS);
-                
-                
-                if ~isempty(bipolarTrials)
-                    if iTrial == 1
-                        nTrialsLinearResponse = zeros([nTrials,size(respC)]);
-                    end
-                    nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
-                end
-                
-                if iTrial == nTrials
-                    % Store the linear response
-                    ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
-                end
-                
-            end
+        if iTrial == nTrials
+            % Store the linear response
+            ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
         end
-    otherwise
-        error('Unknown os type %s\n',osType);
+        
+    end
 end
+
 
 
