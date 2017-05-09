@@ -71,7 +71,7 @@ classdef osLinear < outerSegment
         function val = timeAxis(obj)
             % The temporal samples for the lms filters
             if isempty(obj.lmsConeFilter)
-                warning('No lms impulse response functions computed. Returning empty time axis.');
+                %warning('No lms impulse response functions computed. Returning empty time axis.');
                 val = [];
             else
                 % Time axis is the length of the filters multiplied by the
