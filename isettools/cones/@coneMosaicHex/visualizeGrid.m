@@ -2,6 +2,7 @@ function hFig = visualizeGrid(obj, varargin)
 % Visualize different aspects of the hex grid
 %
 % Name-Value options
+%   axesHandle - Empty - Axes handle to draw on
 %   generateNewFigure  - False
 %   panelPosition      - [1 1]
 %   showCorrespondingRectangularMosaicInstead - False
@@ -20,6 +21,7 @@ function hFig = visualizeGrid(obj, varargin)
 p = inputParser;
 p.addParameter('generateNewFigure', false, @islogical);
 p.addParameter('panelPosition', [1 1]);
+p.addParameter('axesHandle', []);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
 p.addParameter('overlayNullSensors', false, @islogical);
@@ -75,29 +77,33 @@ rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
 
 %% Set up figure
-
-if (generateNewFigure)
-    hFig = figure(round(rand()*100000));
-    if (isempty(panelPosition))
-        figPosition = [rand()*2000 rand()*1000 1300 1300];
+axesHandle = p.Results.axesHandle;
+if (isempty(axesHandle))
+    if (generateNewFigure)
+        hFig = figure(round(rand()*100000));
+        if (isempty(panelPosition))
+            figPosition = [rand()*2000 rand()*1000 1300 1300];
+        else
+            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 1300 1300];
+        end
     else
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 1300 1300];
+        % We want to use the coneMosaic window 
+        if (isempty(panelPosition))
+            hFig = figure(1);
+            figPosition = [rand()*2000 rand()*1000 1300 1300];
+        else
+            hFig = figure(panelPosition(1)*10+panelPosition(2));
+            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700  1300 1300];
+        end
     end
-else
-    % We want to use the coneMosaic window 
-    if (isempty(panelPosition))
-        hFig = figure(1);
-        figPosition = [rand()*2000 rand()*1000 1300 1300];
-    else
-        hFig = figure(panelPosition(1)*10+panelPosition(2));
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700  1300 1300];
-    end
+    cla;
+    set(hFig, 'Position', figPosition, 'Color', [1 1 1]); % , 'MenuBar', 'none', 'NumberTitle', 'off');
+    set(hFig, 'Name', titleString);
+    subplot('Position', [0.02 0.01 0.97 0.97]);
+    axesHandle = gca;
 end
-cla;
-set(hFig, 'Position', figPosition, 'Color', [1 1 1]); % , 'MenuBar', 'none', 'NumberTitle', 'off');
-set(hFig, 'Name', titleString);
-subplot('Position', [0.02 0.01 0.97 0.97]);
-hold on;
+
+hold(axesHandle, 'on');
 
 %% Do the display
 switch showConeDensityContour
@@ -116,7 +122,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         idx = find(obj.pattern==1);
         [iRows,iCols] = ind2sub(size(obj.pattern), idx);
         edgeColor = [0.4 0.4 0.4]; faceColor = 'none';
-        renderPatchArray(pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        renderPatchArray(axesHandle, pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     end
     
     % L-cones
@@ -124,26 +130,26 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none'; % [1 0 0]; 
     faceColor = [1.0 0. 0.];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     % M-cones
     idx = find(obj.pattern == 3);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0.7 0]; 
     faceColor = [0. 0.7 0.];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     % S-cones
     idx = find(obj.pattern == 4);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0 1]; 
     faceColor = [0. 0. 1.0];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing the locations of the perfect hex grid
         meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
-        renderHexMesh(hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
+        renderHexMesh(axesHandle, hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
 else
     % Show the corresponding rectangular mosaic
@@ -152,17 +158,17 @@ else
     idx = find(obj.patternOriginatingRectGrid==2);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7]; lineStyle = '-';
-    renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==3);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 1.0 0.7];
-    renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==4);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 0.7 1.0];
-    renderPatchArray(originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 end
 
 if (~strcmp(showConeDensityContour, 'none'))
@@ -172,25 +178,25 @@ if (~strcmp(showConeDensityContour, 'none'))
         idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
         densityMap(idx) = NaN;
     end
-    [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 1.5, 'ShowText', 'on', 'LabelSpacing', 2000);
+    [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 1.5, 'ShowText', 'on', 'LabelSpacing', 2000);
     clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0]);
     set(gca, 'CLim', [10000 250000]);
 end
 
 %% Arrange axis and fonts
 
-hold off
-axis 'equal'; axis 'xy'
+hold(axesHandle, 'off')
+axis(axesHandle, 'equal'); axis(axesHandle, 'xy')
 xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {});
-set(gca, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
-box on; grid off;
-title(sprintf('%2.2f microns', obj.width*1e6), 'FontSize', 16);
-set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
-set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
+set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {});
+set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
+box(axesHandle, 'on'); grid(axesHandle, 'off');
+title(axesHandle, sprintf('%2.2f microns', obj.width*1e6), 'FontSize', 16);
+set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
+set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
 
 drawnow;
 
@@ -198,7 +204,7 @@ end
 
 
 %% Maybe put in utility directory
-function renderPatchArray(pixelOutline, xCoords, yCoords, edgeColor, faceColor, lineStyle)
+function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, edgeColor, faceColor, lineStyle)
 
 verticesNum = numel(pixelOutline.x);
 x = zeros(verticesNum, numel(xCoords));
@@ -208,11 +214,11 @@ for vertexIndex = 1:verticesNum
     x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
     y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
 end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 0.2, 'LineStyle', lineStyle);
+patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 0.2, 'LineStyle', lineStyle, 'Parent', axesHandle);
 end
 
 %% Separate function??
-function renderHexMesh(xHex, yHex, meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle)
+function renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle)
 x = []; y = [];
 triangleConeIndices = delaunayn([xHex(:), yHex(:)]);
 for triangleIndex = 1:size(triangleConeIndices,1)
@@ -224,7 +230,7 @@ for triangleIndex = 1:size(triangleConeIndices,1)
         y = cat(2, y, yCoords);
     end
 end
-patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle);
+patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle, 'Parent', axesHandle);
 end
 
 function Cout = getContourStruct(C)
