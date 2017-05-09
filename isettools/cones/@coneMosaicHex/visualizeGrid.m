@@ -67,7 +67,7 @@ pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
 originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
 originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
 
-iTheta = (0:5:360)/180*pi;
+iTheta = (0:20:360)/180*pi;
 apertureOutline.x = dx/2.0 * cos(iTheta);
 apertureOutline.y = dx/2.0 * sin(iTheta);
 
@@ -79,24 +79,24 @@ hexCoords = obj.coneLocsHexGrid;
 if (generateNewFigure)
     hFig = figure(round(rand()*100000));
     if (isempty(panelPosition))
-        figPosition = [rand()*2000 rand()*1000 790 718];
+        figPosition = [rand()*2000 rand()*1000 1300 1300];
     else
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 790 718];
+        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 1300 1300];
     end
 else
     % We want to use the coneMosaic window 
     if (isempty(panelPosition))
         hFig = figure(1);
-        figPosition = [rand()*2000 rand()*1000 790 718];
+        figPosition = [rand()*2000 rand()*1000 1300 1300];
     else
         hFig = figure(panelPosition(1)*10+panelPosition(2));
-        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 790 718];
+        figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700  1300 1300];
     end
 end
 cla;
 set(hFig, 'Position', figPosition, 'Color', [1 1 1]); % , 'MenuBar', 'none', 'NumberTitle', 'off');
 set(hFig, 'Name', titleString);
-subplot('Position', [0.04 0.04 0.94 0.94]);
+subplot('Position', [0.02 0.01 0.97 0.97]);
 hold on;
 
 %% Do the display
@@ -122,19 +122,22 @@ if (~showCorrespondingRectangularMosaicInstead)
     % L-cones
     idx = find(obj.pattern == 2);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
-    edgeColor = [1 0 0]; faceColor = [1.0 0.7 0.7];
+    edgeColor = 'none'; % [1 0 0]; 
+    faceColor = [1.0 0. 0.];
     renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     % M-cones
     idx = find(obj.pattern == 3);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
-    edgeColor = [0 0.7 0]; faceColor = [0.7 1.0 0.7];
+    edgeColor = 'none';% = [0 0.7 0]; 
+    faceColor = [0. 0.7 0.];
     renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     % S-cones
     idx = find(obj.pattern == 4);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
-    edgeColor = [0 0 1]; faceColor = [0.7 0.7 1.0];
+    edgeColor = 'none';% = [0 0 1]; 
+    faceColor = [0. 0. 1.0];
     renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     
     if (showPerfectHexMesh)
@@ -169,7 +172,7 @@ if (~strcmp(showConeDensityContour, 'none'))
         idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
         densityMap(idx) = NaN;
     end
-    [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 3.0, 'ShowText', 'on', 'LabelSpacing', 500);
+    [cH, hH] = contour(densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 1.5, 'ShowText', 'on', 'LabelSpacing', 2000);
     clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0]);
     set(gca, 'CLim', [10000 250000]);
 end
@@ -182,9 +185,10 @@ xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', yTickLabels);
-set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], 'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {});
+set(gca, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
 box on; grid off;
+title(sprintf('%2.2f microns', obj.width*1e6), 'FontSize', 16);
 set(gca, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
 set(gca, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
 
@@ -204,7 +208,7 @@ for vertexIndex = 1:verticesNum
     x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
     y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
 end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle);
+patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 0.2, 'LineStyle', lineStyle);
 end
 
 %% Separate function??
