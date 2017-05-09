@@ -89,11 +89,11 @@ nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 % patchSize: um, inCol: number bipolar cells
 % (patchSize(2) / inCol) : um/bipolar cell
 % rfDiameter out: number bipolar cells per RGC
-rfDiameterBipolars = .5*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
+rfDiameterBipolars = 1*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
-centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars + centerNoiseBipolars; % RGC center row coords in nBipolars
-centerY = (sqrt(3)/2 ) *(0:2:nRGC(2)-1)*rfDiameterBipolars - centerNoiseBipolars; % RGC center col coords in nBipolars
+centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars; % RGC center row coords in nBipolars
+centerY = (sqrt(3)/2 ) *(0:2:nRGC(2)-1)*rfDiameterBipolars; % RGC center col coords in nBipolars
 rows = length(centerX); cols = length(centerY);     % number of RGCs
 
 % number bipolar cells out to the extent of the spatial RF
@@ -129,8 +129,8 @@ end
 % Compute the variation in the center position for every cell
 % This could flip the position occasionally.  We were using
 % rand(row,col)*2 - 1 to guarantee no flips.
-centerNoiseBipolarsRow = centerNoiseBipolars*(randn(rows,cols));
-centerNoiseBipolarsCol = centerNoiseBipolars*(randn(rows,cols));
+centerNoiseBipolarsRow = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols));
+centerNoiseBipolarsCol = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols));
 
 Qout = cell(rows,cols); 
 for ii = 1 : rows
@@ -150,9 +150,9 @@ for ii = 1 : rows
         % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
         
         % Get ellipse parameters 
-        D = [1 1];%abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
+        D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
         D = D./norm(D);
-        angleRot = 0;%180*(rand(1,1)-.5);
+        angleRot = 180*(rand(1,1)-.5);
 %         ellipseParams = ellipseGen(cols,rows);
         if isempty(ellipseParams)
             ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
