@@ -119,8 +119,11 @@ classdef coneMosaicHex < coneMosaic
         % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
         [activationImage, activationImageLMScone, imageXaxis, imageYaxis] = computeActivationDensityMap(obj, activation);
         
-        % Visualize activation maps images for the hex mosaic (all cones +  LMS submosaics)
+        % Visualize activation map images for the hex mosaic (all cones +  LMS submosaics)
         hFig = visualizeActivationMaps(obj, activation, varargin);
+        
+        % Render (in the passed axesHandle) an activation map for the hex mosaic
+        renderActivationMap(obj, axesHandle, activation, varargin);
         
         % Print various infos about the cone mosaic
         displayInfo(obj);

@@ -50,8 +50,6 @@ if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
     dx = sqrt((obj.pigment.pdWidth^2)/pi)*2;
 elseif (strcmp(visualizedConeAperture, 'geometricArea'))
     dx = obj.pigment.width;
-else
-    error('visualizedConeAperture must be set to either ''lightCollectingArea'' or ''geometricArea''.\n');
 end
 
 if (showCorrespondingRectangularMosaicInstead)
@@ -194,7 +192,7 @@ yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
 set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {});
 set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
 box(axesHandle, 'on'); grid(axesHandle, 'off');
-title(axesHandle, sprintf('%2.2f microns', obj.width*1e6), 'FontSize', 16);
+title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 16);
 set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
 set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
 
