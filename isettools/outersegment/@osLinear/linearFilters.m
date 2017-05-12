@@ -51,39 +51,14 @@ meanRate = coneMeanIsomerizations(cMosaic, 'absorptionsInXWFormat', p.Results.ab
 
 % A new cone mosaic is generated for each type of cone, and the
 % impulse response
+timeStep = os.timeStep;               % time step (should be < 1 ms)
+nSamples = round(0.8/timeStep) + 1;   % 0.8 total sec
 
-% If the time step is less than 5 ms, the osBioPhys computation for the
-% current is unstable and diverges. In the time step is larger than 1 ms,
-% we 
+flashIntens = 1;   % 1 photon above the background mean
+warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
 
-if os.timeStep > .001
-    
-    timeStep = .001;%os.timeStep;               % time step (should be < 1 ms)
-    downsampleFactor = round(os.timeStep/.001);
-    nSamples = round(0.8/timeStep) + 1;   % 0.8 total sec
-    
-    flashIntens = 1;   % 1 photon above the background mean
-    warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
-    
-    % Where we store the filters
-    os.lmsConeFilter = zeros((nSamples-warmup-1)/downsampleFactor+1,length(meanRate));
-    
-    % Rescale the mean rate
-    meanRate = meanRate*(.001/cMosaic.integrationTime);
-    
-else
-    
-    timeStep = os.timeStep;               % time step (should be < 1 ms)
-    downsampleFactor = 1;
-    nSamples = round(0.8/timeStep) + 1;   % 0.8 total sec
-    
-    flashIntens = 1;   % 1 photon above the background mean
-    warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
-    
-    % Where we store the filters
-    os.lmsConeFilter = zeros(nSamples-warmup+1,length(meanRate));
-end
-
+% Where we store the filters
+os.lmsConeFilter = zeros(nSamples-warmup+1,length(meanRate));
 meanCurrent = zeros(1,3);
 
 %% Generate a cone mosaic with an outerSegment based on the biophysical model 
@@ -124,10 +99,8 @@ for meanInd = 1:length(meanRate)
     
     % Store the impulse response.  We put flashIntens in for completeness,
     % but it is 1 so really, no need.
-    lmsTemp(:,meanInd) = ...
+    os.lmsConeFilter(:,meanInd) = ...
         ((currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1))/flashIntens;
-    
-    os.lmsConeFilter(:,meanInd) = lmsTemp(1:downsampleFactor:end,meanInd);
     %vcNewGraphWin; 
     %plot(stimulus - meanIntens); hold on; 
     %plot(currentImpulse-currentConstant); grid on

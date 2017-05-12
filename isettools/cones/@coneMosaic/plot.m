@@ -41,13 +41,20 @@ function [uData, hf] = plot(obj, pType, varargin)
 %   'current'              - Current movie on cone mosaic
 %   'mean current'         - Image of the mean current
 %   'current timeseries'   - Cone photocurrent graphs
-%   'impulse response'     - Current impulse response for this integration time
+%   'impulse response'     - Cone current impulse response
 %   'movie current'        - Gray scale movie of current
 %
-% When you present 'os ' or 'outersegment ' then we pass the arguments
-% along to os.plot()
+% When the first string is 'os ' or 'outersegment ' then we pass the
+% arguments along to os.plot().  For example, 
 %
-% Example: coneMosaic.plot(type)
+%     cMosaic.plot('os impulse response')
+%
+% plots the outer segment impulse response on its own time axis.
+%
+% Example: 
+%
+%  coneMosaic.plot('impulse response')
+%  coneMosaic.plot('cone mosaic')
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
@@ -166,6 +173,39 @@ switch ieParamFormat(pType)
         current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
         current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
+    case 'impulseresponse'
+        % The current impulse response at the cone mosaic temporal sampling
+        % rate
+        
+        % The outersegment cone temporal impulse response functions are
+        % always represented at a high sampling rate (0.1 ms).
+        if isempty(obj.absorptions)
+            lmsFilters = obj.os.linearFilters(obj);
+        else
+            absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
+            lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', absorptionsInXWFormat);            
+        end
+        
+        %% Interpolate the stored lmsFilters to the time base of the absorptions
+        osTimeAxis    = obj.os.timeAxis;
+        coneTimeAxis  = obj.interpFilterTimeAxis;
+        
+        % Interpolate down to the cone mosaic sampling rate
+        % Interpolation assumes that we are accounting for the time sample bin
+        % width elsewhere.  Also, we extrapolate the filters with zeros to make
+        % sure that they extend all the way through the absorption time axis.
+        % See the notes in s_matlabConv2.m for an explanation of why.
+        interpFilters = interp1(osTimeAxis(:),lmsFilters,coneTimeAxis(:),'linear',0);
+
+        vcNewGraphWin;
+        plot(coneTimeAxis,interpFilters(:,1),'r-', ...
+            coneTimeAxis,interpFilters(:,2),'g-', ...
+            coneTimeAxis,interpFilters(:,3),'b-o');
+        xlabel('Time (sec)'); ylabel('Current (pA)');
+        grid on;
+        l = {'L cone','M cone','S cone'}; legend(l);
+        title('Impulse response (cone temporal sampling)');
+        
     case 'moviecurrent'
         % Current movie in gray scale
         if isempty(obj.current)
