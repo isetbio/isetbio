@@ -63,7 +63,7 @@ baseLineFiringRate  = p.Results.baseLineFiringRate;
 % relative size of the surround.
 
 % Hard coded for now.  To eliminate.
-extent = 5;      % ratio between sampling size and spatial RF standard dev 
+extent = 10;      % ratio between sampling size and spatial RF standard dev 
 r = 0.75;        % radius ratio between center and surround for DoG
 k = 1.032 * r;   % scaling of magnitude of surround
   
@@ -91,7 +91,7 @@ nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 % patchSize: um, inCol: number bipolar cells
 % (patchSize(2) / inCol) : um/bipolar cell
 % rfDiameter out: number bipolar cells per RGC
-rfDiameterBipolars = 1*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
+rfDiameterBipolars = .5*rfDiameterMicrons / (patchSizeMicronsXY(2) / nColBipolars);
 
 % centers of receptive fields
 centerX = (0:2:nRGC(1)-1)*rfDiameterBipolars; % RGC center row coords in nBipolars
