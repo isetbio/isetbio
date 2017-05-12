@@ -37,9 +37,9 @@ p.addRequired('patchSize',@isscalar);
 p.addRequired('nRowBipolars',@isscalar);
 p.addRequired('nColBipolars',@isscalar);
 p.addRequired('rfDiameterMicrons',@isscalar);
-p.addParameter('centerNoise',1.25,@isscalar); % in units of nBipolars
+p.addParameter('centerNoise',.15,@isscalar); % in units of nBipolars
 p.addParameter('baseLineFiringRate',2.2702,@isscalar); % JRG pulled from ON Parasol 2013_08_19_6
-
+p.KeepUnmatched = true;
 vFunc = @(x)(ismatrix(x) || isempty(x));
 p.addParameter('ellipseParams',[],vFunc);  % A,B,rho
 
@@ -135,6 +135,9 @@ centerNoiseBipolarsRow = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols
 centerNoiseBipolarsCol = centerNoiseBipolars*rfDiameterBipolars*(randn(rows,cols));
 
 Qout = cell(rows,cols); 
+
+ellipseParams = ellipseGen(rows,cols,p.Unmatched,'ellipseParams',ellipseParams);
+ 
 for ii = 1 : rows
     for jj = 1 : cols
         
@@ -146,29 +149,14 @@ for ii = 1 : rows
         ic = centerX(ii) + centerNoiseBipolarsRow(ii,jj) - (mod(jj, 2) - 0.5) * rfDiameterBipolars;
         jc = centerY(jj) + centerNoiseBipolarsCol(ii,jj); 
    
-        % Add some noise to deviate from circularity 
-        % (unitless: Q = (1/d^2)*[1 0; 0 1] yields circular SD with r = d
-        % d1 = 1; d2 =  10*0.0675*(rand(1,1)-0.5);      % 0.0675*randn(1,1);
-        % Q = (1/rfDiameter^2)*[d1 d2; d2 d1]./norm([d1 d2; d2 d1]);
-        
-        % Get ellipse parameters 
-        D = abs(0.1*randn(1,2) + 0.5);    %(eye(2)*.2*(rand(2,1)-.5))'; 
-        D = D./norm(D);
-        angleRot = 180*(rand(1,1)-.5);
-        %  ellipseParams = ellipseGen(cols,rows);
-        if isempty(ellipseParams)
-            ellipseParameters = [(1/rfDiameterBipolars)^2*D,angleRot];
-            ellipseParameters(1:2) = ellipseParameters(1:2)./norm(ellipseParameters(1:2));
-        elseif size(ellipseParams,1)==1
-            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
+        if size(ellipseParams,1)==1
+            ellipseParameters = [ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
         else
-            ellipseParameters = [(1/rfDiameterBipolars)^2*ellipseParams{ii,jj}(1:2), ellipseParams{ii,jj}(3)];
+            ellipseParameters = [ellipseParams{ii,jj}(1:2)./norm(ellipseParams{ii,jj}(1:2)), ellipseParams{ii,jj}(3)];
         end
         Qe = ellipseQuadratic(ellipseParameters); 
         Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
-        
-        % ieShape('ellipse','ellipseParameters',[diag(Qe)'./norm(diag(Qe)),angleRot]);
-        
+                
         % Calculate (x,y) values for input to DoG function in an efficient way
         [i2, j2] = meshgrid(pts, pts); % nBipolars
         i = i2(:); j = j2(:);          % nBipolars
