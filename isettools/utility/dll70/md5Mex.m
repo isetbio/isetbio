@@ -19,9 +19,9 @@ function md5Mex
 %compiler installation.  
 %
 
-chdir(fullfile(isetRootPath,'dll70','md5'));
+chdir(fullfile(isetRootPath,'utility','dll70','md5'));
 mex md5.cpp
-movefile(['md5.',mexext],fullfile(isetRootPath,'dll70',['md5.',mexext]))
+movefile(['md5.',mexext],fullfile(isetRootPath,'utility','dll70',['md5.',mexext]))
 path(path)
 fprintf('The md5 for your system is %s\n',which('md5'))
 

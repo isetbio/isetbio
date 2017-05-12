@@ -43,8 +43,18 @@ function reassignConeIdentities(obj, varargin)
         
             eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
             ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
-            [coneSpacing, ~, ~] = coneSize(eccInMeters(:),ang(:));
-            localConeSpacingMicrons = coneSpacing * 1e6;
+            
+            if (obj.varyingDensity)
+                [coneSpacing, ~, ~] = coneSize(eccInMeters(:),ang(:));
+            else
+                [coneSpacing, ~, ~] = coneSize(0*eccInMeters(:),ang(:));
+                if (~isempty(obj.customLambda))
+                    coneSpacing = obj.customLambda/1e6 + 0*coneSpacing;
+                end
+            end
+            
+            % use 10% larger because of granularity in hex locations
+            localConeSpacingMicrons = 1.1 * coneSpacing * 1e6;
 
             [distances, idx] = pdist2(sConeCoordsMicrons, sConeCoordsMicrons, 'euclidean', 'Smallest', 2);
             

@@ -1,5 +1,8 @@
 function exportFigToPDF(pdfFileName,figHandle,dpi, varargin)
 
+    if (isempty(figHandle))
+        return;
+    end
     % If no handle is provided, use the current figure as default
     if nargin<1
         [fileName,pathName] = uiputfile('*.pdf','Save to PDF file:');
