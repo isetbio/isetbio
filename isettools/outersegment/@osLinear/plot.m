@@ -1,8 +1,9 @@
 function h = plot(os, pType, varargin)
-% Plots the osLinear properties and then sends on plot@outersegment
+% OSLINEAR.PLOT - Plots the osLinear properties and then sends on plot@outersegment
 %
 % Inputs: 
 %   os - osLinear object
+%   pType - Plot Type
 % 
 % pType for osLinear only:
 %  current filters - Converts absorptions to photo current for linear model
@@ -27,10 +28,13 @@ p.KeepUnmatched = true;
 p.addRequired('os',@(x)(isa(os,'osLinear')));
 p.addRequired('pType',@ischar);
 
+% Sometime we need these
+p.addParameter('cmosaic',[],@(x)(isa(x,'coneMosaic')));
 p.addParameter('meancurrent',[],@isvector);
 
 p.parse(os, pType, varargin{:});
 meancurrent = p.Results.meancurrent;  % Background current for linear model
+cmosaic     = p.Results.cmosaic;
 
 % No additional parameter/values yet
 % Could put in for one cone class
@@ -43,8 +47,12 @@ switch ieParamFormat(pType)
         % Plot linear temporal filters for L, M and S cones.
 
         h = vcNewGraphWin;
-        tSamples = os.timeAxis;
         
+        if isempty(os.lmsConeFilter)
+            os.linearFilters(cmosaic);
+        end
+        tSamples = os.timeAxis;
+
         plot(tSamples,os.lmsConeFilter(:,1),'r-', ...
             tSamples,os.lmsConeFilter(:,2),'g-', ...
             tSamples,os.lmsConeFilter(:,3),'b-');

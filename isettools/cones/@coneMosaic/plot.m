@@ -70,10 +70,10 @@ uData = [];
 % Find a cleaner way to check and send to os.plot().  Maybe create a parse
 % argument string as in ISET.
 if (length(pType) > 3 && strcmp(pType(1:3),'os '))
-    obj.os.plot(pType(4:end),varargin{:});
+    obj.os.plot(pType(4:end),'cmosaic',obj,varargin{:});
     return;
 elseif (length(pType) > 13 && strcmp(pType(1:13),'outersegment '))
-    obj.os.plot(pType(14:end),varargin{:});
+    obj.os.plot(pType(14:end),'cmosaic',obj,varargin{:});
     return;
 end
 
@@ -105,7 +105,7 @@ switch ieParamFormat(pType)
         % Speed things up
         nCones = size(obj.coneLocs,1);
         locs = obj.coneLocs; pattern = obj.pattern(:);
-        if  nCones > maxCones;
+        if  nCones > maxCones
             disp('Displaying subsampled (50K) version')
             lst = randi(nCones,[maxCones,1]);
             lst = unique(lst);
