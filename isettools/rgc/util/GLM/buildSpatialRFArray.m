@@ -154,6 +154,7 @@ for ii = 1 : rows
         else
             ellipseParameters = [ellipseParams{ii,jj}(1:2)./norm(ellipseParams{ii,jj}(1:2)), ellipseParams{ii,jj}(3)];
         end
+        ellipseParameters
         Qe = ellipseQuadratic(ellipseParameters); 
         Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
                 
@@ -183,17 +184,17 @@ for ii = 1 : rows
         sRFcenter{ii,jj} = so_center;
         sRFsurround{ii,jj} = so_surround;
         
-%         % Do some calculations to make plots where RFs are filled in
-%         % Measure magnitude at 1 SD from center
-%         if ii == 1 && jj == 1
-%             xv = [1 0];%rand(1,2);
-%             xvn = rfDiameterBipolars * xv./norm(xv);
-%             x1 = xvn(1); y1 = xvn(2);
-%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-%             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-%             rii = mr; cii = mc; im = 1;
-%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)];
-%         end
+        % Do some calculations to make plots where RFs are filled in
+        % Measure magnitude at 1 SD from center
+        if ii == 1 && jj == 1
+            xv = [1 0];%rand(1,2);
+            xvn = rfDiameterBipolars * xv./norm(xv);
+            x1 = xvn(1); y1 = xvn(2);
+            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+            rii = mr; cii = mc; im = 1;
+            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
+        end
         Qout{ii,jj} = ellipseParameters;
     end
 end

@@ -32,7 +32,7 @@ end
 
 % Get angle values if they are not already set
 if isempty(angleValues)
-    angleValues = 360*(rand([nRows nCols])-.5);
+    angleValues = 180*(rand([nRows nCols])-.5);
 end
 
 % Build cell array for ellipse parameters out
