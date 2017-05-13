@@ -188,22 +188,22 @@ for ii = 1 : rows
         end
         
         % Makes the 2x2 positive definite quadratic form (matrix)
-        Qe = ellipseQuadratic(ellipseParameters);
+        Q = ellipseQuadratic(ellipseParameters);
         
         % Take the pts variable and make a mesgrid of XY values
         % 
         % s_center = exp(-  (XY - C)'*Qe*(XY-C))
-        % Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
+        % Q = (.125/rfDiameterBipolars^2)*Q./norm(Qe(:));
                 
         % Calculate (x,y) values for input to DoG function in an efficient way
         [X, Y] = meshgrid(pts, pts); % nBipolars
         XY = [X(:) Y(:)];
         
         % Scale by the r and Q
-        QXY  = diag(XY * Qe * XY'); 
+        QXY  = diag(XY * Q * XY'); 
         
         % Surround
-        RQXY = diag(r*XY*Qe*XY');       % unitless
+        RQXY = r*QXY;       % unitless
         %  icrm = repmat([ic jc],length(i),1);
         
         % (-0.5*(x-c)*Q*(x-c)'): unitless
@@ -212,7 +212,7 @@ for ii = 1 : rows
         
         % DoG calculation
         % conditional intensity, related by Poisson firing to spikes/sec
-        so_center   = reshape(exp(-0.5*QXY), size(X));
+        so_center   = reshape(exp(-0.5*QXY),    size(X));
         so_surround = reshape(k*exp(-0.5*RQXY), size(X));
         
         % mesh(so_center)
