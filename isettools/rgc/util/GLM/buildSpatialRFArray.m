@@ -193,17 +193,17 @@ for ii = 1 : rows
         % Take the pts variable and make a mesgrid of XY values
         % 
         % s_center = exp(-  (XY - C)'*Qe*(XY-C))
-        Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
+        % Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
                 
         % Calculate (x,y) values for input to DoG function in an efficient way
         [X, Y] = meshgrid(pts, pts); % nBipolars
         XY = [X(:) Y(:)];
         
         % Scale by the r and Q
-        QXY  = XY * Q * XY'; 
+        QXY  = diag(XY * Qe * XY'); 
         
         % Surround
-        RQXY = r*XY*Q*XY';       % unitless
+        RQXY = diag(r*XY*Qe*XY');       % unitless
         %  icrm = repmat([ic jc],length(i),1);
         
         % (-0.5*(x-c)*Q*(x-c)'): unitless
@@ -214,6 +214,10 @@ for ii = 1 : rows
         % conditional intensity, related by Poisson firing to spikes/sec
         so_center   = reshape(exp(-0.5*QXY), size(X));
         so_surround = reshape(k*exp(-0.5*RQXY), size(X));
+        
+        % mesh(so_center)
+        % mesh(so_surround)
+        
         % so          = so_center - so_surround;
         
         % Needs an explanation.
