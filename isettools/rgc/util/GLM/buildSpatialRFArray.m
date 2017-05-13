@@ -117,7 +117,7 @@ centerCorrectX = (rowCenter(end) - (rowCenter(1)))/2; % nBipolars
 
 % pre-allocate memory
 cellCenterLocations = cell(rows, cols);
-spatialRFArray      = cell(rows, cols);
+% spatialRFArray      = cell(rows, cols);
 sRFcenter           = cell(rows, cols);
 sRFsurround         = cell(rows, cols);
 tonicDrive          = cell(rows, cols);
@@ -190,45 +190,52 @@ for ii = 1 : rows
         % Makes the 2x2 positive definite quadratic form (matrix)
         Qe = ellipseQuadratic(ellipseParameters);
         
+        % Take the pts variable and make a mesgrid of XY values
+        % 
+        % s_center = exp(-  (XY - C)'*Qe*(XY-C))
         Q = (.125/rfDiameterBipolars^2)*Qe./norm(Qe(:));
                 
         % Calculate (x,y) values for input to DoG function in an efficient way
-        [i2, j2] = meshgrid(pts, pts); % nBipolars
-        i = i2(:); j = j2(:);          % nBipolars
-        IJ = [i j];
+        [X, Y] = meshgrid(pts, pts); % nBipolars
+        XY = [X(:) Y(:)];
         
         % Scale by the r and Q
-        QIJ  = Q*IJ'; 
-        rQIJ = r*Q*IJ';       % unitless
+        QXY  = XY * Q * XY'; 
+        
+        % Surround
+        RQXY = r*XY*Q*XY';       % unitless
         %  icrm = repmat([ic jc],length(i),1);
         
         % (-0.5*(x-c)*Q*(x-c)'): unitless
-        p1 = prod([IJ(:,1) QIJ(1,:)'],2) + prod([IJ(:,2) QIJ(2,:)'],2);
-        p2 = prod([IJ(:,1) rQIJ(1,:)'],2)+ prod([IJ(:,2) rQIJ(2,:)'],2);
+        %         p1 = prod([IJ(:,1) QXY(1,:)'],2) + prod([IJ(:,2)  QXY(2,:)'],2);
+        %         p2 = prod([IJ(:,1) RQXY(1,:)'],2) + prod([IJ(:,2) RQXY(2,:)'],2);
         
         % DoG calculation
         % conditional intensity, related by Poisson firing to spikes/sec
-        so_center = reshape(exp(-0.5*p1), size(i2));
-        so_surround = reshape(k*exp(-0.5*p2), size(i2));
-        so = so_center - so_surround;
+        so_center   = reshape(exp(-0.5*QXY), size(X));
+        so_surround = reshape(k*exp(-0.5*RQXY), size(X));
+        % so          = so_center - so_surround;
         
+        % Needs an explanation.
+        cellCenterLocations{ii,jj} = ...
+            (patchSizeMicronsXY(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); 
+        
+        % spatialRFArray{ii,jj} = so;
         % Store calculated parameters, units of conditional intensity
-        cellCenterLocations{ii,jj} = (patchSizeMicronsXY(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); % nBipolars
-        spatialRFArray{ii,jj} = so;
-        sRFcenter{ii,jj} = so_center;
-        sRFsurround{ii,jj} = so_surround;
+        sRFcenter{ii,jj}      = so_center;
+        sRFsurround{ii,jj}    = so_surround;
         
         % Do some calculations to make plots where RFs are filled in
         % Measure magnitude at 1 SD from center
-        if ii == 1 && jj == 1
-            xv = [1 0];   % rand(1,2);
-            xvn = rfDiameterBipolars * xv./norm(xv);
-            x1 = xvn(1); y1 = xvn(2);
-            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-            rii = mr; cii = mc; im = 1;
-            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
-        end
+        %         if ii == 1 && jj == 1
+        %             xv = [1 0];   % rand(1,2);
+        %             xvn = rfDiameterBipolars * xv./norm(xv);
+        %             x1 = xvn(1); y1 = xvn(2);
+        %             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
+        %             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+        %             rii = mr; cii = mc; im = 1;
+        %             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
+        %         end
         Qout{ii,jj} = ellipseParameters;
     end
 end
