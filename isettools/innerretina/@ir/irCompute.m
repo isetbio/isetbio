@@ -63,9 +63,11 @@ else
 end
 % irPlot(ir,'response linear');
 
-%% Compute spikes for each trial
+%% Compute spikes from linear response; do for multiple trials
+
+% This should be for ii=1:length(ir.mosaic)
 switch class(ir.mosaic{1})
-    case {'rgcLinear'};
+    case {'rgcLinear'}
         % No linear response implemented yet.
         disp('No spikes computed for linear RGC mosaic');   
     otherwise

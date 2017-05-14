@@ -37,6 +37,7 @@ allowableFields = {...
     'responseCenter','bipolarresponsecenter',...
     'responseSurround','bipolarresponsesurround',...
     'response','bipolarresponse'...
+    'duration' ...
     };
 
 p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
@@ -54,6 +55,10 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
         
     case{'timestep'}
         val = obj.timeStep;
+        
+    case {'duration'}
+        % In seconds
+        val = obj.timeStep*size(obj.responseCenter,3);
         
     case{'rgbdata'}
         val = obj.rgbData;

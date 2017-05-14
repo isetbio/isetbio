@@ -148,6 +148,7 @@ methods
         
        
     end
+    
     function window(obj)
         obj.figureHandle = bipolarWindow(obj);
         % Tip: Retrieve guidata using

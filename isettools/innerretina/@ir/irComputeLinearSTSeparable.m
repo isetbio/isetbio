@@ -1,5 +1,5 @@
 function [ir, nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, varargin)
-% Computes the mosaic's linear response to an input
+% IRCOMPUTELINEARSTSEPARABLE - Computes the RGC mosaic linear response
 %
 %   ir = irComputeLinearSTSeparable(ir, input, varargin)
 %
@@ -8,11 +8,11 @@ function [ir, nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, vararg
 %
 % There are two types of possible input objects.
 %
-%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
-%           stored in an outer segment object.
-%      'bipolar' - the bipolar cell object with a signal that has gone
-%           through temporal filtering and possibly spatial subunit
-%           nonlinearities.
+%  'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
+%     stored in an outer segment object.
+%  'bipolar' - the bipolar cell object with a signal that has gone
+%     through temporal filtering and possibly spatial subunit
+%     nonlinearities.
 % 
 % For a given mosaic, first the spatial convolution of the center and
 % surround RFs are calculated for each RGB channel, followed by the
@@ -71,18 +71,17 @@ bipolarTrials = p.Results.bipolarTrials;
 
 % Possible osTypes are osIdentity, osLinear, and osBiophys
 % Only osIdentity is implemented now.
-if length(bp) == 1
-    osType = class(bp);
-else
-    osType = class(bp{1});
-end
+% if length(bp) == 1
+%     osType = class(bp);
+% else
+%     osType = class(bp{1});
+% end
 % Bipolar test case in t_coneMosaic
 % t_rgcBar, others to be named.
 
+nTrials = 1;
 if ~isempty(bipolarTrials)
     nTrials = size(bipolarTrials,1);
-else
-    nTrials = 1;
 end
 
 for iTrial = 1:nTrials
@@ -96,6 +95,7 @@ for iTrial = 1:nTrials
         else
             stim   = bp{rgcType}.get('responseCenter');
         end
+        
         switch class(ir.mosaic{rgcType})
             case 'rgcPhys'
                 magFactor = 7.9; % due to bipolar filter
@@ -117,9 +117,7 @@ for iTrial = 1:nTrials
         % Convolve with the temporal impulse response
         respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
         respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-        % Delete fullConvolve
         % ieMovie(respC - respS);
-        
         
         if ~isempty(bipolarTrials)
             if iTrial == 1
@@ -132,7 +130,6 @@ for iTrial = 1:nTrials
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
         end
-        
     end
 end
 
