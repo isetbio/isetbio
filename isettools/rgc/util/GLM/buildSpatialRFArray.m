@@ -1,6 +1,6 @@
-function [sRFcenter, sRFsurround, cellCenterLocations, tonicDrive, Qout] = ...
+function [sRFcenter, sRFsurround, cellCenterLocations, tonicDrive, ellipseParams] = ...
     buildSpatialRFArray(patchSizeMeters, nRowBipolars, nColBipolars, rfDiameterMicrons, varargin)
-% Builds the spatial RF center and surround for the cells in a mosaic
+% BUILDSPATIALARRAY - Create RF center and surround for RGC mosaic
 % 
 % The spatial RFs are generated according to the size of the pixel, cone or
 % bipolar mosaic, their spacing (in microns) and the diameter of the RGC RF
@@ -79,31 +79,35 @@ k = 1.032 * r;   % scaling of magnitude of surround
   
 %% Converting the spatial units from microns to bipolar samples
 
-% Width of the entire patch of cones (which is equal to the patch of
-% bipolars) arrives in meters. We convert to microns and build up a
-% height/width representation (row,col)
-patchSizeMicrons = patchSizeMeters * 1e6;    % Column (width) in um
-patchSizeMicronsXY = [patchSizeMicrons*(nRowBipolars/nColBipolars), patchSizeMicrons]; % Row/Col in um
+% p[atchSizeMeters is the width of the patch of cones sampled by the
+% bipolars. This arrives in meters, we convert row/col in microns
+patchRowColMicrons = [patchSizeMeters*(nRowBipolars/nColBipolars), patchSizeMeters]*1e6; % Row/Col in um
+
+% This is the diameter of the cone mosaic seen by each bipolar in units of
+% microns. 
+bipolarDiameterMicrons = (patchRowColMicrons(2) / nColBipolars);
 
 % Determine the number of RGC samples in the hexagonal mosaic
 % nRGC: RGC cells, row col. 
-nRGC    = floor(patchSizeMicronsXY ./ rfDiameterMicrons); % number of RGCs in h, v direction
-nRGC(2) = floor((2/sqrt(3))*nRGC(2));   % Hex packing related
+nRGC    = floor(patchRowColMicrons ./ rfDiameterMicrons); % number of RGCs in h, v direction
 
-% We calculate the diameter of each bipolar in units of microns.
-bipolarDiameterMicrons = (patchSizeMicronsXY(2) / nColBipolars);
-
-% The RGC rfDiameter in terms of the bipolar array
-% JRG to explain why there is the 0.5.
-rfDiameterBipolars = 0.5 * rfDiameterMicrons / bipolarDiameterMicrons;
+% The scale factor accounts for the hexagonal packing of the RGC mosaic
+nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 
 % From here the spatial mosaic dimensions are mainly in units of bipolar spacing
 
-% Centers of hexagonally packed receptive fields in bipolar space
-rowCenter = (0:2:nRGC(1)-1)*rfDiameterBipolars; % RGC center row coords in nBipolars
-colCenter = (sqrt(3)/2 ) *(0:2:nRGC(2)-1)*rfDiameterBipolars; % RGC center col coords in nBipolars
+% The RGC rfDiameter in terms of the bipolar array
+% JRG to explain why there is the 0.5.  Is one a radius and the other a
+% diameter???
+% rfDiameterBipolars = 0.5 * rfDiameterMicrons / bipolarDiameterMicrons;
+rfDiameterBipolars = rfDiameterMicrons / bipolarDiameterMicrons;
+
+% Centers of hexagonally packed receptive fields in bipolar space.  Why are
+% we only making half as many?
+rowCenter = (0:nRGC(1)-1)*rfDiameterBipolars;               
+colCenter = (sqrt(3)/2 ) *(0:nRGC(2)-1)*rfDiameterBipolars;
 rows = length(rowCenter);
-cols = length(colCenter);     % number of RGCs
+cols = length(colCenter);
 
 % This is the sampling range that we use to specify the spatial extent of
 % the bipolar cells feeding into one RGC.
@@ -147,6 +151,7 @@ end
 % interested.
 centerNoiseBipolarsRow = (centerNoiseBipolars*randn(rows,cols))*rfDiameterBipolars;
 centerNoiseBipolarsCol = (centerNoiseBipolars*randn(rows,cols))*rfDiameterBipolars;
+% vcNewGraphWin; plot(centerNoiseBipolarsCol(:),centerNoiseBipolarsRow(:),'.')
 
 % These are the ellipse shape parameters (not centered)
 ellipseParams = ellipseGen(rows,cols,p.Unmatched,'ellipseParams',ellipseParams);
@@ -179,16 +184,11 @@ for ii = 1 : rows
         % forces the overall size of the ellipses to be about 1 bipolar
         % size because the first two dimensions are the major and minor
         % axes.
-        if size(ellipseParams,1) == 1
-            % User passed in a vector
-            ellipseParameters = [ellipseParams(1:2)./norm(ellipseParams(1:2)), ellipseParams(3)];
-        else
-            % Produced by ellipseGen
-            ellipseParameters = [ellipseParams{ii,jj}(1:2)./norm(ellipseParams{ii,jj}(1:2)), ellipseParams{ii,jj}(3)];
-        end
+        % Produced by ellipseGen
+        ellipseP = [ellipseParams{ii,jj}(1:2)./norm(ellipseParams{ii,jj}(1:2)), ellipseParams{ii,jj}(3)];
         
         % Makes the 2x2 positive definite quadratic form (matrix)
-        Q = ellipseQuadratic(ellipseParameters);
+        Q = ellipseQuadratic(ellipseP);
         
         % Take the pts variable and make a mesgrid of XY values
         % 
@@ -222,25 +222,13 @@ for ii = 1 : rows
         
         % Needs an explanation.
         cellCenterLocations{ii,jj} = ...
-            (patchSizeMicronsXY(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); 
+            (patchRowColMicrons(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); 
         
         % spatialRFArray{ii,jj} = so;
         % Store calculated parameters, units of conditional intensity
         sRFcenter{ii,jj}      = so_center;
         sRFsurround{ii,jj}    = so_surround;
         
-        % Do some calculations to make plots where RFs are filled in
-        % Measure magnitude at 1 SD from center
-        %         if ii == 1 && jj == 1
-        %             xv = [1 0];   % rand(1,2);
-        %             xvn = rfDiameterBipolars * xv./norm(xv);
-        %             x1 = xvn(1); y1 = xvn(2);
-        %             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r*Q*[x1; y1]);
-        %             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-        %             rii = mr; cii = mc; im = 1;
-        %             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameterBipolars (cii-mc-1)]
-        %         end
-        Qout{ii,jj} = ellipseParameters;
     end
 end
 
