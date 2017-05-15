@@ -74,6 +74,8 @@ p.parse(param,varargin{:});
 param = ieParamFormat(p.Results.param);
 cell = p.Results.cell;
  
+%%
+val = [];  % Default return value
 switch ieParamFormat(param)
     
     case{'celltype'}
@@ -147,6 +149,10 @@ switch ieParamFormat(param)
     case {'lastspiketime'}
         % The latest time at which a spike occurs in seconds, used in
         % plotting functions.
+        if ~isfield(obj,'responseSpikes')
+            return;
+        end
+        
         nCells  = obj.get('mosaic size');
         nTrials = obj.get('numbertrials');
         spikes  = obj.responseSpikes;
@@ -164,6 +170,9 @@ switch ieParamFormat(param)
     case{'responsespikes','spiketimes'}
         % Get the spike times in an array
         
+        if ~isfield(obj,'responseSpikes')
+            return;
+        end
         nCells  = obj.get('mosaic size');
         nTrials = obj.get('numbertrials');        
         spikes  = obj.responseSpikes;
@@ -187,8 +196,13 @@ switch ieParamFormat(param)
         end        
         
     case {'spikes'}
+        % What is the difference between this and responseSpikes?
         % cellCtr = 0;
         % @JRG - Needs to be updated
+        if ~isfield(obj,'responseSpike')
+            return;
+        end
+        
         dt = obj.dt;
         maxTrials = obj.get('number trials');
         nCells    = obj.get('mosaic size');
@@ -214,7 +228,7 @@ switch ieParamFormat(param)
                         % For the rgc physiology in EJ's experiments, the
                         % time base is 10 usec, not 1 ms
                         spikeTimes = .01*spikeTimes;
-                    end;
+                    end
                     % Vector on a time base of dt with a 0 or 1 indicating
                     % a spike or not.
                     spikesCell(trial,ceil(spikeTimes./dt)) = 1;
@@ -235,6 +249,7 @@ switch ieParamFormat(param)
         % Get the spikes in an array, but downsampled by dt
         
         spikes = obj.get('spikes');        
+        if isempty(spikes), return; end
         
         nCells  = obj.get('mosaic size');  
                 
@@ -257,8 +272,10 @@ switch ieParamFormat(param)
         
     case{'psth'}
         % Calculate the PSTH from the response
-        nCells = obj.get('mosaic size');
         spikes = obj.get('spikes');
+        if isempty(spikes), disp('No PSTH'); return; end
+        nCells = obj.get('mosaic size');
+
         dt = obj.dt;
         nSamples = round(1/dt);
         sigma    = nSamples/5;

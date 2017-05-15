@@ -49,10 +49,10 @@ properties (SetAccess = protected, GetAccess = public)
     % CELLTYPE diffuse on or off
     cellType;                        
     
-    % PATCHSIZE size of retinal patch from sensor
+    % PATCHSIZE size of retinal patch from cone mosaic
     patchSize;                       
     
-    % TIMESTEP time step of simulation from sensor
+    % TIMESTEP time step of simulation from cone mosaic
     timeStep;       
     
     % FILTERTYPE bipolar temporal filter type

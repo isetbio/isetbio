@@ -54,9 +54,13 @@ switch ieParamFormat(plotType)
     case 'spikemeanimage'
         % Spike mean image
         g = guidata(hf);
-        axes(g.axisResponse);
-        
+        axes(g.axisResponse);        
         spikes = obj.get('spikes');
+        if isempty(spikes)
+            disp('No spikes have been computed (responseSpikes missing)');
+            return;
+        end
+        
         img = mean(spikes,3);
         colormap(gray(256)); imagesc(img); axis image;
         set(gca,'xticklabels','','yticklabels','');
@@ -74,6 +78,10 @@ switch ieParamFormat(plotType)
     case{'linearmovie'}
         % Continuous voltages prior to spike generation
         responseLinear = obj.get('responseLinear');
+        if isempty(responseLinear)
+            disp('No response computed');
+            return;
+        end
         
         clear vParams; 
         vParams.FrameRate = 30; 

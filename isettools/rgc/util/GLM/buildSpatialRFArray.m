@@ -73,7 +73,7 @@ baseLineFiringRate  = p.Results.baseLineFiringRate;
 % 1/r is a scalar that specifies the relative size of the surround.
 
 % Hard coded for now.  To eliminate.
-extent = 10;      % ratio between sampling size and spatial RF standard dev 
+extent = 10;     % ratio between sampling size and spatial RF standard dev 
 r = 0.75;        % radius ratio between center and surround for DoG
 k = 1.032 * r;   % scaling of magnitude of surround
   

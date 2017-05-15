@@ -171,6 +171,8 @@ switch str
     case 'PSTH movie'
         % PSTH movie shows all the cells as a PSTH
         responsePsth = handles.rgcMosaic.get('psth');
+        if isempty(responsePsth), disp('No Spikes'); return; end
+        
         clear vParams; vParams = [];
         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
         frameSkip = round(1./handles.rgcMosaic.get('dt'));
