@@ -102,6 +102,7 @@ switch ieParamFormat(plotType)
     case 'psth'
         % Peri-stimulus time graph for all cells.
         % Kind of a weird plot to make.
+        % Need a flag to force a new window;
         timeStep = obj.dt;
         psth = obj.get('psth');
         resp = RGB2XWFormat(psth);

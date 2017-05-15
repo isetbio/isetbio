@@ -211,17 +211,24 @@ function menuPlotPSTH_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % disp('Plot | PSTH')
     
-% Plots the psth of all the cells combined.  Kind of weird.
+% TURN THIS INTO A CALL TO RGC MOSAIC PLOT!!
 rgcMosaic = handles.rgcMosaic;
-timeStep  = rgcMosaic.dt;
-psth      = rgcMosaic.get('psth');
-resp      = RGB2XWFormat(psth);    % Each cell is in a row
-
 vcNewGraphWin;
-plot(timeStep*(1:size(resp,2)),resp');
-grid on;
-xlabel('Time (sec)');
-ylabel(sprintf('Spikes per %d ms',timeStep*1e3));
+
+% Try to force this into a new window with a flag.
+rgcMosaic.plot('psth');
+
+% Plots the psth of all the cells combined.  Kind of weird.
+% rgcMosaic = handles.rgcMosaic;
+% timeStep  = rgcMosaic.dt;
+% psth      = rgcMosaic.get('psth');
+% resp      = RGB2XWFormat(psth);    % Each cell is in a row
+% 
+% vcNewGraphWin;
+% plot(timeStep*(1:size(resp,2)),resp');
+% grid on;
+% xlabel('Time (sec)');
+% ylabel(sprintf('Spikes per %d ms',timeStep*1e3));
 
 end
 

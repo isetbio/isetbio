@@ -119,7 +119,7 @@ classdef rgcMosaic < handle
             % impulse responses of the appropriate parameters for the cell type.
             obj.cellType = mosaicInd;
             
-            % Generate spatial RFs of the approrpiate size for the cell type and TEE
+            % Generate spatial RFs of the appropriate size for the cell type and TEE
             obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
             obj.rgcInitTime(ir);             % Sets tCenter/tSurround
             

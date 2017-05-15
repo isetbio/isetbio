@@ -40,9 +40,9 @@ p.KeepUnmatched = true;
 p.addRequired('rgcM');
 p.addRequired('innerRetina');
 
-vFunc = @(x)(ismember(ieParamFormat(x),{'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
+vFunc = @(x)(ismember(ieParamFormat(x),...
+    {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
-% p.addParameter('centerNoise');
 p.parse(rgcM,innerRetina,cellType,varargin{:});
 
 %% Set up defaults for the sizes and weights.

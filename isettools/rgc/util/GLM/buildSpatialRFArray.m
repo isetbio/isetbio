@@ -83,48 +83,55 @@ k = 1.032 * r;   % scaling of magnitude of surround
 % bipolars. This arrives in meters, we convert row/col in microns
 patchRowColMicrons = [patchSizeMeters*(nRowBipolars/nColBipolars), patchSizeMeters]*1e6; % Row/Col in um
 
-% This is the diameter of the cone mosaic seen by each bipolar in units of
-% microns. 
+% This is the diameter of the cone mosaic sampled by each bipolar in units
+% of microns.
 bipolarDiameterMicrons = (patchRowColMicrons(2) / nColBipolars);
+
+%% The spatial mosaic dimensions are in units of bipolar spacing
+
+% The RGC rfDiameter in terms of bipolar array samples.  So, one step is
+% one step in the bipolar array. From here on out, the spatial coordinate
+% system is with respect to the bipolar array.
+rfDiameter = rfDiameterMicrons / bipolarDiameterMicrons;
 
 % Determine the number of RGC samples in the hexagonal mosaic
 % nRGC: RGC cells, row col. 
 nRGC    = floor(patchRowColMicrons ./ rfDiameterMicrons); % number of RGCs in h, v direction
 
-% The scale factor accounts for the hexagonal packing of the RGC mosaic
+% Adjust the scale factor to account for the hexagonal packing of the RGC
+% mosaic
 nRGC(2) = floor((2/sqrt(3))*nRGC(2));
 
-% From here the spatial mosaic dimensions are mainly in units of bipolar spacing
+% Initial, noise free sample positions of RGC receptive field centers in
+% bipolar space.  The centers are spaced by the one rfDiameter and the
+% coordinate frame has a (0,0) in the middle of the bipolar plane.  No
+% noise at the moment.  Added later.
+rowCenters = (0:nRGC(1)-1)*rfDiameter;               
+colCenters = (sqrt(3)/2 ) *(0:nRGC(2)-1)*rfDiameter;
+rowCenters = rowCenters - mean(rowCenters);
+colCenters = colCenters - mean(colCenters);
 
-% The RGC rfDiameter in terms of the bipolar array
-% JRG to explain why there is the 0.5.  Is one a radius and the other a
-% diameter???
-% rfDiameterBipolars = 0.5 * rfDiameterMicrons / bipolarDiameterMicrons;
-rfDiameterBipolars = rfDiameterMicrons / bipolarDiameterMicrons;
-
-% Centers of hexagonally packed receptive fields in bipolar space.  Why are
-% we only making half as many?
-rowCenter = (0:nRGC(1)-1)*rfDiameterBipolars;               
-colCenter = (sqrt(3)/2 ) *(0:nRGC(2)-1)*rfDiameterBipolars;
-rows = length(rowCenter);
-cols = length(colCenter);
+% Count the number of rows and columns of the RGCs
+nRows = length(rowCenters);
+nCols = length(colCenters);
 
 % This is the sampling range that we use to specify the spatial extent of
-% the bipolar cells feeding into one RGC.
-pts = -extent*rfDiameterBipolars+1 : extent*rfDiameterBipolars;
+% the bipolar cells feeding into one RGC.  This should be bigger than the
+% largest rgc RF.  So really, extent should be chosen based on the sizer of
+% the RGC RFs, not fixed as it is here (BW).
+pts = -extent:extent;
 
 %% Create spatial RGC RFs
 
 % Make sure the centers are symmetric around zero.
-centerCorrectY = (colCenter(end) - (colCenter(1)))/2; % nBipolars
-centerCorrectX = (rowCenter(end) - (rowCenter(1)))/2; % nBipolars
+% centerCorrectY = (colCenters(end) - (colCenters(1)))/2; % nBipolars
+% centerCorrectX = (rowCenters(end) - (rowCenters(1)))/2; % nBipolars
 
 % pre-allocate memory
-cellCenterLocations = cell(rows, cols);
-% spatialRFArray      = cell(rows, cols);
-sRFcenter           = cell(rows, cols);
-sRFsurround         = cell(rows, cols);
-tonicDrive          = cell(rows, cols);
+cellCenterLocations = cell(nRows, nCols);
+sRFcenter           = cell(nRows, nCols);
+sRFsurround         = cell(nRows, nCols);
+tonicDrive          = cell(nRows, nCols);
 
 %% Set the tonic drive
 
@@ -132,9 +139,9 @@ tonicDrive          = cell(rows, cols);
 % GLM. If the tonic drive term is greater than 0, then there is a
 % baseline firing rate even when the stimulus input is zero.
 % Units of conditional intensity
-for ii = 1 : rows
-    for jj = 1 : cols
-        tonicDrive{ii,jj} = baseLineFiringRate; % from ON Parasol 2013_08_19_6
+for rr = 1 : nRows
+    for cc = 1 : nCols
+        tonicDrive{rr,cc} = baseLineFiringRate; % from ON Parasol 2013_08_19_6
     end
 end
 
@@ -145,38 +152,34 @@ end
 % Specify the ellipse parameters for each cell
 
 % Jitter the center positions of each cell. 
-%
 % N.B. Sometimes this introduces a little flip in position.  We could
-% eliminate that by using rand() instead of randn().  But we are
-% interested.
-centerNoiseBipolarsRow = (centerNoiseBipolars*randn(rows,cols))*rfDiameterBipolars;
-centerNoiseBipolarsCol = (centerNoiseBipolars*randn(rows,cols))*rfDiameterBipolars;
+% eliminate that by using rand() instead of randn().
+centerNoiseRows = (centerNoiseBipolars*randn(nRows,nCols))*rfDiameter;
+centerNoiseCols = (centerNoiseBipolars*randn(nRows,nCols))*rfDiameter;
 % vcNewGraphWin; plot(centerNoiseBipolarsCol(:),centerNoiseBipolarsRow(:),'.')
 
 % These are the ellipse shape parameters (not centered)
-ellipseParams = ellipseGen(rows,cols,p.Unmatched,'ellipseParams',ellipseParams);
+ellipseParams = ellipseGen(nRows,nCols,p.Unmatched,'ellipseParams',ellipseParams);
 
 % The retured ellipse parameters
-Qout = cell(rows,cols); 
+% Qout = cell(rows,cols); 
 
-hexOffset = 0.5 * rfDiameterBipolars;
+% To build the hex mosaic, we need this value
+hexOffset = 0.5 * rfDiameter;
 
-for ii = 1 : rows
-    for jj = 1 : cols
+for rr = 1:nRows         % Row index
+    for cc = 1:nCols     % Col index
         
         % Compute 2D spatial RF
         
-        % Specify RGC centers in bipolar samples.
-        % Offset even columns to set the hexagonal packing.
-        % Add some jitter to the center positions.  
-        % columnOffset = (mod(jj, 2) - 0.5) * rfDiameterBipolars;
-        % ic = centerX(ii) + centerNoiseBipolarsRow(ii,jj) - columnOffset;
-        % jc = centerY(jj) + centerNoiseBipolarsCol(ii,jj); 
+        % Specify RGC centers in bipolar sample space.
+        % First, add some jitter to the center positions.  
+        thisRowCenter = rowCenters(rr) + centerNoiseRows(rr,cc);
+        thisColCenter = colCenters(cc) + centerNoiseCols(rr,cc);
         
-        ic = rowCenter(ii) + centerNoiseBipolarsRow(ii,jj);
-        jc = colCenter(jj) + centerNoiseBipolarsCol(ii,jj); 
-        if mod(jj,2), ic = ic - hexOffset;   % Odd
-        else,         ic = ic + hexOffset;   % Even
+        % Then offset columns to set the hexagonal packing.
+        if mod(cc,2), thisRowCenter = thisRowCenter - hexOffset;   % Odd
+        else,         thisRowCenter = thisRowCenter + hexOffset;   % Even
         end
         
         % JRG - Should we keep the sizes all about the same, or do we allow
@@ -184,8 +187,10 @@ for ii = 1 : rows
         % forces the overall size of the ellipses to be about 1 bipolar
         % size because the first two dimensions are the major and minor
         % axes.
-        % Produced by ellipseGen
-        ellipseP = [ellipseParams{ii,jj}(1:2)./norm(ellipseParams{ii,jj}(1:2)), ellipseParams{ii,jj}(3)];
+        % ellipseP = [ellipseParams{rr,cc}(1:2)./norm(ellipseParams{rr,cc}(1:2)), ellipseParams{rr,cc}(3)];
+        
+        % Without the normalization
+        ellipseP = [ellipseParams{rr,cc}(1:2), ellipseParams{rr,cc}(3)];
         
         % Makes the 2x2 positive definite quadratic form (matrix)
         Q = ellipseQuadratic(ellipseP);
@@ -217,17 +222,19 @@ for ii = 1 : rows
         
         % mesh(so_center)
         % mesh(so_surround)
-        
-        % so          = so_center - so_surround;
+        % so = so_center - so_surround;
         
         % Needs an explanation.
-        cellCenterLocations{ii,jj} = ...
-            (patchRowColMicrons(2) / nColBipolars)*([ic jc] - [centerCorrectX centerCorrectY]); 
+        %         cellCenterLocations{rr,cc} = ...
+        %             (patchRowColMicrons(2) / nColBipolars)*([thisRowCenter thisColCenter] - [centerCorrectX centerCorrectY]);
+        
+        % Save the cell center location
+        cellCenterLocations{rr,cc} = [thisRowCenter, thisColCenter];
         
         % spatialRFArray{ii,jj} = so;
         % Store calculated parameters, units of conditional intensity
-        sRFcenter{ii,jj}      = so_center;
-        sRFsurround{ii,jj}    = so_surround;
+        sRFcenter{rr,cc}      = so_center;
+        sRFsurround{rr,cc}    = so_surround;
         
     end
 end

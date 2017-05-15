@@ -51,6 +51,7 @@ switch class(mosaic)
     case 'rgcPhys'
         offset = [0 0];
     otherwise
+        % This is the upper leftmost point, I think.
         % offset = [rowConv colConv].*mosaic.cellLocation{1,1};
         offset = mosaic.cellLocation{1,1};
 end
