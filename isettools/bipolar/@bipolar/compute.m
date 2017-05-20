@@ -114,9 +114,10 @@ for iTrial = 1:nTrials
             
             % Zero the photocurrent of the S cones. Do this for both the center
             % and the surround.
-            z = zeros(length(S),size(osSig,2));
-            osSigCenter(S(:),:)   = z;
-            osSigSurround(S(:),:) = z;
+            
+            minval = min(osSig(:));
+            osSigCenter(S(:),:)   = minval*ones(size(osSigCenter(S,:)));
+            osSigSurround(S(:),:) =  minval*ones(size(osSigCenter(S,:)));
             
         case{'offmidget'}
             % Keep S cone input for off Midget but only weight by 0.25
@@ -195,11 +196,7 @@ for iTrial = 1:nTrials
     
     % tmp = conv2(bipolarFilt,bipolarSurround);
     tmpSurround = conv2(bipolarFilt,obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)))));
-    
-    
-    tmpCenter = conv2(bipolarFilt,bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
-    tmpSurround = conv2(bipolarFilt,bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
-    
+       
     if ~isempty(coneTrials)
         
         if iTrial == 1

@@ -77,6 +77,7 @@ end
 % OS impulse response.
 params.filterDuration = 0.4; 
 params.samplingTime = 0.001;
+params.cellType = obj.cellType;
 [rgcFilt,rgcTime ] = rgcImpulseResponsePillow(params);
 % vcNewGraphWin; plot(rgcTime,rgcFilt);
 
@@ -119,7 +120,15 @@ if graph
     set(gca,'xlim',[-0.05 0.4]); xlabel('Time (sec)');
 end
 
+
+switch obj.cellType
+    case{'ondiffuse','onmidget','onsbc','sbc'}
+        signVal = 1;
+    otherwise
+        signVal = -1;
+end
+            
 % Down sample the time axis to match the cone mosaic sample times
-bipolarFilt =interp1(timeBase,bipolarFilt,cmosaic.timeAxis,'linear',0);
+bipolarFilt = signVal*interp1(timeBase,bipolarFilt,cmosaic.timeAxis,'linear',0);
 
 end
