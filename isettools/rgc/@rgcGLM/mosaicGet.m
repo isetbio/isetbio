@@ -11,7 +11,7 @@ function val = mosaicGet(obj, param, varargin)
 % Outputs: 
 %   val - parameter value
 % 
-%  Properties that can be gotten: 
+%  Properties: 
 %     generatorFunction
 %     postSpikeFilter
 %     numberTrials

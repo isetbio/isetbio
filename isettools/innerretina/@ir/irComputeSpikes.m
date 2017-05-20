@@ -135,10 +135,6 @@ for iTrial = 1:nTrials
             end
         end
         
-        
-        
-        %     if iTrial == nTrials
-        
         % Set mosaic property
         ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
         
@@ -154,7 +150,7 @@ for iTrial = 1:nTrials
             end
             nTrialsSpikeResponse(iTrial,ii,:,:,:) = ir.mosaic{ii}.get('spikes');
         end
-    end 
+    end
 end
 
 if isempty(nTrialsLinearResponse)

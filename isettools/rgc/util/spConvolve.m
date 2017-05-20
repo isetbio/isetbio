@@ -41,8 +41,9 @@ respSurround = zeros([nCells(1), nCells(2), nSamples, nColors]);
 
 %% Do the convolution.
 
-%
-rowConv = 1; colConv = 1;
+% BW:  I don't understand this. Am deleting because it doesn't do anything
+% anyway.
+% rowConv = 1; colConv = 1;
 
 % The middle cell is at (0,0).  This tells us how far offset the 1st cell
 % is from (0,0).
@@ -50,9 +51,12 @@ switch class(mosaic)
     case 'rgcPhys'
         offset = [0 0];
     otherwise
-        offset = [rowConv colConv].*mosaic.cellLocation{1,1};
+        % This is the upper leftmost point, I think.
+        % offset = [rowConv colConv].*mosaic.cellLocation{1,1};
+        offset = mosaic.cellLocation{1,1};
 end
 
+% BW:  I want to get rid of this nColors thing.
 for cc = 1 : nColors
     for ii = 1 : nCells(1)
         for jj = 1 : nCells(2)
@@ -60,6 +64,10 @@ for cc = 1 : nColors
             spRFcenter   = mosaic.sRFcenter{ii, jj};
             spRFsurround = mosaic.sRFsurround{ii, jj};
             % vcNewGraphWin; imagesc(spRFcenter)            
+            
+            % We want a routine that pulls out the relevant portion of the
+            % input for this RF.  This code is a bit hard to read,
+            % so we should simplify.
             
             % Positions of the stimulus used for the inner product
             [stimX, stimY] = mosaic.stimPositions(ii,jj);
@@ -74,10 +82,14 @@ for cc = 1 : nColors
             % We do all of the time dimension in a single matrix
             stimV = input(floor(stimX(gz)-offset(1)), ...
                 floor(stimY(gz)-offset(2)), :, cc);
-            % Visualize the stimulus
-            % ieMovie(stimV);
+            % Visualize the selected portion of the stimulus
+            % vcNewGraphWin; ieMovie(stimV);
             
-            % Apply the rf weights to the stimulus
+            % This might be quick, or perhaps this calls for a bsxfun()
+            % routine to do the multiply.
+            
+            % Apply the rf weights to the stimulus across all of the time
+            % points.
             rfC = RGB2XWFormat(spRFcenter(gz,gz));
             rfS = RGB2XWFormat(spRFsurround(gz,gz));
             stimV = RGB2XWFormat(stimV);

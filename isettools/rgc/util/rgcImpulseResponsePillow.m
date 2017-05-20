@@ -34,11 +34,11 @@ p = inputParser;
 
 p.addParameter('filterDuration',0.2,@isnumeric);    % Duration in sec
 p.addParameter('samplingTime',0.002,@isnumeric);  % Sample times in sec
-
+p.addParameter('cellType','onparasol',@ischar);  % Sample times in sec
 p.parse(varargin{:});
 filterDuration = p.Results.filterDuration;
 samplingTime = p.Results.samplingTime;
-
+cellType = p.Results.cellType;
 %% Compute the curve, respecting temporal sample
 
 nkt = ceil(filterDuration/samplingTime);  % Number of time bins
@@ -47,11 +47,23 @@ nkt = ceil(filterDuration/samplingTime);  % Number of time bins
 tk = (0:nkt-1)';
 timeAxis = tk*samplingTime;
 
-b1 = nkt/32; b2 = nkt/16;
+switch cellType
+    case {'onparasol','offparasol','ondiffuse','offdiffuse','sbc','onsbc'}
+
+        b1 = nkt/32; b2 = nkt/16;
+        c1 = 1; c2 = 1/1.5;
+        
+    case {'onmidget', 'offmidget'}
+        % fit from apricot data set
+        tk = tk/100; % need to shorten time base for good gamma fit
+        % b1 = 0.08471; b2 = 0.3827; % at nkt = 400
+        b1 = nkt/(400/.08471); b2 = nkt/(400/0.3827);
+        c1 = 1.199; c2 = 0.3188;
+end
+
 k1 = 1/(gamma(6)*b1)*(tk/b1).^5 .* exp(-tk/b1);  % Gamma pdfn
 k2 = 1/(gamma(6)*b2)*(tk/b2).^5 .* exp(-tk/b2);  % Gamma pdf
-
-rgcFilter = (k1 - k2./1.5);
+rgcFilter = (c1*k1 - c2*k2);
 rgcFilter = 1.2*(rgcFilter./max(rgcFilter));
 
 end

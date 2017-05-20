@@ -1,4 +1,4 @@
-classdef Lens
+classdef Lens < handle
     % LENS  Class for human lens pigment properties
     %     lens = LENS() returns a lens object with a variety of derived
     %     properties.
@@ -85,15 +85,55 @@ classdef Lens
         end
         
         function val = get.absorptance(obj)
-            % comptue proportion of quanta absorbed
+            % compute proportion of quanta absorbed
             val = 1 - obj.transmittance;
         end
         
-        % set methods for dependent variables
-        function obj = set.unitDensity(obj, val)
-            % interpolate for wavelength samples
-            obj.unitDensity_ = interp1(obj.wave, val, obj.wave_, 'pchip');
-            obj.unitDensity_ = max(obj.unitDensity, 0);
+        function val = get.density(obj)
+            val = obj.density;
         end
+        
+        function set(obj,param,val)
+            p = inputParser; 
+            p.KeepUnmatched = true;
+            p.addRequired('param', @isstr);
+            p.addRequired('val');
+            
+            % set parameter value
+            switch ieParamFormat(param)
+                case 'name'
+                    assert(ischar(val),'Name should be a string');
+                    obj.name = val;
+                case {'wave', 'wavelength'}
+                    assert(isvector(val), 'wave should be vector');
+                    obj.wave = val(:);
+                case {'absorbance','unitdensity'}
+                    assert(length(val) == length(lens.wave), ...
+                        'Val should have same length as lens wavelength');
+                    obj.unitDensity_ = interp1(obj.wave, val, obj.wave_, 'pchip');
+                    obj.unitDensity_ = max(obj.unitDensity, 0);
+                case 'density'
+                    assert(isscalar(val), 'val should be scalar');
+                    obj.density = val;
+                otherwise
+                    error('Unknown parameter %s\n',param);
+            end
+        end
+        
+        % set methods for dependent variables
+        %         function obj = set.unitDensity(obj, val)
+        %             % interpolate for wavelength samples
+        %             obj.unitDensity_ = interp1(obj.wave, val, obj.wave_, 'pchip');
+        %             obj.unitDensity_ = max(obj.unitDensity, 0);
+        %         end
+        
+        %         function set.wave(obj, val)
+        %             obj.wave = val;
+        %         end
+        
+        %         function set.density(obj, val)
+        %             obj.density = val;
+        %         end
+        
     end
 end
