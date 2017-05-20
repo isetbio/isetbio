@@ -1,4 +1,4 @@
-function Q = ellipseQuadratic(ellipseParameters)
+function Q = ellipseQuadratic(ellipseParameters, rfRadius)
 %ELLIPSEQUADRATIC
 %
 % Return the quadratic form for an ellipse based on the principal axes
@@ -26,15 +26,24 @@ function Q = ellipseQuadratic(ellipseParameters)
 %s
 %  [~, pts] = ieShape('circle');
 %
+% 
+% EJ lab code:
+%   R = rmatrix2(angle / (2*pi) * 360);
+%   L = params.sd_radius * [sd(1) 0; 0 sd(2)];
+%   X = R * L * [x_circle; y_circle];
+%         
 % Example
 %   eParams = [1 1 45];
 %   Q = ellipseQuadratic(eParams);
 %
+% 
 % JRG/BW 
 
 D = diag(ellipseParameters(1:2));
-R = [cosd(ellipseParameters(3)) -sind(ellipseParameters(3));
-    sind(ellipseParameters(3))   cosd(ellipseParameters(3))];
+R = eye(2);
+% R = [cosd(ellipseParameters(3)) -sind(ellipseParameters(3));
+%     sind(ellipseParameters(3))   cosd(ellipseParameters(3))];
 Q = sqrt(D)*R;
+% Q = R*(.5*rfRadius*D);        
 
 end

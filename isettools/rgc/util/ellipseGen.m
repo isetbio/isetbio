@@ -27,7 +27,7 @@ ellipseParams =  p.Results.ellipseParams;
 
 % Get values for major and minor axes if they are not already set
 if isempty(axisValues)
-    axisValues = (axisVariance*randn([nRows nCols 2]) + .5); zeroInd = axisValues<0; axisValues(zeroInd) = abs(axisValues(zeroInd));    
+    axisValues = (axisVariance*randn([nRows nCols 2]) + 1); zeroInd = axisValues<0; axisValues(zeroInd) = abs(axisValues(zeroInd));    
 end
 
 % Get angle values if they are not already set
@@ -43,14 +43,17 @@ if isempty(ellipseParams)
     
     for ii = 1:nRows
         for jj = 1:nCols
+            axisValues(ii,jj,:) = axisValues(ii,jj,:)./norm(squeeze([axisValues(ii,jj,:)]));
             ellipseParameters{ii,jj} = [squeeze(axisValues(ii,jj,:))',angleValues(ii,jj)];
         end
     end
     
 else
     
+    ellipseParams(1:2) = ellipseParams(1:2)./norm(squeeze([ellipseParams(1:2)]));
     for ii = 1:nRows
         for jj = 1:nCols
+            
             ellipseParameters{ii,jj} = [ellipseParams(1:2), ellipseParams(3)];
         end
     end

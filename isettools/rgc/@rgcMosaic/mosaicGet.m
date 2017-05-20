@@ -199,9 +199,9 @@ switch ieParamFormat(param)
         % What is the difference between this and responseSpikes?
         % cellCtr = 0;
         % @JRG - Needs to be updated
-        if ~isfield(obj,'responseSpike')
-            return;
-        end
+%         if ~isfield(obj,'responseSpikes')
+%             return;
+%         end
         
         dt = obj.dt;
         maxTrials = obj.get('number trials');

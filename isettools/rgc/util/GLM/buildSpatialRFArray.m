@@ -73,9 +73,9 @@ baseLineFiringRate  = p.Results.baseLineFiringRate;
 % 1/r is a scalar that specifies the relative size of the surround.
 
 % Hard coded for now.  To eliminate.
-extent = 10;     % ratio between sampling size and spatial RF standard dev 
-r = 0.75;        % radius ratio between center and surround for DoG
-k = 1.032 * r;   % scaling of magnitude of surround
+extent = 2.5;     % ratio between sampling size and spatial RF standard dev 
+r = sqrt(0.75);        % radius ratio between center and surround for DoG
+k = 1.032 * r^2;   % scaling of magnitude of surround
   
 %% Converting the spatial units from microns to bipolar samples
 
@@ -119,7 +119,7 @@ nCols = length(colCenters);
 % the bipolar cells feeding into one RGC.  This should be bigger than the
 % largest rgc RF.  So really, extent should be chosen based on the sizer of
 % the RGC RFs, not fixed as it is here (BW).
-pts = -extent:extent;
+pts = -extent*rfDiameter:extent*rfDiameter;
 
 %% Create spatial RGC RFs
 
@@ -179,54 +179,47 @@ for rr = 1:nRows         % Row index
         
         % Then offset columns to set the hexagonal packing.
         if mod(cc,2), thisRowCenter = thisRowCenter - hexOffset;   % Odd
-        else,         thisRowCenter = thisRowCenter + hexOffset;   % Even
-        end
-        
-        % JRG - Should we keep the sizes all about the same, or do we allow
-        % a lot of variation in the rf sizes.  The norm() operation here
-        % forces the overall size of the ellipses to be about 1 bipolar
-        % size because the first two dimensions are the major and minor
-        % axes.
-        % ellipseP = [ellipseParams{rr,cc}(1:2)./norm(ellipseParams{rr,cc}(1:2)), ellipseParams{rr,cc}(3)];
+        % else,         thisRowCenter = thisRowCenter + hexOffset;   % Even
+        end        
         
         % Without the normalization
         ellipseP = [ellipseParams{rr,cc}(1:2), ellipseParams{rr,cc}(3)];
-        
-        % Makes the 2x2 positive definite quadratic form (matrix)
-        Q = ellipseQuadratic(ellipseP);
-        
-        % Take the pts variable and make a mesgrid of XY values
-        % 
-        % s_center = exp(-  (XY - C)'*Qe*(XY-C))
-        % Q = (.125/rfDiameterBipolars^2)*Q./norm(Qe(:));
+
+        % Makes the 2x2 positive definite quadratic form (matrix)        
+        % In order to keep the same area under the DoG surface, need to
+        % normalize the diagonal.
+        Q =  (1/(.5*rfDiameter)^2)*diag(ellipseParams{rr,cc}(1:2));                 
                 
+        % For the DoG, we need to do the rotation matrix separately from Q,
+        % otherwise the DoG height and width change for the same magnitude
+        % params with a different angle param.
+        R = [cosd(ellipseParams{rr,cc}(3)) -sind(ellipseParams{rr,cc}(3));...
+            sind(ellipseParams{rr,cc}(3))   cosd(ellipseParams{rr,cc}(3))];
+        
         % Calculate (x,y) values for input to DoG function in an efficient way
         [X, Y] = meshgrid(pts, pts); % nBipolars
-        XY = [X(:) Y(:)];
+        % XY = [X(:) Y(:)];       
+        % Apply rotation matrix; need to do it here to coordinates so that
+        % the magnitude of the DoG is not incorrectly scaled.
+        XY = (R*[X(:) Y(:)]')';        
         
+        % % % This is very slow
         % Scale by the r and Q
-        QXY  = diag(XY * Q * XY'); 
+        % QXY  = diag(XY * Q * XY'); %         
+        % % Surround
+        % RQXY = r^2*QXY;       % unitless        
         
-        % Surround
-        RQXY = r*QXY;       % unitless
-        %  icrm = repmat([ic jc],length(i),1);
-        
+        % % % % This does the same thing but much faster for big RFs
+        Qmatr  = Q*XY'; 
+        rQmatr = r^2*Q*XY';       % unitless        
         % (-0.5*(x-c)*Q*(x-c)'): unitless
-        %         p1 = prod([IJ(:,1) QXY(1,:)'],2) + prod([IJ(:,2)  QXY(2,:)'],2);
-        %         p2 = prod([IJ(:,1) RQXY(1,:)'],2) + prod([IJ(:,2) RQXY(2,:)'],2);
+        QXY =  prod([XY(:,1)  Qmatr(1,:)'],2) + prod([XY(:,2)  Qmatr(2,:)'],2);
+        RQXY = prod([XY(:,1) rQmatr(1,:)'],2) + prod([XY(:,2) rQmatr(2,:)'],2);
         
         % DoG calculation
         % conditional intensity, related by Poisson firing to spikes/sec
         so_center   = reshape(exp(-0.5*QXY),    size(X));
-        so_surround = reshape(k*exp(-0.5*RQXY), size(X));
-        
-        % mesh(so_center)
-        % mesh(so_surround)
-        % so = so_center - so_surround;
-        
-        % Needs an explanation.
-        %         cellCenterLocations{rr,cc} = ...
-        %             (patchRowColMicrons(2) / nColBipolars)*([thisRowCenter thisColCenter] - [centerCorrectX centerCorrectY]);
+        so_surround = reshape(k*exp(-0.5*RQXY), size(X));        
         
         % Save the cell center location
         cellCenterLocations{rr,cc} = [thisRowCenter, thisColCenter];
@@ -235,6 +228,24 @@ for rr = 1:nRows         % Row index
         % Store calculated parameters, units of conditional intensity
         sRFcenter{rr,cc}      = so_center;
         sRFsurround{rr,cc}    = so_surround;
+        
+        % Since we create the plot of the RF mosaic as an ellipse, but the
+        % actual RFs as DoGs, we need to check that the DoG magntiude at
+        % rfDiameter is actually 1 std. We do that here by first
+        % calculating what the 1 std magnitude of the DoG should be, and
+        % then comparing it to what our actual RF has. They should match
+        % within 1 (units of bipolar samples). If there is high variance
+        % in the shapes of RFs, then individual RFs might not match, but
+        % they should on average.
+        if rr == 1 && cc == 1
+            xv = [1 0];   % rand(1,2);
+            xvn = rfDiameter * xv./norm(xv);
+            x1 = xvn(1); y1 = xvn(2);
+            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
+            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+            rii = mr; cii = mc; im = 1;
+            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameter (cii-mc-1)]
+        end
         
     end
 end

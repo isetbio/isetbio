@@ -109,9 +109,12 @@ switch shape
         ptsCircle = circle([0,0],radius,nSamp);
         % [xc,yc] = ind2sub(szEllMatrix,ii);
         % szEllMatrix = [sqrt(nEllipses) sqrt(nEllipses)];
+        
+        
         for ii=1:nEllipses
             % ePts = pts*eMatrix;
             % ePts = pts * diag(major/minor axis)* rotmat(third parameter)
+            % ellipseParameters(ii,1:2) = sqrt(2)*ellipseParameters(ii,1:2)./norm([ellipseParameters(ii,1:2)]);
             D = diag(ellipseParameters(ii,1:2));
             R = [cosd(ellipseParameters(ii,3)) -sind(ellipseParameters(ii,3));
                 sind(ellipseParameters(ii,3))   cosd(ellipseParameters(ii,3))];
