@@ -1,8 +1,8 @@
 classdef rgcGLM < rgcMosaic
 %RGCGLM - rgcMosaic using a GLM (coupled-nonlinear) computational model
-% rgcGLM is a subclass of rgcMosaic. It is called when creating a new GLM
-% model rgcMosaic for an inner retina object.  Typically we get here from
-% the inner retina object with the call:
+%
+% rgcGLM is a subclass of rgcMosaic that uses the GLM model.  Typically it
+% is invoked by a call from the inner retina object 
 %
 %   ir.mosaicCreate('model','GLM','type','your type goes here')
 % 
@@ -28,7 +28,6 @@ classdef rgcGLM < rgcMosaic
 % 7/2016 JRG updated
 
 %% Properties 
-    % Public, read-only properties.
     
     properties (SetAccess = public, GetAccess = public)
         % DT Parameter to specify the time bins Pillow uses for coupling and
@@ -102,7 +101,6 @@ classdef rgcGLM < rgcMosaic
     end
     
     methods (Access = public)
-        
     end
     
     % Methods may be called by the subclasses, but are otherwise private 
