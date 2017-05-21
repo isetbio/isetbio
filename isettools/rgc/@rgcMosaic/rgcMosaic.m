@@ -120,7 +120,7 @@ classdef rgcMosaic < handle
             % Switch cell type string to index number
             % The index number helps with the generation of the receptive fields and
             % impulse responses of the appropriate parameters for the cell type.
-            obj.cellType = mosaicInd;
+            obj.cellType = strrep(lower(mosaicInd),' ','');
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
             obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
