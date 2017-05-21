@@ -230,21 +230,32 @@ for rr = 1:nRows         % Row index
         sRFsurround{rr,cc}    = so_surround;
         
         % Since we create the plot of the RF mosaic as an ellipse, but the
-        % actual RFs as DoGs, we need to check that the DoG magntiude at
+        % actual RFs as DoGs, we need to check that the DoG magnitude at
         % rfDiameter is actually 1 std. We do that here by first
         % calculating what the 1 std magnitude of the DoG should be, and
         % then comparing it to what our actual RF has. They should match
-        % within 1 (units of bipolar samples). If there is high variance
-        % in the shapes of RFs, then individual RFs might not match, but
-        % they should on average.
+        % within 1 (units of bipolar samples). If there is high variance in
+        % the shapes of RFs, then individual RFs might not match, but they
+        % should on average.
+        %
+        % BW:  Breaking here for some values. It appears that magnitude1STD
+        % can be a negative number, which is not a good thing.  The logic
+        % in here is hard for me to penetrate. JRG to add notation and
+        % logic.
         if rr == 1 && cc == 1
             xv = [1 0];   % rand(1,2);
             xvn = rfDiameter * xv./norm(xv);
             x1 = xvn(1); y1 = xvn(2);
-            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
-            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-            rii = mr; cii = mc; im = 1;
-            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameter (cii-mc-1)]
+            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*(r^2)*[x1 y1]*Q*[x1; y1]);
+            [maxv,maxr] = max(so_center(:) - so_surround(:)); % Unused?
+            [mr,mc] = ind2sub(size(so_center),maxr);
+            rii = mr; % Not used. So, ...
+            cii = mc; im = 1;
+            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD 
+                im  = im + 1; 
+                cii = mc - 1 + im; 
+            end 
+            [rfDiameter, (cii-mc-1)]  % Displaying but no text?
         end
         
     end
