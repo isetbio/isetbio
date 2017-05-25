@@ -237,15 +237,15 @@ for rr = 1:nRows         % Row index
         % within 1 (units of bipolar samples). If there is high variance
         % in the shapes of RFs, then individual RFs might not match, but
         % they should on average.
-        if rr == 1 && cc == 1
-            xv = [1 0];   % rand(1,2);
-            xvn = rfDiameter * xv./norm(xv);
-            x1 = xvn(1); y1 = xvn(2);
-            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
-            [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-            rii = mr; cii = mc; im = 1;
-            while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameter (cii-mc-1)]
-        end
+%         if rr == 1 && cc == 1
+%             xv = [1 0];   % rand(1,2);
+%             xvn = rfDiameter * xv./norm(xv);
+%             x1 = xvn(1); y1 = xvn(2);
+%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
+%             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+%             rii = mr; cii = mc; im = 1;
+%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameter (cii-mc-1)]
+%         end
         
     end
 end
