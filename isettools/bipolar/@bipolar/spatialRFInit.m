@@ -55,7 +55,7 @@ eccentricity = p.Results.eccentricity;
 %%
 switch obj.cellType
     
-    case{'ondiffuse','offdiffuse'}
+    case{'ondiffuse','offdiffuse','onparasol','offparasol'}
         % Diffuse bipolars that carry parasol signals
         % ecc = 0 mm yields 2x2 cone input to bp
         % ecc = 30 mm yields 5x5 cone input to bp

@@ -45,28 +45,31 @@ classdef rgcMosaic < handle
         Parent;
     end
     
-    % Protected properties.
-    properties (SetAccess = protected, GetAccess = public)
+    % Was Protected properties.  Changing to Public for debugging, and
+    % maybe forever
+    properties (SetAccess = public, GetAccess = public)
         
         %CELLTYPE The type of computational model for the RGC
-        cellType;           % Possible types are listed in header
-        % RFDIAMETER receptive field center diameter
-        rfDiameter;         % 
+        cellType = 'onparasol';           % Possible types are listed in header
+        
+        % RFDIAMETER receptive field center diameter in MICRONS
+        rfDiameter = [];
                
         %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
         cellLocation;
         
-        %SRFCENTER spatial RF of the center on the receptor grid
-        sRFcenter;           
+        %SRFCENTER spatial RF of the center on the cone mosaic grid
+        sRFcenter = [];           
         
         %SRFSURROUND spatial RF of the surround
-        sRFsurround;        
+        sRFsurround = [];        
         
-        %TCENTER temporal impulse response of the center
-        tCenter;            
+        %TCENTER temporal impulse response of the center in dt steps or 1
+        %ms??
+        tCenter =[];            
         
         %TSURROUND  and of the surround (1 ms timing by default)
-        tSurround;             
+        tSurround = [];             
         
         %TONICDRIVE baseline term for linear response; if nonzero, cell
         %spikes with no input
@@ -76,13 +79,13 @@ classdef rgcMosaic < handle
         % rfDiaMagnitude;      
         
         %RESPONSELINEAR Store the linear response after convolution
-        responseLinear;     
+        responseLinear = [];     
         
         %RESPONSESPIKES Store the spike times of the responses
-        responseSpikes;     
+        responseSpikes = [];     
         
         %ELLIPSEMATRIX Store the parameters for the RGC sRF ellipses
-        ellipseMatrix;
+        ellipseMatrix = [];
     end
     
     properties (Access = public)
@@ -99,7 +102,7 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(ir, mosaicInd,varargin)
+        function obj = rgcMosaic(ir, mosaicInd, varargin)
             %% Initialize an rgcMosaic for a particular cell type
             %
             %       initialize(obj, innerRetina, cellType)
@@ -117,11 +120,13 @@ classdef rgcMosaic < handle
             % Switch cell type string to index number
             % The index number helps with the generation of the receptive fields and
             % impulse responses of the appropriate parameters for the cell type.
-            obj.cellType = mosaicInd;
+            obj.cellType = strrep(lower(mosaicInd),' ','');
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
             obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
-            obj.rgcInitTime(ir);             % Sets tCenter/tSurround
+            
+            % Sets temporal RF properties of tCenter/tSurround
+            obj.rgcInitTime(ir);             
             
             % We need the parameters in the parent often enough.  So put in
             % a pointer to it here.
