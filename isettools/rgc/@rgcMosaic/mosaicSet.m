@@ -19,17 +19,8 @@ function obj = mosaicSet(obj, param, val, varargin)
 % Outputs: 
 %    obj with property set appropriately
 % 
-% Properties that can be set:
-%   'cellType',...        - type of RGC of which mosaic is composed
-%   'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
-%   'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
-%   'cellLocation',...    - row col of center of spatial RF
-%   'sRFcenter',...       - center spatial RF surfaces
-%   'sRFsurround',...     - surround spatial RF surfaces
-%   'tCenter',...         - center temporal impulse response
-%   'tSurround',...       - surround temopral impulse response
-%   'linearResponse',...  - linear response of all cells
-% 
+% See the settable responses on line 51.
+%
 % Examples:
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'cellType', 'onParasol')
 %   rgc1.mosaic{1} = mosaicSet(rgc1.mosaic{1}, 'linearResponse', linearResponse)
@@ -48,11 +39,24 @@ p.KeepUnmatched = true;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
+
+%   'rfDiameter',...      - 1 stdev diameter in pixels of spatial RF
+%   'rfDiaMagnitude',...  - magnitude of spatial RF at 1 stdev
+%   'cellLocation',...    - row col of center of spatial RF
+%   'sRFcenter',...       - center spatial RF surfaces
+%   'sRFsurround',...     - surround spatial RF surfaces
+%   'tCenter',...         - center temporal impulse response
+%   'tSurround',...       - surround temopral impulse response
+%   'linearResponse',...  - linear response of all cells
+% 
+
+% What are the spatial units?  On the mosaic of the bipolar input grid, I
+% think (BW).
 allowFields = {...
-        'celltype',...
-        'rfdiameter',...
-        'rfdiaMagnitude',...
-        'celllocation',...
+        'celltype',...        % RGC type
+        'rfdiameter',...      % In samples of the bipolar mosaic ?
+        'rfdiaMagnitude',...  % Not sure
+        'celllocation',...    % In samples of the bipolar mosaic?
         'srfcenter',...
         'srfsurround',...
         'tcenter',...
