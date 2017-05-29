@@ -19,6 +19,12 @@ function [ir, nTrialsSpikes] = irCompute(ir, bp, varargin)
 % in irComputeLinearSTSeparable.  There is no noise added in the linear
 % part.
 %
+% At present, the temporal response is set to an impulse because of the way
+% the bipolar tIR is set.  We need to deal with this.  Also, the 'dt' of
+% the RGC should be inherited form the dt of the bipolar calculation.  I
+% don't see that anywhere (BW).  Should be in the
+% irComputeLinearSTSeparable routine.
+%
 % The spikes are computed irComputeSpikes routine. The spiking can have a
 % random element.  So, we may run the conversion from linear to spikes
 % multiple times, effectively producing spike rasters.

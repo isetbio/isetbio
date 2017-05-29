@@ -81,6 +81,9 @@ for iTrial = 1:nTrials
     % Looping over the rgc mosaics
     for rgcType = 1:length(ir.mosaic)
         
+        % BW inserted.  I think these are supposed to match.
+        ir.mosaic{rgcType}.dt = bp.timeStep;
+        
         % Determine the range of the rgb input data
         if length(bp) == 1,   stim   = bp.get('response');
         else,                 stim   = bp{rgcType}.get('responseCenter');
