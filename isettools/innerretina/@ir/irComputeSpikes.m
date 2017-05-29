@@ -1,26 +1,24 @@
 function [ir, nTrialsSpikeResponse] = irComputeSpikes(ir, varargin)
-% Generate spikes from the linear response
+% IRCOMPUTESPIKES - Generate RGC spikes from the linear mosaic response
 %
 %   ir = irComputeSpikes(ir, varargin)
 %
-% Convert from the linear response to the spiking output for several types
-% of rgc mosaics.  Works for rgcGLM and rgcLNP models.
+% Calculate the spikes from the RGC linear response for rgcGLM and rgcLNP
+% mosaics.  
 %
-% Inputs:
-%   inner retina object
+% Inputs required
+%   ir:  inner retina object
+%
+% Inputs optiona;
+%  nTrialsLinearResponse: Linear inputs from multiple trials
 %
 % Outputs:
-%  The spikes responses are attached to the rgc mosaics
+%  The computed spikes are attached to the rgc mosaic
 %
 % Example:
-%  os = osCreate('identity');
-%  ir = irCreate(os,'model','glm');
-%  ir.mosaicCreate('mosaicType','on midget');
-%  ir.computeContinuous;
-%  ir.computeSpike;
+%   See s_vaRGC.m in WL/WLVernierAcuity
 %
-% JRG (c) isetbio
-
+% JRG (c) isetbio team, 2015
 
 %% Parse
 p = inputParser;
@@ -39,6 +37,8 @@ nTrialsLinearResponse = p.Results.nTrialsLinearResponse;
 % The refresh rate refers to the subsampling of the linear response. Each
 % sample of the linear response is broken into N bins, where N is the
 % refresh rate. This is used in simGLM.m and simGLMcpl.m from Pillow.
+% BW - This should be fixed.
+
 global RefreshRate
 RefreshRate = 10;
 
@@ -47,21 +47,20 @@ nRepeats = ir.get('number trials');
 
 %% Loop on the mosaics in the inner retina
 
+nTrials = 1;
 if ~isempty(nTrialsLinearResponse)
     nTrials = size(nTrialsLinearResponse,1);
-else
-    nTrials = 1;
 end
 
-for iTrial = 1:nTrials
-    
+for iTrial = 1:nTrials    
     for ii = 1:length(ir.mosaic)
         if ~ismember(class(ir.mosaic{ii}), {'rgcGLM','rgcLNP'})
+            % No spikes computed
         else
-            mosaic = ir.mosaic{ii};
+            mosaic   = ir.mosaic{ii};
             responseLinear = mosaic.get('response linear');
             nSamples = size(responseLinear,3);
-            nCells = mosaic.get('mosaic size');
+            nCells   = mosaic.get('mosaic size');
             
             % This is a vector of times that each cell spiked
             spikeTimes = cell([nCells,nRepeats]);
@@ -102,10 +101,10 @@ for iTrial = 1:nTrials
                 end
                 
                 if ieSessionGet('wait bar'), delete(wbar); end
-            else
+            else  % No coupling, much faster
+                
                 % Run without the slow coupling component by looping on the
                 % simGLM, not simGLMcp
-                
                 
                 glmprs   = setGLMprs(mosaic,'coupling',coupling);
                 
@@ -135,27 +134,26 @@ for iTrial = 1:nTrials
             end
         end
         
-        % Set mosaic property
+        % Set mosaic spike times
         ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
         
-        % The nonlinear voltage which is only set in the GLM model
+        % The nonlinear voltage; only set in the GLM model
         if isa(ir.mosaic{ii},'rgcGLM')
             ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
         end
-        %     end
         
         if ~isempty(nTrialsLinearResponse)
             if iTrial == 1 && ii == 1
-                nTrialsSpikeResponse = zeros([nTrials,length(ir.mosaic),size(ir.mosaic{ii}.get('spikes'))]);
+                nTrialsSpikeResponse = ...
+                    zeros([nTrials,length(ir.mosaic),size(ir.mosaic{ii}.get('spikes'))]);
             end
             nTrialsSpikeResponse(iTrial,ii,:,:,:) = ir.mosaic{ii}.get('spikes');
         end
     end
 end
 
-if isempty(nTrialsLinearResponse)
-    nTrialsSpikeResponse = 0;
-end
+% Maybe this should be [], not 0? (BW)
+if isempty(nTrialsLinearResponse), nTrialsSpikeResponse = 0; end
 
 end
 

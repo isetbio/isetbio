@@ -298,8 +298,8 @@ switch(str)
         gdata.rgcMosaic.plot('spike mean image');
     case 'PSTH mean (image)'
         gdata.rgcMosaic.plot('psth mean image');
-%     case 'PSTH plot'
-%         gdata.rgcMosaic.plot('psth');
+        %     case 'PSTH plot'
+        %         gdata.rgcMosaic.plot('psth');
     case 'Linear movie'
         gdata.rgcMosaic.plot('linear movie');        
     case 'Spike movie'
@@ -314,9 +314,7 @@ end
 
 % Make a button for rfOverlay
 rfOverlay = false;
-if rfOverlay
-    rgcM.plot('mosaic');
-end
+if rfOverlay, rgcM.plot('mosaic'); end
 
 % Text description
 str = rgcM.describe;

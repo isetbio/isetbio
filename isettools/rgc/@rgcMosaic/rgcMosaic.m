@@ -163,18 +163,24 @@ classdef rgcMosaic < handle
             % Print the relevant text to a string
             % This is used in the display window
             
+            parent = obj.Parent;
+            
+            % Cell properties
             str = sprintf('Cell type: %s\n',obj.cellType);
             txt = sprintf('Model: %s\n',class(obj));
             str = addText(str,txt);
-            txt = sprintf('N Trials %d\n',obj.Parent.numberTrials);
-            str = addText(str,txt);
             
-            parent = obj.Parent;
-            txt = sprintf('Row,Col: %d, %d\n',parent.row,parent.col);
+            % Mosaic properties
+            txt = sprintf('N Trials %d\n',parent.numberTrials);
             str = addText(str,txt);
             txt = sprintf('Patch size %d (um)\n',1e6*parent.size);
             str = addText(str,txt);
             
+            % Typical cell properties
+            txt = sprintf('Row,Col: %d, %d\n',size(obj.cellLocation));
+            str = addText(str,txt);
+
+            % Temporal properties
         end
         
     end

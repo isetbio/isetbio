@@ -63,7 +63,7 @@ else
 end
 % irPlot(ir,'response linear');
 
-%% Compute spikes from linear response; do for multiple trials
+%% Compute spikes from linear response; possibly for multiple trials
 
 % This should be for ii=1:length(ir.mosaic)
 switch class(ir.mosaic{1})
@@ -72,10 +72,13 @@ switch class(ir.mosaic{1})
         disp('No spikes computed for linear RGC mosaic');   
     otherwise
         % Runs for rgcLNP, rgcGLM
-        % Check the coupling field to decide on the coupling parameter
+        % Send the coupling field to decide on the coupling parameter
         if ~isempty(bipolarTrials) 
-            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling,'nTrialsLinearResponse',nTrialsLinearResponse);
+            % Multiple trial case
+            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling, ...
+                'nTrialsLinearResponse',nTrialsLinearResponse);
         else
+            % Single trial case
             [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling);
         end
 end
