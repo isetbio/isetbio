@@ -1,44 +1,44 @@
 classdef rgcMosaic < handle
-%RGCMOSAIC - generates an rgcMosaic 
-% Each RGC mosaic has a particular model and a type.  The model specifies
-% how we compute the RGC response, and the type specifies the parameters of
-% the model given the type.
-%
-% The inner retina object holds a collection of retinal ganglion cell
-% mosaics. The mosaics themselves are typically created by a function of
-% the inner retina class, such as
-%
-%   ir.mosaicCreate('model','LNP','type','cell type'); 
-%
-% This file contains the constructor and the window call.  Other functions,
-% such as plot(), are separated in the @rgcMosaic directory.
-%
-% Inputs:
-%    model: 'LNP','GLM' [subclasses of rgcMosaic]
-%    type: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified'
-%
-% Notes:
-%
-%   The RGC models are detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
-%   Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-%   and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
-%   Nature (2008).
-% 
-%   The computational model implemented for the coupled GLM model relies on
-%   code by <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
-%   distributed under the GNU General Public License.
-% 
-% See also: rgcLNP.m, rgcGLM.m, irCreate, s_initRetina
-%
-% Example: 
-% 
-%   ir.mosaicCreate('model','LNP','type','on midget'); 
-% 
-%  ISETBIO wiki: <a href="matlab:
-%  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
-%  
-% JRG/BW ISETBIO team, 2015
-
+    %RGCMOSAIC - generates an rgcMosaic
+    % Each RGC mosaic has a particular model and a type.  The model specifies
+    % how we compute the RGC response, and the type specifies the parameters of
+    % the model given the type.
+    %
+    % The inner retina object holds a collection of retinal ganglion cell
+    % mosaics. The mosaics themselves are typically created by a function of
+    % the inner retina class, such as
+    %
+    %   ir.mosaicCreate('model','LNP','type','cell type');
+    %
+    % This file contains the constructor and the window call.  Other functions,
+    % such as plot(), are separated in the @rgcMosaic directory.
+    %
+    % Inputs:
+    %    model: 'LNP','GLM' [subclasses of rgcMosaic]
+    %    type: 'ON Parasol', 'OFF Parasol', 'ON Midget', 'OFF Midget', 'Small Bistratified'
+    %
+    % Notes:
+    %
+    %   The RGC models are detailed in Chichilnisky & Kalmar, J. Neurosci (2002);
+    %   Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
+    %   and Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
+    %   Nature (2008).
+    %
+    %   The computational model implemented for the coupled GLM model relies on
+    %   code by <http://pillowlab.princeton.edu/code_GLM.html Pillow>, which is
+    %   distributed under the GNU General Public License.
+    %
+    % See also: rgcLNP.m, rgcGLM.m, irCreate, s_initRetina
+    %
+    % Example:
+    %
+    %   ir.mosaicCreate('model','LNP','type','on midget');
+    %
+    %  ISETBIO wiki: <a href="matlab:
+    %  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
+    %
+    % JRG/BW ISETBIO team, 2015
+    
     
     %% Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
@@ -54,35 +54,35 @@ classdef rgcMosaic < handle
         
         % RFDIAMETER receptive field center diameter in MICRONS
         rfDiameter = [];
-               
+        
         %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
         cellLocation;
         
         %SRFCENTER spatial RF of the center on the cone mosaic grid
-        sRFcenter = [];           
+        sRFcenter = [];
         
         %SRFSURROUND spatial RF of the surround
-        sRFsurround = [];        
+        sRFsurround = [];
         
         %TCENTER temporal impulse response of the center in dt steps or 1
         %ms??
-        tCenter =[];            
+        tCenter =[];
         
         %TSURROUND  and of the surround (1 ms timing by default)
-        tSurround = [];             
+        tSurround = [];
         
         %TONICDRIVE baseline term for linear response; if nonzero, cell
         %spikes with no input
-        tonicDrive;          
+        tonicDrive;
         
         %RFDIAMAGNITUDE for making movies of response
-        % rfDiaMagnitude;      
+        % rfDiaMagnitude;
         
         %RESPONSELINEAR Store the linear response after convolution
-        responseLinear = [];     
+        responseLinear = [];
         
         %RESPONSESPIKES Store the spike times of the responses
-        responseSpikes = [];     
+        responseSpikes = [];
         
         %ELLIPSEMATRIX Store the parameters for the RGC sRF ellipses
         ellipseMatrix = [];
@@ -126,7 +126,7 @@ classdef rgcMosaic < handle
             obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
             
             % Sets temporal RF properties of tCenter/tSurround
-            obj.rgcInitTime(ir);             
+            obj.rgcInitTime(ir);
             
             % We need the parameters in the parent often enough.  So put in
             % a pointer to it here.
@@ -142,7 +142,7 @@ classdef rgcMosaic < handle
         function val = get(obj, varargin)
             val = mosaicGet(obj, varargin{:});
         end
-        
+                
     end
     
     %% Methods that must only be implemented (Abstract in parent class).
@@ -159,8 +159,38 @@ classdef rgcMosaic < handle
             val = obj.dt*(1:length(obj.tCenter{1}))*1e-3;
         end
         
-        
-        
+        % Used to print text in the window
+        function str= describe(obj)
+            % Describe the RGC mosaic properties
+            %
+            % Prints the relevant text to a string, which is used in the display
+            % window.
+            %
+            % BW, ISETBIO Team, 2017
+            
+            parent = obj.Parent;  % Used for size and trials.  Needs help.
+            
+            % Cell properties
+            str = sprintf('Model: %s\n',class(obj));
+            txt = sprintf('Cell type: %s\n',obj.cellType);
+            str = addText(str,txt);
+            
+            % Mosaic properties
+            txt = sprintf('N Trials %d\n',parent.numberTrials);
+            str = addText(str,txt);
+            txt = sprintf('Patch size %d (um)\n',1e6*parent.size);
+            str = addText(str,txt);
+            
+            % Spatial temporal properties
+            txt = sprintf('Row,Col: %d, %d\n', size(obj.cellLocation));
+            str = addText(str,txt);
+            txt = sprintf('Time samples: %d\n',size(obj.responseLinear,3));
+            str = addText(str,txt);
+            
+            txt = sprintf('Duration: %.0f ms\n',1e3*obj.dt*size(obj.responseLinear,3));
+            str = addText(str,txt);
+            
+        end
     end
     
     % Methods may be called by the subclasses, but are otherwise private

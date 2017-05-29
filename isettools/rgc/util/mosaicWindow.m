@@ -312,13 +312,12 @@ switch(str)
         error('Unknown plot type %s\n',str);
 end
 
-% Make a button for rfOverlay
+% Make a button for rfOverlay.  ALways false, for now.
 rfOverlay = false;
 if rfOverlay, rgcM.plot('mosaic'); end
 
 % Text description
-str = rgcM.describe;
-set(gdata.rgcProperties,'string',str);
+set(gdata.rgcProperties,'string',rgcM.describe);
 
 end
 
