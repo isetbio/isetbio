@@ -79,14 +79,13 @@ if ~isempty(bipolarTrials), nTrials = size(bipolarTrials,1); end
 for iTrial = 1:nTrials
     
     % Looping over the rgc mosaics
-    for rgcType = 1:length(ir.mosaic)
-        
-        % BW inserted.  I think these are supposed to match.
-        ir.mosaic{rgcType}.dt = bp.timeStep;
+    for rgcType = 1:length(ir.mosaic)        
         
         % Determine the range of the rgb input data
-        if length(bp) == 1,   stim   = bp.get('response');
-        else,                 stim   = bp{rgcType}.get('responseCenter');
+        if length(bp) == 1
+            stim   = bp.get('response'); 
+        else                
+            stim   = bp{rgcType}.get('responseCenter');            
         end
         
         % JRG removes the mean and uses a contrast (or scaled contrast) as
@@ -102,22 +101,29 @@ for iTrial = 1:nTrials
         end
         % ieMovie(stim);
         
-        % Set the rgc impulse response to an impulse
-        % Why? (BW)  And if this is right, then why would we even apply it?
+        % Set the rgc impulse response to an impulse 
+        % When we feed a bipolar object into the inner retina, we don't
+        % need to do temporal convolution. We have the tCenter and
+        % tSurround properties for the rgcMosaic, so we set them to an
+        % impulse to remind us that the temporal repsonse is already
+        % computed.
         ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
-        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);
+        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',1);
         
         % We use a separable space-time receptive field.  This allows
-        % us to compute for space first and then time. Space.  But
-        % spConvolve is not a convolution.  So, we should rename this
-        % routine to just rgcSpace(), I think (BW).
-        [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
+        % us to compute for space first and then time. Space. 
+        [respC, respS] = rgcSpaceDot(ir.mosaic{rgcType}, stim);
         % ieMovie(respC);
         
         % Convolve with the temporal impulse response
-        % Why, given that these are impulses?  What's going on here?
-        respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-        respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+        % If the temporal IR is an impulse, we don't need to do the
+        % temporal convolution.  I'm leaving this here as a reminder that
+        % we need to do this if we run any of EJ's original GLM models
+        % (image -> spikes with no cone mosaic or bipolar).
+        % if ir.mosaic{rgcType}.tCenter{1,1} ~= 1
+        %     respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+        %     respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+        % end
         % ieMovie(respC - respS);
         
         % Deal with multiple trial issues

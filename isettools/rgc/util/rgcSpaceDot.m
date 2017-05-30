@@ -1,7 +1,7 @@
-function [respCenter, respSurround] = spConvolve(mosaic, input)
-% Spatial inner product pf stimulus and each RF (rename this function).
+function [respCenter, respSurround] = rgcSpaceDot(mosaic, input)
+% Spatial inner product of stimulus and each RF.
 %
-%  [spRespCenter, spRespSurround] = spConvolve(mosaic,spCenter,spSurround)
+%  [spRespCenter, spRespSurround] = rgcSpaceDot(mosaic,spCenter,spSurround)
 %
 % Compute the inner product of the center and surround of each receptive
 % field with the input.  The input is (typically) a bipolar photocurrent
@@ -92,8 +92,8 @@ for cc = 1 : nColors
             rfS   = RGB2XWFormat(spRFsurround(gz,gz));
             stimV = RGB2XWFormat(stimV);
 
-            respCenter(ii,jj,:,cc)   = rfC'* stimV;
-            respSurround(ii,jj,:,cc) = rfS'* stimV;
+            respCenter(ii,jj,:,cc)   = 40*rfC'* stimV;
+            respSurround(ii,jj,:,cc) = 40*rfS'* stimV;
             
         end
     end

@@ -229,8 +229,6 @@ for rr = 1:nRows         % Row index
         sRFcenter{rr,cc}      = so_center;
         sRFsurround{rr,cc}    = so_surround;
         
-        % Looks like JRG just eliminated the code. (BW)
-        %
         % Since we create the plot of the RF mosaic as an ellipse, but the
         % actual RFs as DoGs, we need to check that the DoG magnitude at
         % rfDiameter is actually 1 std. We do that here by first
@@ -239,40 +237,33 @@ for rr = 1:nRows         % Row index
         % within 1 (units of bipolar samples). If there is high variance
         % in the shapes of RFs, then individual RFs might not match, but
         % they should on average.
-%         if rr == 1 && cc == 1
-%             xv = [1 0];   % rand(1,2);
-%             xvn = rfDiameter * xv./norm(xv);
-%             x1 = xvn(1); y1 = xvn(2);
-%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
-%             [maxv,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
-%             rii = mr; cii = mc; im = 1;
-%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD; im = im+1; cii = mc-1+im; end; [rfDiameter (cii-mc-1)]
-%         end
-
-        % within 1 (units of bipolar samples). If there is high variance in
-        % the shapes of RFs, then individual RFs might not match, but they
-        % should on average.
-        %
-        % BW:  Breaking here for some values. It appears that magnitude1STD
-        % can be a negative number, which is not a good thing.  The logic
-        % in here is hard for me to penetrate. JRG to add notation and
-        % logic.
-%         if rr == 1 && cc == 1
-%             xv = [1 0];   % rand(1,2);
-%             xvn = rfDiameter * xv./norm(xv);
-%             x1 = xvn(1); y1 = xvn(2);
-%             magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*(r^2)*[x1 y1]*Q*[x1; y1]);
-%             [maxv,maxr] = max(so_center(:) - so_surround(:)); % Unused?
-%             [mr,mc] = ind2sub(size(so_center),maxr);
-%             rii = mr; % Not used. So, ...
-%             cii = mc; im = 1;
-%             while (so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD 
-%                 im  = im + 1; 
-%                 cii = mc - 1 + im; 
-%             end 
-%             [rfDiameter, (cii-mc-1)]  % Displaying but no text?
-%         end
-% >>>>>>> rgcEllipse2
+        % To find the radius at which our 1 std magnitude occurs in our DoG
+        % RF, we find the coordinates of the max values of the RF. Then we
+        % move one bipolar sample away from this and check if the value has
+        % decreased below the specified 1 std magnitude; if not, then move
+        % another bipolar sample away, and do this again until the weight
+        % on the bipolar sample is below the 1 std magnitude. Then we
+        % compare our observed value of radius in bipolar samples to the
+        % pre-specified radius.
+        
+        if rr == 1 && cc == 1
+            % Find the RF weight at a distance of the diameter
+            xv = [1 0];  
+            xvn = rfDiameter * xv./norm(xv);
+            x1 = xvn(1); y1 = xvn(2);
+            % Calculate value at 1 std
+            magnitude1STD = exp(-0.5*[x1 y1]*Q*[x1; y1])- k*exp(-0.5*[x1 y1]*r^2*Q*[x1; y1]);
+            % Find coordinates at 1 std
+            [~,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
+            cii = mc; im = 1;
+            % Move one sample away until we find the 1 std sample
+            while (cii < size(so_center,2)) && ((so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD); 
+                im = im+1; 
+                cii = mc-1+im; 
+            end; 
+            % [rfDiameter (cii-mc-1)]
+            % if abs(rfDiameter - (cii - mc - 1)) > 1; display('RF mismatch');
+        end
         
     end
 end
