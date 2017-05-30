@@ -215,8 +215,8 @@ for iTrial = 1:nTrials
     end
     
     if iTrial == nTrials
-        obj.responseCenter = XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col);
-        obj.responseSurround = XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col);
+        obj.responseCenter = XW2RGBFormat(tmpCenter(:,1:size(cmosaic.current,3)),row,col);
+        obj.responseSurround = XW2RGBFormat(tmpSurround(:,1:size(cmosaic.current,3)),row,col);
     end
     
     
