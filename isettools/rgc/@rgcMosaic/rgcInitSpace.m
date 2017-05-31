@@ -43,7 +43,10 @@ p.addRequired('innerRetina');
 vFunc = @(x)(ismember(ieParamFormat(x),...
     {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
+p.addParameter('rfDiameter',[],@isnumeric); % microns
 p.parse(rgcM,innerRetina,cellType,varargin{:});
+
+rgcM.rfDiameter = p.Results.rfDiameter;
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(cellType)
