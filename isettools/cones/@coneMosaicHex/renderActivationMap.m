@@ -122,6 +122,6 @@ function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, faceColors
     S.FaceColor = 'flat';
     S.EdgeColor = edgeColor;
     S.LineWidth = lineWidth;
-    patch(axesHandle, S);
+    patch(S, 'Parent', axesHandle);
 end
 
