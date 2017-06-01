@@ -1,26 +1,28 @@
 classdef bipolar < handle
-%BIPOLAR - Create a bipolar object
+%BIPOLAR - Create a bipolar mosaic object
+%
 % The bipolar class allows the simulation of retinal processing from the
 % cone outer segment current to the retinal ganglion cell spike response.
 % 
 % bp = bipolar(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) creates the bipolar
 % object. Optional parameter name/value pairs are listed below.
 % 
-% Although we do not yet have a fully validated model of this architecture,
-% this represents a first attempt at simulating RGC responses from the cone
-% photocurrent. In order to achieve this, the bipolar temporal impulse response (IR)
-% is the result of deconvolution of the cone IR from the RGC IR.
+% We do not yet have a validated model of the bipolar temporal impulse
+% response.  To simulate it, we assume that the RGC responses from the cone
+% photocurrent as measured by EJ is correct.  The bipolar temporal impulse
+% response (tIR) is the response necessary to combine with the cone
+% temporal tIR to equal the RGC tIR.
 %
 % The bipolar object also allows for the simulation of nonlinear subunits
 % within retinal ganglion cell spatial receptive fields.
 % 
-% Input: the cone response over time from an outer segment object.
+% Input: the cone photocurrent response over time from a cone mosaic.
 % 
-% Output: the bipolar response over time, which can be fed into an inner
-% retina object.
+% Output: the bipolar voltage response over time. This is fed into an inner
+% retina object. (See s_vaRGC.m for an example.  More will appear).
 % 
 %     cellLocation;                    % location of bipolar RF center
-%     cellType;                        % diffuse on or off
+%     cellType;                        % there are five different cell types
 %     patchSize;                       % size of retinal patch from sensor
 %     timeStep;                        % time step of simulation from sensor
 %     filterType;                      % bipolar temporal filter type
@@ -49,10 +51,10 @@ properties (SetAccess = protected, GetAccess = public)
     % CELLTYPE diffuse on or off
     cellType;                        
     
-    % PATCHSIZE size of retinal patch from sensor
+    % PATCHSIZE size of retinal patch from cone mosaic
     patchSize;                       
     
-    % TIMESTEP time step of simulation from sensor
+    % TIMESTEP time step of simulation from cone mosaic
     timeStep;       
     
     % FILTERTYPE bipolar temporal filter type
@@ -87,6 +89,11 @@ properties(Access = private)
     coneType;
 end
 
+properties (Access = public)
+    %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
+    figureHandle;
+end
+
 % Public methods
 methods
     
@@ -97,7 +104,7 @@ methods
         
         p = inputParser;
         addRequired(p,  'cmosaic');
-        addParameter(p, 'cellType', 'offdiffuse', @(x)(ismember(x,obj.validCellTypes)));
+        addParameter(p, 'cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
@@ -114,7 +121,7 @@ methods
         obj.patchSize = osGet(os,'patchSize');
         obj.timeStep  = cmosaic.integrationTime;
         
-        obj.cellType = p.Results.cellType;
+        obj.cellType = strrep(lower(p.Results.cellType),' ','');
         
         % Set the rectification operation
         switch p.Results.rectifyType
@@ -131,7 +138,6 @@ methods
                 obj.rectificationCenter = @(x) x.*(x>0);
                 obj.rectificationSurround = @(x) x.*(x<0);
             otherwise
-                
                 obj.rectificationCenter = @(x) x;
                 obj.rectificationSurround = @(x) zeros(size(x));
         end
@@ -139,11 +145,16 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
-        obj.spatialRFInit;
+        obj.spatialRFInit('ecc',p.Results.ecc);
         
-       
     end
- 
+    
+    function window(obj)
+        obj.figureHandle = bipolarWindow(obj);
+        % Tip: Retrieve guidata using
+        %    gui = guidata(obj.figureHandle);
+        %
+    end
 end
 
 % methods (Static)
@@ -155,13 +166,12 @@ end
 
 properties (Constant)
     % VALIDCELLTYPES Cell array of strings containing valid values for the
-    % cell type.
+    % cell type.  diffuse and parasol are synonyms.  Not sure we should
+    % have them both.
     validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
 end
 
 % Methods that must only be implemented (Abstract in parent class).
-methods (Access=public) 
-end
 
 % Methods may be called by the subclasses, but are otherwise private
 methods (Access = protected)

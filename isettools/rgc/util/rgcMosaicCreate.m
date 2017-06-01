@@ -36,6 +36,7 @@ function ir = rgcMosaicCreate(ir, varargin)
 %% Parse inputs
 
 p = inputParser; 
+p.KeepUnmatched = true;
 p.addRequired('ir');
 
 % Experiment ... thinking about input parsing more generally (JRG/BW)
@@ -57,12 +58,12 @@ switch ieParamFormat(model)
     case {'lnp', 'rgclnp'}
         % Standard linear nonlinear poisson        
         % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-        obj = rgcLNP(ir, mosaicType);
+        obj = rgcLNP(ir, mosaicType,p.Unmatched);
         irSet(ir, 'mosaic', obj);
     case {'glm','rgcglm'}
         % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
         % Nature (2008).
-        obj = rgcGLM(ir, mosaicType);
+        obj = rgcGLM(ir, mosaicType,p.Unmatched);
         irSet(ir, 'mosaic', obj);
     case{'phys','rgcphys'}
         % Unit testing of the physiology

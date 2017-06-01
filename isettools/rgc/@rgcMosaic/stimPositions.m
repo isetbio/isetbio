@@ -39,6 +39,9 @@ yEndCoord   = (stimCenterCoords(2) + sRFMidPointY);
 stimX =  ceil(xStartCoord):floor(xEndCoord);
 stimY =  ceil(yStartCoord):floor(yEndCoord);
 
+if length(stimX)>length(stimY); stimX = stimX(1:length(stimY)); end;
+if length(stimY)>length(stimX); stimY = stimY(1:length(stimX)); end;
+
 if nargout == 3
     % An offset is sometimes used because RGC mosaics may be defined with
     % their center coordinates not at (0,0).

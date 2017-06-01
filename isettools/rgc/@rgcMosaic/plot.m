@@ -54,12 +54,16 @@ switch ieParamFormat(plotType)
     case 'spikemeanimage'
         % Spike mean image
         g = guidata(hf);
-        axes(g.axisResponse);
-        
+        axes(g.axisResponse);        
         spikes = obj.get('spikes');
+        if isempty(spikes)
+            disp('No spikes have been computed (responseSpikes missing)');
+            return;
+        end
+        
         img = mean(spikes,3);
         colormap(gray(256)); imagesc(img); axis image;
-        set(gca,'xticklabels','','yticklabels','');
+        axis off;
         colorbar; drawnow;
         
     case 'spikemovie'
@@ -74,6 +78,10 @@ switch ieParamFormat(plotType)
     case{'linearmovie'}
         % Continuous voltages prior to spike generation
         responseLinear = obj.get('responseLinear');
+        if isempty(responseLinear)
+            disp('No response computed');
+            return;
+        end
         
         clear vParams; 
         vParams.FrameRate = 30; 
@@ -94,6 +102,7 @@ switch ieParamFormat(plotType)
     case 'psth'
         % Peri-stimulus time graph for all cells.
         % Kind of a weird plot to make.
+        % Need a flag to force a new window;
         timeStep = obj.dt;
         psth = obj.get('psth');
         resp = RGB2XWFormat(psth);
@@ -115,15 +124,44 @@ switch ieParamFormat(plotType)
         % Oddly, the center is (row,col)
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
-        ellipseMatrix = obj.ellipseMatrix;
-        ieShape('ellipse','center',center,...
-            'radius',radius, ...
-            'color','b','ellipseMatrix',ellipseMatrix);
-        
+        ellipseMatrix = obj.ellipseMatrix;        
+        [h, pts] = ieShape('ellipse','center',center,'radius',.5*sqrt(2)*radius,'ellipseParameters',vertcat(ellipseMatrix{:}),'color','b');
         set(gca,...
-            'xlim',[min(center(:,2)) - radius, max(center(:,2)) + radius],...
-            'ylim',[min(center(:,1)) - radius, max(center(:,1)) + radius]);
+            'xlim',[min(center(:,2)) - 3*radius, max(center(:,2)) + 3*radius],...
+            'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
+        
+    case 'mosaicsurf'        
+        
+        rfCoords = vertcat(obj.cellLocation{:});
+        rfMinR = min(rfCoords(:,1)); rfMaxR = max(rfCoords(:,1));
+        rfMinC = min(rfCoords(:,2)); rfMaxC = max(rfCoords(:,2));
+        
+        rfSize = size(obj.sRFcenter{1,1});
+        
+        edgePadding = 4;
+        spStim = zeros(edgePadding+ceil(rfSize(1)/1)+ceil(rfMaxR-rfMinR),edgePadding+ceil(rfSize(2)/1)+ceil(rfMaxC-rfMinC));
+        
+        startInd = 2;
+        skipInd = 2;
+        for ri = startInd:skipInd:size(obj.cellLocation,1)
+            for ci = startInd:skipInd:size(obj.cellLocation,2)
+                %         [ri ci]
+                rvStart{ri,ci} = 1+ceil(obj.cellLocation{ri,ci}(1) +ceil((rfMaxR-rfMinR)/2)+1);% - ceil(rfSize(1)/2)+1);
+                rvEnd{ri,ci}   = 1+ceil(obj.cellLocation{ri,ci}(1) +ceil((rfMaxR-rfMinR)/2)) + ceil(rfSize(1)/1);
+                
+                cvStart{ri,ci} = 1+ceil(obj.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2)+1);% - ceil(rfSize(2)/2)+1);
+                cvEnd{ri,ci}   = 1+ceil(obj.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2) + ceil(rfSize(2)/1));
+                
+                if (rvStart{ri,ci} > 0) && (cvStart{ri,ci} > 0)
+                    
+                    spStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci}) = ...
+                        spStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci})+obj.sRFcenter{ri,ci}-obj.sRFsurround{ri,ci};
+                end
+            end
+        end
+        disp('Every other cell in mosaic shown, skipInd = 2');
+        imagesc(spStim);
         
     otherwise
         error('Unknown plot type %s\n',plotType);

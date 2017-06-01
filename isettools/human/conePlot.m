@@ -43,8 +43,17 @@ if notDefined('delta'), delta = 0.25; end  % Sampling in microns
 % support and spread are adjusted below, after the grid is built
 
 % Grid the xy cone positions to the delta spacing using a fast method
-fgrid = ffndgrid(xy,coneType, delta);
+% fgrid = ffndgrid(xy,coneType, delta);
+fgrid = ffndgrid(xy,coneType(:), 0.25);
 fgrid = full(fgrid);
+
+% tic
+% xMin = min(xy(:,1)); xMax = max(xy(:,1));
+% yMin = min(xy(:,2)); yMax = max(xy(:,2));
+% [xg,yg] = meshgrid(xMin:delta:xMax, yMin:delta:yMax);
+% tic
+% vq = griddata(xy(:,1),xy(:,2),coneType(:),xg,yg);
+% toc
 
 % Grid the cone absorption rates the same way
 if exist('absorptions', 'var')
@@ -82,7 +91,7 @@ coneImage = reshape(coneImage,size(fgrid,1),size(fgrid,2),3);
 % mp = [0 0 0 ; 1 0 0 ; 0 1 0; 0 0 1]; image(fgrid); colormap(mp)
 
 % Blur the image by a Gaussian - we set blur and support here.
-if notDefined('spread'), spread = 2.1; end
+if notDefined('spread'),  spread = 2.1; end
 if notDefined('support'), support = round(spread*[4 4]); end
 
 

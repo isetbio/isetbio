@@ -38,7 +38,7 @@ function [h,pts] = ieShape(shape,varargin)
 p = inputParser;
 
 p.addRequired('shape',@isstr);
-p.addParameter('nSamp',200,@isnumeric);
+p.addParameter('nSamp',20,@isnumeric);
 p.addParameter('center',[0 0],@ismatrix);
 p.addParameter('radius',1,@isnumeric);
 p.addParameter('rect',[-1 -1 2 2],@isvector)
@@ -85,6 +85,8 @@ switch shape
     case 'ellipse'
         hold on;
         center = p.Results.center;
+        
+        radius = p.Results.radius;
         nEllipses = size(center,1);
         
         % It is OK to send in a single ellipse parameter.  The ellipse will
@@ -104,18 +106,21 @@ switch shape
         % Also for multiple circles, keep hold on and make axis equal, of
         % course.  Otherwise it's not a circle.
         hold on
-        ptsCircle = circle([0,0],1,nSamp);
+        ptsCircle = circle([0,0],radius,nSamp);
         % [xc,yc] = ind2sub(szEllMatrix,ii);
         % szEllMatrix = [sqrt(nEllipses) sqrt(nEllipses)];
+        
+        
         for ii=1:nEllipses
             % ePts = pts*eMatrix;
             % ePts = pts * diag(major/minor axis)* rotmat(third parameter)
+            % ellipseParameters(ii,1:2) = sqrt(2)*ellipseParameters(ii,1:2)./norm([ellipseParameters(ii,1:2)]);
             D = diag(ellipseParameters(ii,1:2));
             R = [cosd(ellipseParameters(ii,3)) -sind(ellipseParameters(ii,3));
                 sind(ellipseParameters(ii,3))   cosd(ellipseParameters(ii,3))];
             pts = bsxfun(@plus,ptsCircle*D*R,center(ii,:));
             %pts = ptsCircle*D*R + repmat(center,nSamp,1);
-            h = plot(pts(:,2),pts(:,1),colors(ii));
+            h = plot(pts(:,2),pts(:,1),colors(ii),'linewidth',.2);
         end
         % pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
 

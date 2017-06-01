@@ -33,9 +33,9 @@ function t_wvfZernike
 %  http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
 %
 % History:
-%   3/12/2012	  Created.  baw, mdl, kp
-%   4/29/12  dhb  Tried to tighten vertical spacing and apply uniform convention.  Some editing of
-%                 text for clarity.              
+%   3/12/2012	baw, mdl, kp   Created.  
+%   4/29/12     dhb  Tried to tightenvertical spacing and apply uniform
+%   convention.  Some editing of text for clarity.
 %	
 % (c) Wavefront Toolbox Team 2011, 2012
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -19,6 +19,12 @@ function [ir, nTrialsSpikes] = irCompute(ir, bp, varargin)
 % in irComputeLinearSTSeparable.  There is no noise added in the linear
 % part.
 %
+% At present, the temporal response is set to an impulse because of the way
+% the bipolar tIR is set.  We need to deal with this.  Also, the 'dt' of
+% the RGC should be inherited form the dt of the bipolar calculation.  I
+% don't see that anywhere (BW).  Should be in the
+% irComputeLinearSTSeparable routine.
+%
 % The spikes are computed irComputeSpikes routine. The spiking can have a
 % random element.  So, we may run the conversion from linear to spikes
 % multiple times, effectively producing spike rasters.
@@ -43,7 +49,7 @@ p = inputParser;
 p.CaseSensitive = false;
 
 p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-vFunc = @(x) isequal(class(x),'bipolar');
+vFunc = @(x) (isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
 p.addParameter('coupling',false,@islogical);
@@ -63,17 +69,22 @@ else
 end
 % irPlot(ir,'response linear');
 
-%% Compute spikes for each trial
+%% Compute spikes from linear response; possibly for multiple trials
+
+% This should be for ii=1:length(ir.mosaic)
 switch class(ir.mosaic{1})
-    case {'rgcLinear'};
+    case {'rgcLinear'}
         % No linear response implemented yet.
         disp('No spikes computed for linear RGC mosaic');   
     otherwise
         % Runs for rgcLNP, rgcGLM
-        % Check the coupling field to decide on the coupling parameter
+        % Send the coupling field to decide on the coupling parameter
         if ~isempty(bipolarTrials) 
-            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling,'nTrialsLinearResponse',nTrialsLinearResponse);
+            % Multiple trial case
+            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling, ...
+                'nTrialsLinearResponse',nTrialsLinearResponse);
         else
+            % Single trial case
             [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling);
         end
 end

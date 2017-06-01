@@ -41,13 +41,20 @@ function [uData, hf] = plot(obj, pType, varargin)
 %   'current'              - Current movie on cone mosaic
 %   'mean current'         - Image of the mean current
 %   'current timeseries'   - Cone photocurrent graphs
-%   'impulse response'     - Current impulse response for this integration time
+%   'impulse response'     - Cone current impulse response
 %   'movie current'        - Gray scale movie of current
 %
-% When you present 'os ' or 'outersegment ' then we pass the arguments
-% along to os.plot()
+% When the first string is 'os ' or 'outersegment ' then we pass the
+% arguments along to os.plot().  For example, 
 %
-% Example: coneMosaic.plot(type)
+%     cMosaic.plot('os impulse response')
+%
+% plots the outer segment impulse response on its own time axis.
+%
+% Example: 
+%
+%  coneMosaic.plot('impulse response')
+%  coneMosaic.plot('cone mosaic')
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
@@ -70,10 +77,10 @@ uData = [];
 % Find a cleaner way to check and send to os.plot().  Maybe create a parse
 % argument string as in ISET.
 if (length(pType) > 3 && strcmp(pType(1:3),'os '))
-    obj.os.plot(pType(4:end),varargin{:});
+    obj.os.plot(pType(4:end),'cmosaic',obj,varargin{:});
     return;
 elseif (length(pType) > 13 && strcmp(pType(1:13),'outersegment '))
-    obj.os.plot(pType(14:end),varargin{:});
+    obj.os.plot(pType(14:end),'cmosaic',obj,varargin{:});
     return;
 end
 
@@ -99,8 +106,25 @@ switch ieParamFormat(pType)
     
     % ----   Images
     case 'conemosaic'
+        % Default for cone size
+        support = [4,4]; spread = 2; maxCones = 5e4;
+
+        % Speed things up
+        nCones = size(obj.coneLocs,1);
+        locs = obj.coneLocs; pattern = obj.pattern(:);
+        if  nCones > maxCones
+            disp('Displaying subsampled (50K) version')
+            lst = randi(nCones,[maxCones,1]);
+            lst = unique(lst);
+            locs = locs(lst,:); pattern = pattern(lst,:);
+
+            % Brighten up in this case
+            support = round([nCones/maxCones,nCones/maxCones]); 
+            spread = 2*support(1);
+        end
+        
         [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
-            conePlot(obj.coneLocs * 1e6, obj.pattern);
+            conePlot(locs * 1e6, pattern, support, spread);
         imagesc(uData.mosaicImage); axis off; axis image;
     case 'meanabsorptions'
         % title('Mean number of absorptions');
@@ -149,6 +173,39 @@ switch ieParamFormat(pType)
         current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
         current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
+    case 'impulseresponse'
+        % The current impulse response at the cone mosaic temporal sampling
+        % rate
+        
+        % The outersegment cone temporal impulse response functions are
+        % always represented at a high sampling rate (0.1 ms).
+        if isempty(obj.absorptions)
+            lmsFilters = obj.os.linearFilters(obj);
+        else
+            absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
+            lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', absorptionsInXWFormat);            
+        end
+        
+        %% Interpolate the stored lmsFilters to the time base of the absorptions
+        osTimeAxis    = obj.os.timeAxis;
+        coneTimeAxis  = obj.interpFilterTimeAxis;
+        
+        % Interpolate down to the cone mosaic sampling rate
+        % Interpolation assumes that we are accounting for the time sample bin
+        % width elsewhere.  Also, we extrapolate the filters with zeros to make
+        % sure that they extend all the way through the absorption time axis.
+        % See the notes in s_matlabConv2.m for an explanation of why.
+        interpFilters = interp1(osTimeAxis(:),lmsFilters,coneTimeAxis(:),'linear',0);
+
+        vcNewGraphWin;
+        plot(coneTimeAxis,interpFilters(:,1),'r-', ...
+            coneTimeAxis,interpFilters(:,2),'g-', ...
+            coneTimeAxis,interpFilters(:,3),'b-o');
+        xlabel('Time (sec)'); ylabel('Current (pA)');
+        grid on;
+        l = {'L cone','M cone','S cone'}; legend(l);
+        title('Impulse response (cone temporal sampling)');
+        
     case 'moviecurrent'
         % Current movie in gray scale
         if isempty(obj.current)

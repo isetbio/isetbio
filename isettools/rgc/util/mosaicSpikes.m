@@ -1,0 +1,34 @@
+function spikeResp = mosaicSpikes(innerRetina)
+% Convert spikes in the innerRetina object into an NxK matrix where N =
+% number of cells and K = time bins.
+
+spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
+spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
+spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
+spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+
+timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
+
+spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
+spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
+spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
+
+spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
+spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
+
+clear  spikesout1 spikesout2 spikesout3 spikesout4 
+
+%%
+
+spikesout = double(spikesoutsm);
+pointer = 0;%(blockNum-1)*blocklength;
+spikeResp = zeros(size(spikesoutsm,1),size(spikesoutsm,2)/10);
+for i = 1:size(spikesoutsm,2)/10
+    blocksize = 10;
+    endval = i*blocksize;
+    if endval > size(spikesout,2)
+        endval = size(spikesout,2);
+    end
+    startval = (i-1)*blocksize + 1;
+    spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
+end

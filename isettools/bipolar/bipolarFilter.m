@@ -77,6 +77,7 @@ end
 % OS impulse response.
 params.filterDuration = 0.4; 
 params.samplingTime = 0.001;
+params.cellType = obj.cellType;
 [rgcFilt,rgcTime ] = rgcImpulseResponsePillow(params);
 % vcNewGraphWin; plot(rgcTime,rgcFilt);
 
@@ -98,7 +99,18 @@ gw1 = gausswin(length(rgcFilt),gaussVar)';
 gw1 = circshift(gw1,-round(length(rgcFilt)/2) + 0*gaussVar,2);
 gw1 = gw1/sum(gw1);   % Unit area for no DC amplification 
 
-bipolarFilt = ifft(fft(gw1) .* fft((rgcFilt)) ./ fft((osFilt)));
+% Strange indeterministic error here - occasionally, depending on the
+% average isomerizations computed in @osLinear/linearFilters.m, the
+% numerator and denominator of fftBipolarFilt are 0 at the same point,
+% which results in NaN. Here we add a small epsilon 1e-15 to denominator if
+% this happens in order to get rid of the NaN values.
+fftBipolarFilt = fft(gw1) .* fft((rgcFilt)) ./ (fft((osFilt)));
+nanInd = isnan(fftBipolarFilt); 
+if sum(nanInd(:))>0
+    fftBipolarFiltEPS = fft(gw1) .* fft((rgcFilt)) ./ (1e-15+fft((osFilt)));
+    fftBipolarFilt((nanInd)) = fftBipolarFiltEPS((nanInd));
+end
+bipolarFilt = ifft(fftBipolarFilt);
 
 % Graph the various curves (except the Gaussian)
 if graph
@@ -119,7 +131,15 @@ if graph
     set(gca,'xlim',[-0.05 0.4]); xlabel('Time (sec)');
 end
 
+
+switch obj.cellType
+    case{'ondiffuse','onmidget','onsbc','sbc'}
+        signVal = 1;
+    otherwise
+        signVal = -1;
+end
+            
 % Down sample the time axis to match the cone mosaic sample times
-bipolarFilt =interp1(timeBase,bipolarFilt,cmosaic.timeAxis,'linear',0);
+bipolarFilt = signVal*interp1(timeBase,bipolarFilt,cmosaic.timeAxis,'linear',0);
 
 end

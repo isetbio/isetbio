@@ -1,184 +1,144 @@
 function [ir, nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, varargin)
-% Computes the mosaic's linear response to an input
+% IRCOMPUTELINEARSTSEPARABLE - Computes the RGC mosaic linear response
 %
-%   ir = irComputeLinearSTSeparable(ir, input, varargin)
+%   ir = irComputeLinearSTSeparable(ir, input, 'bipolarTrials', bpTrials)
 %
-% The linear responses for each mosaic are computed one at a time. The
-% linear computation is always space-time separable in here?
+% The linear responses for each mosaic are computed. The linear computation
+% is always space-time separation for each mosaic.  The spatial
+% computationa, however, is not a convolution because the RF of the cells
+% in each mosaic differ.
 %
 % There are two types of possible input objects.
 %
-%      'osDisplayRGB' - frame buffer values for a spatiotemporal stimulus
-%           stored in an outer segment object.
-%      'bipolar' - the bipolar cell object with a signal that has gone
-%           through temporal filtering and possibly spatial subunit
-%           nonlinearities.
-% 
-% For a given mosaic, first the spatial convolution of the center and
-% surround RFs are calculated for each RGB channel, followed by the
-% temporal responses for the center and surround and each RGB channel. This
-% results in the linear response.
+% Required inputs
+%   ir:      An inner retina object with RGC mosaics
+%   bp:      A bipolar cell mosaic object.
 %
-% The linear response is the input to irComputeSpikes.
+% Optional inputs
+%  bipolarTrials:  Multiple bipolar trials can be sent in using this
+%                  variable.
 %
-% For the rgcGLM object, the spikes can be computed using the recursive
-% influence of the post-spike and coupling filters between the nonlinear
-% responses of other cells. These computations are carried in
-% irComputeSpikes out using code from Pillow, Shlens, Paninski, Sher,
-% Litke, Chichilnisky, Simoncelli, Nature, 2008, licensed for modification,
-% which can be found at
+% Computational questions
+%    * Why do we scale the bipolar voltage input with ieContrast?
+%    * Why is the RGC impulse response set to an impulse?  I gather this is
+%    because the photocurrent*bipolar equals the observed RGC impulse
+%    response?
 %
-% http://pillowlab.princeton.edu/code_GLM.html
+% Computation
 %
-% Outline:
-%  * Normalize stimulus
-%  * Compute linear response
-%     - spatial convolution
-%     - temporal convolution
-%  * Compute nonlinear response
-% [spiking responses are calculated by subclass versions of rgcCompute]
+%  For each mosaic, the center and surround RF responses are calculated
+%  (matrix multiply). then the temporal impulse response for the center and
+%  surround is calculated.  This continuous operation produces the 'linear'
+%  RGC response shown in the window.
 %
-% Inputs: inner retina object, outersegment object.
+%  The linear response is the input to irComputeSpikes.
 %
-% Outputs: the inner object with fixed linear and noisy spiking responses.
+%   rgcGLM model: The spikes are computed using the recursive influence of
+%   the post-spike and coupling filters between the nonlinear responses of
+%   other cells. These computations are carried in irComputeSpikes out
+%   using code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
+%   Simoncelli, Nature, 2008, licensed for modification,
+%   which can be found at
 %
-% Example:
+%            http://pillowlab.princeton.edu/code_GLM.html
+%
+% Outputs: 
+%   The linear response and spikes are attached to the inner retina
+%   mosaics.  
+%
+% Examples:
+%
 %   ir.compute(identityOS);
-%   irCompute(ir,identityOS);
 %
-% See also: rgcGLM/rgcCompute
+% See also: rgcGLM/rgcCompute, s_vaRGC in WL/WLVernierAcuity
 %
-% JRG (c) isetbio team
+% JRG (c) Isetbio team, 2016
 
-%% Parse
+%% Check inputs
+
 p = inputParser;
 p.CaseSensitive = false;
 
+% ir and bp are both required
 p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
-vFunc = @(x)(isequal(class(x),'bipolar'));
+
+vFunc = @(x)(isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
+% We can use multiple bipolar trials as input
 p.addParameter('bipolarTrials',  [], @isnumeric);
 
 p.parse(ir,bp,varargin{:});
 
-ir = p.Results.ir;
-bp = p.Results.bp;
-
 bipolarTrials = p.Results.bipolarTrials;
+nTrials = 1;
+if ~isempty(bipolarTrials), nTrials = size(bipolarTrials,1); end
 
-%% Get the input data
+%% Process the bipolar data
 
-% Possible osTypes are osIdentity, osLinear, and osBiophys
-% Only osIdentity is implemented now.
-if length(bp) == 1
-    osType = class(bp);
-else
-    osType = class(bp{1});
-end
-switch osType
-    case 'osDisplayRGB'
-        % Display RGB means straight from the frame buffer to your brain
-        % @JRG:  Test cases are in EJ Figure reproduction
-        % Others to be named!
-        warning('This bipolar case should be deprecated');
+for iTrial = 1:nTrials
+    
+    % Looping over the rgc mosaics
+    for rgcType = 1:length(ir.mosaic)        
         
-        spTempStim = osGet(bp, 'rgb data');
-        if isempty(spTempStim), error('No rgb data'); end
+        % Determine the range of the rgb input data
+        if length(bp) == 1
+            stim   = bp.get('response'); 
+        else                
+            stim   = bp{rgcType}.get('responseCenter');            
+        end
         
-        % The Pillow code expects the input to be normalized to the mean of
-        % zero, like a contrast. In this way a frame buffer of 1024 or 512
-        % or 256 would all get scaled into the same [-0.5, 0.5] range.
-        stim = ieContrast(spTempStim);
-        %         range = max(spTempStim(:)) - min(spTempStim(:));
-        %         spTempStim = (spTempStim - mean(spTempStim(:)))/range;
+        % JRG removes the mean and uses a contrast (or scaled contrast) as
+        % the linear input.  Let's justify or explain or something.
+        switch class(ir.mosaic{rgcType})
+            case 'rgcPhys'
+                % Let's get rid of this parameter.  Or explain.  Or
+                % something.
+                magFactor = 7.9; % due to bipolar filter
+                stim = magFactor*ieContrast(stim);
+            otherwise
+                stim = ieContrast(stim);
+        end
+        % ieMovie(stim);
         
-        % Looping over each rgc
-        for rgcType = 1:length(ir.mosaic)                  
-            
-            % We use a separable space-time receptive field.  This allows
-            % us to compute for space first and then time. Space.
-            [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
-            % ieMovie(respC);
-            
-            tResponse = ir.mosaic{rgcType}.tCenter{1,1};
-            
-            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', tResponse);
-            ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);        
-            
-            % Convolve with the temporal impulse response
-            respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-            respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-            % Delete fullConvolve
-            % ieMovie(respC - respS);
-                        
+        % Set the rgc impulse response to an impulse 
+        % When we feed a bipolar object into the inner retina, we don't
+        % need to do temporal convolution. We have the tCenter and
+        % tSurround properties for the rgcMosaic, so we set them to an
+        % impulse to remind us that the temporal repsonse is already
+        % computed.
+        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
+        ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',1);
+        
+        % We use a separable space-time receptive field.  This allows
+        % us to compute for space first and then time. Space. 
+        [respC, respS] = rgcSpaceDot(ir.mosaic{rgcType}, stim);
+        % ieMovie(respC);
+        
+        % Convolve with the temporal impulse response
+        % If the temporal IR is an impulse, we don't need to do the
+        % temporal convolution.  I'm leaving this here as a reminder that
+        % we need to do this if we run any of EJ's original GLM models
+        % (image -> spikes with no cone mosaic or bipolar).
+        % if ir.mosaic{rgcType}.tCenter{1,1} ~= 1
+        %     respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+        %     respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+        % end
+        % ieMovie(respC - respS);
+        
+        % Deal with multiple trial issues
+        if ~isempty(bipolarTrials)
+            if iTrial == 1
+                nTrialsLinearResponse = zeros([nTrials,size(respC)]);
+            end
+            nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
+        end
+        
+        % Store the last trial
+        if iTrial == nTrials
             % Store the linear response
             ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
-            
-        end       
-        
-    case {'bipolar'}
-        % Bipolar test case in t_coneMosaic
-        % t_rgcBar, others to be named.
-        
-        if ~isempty(bipolarTrials)
-            nTrials = size(bipolarTrials,1);
-        else
-            nTrials = 1;
         end
-        
-        for iTrial = 1:nTrials
-            
-            % Looping over the rgc mosaics
-            for rgcType = 1:length(ir.mosaic)
-                
-                % Determine the range of the rgb input data
-                if length(bp) == 1
-                    stim   = bp.get('response');
-                else
-                    stim   = bp.get(bp{rgcType}, 'response');
-                end
-                switch class(ir.mosaic{rgcType})
-                    case 'rgcPhys'
-                        magFactor = 7.9; % due to bipolar filter
-                        stim = magFactor*ieContrast(stim);
-                    otherwise
-                        stim = ieContrast(stim);
-                end
-                % ieMovie(stim);
-                
-                % Set the rgc impulse response to an impulse
-                ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tCenter all', 1);
-                ir.mosaic{rgcType}=ir.mosaic{rgcType}.set('tSurround all',0);
-                
-                % We use a separable space-time receptive field.  This allows
-                % us to compute for space first and then time. Space.
-                [respC, respS] = spConvolve(ir.mosaic{rgcType}, stim);
-                % ieMovie(respC);
-                
-                % Convolve with the temporal impulse response
-                respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-                respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-                % Delete fullConvolve
-                % ieMovie(respC - respS);
-                
-                
-                if ~isempty(bipolarTrials)
-                    if iTrial == 1
-                        nTrialsLinearResponse = zeros([nTrials,size(respC)]);
-                    end
-                    nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
-                end
-                
-                if iTrial == nTrials
-                    % Store the linear response
-                    ir.mosaic{rgcType} = mosaicSet(ir.mosaic{rgcType},'response linear', respC - respS);
-                end
-                
-            end
-        end
-    otherwise
-        error('Unknown os type %s\n',osType);
+    end
 end
-
 

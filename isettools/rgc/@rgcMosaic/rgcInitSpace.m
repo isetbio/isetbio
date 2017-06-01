@@ -1,4 +1,4 @@
-function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
+function rgcM = rgcInitSpace(rgcM,innerRetina,cellType,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
 %    rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
@@ -14,8 +14,8 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 % RF size for the On Parasol cells at a particular eccentricity based on
 % data from Watanabe & Rodieck (J. Comp. Neurol., 1989), Croner & Kaplan
 % (Vision Research, 1995) and Chichilniksy & Kalmar (J Neurosci., 2002,
-% Fig. 5, pg. 2741.). 
-% 
+% Fig. 5, pg. 2741.).
+%
 % For other types of RGCs, we multiply the On Parasol RF size by a unitless
 % factor as listed here. The multipliers are based on Dacey, 2004, "Retinal
 % ganglion cell diversity", in The Cognitive Neurosciences, as well as
@@ -36,13 +36,17 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
 %% All three arguments are required
 
 p = inputParser;
+p.KeepUnmatched = true;
 p.addRequired('rgcM');
 p.addRequired('innerRetina');
 
-vFunc = @(x)(ismember(ieParamFormat(x),{'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
+vFunc = @(x)(ismember(ieParamFormat(x),...
+    {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
+p.addParameter('rfDiameter',[],@isnumeric); % microns
+p.parse(rgcM,innerRetina,cellType,varargin{:});
 
-p.parse(rgcM,innerRetina,cellType);
+rgcM.rfDiameter = p.Results.rfDiameter;
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(cellType)
@@ -58,23 +62,26 @@ switch ieParamFormat(cellType)
         rfSizeMult = 1.1;    % SBC RF size multiplier
 end
 
-% Calculate spatial RF diameter for ON Parasol cell at a particular TEE
-% See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
-% in ON and OFF ganglion cells of primate retina." The Journal of
-% Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
-receptiveFieldDiameterParasol2STD = ...
-    receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
-
-% The spatial RF diameter in pixels (or cones) is therefore the diameter in
-% microns divided by the number of microns per pixel (or cone), scaled by
-% the factor determined by the type of mosaic that is being created.
-
-% in micrometers; divide by umPerScenePx to get pixels
-rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2); 
+% If diameter has not been set, assign its value based on the literature
+if isempty(rgcM.rfDiameter)
+    % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
+    % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
+    % in ON and OFF ganglion cells of primate retina." The Journal of
+    % Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
+    receptiveFieldDiameterParasol2STD = ...
+        receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
+    
+    % The spatial RF diameter in pixels (or cones) is therefore the diameter in
+    % microns divided by the number of microns per pixel (or cone), scaled by
+    % the factor determined by the type of mosaic that is being created.
+    
+    % in micrometers; divide by umPerScenePx to get pixels
+    rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2);
+end
 
 % Build spatial RFs of all RGCs in this mosaic
-[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.rfDiaMagnitude, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
-    buildSpatialRFArray(innerRetina.size, innerRetina.row, innerRetina.col, rgcM.rfDiameter);
+[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
+    buildSpatialRFArray(innerRetina.size, innerRetina.row, innerRetina.col, rgcM.rfDiameter, p.Unmatched);
 
 % sRFcenter, sRFsurround and cellLocation are in units of the inputObj - scene pixels,
 % cones or bipolar cells.
