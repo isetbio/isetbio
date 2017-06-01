@@ -90,6 +90,9 @@ classdef coneMosaic < hiddenHandle
         %    image.
         center;
         
+        %WHICHEYE  String ('left' or 'right') to indicate which eye
+        whichEye;
+        
         %PATTERN Pattern of KLMS cones in the mosaic
         %    K = 1, L = 2, M = 3, S = 4 (K means blank,no cone at that position)
         %    This defines the row and column dimensions of the grid on
@@ -236,6 +239,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));  
             p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment'))); 
             p.addParameter('center',[0 0], @(x)(numel(x) ==2));   
+            p.addParameter('whichEye','left', @(x) ismember(x, {'left', 'right'}));   
             p.addParameter('wave', 400:10:700, @isnumeric);       
             p.addParameter('pattern', [], @isnumeric);            
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);  
@@ -252,8 +256,9 @@ classdef coneMosaic < hiddenHandle
             obj.macular = p.Results.macular;
             obj.os      = p.Results.os;
             
-            obj.center = p.Results.center(:)';
-            obj.wave   = p.Results.wave;
+            obj.center          = p.Results.center(:)';
+            obj.whichEye        = p.Results.whichEye;
+            obj.wave            = p.Results.wave;
             obj.spatialDensity_ = p.Results.spatialDensity(:);
             obj.integrationTime = p.Results.integrationTime;
             
@@ -268,7 +273,7 @@ classdef coneMosaic < hiddenHandle
             % Units of returns are meters
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
-            [spacing, aperture] = coneSize(ecc,ang);
+            [spacing, aperture] = coneSize(ecc,ang, 'whichEye', obj.whichEye);
             
             obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
