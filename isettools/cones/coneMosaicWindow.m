@@ -414,8 +414,6 @@ index    = get(handles.popupImageType, 'Value');
 if index > length(contents), index = 1; end
 plotType = contents{index};
 
-% get a point
-[x, y] = ginput(1); % Rounded and clipped to the data, below
 
 switch plotType
     case 'Mean absorptions'
@@ -443,6 +441,10 @@ switch plotType
         end
         yStr = 'Photocurrent (pA)';
 end
+
+% The plots below are with respect to a point.
+% Get the point
+[x, y] = ginput(1); % Rounded and clipped to the data
 x = ieClip(round(x), 1, size(data, 2));
 y = ieClip(round(y), 1, size(data, 1));
 
@@ -500,7 +502,8 @@ switch source.Label
             t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
         end
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
-        uData.t = t; uData = squeeze(data(y, x, :));
+        uData.timerseries = t;
+        uData.x = x; uData.y = y;
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
         set(gca,'userdata',uData);

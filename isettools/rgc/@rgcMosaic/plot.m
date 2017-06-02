@@ -125,13 +125,20 @@ switch ieParamFormat(plotType)
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;        
-        [h, pts] = ieShape('ellipse','center',center,'radius',.5*sqrt(2)*radius,'ellipseParameters',vertcat(ellipseMatrix{:}),'color','b');
+        ieShape('ellipse','center',center,...
+            'radius',.5*sqrt(2)*radius,...
+            'ellipseParameters',vertcat(ellipseMatrix{:}),...
+            'color','b');
+        
+        % Sets the axis limits
         set(gca,...
             'xlim',[min(center(:,2)) - 3*radius, max(center(:,2)) + 3*radius],...
             'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         
     case 'mosaicsurf'        
+        % Plots a sub-sampled set of spatial RF as surface (mesh) plots
+        % Should make the skip parameters an selectable parameter
         
         rfCoords = vertcat(obj.cellLocation{:});
         rfMinR = min(rfCoords(:,1)); rfMaxR = max(rfCoords(:,1));
@@ -142,8 +149,8 @@ switch ieParamFormat(plotType)
         edgePadding = 4;
         spStim = zeros(edgePadding+ceil(rfSize(1)/1)+ceil(rfMaxR-rfMinR),edgePadding+ceil(rfSize(2)/1)+ceil(rfMaxC-rfMinC));
         
-        startInd = 2;
-        skipInd = 2;
+        % Sub-sampling values
+        startInd = 2; skipInd = 2;
         for ri = startInd:skipInd:size(obj.cellLocation,1)
             for ci = startInd:skipInd:size(obj.cellLocation,2)
                 %         [ri ci]

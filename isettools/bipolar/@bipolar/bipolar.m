@@ -145,7 +145,7 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive field
-        obj.spatialRFInit('ecc',p.Results.ecc);
+        obj.spatialRFInit('ecc',p.Results.ecc,'conemosaic',cmosaic);
         
     end
     

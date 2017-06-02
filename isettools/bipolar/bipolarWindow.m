@@ -22,7 +22,7 @@ function varargout = bipolarWindow(varargin)
 
 % Edit the above text to modify the response to help bipolarwindow
 
-% Last Modified by GUIDE v2.5 18-Mar-2017 13:28:44
+% Last Modified by GUIDE v2.5 02-Jun-2017 11:26:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -152,11 +152,15 @@ switch str
     case 'Bipolar mean (image)'
         handles.bipolar.plot('response image','gamma',g);
          
-    case 'Bipolar plot'
-        handles.bipolar.plot('response');
+        %     case 'Bipolar plot'
+        %         % Each position shown as a time series in one big plot
+        %         handles.bipolar.plot('response');
+        %
         
     case 'Bipolar movie'
+        ieInWindowMessage('Showing movie',handles);
         handles.bipolar.plot('movieResponse');
+        ieInWindowMessage('',handles);
         
     otherwise
         error('Unknown string %s\n',str);
@@ -178,16 +182,60 @@ end
 
 end
 
+% --------------------------------------------------------------------
+function menuPlotCTS_Callback(hObject, eventdata, handles)
+% Plot | Current time series
+%
+
+% The current time series is at a point. Get the point
+[x, y] = ginput(1); % Rounded and clipped to the bipolar mosaic size
+
+sz = size(handles.bipolar.responseCenter);
+xlim = get(gca,'xlim'); ylim = get(gca,'ylim');
+pos(1) = ieClip(round(x - xlim(1)), 1, sz(2));
+pos(2) = ieClip(round(y - ylim(1)), 1, sz(1));
+
+% Draw a circle around the selected point.
+viscircles([x,y],0.7);
+
+% pos is in units of the matrix of data, not microns on the surface.
+% Deal with this.
+handles.bipolar.plot('response time series','pos',pos);
+
+end
 
 % --------------------------------------------------------------------
-% function menuPlotPSTH_Callback(hObject, eventdata, handles)
-% % Plot | PSTH
-% %
-% % hObject    handle to menuPlotPSTH (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% disp('Plot | PSTH')
-% end
+function menuPlotSpatialRFMosaic_Callback(hObject, eventdata, handles)
+% Plot | Spatial RF mosaic
+%
+% hObject    handle to menuPlotSpatialRFMosaic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.bipolar.plot('mosaic');
+
+end
+
+
+% --------------------------------------------------------------------
+function menuPlotSpatialRF_Callback(hObject, eventdata, handles)
+%
+% hObject    handle to menuPlotSpatialRF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+disp('Single spatial RF')
+
+end
+
+% --------------------------------------------------------------------
+function menuPlotTemporalIR_Callback(hObject, eventdata, handles)
+% hObject    handle to menuPlotTemporalIR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+disp('Temporal IRF')
+
+end
 
 % --------------------------------------------------------------------
 function menFileSave_Callback(hObject, eventdata, handles)
@@ -307,3 +355,4 @@ function editGamma_Callback(hObject, eventdata, handles)
 bipolarWindowRefresh(handles)
 %
 end
+
