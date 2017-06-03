@@ -316,7 +316,7 @@ end
 rfOverlay = false;
 if rfOverlay, rgcM.plot('mosaic'); end
 
-% Text description
+% Text description - implemented in rgcMosaic base class.
 set(gdata.rgcProperties,'string',rgcM.describe);
 
 end
