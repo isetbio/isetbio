@@ -67,11 +67,12 @@ switch ieParamFormat(pType)
                 
         % Oddly, the center is (row,col)
         center = obj.cellLocation;  % um w.r.t. center of image
-        radius = 4;
-        ellipseMatrix = eye(2);        
+        center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
+        radius = 1e6*.5*obj.patchSize/(size(obj.cellLocation,1));
+        ellipseMatrix = [1 1 0];        
         ieShape('ellipse','center',center,...
-            'radius',0.5*sqrt(2)*radius,...
-            'ellipseParameters',vertcat(ellipseMatrix(:)),...
+            'radius',0.5*radius,...
+            'ellipseParameters',ellipseMatrix,...
             'color','b');
         
         % Sets the axis limits

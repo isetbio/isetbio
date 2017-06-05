@@ -22,7 +22,7 @@ function varargout = bipolarWindow(varargin)
 
 % Edit the above text to modify the response to help bipolarwindow
 
-% Last Modified by GUIDE v2.5 02-Jun-2017 11:26:59
+% Last Modified by GUIDE v2.5 05-Jun-2017 13:13:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -149,6 +149,9 @@ g = str2double(get(handles.editGamma,'string'));
 
 switch str
 
+    case 'Bipolar mosaic'
+        handles.bipolar.plot('mosaic');
+        
     case 'Bipolar mean (image)'
         handles.bipolar.plot('response image','gamma',g);
          
@@ -285,6 +288,10 @@ str = contents{get(gdata.popupResponseSelect,'Value')};
 g = str2double(get(handles.editGamma,'string'));
 
 switch(str)
+    
+    case 'Bipolar mosaic'
+        gdata.bipolar.plot('mosaic');
+        
     case 'Bipolar mean (image)'
         gdata.bipolar.plot('response image','gamma',g);
         colorbar;
@@ -355,4 +362,3 @@ function editGamma_Callback(hObject, eventdata, handles)
 bipolarWindowRefresh(handles)
 %
 end
-
