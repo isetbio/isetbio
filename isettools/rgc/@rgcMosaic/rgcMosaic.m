@@ -160,7 +160,7 @@ classdef rgcMosaic < handle
         end
         
         % Used to print text in the window
-        function str= describe(obj)
+        function str = describe(obj)
             % Describe the RGC mosaic properties
             %
             % Prints the relevant text to a string, which is used in the display
