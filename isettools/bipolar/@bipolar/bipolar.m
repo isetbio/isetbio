@@ -130,11 +130,14 @@ methods
                 obj.rectificationSurround = @(x) zeros(size(x));
             case 2
                 obj.rectificationCenter = @(x) x.*(x>0);
-                obj.rectificationSurround = @(x) zeros(size(x));                
+                obj.rectificationSurround = @(x) zeros(size(x));                    
             case 3
+                obj.rectificationCenter = @(x) x.*(x<0);
+                obj.rectificationSurround = @(x) zeros(size(x));  
+            case 4
                 obj.rectificationCenter = @(x) x;
                 obj.rectificationSurround = @(x) x;
-            case 4
+            case 5
                 obj.rectificationCenter = @(x) x.*(x>0);
                 obj.rectificationSurround = @(x) x.*(x<0);
             otherwise
