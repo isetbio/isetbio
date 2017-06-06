@@ -66,13 +66,20 @@ vFunc = @(x)(isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
 % We can use multiple bipolar trials as input
-p.addParameter('bipolarTrials',  [], @isnumeric);
+p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 
 p.parse(ir,bp,varargin{:});
 
 bipolarTrials = p.Results.bipolarTrials;
 nTrials = 1;
-if ~isempty(bipolarTrials), nTrials = size(bipolarTrials,1); end
+if ~isempty(bipolarTrials), 
+    if length(bp)==1
+        nTrials = size(bipolarTrials,1); 
+    else
+        nTrials = size(bipolarTrials{1},1); 
+    end
+end
+        
 
 %% Process the bipolar data
 
@@ -81,11 +88,19 @@ for iTrial = 1:nTrials
     % Looping over the rgc mosaics
     for rgcType = 1:length(ir.mosaic)        
         
-        % Determine the range of the rgb input data
+        % Get the bipolar input data, handle bp mosaic and nTrials cases
         if length(bp) == 1
-            stim   = bp.get('response'); 
-        else                
-            stim   = bp{rgcType}.get('responseCenter');            
+            if ~isempty(bipolarTrials)
+                stim   = squeeze(bipolarTrials(iTrial,:,:,:));
+            else
+                stim   = bp.get('response');
+            end
+        else
+            if ~isempty(bipolarTrials)
+                stim   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
+            else
+                stim   = bp{rgcType}.get('response');
+            end;
         end
         
         % JRG removes the mean and uses a contrast (or scaled contrast) as
@@ -128,10 +143,18 @@ for iTrial = 1:nTrials
         
         % Deal with multiple trial issues
         if ~isempty(bipolarTrials)
-            if iTrial == 1
-                nTrialsLinearResponse = zeros([nTrials,size(respC)]);
-            end
-            nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
+%             if length(bp) == 1
+%                 if iTrial == 1
+%                     nTrialsLinearResponse = zeros([nTrials,size(respC)]);
+%                 end
+%                 nTrialsLinearResponse(iTrial,:,:,:) =  respC - respS;
+%             else
+                
+                if iTrial == 1
+                    nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
+                end
+                nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  respC - respS;
+%             end
         end
         
         % Store the last trial

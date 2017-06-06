@@ -53,7 +53,8 @@ vFunc = @(x) (isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
 p.addRequired('bp',vFunc);
 
 p.addParameter('coupling',false,@islogical);
-p.addParameter('bipolarTrials',  [], @isnumeric);  % Multiple bipolar trials
+% p.addParameter('bipolarTrials',  [], @isnumeric);  % Multiple bipolar trials
+p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));  % Multiple bipolar trials
 
 p.parse(ir,bp,varargin{:});
 coupling = p.Results.coupling;

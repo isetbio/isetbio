@@ -25,7 +25,7 @@ p = inputParser;
 p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
 p.addParameter('coupling',true,@islogical);
 
-p.addParameter('nTrialsLinearResponse',  [], @isnumeric);
+p.addParameter('nTrialsLinearResponse',  [], @(x) isnumeric(x)||iscell(x));
 
 p.parse(ir,varargin{:});
 ir = p.Results.ir;
@@ -49,7 +49,7 @@ nRepeats = ir.get('number trials');
 
 nTrials = 1;
 if ~isempty(nTrialsLinearResponse)
-    nTrials = size(nTrialsLinearResponse,1);
+    nTrials = size(nTrialsLinearResponse{1},1);
 end
 
 for iTrial = 1:nTrials    
@@ -58,7 +58,12 @@ for iTrial = 1:nTrials
             % No spikes computed
         else
             mosaic   = ir.mosaic{ii};
-            responseLinear = mosaic.get('response linear');
+            
+            if ~isempty(nTrialsLinearResponse)
+                responseLinear = squeeze(nTrialsLinearResponse{ii}(iTrial,:,:,:));
+            else
+                responseLinear = mosaic.get('response linear');
+            end
             nSamples = size(responseLinear,3);
             nCells   = mosaic.get('mosaic size');
             
@@ -143,17 +148,18 @@ for iTrial = 1:nTrials
         end
         
         if ~isempty(nTrialsLinearResponse)
-            if iTrial == 1 && ii == 1
-                nTrialsSpikeResponse = ...
-                    zeros([nTrials,length(ir.mosaic),size(ir.mosaic{ii}.get('spikes'))]);
+            if iTrial == 1 % && ii == 1
+                nTrialsSpikeResponse{ii} = ...
+                    zeros([nTrials,size(ir.mosaic{ii}.get('spikes'))]);
             end
-            nTrialsSpikeResponse(iTrial,ii,:,:,:) = ir.mosaic{ii}.get('spikes');
+            spikesTemp = ir.mosaic{ii}.get('spikes');
+            nTrialsSpikeResponse{ii}(iTrial,:,:,1:size(spikesTemp,3)) = spikesTemp;
         end
     end
 end
 
 % Maybe this should be [], not 0? (BW)
-if isempty(nTrialsLinearResponse), nTrialsSpikeResponse = 0; end
+if isempty(nTrialsLinearResponse), nTrialsSpikeResponse = []; end
 
 end
 
