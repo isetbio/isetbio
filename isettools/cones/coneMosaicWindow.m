@@ -26,10 +26,10 @@ function varargout = coneMosaicWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Last Modified by GUIDE v2.5 19-Nov-2016 14:29:17
+% Last Modified by GUIDE v2.5 08-Jun-2017 21:21:47
 
 % Begin initialization code - DO NOT EDIT
-gui_Singleton = 1;
+gui_Singleton = 0;
 gui_State = struct('gui_Name', mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
     'gui_OpeningFcn', @coneMosaicWindow_OpeningFcn, ...
