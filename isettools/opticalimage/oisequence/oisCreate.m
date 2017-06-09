@@ -31,11 +31,11 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
 %   ois = oisCreate('harmonic','blend',stimWeights, ...
 %                   'testParameters',hparams, ...
-%                   'ssceneParams',sparams);
+%                   'sceneParameters',sparams);
 %   ois.visualize;
 %
 %  Vernier
-%   clear vparams; vparams(2) = vernierP; 
+%   clear vparams; vparams(2) = vernierP; sparams.fov = 1;
 %   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
 %   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
