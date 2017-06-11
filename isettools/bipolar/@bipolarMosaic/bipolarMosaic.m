@@ -1,11 +1,14 @@
-classdef bipolar < handle
-%BIPOLAR - Create a bipolar mosaic object
+classdef bipolarMosaic < handle
+%BIPOLARMOSAIC - Create a bipolar mosaic object
 %
-% The bipolar class allows the simulation of retinal processing from the
-% cone outer segment current to the retinal ganglion cell spike response.
+% The bipolar mosaic class allows the simulation of retinal processing from
+% the cone outer segment current to the retinal ganglion cell spike
+% response.
 % 
-% bp = bipolar(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) creates the bipolar
-% object. Optional parameter name/value pairs are listed below.
+%    bp = bipolarMosaic(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) 
+%
+% creates the bipolar object. Optional parameter name/value pairs are
+% listed below.
 % 
 % We do not yet have a validated model of the bipolar temporal impulse
 % response.  To simulate it, we assume that the RGC responses from the cone
@@ -98,7 +101,7 @@ end
 methods
     
     % Constructor
-    function obj = bipolar(cmosaic, varargin)     
+    function obj = bipolarMosaic(cmosaic, varargin)     
         % Initialize the bipolar class
         %   bp = bipolar(cMosaic,'cellType','ondiffuse');
         

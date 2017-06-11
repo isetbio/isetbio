@@ -53,11 +53,11 @@ function bipolarWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to bipolarwindow (see VARARGIN)
 
 p = inputParser;
-vFunc = @(x)(isequal(class(x),'bipolar'));
+vFunc = @(x)(isequal(class(x),'bipolarMosaic'));
 p.addRequired('bipolar',vFunc);
 
 % check inputs and get the bipolar object
-if isempty(varargin) || ~isa(varargin{1}, 'bipolar')
+if isempty(varargin) || ~isa(varargin{1}, 'bipolarMosaic')
     error('bipolar object required');
 end
 

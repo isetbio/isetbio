@@ -27,7 +27,7 @@ function bipolarFilt = bipolarFilter(obj, cmosaic, varargin)
 %% parse input parameters
 p = inputParser;
 
-p.addRequired('obj', @(x) (isa(x, 'bipolar')));
+p.addRequired('obj', @(x) (isa(x, 'bipolarMosaic')));
 p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));  
 p.addParameter('graph',false,@islogical);
 
