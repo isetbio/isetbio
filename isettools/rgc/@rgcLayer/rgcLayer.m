@@ -167,7 +167,9 @@ classdef rgcLayer < handle
             
             % parse input
             p = inputParser;
-            p.addRequired('inputObj',@(x)(isa(bp,'bipolar')||isa(bp{1},'bipolar')));
+            
+            % Should this by a bipolarLayer??
+            p.addRequired('inputObj',@(x)(isa(bp,'bipolarMosaic')||isa(bp{1},'bipolarMosaic')));
             
             p.addParameter('name','ir1',@ischar);
             p.addParameter('eyeSide','left',@ischar);
@@ -222,28 +224,28 @@ classdef rgcLayer < handle
             val = irGet(obj, varargin{:});
         end
         
-        % IR Compute functions, that loop over the rgc mosaics
-        function [obj, nTrialsSpikes] = compute(obj, inputObj, varargin)
-            [obj, nTrialsSpikes] = irCompute(obj,  inputObj, varargin{:});
-        end
-        
-        function obj = computeLinearSTSeparable(obj,varargin)
-            obj = irComputeLinearSTSeparable(obj,varargin{:});
-        end
-        
-        function obj = computeSpikes(obj, varargin)
-            obj = irComputeSpikes(obj,  varargin{:});
-        end
-        
-        % plot function, see irPlot
-        function plot(obj, varargin)
-            irPlot(obj, varargin{:});
-        end
-        
-        % normalize function, see irNormalize
-        function obj = normalize(obj,varargin)
-            obj = irNormalize(obj, varargin{:});
-        end      
+        %         % IR Compute functions, that loop over the rgc mosaics
+        %         function [obj, nTrialsSpikes] = compute(obj, inputObj, varargin)
+        %             [obj, nTrialsSpikes] = irCompute(obj,  inputObj, varargin{:});
+        %         end
+        %
+        %         function obj = computeLinearSTSeparable(obj,varargin)
+        %             obj = irComputeLinearSTSeparable(obj,varargin{:});
+        %         end
+        %
+        %         function obj = computeSpikes(obj, varargin)
+        %             obj = irComputeSpikes(obj,  varargin{:});
+        %         end
+        %
+        %         % plot function, see irPlot
+        %         function plot(obj, varargin)
+        %             irPlot(obj, varargin{:});
+        %         end
+        %
+        %         % normalize function, see irNormalize
+        %         function obj = normalize(obj,varargin)
+        %             obj = irNormalize(obj, varargin{:});
+        %         end
         
     end
     

@@ -1,13 +1,13 @@
-function [ir, nTrialsSpikeResponse] = irComputeSpikes(ir, varargin)
+function [rgcL, nTrialsSpikeResponse] = computeSpikes(rgcL, varargin)
 % IRCOMPUTESPIKES - Generate RGC spikes from the linear mosaic response
 %
-%   ir = irComputeSpikes(ir, varargin)
+%   ir = @rgcLayer.computeSpikes(ir, varargin)
 %
 % Calculate the spikes from the RGC linear response for rgcGLM and rgcLNP
 % mosaics.  
 %
 % Inputs required
-%   ir:  inner retina object
+%   rgcL:  rgcLayer object
 %
 % Inputs optiona;
 %  nTrialsLinearResponse: Linear inputs from multiple trials
@@ -18,17 +18,17 @@ function [ir, nTrialsSpikeResponse] = irComputeSpikes(ir, varargin)
 % Example:
 %   See s_vaRGC.m in WL/WLVernierAcuity
 %
-% JRG (c) isetbio team, 2015
+% BW (c) isetbio team, 2015
 
 %% Parse
 p = inputParser;
-p.addRequired('ir',@(x)(isa(ir,'ir')));  % Inner retina object
+p.addRequired('ir',@(x)(isa(rgcL,'rgcLayer')));  % Inner retina object
 p.addParameter('coupling',true,@islogical);
 
 p.addParameter('nTrialsLinearResponse',  [], @(x) isnumeric(x)||iscell(x));
 
-p.parse(ir,varargin{:});
-ir = p.Results.ir;
+p.parse(rgcL,varargin{:});
+rgcL = p.Results.ir;
 coupling = p.Results.coupling;
 
 nTrialsLinearResponse = p.Results.nTrialsLinearResponse;
@@ -43,7 +43,7 @@ global RefreshRate
 RefreshRate = 10;
 
 % For every IR, this could be a vector in the future
-nRepeats = ir.get('number trials');
+nRepeats = rgcL.get('number trials');
 
 %% Loop on the mosaics in the inner retina
 
@@ -53,11 +53,11 @@ if ~isempty(nTrialsLinearResponse)
 end
 
 for iTrial = 1:nTrials    
-    for ii = 1:length(ir.mosaic)
-        if ~ismember(class(ir.mosaic{ii}), {'rgcGLM','rgcLNP'})
+    for ii = 1:length(rgcL.mosaic)
+        if ~ismember(class(rgcL.mosaic{ii}), {'rgcGLM','rgcLNP'})
             % No spikes computed
         else
-            mosaic   = ir.mosaic{ii};
+            mosaic   = rgcL.mosaic{ii};
             
             if ~isempty(nTrialsLinearResponse)
                 responseLinear = squeeze(nTrialsLinearResponse{ii}(iTrial,:,:,:));
@@ -140,19 +140,19 @@ for iTrial = 1:nTrials
         end
         
         % Set mosaic spike times
-        ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseSpikes', spikeTimes);
+        rgcL.mosaic{ii} = mosaicSet(rgcL.mosaic{ii},'responseSpikes', spikeTimes);
         
         % The nonlinear voltage; only set in the GLM model
-        if isa(ir.mosaic{ii},'rgcGLM')
-            ir.mosaic{ii} = mosaicSet(ir.mosaic{ii},'responseVoltage', respVolts);
+        if isa(rgcL.mosaic{ii},'rgcGLM')
+            rgcL.mosaic{ii} = mosaicSet(rgcL.mosaic{ii},'responseVoltage', respVolts);
         end
         
         if ~isempty(nTrialsLinearResponse)
             if iTrial == 1 % && ii == 1
                 nTrialsSpikeResponse{ii} = ...
-                    zeros([nTrials,size(ir.mosaic{ii}.get('spikes'))]);
+                    zeros([nTrials,size(rgcL.mosaic{ii}.get('spikes'))]);
             end
-            spikesTemp = ir.mosaic{ii}.get('spikes');
+            spikesTemp = rgcL.mosaic{ii}.get('spikes');
             nTrialsSpikeResponse{ii}(iTrial,:,:,1:size(spikesTemp,3)) = spikesTemp;
         end
     end

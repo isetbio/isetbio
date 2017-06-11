@@ -60,9 +60,9 @@ p = inputParser;
 p.CaseSensitive = false;
 
 % ir and bp are both required
-p.addRequired('ir',@(x) isequal(class(x),'ir')||isequal(class(x),'irPhys'));
+p.addRequired('ir',@(x) isequal(class(x),'rgcLayer'));
 
-vFunc = @(x)(isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
+vFunc = @(x)(isequal(class(x),'bipolarMosaic')||isequal(class(x{1}),'bipolarMosaic'));
 p.addRequired('bp',vFunc);
 
 % We can use multiple bipolar trials as input

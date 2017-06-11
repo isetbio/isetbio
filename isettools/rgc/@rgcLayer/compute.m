@@ -1,14 +1,14 @@
-function [ir, nTrialsSpikes] = irCompute(ir, bp, varargin)
-% IRCOMPUTE - Computes the rgc mosaic responses to an input
+function [rgcL, nTrialsSpikes] = compute(rgcL, bp, varargin)
+% @RGCLAYER.COMPUTE - Computes the rgc mosaic responses to an input
 %
-%   ir = irCompute(ir, bipolar, varargin)
+%   ir = @rgcLayer.compute(ir, bipolar, varargin)
 %
 % Required inputs
-%  'ir' - inner retina object
-%  'bipolar' - the bipolar mosaic object
+%  'rgcL' -    rgc layer object 
+%  'bipolar' - bipolar mosaic object
 %
 % Optional inputs
-%   'bipolarTrials' -
+%   'nTrialsSpikes' -
 %
 % Computes the continuous (linear) and spike responses for each of the
 % mosaics within the inner retina object.  (Note: There are no spikes
@@ -37,26 +37,25 @@ function [ir, nTrialsSpikes] = irCompute(ir, bp, varargin)
 %     the responseSpikes slot.
 %
 % Example:
-%   ir.compute(bipolar);
-%   irCompute(ir,bipolar);
+%   rgcL.compute(bipolarMosaic??);
 %
-% See also: rgcMosaic, irComputeSpikes, irComputeLinearSTSeparable
+% See also: rgcMosaic
 %
-% 9/2015 JRG (c) isetbio team
-% 7/2016 JRG updated
+% BW (c) isetbio team
+
 %% Parse inputs
 p = inputParser;
 p.CaseSensitive = false;
 
-p.addRequired('ir',@(x) ~isempty(validatestring(class(x),{'ir','irPhys'})));
-vFunc = @(x) (isequal(class(x),'bipolar')||isequal(class(x{1}),'bipolar'));
+p.addRequired('rgcL',@(x) ~isempty(validatestring(class(x),{'rgcLayer'})));
+vFunc = @(x) (isequal(class(x),'bipolarMosaic')||isequal(class(x{1}),'bipolarMosaic'));
 p.addRequired('bp',vFunc);
 
 p.addParameter('coupling',false,@islogical);
 % p.addParameter('bipolarTrials',  [], @isnumeric);  % Multiple bipolar trials
 p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));  % Multiple bipolar trials
 
-p.parse(ir,bp,varargin{:});
+p.parse(rgcL,bp,varargin{:});
 coupling = p.Results.coupling;
 
 bipolarTrials = p.Results.bipolarTrials; 
@@ -64,16 +63,16 @@ bipolarTrials = p.Results.bipolarTrials;
 %% Linear stage of the computation
 
 if ~isempty(bipolarTrials)  
-    [ir,nTrialsLinearResponse] = irComputeLinearSTSeparable(ir, bp, 'bipolarTrials',bipolarTrials);
+    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bp, 'bipolarTrials',bipolarTrials);
 else
-    ir = irComputeLinearSTSeparable(ir, bp);
+    rgcL = rgcL.computeSeparable(bp);
 end
 % irPlot(ir,'response linear');
 
 %% Compute spikes from linear response; possibly for multiple trials
 
 % This should be for ii=1:length(ir.mosaic)
-switch class(ir.mosaic{1})
+switch class(rgcL.mosaic{1})
     case {'rgcLinear'}
         % No linear response implemented yet.
         disp('No spikes computed for linear RGC mosaic');   
@@ -82,11 +81,11 @@ switch class(ir.mosaic{1})
         % Send the coupling field to decide on the coupling parameter
         if ~isempty(bipolarTrials) 
             % Multiple trial case
-            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling, ...
+            [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling, ...
                 'nTrialsLinearResponse',nTrialsLinearResponse);
         else
             % Single trial case
-            [ir, nTrialsSpikes] = irComputeSpikes(ir,'coupling',coupling);
+            [rgcL, nTrialsSpikes] = rgcL.ComputeSpikes('coupling',coupling);
         end
 end
 
