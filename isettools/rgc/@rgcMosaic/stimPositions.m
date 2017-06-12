@@ -11,7 +11,8 @@ function [stimX, stimY, offset] = stimPositions(rgcMosaic,xcell,ycell)
 % 5/2016 JRG (c) ISETBIO Team
 
 % The RGC center location
-stimCenterCoords = rgcMosaic.cellLocation{xcell,ycell};
+micronsToBipolars = rgcMosaic.Parent.col/(1e6*rgcMosaic.Parent.size);
+stimCenterCoords = micronsToBipolars*rgcMosaic.cellLocation{xcell,ycell};
 
 % Find the spatial extent of the RF in terms of multiples of rfDiameter
 extent = 1; % Set spatial RF extent
