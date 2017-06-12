@@ -1,6 +1,14 @@
 function ecc = temporalEquivEcc(center,varargin)
 % Equivalent temporal eccentricity according to Kalmar/Chichilnisky
 %
+%   ecc = temporalEquivEcc(center,varargin)
+%
+% Required parameter:
+%    center - position of mosaic center in mm, fovea is 0,0
+%    
+% Optional parameter
+%    eyeSide
+%
 % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
 % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
 % in ON and OFF ganglion cells of primate retina." The Journal of
@@ -16,15 +24,10 @@ function ecc = temporalEquivEcc(center,varargin)
 %
 % BW ISETBIO Team, 2017
 %
-% This is the code from JRG.  We need to deal with parameters
+% This is the code from JRG.  Not sure it is all the same.
+% In general, I am not sure we should use this for human work.
+% (BW)
 %
-%% Get eye side
-% if strcmp(eyeSide,'right'),        eyeSide = 0;
-% elseif strcmp(eyeSide,'left'),     eyeSide = 1;
-% else
-%     error('Incorrect eye side specification %s\n',eyeSide);
-% end
-% 
 % % Convert angle in degrees to radians
 % theta = (pi/180)*theta;
 % 
@@ -43,6 +46,7 @@ function ecc = temporalEquivEcc(center,varargin)
 %     TEE = rho;
 % end
 
+%%
 p = inputParser;
 p.addRequired('center',@isvector);
 p.addParameter('eyeSide','left',@ischar);

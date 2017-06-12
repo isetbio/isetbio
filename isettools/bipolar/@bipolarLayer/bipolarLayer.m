@@ -36,6 +36,9 @@ classdef bipolarLayer < handle
         % These are protected because they are determined from the cone
         % mosaic that provides the input and thus should not change
         
+        % SPECIES
+        species;
+        
         %TIMESTEP Stimulus temporal sampling (sec) from bipolar
         timeStep;   % This is the same for all mosaics
         
@@ -43,7 +46,6 @@ classdef bipolarLayer < handle
         eyeSide;           
         
         %CENTER position of the patch with respect to fovea (0,0)
-        %       Inherited from the cone mosaic.
         center;
         
         %SIZE Patch size (m) measured at the cone mosaic
@@ -108,6 +110,9 @@ classdef bipolarLayer < handle
 
             % Create an empty cell array
             obj.mosaic = cell(1); 
+            
+            %
+            obj.species = cMosaic.species;
             
             % Center of the patch with respect to distance (meters) on the
             % retina.  Fovea is (0,0).

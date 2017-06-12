@@ -65,11 +65,17 @@ end
 
 % If diameter has not been set, assign its value based on the literature
 if isempty(rgcM.rfDiameter)
+    % If the species is macaque, we might use this
+    % 
     % Calculate spatial RF diameter for ON Parasol cell at a particular TEE
     % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
     % in ON and OFF ganglion cells of primate retina." The Journal of
     % Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
-    retinalLocationToTEE = temporalEquivEcc(rgcLayer.center);
+    % retinalLocationToTEE = temporalEquivEcc(rgcLayer.center);
+    %
+    % For human work, we should probably go with what Jon and Marissa C.
+    % are doing.  Let's ask them (BW).
+    
     receptiveFieldDiameterParasol2STD = ...
         receptiveFieldDiameterFromTEE(retinalLocationToTEE);
     

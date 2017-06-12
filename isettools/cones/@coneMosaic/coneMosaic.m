@@ -60,6 +60,9 @@ classdef coneMosaic < hiddenHandle
         %NAME  The name of the object
         name;
         
+        % SPECIES  {'human','macaque','mouse'}
+        species;
+        
         %PIGMENT  Cone photopigment object for mosaic 
         pigment;
         

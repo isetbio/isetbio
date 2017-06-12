@@ -22,10 +22,10 @@ function varargout = bipolarWindow(varargin)
 
 % Edit the above text to modify the response to help bipolarwindow
 
-% Last Modified by GUIDE v2.5 08-Jun-2017 21:26:15
+% Last Modified by GUIDE v2.5 12-Jun-2017 13:40:53
 
 % Begin initialization code - DO NOT EDIT
-gui_Singleton = 1;
+gui_Singleton = 0;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
                    'gui_OpeningFcn', @bipolarWindow_OpeningFcn, ...
@@ -367,38 +367,4 @@ function editGamma_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of editGamma as a double
 bipolarWindowRefresh(handles)
 %
-end
-
-% --- Executes on selection change in listMosaic.
-function listMosaic_Callback(hObject, eventdata, handles)
-% hObject    handle to listMosaic (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns listMosaic contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listMosaic
-
-contents = cellstr(get(hObject,'String'));
-v = get(hObject,'Value');
-name = contents{v};
-disp(name)
-handles.bipolar.window;
-
-end
-
-% --- Executes during object creation, after setting all properties.
-function listMosaic_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listMosaic (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-% Initialize the strings in the mosaic listbox
-set(hObject,'String',{'a','b','c','d'});
-
 end

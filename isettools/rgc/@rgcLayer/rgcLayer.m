@@ -62,6 +62,10 @@ classdef rgcLayer < handle
     
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
+        
+        %NAME Name of this innerRetina
+        name;
+        
         %NUMBERTRIALS Number of trials when computing
         numberTrials;  
         
@@ -73,12 +77,12 @@ classdef rgcLayer < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        %NAME Name of this innerRetina
-        name;       % Note: The computation is specified by the ir subclass
-                    % Is the spatial sampling is determined by the bipolar
-                    % input?
-                    
-        %SIZE Patch size (m) measured at the cone mosaic
+        % Inherited from prior stages
+        
+        % human, macaque and someday other stuff like mouse
+        species;
+        
+        %SIZE Patch size (m) measured at the cone mosaic (height, width)
         size;        
         
         %TIMESTEP Stimulus temporal sampling (sec) from bipolar
@@ -153,6 +157,7 @@ classdef rgcLayer < handle
             
             p.parse(bp,varargin{:});
             obj.name         = p.Results.name;
+            obj.species      = p.Results.species;
             obj.numberTrials = p.Results.nTrials;
             
             % Should match the cone mosaic patch size and time step

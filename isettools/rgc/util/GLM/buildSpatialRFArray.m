@@ -12,10 +12,11 @@ function [sRFcenter, sRFsurround, cellCenterLocations, tonicDrive, ellipseParams
 %               rfDiameterMicrons, varargin)
 % 
 % Required inputs: 
-%   patchSizeMeters   - Center to center of the RF in microns
-%   nRowBipolars      - Number of input samples
-%   nColBipolars      - Number of input samples
-%   rfDiameterMicrons - Receptive field of 1 std in microns
+%   patchSizeMeters   - Extent of the cone mosaic patch, inherited by
+%                       bipolars and then here (meters)
+%   nRowBipolars      - Number of row input samples from bpLayer
+%   nColBipolars      - Number of col input samples from bpLayer
+%   rfDiameterMicrons - Receptive field std in microns
 %   
 % Optional inputs:
 %    centerNoise - Position jitter as a fraction of the bipolar size
@@ -28,10 +29,13 @@ function [sRFcenter, sRFsurround, cellCenterLocations, tonicDrive, ellipseParams
 %   tonicDrive          - tonic drive is the bias or DC term for the linear output of the GLM. 
 %   Qout - ellipse parameters
 %
-% Example:
-%   Build spatial RFs of the RGCs in this mosaic
+% See also:  rgcInitSpace calls this function
 % 
-% JRG (c) isetbio Team
+% Notes:  See comments below for how the elliptical receptive fields are
+% created based on Chichilnisky and Kalmar logic (around line 60).  The
+% code there and the ideas could be simplified over time.
+%
+% JRG/BW (c) ISETBIO Team, 2016
 
 %% Manage parameters
 p = inputParser;
@@ -54,7 +58,7 @@ centerNoiseBipolars = p.Results.centerNoise;
 ellipseParams       = p.Results.ellipseParams;  % (Major, Minor, Orientation)
 baseLineFiringRate  = p.Results.baseLineFiringRate;
 
-%% sRF Output Details
+%% spatial RF  Details
 % After Chichilnisky & Kalmar, 2002
 %
 % The ellipse intensity maps are defined by this parameterization
@@ -73,15 +77,16 @@ baseLineFiringRate  = p.Results.baseLineFiringRate;
 % 1/r is a scalar that specifies the relative size of the surround.
 
 % Hard coded for now.  To eliminate.
-extent = 2.5;     % ratio between sampling size and spatial RF standard dev 
-r = sqrt(0.75);        % radius ratio between center and surround for DoG
-k = 1.032 * r^2;   % scaling of magnitude of surround
+extent = 2.5;        % ratio between sampling size and spatial RF standard dev 
+r = sqrt(0.75);      % radius ratio between center and surround for DoG
+k = 1.032 * r^2;     % scaling of magnitude of surround
   
 %% Converting the spatial units from microns to bipolar samples
 
-% p[atchSizeMeters is the width of the patch of cones sampled by the
-% bipolars. This arrives in meters, we convert row/col in microns
-patchRowColMicrons = [patchSizeMeters*(nRowBipolars/nColBipolars), patchSizeMeters]*1e6; % Row/Col in um
+% p[atchSizeMeters is the width (columns) of the patch of cones sampled by
+% the bipolars. This arrives in meters, we convert row/col in microns
+% Row/Col in um
+patchRowColMicrons = patchSizeMeters*[(nRowBipolars/nColBipolars), 1]*1e6; 
 
 % This is the diameter of the cone mosaic sampled by each bipolar in units
 % of microns.
