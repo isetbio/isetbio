@@ -213,7 +213,7 @@ end
 %% Watson RGC Formula - 2014
 
 
-%% Get lookup table for how large RF is
+%% Get lookup table for how large RF is 
 % There is an asymmetry in the size of RGC RFs over the retina
 szCols = 128; fovRows = 90; fovCols = 90; scaleFactor = 1;
 cellType = 'Midget';
@@ -224,24 +224,38 @@ cellType = 'Midget';
 % rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing(szCols,szCols,fovRows)';
 [rgcDiameterLUT, radDeg, rgc1d] = watsonRGCSpacing(szCols,szCols,fovRows);
 
-figure; plot(radDeg,rgc1d);
+arcMinPerDegree = 60; convertDensityFactor = sqrt(2);
+figure; 
+cind = 'rbgk'; hold on;
+for k = 1:4
+    plot(radDeg,convertDensityFactor*arcMinPerDegree*rgc1d(k,:),cind(k),'linewidth',2);
+end
 xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
-legend('Nasal','Superior','Temporal','Inferior');
-
+legend('Temporal','Superior','Nasal','Inferior','location','nw')
 title(sprintf('Human %s RGC RF Size (degrees)',cellType));
+axis([0 10 0 6]); set(gca,'fontsize',14);
+
 % figure; degStart = -fovCols/2; degEnd = fovCols/2;
 % degarr = [degStart: (degEnd-degStart)/szCols : degEnd];
-% contourf(degarr,degarr,rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
+% contourf(degarr,degarr,convertDensityFactor*rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
 % % surfc(degarr,degarr,rgcDiameterLUT); shading flat; %[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); % axis square
-% title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar;
+% title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar; 
 
 %%
-% figure; hold on;
-% plot(rgcDiameterLUT(65:-1:1,65));
-% plot(rgcDiameterLUT(65:end,65));
-% plot(rgcDiameterLUT(65,65:-1:1));
-% plot(rgcDiameterLUT(65,65:end));
-% grid on;
+figure; hold on;
+
+degAxis = (fovRows/2)*[1:(size(rgcDiameterLUT,1)-1)/2+1]/(((size(rgcDiameterLUT,1)-1)/2+1));
+plot(degAxis,rgcDiameterLUT(65:-1:1,65));
+plot(degAxis,rgcDiameterLUT(65:end,65));
+plot(degAxis,rgcDiameterLUT(65,65:-1:1));
+plot(degAxis,rgcDiameterLUT(65,65:end));
+grid on;
+axis([0 10 0 0.08]);
+ xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
+legend('Nasal','Superior','Temporal','Inferior');
+ 
+title(sprintf('Human %s RGC RF Size (degrees)',cellType));
+set(gca,'fontsize',14);
 
 %% Bipolar
 
