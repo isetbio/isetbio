@@ -1,7 +1,7 @@
-function rgcM = rgcInitSpace(rgcM,innerRetina,cellType,varargin)
+function rgcM = rgcInitSpace(rgcM,rgcLayer,cellType,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
-%    rgcM = rgcInitSpace(rgcM,innerRetina,cellType)
+%    rgcM = rgcInitSpace(rgcM,rgcLayer,cellType)
 %
 % cellType is one of (spacing and case are irrelevant)
 %  {'ON Parasol', 'OFF Parasol', 'ON Midget', OFF Midget', 'Small bistratified'}
@@ -27,8 +27,6 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType,varargin)
 % Neuroscience 22.7 (2002).
 %
 % Example:
-%   ir = irCreate(bipolar(coneMosaic));
-%   ir.mos
 % See also:
 %
 % JRG/BW ISETBIO Team 2015
@@ -37,16 +35,19 @@ function rgcM = rgcInitSpace(rgcM,innerRetina,cellType,varargin)
 
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('rgcM');
-p.addRequired('innerRetina');
+vFunc = @(x)(ismember(class(x),{'rgcGLM','rgcLNP'}));
+p.addRequired('rgcM',vFunc);
+p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
 
 vFunc = @(x)(ismember(ieParamFormat(x),...
     {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
 p.addRequired('cellType',vFunc);
+p.addParameter('inMosaic',1,@isscalar);
 p.addParameter('rfDiameter',[],@isnumeric); % microns
-p.parse(rgcM,innerRetina,cellType,varargin{:});
+p.parse(rgcM,rgcLayer,cellType,varargin{:});
 
 rgcM.rfDiameter = p.Results.rfDiameter;
+inMosaic = p.Results.inMosaic;
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(cellType)
@@ -68,8 +69,9 @@ if isempty(rgcM.rfDiameter)
     % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
     % in ON and OFF ganglion cells of primate retina." The Journal of
     % Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
+    retinalLocationToTEE = temporalEquivEcc(rgcLayer.center);
     receptiveFieldDiameterParasol2STD = ...
-        receptiveFieldDiameterFromTEE(innerRetina.temporalEquivEcc);
+        receptiveFieldDiameterFromTEE(retinalLocationToTEE);
     
     % The spatial RF diameter in pixels (or cones) is therefore the diameter in
     % microns divided by the number of microns per pixel (or cone), scaled by
@@ -80,8 +82,19 @@ if isempty(rgcM.rfDiameter)
 end
 
 % Build spatial RFs of all RGCs in this mosaic
+% We need to know the number of rows and columns in the bipolarMosaic that
+% drives this mosaic.  So, we need to know which bipolar mosaic we are
+% using as input here.
+%
+% RIGHT NOW I JUST USE THE FIRST MOSAIC.  BUT THIS SHOULD GET PASSED IN AND
+% SET!!!
+sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
 [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
-    buildSpatialRFArray(innerRetina.size, innerRetina.row, innerRetina.col, rgcM.rfDiameter, p.Unmatched);
+    buildSpatialRFArray(rgcLayer.size(2), ...
+    sz(1), ...
+    sz(2), ...
+    rgcM.rfDiameter, ...
+    p.Unmatched);
 
 % sRFcenter, sRFsurround and cellLocation are in units of the inputObj - scene pixels,
 % cones or bipolar cells.

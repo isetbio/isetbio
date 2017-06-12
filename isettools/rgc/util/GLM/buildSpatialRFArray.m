@@ -183,7 +183,7 @@ for rr = 1:nRows         % Row index
         end        
         
         % Without the normalization
-        ellipseP = [ellipseParams{rr,cc}(1:2), ellipseParams{rr,cc}(3)];
+        % ellipseP = [ellipseParams{rr,cc}(1:2), ellipseParams{rr,cc}(3)];
 
         % Makes the 2x2 positive definite quadratic form (matrix)        
         % In order to keep the same area under the DoG surface, need to
@@ -260,7 +260,7 @@ for rr = 1:nRows         % Row index
             while (cii < size(so_center,2)) && ((so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD); 
                 im = im+1; 
                 cii = mc-1+im; 
-            end; 
+            end 
             % [rfDiameter (cii-mc-1)]
             % if abs(rfDiameter - (cii - mc - 1)) > 1; display('RF mismatch');
         end

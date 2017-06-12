@@ -1,7 +1,7 @@
 function TEE = retinalLocationToTEE(theta, rho, eyeSide)
 % Temporal equivalent eccentricity for a visual field position
 %
-%       TEE = retinalLocationToTEE(theta, rho, eyeSide)
+%    TEE = retinalLocationToTEE(theta, rho, eyeSide)
 %
 % This function is used to build RGC density and RF size values at
 % different eccentricities.

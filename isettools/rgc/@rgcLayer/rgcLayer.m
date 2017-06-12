@@ -90,6 +90,9 @@ classdef rgcLayer < handle
         % CENTER of patch (m) with respect to fovea = [0,0];
         center;
         
+        % INPUT bipolar layer
+        input;
+        
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -153,7 +156,7 @@ classdef rgcLayer < handle
             obj.numberTrials = p.Results.nTrials;
             
             % Should match the cone mosaic patch size and time step
-            obj.eyeSide      = bp.eyeSide;
+            obj.eyeSide   = bp.eyeSide;
             obj.size      = bp.size;        % Bipolar patch size
             obj.timeStep  = bp.timeStep;    % Temporal sampling
                         
@@ -162,6 +165,7 @@ classdef rgcLayer < handle
             
             % Spatial position on the retina (meters, fovea is 0,0).
             obj.center = bp.center;
+            obj.input  = bp;   % Bipolar layer link kept here
             
         end
         
@@ -202,10 +206,25 @@ classdef rgcLayer < handle
         %             obj = irNormalize(obj, varargin{:});
         %         end
         
+        function val = eccentricity(obj,varargin)
+            % Default is units of meters.
+            p = inputParser;
+            
+            % Should check for valid units
+            p.addParameter('units','m',@ischar);
+            p.parse(varargin{:});
+            
+            units = p.Results.units;
+            val = sqrt(sum(obj.center.^2));
+            val = val*ieUnitScaleFactor(units);
+            
+        end
+        
     end
     
     % Methods that must only be implemented in the subclasses. 
     methods (Abstract, Access=public)
+
     end
     
     % Methods may be called by the subclasses, but are otherwise private

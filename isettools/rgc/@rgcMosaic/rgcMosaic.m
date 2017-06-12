@@ -102,35 +102,39 @@ classdef rgcMosaic < handle
     methods
         
         % Constructor
-        function obj = rgcMosaic(ir, mosaicInd, varargin)
+        function obj = rgcMosaic(rgcLayer, cellType, varargin)
             %% Initialize an rgcMosaic for a particular cell type
             %
-            %       initialize(obj, innerRetina, cellType)
-            %           [only called internally from rgcMosaic.m]
+            %  rgcMosaic(rgcLayer, cellType, 'input mosaic',val)
             %
-            % The object is intialized based on a series of input parameters that
-            % can include the location of the retinal patch.
+            % rgcMosaic is intialized based on a cell type and the
+            % properties of the bipolar mosaic input. The bipolar mosaic is
+            % specified by its index in the bpLayer object that is attached
+            % to rgcLayer.input.
             %
-            % First, the name of the cell type is assigned based on the value passed in
-            % the type parameter. Next, spatial receptive fields of the appropriate
-            % size are generated for the array of RGCs of that particular type. Then
-            % the RGB temporal impulse responses for the center and surround are
-            % generated.
-            %
-            % Switch cell type string to index number
-            % The index number helps with the generation of the receptive fields and
-            % impulse responses of the appropriate parameters for the cell type.
-            obj.cellType = strrep(lower(mosaicInd),' ','');
+            % BW, ISETBIO Team, 2017
+            
+            p = inputParser;
+            p.KeepUnmatched = true;
+            p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
+            p.addRequired('cellType',@ischar);
+            p.addParameter('inMosaic',1,@isscalar);
+            
+            p.parse(rgcLayer,cellType,varargin{:});
+            inMosaic = p.Results.inMosaic;
+            
+            % This the rgc mosaic type
+            obj.cellType = strrep(lower(cellType),' ','');
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
-            obj.rgcInitSpace(ir, mosaicInd,varargin{:}); % Sets sRFcenter, sRFsurround
+            obj.rgcInitSpace(rgcLayer, cellType, 'inMosaic', inMosaic, varargin{:}); % Sets sRFcenter, sRFsurround
             
             % Sets temporal RF properties of tCenter/tSurround
-            obj.rgcInitTime(ir);
+            obj.rgcInitTime(rgcLayer);
             
             % We need the parameters in the parent often enough.  So put in
             % a pointer to it here.
-            obj.Parent = ir;
+            obj.Parent = rgcLayer;
         end
         
         % set function, see mosaicSet for details
