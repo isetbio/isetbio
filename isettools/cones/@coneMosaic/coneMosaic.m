@@ -339,6 +339,16 @@ classdef coneMosaic < hiddenHandle
             val(:,:,2) = yy;
         end
         
+        % Size in meters
+        function val = size(obj,varargin)
+            % Size of the cone mosaic patch in meters (height,width)
+            % TODO
+            %
+            % Should allow varargin to specify unit scale, e.g.
+            %   cMosaic.size('unit','microns')
+            val = [obj.height,obj.width];
+        end
+        
         function val = get.width(obj)
             val = obj.cols * obj.patternSampleSize(1);
         end
@@ -388,6 +398,11 @@ classdef coneMosaic < hiddenHandle
             
             % The number of eye positions defines the number of samples
             val = size(obj.emPositions,1);
+        end
+        
+        function val = timeStep(obj)
+            % This is the current time step
+            val = obj.os.timeStep;
         end
         
         %% Set methods for class properties

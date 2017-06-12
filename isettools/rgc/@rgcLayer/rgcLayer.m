@@ -25,17 +25,12 @@ classdef rgcLayer < handle
     %
     %  Established by constructor parameters
     %     name:      animal, ir; example: 'macaque ir'
-    %     eyeSide:   Left or right eye
-    %     eyeRadius: Position of patch in radius
-    %     eyeAngle:  Angle (degrees)
-    %     temporalEquivEcc: calculated from retinal position, see
-    %           retinalLocationToTEE 
     %     numberTrials: number of trials for spike generation
     %
     %   Inherited from bipolar input
     %     row:       N Stimulus row samples
     %     col:       N Stimulus col samples
-    %     size:   Stimulus input spacing (m)
+    %     size:      Stimulus input spacing (m)
     %     timing:    Stimulus input time step (sec)
     %
     %  Established by the mosaicCreate method
@@ -45,12 +40,12 @@ classdef rgcLayer < handle
     %   set, get, compute, plot
     %
     % Examples:
-    %   bp = bipolar(coneMosaic);
-    %   innerRetina1 = irCreate(bp,'name','myRGC');
+    %   bpL  = bipolarLayer(coneMosaic);
+    %   rgcL = rgcLayer(bpLayer,'name','myRGC');
     %
     %   params.name = 'Macaque inner retina 1';
     %   params.eyeSide = 'left'; params.eyeRadius = 2;
-    %   innerRetina2 = ir(bp, params);
+    %   rgcL = rgcLayer(bpLayer, params);
     %
     %  ISETBIO wiki: <a href="matlab:
     %  web('https://github.com/isetbio/isetbio/wiki/Retinal-ganglion-cells','-browser')">RGCS</a>.
@@ -83,12 +78,6 @@ classdef rgcLayer < handle
                     % Is the spatial sampling is determined by the bipolar
                     % input?
                     
-        %ROW N Stimulus row samples (from bipolar)
-        row;        
-        
-        %COL N Stimulus col samples (from bipolar)
-        col;         
-        
         %SIZE Patch size (m) measured at the cone mosaic
         size;        
         
@@ -98,14 +87,8 @@ classdef rgcLayer < handle
         %EYESIDE Left or right eye
         eyeSide;           
         
-        %EYERADIUS Position of patch in radius
-        eyeRadius;         
-        
-        %EYEANGLE and angle (degrees)
-        eyeAngle;         
-        
-        %TEMPORALEQUIVECC Temporal equivalent eccentricity (mm)
-        temporalEquivEcc; 
+        % CENTER of patch (m) with respect to fovea = [0,0];
+        center;
         
     end
     
@@ -122,26 +105,18 @@ classdef rgcLayer < handle
             % innerretina object.  We should get rid of this rgcLayerCreate
             % analog and
             %
-            %  obj = irCreate(inputObj, params)
+            %  obj = rgcLayer(bipolarLayer, params)
+            %  
+            % Required Inputs:
+            %  bpLayer:   a bipolar layer object
             %
-            %           params:
-            %             'name', name
-            %             'eyeSide',{'left','right'},
-            %             'eyeRadius',eyeRadius
-            %             'eyeAngle',eyeAngle
-            %
-            % Inputs:
-            %  inputObj:  a bipolar object or osDisplayRGBo object
+            % Optional inputs
             %  name:      Name for this instance
-            %  model:     Computation type for all the rgc mosaics
-            %       'linear' - Basic linear filtering as in typical center-surround
-            %       'LNP'    - linear-nonlinear-Poisson, see Pillow paper as below; only contains post-spike filter
-            %       'GLM'    - coupled generalized linear model, see Pillow paper, includes coupling filters
-            %       'Phys'   - pulls a set of parameters measured in physiology by
-            %                           the Chichilnisky lab.
+            %  species:  
+            %  nTrials
             %
             % Outputs:
-            %  rgc object: of the specified model type
+            %  rgc layer object
             %
             % The coupled-GLM model is described in Pillow, Shlens, Paninski, Sher,
             % Litke, Chichilnisky & Simoncelli, Nature (2008).
@@ -160,53 +135,33 @@ classdef rgcLayer < handle
             %
             % JRG 9/2015 Copyright ISETBIO Team
             % JRG 7/2016 updated
-
-            % We require an inner retina to receive its inputs from a
-            % bipolar object.  To skip the bipolar model use a bpIdentity
-            % object.
             
             % parse input
             p = inputParser;
             
             % Should this by a bipolarLayer??
-            p.addRequired('inputObj',@(x)(isa(bp,'bipolarMosaic')||isa(bp{1},'bipolarMosaic')));
+            p.addRequired('inputObj',@(x)(isa(bp,'bipolarLayer')));
             
             p.addParameter('name','ir1',@ischar);
-            p.addParameter('eyeSide','left',@ischar);
-            p.addParameter('eyeRadius',0,@isnumeric);
-            p.addParameter('eyeAngle',0,@isnumeric);
             p.addParameter('species','macaque',@ischar);
             p.addParameter('nTrials',1,@isscalar);
             
             p.KeepUnmatched = true;
             
             p.parse(bp,varargin{:});
-            
-            obj.eyeSide   = p.Results.eyeSide;
-            obj.eyeRadius = p.Results.eyeRadius;
-            obj.eyeAngle  = p.Results.eyeAngle;
-            obj.name      = p.Results.name;
-            
+            obj.name         = p.Results.name;
             obj.numberTrials = p.Results.nTrials;
             
-            if length(bp) > 1                
-                obj.size      = bp{1}.get('patch size'); % Bipolar patch
-                obj.timeStep  = bp{1}.get('time step');  % Temporal sampling
-                
-                bpC = bp{1}.get('bipolarResponseCenter');
-            else
-                obj.size      = bp.get('patch size'); % Bipolar patch
-                obj.timeStep  = bp.get('time step');  % Temporal sampling
-                
-                bpC = bp.get('bipolarResponseCenter');
-            end
-            
-            obj.row = size(bpC,1);  obj.col = size(bpC,2);
-
+            % Should match the cone mosaic patch size and time step
+            obj.eyeSide      = bp.eyeSide;
+            obj.size      = bp.size;        % Bipolar patch size
+            obj.timeStep  = bp.timeStep;    % Temporal sampling
+                        
+            % Empty cell array to hold mosaics we create.
             obj.mosaic = cell(1); % Cells are added by mosaicCreate method
             
-            % Temporal equivalent eccentricity in deg
-            obj.temporalEquivEcc = retinalLocationToTEE(obj.eyeAngle, obj.eyeRadius, obj.eyeSide);
+            % Spatial position on the retina (meters, fovea is 0,0).
+            obj.center = bp.center;
             
         end
         
