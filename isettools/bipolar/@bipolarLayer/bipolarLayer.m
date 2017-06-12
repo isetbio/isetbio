@@ -27,6 +27,9 @@ classdef bipolarLayer < handle
         
         %MOSAIC Cell array containing bipolar cell mosaics
         mosaic;
+        
+        % When we have a window, we use this figureHandle for refresh
+        figureHandle;
                        
     end
     
@@ -119,13 +122,19 @@ classdef bipolarLayer < handle
             obj.center =  cMosaic.center;
             
         end
-                
+        
+        % Show the bipolar layer window
+        function hdl = window(obj,varargin)
+            hdl = bipolarLayerWindow(obj);
+        end
+        
     end
     
     % Methods that must only be implemented in the subclasses. 
     methods (Abstract, Access=public)
         % Could define the methods here, or just let them be implicitly
-        % defined in the functions themselves.
+        % defined in the functions themselves
+        
     end
     
     % Methods may be called by the subclasses, but are otherwise private
