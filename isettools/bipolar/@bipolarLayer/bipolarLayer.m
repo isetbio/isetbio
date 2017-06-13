@@ -128,13 +128,16 @@ classdef bipolarLayer < handle
             hdl = bipolarLayerWindow(obj);
         end
         
+        %         function plot(obj,pType,varargin)
+        %         end
+
     end
     
     % Methods that must only be implemented in the subclasses. 
-    methods (Abstract, Access=public)
+    methods (Access=public)
         % Could define the methods here, or just let them be implicitly
         % defined in the functions themselves
-        
+        plot(obj,pType,varargin);
     end
     
     % Methods may be called by the subclasses, but are otherwise private
