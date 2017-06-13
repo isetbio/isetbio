@@ -137,7 +137,8 @@ classdef bipolarLayer < handle
     methods (Access=public)
         % Could define the methods here, or just let them be implicitly
         % defined in the functions themselves
-        plot(obj,pType,varargin);
+        hdl = plot(obj,pType,varargin);
+        str = describe(obj);
     end
     
     % Methods may be called by the subclasses, but are otherwise private
