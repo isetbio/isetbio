@@ -95,7 +95,9 @@ osFilt  = interp1(osTime, osFilt,timeBase,'linear',0);
 % controls the onset of the impulse response.  We shift by an amount the
 % keeps the filter causal.
 gaussVar = 100;
-gw1 = gausswin(length(rgcFilt),gaussVar)';
+% gw1 = gausswin(length(rgcFilt),gaussVar)';
+N = length(rgcFilt)-1; n = (0:N)'-N/2;
+gw1 = exp(-(1/2)*(gaussVar*n/(N/2)).^2)';
 gw1 = circshift(gw1,-round(length(rgcFilt)/2) + 0*gaussVar,2);
 gw1 = gw1/sum(gw1);   % Unit area for no DC amplification 
 
