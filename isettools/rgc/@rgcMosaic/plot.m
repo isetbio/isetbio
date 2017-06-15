@@ -126,9 +126,30 @@ switch ieParamFormat(plotType)
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;        
         ieShape('ellipse','center',center,...
-            'radius',.5*sqrt(2)*radius,...
+            'radius',sqrt(2)*radius,...
             'ellipseParameters',vertcat(ellipseMatrix{:}),...
             'color','b');
+        
+        % Sets the axis limits
+        set(gca,...
+            'xlim',[min(center(:,2)) - 3*radius, max(center(:,2)) + 3*radius],...
+            'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
+        xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
+        
+    case 'mosaicfill'
+        % Plot the mosaic spatial receptive field geometry
+        % We need to add the possibility of elliptical forms some day.
+        % And we should figure out how to do center/surround
+        cla reset;
+        
+        % Oddly, the center is (row,col)
+        center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        radius = obj.rfDiameter/2;
+        ellipseMatrix = obj.ellipseMatrix;        
+        ieShape('ellipse','center',center,...
+            'radius',sqrt(2)*radius,...
+            'ellipseParameters',vertcat(ellipseMatrix{:}),...
+            'fillArray',obj.responseLinear(:,:,10));
         
         % Sets the axis limits
         set(gca,...
@@ -150,7 +171,7 @@ switch ieParamFormat(plotType)
         spStim = zeros(edgePadding+ceil(rfSize(1)/1)+ceil(rfMaxR-rfMinR),edgePadding+ceil(rfSize(2)/1)+ceil(rfMaxC-rfMinC));
         
         % Sub-sampling values
-        startInd = 2; skipInd = 2;
+        startInd = 2; skipInd = 1;
         for ri = startInd:skipInd:size(obj.cellLocation,1)
             for ci = startInd:skipInd:size(obj.cellLocation,2)
                 %         [ri ci]
