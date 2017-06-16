@@ -152,7 +152,7 @@ classdef rgcMosaic < handle
     %% Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function window(obj)
-            obj.figureHandle = mosaicWindow(obj);
+            obj.figureHandle = rgcMosaicWindow(obj);
             % Tip: Retrieve guidata using
             %    gui = guidata(obj.figureHandle);
             %
