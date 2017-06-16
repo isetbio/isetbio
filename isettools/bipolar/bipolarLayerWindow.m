@@ -68,6 +68,14 @@ handles.output = hObject;
 % This is the bipolar layer object
 handles.bipolar = bp;
 
+% Store the cell types in the list box.  Maybe we should have a 'name' slot
+% in the mosaic and store that, where the default name is the cell type.
+mosaicNames = cell(1,length(bp.mosaic));
+for ii=1:length(bp.mosaic)
+    mosaicNames{ii} = bp.mosaic{ii}.cellType;  
+end
+set(handles.listMosaics,'String',mosaicNames);
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -151,22 +159,19 @@ str = contents{get(hObject,'Value')};
 cla
 g = str2double(get(handles.editGamma,'string'));
 
+% Get this from listBox properly
+nMosaic = get(handles.listMosaics,'Value');
 switch str
 
     case 'Bipolar mosaic'
-        handles.bipolar.plot('mosaic');
+        handles.bipolar.plot('mosaic','nMosaic',nMosaic);
         
     case 'Bipolar mean (image)'
-        handles.bipolar.plot('response image','gamma',g);
-         
-        %     case 'Bipolar plot'
-        %         % Each position shown as a time series in one big plot
-        %         handles.bipolar.plot('response');
-        %
-        
+        handles.bipolar.plot('response image','gamma',g,'nMosaic',nMosaic);
+              
     case 'Bipolar movie'
         ieInWindowMessage('Showing movie',handles);
-        handles.bipolar.plot('movieResponse');
+        handles.bipolar.plot('movieResponse','nMosaic',nMosaic);
         ieInWindowMessage('',handles);
         
     otherwise
@@ -291,16 +296,23 @@ str = contents{get(gdata.popupResponseSelect,'Value')};
 
 g = str2double(get(handles.editGamma,'string'));
 
+% Get the selected mosaic from the listbox properly ...
+nMosaic = get(gdata.listMosaics,'Value');
+% Need to deal with interface for layer, not mosaic
+
+% Update the main axis window with the relevant plot
 switch(str)
     
     case 'Bipolar mosaic'
-        gdata.bipolar.plot('mosaic');
+        gdata.bipolar.plot('mosaic','nMosaic',nMosaic);
         
     case 'Bipolar mean (image)'
-        gdata.bipolar.plot('response image','gamma',g);
+        gdata.bipolar.plot('response image','gamma',g,'nMosaic',nMosaic);
         colorbar;
+        
     case 'Bipolar movie'
-        gdata.bipolar.plot('movieResponse','gamma',g);
+        gdata.bipolar.plot('movieResponse','gamma',g,'nMosaic',nMosaic);
+        
     otherwise
         error('Unknown plot type %s\n',str);
 end

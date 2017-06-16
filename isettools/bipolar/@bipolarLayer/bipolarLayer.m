@@ -127,9 +127,6 @@ classdef bipolarLayer < handle
         function hdl = window(obj,varargin)
             hdl = bipolarLayerWindow(obj);
         end
-        
-        %         function plot(obj,pType,varargin)
-        %         end
 
     end
     

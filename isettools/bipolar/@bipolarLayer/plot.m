@@ -44,6 +44,7 @@ p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields))
 
 p.addParameter('gamma',1,@isscalar);
 p.addParameter('pos',[],@isvector);
+p.addParameter('newWindow',false,@islogical);
 
 % Will this be one of the mosaics, or use multiple mosaics (0, or maybe a
 % vector?)
@@ -58,11 +59,13 @@ if nMosaic > length(obj.mosaic)
         nMosaic,length(obj.mosaic));
 end
 
-%% Which type of plot
-hdl = vcNewGraphWin;
+%% Account for parameters
+if p.Results.newWindow; hdl = vcNewGraphWin; end
+
 if nMosaic == 0
     % A plot that uses more than one mosaic.  What the layer is for.
     % We need to make some stuff up for here.
+    disp('Whole layer plot options are NYI')
     return;
 else
     % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
