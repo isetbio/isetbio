@@ -48,17 +48,44 @@ switch class(mosaic)
     case 'rgcPhys'
         offset = [0 0];
     otherwise
+        % BW is confused by this calculation.  The cellLocation term is in
+        % samples on the cone mosaic.  What is being computed here appears
+        % to be the position in microns of the bipolar samples.  Is that
+        % right?
+        
         % This is the upper leftmost point, I think.
         % offset = [rowConv colConv] .* mosaic.cellLocation{1,1};
         
-        % (BW) This doesn't make any sense.  The answer is always 1/1e6.
-        micronsToBipolars = mosaic.Parent.size/(1e6*mosaic.Parent.size);
-        offset = micronsToBipolars*mosaic.cellLocation{1,1};
+        % I think this section should be replaced by
+        %
+        %    1 / bp.mosaic{1}.rfSize('units','um');
+        % 
+        % The same code appears elswhere (rgcMosaic.stimPositions)
+        % (BW)
+        
+        % This code replaces something JRG had that confused me.  That code
+        % as (size/(1e6*size)), which is always 1e6.  I think what is
+        % intended is the number of bipolar receptive fields per micron.
+        % When the RF is 2 microns, this is 1/2.  (BW).
+        patchSizeUM = 1e6*mosaic.Parent.size;   % In microns
+        
+        % The bipolar mosaics at this point are all the same row/col count.
+        % But they may not be in the future.  So, what do we do about that?
+        bpRowCol = size(mosaic.Parent.input.mosaic{1}.cellLocation);    
+        
+        % Converts a distance in microns to a number of bipolars per micron
+        micronsToBipolars = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
+        
+        % I don't know what this computes. (BW)
+        % Seems like this multiplies out to cells*(cells/micron)
+        offset = micronsToBipolars .* mosaic.cellLocation{1,1}; 
 end
 
-% BW:  I want to get rid of this nColors element of the loop.
+% BW:  I want to get rid of this nColors element of the loop.  Nobody seems
+% to know why it is here, but we are afraid to get rid of the nColors
+% parameter for now.  Maybe related to some EJ input stimulus?
 if nColors > 1
-    fprintf('nColors bigger than 1.  Call BW and tell him what you are doing\n'); 
+    fprintf('Send wandell@stanford.edu an email and tell him why nColors > 1\n'); 
 end
 for cc = 1 : nColors
     for ii = 1 : nCells(1)

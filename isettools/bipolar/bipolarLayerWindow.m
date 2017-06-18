@@ -149,34 +149,7 @@ function popupResponseSelect_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupResponseSelect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupResponseSelect
 
-% These are all the strings in the popup
-contents = cellstr(get(hObject,'String'));
-
-% This is the selected string
-str = contents{get(hObject,'Value')};
-
-% Clear the axis in the image
-cla
-g = str2double(get(handles.editGamma,'string'));
-
-% Get this from listBox properly
-nMosaic = get(handles.listMosaics,'Value');
-switch str
-
-    case 'Bipolar mosaic'
-        handles.bipolar.plot('mosaic','nMosaic',nMosaic);
-        
-    case 'Bipolar mean (image)'
-        handles.bipolar.plot('response image','gamma',g,'nMosaic',nMosaic);
-              
-    case 'Bipolar movie'
-        ieInWindowMessage('Showing movie',handles);
-        handles.bipolar.plot('movieResponse','nMosaic',nMosaic);
-        ieInWindowMessage('',handles);
-        
-    otherwise
-        error('Unknown string %s\n',str);
-end
+bipolarWindowRefresh(handles);
 
 end
 
@@ -198,6 +171,9 @@ end
 function menuPlotCTS_Callback(hObject, eventdata, handles)
 % Plot | Current time series
 %
+
+% We should make this a function that selects a point and plots it on the
+% window axis.
 
 % The current time series is at a point. Get the point
 [x, y] = ginput(1); % Rounded and clipped to the bipolar mosaic size
@@ -256,7 +232,7 @@ function menFileSave_Callback(hObject, eventdata, handles)
 % hObject    handle to menFileSave (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp('Save')
+disp('Save.  NYI')
 end
 
 % --------------------------------------------------------------------
@@ -311,8 +287,10 @@ switch(str)
         colorbar;
         
     case 'Bipolar movie'
+        ieInWindowMessage('Showing movie',handles);
         gdata.bipolar.plot('movieResponse','gamma',g,'nMosaic',nMosaic);
-        
+        ieInWindowMessage('',handles);
+
     otherwise
         error('Unknown plot type %s\n',str);
 end
@@ -325,7 +303,7 @@ end
 
 
 % --- Executes on button press in btnPlayPause.
-function btnPlayPause_Callback(hObject, eventdata, handles)
+function btnPlayPause_Callback(hObject, eventdata, handles) %#ok<*DEFNU>
 % hObject    handle to btnPlayPause (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -383,12 +361,11 @@ end
 
 % --- Executes on selection change in listMosaics.
 function listMosaics_Callback(hObject, eventdata, handles)
-% hObject    handle to listMosaics (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Select a mosaic from the listbox.
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listMosaics contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listMosaics
+% User selected a new mosaic.  Refresh.
+bipolarWindowRefresh(handles);
+
 end
 
 % --- Executes during object creation, after setting all properties.

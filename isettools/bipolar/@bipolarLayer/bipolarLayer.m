@@ -39,20 +39,19 @@ classdef bipolarLayer < handle
         % These are protected because they are determined from the cone
         % mosaic that provides the input and thus should not change
         
-        % SPECIES
-        species;
         
         %TIMESTEP Stimulus temporal sampling (sec) from bipolar
         timeStep;   % This is the same for all mosaics
-        
-        %EYESIDE Left or right eye
-        eyeSide;           
+               
         
         %CENTER position of the patch with respect to fovea (0,0)
         center;
         
         %SIZE Patch size (m) measured at the cone mosaic
         size;  
+        
+        % INPUT  - Cone mosaic input
+        input;
         
     end
     
@@ -76,8 +75,6 @@ classdef bipolarLayer < handle
             %
             %  Optional
             %   'name'    -   string
-            %   'eyeSide' -  'left','right'}
-            %   'species' -  {'human','macaque'}
             %   'nTrials' -   1
             %
             % Outputs:
@@ -87,35 +84,34 @@ classdef bipolarLayer < handle
 
             % parse input
             p = inputParser;
-            p.addRequired('inputObj',@(x)(isa(cMosaic,'coneMosaic')));
+            p.addRequired('cMosaic',@(x)(isa(cMosaic,'coneMosaic')));
             
             p.addParameter('name','bipolarLayer',@ischar);
-            p.addParameter('eyeSide','left',@ischar);
-            p.addParameter('species','human',@ischar);
             p.addParameter('nTrials',1,@isscalar);
             
             p.KeepUnmatched = true;
             
             p.parse(cMosaic,varargin{:});
             
-            obj.eyeSide   = p.Results.eyeSide;
-            obj.name      = p.Results.name;
-            
+            obj.name         = p.Results.name;
             obj.numberTrials = p.Results.nTrials;
-                       
+            
+            % Create an empty cell array of bipolar mosaics
+            obj.mosaic = [];
+            
+            % We may keep the cone mosaic around and then get rid of the
+            % obj.center, .species, .timeStep and .size.  No reason to have
+            % both other than confusion.  We can write little methods to
+            % get these from the input.
+            obj.input  = cMosaic;
+            
             % The patch size should apply to all of the mosaics.  It is
             % determined by the cone mosaic patch, as is the time step.
-            obj.size      = cMosaic.size;
+            obj.size = cMosaic.size;
             
             % The time sample is the integration time of the cones.  Both
             % the absorptions and the current are sampled at this rate
             obj.timeStep  = cMosaic.integrationTime;  
-
-            % Create an empty cell array
-            obj.mosaic = cell(1); 
-            
-            %
-            obj.species = cMosaic.species;
             
             % Center of the patch with respect to distance (meters) on the
             % retina.  Fovea is (0,0).

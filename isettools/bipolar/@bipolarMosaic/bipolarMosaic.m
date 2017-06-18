@@ -156,19 +156,28 @@ methods
     end
     
     function window(obj)
-        obj.figureHandle = bipolarWindow(obj);
         % Tip: Retrieve guidata using
         %    gui = guidata(obj.figureHandle);
-        %
+        obj.figureHandle = bipolarWindow(obj);
     end
+    
+    function cellsPerDistance(obj,varargin)
+        p = inputParser;
+        p.addRequired('obj',@(x)(isequal(class(obj),'bipolarMosaic')));
+        p.addParameter('units','m',@ischar);
+        p.parse(obj,varargin{:});
+        
+        patchSizeUM = obj.Parent.size;   % In microns
+        
+        % The bipolar mosaics at this point are all the same row/col count.
+        % But they may not be in the future.  So, what do we do about that?
+        bpRowCol = size(obj.Parent.input.mosaic{1}.cellLocation);    
+        
+        % Converts a distance in microns to a number of bipolars per micron
+        micronsToBipolars = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
+    end
+    
 end
-
-% methods (Static)
-%     obj = set(obj, varargin);
-%     val = get(obj, varargin);
-%     [val, nTrialsCenter, nTrialsSurround] = compute(obj, varargin);
-%     plot(obj, varargin);
-% end
 
 properties (Constant)
     % VALIDCELLTYPES Cell array of strings containing valid values for the

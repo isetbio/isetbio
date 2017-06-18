@@ -3,14 +3,18 @@ function spatialRFInit(obj,varargin)
 %
 %    bipolar.spatialRFInit(varargin)
 %
-% The bipolar mosaic takes its input from the cone mosaic.  The spatial
-% samples of the RF mosaic inputs are with respect to the spatial samples
-% of the cone mosaic.  If the cones are spaced, say 2 um, then the spatial
-% samples on the input layer of the bipolars will also be 2 um.
+% N.B. The spatial receptive fields here are a very initial first draft,
+% and the numbers should not be relied upon for detailed work.  They are a
+% rough approximation.*********************
 %
-% Typically, we place a bipolar at every cone sample.  In the future, we
-% may implement larger bipolar receptive fields with with fewer, more
-% widely spaced bipolars.
+% Each bipolar mosaic takes its input from the cone mosaic.  The spatial
+% samples of the bipolar inputs are with respect to the spatial samples
+% of the cone mosaic. If the cones are spaced, say 2 um, then each spatial
+% sample to the bipolars will be spaced 2 um.
+%
+% Typically, there is a bipolar at every cone sample (no subsampling).  In
+% the future, we may implement larger bipolar receptive fields with
+% fewer (spaced) bipolars.
 %
 % There are five types of bipolar receptive fields, one assigned to each of
 % the big five RGC types. These have preferential cone selections.  The
@@ -39,11 +43,10 @@ function spatialRFInit(obj,varargin)
 %   They seem to think that for ganglion cells the gain ratio is about
 %   1:0.5 and the diameter ratio is between 1:2 and 1:5.
 %
-% Likely the larger RF sizes measured physiological (Dacey et al.)
-% vs anatomically (B&W) reflect spread of signals among cones (via
-% direct gap junctions) and probably more important among cone
-% bipolars (via gap junctions with AII amacrine cells). - Fred
-%
+% Likely the larger RF sizes measured physiological (Dacey et al.) vs
+% anatomically (B&W) reflect spread of signals among cones (via direct gap
+% junctions) and probably more important among cone bipolars (via gap
+% junctions with AII amacrine cells). - Fred
 %
 % JRG/BW ISETBIO Team, 2015
 
@@ -72,12 +75,17 @@ p.parse(varargin{:});
 eccentricity = p.Results.eccentricity;
 conemosaic   = p.Results.conemosaic;
 
-%%
+%% Select parameters for each cell type
+
+% The spatial samples below (e.g. minSupport and spread) are in units of
+% samples on the cone mosaic.  To specify these in terms of spatial units
+% (e.g., microns) you must multiply by the cone spatial sampling.
 switch obj.cellType
     
     case{'ondiffuse','offdiffuse','onparasol','offparasol'}
         % Diffuse bipolars that carry parasol signals
-        % ecc = 0 mm yields 2x2 cone input to bp
+        %
+        % ecc = 0 mm  yields 2x2 cone input to bp
         % ecc = 30 mm yields 5x5 cone input to bp
         
         minSupport = 12;   % Minimum spatial support
@@ -90,7 +98,7 @@ switch obj.cellType
         % the center the input is basically 1 cone.  Far in the periphery,
         % it will be seomthing else that we will have a function for, like
         % the support.s
-        spread = 1;
+        spread = 1;   % This spread is in cones, not microns
         
         obj.sRFcenter   = fspecial('gaussian',[support, support],spread);
         obj.sRFsurround = 1.3*fspecial('gaussian',[support,support], 1.3*spread);
@@ -108,7 +116,7 @@ switch obj.cellType
         rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
         rfSurroundBig = fspecial('gaussian',[support,support],10*spread); % convolutional for now
         
-        obj.sRFcenter = rfCenterBig(:,:);
+        obj.sRFcenter   = rfCenterBig(:,:);
         obj.sRFsurround = rfSurroundBig(:,:);
         
         
@@ -135,16 +143,21 @@ end
 
 % Set the bipolar spatial sample positions in cell location
 
-% Note:
-% We refer it to the positions of the cones in the coneMosaic.  The inputs
-% to the bipolars are actual cones, so we think it's OK to define the RF in
-% terms of weights from actual cones into the bipolar.
+% **************
 %
-% As a utility, we want to be able to show this in spatial units on the
-% retinal surface (in um or mm).  That will be first implemented in
-% bipolar.plot('mosaic').  But basically, to do this the units are
-% X*coneMosaic.patternSampleSize (we think).  This doesn't deal with the
-% jittered cone mosaic yet, but kind of like this. (BW/JRG).
+% N.B. We refer to the bipolar cell locations with respect to the cones in
+% the coneMosaic.  The inputs to the bipolars are actual cones, so we think
+% it's OK to define the RF in terms of weights from actual cones into the
+% bipolar.
+%
+% We need to write simple utilities that convert from the spatial units on
+% the cone mosaic into spatial units on the retinal surface (in um or mm).
+% That will be first implemented in bipolar.plot('mosaic').  But basically,
+% to do this the units are X*coneMosaic.patternSampleSize (we think).  This
+% doesn't deal with the jittered cone mosaic yet, but kind of like this.
+% (BW/JRG). 
+% 
+%**************
 
 [X,Y] = meshgrid(1:conemosaic.cols,1:conemosaic.rows);
 X = X - mean(X(:)); Y = Y - mean(Y(:));
