@@ -227,7 +227,7 @@ for rr = 1:nRows         % Row index
         so_surround = reshape(k*exp(-0.5*RQXY), size(X));        
         
         % Save the cell center location
-        cellCenterLocations{rr,cc} = [thisRowCenter, thisColCenter];
+        cellCenterLocations{rr,cc} = (rfDiameterMicrons/rfDiameter)*[thisRowCenter, thisColCenter];
         
         % spatialRFArray{ii,jj} = so;
         % Store calculated parameters, units of conditional intensity

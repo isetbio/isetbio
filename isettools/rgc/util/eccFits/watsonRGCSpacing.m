@@ -92,10 +92,18 @@ fr = (1/1.12)*(1+r./41.03).^(-1);
 for k = 1:4
 dmf1d(k,:) = fr.*dgf(k,:);
 end
-% figure; plot(r,dmf1d);
-% set(gca,'xscale','log'); set(gca,'yscale','log');
-% grid on;
 
+figure; cind = 'rbgk'; hold on;
+for k = 1:4
+dmf1d(k,:) = fr.*dgf(k,:);
+ plot(r,dmf1d(k,:),cind(k),'linewidth',2);
+end
+% figure; plot(r,dmf1d);
+set(gca,'xscale','log'); set(gca,'yscale','log');
+grid on; axis([0.05 100 1 1e5]);
+legend('Temporal','Superior','Nasal','Inferior');
+xlabel('Eccentricity (degrees)'); ylabel('Density (1/deg^2)');
+set(gca,'fontsize',14);
 % 9
 smf1d = sqrt(2./(sqrt(3)*dmf1d)); % figure; plot(r,smf1d); grid on;
 
@@ -120,6 +128,8 @@ xctr = 0; yctr = 0;
 
 degStart = -fovCols/2; degEnd = fovCols/2;
 degarr = [degStart: (degEnd-degStart)/cols : degEnd];
+
+convertDensityFactor = sqrt(2);
 
 for x = degarr
     xctr = xctr+1;
@@ -150,14 +160,14 @@ for y = degarr
             smf(xctr,yctr,kctr) = sqrt(2./(sqrt(3)*dmf(xctr,yctr,kctr)));
         end
         
-        smf0(xctr,yctr) = (1/rxy)*sqrt(x^2*smf(xctr,yctr,1).^2 + y^2*smf(xctr,yctr,2).^2);
+        smf0(xctr,yctr) = convertDensityFactor*(1/rxy)*sqrt(x^2*smf(xctr,yctr,1).^2 + y^2*smf(xctr,yctr,2).^2);
     end
 end
 figure; 
 % subplot(121);
 % plot(r,smf1d); xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
 % subplot(122);
-contourf(degarr,degarr,smf0',[0:max(smf(:))/20:max(smf(:))] ); axis square
+contourf(degarr,degarr,smf0',[0:max(smf0(:))/20:max(smf0(:))] ); axis square
 title(sprintf('Human Midget RGC RF Size (degrees)')); colorbar; 
 
 xlabel(sprintf('Eccentricity (degrees)\nTemporal <---------------------> Nasal')); 

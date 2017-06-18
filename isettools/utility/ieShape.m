@@ -45,6 +45,8 @@ p.addParameter('rect',[-1 -1 2 2],@isvector)
 p.addParameter('lineX',[0 1],@isvector);
 p.addParameter('lineY',[0 1],@isvector);
 p.addParameter('color','k',@ischar);
+p.addParameter('fillColor','k',@ischar);
+p.addParameter('fillArray',[],@isnumeric);
 p.addParameter('ellipseParameters',[1 1 0],@ismatrix);  % y,x,rho
 
 p.parse(shape,varargin{:});
@@ -102,6 +104,14 @@ switch shape
             colors = p.Results.color;
         end
         
+        if length(p.Results.fillArray) == 1 && nEllipses > 1 && ~isempty(p.Results.fillColor)
+            fillArray = repmat(p.Results.fillArray,nEllipses,1);
+            
+            fillArrayMax = 1;
+        else
+            fillArray = p.Results.fillArray;
+            fillArrayMax = max(fillArray(:));
+        end
         % We want a fill color, too, don't we.  Wonder how to do that?
         % Also for multiple circles, keep hold on and make axis equal, of
         % course.  Otherwise it's not a circle.
@@ -120,7 +130,11 @@ switch shape
                 sind(ellipseParameters(ii,3))   cosd(ellipseParameters(ii,3))];
             pts = bsxfun(@plus,ptsCircle*D*R,center(ii,:));
             %pts = ptsCircle*D*R + repmat(center,nSamp,1);
-            h = plot(pts(:,2),pts(:,1),colors(ii),'linewidth',.2);
+            if isempty(fillArray)
+                h = plot(pts(:,2),pts(:,1),colors(ii),'linewidth',.2);
+            else
+                h = patch(pts(:,2),pts(:,1),fillArray(ii)./fillArrayMax);%,'linewidth',.2);
+            end
         end
         % pts = (radius(ii)*(ellipseMatrix{xc,yc}./norm(ellipseMatrix{xc,yc}(:)))*(ptsCircle-ones(200,1)*center(ii,:))')';%([0 1; 1 0])*(ptsCircle-ones(200,1)*center(ii,:))';
 

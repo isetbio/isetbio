@@ -50,7 +50,9 @@ switch class(mosaic)
     otherwise
         % This is the upper leftmost point, I think.
         % offset = [rowConv colConv] .* mosaic.cellLocation{1,1};
-        offset = mosaic.cellLocation{1,1};
+        
+        micronsToBipolars = mosaic.Parent.col/(1e6*mosaic.Parent.size);
+        offset = micronsToBipolars*mosaic.cellLocation{1,1};
 end
 
 % BW:  I want to get rid of this nColors element of the loop.
