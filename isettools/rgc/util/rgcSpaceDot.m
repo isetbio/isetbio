@@ -51,7 +51,8 @@ switch class(mosaic)
         % This is the upper leftmost point, I think.
         % offset = [rowConv colConv] .* mosaic.cellLocation{1,1};
         
-        micronsToBipolars = mosaic.Parent.col/(1e6*mosaic.Parent.size);
+        % (BW) This doesn't make any sense.  The answer is always 1/1e6.
+        micronsToBipolars = mosaic.Parent.size/(1e6*mosaic.Parent.size);
         offset = micronsToBipolars*mosaic.cellLocation{1,1};
 end
 
