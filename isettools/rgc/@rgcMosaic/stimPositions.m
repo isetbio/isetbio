@@ -3,12 +3,18 @@ function [stimX, stimY, offset] = stimPositions(rgcMosaic,xcell,ycell)
 %
 %  [stimX, stimY, offset] = stimPositions(obj,xcell,ycell)
 %
-% In order to compute the linear response of an RGC, the relevant spatial
-% positions of the stimulus must be determined based on the center
-% coordinates of the RF in stimulus space and the spatial extent of the RF.
-% This function pulls out the relevant spatial coordinates for a given RGC.
+% To compute the linear response of an RGC, the relevant spatial positions
+% of the stimulus must be determined based on the center coordinates of the
+% RF in stimulus space and the spatial extent of the RF. This function
+% pulls out the relevant spatial coordinates for a given RGC.
 %
 % 5/2016 JRG (c) ISETBIO Team
+
+% If we want the stimulus center in units of microns, I am worried.
+% micronsToBipolars has units of cell/micron.  cell Location has units of
+% cell.  We are multiplying them.  (BW)
+%
+% Also, the logic below around if/else and ceil() seems broken to me. (BW).
 
 % The RGC center location
 micronsToBipolars = rgcMosaic.Parent.col/(1e6*rgcMosaic.Parent.size);
@@ -46,7 +52,7 @@ if length(stimY)>length(stimX); stimY = stimY(1:length(stimX)); end;
 if length(stimX)>size(rgcMosaic.sRFcenter{xcell,ycell},1) || length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2) 
     stimX = stimX(1:size(rgcMosaic.sRFcenter{xcell,ycell},1)); 
     stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); 
-end;
+end
 % if length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2); stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); end;
 
 if nargout == 3
@@ -55,6 +61,8 @@ if nargout == 3
     
     % Set rounding of cell location based on whether it is
     % positive or negative
+    % BW.  Hunh?  Aren't the functions the same on the if/else?
+
     if rgcMosaic.cellLocation{1,1}(1) > 0
         offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
     else
