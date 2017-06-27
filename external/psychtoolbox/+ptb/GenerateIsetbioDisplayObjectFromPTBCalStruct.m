@@ -48,10 +48,9 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTCalStruct(displayName
         % SubSample the SPDs 
         newS = input.Results.ExtraData.subSamplingSvector;              
         lowPassSigmaInNanometers = 4;        
-        maintainTotalEnergy = true;
         showFig = false;
-        [subSampledWave, subSampledSPDs] = ptb.SubSampleSPDs(S, spd, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
-        [~, subSampledAmbient] = ptb.SubSampleSPDs(S, ambient, newS, lowPassSigmaInNanometers, maintainTotalEnergy, showFig);
+        [subSampledWave, subSampledSPDs] = ptb.SubSampleSPDs(S, spd, newS, lowPassSigmaInNanometers, showFig);
+        [~, subSampledAmbient] = ptb.SubSampleSPDs(S, ambient, newS, lowPassSigmaInNanometers,  showFig);
 
         % Set the display object's SPD to the subsampled versions
         displayObject = displaySet(displayObject, 'wave', subSampledWave);
