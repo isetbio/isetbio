@@ -1,4 +1,11 @@
-function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDs(originalS, originalSPDs, targetS, lowPassSigma, maintainTotalEnergy, showFig)
+function [subSampledWavelengthSupport, subSampledSPDs] = SubSampleSPDs(originalS, originalSPDs, targetS, lowPassSigma, maintainTotalEnergy, showFig)
+    subSampledWavelengthSupport = SToWls(targetS);
+    originalWavelengthSupport = SToWls(originalS);
+    subSampledSPDs = SplineSpd(originalWavelengthSupport, originalSPDs, subSampledWavelengthSupport);
+end
+
+    
+function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDsOLD(originalS, originalSPDs, targetS, lowPassSigma, maintainTotalEnergy, showFig)
 % [subSampledWavelengthSampling, subSampledSPDs] = subSampleSPDs(originalS, originalSPDs, newSamplingInterval, lowPassSigma, maintainTotalEnergy, showFig)
 %
 % Method to subsample the SPDs by a given sampling interval (given in nanometers) after first
