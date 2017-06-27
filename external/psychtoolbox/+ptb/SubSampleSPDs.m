@@ -1,7 +1,7 @@
 function [subSampledWavelengthSupport, subSampledSPDs] = SubSampleSPDs(originalS, originalSPDs, targetS, lowPassSigma, maintainTotalEnergy, showFig)
     subSampledWavelengthSupport = SToWls(targetS);
     originalWavelengthSupport = SToWls(originalS);
-    subSampledSPDs = SplineSpd(originalWavelengthSupport, originalSPDs, subSampledWavelengthSupport);
+    subSampledSPDs = SplineCmf(originalWavelengthSupport, originalSPDs', subSampledWavelengthSupport);
 end
 
     
