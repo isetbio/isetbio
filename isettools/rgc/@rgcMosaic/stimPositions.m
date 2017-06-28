@@ -16,8 +16,10 @@ function [stimX, stimY, offset] = stimPositions(rgcMosaic,xcell,ycell)
 %
 % Also, the logic below around if/else and ceil() seems broken to me. (BW).
 
+% This code is very confusing to me (BW) and I hope to straighten out the
+% logic with JRG.
 % The RGC center location
-micronsToBipolars = rgcMosaic.Parent.col/(1e6*rgcMosaic.Parent.size);
+micronsToBipolars = size(rgcMosaic.cellLocation,2)/(1e6*rgcMosaic.Parent.size(2));
 stimCenterCoords = micronsToBipolars*rgcMosaic.cellLocation{xcell,ycell};
 
 % Find the spatial extent of the RF in terms of multiples of rfDiameter
@@ -46,8 +48,8 @@ yEndCoord   = (stimCenterCoords(2) + sRFMidPointY);
 stimX =  ceil(xStartCoord):floor(xEndCoord);
 stimY =  ceil(yStartCoord):floor(yEndCoord);
 
-if length(stimX)>length(stimY); stimX = stimX(1:length(stimY)); end;
-if length(stimY)>length(stimX); stimY = stimY(1:length(stimX)); end;
+if length(stimX)>length(stimY); stimX = stimX(1:length(stimY)); end
+if length(stimY)>length(stimX); stimY = stimY(1:length(stimX)); end
 
 if length(stimX)>size(rgcMosaic.sRFcenter{xcell,ycell},1) || length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2) 
     stimX = stimX(1:size(rgcMosaic.sRFcenter{xcell,ycell},1)); 
