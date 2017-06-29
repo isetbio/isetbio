@@ -99,6 +99,7 @@ classdef rgcLayer < handle
         
     end
     
+
     % Private properties. Only methods of the parent class can set these
     properties(Access = private)
     end
@@ -174,6 +175,7 @@ classdef rgcLayer < handle
             
         end
         
+        
         function obj = mosaicCreate(varargin)
             obj = rgcMosaicCreate(varargin{:});
         end
@@ -186,6 +188,11 @@ classdef rgcLayer < handle
         % get function, see irGet
         function val = get(obj, varargin)
             val = irGet(obj, varargin{:});
+        end
+        
+        % Show the RGC layer window
+        function hdl = window(obj,varargin)
+            hdl = rgcLayerWindow(obj);
         end
         
         %         % IR Compute functions, that loop over the rgc mosaics

@@ -22,7 +22,7 @@ function varargout = rgcLayerWindow(varargin)
 
 % Edit the above text to modify the response to help rgcLayerWindow
 
-% Last Modified by GUIDE v2.5 12-Jun-2017 17:41:46
+% Last Modified by GUIDE v2.5 28-Jun-2017 15:55:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -350,5 +350,30 @@ function sliderMovieProgress_CreateFcn(hObject, eventdata, handles)
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+end
+
+
+% --- Executes on selection change in listMosaic.
+function listMosaic_Callback(hObject, eventdata, handles)
+% hObject    handle to listMosaic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listMosaic contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listMosaic
+
+end
+
+% --- Executes during object creation, after setting all properties.
+function listMosaic_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listMosaic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 end
