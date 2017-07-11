@@ -53,15 +53,15 @@ function rgcLayerWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to rgcLayerWindow (see VARARGIN)
 
 % check inputs and get the rgcMosaic object
-if isempty(varargin) || ~isa(varargin{1}, 'rgcMosaic')
-    error('rgc mosaic object required');
+if isempty(varargin) || ~isa(varargin{1}, 'rgcLayer')
+    error('rgc Layer object required');
 end
-rgcM = varargin{1};
-rgcM.figureHandle = hObject;   % Store this figure handle
+rgcL = varargin{1};
+rgcL.figureHandle = hObject;   % Store this figure handle
 
 % Choose default command line output for rgcLayerWindow
 handles.output = hObject;
-handles.rgcMosaic = varargin{1};
+handles.rgcLayer = varargin{1};
 handles.spikesMovie = [];  % spike movie
 
 % Update handles structure
@@ -71,7 +71,7 @@ guidata(hObject, handles);
 % uiwait(handles.rgcLayerWindow);
 
 % Refresh/Initialize window information
-mosaicWindowRefresh(handles);
+layerWindowRefresh(handles);
 
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
@@ -262,7 +262,7 @@ function menuFileRefresh_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileRefresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-mosaicWindowRefresh(handles)
+layerWindowRefresh(handles)
 end
 
 % --------------------------------------------------------------------
@@ -277,7 +277,7 @@ end
 
 %% Internal functions
 
-function mosaicWindowRefresh(handles)
+function layerWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
 rgcM  = handles.rgcMosaic;

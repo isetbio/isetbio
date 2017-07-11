@@ -71,7 +71,9 @@ classdef rgcLayer < handle
         
         %MOSAIC Cell array containing ganglion cell mosaics
         mosaic;        % The spatial sampling differs for each mosaic
-                       
+                 
+        % When we have a window, we use this figureHandle for refresh
+        figureHandle;
     end
     
     % Protected properties; Methods of the parent class and all of its
