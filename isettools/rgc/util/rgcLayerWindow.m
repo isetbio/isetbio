@@ -22,7 +22,7 @@ function varargout = rgcLayerWindow(varargin)
 
 % Edit the above text to modify the response to help rgcLayerWindow
 
-% Last Modified by GUIDE v2.5 28-Jun-2017 15:55:05
+% Last Modified by GUIDE v2.5 11-Jul-2017 21:37:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -75,6 +75,12 @@ guidata(hObject, handles);
 
 % UIWAIT makes rgcLayerWindow wait for user response (see UIRESUME)
 % uiwait(handles.rgcLayerWindow);
+
+mosaicNames = cell(1,length(rgcL.mosaic));
+for ii=1:length(rgcL.mosaic)
+    mosaicNames{ii} = rgcL.mosaic{ii}.cellType;  
+end
+set(handles.listMosaics,'String',mosaicNames);
 
 % Refresh/Initialize window information
 rgcLayerWindowRefresh(handles);
@@ -145,52 +151,55 @@ function popupResponseSelect_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupResponseSelect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupResponseSelect
 
-% These are all the strings in the popup
-contents = cellstr(get(hObject,'String'));
-
-% This is the selected string
-str = contents{get(hObject,'Value')};
-
-% Clear the axis in the image
-cla
-
-% Perform the action given the selection
-% Some of the selections (e.g., PSTH mean image) are weird and should be
-% deleted, IMHO.
-% The PSTH movie seems good.  Spike movie less good, but OK.
-switch str
-    case 'Receptive field mosaic'
-        % Should be extended to include case of ellipsoidal RFs
-        handles.rgcMosaic.plot('mosaic');
-        
-    case 'Spike movie'
-        % Spike movie pulldown
-        handles.rgcMosaic.plot('spike movie');
-        
-    case 'Linear movie'
-        % Linear movie, needs units if possible, colorbar if possible        
-        handles.rgcMosaic.plot('linear movie');
-
-    case 'Spike mean (image)'
-        handles.rgcMosaic.plot('spike mean image');
-                         
-    case 'PSTH movie'
-        % PSTH movie shows all the cells as a PSTH
-        responsePsth = handles.rgcMosaic.get('psth');
-        if isempty(responsePsth), disp('No Spikes'); return; end
-        
-        clear vParams; vParams = [];
-        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
-        frameSkip = round(1./handles.rgcMosaic.get('dt'));
-        
-        % We might build in the movie control parameters as cone mosaic
-        ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
-        
-    otherwise
-        error('Unknown string %s\n',str);
-end
+rgcLayerWindowRefresh(handles);
 
 end
+
+% % These are all the strings in the popup
+% contents = cellstr(get(hObject,'String'));
+% 
+% % This is the selected string
+% str = contents{get(hObject,'Value')};
+% 
+% % Clear the axis in the image
+% cla
+% 
+% % Perform the action given the selection
+% % Some of the selections (e.g., PSTH mean image) are weird and should be
+% % deleted, IMHO.
+% % The PSTH movie seems good.  Spike movie less good, but OK.
+% switch str
+%     case 'Receptive field mosaic'
+%         % Should be extended to include case of ellipsoidal RFs
+%         handles.rgcMosaic.plot('mosaic');
+%         
+%     case 'Spike movie'
+%         % Spike movie pulldown
+%         handles.rgcMosaic.plot('spike movie');
+%         
+%     case 'Linear movie'
+%         % Linear movie, needs units if possible, colorbar if possible        
+%         handles.rgcMosaic.plot('linear movie');
+% 
+%     case 'Spike mean (image)'
+%         handles.rgcMosaic.plot('spike mean image');
+%                          
+%     case 'PSTH movie'
+%         % PSTH movie shows all the cells as a PSTH
+%         responsePsth = handles.rgcMosaic.get('psth');
+%         if isempty(responsePsth), disp('No Spikes'); return; end
+%         
+%         clear vParams; vParams = [];
+%         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
+%         frameSkip = round(1./handles.rgcMosaic.get('dt'));
+%         
+%         % We might build in the movie control parameters as cone mosaic
+%         ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
+%         
+%     otherwise
+%         error('Unknown string %s\n',str);
+% end
+
 
 % --- Executes during object creation, after setting all properties.
 function popupResponseSelect_CreateFcn(hObject, eventdata, handles)
@@ -286,8 +295,8 @@ end
 function rgcLayerWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
-rgcM  = handles.rgcMosaic;
-fig   = figure(rgcM.figureHandle);
+rgcL  = handles.rgcLayer;
+fig   = figure(rgcL.figureHandle);
 gdata = guidata(fig);
 
 % Show the appropriate response axis plot
@@ -297,33 +306,37 @@ cla(gdata.axisResponse,'reset');
 % Selected string in the popup
 contents = cellstr(get(gdata.popupResponseSelect,'String'));
 str = contents{get(gdata.popupResponseSelect,'Value')};
+
+nMosaic = get(gdata.listMosaics,'Value');
+rgcL = gdata.rgcLayer;
+
 switch(str)
     case 'Receptive field mosaic'
-        gdata.rgcMosaic.plot('mosaic');
+        rgcL.mosaic{nMosaic}.plot('mosaic','nMosaic',nMosaic);
     case 'Spike mean (image)'
-        gdata.rgcMosaic.plot('spike mean image');
+        rgcL.mosaic{nMosaic}.plot('spike mean image');
     case 'PSTH mean (image)'
-        gdata.rgcMosaic.plot('psth mean image');
+        rgcL.mosaic{nMosaic}.plot('psth mean image');
         %     case 'PSTH plot'
         %         gdata.rgcMosaic.plot('psth');
     case 'Linear movie'
-        gdata.rgcMosaic.plot('linear movie');        
+        rgcL.mosaic{nMosaic}.plot('linear movie');        
     case 'Spike movie'
-        gdata.rgcMosaic.plot('spike movie');
+        rgcL.mosaic{nMosaic}.plot('spike movie');
     case 'PSTH movie'
         %
         disp('PSTH movie NYI.  Showing spike movie')
-        gdata.rgcMosaic.plot('spike movie');
+        rgcL.mosaic{nMosaic}.plot('spike movie');
     otherwise
         error('Unknown plot type %s\n',str);
 end
 
 % Make a button for rfOverlay.  ALways false, for now.
-rfOverlay = false;
-if rfOverlay, rgcM.plot('mosaic'); end
+% rfOverlay = false;
+% if rfOverlay, rgcL.mosaic{nMosaic}.plot('mosaic'); end
 
 % Text description - implemented in rgcMosaic base class.
-set(gdata.rgcProperties,'string',rgcM.describe);
+% set(gdata.rgcProperties,'string',rgcL.describe);
 
 end
 
@@ -360,20 +373,20 @@ end
 end
 
 
-% --- Executes on selection change in listMosaic.
-function listMosaic_Callback(hObject, eventdata, handles)
-% hObject    handle to listMosaic (see GCBO)
+% --- Executes on selection change in listMosaics.
+function listMosaics_Callback(hObject, eventdata, handles)
+% hObject    handle to listMosaics (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listMosaic contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listMosaic
+% Hints: contents = cellstr(get(hObject,'String')) returns listMosaics contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listMosaics
 
 end
 
 % --- Executes during object creation, after setting all properties.
-function listMosaic_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listMosaic (see GCBO)
+function listMosaics_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listMosaics (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -4,7 +4,7 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %
 % Required input
 %   plotType - string, type of plot
-%
+
 % Optional input (key-val pairs in varargin):
 %   'hf' - figure or axis handle
 %      By default, this is the figure handle of the rgcMosaic window

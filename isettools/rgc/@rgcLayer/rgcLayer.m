@@ -156,11 +156,9 @@ classdef rgcLayer < handle
             
             p.parse(bp,varargin{:});
             obj.name         = p.Results.name;
-            obj.species      = p.Results.species;
             obj.numberTrials = p.Results.nTrials;
             
             % Should match the cone mosaic patch size and time step
-            obj.eyeSide   = bp.input.whichEye; % Maybe not needed?
             obj.size      = bp.size;        % Bipolar patch size
             obj.timeStep  = bp.timeStep;    % Temporal sampling
                         
