@@ -48,6 +48,7 @@ p.KeepUnmatched = true;
 % Set up vFunc for checking the pType
 pType = ieParamFormat(pType);
 p.addRequired('pType', @isstr);     % Type of plot
+p.addParameter('hf', obj.figureHandle, @isgraphics);  % figure handle
 
 p.addParameter('nMosaic',1,@isinteger);
 p.parse(pType,varargin{:});
@@ -70,7 +71,7 @@ if nMosaic == 0
     return;
 else
     % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
-    [hdl, uData] = obj.mosaic{nMosaic}.plot(pType);
+    [hdl, uData] = obj.mosaic{nMosaic}.plot(pType,'hf',hf);
 end
 
 end

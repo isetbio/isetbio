@@ -155,52 +155,6 @@ rgcLayerWindowRefresh(handles);
 
 end
 
-% % These are all the strings in the popup
-% contents = cellstr(get(hObject,'String'));
-% 
-% % This is the selected string
-% str = contents{get(hObject,'Value')};
-% 
-% % Clear the axis in the image
-% cla
-% 
-% % Perform the action given the selection
-% % Some of the selections (e.g., PSTH mean image) are weird and should be
-% % deleted, IMHO.
-% % The PSTH movie seems good.  Spike movie less good, but OK.
-% switch str
-%     case 'Receptive field mosaic'
-%         % Should be extended to include case of ellipsoidal RFs
-%         handles.rgcMosaic.plot('mosaic');
-%         
-%     case 'Spike movie'
-%         % Spike movie pulldown
-%         handles.rgcMosaic.plot('spike movie');
-%         
-%     case 'Linear movie'
-%         % Linear movie, needs units if possible, colorbar if possible        
-%         handles.rgcMosaic.plot('linear movie');
-% 
-%     case 'Spike mean (image)'
-%         handles.rgcMosaic.plot('spike mean image');
-%                          
-%     case 'PSTH movie'
-%         % PSTH movie shows all the cells as a PSTH
-%         responsePsth = handles.rgcMosaic.get('psth');
-%         if isempty(responsePsth), disp('No Spikes'); return; end
-%         
-%         clear vParams; vParams = [];
-%         vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
-%         frameSkip = round(1./handles.rgcMosaic.get('dt'));
-%         
-%         % We might build in the movie control parameters as cone mosaic
-%         ieMovie(responsePsth(:,:,1:frameSkip:end),vParams);
-%         
-%     otherwise
-%         error('Unknown string %s\n',str);
-% end
-
-
 % --- Executes during object creation, after setting all properties.
 function popupResponseSelect_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popupResponseSelect (see GCBO)
@@ -309,12 +263,13 @@ str = contents{get(gdata.popupResponseSelect,'Value')};
 
 nMosaic = get(gdata.listMosaics,'Value');
 rgcL = gdata.rgcLayer;
+rgcL.mosaic{nMosaic}.figureHandle = rgcL.figureHandle;
 
 switch(str)
     case 'Receptive field mosaic'
         rgcL.mosaic{nMosaic}.plot('mosaic','nMosaic',nMosaic);
     case 'Spike mean (image)'
-        rgcL.mosaic{nMosaic}.plot('spike mean image');
+        rgcL.mosaic{nMosaic}.plot('spike mean image','nMosaic',nMosaic);
     case 'PSTH mean (image)'
         rgcL.mosaic{nMosaic}.plot('psth mean image');
         %     case 'PSTH plot'
