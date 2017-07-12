@@ -74,7 +74,7 @@ bpL.window;
 
 %% Retinal ganlion cell model
 
-clear rgcLayer irParams mosaicParams
+clear rgcLayer
 
 % Create retina ganglion cell layer object
 rgcL = rgcLayer(bpL);
