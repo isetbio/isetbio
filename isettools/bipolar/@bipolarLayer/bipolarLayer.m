@@ -38,11 +38,11 @@ classdef bipolarLayer < handle
     properties (SetAccess = protected)
         % These are protected because they are determined from the cone
         % mosaic that provides the input and thus should not change
-        
+        % A few parameters stored here for convenience, but they can be
+        % derived from input or input to input or ...
         
         %TIMESTEP Stimulus temporal sampling (sec) from bipolar
-        timeStep;   % This is the same for all mosaics
-               
+        timeStep;   % This is the same for all mosaics 
         
         %CENTER position of the patch with respect to fovea (0,0)
         center;

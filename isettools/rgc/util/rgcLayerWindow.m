@@ -52,16 +52,22 @@ function rgcLayerWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to rgcLayerWindow (see VARARGIN)
 
-% check inputs and get the rgcMosaic object
-if isempty(varargin) || ~isa(varargin{1}, 'rgcLayer')
-    error('rgc Layer object required');
-end
+
+p = inputParser;
+vFunc = @(x)(isequal(class(x),'rgcLayer'));
+p.addRequired('rgc',vFunc);
+
+% Check that we have the bipolar layer
+p.parse(varargin{:});
+
 rgcL = varargin{1};
 rgcL.figureHandle = hObject;   % Store this figure handle
 
-% Choose default command line output for rgcLayerWindow
+% Choose default command line output for bipolarlayerwindow
 handles.output = hObject;
+
 handles.rgcLayer = varargin{1};
+
 handles.spikesMovie = [];  % spike movie
 
 % Update handles structure
@@ -71,7 +77,7 @@ guidata(hObject, handles);
 % uiwait(handles.rgcLayerWindow);
 
 % Refresh/Initialize window information
-layerWindowRefresh(handles);
+rgcLayerWindowRefresh(handles);
 
 % Very important for good rendering speed
 set(hObject, 'Renderer', 'OpenGL')
@@ -262,7 +268,7 @@ function menuFileRefresh_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileRefresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-layerWindowRefresh(handles)
+rgcLayerWindowRefresh(handles)
 end
 
 % --------------------------------------------------------------------
@@ -277,7 +283,7 @@ end
 
 %% Internal functions
 
-function layerWindowRefresh(handles)
+function rgcLayerWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
 rgcM  = handles.rgcMosaic;

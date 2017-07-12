@@ -79,22 +79,18 @@ classdef rgcLayer < handle
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        % Inherited from prior stages
-        
-        % human, macaque and someday other stuff like mouse
-        species;
+        % Inherited from prior stages.  
+        % A few parameters stored here for convenience, but they can be
+        % derived from input or input to input or ...
         
         %SIZE Patch size (m) measured at the cone mosaic (height, width)
         size;        
         
+        %CENTER position of the patch with respect to fovea (0,0)
+        center;
+        
         %TIMESTEP Stimulus temporal sampling (sec) from bipolar
         timeStep;   % This is the same for all mosaics
-        
-        %EYESIDE Left or right eye
-        eyeSide;           
-        
-        % CENTER of patch (m) with respect to fovea = [0,0];
-        center;
         
         % INPUT bipolar layer
         input;
