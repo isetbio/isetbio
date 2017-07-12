@@ -126,5 +126,3 @@ rgcL.mosaic{3}.window;
 rgcL.mosaic{5}.window;  % This seems off to BW, slanted line???
 
 %%
-
-toc
