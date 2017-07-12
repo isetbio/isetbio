@@ -14,7 +14,6 @@ function [stimX, stimY, offset] = stimPositions(rgcMosaic,xcell,ycell)
 % micronsToBipolars has units of cell/micron.  cell Location has units of
 % cell.  We are multiplying them.  (BW)
 %
-% Also, the logic below around if/else and ceil() seems broken to me. (BW).
 
 % This code is very confusing to me (BW) and I hope to straighten out the
 % logic with JRG.
@@ -57,25 +56,13 @@ if length(stimX)>size(rgcMosaic.sRFcenter{xcell,ycell},1) || length(stimY)>size(
 end
 % if length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2); stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); end;
 
-if nargout == 3
-    % An offset is sometimes used because RGC mosaics may be defined with
-    % their center coordinates not at (0,0).
-    
-    % Set rounding of cell location based on whether it is
-    % positive or negative
-    % BW.  Hunh?  Aren't the functions the same on the if/else?
+%% Calculate the offset parameter
 
-    if rgcMosaic.cellLocation{1,1}(1) > 0
-        offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
-    else
-        offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
-    end
-    
-    if rgcMosaic.cellLocation{1,1}(2) > 0
-        offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
-    else
-        offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
-    end
+if nargout == 3
+    % An offset is sometimes needed because RGC mosaics may be defined with
+    % their center coordinates not at (0,0).
+    offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
+    offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
 end
 
 end

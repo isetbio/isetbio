@@ -67,7 +67,7 @@ if ~isempty(bipolarTrials)
 else
     rgcL = rgcL.computeSeparable(bp);
 end
-% irPlot(ir,'response linear');
+% rgcL.plot('response linear');
 
 %% Compute spikes from linear response; possibly for multiple trials
 

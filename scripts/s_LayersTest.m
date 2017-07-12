@@ -13,9 +13,13 @@ rdt = RdtClient('isetbio');
 rdt.crp('/resources/data/cmosaics');
 % rdt.listArtifacts('type','mat','print',true);
 
-data = rdt.readArtifact('vaConeMosaic', 'type', 'mat');
+% coneMosaicDataFixedEye;
+% vaConeMosaic
+data = rdt.readArtifact('coneMosaicDataFixedEye', 'type', 'mat');
 cMosaic   = data.cMosaic;
 alignedC = data.alignedC;
+
+% cMosaic.window;
 
 %% Create a set of bipolar cell types in the bipolar mosaic
 
@@ -59,11 +63,9 @@ bpL.mosaic = bpMosaic;
 % * The units on the center size may not be correct. 
 % * We need to allow changing the size of the center and surround on the bipolar.
 
-%% First mosaic shown directly
-bpL.mosaic{1}.window;
-
-%% Second mosaic shown directly
-bpL.mosaic{2}.window;
+%% Mosaics shown directly
+% bpL.mosaic{1}.window;
+% bpL.mosaic{2}.window;
 
 %% The size of the RFs are surprising here
 
@@ -87,7 +89,7 @@ mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 mosaicParams.type  = cellType;
 mosaicParams.model = 'GLM';
 
-diameters = [5 5 3 3 10];  % In microns.
+diameters = [5 5 3 3 3];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','smallbistratified'};
 for ii = 1:length(cellType)

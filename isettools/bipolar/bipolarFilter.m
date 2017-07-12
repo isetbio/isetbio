@@ -7,10 +7,6 @@ function bipolarFilt = bipolarFilter(obj, cmosaic, varargin)
 % the convolution of the outersegment and the bipolar equals the impulse
 % response of the rgc.
 %
-% BW: Mysterious, what we are doing here.  With this calculation, we should
-% not further apply the RGC impulse response.  I think.  To discuss with
-% the group what the IR of the RGC means in the ir.mosaic{1}.tCenter field.
-% 
 % Example:
 %   cMosaic = coneMosaic;
 %   cMosaic.os.linearFilters(cMosaic);
@@ -43,38 +39,29 @@ if isa(cmosaic.os,'osLinear')
     osTime   = cmosaic.os.timeAxis;
 else
     osFiltTemp = linearFilters(cmosaic.os, cmosaic);
-    osFilt = osFiltTemp(:,1);
-    osTime   = ((1:size(osFilt,1)) - 1) * cmosaic.os.timeStep;
+    osFilt     = osFiltTemp(:,1);
+    osTime     = ((1:size(osFilt,1)) - 1) * cmosaic.os.timeStep;
 end
 
 
-%% Create the Pillow impulse response function that we match
+%%  Deal with temporal impulse response issues
+%
+% This code comes out of here and becomes a utility to show how we build up
+% the temporal IR at different stages along the computation.
+%
+% Here, this code picks a desired RGC temporal IR and finds the bipolar
+% temporal IR that will combine with the outer segment IR to achieve that
+% goal.  It accounts for the outer segment temporal impulse response and
+% finds the bipolar IR so that
+%
+%  rgcIR = conv(coneIR,bipolarIR);
+%
 
-% We match the impulse response of an inner retina type irPhys, the values
-% for eyeSide, eyeRadius and eyeAngle have no effect, because those are not
-% dependent on the properties of the retinal piece used in the Chichilnisky
-% Lab experiment.
-% clear params
-% params.name = 'dummy';
-% params.eyeSide = 'left'; 
-% params.eyeRadius = 0; 
-% params.eyeAngle  = 0; 
-% cellType = 'onParasol';   % Could be offParasol, or ...
-% 
-% % First the inner retina and then a mosaic
-% % The inner retina seems to use the obj (bipolar) time base to set up the
-% % impulse response in the mosaicCreate.  Look into this and get it right,
-% % sigh.
-% innerRetina = ir(obj, params);
-% innerRetina.mosaicCreate('type',cellType,'model','GLM');
-% 
-% % The temporal impulse response function of the mosaic.
-% cellNum = 1;
-% rgcFilt = innerRetina.mosaic{1}.tCenter{cellNum};
-% rgcTime = innerRetina.mosaic{1}.timeAxis;
+% By default, we would create the Pillow RGC impulse response function that
+% we will aim to match 
 
-% I chose these parameters so that the bipolar IR would be delayed past the
-% OS impulse response.
+% JRG chose these parameters so that the bipolar IR would be delayed past
+% the OS impulse response.
 params.filterDuration = 0.4; 
 params.samplingTime = 0.001;
 params.cellType = obj.cellType;
@@ -133,11 +120,14 @@ if graph
     set(gca,'xlim',[-0.05 0.4]); xlabel('Time (sec)');
 end
 
+%% Set the sign for on and off- types
 
 switch obj.cellType
     case{'ondiffuse','onmidget','onsbc','sbc'}
+        % On cell types
         signVal = 1;
     otherwise
+        % Off cell types
         signVal = -1;
 end
             

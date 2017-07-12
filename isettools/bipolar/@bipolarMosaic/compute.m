@@ -109,8 +109,8 @@ for iTrial = 1:nTrials
             
             % Remove S cone input for these types of bipolars
             
-            % Find the locations (row, col) of the different cone types
-            [~,~,S] = coneTypeLocations(cmosaic,'val','index');
+            % Find the locations indices of the different cone types
+            [~,~,S] = coneTypeLocations(cmosaic,'format','index');
             
             % Zero the photocurrent of the S cones. Do this for both the center
             % and the surround.
@@ -123,7 +123,7 @@ for iTrial = 1:nTrials
             % Keep S cone input for off Midget but only weight by 0.25
             
             % Find the locations (row, col) of the different cone types
-            [~,~,S] = coneTypeLocations(cmosaic,'val','index');
+            [~,~,S] = coneTypeLocations(cmosaic,'format','index');
             
             minval = min(osSig(:));
             
@@ -134,26 +134,35 @@ for iTrial = 1:nTrials
             osSigSurround(S,:) = 0.25*(osSigSurround(S,:)-minval)+minval;
             
         case{'onsbc'}
-            % Set L and M cones to zero in SBC center, set S cones to zero in
-            % SBC surround.
-            % Find the locations (row, col) of the different cone types
-            [L,M,S] = coneTypeLocations(cmosaic,'val','index');
+            % Set L and M cones to zero in SBC center, set S cones to zero
+            % in SBC surround.
+            
+            % Find the indices of the different cone types
+            [L,M,S] = coneTypeLocations(cmosaic,'format','index');
+            
+            % This is one long vector of L,M cone indices
             LM = [L; M];
             
+            % Find the effectively zero outer segment signal for this
+            % mosaic
             minval = min(osSig(:));
-            % Set center to only have S cones
             
-            osSigCenter   = osSig;
-            osSigCenter(LM,:)   = minval*ones(size(osSigCenter(LM,:)));
+            % When the center is an LM cone, make all of the time steps in
+            % the center the smallest value
+            osSigCenter       = osSig;
+            osSigCenter(LM,:) = minval*ones(size(osSigCenter(LM,:)));
             
-            osSigSurround   = osSig;
-            osSigSurround(S,:)   = minval*ones(size(osSigSurround(S,:)));
+            % Put effectively zero S-cone signals into the surround
+            osSigSurround      = osSig;
+            osSigSurround(S,:) = minval*ones(size(osSigSurround(S,:)));
             
     end
     
     % Put the data back into RGB format, like RGB2XW()
-    osSigCenter   = reshape(osSigCenter,size(cmosaic.current));
-    osSigSurround = reshape(osSigSurround,size(cmosaic.current));
+    sz = size(cmosaic.current);
+    osSigCenter   = XW2RGBFormat(osSigCenter,sz(1),sz(2));
+    osSigSurround = XW2RGBFormat(osSigSurround,sz(1),sz(2));
+
     % cmosaic.window;
     % vcNewGraphWin; ieMovie(osSigCenter);
     
@@ -162,7 +171,9 @@ for iTrial = 1:nTrials
     % Full spatial convolution for every frame
     bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
     bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
-    
+    % vcNewGraphWin; ieMovie(bipolarCenter);
+    % vcNewGraphWin; ieMovie(bipolarSurround);
+
     % Subsample in space to the resolution for this bipolar mosaic.
     % The spacing is equal to the number of pixels that make up the center of
     % the spatial receptive field.  This could be a settable parameter for
@@ -179,7 +190,7 @@ for iTrial = 1:nTrials
     
     %% New method
     
-    % The filter isn't right.  Time base is off.  Let's deal with it.
+    % 
     bipolarFilt = bipolarFilter(obj, cmosaic);
     
     %% Compute the temporal response of the bipolar mosaic
@@ -193,10 +204,13 @@ for iTrial = 1:nTrials
     
     % tmp = conv2(bipolarFilt,bipolarCenter);
     tmpCenter = conv2(bipolarFilt,obj.rectificationCenter(bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2)))));
+    % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter,row, col); ieMovie(tmp);
+    
     
     % tmp = conv2(bipolarFilt,bipolarSurround);
     tmpSurround = conv2(bipolarFilt,obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)))));
-       
+    % vcNewGraphWin; tmp = XW2RGBFormat(tmpSurround,row, col); ieMovie(tmp);
+
     if ~isempty(coneTrials)
         
         if iTrial == 1
