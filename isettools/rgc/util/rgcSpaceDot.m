@@ -92,7 +92,7 @@ for ii = 1 : nCells(1)
         % Center positions of the stimulus used for the inner product
         % with the RF. stimPositions are indices of the bipolar input. We
         % might rename this to be inputPositions
-        [inputX, inputY] = mosaic.stimPositions(ii,jj);
+        [inputX, inputY] = mosaic.stimPositions(ii,jj,bipolarsPerMicron);
         
         % Find the RF location indices, gz, that are within size of
         % stimulus
