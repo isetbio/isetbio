@@ -30,6 +30,8 @@ function [respCenter, respSurround] = rgcSpaceDot(mosaic, input)
 %  respCenter:     Response over time from the center
 %  respSurround:   Response over time from the surround
 %
+% See below for PROGRAMMING TODO
+%
 % JRG,BW ISETBIO TEAM, 2015
 
 %% init parameters
@@ -43,42 +45,11 @@ respSurround = zeros([nCells(1), nCells(2), nSamples]);
 %% Do the inner product.
 
 % The middle cell is at (0,0).  The offset tells us how far offset the 1st
-% cell is from (0,0).
-switch class(mosaic)
-    case 'rgcPhys'
-        offset = [0 0];
-    otherwise
-        % BW is confused by this calculation.  The cellLocation term is in
-        % samples on the cone mosaic.  What is being computed here appears
-        % to be the position in microns of the bipolar samples.  Is that
-        % right?
-        
-        % This is the upper leftmost point, I think.
-        % offset = [rowConv colConv] .* mosaic.cellLocation{1,1};
-        
-        % I think this section should be replaced by
-        %
-        %    1 / bp.mosaic{1}.rfSize('units','um');
-        %
-        % The same code appears elswhere (rgcMosaic.stimPositions)
-        % (BW)
-        
-        % This code replaces something JRG had that confused me.  That code
-        % as (size/(1e6*size)), which is always 1e6.  I think what is
-        % intended is the number of bipolar receptive fields per micron.
-        % When the RF is 2 microns, this is 1/2.  (BW).
-        patchSizeUM = 1e6*mosaic.Parent.size;   % In microns
-        
-        % The bipolar mosaics at this point are all the same row/col count.
-        % But they may not be in the future.  So, what do we do about that?
-        bpRowCol = size(input);
-        
-        bipolarsPerMicron = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
-        
-        % The cellLocation positions are in microns and centered at 0,0.
-        % The offset is the
-        offset = bipolarsPerMicron .* mosaic.cellLocation{1,1};
-end
+% cell is from (0,0). This value is the same for all cells in the mosaic so
+% computed outside of the loop.
+patchSizeUM = 1e6*mosaic.Parent.size;   % In microns
+bipolarsPerMicron = size(input(:,:,1)) ./ patchSizeUM;   % cells/micron
+nTime = size(input,3);
 
 for ii = 1 : nCells(1)
     for jj = 1 : nCells(2)
@@ -89,34 +60,63 @@ for ii = 1 : nCells(1)
         spRFsurround = mosaic.sRFsurround{ii, jj};
         % vcNewGraphWin; imagesc(spRFcenter)
         
-        % Center positions of the stimulus used for the inner product
-        % with the RF. stimPositions are indices of the bipolar input. We
-        % might rename this to be inputPositions
-        [inputX, inputY] = mosaic.stimPositions(ii,jj,bipolarsPerMicron);
+        % Row and col positions of the input used for the inner product
+        % with the RGC RF. The row/col values are sample positions of the
+        % bipolar input. 
+        [inputRow, inputCol] = mosaic.inputPositions(ii,jj,bipolarsPerMicron);
         
-        % Find the RF location indices, gz, that are within size of
+        % Find the rows and columns within the stimulus range
+        nRow = length(inputRow); nCol = length(inputCol);
+        mxRow = size(input,1); mxCol = size(input,2);
+        inputValues = zeros(nRow,nCol,nTime);
+        
+        % Sometimes the RF extends outside of the size of the input.  So we
+        % clip it here to keep the values within the input range, these are
+        % the good rows and cols.
+        goodRows = inputRow((inputRow > 0) & (inputRow < mxRow));
+        goodCols = inputCol((inputCol > 0) & (inputCol < mxCol));
+        inputValues(goodRows,goodCols,:) = input(goodRows,goodCols,:);
+        
+        % The inputValues are a time series.  So we put it into XW (which
+        % means space-time) formatting.
+        inputValues   = RGB2XWFormat(inputValues);
+        rfC           = spRFcenter(:);
+        rfS           = spRFsurround(:);
+        
+        % Put the RF center as a row and multiply it by the XT matrix
+        respCenter(ii,jj,:)   = rfC' * inputValues;
+        respSurround(ii,jj,:) = rfS' * inputValues;
+        
+        % PROGRAMMING TODO
+        % We have to handle edge cases.  Let's see if we can improve on
+        % this particular 'find' function. For example, ...
+        % 
+        % gz = (inputRow > 1) && (inputRow < mx)
+        %
+        % Find the RF location indices, gz, that are within the size of
         % stimulus
-        gz = find(inputX - offset(1) >= 1 & ...
-            inputY - offset(2) >= 1 & ...
-            inputX - offset(1) <= size(input,1) & ...
-            inputY - offset(2) <= size(input,2) );
-        
-        % Extract the part of the input that will interact with the
-        % RF.  We take this part of the input for all points in
-        % time.
-        stimV = input(floor(inputX(gz)-offset(1)), ...
-            floor(inputY(gz)-offset(2)), :);
-        % Visualize the selected portion of the stimulus
-        % vcNewGraphWin; ieMovie(stimV);
-        
-        % Compute and store the inner product of the rf weights and
-        % the stimulus computed across all of the time points.
-        rfC   = RGB2XWFormat(spRFcenter(gz,gz));
-        rfS   = RGB2XWFormat(spRFsurround(gz,gz));
-        stimV = RGB2XWFormat(stimV);
-        
-        respCenter(ii,jj,:)   = 40*rfC'* stimV;
-        respSurround(ii,jj,:) = 40*rfS'* stimV;
+        %         gz = find(inputRow - offset(1) >= 1 & ...
+        %             inputCol - offset(2) >= 1 & ...
+        %             inputRow - offset(1) <= size(input,1) & ...
+        %             inputCol - offset(2) <= size(input,2) );
+        %
+        %         % Extract the part of the input that will interact with the
+        %         % RF.  We take this part of the input for all points in
+        %         % time.
+        %         inputValues = input(floor(inputRow(gz)-offset(1)), ...
+        %             floor(inputCol(gz)-offset(2)), :);
+        %         % Visualize the selected portion of the stimulus
+        %         % vcNewGraphWin; ieMovie(stimV);
+        %
+        %         % Compute and store the inner product of the rf weights and
+        %         % the stimulus computed across all of the time points.
+        %         rfC   = RGB2XWFormat(spRFcenter(gz,gz));
+        %         rfS   = RGB2XWFormat(spRFsurround(gz,gz));
+        %         inputValues = RGB2XWFormat(inputValues);
+        %
+        %         % What is this 40 doing here? PROGRAMMING TODO
+        %         respCenter(ii,jj,:)   = 40*rfC'* inputValues;
+        %         respSurround(ii,jj,:) = 40*rfS'* inputValues;
         
     end
 end
