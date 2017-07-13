@@ -135,18 +135,28 @@ for iTrial = 1:nTrials
         % end
         % ieMovie(respC - respS);
         
+        % PROGRAMMING TODO:
+        % Scale magnitude for response to bipolar output:
+        % The magnitudes of the linear RFs are set according to a
+        % conversion of RGB values 0-255 to a spike rate with an average of
+        % 10-20 Hz. Since we are working with bipolar currents, we need to
+        % scale our linear responses accordingly. An informal observation
+        % of bipolar current outputs are on the scale of 0-5, so we will
+        % scale the linear output by 255/5 = 50;
+        bipolarScalingFactor = 50;        
+        
         % Deal with multiple trial issues
         if ~isempty(bipolarTrials)                
                 if iTrial == 1
                     nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
                 end
-                nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  respC - respS;
+                nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScalingFactor*(respC - respS);
         end
         
         % Store the last trial
         if iTrial == nTrials
             % Store the linear response
-            rgcL.mosaic{rgcType} = mosaicSet(rgcL.mosaic{rgcType},'response linear', respC - respS);
+            rgcL.mosaic{rgcType} = mosaicSet(rgcL.mosaic{rgcType},'response linear', bipolarScalingFactor*(respC - respS));
             % rgcL.mosaic{rgcType}.window;
         end
     end

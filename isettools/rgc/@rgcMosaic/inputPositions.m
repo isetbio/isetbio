@@ -67,26 +67,30 @@ colEnd   = (rgcCenter(2) + sRFMidPointCol);
 % Matlab notation the edge positions are 1 to max of the size.  The offset
 % puts the return row,col values in this range.
 offset = bipolarsPerMicron .* rgcMosaic.cellLocation{1,1};
-offset = floor(offset);
+% offset = floor(offset);
 
-% If there is rounding, keep it in range
-inputRow =  (ceil(rowStart):floor(rowEnd)) - offset(1);
-inputCol =  (ceil(colStart):floor(colEnd)) - offset(2);
+% % If there is rounding, keep it in range
+% inputRow =  (ceil(rowStart):floor(rowEnd)) - offset(1);
+% inputCol =  (ceil(colStart):floor(colEnd)) - offset(2);
+
+% Add the eps0 offset to each position and apply ceil and floor to ensure
+% inputRow and inputCol are equal to size(rgcMosaic.sRFcenter{row,col})
+eps0 = .0001;
+inputRow =  ceil(rowStart - offset(1)+eps0):floor((rowEnd) - offset(1));
+inputCol =  ceil(colStart - offset(2)+eps0):floor((colEnd) - offset(2));
 
 % Now, how do we check and what do we do to make sure that the inputRow/Col
 % match the size of the receptive field.
+% Create conditional breakpoint with this condition:
+% (length(inputRow)~=size(rgcMosaic.sRFcenter{row,col},1)) | (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},1))
 
 %% Checking stuff
-% if length(inputRow)>length(inputCol)
-%     inputRow = inputRow(1:length(inputCol));
-% end
-% if length(inputCol)>length(inputRow)
-%     inputCol = inputCol(1:length(inputRow)); 
-% end
 
+% We never end up here.
 if length(inputRow)>size(rgcMosaic.sRFcenter{row,col},1) || length(inputCol)>size(rgcMosaic.sRFcenter{row,col},2) 
     inputRow = inputRow(1:size(rgcMosaic.sRFcenter{row,col},1));
     inputCol = inputCol(1:size(rgcMosaic.sRFcenter{row,col},2)); 
+    1010
 end
 % if length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2); stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); end;
 

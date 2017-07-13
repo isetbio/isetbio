@@ -73,9 +73,11 @@ for ii = 1 : nCells(1)
         % Sometimes the RF extends outside of the size of the input.  So we
         % clip it here to keep the values within the input range, these are
         % the good rows and cols.
-        goodRows = inputRow((inputRow > 0) & (inputRow < mxRow));
-        goodCols = inputCol((inputCol > 0) & (inputCol < mxCol));
-        inputValues(goodRows,goodCols,:) = input(goodRows,goodCols,:);
+        goodRowInds = (inputRow > 0) & (inputRow < mxRow);
+        goodRows = inputRow(goodRowInds);
+        goodColInds = (inputCol > 0) & (inputCol < mxCol);
+        goodCols = inputCol(goodColInds);
+        inputValues(goodRowInds,goodColInds,:) = input(goodRows,goodCols,:);
         
         % The inputValues are a time series.  So we put it into XW (which
         % means space-time) formatting.
