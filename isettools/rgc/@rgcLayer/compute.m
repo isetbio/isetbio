@@ -105,7 +105,7 @@ switch class(rgcL.mosaic{1})
                 'nTrialsLinearResponse',nTrialsLinearResponse);
         else
             % Single trial case
-            [rgcL, nTrialsSpikes] = rgcL.ComputeSpikes('coupling',coupling);
+            [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling);
         end
 end
 

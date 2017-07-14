@@ -160,15 +160,10 @@ switch str
         
     case 'Bipolar mean (image)'
         handles.bipolar.plot('response image','gamma',g);
-         
-        %     case 'Bipolar plot'
-        %         % Each position shown as a time series in one big plot
-        %         handles.bipolar.plot('response');
-        %
         
     case 'Bipolar movie'
         ieInWindowMessage('Showing movie',handles);
-        handles.bipolar.plot('movieResponse');
+        handles.bipolar.plot('response movie');
         ieInWindowMessage('',handles);
         
     otherwise

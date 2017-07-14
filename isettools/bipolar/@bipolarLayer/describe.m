@@ -5,6 +5,11 @@ function str = describe(obj)
 %   
 % BW ISETBIO Team, 2017
 
+%%
+gdata = guidata(obj.figureHandle);
+nMosaic = get(gdata.listMosaics,'Value');
+
+%% General properties
 str = [];
 txt = sprintf('N Mosaics:    \t%d \n',length(obj.mosaic));
 str = addText(str,txt);
@@ -20,5 +25,12 @@ txt = sprintf('Eye side:     \t%s \n',obj.input.whichEye);
 str = addText(str,txt);
 txt = sprintf('Species:      \t%s \n',obj.input.species);
 str = addText(str,txt);
-            
+
+% Specific to this mosaic
+txt = sprintf('---\n');
+str = addText(str,txt);
+[r,c,~] = size(obj.mosaic{nMosaic}.responseCenter);
+txt = sprintf('Samples:   \t%d %d \n',r,c);
+str = addText(str,txt);
+
 end
