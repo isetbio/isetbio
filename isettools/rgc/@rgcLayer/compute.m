@@ -52,20 +52,40 @@ vFunc = @(x) (isequal(class(x),'bipolarMosaic')||isequal(class(x{1}),'bipolarMos
 p.addRequired('bp',vFunc);
 
 p.addParameter('coupling',false,@islogical);
-% p.addParameter('bipolarTrials',  [], @isnumeric);  % Multiple bipolar trials
 p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));  % Multiple bipolar trials
+p.addParameter('bipolarScale',50,@isnumeric);
+p.addParameter('bipolarContrast',1,@isnumeric);
 
 p.parse(rgcL,bp,varargin{:});
 coupling = p.Results.coupling;
+bipolarTrials = p.Results.bipolarTrials;
 
-bipolarTrials = p.Results.bipolarTrials; 
+% See notes below
+bipolarScale    = p.Results.bipolarScale; 
+bipolarContrast = p.Results.bipolarContrast; 
 
 %% Linear stage of the computation
 
+% We set the bipolar scale factor in order to produce a bipolar model that
+% generates reasonable RGC spikes for typical viewing conditions.  The sad
+% truth is that we don't have a biophysically accurate model of the bipolar
+% cells.  Consequently, we have no match for the bipolar current with real
+% units.  This is a fudge factor that produces attractive RGC spike rates.
+% When we get more information about the bipolar models, we hope to do
+% better.
+% Similarly, the internal calculation converts bipolar current to a
+% contrast with a max value of 1.  We can control the max contrast here.
+% The code is not set up vary these parameters yet.  We will expose them
+% some day.
 if ~isempty(bipolarTrials)  
-    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bp, 'bipolarTrials',bipolarTrials);
+    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bp, ...
+        'bipolarScale', bipolarScale,...
+        'bipolarContrast',bipolarContrast,...
+        'bipolarTrials',bipolarTrials);
 else
-    rgcL = rgcL.computeSeparable(bp);
+    rgcL = rgcL.computeSeparable(bp, ...
+        'bipolarContrast',bipolarContrast,...
+        'bipolarScale', bipolarScale);
 end
 % rgcL.plot('response linear');
 

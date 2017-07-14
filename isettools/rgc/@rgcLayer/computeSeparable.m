@@ -33,12 +33,12 @@ function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcL, bp, varargin)
 %
 %  The linear response is the input to irComputeSpikes.
 %
-%   rgcGLM model: The spikes are computed using the recursive influence of
-%   the post-spike and coupling filters between the nonlinear responses of
-%   other cells. These computations are carried in irComputeSpikes out
-%   using code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
-%   Simoncelli, Nature, 2008, licensed for modification,
-%   which can be found at
+% rgcGLM model: The spikes are computed using the recursive influence of
+% the post-spike and coupling filters between the nonlinear responses of
+% other cells. These computations are carried in irComputeSpikes out using
+% code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
+% Simoncelli, Nature, 2008, licensed for modification, which can be found
+% at
 %
 %            http://pillowlab.princeton.edu/code_GLM.html
 %
@@ -67,9 +67,14 @@ p.addRequired('bp',vFunc);
 
 % We can use multiple bipolar trials as input
 p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
+p.addParameter('bipolarScale',  50, @isnumeric);
+p.addParameter('bipolarContrast',  1, @isnumeric);
 
 p.parse(rgcL,bp,varargin{:});
+bipolarScale = p.Results.bipolarScale;
+bipolarContrast = p.Results.bipolarContrast;
 
+%%
 bipolarTrials = p.Results.bipolarTrials;
 nTrials = 1;
 if ~isempty(bipolarTrials) 
@@ -89,28 +94,30 @@ for iTrial = 1:nTrials
         % Get the bipolar input data, handle bp mosaic and nTrials cases
         if length(bp) == 1
             if ~isempty(bipolarTrials)
-                stim   = squeeze(bipolarTrials(iTrial,:,:,:));
+                input   = squeeze(bipolarTrials(iTrial,:,:,:));
             else
-                stim   = bp.get('response');
+                input   = bp.get('response');
             end
         else
             if ~isempty(bipolarTrials)
-                stim   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
+                input   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
             else
-                stim   = bp{rgcType}.get('response');
+                input   = bp{rgcType}.get('response');
             end
         end
         
-        % Removes the mean and uses a contrast (or scaled contrast) as
+        %% Removes the mean and uses a contrast 
+        % This is a normalization on the bipolar current.
+        % It sc
         % the linear input.  Let's justify or explain or something.
-        stim = ieContrast(stim);
+        input = ieContrast(input,'maxC',bipolarContrast);
+        
         % vcNewGraphWin; ieMovie(stim);
-
         % foo = zeros(10,11,size(stim,3));
         % for ii=1:size(stim,3), foo(:,:,ii) = imresize(stim(:,:,ii),[10,11]); end
         % ieMovie(foo);
         
-        % Set the rgc impulse response to an impulse 
+        %% Set the rgc impulse response to an impulse 
         % When we feed a bipolar object into the inner retina, we don't
         % need to do temporal convolution. We have the tCenter and
         % tSurround properties for the rgcMosaic, so we set them to an
@@ -119,12 +126,12 @@ for iTrial = 1:nTrials
         rgcL.mosaic{rgcType}=rgcL.mosaic{rgcType}.set('tCenter all', 1);
         rgcL.mosaic{rgcType}=rgcL.mosaic{rgcType}.set('tSurround all',1);
         
-        % We use a separable space-time receptive field.  This allows
-        % us to compute for space first and then time. Space. 
-        [respC, respS] = rgcSpaceDot(rgcL.mosaic{rgcType}, stim);
+        % We use a separable space-time receptive field that computes for
+        % space here.  We will implement temporal response later.
+        [respC, respS] = rgcSpaceDot(rgcL.mosaic{rgcType}, input);
         % vcNewGraphWin; ieMovie(respC);
         
-        % Convolve with the temporal impulse response
+        %% Convolve with the temporal impulse response
         % If the temporal IR is an impulse, we don't need to do the
         % temporal convolution.  I'm leaving this here as a reminder that
         % we need to do this if we run any of EJ's original GLM models
@@ -135,28 +142,19 @@ for iTrial = 1:nTrials
         % end
         % ieMovie(respC - respS);
         
-        % PROGRAMMING TODO:
-        % Scale magnitude for response to bipolar output:
-        % The magnitudes of the linear RFs are set according to a
-        % conversion of RGB values 0-255 to a spike rate with an average of
-        % 10-20 Hz. Since we are working with bipolar currents, we need to
-        % scale our linear responses accordingly. An informal observation
-        % of bipolar current outputs are on the scale of 0-5, so we will
-        % scale the linear output by 255/5 = 50;
-        bipolarScalingFactor = 50;        
-        
-        % Deal with multiple trial issues
-        if ~isempty(bipolarTrials)                
-                if iTrial == 1
-                    nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
-                end
-                nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScalingFactor*(respC - respS);
+
+        %% Deal with multiple trial issues
+        if ~isempty(bipolarTrials)
+            if iTrial == 1
+                nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
+            end
+            nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScale*(respC - respS);
         end
         
         % Store the last trial
         if iTrial == nTrials
             % Store the linear response
-            rgcL.mosaic{rgcType} = mosaicSet(rgcL.mosaic{rgcType},'response linear', bipolarScalingFactor*(respC - respS));
+            rgcL.mosaic{rgcType} = mosaicSet(rgcL.mosaic{rgcType},'response linear', bipolarScale*(respC - respS));
             % rgcL.mosaic{rgcType}.window;
         end
     end

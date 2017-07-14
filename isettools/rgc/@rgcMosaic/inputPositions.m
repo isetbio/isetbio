@@ -35,37 +35,30 @@ function [inputRow, inputCol] = inputPositions(rgcMosaic,row,col,bipolarsPerMicr
 %
 % 5/2016 JRG (c) ISETBIO Team
 
-% The length of the inputRow and inputCol has to end up being the same as
-% the size of the receptive field row and col
+% The length of the inputRow and inputCol has to be the same as the size of
+% the receptive field row and col
 
-% The RGC center location with respect to the input (bipolar) sampling grid
+% The RGC center location is specified in microns.  We multiply this value
+% with the number of bipolars per micron so that we know the center with
+% respect to the input (bipolar) sampling grid
 rgcCenter = bipolarsPerMicron .* rgcMosaic.cellLocation{row,col};
 
-% Get midpoint of RF by taking half of the col size
-% We might want to start using continuous functions that doing everything
-% with gridded sample.
-sRFMidPointRow = (1/2)*size(rgcMosaic.sRFcenter{1,1},1);
+% The sRFcenter{} is the set of weights that will be applied to the input
+% layer.  The positions of the weights are in the sample coordinates of the
+% input. We calculate the midpoint of RF by taking half of the row size.
+sRFMidPointRow = (1/2)*size(rgcMosaic.sRFcenter{row,col},1);
 
-% The region where take the input for this cell
-%
-% rgcCenter indicates position of RGC on the bipolar samples. The row coord
-% of the input is the RGC center minus the midpoint size of the RF
-% midpoint.
+% The row and samples where read the input for this cell
 rowStart = (rgcCenter(1) - sRFMidPointRow);
 rowEnd   = (rgcCenter(1) + sRFMidPointRow);
 
-% Get midpoint of RF by taking half of the row size
-sRFMidPointCol = (1/2)*size(rgcMosaic.sRFcenter{1,1},2);
-
-% stimCenterCoords indicates position of RGC on stimulus image
-% The first x coord of the stimulus of interest is the RGC center minus
-% the midpoint size of the RF.
+% Repeat for the column dimension.
+sRFMidPointCol = (1/2)*size(rgcMosaic.sRFcenter{row,col},2);
 colStart = (rgcCenter(2) - sRFMidPointCol);
 colEnd   = (rgcCenter(2) + sRFMidPointCol);
 
-% The offset is the distance in bipolar samples to the edge position.  In
-% Matlab notation the edge positions are 1 to max of the size.  The offset
-% puts the return row,col values in this range.
+% The offset parameter is the distance in bipolar samples to the edge
+% of the input. 
 offset = bipolarsPerMicron .* rgcMosaic.cellLocation{1,1};
 % offset = floor(offset);
 
@@ -76,31 +69,28 @@ offset = bipolarsPerMicron .* rgcMosaic.cellLocation{1,1};
 % Add the eps0 offset to each position and apply ceil and floor to ensure
 % inputRow and inputCol are equal to size(rgcMosaic.sRFcenter{row,col})
 eps0 = .0001;
-inputRow =  ceil(rowStart - offset(1)+eps0):floor((rowEnd) - offset(1));
-inputCol =  ceil(colStart - offset(2)+eps0):floor((colEnd) - offset(2));
+inputRow =  ceil(rowStart - offset(1) + eps0):floor((rowEnd) - offset(1));
+inputCol =  ceil(colStart - offset(2) + eps0):floor((colEnd) - offset(2));
 
-% Now, how do we check and what do we do to make sure that the inputRow/Col
-% match the size of the receptive field.
-% Create conditional breakpoint with this condition:
-% (length(inputRow)~=size(rgcMosaic.sRFcenter{row,col},1)) | (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},1))
+% inputRow =  ceil(rowStart - offset(1)):floor((rowEnd) - offset(1));
+% inputCol =  ceil(colStart - offset(2)):floor((colEnd) - offset(2));
+
+% Check to make sure that the inputRow/Col match the size of the receptive
+% field. If we never get this error, then we will delete the check.
+if (length(inputRow) ~= size(rgcMosaic.sRFcenter{row,col},1)) || ...
+        (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},1))
+    error('Dimension mismatch of input and rf size');
+end
 
 %% Checking stuff
 
 % We never end up here.
-if length(inputRow)>size(rgcMosaic.sRFcenter{row,col},1) || length(inputCol)>size(rgcMosaic.sRFcenter{row,col},2) 
-    inputRow = inputRow(1:size(rgcMosaic.sRFcenter{row,col},1));
-    inputCol = inputCol(1:size(rgcMosaic.sRFcenter{row,col},2)); 
-    1010
-end
+% if length(inputRow)>size(rgcMosaic.sRFcenter{row,col},1) || length(inputCol)>size(rgcMosaic.sRFcenter{row,col},2) 
+%     inputRow = inputRow(1:size(rgcMosaic.sRFcenter{row,col},1));
+%     inputCol = inputCol(1:size(rgcMosaic.sRFcenter{row,col},2)); 
+%     1010
+% end
 % if length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2); stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); end;
 
-%% Calculate the offset parameter
-
-% if nargout == 3
-%     % An offset is sometimes needed because RGC mosaics may be defined with
-%     % their center coordinates not at (0,0).
-%     offset(1) = ceil(rgcMosaic.cellLocation{1,1}(1));
-%     offset(2) = ceil(rgcMosaic.cellLocation{1,1}(2));
-% end
 
 end

@@ -90,7 +90,7 @@ mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 mosaicParams.type  = cellType;
 mosaicParams.model = 'GLM';
 
-diameters = [5 5 3 3 3];  % In microns.
+diameters = [5 5 3 3 10];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','smallbistratified'};
 for ii = 1:length(cellType)
@@ -106,8 +106,10 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Number of trials refers to number of repeats of the same stimulus
 disp('Computing rgc responses');
-[rgcL, nTrialsSpikes] = rgcL.compute(bpMosaic,'bipolarTrials',bpNTrials);
-
+[rgcL, nTrialsSpikes] = rgcL.compute(bpMosaic,...
+    'bipolarTrials',bpNTrials,...
+    'bipolarScale',200,...
+    'bipolarContrast',1);
 
 %% Show the layer
 

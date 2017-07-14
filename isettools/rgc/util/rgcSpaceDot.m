@@ -30,8 +30,6 @@ function [respCenter, respSurround] = rgcSpaceDot(mosaic, input)
 %  respCenter:     Response over time from the center
 %  respSurround:   Response over time from the surround
 %
-% See below for PROGRAMMING TODO
-%
 % JRG,BW ISETBIO TEAM, 2015
 
 %% init parameters
@@ -88,37 +86,6 @@ for ii = 1 : nCells(1)
         % Put the RF center as a row and multiply it by the XT matrix
         respCenter(ii,jj,:)   = rfC' * inputValues;
         respSurround(ii,jj,:) = rfS' * inputValues;
-        
-        % PROGRAMMING TODO
-        % We have to handle edge cases.  Let's see if we can improve on
-        % this particular 'find' function. For example, ...
-        % 
-        % gz = (inputRow > 1) && (inputRow < mx)
-        %
-        % Find the RF location indices, gz, that are within the size of
-        % stimulus
-        %         gz = find(inputRow - offset(1) >= 1 & ...
-        %             inputCol - offset(2) >= 1 & ...
-        %             inputRow - offset(1) <= size(input,1) & ...
-        %             inputCol - offset(2) <= size(input,2) );
-        %
-        %         % Extract the part of the input that will interact with the
-        %         % RF.  We take this part of the input for all points in
-        %         % time.
-        %         inputValues = input(floor(inputRow(gz)-offset(1)), ...
-        %             floor(inputCol(gz)-offset(2)), :);
-        %         % Visualize the selected portion of the stimulus
-        %         % vcNewGraphWin; ieMovie(stimV);
-        %
-        %         % Compute and store the inner product of the rf weights and
-        %         % the stimulus computed across all of the time points.
-        %         rfC   = RGB2XWFormat(spRFcenter(gz,gz));
-        %         rfS   = RGB2XWFormat(spRFsurround(gz,gz));
-        %         inputValues = RGB2XWFormat(inputValues);
-        %
-        %         % What is this 40 doing here? PROGRAMMING TODO
-        %         respCenter(ii,jj,:)   = 40*rfC'* inputValues;
-        %         respSurround(ii,jj,:) = 40*rfS'* inputValues;
         
     end
 end

@@ -1,39 +1,47 @@
-function contrast = ieContrast(sigIn,varargin)
-% Convert a signal to a contrast
+function contrast = ieContrast(input,varargin)
+% Convert a signal to a unit contrast
 %
-%    contrast = ieContrast(sig)
+%    contrast = ieContrast(input,varargin)
+%
+% Input:
+%   input - Usually a current signal input to a class
+%
+% Input parameters
+%   maxC - max contrast, a number between 0 and 1
+%
+% Output:
+%   contrast - The input converted to a contrast
 %
 % The signal mean is subtracted and the signal is scaled so that the entire
 % range is 1 unit.  
 %
 % N.B. If the data are constant, then the return is all zero contrast.
 %
-% See also irComputeLinearSTSeparable.m
+% Example
+%   ieContrast(input,'maxC',0.5)
+%
+% See also: computeSeparable.m
 % 
 % JRG/BW ISETBIO Team, 2016
 
 %% Parse
 p = inputParser;
-p.addRequired('sigIn',@isnumeric);
-p.parse(sigIn,varargin{:});
-sigIn = p.Results.sigIn;
+p.addRequired('input',@isnumeric);
+p.addParameter('maxC',1,@(x)((x >= 0) && ( x <= 1)));
 
-sizeSig = size(sigIn);
-sigSS = sigIn;
+p.parse(input,varargin{:});
+input = p.Results.input;
+maxC = p.Results.maxC;
 
-% % Only compute denominator for contrast using steady state signal
-% sigSS = sigIn(:,:,end-round(.5*sizeSig(3)):end);
+%% Find the range and mean, knock yourself out
 
-%%
-range = max(sigSS(:)) - min(sigSS(:));
-sig = sigIn;
+range = max(input(:)) - min(input(:));
 if range == 0
     warning('Constant data, hence zero contrast.');
-    contrast = zeros(size(sig));
+    contrast = zeros(size(input));
 else
-    mn = mean(sig(:));
-    contrast = (sig - mn)/range;
+    mn = mean(input(:));
+    contrast = maxC*(input - mn)/range;
 end
 
 end
-
