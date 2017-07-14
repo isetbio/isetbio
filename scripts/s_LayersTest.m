@@ -1,4 +1,4 @@
-%% s_Layers.m
+%% s_LayersTest.m
 %
 % Testing the new layer architecture.
 %
@@ -125,10 +125,10 @@ rgcL.window;
 
 % I wish we could have two windows up at the same time.  Read the code to
 % see why it is always the same window.
-rgcL.mosaic{1}.window;
-%%
-rgcL.mosaic{3}.window;
-%%
-rgcL.mosaic{5}.window;  % This seems off to BW, slanted line???
+% rgcL.mosaic{1}.window;
+% %%
+% rgcL.mosaic{3}.window;
+% %%
+% rgcL.mosaic{5}.window;  % This seems off to BW, slanted line???
 
 %%

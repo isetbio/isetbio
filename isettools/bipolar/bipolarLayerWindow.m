@@ -288,7 +288,7 @@ switch(str)
         
     case 'Bipolar movie'
         ieInWindowMessage('Showing movie',handles);
-        gdata.bipolar.plot('movieResponse','gamma',g,'nMosaic',nMosaic);
+        gdata.bipolar.plot('Response movie','gamma',g,'nMosaic',nMosaic);
         ieInWindowMessage('',handles);
 
     otherwise
