@@ -80,3 +80,39 @@ rdt.credentialsDialog();  % wandell, Jxxx4XX
 rdt.crp('/resources/data/cmosaics')
 version1 = '1';
 rdt.publishArtifact(coneMosaicFile, 'version', version1);
+
+%% Make a cone mosaic of a face image
+
+scene = sceneFromFile;
+scene = sceneSet(scene,'fov',2);
+scene = sceneAdjustIlluminant(scene,'D65');
+vcAddObject(scene); sceneWindow;
+
+oi = oiCreate;
+oi = oiCompute(oi,scene);
+vcAddObject(oi); oiWindow;
+
+cMosaic = coneMosaic;
+cMosaic.setSizeToFOV(sceneGet(scene,'fov'));
+emPaths  = cMosaic.emGenSequence(60);
+
+% Better way to compute, like above.  Does it require multiple trials?
+cMosaic.compute(oi, 'emPaths', emPaths);
+cMosaic.computeCurrent;
+alignedC = cMosaic.current;
+
+cMosaic.window;
+faceFile = fullfile(isetbioRootPath,'local','coneMosaicDataF.mat');
+save(faceFile,'cMosaic','alignedC');
+
+rdt = RdtClient('isetbio');
+rdt.credentialsDialog();  % wandell, Jxxx4XX
+
+% You can change other places.
+rdt.crp('/resources/data/cmosaics')
+rdt.listArtifacts('recurseive',true,'print',true);
+version1 = '1';
+rdt.publishArtifact(faceFile, 'version', version1);
+
+%%
+

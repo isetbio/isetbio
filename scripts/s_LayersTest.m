@@ -16,6 +16,7 @@ rdt.crp('/resources/data/cmosaics');
 % coneMosaicDataFixedEye;
 % vaConeMosaic
 % coneMosaicDataScones
+% coneMosaicDataF
 data      = rdt.readArtifact('vaConeMosaic', 'type', 'mat');
 cMosaic   = data.cMosaic;
 alignedC  = data.alignedC;

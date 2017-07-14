@@ -172,7 +172,7 @@ if currentFlag
         disp('Absorptions are a single frame.  No current to calculate.')        
         return;
     else
-        [obj.current, interpFilters, meanCur] = obj.os.osCompute(cMosaic);
+        [obj.current, interpFilters, meanCur] = obj.os.osCompute(obj);
     end
 end
 
