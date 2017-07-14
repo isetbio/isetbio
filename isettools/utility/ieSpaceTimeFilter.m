@@ -4,7 +4,9 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 %    resp = ieSpaceTimeFilter(sig,kernel,varargin)
 %
 % We use this to calculate either just the spatial pooling or
-% spatial-temporal pooling for a signal.  
+% spatial-temporal pooling for a signal.  If the kernel is 2D, say the
+% spatial receptive field, the the calculation is space-only.  If the
+% kernel is 3D, then the calculation is space-time.
 %
 % For example, motion analysis can be a kernel that is slanted in
 % space-time. Pure spatial is a kernel that is 2D.
@@ -28,7 +30,7 @@ p.addParameter('pad', 'same', @ischar);
 p.parse(sig, kernel, varargin{:});
 pad = p.Results.pad;
 
-%% Apply convn using the 'same' flag 
+%% Apply convn typically using the pad='same' flag 
 resp = convn(sig, kernel, pad);
 
 end

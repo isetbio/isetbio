@@ -7,6 +7,10 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
 % photocurrent into bipolar current that is delivered to the retinal
 % ganglion cells.
 %
+% This could be transformed to be like the rgc computation where each
+% cell has its own spatial RF.  Not there yet, just using convolutions.
+%
+%
 % Required parameters:
 %   obj:       a bipolar object
 %   cmosaic:   coneMosaic (current must be computed)
@@ -29,6 +33,7 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
 %  or includes a rectification.  This is controlled by the obj.rectifyType
 %  parameter. The rectification happens at the end of the function, after
 %  both spatial and temporal filtering.
+%  *** This feature has not been tested or much used - on our list
 %  REFERENCE: Meister option
 %
 %  The spatial filtering is followed by a temporal filter that is selected
@@ -96,10 +101,10 @@ for iTrial = 1:nTrials
     %
     % Citations:  See bipolar.m.  Wiki page <>
     
-    % TODO:  We should set this up as a structure that we use to implement the
-    % anatomical rules.  Let's send in a struct that defines the anatomical
-    % rules (e.g., aRules) with slots that implement the kind of stuff listed
-    % above.
+    % TODO:  We should set this up as a structure that we use to implement
+    % the anatomical rules.  Let's send in a struct that defines the
+    % anatomical rules (e.g., anatomyRules) with slots that implement the
+    % kind of stuff listed above.
     %
     switch obj.cellType
         case{'offdiffuse','ondiffuse','onmidget'}
@@ -117,7 +122,7 @@ for iTrial = 1:nTrials
             
             minval = min(osSig(:));
             osSigCenter(S(:),:)   = minval*ones(size(osSigCenter(S,:)));
-            osSigSurround(S(:),:) =  minval*ones(size(osSigCenter(S,:)));
+            osSigSurround(S(:),:) = minval*ones(size(osSigCenter(S,:)));
             
         case{'offmidget'}
             % Keep S cone input for off Midget but only weight by 0.25
@@ -166,53 +171,69 @@ for iTrial = 1:nTrials
     % cmosaic.window;
     % vcNewGraphWin; ieMovie(osSigCenter);
     
-    %% Spatial convolution
+    %% Spatial filtering 
     
-    % Full spatial convolution for every frame
+    % Full spatial convolution for every frame.  The kernel is only 2D
+    % which is why we have a space-only convolution.
     bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
     bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
     % vcNewGraphWin; ieMovie(bipolarCenter);
     % vcNewGraphWin; ieMovie(bipolarSurround);
 
-    % Subsample in space to the resolution for this bipolar mosaic.
-    % The spacing is equal to the number of pixels that make up the center of
-    % the spatial receptive field.  This could be a settable parameter for
-    % others to experiment with, too.  We need a reference.
+    % The bipolar cells might not be abutting, in some model.  We have
+    % never used that condition - they always fully tile.  So spacing is
+    % always 1 and we haven't subsampled.  This is here because, well, we
+    % might some day. (BW/JRG).
     spacing = size(obj.sRFcenter,1);
-    bipolarCenter   = ieImageSubsample(bipolarCenter, spacing);
-    bipolarSurround = ieImageSubsample(bipolarSurround, spacing);
+    if spacing ~= 1
+        % Subsample in space to the resolution for this bipolar mosaic. The
+        % spacing is equal to the number of pixels that make up the center
+        % of the spatial receptive field.  This could be a settable
+        % parameter for others to experiment with, too.  We need a
+        % reference.
+        bipolarCenter   = ieImageSubsample(bipolarCenter, spacing);
+        bipolarSurround = ieImageSubsample(bipolarSurround, spacing);
+    end
     
     %% Temporal filtering
     
-    % Reshape for temporal convolution
+    % Reshape the data for the temporal convolution
     [bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
     bipolarSurround = RGB2XWFormat(bipolarSurround);
     
-    %% New method
-    
-    % 
+    % This is the impulse response filter
     bipolarFilt = bipolarFilter(obj, cmosaic);
     
-    %% Compute the temporal response of the bipolar mosaic
-    %
-    % Deal with rectification, next. Need a plan
+    % If we wanted to rectify the signal, we could do it here
     %
     % obj.rectify(input,'rType',{hw,fw,none})
     % obj.responseCenter   = obj.rectificationCenter(bipolarOutputLinearCenter);
     % obj.responseSurround = obj.rectificationSurround(bipolarOutputLinearSurround);
     %
     
-    % tmp = conv2(bipolarFilt,bipolarCenter);
-    tmpCenter = conv2(bipolarFilt,obj.rectificationCenter(bipolarCenter-(min(bipolarCenter')'*ones(1,size(bipolarCenter,2)))));
+    %% Rectification and temporal convolution issues
+    
+    % Rectification - not tested or analyzed 
+    
+    % We have in the past shifted the bipolar response levels to a minimum
+    % of zero.  That is arbitrary and produces higher contrast signals.  It
+    % might be OK because we have no real units on the bipolar current.
+    % Or, maybe we should leave them alone.  Anyway, here we are shifting
+    % them to a min of zero.
+    
+    % bipolarCenter = obj.rectificationCenter(bipolarCenter - (min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
+    bipolarCenter = bipolarCenter - (min(bipolarCenter')'*ones(1,size(bipolarCenter,2)));
+    tmpCenter = conv2(bipolarFilt,bipolarCenter);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter,row, col); ieMovie(tmp);
     
-    
-    % tmp = conv2(bipolarFilt,bipolarSurround);
-    tmpSurround = conv2(bipolarFilt,obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)))));
+    % Rectification
+    % Not fully tested or analyzed - 
+    % bipolarSurround = obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
+    bipolarSurround = bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)));
+    tmpSurround = conv2(bipolarFilt,bipolarSurround);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpSurround,row, col); ieMovie(tmp);
 
     if ~isempty(coneTrials)
-        
         if iTrial == 1
             nTrialsCenter = zeros([nTrials,size(XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col))]);
             nTrialsSurround = zeros([nTrials,size(XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col))]);
@@ -224,12 +245,12 @@ for iTrial = 1:nTrials
         %     obj.responseSurround(iTrial,:,:,:) = tmpTrialSurround;
         
     else
-        nTrialsCenter = 0;
+        nTrialsCenter   = 0;
         nTrialsSurround = 0;
     end
     
     if iTrial == nTrials
-        obj.responseCenter = XW2RGBFormat(tmpCenter(:,1:size(cmosaic.current,3)),row,col);
+        obj.responseCenter   = XW2RGBFormat(tmpCenter(:,1:size(cmosaic.current,3)),row,col);
         obj.responseSurround = XW2RGBFormat(tmpSurround(:,1:size(cmosaic.current,3)),row,col);
     end
     
