@@ -27,18 +27,18 @@ function val = mosaicGet(obj, param, varargin)
 %    'tCenter'          - center temporal impulse response
 %    'tSurround'        - surround temopral impulse response
 %    'linearResponse'   - linear response of all cells
-%    'dt'
+%    'dt'               - time step (microsec, why?)
 %    'mosaic size'      - Row/col for cells
 %    'last spike time'
 %    'spikes'
+%    'spike times'
 %    'psth'
 %
 % Examples:
 %   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
 %   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
 % 
-% 9/2015 JRG (c) isetbio team
-% 7/2016 JRG updated
+% 9/2015 JRG, BW (c) isetbio team
  
 %% Parse
 p = inputParser; 
@@ -57,9 +57,8 @@ allowFields = {...
         'tsurround',...
         'tonicdrive',...
         'responselinear'...
-        'responseSpikes',...
-        'spikeTimes',...
-        'spikesDownSampled',...
+        'spiketimes',...
+        'spikesdownsampled',...
         'mosaicsize', ...
         'dt', ...
         'lastspiketime', ...
@@ -167,7 +166,7 @@ switch ieParamFormat(param)
             end
         end
         
-    case{'responsespikes','spiketimes'}
+    case{'spiketimes'}
         % Get the spike times in an array
         
         if ~isfield(obj,'responseSpikes')
@@ -196,14 +195,10 @@ switch ieParamFormat(param)
         end        
         
     case {'spikes'}
-        % What is the difference between this and responseSpikes?
-        % cellCtr = 0;
-        % @JRG - Needs to be updated
-%         if ~isfield(obj,'responseSpikes')
-%             return;
-%         end
+        % Returns 
         
-        dt = obj.dt;
+        dt = obj.dt;  % Bin time in microseconds
+        
         maxTrials = obj.get('number trials');
         nCells    = obj.get('mosaic size');
         lastSpike = obj.get('last spike time');
@@ -213,29 +208,33 @@ switch ieParamFormat(param)
         for xcell = 1:nCells(1)
             for ycell = 1:nCells(2)
                 clear spikeTimes spikesCell
-                % cellCtr = cellCtr+1;
                 
                 % Convert the time stamps in response spikes to a vector
-                % that has 0's and 1's at different times.  The number
-                % of times is 1 ms divided by dt, which appears to be 0.01
-                % milliseconds.  So, if there are, say, 500 ms in the
-                % stimulus there are 50,000 indices in y
-                % We need to speed this up and simplify if possible.
+                % that has 0's and 1's at different times.  The number of
+                % sample times is 1 ms divided by dt, which appears to be
+                % 0.1 (100 usec) or 0.01 milliseconds (10 usec)
+                %
+                % So, if there are, say, 500 ms in the stimulus there are
+                % 50,000 indices in spikeTimes. 
                 %
                 for trial = 1:maxTrials
+                    % These times are every dt*msec step.  Typically dt is
+                    % 0.1 or 0.01.
                     spikeTimes =  obj.responseSpikes{xcell,ycell,trial};
-                    if strcmpi(class(obj),'rgcphys')
-                        % For the rgc physiology in EJ's experiments, the
-                        % time base is 10 usec, not 1 ms
-                        spikeTimes = .01*spikeTimes;
-                    end
-                    % Vector on a time base of dt with a 0 or 1 indicating
-                    % a spike or not.
+                    %   if strcmpi(class(obj),'rgcphys')
+                    %       % For the rgc physiology in EJ's experiments, the
+                    %       % time base is 10 usec, not 1 ms
+                    %      spikeTimes = .01*spikeTimes;
+                    %   end
+                    
+                    % This is a vector of 0s and 1s on a time base of
+                    % milliseconds.
                     spikesCell(trial,ceil(spikeTimes./dt)) = 1;
                 end
                 
                 if size(spikesCell,1) > 1
                     % More than one trial, sum across trials
+                    disp('Surprised to be rgcMosaic.mosaicGet in this case')
                     spikes(xcell,ycell,1:length(spikesCell)) = sum(spikesCell);
                 else
                     spikes(xcell,ycell,1:length(spikesCell)) = spikesCell;
@@ -243,7 +242,8 @@ switch ieParamFormat(param)
                 
             end
         end
-        val = spikes; clear spikes spikesCell;
+        val = spikes; 
+        clear spikes spikesCell;
         
     case{'spikesdownsampled'}
         % Get the spikes in an array, but downsampled by dt

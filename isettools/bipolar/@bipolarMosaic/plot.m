@@ -1,21 +1,32 @@
 function hdl = plot(obj, pType, varargin)
-% Plot the values from the bipolar object
+% Plot data from a bipolar mosaic object
 % 
-%    hdl = bp.plot(parameter)
+%    hdl = bp.plot(plotType, varargin)
 %
 % Plot types
 %   response center
 %   response surround
-%   response
-%   movie response 
-%   Time series
-% Optional parameters
-%   gamma for image display
+%   response image
+%   response movie
+%   response time series
+%   spatial rf
+%   mosaic
+%
+% Optional parameters-value pairs
+%   gamma - controls image display
+%   pos   - position
 %
 % Examples:
+%   (run s_LayersTest).
+%   bpMosaics = bpL.mosaic;
+%   bpMosaics{1}.plot('spatial rf')
+%   bpMosaics{1}.plot('mosaic');
+%   bpMosaics{1}.plot('response center');
+%   bpMosaics{1}.plot('response time series','pos',[5 5]);
+%   bpMosaics{1}.plot('response image');
+%   bpMosaics{1}.plot('response movie');
 %
-% 
-% 5/2016 JRG (c) isetbio team
+% 5/2016 JRG,BW (c) isetbio team
 
 %% Parse inputs
 
@@ -27,9 +38,9 @@ p.KeepUnmatched = true;
 % Make key properties that can be set required arguments, and require
 % values along with key names.
 allowableFields = {...
-    'responsetimeseries','responseCenter','responseSurround',...
+    'responsetimeseries','responsecenter','responsesurround',...
     'movieresponse','responseimage', ...
-    'spatialrf','mosaic'};
+    'spatialrf','mosaic','responsemovie'};
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 p.addParameter('gamma',1,@isscalar);
@@ -37,8 +48,7 @@ p.addParameter('pos',[],@isvector);
 
 % Parse pType
 p.parse(pType,varargin{:}); 
-
-
+% Parameters are pulled out in the case statements, below.
 
 %% Create window
 hdl = gcf;%vcNewGraphWin([],'upperLeftBig');
@@ -52,17 +62,22 @@ sz = size(obj.responseCenter);
 switch ieParamFormat(pType)
     case 'spatialrf'
         % bp.plot('spatial rf')
+        % Not a good idea yet, because the rf is usually an impulse these
+        % days.  May change in the future.
         srf = obj.sRFcenter - obj.sRFsurround;
         sz = size(srf); 
+        if isequal(sz,[1, 1])
+            disp('spatial rf is an impulse');
+            return;
+        end
+        
         x = (1:sz(2)) - mean(1:sz(2));    
         y = (1:sz(1)) - mean(1:sz(1)); 
         surf(x,y,srf); colormap(parula);
         xlabel('Cone position re: center'); zlabel('Responsivity')
+        
     case {'mosaic'}
         % bp.plot('mosaic') - Shows RF array
-        % At some point we will allow the sRF parameters to vary across the
-        % array.
-        % See irPlot.m for an example.
         % Get contour lines for mosaic RFs
                 
         % Oddly, the center is (row,col)
@@ -81,40 +96,6 @@ switch ieParamFormat(pType)
             'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         ylabel(sprintf('Distance (\\mum)'),'fontsize',14);
-        
-        %
-        %         spatialRFcontours = plotContours(obj.mosaic{cellTypeInd}, obj.size, obj.col);
-        %         figure(hf);
-        %         % Subplot if more than one mosaic is being plotted
-        %         if length(mosaicIndices)>1; subplot(ceil(length(mosaicIndices)/2),2,cellTypeInd); end;
-        %
-        %         nCells = obj.mosaic{cellTypeInd}.get('mosaic size');
-        %
-        %         % Convert RGC position to distance
-        %         patchSizeX = obj.size;
-        %         numberCellsX = obj.col;
-        %         umPerCell = 1e0*patchSizeX/numberCellsX;
-        %
-        %         cmap = parula(16);
-        %         for xcell = 1:nCells(1)
-        %             for ycell = 1:nCells(2)
-        %                 hold on;
-        %                 % center
-        %                 plot(umPerCell*spatialRFcontours{xcell,ycell,1}(1,2:end),...
-        %                     umPerCell*spatialRFcontours{xcell,ycell,1}(2,2:end),...
-        %                     'color','r','linewidth',3);%cmap(cellTypeInd,:));
-        %                 hold on;
-        %                 % surround
-        %                 plot(umPerCell*spatialRFcontours{xcell,ycell,2}(1,2:end),...
-        %                     umPerCell*spatialRFcontours{xcell,ycell,2}(2,2:end),...
-        %                     'color','m','linewidth',3);%cmap(cellTypeInd+8,:));
-        %             end
-        %         end
-        %         axis equal
-        %         title(sprintf('%s',obj.mosaic{cellTypeInd}.cellType),'fontsize',14);
-        %         xlabel(sprintf('Distance (m)'),'fontsize',14);
-        %         ylabel(sprintf('Distance (m)'),'fontsize',14);
-            
             
     case{'responsecenter'}
         % bp.plot('response center')
@@ -180,10 +161,10 @@ switch ieParamFormat(pType)
         end
         
         imagesc(samples,samples,img);
-        axis image; colormap(gray(256));
+        axis image; colormap(gray(256)); title('Current (a.u.)');
         xlabel(sprintf('Cell position (\\mum)'));
         
-    case{'responsemovie','movieresponse'}
+    case{'responsemovie'}
         % Pass the varargin along
         if ~isempty(varargin) && length(varargin) == 1
             % Params are coded in a single struct

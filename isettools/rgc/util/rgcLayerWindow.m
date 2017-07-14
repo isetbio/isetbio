@@ -22,7 +22,7 @@ function varargout = rgcLayerWindow(varargin)
 
 % Edit the above text to modify the response to help rgcLayerWindow
 
-% Last Modified by GUIDE v2.5 11-Jul-2017 21:37:00
+% Last Modified by GUIDE v2.5 13-Jul-2017 21:58:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -90,6 +90,7 @@ set(hObject, 'Renderer', 'OpenGL')
 
 handles.linearMov = [];
 handles.psthMov = [];
+
 end
 
 % --- Outputs from this function are returned to the command line.
@@ -174,30 +175,12 @@ end
 % --------------------------------------------------------------------
 function menuPlotPSTH_Callback(hObject, eventdata, handles)
 % Plot | PSTH
-%
-% hObject    handle to menuPlotPSTH (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% disp('Plot | PSTH')
     
-% TURN THIS INTO A CALL TO RGC MOSAIC PLOT!!
-rgcMosaic = handles.rgcMosaic;
-vcNewGraphWin;
+nMosaic = get(handles.listMosaics,'Value');
+rgcMosaic = handles.rgcLayer.mosaic{nMosaic}; 
 
 % Try to force this into a new window with a flag.
 rgcMosaic.plot('psth');
-
-% Plots the psth of all the cells combined.  Kind of weird.
-% rgcMosaic = handles.rgcMosaic;
-% timeStep  = rgcMosaic.dt;
-% psth      = rgcMosaic.get('psth');
-% resp      = RGB2XWFormat(psth);    % Each cell is in a row
-% 
-% vcNewGraphWin;
-% plot(timeStep*(1:size(resp,2)),resp');
-% grid on;
-% xlabel('Time (sec)');
-% ylabel(sprintf('Spikes per %d ms',timeStep*1e3));
 
 end
 
@@ -223,7 +206,7 @@ function menuFileSave_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileSave (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp('Save')
+disp('Save NYI')
 end
 
 % --------------------------------------------------------------------
@@ -296,14 +279,11 @@ switch(str)
         rgcL.mosaic{nMosaic}.plot('spike mean image','nMosaic',nMosaic);
     case 'PSTH mean (image)'
         rgcL.mosaic{nMosaic}.plot('psth mean image');
-        %     case 'PSTH plot'
-        %         gdata.rgcMosaic.plot('psth');
     case 'Linear movie'
         rgcL.mosaic{nMosaic}.plot('linear movie');        
     case 'Spike movie'
         rgcL.mosaic{nMosaic}.plot('spike movie');
     case 'PSTH movie'
-        %
         disp('PSTH movie NYI.  Showing spike movie')
         rgcL.mosaic{nMosaic}.plot('spike movie');
     otherwise
@@ -318,7 +298,6 @@ end
 set(gdata.rgcProperties,'string',rgcL.describe);
 
 end
-
 
 % --- Executes on button press in btnPlayPause.
 function btnPlayPause_Callback(hObject, eventdata, handles)
@@ -350,6 +329,3 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 end
-
-
-
