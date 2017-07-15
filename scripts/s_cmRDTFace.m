@@ -31,12 +31,15 @@ cMosaic.window;
 faceFile = fullfile(isetbioRootPath,'local','coneMosaicDataFace.mat');
 save(faceFile,'cMosaic');
 
+% tmpFile = fullfile(isetbioRootPath,'local','tmpFace.mat');
+% save(tmpFile,'cMosaic');
+
 rdt = RdtClient('isetbio');
 rdt.credentialsDialog();  % wandell, Jxxx4XX
 
 % You can change other places.
 rdt.crp('/resources/data/cmosaics')
-rdt.listArtifacts('recurseive',true,'print',true);
+rdt.listArtifacts('recursive',true,'print',true);
 version1 = '1';
 rdt.publishArtifact(faceFile, 'version', version1);
 a = rdt.listArtifacts('print',true);
