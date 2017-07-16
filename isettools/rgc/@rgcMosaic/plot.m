@@ -13,6 +13,7 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %             []            - create plot in new figure
 %             figure handle - an alternative figure
 %             'none'        - don't plot, only generate uData
+%   'gam' - Display gamma parameter (imagesc(x.^gam));
 %
 % Outputs:
 %   uData - Computed user data
@@ -35,9 +36,11 @@ p.KeepUnmatched = true;
 % What about obj?
 p.addRequired('plotType', @isstr);                        % Type of plot
 p.addParameter('hf', obj.figureHandle, @isgraphics);  % figure handle
+p.addParameter('gam',1,@isnumeric);
 
 p.parse(plotType, varargin{:});
-hf = p.Results.hf;
+hf  = p.Results.hf;
+gam = p.Results.gam;
 
 uData = [];
 
@@ -54,7 +57,7 @@ switch ieParamFormat(plotType)
     case 'spikemeanimage'
         % Spike mean image
         g = guidata(hf);
-        axes(g.axisResponse);        
+        axes(g.axisResponse);
         spikes = obj.get('spikes');  % Number of spikes in each ms
         if isempty(spikes)
             disp('No spikes have been computed (responseSpikes missing)');
@@ -63,7 +66,7 @@ switch ieParamFormat(plotType)
         
         img = mean(spikes,3);  % Mean spikes per millisecond
         img = img*1000;        % Mean spikes per second
-        colormap(gray(256)); imagesc(img); axis image;
+        colormap(gray(256)); imagesc(img.^gam); axis image;
         axis off; colorbar; drawnow;
         title('Spikes/sec');
         
@@ -71,8 +74,11 @@ switch ieParamFormat(plotType)
         % Movie of spiking activity
         % Should this work with the mosaic plot of circles?
         psthTest = obj.get('spikes');
+       
         clear vParams; vParams = [];
-        vParams.FrameRate = 30; vParams.show = true; %vParams.step = 2;
+        vParams.gamma     = gam;
+        vParams.FrameRate = 30; 
+        vParams.show      = true; %vParams.step = 2;
         frameSkip = round(1./obj.get('dt'));
         ieMovie(psthTest(:,:,1:frameSkip:end),vParams);
         
@@ -84,22 +90,22 @@ switch ieParamFormat(plotType)
             return;
         end
         
-        clear vParams; 
-        vParams.FrameRate = 30; 
-        vParams.show = true;
-        
+        clear vParams;
+        vParams.FrameRate = 30;
+        vParams.show      = true;
+        vParams.gamma     = gam;
+
         % Should we add controls like the cone mosaic window, or just play
         % it once?
         ieMovie(responseLinear,vParams);
-      
         
     case 'psthmeanimage'
         psth = obj.get('psth');
-        imagesc(mean(psth,3));
+        imagesc(mean(psth,3).^gam);
         axis image; colormap(gray(256)); colorbar;
         set(gca,'xticklabels','','yticklabels','');
         drawnow;
-
+        
     case 'psth'
         % Peri-stimulus time graph for all cells.
         % Kind of a weird plot to make.
@@ -125,7 +131,7 @@ switch ieParamFormat(plotType)
         % Oddly, the center is (row,col)
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
-        ellipseMatrix = obj.ellipseMatrix;        
+        ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
             'radius',sqrt(2)*radius,...
             'ellipseParameters',vertcat(ellipseMatrix{:}),...
@@ -146,11 +152,13 @@ switch ieParamFormat(plotType)
         % Oddly, the center is (row,col)
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
-        ellipseMatrix = obj.ellipseMatrix;        
+        ellipseMatrix = obj.ellipseMatrix;
+        mn = mean(obj.responseLinear(:));  % Mean over all cells at all times
+        linearResponse = (mean(obj.responseLinear,3) - mn) / mn;
         ieShape('ellipse','center',center,...
             'radius',sqrt(2)*radius,...
             'ellipseParameters',vertcat(ellipseMatrix{:}),...
-            'fillArray',obj.responseLinear(:,:,10));
+            'fillArray',linearResponse); %obj.responseLinear(:,:,10)
         
         % Sets the axis limits
         set(gca,...
@@ -158,7 +166,10 @@ switch ieParamFormat(plotType)
             'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         
-    case 'mosaicsurf'        
+        colormap(gray(256)); colorbar; drawnow;
+        title('Linear response contrast re: global mean');
+        
+    case 'mosaicsurf'
         % Plots a sub-sampled set of spatial RF as surface (mesh) plots
         % Should make the skip parameters an selectable parameter
         

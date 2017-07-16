@@ -22,7 +22,7 @@ function varargout = rgcLayerWindow(varargin)
 
 % Edit the above text to modify the response to help rgcLayerWindow
 
-% Last Modified by GUIDE v2.5 13-Jul-2017 21:58:00
+% Last Modified by GUIDE v2.5 15-Jul-2017 21:05:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -251,6 +251,28 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 end
 
+function editGamma_Callback(hObject, eventdata, handles)
+% editGamma box.  Sets display gamma.
+
+% Refresh to update for the new gamma value
+rgcLayerWindowRefresh(handles)
+
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function editGamma_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editGamma (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
 %% Internal functions
 
 function rgcLayerWindowRefresh(handles)
@@ -271,21 +293,27 @@ str = contents{get(gdata.popupResponseSelect,'Value')};
 nMosaic = get(gdata.listMosaics,'Value');
 rgcL = gdata.rgcLayer;
 rgcL.mosaic{nMosaic}.figureHandle = rgcL.figureHandle;
+gam = str2double(get(gdata.editGamma','String'));
 
 switch(str)
     case 'Receptive field mosaic'
-        rgcL.mosaic{nMosaic}.plot('mosaic','nMosaic',nMosaic);
+        rgcL.mosaic{nMosaic}.plot('mosaic fill','gam',gam);
     case 'Spike mean (image)'
-        rgcL.mosaic{nMosaic}.plot('spike mean image','nMosaic',nMosaic);
+        rgcL.mosaic{nMosaic}.plot('spike mean image','gam',gam);
     case 'PSTH mean (image)'
-        rgcL.mosaic{nMosaic}.plot('psth mean image');
+        rgcL.mosaic{nMosaic}.plot('psth mean image','gam',gam);
     case 'Linear movie'
-        rgcL.mosaic{nMosaic}.plot('linear movie');        
+        ieInWindowMessage('Showing movie',handles,[]);
+        rgcL.mosaic{nMosaic}.plot('linear movie','gam',gam); 
+        ieInWindowMessage('',handles,[]);
     case 'Spike movie'
-        rgcL.mosaic{nMosaic}.plot('spike movie');
+        ieInWindowMessage('Showing movie',handles,[]);
+        rgcL.mosaic{nMosaic}.plot('spike movie','gam',gam);
+        ieInWindowMessage('',handles,[]);
     case 'PSTH movie'
-        disp('PSTH movie NYI.  Showing spike movie')
-        rgcL.mosaic{nMosaic}.plot('spike movie');
+        ieInWindowMessage('Showing movie',handles,[]);
+        rgcL.mosaic{nMosaic}.plot('spike movie','gam',gam);
+        ieInWindowMessage('',handles,[]);
     otherwise
         error('Unknown plot type %s\n',str);
 end
@@ -297,35 +325,4 @@ end
 % Text description - implemented in rgcMosaic base class.
 set(gdata.rgcProperties,'string',rgcL.describe);
 
-end
-
-% --- Executes on button press in btnPlayPause.
-function btnPlayPause_Callback(hObject, eventdata, handles)
-% hObject    handle to btnPlayPause (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of btnPlayPause
-end
-
-% --- Executes on slider movement.
-function sliderMovieProgress_Callback(hObject, eventdata, handles)
-% hObject    handle to sliderMovieProgress (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-end
-
-% --- Executes during object creation, after setting all properties.
-function sliderMovieProgress_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to sliderMovieProgress (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
 end

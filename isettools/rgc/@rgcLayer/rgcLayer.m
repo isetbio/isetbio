@@ -191,29 +191,6 @@ classdef rgcLayer < handle
             hdl = rgcLayerWindow(obj);
         end
         
-        %         % IR Compute functions, that loop over the rgc mosaics
-        %         function [obj, nTrialsSpikes] = compute(obj, inputObj, varargin)
-        %             [obj, nTrialsSpikes] = irCompute(obj,  inputObj, varargin{:});
-        %         end
-        %
-        %         function obj = computeLinearSTSeparable(obj,varargin)
-        %             obj = irComputeLinearSTSeparable(obj,varargin{:});
-        %         end
-        %
-        %         function obj = computeSpikes(obj, varargin)
-        %             obj = irComputeSpikes(obj,  varargin{:});
-        %         end
-        %
-        %         % plot function, see irPlot
-        %         function plot(obj, varargin)
-        %             irPlot(obj, varargin{:});
-        %         end
-        %
-        %         % normalize function, see irNormalize
-        %         function obj = normalize(obj,varargin)
-        %             obj = irNormalize(obj, varargin{:});
-        %         end
-        
         function val = eccentricity(obj,varargin)
             % Default is units of meters.
             p = inputParser;
