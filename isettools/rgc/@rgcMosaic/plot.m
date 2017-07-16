@@ -149,16 +149,22 @@ switch ieParamFormat(plotType)
         % And we should figure out how to do center/surround
         cla reset;
         
-        % Oddly, the center is (row,col)
+        spikes = obj.get('spikes');  % Number of spikes in each ms
+        if isempty(spikes)
+            disp('No spikes have been computed (responseSpikes missing)');
+            return;
+        end
+        img = mean(spikes,3);  % Mean spikes per millisecond
+        img = img*1000;        % Mean spikes per second
+        img = img.^gam;
+        
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
-        mn = mean(obj.responseLinear(:));  % Mean over all cells at all times
-        linearResponse = (mean(obj.responseLinear,3) - mn) / mn;
         ieShape('ellipse','center',center,...
             'radius',sqrt(2)*radius,...
             'ellipseParameters',vertcat(ellipseMatrix{:}),...
-            'fillArray',linearResponse); %obj.responseLinear(:,:,10)
+            'fillArray',img); %obj.responseLinear(:,:,10)
         
         % Sets the axis limits
         set(gca,...
