@@ -80,10 +80,22 @@ switch ieParamFormat(pType)
         % bp.plot('mosaic') - Shows RF array
         % Get contour lines for mosaic RFs
                 
-        % Oddly, the center is (row,col)
+        % If there are a lot, sub sample
         center = obj.cellLocation;  % um w.r.t. center of image
         center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
-        radius = 1e6*.5*obj.patchSize/(size(obj.cellLocation,1));
+        nCells = size(center,1);
+        
+        radius = 1e6 * 0.5 * obj.patchSize/(size(obj.cellLocation,1));
+        xMin = min(center(:,2)) - 3*radius; xMax = max(center(:,2)) + 3*radius;
+        yMin = min(center(:,2)) - 3*radius; yMax = max(center(:,2)) + 3*radius;
+        titleS = sprintf('RF positions and sizes');
+        maxSamples = 500;
+        if size(center,1) > maxSamples
+            % Too many to show all.  Sub sampling    
+            center = center(randi(nCells,[maxSamples,1]),:);
+            titleS = sprintf('Sampled RF positions and sizes (%d of %d)',maxSamples,size(obj.cellLocation(:),1));
+        end
+        
         ellipseMatrix = [1 1 0];        
         ieShape('ellipse','center',center,...
             'radius',0.5*radius,...
@@ -91,11 +103,10 @@ switch ieParamFormat(pType)
             'color','b');
         
         % Sets the axis limits
-        set(gca,...
-            'xlim',[min(center(:,2)) - 3*radius, max(center(:,2)) + 3*radius],...
-            'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
+        set(gca,'xlim',[xMin,xMax],'ylim',[yMin,yMax]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         ylabel(sprintf('Distance (\\mum)'),'fontsize',14);
+        title(titleS);
             
     case{'responsecenter'}
         % bp.plot('response center')

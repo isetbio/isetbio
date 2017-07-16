@@ -123,13 +123,14 @@ switch ieParamFormat(plotType)
         grid on; axis image
         
     case 'mosaic'
-        % Plot the mosaic spatial receptive field geometry
+        % Plot the mosaic spatial receptive field geometry, with no fill.
         % We need to add the possibility of elliptical forms some day.
         % And we should figure out how to do center/surround
         cla reset;
         
-        % Oddly, the center is (row,col)
+        % We should subsample the number shown when there are many.
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
@@ -144,21 +145,24 @@ switch ieParamFormat(plotType)
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         
     case 'mosaicfill'
-        % Plot the mosaic spatial receptive field geometry
-        % We need to add the possibility of elliptical forms some day.
-        % And we should figure out how to do center/surround
+        % Plot the mosaic spatial receptive field geometry but shading the
+        % interior to reflect the activity level.
+        % Perhaps we should take in a 'fill' parameter, rather than have
+        % two different case statements.
         cla reset;
         
         spikes = obj.get('spikes');  % Number of spikes in each ms
         if isempty(spikes)
-            disp('No spikes have been computed (responseSpikes missing)');
+            disp('No spikes have been computed.');
             return;
         end
         img = mean(spikes,3);  % Mean spikes per millisecond
         img = img*1000;        % Mean spikes per second
-        img = img.^gam;
+        img = img.^gam;        % This makes the units arbitrary
         
+        % We should subsample the number shown when there are many.
         center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
@@ -166,18 +170,18 @@ switch ieParamFormat(plotType)
             'ellipseParameters',vertcat(ellipseMatrix{:}),...
             'fillArray',img); %obj.responseLinear(:,:,10)
         
-        % Sets the axis limits
+        % Sets the plot axis limits
         set(gca,...
             'xlim',[min(center(:,2)) - 3*radius, max(center(:,2)) + 3*radius],...
             'ylim',[min(center(:,1)) - 3*radius, max(center(:,1)) + 3*radius]);
         xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
         
         colormap(gray(256)); colorbar; drawnow;
-        title('Linear response contrast re: global mean');
+        title('Mean spikes (a.u.)');
         
     case 'mosaicsurf'
         % Plots a sub-sampled set of spatial RF as surface (mesh) plots
-        % Should make the skip parameters an selectable parameter
+        % Should make the skip parameters selectable
         
         rfCoords = vertcat(obj.cellLocation{:});
         rfMinR = min(rfCoords(:,1)); rfMaxR = max(rfCoords(:,1));
@@ -190,6 +194,12 @@ switch ieParamFormat(plotType)
         
         % Sub-sampling values
         startInd = 2; skipInd = 1;
+        [row,col] = size(obj.cellLocation);
+        
+        % Initialize all the cell arrays to be the same
+        rvStart = cell(row,col); rvEnd = rvStart;
+        cvStart = rvStart; cvEnd = rvStart;
+        
         for ri = startInd:skipInd:size(obj.cellLocation,1)
             for ci = startInd:skipInd:size(obj.cellLocation,2)
                 %         [ri ci]
@@ -206,7 +216,11 @@ switch ieParamFormat(plotType)
                 end
             end
         end
-        disp('Every other cell in mosaic shown, skipInd = 2');
+        
+        if skipInd ~= 1
+            % Let the user know if you are skippiing plots
+            fprintf('Skip index (skipInd) = %d\n',skipInd);
+        end
         imagesc(spStim);
         
     otherwise

@@ -14,6 +14,9 @@ rdt.crp('/resources/data/cmosaics');
 % rdt.listArtifacts('type','mat','print',true);
 
 % coneMosaicDataFace
+% For some reason, this opens the cMosaic.window.  I don't understand why.
+% This happens when we load the data that is downloaded in
+% rdtLoadWellKnownFileTypes.
 data      = rdt.readArtifact('coneMosaicDataFace', 'type', 'mat');
 cMosaic   = data.cMosaic;
 
