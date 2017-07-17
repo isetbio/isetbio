@@ -44,9 +44,10 @@ for ii=1:length(cellType)
     bpMosaicParams.cellType = cellType{ii};
     bpMosaic{ii} = bipolarMosaic(cMosaic, bpMosaicParams);
     
-    % Set up the bipolar RF 
-    bpMosaic{ii}.set('sRFcenter',3);
-    bpMosaic{ii}.set('sRFsurround',5);
+    % Set up the bipolar center and surround RFs
+    support = 11;
+    bpMosaic{ii}.set('sRFCenter',  fspecial('gaussian',[support support],1));
+    bpMosaic{ii}.set('sRFSurround',fspecial('gaussian',[support support],2));
     
     bpMosaic{ii}.compute(cMosaic);
     bpL.mosaic{ii} = bpMosaic{ii};

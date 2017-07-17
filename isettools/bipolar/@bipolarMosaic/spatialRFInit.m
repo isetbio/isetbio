@@ -64,12 +64,14 @@ p = inputParser;
 
 p.addParameter('eccentricity',0,@isscalar);
 p.addParameter('conemosaic',[],@(x)(isequal(class(x),'coneMosaic')));
+p.addParameter('spread',1,@isscalar);
 
 % For the future.  We don't have multiple mosaics yet.
 p.parse(varargin{:});
 
 eccentricity = p.Results.eccentricity;
 conemosaic   = p.Results.conemosaic;
+spread       = p.Results.spread;
 
 %% Select parameters for each cell type
 
@@ -86,18 +88,20 @@ switch obj.cellType
         
         minSupport = 12;   % Minimum spatial support
         
-        % BW, screwing around.  Just made spatial spread up here.
+        % BW, screwing around.  Just arbitrarily set the spatial spread here.
         % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
         support = max(minSupport,floor(2 + (3/10)*(eccentricity)));
         
-        % Standard deviation of the Gaussian for the center.  Anywhere near
-        % the center the input is basically 1 cone.  Far in the periphery,
-        % it will be seomthing else that we will have a function for, like
-        % the support.s
-        spread = 1;   % This spread is in cones, not microns
-        
-        obj.sRFcenter   = fspecial('gaussian',[support, support],spread);
-        obj.sRFsurround = 1.3*fspecial('gaussian',[support,support], 1.3*spread);
+        % Standard deviation of the Gaussian for the center, specified in
+        % spatial samples on the input mosaic.  Anywhere near the center
+        % the input is basically 1 cone.  Far in the periphery, it will be
+        % seomthing else that we will have a function for, like the
+        % support.
+
+        % We need an amplitude for these functions to be specified in the
+        % object.
+        obj.sRFcenter   = fspecial('gaussian',[support, support], spread);
+        obj.sRFsurround = fspecial('gaussian',[support, support], 1.3*spread);
             
     case {'onsbc'}
         minSupport = 15;    % Minimum spatial support

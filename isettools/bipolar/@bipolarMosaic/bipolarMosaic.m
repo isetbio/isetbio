@@ -48,6 +48,7 @@ end
 
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
+    % We need an amplitude for the center and surround
     
     % CELLTYPE diffuse on or off
     cellType;                        
@@ -65,10 +66,12 @@ properties (SetAccess = protected, GetAccess = public)
     filterType; 
     
     % SRFCENTER spatial RF of the center on the input samples
-    sRFcenter;                       
+    % Represented w.r.t the input sampling grid
+    sRFcenter = [];                       
     
     % SRFSURROUND spatial RF of the surround on the input samples
-    sRFsurround;                   
+    % Represented w.r.t the input sampling grid
+    sRFsurround = [];                   
     
     % RECTIFICATIONCENTER nonlinear function for center
     rectificationCenter              
