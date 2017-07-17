@@ -118,7 +118,6 @@ classdef rgcLayer < handle
             %
             % Optional inputs
             %  name:      Name for this instance
-            %  species:  
             %  nTrials
             %
             % Outputs:
@@ -131,14 +130,6 @@ classdef rgcLayer < handle
             % <http://pillowlab.princeton.edu/code_GLM.html code by Pillow>
             % under the GNU General Public License.
             %
-            % Example:
-            %   os  = osCreate('identity');
-            %   innerRetina = irCreate(os,'GLM','name','myRGC');
-            %   innerRetina = irCreate(os,'name','EJ',...
-            %             'eyeSide','left','eyeRadius',12,'eyeAngle',90));
-            %
-            % See also:  ir.m, rgcMosaic.m
-            %
             % JRG 9/2015 Copyright ISETBIO Team
             % JRG 7/2016 updated
             
@@ -148,8 +139,7 @@ classdef rgcLayer < handle
             % Should this by a bipolarLayer??
             p.addRequired('inputObj',@(x)(isa(bp,'bipolarLayer')));
             
-            p.addParameter('name','ir1',@ischar);
-            p.addParameter('species','macaque',@ischar);
+            p.addParameter('name','rgcLayer',@ischar);
             p.addParameter('nTrials',1,@isscalar);
             
             p.KeepUnmatched = true;

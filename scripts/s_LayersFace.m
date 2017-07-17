@@ -24,7 +24,9 @@ cMosaic   = data.cMosaic;
 
 %% Create a set of bipolar cell types in the bipolar mosaic
 
-cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
+% Something wrong with onparasol offparasol that is OK with ondiffuse and
+% offdifuse.  Look into it.
+cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onsbc'};
 
 clear bpL
 clear bpMosaicParams
@@ -36,21 +38,14 @@ bpMosaicParams.rectifyType = 1;  % Experiment with this
 bpMosaic = cell(5,1);
 for ii=1:length(cellType)
     % Maybe this could be
-    %   bpMosaicParams.cellType = cellType{ii};
-    %   bpL.mosaicCreate(ii,bpMosaicParams);
-    %   bpL.mosaic{ii}.compute;     % Knows about cMosaic input
-    %
-    
     bpMosaicParams.cellType = cellType{ii};
-    bpMosaic{ii} = bipolarMosaic(cMosaic, bpMosaicParams);
+    bpL.mosaicCreate(cellType{ii},bpMosaicParams);
     
-    % Set up the bipolar center and surround RFs
     support = 11;
-    bpMosaic{ii}.set('sRFCenter',  fspecial('gaussian',[support support],1));
-    bpMosaic{ii}.set('sRFSurround',fspecial('gaussian',[support support],2));
+    bpL.mosaic{ii}.set('sRFCenter',  fspecial('gaussian',[support support],1));
+    bpL.mosaic{ii}.set('sRFSurround',fspecial('gaussian',[support support],2));
     
-    bpMosaic{ii}.compute(cMosaic);
-    bpL.mosaic{ii} = bpMosaic{ii};
+    bpL.mosaic{ii}.compute(cMosaic);     % Knows about cMosaic input
 end
 bpL.window;
 
@@ -72,7 +67,7 @@ mosaicParams.model = 'GLM';
 % diameters = [15 15 7 7 20];  % In microns.
 diameters = 2*[15 15 7 7 20];  % In microns.
 
-cellType = {'on parasol','off parasol','on midget','off midget','smallbistratified'};
+cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
     mosaicParams.rfDiameter = diameters(ii);
     mosaicParams.type = cellType{ii};

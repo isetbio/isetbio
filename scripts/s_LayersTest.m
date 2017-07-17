@@ -28,7 +28,7 @@ alignedC  = data.alignedC;
 bpL = bipolarLayer(cMosaic);
 
 % Make each type of bipolar mosaic
-cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
+cellType = {'on diffuse','off diffuse','on midget','off midget','small bistratified'};
 
 clear bpMosaicParams
 bpMosaicParams.rectifyType = 1;  % Experiment with this

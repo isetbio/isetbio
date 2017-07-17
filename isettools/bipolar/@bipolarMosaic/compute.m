@@ -161,17 +161,20 @@ for iTrial = 1:nTrials
             osSigSurround      = osSig;
             osSigSurround(S,:) = minval*ones(size(osSigSurround(S,:)));
             
+        otherwise
+            error('Unrecognized bipolar mosaic type %s\n',obj.cellType);
+            
     end
     
     % Put the data back into RGB format, like RGB2XW()
     sz = size(cmosaic.current);
     osSigCenter   = XW2RGBFormat(osSigCenter,sz(1),sz(2));
     osSigSurround = XW2RGBFormat(osSigSurround,sz(1),sz(2));
-
+    
     % cmosaic.window;
     % vcNewGraphWin; ieMovie(osSigCenter);
     
-    %% Spatial filtering 
+    %% Spatial filtering
     
     % Full spatial convolution for every frame.  The kernel is only 2D
     % which is why we have a space-only convolution.
@@ -179,7 +182,7 @@ for iTrial = 1:nTrials
     bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
     % vcNewGraphWin; ieMovie(bipolarCenter);
     % vcNewGraphWin; ieMovie(bipolarSurround);
-
+    
     % The bipolar cells might not be abutting, in some model.  We have
     % never used that condition - they always fully tile.  So spacing is
     % always 1 and we haven't subsampled.  This is here because, well, we
@@ -213,7 +216,7 @@ for iTrial = 1:nTrials
     
     %% Rectification and temporal convolution issues
     
-    % Rectification - not tested or analyzed 
+    % Rectification - not tested or analyzed
     
     % We have in the past shifted the bipolar response levels to a minimum
     % of zero.  That is arbitrary and produces higher contrast signals.  It
@@ -227,12 +230,14 @@ for iTrial = 1:nTrials
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter,row, col); ieMovie(tmp);
     
     % Rectification
-    % Not fully tested or analyzed - 
+    % Not fully tested or analyzed -
     % bipolarSurround = obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
-    bipolarSurround = bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)));
+    % This worked:
+    %  bipolarSurround = bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)));
+    bipolarSurround = bipolarSurround-(min(bipolarSurround,[],2)*ones(1,size(bipolarSurround,2)));
     tmpSurround = conv2(bipolarFilt,bipolarSurround);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpSurround,row, col); ieMovie(tmp);
-
+    
     if ~isempty(coneTrials)
         if iTrial == 1
             nTrialsCenter = zeros([nTrials,size(XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col))]);
