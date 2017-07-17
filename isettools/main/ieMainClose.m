@@ -8,6 +8,8 @@ function ieMainClose
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
+%% We could probably get rid of vcSESSION in ISETBIO
+
 global vcSESSION
 
 if ~checkfields(vcSESSION,'GUI'); closereq; return; end
@@ -22,15 +24,13 @@ if checkfields(vcSESSION.GUI,'vcOptImgWindow','hObject')
     oiClose;
 end
 
-% We need to try this, or perhaps to store the handles in vcSESSION.
-% findall(), findobj()
-
 vcSESSION.GUI = [];
 
-% This closes the bipolarLayer and rgcLayer windows, for some reason
-% If we could find out how many there are, we could call this again and
-% again.  But the possible code above doesn't return any of the windows!
-% Why? (BW)
-closereq;   
+%% This closes all the remaining figures in the root.
 
-return;
+%  The ISETBIO figures, such as rgcLayer.window and bipolarLayer.window,
+%  are closed by this call.
+h = findall(0,'Type','Figure');
+delete(h);
+
+end

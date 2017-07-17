@@ -123,7 +123,7 @@ end
 %% Set the sign for on and off- types
 
 switch obj.cellType
-    case{'ondiffuse','onmidget','onsbc','sbc'}
+    case{'ondiffuse','onparasol','onmidget','onsbc'}
         % On cell types
         signVal = 1;
     otherwise

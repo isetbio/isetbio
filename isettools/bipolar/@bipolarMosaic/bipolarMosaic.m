@@ -182,7 +182,7 @@ methods
         obj.figureHandle = bipolarWindow(obj);
     end
     
-    function cellsPerDistance(obj,varargin)
+    function bipolarsPerMicron = cellsPerDistance(obj,varargin)
         p = inputParser;
         p.addRequired('obj',@(x)(isequal(class(obj),'bipolarMosaic')));
         p.addParameter('units','m',@ischar);
@@ -195,7 +195,7 @@ methods
         bpRowCol = size(obj.Parent.input.mosaic{1}.cellLocation);    
         
         % Converts a distance in microns to a number of bipolars per micron
-        micronsToBipolars = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
+        bipolarsPerMicron = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
     end
     
 end
@@ -203,7 +203,7 @@ end
 properties (Constant)
     % VALIDCELLTYPES Cell array of strings containing valid values for the
     % cell type.  diffuse and parasol are synonyms.  Not sure we should
-    % have them both.
+    % have them both.  And, possibly we should have smallbistratified. (BW)
     validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
 end
 
