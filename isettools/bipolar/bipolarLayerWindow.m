@@ -60,7 +60,7 @@ p.addRequired('bipolar',vFunc);
 p.parse(varargin{:});
 
 bp = varargin{1};
-bp.figureHandle = hObject;   % Store this figure handle
+bp.fig = hObject;   % Store this figure handle
 
 % Choose default command line output for bipolarlayerwindow
 handles.output = hObject;
@@ -249,7 +249,7 @@ function menuFileClose_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileClose (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.bp.figureHandle = [];
+handles.bp.fig = [];
 delete(handles.bipolarWindow);
 end
 
@@ -259,7 +259,7 @@ function bipolarWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
 bp    = handles.bipolar;
-fig   = figure(bp.figureHandle);
+fig   = figure(bp.fig);
 gdata = guidata(fig);
 
 % Show the appropriate response axis plot

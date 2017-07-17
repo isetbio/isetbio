@@ -90,17 +90,21 @@ switch ieParamFormat(pType)
         center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
         nCells = size(center,1);
         [r,c,~] = size(obj.cellLocation);
+        
         % Convert sample grid positions to distance in microns
         metersPerBipolar = obj.patchSize ./ [r,c];
-        center = 1e6*center*diag(metersPerBipolar(:));  % Centers in microns
         
+        % Determine the RF radius.
         % Calculate the radius.  This seems too special case.  Ask JRG what
         % he intended here.  It seems like he thinks the radius is
         % predetermined to be 1.  But ...
+        % At this moment, we are calculating the radius of the support in
+        % microns. We probably want to have parameters that define the
+        % support and the spread separately.
+        center = 1e6*center*diag(metersPerBipolar(:));  % Centers in microns
         metersPerInput   = obj.input.patternSampleSize(1);
-        radius = (1e6*metersPerInput*obj.sRFcenter)/2;  % Radius in microns
-        % radius = 1e6 * 0.5 * obj.patchSize/(size(obj.cellLocation,1));
-        
+        radius = (1e6*metersPerInput*size(obj.sRFcenter,1))/2;  
+                
         % At this point we should have centers and radius in terms of
         % microns.  If life is goo
         xMin = min(center(:,2)) - 3*radius; xMax = max(center(:,2)) + 3*radius;

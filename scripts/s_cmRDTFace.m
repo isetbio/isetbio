@@ -6,6 +6,9 @@
 %
 % BW ISETBIO Team, 2017
 
+%% 
+ieInit
+
 %% Make a cone mosaic of a face image
 
 scene = sceneFromFile(fullfile(isetRootPath,'data','images','rgb','faceMale.jpg'),'rgb');
@@ -25,10 +28,13 @@ cMosaic.emGenSequence(60);
 disp('Computing cone mosaic current');
 cMosaic.compute(oi);
 cMosaic.computeCurrent(oi);
+
+%%
 cMosaic.window;
 
 %%
 faceFile = fullfile(isetbioRootPath,'local','coneMosaicDataFace.mat');
+cMosaic.hdl = [];
 save(faceFile,'cMosaic');
 
 % tmpFile = fullfile(isetbioRootPath,'local','tmpFace.mat');
@@ -53,8 +59,8 @@ a = rdt.listArtifacts('print',true);
 % 
 % a = rdt.listArtifacts('print',true);
 % 
-% % Choose the face mosaics
-% % facemosaics = a(1:2);
+% % Choose the face mosaics.
+% % facemosaics = a(1);
 % 
 % % BSH: let's look specifically at the image-artifact version 1 folder
 % % it should contain the jpg and various metadata files
@@ -68,7 +74,7 @@ a = rdt.listArtifacts('print',true);
 % deleted = rdtDeleteArtifacts(rdt.configuration, facemosaics, 'allFiles', true);
 % 
 % % This returns an empty artifact, which is good
-% a = rd.listArtifacts('print',true);
+% a = rdt.listArtifacts('print',true);
 
 %%
 

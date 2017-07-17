@@ -1,5 +1,9 @@
-classdef bipolarLayer < handle
+classdef bipolarLayer < cellLayer
     % BIPOLARLAYER - Create an bipolarLayer object
+    %
+    % This is a subclass of the general class 'cellLayer'.  It inherits the
+    % properties of that class, including slots for an input, fig, center,
+    % size, ...
     %
     % The bipolarLayer class stores general properties of the bipolar layer
     % patch and stores the bipolarMosaic objects in its mosaic property
@@ -18,41 +22,15 @@ classdef bipolarLayer < handle
     
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
-        %NAME Name of this bipolar layer object
-        % Could be used in window 
-        name;       
         
-        %NUMBERTRIALS Number of trials when computing
-        numberTrials;  
-        
-        %MOSAIC Cell array containing bipolar cell mosaics
+        %MOSAIC Cell array holding the bipolar cell mosaics
         mosaic;
-        
-        % When we have a window, we use this figureHandle for refresh
-        figureHandle;
-                       
+                               
     end
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
-    properties (SetAccess = protected)
-        % These are protected because they are determined from the cone
-        % mosaic that provides the input and thus should not change
-        % A few parameters stored here for convenience, but they can be
-        % derived from input or input to input or ...
-        
-        %TIMESTEP Stimulus temporal sampling (sec) from bipolar
-        timeStep;   % This is the same for all mosaics 
-        
-        %CENTER position of the patch with respect to fovea (0,0)
-        center;
-        
-        %SIZE Patch size (m) measured at the cone mosaic
-        size;  
-        
-        % INPUT  - Cone mosaic input
-        input;
-        
+    properties (SetAccess = protected)       
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -94,10 +72,7 @@ classdef bipolarLayer < handle
             p.parse(cMosaic,varargin{:});
             
             obj.name         = p.Results.name;
-            obj.numberTrials = p.Results.nTrials;
-            
-            % Create an empty cell array of bipolar mosaics
-            obj.mosaic = [];
+            obj.nTrials = p.Results.nTrials;
             
             % We may keep the cone mosaic around and then get rid of the
             % obj.center, .species, .timeStep and .size.  No reason to have

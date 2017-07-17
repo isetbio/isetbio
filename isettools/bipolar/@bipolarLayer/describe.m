@@ -6,7 +6,7 @@ function str = describe(obj)
 % BW ISETBIO Team, 2017
 
 %%
-gdata = guidata(obj.figureHandle);
+gdata = guidata(obj.fig);
 nMosaic = get(gdata.listMosaics,'Value');
 
 %% General properties
@@ -17,7 +17,7 @@ txt = sprintf('Center:       \t(%.1f,%.1f) mm\n',[obj.input.center]*1e3);
 str = addText(str,txt);
 txt = sprintf('Time step:    \t%.1f ms\n',obj.input.integrationTime*1e3);
 str = addText(str,txt);
-txt = sprintf('N Trials:     \t%.0f \n',obj.numberTrials);
+txt = sprintf('N Trials:     \t%.0f \n',obj.nTrials);
 str = addText(str,txt);
 txt = sprintf('Eye side:     \t%s \n',obj.input.whichEye);
 str = addText(str,txt);
