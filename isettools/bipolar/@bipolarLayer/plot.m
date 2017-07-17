@@ -45,7 +45,7 @@ allowableFields = {...
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 p.addParameter('gamma',1,@isscalar);
-p.addParameter('pos',[],@isvector);
+p.addParameter('pos',[1,1],@isvector);    % If not passed, then assume 1,1
 p.addParameter('newWindow',false,@islogical);
 
 % Will this be one of the mosaics, or use multiple mosaics (0, or maybe a
@@ -71,7 +71,7 @@ if nMosaic == 0
     return;
 else
     % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
-    hdl = obj.mosaic{nMosaic}.plot(pType);
+    hdl = obj.mosaic{nMosaic}.plot(pType,p.Results);
 end
 
 end

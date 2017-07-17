@@ -44,7 +44,7 @@ allowableFields = {...
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 p.addParameter('gamma',1,@isscalar);
-p.addParameter('pos',[],@isvector);
+p.addParameter('pos',[1,1],@isvector);
 
 % Parse pType
 p.parse(pType,varargin{:}); 
@@ -94,12 +94,11 @@ switch ieParamFormat(pType)
         metersPerBipolar = obj.patchSize ./ [r,c];
         center = 1e6*center*diag(metersPerBipolar(:));  % Centers in microns
         
-        
         % Calculate the radius.  This seems too special case.  Ask JRG what
         % he intended here.  It seems like he thinks the radius is
         % predetermined to be 1.  But ...
         metersPerInput   = obj.input.patternSampleSize(1);
-        radius = 1e6*metersPerInput*obj.sRFcenter/2;  % Radius in microns
+        radius = (1e6*metersPerInput*obj.sRFcenter)/2;  % Radius in microns
         % radius = 1e6 * 0.5 * obj.patchSize/(size(obj.cellLocation,1));
         
         % At this point we should have centers and radius in terms of
@@ -118,7 +117,8 @@ switch ieParamFormat(pType)
         % The whole ellipse thing isn't handled really, is it?  I mean, the
         % parameter is fixed here, and not set.
         ellipseMatrix = [1 1 0];        
-        ieShape('ellipse','center',center,...
+        ieShape('ellipse',...
+            'center',center,...
             'radius',radius,...
             'ellipseParameters',ellipseMatrix,...
             'color','b');
@@ -188,8 +188,14 @@ switch ieParamFormat(pType)
         dx = patchSizeUM/size(response,1);  % Step in microns
         samples = 1:dx:size(response,1);
         samples = samples - mean(samples(:));
-        if p.Results.gamma ~= 1, img = mean(response,3).^p.Results.gamma;
-        else                     img = mean(response,3);
+        
+        % The gamma has to deal with negative numbers, sigh.
+        if p.Results.gamma ~= 1
+            img = mean(response,3);
+            img(img>=0) = img(img>=0).^p.Results.gamma;
+            img(img<0)  = ((-1)*img(img<0)*p.Results.gamma)*-1;
+        else
+            img = mean(response,3);
         end
         
         imagesc(samples,samples,img);
