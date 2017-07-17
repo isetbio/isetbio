@@ -1,31 +1,27 @@
 function spatialRFInit(obj,varargin)
-% Build spatial receptive field for the bipolar mosaic
+% SPATIALRFINIT - Build spatial receptive field for the bipolar mosaic
 %
-%    bipolar.spatialRFInit(varargin)
+%    @bipolarMosaic.spatialRFInit(varargin)
 %
-% N.B. The spatial receptive fields here are a very initial first draft,
-% and the numbers should not be relied upon for detailed work.  They are a
-% rough approximation.*********************
+% Each bipolar mosaic takes its input from the cone mosaic, so that cell
+% locations are with respect to the spatial samples of the cone mosaic. To
+% compute the  spatial spread, we need to account for the cone spacing.
+% Thus, if the cones are spaced, say 2 um, and the bipolar RF spans 5
+% samples, the spatial extent will be 2*5 um. 
 %
-% Each bipolar mosaic takes its input from the cone mosaic.  The spatial
-% samples of the bipolar inputs are with respect to the spatial samples
-% of the cone mosaic. If the cones are spaced, say 2 um, then each spatial
-% sample to the bipolars will be spaced 2 um.
+% --- REFERENCES AND BUILTIN bipolar types ---
 %
-% Typically, there is a bipolar at every cone sample (no subsampling).  In
-% the future, we may implement larger bipolar receptive fields with
-% fewer (spaced) bipolars.
+% We have implemented five types of bipolar receptive fields, one assigned
+% to each of the big five RGC types. Each bipolar type has a preferential
+% cone selections.  The critical decision is no S-cones for on/off parasol
+% and on-midget, as per the Chichilnisky primate data (REFERENCE HERE).
 %
-% There are five types of bipolar receptive fields, one assigned to each of
-% the big five RGC types. These have preferential cone selections.  The
-% critical decision is no S-cones for on/off parasol and on-midget, as per
-% the Chichilnisky primate data ().  Parasol is synonymous with diffuse.
+% N.B.  Parasol is synonymous with diffuse.
 %
-% --- REFERENCE ---
-% The data for the size of the support is based off of this passage
-% from Dacey, Brainard, Lee, et al., Vision Research, 2000, page
-% 1808 bottom right.
+% The data for the support size is this passage from Dacey, Brainard, Lee,
+% et al., Vision Research, 2000, page 1808 bottom right.
 % (http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf)
+%
 % They write:
 %
 %  "The frequency response was bandpass and well fit by a difference of
@@ -50,7 +46,7 @@ function spatialRFInit(obj,varargin)
 %
 % JRG/BW ISETBIO Team, 2015
 
-% TODO
+%  PROGRAMMING TODO
 %
 % These numbers don't make sense to BW at this time.  We need to write a
 % script showing how big they are with respect to the cone mosaic, and we
@@ -141,14 +137,17 @@ switch obj.cellType
         
 end
 
-% Set the bipolar spatial sample positions in cell location
-
-% **************
+% Set the bipolar spatial sample positions as cell locations in the input
+% layer (cone mosaic). we think this makes sense because the computations
+% are specified using weights on the inputs.
 %
-% N.B. We refer to the bipolar cell locations with respect to the cones in
-% the coneMosaic.  The inputs to the bipolars are actual cones, so we think
-% it's OK to define the RF in terms of weights from actual cones into the
-% bipolar.
+% For the bipolars, it is straightforward to compute the spread in microns
+% from this specification.  We simply multiply the number of input samples
+% by the spatial sample separation of the cones.
+%
+% When the layer is deeper, however, we have to keep referring back through
+% multiple layers.  This issue will be addressed in the RGCLAYER, and then
+% onward.
 %
 % We need to write simple utilities that convert from the spatial units on
 % the cone mosaic into spatial units on the retinal surface (in um or mm).
@@ -157,14 +156,15 @@ end
 % doesn't deal with the jittered cone mosaic yet, but kind of like this.
 % (BW/JRG). 
 % 
-%**************
 
+% Cone row and column positions, but centered around (0,0).
 [X,Y] = meshgrid(1:conemosaic.cols,1:conemosaic.rows);
 X = X - mean(X(:)); Y = Y - mean(Y(:));
-obj.cellLocation = zeros(conemosaic.cols,conemosaic.rows,2);
-obj.cellLocation (:,:,1) = X;
-obj.cellLocation (:,:,2) = Y;
 
+% Put them in the (row,col,X/Y) tensor.
+obj.cellLocation = zeros(conemosaic.cols,conemosaic.rows,2);
+obj.cellLocation(:,:,1) = X;
+obj.cellLocation(:,:,2) = Y;
 
 end
 

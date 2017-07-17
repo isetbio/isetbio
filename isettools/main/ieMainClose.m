@@ -4,7 +4,7 @@ function ieMainClose
 %     ieMainClose
 %
 % The routine checks for various fields, closes all the main windows
-% properly. 
+% properly.
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
@@ -22,20 +22,15 @@ if checkfields(vcSESSION.GUI,'vcOptImgWindow','hObject')
     oiClose;
 end
 
-if checkfields(vcSESSION.GUI,'vcSensImgWindow','hObject')
-    sensorImageWindow;
-    sensorClose;
-end
-
-if checkfields(vcSESSION.GUI,'vcConeImgWindow','hObject')
-    try
-        delete(vcSESSION.GUI.vcConeImgWindow.hObject);
-    catch
-    end
-    vcSESSION.GUI = rmfield(vcSESSION.GUI,'vcConeImgWindow');
-end
+% We need to try this, or perhaps to store the handles in vcSESSION.
+% findall(), findobj()
 
 vcSESSION.GUI = [];
-closereq;
+
+% This closes the bipolarLayer and rgcLayer windows, for some reason
+% If we could find out how many there are, we could call this again and
+% again.  But the possible code above doesn't return any of the windows!
+% Why? (BW)
+closereq;   
 
 return;

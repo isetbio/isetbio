@@ -79,26 +79,47 @@ switch ieParamFormat(pType)
     case {'mosaic'}
         % bp.plot('mosaic') - Shows RF array
         % Get contour lines for mosaic RFs
+        % The cell locations are specified with respect to the cone mosaic
+        % input layer.  We would like to present them in terms of microns
+        % on the cone mosaic surface.  So, we transform the cell locations
+        % to microns.
                 
-        % If there are a lot, sub sample
-        center = obj.cellLocation;  % um w.r.t. center of image
+        % These are sampled w.r.t. the input mosaic.  We convert to microns
+        center = obj.cellLocation;  
+        % List the (x,y) positions on the grid and count how many
         center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
         nCells = size(center,1);
+        [r,c,~] = size(obj.cellLocation);
+        % Convert sample grid positions to distance in microns
+        metersPerBipolar = obj.patchSize ./ [r,c];
+        center = 1e6*center*diag(metersPerBipolar(:));  % Centers in microns
         
-        radius = 1e6 * 0.5 * obj.patchSize/(size(obj.cellLocation,1));
+        
+        % Calculate the radius.  This seems too special case.  Ask JRG what
+        % he intended here.  It seems like he thinks the radius is
+        % predetermined to be 1.  But ...
+        metersPerInput   = obj.input.patternSampleSize(1);
+        radius = 1e6*metersPerInput*obj.sRFcenter/2;  % Radius in microns
+        % radius = 1e6 * 0.5 * obj.patchSize/(size(obj.cellLocation,1));
+        
+        % At this point we should have centers and radius in terms of
+        % microns.  If life is goo
         xMin = min(center(:,2)) - 3*radius; xMax = max(center(:,2)) + 3*radius;
         yMin = min(center(:,2)) - 3*radius; yMax = max(center(:,2)) + 3*radius;
         titleS = sprintf('RF positions and sizes');
+        
+        % If there are a lot ... sub sample
         maxSamples = 500;
         if size(center,1) > maxSamples
-            % Too many to show all.  Sub sampling    
             center = center(randi(nCells,[maxSamples,1]),:);
             titleS = sprintf('Sampled RF positions and sizes (%d of %d)',maxSamples,size(obj.cellLocation(:),1));
         end
         
+        % The whole ellipse thing isn't handled really, is it?  I mean, the
+        % parameter is fixed here, and not set.
         ellipseMatrix = [1 1 0];        
         ieShape('ellipse','center',center,...
-            'radius',0.5*radius,...
+            'radius',radius,...
             'ellipseParameters',ellipseMatrix,...
             'color','b');
         

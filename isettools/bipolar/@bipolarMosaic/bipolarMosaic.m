@@ -48,25 +48,26 @@ end
 
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
-    %CELLLOCATION location of bipolar RF center
-    cellLocation;
     
     % CELLTYPE diffuse on or off
     cellType;                        
     
-    % PATCHSIZE size of retinal patch from cone mosaic
+    %CELLLOCATION location of bipolar RF centers w.r.t. the input samples
+    cellLocation;
+    
+    % PATCHSIZE size of retinal patch w.r.t. the cone mosaic
     patchSize;                       
     
-    % TIMESTEP time step of simulation from cone mosaic
+    % TIMESTEP time step of simulation from original cone mosaic
     timeStep;       
     
     % FILTERTYPE bipolar temporal filter type
     filterType; 
     
-    % SRFCENTER spatial RF of the center on the receptor grid
+    % SRFCENTER spatial RF of the center on the input samples
     sRFcenter;                       
     
-    % SRFSURROUND spatial RF of the surround on the receptor grid
+    % SRFSURROUND spatial RF of the surround on the input samples
     sRFsurround;                   
     
     % RECTIFICATIONCENTER nonlinear function for center
@@ -79,7 +80,13 @@ properties (SetAccess = protected, GetAccess = public)
     responseCenter;                  
     
     % RESPONSESURROUND Store the linear response of the surround after convolution
-    responseSurround;                
+    responseSurround;
+    
+    % cone mosaic input
+    input;
+    
+    % parent - the bipolarLayer containing this mosaic
+    parent;
 
 end
 
@@ -103,26 +110,37 @@ methods
     % Constructor
     function obj = bipolarMosaic(cmosaic, varargin)     
         % Initialize the bipolar class
+        %
         %   bp = bipolar(cMosaic,'cellType','ondiffuse');
+        %
         
         p = inputParser;
         addRequired(p,  'cmosaic');
+        
+        addParameter(p, 'parent',[], @(x)(isequal(class(x),'bipolarLayer')));
         addParameter(p, 'cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
         addParameter(p, 'rectifyType', 1, @isnumeric);
         addParameter(p, 'filterType',  1, @isnumeric);
         addParameter(p, 'cellLocation',  [], @isnumeric);
         addParameter(p, 'ecc',  1, @isnumeric);
         addParameter(p, 'coneType',  -1, @isnumeric);
-        
+
         p.parse(cmosaic, varargin{:});  
+        
+        % The layer object that this is part of.
+        obj.parent    = p.Results.parent;
+        obj.input     = p.Results.cmosaic;
         
         % Store the spatial pattern of input cones
         obj.coneType  = cmosaic.pattern;
         
-        % Match the time step of the cone mosaic
-        os = cmosaic.os;
-        obj.patchSize = osGet(os,'patchSize');
+        % This might be a mistake, but we store the size and time step of
+        % the cone mosaic in this mosaic for easy accessibility.  The
+        % cMosaic itself is stored in the layer object that contains this
+        % mosaic.  Maybe these should just be private variables?
+        obj.patchSize = cmosaic.size; 
         obj.timeStep  = cmosaic.integrationTime;
+        
         
         obj.cellType = strrep(lower(p.Results.cellType),' ','');
         

@@ -31,9 +31,16 @@ clear bpMosaicParams
 
 bpL = bipolarLayer(cMosaic);
 
+bpMosaicParams.parent = bpL;
 bpMosaicParams.rectifyType = 1;  % Experiment with this
 bpMosaic = cell(5,1);
 for ii=1:length(cellType)
+    % Maybe this could be
+    %   bpMosaicParams.cellType = cellType{ii};
+    %   bpL.mosaicCreate(ii,bpMosaicParams);
+    %   bpL.mosaic{ii}.compute;     % Knows about cMosaic input
+    %
+    
     bpMosaicParams.cellType = cellType{ii};
     bpMosaic{ii} = bipolarMosaic(cMosaic, bpMosaicParams);
     
@@ -45,21 +52,6 @@ for ii=1:length(cellType)
     bpL.mosaic{ii} = bpMosaic{ii};
 end
 bpL.window;
-
-% Try varying some experimental parameters
-%
-% bpL.mosaic{1}.set('sRFcenter',5); bpL.mosaic{1}.set('sRFsurround',1);
-% Now compute and redisplay.
-%
-% disp('Computing bipolar responses'); [~, bpNTrialsCenter,
-% bpNTrialsSurround] = bp.compute(cMosaic,'coneTrials',alignedC);
-%
-%
-% TODO
-%
-% * After showing movie, the numbers on the mosaic axis are missing 
-% * The units on the center size may not be correct. 
-% * We need to allow changing the size of the center and surround on the bipolar.
 
 %% Retinal ganlion cell model
 
