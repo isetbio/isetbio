@@ -89,8 +89,8 @@ classdef rgcMosaic < handle
     end
     
     properties (Access = public)
-        %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
-        figureHandle;
+        %FIGURE HANDLE When we open the figure for the mosaic, we store the handle here
+        fig;
     end
     
     % Private properties. Only methods of the parent class can set these

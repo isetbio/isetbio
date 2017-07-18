@@ -65,8 +65,7 @@ mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 mosaicParams.type  = cellType;
 mosaicParams.model = 'GLM';
 
-% diameters = [15 15 7 7 20];  % In microns.
-diameters = 2*[15 15 7 7 20];  % In microns.
+diameters = [10 10 5 5 20];  % In microns.
 for ii = 1:length(cellType)
     mosaicParams.rfDiameter = diameters(ii);
     mosaicParams.type = cellType{ii};

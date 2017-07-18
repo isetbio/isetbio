@@ -35,7 +35,7 @@ p.KeepUnmatched = true;
 
 % What about obj?
 p.addRequired('plotType', @isstr);                        % Type of plot
-p.addParameter('hf', obj.figureHandle, @isgraphics);  % figure handle
+p.addParameter('hf', obj.fig, @isgraphics);  % figure handle
 p.addParameter('gam',1,@isnumeric);
 
 p.parse(plotType, varargin{:});
