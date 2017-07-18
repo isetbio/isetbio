@@ -40,7 +40,7 @@ p.KeepUnmatched = true;
 p.addRequired('ir');
 
 % Experiment ... thinking about input parsing more generally (JRG/BW)
-mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratified','sbc'};
+mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratified','onsbc'};
 p.addParameter('type','on parasol',@(x) any(validatestring(ieParamFormat(x),mosaicTypes)));
 
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};

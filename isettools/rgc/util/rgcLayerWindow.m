@@ -60,8 +60,8 @@ p.addRequired('rgc',vFunc);
 % Check that we have the bipolar layer
 p.parse(varargin{:});
 
-rgcL = varargin{1};
-rgcL.figureHandle = hObject;   % Store this figure handle
+rgcL     = varargin{1};
+rgcL.fig = hObject;   % Store this figure handle
 
 % Choose default command line output for bipolarlayerwindow
 handles.output = hObject;
@@ -223,7 +223,7 @@ function menuFileClose_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileClose (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.rgcM.figureHandle = [];
+handles.rgcM.fig = [];
 delete(handles.mosaicWindow);
 end
 
@@ -279,7 +279,7 @@ function rgcLayerWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
 rgcL  = handles.rgcLayer;
-fig   = figure(rgcL.figureHandle);
+fig   = figure(rgcL.fig);
 gdata = guidata(fig);
 
 % Show the appropriate response axis plot
@@ -292,7 +292,7 @@ str = contents{get(gdata.popupResponseSelect,'Value')};
 
 nMosaic = get(gdata.listMosaics,'Value');
 rgcL = gdata.rgcLayer;
-rgcL.mosaic{nMosaic}.figureHandle = rgcL.figureHandle;
+rgcL.mosaic{nMosaic}.fig = rgcL.fig;
 gam = str2double(get(gdata.editGamma','String'));
 
 switch(str)

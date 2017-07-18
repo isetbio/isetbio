@@ -75,7 +75,7 @@ switch param
     case{'numbertrials'}
         % Will be a vector some day for number of trials for each mosaic in
         % the ir.  Now, it is just a plain old number.
-        obj.numberTrials = val;
+        obj.nTrials = val;
         
     case{'timing'}
         obj.timing = val;

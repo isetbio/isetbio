@@ -55,6 +55,7 @@ clear rgcLayer
 
 % Create retina ganglion cell layer object
 rgcL = rgcLayer(bpL);
+cellType = {'onparasol','offparasol','onmidget','offmidget','onsbc'};
 
 % There are various parameters you could set.  We will write a script
 % illustrating these later.  We need a description.
@@ -66,8 +67,6 @@ mosaicParams.model = 'GLM';
 
 % diameters = [15 15 7 7 20];  % In microns.
 diameters = 2*[15 15 7 7 20];  % In microns.
-
-cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
     mosaicParams.rfDiameter = diameters(ii);
     mosaicParams.type = cellType{ii};
@@ -81,7 +80,7 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Number of trials refers to number of repeats of the same stimulus
 disp('Computing rgc responses');
-[rgcL, nTrialsSpikes] = rgcL.compute(bpMosaic,...
+[rgcL, nTrialsSpikes] = rgcL.compute(bpL.mosaic,...
     'bipolarScale',50,...
     'bipolarContrast',0.2);
 

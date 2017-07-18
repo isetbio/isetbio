@@ -40,7 +40,7 @@ p.addRequired('rgcM',vFunc);
 p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
 
 vFunc = @(x)(ismember(ieParamFormat(x),...
-    {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'smallbistratified'}));
+    {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'onsbc','smallbistratified'}));
 p.addRequired('cellType',vFunc);
 p.addParameter('inMosaic',1,@isscalar);
 p.addParameter('rfDiameter',[],@isnumeric); % microns
@@ -59,7 +59,7 @@ switch ieParamFormat(cellType)
         rfSizeMult = 0.5;    % On Midget RF size multiplier
     case 'offmidget'
         rfSizeMult = 0.425;  % Off Midget RF size multiplier
-    case 'smallbistratified'
+    case {'onsbc','smallbistratified'}
         rfSizeMult = 1.1;    % SBC RF size multiplier
 end
 

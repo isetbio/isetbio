@@ -62,7 +62,7 @@ switch param
     case{'spacing'}
         val = obj.spacing;
     case {'numbertrials'}
-        val = obj.numberTrials;
+        val = obj.nTrials;
 end
 
 end

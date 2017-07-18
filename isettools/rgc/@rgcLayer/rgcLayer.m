@@ -1,5 +1,9 @@
-classdef rgcLayer < handle
+classdef rgcLayer < cellLayer
     %RGCLAYER - Create an rgcLayer object
+    %
+    % This is a subclass of the general class 'cellLayer'.  It inherits the
+    % properties of that class, including slots for an input, fig, center,
+    % size, ...
     %
     % The rgcLayer class stores general properties of the RGC layer patch
     % and stores the rgcMosaic objects in its mosaic property field.  (This
@@ -63,38 +67,16 @@ classdef rgcLayer < handle
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
         
-        %NAME Name of this innerRetina
-        name;
-        
-        %NUMBERTRIALS Number of trials when computing
-        numberTrials;  
-        
         %MOSAIC Cell array containing ganglion cell mosaics
-        mosaic;        % The spatial sampling differs for each mosaic
+        % Cells are added by mosaicCreate method    
+        mosaic ={};  % The spatial sampling differs for each mosaic
                  
-        % When we have a window, we use this figureHandle for refresh
-        figureHandle;
     end
     
     % Protected properties; Methods of the parent class and all of its
     % subclasses can set these.
     properties (SetAccess = protected)
-        % Inherited from prior stages.  
-        % A few parameters stored here for convenience, but they can be
-        % derived from input or input to input or ...
-        
-        %SIZE Patch size (m) measured at the cone mosaic (height, width)
-        size;        
-        
-        %CENTER position of the patch with respect to fovea (0,0)
-        center;
-        
-        %TIMESTEP Stimulus temporal sampling (sec) from bipolar
-        timeStep;   % This is the same for all mosaics
-        
-        % INPUT bipolar layer
-        input;
-        
+
     end
     
 
@@ -104,14 +86,10 @@ classdef rgcLayer < handle
     
     % Public methods
     methods
-        function obj = rgcLayer(bp, varargin)
+        function obj = rgcLayer(bpLayer, varargin)
             % Constructor
             %
-            % Taken from the irCreate() code, which was how we called the
-            % innerretina object.  We should get rid of this rgcLayerCreate
-            % analog and
-            %
-            %  obj = rgcLayer(bipolarLayer, params)
+            %  rgcL = rgcLayer(bipolarLayer, params)
             %  
             % Required Inputs:
             %  bpLayer:   a bipolar layer object
@@ -137,27 +115,25 @@ classdef rgcLayer < handle
             p = inputParser;
             
             % Should this by a bipolarLayer??
-            p.addRequired('inputObj',@(x)(isa(bp,'bipolarLayer')));
+            p.addRequired('bpLayer',@(x)(isa(x,'bipolarLayer')));
             
             p.addParameter('name','rgcLayer',@ischar);
             p.addParameter('nTrials',1,@isscalar);
             
             p.KeepUnmatched = true;
             
-            p.parse(bp,varargin{:});
+            p.parse(bpLayer,varargin{:});
             obj.name         = p.Results.name;
-            obj.numberTrials = p.Results.nTrials;
+            obj.nTrials = p.Results.nTrials;
             
             % Should match the cone mosaic patch size and time step
-            obj.size      = bp.size;        % Bipolar patch size
-            obj.timeStep  = bp.timeStep;    % Temporal sampling
+            obj.size      = bpLayer.size;        % Bipolar patch size
+            obj.timeStep  = bpLayer.timeStep;    % Temporal sampling
                         
-            % Empty cell array to hold mosaics we create.
-            obj.mosaic = cell(1); % Cells are added by mosaicCreate method
             
             % Spatial position on the retina (meters, fovea is 0,0).
-            obj.center = bp.center;
-            obj.input  = bp;   % Bipolar layer link kept here
+            obj.center = bpLayer.center;
+            obj.input  = bpLayer;   % Bipolar layer link kept here
             
         end
         
