@@ -1,4 +1,4 @@
-classdef rgcMosaic < handle
+classdef rgcMosaic < cellMosaic
     %RGCMOSAIC - generates an rgcMosaic
     % Each RGC mosaic has a particular model and a type.  The model specifies
     % how we compute the RGC response, and the type specifies the parameters of
@@ -42,27 +42,26 @@ classdef rgcMosaic < handle
     
     %% Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        parent;
     end
     
     % Was Protected properties.  Changing to Public for debugging, and
     % maybe forever
     properties (SetAccess = public, GetAccess = public)
         
-        %CELLTYPE The type of computational model for the RGC
-        cellType = 'onparasol';           % Possible types are listed in header
+        %         %CELLTYPE The type of computational model for the RGC
+        %         cellType = 'onparasol';           % Possible types are listed in header
+        %
+        %         %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
+        %         cellLocation;
         
         % RFDIAMETER receptive field center diameter in MICRONS
         rfDiameter = [];
         
-        %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
-        cellLocation;
-        
-        %SRFCENTER spatial RF of the center on the cone mosaic grid
-        sRFcenter = [];
-        
-        %SRFSURROUND spatial RF of the surround
-        sRFsurround = [];
+        %         %SRFCENTER spatial RF of the center on the cone mosaic grid
+        %         sRFcenter = [];
+        %
+        %         %SRFSURROUND spatial RF of the surround
+        %         sRFsurround = [];
         
         %TCENTER temporal impulse response of the center in dt steps or 1
         %ms??
@@ -89,8 +88,6 @@ classdef rgcMosaic < handle
     end
     
     properties (Access = public)
-        %FIGURE HANDLE When we open the figure for the mosaic, we store the handle here
-        fig;
     end
     
     % Private properties. Only methods of the parent class can set these
@@ -154,10 +151,11 @@ classdef rgcMosaic < handle
     %% Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function window(obj)
-            obj.fig = rgcMosaicWindow(obj);
             % Tip: Retrieve guidata using
             %    gui = guidata(obj.figureHandle);
             %
+            obj.fig = rgcMosaicWindow(obj);
+            
         end
         
         function val = timeAxis(obj)
@@ -174,7 +172,7 @@ classdef rgcMosaic < handle
             %
             % BW, ISETBIO Team, 2017
             
-            parent = obj.Parent;  % Used for size and trials.  Needs help.
+            parent = obj.parent;  % Used for size and trials.  Needs help.
             
             % Cell properties
             str = sprintf('Model: %s\n',class(obj));

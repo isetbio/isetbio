@@ -1,14 +1,13 @@
-classdef bipolarMosaic < handle
+classdef bipolarMosaic < cellMosaic
 %BIPOLARMOSAIC - Create a bipolar mosaic object
 %
-% The bipolar mosaic class allows the simulation of retinal processing from
-% the cone outer segment current to the retinal ganglion cell spike
-% response.
+% The bipolar mosaic class is a subclass of cellMosaic. It is used to
+% simulate the processing from the cone outer segment current to the
+% bipolar cell current output. To create the bipolar mosaic, use
 % 
 %    bp = bipolarMosaic(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) 
 %
-% creates the bipolar object. Optional parameter name/value pairs are
-% listed below.
+% Optional parameter name/value pairs are listed below.
 % 
 % We do not yet have a validated model of the bipolar temporal impulse
 % response.  To simulate it, we assume that the RGC responses from the cone
@@ -50,28 +49,31 @@ end
 properties (SetAccess = protected, GetAccess = public)
     % We need an amplitude for the center and surround
     
-    % CELLTYPE diffuse on or off
-    cellType;                        
+    %     % CELLTYPE diffuse on or off
+    %     cellType;
+    %
+    %     %CELLLOCATION location of bipolar RF centers w.r.t. the input samples
+    %     cellLocation;
+    %
+    %     % PATCHSIZE size of retinal patch w.r.t. the cone mosaic
+    %     patchSize;
+    %
+    %     % TIMESTEP time step of simulation from original cone mosaic
+    %     timeStep;
     
-    %CELLLOCATION location of bipolar RF centers w.r.t. the input samples
-    cellLocation;
+    %     % FILTERTYPE bipolar temporal filter type
+    %     filterType;
+    %
+    %     % SRFCENTER spatial RF of the center on the input samples
+    %     % Represented w.r.t the input sampling grid
+    %     sRFcenter = [];
+    %
+    %     % SRFSURROUND spatial RF of the surround on the input samples
+    %     % Represented w.r.t the input sampling grid
+    %     sRFsurround = [];
     
-    % PATCHSIZE size of retinal patch w.r.t. the cone mosaic
-    patchSize;                       
-    
-    % TIMESTEP time step of simulation from original cone mosaic
-    timeStep;       
-    
-    % FILTERTYPE bipolar temporal filter type
-    filterType; 
-    
-    % SRFCENTER spatial RF of the center on the input samples
-    % Represented w.r.t the input sampling grid
-    sRFcenter = [];                       
-    
-    % SRFSURROUND spatial RF of the surround on the input samples
-    % Represented w.r.t the input sampling grid
-    sRFsurround = [];                   
+    % The bipolar calculation can include rectification.  We also store the
+    % center and surround responses separately
     
     % RECTIFICATIONCENTER nonlinear function for center
     rectificationCenter              
@@ -85,11 +87,11 @@ properties (SetAccess = protected, GetAccess = public)
     % RESPONSESURROUND Store the linear response of the surround after convolution
     responseSurround;
     
-    % cone mosaic input
-    input;
-    
-    % parent - the bipolarLayer containing this mosaic
-    parent;
+    %     % cone mosaic input
+    %     input;
+    %
+    %     % parent - the bipolarLayer containing this mosaic
+    %     parent;
 
 end
 
@@ -118,15 +120,15 @@ methods
         %
         
         p = inputParser;
-        addRequired(p,  'cmosaic');
+        p.addRequired('cmosaic',@(x)(isequal(class(x),'coneMosaic')));
         
-        addParameter(p, 'parent',[], @(x)(isequal(class(x),'bipolarLayer')));
-        addParameter(p, 'cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
-        addParameter(p, 'rectifyType', 1, @isnumeric);
-        addParameter(p, 'filterType',  1, @isnumeric);
-        addParameter(p, 'cellLocation',  [], @isnumeric);
-        addParameter(p, 'ecc',  1, @isnumeric);
-        addParameter(p, 'coneType',  -1, @isnumeric);
+        p.addParameter('parent',[], @(x)(isequal(class(x),'bipolarLayer')));
+        p.addParameter('cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
+        p.addParameter('rectifyType', 1, @isnumeric);
+        p.addParameter('filterType',  1, @isnumeric);
+        p.addParameter('cellLocation',  [], @isnumeric);
+        p.addParameter('ecc',  1, @isnumeric);
+        p.addParameter('coneType',  -1, @isnumeric);
 
         p.parse(cmosaic, varargin{:});  
         
