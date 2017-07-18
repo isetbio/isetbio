@@ -64,7 +64,7 @@ mosaicParams.centerNoise = 0;
 mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
 mosaicParams.type  = cellType;
-mosaicParams.model = 'GLM';
+mosaicParams.model = 'LNP';
 mosaicParams.coupling = false;
 
 diameters = round([10 10 5 5 20]);  % Should be samples on the input layer
