@@ -42,7 +42,7 @@ classdef rgcMosaic < handle
     
     %% Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        Parent;
+        parent;
     end
     
     % Was Protected properties.  Changing to Public for debugging, and
@@ -123,18 +123,20 @@ classdef rgcMosaic < handle
             p.parse(rgcLayer,cellType,varargin{:});
             inMosaic = p.Results.inMosaic;
             
+            % We need the parameters in the layer often enough.
+            obj.parent = rgcLayer;
+            
             % This the rgc mosaic type
             obj.cellType = strrep(lower(cellType),' ','');
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
-            obj.rgcInitSpace(rgcLayer, cellType, 'inMosaic', inMosaic, varargin{:}); % Sets sRFcenter, sRFsurround
+            % Sets sRFcenter, sRFsurround
+            obj.rgcInitSpace(cellType, 'inMosaic', inMosaic, varargin{:}); 
             
             % Sets temporal RF properties of tCenter/tSurround
             obj.rgcInitTime(rgcLayer);
             
-            % We need the parameters in the parent often enough.  So put in
-            % a pointer to it here.
-            obj.Parent = rgcLayer;
+
         end
         
         % set function, see mosaicSet for details
@@ -152,7 +154,7 @@ classdef rgcMosaic < handle
     %% Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function window(obj)
-            obj.figureHandle = rgcMosaicWindow(obj);
+            obj.fig = rgcMosaicWindow(obj);
             % Tip: Retrieve guidata using
             %    gui = guidata(obj.figureHandle);
             %

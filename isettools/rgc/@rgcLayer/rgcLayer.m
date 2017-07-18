@@ -123,12 +123,12 @@ classdef rgcLayer < cellLayer
             p.KeepUnmatched = true;
             
             p.parse(bpLayer,varargin{:});
-            obj.name         = p.Results.name;
+            obj.name    = p.Results.name;
             obj.nTrials = p.Results.nTrials;
             
             % Should match the cone mosaic patch size and time step
-            obj.size      = bpLayer.size;        % Bipolar patch size
-            obj.timeStep  = bpLayer.timeStep;    % Temporal sampling
+            obj.size     = bpLayer.size;        % Bipolar patch size
+            obj.timeStep = bpLayer.timeStep;    % Temporal sampling
                         
             
             % Spatial position on the retina (meters, fovea is 0,0).
@@ -138,8 +138,8 @@ classdef rgcLayer < cellLayer
         end
         
         
-        function obj = mosaicCreate(varargin)
-            obj = rgcMosaicCreate(varargin{:});
+        function rgcM = mosaicCreate(rgcL,varargin)
+            rgcM = rgcMosaicCreate(rgcL,varargin{:});
         end
         
         % set function, see irSet

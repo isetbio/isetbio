@@ -1,35 +1,31 @@
-function ir = rgcMosaicCreate(ir, varargin)
+function rgcM = rgcMosaicCreate(rgcL, varargin)
 % Add an RGC mosaic with a specific computational model and cell type
 % 
-%      ir = rgcMosaicCreate(ir, 'model',val, 'mosaicType',val)
+%      rgcM = rgcMosaicCreate(rgcL, 'model',val, 'mosaicType',val)
 % or
-%      ir.mosaicCreate('model', val, 'type', val);
 %
-% The rgc mosaics are stored as a cell array attached to the inner retina
-% (ir) class.  The RGC mosaics are the main computational engine for
-% producing retinal spike outputs.
+% The rgc mosaics are stored as a cell array attached to the an rgcLayer
+% class.  The rgc mosaics are the computational engine for producing
+% retinal spike outputs.
 %
-% The  mosaic types are
+% The rgc mosaic types are
 %     'ON Parasol', 
 %     'OFF Parasol', 
 %     'ON Midget', 
 %     'OFF Midget', 
-%     'Small Bistratified' 
+%     'ON sbc' 
 %
 % The  models are
 %   GLM     - Pillow et al. coupled generalized line
 %   LNP     - Linear, nonlinear, poisson (EJ 2002 reference)
 %   Phys    - Fitting the physiology data from EJ
 %
-% Often, we call it as a method of the inner retina class. In that case,
+% Often, we call it as a method of the rgcLayer class. In that case,
 % the call looks like: 
 %
-%     ir = irCreate(bipolar(coneMosaic));
-%     ir.mosaicCreate('model','lnp','type','on parasol');
-%     ir.mosaicCreate('model','GLM','type','on midget');
+%      rgcL.mosaicCreate('model', val, 'type', val);
 %
-% See also:   t_rgc<>.m,     v_rgc<>, contain many examples.  These may
-% rely on the RemoteData Toolbox downloads of pre-computed stimuli.
+% See also: s_LayersTest.m
 %
 % Copyright ISETBIO Team 2016
 
@@ -44,12 +40,12 @@ mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratifie
 p.addParameter('type','on parasol',@(x) any(validatestring(ieParamFormat(x),mosaicTypes)));
 
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
-p.addParameter('model','lnp',@(x) any(validatestring(x,modelTypes)));
+p.addParameter('model','lnp',@(x) any(validatestring(ieParamFormat(x),modelTypes)));
 
-p.parse(ir,varargin{:});
+p.parse(rgcL,varargin{:});
 
 mosaicType = p.Results.type;
-model             = p.Results.model;
+model      = p.Results.model;
 %% Switch on the computational model
 
 % There is a separate mosaic class for each ir computational model.  
@@ -58,20 +54,20 @@ switch ieParamFormat(model)
     case {'lnp', 'rgclnp'}
         % Standard linear nonlinear poisson        
         % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-        obj = rgcLNP(ir, mosaicType,p.Unmatched);
-        irSet(ir, 'mosaic', obj);
+        rgcM = rgcLNP(rgcL, mosaicType,p.Unmatched);
+        irSet(rgcL, 'mosaic', rgcM);
     case {'glm','rgcglm'}
         % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
         % Nature (2008).
-        obj = rgcGLM(ir, mosaicType,p.Unmatched);
-        irSet(ir, 'mosaic', obj);
+        rgcM = rgcGLM(rgcL, mosaicType,p.Unmatched);
+        irSet(rgcL, 'mosaic', rgcM);
     case{'phys','rgcphys'}
         % Unit testing of the physiology
         % Requires the isetbio repository EJLExperimentalRGC
-        obj = rgcPhys(ir, mosaicType);
-        irSet(ir, 'mosaic', obj);
+        rgcM = rgcPhys(rgcL, mosaicType);
+        irSet(rgcL, 'mosaic', rgcM);
     otherwise
-        error('Unknown inner retina class: %s\n',class(ir));
+        error('Unknown inner retina class: %s\n',class(rgcL));
 end
 
 end

@@ -5,6 +5,7 @@ function str = describe(obj)
 %   
 % BW ISETBIO Team, 2017
 
+%% Layer values
 str = [];
 txt = sprintf('Patch size:   \t %.1f %.1f um\n',obj.input.size*1e6);
 str = addText(str,txt);
@@ -19,6 +20,14 @@ str = addText(str,txt);
 txt = sprintf('Eye side:     \t %s \n',obj.input.input.whichEye);
 str = addText(str,txt);
 txt = sprintf('Species:      \t %s \n',obj.input.input.species);
+str = addText(str,txt);
+str = addText(str,sprintf('---\n'));
+
+%% Selected mosaic values
+
+gdata = guidata(obj.fig);
+nMosaic = get(gdata.listMosaics,'Value');
+txt = sprintf('Row,Col:     \t %d, %d\n',size(obj.mosaic{nMosaic}.cellLocation));
 str = addText(str,txt);
             
 end

@@ -1,10 +1,16 @@
-function rgcM = rgcInitSpace(rgcM,rgcLayer,cellType,varargin)
+function rgcM = rgcInitSpace(rgcM,cellType,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
-%    rgcM = rgcInitSpace(rgcM,rgcLayer,cellType)
+%    rgcM = rgcInitSpace(rgcM,cellType,varargin)
 %
-% cellType is one of (spacing and case are irrelevant)
-%  {'ON Parasol', 'OFF Parasol', 'ON Midget', OFF Midget', 'Small bistratified'}
+% Required inputs
+%   rgcM:     the mosaic
+%   cellType: is one of (spacing and case are irrelevant)
+%       {'ON Parasol', 'OFF Parasol', 'ON Midget', OFF Midget', 'ON SBC'}
+%
+% Optional Parameter-Values
+%   inMosaic
+%   rfDiameter
 %
 % RF size scale parameters: Parasol RFs are the largest, while Midget RFs
 % are about half the diameter of Parasol RFs, and SBC RFs are 1.2X the
@@ -37,17 +43,17 @@ p = inputParser;
 p.KeepUnmatched = true;
 vFunc = @(x)(ismember(class(x),{'rgcGLM','rgcLNP'}));
 p.addRequired('rgcM',vFunc);
-p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
-
 vFunc = @(x)(ismember(ieParamFormat(x),...
     {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'onsbc','smallbistratified'}));
 p.addRequired('cellType',vFunc);
+
 p.addParameter('inMosaic',1,@isscalar);
 p.addParameter('rfDiameter',[],@isnumeric); % microns
-p.parse(rgcM,rgcLayer,cellType,varargin{:});
+p.parse(rgcM,cellType,varargin{:});
 
 rgcM.rfDiameter = p.Results.rfDiameter;
-inMosaic = p.Results.inMosaic;
+inMosaic        = p.Results.inMosaic;
+rgcLayer        = rgcM.parent;
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(cellType)
@@ -87,7 +93,16 @@ if isempty(rgcM.rfDiameter)
     rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2);
 end
 
-% Build spatial RFs of all RGCs in this mosaic
+%% Build spatial RFs of all RGCs in this mosaic.
+%
+% This section of code is in drastic need of reorganizing (BW).
+%
+% First, the diameter should be given in terms of input mosaic samples,
+% keeping the units consistent.
+% Second, the code for choosing based on the literature should be pulled
+% out of here and provided as a separate utility.
+%
+%
 % We need to know the number of rows and columns in the bipolarMosaic that
 % drives this mosaic.  So, we need to know which bipolar mosaic we are
 % using as input here.
@@ -102,9 +117,11 @@ sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
     rgcM.rfDiameter, ...
     p.Unmatched);
 
-% sRFcenter, sRFsurround and cellLocation are in units of the inputObj - scene pixels,
-% cones or bipolar cells.
+% sRFcenter, sRFsurround matrices and cellLocation are in units of the
+% inputObj - scene pixels, cones or bipolar cells.
+%
 % rfDiaMagnitude is in units of micrometers.
+%
 % tonicDrive is in units of conditional intensity.
 
 end

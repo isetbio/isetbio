@@ -41,6 +41,7 @@ for ii=1:length(cellType)
     bpMosaicParams.cellType = cellType{ii};
     bpL.mosaicCreate(cellType{ii},bpMosaicParams);
     
+    % Should be samples on the input layer
     support = 11;
     bpL.mosaic{ii}.set('sRFCenter',  fspecial('gaussian',[support support],1));
     bpL.mosaic{ii}.set('sRFSurround',fspecial('gaussian',[support support],2));
@@ -64,16 +65,17 @@ mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
 mosaicParams.type  = cellType;
 mosaicParams.model = 'GLM';
+mosaicParams.coupling = false;
 
-diameters = [10 10 5 5 20];  % In microns.
+diameters = round([10 10 5 5 20]);  % Should be samples on the input layer
 for ii = 1:length(cellType)
     mosaicParams.rfDiameter = diameters(ii);
     mosaicParams.type = cellType{ii};
-    mosaicParams.inMosaic = 1;   % Could switch up and match inputs to outputs
+    mosaicParams.inMosaic = ii;   % Could switch up and match inputs to outputs
     rgcL.mosaicCreate(mosaicParams);
 end
 % rgcL.mosaic{1}.window
-nTrials = 1; rgcL.set('numberTrials',nTrials);
+nTrials = 1; rgcL.set('nTrials',nTrials);
 
 %% Compute the inner retina response and visualize
 

@@ -72,10 +72,15 @@ classdef rgcGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcGLM(ir, mosaicType, varargin)
+        function obj = rgcGLM(rgcL, mosaicType, varargin)
+            
+            p = inputParser;
+            p.KeepUnmatched = true;
+            p.addParameter('coupling',true,@islogical);
+            p.parse(varargin{:});
             
             % Initialize the mosaic parent class
-            obj = obj@rgcMosaic(ir, mosaicType, varargin{:});
+            obj = obj@rgcMosaic(rgcL, mosaicType, varargin{:});
             
             % The Pillow generator function
             obj.generatorFunction = @exp;
@@ -84,7 +89,9 @@ classdef rgcGLM < rgcMosaic
             obj.postSpikeFilter = buildPostSpikeFilter(obj.dt);
             
             % Coupling filters between nearby ganglion cells
-            [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, obj.dt);
+            if p.Results.coupling
+                [obj.couplingFilter, obj.couplingMatrix] = buildCouplingFilters(obj, obj.dt);
+            end
             
         end
         

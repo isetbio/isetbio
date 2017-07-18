@@ -8,6 +8,7 @@ function ellipseParameters = ellipseGen(nRows, nCols, varargin)
 
 %%
 p = inputParser;
+p.KeepUnmatched = true;
 p.addRequired('nRows'); % number rows of RGCs
 p.addRequired('nCols'); % number cols of RGCs
 p.addParameter('angleValues',[],@isnumeric);  % array of specific angle values
@@ -18,9 +19,9 @@ p.parse(nRows,nCols,varargin{:});
 
 nRows = p.Results.nRows;
 nCols = p.Results.nCols;
-angleValues = p.Results.angleValues;
-axisValues = p.Results.axisValues;
-axisVariance = p.Results.axisVariance;
+angleValues   = p.Results.angleValues;
+axisValues    = p.Results.axisValues;
+axisVariance  = p.Results.axisVariance;
 ellipseParams =  p.Results.ellipseParams;
 
 %% Build vectors

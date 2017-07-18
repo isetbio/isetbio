@@ -42,7 +42,8 @@ allowableFieldsToSet = {...
         'mosaic',...
         'numberTrials',...
         'recordedSpikes'...
-        'numbertrials'
+        'numbertrials',...
+        'ntrials'
     };
 p.addRequired('param',@(x) any(validatestring(x,allowableFieldsToSet)));
 p.addRequired('val');
@@ -72,7 +73,7 @@ switch param
         end
         obj.mosaic{mosaicInd+1,1} = val;   
         
-    case{'numbertrials'}
+    case{'numbertrials','ntrials'}
         % Will be a vector some day for number of trials for each mosaic in
         % the ir.  Now, it is just a plain old number.
         obj.nTrials = val;
