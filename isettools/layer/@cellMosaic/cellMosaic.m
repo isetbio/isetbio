@@ -61,6 +61,10 @@ end
 properties (Access = public)
     %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
     fig;
+    
+    % NOTES - A cell array to keep notes, parameters, unaccounted for
+    % things.  Maybe it should be a struct.
+    notes = {};
 end
 
 % Public methods

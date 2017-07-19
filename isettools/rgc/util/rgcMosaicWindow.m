@@ -57,7 +57,7 @@ if isempty(varargin) || ~isa(varargin{1}, 'rgcMosaic')
     error('rgc mosaic object required');
 end
 rgcM = varargin{1};
-rgcM.figureHandle = hObject;   % Store this figure handle
+rgcM.fig = hObject;   % Store this figure handle
 
 % Choose default command line output for rgcMosaicWindow
 handles.output = hObject;
@@ -271,7 +271,7 @@ function menuFileClose_Callback(hObject, eventdata, handles)
 % hObject    handle to menuFileClose (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.rgcM.figureHandle = [];
+handles.rgcM.fig = [];
 delete(handles.mosaicWindow);
 end
 
@@ -281,7 +281,7 @@ function mosaicWindowRefresh(handles)
 % Update all the text fields and such with the data in the mosaic
 
 rgcM  = handles.rgcMosaic;
-fig   = figure(rgcM.figureHandle);
+fig   = figure(rgcM.fig);
 gdata = guidata(fig);
 
 % Show the appropriate response axis plot

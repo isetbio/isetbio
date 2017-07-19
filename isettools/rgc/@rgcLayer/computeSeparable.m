@@ -1,37 +1,44 @@
-function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcL, bp, varargin)
-% IRCOMPUTELINEARSTSEPARABLE - Computes the RGC mosaic linear response
+function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcL, bpMosaic, varargin)
+% COMPUTESEPARABLE - Computes the RGC mosaic linear response
 %
-%   ir = irComputeLinearSTSeparable(rgcL, input, 'bipolarTrials', bpTrials)
+%   computeSparable(rgcL, bpMosaics)
+%   @rgcLayer.computeSeparable(bpMosaics,varargin)
+%
+% Computes the linear responses and spikes for each of the mosaics in a
+% retina layer object.  
+%
+% ***
+%  PROGRAMMING:  We still have data management to deal with in terms of
+%  which bpMosaics drive which rgcMosaics.
+% ***
 %
 % The linear responses for each mosaic are computed. The linear computation
-% is always space-time separation for each mosaic.  The spatial
-% computationa, however, is not a convolution because the RF of the cells
-% in each mosaic differ.
-%
-% There are two types of possible input objects.
+% is space-time separation for each mosaic.  The spatial computation,
+% however, is not a convolution because the RF of the cells within a mosaic
+% can differ.
 %
 % Required inputs
-%   rgcL:    A retina layer object with RGC mosaics
-%   bp:      A bipolar cell mosaic object.
+%   rgcL:     A retina layer object with RGC mosaics (obj)
+%   bpMosaic: A bipolar cell mosaic object or a cell array of bipolar
+%             mosaicss.
 %
 % Optional inputs
 %  bipolarTrials:  Multiple bipolar trials can be sent in using this
 %                  variable.
 %
-% Computational questions
+% For each corresponding bp and rgc mosaic, the center and surround RF
+% responses are calculated (matrix multiply). then the temporal impulse
+% response for the center and surround is calculated.  This continuous
+% operation produces the 'linear' RGC response shown in the window.
+%
+% The spikes are computed from the linear response in a separate routine.
+%
+% Science and references 
+%
 %    * Why do we scale the bipolar voltage input with ieContrast?
 %    * Why is the RGC impulse response set to an impulse?  I gather this is
 %    because the photocurrent*bipolar equals the observed RGC impulse
 %    response?
-%
-% Computation
-%
-%  For each mosaic, the center and surround RF responses are calculated
-%  (matrix multiply). then the temporal impulse response for the center and
-%  surround is calculated.  This continuous operation produces the 'linear'
-%  RGC response shown in the window.
-%
-%  The linear response is the input to irComputeSpikes.
 %
 % rgcGLM model: The spikes are computed using the recursive influence of
 % the post-spike and coupling filters between the nonlinear responses of
@@ -40,19 +47,11 @@ function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcL, bp, varargin)
 % Simoncelli, Nature, 2008, licensed for modification, which can be found
 % at
 %
-%            http://pillowlab.princeton.edu/code_GLM.html
-%
-% Outputs: 
-%   The linear response and spikes are attached to the inner retina
-%   mosaics.  
-%
-% Examples:
-%
-%   ir.compute(identityOS);
+%   http://pillowlab.princeton.edu/code_GLM.html
 %
 % See also: rgcGLM/rgcCompute, s_vaRGC in WL/WLVernierAcuity
 %
-% JRG (c) Isetbio team, 2016
+% JRG/BW (c) Isetbio team, 2016
 
 %% Check inputs
 
@@ -70,7 +69,7 @@ p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 p.addParameter('bipolarScale',  50, @isnumeric);
 p.addParameter('bipolarContrast',  1, @isnumeric);
 
-p.parse(rgcL,bp,varargin{:});
+p.parse(rgcL,bpMosaic,varargin{:});
 bipolarScale = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
 
@@ -78,7 +77,7 @@ bipolarContrast = p.Results.bipolarContrast;
 bipolarTrials = p.Results.bipolarTrials;
 nTrials = 1;
 if ~isempty(bipolarTrials) 
-    if length(bp)==1
+    if length(bpMosaic)==1
         nTrials = size(bipolarTrials,1); 
     else
         nTrials = size(bipolarTrials{1},1); 
@@ -92,17 +91,17 @@ for iTrial = 1:nTrials
     % Looping over the rgc mosaics
     for rgcType = 1:length(rgcL.mosaic)                
         % Get the bipolar input data, handle bp mosaic and nTrials cases
-        if length(bp) == 1
+        if length(bpMosaic) == 1
             if ~isempty(bipolarTrials)
                 input   = squeeze(bipolarTrials(iTrial,:,:,:));
             else
-                input   = bp.get('response');
+                input   = bpMosaic.get('response');
             end
         else
             if ~isempty(bipolarTrials)
                 input   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
             else
-                input   = bp{rgcType}.get('response');
+                input   = bpMosaic{rgcType}.get('response');
             end
         end
         

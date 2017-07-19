@@ -14,7 +14,7 @@ function hdl = plot(obj, pType, varargin)
 %
 % Optional parameters-value pairs
 %   gamma - controls image display
-%   pos   - position
+%   pos   - positions to plot for time series
 %
 % Examples:
 %   (run s_LayersTest).
@@ -44,14 +44,14 @@ allowableFields = {...
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 p.addParameter('gamma',1,@isscalar);
-p.addParameter('pos',[1,1],@isvector);
+p.addParameter('pos',[],@ismatrix);
 
 % Parse pType
+% Additional parameters are pulled out in the case statements, below.
 p.parse(pType,varargin{:}); 
-% Parameters are pulled out in the case statements, below.
 
-%% Create window
-hdl = gcf;%vcNewGraphWin([],'upperLeftBig');
+%% Set the window.  Maybe this should be obj.fig???
+hdl = gcf;   %vcNewGraphWin([],'upperLeftBig');
 
 sz = size(obj.responseCenter);
 
@@ -61,9 +61,7 @@ sz = size(obj.responseCenter);
 % Options
 switch ieParamFormat(pType)
     case 'spatialrf'
-        % bp.plot('spatial rf')
-        % Not a good idea yet, because the rf is usually an impulse these
-        % days.  May change in the future.
+        % @bipolarMosaic.plot('spatial rf')
         srf = obj.sRFcenter - obj.sRFsurround;
         sz = size(srf); 
         if isequal(sz,[1, 1])
@@ -74,10 +72,10 @@ switch ieParamFormat(pType)
         x = (1:sz(2)) - mean(1:sz(2));    
         y = (1:sz(1)) - mean(1:sz(1)); 
         surf(x,y,srf); colormap(parula);
-        xlabel('Cone position re: center'); zlabel('Responsivity')
+        xlabel('Cone samples'); zlabel('Responsivity')
         
     case {'mosaic'}
-        % bp.plot('mosaic') - Shows RF array
+        % @bipolarMosaic.plot('mosaic') - Shows RF array
         % Get contour lines for mosaic RFs
         % The cell locations are specified with respect to the cone mosaic
         % input layer.  We would like to present them in terms of microns
@@ -134,23 +132,49 @@ switch ieParamFormat(pType)
         title(titleS);
             
     case{'responsecenter'}
-        % bp.plot('response center')
-        responseRS = reshape(obj.responseCenter,sz(1)*sz(2),sz(3));
-        plot(.001*(1:sz(3)),responseRS);
-        xlabel('Time (sec)');
-        ylabel('Response (AU)');
-        title('Bipolar Mosaic Response');
+        % @bipolarMosaic.plot('response center')
+        % @bipolarMosaic.plot('response center','pos',[1,1]);
+        % TODO - add cell lcation
+        pos = p.Results.pos;
+        if isempty(pos)
+            % Put position in the rows, time in the columns
+            responseRS = RGB2XWFormat(obj.responseCenter);
+        else
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseCenter,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:);
+            end
+        end
+        
+        % Show it
+        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS');
+        xlabel('Time (sec)'); ylabel('Response (AU)');
+        title('Center response(s)'); grid on
         
     case{'responsesurround'}
-        % bp.plot('response surround')
-        responseRS = reshape(obj.responseSurround,sz(1)*sz(2),sz(3));
-        plot(.001*(1:sz(3)),responseRS);
-        xlabel('Time (sec)');
-        ylabel('Response (AU)');
-        title('Bipolar Mosaic Response');
+        % @bipolarMosaic.plot('response surround')
+        % responseRS = reshape(obj.responseSurround,sz(1)*sz(2),sz(3));
+        pos = p.Results.pos;
+        if isempty(pos)
+            % Put position in the rows, time in the columns
+            responseRS = RGB2XWFormat(obj.responseSurround);
+        else
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            end
+        end
+        
+        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS);
+        xlabel('Time (sec)'); ylabel('Response (AU)');
+        title('Bipolar surround response'); grid on
         
     case{'responsetimeseries'}
-        % bp.plot('response time series','pos',...)
+        % @bipolarMosaic.plot('response time series','pos',...)
         %
         % Open a new window and show the time series, but not in any
         % particular organized way. Only up to 200 samples are shown.
@@ -158,40 +182,48 @@ switch ieParamFormat(pType)
         %
         pos = p.Results.pos;
         if isempty(pos)
-            nCells = sz(1)*sz(2);
-            response = reshape(obj.get('response'),nCells,sz(3));    
+            responseRS = RGB2XWFormat(obj.responseCenter - obj.responseSurround);  
+            nCells = size(responseRS,1);
         else
-            response = squeeze(obj.responseCenter(pos(1),pos(2),:) - obj.responseSurround(pos(1),pos(2),:));
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:) - obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            end            
         end
         tSamples = obj.timeStep*(1:size(obj.responseCenter,3));
         
         vcNewGraphWin;
-        if isempty(pos) && nCells >= 100
+        if isempty(pos) &&  nCells > 100
             % 100 randomly sampled positions
             cSamples = randi(nCells,[100,1]);
-            plot(tSamples,response(cSamples,:));
+            plot(tSamples,responseRS(cSamples,:));
             title('Bipolar current (100 samples)');
         elseif isempty(pos)
             % All of the spatial samples
-            plot(tSamples,response);
+            plot(tSamples,responseRS);
             title('Bipolar current');
         else
             % From a single point
-            plot(tSamples,response)
-            title(sprintf('Position %d,%d',pos(1),pos(2)));
+            plot(tSamples,responseRS)
+            title(sprintf('Selected positions'));
         end
         
         xlabel(sprintf('Time (sec, \\Deltat %.0f ms)',obj.timeStep*1e3));
-        ylabel('Current (AU)');
+        ylabel('Current (a.u.)');
         grid on
         
     case{'responseimage'}
-        % bp.plot('response')
+        %
+        % @bipolarMosaic.plot('response image')
+        %
         response = (obj.get('response'));
         patchSizeUM = obj.patchSize*1e6;
         dx = patchSizeUM/size(response,1);  % Step in microns
-        samples = 1:dx:size(response,1);
-        samples = samples - mean(samples(:));
+        rowSamples = dx(1)*(1:size(response,1)); 
+        rowSamples = rowSamples - mean(rowSamples);
+        colSamples = dx(2)*(1:size(response,2));
+        colSamples = colSamples - mean(colSamples);
         
         % The gamma has to deal with negative numbers, sigh.
         if p.Results.gamma ~= 1
@@ -202,7 +234,7 @@ switch ieParamFormat(pType)
             img = mean(response,3);
         end
         
-        imagesc(samples,samples,img);
+        imagesc(rowSamples,colSamples,img);
         axis image; colormap(gray(256)); title('Current (a.u.)');
         xlabel(sprintf('Cell position (\\mum)'));
         

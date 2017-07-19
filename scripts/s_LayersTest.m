@@ -28,52 +28,19 @@ alignedC  = data.alignedC;
 bpL = bipolarLayer(cMosaic);
 
 % Make each type of bipolar mosaic
-cellType = {'on diffuse','off diffuse','on midget','off midget','small bistratified'};
+cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
 
 clear bpMosaicParams
 bpMosaicParams.rectifyType = 1;  % Experiment with this
 
 bpMosaic  = cell(1,length(cellType));
 bpNTrials = cell(1,length(cellType));
-for ii = 1:length(cellType)
-    
+for ii = 1:length(cellType)   
     bpMosaicParams.cellType = cellType{ii};
-    
-    bpMosaic{ii} = bipolarMosaic(cMosaic, bpMosaicParams);
-    bpMosaic{ii}.set('sRFcenter',1);
-    bpMosaic{ii}.set('sRFsurround',0);
-    
-    [~, bpNTrialsCenterTemp, bpNTrialsSurroundTemp] = ...
-        bpMosaic{ii}.compute(cMosaic,'coneTrials',alignedC);
-    bpNTrials{ii} = bpNTrialsCenterTemp - bpNTrialsSurroundTemp;
-    
+    bpL.mosaicCreate(cellType{ii},bpMosaicParams);
+    bpL.mosaic{ii}.compute(cMosaic);   
 end
-bpL.mosaic = bpMosaic;
 
-% Try varying some experimental parameters
-%
-% bpL.mosaic{1}.set('sRFcenter',5); bpL.mosaic{1}.set('sRFsurround',1);
-% Now compute and redisplay.
-%
-% disp('Computing bipolar responses'); [~, bpNTrialsCenter,
-% bpNTrialsSurround] = bp.compute(cMosaic,'coneTrials',alignedC);
-%
-%
-% TODO
-%
-% * After showing movie, the numbers on the mosaic axis are missing 
-% * The units on the center size may not be correct. 
-% * We need to allow changing the size of the center and surround on the bipolar.
-
-%% Mosaics shown directly
-% bpL.mosaic{1}.window;
-% bpL.mosaic{2}.window;
-
-%% The size of the RFs are surprising here
-
-% The bipolar sizes we model are all the same for all the types.  The
-% increaed RF size of the corresponding RGCs arise from spatial summation
-% at the next synapse in the model.
 bpL.window;
 
 %% Retinal ganlion cell model
@@ -93,7 +60,7 @@ mosaicParams.model = 'GLM';
 
 diameters = [5 5 3 3 10];  % In microns.
 
-cellType = {'on parasol','off parasol','on midget','off midget','smallbistratified'};
+cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
     mosaicParams.rfDiameter = diameters(ii);
     mosaicParams.type = cellType{ii};
@@ -105,30 +72,11 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 %% Compute the inner retina response and visualize
 
-% Number of trials refers to number of repeats of the same stimulus
 disp('Computing rgc responses');
-[rgcL, nTrialsSpikes] = rgcL.compute(bpMosaic,...
-    'bipolarTrials',bpNTrials,...
-    'bipolarScale',100,...
+rgcL = rgcL.compute(bpL,...
+    'bipolarScale',50,...
     'bipolarContrast',1);
 
-%% Show the layer
-
 rgcL.window;
-
-%% Retinal ganglion cell layer window
-
-% TODO:
-%   Put up 'ieInWindowMessage() when the movie is playing Label the
-%   distances on the x and y axes
-%
-
-% I wish we could have two windows up at the same time.  Read the code to
-% see why it is always the same window.
-% rgcL.mosaic{1}.window;
-% %%
-% rgcL.mosaic{3}.window;
-% %%
-% rgcL.mosaic{5}.window;  % This seems off to BW, slanted line???
 
 %%

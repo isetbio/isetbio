@@ -29,6 +29,8 @@ classdef cellLayer < handle
         % gdata = guidata(fig); Should work.
         fig;
         
+        % NOTES - cell array to store notes
+        notes = {};
     end
     
     % Protected properties; Methods of the parent class and all of its

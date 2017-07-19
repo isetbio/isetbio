@@ -3,26 +3,21 @@ classdef bipolarMosaic < cellMosaic
 %
 % The bipolar mosaic class is a subclass of cellMosaic. It is used to
 % simulate the processing from the cone outer segment current to the
-% bipolar cell current output. To create the bipolar mosaic, use
+% bipolar cell current output. 
+%
+% To create the bipolar mosaic, use
 % 
-%    bp = bipolarMosaic(cMosaic, 'PARAM1', val1, 'PARAM2', val2,...) 
+%   bp = bipolarMosaic(coneMosaic, 'PARAM1', val1, 'PARAM2', val2,...) 
 %
 % Optional parameter name/value pairs are listed below.
 % 
-% We do not yet have a validated model of the bipolar temporal impulse
-% response.  To simulate it, we assume that the RGC responses from the cone
-% photocurrent as measured by EJ is correct.  The bipolar temporal impulse
-% response (tIR) is the response necessary to combine with the cone
-% temporal tIR to equal the RGC tIR.
-%
 % The bipolar object also allows for the simulation of nonlinear subunits
 % within retinal ganglion cell spatial receptive fields.
 % 
-% Input: the cone photocurrent response over time from a cone mosaic.
+% Input (Required):
+%  coneMosaic: a cone mosaic object that includes the photocurrent response
 % 
-% Output: the bipolar voltage response over time. This is fed into an inner
-% retina object. (See s_vaRGC.m for an example.  More will appear).
-% 
+% Input (Parameter-Value pairs):
 %     cellLocation;                    % location of bipolar RF center
 %     cellType;                        % there are five different cell types
 %     patchSize;                       % size of retinal patch from sensor
@@ -37,8 +32,16 @@ classdef bipolarMosaic < cellMosaic
 % 
 %  ISETBIO wiki: <a href="matlab:
 %  web('https://github.com/isetbio/isetbio/wiki/bipolar','-browser')">bipolar</a>.
-%   
-% 5/2016 JRG (c) isetbio team
+%  
+% Scientific notes and references
+%  We do not have a validated model of the bipolar temporal impulse
+%  response.  To simulate it, we assume that the RGC responses from the
+%  cone photocurrent as measured by EJ is correct.  The bipolar temporal
+%  impulse response (tIR) is the response necessary to combine with the
+%  cone temporal tIR to equal the RGC tIR.
+%
+
+% JRG/BW (c) isetbio team, 2016
 
 %% Define object
 % Public, read-only properties.
@@ -47,33 +50,9 @@ end
 
 % Protected properties.
 properties (SetAccess = protected, GetAccess = public)
-    % We need an amplitude for the center and surround
-    
-    %     % CELLTYPE diffuse on or off
-    %     cellType;
-    %
-    %     %CELLLOCATION location of bipolar RF centers w.r.t. the input samples
-    %     cellLocation;
-    %
-    %     % PATCHSIZE size of retinal patch w.r.t. the cone mosaic
-    %     patchSize;
-    %
-    %     % TIMESTEP time step of simulation from original cone mosaic
-    %     timeStep;
-    
-    %     % FILTERTYPE bipolar temporal filter type
-    %     filterType;
-    %
-    %     % SRFCENTER spatial RF of the center on the input samples
-    %     % Represented w.r.t the input sampling grid
-    %     sRFcenter = [];
-    %
-    %     % SRFSURROUND spatial RF of the surround on the input samples
-    %     % Represented w.r.t the input sampling grid
-    %     sRFsurround = [];
-    
-    % The bipolar calculation can include rectification.  We also store the
-    % center and surround responses separately
+    % TODO: We should specify an amplitude for the center and surround.
+    % Perhaps we should specify parameters of the receptive fields beyond
+    % what is in cellMosaic.
     
     % RECTIFICATIONCENTER nonlinear function for center
     rectificationCenter              
@@ -86,12 +65,6 @@ properties (SetAccess = protected, GetAccess = public)
     
     % RESPONSESURROUND Store the linear response of the surround after convolution
     responseSurround;
-    
-    %     % cone mosaic input
-    %     input;
-    %
-    %     % parent - the bipolarLayer containing this mosaic
-    %     parent;
 
 end
 
@@ -105,8 +78,6 @@ properties(Access = private)
 end
 
 properties (Access = public)
-    %FIGUREHANDLE When we open the figure for the mosaic, we store the handle here
-    figureHandle;
 end
 
 % Public methods
@@ -116,7 +87,8 @@ methods
     function obj = bipolarMosaic(cmosaic, varargin)     
         % Initialize the bipolar class
         %
-        %   bp = bipolar(cMosaic,'cellType','ondiffuse');
+        % Example:
+        %   bp = bipolarMosaic(cMosaic,'cellType','ondiffuse');
         %
         
         p = inputParser;
@@ -124,11 +96,12 @@ methods
         
         p.addParameter('parent',[], @(x)(isequal(class(x),'bipolarLayer')));
         p.addParameter('cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
+        p.addParameter('cellLocation',  [], @isnumeric);
         p.addParameter('rectifyType', 1, @isnumeric);
         p.addParameter('filterType',  1, @isnumeric);
-        p.addParameter('cellLocation',  [], @isnumeric);
         p.addParameter('ecc',  1, @isnumeric);
         p.addParameter('coneType',  -1, @isnumeric);
+        p.addParameter('stride',  1, @isnumeric);
 
         p.parse(cmosaic, varargin{:});  
         
@@ -145,7 +118,6 @@ methods
         % mosaic.  Maybe these should just be private variables?
         obj.patchSize = cmosaic.size; 
         obj.timeStep  = cmosaic.integrationTime;
-        
         
         obj.cellType = strrep(lower(p.Results.cellType),' ','');
         
@@ -173,15 +145,17 @@ methods
         
         obj.filterType = p.Results.filterType;
         
-        % Build spatial receptive field
-        obj.spatialRFInit('ecc',p.Results.ecc,'conemosaic',cmosaic);
+        % Build spatial receptive fields
+        obj.spatialRFInit('conemosaic',cmosaic,...
+            'ecc',   p.Results.ecc,...
+            'stride',p.Results.stride);
         
     end
     
     function window(obj)
         % Tip: Retrieve guidata using
         %    gui = guidata(obj.figureHandle);
-        obj.figureHandle = bipolarWindow(obj);
+        obj.fig = bipolarWindow(obj);
     end
     
     function bipolarsPerMicron = cellsPerDistance(obj,varargin)
@@ -203,9 +177,11 @@ methods
 end
 
 properties (Constant)
-    % VALIDCELLTYPES Cell array of strings containing valid values for the
-    % cell type.  diffuse and parasol are synonyms.  Not sure we should
-    % have them both.  And, possibly we should have smallbistratified. (BW)
+    % VALIDCELLTYPES 
+    %
+    % Cell array of strings containing valid values for the cell type.
+    % diffuse and parasol are synonyms.  Not sure we should have them both.
+    % And, possibly we should have smallbistratified. (BW)
     validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
 end
 

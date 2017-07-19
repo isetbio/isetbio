@@ -1,5 +1,5 @@
 function spatialRFInit(obj,varargin)
-% SPATIALRFINIT - Build spatial receptive field for the bipolar mosaic
+% SPATIALRFINIT - Build spatial receptive fields for the bipolar mosaic
 %
 %    @bipolarMosaic.spatialRFInit(varargin)
 %
@@ -8,6 +8,11 @@ function spatialRFInit(obj,varargin)
 % compute the  spatial spread, we need to account for the cone spacing.
 % Thus, if the cones are spaced, say 2 um, and the bipolar RF spans 5
 % samples, the spatial extent will be 2*5 um. 
+%
+% Scientific notes and references
+%
+%  Size of the RF
+%  Sampling density (stride) of the RF centers.
 %
 % --- REFERENCES AND BUILTIN bipolar types ---
 %
@@ -48,15 +53,26 @@ function spatialRFInit(obj,varargin)
 
 %  PROGRAMMING TODO
 %
-% These numbers don't make sense to BW at this time.  We need to write a
-% script showing how big they are with respect to the cone mosaic, and we
-% need to check how they vary with eccentricity.  Comparing with the curves
-% in the cited data would be best.
+% To compute the spread in microns from this specification, multiply the
+% number of input samples by the spatial sample separation of the cones in
+% the mosaic (stored in the input slot).
 %
 % We will incorporate a function that changes the size of the spread and
 % support as a function of eccentricity.  For now we just put in some
 % placeholder numbers. (Let's do better on this explanation, BW).
 %
+% When the layer is deeper, however, we have to keep referring back through
+% multiple layers.  This issue will be addressed in the RGCLAYER, and then
+% onward.
+%
+% We need to write simple utilities that convert from the spatial units on
+% the cone mosaic into spatial units on the retinal surface (in um or mm).
+% That will be first implemented in bipolar.plot('mosaic').  But basically,
+% to do this the units are X*coneMosaic.patternSampleSize (we think).  This
+% doesn't deal with the jittered cone mosaic yet, but kind of like this.
+% (BW/JRG). 
+% 
+
 
 
 %% Parse inputs
@@ -65,6 +81,7 @@ p = inputParser;
 p.addParameter('eccentricity',0,@isscalar);
 p.addParameter('conemosaic',[],@(x)(isequal(class(x),'coneMosaic')));
 p.addParameter('spread',1,@isscalar);
+p.addParameter('stride',[],@(x)(isempty(x) || isscalar(x)));
 
 % For the future.  We don't have multiple mosaics yet.
 p.parse(varargin{:});
@@ -72,12 +89,14 @@ p.parse(varargin{:});
 eccentricity = p.Results.eccentricity;
 conemosaic   = p.Results.conemosaic;
 spread       = p.Results.spread;
+stride       = p.Results.stride;
 
 %% Select parameters for each cell type
 
 % The spatial samples below (e.g. minSupport and spread) are in units of
-% samples on the cone mosaic.  To specify these in terms of spatial units
-% (e.g., microns) you must multiply by the cone spatial sampling.
+% samples on the cone mosaic.  We can convert this to spatial units on the
+% cone mosaic (microns) by multiplying by the cone spatial sampling.  The
+% cone mosaic is stored in the input slot of the bipolar mosaic.
 switch obj.cellType
     
     case{'ondiffuse','offdiffuse','onparasol','offparasol'}
@@ -141,32 +160,20 @@ switch obj.cellType
         
 end
 
-% Set the bipolar spatial sample positions as cell locations in the input
-% layer (cone mosaic). we think this makes sense because the computations
-% are specified using weights on the inputs.
-%
-% For the bipolars, it is straightforward to compute the spread in microns
-% from this specification.  We simply multiply the number of input samples
-% by the spatial sample separation of the cones.
-%
-% When the layer is deeper, however, we have to keep referring back through
-% multiple layers.  This issue will be addressed in the RGCLAYER, and then
-% onward.
-%
-% We need to write simple utilities that convert from the spatial units on
-% the cone mosaic into spatial units on the retinal surface (in um or mm).
-% That will be first implemented in bipolar.plot('mosaic').  But basically,
-% to do this the units are X*coneMosaic.patternSampleSize (we think).  This
-% doesn't deal with the jittered cone mosaic yet, but kind of like this.
-% (BW/JRG). 
-% 
+% The bipolar RF center positions are stored with respect to the samples of
+% the input layer (cone mosaic). The weights are also stored with respect
+% to the input sample.
+
+if isempty(stride), stride = round(support/2); end
 
 % Cone row and column positions, but centered around (0,0).
-[X,Y] = meshgrid(1:conemosaic.cols,1:conemosaic.rows);
+% These should be spaced by an amount that is controlled by a parameter and
+% reflects the size of the receptive field.
+[X,Y] = meshgrid(1:stride:conemosaic.cols,1:stride:conemosaic.rows);
 X = X - mean(X(:)); Y = Y - mean(Y(:));
 
 % Put them in the (row,col,X/Y) tensor.
-obj.cellLocation = zeros(conemosaic.cols,conemosaic.rows,2);
+obj.cellLocation = zeros(size(X,1),size(X,2),2);
 obj.cellLocation(:,:,1) = X;
 obj.cellLocation(:,:,2) = Y;
 

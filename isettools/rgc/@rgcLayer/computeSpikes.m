@@ -4,13 +4,13 @@ function [rgcL, nTrialsSpikeResponse] = computeSpikes(rgcL, varargin)
 %   ir = @rgcLayer.computeSpikes(ir, varargin)
 %
 % Calculate the spikes from the RGC linear response for rgcGLM and rgcLNP
-% mosaics.  
+% mosaics.
 %
 % Inputs required
 %   rgcL:  rgcLayer object
 %
 % Inputs optiona;
-%  nTrialsLinearResponse: Linear inputs from multiple trials
+%  nTrials: Linear inputs from multiple trials
 %
 % Outputs:
 %  The computed spikes are attached to the rgc mosaic
@@ -22,16 +22,15 @@ function [rgcL, nTrialsSpikeResponse] = computeSpikes(rgcL, varargin)
 
 %% Parse
 p = inputParser;
-p.addRequired('ir',@(x)(isa(rgcL,'rgcLayer')));  % Inner retina object
-p.addParameter('coupling',true,@islogical);
 
-p.addParameter('nTrialsLinearResponse',  [], @(x) isnumeric(x)||iscell(x));
+p.addRequired('rgcL',@(x)(isa(x,'rgcLayer')));  % Inner retina object
+p.addParameter('coupling',true,@islogical);
+p.addParameter('nTrials', 1, @isscalar);
 
 p.parse(rgcL,varargin{:});
-rgcL = p.Results.ir;
-coupling = p.Results.coupling;
 
-nTrialsLinearResponse = p.Results.nTrialsLinearResponse;
+coupling = p.Results.coupling;
+nTrials = p.Results.nTrials;
 %% Required for Pillow code
 
 % The refresh rate refers to the subsampling of the linear response. Each
@@ -47,20 +46,22 @@ nRepeats = rgcL.get('number trials');
 
 %% Loop on the mosaics in the inner retina
 
-nTrials = 1;
-if ~isempty(nTrialsLinearResponse)
-    nTrials = size(nTrialsLinearResponse{1},1);
+if ~isempty(nTrials)
+    nTrials = size(nTrials{1},1);
 end
 
-for iTrial = 1:nTrials    
+nTrialsSpikeResponse = cell(length(rgcL.mosaic),1);
+
+for iTrial = 1:nTrials
     for ii = 1:length(rgcL.mosaic)
+        
         if ~ismember(class(rgcL.mosaic{ii}), {'rgcGLM','rgcLNP'})
             % No spikes computed
         else
             mosaic   = rgcL.mosaic{ii};
             
-            if ~isempty(nTrialsLinearResponse)
-                responseLinear = squeeze(nTrialsLinearResponse{ii}(iTrial,:,:,:));
+            if ~isempty(nTrials)
+                responseLinear = squeeze(nTrials{ii}(iTrial,:,:,:));
             else
                 responseLinear = mosaic.get('response linear');
             end
@@ -147,7 +148,7 @@ for iTrial = 1:nTrials
             rgcL.mosaic{ii} = mosaicSet(rgcL.mosaic{ii},'responseVoltage', respVolts);
         end
         
-        if ~isempty(nTrialsLinearResponse)
+        if ~isempty(nTrials)
             if iTrial == 1 % && ii == 1
                 nTrialsSpikeResponse{ii} = ...
                     zeros([nTrials,size(rgcL.mosaic{ii}.get('spikes'))]);
@@ -158,8 +159,7 @@ for iTrial = 1:nTrials
     end
 end
 
-% Maybe this should be [], not 0? (BW)
-if isempty(nTrialsLinearResponse), nTrialsSpikeResponse = []; end
+if isempty(nTrials), nTrialsSpikeResponse = []; end
 
 end
 

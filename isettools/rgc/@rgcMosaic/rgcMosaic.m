@@ -1,17 +1,16 @@
 classdef rgcMosaic < cellMosaic
     %RGCMOSAIC - generates an rgcMosaic
-    % Each RGC mosaic has a particular model and a type.  The model specifies
-    % how we compute the RGC response, and the type specifies the parameters of
-    % the model given the type.
     %
-    % The inner retina object holds a collection of retinal ganglion cell
-    % mosaics. The mosaics themselves are typically created by a function of
-    % the inner retina class, such as
+    %    rgcM = rgcMosaic(
+    % The rgcMosaic class defines a particular RGC type and computational
+    % model. The model specifies how to compute the RGC response from the
+    % input. The type specifies cell and model parameters.
     %
-    %   ir.mosaicCreate('model','LNP','type','cell type');
+    % The rgcLayer class  holds a collection of rgcMosaics.
+    % The mosaics themselves are typically created by a function
+    % of the rgcLayer class, such as
     %
-    % This file contains the constructor and the window call.  Other functions,
-    % such as plot(), are separated in the @rgcMosaic directory.
+    %   rgcLayer.mosaicCreate('model','LNP','type','cell type');
     %
     % Inputs:
     %    model: 'LNP','GLM' [subclasses of rgcMosaic]
@@ -48,20 +47,8 @@ classdef rgcMosaic < cellMosaic
     % maybe forever
     properties (SetAccess = public, GetAccess = public)
         
-        %         %CELLTYPE The type of computational model for the RGC
-        %         cellType = 'onparasol';           % Possible types are listed in header
-        %
-        %         %CELLLOCATION Cell array cellLocation{i}{j} = [x,y] position (microns)
-        %         cellLocation;
-        
         % RFDIAMETER receptive field center diameter in MICRONS
         rfDiameter = [];
-        
-        %         %SRFCENTER spatial RF of the center on the cone mosaic grid
-        %         sRFcenter = [];
-        %
-        %         %SRFSURROUND spatial RF of the surround
-        %         sRFsurround = [];
         
         %TCENTER temporal impulse response of the center in dt steps or 1
         %ms??
@@ -114,7 +101,7 @@ classdef rgcMosaic < cellMosaic
             p = inputParser;
             p.KeepUnmatched = true;
             p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
-            p.addRequired('cellType',@ischar);
+            p.addRequired('cellType',@(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
             p.addParameter('inMosaic',1,@isscalar);
             
             p.parse(rgcLayer,cellType,varargin{:});
@@ -148,6 +135,11 @@ classdef rgcMosaic < cellMosaic
                 
     end
     
+    properties (Constant)
+        % VALIDCELLTYPES
+        validCellTypes = {'onparasol','offparasol','onmidget','offmidget','onsbc'};
+    end
+    
     %% Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function window(obj)
@@ -167,8 +159,8 @@ classdef rgcMosaic < cellMosaic
         function str = describe(obj)
             % Describe the RGC mosaic properties
             %
-            % Prints the relevant text to a string, which is used in the display
-            % window.
+            % Prints the relevant text to a string, which is used in the
+            % display window.
             %
             % BW, ISETBIO Team, 2017
             
@@ -180,7 +172,7 @@ classdef rgcMosaic < cellMosaic
             str = addText(str,txt);
             
             % Mosaic properties
-            txt = sprintf('N Trials %d\n',parent.numberTrials);
+            txt = sprintf('N Trials %d\n',parent.nTrials);
             str = addText(str,txt);
             txt = sprintf('Patch size %d (um)\n',1e6*parent.size);
             str = addText(str,txt);
