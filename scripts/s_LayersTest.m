@@ -58,7 +58,7 @@ rgcL = rgcLayer(bpL);
 % illustrating these later.  We need a description.
 rgcParams.centerNoise = 0;
 rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-rgcParams.model = 'LNP';
+rgcParams.model = 'GLM';
 % mosaicParams.axisVariance = .1;
 
 diameters = [5 5 3 3 10];  % In microns.

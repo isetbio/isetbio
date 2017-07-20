@@ -48,6 +48,7 @@ p.KeepUnmatched = true;
  
 allowFields = {...
         'celltype',...
+        'ntrials',...
         'rfdiameter',...
         'rfdiamagnitude',...
         'celllocation',...
@@ -80,7 +81,8 @@ switch ieParamFormat(param)
     case{'celltype'}
         % String that stores cell type name
         val = obj.cellType;
-        
+    case {'ntrials'}
+        val = obj.parent.nTrials;
     case{'rfdiameter'}
         % Spatial RF diameter in micrometers
         val = obj.rfDiameter; 
@@ -199,7 +201,7 @@ switch ieParamFormat(param)
         
         dt = obj.dt;  % Bin time in microseconds
         
-        maxTrials = obj.get('number trials');
+        maxTrials = obj.get('n trials');
         nCells    = obj.get('mosaic size');
         lastSpike = obj.get('last spike time');
         spikes = zeros(nCells(1),nCells(2),ceil(lastSpike));

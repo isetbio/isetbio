@@ -138,7 +138,7 @@ rgcM.set('responseSpikes', spikeTimes);
 
 % The nonlinear voltage; only set in the GLM model
 if isa(rgcM,'rgcGLM')
-    rgcM.set('responseVoltage', respVolts);
+    rgcM.set('response voltage', respVolts);
 end
 
 % if ~isempty(nTrials)

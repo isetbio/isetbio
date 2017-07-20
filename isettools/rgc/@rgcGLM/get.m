@@ -1,7 +1,7 @@
-function val = mosaicGet(obj, param, varargin)
+function val = get(obj, param, varargin)
 % Gets a property from an rgcGLM object.
 %
-%   val = mosaicGet(rgc.mosaic, param, varargin)
+%   val = @rgcGLM.get(param, varargin)
 %
 % Inputs: 
 %   obj    - rgc object
@@ -69,7 +69,7 @@ switch param
         
     otherwise
         % Super class
-        val = mosaicGet@rgcMosaic(obj,param,varargin{:});
+        val =get@rgcMosaic(obj,param,varargin{:});
 end
 
 end

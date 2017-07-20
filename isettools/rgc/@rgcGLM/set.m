@@ -1,7 +1,7 @@
-function obj = mosaicSet(obj, param, val, varargin)
+function obj = set(obj, param, val, varargin)
 %  Sets a property for an rgcGLM object.
 %
-%       rgc.mosaic = mosaicSet(rgc.mosaic, param, val, varargin)
+%   @rgcGLM.set(param, val, varargin)
 %
 % Inputs: 
 % 
@@ -59,7 +59,7 @@ switch param
         obj.couplingMatrix = val;
     otherwise
         % Superclass
-        mosaicSet@rgcMosaic(obj,param,val,varargin{:});
+        set@rgcMosaic(obj,param,val,varargin{:});
         
 end
 end
