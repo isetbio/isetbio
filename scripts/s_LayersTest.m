@@ -35,13 +35,16 @@ bpMosaicParams.rectifyType = 1;  % Experiment with this
 bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
 bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
 
+% Maybe we need a bipolarLayer.compute that performs this loop
 bpMosaic  = cell(1,length(cellType));
 bpNTrials = cell(1,length(cellType));
 for ii = 1:length(cellType)   
     bpMosaicParams.cellType = cellType{ii};
-    % We want this to be mosaicCreate(bpMosaicParams) in the end.
+    % We want an option for
+    %   @bipolarLayer.mosaicCreate(cMosaic,bpMosaicParams)
+    %
     bpL.mosaic{ii} = bipolarMosaic(cMosaic,bpMosaicParams);
-    bpL.mosaic{ii}.compute(cMosaic);   
+    bpL.mosaic{ii}.compute();   
 end
 
 bpL.window;
@@ -66,7 +69,8 @@ diameters = [5 5 3 3 10];  % In microns.
 cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
     rgcParams.rfDiameter = diameters(ii);
-    % Input bipolar mosaic and specific parameters
+    % Input bipolar mosaic, cell type, and specific parameters
+    % Or? rgcL.mosaic{ii} = rgcGLM(bpL.mosaic{ii},cellType{ii},rgcParams);
     rgcL.mosaicCreate(bpL.mosaic{ii},cellType{ii},rgcParams);
 end
 

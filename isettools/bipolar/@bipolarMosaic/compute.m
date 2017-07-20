@@ -1,7 +1,7 @@
-function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
+function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
 % BIPOLAR.COMPUTE - Compute bipolar continuous current responses
 %
-%    bipolar.compute(coneMosaic,varargin);
+%    bipolar.compute(varargin);
 %
 % The bipolars act as a spatial-temporal function that converts the cone
 % photocurrent into bipolar current that is delivered to the retinal
@@ -10,10 +10,8 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
 % This could be transformed to be like the rgc computation where each
 % cell has its own spatial RF.  Not there yet, just using convolutions.
 %
-%
 % Required parameters:
 %   obj:       a bipolar object
-%   cmosaic:   coneMosaic (current must be computed)
 %
 % Bipolar cell parameters are set when the bp mosaic is created.  Important
 % parameters include:
@@ -61,13 +59,13 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, cmosaic, varargin)
 
 p = inputParser;
 p.addRequired('obj', @(x) (isa(x, 'bipolarMosaic')));
-p.addRequired('cmosaic', @(x) (isa(x, 'coneMosaic')));
 addParameter(p, 'coneTrials',  [], @isnumeric);
 
 % parse - no options at this opint
-p.parse(obj, cmosaic, varargin{:});
+p.parse(obj, varargin{:});
 
 coneTrials = p.Results.coneTrials;
+cmosaic    = obj.input;
 
 if isempty(cmosaic.current)
     error('No cone photocurrent.  Use cmosaic.computeCurrent.');

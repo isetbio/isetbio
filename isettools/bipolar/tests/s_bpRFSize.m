@@ -32,7 +32,7 @@ bpL.mosaicCreate('onmidget',bpMosaicParams);
 support = 3;
 bpL.mosaic{1}.set('sRFCenter',  fspecial('gaussian',[support support],1));
 bpL.mosaic{1}.set('sRFSurround',fspecial('gaussian',[support support],2));
-bpL.mosaic{1}.compute(cMosaic);     % Knows about cMosaic input
+bpL.mosaic{1}.compute;     % Knows about cMosaic input
 
 %% Now make a larger bipolar
 
@@ -42,7 +42,7 @@ bpL.mosaicCreate('onmidget',bpMosaicParams);
 support = 7;
 bpL.mosaic{2}.set('sRFCenter',  fspecial('gaussian',[support support],3));
 bpL.mosaic{2}.set('sRFSurround',fspecial('gaussian',[support support],5));
-bpL.mosaic{2}.compute(cMosaic);     % Knows about cMosaic input
+bpL.mosaic{2}.compute();     % Knows about cMosaic input
 
 bpL.window;
 

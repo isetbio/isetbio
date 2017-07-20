@@ -1,7 +1,7 @@
 function mosaicCreate(obj,cellType, varargin)
 % MOSAICCREATE - Bipolar layer method to create a mosaic of bipolar cells
 %
-%   bpL = @bipolarLayer.mosaicCreate('cellType',...);
+%   bpL = @bipolarLayer.mosaicCreate('cellType',varargin,...);
 %
 % Wandell, ISETBIO Team, 2017
 
