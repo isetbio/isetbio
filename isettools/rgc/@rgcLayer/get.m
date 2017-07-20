@@ -1,14 +1,16 @@
-function val = irGet(obj, param, varargin)
+function val = get(obj, param, varargin)
 % rgcGet: a method of @rgc that gets rgc object 
 % parameters using the input parser structure.
 % 
-%       val = irGet(rgc, param, varargin)
+%       val = @rgcLayer.get(rgc, param, varargin)
 % 
-% Inputs: rgc object, property to be gotten
+% Inputs: 
+%   @rgcLayer.get(property,varargin);
+%
+% Outputs: 
+%   val - of property
 % 
-% Outputs: val of property
-% 
-% Proeprties:
+% Proprrties:
 %   name: type of rgc object, e.g., 'macaque RGC'
 %   input: 'cone current' or 'scene RGB', depends on type of outer
 %           segment object created.
@@ -22,8 +24,7 @@ function val = irGet(obj, param, varargin)
 %   val = rgcGet(rgc1, 'name')
 %   val = rgcGet(rgc1, 'input')
 % 
-% 9/2015 JRG 
-
+% JRG/BW ISETBIO Team, 2015
 
 %% Parse
 p = inputParser; 

@@ -136,20 +136,12 @@ classdef rgcLayer < cellLayer
             obj.input  = bpLayer;   % Bipolar layer link kept here
             
         end
-        
-        
-        function rgcM = mosaicCreate(rgcL,varargin)
-            rgcM = rgcMosaicCreate(rgcL,varargin{:});
-        end
-        
-        % set function, see irSet
-        function obj = set(obj, varargin)
-            obj = irSet(obj, varargin{:});
-        end
-        
-        % get function, see irGet
-        function val = get(obj, varargin)
-            val = irGet(obj, varargin{:});
+           
+        function rgcM = mosaicCreate(rgcL,bipolarM,cellType,varargin)
+            % Varargin must specify the bipolar mosaic input
+            % It should also specify the cellType and rgc model
+            % Other parameters are possible.
+            rgcM = rgcMosaicCreate(rgcL,bipolarM,cellType,varargin{:});
         end
         
         % Show the RGC layer window

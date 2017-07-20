@@ -1,7 +1,7 @@
-function timeAxis = rgcInitTime(rgcM, innerRetina)
+function timeAxis = initTime(rgcM, innerRetina)
 % Initialize a temporal impulse response function for a mosaic
 %
-%   timeAxis = rgcInitTime(rgcM, innerRetina)
+%   timeAxis = rgcMosaic.initTime(rgcM, innerRetina)
 % 
 % Build a temporal impulse response function for an rgc mosaic
 %

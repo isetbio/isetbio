@@ -72,15 +72,23 @@ classdef rgcGLM < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcGLM(rgcL, mosaicType, varargin)
+        function obj = rgcGLM(rgcL, bipolarM, cellType, varargin)
             
             p = inputParser;
             p.KeepUnmatched = true;
+            
+            p.addRequired('rgcL',@(x)(isequal(class(x),'rgcLayer')));
+            p.addRequired('bipolarM',@(x)(isequal(class(x),'bipolarMosaic')));
+            p.addRequired('cellType',@ischar); % Could check better
+
             p.addParameter('coupling',true,@islogical);
-            p.parse(varargin{:});
+            p.parse(rgcL,bipolarM,cellType,varargin{:});
             
             % Initialize the mosaic parent class
-            obj = obj@rgcMosaic(rgcL, mosaicType, varargin{:});
+            obj = obj@rgcMosaic(rgcL, cellType, varargin{:});
+            
+            % Input is a bipolar mosaic
+            obj.input = bipolarM;
             
             % The Pillow generator function
             obj.generatorFunction = @exp;
@@ -95,16 +103,6 @@ classdef rgcGLM < rgcMosaic
             
         end
         
-        % set function, see @rgcGLM/mosaicSet.m for details
-        function obj = set(obj, varargin)
-            mosaicSet(obj, varargin{:});
-        end
-        
-        % get function, see @rgcGLM/mosaicGet.m for details
-        function val = get(obj, varargin)
-           val = mosaicGet(obj, varargin{:});
-        end
-      
     end
     
     methods (Access = public)

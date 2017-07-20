@@ -115,10 +115,10 @@ classdef rgcMosaic < cellMosaic
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
             % Sets sRFcenter, sRFsurround
-            obj.rgcInitSpace(cellType, 'inMosaic', inMosaic, varargin{:}); 
+            obj.initSpace(cellType, 'inMosaic', inMosaic, varargin{:}); 
             
             % Sets temporal RF properties of tCenter/tSurround
-            obj.rgcInitTime(rgcLayer);
+            obj.initTime(rgcLayer);
             
 
         end

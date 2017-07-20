@@ -1,7 +1,7 @@
-function obj = mosaicSet(obj, param, val, varargin)
+function obj = set(obj, param, val, varargin)
 % Sets a property for an rgcMosaic object.
 %
-%  mosaic = mosaicSet(mosaic, property, value, varargin)
+%  mosaic = @rgcMosaic.set(mosaic, property, value, varargin)
 %  
 % The mosaicSet function sets a property for the mosaic object if the
 % property is defined in the rgcMosaic superclass. The subclasses of

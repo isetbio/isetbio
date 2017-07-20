@@ -1,7 +1,7 @@
-function val = mosaicGet(obj, param, varargin)
+function val = get(obj, param, varargin)
 % Gets a property from an rgcMosaic object.
 % 
-%   val = mosaicGet(rgc.mosaic, property)
+%   val = rgcMosaic.get(rgc.mosaic, property)
 % 
 % The mosaicGet function gets a property from the mosaic object if the
 % property is defined in the rgcMosaic superclass. The subclasses of

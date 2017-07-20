@@ -1,7 +1,7 @@
-function spatialRFInit(obj,varargin)
+function initSpace(obj,varargin)
 % SPATIALRFINIT - Build spatial receptive fields for the bipolar mosaic
 %
-%    @bipolarMosaic.spatialRFInit(varargin)
+%    @bipolarMosaic.initSpace(varargin)
 %
 % Each bipolar mosaic takes its input from the cone mosaic, so that cell
 % locations are with respect to the spatial samples of the cone mosaic. To

@@ -1,22 +1,20 @@
-function [rgcL, nTrialsSpikes] = compute(rgcL, bpM, varargin)
+function [rgcL, nTrialsSpikes] = compute(rgcL, varargin)
 % @RGCLAYER.COMPUTE - Computes the rgc mosaic responses to an input
 %
-%   @rgcLayer.compute(bipolarMosaic, varargin)
+%   @rgcLayer.compute(varargin)
 %
 % Computes the continuous (linear) and then spike responses for each of the
 % mosaics within the inner retina layer object.
 % 
 % Required inputs
-%  'rgcL' - rgc layer object 
-%  'bpM'  - bipolar mosaic object or cell array of such objects
 %
 % Optional inputs
 %   'nTrialsSpikes' -  Multiple trials case
 %
-% For each mosaic, a space-time separable linear response is computed. This
-% stage of the computation is stored in 'responseLinear'.  This is managed
-% in irComputeLinearSTSeparable.  There is no noise added in the linear
-% part.
+% Compute the responses for each mosaic in the layer. First, a space-time
+% separable linear response is computed. This stage of the computation is
+% stored in 'responseLinear'. This is managed in computeSeparable.  There
+% is no noise added in the linear part.
 %
 % At present, the temporal response is set to an impulse because of the way
 % the bipolar tIR is set.  We need to deal with this.  Also, the 'dt' of
@@ -63,10 +61,6 @@ p.CaseSensitive = false;
 
 p.addRequired('rgcL',@(x) ~isempty(validatestring(class(x),{'rgcLayer'})));
 
-% Either a single bipolar mosaic or a cell array of them.
-vFunc = @(x) (isequal(class(x),'bipolarMosaic') || isequal(class(x{1}),'bipolarMosaic'));
-p.addRequired('bpM',vFunc);
-
 % For GLM model.  If true, much slower bigger memory
 p.addParameter('coupling',false,@islogical);   
 
@@ -75,7 +69,7 @@ p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 p.addParameter('bipolarScale',50,@isnumeric);
 p.addParameter('bipolarContrast',1,@isnumeric);
 
-p.parse(rgcL,bpM,varargin{:});
+p.parse(rgcL,varargin{:});
 coupling      = p.Results.coupling;
 bipolarTrials = p.Results.bipolarTrials;
 
@@ -87,21 +81,26 @@ bipolarContrast = p.Results.bipolarContrast;
 
 if ~isempty(bipolarTrials) 
     % Multiple trials
-    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bpM, ...
+    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bpMosaic, ...
         'bipolarScale', bipolarScale,...
         'bipolarContrast',bipolarContrast,...
         'bipolarTrials',bipolarTrials);
 else
-    % One trial case.
-    rgcL = rgcL.computeSeparable(bpM, ...
-        'bipolarContrast',bipolarContrast,...
-        'bipolarScale', bipolarScale);
+    % One trial case.  Compute the linear response for every mosaic. The
+    % inputs are already attached.
+    for ii=1:length(rgcL.mosaic)
+        rgcL.mosaic{ii}.computeSeparable(...
+            'bipolarContrast',bipolarContrast,...
+            'bipolarScale', bipolarScale);
+    end
+    
 end
 
 %% Compute spikes from linear response; possibly for multiple trials
 
-% This should be for ii=1:length(ir.mosaic)
-switch class(rgcL.mosaic{1})
+for ii=1:length(rgcL.mosaic{ii})
+    rgcM = rgcL.mosaic{ii}
+switch class(rgcM)
     case {'rgcLinear'}
         % No linear response implemented yet.
         disp('No spikes computed for linear RGC mosaic');   
@@ -110,7 +109,9 @@ switch class(rgcL.mosaic{1})
         % Send the coupling field to decide on the coupling parameter
         if ~isempty(bipolarTrials) 
             % Multiple trial case
-            [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling, ...
+            [rgcL, nTrialsSpikes] = ...
+                rgcL.computeSpikes(...
+                'coupling',coupling, ...
                 'nTrialsLinearResponse',nTrialsLinearResponse);
         else
             % Single trial case

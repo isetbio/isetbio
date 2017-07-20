@@ -1,7 +1,7 @@
-function rgcM = rgcInitSpace(rgcM,cellType,varargin)
+function rgcM = initSpace(rgcM,cellType,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
-%    rgcM = rgcInitSpace(rgcM,cellType,varargin)
+%    rgcM = rgcMosaic.initSpace(rgcM,cellType,varargin)
 %
 % Required inputs
 %   rgcM:     the mosaic
@@ -61,7 +61,8 @@ p.addRequired('rgcM',vFunc);
 % May not be needed because how could we get here if not valid?
 vFunc = @(x)(ismember(ieParamFormat(x),rgcM.validCellTypes));
 p.addRequired('cellType',vFunc);
-  
+
+p.addParameter('inMosaic',1,@isnumeric); % microns
 p.addParameter('rfDiameter',[],@isnumeric); % microns
 p.parse(rgcM,cellType,varargin{:});
 

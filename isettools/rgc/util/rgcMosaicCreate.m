@@ -1,7 +1,7 @@
-function rgcM = rgcMosaicCreate(rgcL, varargin)
+function rgcM = rgcMosaicCreate(rgcL, bipolarM, cellType, varargin)
 % Add an RGC mosaic with a specific computational model and cell type
 % 
-%      rgcM = rgcMosaicCreate(rgcL, 'model',val, 'mosaicType',val)
+%      rgcM = rgcMosaicCreate(rgcL, bipolarM, cellType, 'model',val, )
 % or
 %
 % The rgc mosaics are stored as a cell array attached to the an rgcLayer
@@ -33,41 +33,43 @@ function rgcM = rgcMosaicCreate(rgcL, varargin)
 
 p = inputParser; 
 p.KeepUnmatched = true;
-p.addRequired('ir');
+p.addRequired('rgcL',@(x)(isequal(class(x),'rgcLayer')));
+p.addRequired('bipolarM',@(x)(isequal(class(x),'bipolarMosaic')));
 
 % Experiment ... thinking about input parsing more generally (JRG/BW)
-mosaicTypes = {'onparasol','offparasol','onmidget','offmidget','smallbistratified','onsbc'};
-p.addParameter('type','on parasol',@(x) any(validatestring(ieParamFormat(x),mosaicTypes)));
+cellTypes = {'onparasol','offparasol','onmidget','offmidget','onsbc'};
+p.addRequired('cellType',@(x) any(validatestring(ieParamFormat(x),cellTypes)));
 
 modelTypes = {'linear','lnp','glm','phys','subunit','pool'};
 p.addParameter('model','lnp',@(x) any(validatestring(ieParamFormat(x),modelTypes)));
 
-p.parse(rgcL,varargin{:});
+p.parse(rgcL,bipolarM, cellType, varargin{:});
 
-mosaicType = p.Results.type;
-model      = p.Results.model;
+model    = p.Results.model;
 %% Switch on the computational model
 
 % There is a separate mosaic class for each ir computational model.  
 % These are rgcMosaicLinear, rgcMosaicLNP, rgcMosaicGLM,...
 switch ieParamFormat(model)
-    case {'lnp', 'rgclnp'}
-        % Standard linear nonlinear poisson        
+    case {'lnp'}
+        % Standard linear nonlinear poisson
         % Pillow, Paninski, Uzzell, Simoncelli & Chichilnisky, J. Neurosci (2005);
-        rgcM = rgcLNP(rgcL, mosaicType,p.Unmatched);
-        irSet(rgcL, 'mosaic', rgcM);
-    case {'glm','rgcglm'}
+        rgcM = rgcLNP(rgcL, bipolarM, cellType, p.Unmatched);
+    case {'glm'}
         % Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky & Simoncelli,
         % Nature (2008).
-        rgcM = rgcGLM(rgcL, mosaicType,p.Unmatched);
-        irSet(rgcL, 'mosaic', rgcM);
-    case{'phys','rgcphys'}
+        rgcM = rgcGLM(rgcL, bipolarM, cellType, p.Unmatched);
+    case{'phys'}
         % Unit testing of the physiology
         % Requires the isetbio repository EJLExperimentalRGC
-        rgcM = rgcPhys(rgcL, mosaicType);
-        irSet(rgcL, 'mosaic', rgcM);
+        rgcM = rgcPhys(rgcL, bipolarM, cellType);
     otherwise
         error('Unknown inner retina class: %s\n',class(rgcL));
 end
+
+%% We want to selecct a particular mosaic with nMosaic here
+
+% As written, add this mosaic to the end of the list.
+rgcL.set('mosaic', rgcM);
 
 end

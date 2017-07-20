@@ -71,11 +71,14 @@ classdef rgcLNP < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcLNP(rgc, mosaicType, varargin)
+        function obj = rgcLNP(rgc, bipolarM, cellType, varargin)
             
             % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc, mosaicType, varargin{:});
-
+            obj = obj@rgcMosaic(rgc, cellType, varargin{:});
+            
+            % Input is a bipolar mosaic
+            obj.input = bipolarM;
+            
             % Effect of a spike on output voltages
             obj.generatorFunction = @exp;
             
