@@ -17,7 +17,7 @@ rdt.crp('/resources/data/cmosaics');
 % vaConeMosaic
 % coneMosaicDataScones
 % coneMosaicDataF
-data      = rdt.readArtifact('vaConeMosaic', 'type', 'mat');
+data      = rdt.readArtifact('coneMosaicDataFixedEye', 'type', 'mat');
 cMosaic   = data.cMosaic;
 alignedC  = data.alignedC;
 
@@ -25,25 +25,23 @@ alignedC  = data.alignedC;
 
 %% Create a set of bipolar cell types in the bipolar mosaic
 
+clear bpL 
+
 bpL = bipolarLayer(cMosaic);
 
 % Make each type of bipolar mosaic
 cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
 
+% Stride isn't influencing yet.s
 clear bpMosaicParams
 bpMosaicParams.rectifyType = 1;  % Experiment with this
 bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
 bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
+bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
 
 % Maybe we need a bipolarLayer.compute that performs this loop
-bpMosaic  = cell(1,length(cellType));
-bpNTrials = cell(1,length(cellType));
 for ii = 1:length(cellType)   
-    bpMosaicParams.cellType = cellType{ii};
-    % We want an option for
-    %   @bipolarLayer.mosaicCreate(cMosaic,bpMosaicParams)
-    %
-    bpL.mosaic{ii} = bipolarMosaic(cMosaic,bpMosaicParams);
+    bpL.mosaic{ii} = bipolarMosaic(cMosaic, cellType{ii}, bpMosaicParams);
     bpL.mosaic{ii}.compute();   
 end
 
@@ -61,17 +59,15 @@ rgcL = rgcLayer(bpL);
 % illustrating these later.  We need a description.
 rgcParams.centerNoise = 0;
 rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-rgcParams.model = 'GLM';
+rgcParams.model = 'LNP';
 % mosaicParams.axisVariance = .1;
 
-diameters = [5 5 3 3 10];  % In microns.
+diameters = [7 7 2 2 10];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
     rgcParams.rfDiameter = diameters(ii);
-    % Input bipolar mosaic, cell type, and specific parameters
-    % Or? rgcL.mosaic{ii} = rgcGLM(bpL.mosaic{ii},cellType{ii},rgcParams);
-    rgcL.mosaicCreate(bpL.mosaic{ii},cellType{ii},rgcParams);
+    rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
 end
 
 nTrials = 1; rgcL.set('numberTrials',nTrials);
@@ -80,10 +76,9 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Every mosaic has its input and properties assigned so we should be able
 % to just run through all of them.
-disp('Computing rgc responses');
 rgcL = rgcL.compute(...
     'bipolarScale',50,...
-    'bipolarContrast',1);
+    'bipolarContrast',0.5);
 
 %%
 rgcL.window;

@@ -1,36 +1,34 @@
 function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
 % BIPOLAR.COMPUTE - Compute bipolar continuous current responses
 %
-%    bipolar.compute(varargin);
+%    @bipolarMosaic.compute(varargin);
 %
 % The bipolars act as a spatial-temporal function that converts the cone
 % photocurrent into bipolar current that is delivered to the retinal
-% ganglion cells.
+% ganglion cells. The cone mosaic is the input, and it contains a
+% photocurrent time series (coneMosaic.current).
 %
-% This could be transformed to be like the rgc computation where each
-% cell has its own spatial RF.  Not there yet, just using convolutions.
+% The bipolar response is computed with a separable spatio-temporal
+% calculation (first spatial filtering, then temporal filtering) of the
+% cone current to create the bipolar output.
 %
-% Required parameters:
+% The critical bipolar mosaic parameters are set up and stored in the
+% @bipolarMosaic object itself.  This routine computes the responses based
+% on those settings.  See the class definition for the list of parameters.
+%
+% Required input
 %   obj:       a bipolar object
 %
-% Bipolar cell parameters are set when the bp mosaic is created.  Important
-% parameters include:
+% Outputs
+%   responseCenter, responseSurround - The center and surround responses
+%   are calculated and stored in the mosaic as responseCenter and
+%   responseSurround
 %
-%  'Cell type': The bipolar cells are classified into several types
-%     * on/off diffuse, which connect to parasol RGCs
-%     * on/off midget, which connect to midget RGCs
-%     * on small bistratified, which connect to S-cone bistratified
-%  'Processing' - linear or rectified
+% The principal decision is whether the bipolar transformation is linear or
+% includes a rectification.  This is controlled by the obj.rectifyType
+% parameter. The rectification happens at the end of the function, after
+% both spatial and temporal filtering.
 %
-%  The cone mosaic current contains a time series of the photocurrent
-%  (coneMosaic.current). The bipolar response performs a spatio-temporal
-%  separable convolution (first spatial filtering, then temporal filtering)
-%  of the cone current to create the bipolar current.
-%
-%  The principal decision is whether the bipolar transformation is linear
-%  or includes a rectification.  This is controlled by the obj.rectifyType
-%  parameter. The rectification happens at the end of the function, after
-%  both spatial and temporal filtering.
 %  *** This feature has not been tested or much used - on our list
 %  REFERENCE: Meister option
 %
@@ -52,6 +50,25 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
 %  add bpNTrialsCenter + bpNTrialsSurround.
 %
 %  Only the last trial reponse is stored in the object itself.
+%
+% Programming todo
+%
+% This could be transformed to be like the rgc computation where each
+% cell has its own spatial RF.  Not there yet, just using convolutions.
+%
+% TODO:  We should set this up as a structure that we use to implement
+% the anatomical rules.  Let's send in a struct that defines the
+% anatomical rules (e.g., anatomyRules) with slots that implement the
+% kind of stuff listed here.
+%
+% Anatomical rules:
+%
+%  off Diffuse, on Diffuse and on Midget - These receive no S cone input
+%  offMidget - keep S cones but scale the connection strength down by 75%
+%  onSBC     - S cone inputs to center, only L/M cone inputs to surround
+%
+% Citations:  See bipolar.m.  Wiki page <>
+
 %
 % 5/2016 JRG (c) isetbio team
 
@@ -89,21 +106,7 @@ for iTrial = 1:nTrials
     end
     
     
-    %% Enfoce anatomical rules on cone to bipolar connections
-    
-    % Anatomical rules:
-    %
-    %  off Diffuse, on Diffuse and on Midget - These receive no S cone input
-    %  offMidget - keep S cones but scale the connection strength down by 75%
-    %  onSBC     - S cone inputs to center, only L/M cone inputs to surround
-    %
-    % Citations:  See bipolar.m.  Wiki page <>
-    
-    % TODO:  We should set this up as a structure that we use to implement
-    % the anatomical rules.  Let's send in a struct that defines the
-    % anatomical rules (e.g., anatomyRules) with slots that implement the
-    % kind of stuff listed above.
-    %
+    %% Enforce anatomical rules on cone to bipolar connections
     switch obj.cellType
         case{'offdiffuse','ondiffuse','onmidget'}
             
@@ -181,23 +184,14 @@ for iTrial = 1:nTrials
     % vcNewGraphWin; ieMovie(bipolarCenter);
     % vcNewGraphWin; ieMovie(bipolarSurround);
     
-    % The bipolar cells might not be abutting, in some model.  We have
-    % never used that condition - they always fully tile.  So spacing is
-    % always 1 and we haven't subsampled.  This is here because, well, we
-    % might some day. (BW/JRG).
-    % 
-    % This could/should be a parameter that depends on the standard
-    % deviation of the RF spead.
-    stride = round(size(obj.sRFcenter,1)/2);
-    if stride ~= 1
-        % Subsample in space to the resolution for this bipolar mosaic. The
-        % spacing is equal to the number of pixels that make up the center
-        % of the spatial receptive field.  This could be a settable
-        % parameter for others to experiment with, too.  We need a
-        % reference.
-        bipolarCenter   = ieImageSubsample(bipolarCenter, stride);
-        bipolarSurround = ieImageSubsample(bipolarSurround, stride);
-    end
+    % Pull out the samples at the cell locations.  It works here because
+    % they are evenly spaced (stride).  If we have jitter, we need another
+    % approach.
+    strideRow = abs(obj.cellLocation(1,2,1) - obj.cellLocation(1,1,1));
+    strideCol = abs(obj.cellLocation(2,1,2) - obj.cellLocation(1,1,2));
+    
+    bipolarCenter   = bipolarCenter(1:strideRow:end,1:strideCol:end,:);
+    bipolarSurround = bipolarSurround(1:strideRow:end,1:strideCol:end,:);
     
     %% Temporal filtering
     

@@ -262,7 +262,7 @@ for rr = 1:nRows         % Row index
             [~,maxr] = max(so_center(:)-so_surround(:)); [mr,mc] = ind2sub(size(so_center),maxr);
             cii = mc; im = 1;
             % Move one sample away until we find the 1 std sample
-            while (cii < size(so_center,2)) && ((so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD); 
+            while (cii < size(so_center,2)) && ((so_center(mr,cii)-so_surround(mr,cii)) > magnitude1STD) 
                 im = im+1; 
                 cii = mc-1+im; 
             end 

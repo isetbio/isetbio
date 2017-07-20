@@ -3,6 +3,14 @@ function initSpace(obj,varargin)
 %
 %    @bipolarMosaic.initSpace(varargin)
 %
+% Inputs (parameter-values)
+%   eccentricity
+%   spread
+%   spreadRatio
+%   stride
+%   ampCenter
+%   ampSurround
+%
 % Each bipolar mosaic takes its input from the cone mosaic, so that cell
 % locations are with respect to the spatial samples of the cone mosaic. To
 % compute the  spatial spread, we need to account for the cone spacing.
@@ -18,8 +26,10 @@ function initSpace(obj,varargin)
 %
 % We have implemented five types of bipolar receptive fields, one assigned
 % to each of the big five RGC types. Each bipolar type has a preferential
-% cone selections.  The critical decision is no S-cones for on/off parasol
-% and on-midget, as per the Chichilnisky primate data (REFERENCE HERE).
+% cone selection rule.  The critical rule is **no S-cones for on/off
+% parasol and on-midget**, as per the Chichilnisky primate data (Field and
+% Chichilnisky, 2010, Nature).
+% <http://www.nature.com/nature/journal/v467/n7316/full/nature09424.html>
 %
 % N.B.  Parasol is synonymous with diffuse.
 %
@@ -29,8 +39,8 @@ function initSpace(obj,varargin)
 %
 % They write:
 %
-%  "The frequency response was bandpass and well fit by a difference of
-%  Gaussians receptive field model. (abstract)"
+%  "The [spatial] frequency response was bandpass and well fit by a
+%  difference of Gaussians receptive field model. (abstract)"
 %
 %  "For midget bipolar cells, it is known that at retinal eccentricities up
 %  to 10 mm virtually all cells restrict dendritic contact to single cones
@@ -50,7 +60,7 @@ function initSpace(obj,varargin)
 % junctions with AII amacrine cells). - Fred
 %
 % JRG/BW ISETBIO Team, 2015
-
+%
 %  PROGRAMMING TODO
 %
 % To compute the spread in microns from this specification, multiply the
@@ -73,43 +83,47 @@ function initSpace(obj,varargin)
 % (BW/JRG). 
 % 
 
-
-
 %% Parse inputs
 p = inputParser;
-
+p.KeepUnmatched = true;
 p.addParameter('eccentricity',0,@isscalar);
-p.addParameter('conemosaic',[],@(x)(isequal(class(x),'coneMosaic')));
-p.addParameter('spread',1,@isscalar);
-p.addParameter('stride',[],@(x)(isempty(x) || isscalar(x)));
+p.addParameter('spread',[],@isscalar);
+p.addParameter('spreadRatio',10,@isscalar);
 
-% For the future.  We don't have multiple mosaics yet.
+p.addParameter('stride',[],@(x)(isempty(x) || isscalar(x)));
+p.addParameter('ampCenter',1,@(x)(isempty(x) || isscalar(x)));
+p.addParameter('ampSurround',1.3,@(x)(isempty(x) || isscalar(x)));
+
 p.parse(varargin{:});
 
 eccentricity = p.Results.eccentricity;
-conemosaic   = p.Results.conemosaic;
-spread       = p.Results.spread;
+spread       = p.Results.spread;             % Spread center
 stride       = p.Results.stride;
+ampCenter    = p.Results.ampCenter;
+ampSurround  = p.Results.ampSurround;
+spreadRatio  = p.Results.spreadRatio;  % Surround spread / center spread
+
+% Calculate the spread of the surround
+spreadSurround = spread*spreadRatio;
 
 %% Select parameters for each cell type
 
-% The spatial samples below (e.g. minSupport and spread) are in units of
+% The spatial samples below (e.g. support and spread) are in units of
 % samples on the cone mosaic.  We can convert this to spatial units on the
-% cone mosaic (microns) by multiplying by the cone spatial sampling.  The
-% cone mosaic is stored in the input slot of the bipolar mosaic.
+% cone mosaic (microns) by multiplying by the cone spatial sampling
+% distance.  The cone mosaic is stored in the input slot of the bipolar
+% mosaic.
 switch obj.cellType
     
-    case{'ondiffuse','offdiffuse','onparasol','offparasol'}
+    case{'ondiffuse','offdiffuse'}
         % Diffuse bipolars that carry parasol signals
-        %
-        % ecc = 0 mm  yields 2x2 cone input to bp
-        % ecc = 30 mm yields 5x5 cone input to bp
         
-        minSupport = 12;   % Minimum spatial support
-        
-        % BW, screwing around.  Just arbitrarily set the spatial spread here.
-        % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-        support = max(minSupport,floor(2 + (3/10)*(eccentricity)));
+        if isempty(spread)
+            % A functional rule, you could use this.  1 at the central
+            % fovea and 3 cones at 40 deg.  Linear.
+            spread =  floor(1 + (2/40)*(eccentricity));
+        end
+        support = round(3.5*spread);    % Minimum spatial support
         
         % Standard deviation of the Gaussian for the center, specified in
         % spatial samples on the input mosaic.  Anywhere near the center
@@ -119,56 +133,66 @@ switch obj.cellType
 
         % We need an amplitude for these functions to be specified in the
         % object.
-        obj.sRFcenter   = fspecial('gaussian',[support, support], spread);
-        obj.sRFsurround = fspecial('gaussian',[support, support], 1.3*spread);
+        obj.sRFcenter   = ampCenter*fspecial('gaussian',[support, support], spread);
+        obj.sRFsurround = ampSurround*fspecial('gaussian',[support, support], spreadSurround);
             
     case {'onsbc'}
-        minSupport = 15;    % Minimum spatial support
         
         % Small bistratified cells - handle S-cone signals
+        % Find reference from Fred/EJ.
+        if isempty(spread)
+            % A functional rule, you could use this.  2 at the central
+            % fovea and 5 cones at 40 deg.  Linear.
+            spread =  floor(2 + (3/40)*(eccentricity));
+        end
+        support = round(3.5*spread);    % Minimum spatial support
         
-        % Needs to be checked and thought through some more @JRG
-        % for this particular cell type.
-        support = max(minSupport,floor(2 + (3/10)*(eccentricity)));
+        % Reference for very broad surround is in header
+        rfCenterBig   = fspecial('gaussian',[support,support],spread);    % convolutional for now
+        rfSurroundBig = fspecial('gaussian',[support,support],spreadSurround); % convolutional for now
         
-        spread = 3;  % Standard deviation of the Gaussian - will be a function
-        rfCenterBig   = fspecial('gaussian',[support,support],spread); % convolutional for now
-        rfSurroundBig = fspecial('gaussian',[support,support],10*spread); % convolutional for now
-        
-        obj.sRFcenter   = rfCenterBig(:,:);
-        obj.sRFsurround = rfSurroundBig(:,:);
+        obj.sRFcenter   = ampCenter*rfCenterBig(:,:);
+        obj.sRFsurround = ampSurround*rfSurroundBig(:,:);
         
         
     case{'onmidget','offmidget'}
-        % Midget bipolars to midget RGCs
+        % Midget bipolars to midget RGCs.  Midgets restrict their centers
+        % to 1 cone out to at least 10 mm in macaque, which is like 40 or
+        % 50 deg.
+        %
+        % See the Psychtoolbox external routine RetinalMMToDegrees for help
+        % with mm to degrees in different species.
         
-        minSupport = 7;    % Minimum spatial support
+        if isempty(spread)
+            % A functional rule, you could use this.  1 at the central
+            % fovea and 3 cones at 40 deg.  Linear.
+            spread =  floor(1 + (2/40)*(eccentricity));
+        end
+        support = round(3.5*spread);    % Minimum spatial support
         
         % ecc = 0 mm yields 1x1 cone input to bp
         % ecc = 30 mm yields 3x3 cone input to bp
         % Support formula extrapolated from data in Dacey ... Lee, 1999 @JRG to insert
-        
-        support = max(minSupport,floor(1 + (2/10)*(eccentricity)));
+        % support = max(minSupport,floor(1 + (2/10)*(eccentricity)));
         
         % Standard deviation of the Gaussian for the center.  Anywhere near
         % the center the input is basically 1 cone.  Far in the periphery,
         % it will be seomthing else that we will have a function for, like
         % the support.s
-        spread = 1;
-        obj.sRFcenter   = fspecial('gaussian',[support,support], spread); % convolutional for now
-        obj.sRFsurround = 1.3*fspecial('gaussian',[support,support], 10*spread); % convolutional for now
+        obj.sRFcenter   = ampCenter*fspecial('gaussian',[support,support], spread); % convolutional for now
+        obj.sRFsurround = ampSurround*fspecial('gaussian',[support,support], spreadSurround); % convolutional for now
         
 end
 
 % The bipolar RF center positions are stored with respect to the samples of
 % the input layer (cone mosaic). The weights are also stored with respect
 % to the input sample.
-
 if isempty(stride), stride = round(spread); end
 
 % Cone row and column positions, but centered around (0,0).
 % These should be spaced by an amount that is controlled by a parameter and
 % reflects the size of the receptive field.
+conemosaic = obj.input;
 [X,Y] = meshgrid(1:stride:conemosaic.cols,1:stride:conemosaic.rows);
 X = X - mean(X(:)); Y = Y - mean(Y(:));
 

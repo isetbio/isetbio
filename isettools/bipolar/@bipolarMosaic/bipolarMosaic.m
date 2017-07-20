@@ -84,26 +84,24 @@ end
 methods
     
     % Constructor
-    function obj = bipolarMosaic(cmosaic, varargin)     
+    function obj = bipolarMosaic(cmosaic, cellType, varargin)     
         % Initialize the bipolar class
         %
         % Example:
-        %   bp = bipolarMosaic(cMosaic,'cellType','ondiffuse');
+        %   bp = bipolarMosaic(cMosaic,cellType,varargin);
         %
+        % JRG/BW ISETBIO Team, 2016
         
         p = inputParser;
-        p.KeepUnmatched;    % Keeps spread and stride 
+        p.KeepUnmatched = true;      % Keeps spread, stride, eccentricity
         p.addRequired('cmosaic',@(x)(isequal(class(x),'coneMosaic')));
+        p.addRequired('cellType', @(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
         
         p.addParameter('parent',[], @(x)(isequal(class(x),'bipolarLayer')));
-        p.addParameter('cellType', 'offdiffuse', @(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
         p.addParameter('rectifyType', 1, @isnumeric);
         p.addParameter('filterType',  1, @isnumeric);
-        p.addParameter('ecc',  0, @isnumeric);
-        p.addParameter('spread',  1, @isnumeric);
-        p.addParameter('stride',  1, @isnumeric);
 
-        p.parse(cmosaic, varargin{:});  
+        p.parse(cmosaic, cellType, varargin{:});  
         
         % The layer object that this is part of.
         obj.parent    = p.Results.parent;
@@ -119,7 +117,7 @@ methods
         obj.patchSize = cmosaic.size; 
         obj.timeStep  = cmosaic.integrationTime;
         
-        obj.cellType = ieParamFormat(p.Results.cellType);
+        obj.cellType = ieParamFormat(cellType);
         
         % Set the rectification operation
         switch p.Results.rectifyType
@@ -146,11 +144,8 @@ methods
         obj.filterType = p.Results.filterType;
         
         % Build spatial receptive fields
-        obj.initSpace('conemosaic',cmosaic,...
-            'ecc',   p.Results.ecc,...
-            'stride',p.Results.stride, ...
-            'spread',p.Results.spread);
-        
+        obj.initSpace(varargin{:});
+
     end
     
     function window(obj)
@@ -183,7 +178,7 @@ properties (Constant)
     % Cell array of strings containing valid values for the cell type.
     % diffuse and parasol are synonyms.  Not sure we should have them both.
     % And, possibly we should have smallbistratified. (BW)
-    validCellTypes = {'ondiffuse','offdiffuse','onparasol','offparasol','onmidget','offmidget','onsbc'};
+    validCellTypes = {'ondiffuse','offdiffuse','onmidget','offmidget','onsbc'};
 end
 
 % Methods that must only be implemented (Abstract in parent class).

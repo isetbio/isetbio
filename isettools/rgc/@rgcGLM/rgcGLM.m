@@ -81,7 +81,7 @@ classdef rgcGLM < rgcMosaic
             p.addRequired('bipolarM',@(x)(isequal(class(x),'bipolarMosaic')));
             p.addRequired('cellType',@ischar); % Could check better
 
-            p.addParameter('coupling',true,@islogical);
+            p.addParameter('coupling',false,@islogical);
             p.parse(rgcL,bipolarM,cellType,varargin{:});
             
             % Initialize the mosaic parent class
