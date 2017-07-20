@@ -5,12 +5,14 @@ function rgcM = rgcInitSpace(rgcM,cellType,varargin)
 %
 % Required inputs
 %   rgcM:     the mosaic
-%   cellType: is one of (spacing and case are irrelevant)
-%       {'ON Parasol', 'OFF Parasol', 'ON Midget', OFF Midget', 'ON SBC'}
+%   cellType: is one of rgcM.validCellTypes (spacing and capitalization are
+%             ignored).
 %
-% Optional Parameter-Values
-%   inMosaic
+% Optional inputs (Parameter-Value pairs)
 %   rfDiameter
+%
+%
+% Scientific notes and references
 %
 % RF size scale parameters: Parasol RFs are the largest, while Midget RFs
 % are about half the diameter of Parasol RFs, and SBC RFs are 1.2X the
@@ -32,6 +34,16 @@ function rgcM = rgcInitSpace(rgcM,cellType,varargin)
 % in ON and OFF ganglion cells of primate retina." The Journal of
 % Neuroscience 22.7 (2002).
 %
+% Old notes
+%
+% sRFcenter, sRFsurround matrices and cellLocation are in units of the
+% inputObj - scene pixels, cones or bipolar cells.
+%
+% rfDiaMagnitude is in units of micrometers.
+%
+% tonicDrive is in units of conditional intensity.
+%
+%
 % Example:
 % See also:
 %
@@ -41,17 +53,19 @@ function rgcM = rgcInitSpace(rgcM,cellType,varargin)
 
 p = inputParser;
 p.KeepUnmatched = true;
+
+% Possible RGC models.
 vFunc = @(x)(ismember(class(x),{'rgcGLM','rgcLNP'}));
 p.addRequired('rgcM',vFunc);
-vFunc = @(x)(ismember(ieParamFormat(x),...
-    {'onparasol', 'offparasol', 'onmidget', 'offmidget', 'onsbc','smallbistratified'}));
-p.addRequired('cellType',vFunc);
 
-p.addParameter('inMosaic',1,@isscalar);
+% May not be needed because how could we get here if not valid?
+vFunc = @(x)(ismember(ieParamFormat(x),rgcM.validCellTypes));
+p.addRequired('cellType',vFunc);
+  
 p.addParameter('rfDiameter',[],@isnumeric); % microns
 p.parse(rgcM,cellType,varargin{:});
 
-rgcM.rfDiameter = p.Results.rfDiameter;
+rgcM.rfDiameter = p.Results.rfDiameter;  % Samples on the input
 inMosaic        = p.Results.inMosaic;
 rgcLayer        = rgcM.parent;
 
@@ -117,11 +131,5 @@ sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
     rgcM.rfDiameter, ...
     p.Unmatched);
 
-% sRFcenter, sRFsurround matrices and cellLocation are in units of the
-% inputObj - scene pixels, cones or bipolar cells.
-%
-% rfDiaMagnitude is in units of micrometers.
-%
-% tonicDrive is in units of conditional intensity.
 
 end

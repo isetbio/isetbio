@@ -164,7 +164,7 @@ end
 % the input layer (cone mosaic). The weights are also stored with respect
 % to the input sample.
 
-if isempty(stride), stride = round(support/2); end
+if isempty(stride), stride = round(spread); end
 
 % Cone row and column positions, but centered around (0,0).
 % These should be spaced by an amount that is controlled by a parameter and

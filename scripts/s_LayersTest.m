@@ -32,12 +32,15 @@ cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
 
 clear bpMosaicParams
 bpMosaicParams.rectifyType = 1;  % Experiment with this
+bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
+bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
 
 bpMosaic  = cell(1,length(cellType));
 bpNTrials = cell(1,length(cellType));
 for ii = 1:length(cellType)   
     bpMosaicParams.cellType = cellType{ii};
-    bpL.mosaicCreate(cellType{ii},bpMosaicParams);
+    % We want this to be mosaicCreate(bpMosaicParams) in the end.
+    bpL.mosaic{ii} = bipolarMosaic(cMosaic,bpMosaicParams);
     bpL.mosaic{ii}.compute(cMosaic);   
 end
 

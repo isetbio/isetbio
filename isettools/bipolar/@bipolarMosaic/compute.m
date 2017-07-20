@@ -187,15 +187,18 @@ for iTrial = 1:nTrials
     % never used that condition - they always fully tile.  So spacing is
     % always 1 and we haven't subsampled.  This is here because, well, we
     % might some day. (BW/JRG).
-    spacing = size(obj.sRFcenter,1);
-    if spacing ~= 1
+    % 
+    % This could/should be a parameter that depends on the standard
+    % deviation of the RF spead.
+    stride = round(size(obj.sRFcenter,1)/2);
+    if stride ~= 1
         % Subsample in space to the resolution for this bipolar mosaic. The
         % spacing is equal to the number of pixels that make up the center
         % of the spatial receptive field.  This could be a settable
         % parameter for others to experiment with, too.  We need a
         % reference.
-        bipolarCenter   = ieImageSubsample(bipolarCenter, spacing);
-        bipolarSurround = ieImageSubsample(bipolarSurround, spacing);
+        bipolarCenter   = ieImageSubsample(bipolarCenter, stride);
+        bipolarSurround = ieImageSubsample(bipolarSurround, stride);
     end
     
     %% Temporal filtering
@@ -225,15 +228,13 @@ for iTrial = 1:nTrials
     % them to a min of zero.
     
     % bipolarCenter = obj.rectificationCenter(bipolarCenter - (min(bipolarCenter')'*ones(1,size(bipolarCenter,2))));
-    bipolarCenter = bipolarCenter - (min(bipolarCenter')'*ones(1,size(bipolarCenter,2)));
+    bipolarCenter = bipolarCenter - (min(bipolarCenter,[],2)*ones(1,size(bipolarCenter,2)));
     tmpCenter = conv2(bipolarFilt,bipolarCenter);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter,row, col); ieMovie(tmp);
     
     % Rectification
     % Not fully tested or analyzed -
     % bipolarSurround = obj.rectificationSurround(bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2))));
-    % This worked:
-    %  bipolarSurround = bipolarSurround-(min(bipolarSurround')'*ones(1,size(bipolarSurround,2)));
     bipolarSurround = bipolarSurround-(min(bipolarSurround,[],2)*ones(1,size(bipolarSurround,2)));
     tmpSurround = conv2(bipolarFilt,bipolarSurround);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpSurround,row, col); ieMovie(tmp);

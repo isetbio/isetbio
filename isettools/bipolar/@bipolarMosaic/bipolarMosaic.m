@@ -92,15 +92,15 @@ methods
         %
         
         p = inputParser;
+        p.KeepUnmatched;    % Keeps spread and stride 
         p.addRequired('cmosaic',@(x)(isequal(class(x),'coneMosaic')));
         
         p.addParameter('parent',[], @(x)(isequal(class(x),'bipolarLayer')));
-        p.addParameter('cellType', 'offdiffuse', @(x)(ismember(strrep(lower(x),' ',''),obj.validCellTypes)));
-        p.addParameter('cellLocation',  [], @isnumeric);
+        p.addParameter('cellType', 'offdiffuse', @(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
         p.addParameter('rectifyType', 1, @isnumeric);
         p.addParameter('filterType',  1, @isnumeric);
-        p.addParameter('ecc',  1, @isnumeric);
-        p.addParameter('coneType',  -1, @isnumeric);
+        p.addParameter('ecc',  0, @isnumeric);
+        p.addParameter('spread',  1, @isnumeric);
         p.addParameter('stride',  1, @isnumeric);
 
         p.parse(cmosaic, varargin{:});  
@@ -119,7 +119,7 @@ methods
         obj.patchSize = cmosaic.size; 
         obj.timeStep  = cmosaic.integrationTime;
         
-        obj.cellType = strrep(lower(p.Results.cellType),' ','');
+        obj.cellType = ieParamFormat(p.Results.cellType);
         
         % Set the rectification operation
         switch p.Results.rectifyType
@@ -148,7 +148,8 @@ methods
         % Build spatial receptive fields
         obj.spatialRFInit('conemosaic',cmosaic,...
             'ecc',   p.Results.ecc,...
-            'stride',p.Results.stride);
+            'stride',p.Results.stride, ...
+            'spread',p.Results.spread);
         
     end
     
