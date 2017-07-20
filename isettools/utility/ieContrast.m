@@ -31,7 +31,7 @@ p.addParameter('maxC',1,@(x)((x >= 0) && ( x <= 1)));
 
 p.parse(input,varargin{:});
 input = p.Results.input;
-maxC = p.Results.maxC;
+maxC  = p.Results.maxC;
 
 %% Find the range and mean, knock yourself out
 

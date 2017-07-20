@@ -103,12 +103,12 @@ bipolarContrast = p.Results.bipolarContrast;
 %         end
 %     end
 
-%% Removes the mean and uses a contrast
-% This is a normalization on the bipolar current.
-% It sc
-% the linear input.  Let's justify or explain or something.
+%% Removes the mean of the bipolar mosaic input, converts to contrast
 
-input = ieContrast(rgcM.get('response'),'maxC',bipolarContrast);
+% This is a normalization on the bipolar current.
+% Let's justify or explain or something.
+
+input = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
 
 % vcNewGraphWin; ieMovie(stim);
 % foo = zeros(10,11,size(stim,3));
@@ -116,17 +116,17 @@ input = ieContrast(rgcM.get('response'),'maxC',bipolarContrast);
 % ieMovie(foo);
 
 %% Set the rgc impulse response to an impulse
-% When we feed a bipolar object into the inner retina, we don't
-% need to do temporal convolution. We have the tCenter and
-% tSurround properties for the rgcMosaic, so we set them to an
-% impulse to remind us that the temporal repsonse is already
-% computed.
-rgcL.mosaic{rgcType} = rgcL.mosaic{rgcType}.set('tCenter all', 1);
-rgcL.mosaic{rgcType} = rgcL.mosaic{rgcType}.set('tSurround all',1);
+
+% When we feed a bipolar object into the inner retina, we don't need to do
+% temporal convolution. We have the tCenter and tSurround properties for
+% the rgcMosaic, so we set them to an impulse to remind us that the
+% temporal repsonse is already computed.
+rgcM.set('tCenter all', 1);
+rgcM.set('tSurround all',1);
 
 % We use a separable space-time receptive field that computes for
 % space here.  We will implement temporal response later.
-[respC, respS] = rgcSpaceDot(rgcL.mosaic{rgcType}, input);
+[respC, respS] = rgcSpaceDot(rgcM, input);
 % vcNewGraphWin; ieMovie(respC);
 
 %% Convolve with the temporal impulse response
@@ -142,19 +142,19 @@ rgcL.mosaic{rgcType} = rgcL.mosaic{rgcType}.set('tSurround all',1);
 
 
 %% Deal with multiple trial issues
-if ~isempty(bipolarTrials)
-    if iTrial == 1
-        nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
-    end
-    nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScale*(respC - respS);
-end
+% if ~isempty(bipolarTrials)
+%     if iTrial == 1
+%         nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
+%     end
+%     nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScale*(respC - respS);
+% end
 
 % Store the last trial
-if iTrial == nTrials
-    % Store the linear response
-    rgcL.mosaic{rgcType} = mosaicSet(rgcL.mosaic{rgcType},'response linear', bipolarScale*(respC - respS));
-    % rgcL.mosaic{rgcType}.window;
-end
+%if iTrial == nTrials
+% Store the linear response
+rgcM.set('response linear', bipolarScale*(respC - respS));
+% rgcM.window;
+%end
 % end
 end
 

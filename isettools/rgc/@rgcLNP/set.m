@@ -1,8 +1,10 @@
-function obj = mosaicSet(obj, param, val, varargin)
-%  Sets a property for an rgcLNP object.
+function obj = set(obj, param, val, varargin)
+% Sets a rgcLNP object parameter
 % 
-%   rgc.mosaic = mosaicSet(rgc.mosaic, param, value, varargin)
+%      @rgcLNP.set(param, value, varargin)
 %  
+% Passes along parameters not found here to @rgcMosaic.set
+
 % Inputs: 
 % 
 %   obj    - rgc object
@@ -57,7 +59,7 @@ switch param
         
     otherwise
         % Super class parameters
-        mosaicSet@rgcMosaic(obj,param,val,varargin{:});
+        set@rgcMosaic(obj,param,val,varargin{:});
         
 end
 

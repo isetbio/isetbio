@@ -86,17 +86,6 @@ classdef rgcLNP < rgcMosaic
             obj.postSpikeFilter = buildPostSpikeFilter(obj.dt);
             
         end
-        
-        % set function, see @rgcLNP/mosaicSet.m for details
-        function obj = set(obj, varargin)
-            mosaicSet(obj, varargin{:});
-        end
-        
-        % get function, see @rgcLNP/mosaicSet.m for details
-        function val = get(obj, varargin)
-           val = mosaicGet(obj, varargin{:});
-        end
-      
     end
     
     % Methods that must only be implemented (Abstract in parent class).

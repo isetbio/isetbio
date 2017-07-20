@@ -120,19 +120,8 @@ classdef rgcMosaic < cellMosaic
             % Sets temporal RF properties of tCenter/tSurround
             obj.initTime(rgcLayer);
             
+        end
 
-        end
-        
-        % set function, see mosaicSet for details
-        function obj = set(obj, varargin)
-            mosaicSet(obj, varargin{:});
-        end
-        
-        % get function, see mosaicGet for details
-        function val = get(obj, varargin)
-            val = mosaicGet(obj, varargin{:});
-        end
-                
     end
     
     properties (Constant)

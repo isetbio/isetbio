@@ -1,11 +1,13 @@
-function val = mosaicGet(obj, param, varargin)
-% Gets a property from an rgcLNP object.
+function val = get(obj, param, varargin)
+% Gets a rgcLNP parameter
 %
-%   val = mosaicGet(rgc.mosaic, param, varargin)
+%   val = @rgcLNP.get(param, varargin)
+%
+% Passes along parameters not found here to @rgcMosaic.get
 %
 % Inputs: 
-%   obj    - rgc object
-%   param  - parameter string
+%   obj      - rgc object
+%   param    - parameter string
 %   varargin - Not used yet, but will be used for units and other things.
 % 
 % Outputs: 
@@ -20,8 +22,8 @@ function val = mosaicGet(obj, param, varargin)
 %     couplingMatrix
 %
 % Examples:
-%   val = mosaicGet(rgc1.mosaic{1}, 'cell type')
-%   val = mosaicGet(rgc1.mosaic{3}, 'psth response')
+%   val = @rgcLNP.get('cell type')
+%   val = @rgcLNP.get('psth response')
 %
 % 9/2015 JRG (c) isetbio team
 % 7/2016 JRG updated
@@ -30,7 +32,6 @@ function val = mosaicGet(obj, param, varargin)
 p = inputParser; 
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
-p.KeepUnmatched = true;
 p.KeepUnmatched = true;
 p.addRequired('param');
 

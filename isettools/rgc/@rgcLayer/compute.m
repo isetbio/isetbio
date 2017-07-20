@@ -5,7 +5,7 @@ function [rgcL, nTrialsSpikes] = compute(rgcL, varargin)
 %
 % Computes the continuous (linear) and then spike responses for each of the
 % mosaics within the inner retina layer object.
-% 
+%
 % Required inputs
 %
 % Optional inputs
@@ -62,61 +62,54 @@ p.CaseSensitive = false;
 p.addRequired('rgcL',@(x) ~isempty(validatestring(class(x),{'rgcLayer'})));
 
 % For GLM model.  If true, much slower bigger memory
-p.addParameter('coupling',false,@islogical);   
+p.addParameter('coupling',false,@islogical);
 
 % Multiple bipolar trials
-p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));  
+p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 p.addParameter('bipolarScale',50,@isnumeric);
 p.addParameter('bipolarContrast',1,@isnumeric);
 
 p.parse(rgcL,varargin{:});
 coupling      = p.Results.coupling;
-bipolarTrials = p.Results.bipolarTrials;
+% bipolarTrials = p.Results.bipolarTrials;
 
 % See notes below
-bipolarScale    = p.Results.bipolarScale; 
-bipolarContrast = p.Results.bipolarContrast; 
+bipolarScale    = p.Results.bipolarScale;
+bipolarContrast = p.Results.bipolarContrast;
 
 %% Linear stage of the computation
 
-if ~isempty(bipolarTrials) 
-    % Multiple trials
-    [rgcL,nTrialsLinearResponse] = rgcL.computeSeparable(bpMosaic, ...
-        'bipolarScale', bipolarScale,...
+% For now, only deal with one trial case.  Compute the linear response for
+% every mosaic. The inputs are already attached.
+for ii=1:length(rgcL.mosaic)
+    rgcL.mosaic{ii}.computeSeparable(...
         'bipolarContrast',bipolarContrast,...
-        'bipolarTrials',bipolarTrials);
-else
-    % One trial case.  Compute the linear response for every mosaic. The
-    % inputs are already attached.
-    for ii=1:length(rgcL.mosaic)
-        rgcL.mosaic{ii}.computeSeparable(...
-            'bipolarContrast',bipolarContrast,...
-            'bipolarScale', bipolarScale);
-    end
-    
+        'bipolarScale', bipolarScale);
+    rgcL.mosaic{ii}.computeSpikes('coupling',coupling);
 end
 
 %% Compute spikes from linear response; possibly for multiple trials
 
-for ii=1:length(rgcL.mosaic{ii})
-    rgcM = rgcL.mosaic{ii}
-switch class(rgcM)
-    case {'rgcLinear'}
-        % No linear response implemented yet.
-        disp('No spikes computed for linear RGC mosaic');   
-    otherwise
-        % Runs for rgcLNP, rgcGLM
-        % Send the coupling field to decide on the coupling parameter
-        if ~isempty(bipolarTrials) 
-            % Multiple trial case
-            [rgcL, nTrialsSpikes] = ...
-                rgcL.computeSpikes(...
-                'coupling',coupling, ...
-                'nTrialsLinearResponse',nTrialsLinearResponse);
-        else
-            % Single trial case
-            [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling);
-        end
-end
-
+% for ii=1:length(rgcL.mosaic{ii})
+%     rgcM = rgcL.mosaic{ii};
+%     switch class(rgcM)
+%         case {'rgcLinear'}
+%             % No linear response implemented yet.
+%             disp('No spikes computed for linear RGC mosaic');
+%         otherwise
+%             % Runs for rgcLNP, rgcGLM
+%             % Send the coupling field to decide on the coupling parameter
+%             if ~isempty(bipolarTrials)
+%                 % Multiple trial case
+%                 [rgcL, nTrialsSpikes] = ...
+%                     rgcL.computeSpikes(...
+%                     'coupling',coupling, ...
+%                     'nTrialsLinearResponse',nTrialsLinearResponse);
+%             else
+%                 % Single trial case
+%                 [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling);
+%             end
+%     end
+%
+% end
 end
