@@ -64,7 +64,7 @@ switch ieParamFormat(param)
         val = obj.responseVoltage;
         
     otherwise
-        val = mosaicGet@rgcMosaic(obj,param,varargin{:});
+        val = get@rgcMosaic(obj,param,varargin{:});
 end      
 
 end

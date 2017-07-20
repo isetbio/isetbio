@@ -56,8 +56,9 @@ function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 p = inputParser;
 p.CaseSensitive = false;
 
-% ir and bp are both required
-p.addRequired('rgcM',@(x) isequal(class(x),'rgcMosaic'));
+validTypes = {'rgcGLM','rgcLNP'};
+vFunc = @(x)(ismember(class(x),validTypes));
+p.addRequired('rgcM',vFunc);
 
 % We can use multiple bipolar trials as input
 p.addParameter('bipolarScale',  50, @isnumeric);
