@@ -1,10 +1,9 @@
-function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDs(originalS, originalSPDs, targetS, lowPassSigma, maintainTotalEnergy, showFig)
-% [subSampledWavelengthSampling, subSampledSPDs] = subSampleSPDs(originalS, originalSPDs, newSamplingInterval, lowPassSigma, maintainTotalEnergy, showFig)
+function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDs(originalS, originalSPDs, targetS, lowPassSigma, showFig)
+% [subSampledWavelengthSampling, subSampledSPDs] = subSampleSPDs(originalS, originalSPDs, newSamplingInterval, lowPassSigma, showFig)
 %
 % Method to subsample the SPDs by a given sampling interval (given in nanometers) after first
 % low-passing them with a Gaussian kernel with sigma = lowPassSigma (given in nanometers).
-% If the maintainTotalEnergy flag is set to true, the sub-sampled SPDs have equal
-% total power as the original SPDs. If the showFig flag is set to true a figure showing all 
+% If the showFig flag is set to true a figure showing all 
 % the intermediate steps of this operation is displayed.
 %
 % 2/26/2015     npc     Wrote it.
@@ -39,7 +38,7 @@ function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDs(original
     lowpassedSPDs = zeros(numel(maxResWavelengthSampling), channelsNum);
     
     % generate the lowpass kernel
-    lowPassKernel = generateGaussianLowPassKernel(newSamplingInterval, lowPassSigma, maxResWavelengthSampling, maintainTotalEnergy);
+    lowPassKernel = generateGaussianLowPassKernel(newSamplingInterval, lowPassSigma, maxResWavelengthSampling);
         
     % zero pad lowpass kernel
     FFTsize = 1024;
@@ -93,10 +92,7 @@ function [subSampledWavelengthSampling, subSampledSPDs] = SubSampleSPDs(original
             xlabel('wavelength (nm)'); ylabel('energy');
             title(sprintf('power: %2.4f (original SPD) vs. %2.4f (subsampled SPD)', originalSPDpower(channelIndex), subSampledSPDpower(channelIndex)));
         end
-       
-        setFigureFontSizes(hFig, 'fontName', 'helvetica', 'FontSize', 14);
         drawnow;
-    
     end % if (showFig)
 end
 
@@ -115,7 +111,7 @@ function F = extractSignalFromZeroPaddedSignal(paddedF, desiredSize)
 end
 
 % Method to generate a Gaussian LowPass kernel
-function gaussF = generateGaussianLowPassKernel(newSamplingInterval, sigma, samplingAxis, maintainTotalEnergy) 
+function gaussF = generateGaussianLowPassKernel(newSamplingInterval, sigma, samplingAxis) 
 
     samplingAxis = (0:(numel(samplingAxis)-1))-(numel(samplingAxis)/2)+0.5;
     
@@ -124,11 +120,6 @@ function gaussF = generateGaussianLowPassKernel(newSamplingInterval, sigma, samp
         gaussF(samplingAxis == 0) = 1;
     else
         gaussF = exp(-0.5*(samplingAxis/sigma).^2);
-        if (maintainTotalEnergy)
-            gain = newSamplingInterval;
-        else
-            gain = 1;
-        end
-        gaussF = gain * gaussF / sum(gaussF);
+        gaussF = gaussF / sum(gaussF);
     end
 end

@@ -1,6 +1,6 @@
 function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,otf,varargin)
 %OTFTOPSF  Convert a 2D optical transfer fucntion to a 2D point spread function.
-%    [xSfGridCyclesDeg,ySfGridCyclesDeg,otf] = PsfToOtf(xGridMinutes,yGridMinutes,psf,varargin)
+%    [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,otf,varargin)
 %
 %    Converts a optical transfer function specified over two-dimensional
 %    spatial frequency in cycles per degree to a point spread function
