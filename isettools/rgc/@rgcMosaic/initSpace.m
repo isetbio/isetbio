@@ -9,8 +9,11 @@ function rgcM = initSpace(rgcM,varargin)
 %             ignored).
 %
 % Optional inputs (Parameter-Value pairs)
-%   rfDiameter
-%
+%   'rfDiameter'                 % in spatial units of bipolar samples
+%   'centerNoise'                % in spatial units of bipolar samples
+%   'ellipseParams'              % A,B,rho
+%   'centerSurroundSizeRatio'  
+%   'centerSurroundAmpRatio'   
 %
 % Scientific notes and references
 %
@@ -60,12 +63,16 @@ p.KeepUnmatched = true;
 % Possible RGC models.
 vFunc = @(x)(ismember(class(x),{'rgcGLM','rgcLNP'}));
 p.addRequired('rgcM',vFunc);
+p.addParameter('rfDiameter',[],@isscalar);         % in units of bipolar samples
+p.addParameter('centerNoise',.15,@isscalar);      % in units of bipolar samples
+p.addParameter('ellipseParams',[],@(x)(ismatrix(x) || isempty(x)));  % A,B,rho
 
-p.addParameter('rfDiameter',[],@isnumeric); % microns
+% See notes in RGCRFELLIPSES
+p.addParameter('centerSurroundSizeRatio',sqrt(0.75),@isscalar);
+p.addParameter('centerSurroundAmpRatio', 0.774,@isscalar);
 p.parse(rgcM,varargin{:});
 
-rgcM.rfDiameter = p.Results.rfDiameter;  % Samples on the input
-rgcLayer        = rgcM.parent;
+rgcM.rfDiameter = p.Results.rfDiameter;
 
 %% Set up defaults for the sizes and weights.
 switch ieParamFormat(rgcM.cellType)
@@ -89,7 +96,7 @@ if isempty(rgcM.rfDiameter)
     % See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional asymmetries
     % in ON and OFF ganglion cells of primate retina." The Journal of
     % Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in micrometers.
-    retinalLocationToTEE = temporalEquivEcc(rgcLayer.center);
+    retinalLocationToTEE = temporalEquivEcc(rgcM.parent.center);
     %
     % For human work, we should probably go with what Jon and Marissa C.
     % are doing.  Let's ask them (BW).
@@ -108,32 +115,17 @@ if isempty(rgcM.rfDiameter)
     
 end
 
+
 %% Build spatial RFs of all RGCs in this mosaic.
-%
-% This section of code is in drastic need of reorganizing (BW).
-%
-% First, the diameter should be given in terms of input mosaic samples,
-% keeping the units consistent.
-% Second, the code for choosing based on the literature should be pulled
-% out of here and provided as a separate utility.
-%
-%
-% We need to know the number of rows and columns in the bipolarMosaic that
-% drives this mosaic.  So, we need to know which bipolar mosaic we are
-% using as input here.
-%
-% RIGHT NOW I JUST USE THE FIRST MOSAIC.  BUT THIS SHOULD GET PASSED IN AND
-% SET!!!
-% sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
-% [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
-%     buildSpatialRFArray(rgcLayer.size(2), ...
-%     sz(1), ...
-%     sz(2), ...
-%     rgcM.rfDiameter, ...
-%     p.Unmatched);
 
-rgcM.spatialArray(varargin{:});
+% These are the parameters we use to build the jittered, hex spatial array
+% of center positions and ellipsoid RF shapes
+params.spread             = rgcM.rfDiameter/2;
+params.centerNoise        = p.Results.centerNoise;
+params.ellipseParams      = p.Results.ellipseParams;
+params.centerSurroundSizeRatio = p.Results.centerSurroundSizeRatio;
+params.centerSurroundAmpRatio  = p.Results.centerSurroundAmpRatio;
 
-
+rgcM.spatialArray(params);
 
 end

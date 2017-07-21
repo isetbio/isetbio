@@ -49,43 +49,20 @@ stride = p.Results.stride;
 spread = rgcM.rfDiameter/2;
 if isempty(stride), stride = max(1,round(spread)); end
 
-[nRowBipolars, nColBipolars,~] = size(rgcM.input.cellLocation);
+%%
+tmp = rgcM.input.cellLocation(:,:,1);
+minRow = min(tmp(:)); maxRow = max(tmp(:));
+tmp = rgcM.input.cellLocation(:,:,2);
+minCol = min(tmp(:)); maxCol = max(tmp(:));
 
-% Figure out how many RGCs we need
-nRGC = zeros(2,1);
-nRGC(1) = length(1:stride:nRowBipolars);
-nRGC(2) = length(1:stride:nColBipolars);
-nRGC(2) = floor((2/sqrt(3))*nRGC(2));   % JRG's magical hex
-
-%% Converting the spatial units from microns to bipolar samples
-
-% % p[atchSizeMeters is the width (columns) of the patch of cones sampled by
-% % the bipolars. This arrives in meters, we convert row/col in microns
-% % Row/Col in um
-% patchRowColMicrons = patchSizeMeters*[(nRowBipolars/nColBipolars), 1]*1e6; 
-% 
-% % This is the diameter of the cone mosaic sampled by each bipolar in units
-% % of microns.
-% bipolarDiameterMicrons = (patchRowColMicrons(2) / nColBipolars);
-% 
-% % The spatial mosaic dimensions are in units of bipolar spacing
-% 
-% % The RGC rfDiameter in terms of bipolar array samples.  So, one step is
-% % one step in the bipolar array. From here on out, the spatial coordinate
-% % system is with respect to the bipolar array.
-% rfDiameterBipolars = rfDiameterMicrons / bipolarDiameterMicrons;
-% 
-% % Determine the number of RGC samples in the hexagonal mosaic
-% % nRGC: RGC cells, row col. 
-% nRGC    = floor(patchRowColMicrons ./ rfDiameterMicrons); % number of RGCs in h, v direction
-% 
-% % Adjust the scale factor to account for the hexagonal packing of the RGC
-% % mosaic
-% nRGC(2) = floor((2/sqrt(3))*nRGC(2));
+% The multiplicative factor on the col is hex spacing.  
+rowSamples = minRow:stride:maxRow;
+colSamples = minCol:((sqrt(3)/2)*stride):maxCol;
+[Y,X] = meshgrid(rowSamples,colSamples);
+cellLocation(:,:,2) = Y; cellLocation(:,:,1) = X;   % RGC cell center locations
 
 %% Create elliptical spatial RFs for each cell
 
-[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.ellipseMatrix] = rgcRFEllipses(nRGC, rgcM.rfDiameter, varargin{:});
-
+[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.ellipseMatrix] = rgcRFEllipses(cellLocation, spread, varargin{:});
 
 end

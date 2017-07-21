@@ -61,10 +61,10 @@ rgcParams.centerNoise = 0;
 rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
 
-diameters = [5];  % In microns.
+diameters = [3 3 1 1 5];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
-for ii = 1:1% length(cellType)
+for ii = 1:length(cellType)
     rgcParams.rfDiameter = diameters(ii);
     rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
 end
@@ -75,9 +75,7 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Every mosaic has its input and properties assigned so we should be able
 % to just run through all of them.
-rgcL = rgcL.compute(...
-    'bipolarScale',50,...
-    'bipolarContrast',0.5);
+rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
 
 %%
 rgcL.window;
