@@ -48,28 +48,28 @@ sRFMidPointRow = (1/2)*size(rgcMosaic.sRFcenter{row,col},1);
 
 % The row and samples where read the input for this cell
 rowStart = (rgcCenter(1) - sRFMidPointRow);
-rowEnd   = (rgcCenter(1) + sRFMidPointRow);
+% rowEnd   = (rgcCenter(1) + sRFMidPointRow);
 
 % Repeat for the column dimension.
 sRFMidPointCol = (1/2)*size(rgcMosaic.sRFcenter{row,col},2);
 colStart = (rgcCenter(2) - sRFMidPointCol);
-colEnd   = (rgcCenter(2) + sRFMidPointCol);
+% colEnd   = (rgcCenter(2) + sRFMidPointCol);
 
 % The offset parameter is the distance in bipolar samples to the edge
 % of the input. 
-offset =rgcMosaic.cellLocation(1,1,:);
+offset = rgcMosaic.cellLocation(1,1,:);
 
-% Add the eps0 offset to each position and apply ceil and floor to ensure
-% inputRow and inputCol are equal to size(rgcMosaic.sRFcenter{row,col})
-eps0 = .0001;
-inputRow =  ceil(rowStart - offset(1) + eps0):floor((rowEnd) - offset(1));
-inputCol =  ceil(colStart - offset(2) + eps0):floor((colEnd) - offset(2));
+nRow     =  (0:size(rgcMosaic.sRFcenter{row,col},1)-1);
+nCol     =  (0:size(rgcMosaic.sRFcenter{row,col},2)-1);
+inputRow =  ceil(nRow + rowStart - offset(1));
+inputCol =  ceil(nCol + colStart - offset(2));
 
+% Older code.
 % Check to make sure that the inputRow/Col match the size of the receptive
 % field. If we never get this error, then we will delete the check.
-if (length(inputRow) ~= size(rgcMosaic.sRFcenter{row,col},1)) || ...
-        (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},1))
-    error('Dimension mismatch of input and rf size');
-end
+% if (length(inputRow) ~= size(rgcMosaic.sRFcenter{row,col},1)) || ...
+%         (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},2))
+%     error('Dimension mismatch of input and rf size');
+% end
 
 end

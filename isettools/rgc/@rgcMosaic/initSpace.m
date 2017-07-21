@@ -120,7 +120,6 @@ end
 
 % These are the parameters we use to build the jittered, hex spatial array
 % of center positions and ellipsoid RF shapes
-params.spread             = rgcM.rfDiameter/2;
 params.centerNoise        = p.Results.centerNoise;
 params.ellipseParams      = p.Results.ellipseParams;
 params.centerSurroundSizeRatio = p.Results.centerSurroundSizeRatio;

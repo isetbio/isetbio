@@ -29,7 +29,7 @@ cMosaic.emGenSequence(nMovements);
 cMosaic.compute(oi);
 cMosaic.computeCurrent;
 
-cMosaic.window;
+% cMosaic.window;
 
 %% Make the biplar layer with just one mosaic 
 
@@ -43,6 +43,7 @@ ii = 1;
 bpMosaicParams.spread  = 2;  % RF diameter w.r.t. input samples
 bpMosaicParams.stride  = 2;  % RF diameter w.r.t. input samples
 bpL.mosaic{ii} = bipolarMosaic(cMosaic,'on midget',bpMosaicParams);
+
 % Maybe we should have a bpL.compute
 bpL.mosaic{ii}.compute;
 bpL.window;
@@ -52,8 +53,7 @@ clear rgcL rgcParams
 rgcL = rgcLayer(bpL);
 
 % Spread and stride are not working
-rgcParams.rfDiameter = 2;
-
+rgcParams.rfDiameter = 1.5;
 
 ii = 1;
 % rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{1},'on midget');

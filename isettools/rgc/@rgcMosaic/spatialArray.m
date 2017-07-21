@@ -42,22 +42,26 @@ p.KeepUnmatched = true;
 
 p.addRequired('rgcM',@(x)(isa(rgcM,'rgcMosaic')));
 p.addParameter('stride',[],@isscalar);
-
 p.parse(rgcM,varargin{:});
+
 stride = p.Results.stride;
-
 spread = rgcM.rfDiameter/2;
-if isempty(stride), stride = max(1,round(spread)); end
 
-%%
-tmp = rgcM.input.cellLocation(:,:,1);
-minRow = min(tmp(:)); maxRow = max(tmp(:));
-tmp = rgcM.input.cellLocation(:,:,2);
-minCol = min(tmp(:)); maxCol = max(tmp(:));
+% If stride is not set, use 2 std center to center separation.
+if isempty(stride), stride = max(1,2*spread); end
 
-% The multiplicative factor on the col is hex spacing.  
-rowSamples = minRow:stride:maxRow;
-colSamples = minCol:((sqrt(3)/2)*stride):maxCol;
+%% Figure out the RGC cell locations with respect to the bipolar samples
+
+%
+[bpRow,bpCol,~] = size(rgcM.input.cellLocation);
+
+rowSamples = 1:stride:bpRow;   
+% The multiplicative factor on the col is hex spacing.
+colSamples = 1:((sqrt(3)/2)*stride):bpCol;
+
+rowSamples = rowSamples - mean(rowSamples);
+colSamples = colSamples - mean(colSamples);
+
 [Y,X] = meshgrid(rowSamples,colSamples);
 cellLocation(:,:,2) = Y; cellLocation(:,:,1) = X;   % RGC cell center locations
 
