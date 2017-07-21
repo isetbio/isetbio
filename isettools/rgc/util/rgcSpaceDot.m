@@ -1,4 +1,4 @@
-function [respCenter, respSurround] = rgcSpaceDot(mosaic, input)
+function [respCenter, respSurround] = rgcSpaceDot(rgcM, input)
 % Spatial inner product of stimulus and each RF.
 %
 %  [spRespCenter, spRespSurround] = rgcSpaceDot(mosaic,input)
@@ -33,8 +33,8 @@ function [respCenter, respSurround] = rgcSpaceDot(mosaic, input)
 % JRG,BW ISETBIO TEAM, 2015
 
 %% init parameters
-nSamples = size(input, 3);
-nCells   = mosaic.get('mosaic size');
+nSamples = size(input, 3);              % Temporal samples
+nCells   = rgcM.get('mosaic size');   % RGC cells
 
 % pre-allocate space
 respCenter   = zeros([nCells(1), nCells(2), nSamples]);
@@ -54,18 +54,19 @@ for ii = 1 : nCells(1)
         
         % Get RF of the center and surround of this cell.  These data
         % are not on the mosaic, but rather they are centered at (0,0).
-        spRFcenter   = mosaic.sRFcenter{ii, jj};
-        spRFsurround = mosaic.sRFsurround{ii, jj};
+        spRFcenter   = rgcM.sRFcenter{ii, jj};
+        spRFsurround = rgcM.sRFsurround{ii, jj};
         % vcNewGraphWin; imagesc(spRFcenter)
         
         % Row and col positions of the input used for the inner product
         % with the RGC RF. The row/col values are sample positions of the
-        % bipolar input. 
-        [inputRow, inputCol] = mosaic.inputPositions(ii,jj);
+        % bipolar input.  We need a unit test to show that these positions
+        % change properly as we step through the RGC positions.
+        [inputRow, inputCol] = rgcM.inputPositions(ii,jj);
         
         % Find the rows and columns within the stimulus range
-        nRow = length(inputRow); nCol = length(inputCol);
-        mxRow = size(input,1); mxCol = size(input,2);
+        nRow  = length(inputRow); nCol = length(inputCol);
+        mxRow = size(input,1);    mxCol = size(input,2);
         inputValues = zeros(nRow,nCol,nTime);
         
         % Sometimes the RF extends outside of the size of the input.  So we

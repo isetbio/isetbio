@@ -110,10 +110,7 @@ bipolarContrast = p.Results.bipolarContrast;
 
 input = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
 
-% vcNewGraphWin; ieMovie(stim);
-% foo = zeros(10,11,size(stim,3));
-% for ii=1:size(stim,3), foo(:,:,ii) = imresize(stim(:,:,ii),[10,11]); end
-% ieMovie(foo);
+% vcNewGraphWin; ieMovie(input);
 
 %% Set the rgc impulse response to an impulse
 
