@@ -143,32 +143,34 @@ function popupResponseSelect_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupResponseSelect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupResponseSelect
 
+bipolarWindowRefresh(handles)
+
 % These are all the strings in the popup
-contents = cellstr(get(hObject,'String'));
-
-% This is the selected string
-str = contents{get(hObject,'Value')};
-
-% Clear the axis in the image
-cla
-g = str2double(get(handles.editGamma,'string'));
-
-switch str
-
-    case 'Bipolar mosaic'
-        handles.bipolar.plot('mosaic');
-        
-    case 'Bipolar mean (image)'
-        handles.bipolar.plot('response image','gamma',g);
-        
-    case 'Bipolar movie'
-        ieInWindowMessage('Showing movie',handles);
-        handles.bipolar.plot('response movie');
-        ieInWindowMessage('',handles);
-        
-    otherwise
-        error('Unknown string %s\n',str);
-end
+% contents = cellstr(get(hObject,'String'));
+% 
+% % This is the selected string
+% str = contents{get(hObject,'Value')};
+% 
+% % Clear the axis in the image
+% cla
+% g = str2double(get(handles.editGamma,'string'));
+% 
+% switch str
+% 
+%     case 'Bipolar mosaic'
+%         handles.bipolar.plot('mosaic');
+%         
+%     case 'Bipolar mean (image)'
+%         handles.bipolar.plot('response image','gamma',g);
+%         
+%     case 'Bipolar movie'
+%         ieInWindowMessage('Showing movie',handles);
+%         handles.bipolar.plot('response movie');
+%         ieInWindowMessage('',handles);
+%         
+%     otherwise
+%         error('Unknown string %s\n',str);
+% end
 
 end
 
@@ -290,14 +292,17 @@ g = str2double(get(handles.editGamma,'string'));
 
 switch(str)
     
-    case 'Bipolar mosaic'
-        gdata.bipolar.plot('mosaic');
-        
     case 'Bipolar mean (image)'
         gdata.bipolar.plot('response image','gamma',g);
         colorbar;
+    case 'Bipolar mosaic'
+        ieInWindowMessage('Creating mosaic',handles);
+        gdata.bipolar.plot('mosaic');
+        ieInWindowMessage('',handles);
     case 'Bipolar movie'
+        ieInWindowMessage('Showing movie',handles);
         gdata.bipolar.plot('movieResponse','gamma',g);
+        ieInWindowMessage('',handles);
     otherwise
         error('Unknown plot type %s\n',str);
 end

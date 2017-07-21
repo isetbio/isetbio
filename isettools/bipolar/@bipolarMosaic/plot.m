@@ -10,6 +10,7 @@ function hdl = plot(obj, pType, varargin)
 %   response movie
 %   response time series
 %   spatial rf
+%   surround rf
 %   mosaic
 %
 % Optional parameters-value pairs
@@ -40,7 +41,7 @@ p.KeepUnmatched = true;
 allowableFields = {...
     'responsetimeseries','responsecenter','responsesurround',...
     'responseimage','responsemovie', ...
-    'spatialrf','mosaic'};
+    'spatialrf','surroundrf','mosaic'};
 p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
 
 p.addParameter('gamma',1,@isscalar);
@@ -71,6 +72,20 @@ switch ieParamFormat(pType)
         
         x = (1:sz(2)) - mean(1:sz(2));    
         y = (1:sz(1)) - mean(1:sz(1)); 
+        surf(x,y,srf); colormap(parula);
+        xlabel('Cone samples'); zlabel('Responsivity')
+        
+    case 'surroundrf'
+        % @bipolarMosaic.plot('surround rf')
+        srf = obj.sRFsurround;
+        sz = size(srf);
+        if isequal(sz,[1, 1])
+            disp('spatial rf is an impulse');
+            return;
+        end
+        
+        x = (1:sz(2)) - mean(1:sz(2));
+        y = (1:sz(1)) - mean(1:sz(1));
         surf(x,y,srf); colormap(parula);
         xlabel('Cone samples'); zlabel('Responsivity')
         

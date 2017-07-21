@@ -88,7 +88,7 @@ p = inputParser;
 p.KeepUnmatched = true;
 p.addParameter('eccentricity',0,@isscalar);
 p.addParameter('spread',[],@isscalar);
-p.addParameter('spreadRatio',10,@isscalar);
+p.addParameter('spreadRatio',10,@isscalar);  % Dacey bipolar paper
 
 p.addParameter('stride',[],@(x)(isempty(x) || isscalar(x)));
 p.addParameter('ampCenter',1,@(x)(isempty(x) || isscalar(x)));
@@ -102,9 +102,6 @@ stride       = p.Results.stride;
 ampCenter    = p.Results.ampCenter;
 ampSurround  = p.Results.ampSurround;
 spreadRatio  = p.Results.spreadRatio;  % Surround spread / center spread
-
-% Calculate the spread of the surround
-spreadSurround = spread*spreadRatio;
 
 %% Select parameters for each cell type
 
@@ -134,6 +131,9 @@ switch obj.cellType
         % We need an amplitude for these functions to be specified in the
         % object.
         obj.sRFcenter   = ampCenter*fspecial('gaussian',[support, support], spread);
+        
+        % Calculate the spread of the surround
+        spreadSurround = spread*spreadRatio;
         obj.sRFsurround = ampSurround*fspecial('gaussian',[support, support], spreadSurround);
             
     case {'onsbc'}
@@ -148,11 +148,10 @@ switch obj.cellType
         support = round(3.5*spread);    % Minimum spatial support
         
         % Reference for very broad surround is in header
-        rfCenterBig   = fspecial('gaussian',[support,support],spread);    % convolutional for now
-        rfSurroundBig = fspecial('gaussian',[support,support],spreadSurround); % convolutional for now
+        obj.sRFcenter   = ampCenter*fspecial('gaussian',[support,support],spread);    % convolutional for now
         
-        obj.sRFcenter   = ampCenter*rfCenterBig(:,:);
-        obj.sRFsurround = ampSurround*rfSurroundBig(:,:);
+        spreadSurround = spread*spreadRatio;
+        obj.sRFsurround = ampSurround*fspecial('gaussian',[support,support],spreadSurround); % convolutional for now
         
         
     case{'onmidget','offmidget'}
@@ -180,6 +179,9 @@ switch obj.cellType
         % it will be seomthing else that we will have a function for, like
         % the support.s
         obj.sRFcenter   = ampCenter*fspecial('gaussian',[support,support], spread); % convolutional for now
+        
+        % Calculate the spread of the surround
+        spreadSurround = spread*spreadRatio;
         obj.sRFsurround = ampSurround*fspecial('gaussian',[support,support], spreadSurround); % convolutional for now
         
 end

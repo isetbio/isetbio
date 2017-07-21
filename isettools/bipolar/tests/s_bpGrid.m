@@ -53,7 +53,7 @@ clear rgcL rgcParams
 rgcL = rgcLayer(bpL);
 
 % Spread and stride are not working
-rgcParams.rfDiameter = 1.5;
+rgcParams.rfDiameter = 3;
 
 ii = 1;
 % rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{1},'on midget');

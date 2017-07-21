@@ -35,56 +35,45 @@ bpL = bipolarLayer(cMosaic);
 
 bpMosaicParams.parent = bpL;
 bpMosaicParams.rectifyType = 1;  % Experiment with this
-bpMosaic = cell(5,1);
 for ii=1:length(cellType)
-    % Maybe this could be
-    bpMosaicParams.cellType = cellType{ii};
-    bpL.mosaicCreate(cellType{ii},bpMosaicParams);
-    
-    % Should be samples on the input layer
-    support = 11;
-    bpL.mosaic{ii}.set('sRFCenter',  fspecial('gaussian',[support support],1));
-    bpL.mosaic{ii}.set('sRFSurround',fspecial('gaussian',[support support],2));
-    
-    bpL.mosaic{ii}.compute(cMosaic);     % Knows about cMosaic input
+    bpL.mosaic{ii} = bipolarMosaic(cMosaic, cellType{ii}, bpMosaicParams);
+    % bpL.mosaic{ii}.set('sRFsurround',zeros(size(bpL.mosaic{ii}.sRFsurround)));
+    bpL.mosaic{ii}.compute;   
 end
 bpL.window;
 
 %% Retinal ganlion cell model
 
-clear rgcLayer
+
+% Tried only for GLM and LNP.  Ask JRG if other types are still supported.
+clear rgcL rgcParams
 
 % Create retina ganglion cell layer object
 rgcL = rgcLayer(bpL);
-cellType = {'onparasol','offparasol','onmidget','offmidget','onsbc'};
 
 % There are various parameters you could set.  We will write a script
 % illustrating these later.  We need a description.
-mosaicParams.centerNoise = 0;
-mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+rgcParams.centerNoise = 0;
+rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
-mosaicParams.type  = cellType;
-mosaicParams.model = 'LNP';
-mosaicParams.coupling = false;
 
-diameters = round([10 10 5 5 20]);  % Should be samples on the input layer
+diameters = [3 3 1 1 5];  % In microns.
+
+cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
-    mosaicParams.rfDiameter = diameters(ii);
-    mosaicParams.type = cellType{ii};
-    mosaicParams.inMosaic = ii;   % Could switch up and match inputs to outputs
-    rgcL.mosaicCreate(mosaicParams);
+    rgcParams.rfDiameter = diameters(ii);
+    rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
 end
-% rgcL.mosaic{1}.window
-nTrials = 1; rgcL.set('nTrials',nTrials);
+
+nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 %% Compute the inner retina response and visualize
 
-% Number of trials refers to number of repeats of the same stimulus
-disp('Computing rgc responses');
-[rgcL, nTrialsSpikes] = rgcL.compute(bpL.mosaic, ...
-    'bipolarScale',50,...
-    'bipolarContrast',0.2);
+% Every mosaic has its input and properties assigned so we should be able
+% to just run through all of them.
+rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
 
-%% Show the layer
-
+%%
 rgcL.window;
+
+%%

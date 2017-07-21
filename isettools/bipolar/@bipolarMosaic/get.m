@@ -31,6 +31,7 @@ allowableFields = {...
     'timeStep',...
     'sRFcenter',...
     'sRFsurround',...
+    'spatialrf',...
     'temporalDifferentiator',...
     'threshold',...
     'rgbdata',...
@@ -45,7 +46,7 @@ p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFields)))
 % Parse and put results into structure p.
 p.parse(varargin{:}); params = p.Results;
 
-switch ieParamFormat(params.what);  % Lower case and remove spaces
+switch ieParamFormat(params.what)  % Lower case and remove spaces
 
     case {'celllocation'}        
         val = obj.cellLocation;
@@ -68,6 +69,9 @@ switch ieParamFormat(params.what);  % Lower case and remove spaces
         
     case{'srfsurround'}
         val = obj.sRFsurround;
+        
+    case {'spatialrf'}
+        val = obj.sRFcenter - obj.sRFsurround;
         
     case{'temporaldifferentiator'}
         val = obj.temporalDifferentiator;
