@@ -280,8 +280,10 @@ nMosaic = get(gdata.listMosaics,'Value');
 switch(str)
     
     case 'Bipolar mosaic'
+        ieInWindowMessage('Building mosaic',handles);
         gdata.bipolar.plot('mosaic','nMosaic',nMosaic);
-        
+        ieInWindowMessage('',handles);
+
     case 'Bipolar mean (image)'
         gdata.bipolar.plot('response image','gamma',g,'nMosaic',nMosaic);
         colorbar;

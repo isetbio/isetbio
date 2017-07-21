@@ -297,7 +297,10 @@ gam = str2double(get(gdata.editGamma','String'));
 
 switch(str)
     case 'Receptive field mosaic'
+        ieInWindowMessage('Building mosaic',handles);
         rgcL.mosaic{nMosaic}.plot('mosaic fill','gam',gam);
+        ieInWindowMessage('',handles);
+
     case 'Spike mean (image)'
         rgcL.mosaic{nMosaic}.plot('spike mean image','gam',gam);
     case 'PSTH mean (image)'

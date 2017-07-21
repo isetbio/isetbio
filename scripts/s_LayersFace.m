@@ -57,7 +57,7 @@ rgcParams.centerNoise = 0;
 rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
 
-diameters = [3 3 1 1 5];  % In microns.
+diameters = [6 5 3 3 7];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
 for ii = 1:length(cellType)
