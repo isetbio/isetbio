@@ -57,8 +57,8 @@ classdef rgcMosaic < cellMosaic
         %TSURROUND  and of the surround (1 ms timing by default)
         tSurround = [];
         
-        %TONICDRIVE baseline term for linear response; if nonzero, cell
-        %spikes with no input
+        %TONICDRIVE matrix of baselines drives for linear response; if
+        % nonzero, cell spikes occasionally with no input
         tonicDrive;
         
         %RFDIAMAGNITUDE for making movies of response
@@ -86,7 +86,7 @@ classdef rgcMosaic < cellMosaic
     methods
         
         % Constructor
-        function obj = rgcMosaic(rgcLayer, cellType, varargin)
+        function obj = rgcMosaic(rgcLayer, bipolarM, cellType, varargin)
             %% Initialize an rgcMosaic for a particular cell type
             %
             %  rgcMosaic(rgcLayer, cellType, 'input mosaic',val)
@@ -101,24 +101,35 @@ classdef rgcMosaic < cellMosaic
             p = inputParser;
             p.KeepUnmatched = true;
             p.addRequired('rgcLayer',@(x)(isequal(class(x),'rgcLayer')));
+            p.addRequired('bipolarM',@(x)(isequal(class(x),'bipolarMosaic')));
             p.addRequired('cellType',@(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
-            p.addParameter('inMosaic',1,@isscalar);
+            p.addParameter('baselineRate',2.27,@isscalar);
             
-            p.parse(rgcLayer,cellType,varargin{:});
-            inMosaic = p.Results.inMosaic;
+            p.parse(rgcLayer,bipolarM, cellType,varargin{:});
             
             % We need the parameters in the layer often enough.
             obj.parent = rgcLayer;
+            
+            % So we can build the spatial RFs
+            obj.input = bipolarM;
             
             % This the rgc mosaic type
             obj.cellType = strrep(lower(cellType),' ','');
             
             % Generate spatial RFs of the appropriate size for the cell type and TEE
             % Sets sRFcenter, sRFsurround
-            obj.initSpace(cellType, 'inMosaic', inMosaic, varargin{:}); 
+            obj.initSpace(varargin{:}); 
             
             % Sets temporal RF properties of tCenter/tSurround
             obj.initTime(rgcLayer);
+            
+            % Initialize the baseline (tonic) drive
+            %
+            % Tonic drive is the bias or DC term for the linear output of
+            % the GLM. If the tonic drive term is greater than 0, then
+            % there is a baseline firing rate even when the stimulus input
+            % is zero. Units of conditional intensity
+            obj.tonicDrive = p.Results.baselineRate*(ones(size(obj.cellLocation)));
             
         end
 

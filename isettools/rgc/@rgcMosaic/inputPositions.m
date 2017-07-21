@@ -1,7 +1,7 @@
-function [inputRow, inputCol] = inputPositions(rgcMosaic,row,col,bipolarsPerMicron)
+function [inputRow, inputCol] = inputPositions(rgcMosaic,row,col)
 % Calculate the receptive field position of one RGC cell in input frame
 %
-%  [inputRow, inputCol] = inputPositions(obj,row,col,bipolarsPerMicron)
+%  [inputRow, inputCol] = inputPositions(obj,row,col)
 %
 % Inputs:
 %    rgcMosaic - any type
@@ -38,10 +38,8 @@ function [inputRow, inputCol] = inputPositions(rgcMosaic,row,col,bipolarsPerMicr
 % The length of the inputRow and inputCol has to be the same as the size of
 % the receptive field row and col
 
-% The RGC center location is specified in microns.  We multiply this value
-% with the number of bipolars per micron so that we know the center with
-% respect to the input (bipolar) sampling grid
-rgcCenter = bipolarsPerMicron .* rgcMosaic.cellLocation{row,col};
+% The RGC center location is specified in bipolar samples.
+rgcCenter = rgcMosaic.cellLocation(row,col,:);
 
 % The sRFcenter{} is the set of weights that will be applied to the input
 % layer.  The positions of the weights are in the sample coordinates of the
@@ -59,12 +57,7 @@ colEnd   = (rgcCenter(2) + sRFMidPointCol);
 
 % The offset parameter is the distance in bipolar samples to the edge
 % of the input. 
-offset = bipolarsPerMicron .* rgcMosaic.cellLocation{1,1};
-% offset = floor(offset);
-
-% % If there is rounding, keep it in range
-% inputRow =  (ceil(rowStart):floor(rowEnd)) - offset(1);
-% inputCol =  (ceil(colStart):floor(colEnd)) - offset(2);
+offset =rgcMosaic.cellLocation(1,1,:);
 
 % Add the eps0 offset to each position and apply ceil and floor to ensure
 % inputRow and inputCol are equal to size(rgcMosaic.sRFcenter{row,col})
@@ -72,25 +65,11 @@ eps0 = .0001;
 inputRow =  ceil(rowStart - offset(1) + eps0):floor((rowEnd) - offset(1));
 inputCol =  ceil(colStart - offset(2) + eps0):floor((colEnd) - offset(2));
 
-% inputRow =  ceil(rowStart - offset(1)):floor((rowEnd) - offset(1));
-% inputCol =  ceil(colStart - offset(2)):floor((colEnd) - offset(2));
-
 % Check to make sure that the inputRow/Col match the size of the receptive
 % field. If we never get this error, then we will delete the check.
 if (length(inputRow) ~= size(rgcMosaic.sRFcenter{row,col},1)) || ...
         (length(inputCol)~=size(rgcMosaic.sRFcenter{row,col},1))
     error('Dimension mismatch of input and rf size');
 end
-
-%% Checking stuff
-
-% We never end up here.
-% if length(inputRow)>size(rgcMosaic.sRFcenter{row,col},1) || length(inputCol)>size(rgcMosaic.sRFcenter{row,col},2) 
-%     inputRow = inputRow(1:size(rgcMosaic.sRFcenter{row,col},1));
-%     inputCol = inputCol(1:size(rgcMosaic.sRFcenter{row,col},2)); 
-%     1010
-% end
-% if length(stimY)>size(rgcMosaic.sRFcenter{xcell,ycell},2); stimY = stimY(1:size(rgcMosaic.sRFcenter{xcell,ycell},2)); end;
-
 
 end

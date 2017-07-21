@@ -129,7 +129,7 @@ switch ieParamFormat(plotType)
         cla reset;
         
         % We should subsample the number shown when there are many.
-        center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        center = obj.cellLocation;  % um w.r.t. center of image
         
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
@@ -161,7 +161,7 @@ switch ieParamFormat(plotType)
         img = img.^gam;        % This makes the units arbitrary
         
         % We should subsample the number shown when there are many.
-        center = cell2mat(obj.cellLocation(:));  % um w.r.t. center of image
+        center = RGB2XWFormat(obj.cellLocation);  % um w.r.t. center of image
         
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
@@ -183,7 +183,9 @@ switch ieParamFormat(plotType)
         % Plots a sub-sampled set of spatial RF as surface (mesh) plots
         % Should make the skip parameters selectable
         
-        rfCoords = vertcat(obj.cellLocation{:});
+        % TO DEBUG with new cellLocation format.
+        
+        rfCoords = vertcat(obj.cellLocation);
         rfMinR = min(rfCoords(:,1)); rfMaxR = max(rfCoords(:,1));
         rfMinC = min(rfCoords(:,2)); rfMaxC = max(rfCoords(:,2));
         

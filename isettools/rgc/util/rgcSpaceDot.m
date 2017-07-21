@@ -45,8 +45,8 @@ respSurround = zeros([nCells(1), nCells(2), nSamples]);
 % The middle cell is at (0,0).  The offset tells us how far offset the 1st
 % cell is from (0,0). This value is the same for all cells in the mosaic so
 % computed outside of the loop.
-patchSizeUM = 1e6*mosaic.parent.size;   % In microns
-bipolarsPerMicron = size(input(:,:,1)) ./ patchSizeUM;   % cells/micron
+% patchSizeUM = 1e6*mosaic.parent.size;   % In microns
+% bipolarsPerMicron = size(input(:,:,1)) ./ patchSizeUM;   % cells/micron
 nTime = size(input,3);
 
 for ii = 1 : nCells(1)
@@ -61,7 +61,7 @@ for ii = 1 : nCells(1)
         % Row and col positions of the input used for the inner product
         % with the RGC RF. The row/col values are sample positions of the
         % bipolar input. 
-        [inputRow, inputCol] = mosaic.inputPositions(ii,jj,bipolarsPerMicron);
+        [inputRow, inputCol] = mosaic.inputPositions(ii,jj);
         
         % Find the rows and columns within the stimulus range
         nRow = length(inputRow); nCol = length(inputCol);

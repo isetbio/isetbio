@@ -1,7 +1,7 @@
-function rgcM = initSpace(rgcM,cellType,varargin)
+function rgcM = initSpace(rgcM,varargin)
 % Initialize the spatial rf properties of a rgc mosaic for a cell type
 %
-%    rgcM = rgcMosaic.initSpace(rgcM,cellType,varargin)
+%    rgcM = rgcMosaic.initSpace(varargin)
 %
 % Required inputs
 %   rgcM:     the mosaic
@@ -34,6 +34,9 @@ function rgcM = initSpace(rgcM,cellType,varargin)
 % in ON and OFF ganglion cells of primate retina." The Journal of
 % Neuroscience 22.7 (2002).
 %
+% We add notes about the Watson paper here and insert some of JRG's code
+% for setting the sizes here.
+%
 % Old notes
 %
 % sRFcenter, sRFsurround matrices and cellLocation are in units of the
@@ -58,20 +61,14 @@ p.KeepUnmatched = true;
 vFunc = @(x)(ismember(class(x),{'rgcGLM','rgcLNP'}));
 p.addRequired('rgcM',vFunc);
 
-% May not be needed because how could we get here if not valid?
-vFunc = @(x)(ismember(ieParamFormat(x),rgcM.validCellTypes));
-p.addRequired('cellType',vFunc);
-
-p.addParameter('inMosaic',1,@isnumeric); % microns
 p.addParameter('rfDiameter',[],@isnumeric); % microns
-p.parse(rgcM,cellType,varargin{:});
+p.parse(rgcM,varargin{:});
 
 rgcM.rfDiameter = p.Results.rfDiameter;  % Samples on the input
-inMosaic        = p.Results.inMosaic;
 rgcLayer        = rgcM.parent;
 
 %% Set up defaults for the sizes and weights.
-switch ieParamFormat(cellType)
+switch ieParamFormat(rgcM.cellType)
     case 'onparasol'
         rfSizeMult = 1;      % On Parasol RF size multiplier
     case 'offparasol'
@@ -106,6 +103,9 @@ if isempty(rgcM.rfDiameter)
     
     % in micrometers; divide by umPerScenePx to get pixels
     rgcM.rfDiameter = rfSizeMult*(receptiveFieldDiameterParasol2STD/2);
+    
+    % We now convert to input samples
+    
 end
 
 %% Build spatial RFs of all RGCs in this mosaic.
@@ -124,13 +124,16 @@ end
 %
 % RIGHT NOW I JUST USE THE FIRST MOSAIC.  BUT THIS SHOULD GET PASSED IN AND
 % SET!!!
-sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
-[rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
-    buildSpatialRFArray(rgcLayer.size(2), ...
-    sz(1), ...
-    sz(2), ...
-    rgcM.rfDiameter, ...
-    p.Unmatched);
+% sz = size(rgcLayer.input.mosaic{inMosaic}.cellLocation);
+% [rgcM.sRFcenter, rgcM.sRFsurround, rgcM.cellLocation, rgcM.tonicDrive, rgcM.ellipseMatrix] = ...
+%     buildSpatialRFArray(rgcLayer.size(2), ...
+%     sz(1), ...
+%     sz(2), ...
+%     rgcM.rfDiameter, ...
+%     p.Unmatched);
+
+rgcM.spatialArray(varargin{:});
+
 
 
 end

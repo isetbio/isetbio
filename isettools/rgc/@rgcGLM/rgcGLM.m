@@ -85,10 +85,7 @@ classdef rgcGLM < rgcMosaic
             p.parse(rgcL,bipolarM,cellType,varargin{:});
             
             % Initialize the mosaic parent class
-            obj = obj@rgcMosaic(rgcL, cellType, varargin{:});
-            
-            % Input is a bipolar mosaic
-            obj.input = bipolarM;
+            obj = obj@rgcMosaic(rgcL, bipolarM, cellType, varargin{:});
             
             % The Pillow generator function
             obj.generatorFunction = @exp;

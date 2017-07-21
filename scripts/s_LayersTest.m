@@ -59,13 +59,12 @@ rgcL = rgcLayer(bpL);
 % illustrating these later.  We need a description.
 rgcParams.centerNoise = 0;
 rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-rgcParams.model = 'LNP';
 % mosaicParams.axisVariance = .1;
 
-diameters = [7 7 2 2 10];  % In microns.
+diameters = [5];  % In microns.
 
 cellType = {'on parasol','off parasol','on midget','off midget','onsbc'};
-for ii = 1:length(cellType)
+for ii = 1:1% length(cellType)
     rgcParams.rfDiameter = diameters(ii);
     rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
 end
