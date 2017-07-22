@@ -29,7 +29,7 @@ bpL = bipolarLayer(cMosaic);
 
 ii = 1;
 bpMosaicParams.spread  = 2;  % RF diameter w.r.t. input samples
-bpMosaicParams.stride  = 2;  % RF diameter w.r.t. input samples
+bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
 bpL.mosaic{ii} = bipolarMosaic(cMosaic,'on midget',bpMosaicParams);
 bpL.mosaic{ii}.compute;
 
@@ -40,7 +40,7 @@ clear rgcL rgcParams
 rgcL = rgcLayer(bpL);
 
 % Spread and stride are not working
-rgcParams.rfDiameter = 2;
+rgcParams.rfDiameter = 1;
 
 % rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{1},'on midget');
 rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{1},'on midget',rgcParams);
