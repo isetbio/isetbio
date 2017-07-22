@@ -28,7 +28,7 @@ str = addText(str,sprintf('---\n'));
 gdata = guidata(obj.fig);
 nMosaic = get(gdata.listMosaics,'Value');
 [r,c, ~] = size(obj.mosaic{nMosaic}.cellLocation);
-txt = sprintf('Row,Col,Time:     \t %d, %d\n',r,c);
+txt = sprintf('Row,Col:     \t %d, %d\n',r,c);
 str = addText(str,txt);
             
 end
