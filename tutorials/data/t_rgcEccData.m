@@ -251,32 +251,10 @@ axis([0 10 0 6]); set(gca,'fontsize',14);
 % % surfc(degarr,degarr,rgcDiameterLUT); shading flat; %[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); % axis square
 % title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar; 
 
-%% This section is broken now (BW).  Some sizes don't match.
-%
-% JRG help?
-
-vcNewGraphWin; 
-hold on;
-
-degAxis = (fovRows/2)*(1:(size(rgcDiameterLUT,1)-1)/2+1)/(((size(rgcDiameterLUT,1)-1)/2+1));
-
-% Why is this 65, not not calculated?  Or something.  JRG to follow up.
-plot(degAxis,rgcDiameterLUT(65:-1:1,65));
-plot(degAxis,rgcDiameterLUT(65:end,65));
-plot(degAxis,rgcDiameterLUT(65,65:-1:1));
-plot(degAxis,rgcDiameterLUT(65,65:end));
-
-grid on;
-axis([0 10 0 0.08]);
- xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
-legend('Nasal','Superior','Temporal','Inferior');
- 
-title(sprintf('Human %s RGC RF Size (degrees)',cellType));
-set(gca,'fontsize',14);
-
 %% Bipolar
 
 % Parasol and SBC
+% Very rough, needs to be thought about and fixed.
 
 vcNewGraphWin;
 
