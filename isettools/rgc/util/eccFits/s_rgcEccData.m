@@ -1,4 +1,4 @@
-% t_rgcEccData
+%% Various sources of RGC and eccentricity data (s_rgcEccData)
 %
 % Plot and fit data captured from plots in Croner & Kaplan (1995) and Dacey
 % (2004) on RGC RF size as a function of eccentricity.
@@ -6,21 +6,31 @@
 % This data is used to scale ISETBIO RGC RF sizes as a function of
 % eccentricity.
 %
-% Data was digitized using 'digitize2' and ginput:
-% https://www.mathworks.com/matlabcentral/fileexchange/928-digitize2-m
-%
 % Croner & Kaplan, 1995, Figure 4:
 % https://pdfs.semanticscholar.org/be5f/d167a456b4bce52e7edb7bd187616e79adc6.pdf
 %
 % Dacey, 2004, Figure 2A:
 % https://pdfs.semanticscholar.org/5f15/a3de07ccdbf2ef3763da262ede1c876f6b6a.pdf
+%
+% Watson, 2014 data - see the function watsonRGCSpacing
+%
+% See also: s_rgcEccData
+% 
+% Data input
+%  Data from the figures were digitized using 'digitize2' and ginput:
+%  https://www.mathworks.com/matlabcentral/fileexchange/928-digitize2-m
+%  (BW likes grabit, also).
+%
+% JRG ISETBIO Team, 2017
 
-%% For plotting ...??
+%% For plotting some of the curves
+
 movingAverageFlag = true;
 
-%% Dacey Parasol Data
+%% Dacey 2004, Figure 2A, Parasol Data
 
-load([isetbioRootPath '/isettools/data/rgc/parasolData.mat'])
+load(fullfile(isetbioRootPath,'isettools','data','rgc','parasolData.mat'));
+
 vcNewGraphWin([],'wide');
 subplot(1,3,1);
 scatter(parasolData(:,1),parasolData(:,2))
@@ -55,9 +65,11 @@ axis([0 18 0 450]);
 
 
 %% Croner and Kaplan parasol data
-
+%
 % This will not agree exactly with Dacey data which is dendritic field
 % measurements
+
+subplot(1,3,1);
 
 % figure; scatter([5 15 25]*.3,[.1 .18 .23]*.3)
 %
@@ -68,7 +80,7 @@ axis([0 18 0 450]);
 % clear
 ckData = load(fullfile(isetbioRootPath,'isettools','data','rgc','croner_kaplan_parasol_rgc.mat'));
 d1 = ckData.d1;
-d2 = ckData.d2;
+% d2 = ckData.d2;
 
 % Microns to degrees for monkey.  Should be functionalized - or maybe it
 % is.
@@ -86,7 +98,6 @@ parasolFit = ([ones(size(d1,1),1) d1(:,1)]\d1(:,2));
 
 % Plot regression
 hold on; plot(.1:.1:8,(.1:.1:8).*parasolFit(2)+parasolFit(1));
-
 
 % % Moving average bin
 % if movingAverageFlag
@@ -119,7 +130,7 @@ legend('Data','Fit','Binned Average');
 
 %% Dacey Midget data
 
-load([isetbioRootPath '/isettools/data/rgc/midgetData.mat'])
+load(fullfile(isetbioRootPath,'isettools','data','rgc','midgetData.mat'))
 % figure;
 subplot(1,3,2);
 scatter(midgetData(:,1),midgetData(:,2))
@@ -156,8 +167,7 @@ axis([0 18 0 450]);
 
 %% Dacey SBC data
 
-load([isetbioRootPath '/isettools/data/rgc/sbcData.mat'])
-% figure;
+load(fullfile(isetbioRootPath,'isettools','data','rgc','sbcData.mat'))
 subplot(1,3,3);
 scatter(sbcData(:,1),-sbcData(:,2))
 
@@ -198,7 +208,7 @@ plotFlag = false;
 
 if plotFlag
     deg2mm = 0.3;
-    figure; scatter([2.5 7.5 15 25 35]*deg2mm,[.03 .05 .07 .09 .15]*deg2mm)
+    vcNewGraphWin; scatter([2.5 7.5 15 25 35]*deg2mm,[.03 .05 .07 .09 .15]*deg2mm)
     
     % midgetFit2 = ([ones(size([2.5 7.5 15 25 35]')) [.03 .05 .07 .09 .15]'])\[2.5 7.5 15 25 35]';
     
@@ -212,8 +222,7 @@ end
 
 %% Watson RGC Formula - 2014
 
-
-%% Get lookup table for how large RF is 
+% Get lookup table for how large RF is 
 % There is an asymmetry in the size of RGC RFs over the retina
 szCols = 128; fovRows = 90; fovCols = 90; scaleFactor = 1;
 cellType = 'Midget';
@@ -225,7 +234,7 @@ cellType = 'Midget';
 [rgcDiameterLUT, radDeg, rgc1d] = watsonRGCSpacing(szCols,szCols,fovRows);
 
 arcMinPerDegree = 60; convertDensityFactor = sqrt(2);
-figure; 
+vcNewGraphWin; 
 cind = 'rbgk'; hold on;
 for k = 1:4
     plot(radDeg,convertDensityFactor*arcMinPerDegree*rgc1d(k,:),cind(k),'linewidth',2);
@@ -242,7 +251,8 @@ axis([0 10 0 6]); set(gca,'fontsize',14);
 % title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar; 
 
 %%
-figure; hold on;
+vcNewGraphWin; 
+hold on;
 
 degAxis = (fovRows/2)*[1:(size(rgcDiameterLUT,1)-1)/2+1]/(((size(rgcDiameterLUT,1)-1)/2+1));
 plot(degAxis,rgcDiameterLUT(65:-1:1,65));
@@ -281,3 +291,5 @@ axis([0 100 0 16]);
 title('Midget Bipolar');
 xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
 % scatter(midgetData(:,1),midgetData(:,2))
+
+%%
