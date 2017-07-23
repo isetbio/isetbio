@@ -25,8 +25,8 @@ clear bpMosaicParams
 
 bpL = bipolarLayer(cMosaic);
 bpMosaicParams.parent = bpL;
-bpMosaicParams.stride = 3;
-bpL.mosaicCreate('onmidget',bpMosaicParams);
+bpMosaicParams.stride = 2;
+bpL.mosaic{1} = bipolarMosaic(cMosaic,'onmidget',bpMosaicParams);
 
 % Set the smaller size
 support = 3;
@@ -36,7 +36,7 @@ bpL.mosaic{1}.compute;     % Knows about cMosaic input
 
 %% Now make a larger bipolar
 
-bpL.mosaicCreate('onmidget',bpMosaicParams);
+bpL.mosaic{2} = bipolarMosaic(cMosaic,'onmidget',bpMosaicParams);
 
 % Set the larger size
 support = 7;
