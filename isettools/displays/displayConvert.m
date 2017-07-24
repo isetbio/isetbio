@@ -92,7 +92,7 @@ end
 if length(varargin) > 1 && ~isempty(varargin{2})
     fname = varargin{2};
     [~, fname, ~] = fileparts(fname);
-    fname = fullfile(isetRootPath, 'data', 'displays', fname);
+    fname = fullfile(isetbioDataPath, 'displays', fname);
     if ~exist(fname, 'file') || ow
         save(fname, 'd');
     else

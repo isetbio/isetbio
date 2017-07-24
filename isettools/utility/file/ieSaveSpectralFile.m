@@ -45,8 +45,7 @@ elseif ismatrix(data)
 end
 
 if notDefined('fullpathname')
-    fullpathname = vcSelectDataFile([isetRootPath,filesep,'data'],...
-                                    'w','mat');
+    fullpathname = vcSelectDataFile(isetbioDataPath,'w','mat');
     if isempty(fullpathname), disp('User canceled'); return; end
 end
 if notDefined('dFormat'), dFormat = 'double'; end

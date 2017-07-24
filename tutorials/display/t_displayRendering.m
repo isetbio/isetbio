@@ -33,7 +33,7 @@ XYZ = ieReadSpectra('XYZ',wave);
 % give them labels.
 
 % load macbethChart; 
-%fName = fullfile(isetRootPath,'data','surfaces','macbethChart.mat');
+%fName = fullfile(isetbioDataPath,'surfaces','macbethChart.mat');
 macbethChart = ieReadSpectra('macbethChart',wave);
 
 % Ooops ... these numbers aren't right.  Must find proper chip numbers

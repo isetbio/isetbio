@@ -14,7 +14,7 @@ function [scene, peakReflectance] = sceneAdjustReflectance(scene,prct)
 % 98.
 %
 % Example:
-%  fullFileName = fullfile(isetRootPath,'data','images', ...
+%  fullFileName = fullfile(isetbioDataPath,'images', ...
 %                   'multispectral','StuffedAnimals_tungsten-hdrs.mat');
 %  scene = sceneFromFile(fullFileName,'multispectral');
 %  scene = sceneAdjustReflectance(scene);

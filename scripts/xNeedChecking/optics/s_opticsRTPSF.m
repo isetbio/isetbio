@@ -30,7 +30,7 @@ vcAddAndSelectObject('scene',scene); sceneWindow;
 oi = oiCreate('ray trace');
 
 % Load the example Zemax file
-fname = fullfile(isetRootPath,'data','optics','rtZemaxExample.mat');
+fname = fullfile(isetbioDataPath,'optics','rtZemaxExample.mat');
 load(fname,'optics'); 
 
 oi = oiSet(oi,'name','ray trace case');

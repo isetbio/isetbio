@@ -43,7 +43,7 @@ vcAddAndSelectObject(scene); sceneWindow;
 oi = oiCreate;
 
 % Load in the wide angle lens optics file created by Zemax (zm)
-opticsFileName = fullfile(isetRootPath,'data','optics','zmWideAngle.mat');
+opticsFileName = fullfile(isetbioDataPath,'optics','zmWideAngle.mat');
 tmp = load(opticsFileName);
 
 % Set the oi with the optics loaded from the file

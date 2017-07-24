@@ -26,10 +26,10 @@ function [scene, sSamples, reflectance, rcSize] = sceneReflectanceChart(sFiles,s
 %  
 %Example:
 %  sFiles = cell(1,4);
-%  sFiles{1} = fullfile(isetRootPath,'data','surfaces','reflectances','MunsellSamples_Vhrel.mat');
-%  sFiles{2} = fullfile(isetRootPath,'data','surfaces','reflectances','Food_Vhrel.mat');
-%  sFiles{3} = fullfile(isetRootPath,'data','surfaces','reflectances','DupontPaintChip_Vhrel.mat');
-%  sFiles{4} = fullfile(isetRootPath,'data','surfaces','reflectances','Skin_Vhrel.mat');
+%  sFiles{1} = fullfile(isetbioDataPath,'surfaces','reflectances','MunsellSamples_Vhrel.mat');
+%  sFiles{2} = fullfile(isetbioDataPath,'surfaces','reflectances','Food_Vhrel.mat');
+%  sFiles{3} = fullfile(isetbioDataPath,'surfaces','reflectances','DupontPaintChip_Vhrel.mat');
+%  sFiles{4} = fullfile(isetbioDataPath,'surfaces','reflectances','Skin_Vhrel.mat');
 %  sSamples = [12,12,25,25]*5; nSamples = sum(sSamples);
 %  pSize = 24; 
 %

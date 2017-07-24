@@ -6,7 +6,7 @@ function rootPath=isetRootPath()
 % sub-directories.
 % 
 % Example:
-%   fullfile(isetRootPath,'data')
+%   fullfile(isetbioDataPath)
 
 rootPath=which('isetRootPath');
 
