@@ -14,7 +14,7 @@ function glminput = setGLMinput(mosaic)
 
 %% Set glminput to linear response
 
-% nCells = mosaic.get('mosaic size');
+% nCells = mosaic.get('mosaic samples');
 % nCellsTotal = nCells(1)*nCells(2);
 % nSamples = size(lResponse,3);
 

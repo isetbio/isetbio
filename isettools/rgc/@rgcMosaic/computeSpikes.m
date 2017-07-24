@@ -66,7 +66,7 @@ responseLinear = rgcM.get('response linear');
 % end
 
 nSamples = size(responseLinear,3);
-nCells   = mosaic.get('mosaic size');
+nCells   = mosaic.get('mosaic samples');
 
 % This is a vector of times that each cell spiked
 spikeTimes = cell([nCells,nRepeats]);

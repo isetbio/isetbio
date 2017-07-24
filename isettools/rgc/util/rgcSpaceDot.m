@@ -34,7 +34,7 @@ function [respCenter, respSurround] = rgcSpaceDot(rgcM, input)
 
 %% init parameters
 nSamples = size(input, 3);              % Temporal samples
-nCells   = rgcM.get('mosaic size');   % RGC cells
+nCells   = rgcM.get('mosaic samples');   % RGC cells
 
 % pre-allocate space
 respCenter   = zeros([nCells(1), nCells(2), nSamples]);

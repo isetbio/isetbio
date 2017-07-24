@@ -131,6 +131,9 @@ switch ieParamFormat(plotType)
         % We should subsample the number shown when there are many.
         center = obj.cellLocation;  % um w.r.t. center of image
         
+        % Why are we plotting sqrt(2)* radius?  1 std is radius.
+        % But 1.4 radius looks good.  Is that why?
+        % (BW)
         radius = obj.rfDiameter/2;
         ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
@@ -160,10 +163,15 @@ switch ieParamFormat(plotType)
         img = img*1000;        % Mean spikes per second
         img = img.^gam;        % This makes the units arbitrary
         
+        umPerSample = 1e6*obj.get('meters per sample');
+        
         % We should subsample the number shown when there are many.
         center = RGB2XWFormat(obj.cellLocation);  % um w.r.t. center of image
+        center = center * diag(umPerSample);
         
         radius = obj.rfDiameter/2;
+        radius = radius * mean(umPerSample);
+        
         ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
             'radius',sqrt(2)*radius,...

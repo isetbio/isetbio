@@ -33,7 +33,7 @@ global RefreshRate
 
 if coupling
     %% Get number of cells
-    nCells = mosaic.get('mosaic size');
+    nCells = mosaic.get('mosaic samples');
     nCellsTotal = nCells(1)*nCells(2);
     
     %% Set linear temporal filter
@@ -97,7 +97,7 @@ if coupling
 %                 ih(cellCtr,:,:) = reshape(mosaic.couplingFilter{cellCtr}, nCellsTotal,hlen);
                 clear ii jj indNZ
                 indNZ = find(mosaic.couplingFilter{cellCtr}(:,:,1)~=0);
-                [ii,jj] = ind2sub([mosaic.get('mosaic size')],indNZ);
+                [ii,jj] = ind2sub([mosaic.get('mosaic samples')],indNZ);
                 
                 for iiind = 1:length(ii)
                     ih(iiind,cellCtr,:) = mosaic.couplingFilter{cellCtr}(ii(iiind),jj(iiind),:);

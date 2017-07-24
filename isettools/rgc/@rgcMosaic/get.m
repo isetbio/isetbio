@@ -17,23 +17,7 @@ function val = get(obj, param, varargin)
 % Outputs: 
 %   val - parameter value
 % 
-% Properties that can be gotten:
-%    'cellType'         - type of RGC of which mosaic is composed
-%    'rfDiameter'       - 1 stdev diameter in pixels of spatial RF
-%    'rfDiaMagnitude'   - magnitude of spatial RF at 1 stdev
-%    'cellLocation'     - coordinates of spatial RF center in ??? frame
-%    'sRFcenter'        - center spatial RF surfaces
-%    'sRFsurround'      - surround spatial RF surfaces
-%    'spatialrf'        - spatial receptive field
-%    'tCenter'          - center temporal impulse response
-%    'tSurround'        - surround temopral impulse response
-%    'linearResponse'   - linear response of all cells
-%    'dt'               - time step (microsec, why?)
-%    'mosaic size'      - Row/col for cells
-%    'last spike time'
-%    'spikes'
-%    'spike times'
-%    'psth'
+% See allowFields (below) for properties 
 %
 % Examples:
 %   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
@@ -63,6 +47,8 @@ allowFields = {...
         'spiketimes',...
         'spikesdownsampled',...
         'mosaicsize', ...
+        'mosaicsamples', ...
+        'meterspersample', ...
         'dt', ...
         'lastspiketime', ...
         'spikes', ...
@@ -142,8 +128,27 @@ switch ieParamFormat(param)
         val = obj.responseLinear;
         
     case {'mosaicsize'}
+        val = obj.patchSize;
+        if isempty(val), val = obj.input.patchSize; end
+        
+    case {'mosaicsamples'}        
         % Mosaic size in units of number of RGCs
-        val = size(obj.cellLocation);
+        [nRow, nCol, ~] = size(obj.cellLocation);
+        val = [nRow, nCol];
+        
+    case {'meterspersample'}
+        % obj.get('meters per sample')
+        
+        % Find the range of the cell locations.  This corresponds to the
+        % number of samples on the input layer, really.
+        r = obj.cellLocation(:,:,1); r = r(:); rRange = range(r);
+        c = obj.cellLocation(:,:,1); c = c(:); cRange = range(c);
+        
+        % Find the patch size.
+        patchSize = obj.get('mosaic size');     % Meters
+        
+        % Divide
+        val = patchSize ./ [rRange, cRange] ;
         
     case {'dt'}
         % The bin subsampling size. In the original Pillow code, was a
@@ -159,7 +164,7 @@ switch ieParamFormat(param)
             return;
         end
         
-        nCells  = obj.get('mosaic size');
+        nCells  = obj.get('mosaic samples');
         nTrials = obj.get('numbertrials');
         spikes  = obj.responseSpikes;
  
@@ -179,7 +184,7 @@ switch ieParamFormat(param)
         if ~isfield(obj,'responseSpikes')
             return;
         end
-        nCells  = obj.get('mosaic size');
+        nCells  = obj.get('mosaic samples');
         nTrials = obj.get('numbertrials');        
         spikes  = obj.responseSpikes;
         val = 0;
@@ -207,7 +212,7 @@ switch ieParamFormat(param)
         dt = obj.dt;  % Bin time in microseconds
         
         maxTrials = obj.get('n trials');
-        nCells    = obj.get('mosaic size');
+        nCells    = obj.get('mosaic samples');
         lastSpike = obj.get('last spike time');
         spikes = zeros(nCells(1),nCells(2),ceil(lastSpike));
         spikesCell = zeros(maxTrials,ceil(lastSpike/dt));
@@ -258,7 +263,7 @@ switch ieParamFormat(param)
         spikes = obj.get('spikes');        
         if isempty(spikes), return; end
         
-        nCells  = obj.get('mosaic size');  
+        nCells  = obj.get('mosaic samples');  
                 
         numDownSampleBlocks = ceil(size(spikes,3)*obj.dt);
         lenBlock = round(1./obj.dt);
@@ -281,7 +286,7 @@ switch ieParamFormat(param)
         % Calculate the PSTH from the response
         spikes = obj.get('spikes');
         if isempty(spikes), disp('No PSTH'); return; end
-        nCells = obj.get('mosaic size');
+        nCells = obj.get('mosaic samples');
 
         dt = obj.dt;
         nSamples = round(1/dt);

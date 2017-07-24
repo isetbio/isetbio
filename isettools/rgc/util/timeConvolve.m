@@ -21,7 +21,7 @@ function resp = timeConvolve(mosaic, input, csFlag)
 
 nSamples    = size(input,3);    % Temporal samples
 nChannels = size(input,4);    % Usually just 1, but for osDisplayRGB
-nCells      = mosaic.get('mosaic size'); 
+nCells      = mosaic.get('mosaic samples'); 
 
 %% Convolutions for each cell and channel
 
