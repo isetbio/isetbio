@@ -3,28 +3,20 @@ function hdl = plot(obj, pType, varargin)
 % 
 %    hdl = bp.plot(plotType, varargin)
 %
-% Plot types
-%   response center
-%   response surround
-%   response image
-%   response movie
-%   response time series
-%   spatial rf
-%   surround rf
-%   mosaic
+% Type @bipolarMosaic.plot('help'); to see the plot types.
 %
 % Optional parameters-value pairs
 %   gamma - controls image display
 %   pos   - positions to plot for time series
 %
 % Examples:
-%   (run s_LayersTest).
 %   bpMosaics = bpL.mosaic;
+%
 %   bpMosaics{1}.plot('spatial rf')
 %   bpMosaics{1}.plot('mosaic');
 %   bpMosaics{1}.plot('response center');
 %   bpMosaics{1}.plot('response time series','pos',[5 5]);
-%   bpMosaics{1}.plot('response image');
+%   bpMosaics{1}.plot('response image','gamma',0.3);
 %   bpMosaics{1}.plot('response movie');
 %
 % 5/2016 JRG,BW (c) isetbio team
@@ -38,11 +30,12 @@ p.KeepUnmatched = true;
 
 % Make key properties that can be set required arguments, and require
 % values along with key names.
-allowableFields = {...
+allowPlots = {...
+    'help',...
     'responsetimeseries','responsecenter','responsesurround',...
     'responseimage','responsemovie', ...
     'spatialrf','surroundrf','mosaic'};
-p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowPlots)));
 
 p.addParameter('gamma',1,@isscalar);
 p.addParameter('pos',[],@ismatrix);
@@ -52,8 +45,7 @@ p.addParameter('pos',[],@ismatrix);
 p.parse(pType,varargin{:}); 
 
 %% Set the window.  Maybe this should be obj.fig???
-hdl = gcf;   %vcNewGraphWin([],'upperLeftBig');
-
+if ~strcmpi(pType,'help'), hdl = gcf; end  %vcNewGraphWin([],'upperLeftBig');
 sz = size(obj.responseCenter);
 
 % Programming:
@@ -61,6 +53,13 @@ sz = size(obj.responseCenter);
 
 % Options
 switch ieParamFormat(pType)
+    case 'help'
+        fprintf('\nKnown %s plot types\n--------------\n',class(obj));
+        for ii=2:length(allowPlots)
+            fprintf('\t%s\n',allowPlots{ii});
+        end
+        hdl = [];
+        return;
     case 'spatialrf'
         % @bipolarMosaic.plot('spatial rf')
         srf = obj.sRFcenter - obj.sRFsurround;

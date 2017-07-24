@@ -1,32 +1,31 @@
 function hdl = plot(obj, pType, varargin)
+% Deprecate - plots should be called based on the mosaic, I think.
+%
 % Plot the values from one of the mosaics of a bipolarLayer object
 % 
 %    hdl = bipolarLayer.plot(plotType,...)
 %
 % Required Inputs
-%  plotType - Plot type {response center, response surround, response movie,
-%             response time series}
+%  pType -  The plot type.  Use @bipolarLayer.plot('help','nMosaic',1) to
+%           see implemented plot types.
 %  
 % Parameter-Key Inputs
-%  nMosaic  - Mosaic to use for plotting
-%  gamma
+%  nMosaic  - Mosaic number to plot
+%  gamma    
 %  pos
 %  newWindow
 %
-% For many parameters, this routine calls rgcMosaic.plot. In that case the
-% selected mosaic is based on the integer nMosaic.
+% For most plot types this routine calls rgcMosaic.plot. The selected
+% mosaic from the layer is based on the integer nMosaic.
 %
-% We will develop some cases in which we compare across mosaics. In that
-% case nMosaic will be 0.
-%
-% Optional parameters
-%   gamma for image display
+% We plan to implement cases for the layer that compare across several
+% mosaics.
 %
 % Examples:
 %   bipolarLayer.plot('mosaic','nMosaic',1);
 %   bipolarLayer.plot('movie response','nMosaic',1);
 %
-% 5/2016 JRG (c) isetbio team
+% JRG/BW (c) isetbio team
 
 %% Parse inputs
 
@@ -35,14 +34,7 @@ p.CaseSensitive = false;
 p.FunctionName  = mfilename;
 p.KeepUnmatched = true;
 
-% Make key properties that can be set required arguments, and require
-% values along with key names.  This list is pretty small.  Hard to
-% maintain. (BW).
-allowableFields = {...
-    'responsetimeseries','responseCenter','responseSurround',...
-    'responsemovie','responseimage', ...
-    'spatialrf','mosaic'};
-p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+p.addRequired('pType',@ischar);
 
 p.addParameter('gamma',1,@isscalar);
 p.addParameter('pos',[1,1],@isvector);    % If not passed, then assume 1,1
@@ -67,7 +59,7 @@ if p.Results.newWindow; hdl = vcNewGraphWin; end
 if nMosaic == 0
     % A plot that uses more than one mosaic.  What the layer is for.
     % We need to make some stuff up for here.
-    disp('Whole layer plot options are NYI')
+    disp('No layer plots implemented yet.')
     return;
 else
     % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
