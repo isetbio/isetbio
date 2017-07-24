@@ -71,19 +71,25 @@ classdef rgcLNP < rgcMosaic
     methods
         
         % Constructor
-        function obj = rgcLNP(rgc, bipolarM, cellType, varargin)
+        function obj = rgcLNP(rgcL, bipolarM, cellType, varargin)            
+            
+            p = inputParser;
+            p.KeepUnmatched = true;
+            
+            p.addRequired('rgcL',@(x)(isequal(class(x),'rgcLayer')));
+            p.addRequired('bipolarM',@(x)(isequal(class(x),'bipolarMosaic')));
+            p.addRequired('cellType',@ischar); % Could check better
+            
+            p.parse(rgcL,bipolarM,cellType,varargin{:});
             
             % Initialize the parent class            
-            obj = obj@rgcMosaic(rgc, cellType, varargin{:});
-            
-            % Input is a bipolar mosaic
-            obj.input = bipolarM;
-            
+            obj = obj@rgcMosaic(rgcL, bipolarM, cellType, varargin{:});
+                        
             % Effect of a spike on output voltages
             obj.generatorFunction = @exp;
             
             % Post spike filter
-            obj.postSpikeFilter = buildPostSpikeFilter(obj.dt);
+            obj.postSpikeFilter = zeros(size(buildPostSpikeFilter(obj.dt)));
             
         end
     end
