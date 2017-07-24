@@ -1,11 +1,19 @@
 function mosaicCreate(obj,cellType, varargin)
+% Deprecated
+%
+% Use instead
+%
+%    bipolarLayer.mosaic{ii} = bipolarMosaic(....);
+%
 % MOSAICCREATE - Bipolar layer method to create a mosaic of bipolar cells
 %
-%   bpL = @bipolarLayer.mosaicCreate('cellType',varargin,...);
+%  bpL = @bipolarLayer.mosaicCreate('cellType',varargin,...);
 %
 % Wandell, ISETBIO Team, 2017
 
 %% Set the sell type and pass in the layer object which will become parent
+
+warning('Suggest using bipolarLayer.mosaic{ii} = bipolarMosaic( ....)')
 
 p = inputParser;
 p.KeepUnmatched = true;
@@ -27,10 +35,12 @@ nMosaic = p.Results.nMosaic;
 
 if isempty(nMosaic)
     % Add it to the end
-    obj.mosaic{end+1} = bipolarMosaic(obj.input, params);
+    obj.mosaic{end+1} = bipolarMosaic(obj.input, cellType, params);
 else
     % Use the specified slot
-    obj.mosaic{nMosaic} = bipolarMosaic(obj.input, params);
+    obj.mosaic{nMosaic} = bipolarMosaic(obj.input, cellType, params);
 end
 
 end
+
+

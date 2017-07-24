@@ -137,13 +137,6 @@ classdef rgcLayer < cellLayer
             
         end
            
-        function rgcM = mosaicCreate(rgcL,bipolarM,cellType,varargin)
-            % Varargin must specify the bipolar mosaic input
-            % It should also specify the cellType and rgc model
-            % Other parameters are possible.
-            rgcM = rgcMosaicCreate(rgcL,bipolarM,cellType,varargin{:});
-        end
-        
         % Show the RGC layer window
         function hdl = window(obj,varargin)
             hdl = rgcLayerWindow(obj);
