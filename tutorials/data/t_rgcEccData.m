@@ -1,10 +1,10 @@
-%% Various sources of RGC and eccentricity data (s_rgcEccData)
-%
-% Plot and fit data captured from plots in Croner & Kaplan (1995) and Dacey
-% (2004) on RGC RF size as a function of eccentricity.
+%% Various sources of RGC and eccentricity data (t_rgcEccData)
 %
 % This data is used to scale ISETBIO RGC RF sizes as a function of
 % eccentricity.
+%
+% Plot and fit data captured from plots in Croner & Kaplan (1995) and Dacey
+% (2004) on RGC RF size as a function of eccentricity.
 %
 % Croner & Kaplan, 1995, Figure 4:
 % https://pdfs.semanticscholar.org/be5f/d167a456b4bce52e7edb7bd187616e79adc6.pdf
@@ -12,9 +12,7 @@
 % Dacey, 2004, Figure 2A:
 % https://pdfs.semanticscholar.org/5f15/a3de07ccdbf2ef3763da262ede1c876f6b6a.pdf
 %
-% Watson, 2014 data - see the function watsonRGCSpacing
-%
-% See also: s_rgcEccData
+% See also: t_rgcWatson for the Watson 2014 JOV work.
 % 
 % Data input
 %  Data from the figures were digitized using 'digitize2' and ginput:
@@ -218,38 +216,6 @@ if plotFlag
     x = .1:.1:35*.3; y = midgetFit2(1) + midgetFit2(2)*x;
     hold on; scatter(x,y);
 end
-
-
-%% Watson RGC Formula - 2014
-
-% Get lookup table for how large RF is 
-% There is an asymmetry in the size of RGC RFs over the retina
-szCols = 128; fovRows = 90; fovCols = 90; scaleFactor = 1;
-cellType = 'Midget';
-
-% Top page 7, right column: "Typically we are concerned with the spacing
-% within one class, in which case density is halved and the spacings should
-% be multiplied by sqrt(2)."
-% rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing(szCols,szCols,fovRows)';
-% [rgcDiameterLUT, radDeg, rgc1d] = watsonRGCSpacing(szCols,szCols,fovRows);
-[rgcDiameterLUT, radDeg, rgc1d] = watsonRGCSpacing(fovRows);
-
-arcMinPerDegree = 60; convertDensityFactor = sqrt(2);
-vcNewGraphWin; 
-cind = 'rbgk'; hold on;
-for k = 1:4
-    plot(radDeg,convertDensityFactor*arcMinPerDegree*rgc1d(k,:),cind(k),'linewidth',2);
-end
-xlabel('Eccentricity (degrees)'); ylabel('RF Size (degrees)'); grid on;
-legend('Temporal','Superior','Nasal','Inferior','location','nw')
-title(sprintf('Human %s RGC RF Size (degrees)',cellType));
-axis([0 10 0 6]); set(gca,'fontsize',14);
-
-% figure; degStart = -fovCols/2; degEnd = fovCols/2;
-% degarr = [degStart: (degEnd-degStart)/szCols : degEnd];
-% contourf(degarr,degarr,convertDensityFactor*rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
-% % surfc(degarr,degarr,rgcDiameterLUT); shading flat; %[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); % axis square
-% title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar; 
 
 %% Bipolar
 
