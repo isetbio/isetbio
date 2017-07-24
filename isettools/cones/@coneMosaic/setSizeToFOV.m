@@ -1,35 +1,44 @@
 function obj = setSizeToFOV(obj, fov, varargin)
-% set size to fov
-% Updates the cone mosaic size to match the FOV
+%SETSIZETOFOV  Updates the cone mosaic size to match the FOV
+%   setSizeToFOV(obj,fov,varargin)
 %
-%    cm.setSizeToFOV(fov,varargin)
+%   Inputs:
+%   fov - 2-element vector for desired horizontal/vertical field of view in degrees
+%         If a scalar is passed, fov is taken to be square.
 %
-% Inputs:
-%   fov - 2-element vector for desired horizontal/vertical
-%         field of view in degrees
+%   Optional key/value pairs:
+%     'sceneDist' -     Distance to scene in meters (default, Inf))
+%     'focalLength' -   Focal length assumed for eye in meters (default, 0.017)
 %
-% Parameters
-%     sceneDist:    (Inf,   meters)
-%     focalLength:  (0.017, meters)
-%
+%   [DHB NOTE: 
+%   [DHB NOTE: CAN THE DEFAULT FOCAL LENGTH FOR THE EYE BE OBTAINED FROM THE CONEMOSAIC OBJECT?]
+%   [DHB NOTE: IS INF A GOOD CHOICE FOR THE DEFAULT SCENE DISTANCE?  EXPLAIN IMPLICATIONS OF THIS
+%   CHOICE.]
+
 % HJ ISETBIO Team 2016
 
 % parse input
 p = inputParser;
 p.addRequired('fov', @isnumeric);
-p.addParameter('sceneDist', inf, @isnumeric);
+p.addParameter('sceneDist', Inf, @isnumeric);
 p.addParameter('focalLength', 0.017, @isnumeric);
 
 p.parse(fov, varargin{:});
 sceneDist = p.Results.sceneDist;
 focalLength = p.Results.focalLength;
-if isscalar(fov), fov = [fov fov]; end
-fov = fov([2 1]); % flip the order to be vertical/horizontal
 
-% compute current field of view
+% Handle case where a scalar fov is passed. Interpret as a square fov.
+if isscalar(fov), fov = [fov fov]; end
+
+% This routine thinks in vertical/horizontal, flip input so code below
+% works.
+fov = fov([2 1]); 
+
+% Compute current field of view
 imageDist = 1/(1/focalLength - 1/sceneDist);
 curFov = 2*atand([obj.height obj.width]/imageDist/2);
 
-% set new size to object
+% Set new size to object
 obj.mosaicSize = ceil(obj.mosaicSize .* fov./curFov);
+
 end

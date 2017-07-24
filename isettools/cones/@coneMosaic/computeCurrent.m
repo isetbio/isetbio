@@ -1,6 +1,6 @@
 function [interpFilters, meanCur] = computeCurrent(obj, varargin)
 %COMPUTECURRENT Convert absorptions to photocurrent using the os model.
-%    [interpFilters, meanCur] = COMPUTECURRENT(obj, varargin) 
+%   [interpFilters, meanCur] = COMPUTECURRENT(obj, varargin) 
 %
 %   Input:
 %   obj - A coneMosaic object.

@@ -42,7 +42,7 @@ classdef coneMosaic < hiddenHandle
     %                     accuracy.
     %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
     %                     middle or cone mosaic, 1 unit is 1 cone for rect
-    %                     (HEX?)
+    %                     (DHB NOTE: WHAT ABOUT HEX?)
     %   'apertureBlur'    Blur by cone aperture? true/false (default false).
     %   'noiseFlag'       Add photon noise (default) or not. String (default
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
@@ -50,9 +50,9 @@ classdef coneMosaic < hiddenHandle
     %  ISETBIO wiki: <a href="matlab:
     %  web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
     %
-    % HJ/JRG/BW ISETBIO Team, 2016
-    %
     % See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
+    
+    % HJ/JRG/BW ISETBIO Team, 2016
 
     % Keep the format of the comments here.  They are used by the doc
     % command to produce useful documentation of the properites.

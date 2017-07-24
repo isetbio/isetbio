@@ -20,7 +20,6 @@ function [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, resp
 %
 %   None currently.
 
-% 
 % NPC, ISETBIO Team, 2016  
   
     demosaicedResponses = obj.demosaicedResponses(response);
