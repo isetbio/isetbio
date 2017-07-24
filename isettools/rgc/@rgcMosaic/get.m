@@ -3,25 +3,26 @@ function val = get(obj, param, varargin)
 % 
 %   val = rgcMosaic.get(rgc.mosaic, property)
 % 
-% The mosaicGet function gets a property from the mosaic object if the
-% property is defined in the rgcMosaic superclass. The subclasses of
-% rgcMosaic have properties not included here, and if the request is not
-% for one of the properties common to all subclasses, then the subclass
-% mosaicGet is called.
+% Gets a property from an rgc mosaic object. 
+%
+% The subclasses of rgcMosaic (e.g., rgcGLM and rgcLNP) have properties not
+% included here. Those classes first check their own special cases, and if
+% the request is not for one of those properties then this function is
+% called for a more general case common to all rgc subclasses.
 %
 % Inputs: 
-%   obj    - rgc object
-%   param  - parameter string
-%   varargin - Not used yet, but will be used for units and other things.
+%   obj      - rgc object
+%   param    - parameter string
+%   varargin - This will be used for units and other things.
 % 
 % Outputs: 
 %   val - parameter value
 % 
-% See allowFields (below) for properties 
+% Use @rgcMosaic.get('help') to see allowable parameters.
 %
 % Examples:
-%   val = mosaicGet(rgc1.mosaic{1}, 'cellType')
-%   val = mosaicGet(rgc1.mosaic{3}, 'linearResponse')
+%   val = @rgcMosaic.get('cellType')
+%   val = @rgcMosaic.get('linearResponse')
 % 
 % 9/2015 JRG, BW (c) isetbio team
  
@@ -32,6 +33,7 @@ p.FunctionName = mfilename;
 p.KeepUnmatched = true;
  
 allowFields = {...
+        'help',...
         'celltype',...
         'ntrials',...
         'rfdiameter',...
@@ -55,17 +57,22 @@ allowFields = {...
         'psth'
     };
 p.addRequired('param',@(x) any(validatestring(ieParamFormat(x),allowFields)));
-p.addParameter('cell',[],@(x) (length(x(:)) == 2));
  
-% Parse and put results into structure p.
+% Parse the arguments into the p.Results field
 p.parse(param,varargin{:}); 
-param = ieParamFormat(p.Results.param);
-cell = p.Results.cell;
+
+% cell = p.Results.cell;
  
-%%
 val = [];  % Default return value
+
+%% Remove the spaces and force lower case on the param argument
 switch ieParamFormat(param)
-    
+        case 'help'
+        fprintf('\nKnown %s parameters\n--------------\n',class(obj));
+        for ii=2:length(allowFields)
+            fprintf('\t%s\n',allowFields{ii});
+        end
+        return;
     case{'celltype'}
         % String that stores cell type name
         val = obj.cellType;
@@ -104,24 +111,24 @@ switch ieParamFormat(param)
         % Linear temporal center impulse response in units of conditional
         % intensity, related by Poisson firing to spikes/sec
         val = obj.tCenter;
-        if ~isempty(cell)
-            val = val{cell(1),cell(2)};
-        end
+        %         if ~isempty(cell)
+        %             val = val{cell(1),cell(2)};
+        %         end
         
     case{'tsurround'}
         % Linear temporal surround impulse response in units of conditional
         % intensity, related by Poisson firing to spikes/sec
         val = obj.tSurround;
-        if ~isempty(cell)
-            val = val{cell(1),cell(2)};
-        end
+        %         if ~isempty(cell)
+        %             val = val{cell(1),cell(2)};
+        %         end
     case{'tonicdrive'}
         % The DC components of the linear response in units of conditional
         % intensity.
         val = obj.tonicDrive;
-        if ~isempty(cell)
-            val = val{cell(1),cell(2)};
-        end
+        %         if ~isempty(cell)
+        %             val = val{cell(1),cell(2)};
+        %         end
     case{'responselinear'}
         % Linear response in units of conditional intensity, related by
         % Poisson firing to spikes/sec

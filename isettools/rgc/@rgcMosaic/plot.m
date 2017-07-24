@@ -1,5 +1,6 @@
 function [uData, hf] = plot(obj, plotType, varargin)
 % Plot function for rgcMosaic
+%
 %    [uData, hf] = rgcMosaic.plot(plotType, varargin)
 %
 % Required input
@@ -19,11 +20,8 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %   uData - Computed user data
 %   hf    - figure handle
 %
-% Plot type can be chosen from
-%   'spike mean image'    - Gray scale image of mean spikes per
-%   'mosaic'              - RGC mosaic as circles
-%   'linear movie'        - Linear voltages as movie
-%   'psth'                - Peristimulus time histogram as ...
+% Plot type can found by toping
+%     @rgcMosaic.plot('help')
 %
 % Example:
 %
@@ -33,8 +31,12 @@ function [uData, hf] = plot(obj, plotType, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 
-% What about obj?
-p.addRequired('plotType', @isstr);                        % Type of plot
+allowPlots = {'help','spikemeanimage','spikemovie',...
+    'linearmovie',...
+    'psthmeanimage','psth', ...
+    'mosaic', 'mosaicfill', 'mosaicsurf'};
+p.addRequired('plotType',@(x) any(validatestring(ieParamFormat(x),allowPlots)));
+
 p.addParameter('hf', obj.fig, @isgraphics);  % figure handle
 p.addParameter('gam',1,@isnumeric);
 
@@ -51,9 +53,15 @@ elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
-fprintf('Plot %s for %s class\n',plotType,class(obj));
+% fprintf('Plot %s for %s class\n',plotType,class(obj));
 
 switch ieParamFormat(plotType)
+    case 'help'
+        fprintf('\nKnown %s types\n--------------\n',class(obj));
+        for ii=2:length(allowPlots)
+            fprintf('\t%s\n',allowPlots{ii});
+        end
+        return;
     case 'spikemeanimage'
         % Spike mean image
         g = guidata(hf);
