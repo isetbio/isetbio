@@ -1,4 +1,4 @@
-function [rgcL, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
+function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 % COMPUTESEPARABLE - Computes the RGC mosaic linear response
 %
 %   computeSparable(rgcM)
@@ -70,17 +70,13 @@ p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 p.parse(rgcM,varargin{:});
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
-
+bipolarTrials   = p.Results.bipolarTrials;
 %%
-% bipolarTrials = p.Results.bipolarTrials;
-% nTrials = 1;
-% if ~isempty(bipolarTrials)
-%     if length(bpMosaic)==1
-%         nTrials = size(bipolarTrials,1);
-%     else
-%         nTrials = size(bipolarTrials{1},1);
-%     end
-% end
+bipolarTrials = p.Results.bipolarTrials;
+nTrials = 1;
+if ~isempty(bipolarTrials)
+    nTrials = size(bipolarTrials,1);
+end
 
 
 %% Process the bipolar data
@@ -103,56 +99,62 @@ bipolarContrast = p.Results.bipolarContrast;
 %         end
 %     end
 
-%% Removes the mean of the bipolar mosaic input, converts to contrast
-
-% This is a normalization on the bipolar current.
-% Let's justify or explain or something.
-
-input = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
-
-% vcNewGraphWin; ieMovie(input);
-
-%% Set the rgc impulse response to an impulse
-
-% When we feed a bipolar object into the inner retina, we don't need to do
-% temporal convolution. We have the tCenter and tSurround properties for
-% the rgcMosaic, so we set them to an impulse to remind us that the
-% temporal repsonse is already computed.
-rgcM.set('tCenter all', 1);
-rgcM.set('tSurround all',1);
-
-% We use a separable space-time receptive field that computes for
-% space here.  We will implement temporal response later.
-[respC, respS] = rgcSpaceDot(rgcM, input);
-% vcNewGraphWin; ieMovie(respC);
-
-%% Convolve with the temporal impulse response
-% If the temporal IR is an impulse, we don't need to do the
-% temporal convolution.  I'm leaving this here as a reminder that
-% we need to do this if we run any of EJ's original GLM models
-% (image -> spikes with no cone mosaic or bipolar).
-% if ir.mosaic{rgcType}.tCenter{1,1} ~= 1
-%     respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-%     respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-% end
-% ieMovie(respC - respS);
-
-
-%% Deal with multiple trial issues
-% if ~isempty(bipolarTrials)
-%     if iTrial == 1
-%         nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
-%     end
-%     nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScale*(respC - respS);
-% end
-
-% Store the last trial
-%if iTrial == nTrials
-% Store the linear response
-rgcM.set('response linear', bipolarScale*(respC - respS));
-% rgcM.window;
-%end
-% end
+for iTrial = 1:nTrials
+    %% Removes the mean of the bipolar mosaic input, converts to contrast
+    
+    % This is a normalization on the bipolar current.
+    % Let's justify or explain or something.
+    
+    % input = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
+    if ~isempty(bipolarTrials)
+        input   = ieContrast(squeeze(bipolarTrials(iTrial,:,:,:)),'maxC',bipolarContrast);
+    else
+        input   = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
+    end
+    % vcNewGraphWin; ieMovie(input);
+    
+    %% Set the rgc impulse response to an impulse
+    
+    % When we feed a bipolar object into the inner retina, we don't need to do
+    % temporal convolution. We have the tCenter and tSurround properties for
+    % the rgcMosaic, so we set them to an impulse to remind us that the
+    % temporal repsonse is already computed.
+    rgcM.set('tCenter all', 1);
+    rgcM.set('tSurround all',1);
+    
+    % We use a separable space-time receptive field that computes for
+    % space here.  We will implement temporal response later.
+    [respC, respS] = rgcSpaceDot(rgcM, input);
+    % vcNewGraphWin; ieMovie(respC);
+    
+    %% Convolve with the temporal impulse response
+    % If the temporal IR is an impulse, we don't need to do the
+    % temporal convolution.  I'm leaving this here as a reminder that
+    % we need to do this if we run any of EJ's original GLM models
+    % (image -> spikes with no cone mosaic or bipolar).
+    % if ir.mosaic{rgcType}.tCenter{1,1} ~= 1
+    %     respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
+    %     respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
+    % end
+    % ieMovie(respC - respS);
+    
+    
+    %% Deal with multiple trial issues
+    
+    if iTrial == 1
+        nTrialsLinearResponse = zeros([nTrials,size(respC)]);
+    end
+    if ~isempty(bipolarTrials)
+        nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);
+    end
+    
+    % Store the last trial
+    if iTrial == nTrials
+        % Store the linear response
+        rgcM.set('response linear', bipolarScale*(respC - respS));
+        % rgcM.window;
+    end
+end
 end
 
 

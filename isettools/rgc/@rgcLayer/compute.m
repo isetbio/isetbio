@@ -77,15 +77,26 @@ coupling      = p.Results.coupling;
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
 
+bipolarTrials   = p.Results.bipolarTrials;
+if isempty(bipolarTrials)
+    bipolarTrials = cell(1,length(rgcL.mosaic));
+end
 %% Linear stage of the computation
 
 % For now, only deal with one trial case.  Compute the linear response for
 % every mosaic. The inputs are already attached.
 for ii=1:length(rgcL.mosaic)
-    rgcL.mosaic{ii}.computeSeparable(...
+    [rgcM,nTrialsLinearResponseM] = ...
+        rgcL.mosaic{ii}.computeSeparable(...
         'bipolarContrast',bipolarContrast,...
-        'bipolarScale', bipolarScale);
-    rgcL.mosaic{ii}.computeSpikes('coupling',coupling);
+        'bipolarScale', bipolarScale,...
+        'bipolarTrials',bipolarTrials{ii});
+
+    [rgcM,nTrialsSpikeResponseM] = ...
+        rgcL.mosaic{ii}.computeSpikes('coupling',coupling,...
+        'nTrialsLinear',nTrialsLinearResponseM);
+    
+    nTrialsSpikes{ii} = nTrialsSpikeResponseM;
 end
 
 %% Compute spikes from linear response; possibly for multiple trials
