@@ -4,8 +4,9 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %    [uData, hf] = rgcMosaic.plot(plotType, varargin)
 %
 % Required input
-%   plotType - string, type of plot
-
+%   plotType - type of plot.  Available plots are listed by
+%               @rgcMosaic.plot('help') 
+%
 % Optional input (key-val pairs in varargin):
 %   'hf' - figure or axis handle
 %      By default, this is the figure handle of the rgcMosaic window
@@ -19,9 +20,6 @@ function [uData, hf] = plot(obj, plotType, varargin)
 % Outputs:
 %   uData - Computed user data
 %   hf    - figure handle
-%
-% Plot type can found by toping
-%     @rgcMosaic.plot('help')
 %
 % Example:
 %
@@ -37,7 +35,7 @@ allowPlots = {'help','spikemeanimage','spikemovie',...
     'mosaic', 'mosaicfill', 'mosaicsurf'};
 p.addRequired('plotType',@(x) any(validatestring(ieParamFormat(x),allowPlots)));
 
-p.addParameter('hf', obj.fig, @isgraphics);  % figure handle
+p.addParameter('hf', obj.fig);  
 p.addParameter('gam',1,@isnumeric);
 
 p.parse(plotType, varargin{:});
@@ -46,15 +44,17 @@ gam = p.Results.gam;
 
 uData = [];
 
-% Select place for plot to appear
+%% Select place for plot to appear
+
 % The mosaic window has a response image and a geometry image
-if isempty(hf), hf = vcNewGraphWin;
+if isempty(hf) && ~strcmpi(plotType,'help'), hf = vcNewGraphWin;
 elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
 % fprintf('Plot %s for %s class\n',plotType,class(obj));
 
+%%
 switch ieParamFormat(plotType)
     case 'help'
         fprintf('\nKnown %s types\n--------------\n',class(obj));

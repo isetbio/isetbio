@@ -7,7 +7,8 @@ function [hdl, uData] = plot(obj, pType, varargin)
 % @rgcMosaic.plot.
 %
 % Inputs:
-%   type - string, type of plot
+%   pType - Type of plot.  Type @rgcLayer.plot('help') to see allowable
+%           plot types.
 %
 % Optional input (key-val pairs in varargin):
 %   nMosaic - which mosaic to use
@@ -33,8 +34,11 @@ p.KeepUnmatched = true;
 
 % Set up vFunc for checking the pType
 pType = ieParamFormat(pType);
-p.addRequired('pType', @isstr);     % Type of plot
-p.addParameter('hf', obj.figureHandle, @isgraphics);  % figure handle
+p.addRequired('pType', @ischar);     % Type of plot
+
+% figure handle can be a graphics object, the string 'none', or empty
+vFunc = @(x)( ischar(x) || isgraphics(x) || isempty(x));
+p.addParameter('hf', [], vFunc);  
 
 p.addParameter('nMosaic',1,@isinteger);
 p.parse(pType,varargin{:});
@@ -47,13 +51,16 @@ if nMosaic > length(obj.mosaic)
 end
 
 %% Account for parameters
-if p.Results.newWindow; hdl = vcNewGraphWin; end
-
 uData = [];
+hf = p.Results.hf;
+if ischar(hf) && strcmp(hf,'none'), hf = []; 
+elseif isempty(hf) && ~strcmpi(pType,'help'),   hf = vcNewGraphWin; 
+end
+
 if nMosaic == 0
     % A plot that uses more than one mosaic.  What the layer is for.
     % We need to make some stuff up for here.
-    disp('Whole layer plot options are NYI')
+    disp('No layer plot type are implemented yet.')
     return;
 else
     % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
