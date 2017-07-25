@@ -18,7 +18,7 @@
 %  Data from the figures were digitized using 'digitize2' and ginput:
 %  https://www.mathworks.com/matlabcentral/fileexchange/928-digitize2-m
 %  (BW likes grabit, also).
-%
+
 % JRG ISETBIO Team, 2017
 
 %% For plotting some of the curves
