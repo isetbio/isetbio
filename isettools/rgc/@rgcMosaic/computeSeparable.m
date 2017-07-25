@@ -75,7 +75,6 @@ bipolarTrials = p.Results.bipolarTrials;
 nTrials = 1;
 if ~isempty(bipolarTrials), nTrials = size(bipolarTrials,1); end
 
-
 for iTrial = 1:nTrials
     %% Removes the mean of the bipolar mosaic input, converts to contrast
     
@@ -122,19 +121,31 @@ for iTrial = 1:nTrials
     
     %% Deal with multiple trial returns
     
-    if iTrial == 1
-        nTrialsLinearResponse = zeros([nTrials,size(respC)]);
-    end
-    if ~isempty(bipolarTrials)
+    if isempty(bipolarTrials)
+        % Shouldn't this be if nTrial == 1?
+        % Then if iTrial == 1 and nTrial > 1 we allocate?
+        nTrialsLinearResponse = [];
+        
+    elseif ~isempty(bipolarTrials) && iTrial == 1
+        [nr,nc,nt] = size(respC);
+        % Allocate
+        nTrialsLinearResponse  =  zeros(nTrials, nr, nc, nt);
+        % Put in the first trial
+        nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);
+        
+    else
+        % I don't understand why Matlab thinks this is incrementing on the
+        % loop. (BW)
         nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);
     end
     
     % Store the last trial
     if iTrial == nTrials
-        % Store the linear response
+        % Store the last linear response in the object
         rgcM.set('response linear', bipolarScale*(respC - respS));
     end
 end
 
+end
 
 

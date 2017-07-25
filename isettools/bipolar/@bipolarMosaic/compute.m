@@ -21,8 +21,8 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
 %
 % Outputs
 %   responseCenter, responseSurround - The center and surround responses
-%   are calculated and stored in the mosaic as responseCenter and
-%   responseSurround
+%     are calculated and stored in the mosaic as responseCenter and
+%     responseSurround
 %
 % The principal decision is whether the bipolar transformation is linear or
 % includes a rectification.  This is controlled by the obj.rectifyType
