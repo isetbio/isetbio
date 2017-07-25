@@ -7,11 +7,6 @@ function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 % Computes the linear responses and spikes for each of the mosaics in a
 % retina layer object.
 %
-% ***
-%  PROGRAMMING:  We still have data management to deal with in terms of
-%  multiple trials. 
-% ***
-%
 % The linear responses for each mosaic are computed. The linear computation
 % is space-time separation for each mosaic.  The spatial computation,
 % however, is not a convolution because the RF of the cells within a mosaic
@@ -22,21 +17,26 @@ function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 %
 % Optional inputs
 %  bipolarTrials:  Multiple bipolar trials can be sent in using this
-%                  variable.
+%                  variable. It is a cell array {nTrials,x,y,t}
 %
-% For each corresponding bp and rgc mosaic, the center and surround RF
-% responses are calculated (matrix multiply). then the temporal impulse
-% response for the center and surround is calculated.  This continuous
-% operation produces the 'linear' RGC response shown in the window.
+% This methods produces the 'linear' RGC response shown in the window.
 %
-% The spikes are computed from the linear response in a separate routine.
+% For each corresponding bipolarMosaic and rgcMosaic, the center and
+% surround RF responses are calculated (matrix multiply). In principle, the
+% temporal impulse response for the center and surround is calculated but
+% in practice for now we only use the impulse.  This maintains the
+% bipolar/cone impulse response to match the RGC impulse response. 
 %
-% Science and references
+% The spikes are computed from these linear responses in the computeSpikes
+% method.
+%
+% Science and references - NEEDS TO BE EDITED (BW)
+%
+% See @rgcLayer.compute for a discussion
 %
 %    * Why do we scale the bipolar voltage input with ieContrast?
-%    * Why is the RGC impulse response set to an impulse?  I gather this is
-%    because the photocurrent*bipolar equals the observed RGC impulse
-%    response?
+%    * Why is the RGC impulse response set to an impulse?  Because the
+%    photocurrent*bipolar equals the observed RGC impulse response?
 %
 % rgcGLM model: The spikes are computed using the recursive influence of
 % the post-spike and coupling filters between the nonlinear responses of
@@ -63,41 +63,18 @@ p.addRequired('rgcM',vFunc);
 % We can use multiple bipolar trials as input
 p.addParameter('bipolarScale',  50, @isnumeric);
 p.addParameter('bipolarContrast',  1, @isnumeric);
-
-% Not used now.  To be added later.
 p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
 
 p.parse(rgcM,varargin{:});
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
-bipolarTrials   = p.Results.bipolarTrials;
-%%
 bipolarTrials = p.Results.bipolarTrials;
+
+%% Loop over multiple trials
+
 nTrials = 1;
-if ~isempty(bipolarTrials)
-    nTrials = size(bipolarTrials,1);
-end
+if ~isempty(bipolarTrials), nTrials = size(bipolarTrials,1); end
 
-
-%% Process the bipolar data
-% nTrialsLinearResponse = cell(5,1);
-% for iTrial = 1:nTrials
-% Looping over the rgc mosaics
-% for rgcType = 1:length(rgcL.mosaic)
-%     % Get the bipolar input data, handle bp mosaic and nTrials cases
-%     if length(bpMosaic) == 1
-%         if ~isempty(bipolarTrials)
-%             input   = squeeze(bipolarTrials(iTrial,:,:,:));
-%         else
-%             input   = bpMosaic.get('response');
-%         end
-%     else
-%         if ~isempty(bipolarTrials)
-%             input   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
-%         else
-%             input   = bpMosaic{rgcType}.get('response');
-%         end
-%     end
 
 for iTrial = 1:nTrials
     %% Removes the mean of the bipolar mosaic input, converts to contrast
@@ -105,8 +82,8 @@ for iTrial = 1:nTrials
     % This is a normalization on the bipolar current.
     % Let's justify or explain or something.
     
-    % input = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
     if ~isempty(bipolarTrials)
+        % Set the contrast for this trial
         input   = ieContrast(squeeze(bipolarTrials(iTrial,:,:,:)),'maxC',bipolarContrast);
     else
         input   = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
@@ -115,9 +92,9 @@ for iTrial = 1:nTrials
     
     %% Set the rgc impulse response to an impulse
     
-    % When we feed a bipolar object into the inner retina, we don't need to do
-    % temporal convolution. We have the tCenter and tSurround properties for
-    % the rgcMosaic, so we set them to an impulse to remind us that the
+    % When we feed a bipolar object into the inner retina, we don't need to
+    % do temporal convolution. We have the tCenter and tSurround properties
+    % for the rgcMosaic, so we set them to an impulse to remind us that the
     % temporal repsonse is already computed.
     rgcM.set('tCenter all', 1);
     rgcM.set('tSurround all',1);
@@ -127,7 +104,11 @@ for iTrial = 1:nTrials
     [respC, respS] = rgcSpaceDot(rgcM, input);
     % vcNewGraphWin; ieMovie(respC);
     
-    %% Convolve with the temporal impulse response
+    % Convolve with the temporal impulse response
+    %
+    % We commented out for now, but this temporal convolution should be
+    % allowed at some point.
+    %
     % If the temporal IR is an impulse, we don't need to do the
     % temporal convolution.  I'm leaving this here as a reminder that
     % we need to do this if we run any of EJ's original GLM models
@@ -139,7 +120,7 @@ for iTrial = 1:nTrials
     % ieMovie(respC - respS);
     
     
-    %% Deal with multiple trial issues
+    %% Deal with multiple trial returns
     
     if iTrial == 1
         nTrialsLinearResponse = zeros([nTrials,size(respC)]);
@@ -152,9 +133,8 @@ for iTrial = 1:nTrials
     if iTrial == nTrials
         % Store the linear response
         rgcM.set('response linear', bipolarScale*(respC - respS));
-        % rgcM.window;
     end
 end
-end
+
 
 
