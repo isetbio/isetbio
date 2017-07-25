@@ -71,39 +71,7 @@ p.parse(rgcM,varargin{:});
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
 
-%%
-% bipolarTrials = p.Results.bipolarTrials;
-% nTrials = 1;
-% if ~isempty(bipolarTrials)
-%     if length(bpMosaic)==1
-%         nTrials = size(bipolarTrials,1);
-%     else
-%         nTrials = size(bipolarTrials{1},1);
-%     end
-% end
-
-
-%% Process the bipolar data
-% nTrialsLinearResponse = cell(5,1);
-% for iTrial = 1:nTrials
-% Looping over the rgc mosaics
-% for rgcType = 1:length(rgcL.mosaic)
-%     % Get the bipolar input data, handle bp mosaic and nTrials cases
-%     if length(bpMosaic) == 1
-%         if ~isempty(bipolarTrials)
-%             input   = squeeze(bipolarTrials(iTrial,:,:,:));
-%         else
-%             input   = bpMosaic.get('response');
-%         end
-%     else
-%         if ~isempty(bipolarTrials)
-%             input   = squeeze(bipolarTrials{rgcType}(iTrial,:,:,:));
-%         else
-%             input   = bpMosaic{rgcType}.get('response');
-%         end
-%     end
-
-%% Removes the mean of the bipolar mosaic input, converts to contrast
+%% Remove the mean of the bipolar mosaic input, converts to contrast
 
 % This is a normalization on the bipolar current.
 % Let's justify or explain or something.
@@ -126,33 +94,9 @@ rgcM.set('tSurround all',1);
 [respC, respS] = rgcSpaceDot(rgcM, input);
 % vcNewGraphWin; ieMovie(respC);
 
-%% Convolve with the temporal impulse response
-% If the temporal IR is an impulse, we don't need to do the
-% temporal convolution.  I'm leaving this here as a reminder that
-% we need to do this if we run any of EJ's original GLM models
-% (image -> spikes with no cone mosaic or bipolar).
-% if ir.mosaic{rgcType}.tCenter{1,1} ~= 1
-%     respC = timeConvolve(ir.mosaic{rgcType}, respC, 'c');
-%     respS = timeConvolve(ir.mosaic{rgcType}, respS, 's');
-% end
-% ieMovie(respC - respS);
-
-
-%% Deal with multiple trial issues
-% if ~isempty(bipolarTrials)
-%     if iTrial == 1
-%         nTrialsLinearResponse{rgcType} = zeros([nTrials,size(respC)]);
-%     end
-%     nTrialsLinearResponse{rgcType}(iTrial,:,:,:) =  bipolarScale*(respC - respS);
-% end
-
-% Store the last trial
-%if iTrial == nTrials
 % Store the linear response
 rgcM.set('response linear', bipolarScale*(respC - respS));
-% rgcM.window;
-%end
-% end
+
 end
 
 

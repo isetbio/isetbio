@@ -11,42 +11,50 @@ function [rgcL, nTrialsSpikes] = compute(rgcL, varargin)
 % Optional inputs
 %   'nTrialsSpikes' -  Multiple trials case
 %
-% Compute the responses for each mosaic in the layer. First, a space-time
-% separable linear response is computed. This stage of the computation is
-% stored in 'responseLinear'. This is managed in computeSeparable.  There
-% is no noise added in the linear part.
+% First,a space-time separable linear response is computed. The computed
+% values are stored in the 'responseLinear' slot of each mosaic. The
+% critical method is computeSeparable. No noise is added in the linear
+% part.
 %
-% At present, the temporal response is set to an impulse because of the way
-% the bipolar tIR is set.  We need to deal with this.  Also, the 'dt' of
-% the RGC should be inherited form the dt of the bipolar calculation.  I
-% don't see that anywhere (BW).  Should be in the
-% irComputeLinearSTSeparable routine.
+% By default, the temporal response is an impulse because of the way the
+% bipolar temporal impulse response is set.  Also, the 'dt' of the RGC is
+% inherited form the dt of the bipolar calculation.
 %
-% The spikes are computed irComputeSpikes routine. The spiking can have a
-% random element.  So, we may run the conversion from linear to spikes
-% multiple times, effectively producing spike rasters.
+% The spikes are computed from the responseLinear using the computeSpikes
+% method. The spiking has a random element.  Running the conversion from
+% linear to spikes multiple times produces different spike rasters.
 %
 % Outputs:
-%  ir: the inner retina object with responses attached to each mosaic
 %  nTrialsSpikes:  (trials x xPos x yPos x Time)
 %     Binary matrix indicating the spike times for all the trials.
 %     The last one is stored in the mosaics of the inner retina object in
 %     the responseSpikes slot.
 %
-% Science and references and computational issues
+% ** Science **
 %
-% We set the bipolar scale factor in order to produce a bipolar model that
-% generates reasonable RGC spikes for typical viewing conditions.  The sad
-% truth is that we don't have a biophysically accurate model of the bipolar
-% cells.  Consequently, we have no match for the bipolar current with real
-% units.  This is a fudge factor that produces attractive RGC spike rates.
-% When we get more information about the bipolar models, we hope to do
-% better.
+% There are a number of unresolved scientific issues about how to represent
+% the bipolar responses. We are simply unsure what the right thing to do
+% is. Here is what we do.
 %
-% Similarly, the internal calculation converts bipolar current to a
-% contrast with a max value of 1.  We can control the max contrast here.
-% The code is not set up vary these parameters yet.  We will expose them
-% some day.
+% We convert the bipolar response to a contrast signal.  The maximum value
+% of the contrast is set by the parameter 'bipolarContrast', with a default
+% of 1.  We compute the inner product between the center and surround
+% spatial receptive fields with this contrast.
+%
+% Then we compute the difference between the center and surround, and we
+% scale the output by the parameter 'bipolarScale', which has a default of
+% 100.  This value is chosen to influence the spike rates, because this
+% setting generates reasonable RGC spikes for typical viewing conditions.
+%
+% The sad truth is that we don't have a biophysically accurate model of the
+% bipolar cells. Consequently, we have no match for the bipolar current
+% with real units. This is a HUDGE fudge factor that produces attractive
+% RGC spike rates. When we get more information about the bipolar models,
+% we hope to do better.
+%
+% We should be experimenting with bipolarContrast and bipolarScale.  We
+% should be reading the literature to try to bring these values into closer
+% alignment with the biophysics.  Someone should write the literature.
 %
 % Example:
 %   rgcL.compute(bipolarMosaic??);
@@ -88,28 +96,4 @@ for ii=1:length(rgcL.mosaic)
     rgcL.mosaic{ii}.computeSpikes('coupling',coupling);
 end
 
-%% Compute spikes from linear response; possibly for multiple trials
-
-% for ii=1:length(rgcL.mosaic{ii})
-%     rgcM = rgcL.mosaic{ii};
-%     switch class(rgcM)
-%         case {'rgcLinear'}
-%             % No linear response implemented yet.
-%             disp('No spikes computed for linear RGC mosaic');
-%         otherwise
-%             % Runs for rgcLNP, rgcGLM
-%             % Send the coupling field to decide on the coupling parameter
-%             if ~isempty(bipolarTrials)
-%                 % Multiple trial case
-%                 [rgcL, nTrialsSpikes] = ...
-%                     rgcL.computeSpikes(...
-%                     'coupling',coupling, ...
-%                     'nTrialsLinearResponse',nTrialsLinearResponse);
-%             else
-%                 % Single trial case
-%                 [rgcL, nTrialsSpikes] = rgcL.computeSpikes('coupling',coupling);
-%             end
-%     end
-%
-% end
 end
