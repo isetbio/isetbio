@@ -7,11 +7,6 @@ function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 % Computes the linear responses and spikes for each of the mosaics in a
 % retina layer object.
 %
-% ***
-%  PROGRAMMING:  We still have data management to deal with in terms of
-%  multiple trials. 
-% ***
-%
 % The linear responses for each mosaic are computed. The linear computation
 % is space-time separation for each mosaic.  The spatial computation,
 % however, is not a convolution because the RF of the cells within a mosaic
