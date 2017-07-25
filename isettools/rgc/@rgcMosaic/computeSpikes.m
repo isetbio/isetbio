@@ -152,6 +152,8 @@ for iTrial = 1:nTrials
         end
         spikesTemp = rgcM.get('spikes');
         nTrialsSpikeResponseM(iTrial,:,:,1:size(spikesTemp,3)) = spikesTemp;
+    else
+        nTrialsSpikeResponseM = [];
     end
     
 end

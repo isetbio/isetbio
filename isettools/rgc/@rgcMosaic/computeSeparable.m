@@ -142,7 +142,7 @@ for iTrial = 1:nTrials
     %% Deal with multiple trial issues
     
     if iTrial == 1
-        nTrialsLinearResponse = zeros([nTrials,size(respC)]);
+        nTrialsLinearResponse = [];
     end
     if ~isempty(bipolarTrials)
         nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);
