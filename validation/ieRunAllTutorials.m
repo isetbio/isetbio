@@ -15,6 +15,7 @@ function iePublishAllTutorials
 
     % list of scripts to be skipped from automatic publishing
     scriptsToSkip = {...
+          'underDevelopment' ...
 %         't_coneMosaicLowPassResponses' ...  % this works stand-alone but freezes when run from this script
 %         't_coneMosaicDemosaicResponses' ... % this works stand-alone but freezes when run from this script
 %         't_osCurrentsVsLuminanceLevel' ...  % takes too long to run.
