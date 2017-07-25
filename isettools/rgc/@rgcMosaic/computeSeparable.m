@@ -136,8 +136,12 @@ for iTrial = 1:nTrials
     %% Deal with multiple trial issues
     
     if iTrial == 1
+        % Shouldn't this be if nTrial == 1?
+        % Then if iTrial == 1 and nTrial > 1 we allocate?
         nTrialsLinearResponse = [];
     end
+    
+    % If iTrial == 1 and this is the first 
     if ~isempty(bipolarTrials)
         nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);
     end
@@ -149,6 +153,7 @@ for iTrial = 1:nTrials
         % rgcM.window;
     end
 end
+
 end
 
 
