@@ -1,4 +1,4 @@
-function [rgcL, nTrialsSpikes] = compute(rgcL, varargin)
+function [nTrialsSpikes] = compute(rgcL, varargin)
 % @RGCLAYER.COMPUTE - Computes the rgc mosaic responses to an input
 %
 %   @rgcLayer.compute(varargin)
@@ -73,7 +73,7 @@ p.addRequired('rgcL',@(x) ~isempty(validatestring(class(x),{'rgcLayer'})));
 p.addParameter('coupling',false,@islogical);
 
 % Multiple bipolar trials
-p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
+p.addParameter('bipolarTrials',  [], @(x)(isnumeric(x)||iscell(x)));
 p.addParameter('bipolarScale',50,@isnumeric);
 p.addParameter('bipolarContrast',1,@isnumeric);
 
@@ -88,19 +88,27 @@ bipolarContrast = p.Results.bipolarContrast;
 bipolarTrials   = p.Results.bipolarTrials;
 if isempty(bipolarTrials)
     bipolarTrials = cell(1,length(rgcL.mosaic));
+elseif isnumeric(bipolarTrials)
+    % Turn the trials into a cell for the compute, below.
+    tmp = bipolarTrials;
+    clear bipolarTrials
+    bipolarTrials{1} = tmp;
+    clear tmp
 end
+
 %% Linear stage of the computation
 
 % For now, only deal with one trial case.  Compute the linear response for
 % every mosaic. The inputs are already attached.
+nTrialsSpikes = cell(length(rgcL.mosaic),1);
 for ii=1:length(rgcL.mosaic)
-    [rgcM,nTrialsLinearResponseM] = ...
+    [~,nTrialsLinearResponseM] = ...
         rgcL.mosaic{ii}.computeSeparable(...
         'bipolarContrast',bipolarContrast,...
         'bipolarScale', bipolarScale,...
         'bipolarTrials',bipolarTrials{ii});
 
-    [rgcM,nTrialsSpikeResponseM] = ...
+    [~,nTrialsSpikeResponseM] = ...
         rgcL.mosaic{ii}.computeSpikes('coupling',coupling,...
         'nTrialsLinear',nTrialsLinearResponseM);
     
