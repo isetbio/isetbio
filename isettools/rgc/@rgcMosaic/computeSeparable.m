@@ -67,7 +67,6 @@ bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
 bipolarTrials   = p.Results.bipolarTrials;
 %%
-bipolarTrials = p.Results.bipolarTrials;
 nTrials = 1;
 if ~isempty(bipolarTrials)
     nTrials = size(bipolarTrials,1);
