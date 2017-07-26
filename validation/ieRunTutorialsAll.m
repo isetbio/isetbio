@@ -8,7 +8,8 @@ function ieRunTutorialsAll
 
 % User/project specific preferences
 p = struct(...
-    'rootDirectory',            fileparts(which(mfilename())) ...
+    'rootDirectory',            fileparts(which(mfilename())), ...
+    'tutorialsSourceDir',       fullfile(isetbioRootPath, 'tutorials') ...                % local directory where tutorial scripts are located
     );
 
 %% List of scripts to be skipped from automatic publishing.
