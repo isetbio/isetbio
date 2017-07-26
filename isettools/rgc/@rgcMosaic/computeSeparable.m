@@ -4,13 +4,12 @@ function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 %   computeSparable(rgcM)
 %   @rgcMosaic.computeSeparable(varargin)
 %
-% Computes the linear responses and spikes for each of the mosaics in a
-% retina layer object.
+% Computes the linear responses for each of the mosaics in a retina layer
+% object. Space and time are computed separately.
 %
-% The linear responses for each mosaic are computed. The linear computation
-% is space-time separation for each mosaic.  The spatial computation,
-% however, is not a convolution because the RF of the cells within a mosaic
-% can differ.
+% The spatial computation is not a convolution because the RF of the cells
+% within a mosaic can differ. At present, there is no temporal impulse
+% response function.  See the explanation below.
 %
 % Required inputs
 %   rgcM:     A retina mosaic object 
@@ -22,32 +21,22 @@ function [rgcM, nTrialsLinearResponse] = computeSeparable(rgcM, varargin)
 % This methods produces the 'linear' RGC response shown in the window.
 %
 % For each corresponding bipolarMosaic and rgcMosaic, the center and
-% surround RF responses are calculated (matrix multiply). In principle, the
-% temporal impulse response for the center and surround is calculated but
-% in practice for now we only use the impulse.  This maintains the
-% bipolar/cone impulse response to match the RGC impulse response. 
+% surround RF responses are calculated  by an inner product of the input
+% with the RGC spatial receptive field. 
 %
-% The spikes are computed from these linear responses in the computeSpikes
+% In principle, the temporal impulse response for the center and surround
+% is calculated but in practice for now we only use the impulse.  The
+% reason is because this maintains the bipolar/cone impulse response, and
+% that was chosen to match the RGC impulse response. 
+%
+% Spikes are computed from these linear responses in the computeSpikes
 % method.
 %
-% Science and references - NEEDS TO BE EDITED (BW)
+% Science and references
 %
-% See @rgcLayer.compute for a discussion
+%  See @rgcLayer.compute for a discussion about the implementation choices. 
 %
-%    * Why do we scale the bipolar voltage input with ieContrast?
-%    * Why is the RGC impulse response set to an impulse?  Because the
-%    photocurrent*bipolar equals the observed RGC impulse response?
-%
-% rgcGLM model: The spikes are computed using the recursive influence of
-% the post-spike and coupling filters between the nonlinear responses of
-% other cells. These computations are carried in irComputeSpikes out using
-% code from Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky,
-% Simoncelli, Nature, 2008, licensed for modification, which can be found
-% at
-%
-%   http://pillowlab.princeton.edu/code_GLM.html
-%
-% See also: rgcGLM/rgcCompute, s_vaRGC in WL/WLVernierAcuity
+% See also: rgcGLM, rgcLNP, rgcMosaic
 %
 % JRG/BW (c) Isetbio team, 2016
 
@@ -128,7 +117,7 @@ for iTrial = 1:nTrials
         
     elseif ~isempty(bipolarTrials) && iTrial == 1
         [nr,nc,nt] = size(respC);
-        % Allocate
+        % Allocate space
         nTrialsLinearResponse  =  zeros(nTrials, nr, nc, nt);
         % Put in the first trial
         nTrialsLinearResponse(iTrial,:,:,:) =  bipolarScale*(respC - respS);

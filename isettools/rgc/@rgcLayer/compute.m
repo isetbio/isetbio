@@ -1,17 +1,27 @@
 function [nTrialsSpikes] = compute(rgcL, varargin)
 % @RGCLAYER.COMPUTE - Computes the rgc mosaic responses to an input
 %
-%   @rgcLayer.compute(varargin)
+%   compute(rgcLayer, ...)
+%   @rgcLayer.compute( ...)
 %
 % Computes the continuous (linear) and then spike responses for each of the
 % mosaics within the inner retina layer object.
 %
-% Required inputs
+% Required inputs:
+%   rgcLayer
 %
 % Optional inputs
 %   'nTrialsSpikes' -  Multiple trials case
 %
-% First,a space-time separable linear response is computed. The computed
+% Outputs:
+%  nTrialsSpikes:  (trials x xPos x yPos x Time)
+%     Binary matrix indicating the spike times for all the trials.
+%     The last one is stored in the mosaics of the inner retina object in
+%     the responseSpikes slot.
+%
+% ** Computation **
+%
+% First, a space-time separable linear response is computed. The computed
 % values are stored in the 'responseLinear' slot of each mosaic. The
 % critical method is computeSeparable. No noise is added in the linear
 % part.
@@ -20,15 +30,9 @@ function [nTrialsSpikes] = compute(rgcL, varargin)
 % bipolar temporal impulse response is set.  Also, the 'dt' of the RGC is
 % inherited form the dt of the bipolar calculation.
 %
-% The spikes are computed from the responseLinear using the computeSpikes
+% Spikes are computed from the responseLinear using the computeSpikes
 % method. The spiking has a random element.  Running the conversion from
 % linear to spikes multiple times produces different spike rasters.
-%
-% Outputs:
-%  nTrialsSpikes:  (trials x xPos x yPos x Time)
-%     Binary matrix indicating the spike times for all the trials.
-%     The last one is stored in the mosaics of the inner retina object in
-%     the responseSpikes slot.
 %
 % ** Science **
 %
@@ -56,12 +60,32 @@ function [nTrialsSpikes] = compute(rgcL, varargin)
 % should be reading the literature to try to bring these values into closer
 % alignment with the biophysics.  Someone should write the literature.
 %
+% Currently, we have implemented two different mosaic models - one that we
+% call the coupled-GLM (rgcGLM) and a second that is a linear nonlinear
+% Poisson (LNP sequence.
+%
+% @rgcGLM mosaic:
+%
+%  The spikes can computed using the recursive influence of the post-spike
+%  and coupling filters between the nonlinear responses of other cells.
+%  These computations are carried in irComputeSpikes out using code from
+%  Pillow, Shlens, Paninski, Sher, Litke, Chichilnisky, Simoncelli, Nature,
+%  2008, licensed for modification, which can be found at
+%
+%    http://pillowlab.princeton.edu/code_GLM.html
+%
+%  In practice, the coupling slows the computation considerably.  See
+%  rgcGLM.m for a discussion of the parameters in that model.
+%
+% @rgcLNP mosaic
+%
+%
 % Example:
 %   rgcL.compute(bipolarMosaic??);
 %
-% See also: rgcMosaic
+% See also: rgcMosaic, rgcGLM, rgcLNP
 %
-% BW (c) isetbio team
+% BW (c) ISETBIO team
 
 %% Parse inputs
 p = inputParser;
