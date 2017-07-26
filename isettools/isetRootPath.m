@@ -8,8 +8,8 @@ function rootPath=isetRootPath()
 % Example:
 %   fullfile(isetbioDataPath)
 
-rootPath=which('isetRootPath');
-
-[rootPath,fName,ext]=fileparts(rootPath);
+% rootPath=which('isetRootPath');
+% [rootPath,fName,ext]=fileparts(rootPath);
+rootPath = fullfile(isetbioRootPath,'isettools',[]);
 
 return

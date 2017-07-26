@@ -4,6 +4,6 @@ function dataPath=isetbioDataPath()
 %
 %   See also: isetbioRootPath.
 
-dataPath=fullfile(isetbioRootPath,'data',[]);
+dataPath=fullfile(isetbioRootPath,'isettools','data',[]);
 
 return
