@@ -236,7 +236,7 @@ switch ieParamFormat(param)
                 % So, if there are, say, 500 ms in the stimulus there are
                 % 50,000 indices in spikeTimes. 
                 %
-                for trial = 1:maxTrials
+                for trial = 1%:maxTrials
                     % These times are every dt*msec step.  Typically dt is
                     % 0.1 or 0.01.
                     spikeTimes =  obj.responseSpikes{xcell,ycell,trial};

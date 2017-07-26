@@ -1,4 +1,4 @@
-function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
+function response = compute(obj, varargin)
 % BIPOLAR.COMPUTE - Compute bipolar continuous current responses
 %
 %    @bipolarMosaic.compute(varargin);
@@ -20,9 +20,9 @@ function [obj, nTrialsCenter, nTrialsSurround] = compute(obj, varargin)
 %   obj:       a bipolar object
 %
 % Outputs
-%   responseCenter, responseSurround - The center and surround responses
-%   are calculated and stored in the mosaic as responseCenter and
-%   responseSurround
+%   Response - The response of the bipolar.  N.B. The center and
+%              surround responses are calculated and stored in the mosaic
+%              as responseCenter and responseSurround
 %
 % The principal decision is whether the bipolar transformation is linear or
 % includes a rectification.  This is controlled by the obj.rectifyType
@@ -94,8 +94,7 @@ end
 
 %% Spatial filtering and subsampling
 
-% Convolve spatial RFs across the photo current of the cones in the mosaic
-
+% If the input includes multiple trials, we run across all the trials here.
 for iTrial = 1:nTrials
     
     % This places the cone 3D matrix into a coneNumber x time matrix
@@ -239,20 +238,21 @@ for iTrial = 1:nTrials
         
         nTrialsCenter(iTrial,:,:,:) = XW2RGBFormat(tmpCenter(:,1:cmosaic.tSamples),row,col);
         nTrialsSurround(iTrial,:,:,:) = XW2RGBFormat(tmpSurround(:,1:cmosaic.tSamples),row,col);
-        %     obj.responseCenter(iTrial,:,:,:) = tmpTrialCenter;
-        %     obj.responseSurround(iTrial,:,:,:) = tmpTrialSurround;
-        
     else
         nTrialsCenter   = 0;
         nTrialsSurround = 0;
     end
     
     if iTrial == nTrials
+        % Store the last trial in the object
         obj.responseCenter   = XW2RGBFormat(tmpCenter(:,1:size(cmosaic.current,3)),row,col);
         obj.responseSurround = XW2RGBFormat(tmpSurround(:,1:size(cmosaic.current,3)),row,col);
     end
     
     
 end
+
+response = nTrialsCenter - nTrialsSurround;
+
 
 end
