@@ -17,7 +17,7 @@ function ValidationFunction(runTimeParams)
 ieInit;
 
 %% Read in the scene
-fName = fullfile(isetRootPath,'data','images','multispectral','StuffedAnimals_tungsten-hdrs');
+fName = fullfile(isetbioDataPath,'images','multispectral','StuffedAnimals_tungsten-hdrs');
 scene = sceneFromFile(fName,'multispectral');
 UnitTest.validationData('sceneA', scene);
     

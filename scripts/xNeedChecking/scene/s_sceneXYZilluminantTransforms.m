@@ -20,10 +20,10 @@
 % The files containing the reflectances are in ISET format, readable by 
 % s = ieReadSpectra(sFiles{1});
 sFiles = cell(1,4);
-sFiles{1} = fullfile(isetRootPath,'data','surfaces','reflectances','MunsellSamples_Vhrel.mat');
-sFiles{2} = fullfile(isetRootPath,'data','surfaces','reflectances','Food_Vhrel.mat');
-sFiles{3} = fullfile(isetRootPath,'data','surfaces','reflectances','DupontPaintChip_Vhrel.mat');
-sFiles{4} = fullfile(isetRootPath,'data','surfaces','reflectances','HyspexSkinReflectance.mat');
+sFiles{1} = fullfile(isetbioDataPath,'surfaces','reflectances','MunsellSamples_Vhrel.mat');
+sFiles{2} = fullfile(isetbioDataPath,'surfaces','reflectances','Food_Vhrel.mat');
+sFiles{3} = fullfile(isetbioDataPath,'surfaces','reflectances','DupontPaintChip_Vhrel.mat');
+sFiles{4} = fullfile(isetbioDataPath,'surfaces','reflectances','HyspexSkinReflectance.mat');
 
 % The number of samples from each of the data sets, respectively
 sSamples = [12,12,24,24];    % 

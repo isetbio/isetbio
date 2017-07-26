@@ -17,8 +17,8 @@ function [reflectances, sSamples] = ieReflectanceSamples(sFiles,sSamples,wave,re
 %
 %Example:
 %  sFiles = cell(1,2);
-%  sFiles{1} = fullfile(isetRootPath,'data','surfaces','reflectances','MunsellSamples_Vhrel.mat');
-%  sFiles{2} = fullfile(isetRootPath,'data','surfaces','reflectances','DupontPaintChip_Vhrel.mat');
+%  sFiles{1} = fullfile(isetbioDataPath,'surfaces','reflectances','MunsellSamples_Vhrel.mat');
+%  sFiles{2} = fullfile(isetbioDataPath,'surfaces','reflectances','DupontPaintChip_Vhrel.mat');
 %  sSamples = [12,12]*5; 
 %  [reflectances, sSamples] = ieReflectanceSamples(sFiles,sSamples);
 %  plot(wave,reflectances); grid on

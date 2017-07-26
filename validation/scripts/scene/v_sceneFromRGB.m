@@ -64,7 +64,7 @@ function ValidationFunction(runTimeParams)%% s_sceneFromRGB
     UnitTest.validationData('spd1', spd);
 
     %% Read in an rgb file and create calibrated display values
-    rgbFile = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+    rgbFile = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
     scene   = sceneFromFile(rgbFile,'rgb',[],displayCalFile);
     if (runTimeParams.generatePlots)   
         vcAddAndSelectObject(scene); sceneWindow;

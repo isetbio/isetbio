@@ -12,7 +12,7 @@ function [figH,m, cbH] = imageMontage(hc, slices, numCols, figNum)
 % flip:        Flip the image somehow or other
 %
 % Example (requires hc data, not shipped by default):
-%   fname = fullfile(isetRootPath,'data','images','hyperspectral','surgicalSWIR.mat');
+%   fname = fullfile(isetbioDataPath,'images','hyperspectral','surgicalSWIR.mat');
 %   d = load(fname,'hc');
 %   nWave = size(d.hc,3);
 %   [figH, m] = imageMontage(d.hc,1:10:nWave);

@@ -13,7 +13,7 @@ wave = SToWls(foo.S_log10coneabsorbance_ss);
 
 %%
 comment = 'Stockman/Sharpe cone absorbance from PTB.';
-fname = fullfile(isetRootPath,'data','human','coneAbsorbance');
+fname = fullfile(isetbioDataPath,'human','coneAbsorbance');
 
 ieSaveSpectralFile(wave(:),absorbance',comment,fname);
 

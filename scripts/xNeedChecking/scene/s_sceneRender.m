@@ -19,7 +19,7 @@
 
 %% Read in the scene
 wList = [400:10:700];
-fullFileName = fullfile(isetRootPath,'data','images','multispectral','StuffedAnimals_tungsten-hdrs.mat');
+fullFileName = fullfile(isetbioDataPath,'images','multispectral','StuffedAnimals_tungsten-hdrs.mat');
 scene = sceneFromFile(fullFileName ,'multispectral',[],[],wList);
 
 % Have a look at the image (just mapping different spectral bands into rgb)

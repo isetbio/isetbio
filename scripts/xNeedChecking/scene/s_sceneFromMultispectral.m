@@ -13,7 +13,7 @@
 % * http://imageval.com/scene-database/ 
 % * http://scien.stanford.edu/index.php/hyperspectral-image-data/
 
-fullFileName = fullfile(isetRootPath,'data','images','multispectral','StuffedAnimals_tungsten-hdrs');
+fullFileName = fullfile(isetbioDataPath,'images','multispectral','StuffedAnimals_tungsten-hdrs');
 
 %% Read in the multispectral/hyperspectral image data
 % 

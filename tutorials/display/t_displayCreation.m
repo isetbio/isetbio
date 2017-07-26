@@ -152,7 +152,7 @@ d.dixel.renderFunc = [];
 
 %% Save and visualize
 % For how to use display structure, see t_displayIntroduction
-save(fullfile(isetRootPath, 'data', 'displays', 'dExample.mat'), 'd');
+save(fullfile(isetbioDataPath, 'displays', 'dExample.mat'), 'd');
 
 % now we can create it
 d = displayCreate('dExample');

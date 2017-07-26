@@ -72,7 +72,7 @@ wave =   sceneGet(macbethChartObject,'wave');
 nWaves = sceneGet(macbethChartObject,'nwave');
 
 % Read the MCC reflectance data
-fName = fullfile(isetRootPath,'data','surfaces','macbethChart.mat');
+fName = fullfile(isetbioDataPath,'surfaces','macbethChart.mat');
 macbethChart = ieReadSpectra(fName,wave);
 
 % Sort out whether we have the right set of patches

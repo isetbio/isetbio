@@ -75,8 +75,7 @@ end
 
 % Refresh image window
 if ~isfield(vcSESSION, 'imgData') || isempty(vcSESSION.imgData)
-    I = imread(fullfile(isetRootPath, ...
-                'data', 'images', 'rgb', 'macbeth.tif'));
+    I = imread(fullfile(isetbioDataPath,'images', 'rgb', 'macbeth.tif'));
     I = im2double(I);
     vcSESSION.imgData = I;
 end

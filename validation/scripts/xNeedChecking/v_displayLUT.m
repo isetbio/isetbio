@@ -8,7 +8,7 @@ s_initISET
 
 %%  Read an 8bit RGB file and return some photons.
 
-fName = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
 photons = vcReadImage(fName,'rgb');
 
 %% Read an 8-bit RGB file.  With a 10-bit gamma table.  

@@ -56,7 +56,7 @@ switch vcGetImageFormat(energy,wave)
         xwData = energy;
 end
 
-fName = fullfile(isetRootPath,'data','human','luminosity.mat');
+fName = fullfile(isetbioDataPath,'human','luminosity.mat');
 V = ieReadSpectra(fName,wave);
 
 % 683 is the standard factor for conversion when the energy are in Watts.
