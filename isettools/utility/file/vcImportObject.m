@@ -19,7 +19,7 @@ function [newVal,fullName] = vcImportObject(objType,fullName,preserveDataFlag)
 % Examples:
 %   newVal = vcImportObject('SCENE');
 %   newVal = vcImportObject('ISA')
-%   fullName = fullfile(isetRootPath,'data','optics','rtZemaxExample.mat');
+%   fullName = fullfile(isetbioDataPath,'optics','rtZemaxExample.mat');
 %   vcImportObject('OPTICS',fullName);
 %
 % Copyright ImagEval Consultants, LLC, 2005.

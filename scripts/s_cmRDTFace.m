@@ -11,7 +11,7 @@ ieInit
 
 %% Make a cone mosaic of a face image
 
-scene = sceneFromFile(fullfile(isetRootPath,'data','images','rgb','faceMale.jpg'),'rgb');
+scene = sceneFromFile(fullfile(isetbioDataPath,'images','rgb','faceMale.jpg'),'rgb');
 scene = sceneSet(scene,'fov',1.2);
 scene = sceneAdjustIlluminant(scene,'D65.mat');
 vcAddObject(scene); sceneWindow;

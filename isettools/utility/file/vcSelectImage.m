@@ -25,7 +25,7 @@ if notDefined('ext'), ext = '*'; end
 
 curDir = pwd;
 if notDefined('imgDir')
-    imgDir = fullfile(isetRootPath,'data','images',imageType);
+    imgDir = fullfile(isetbioDataPath,'images',imageType);
 end
 
 chdir(imgDir)

@@ -65,7 +65,7 @@ switch lower(dataType)
             end
         end
     case {'data'}
-        fullPath = fullfile(isetRootPath,'data');
+        fullPath = fullfile(isetbioDataPath);
 
         % Check that directory exists. If not, try using the last directory
         % Otherwise, just go to data.
@@ -75,7 +75,7 @@ switch lower(dataType)
             end
         end
     case {'displays'}
-        fullPath = fullfile(isetRootPath,'data','displays');
+        fullPath = fullfile(isetbioDataPath,'displays');
         if ~exist(fullPath,'dir'),
             if  ~isempty(pDir), fullPath = pDir;
             else fullPath = isetRootPath;

@@ -61,8 +61,8 @@ function [scene,parms] = sceneCreate(sceneName,varargin)
 %
 %       pSize = 24;          % Patch size in pixels
 %       sSamples = [64 64];  % Surface samples from the files
-%       sFiles{1} = fullfile(isetRootPath,'data','surfaces','reflectances','MunsellSamples_Vhrel.mat');
-%       sFiles{2} = fullfile(isetRootPath,'data','surfaces','reflectances','Food_Vhrel.mat');
+%       sFiles{1} = fullfile(isetbioDataPath,'surfaces','reflectances','MunsellSamples_Vhrel.mat');
+%       sFiles{2} = fullfile(isetbioDataPath,'surfaces','reflectances','Food_Vhrel.mat');
 %       sceneCreate('reflectance chart',pSize,sSamples,sFiles);
 %
 % NARROWBAND COLOR PATCHES
@@ -210,9 +210,9 @@ switch sceneName
         % Patch size in pixels
         pSize = 24;
         % Default surface files
-        sFiles{1} = fullfile(isetRootPath,'data','surfaces', ...
+        sFiles{1} = fullfile(isetbioDataPath,'surfaces', ...
                             'reflectances','MunsellSamples_Vhrel.mat');
-        sFiles{2} = fullfile(isetRootPath,'data','surfaces', ...
+        sFiles{2} = fullfile(isetbioDataPath,'surfaces', ...
                             'reflectances','Food_Vhrel.mat');
         % Surface samples from the files
         sSamples = [64 64];

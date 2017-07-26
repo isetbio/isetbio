@@ -18,7 +18,7 @@
 %  Data from the figures were digitized using 'digitize2' and ginput:
 %  https://www.mathworks.com/matlabcentral/fileexchange/928-digitize2-m
 %  (BW likes grabit, also).
-%
+
 % JRG ISETBIO Team, 2017
 
 %% For plotting some of the curves
@@ -27,7 +27,7 @@ movingAverageFlag = true;
 
 %% Dacey 2004, Figure 2A, Parasol Data
 
-load(fullfile(isetbioRootPath,'isettools','data','rgc','parasolData.mat'));
+load(fullfile(isetbioDataPath,'rgc','parasolData.mat'));
 
 vcNewGraphWin([],'wide');
 subplot(1,3,1);
@@ -76,7 +76,7 @@ subplot(1,3,1);
 % hold on; scatter(x,y)
 
 % clear
-ckData = load(fullfile(isetbioRootPath,'isettools','data','rgc','croner_kaplan_parasol_rgc.mat'));
+ckData = load(fullfile(isetbioDataPath,'rgc','croner_kaplan_parasol_rgc.mat'));
 d1 = ckData.d1;
 % d2 = ckData.d2;
 
@@ -127,8 +127,8 @@ legend('Data','Fit','Binned Average');
 % figure; scatter(parasolX,parasolY);
 
 %% Dacey Midget data
+load(fullfile(isetbioDataPath,'rgc','midgetData.mat'))
 
-load(fullfile(isetbioRootPath,'isettools','data','rgc','midgetData.mat'))
 % figure;
 subplot(1,3,2);
 scatter(midgetData(:,1),midgetData(:,2))
@@ -165,7 +165,7 @@ axis([0 18 0 450]);
 
 %% Dacey SBC data
 
-load(fullfile(isetbioRootPath,'isettools','data','rgc','sbcData.mat'))
+load(fullfile(isetbioDataPath,'rgc','sbcData.mat'))
 subplot(1,3,3);
 scatter(sbcData(:,1),-sbcData(:,2))
 

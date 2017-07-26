@@ -8,7 +8,7 @@ function figH = hcimage(hc,varargin)
 %
 % Examples:
 %
-%   fname = fullfile(isetRootPath,'data','images','hyperspectral','surgicalSWIR.mat');
+%   fname = fullfile(isetbioDataPath,'images','hyperspectral','surgicalSWIR.mat');
 %   load(fname,'hc'); nWave = size(hc,3);
 %   hcimage(hc,'image montage');
 %   hcimage(hc,'movie');

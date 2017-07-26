@@ -48,7 +48,7 @@ scenePlot(scene,'illuminant photons roi')
 %% Create a scene based on multispectral scene data
 %
 %  see s_sceneFromMultispectral.m
-sceneFile = fullfile(isetRootPath,'data','images','multispectral','StuffedAnimals_tungsten-hdrs.mat');
+sceneFile = fullfile(isetbioDataPath,'images','multispectral','StuffedAnimals_tungsten-hdrs.mat');
 scene = sceneFromFile(sceneFile,'multispectral');
 scene = sceneAdjustLuminance(scene,61); % This sets the mean scene luminance
 scene = sceneSet(scene,'fov',26.5); % match the scene field of view (fov) with the sensor fov

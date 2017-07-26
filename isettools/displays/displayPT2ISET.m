@@ -15,7 +15,7 @@ function d = displayPT2ISET(fname,iWave)
 %   d = displayPT2ISET(fname);
 %   displayGet(d,'peak luminance')
 %   displayGet(d,'primaries xyz')   % XYZ in the rows
-%   f = fullfile(isetRootPath,'data','displays','LCD-Apple.mat');
+%   f = fullfile(isetbioDataPath,'displays','LCD-Apple.mat');
 %   save(f,'d');
 %
 %  Sampled in 10 nm steps
@@ -23,7 +23,7 @@ function d = displayPT2ISET(fname,iWave)
 %   d = displayPT2ISET(fname,[400:10:700]);
 %   displayGet(d,'peak luminance')
 %   displayGet(d,'primaries xyz')   % XYZ in the rows
-%   f = fullfile(isetRootPath,'data','displays','LCD-Apple.mat');
+%   f = fullfile(isetbioDataPath,'displays','LCD-Apple.mat');
 %   save(f,'d');
 %
 %  Plot display properties (e.g., spd and white point xy)
