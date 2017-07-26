@@ -52,16 +52,16 @@ function [scene,I] = sceneFromFile(I, imType, meanLuminance, dispCal, ...
 %   scene = sceneFromFile(fullFileName,imgType,meanLuminance);
 %
 %   dispCal = 'OLED-Sony.mat';meanLuminance=[];
-%   fName = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+%   fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
 %   scene = sceneFromFile(fName,'rgb',meanLuminance,dispCal);
 %
 %   wList = [400:50:700];
-%   fullFileName = fullfile(isetRootPath,'data','images', ...
+%   fullFileName = fullfile(isetbioDataPath,'images', ...
 %                   'multispectral','StuffedAnimals_tungsten-hdrs');
 %   scene = sceneFromFile(fullFileName,'multispectral',[],[],wList);
 %
 %   dispCal = 'OLED-Sony.mat';meanLuminance=[];
-%   fName = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+%   fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
 %   rgb = imread(fName);
 %   scene = sceneFromFile(rgb,'rgb',100,dispCal);
 %

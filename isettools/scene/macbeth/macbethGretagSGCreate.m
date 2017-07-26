@@ -22,7 +22,7 @@
 % fN = ieSaveSpectralFile(spd_wave,spd_reflectance,comment,[]);
 
 %% Create the large Gretag chart
-fName = fullfile(isetRootPath,'data','surfaces','gretagDigitalColorSG.mat');
+fName = fullfile(isetbioDataPath,'surfaces','gretagDigitalColorSG.mat');
 [reflectance, wave]= ieReadSpectra(fName);
 
 %% Create the chart

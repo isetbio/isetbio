@@ -140,8 +140,8 @@ oiWindow;
 
 % We saved these shift invariant optics using:
 %
-% fullName = fullfile(isetRootPath,'data','optics','si2x1GaussianWaveVarying');
-% (or) fullName = fullfile(isetRootPath,'data','optics','siGaussianWaveVarying');
+% fullName = fullfile(isetbioDataPath,'optics','si2x1GaussianWaveVarying');
+% (or) fullName = fullfile(isetbioDataPath,'optics','siGaussianWaveVarying');
 % vcExportObject(optics,fullName)
 % You can import these optics using:  Optics | Import Optics
 
@@ -153,7 +153,7 @@ oiWindow;
 
 %% Loading (2x1) asymmetric optics data from a file
 
-fullName = fullfile(isetRootPath,'data','optics','si2x1GaussianWaveVarying.mat');
+fullName = fullfile(isetbioDataPath,'optics','si2x1GaussianWaveVarying.mat');
 newVal   = vcImportObject('OPTICS',fullName);
 oi       = vcGetObject('oi');
 lens = Lens; lens.density = 0;
