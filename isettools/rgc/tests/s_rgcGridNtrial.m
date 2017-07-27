@@ -51,6 +51,11 @@ for ii=1:nTrials
     emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
 end
 
+% We would like the returns to be nTrials x r x c x time with this
+% syntax, which emPaths is nTrials > 1.
+%
+%   [abs,curr] = cMosaic.compute(oi,'emPaths',emPaths,'currentFlag',true);
+%
 %% Make the bipolar layer with just one mosaic 
 
 clear bpL bpMosaicParams bpTrials
