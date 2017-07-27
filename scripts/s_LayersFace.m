@@ -13,10 +13,6 @@ rdt = RdtClient('isetbio');
 rdt.crp('/resources/data/cmosaics');
 % rdt.listArtifacts('type','mat','print',true);
 
-% coneMosaicDataFace
-% For some reason, this opens the cMosaic.window.  I don't understand why.
-% This happens when we load the data that is downloaded in
-% rdtLoadWellKnownFileTypes.
 data      = rdt.readArtifact('coneMosaicDataFace', 'type', 'mat');
 cMosaic   = data.cMosaic;
 
@@ -71,7 +67,7 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Every mosaic has its input and properties assigned so we should be able
 % to just run through all of them.
-rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
+rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
 
 %%
 rgcL.window;
