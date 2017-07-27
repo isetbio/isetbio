@@ -1,1 +1,0 @@
-function [list] = TruncateList(list,low,high)% [list] = TruncateList(list,low,high)% Just return inbounds pointsindex = find( list(:,1) >= low & list(:,2) >= low & ...              list(:,1) <= high & list(:,2) <= high );list = list(index,:);

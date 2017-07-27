@@ -1,1 +1,0 @@
-function [list] = WrapList(list,ndim)% [list] = WrapList(list,ndim)% Handle wrap around of point list in ndim mosaicindex = find( list < 1 );list(index) = floor( list(index) + ndim);index = find( list > ndim );list(index) = ceil( list(index) - ndim);

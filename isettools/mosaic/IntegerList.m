@@ -1,1 +1,0 @@
-function [list] = IntegerList(list)list = floor(list + 0.5);
