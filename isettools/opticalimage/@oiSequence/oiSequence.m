@@ -1,19 +1,22 @@
 classdef oiSequence
     % OISEQUENCE - Class for generating a temporal sequence of optical images
     %
-    %   The stimuli for many psychophysical and physiological experiments can be
-    %   described as a fixed background image and combined with a time-varying
-    %   image. The oiSequence represents the these two images along with the
-    %   weights that define the composition of the two images across time.
+    % The stimuli for many psychophysical and physiological experiments can
+    % be described as a fixed background image combined with a time-varying
+    % image. The oiSequence class includes methods that combine the such
+    % image combinations across time.
     %
-    %   The parameters and usage are
+    % There is a companion method, oisCreate() that produces certain
+    % classic oiSequences (harmonics, vernier targets, impulses). For some
+    % cases, that function may provide a simpler interface for creating an
+    % oiSequence.
+    %
+    % To create an oiSequence using this function ...
     %
     %    oiSeq = oiSequence(oiBackground, oiModulated, timeAxis, weightsTime, ...
     %                       'PARAM1',val,'PARAM2', val,  ...) 
     %
-    %    creates the oiSequence object.
-    %
-    %   Optional parameter name/value pairs chosen from the following:
+    % Optional parameter name/value pairs chosen from the following:
     %
     %   'composition'     -  add or blend or xor the fixed and modulated OIs
     %   'modulationRegion'-  choose a region of interest for the modulation
@@ -27,15 +30,17 @@ classdef oiSequence
     %                  modulationFunctionTimeAxis, modulationFunction, ...
     %                  'modulationRegion', modulationRegion);
     %
-    % TODO:  Maybe set up some oiGet/Set routines with the syntax
-    %        oiSequence.get('oiFixed mumble') and
-    %        oiSequence.get('oiModulated mumble')???
-    %        Maybe oiSequence.get('frame',val)???
+    % See also: oisCreate, t_oiSequence
     %
     %  NPC, ISETBIO TEAM, 2016
+    
+    % Programming TODO
     %
-    % See also t_oiSequence
-    %
+    % Maybe set up some oiGet/Set routines with the syntax
+    %    oiSequence.get('oiFixed mumble') and
+    %    oiSequence.get('oiModulated mumble')???
+    %    Maybe oiSequence.get('frame',val)???
+    
     
     properties
         photonsFixed;         % Photons stored as double

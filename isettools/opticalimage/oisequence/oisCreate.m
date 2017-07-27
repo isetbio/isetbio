@@ -1,7 +1,8 @@
 function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 % OISCREATE - oi sequence creation
-%    An oiSequence specifies certain simple retinal images that vary over
-%    time, such as stimuli used in typical psychophysical experiments.
+%
+% An oiSequence specifies certain simple retinal images that vary over
+% time, such as stimuli used in typical psychophysical experiments.
 %
 %    [ois, scenes] = OISCREATE(oisType,composition,modulation,'PARAM1',val ...)
 %
@@ -11,8 +12,8 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %   'modulation'   - Series of weights describing the add or blend
 %
 %  Optional parameter/val types chosen from the following 
-%    'testParameters'   Parameters for the test targets 
-%    'sceneParameters'  General scene parameters (e.g., fov, luminance)
+%    'testParameters'  -  Parameters for the test targets 
+%    'sceneParameters' -  General scene parameters (e.g., fov, luminance)
 %    
 %    The sequence is a mixture of a fixed OI and a modulated OI. The
 %    mixture is determined by a time series of weights.  The weights are
@@ -27,30 +28,28 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %  Harmonics
 %   clear hparams
 %   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
-%   hparams(1) = hparams(2); hparams(1).contrast = 0; sparams.fov = 1; 
+%   hparams(1) = hparams(2); hparams(1).contrast = 0; 
+%   sparams.fov = 1; 
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   ois = oisCreate('harmonic','blend',stimWeights, ...
-%                   'testParameters',hparams, ...
-%                   'sceneParameters',sparams);
+%   ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
 %   ois.visualize;
 %
 %  Vernier
-%   clear vparams; vparams(2) = vernierP; sparams.fov = 1;
+%   clear vparams; vparams(2) = vernierP; 
 %   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
 %   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
+%   sparams.fov = 1;
 %   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,...
-%                                 'testParameters',vparams,...
-%                                 'sceneParameters',sparams);
+%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
 %   vernier.visualize;
+%
 %   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %
-% Impulse 
+% Impulse (temporal)
 %   clear iparams
 %   sparams.fov = 1; sparams.luminance = 100;
 %   stimWeights = zeros(1,50); stimWeights(2:4) = 1;
-%   impulse = oisCreate('impulse','add', stimWeights,...
-%                       'sceneParameters',sparams);
+%   impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
 %   impulse.visualize;
 %
 % See also SCENECREATE
@@ -63,11 +62,14 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %% Inputs
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('oisType',@ischar)
+
+% Required
+validTypes = {'harmonic','vernier','impulse'};
+p.addRequired('oisType',@(x)(ismember(x,validTypes)));
 p.addRequired('composition',@ischar);
 p.addRequired('modulation');
 
-% Parameters that can be passed
+% Parameters
 p.addParameter('sampleTimes',[],@isvector);
 p.addParameter('testParameters',[],@isstruct);
 p.addParameter('sceneParameters',[],@isstruct);

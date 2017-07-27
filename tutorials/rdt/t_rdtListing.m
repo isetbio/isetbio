@@ -23,7 +23,8 @@ rdt.listRemotePaths('print',true);  % 'all' false limits
 rdt.crp('/resources/scenes/hyperspectral');
 rdt.listRemotePaths('print',true);
 
-%% 
+%% Here are the data sets we seem to be maintaining
+
 rdt.crp('/resources/data');
 rdt.listRemotePaths('print',true);
 
