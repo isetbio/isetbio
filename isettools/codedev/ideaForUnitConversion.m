@@ -1,5 +1,7 @@
-function [newVal,newUnitStr,oldUnitStr] = unitConvert(oldVal,valType,oldUnitStr,newUnitStr)
-% [newVal,newUnitStr,oldUnitStr] = unitConvert(oldVal,valType,oldUnitStr)
+function [newVal,newUnitStr,oldUnitStr] = ideaForUnitConversion(oldVal,valType,oldUnitStr,newUnitStr)
+%ideaForUnitConversion  An idea about how to encapsulate unit conversion.
+%
+% [newVal,newUnitStr,oldUnitStr] = ideaForUnitConversion(oldVal,valType,oldUnitStr)
 %
 % Value types:
 %  'length' - default units: 'm'
@@ -25,7 +27,7 @@ function [newVal,newUnitStr,oldUnitStr] = unitConvert(oldVal,valType,oldUnitStr,
 % NOTE: This routine does not convert units of power from energy to quantal
 % units or vice-versa, because that conversion requires knowing the
 % wavelength of the light being converted.
-%
+
 % 7/20/15  dhb  Started to write this.
 
 % Switch on value type

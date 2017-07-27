@@ -1,12 +1,12 @@
-function exampleSet(varargin)
-% exampleSet(varargin)
+function exampleInputParser(varargin)
+% exampleInputParser(varargin)
 %
 % Example function that shows how to use Matlab's parser object to set up a
 % parameters structure using key/value pairs.  This is set up to show how
 % we might do this for the set method for an object called example.
 %
 % The calling syntax is 
-%  exampleSet('WhatToSet',valueToSet,...) where ... is set of key value pairs.
+%  exampleInputParser('WhatToSet',valueToSet,...) where ... is set of key value pairs.
 %
 % Supported key/value pairs
 %   'units','unitstring' - Set the units parameter to the string in unitstring (default,'defaultunits').
@@ -49,9 +49,9 @@ function exampleSet(varargin)
 % value would be passed.
 %
 % Examples:
-%  exampleSet('oslength',10);
-%  exampleSet('regenerationtime',150,'units','usec','whatsi',11,'whosi','ellen');
-%
+%  exampleInputParser('oslength',10);
+%  exampleInputParser('regenerationtime',150,'units','usec','whatsi',11,'whosi','ellen');
+
 % 7/20/15  dhb  Wrote it.  Sure beats working.
 
 % Check for the number of arguments and create parser object.
