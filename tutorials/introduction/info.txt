@@ -1,1 +1,0 @@
-This section contains tutorial scripts to provide an introduction to isetbio.

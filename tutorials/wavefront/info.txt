@@ -1,1 +1,0 @@
-This section contains tutorial scripts related to wavefront optics.
