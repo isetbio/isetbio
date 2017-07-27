@@ -2,8 +2,8 @@
 %
 % Main code tree for isetbio.
 %
-% bipolar                       - For developers. Configure isetbio preferences.
-% cell                          - cellLayer and cellMosaic classes.  Parent classes for bipolar, rgc, etc.
+% bipolar                       - Implmentation of bipolar cells.
+% cell                          - Implementation of cellLayer and cellMosaic parent classes. Used by bipolar, rgc, etc.
 % codedev                       - For developers. Examples and ideas about how to code things. 
 % color                         - Colorimetric support routines.              
 % cones                         - Implementation of calculations for isomerizations, photocurrent, cone mosaics.
@@ -14,10 +14,10 @@
 % fonts                         - Support for describing letters.
 % gui                           - Support for gui's, used by windows associated with various objects.
 % human                         - Mostly routines for returning data about human visual system.  But also has some mouse routines.
-% image
-% main
-% mosaic
-% opticalimage
-% rgc
-% utility
-% wavefront
+% image                         - Support for creating some standard images of interest.
+% main                          - Implementation of high level gui interface to some of the calcuations. 
+% mosaic                        - Support for describing mosaic geometry. This is DHB code from the early 1990s that we may or may not actually be using.
+% opticalimage                  - Implementation of computation of the retinal image.
+% rgc                           - Implementation of retinal ganglion cells
+% utility                       - A wide range of utility functions, some of which we use.
+% wavefront                     - Implementation of wavefront optics calculations
