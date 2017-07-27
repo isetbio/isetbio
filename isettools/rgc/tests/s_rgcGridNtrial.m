@@ -40,9 +40,9 @@ cMosaic = coneMosaic;
 cMosaic.setSizeToFOV(fov);
 
 %% New method for multiple cone trials when not an oiSequence
-% nMovements = 25; nTrials = 2;
-% emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
-% [coneAbsorptions, coneCurrent] = cMosaic.compute(oi,'emPath',emPaths,'currentFlag',true);
+nMovements = 25; nTrials = 2;
+emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
+[coneAbsorptions, coneCurrent] = cMosaic.compute(oi,'emPath',emPaths,'currentFlag',true);
 
 % vcNewGraphWin; 
 % ieMovie(squeeze(coneAbsorptions(1,:,:,:)));
@@ -57,16 +57,16 @@ cMosaic.setSizeToFOV(fov);
 
 % Returns the same coneAbsorptions and coneCurrent
 %
-nMovements = 25; nTrials = 2;
-emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
-coneAbsorptions = zeros(nTrials,cMosaic.rows,cMosaic.cols,nMovements);
-coneCurrent     = zeros(size(coneAbsorptions));
-for ii=1:nTrials
-    cMosaic.compute(oi,'emPath',emPaths,'currentFlag',true);
-    coneAbsorptions(ii,:,:,:) = cMosaic.absorptions;
-    coneCurrent(ii,:,:,:)     = cMosaic.current;
-    emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
-end
+% nMovements = 25; nTrials = 2;
+% emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
+% coneAbsorptions = zeros(nTrials,cMosaic.rows,cMosaic.cols,nMovements);
+% coneCurrent     = zeros(size(coneAbsorptions));
+% for ii=1:nTrials
+%     cMosaic.compute(oi,'emPath',emPaths,'currentFlag',true);
+%     coneAbsorptions(ii,:,:,:) = cMosaic.absorptions;
+%     coneCurrent(ii,:,:,:)     = cMosaic.current;
+%     emPaths    = cMosaic.emGenSequence(nMovements,'nTrials',nTrials);
+% end
 
 % vcNewGraphWin;
 % ieMovie(squeeze(coneAbsorptions(1,:,:,:)));
