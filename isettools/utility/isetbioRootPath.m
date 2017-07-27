@@ -8,8 +8,9 @@ function rootPath=isetbioRootPath()
 % Example:
 %   fullfile(isetbioRootPath,'data')
 
-rootPath=which('isetbioRootPath');
+% 07/27/17  dhb  Changed to index off of Contents.m, so as not to clutter isetbio root directory.
 
+rootPath=which('isetbio/Contents');
 [rootPath,~,~]=fileparts(rootPath);
 
 return
