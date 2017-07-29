@@ -1,4 +1,5 @@
-function t_coneMosaicHex6
+function t_conesMosaicHex6
+%%t_conesMosaicHex6
 
     %% Initialize
     ieInit; clear; close all;

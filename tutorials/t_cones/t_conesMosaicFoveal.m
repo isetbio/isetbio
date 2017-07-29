@@ -1,4 +1,4 @@
-% t_coneMosaicFoveal
+%%t_conesMosaicFoveal
 % 
 % Illustrates the difference between the foveal and peripheral cone outer
 % segment impulse responses using the osBioPhys object.

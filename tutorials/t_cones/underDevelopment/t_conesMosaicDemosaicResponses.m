@@ -1,5 +1,5 @@
-function t_coneMosaicDemosaicResponses
-% t_coneMosaicDemosaicResponses
+function t_conesMosaicDemosaicResponses
+%%t_conesMosaicDemosaicResponses
 %
 % Show how to demosaic, either at isomerizations or photocurrent.
 %

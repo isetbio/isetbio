@@ -1,29 +1,19 @@
-%% t_ColorMatching
+%% t_ColorMatching  Tutorial on color matching and displays
 %
-% Tutorial on color matching
+% Description:
+%     This tutorial  introduces several computational methods in color. These are:
+%       * How to compute the XYZ values of a light source
+%       * How to set a monitor output to achieve these XYZ levels
+%       * How to manage the nonlinear relationship between frame buffer and emitted light output
+%       * How to compute and plot the xy chromaticity values of a display
 %
-% This tutorial  introduces several computational methods in color. These
-% are:
-%  * How to compute the XYZ values of a light source
-%  * How to set a monitor output to achieve these XYZ levels
-%  * How to manage the nonlinear relationship between frame buffer and
-%    emitted light output
-%  * How to compute and plot the xy chromaticity values of a display
-%
-% There are a set of questions at the end that can help you deepen your
-% understanding.
-%
-% Class:       Psych 221 - Applied Vision and Image Systems 
-% Tutorial:    Color Matching on Displays
-% Author:      Wandell 
-% Purpose:     Introduce SPDs, XYZ functions, gamma, matching calculations 
-% Last Update: 2015/1/5 (HJ)
-% Duration:    45 minutes
-%	
+%     There are a set of questions at the end that can help you deepen your
+%     understanding.
+	
 % Matlab 5:     Checked 01.06.98 BW
 % Matlab 7:     Checked 01.06.06 GN/BW
-% R2014b:       Updated 12.31.14, use display objects and ieReadSpectra DHB
-%
+% R2014b:       Updated 12.31.14, use display objects and ieReadSpectra, DHB
+% R2016a:       Checked 07.28.17, DHB
 
 %% Initialize
 ieInit;
@@ -315,9 +305,9 @@ displayPlot(d, 'gamut');
 % corners of the gamut
 sum(maxXYZ)
 
-%% TUTORIAL QUESTIONS
+%% Tutorial questions
 %
-% USING THE COLOR MATCHING FUNCTIONS
+% Using the color matching functions
 %
 % Consider a color matching experiment using a CRT monitor with phosphor
 % spectral power distributions (SPD) given by 'phosphors' in
@@ -332,8 +322,8 @@ sum(maxXYZ)
 %
 % c) If you wanted to perform an experiment to test the predicted match,
 % what could you do to arrange the viewing conditions?
-%
-% COLOR MONITOR CALIBRATION AND CHROMATICITY
+
+%% Color monitor calibration and chromaticity
 %
 % a) Let the SPDs of the three phosphors of a color monitor be R, G, and B.
 % Let the value of a pixel be written as a vector x = [r,g,b], where r, g,
@@ -358,8 +348,8 @@ sum(maxXYZ)
 % chromaticity of the phosphor, how would you design it to achieve the best
 % monitor performance?  You may want to sketch or plot a chromaticity
 % diagram to show what you mean.
-%
-%% Optional questions
+
+%% Effect of display dark light on gamut
 % 
 % Suppose you are an LCD manufacturer, and you know that if you had an
 % ideal LCD, each of the R,G,B color channels would emit light according to

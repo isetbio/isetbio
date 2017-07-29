@@ -1,4 +1,4 @@
-%% t_coneMosaicHex3
+%%t_conesMosaicHex3
 %
 % Generates a rectangular and a hexagonal mosaic and visualizes
 % isomerization maps of the two mosaics for three different scenes.

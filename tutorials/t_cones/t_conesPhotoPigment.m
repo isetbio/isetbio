@@ -1,4 +1,4 @@
-%% t_photoPigment
+%%t_conesPhotoPigment
 %
 % The photoPigment object represents the data needed to calculate the
 % capture of light by the cone photopigment.

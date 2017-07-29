@@ -1,10 +1,8 @@
-%% t_colorSpectrum
-%
-% Apply color methods to render an approximation to the visible spectrum
+%% t_colorSpectrum  Apply colorimetric methods to render an approximation to the visible spectrum
 % 
-% This tutorial uses the color-matching tools we have developed to
-% create an image approaching the appearance the rainbow (the spectral
-% colors) on your display.
+% Description:
+%    This tutorial uses color-matching tools to create an image approaching
+%    the appearance the rainbow (the spectral colors) on a display.
 
 % 12/29/14  dhb  Updated for isetbio, and cleaned a bit.
 % 01/05/15  hj   HJ did something for class usage. 
@@ -195,4 +193,3 @@ set(gca,'ytickLabel','');
 % image, or we adjusted just that part, we could obtain a more saturated
 % overall appearance. Again, a design decision.
 
-% END TUTORIAL

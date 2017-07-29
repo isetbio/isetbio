@@ -1,30 +1,40 @@
-%% t_EnergyQuanta
+%%t_EnergyQuanta  Explain the relation between units of energy and unit of quanta.
 %
-% Planck's relation and the units - explain the relationship between units of energy and units of quanta.
+% Description:
+%     Illustrate relationship between energy and quantal units Planck's equation.
+%     These differences matter for  calculations involving the CIE functions
+%     and human cone quantum absorptions.  
 %
-% These differences matter for  calculations involving the CIE functions
-% and human cone quantum absorptions.
+%     Also shows how to compute CIE XYZ tristimulus values starting with
+%     spectra in either energy or quantal uints.
 %
 % References:
-%  http://en.wikipedia.org/wiki/Planck%27s_relation
-%
-% Copyright ImagEval Consultants, LLC, 2012.
+%    http://en.wikipedia.org/wiki/Planck%27s_relation
 
-%% The photons and energy are connected by Planck's Relation 
-%  See: http://en.wikipedia.org/wiki/Planck%27s_relation
+% Copyright ImagEval Consultants, LLC, 2012.
+%
+% 07/29/17  dhb  Commenting pass.
+
+%% Clear 
+clear; close all;
+
+%% Photons and energy are connected by Planck's Relation 
 %
 %    photons = (energy/(h*c)) .* wavelength);
 %    energy  = (h*c) * photons ./ wavelength;
 %
 % The term h is Planck's constant and c is the speed of light.  
 %
-% ISET stores these constants so you can find them:
-% vcConstants('plancks constant')
-% vcConstants('speed of light')
+% Isetbio stores these constants so you can find them:
+%   vcConstants('plancks constant')
+%   vcConstants('speed of light')
 
-% We can calculate the energy for quanta at different wavelengths by 
-% setting up a vector of 1s to represent the photons and then calling
-% function  Quanta2Energy
+%% Calculate the energy for quanta at different wavelengths
+%
+% Set up a vector of 1s to represent the photons and then call
+% function Quanta2Energy.
+%
+% Wavelengths are in nm for the call into Quanta2Energy.
 wave = 400:5:700;  
 photons = ones(length(wave),1);
 E = Quanta2Energy(wave,photons);
@@ -37,7 +47,8 @@ xlabel('Wavelength (nm)');ylabel('Energy (watts/sr/nm/m2)')
 %% The spectral power distribution (SPD) in energy and quanta
 %
 % This is a standard Daylight 6500 light source.  We read it and set its
-% luminance to 100 cd/m2.
+% luminance to 100 cd/m2.  With this scaling and our conventions, the
+% energy is a radiance in units of watts/[sr-m2-nm].
 d65Energy = ieReadSpectra('D65',wave);
 d65XYZ = ieXYZFromEnergy(d65Energy(:)',wave);
 d65Energy = d65Energy*100/d65XYZ(2);
@@ -58,8 +69,7 @@ d65Photons = Energy2Quanta(wave(:),d65Energy(:));
 vcNewGraphWin; plot(wave,d65Photons); grid on
 xlabel('Wavelength (nm)'); ylabel('Photons (q/sr/nm/m2)')
 
-
-%% t_EnergyQuanta - Energy, Photons, and the CIE XYZ functions
+%% Energy, Photons, and the CIE XYZ functions
 %
 % The CIE 1931 standard curves for XYZ are defined assuming that the input
 % signal is specified in terms of energy.
@@ -67,13 +77,11 @@ XYZEnergy = ieReadSpectra('XYZ',wave);
 vcNewGraphWin; 
 subplot(1,2,1), plot(wave,XYZEnergy); grid on; title('XYZ standard (energy)');
 
-% For good reasons, the ISET sensor calculations are based on a
+% ISETBio calculations of photopigment isomerizations are based on a
 % representation of the input signal in photons.  If you wish to use an XYZ
 % filter on a sensor and want the output voltage to measure the XYZ value
 % of a light, then the filter used by the sensor should expect the input
-% signal to be defined in photons, not energy.  You can see how to adjust
-% the filter by examining the ISET script, XYZQuanta.m.
-% type XYZQuanta.m
+% signal to be defined in photons, not energy.
 XYZPhotons = ieReadSpectra('XYZQuanta',wave);
 subplot(1,2,2), plot(wave,XYZPhotons); grid on; title('XYZ Photons')
 
@@ -104,15 +112,13 @@ d65XYZ = ieXYZFromEnergy(d65Energy(:)',wave)
 % the luminance level (Y) is a simple relationship:
 %
 % The 683 value is a constant used by the CIE having to do with certain
-% material standards.  The two formula return the same values.
+% standards.  The two formula return the same values.
 %
 % We take the size of the wavelength step into account in computing the
 % summation approximation to the integral over wavelength, since the
 % isetbio convention is to specify power on a per nm basis.  If you're
 % used to using PTB, this convention differs from PTB's.  PTB specifies
 % spectral power distributions on a power per wavelength sample basis.
-dnm = wave(2)-wave(1);   % Wavelength step
-d65XYZ = dnm*683*XYZPhotons'*d65Photons(:)
-d65XYZ = dnm*683*XYZEnergy'*d65Energy(:)
-
-%% End
+wavelengthStep = wave(2)-wave(1);   
+d65XYZ = wavelengthStep*683*XYZPhotons'*d65Photons(:)
+d65XYZ = wavelengthStep*683*XYZEnergy'*d65Energy(:)

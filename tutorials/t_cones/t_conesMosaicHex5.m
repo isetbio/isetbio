@@ -1,4 +1,4 @@
-%% t_coneMosaicHex5
+%%t_conesMosaicHex5
 %
 % Shows how to generate hexagonal mosaic with spatially-varying cone density.
 %

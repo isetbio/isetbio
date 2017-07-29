@@ -1,5 +1,5 @@
-function t_coneMosaicLowPassResponses()
-% t_coneMosaicLowPassResponses()
+function t_conesMosaicLowPassResponses()
+%t_conesMosaicLowPassResponses()
 %
 % Demonstrates how to low-pass a mosaic's response
 %

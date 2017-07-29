@@ -1,4 +1,4 @@
-%% t_coneMosaicHex1
+%%t_conesMosaicHex1
 %
 % Shows how to generate a default hexagonal mosaic, and how to customize it (FOV, resamplingFactor).
 %

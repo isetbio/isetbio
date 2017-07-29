@@ -1,4 +1,4 @@
-%% t_coneMosaicAbsorptionNoise
+%%t_conesMosaicAbsorptionNoise
 %
 % Testing noise models in coneMosaic.compute.
 %

@@ -16,12 +16,13 @@ function XYZ = ieXYZFromEnergy(energy,wave)
 % The returned values, XYZ, are X,Y,Z in the columns of the matrix. Each
 % row of energy has a corresponding XYZ value in the corresponding row of
 % XYZ. This is what we call XW format.  
-%
-% ** We are considering whether the return might be put into RGB format if
-% it is sent in that way. **
+
 %
 % The units of Y are candelas/meter-squared if energy is radiance and lux
 % if energy is irradiance.
+%
+% The units of radiance are watts/[sr-m2-nm], while the units of irradiance
+% are Watts/[m2-nm].
 %
 % See also: ieXYZFromPhotons()
 %
@@ -37,7 +38,11 @@ function XYZ = ieXYZFromEnergy(energy,wave)
 %    p = sceneGet(macbethChart,'photons');
 %    wave = sceneGet(macbethChart,'wave'); e = Quanta2Energy(wave,p);
 %    XYZ = ieXYZFromEnergy(e,wave);  
+
 %
+% NOTE: We could consider putting the return into RGB format if
+% it is sent in that way.
+
 % Copyright ImagEval Consultants, LLC, 2003.
 
 

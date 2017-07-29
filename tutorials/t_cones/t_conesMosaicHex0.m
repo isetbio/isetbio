@@ -1,4 +1,4 @@
-%% t_coneMosaicHex0
+%%t_conesMosaicHex0
 %
 % Shows how to generate a custom hexagonal mosaic, including an S-cone free
 % region, and a desired S-cone spacing

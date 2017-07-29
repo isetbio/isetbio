@@ -1,4 +1,4 @@
-%% t_coneMosaicHex2
+%%t_conesMosaicHex2
 %
 % Visualizes the effects of different resampling factors.
 % A resampling factor value of 1 gives a rectangular grid.
