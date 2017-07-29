@@ -11,7 +11,7 @@ function imageType = ieImageType(fullName)
 % to identify the type of data. 
 %
 % Example:
-%   fname =[isetRootPath,'\data\images\MultiSpectral\Fruit-hdrs.mat'];
+%   fname = fullfile(isetbioDataPath,'images','MultiSpectral','Fruit-hdrs.mat');
 %   ieImageType(fname)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
