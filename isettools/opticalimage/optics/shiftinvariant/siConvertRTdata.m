@@ -14,7 +14,7 @@ function [optics, inName, outName] = siConvertRTdata(inName,fieldHeight,outName)
 % custom calculation.
 %
 %Examples:
-%     baseDir = [isetRootPath,'\data\optics\'];
+%     baseDir = fullfile(isetbioDataPath,'optics');
 %     inName = fullfile(baseDir,'rtZemaxExample.mat');
 %
 %     siConvertRTdata;
