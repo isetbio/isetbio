@@ -75,7 +75,7 @@ nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 % Every mosaic has its input and properties assigned so we should be able
 % to just run through all of them.
-rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
+rgcL.compute('bipolarScale',50,'bipolarContrast',0.5);
 
 %%
 rgcL.window;

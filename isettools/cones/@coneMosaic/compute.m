@@ -1,6 +1,6 @@
 function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
 %COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
-%   
+%
 %   @coneMosaic.compute(obj,oi,varargin)
 %
 %   Compute the temporal sequence of cone absorptions, which we treat as
@@ -18,8 +18,8 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %
 %   Optional inputs (name/value pairs):
 %
-%    'currentFlag'        Compute photocurrent (default false). 
-%    'seed' -             Seed to use when obj.noiseFlag is 'frozen (default 1). 
+%    'currentFlag'        Compute photocurrent (default false).
+%    'seed' -             Seed to use when obj.noiseFlag is 'frozen (default 1).
 %    'emPath'             Eye movement path (Nx2 matrix) (default
 %                         obj.emPositions). If the input is an oiSequence,
 %                         the eye movement paths can be (nTrials x nTimes x
@@ -27,7 +27,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %                         below for more details).
 %    'theExpandedMosaic'  This allows you to set a larger cone mosaic to
 %                         make sure that the eye movements are within the
-%                         mosaic. 
+%                         mosaic.
 %
 %   Outputs:
 %    absorptions   - cone photon absorptions
@@ -45,14 +45,14 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %   positions with respect to the cone mosaic. For the single trial case,
 %   we recommend setting the coneMosaic.emPositions or using
 %   coneMosaic.emGenSequence.
-% 
+%
 %   When using an oiSequence input, you can execute a multiple trial
 %   computation by setting the eye movement variable to a 3D array
 %
 %          emPath: (nTrials , nTime , 2)
 %
 %   In that case, we return the absorptions and possibly photocurrent for
-%   nTrials in a 4D matrix:  (nTrials x nTime x row x col).  
+%   nTrials in a 4D matrix:  (nTrials x nTime x row x col).
 %
 %   If you set the currentFlag to true, then the current is also returned
 %   in a matrix of the same size.
@@ -102,84 +102,105 @@ obj.current = [];
 %  image).  In that case you should run a loop on the compute itself.
 %
 if length(size(emPath)) > 2
-    error('To run with multiple trials create an oiSequence. See the wiki.');
-end
+    % If multiple trials are requested, then emPath is 
+    %
+    %      (nTrials x nTime x 2)
+    %
+    % We make a recursive call to this routine in order to compute with one
+    % eye movement path at a time.  The current flag is maintained.
 
-obj.emPositions = emPath;
-
-% This code efficiently calculates the effects of eye movements. The logic
-% is this:
-%
-%   1. We make a full LMS calculation so that we know the LMS absorptions
-%   at every cone mosaic position.  We need to do this only once.
-%
-%   2. We then move the eye to a position and pull out the LMS values that
-%   match the spatial pattern of the cones in the grid, but centered at the
-%   next eye movement location.
-%
-
-% We need a copy of the object because of eye movements.
-if (isempty(theExpandedMosaic))
-    % We need an enlarged version of the cone mosaic because of the eye
-    % movements.  Generate it here, if the user did not provide one.
-    padRows = max(abs(emPath(:, 2)));
-    padCols = max(abs(emPath(:, 1)));
-    theExpandedMosaic = obj.copy();
-    theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
-elseif isa(theExpandedMosaic, 'coneMosaic')
-    % OK, we are passed theExpandedMosaic. 
-    % Set the current path and integrationTime and use it.
-    theExpandedMosaic.emPositions = obj.emPositions;
-    theExpandedMosaic.integrationTime = obj.integrationTime;
-    theExpandedMosaic.absorptions = [];
-    padRows = round((theExpandedMosaic.rows-obj.rows)/2);
-    padCols = round((theExpandedMosaic.cols-obj.cols)/2);
-end
-
-% Compute full LMS noise free absorptions
-absorptions = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
+    % Define variables and allocate space
+    nTrials = size(emPath,1);
+    nTime   = size(emPath,2);
+    absorptions = zeros(nTrials,obj.rows,obj.cols,nTime);
+    if currentFlag, current  = zeros(size(absorptions)); end
     
-% Deal with eye movements
-absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
-
-% Add photon noise to the whole volume
-switch obj.noiseFlag
-    case {'frozen','random'}
-        if (isa(obj, 'coneMosaicHex'))
-            % Only call photonNoise on the non-null cones for a hex mosaic.
-            nonNullConeIndices = find(obj.pattern > 1);
-            timeSamples = size(absorptions,3);
-            absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
-            absorptionsCopy = absorptions;
-            absorptions = absorptions(:, nonNullConeIndices);
-            
-            % Add noise
-            absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'noiseFlag',obj.noiseFlag,'seed',seed);
-            absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
-            clear 'absorptionsCopy'
-        else % Rectangular mosaic
-            % Add noise
-            absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag,'seed',seed);
+    % Do each trial
+    for ii=1:nTrials
+        thisPath = squeeze(emPath(ii,:,:));
+        [absorptions(ii,:,:,:), c, interpFilters, meanCur] = obj.compute(oi,'emPaths',thisPath,'currentFlag',currentFlag);
+        if currentFlag, current(ii,:,:,:) = c; end
+    end
+    
+else
+    
+    obj.emPositions = emPath;
+    
+    % This code efficiently calculates the effects of eye movements. The logic
+    % is this:
+    %
+    %   1. We make a full LMS calculation so that we know the LMS absorptions
+    %   at every cone mosaic position.  We need to do this only once.
+    %
+    %   2. We then move the eye to a position and pull out the LMS values that
+    %   match the spatial pattern of the cones in the grid, but centered at the
+    %   next eye movement location.
+    %
+    
+    % We need a copy of the object because of eye movements.
+    if (isempty(theExpandedMosaic))
+        % We need an enlarged version of the cone mosaic because of the eye
+        % movements.  Generate it here, if the user did not provide one.
+        padRows = max(abs(emPath(:, 2)));
+        padCols = max(abs(emPath(:, 1)));
+        theExpandedMosaic = obj.copy();
+        theExpandedMosaic.pattern = zeros(obj.rows+2*padRows, obj.cols+2*padCols);
+    elseif isa(theExpandedMosaic, 'coneMosaic')
+        % OK, we are passed theExpandedMosaic.
+        % Set the current path and integrationTime and use it.
+        theExpandedMosaic.emPositions = obj.emPositions;
+        theExpandedMosaic.integrationTime = obj.integrationTime;
+        theExpandedMosaic.absorptions = [];
+        padRows = round((theExpandedMosaic.rows-obj.rows)/2);
+        padCols = round((theExpandedMosaic.cols-obj.cols)/2);
+    end
+    
+    % Compute full LMS noise free absorptions
+    absorptions = theExpandedMosaic.computeSingleFrame(oi, 'fullLMS', true);
+    
+    % Deal with eye movements
+    absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, 'padRows', padRows, 'padCols', padCols);
+    
+    % Add photon noise to the whole volume
+    switch obj.noiseFlag
+        case {'frozen','random'}
+            if (isa(obj, 'coneMosaicHex'))
+                % Only call photonNoise on the non-null cones for a hex mosaic.
+                nonNullConeIndices = find(obj.pattern > 1);
+                timeSamples = size(absorptions,3);
+                absorptions = reshape(permute(absorptions, [3 1 2]), [timeSamples size(obj.pattern,1)*size(obj.pattern,2)]);
+                absorptionsCopy = absorptions;
+                absorptions = absorptions(:, nonNullConeIndices);
+                
+                % Add noise
+                absorptionsCopy(:, nonNullConeIndices) = obj.photonNoise(absorptions, 'noiseFlag',obj.noiseFlag,'seed',seed);
+                absorptions = permute(reshape(absorptionsCopy, [timeSamples size(obj.pattern,1) size(obj.pattern,2)]), [2 3 1]);
+                clear 'absorptionsCopy'
+            else % Rectangular mosaic
+                % Add noise
+                absorptions = obj.photonNoise(absorptions,'noiseFlag',obj.noiseFlag,'seed',seed);
+            end
+        case {'none'}
+            % No noise
+        otherwise
+            error('Invalid noise flag passed');
+    end
+    
+    % Set the absorptions in the object.
+    obj.absorptions = absorptions;
+    
+    %% Compute photocurrent if requested
+    current       = [];
+    interpFilters = [];
+    meanCur       = [];
+    if currentFlag
+        if size(obj.absorptions,3) == 1
+            disp('Absorptions are a single frame.  No current to calculate.')
+            return;
+        else
+            [current, interpFilters, meanCur] = obj.os.osCompute(obj);
+            obj.current = current;
         end
-    case {'none'}
-        % No noise
-    otherwise
-        error('Invalid noise flag passed');
-end
-
-% Set the absorptions in the object.
-obj.absorptions = absorptions;
-
-%% Compute photocurrent if requested
-current       = [];
-interpFilters = [];
-meanCur       = [];
-if currentFlag
-    if size(obj.absorptions,3) == 1
-        disp('Absorptions are a single frame.  No current to calculate.')        
-        return;
-    else
-        [obj.current, interpFilters, meanCur] = obj.os.osCompute(obj);
     end
 end
 
