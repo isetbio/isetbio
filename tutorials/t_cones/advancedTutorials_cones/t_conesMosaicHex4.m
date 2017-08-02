@@ -41,7 +41,7 @@ theHexMosaic.displayInfo();
 
 %% Unit test 1: achromatic Gabor scene
 [dirName,~] = fileparts(which(mfilename()));
-load(fullfile(dirName,'GaborAchromScene.mat'))
+load(fullfile(dirName,'t_conesGaborAchromScene.mat'))
 gaborScene = sceneSet(gaborScene,'fov', 1.0);
 
 % Compute the optical image

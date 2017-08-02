@@ -60,8 +60,6 @@ set(hFig2, 'Position', [500 100 400 400], 'Name', 'Hex mosaic');
 theRectMosaic.plot('cone mosaic', 'hf', hFig1);
 theHexMosaic.plot('cone mosaic', 'hf', hFig2);
 
-
-
 %% Unit test 3: compare isomerizations between rect and hex mosaics for the ring rays scene
 if (interactiveMode)
     commandwindow

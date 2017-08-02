@@ -1,15 +1,22 @@
 function density = coneDensity(ecc, angleDeg, whichEye, varargin)
-% Compute cone packing density as a function of retinal position
+%coneDensity  Compute cone packing density as a function of retinal position
 %
-%   density = coneDensity(ecc, angle, whichEye, varargin)
+% Usage:
+%     density = coneDensity(ecc, angle, whichEye, varargin)
+%
+% Description:
+%     Compute cone packing density as a function of retinal position.
 %
 % Inputs:
-%   ecc      - eccentricity in meters, default is 0 (.30 mm/deg)
-%   angle    - angle in degree, default is 0
-%   whichEye - left or right eye, chosen from 'left' (default) or 'right'
+%     ecc      - retinal eccentricity in meters, default is 0 (.30 mm/deg)
+%     angle    - angle in degree, default is 0
+%     whichEye - left or right eye, chosen from 'left' (default) or 'right'
+%
+% [DHB NOTE: WHAT IS ANGULAR COORDINATE SYSTEM? WHICH WAY IS ZERO DEGS, AND 
+% WHICH WAY DOES ANGLE GO.]
 %
 % Outputs:
-%   density  - cone packing density in cones/mm^2
+%     density  - cone packing density in cones/mm^2
 %
 % References:
 %   1) Curcio, C. A., Sloan, K. R., Kalina, R. E. and Hendrickson, A. E.

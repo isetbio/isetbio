@@ -14,7 +14,7 @@
 % BW Vistasoft Team, 2016
 
 %% Where the data will be saved
-chdir(fullfile(isetbioRootPath,'/isettools/data/human/coneMosaic/'));
+chdir(fullfile(isetbioDataPath,'human/coneMosaic/'));
 
 %% With error bars
 %
