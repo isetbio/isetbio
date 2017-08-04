@@ -319,6 +319,7 @@ switch plotType
         
         % play movie if more than one frame
         btnPlayPause_Callback(hObject, eventdata, handles);
+        
     case 'Mean photocurrent'
         cm.plot('mean current', 'hf', handles.axes2);
         axis image
@@ -391,7 +392,6 @@ function contextMenuEnable(handles,enable)
 %   enable.vLine
 %   enable.vLineLMS
 %   enable.timeSeries
-%
 
 set(handles.menuPlotHLine, 'Enable', enable.hLine);
 set(handles.menuPlotVLine, 'Enable', enable.vLine);
@@ -414,11 +414,11 @@ index    = get(handles.popupImageType, 'Value');
 if index > length(contents), index = 1; end
 plotType = contents{index};
 
-
 switch plotType
     case 'Mean absorptions'
         data = mean(handles.cMosaic.absorptions, 3);
         yStr = 'Absorptions';
+        
     case 'Absorption movie'
         cnt = round(get(handles.sliderMovieProgress, 'Value'));
         if strcmp(source.Label, 'time series')
@@ -456,10 +456,12 @@ switch source.Label
         vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); 
         grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
         set(gca,'userdata',data(y,:));
+        
     case 'vLine response'
         vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); 
         grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
         set(gca,'userdata',data(:,x));
+        
     case 'hLine LMS'
         % Save the work more completely in the window, please!
         vcNewGraphWin([],'tall'); names = 'LMS';
@@ -474,6 +476,7 @@ switch source.Label
             set(gca,'xlim',[1 size(data,2)]);
         end
         set(gca,'userdata',uData);
+        
     case 'vLine LMS'
         % Save the work more completely in the window, please!
         vcNewGraphWin([],'tall'); names = 'LMS';
@@ -488,6 +491,7 @@ switch source.Label
             set(gca,'xlim',[1 size(data,1)]);
         end
         set(gca,'userdata',uData);
+        
     case 'time series'
         % Time series is enabled for the absorption and current movie modes
         vcNewGraphWin;
@@ -507,6 +511,7 @@ switch source.Label
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
         set(gca,'userdata',uData);
+        
     otherwise
         error('Unknown label type');
 end

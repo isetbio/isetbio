@@ -1,8 +1,8 @@
 function [uData, hf] = plot(obj, plotType, varargin)
 %PLOT  Plot function for coneMosaic base class
-%   [uData, hf] = coneMosaic.plot(plotType, varargin)
+%   [uData, hf] = plot(obj,plotType, varargin)
 %
-%   There is a specialized plot() for the coneMosaicHex class that calls this
+%   There is a specialized plot method for the coneMosaicHex class that calls this
 %   function.
 %
 %   Inputs:

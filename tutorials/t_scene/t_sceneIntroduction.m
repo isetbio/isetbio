@@ -1,13 +1,13 @@
-%% t_sceneIntroduction
+%%t_sceneIntroduction  An introduction to ISETBio scene objects
 %
-% An introduction to ISETBIO objects and functions: Scene
+% An introduction to ISETBio objects and functions: Scene
 %
-% ISETBIO is structured around a few key objects that are important parts of
+% ISETBio is structured around a few key objects that are important parts of
 % the image acquisition pipeline. These are the scene, optical image,
 % sensor, and image processor.
 %
-% A main goal of this script is to illustrate the ISETBIO programming style.
-% By using ISETBIO objects properly, the code and analysis are much easier to
+% A main goal of this script is to illustrate the ISETBio programming style.
+% By using ISETBio objects properly, the code and analysis are much easier to
 % understand. The implementation of these objects was written before Matlab
 % implemented its classes and thus doesn't rely on their organization.  But
 % many of the principles are the same.
@@ -15,20 +15,21 @@
 % For each object there are three fundamental operations:  Create, set
 % parameters, and get parameters.
 %
-% This script introduces the first and simplest ISETBIO object: a scene. The
+% This script introduces the first and simplest ISETBio object: a scene. The
 % scene describes the radiance field.  For the present tutorial we  work
 % with a simple planar radiance image, such as the image on a display
 % surface.  We have some implementations for 3D scenes that should be
 % incorporated by mid-2014.
 %
 % Notes:
-%   A) Use t_TABCOMPLETION to see the list of ISETBIO tutorials
+%   A) Use t_<tab> at the Matlab command line to see the list of ISETBio tutorials.
 %
 % See also: t_oiIntroduction
-%
+
 % Copyright ImagEval Consultants, LLC, 2011.
 
-%% Initializing ISET
+%% Initializing ISETBio
+%
 % While not necessary, initialization keeps the work space clean
 ieInit;
 
@@ -37,7 +38,7 @@ ieInit;
 % different initial formats. For the scene, the optics including color
 % targets, patterns, charts, and images.
 
-% ISET sceneCreate builds a number of predefined scenes
+% ISETBio sceneCreate builds a number of predefined scenes
 % You can see the range of possibilities by typing
 %    help sceneCreate, or 
 %    doc sceneScreate
@@ -47,7 +48,7 @@ ieInit;
 scene = sceneCreate('macbeth d65');
 
 % To put the scene object into a window of the graphical user interface
-% (GUI), first we use the command ISET that adds the scene to the ISET
+% (GUI), first we use the command ISETBio that adds the scene to the ISETBio
 % database:
 vcAddObject(scene);
 
@@ -83,7 +84,7 @@ hFOV = sceneGet(scene,'hfov')
 % In designing the sets/gets, the author must select an approach:  Do we
 % allow the user to set anything and then update the other parameters for
 % consistency, or do we only allow the user to set specific parameters and
-% through this limitation enforce consistency.  ISETBIO uses the 2nd method:
+% through this limitation enforce consistency.  ISETBio uses the 2nd method:
 % Only some parameters can be set.
 %
 % That is why there are more gets than sets.  You can get parameters that
@@ -94,7 +95,7 @@ hFOV = sceneGet(scene,'hfov')
 scene
 
 %% More about gets and sets
-% While the objects in ISETBIO can be addressed directly - please don't.
+% While the objects in ISETBio can be addressed directly - please don't.
 % If you are ever tempted to set the objects directly, go get a cup of
 % coffee.  When you come back, you will feel like using a sceneSet
 
@@ -112,7 +113,6 @@ dist    = sceneGet(scene,'distance','mm');
 spacing = sceneGet(scene,'sample spacing','mm');
 dist
 
-%
 % If we move the scene closer, and we maintain the same number of row and
 % column samples, the spacing changes.
 scene = sceneSet(scene,'distance',0.6);
@@ -132,7 +132,7 @@ sceneGet(scene,'sample spacing','um')
 sceneGet(scene,'sample spacing','m')
 
 %% Creating a scene from a file
-% ISETBIO includes a few multispectral scenes.  These are large files, so the
+% ISETBio includes a few multispectral scenes.  These are large files, so the
 % default distribution only includes one example.  We have another 100 or
 % so that are available.
 fname = fullfile(isetbioDataPath,'images','multispectral','stuffedAnimals_tungsten-hdrs.mat');
@@ -141,7 +141,7 @@ vcAddAndSelectObject(scene); sceneWindow;
 
 %% Plotting
 % Many scene properties that can be plotted either from the scene Window or
-% using scenePlot. For example, ISETBIO scenes specify a uniform illuminant by
+% using scenePlot. For example, ISETBio scenes specify a uniform illuminant by
 % default.  You can plot the illuminant in energy units by this command.
 scenePlot(scene,'illuminant energy roi');
 
@@ -159,7 +159,7 @@ bb = blackbody(sceneGet(scene,'wave'),6500,'energy');
 scene = sceneAdjustIlluminant(scene,bb);
 vcReplaceAndSelectObject(scene); sceneWindow;
 
-%% ISETBIO keeps track of units
+%% ISETBio keeps track of units
 % In this case, we plot the illuminant in units of photons, rather than
 % energy.
 scenePlot(scene,'illuminant photons roi');

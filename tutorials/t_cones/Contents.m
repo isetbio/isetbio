@@ -2,7 +2,7 @@
 %
 % Illustrates colorimetric calculations in isetbio.
 %
-% t_conesMosaicAbsorptionNoise  -
+% t_conesMosaicAbsorptionNoise  - Illustrate noise generation for the coneMosaic object.
 % t_conesMosaicBasic            - Basic introduction to the cone mosaic object.
 % t_conesMosaicFoveal           -
 % t_conesMosaicHex              - Basic construction and use of a hexagonal mosaic.
