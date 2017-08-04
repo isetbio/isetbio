@@ -406,6 +406,11 @@ function contextMenuPlot(source, callbackdata)
 %
 % Source is a Menu object 
 % The guidata of source contains all the gui objects
+%
+% PROGRAMMING TODO
+%  These should all be calls to the conemosaic.plot return, I think.  Or at
+%  least, DHB thinks and I usually agree.  Let's see if we can do it that
+%  way.
 handles = guidata(source);
 
 % determine which data to use (absorption or current)

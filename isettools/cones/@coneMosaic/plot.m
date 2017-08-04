@@ -51,7 +51,8 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %    arguments along to os.plot().  For example, 
 %      cMosaic.plot('os impulse response')
 %    plots the outer segment impulse response on its own time axis.
-%    [DHB NOTE: RETURN DATA ARE BOTH SET TO EMPTY IN THIS CASE, NOT GOOD. CAN THIS BE EASILY FIXED?]
+%    [DHB NOTE: RETURN DATA ARE BOTH SET TO EMPTY IN THIS CASE, NOT GOOD.
+%    CAN THIS BE EASILY FIXED?] 
 %
 %    Examples: 
 %      coneMosaic.plot('impulse response')
