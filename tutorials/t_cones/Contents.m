@@ -1,10 +1,9 @@
 % isetbio/tutorials/t_cones
 %
-% Illustrates colorimetric calculations in isetbio.
+% Illustrates cone mosaic object and computation of cone isomerizations.
 %
 % t_conesMosaicAbsorptionNoise  - Illustrate noise generation for the coneMosaic object.
 % t_conesMosaicBasic            - Basic introduction to the cone mosaic object.
-% t_conesMosaicFoveal           -
 % t_conesMosaicHex              - Basic construction and use of a hexagonal mosaic.
 % t_conesMosaicPhotoPigment     -
 %
