@@ -94,7 +94,7 @@ coneSz(2) = coneSz(1);
 if strcmpi(osType, 'biophys');
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
     osCM.set('noise flag','none');
-%     osCM = osBioPhys('osType',true);  % foveal (slow) cone dynamics
+%     osCM = osBioPhys('eccentricityDegs',0);  % foveal (slow) cone dynamics
     cm = coneMosaic('os',osCM);
     
     cm.integrationTime = integrationTime;% cm.os.timeStep;
