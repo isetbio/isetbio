@@ -89,9 +89,9 @@ classdef osBioPhys < outerSegment
             % passed eccentricity.
             if (eccentricityDegs == -1)
                 if (p.Results.osType)
-                    eccentricityDegs = 10;
-                else
                     eccentricityDegs = 0;
+                else
+                    eccentricityDegs = 10;
                 end
             end 
             
@@ -110,6 +110,7 @@ classdef osBioPhys < outerSegment
                     obj.model.n = 4;  	        % cooperativity for cyclase, hill coef - default 4
                     obj.model.kGc = 0.5;        % hill affinity for cyclase - default 0.5
                     obj.model.OpsinGain = 10;   % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+                    
             % Othewise use foveal parameters
             else
                     % Foveal parameters
