@@ -88,7 +88,7 @@ classdef osBioPhys < outerSegment
             % has its defaul value of -1.  Otherwise osFlag is ignored in favor of the expliclity
             % passed eccentricity.
             if (eccentricityDegs == -1)
-                if (p.Results.osFlag)
+                if (p.Results.osType)
                     eccentricityDegs = 10;
                 else
                     eccentricityDegs = 0;
