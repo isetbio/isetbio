@@ -1,62 +1,73 @@
 function [uData, hf] = plot(obj, plotType, varargin)
-%PLOT  Plot function for coneMosaic base class
+%PLOT  Plot function for @conemmsaic base class
+%
 %   [uData, hf] = plot(obj,plotType, varargin)
 %
-%   There is a specialized plot method for the coneMosaicHex class that calls this
-%   function.
+% There is a specialized plot method for the coneMosaicHex class that calls
+% this function.
+% 
+% When the plot type string begins with 'os ' or 'outersegment ' we pass
+% the arguments along to os.plot().  For example,
 %
-%   Inputs:
+%      cMosaic.plot('os impulse response')
+%
+% graphs the outer segment impulse response on its own time axis.
+% [DHB NOTE: RETURN DATA ARE BOTH SET TO EMPTY IN THIS CASE, NOT GOOD.
+% CAN THIS BE EASILY FIXED?]
+%
+% Required Inputs:
 %   plotType - string, type of plot
 %
-%   Outputs:
-%   hf    - figure handle
+% Optional key/value pairs:
+%  'hf' - figure handle or control structure, the meaning of value is
+%     [] - create plot in new figure
+%    'none'        - don't plot
+%     isgraphics figure or axes handle - Use that figure or axes
+%  'oi' - an optical image that is used to get lens transmittance for QE
+%         plots 
+%  'x' - x value (col) for vline plots 
+%  'y' - y value (row) for hline plots
+%   
+% Outputs:
+%   hf    - figure or axes handle
 %   uData - Computed data
 %
-%   Optional key/value pairs:
-%     'hf' - figure handle or control structure, the meaning of value is
-%             []            - create plot in new figure
-%             figure handle - plot in figure specified by hf
-%             'none'        - don't plot
-%     'oi' - [DHB NOTE: WHAT DOES THIS DO?]
+% @conemosaic.plot('help') lists the valid plot types
+%  N.B. The '*' means user must select a point on an image to specify the
+%  location of the point or line to be plotted).
 %
-%   The plot type can be chosen from
-%   Mosaic
-%     'cone mosaic'          - Color image of the cone arrangement
+%   Cone mosaic            - Color image of the cone arrangement
 %
-%   Cone properties
-%     'cone fundamentals'    - Cone pigment without macular or lens
-%     'cone spectral qe'     - Cone pigment and macular
+% 	Mean absorptions       - Image of the mean absorptions
+% 	Movie absorptions      - Movie of the absorptions on cone mosaic
+% 	Mean current           - Image of the mean current
+% 	Movie current          - Gray scale movie of current
 %
-%    Pigments
-%      'macular transmittance'- Graph
-%      'macular absorptance'  - Graph
-%      'eye spectral qe'      - Cone pigment with macular and lens
+% 	hline absorptions*     - Graph of a horizontal line of absoprtions
+% 	hline current*         - 
+% 	hline absorptions lms* - Three panel graph of LMS absorptions
+% 	hline current lms*     - Three panel graph of LMS current
+% 	vline absorptions*     - Vertical line
+% 	vline current*
+% 	vline absorptions lms*
+% 	vline current lms*
+% 	time series absorptions* - Cone absorptions Graph of a point
+% 	time series current*     - Cone photocurrent Graph of a point
 %
-%    Absorptions
-%      'mean absorptions'     - Image of the mean absorptions
-%      'absorptions'          - Movie of the absorptions on cone mosaic in RGB. [Not currently implemented.]
-%      'movie absorptions'    - Gray scale movie of absorptions
+% 	Impulse response       - Cone current impulse response
 %
-%    Eye movements
-%      'eye movement path'    - eye movement
+% 	Cone fundamentals      - Cone pigment without macular or lens
+% 	Cone spectral QE       - Cone pigment and macular
+% 	Eye spectral QE        - Cone pigment with macular and lens
+% 	Macular transmittance  - Graph
+% 	Macular absorptance    - Graph
+% 	Macular absorbance     - Graph
+% 	Eye movement path      - eye movement path
+%     
 %
-%    Photocurrent
-%      'current'. 'photocurrent' - Current movie on cone mosaic in RGB.  [Not currently implemented.]
-%      'mean current'         - Image of the mean current
-%      'current timeseries'   - Cone photocurrent graphs
-%      'impulse response'     - Cone current impulse response
-%      'movie current'        - Gray scale movie of current
-%
-%    When the plot type string begins with 'os ' or 'outersegment ' then we pass the
-%    arguments along to os.plot().  For example,
-%      cMosaic.plot('os impulse response')
-%    plots the outer segment impulse response on its own time axis.
-%    [DHB NOTE: RETURN DATA ARE BOTH SET TO EMPTY IN THIS CASE, NOT GOOD.
-%    CAN THIS BE EASILY FIXED?]
-%
-%    Examples:
-%      coneMosaic.plot('impulse response')
-%      coneMosaic.plot('cone mosaic')
+%  Examples:
+%   coneMosaic.plot('impulse response')
+%   coneMosaic.plot('cone mosaic')
 %
 % HJ/BW, ISETBIO TEAM, 2016
 
@@ -82,7 +93,7 @@ end
 validPlots = {'help',...
     'Cone mosaic',...
     'Mean absorptions','Movie absorptions', ...
-    'Mean current','Movie current','Current timeseries',...
+    'Mean current','Movie current',...
     'hline absorptions','hline current','hline absorptions lms','hline current lms',...
     'vline absorptions','vline current','vline absorptions lms', 'vline current lms' ...
     'Impulse response','time series absorptions','time series current'...
@@ -173,14 +184,15 @@ switch ieParamFormat(plotType)
         if isempty(obj.absorptions), error('no absorption data'); end
         
         % Show the data, with the gamma from the window.
-        uData = mean(obj.absorptions,3);
-        gdata = guidata(obj.hdl);
-        gam = str2double(get(gdata.editGam,'string'));
-        imagesc(uData.^gam); axis off;
+        uData.data = mean(obj.absorptions,3);
+        gdata      = guidata(obj.hdl);
+        gam        = str2double(get(gdata.editGam,'string'));
+        imagesc((uData.data).^gam); axis off;
         
         % Preserve the tick labels in real photons
         colormap(gray);  % Shows a numerical value
         cbar = colorbar;
+        
         % set(get(cbar,'title'),'string','p per frame','rotation',90);
         photons = str2double(get(cbar,'TickLabels')).^(1/gam);
         photons = num2str(round(photons)); set(cbar,'TickLabels',photons);
@@ -211,12 +223,13 @@ switch ieParamFormat(plotType)
         yStr = 'Absorptions per frame';
         if isequal(plotType(1),'v')
             plot(data(:, x), 'LineWidth', 2);
+            uData.y = data(:,x); uData.x = 1:length(uData.y);
             grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
             set(gca,'userdata',data(:,x));
         else
             plot(data(y, :), 'LineWidth', 2);
+            uData.y = data(y, :); uData.x = 1:length(uData.y);
             grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
-            set(gca,'userdata',data(y,:));
         end
 
     case {'hlineabsorptionslms','vlineabsorptionslms'}
@@ -253,7 +266,6 @@ switch ieParamFormat(plotType)
                 ylabel([names(ii-1) ' ' yStr]);
                 set(gca,'xlim',[1 size(data,2)]);
             end
-            set(gca,'userdata',uData);
         end
 
     case 'timeseriesabsorptions'
@@ -271,28 +283,29 @@ switch ieParamFormat(plotType)
 
         vcNewGraphWin;         
         yStr = 'Absorptions per frame';
-        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
+        data = squeeze(data(y, x, :));
+        plot(t, squeeze(data), 'LineWidth', 2);
         uData.timerseries = t;
-        uData.x = x; uData.y = y;
+        uData.x = t; uData.y = data; uData.pos = [x,y];
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
-        set(gca,'userdata',uData);
         
     case 'meancurrent'
         if isempty(obj.current), error('no photocurrent data'); end
-        uData = mean(obj.current, 3);
+        data = mean(obj.current, 3);
         
         % Apply gamma.  The current is always negative.
         gdata = guidata(obj.hdl);
         gam = str2double(get(gdata.editGam,'string'));
-        if max(uData(:)) > 0
+        if max(data(:)) > 0
             warning('Gamma correction in display is not correct');
         end
         
         % Carry on assuming current is negative pA.
         % uData = -1*(abs(uData).^gam);
-        uData = abs(uData);
-        if ~isequal(hf, 'none'), imagesc(uData.^gam); end
+        data = abs(data);
+        if ~isequal(hf, 'none'), imagesc(data.^gam); end
+        uData.data = data;
         
         axis off; colormap(flipud(gray));  % Shows a numerical value
         cbar = colorbar;
@@ -316,11 +329,12 @@ switch ieParamFormat(plotType)
         if isequal(plotType(1),'v')
             plot(data(:, x), 'LineWidth', 2);
             grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
-            set(gca,'userdata',data(:,x));
+            uData.y = data(:,x); uData.x = 1:length(uData.y); 
         else
             plot(data(y, :), 'LineWidth', 2);
             grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
-            set(gca,'userdata',data(y,:));
+            uData.y = data(y,:);
+            uData.x = 1:length(uData.y);
         end
         
     case {'hlinecurrentlms','vlinecurrentlms'}
@@ -358,7 +372,6 @@ switch ieParamFormat(plotType)
                 ylabel([names(ii-1) ' ' yStr]);
                 set(gca,'xlim',[1 size(data,2)]);
             end
-            set(gca,'userdata',uData);
         end
     case 'timeseriescurrent'
         data = obj.current;
@@ -375,11 +388,10 @@ switch ieParamFormat(plotType)
         vcNewGraphWin;
         yStr = 'Absorptions per frame';
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
-        uData.timerseries = t;
-        uData.x = x; uData.y = y;
+        uData.x = t; uData.y = squeeze(data(y, x, :));
+        uData.pos = [x, y];
         grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(gca,'ylim',[mn mx]);
-        set(gca,'userdata',uData);
         
     case 'impulseresponse'
         % The current impulse response at the cone mosaic temporal sampling
@@ -474,14 +486,14 @@ switch ieParamFormat(plotType)
             xlabel('Wavelength (nm)'); ylabel('Eye quanta efficiency');
         end
         
-    case 'currenttimeseries'
-        % Photocurrent time series of selected points.
-        % Need a way to choose which points!
-        if isempty(obj.current)
-            if isempty(p.Results.hf), close(hf); end
-            error('no photocurrent data');
-        end
-        uData = plotCurrentTimeseries(obj,varargin{:});
+        %     case 'currenttimeseries'
+        %         % Photocurrent time series of selected points.
+        %         % Need a way to choose which points!
+        %         if isempty(obj.current)
+        %             if isempty(p.Results.hf), close(hf); end
+        %             error('no photocurrent data');
+        %         end
+        %         uData = plotCurrentTimeseries(obj,varargin{:});
         
     case {'empath', 'eyemovementpath'}
         plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
@@ -513,6 +525,8 @@ switch ieParamFormat(plotType)
     otherwise
         error('unsupported plot type');
 end
+
+set(gca,'userdata',uData);
 
 end
 

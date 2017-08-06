@@ -1,4 +1,4 @@
-function plot(os, pType, varargin)
+function uData = plot(os, pType, varargin)
 % Plot for the outersegment base class
 %
 % Some special cases of plot are managed in osLinear, osBioPhys.  General
@@ -32,6 +32,7 @@ p.addRequired('pType', @ischar);
 p.parse(os, pType, varargin{:});
 % No parameter values set yet
 
+uData = [];
 
 %% Choosing the plot type
 switch ieParamFormat(pType)

@@ -107,20 +107,14 @@ classdef osBioPhys < outerSegment
             obj = osCompute(obj, varargin{:});
         end
         
-        function plot(obj, sensor, varargin)
+        function uData = plot(obj, sensor, varargin)
             % see osPlot for details
-            osPlot(obj, sensor, varargin{:});
+            uData = osPlot(obj, sensor, varargin{:});
         end
         
         function val = timeAxis(obj)
-            % The temporal samples for the lms filters
-%             if isempty(obj.lmsConeFilter)
-%                 warning('No lms impulse response functions computed');
-%             else
-                % Time axis is the length of the filters multiplied by the
-                % time step
-                val = ((1:size(linearFilters(obj.os,obj),1)) - 1) * obj.timeStep;
-%             end
+            % The temporal samples for the lms filters            
+            val = ((1:size(linearFilters(obj.os,obj),1)) - 1) * obj.timeStep;
         end
         
     end
