@@ -18,7 +18,7 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %             figure handle - plot in figure specified by hf
 %             'none'        - don't plot
 %     'oi' - [DHB NOTE: WHAT DOES THIS DO?]
-% 
+%
 %   The plot type can be chosen from
 %   Mosaic
 %     'cone mosaic'          - Color image of the cone arrangement
@@ -48,34 +48,22 @@ function [uData, hf] = plot(obj, plotType, varargin)
 %      'movie current'        - Gray scale movie of current
 %
 %    When the plot type string begins with 'os ' or 'outersegment ' then we pass the
-%    arguments along to os.plot().  For example, 
+%    arguments along to os.plot().  For example,
 %      cMosaic.plot('os impulse response')
 %    plots the outer segment impulse response on its own time axis.
 %    [DHB NOTE: RETURN DATA ARE BOTH SET TO EMPTY IN THIS CASE, NOT GOOD.
-%    CAN THIS BE EASILY FIXED?] 
+%    CAN THIS BE EASILY FIXED?]
 %
-%    Examples: 
+%    Examples:
 %      coneMosaic.plot('impulse response')
 %      coneMosaic.plot('cone mosaic')
-
+%
 % HJ/BW, ISETBIO TEAM, 2016
 
-%% Parse input
-p = inputParser;
-p.KeepUnmatched = true;
-p.addRequired('obj');
-p.addRequired('pType', @isstr);               % Type of plot
-p.addParameter('hf', []);                     % Figure handle
-p.addParameter('oi',[],@isstruct);            % Used for spectral qe
-p.parse(obj,plotType, varargin{:});
-hf = p.Results.hf;
-oi = p.Results.oi;                            % Used in plotGraphs routine
+% Programming TODO
+% Think about coneImageActivity function at end.
 
-% Initialize return structure
-uData = [];
-
-%% Should we send this off to the os plot routine?
-% Check plot type string to find out.
+%% Check plot type string if we send this off to the os plot routine
 %
 % (Might Find a cleaner way to check and send to os.plot.
 %  Maybe create a parse argument string as in ISET.)
@@ -86,6 +74,57 @@ elseif (length(plotType) > 13 && strcmp(plotType(1:13),'outersegment '))
     obj.os.plot(plotType(14:end),'cmosaic',obj,varargin{:});
     return;
 end
+
+%% It is a cone mosaic plot, not an os plot.
+
+% Add to this list when you put in a new type of plot.  The validation
+% squeezes out the spaces and makes lower case.
+validPlots = {'help',...
+    'Cone mosaic',...
+    'Mean absorptions','Movie absorptions', ...
+    'Mean current','Movie current','Current timeseries',...
+    'hline absorptions','hline current','hline absorptions lms','hline current lms',...
+    'vline absorptions','vline current','vline absorptions lms', 'vline current lms' ...
+    'Impulse response','time series absorptions','time series current'...
+    'Cone fundamentals', 'Cone spectral QE', 'Eye spectral QE',...
+    'Macular transmittance','Macular absorptance', 'Macular absorbance', ...
+    'Eye movement path'};
+
+% If the person just wants help
+if isequal(plotType,'help')
+    fprintf('\nKnown %s plot types\n--------------\n',class(obj));
+    for ii=2:length(validPlots)
+        fprintf('\t%s\n',validPlots{ii});
+    end
+    return;
+else
+    % Makes less readable, but better for programming. I
+    for ii=1:length(validPlots)
+        validPlots{ii} = ieParamFormat(validPlots{ii});
+    end
+end
+
+
+%% Onward
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('obj');
+
+% Squeeze spaces and force lower case on validPlots.  Then check plotType
+validPlots = cellfun(@(x)(ieParamFormat(x)),validPlots,'UniformOutput',false);
+p.addRequired('pType', @(x)any(validatestring(ieParamFormat(x),validPlots)));
+
+p.addParameter('hf', []);                     % Figure handle
+p.addParameter('oi',[],@isstruct);            % Used for spectral qe
+p.addParameter('x',[],@isscalar);             % x axis value
+p.addParameter('y',[],@isscalar);             % y axis value
+
+p.parse(obj,plotType, varargin{:});
+hf = p.Results.hf;
+oi = p.Results.oi;                            % Used in plotGraphs routine
+
+% Initialize return structure
+uData = [];
 
 %% Initialize where we'll plot
 if isempty(hf), hf = vcNewGraphWin;
@@ -109,7 +148,7 @@ switch ieParamFormat(plotType)
     case 'conemosaic'
         % Default for cone size
         support = [4,4]; spread = 2; maxCones = 5e4;
-
+        
         % Speed things up
         nCones = size(obj.coneLocs,1);
         locs = obj.coneLocs; pattern = obj.pattern(:);
@@ -118,9 +157,9 @@ switch ieParamFormat(plotType)
             lst = randi(nCones,[maxCones,1]);
             lst = unique(lst);
             locs = locs(lst,:); pattern = pattern(lst,:);
-
+            
             % Brighten up in this case
-            support = round([nCones/maxCones,nCones/maxCones]); 
+            support = round([nCones/maxCones,nCones/maxCones]);
             spread = 2*support(1);
         end
         
@@ -129,7 +168,8 @@ switch ieParamFormat(plotType)
         imagesc(uData.mosaicImage); axis off; axis image;
         
     case 'meanabsorptions'
-        % title('Mean number of absorptions');
+        % Image of mean absorptions per integration period
+        %
         if isempty(obj.absorptions), error('no absorption data'); end
         
         % Show the data, with the gamma from the window.
@@ -141,9 +181,10 @@ switch ieParamFormat(plotType)
         % Preserve the tick labels in real photons
         colormap(gray);  % Shows a numerical value
         cbar = colorbar;
+        % set(get(cbar,'title'),'string','p per frame','rotation',90);
         photons = str2double(get(cbar,'TickLabels')).^(1/gam);
         photons = num2str(round(photons)); set(cbar,'TickLabels',photons);
-        axis image;
+        axis image; title('Absorptions per integration time');
         
     case 'movieabsorptions'
         % Movie in gray scale
@@ -154,6 +195,88 @@ switch ieParamFormat(plotType)
         % Additional arguments may be the video file name, step, and
         % FrameRate
         uData = ieMovie(obj.absorptions,varargin{:});
+        
+    case {'hlineabsorptions','vlineabsorptions'}
+        data = mean(obj.absorptions,3);
+        
+        % The plots below are with respect to a point.
+        % Get the point
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));
+        
+        % Draw a circle around the selected point.
+        viscircles([x,y],0.7);
+        vcNewGraphWin;
+        yStr = 'Absorptions per frame';
+        if isequal(plotType(1),'v')
+            plot(data(:, x), 'LineWidth', 2);
+            grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
+            set(gca,'userdata',data(:,x));
+        else
+            plot(data(y, :), 'LineWidth', 2);
+            grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
+            set(gca,'userdata',data(y,:));
+        end
+
+    case {'hlineabsorptionslms','vlineabsorptionslms'}
+        data = mean(obj.absorptions,3);
+        
+        % The plots below are with respect to a point.
+        % Get the point
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));        %
+        viscircles([x,y],0.7);
+
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
+        yStr = 'Absorptions per frame';
+        if isequal(plotType(1),'v')
+            c = {'ro-','go-','bo-'};
+            for ii = 2 : 4 % L, M, S
+                subplot(3, 1, ii-1);
+                pos = find(obj.pattern(:, x) == ii);
+                plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
+                uData.pos{ii-1} = pos; uData.data{ii-1}=data(pos,x);
+                xlabel('Vertical Position (cones');
+                ylabel([names(ii-1) ' ' yStr]);
+                set(gca,'xlim',[1 size(data,1)]);
+            end
+        else
+            for ii = 2 : 4 % L, M, S
+                subplot(3, 1, ii-1);
+                pos = find(obj.pattern(y, :) == ii);
+                plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
+                uData.pos{ii-1} = pos; uData.data{ii-1}=data(y,pos);
+                xlabel('Horizontal Position (cones');
+                ylabel([names(ii-1) ' ' yStr]);
+                set(gca,'xlim',[1 size(data,2)]);
+            end
+            set(gca,'userdata',uData);
+        end
+
+    case 'timeseriesabsorptions'
+        % Context menu plot absorption time series.
+        data = obj.absorptions;
+        mx = max(data(:));
+        mn = min(data(:));
+                
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));        %
+        viscircles([x,y],0.7);
+        
+        t = (1:size(data, 3)) * obj.integrationTime * 1e3;
+
+        vcNewGraphWin;         
+        yStr = 'Absorptions per frame';
+        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
+        uData.timerseries = t;
+        uData.x = x; uData.y = y;
+        grid on; xlabel('Time (ms)'); ylabel(yStr);
+        set(gca,'ylim',[mn mx]);
+        set(gca,'userdata',uData);
         
     case 'meancurrent'
         if isempty(obj.current), error('no photocurrent data'); end
@@ -177,6 +300,87 @@ switch ieParamFormat(plotType)
         current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
         
+    case {'hlinecurrent','vlinecurrent'}
+        data = mean(obj.current,3);
+        
+        % The plots below are with respect to a point.
+        % Get the point
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));
+        
+        % Draw a circle around the selected point.
+        viscircles([x,y],0.7);
+        vcNewGraphWin;
+        yStr = 'Absorptions per frame';
+        if isequal(plotType(1),'v')
+            plot(data(:, x), 'LineWidth', 2);
+            grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
+            set(gca,'userdata',data(:,x));
+        else
+            plot(data(y, :), 'LineWidth', 2);
+            grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
+            set(gca,'userdata',data(y,:));
+        end
+        
+    case {'hlinecurrentlms','vlinecurrentlms'}
+        
+        data = mean(obj.current,3);
+        
+        % The plots below are with respect to a point.
+        % Get the point
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));        %
+        viscircles([x,y],0.7);
+
+        vcNewGraphWin([],'tall'); names = 'LMS';
+        c = {'ro-','go-','bo-'};
+        yStr = 'Photocurrent (pA)';
+        if isequal(plotType(1),'v')
+            c = {'ro-','go-','bo-'};
+            for ii = 2 : 4 % L, M, S
+                subplot(3, 1, ii-1);
+                pos = find(obj.pattern(:, x) == ii);
+                plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
+                uData.pos{ii-1} = pos; uData.data{ii-1}=data(pos,x);
+                xlabel('Vertical Position (cones');
+                ylabel([names(ii-1) ' ' yStr]);
+                set(gca,'xlim',[1 size(data,1)]);
+            end
+        else
+            for ii = 2 : 4 % L, M, S
+                subplot(3, 1, ii-1);
+                pos = find(obj.pattern(y, :) == ii);
+                plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
+                uData.pos{ii-1} = pos; uData.data{ii-1}=data(y,pos);
+                xlabel('Horizontal Position (cones');
+                ylabel([names(ii-1) ' ' yStr]);
+                set(gca,'xlim',[1 size(data,2)]);
+            end
+            set(gca,'userdata',uData);
+        end
+    case 'timeseriescurrent'
+        data = obj.current;
+        mx = max(data(:));
+        mn = min(data(:));
+        
+        [x, y] = ginput(1); % Rounded and clipped to the data
+        x = ieClip(round(x), 1, size(data, 2));
+        y = ieClip(round(y), 1, size(data, 1));        %
+        viscircles([x,y],0.7);
+        
+        t = (1:size(data, 3)) * obj.integrationTime * 1e3;
+        
+        vcNewGraphWin;
+        yStr = 'Absorptions per frame';
+        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
+        uData.timerseries = t;
+        uData.x = x; uData.y = y;
+        grid on; xlabel('Time (ms)'); ylabel(yStr);
+        set(gca,'ylim',[mn mx]);
+        set(gca,'userdata',uData);
+        
     case 'impulseresponse'
         % The current impulse response at the cone mosaic temporal sampling
         % rate
@@ -187,7 +391,7 @@ switch ieParamFormat(plotType)
             lmsFilters = obj.os.linearFilters(obj);
         else
             absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
-            lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', absorptionsInXWFormat);            
+            lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', absorptionsInXWFormat);
         end
         
         %% Interpolate the stored lmsFilters to the time base of the absorptions
@@ -200,7 +404,7 @@ switch ieParamFormat(plotType)
         % sure that they extend all the way through the absorption time axis.
         % See the notes in s_matlabConv2.m for an explanation of why.
         interpFilters = interp1(osTimeAxis(:),lmsFilters,coneTimeAxis(:),'linear',0);
-
+        
         vcNewGraphWin;
         plot(coneTimeAxis,interpFilters(:,1),'r-', ...
             coneTimeAxis,interpFilters(:,2),'g-', ...
@@ -209,7 +413,7 @@ switch ieParamFormat(plotType)
         grid on;
         l = {'L cone','M cone','S cone'}; legend(l);
         title('Impulse response (cone temporal sampling)');
-  
+        
     case 'moviecurrent'
         % Current movie in gray scale
         if isempty(obj.current)
@@ -221,7 +425,7 @@ switch ieParamFormat(plotType)
         % FrameRate
         disp('No gamma applied');
         uData = ieMovie(obj.current,varargin{:});
-     
+        
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
         uData = obj.pigment.absorptance;
@@ -284,27 +488,27 @@ switch ieParamFormat(plotType)
         grid on; xlabel('Horizontal position (cones)');
         ylabel('Vertical position (cones)');
         
-     % RGB movies on cone mosaic. These are not currently implemented, but exist
-     % here in draft form.  See routine coneImageActivity below as well.
-     % Could be resurrected some day.
-     %
-     %     case 'absorptions'
-     %         % Movie of the absorptions on the cone mosaic
-     %         if isempty(obj.absorptions)
-     %             % Could be come cla; return
-     %             error('no absorption data');
-     %         end
-     %         uData = coneImageActivity(obj, hf, varargin{:});
-     %
-     %     case {'current', 'photocurrent'}
-     %         % Photo current movie on colored cone mosaic
-     %         if isempty(obj.current)
-     %             if isempty(p.Results.hf), close(hf); end
-     %             error('no photocurrent data');
-     %         end
-     %         uData = coneImageActivity(obj, hf, 'dataType', ...
-     %             'photocurrent', varargin{:});
-
+        % RGB movies on cone mosaic. These are not currently implemented, but exist
+        % here in draft form.  See routine coneImageActivity below as well.
+        % Could be resurrected some day.
+        %
+        %     case 'absorptions'
+        %         % Movie of the absorptions on the cone mosaic
+        %         if isempty(obj.absorptions)
+        %             % Could be come cla; return
+        %             error('no absorption data');
+        %         end
+        %         uData = coneImageActivity(obj, hf, varargin{:});
+        %
+        %     case {'current', 'photocurrent'}
+        %         % Photo current movie on colored cone mosaic
+        %         if isempty(obj.current)
+        %             if isempty(p.Results.hf), close(hf); end
+        %             error('no photocurrent data');
+        %         end
+        %         uData = coneImageActivity(obj, hf, 'dataType', ...
+        %             'photocurrent', varargin{:});
+        
         
     otherwise
         error('unsupported plot type');
@@ -317,7 +521,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 %  mov = coneImageActivity(coneMosaic,hf)
 %
 % This function Would be used in commented out cases above if they are resurrected.
-% 
+%
 %  Inputs:
 %  cones:  coneMosaic class object=
 %  hf:     figure handle or 'none' or a struct

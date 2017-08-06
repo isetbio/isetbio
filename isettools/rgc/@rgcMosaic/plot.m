@@ -29,11 +29,11 @@ function [uData, hf] = plot(obj, plotType, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 
-allowPlots = {'help','spikemeanimage','spikemovie',...
+validPlots = {'help','spikemeanimage','spikemovie',...
     'linearmovie',...
     'psthmeanimage','psth', ...
     'mosaic', 'mosaicfill', 'mosaicsurf'};
-p.addRequired('plotType',@(x) any(validatestring(ieParamFormat(x),allowPlots)));
+p.addRequired('plotType',@(x) any(validatestring(ieParamFormat(x),validPlots)));
 
 p.addParameter('hf', obj.fig);  
 p.addParameter('gam',1,@isnumeric);
@@ -52,14 +52,12 @@ elseif isgraphics(hf, 'figure'), figure(hf);
 elseif isgraphics(hf, 'axes'), axes(hf);
 end
 
-% fprintf('Plot %s for %s class\n',plotType,class(obj));
-
 %%
 switch ieParamFormat(plotType)
     case 'help'
         fprintf('\nKnown %s types\n--------------\n',class(obj));
-        for ii=2:length(allowPlots)
-            fprintf('\t%s\n',allowPlots{ii});
+        for ii=2:length(validPlots)
+            fprintf('\t%s\n',validPlots{ii});
         end
         return;
     case 'spikemeanimage'

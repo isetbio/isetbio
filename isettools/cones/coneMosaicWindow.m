@@ -273,6 +273,10 @@ set(handles.popupImageType, 'String', str);
 
 %% Here are the different window options
 
+% Should never come on any more.  After a while, delete this
+% resetMovieControl(handles,'off');
+% enable context menu plot options at the end
+
 switch plotType
     case 'Cone mosaic'
         % cone mosaic image
@@ -280,78 +284,33 @@ switch plotType
         % compute it once and store it.
         cm.plot('cone mosaic', 'hf', handles.axes2);
 
-        resetMovieControl(handles,'off');
-        
-        % enable plot options in menu
-        enable.hLine = 'off';    enable.vLine = 'off';
-        enable.hLineLMS = 'off'; enable.vLineLMS = 'off';
-        enable.timeSeries = 'off';
-        contextMenuEnable(handles,enable);
-
-
     case 'Mean absorptions'
         % mean cone absorptions
         cm.plot('mean absorptions', 'hf', handles.axes2);
-        axis image
-        resetMovieControl(handles,'off');
-
-        % Why isn't axis image in the plot() routine?
-        
-        % enable plot options in menu
-        enable.hLine = 'on';    enable.vLine = 'on';
-        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
-        enable.timeSeries = 'off';
-        contextMenuInit(handles);
-        contextMenuEnable(handles,enable);
         
     case 'Absorption movie'
-        resetMovieControl(handles,'on');  %Turn off the movie controller
-
-        enable.hLine = 'on';    enable.vLine = 'on';
-        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
-        enable.timeSeries = 'on';
-        contextMenuEnable(handles,enable);
-        
-        % Initiate movie display GUI elements.
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'off');
-        
-        % play movie if more than one frame
-        btnPlayPause_Callback(hObject, eventdata, handles);
+        ieInWindowMessage('Showing absorption movie',handles)
+        cm.plot('movie absorptions','hf', handles.axes2);
+        ieInWindowMessage('',handles)
         
     case 'Mean photocurrent'
         cm.plot('mean current', 'hf', handles.axes2);
         axis image
-        
-        resetMovieControl(handles,'off');  %Turn off the movie controller
-        
-        enable.hLine = 'on';    enable.vLine = 'on';
-        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
-        enable.timeSeries = 'off';
-        contextMenuInit(handles);
-        contextMenuEnable(handles,enable);
 
     case 'Photocurrent movie'
-        resetMovieControl(handles,'on');  %Turn off the movie controller
-
-        % Graphics elements
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-        set(handles.sliderMovieProgress, 'Visible', 'off');
+        ieInWindowMessage('Showing photocurrent movie',handles)
+        cm.plot('movie current','hf', handles.axes2);
+        ieInWindowMessage('',handles)
         
-        % enable plot options in menu
-        enable.hLine = 'on';    enable.vLine = 'on';
-        enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
-        enable.timeSeries = 'on';
-        contextMenuInit(handles);
-        contextMenuEnable(handles,enable);
-        
-        % play movie
-        btnPlayPause_Callback(hObject, eventdata, handles);
     otherwise
         error('Unknown plot type');
 end
+
+enable.hLine = 'on';    enable.vLine = 'on';
+enable.hLineLMS = 'on'; enable.vLineLMS = 'on';
+enable.timeSeries = 'on';
+contextMenuInit(handles);
+contextMenuEnable(handles,enable);
 
 
 end
@@ -374,6 +333,7 @@ if ~isempty(handles.axes2.Children)
     uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
     uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
+    uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
 end
 
 end
@@ -402,15 +362,15 @@ set(handles.menuPlotTimeSeries, 'Enable', enable.timeSeries);
 end
 
 function contextMenuPlot(source, callbackdata)
-% call back function for context menu
+% Callback function for five possible context menu plots%
 %
-% Source is a Menu object 
+%   hline, vline, hLineLMS, vLineLMS, timeSeries
+%
+% There are really 10 calls because the data might be absorptions or
+% current.
+%
 % The guidata of source contains all the gui objects
 %
-% PROGRAMMING TODO
-%  These should all be calls to the conemosaic.plot return, I think.  Or at
-%  least, DHB thinks and I usually agree.  Let's see if we can do it that
-%  way.
 handles = guidata(source);
 
 % determine which data to use (absorption or current)
@@ -419,129 +379,34 @@ index    = get(handles.popupImageType, 'Value');
 if index > length(contents), index = 1; end
 plotType = contents{index};
 
+% Identify the data type, absorptions or current
 switch plotType
-    case 'Mean absorptions'
-        data = mean(handles.cMosaic.absorptions, 3);
-        yStr = 'Absorptions';
-        
-    case 'Absorption movie'
-        cnt = round(get(handles.sliderMovieProgress, 'Value'));
-        if strcmp(source.Label, 'time series')
-            data = handles.cMosaic.absorptions;
-        else
-            data = handles.cMosaic.absorptions(:, :, cnt);
-        end
-        yStr = 'Absorptions';
-        
-    case 'Mean photocurrent'
-        data = mean(handles.cMosaic.current, 3);
-        yStr = 'Photocurrent (pA)';
-        
-    case 'Photocurrent movie'
-        cnt = round(get(handles.sliderMovieProgress, 'Value'));
-        if strcmp(source.Label, 'time series')
-            data = handles.cMosaic.current;
-        else
-            data = handles.cMosaic.current(:, :, cnt);
-        end
-        yStr = 'Photocurrent (pA)';
+    case {'Mean absorptions','Cone mosaic','Absorption movie'}
+        dataType = 'absorptions';
+    case {'Mean photocurrent','Photocurrent movie'}      
+        dataType = 'current';
 end
 
-% The plots below are with respect to a point.
-% Get the point
-[x, y] = ginput(1); % Rounded and clipped to the data
-x = ieClip(round(x), 1, size(data, 2));
-y = ieClip(round(y), 1, size(data, 1));
-
-% Draw a circle around the selected point.
-viscircles([x,y],0.7);
-
-switch source.Label
-    case 'hLine response'
-        vcNewGraphWin; plot(data(y, :), 'LineWidth', 2); 
-        grid on; xlabel('Horizontal position (cones)'); ylabel(yStr);
-        set(gca,'userdata',data(y,:));
-        
-    case 'vLine response'
-        vcNewGraphWin; plot(data(:, x), 'LineWidth', 2); 
-        grid on; xlabel('Vertical position (cones)'); ylabel(yStr);
-        set(gca,'userdata',data(:,x));
-        
-    case 'hLine LMS'
-        % Save the work more completely in the window, please!
-        vcNewGraphWin([],'tall'); names = 'LMS';
-        c = {'ro-','go-','bo-'};
-        for ii = 2 : 4 % L, M, S
-            subplot(3, 1, ii-1);
-            pos = find(handles.cMosaic.pattern(y, :) == ii);
-            plot(pos, data(y, pos), c{ii-1}, 'LineWidth', 2); grid on;
-            uData.pos{ii-1} = pos; uData.data{ii-1}=data(y,pos);
-            xlabel('Horizontal Position (cones');
-            ylabel([names(ii-1) ' ' yStr]);
-            set(gca,'xlim',[1 size(data,2)]);
-        end
-        set(gca,'userdata',uData);
-        
-    case 'vLine LMS'
-        % Save the work more completely in the window, please!
-        vcNewGraphWin([],'tall'); names = 'LMS';
-        c = {'ro-','go-','bo-'};
-        for ii = 2 : 4 % L, M, S
-            subplot(3, 1, ii-1);
-            pos = find(handles.cMosaic.pattern(:, x) == ii);
-            plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2); grid on;
-            uData.pos{ii-1} = pos; uData.data{ii-1}=data(pos,x);
-            xlabel('Vertical Position (cones');
-            ylabel([names(ii-1) ' ' yStr]);
-            set(gca,'xlim',[1 size(data,1)]);
-        end
-        set(gca,'userdata',uData);
-        
-    case 'time series'
-        % Time series is enabled for the absorption and current movie modes
-        vcNewGraphWin;
-        if index == 3  %  absorption movie
-            % Show the absorption time series
-            mx = max(handles.cMosaic.absorptions(:));
-            mn = min(handles.cMosaic.absorptions(:));
-            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
-        elseif index == 5  % photocurrent movie
-            mx = max(handles.cMosaic.current(:));
-            mn = min(handles.cMosaic.current(:));
-            t = (1:size(data, 3)) * handles.cMosaic.integrationTime * 1e3;
-        end
-        plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
-        uData.timerseries = t;
-        uData.x = x; uData.y = y;
-        grid on; xlabel('Time (ms)'); ylabel(yStr);
-        set(gca,'ylim',[mn mx]);
-        set(gca,'userdata',uData);
-        
+% Figure out which plot was requested and build the command
+switch ieParamFormat(source.Label)
+    case 'hlineresponse'
+        cmd = ['hline',dataType];
+    case 'vlineresponse'
+        cmd = ['vline',dataType];
+    case 'hlinelms'
+        cmd = ['hline',dataType,'lms'];
+    case 'vlinelms'
+        cmd = ['vline',dataType,'lms'];
+    case 'timeseries'
+        cmd = ['time series',dataType];
     otherwise
-        error('Unknown label type');
+        error('Unknown plot type %s\n',source.label);
 end
 
-end
+% Call the plot command, setting the main window axis for the first place
+% to start.
+handles.cMosaic.plot(cmd,'hf',handles.axes2);
 
-function resetMovieControl(handles,status)
-% reset movie controls for playing a movie
-
-switch status
-    case 'off'
-        set(handles.btnPlayPause, 'Visible', 'off');
-        set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
-
-        set(handles.sliderMovieProgress, 'Visible', 'off');
-        set(handles.sliderMovieProgress, 'Value', 1);
-    case 'on'
-        set(handles.btnPlayPause, 'Visible', 'on');
-        set(handles.btnPlayPause, 'Value', 1);  % Auto start the movie
-
-        set(handles.sliderMovieProgress, 'Visible', 'off');
-        set(handles.sliderMovieProgress, 'Value', 1);
-
-end
-        
 end
 
 function menuPlot_Callback(hObject, eventdata, handles)
@@ -868,7 +733,7 @@ function menuConePhotocurrentNoise_Callback(hObject, eventdata, handles)
 % Cones | Toggle photocurrent noise
 % Also executes computeCurrent
 
-set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
+% set(handles.btnPlayPause,'Value',0);  % Turn off any movie.
 
 % Flip from whatever state to the other
 switch handles.cMosaic.os.noiseFlag
@@ -894,7 +759,7 @@ function popupImageType_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Stop any movies.
-set(handles.btnPlayPause,'Value',0);  % Turn off the movie.
+% set(handles.btnPlayPause,'Value',0);  % Turn off the movie.
 
 % Refresh.
 coneMosaicGUIRefresh(hObject, eventdata, handles);
@@ -953,81 +818,7 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 end
 
-function btnPlayPause_Callback(~, ~, handles)
-% Play/Pause button near slider
 
-% We don't want the numbers during the movie, I think.
-axis off;
-
-% Which type of data, absorptions or current
-index = get(handles.popupImageType, 'Value');
-if index == 3,       mov = handles.cMosaic.absorptions;
-elseif index == 5,   mov = handles.cMosaic.current;
-end
-
-% Gamma for display
-gam = get(handles.editGam,'value');
-
-% Check that there are some frames for a movie
-if ismatrix(mov), nFrames = 1;
-else              nFrames = size(mov, ndims(mov));
-end
-if nFrames == 1, 
-    str = sprintf('Only one frame. No movie to show.'); 
-    ieInWindowMessage(str,handles,3);
-    return; 
-end
-
-% Display up the slider
-set(handles.sliderMovieProgress, 'Min', 1);
-set(handles.sliderMovieProgress, 'Max', nFrames);
-set(handles.sliderMovieProgress, 'SliderStep', [1, round(max(nFrames/4,1))]);  %Minor step and major step
-
-% If play, then play.
-if get(handles.btnPlayPause, 'Value')
-    % play video if  value is not zero
-    set(handles.btnPlayPause, 'String', 'Pause');
-    set(handles.sliderMovieProgress, 'Visible', 'off');
-    set(handles.txtMovieFrame,'Visible','off');
-
-    gData = guidata(handles.coneMosaicWindow);
-    axes(gData.axes2);
-    while get(handles.btnPlayPause, 'Value')
-        % Plays the movie until the pause button is pushed.
-        % I removed the slider and counter for now.  We could pass the pause button into
-        % the ieMovie routine.  Say, ('hdlCounter',XXX,'hdlPause',yyy)
-        ieMovie(mov,'gamma',gam); 
-        pause(0.2);  % The brief pause identifies the end of the movie.
-    end
-    
-else
-    % pause video when the value is false (zero)
-    set(handles.btnPlayPause, 'String', 'Play');
-    
-    % Turn on the slider and frame counter
-    set(handles.txtMovieFrame,'Visible','on');
-    val = str2double(get(handles.txtMovieFrame,'String'));
-    val = max(1,val);
-    set(handles.sliderMovieProgress, 'Value', val);
-    set(handles.sliderMovieProgress, 'Visible', 'on');
-    
-    % We should show the right image frame here
-    % TODO
-    
-end
-
-% register right click menu
-c = uicontextmenu;
-for ichild = 1:size(handles.axes2.Children,1)
-    handles.axes2.Children(ichild).UIContextMenu = c;
-end
-uimenu(c, 'Label', 'hLine response', 'Callback', @contextMenuPlot);
-uimenu(c, 'Label', 'vLine response', 'Callback', @contextMenuPlot);
-uimenu(c, 'Label', 'hLine LMS', 'Callback', @contextMenuPlot);
-uimenu(c, 'Label', 'vLine LMS', 'Callback', @contextMenuPlot);
-uimenu(c, 'Label', 'time series', 'Callback', @contextMenuPlot);
-
-end
 
 function editEccentricity_Callback(hObject, eventdata, handles)
 % hObject    handle to editEccentricity (see GCBO)
@@ -1066,6 +857,6 @@ contextMenuPlot(hObject, []);
 end
 
 function menuPlotTimeSeries_Callback(hObject, ~, handles)
-set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
+% set(handles.btnPlayPause, 'Value', 0);  % Pause the movie
 contextMenuPlot(hObject, []);
 end
