@@ -81,8 +81,7 @@ classdef osBioPhys < outerSegment
             addParameter(p,'eccentricityDegs',-1,@isnumeric);
             p.parse(varargin{:});
             eccentricityDegs = p.Results.eccentricityDegs; 
-            
-
+           
             % Handle deprecated call where osType == true meant foveal and osType == false meant
             % peripheral.  We respect the old osType flag when the eccentricityDegs parameter
             % has its defaul value of -1.  Otherwise osFlag is ignored in favor of the expliclity

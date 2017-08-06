@@ -1,77 +1,125 @@
 function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
-% Returns the photocurrent impulse response for a single absorption 
+%%linearFilters  Returns the photocurrent impulse response for a single absorption
 %
-% The LMS impulse response functions calculated here model the cone
-% photocurrent response to brief or low contrasts with respect to a steady
-% background.  These experimental conditions (steady backgroynds, modest
-% contrasts) are often found in psychophysical or physiological experiment.
+% Syntax:
+%     [lmsFilters, meanCurrent] = linearFilters(os, cMosaic)
 %
-% The impulse response function is derived from Rieke's biophysical model.
-% It depends on the mean absorption rate, and exhibits adaptation behavior.
-% (s_osLinearFilters)
+% Description:
+%    The LMS impulse response functions calculated here model the cone
+%    photocurrent response to brief or low contrasts with respect to a steady
+%    background.  These experimental conditions (steady backgrounds, modest
+%    contrasts) are often found in psychophysical or physiological experiments.
 %
-% There are different parameters for foveal and peripheral functions
-% (t_osLinearize). 
+%    The impulse response function is derived from Rieke's biophysical model.
+%    It depends on the mean absorption rate, and exhibits adaptation behavior.
+%
+%    See osLinear.osCompute() for how the impulse response function and mean
+%    currents are used.
+%
+%    There are different parameters for foveal and peripheral functions.
+%    (t_osLinearize).
+%
+%    The LMS filters (impulse response functions) are stored here at a
+%    particular time step (os.timeStep), which is typically 1 ms, but could be
+%    shorter.  When it is used in osLinear.osCompute, the filters are
+%    resampled to the time base of the cone absorptions.
 % 
-% Input
-%  os:      A linear outer segment object
-%  cMosaic: The parent object of the outersegment
+% Input:
+%    os                           A linear outer segment object
 %
-% Return:
-%  lmsFilters  - The impulse responses to a single photon added to
-%                the background; these are stored in lmsConeFilter in
-%                the os object
-%  meanCurrent - The steady state caused by the mean absorption rate. This
-%                value is used in osCompute(). 
+%    cMosaic                      The parent object of the outersegment
 %
-% The LMS filters (impulse response functions) are stored here at a
-% particular time step (os.timeStep), which is typically 1 ms, but could be
-% shorter.  When it is used in osLinear.osCompute, the filters are
-% resampled to the time base of the cone absorptions.
+% Output:
+%    lmsFilters                   The impulse responses to a single photon added to
+%                                 the background; these are stored in lmsConeFilter in
+%                                 the os object.
 %
-% See osLinear.osCompute() for how the impulse response function and mean
-% currents are used.
+%    meanCurrent                  The steady state caused by the mean absorption rate. This
+%                                 value is used in osCompute(). 
 %
-% See also: v_osBioPhys, t_coneMosaicFoveal, t_osLinearize, s_osLinearFilters
+% Optional key/value pairs:
+%    'absorptionsInXWFormat'      Matrix. Pass input absorptions directly in XW format, rather than getting them
+%                                 out of the cMosaic object (default empty). This is passed into routine
+%                                 coneMeanIsomerizations.
 %
-% 11/2016 JRG/BW (c) isetbio team
+%    'eccentricityDegs'           Value. Eccentricity in degrees to pass on to the osBioPhys object when computing
+%                                 the linear impulse response.  See osBioPhys for description of its meaning.
+%                                 Currently this is set to -1 by default, so that the old eccentricity flag
+%                                 is respected for backwards compatibility.
+%
+%    'eccentricity'               Logical. Deprecated usage.  False (default) means use peripheral 
+%                                 parameters, true means use foveal parameters.  Stop using
+%                                 this form in favor of 'eccentricityDegs'.  Just to have
+%                                 a value, osFlag == false -> eccentricityDegs = 10 and 
+%                                 osFlag == true -> eccentricityDegs = 0;
+%   
+%
+% See also: coneMeanIsomerizations, osBioPhys, v_osBioPhys, t_coneMosaicFoveal, t_osLinearize, s_osLinearFilters
+
+% 11/2016  JRG/BW    (c) isetbio team
+% 08/06/17 dhb       Cleanup comments.  
+%                    Explicitly set cone type in the pattern on each loop, so that 
+%                    that things will work right if we every put in explicit dynamics
+%                    by cone type.
 
 %% parse input parameters
 p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x,'coneMosaic')); 
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
-p.addParameter('eccentricity',false,@islogical);  % Needs updating - Foveal or peripheral
+p.addParameter('eccentricityDegs',-1,@isnumeric);
+p.addParameter('eccentricity',false,@islogical); 
 p.parse(os, cMosaic, varargin{:})
 
-eccentricity   = p.Results.eccentricity;        % Needs updating
-meanRate = coneMeanIsomerizations(cMosaic, 'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);     % R*/sec
+%% Handle deprecated usage of 'eccentricity' key
+% Handle deprecated call where eccentricity == true meant foveal and eccentricity == false meant
+% peripheral.  We respect the old eccentricity flag when the eccentricityDegs parameter
+% has its defaul value of -1.  Otherwise eccentricity is ignored in favor of the expliclity
+% passed eccentricity.
+eccentricityDegs = p.Results.eccentricityDegs;
+if (eccentricityDegs == -1)
+    if (p.Results.eccentricity)
+        eccentricityDegs = 0;
+    else
+        eccentricityDegs = 10;
+    end
+end
 
-%% Generate impulse responses for L, M or S cone
+eccentricity   = p.Results.eccentricity;        
 
-% A new cone mosaic is generated for each type of cone, and the
-% impulse response
+%% Get mean isomerization rate, in R*/sec
+meanRate = coneMeanIsomerizations(cMosaic,'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);
+
+%% Setup parameters
+%
+% We will get the linear impuluse response by explicitly passing in a delta
+% function to the osBioPhys object and extracting what happens.  We need to
+% set some actual parameters to make this happen.
+%
+% Parameters
 timeStep = os.timeStep;               % time step (should be < 1 ms)
 nSamples = round(0.8/timeStep) + 1;   % 0.8 total sec
-
-flashIntens = 1;   % 1 photon above the background mean
-warmup = round(0.4/timeStep);    % Warm up period is 0.4 sec
+flashIntensity = 1;                   % 1 photon above the background mean
+warmupTime = round(0.4/timeStep);     % Warm up period is 0.4 sec
 
 % Where we store the filters
-os.lmsConeFilter = zeros(nSamples-warmup+1,length(meanRate));
+os.lmsConeFilter = zeros(nSamples-warmupTime+1,length(meanRate));
 meanCurrent = zeros(1,3);
 
 %% Generate a cone mosaic with an outerSegment based on the biophysical model 
-
+%
 % We turn off the noise and use the biophysical coneMosaic model to
-% calculate an impulse response.
-osCM = osBioPhys('osType',eccentricity);   % Will become eccentricity some day
+% calculate an impulse response.  We set up a mosaic with a single
+% L cone as a placeholder, but this gets set to the different types
+% in the loop below.
+osCM = osBioPhys('eccentricityDegs',eccentricityDegs);  
 osCM.set('noise flag','none');            % Run it without noise
-cm = coneMosaic('os',osCM,'pattern', 2);   % single cone
+cm = coneMosaic('os',osCM,'pattern', 2);  % Single cone mosaic, L cone as placeholder
 cm.integrationTime = timeStep;
 cm.os.timeStep = timeStep;
 
-% For each of the cone types
+%% For each of the cone types ...
+assert(length(meanRate) == 3,'We only know how to deal with three cone types');
 for meanInd = 1:length(meanRate)
     
     % Get the isomerization rate (R*) in each time step R*
@@ -81,6 +129,11 @@ for meanInd = 1:length(meanRate)
     stimulus = meanIntens*ones(nSamples, 1);
     
     % Compute outer segment current for the constant stimulus
+    % The loop goes from 1 to 3 for L, M and S and these cone
+    % types are indexed in the pattern by 2, 3, 4.  This decision
+    % was baked in very early in the ISET/ISETBio design and is
+    % hard to back out of now.
+    cm.pattern = meanInd+1;
     cm.absorptions  = reshape(stimulus, [1 1 nSamples]);
     cm.computeCurrent('bgR',meanRate(meanInd));
     currentConstant = squeeze(cm.current);
@@ -88,7 +141,7 @@ for meanInd = 1:length(meanRate)
     
     % Add a single photon (impulse) to the background one time step after
     % the warmup period
-    stimulus(warmup+1) = meanIntens + flashIntens;
+    stimulus(warmupTime+1) = meanIntens + flashIntensity;
     
     % Compute outer segment currents with biophysical model
     % with the impulse stimulus
@@ -100,7 +153,7 @@ for meanInd = 1:length(meanRate)
     % Store the impulse response.  We put flashIntens in for completeness,
     % but it is 1 so really, no need.
     os.lmsConeFilter(:,meanInd) = ...
-        ((currentImpulse((warmup:end)-1)) - currentConstant((warmup:end)-1))/flashIntens;
+        ((currentImpulse((warmupTime:end)-1)) - currentConstant((warmupTime:end)-1))/flashIntensity;
     %vcNewGraphWin; 
     %plot(stimulus - meanIntens); hold on; 
     %plot(currentImpulse-currentConstant); grid on
@@ -109,10 +162,9 @@ for meanInd = 1:length(meanRate)
     % before the very end to the mean current from the constant stimulus
     % background. Edges are always a bitch.
     meanCurrent(meanInd) = currentConstant(end-10);
-    
 end
 
-%% Assign them as output and return
+%% Assign the filters as output and return
 lmsFilters = os.lmsConeFilter;
 
 end
