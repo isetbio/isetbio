@@ -1,5 +1,5 @@
-function h = plot(os, pType, varargin)
-% OSLINEAR.PLOT - Plots the osLinear properties and then sends on plot@outersegment
+function [uData, h] = plot(os, pType, varargin)
+% OSLINEAR.PLOT - Plots osLinear properties or sends to @outersegment.plot
 %
 % Inputs: 
 %   os - osLinear object
@@ -8,8 +8,9 @@ function h = plot(os, pType, varargin)
 % pType for osLinear only:
 %  current filters - Converts absorptions to photo current for linear model
 %
-% Outputs: 
-%    h is a handle to the plot window
+% Outputs:
+%  uData - User data for values in the plot (use uData = get(gca,'userdata);)
+%  h     - handle to the plot window
 %
 % Properties that can be plotted:
 %
@@ -48,16 +49,17 @@ switch ieParamFormat(pType)
 
         h = vcNewGraphWin;
         
-        if isempty(os.lmsConeFilter)
-            os.linearFilters(cmosaic);
-        end
+        if isempty(os.lmsConeFilter), os.linearFilters(cmosaic); end
         tSamples = os.timeAxis;
-
+        uData.t = tSamples;
+        uData.y = os.lmsConeFilter;
+        
         plot(tSamples,os.lmsConeFilter(:,1),'r-', ...
             tSamples,os.lmsConeFilter(:,2),'g-', ...
             tSamples,os.lmsConeFilter(:,3),'b-');
-        xlabel('Time (sec)'); ylabel('Current (pA)');
-        grid on;
+        xlabel('Time (sec)'); ylabel('Current (pA)'); grid on;
+        
+        % Create legend and title
         l = cell(1,3);
         if ~isempty(meancurrent)
             c = {'L','M','S'};
@@ -71,8 +73,10 @@ switch ieParamFormat(pType)
         title('Absorption impulse response');
         
     otherwise
-        plot@outerSegment(os,pType);
+        [uData,h] = plot@outerSegment(os,pType);
 end
+
+set(gca,'userdata',uData);
 
 end
 

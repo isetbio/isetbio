@@ -312,6 +312,7 @@ switch ieParamFormat(plotType)
         current = -1*(abs(str2double(get(cbar,'TickLabels')).^(1/gam)));
         current = num2str(round(current)); set(cbar,'TickLabels',current);
         axis image;
+        title('Photocurrent (pA)');
         
     case {'hlinecurrent','vlinecurrent'}
         data = mean(obj.current,3);

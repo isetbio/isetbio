@@ -1,4 +1,4 @@
-function uData = plot(os, pType, varargin)
+function [uData,h] = plot(os, pType, varargin)
 % Plot for the outersegment base class
 %
 % Some special cases of plot are managed in osLinear, osBioPhys.  General
@@ -14,14 +14,15 @@ function uData = plot(os, pType, varargin)
 %   all
 %
 % Outputs: 
-%    h is a handle to the plot window
+%   uData - userdata that was plotted (uData = get(gca,'userdata'))
+%   h is a handle to the plot window
 %
 % Properties that can be plotted:
+%   None yet.
 %
 % Examples:
 %
-% (c) isetbio
-% 09/2015 JRG
+% JRG/BW (c) isetbio
 
 %% Check for the number of arguments and create parser object.
 
@@ -32,7 +33,7 @@ p.addRequired('pType', @ischar);
 p.parse(os, pType, varargin{:});
 % No parameter values set yet
 
-uData = [];
+uData = []; h = [];
 
 %% Choosing the plot type
 switch ieParamFormat(pType)

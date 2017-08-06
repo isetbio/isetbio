@@ -205,7 +205,7 @@ function coneMosaicGUIRefresh(hObject, eventdata, handles)
 cm = handles.cMosaic;
 
 % Place name in text string box
-set(handles.txtName,'string',sprintf('%s',cm.name));
+set(handles.mosaicName,'string',sprintf('%s',cm.name));
 
 % set row and cols
 set(handles.editRows, 'string', num2str(cm.rows));
@@ -295,7 +295,6 @@ switch plotType
         
     case 'Mean photocurrent'
         cm.plot('mean current', 'hf', handles.axes2);
-        axis image
 
     case 'Photocurrent movie'
         ieInWindowMessage('Showing photocurrent movie',handles)
@@ -339,7 +338,7 @@ end
 end
 
 function contextMenuEnable(handles,enable)
-% enable plot options in menu
+% Set enable plot options in menu
 %
 %    c = contextMenuInit(handles,enable)
 %    % Set up enable.XXX
@@ -347,11 +346,6 @@ function contextMenuEnable(handles,enable)
 %
 % enable is a structure of 'on' and 'off' values
 %
-%   enable.hLine
-%   enable.hLineLMS
-%   enable.vLine
-%   enable.vLineLMS
-%   enable.timeSeries
 
 set(handles.menuPlotHLine, 'Enable', enable.hLine);
 set(handles.menuPlotVLine, 'Enable', enable.vLine);
@@ -362,15 +356,15 @@ set(handles.menuPlotTimeSeries, 'Enable', enable.timeSeries);
 end
 
 function contextMenuPlot(source, callbackdata)
-% Callback function for five possible context menu plots%
+% Callback function for five context menu plots
 %
 %   hline, vline, hLineLMS, vLineLMS, timeSeries
 %
-% There are really 10 calls because the data might be absorptions or
+% There are really 2x5 calls because the data might be absorptions or
 % current.
 %
-% The guidata of source contains all the gui objects
-%
+
+% The guidata return of the variable 'source' contains the gui objects
 handles = guidata(source);
 
 % determine which data to use (absorption or current)
