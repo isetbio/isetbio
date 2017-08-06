@@ -1,17 +1,27 @@
-%%t_osFoveaPeriphery  Illustrate difference in photocurrent impulse response between fovea and periphery
+%%t_osFoveaPeriphery  Illustrate difference in photocurrent response between fovea and periphery
 % 
 % Description:
 %     Illustrates the difference between the foveal and peripheral cone outer
-%     segment impulse responses, using the osBioPhys object.
+%     segment responses, using the osBioPhys object.
 % 
 %     A single cone is created, and its absorption time course is set to have an
 %     impulse at the first time step. Biophysical outer segments are created,
 %     one with foveal dynamics and one with peripheral dynamics.
 %
-%     This tutorial is a variation of validation routie v_osBioPhysObject.  It works
+%     This tutorial is a variation of validation routine v_osBioPhysObject.  It works
 %     by generating a cone mosaic and directly setting the photon absorptions there.
 %     Better would be to create a stimulus movie and push the example all the way from
 %     the stimulus to the photocurrent.
+%
+%     There is a method for the outersegment object, linearFilters, that
+%     gets the impulse response for a small perturbation around a steady
+%     uniform background.  Tutorial t_osLinearize shows how to do roughly
+%     the same thing as here but using that routine.  In that tutorial,
+%     what you get is the differential response to a stimulus on the steady
+%     background, whereas here the raw current response to a flash in the
+%     dark is shown.
+%
+% See also: t_osLinearize
 
 % 10/2016 JRG (c) Isetbio team
 %

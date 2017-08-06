@@ -1,69 +1,88 @@
-% t_osLinearize
+% t_osLinearize  Show how small perturbation linear os impulse responses are obtained
 %
-%   Illustrates the foveal and peripheral cone outer segment temporal
-%   impulse responses using the osBioPhys object at different mean
-%   intensities.
+% Description:
+%    Illustrates the foveal and peripheral cone outer segment temporal
+%    impulse responses using the osBioPhys object at different mean
+%    intensities.
 %
-% JRG/BW 11/2016 (c) isetbio team
+%    This has a some overlap with t_soFoveaPeriphery.  The difference
+%    is that this calls through the os linearFilters methods, whereas
+%    t_osFoveaPeriphery exposes the underlying calls to the osBioPhys object.
+%    In t_osFoveaPeriphery the raw response to an incrmenet in the dark is shown.
+%    Here the impuluse response starts at zero and shows the differential response
+%    to a stimulus on a steady background.
+%
+%    Note the different current scales for foveal and peripheral responeses.  The
+%    foveal response is larger and slower.
+%
+% See also: t_osFoveaPeriphery
 
-%%
+% 11/2016  JRG/BW 11/2016 (c) Isetbio team
+% 08/06/17 dhb            Cleaning pass.
+
+%% Initialize
 ieInit;
 
+%% Create a small cone mosaic of L cones
 cMosaic = coneMosaic('os',osLinear,'pattern',[2 2 2]);
 
-%% Background levels
-
+%% Setup background levels
+%
 % Mean of isomerization stimulus in R*/sec (scaled by time step to be
 % placed in bins of photons). The mean rate affects the magnitude of
 % the impulse response due to adaptation.
+%
+% For this tutorial, background rates are the same for all classes of cone.
+% Results for the L cones are plotted.
 meanIsoArray = [100 500 1000 2000 5000 10000]*cMosaic.integrationTime;
 
-% This should be a function that gets tSamples from osLinear class
-tSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+%% Allocate space for the impulse responses
+% 
+% A litte ugly, we get an impulse response and find its size.
+nTimeSamples = size(cMosaic.os.linearFilters(cMosaic),1);
+fovea = zeros(nTimeSamples,length(meanIsoArray));
+periphery = zeros(nTimeSamples,length(meanIsoArray));
 
-%%  Loop on different background rates and plot
-
-fovea     = zeros(tSamples,length(meanIsoArray));
-periphery = zeros(tSamples,length(meanIsoArray));
-
+%%  Loop on different background rates and and compute
 os = cMosaic.os;
-
 for ii = 1:length(meanIsoArray)
     
     % Set mean background for start of current output
     cMosaic.absorptions = repmat(meanIsoArray(ii),1,3);
         
-    % Compute outer segment currents.
-    tmp     = os.linearFilters(cMosaic,'eccentricity',true);
+    % Compute outer segment currents for the fovea.
+    %
+    % Pull out first column of return, corresponds to L cones.
+    tmp = os.linearFilters(cMosaic,'eccentricityDegs',0);
     fovea(:,ii) = tmp(:,1);
     
-    tmp = os.linearFilters(cMosaic,'eccentricity',false);
+    % Do it for the periphery
+    tmp = os.linearFilters(cMosaic,'eccentricityDegs',10);
     periphery(:,ii) = tmp(:,1);
     
 end
 
-%%
+%% Plot
 vcNewGraphWin([],'wide'); 
-T = os.timeAxis;
-subplot(1,2,1); hold on;
-plot(T,fovea,'LineWidth',3);
-grid on; % legend('Peripheral','Foveal');
+timeAxis = os.timeAxis;
 
-% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+% Fovea
+subplot(1,2,1); hold on;
+plot(timeAxis,fovea,'LineWidth',3);
+grid on;
 xlabel('Time (sec)','FontSize',14);
 ylabel('pA','FontSize',14);
 set(gca,'fontsize',14);
 title(sprintf('Foveal IR (R*/sec)'));
 
-%
+% Periphery
 subplot(1,2,2); hold on;
-plot(T,periphery,'LineWidth',3);
-grid on; % legend('Peripheral','Foveal');
-% axis([0 0.2 min((current2Scaled./max(current2Scaled(:)))) 1]);
+plot(timeAxis,periphery,'LineWidth',3);
+grid on;
 xlabel('Time (sec)','FontSize',14);
 ylabel('pA','FontSize',14);
 set(gca,'fontsize',14);
 title(sprintf('Peripheral IR (R*/sec)'));
 
-% legend(num2str(meanIsoArray));
+% Add a legend
 legend('100', '500', '1000', '2000', '5000', '10000')

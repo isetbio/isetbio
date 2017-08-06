@@ -2,8 +2,8 @@
 %
 % Illustrates use of outersegment object, which computes photocurrent from isomerizations.
 %
-% t_osFoveaPeriphery            - Illustrate difference in photocurrent impulse response between fovea and periphery
-% t_osLinearize                 - 
+% t_osFoveaPeriphery            - Illustrate difference in photocurrent response between fovea and periphery
+% t_osLinearize                 - Show how small perturbation linear os impulse responses are obtained
 % t_osNoise                     -
 % t_osTimeStep                  - 
 %

@@ -12,12 +12,14 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %
 %    The impulse response function is derived from Rieke's biophysical model.
 %    It depends on the mean absorption rate, and exhibits adaptation behavior.
+%    We take the difference in the response to a constant stimulus and one
+%    with a small delta function increment.
 %
 %    See osLinear.osCompute() for how the impulse response function and mean
 %    currents are used.
 %
-%    There are different parameters for foveal and peripheral functions.
-%    (t_osLinearize).
+%    There are different parameters for foveal and peripheral functions, as implemented
+%    by osBioPhys.
 %
 %    The LMS filters (impulse response functions) are stored here at a
 %    particular time step (os.timeStep), which is typically 1 ms, but could be
@@ -150,8 +152,10 @@ for meanInd = 1:length(meanRate)
     currentImpulse = squeeze(cm.current);
     % hold on; plot(timeStep*(1:nSamples),currentImpulse);
     
-    % Store the impulse response.  We put flashIntens in for completeness,
+    % Store the impulse response.  We divide by flashIntensity in for completeness,
     % but it is 1 so really, no need.
+    %
+    % The impulse response is stored so that it starts at 0 and goes positive
     os.lmsConeFilter(:,meanInd) = ...
         ((currentImpulse((warmupTime:end)-1)) - currentConstant((warmupTime:end)-1))/flashIntensity;
     %vcNewGraphWin; 
