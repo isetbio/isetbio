@@ -132,7 +132,7 @@ p.addParameter('y',[],@isscalar);             % y axis value
 
 p.parse(obj,plotType, varargin{:});
 hf = p.Results.hf;
-oi = p.Results.oi;                            % Used in plotGraphs routine
+oi = p.Results.oi;                         % Used in plotGraphs routine
 
 % Initialize return structure
 uData = [];
@@ -436,7 +436,6 @@ switch ieParamFormat(plotType)
         
         % Additional arguments may be the video file name, step, and
         % FrameRate
-        disp('No gamma applied');
         uData = ieMovie(obj.current,varargin{:});
         
     case 'conefundamentals'

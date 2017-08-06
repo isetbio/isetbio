@@ -273,9 +273,10 @@ set(handles.popupImageType, 'String', str);
 
 %% Here are the different window options
 
-% Should never come on any more.  After a while, delete this
-% resetMovieControl(handles,'off');
-% enable context menu plot options at the end
+% Gamma is handled within plot for the mean images
+% For the video, we are handling it this way so we can, in the future, set
+% additional parameters for the movies that get passed to ieMovie.
+g = str2num(get(handles.editGam,'string')); 
 
 switch plotType
     case 'Cone mosaic'
@@ -290,7 +291,7 @@ switch plotType
         
     case 'Absorption movie'
         ieInWindowMessage('Showing absorption movie',handles)
-        cm.plot('movie absorptions','hf', handles.axes2);
+        cm.plot('movie absorptions','hf', handles.axes2,'gamma',g);
         ieInWindowMessage('',handles)
         
     case 'Mean photocurrent'
@@ -298,7 +299,7 @@ switch plotType
 
     case 'Photocurrent movie'
         ieInWindowMessage('Showing photocurrent movie',handles)
-        cm.plot('movie current','hf', handles.axes2);
+        cm.plot('movie current','hf', handles.axes2,'gamma',g);
         ieInWindowMessage('',handles)
         
     otherwise
