@@ -1,4 +1,4 @@
-%%t_osNoise  Illustrate the noise spectrum from the outer segment biophysical model
+%%t_osNoise  Illustrate the noise spectrum for photocurrent
 %
 % Description:
 %    
