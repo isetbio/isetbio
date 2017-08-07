@@ -26,7 +26,7 @@ classdef osBioPhys < outerSegment
 % Optional key/value pairs:
 %     'eccentricity'                Eccentricity in degrees. Determines parameters used.  Currently
 %                                   we just have foveal and peripheral parameters, and somewhat
-%                                   arbitrarily set the cuttoff at 2 degrees.  Default is 10 degrees.
+%                                   arbitrarily set the cuttoff at 10 degrees.  Default is 15 degrees.
 %                                   
 % References:
 %     http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
@@ -63,7 +63,7 @@ classdef osBioPhys < outerSegment
            
             % Parse input
             p = inputParser;
-            addParameter(p,'eccentricity',10,@isnumeric);
+            addParameter(p,'eccentricity',15,@isnumeric);
             p.parse(varargin{:});
             eccentricityDegs = p.Results.eccentricity; 
             

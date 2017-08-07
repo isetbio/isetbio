@@ -46,7 +46,7 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %
 %    'eccentricity'               Value. Eccentricity in degrees to pass on to the osBioPhys object when computing
 %                                 the linear impulse response.  See osBioPhys for description of its meaning.
-%                                 Default 10.
+%                                 Default 15.
 %
 % See also: coneMeanIsomerizations, osBioPhys, v_osBioPhys, t_coneMosaicFoveal, t_osLinearize, s_osLinearFilters
 
@@ -61,7 +61,7 @@ p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x,'coneMosaic')); 
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
-p.addParameter('eccentricity',10,@isnumeric);
+p.addParameter('eccentricity',15,@isnumeric);
 p.parse(os, cMosaic, varargin{:})
 eccentricityDegs = p.Results.eccentricity; 
 
