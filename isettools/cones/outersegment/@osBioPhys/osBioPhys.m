@@ -3,11 +3,11 @@ classdef osBioPhys < outerSegment
 %
 % Syntax:
 %     os = osBioPhys;
-%     os = osBioPhys('eccentricityDegs',0);
+%     os = osBioPhys('eccentricity',0);
 %
 % Description:
-%     This class provides methods and parameters for converting a movie of isomerizations (R*) to outer
-%     segment current (pA).
+%     This class provides methods and parameters for converting a movie of
+%     isomerizations (R*) to outer segment current (pA).
 % 
 %     Rieke and colleagues defined a set of difference equations as a
 %     simulation of the phototransduction cascade. This object defines the
@@ -23,28 +23,10 @@ classdef osBioPhys < outerSegment
 %     At present, we just have two sets of parameters, foveal and peripheral.  One day
 %     we might try to handle eccentricity more finely.
 %
-%     [DHB NOTE: In a while, should get rid of osType flag, but I am preserving backwards
-%     compatibility for a while to give people the chance to update their code to use
-%     eccentricityDegs.]
-%
-%     [DHB NOTE: There are some commented out blocks of code in this file that I am tempted
-%     to deletec, but I didn't have the nerve today.]
-%
 % Optional key/value pairs:
-%     'eccentricityDegs'            Determines parameters used.  Currently we just
-%                                   have foveal and peripheral parameters, and somewhat
-%                                   arbitrarily set the cuttoff at 2 degrees.
-%                                   This routine currently has a default of -1, which means
-%                                   that the deprecated 'osType' value is used to switch
-%                                   between peripheral and foveal parameters.  We recommend
-%                                   calling with an explicit eccentricity in degrees, as we
-%                                   will eventually get rid of osType.
-%
-%     'osType'                      Deprecated usage.  False (default) means use peripheral 
-%                                   parameters, true means use foveal parameters.  Stop using
-%                                   this form in favor of 'eccentricityDegs'.  Just to have
-%                                   a value, osFlag == false -> eccentricityDegs = 10 and 
-%                                   osFlag == true -> eccentricityDegs = 0;
+%     'eccentricity'                Eccentricity in degrees. Determines parameters used.  Currently
+%                                   we just have foveal and peripheral parameters, and somewhat
+%                                   arbitrarily set the cuttoff at 2 degrees.  Default is 10 degrees.
 %                                   
 % References:
 %     http://isetbio.org/cones/adaptation%20model%20-%20rieke.pdf
@@ -56,6 +38,7 @@ classdef osBioPhys < outerSegment
 % 08/05/17  dhb   Add eccentricityDegs key/value pair, and comments about it.
 %                 This had been suggested previously in the comments as required.
 %                 I did it in a backwards compatiable fashion.
+%           dhb   Deprecate 'osType' and change 'eccentricityDegs' to 'eccentricity'.
 
     properties(Access = private)
         %state  Biophysics parameter state
@@ -77,24 +60,11 @@ classdef osBioPhys < outerSegment
            
             % Parse input
             p = inputParser;
-            addParameter(p,'osType',false,@islogical);
-            addParameter(p,'eccentricityDegs',-1,@isnumeric);
+            addParameter(p,'eccentricity',10,@isnumeric);
             p.parse(varargin{:});
-            eccentricityDegs = p.Results.eccentricityDegs; 
-           
-            % Handle deprecated call where osType == true meant foveal and osType == false meant
-            % peripheral.  We respect the old osType flag when the eccentricityDegs parameter
-            % has its defaul value of -1.  Otherwise osFlag is ignored in favor of the expliclity
-            % passed eccentricity.
-            if (eccentricityDegs == -1)
-                if (p.Results.osType)
-                    eccentricityDegs = 0;
-                else
-                    eccentricityDegs = 10;
-                end
-            end 
+            eccentricityDegs = p.Results.eccentricity; 
             
-            % If eccentricity is greater than 2, use peripheral parameters
+            % If eccentricity is greater than foveal/peripheral cutoff, use peripheral parameters
             if (eccentricityDegs > obj.fovealPeripheralCutoffDegs) 
                     % Peripheral parameters
                     obj.model.sigma = 22;       % rhodopsin activity decay rate (1/sec) - default 22
@@ -108,7 +78,7 @@ classdef osBioPhys < outerSegment
                     obj.model.betaSlow = 0.4;   % rate constant for slow calcium modulation of channels - default 0.4
                     obj.model.n = 4;  	        % cooperativity for cyclase, hill coef - default 4
                     obj.model.kGc = 0.5;        % hill affinity for cyclase - default 0.5
-                    obj.model.OpsinGain = 10;   % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+                    obj.model.OpsinGain = 10;   % So stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
                     
             % Othewise use foveal parameters
             else
@@ -124,12 +94,8 @@ classdef osBioPhys < outerSegment
                     obj.model.betaSlow = 0.4;   % rate constant for slow calcium modulation of channels - default 0.4
                     obj.model.n     = 4;        % cooperativity for cyclase, hill coef - default 4
                     obj.model.kGc   = 0.5;      % hill affinity for cyclase - default 0.5
-                    obj.model.OpsinGain = 12;   % so stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
+                    obj.model.OpsinGain = 12;   % So stimulus can be in R*/sec (this is rate of increase in opsin activity per R*/sec) - default 10
             end
-            
-            % % Derived properties
-            % obj.model.q    = 2 * obj.model.beta * obj.model.cdark / (obj.model.k * obj.model.gdark^obj.model.h);
-            % obj.model.smax = obj.model.eta/obj.model.phi * obj.model.gdark * (1 + (obj.model.cdark / obj.model.kGc)^obj.model.n);
                      
         end
         

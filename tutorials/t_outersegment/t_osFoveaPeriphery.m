@@ -47,7 +47,7 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % Create an os object with peripheral parameters and insert it into a cone
 % mosaic.  Passing a 1 by 1 pattern matrix to the mosaic create call causes
 % the mosaic to have one L cone (because pattern type 2 -> L cone).
-osPeripheral = osBioPhys('eccentricityDegs',10);           
+osPeripheral = osBioPhys('eccentricity',10);           
 osPeripheral.set('noise flag','none');
 cmPeripheral = coneMosaic('os',osPeripheral,'pattern', 2); 
 cmPeripheral.integrationTime = timeStep;
@@ -72,8 +72,8 @@ plot(timeAxis,squeeze(cmPeripheral.current),'r','LineWidth',2);
 
 %% Repeat for foveal dynamics and add to plot
 %
-% Setting 'eccentricityDegs' to 0, for foveal dynamics
-osFoveal = osBioPhys('eccentricityDegs',0);
+% Setting 'eccentricity' to 0, for foveal dynamics
+osFoveal = osBioPhys('eccentricity',0);
 osFoveal.set('noise flag','none');
 cmFoveal = coneMosaic('os',osFoveal, 'pattern', 2); % a single cone
 cmFoveal.integrationTime = timeStep;

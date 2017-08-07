@@ -15,7 +15,7 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %    We take the difference in the response to a constant stimulus and one
 %    with a small delta function increment.
 %
-%    See osLinear.osCompute() for how the impulse response function and mean
+%    See osLinear.osCompute for how the impulse response function and mean
 %    currents are used.
 %
 %    There are different parameters for foveal and peripheral functions, as implemented
@@ -44,17 +44,9 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
 %                                 out of the cMosaic object (default empty). This is passed into routine
 %                                 coneMeanIsomerizations.
 %
-%    'eccentricityDegs'           Value. Eccentricity in degrees to pass on to the osBioPhys object when computing
+%    'eccentricity'               Value. Eccentricity in degrees to pass on to the osBioPhys object when computing
 %                                 the linear impulse response.  See osBioPhys for description of its meaning.
-%                                 Currently this is set to -1 by default, so that the old eccentricity flag
-%                                 is respected for backwards compatibility.
-%
-%    'eccentricity'               Logical. Deprecated usage.  False (default) means use peripheral 
-%                                 parameters, true means use foveal parameters.  Stop using
-%                                 this form in favor of 'eccentricityDegs'.  Just to have
-%                                 a value, osFlag == false -> eccentricityDegs = 10 and 
-%                                 osFlag == true -> eccentricityDegs = 0;
-%   
+%                                 Default 10.
 %
 % See also: coneMeanIsomerizations, osBioPhys, v_osBioPhys, t_coneMosaicFoveal, t_osLinearize, s_osLinearFilters
 
@@ -69,25 +61,9 @@ p = inputParser; p.KeepUnmatched = true;
 p.addRequired('os', @(x) isa(x, 'outerSegment'));
 p.addRequired('cMosaic', @(x) isa(x,'coneMosaic')); 
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
-p.addParameter('eccentricityDegs',-1,@isnumeric);
-p.addParameter('eccentricity',false,@islogical); 
+p.addParameter('eccentricity',10,@isnumeric);
 p.parse(os, cMosaic, varargin{:})
-
-%% Handle deprecated usage of 'eccentricity' key
-% Handle deprecated call where eccentricity == true meant foveal and eccentricity == false meant
-% peripheral.  We respect the old eccentricity flag when the eccentricityDegs parameter
-% has its defaul value of -1.  Otherwise eccentricity is ignored in favor of the expliclity
-% passed eccentricity.
-eccentricityDegs = p.Results.eccentricityDegs;
-if (eccentricityDegs == -1)
-    if (p.Results.eccentricity)
-        eccentricityDegs = 0;
-    else
-        eccentricityDegs = 10;
-    end
-end
-
-eccentricity   = p.Results.eccentricity;        
+eccentricityDegs = p.Results.eccentricity; 
 
 %% Get mean isomerization rate, in R*/sec
 meanRate = coneMeanIsomerizations(cMosaic,'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);
@@ -114,7 +90,7 @@ meanCurrent = zeros(1,3);
 % calculate an impulse response.  We set up a mosaic with a single
 % L cone as a placeholder, but this gets set to the different types
 % in the loop below.
-osCM = osBioPhys('eccentricityDegs',eccentricityDegs);  
+osCM = osBioPhys('eccentricity',eccentricityDegs);  
 osCM.set('noise flag','none');            % Run it without noise
 cm = coneMosaic('os',osCM,'pattern', 2);  % Single cone mosaic, L cone as placeholder
 cm.integrationTime = timeStep;

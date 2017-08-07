@@ -53,11 +53,11 @@ for ii = 1:length(meanIsoArray)
     % Compute outer segment currents for the fovea.
     %
     % Pull out first column of return, corresponds to L cones.
-    tmp = os.linearFilters(cMosaic,'eccentricityDegs',0);
+    tmp = os.linearFilters(cMosaic,'eccentricity',0);
     fovea(:,ii) = tmp(:,1);
     
     % Do it for the periphery
-    tmp = os.linearFilters(cMosaic,'eccentricityDegs',10);
+    tmp = os.linearFilters(cMosaic,'eccentricity',10);
     periphery(:,ii) = tmp(:,1);
     
 end
