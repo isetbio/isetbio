@@ -1,9 +1,12 @@
-%% t_displayCreation
+%%t_displayCreation  Show how to create an ISETBio display structure
 %
-%  This tutorial explains how to create an ISET display structure using
-%  measurement data
+% Description:
+%    This tutorial explains how to create an ISETBio display structure using
+%    measurement data
+
+% HJ/JEF, Stanford, 2015
 %
-%  HJ/JEF, Stanford, 2015
+% 08/07/17  dhb  Update to use Matlab's tempdir to decide where to write the output file.
 
 % Initialize ISET
 ieInit;
@@ -42,6 +45,7 @@ d.dist = 0.5;
 d.isEmissive = true;
 
 %% Spectral power distribution (spd)
+%
 % Wavelength samples
 %
 % This field is a column vector and contains information about which
@@ -151,14 +155,13 @@ d.dixel.controlmap = ones(size(d.dixel.intensitymap));
 d.dixel.renderFunc = [];
 
 %% Save and visualize
+%
 % For how to use display structure, see t_displayIntroduction
-displayFile = fullfile(isetbioRootPath, 'local', 'dExample.mat');
+displayFile = fullfile(tempdir, 'dExample.mat');
 save(displayFile, 'd');
 
-% now we can create it
+% Now we can create it
 d = displayCreate(displayFile);
 
-% have a look
+% Have a look
 vcAddObject(d); displayWindow;
-
-%%
