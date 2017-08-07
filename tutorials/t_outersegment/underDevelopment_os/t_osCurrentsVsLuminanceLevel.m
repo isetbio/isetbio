@@ -1,6 +1,7 @@
 function t_osCurrentsVsLuminanceLevel
-% [DHB NOTE:] NEEDS COMMENTING.  WHAT DOES IT SHOW?
-% [DHB NOTE:] DOES WAY TOO MANY CASES FOR A TUTORIAL.  SHORTEN TO SHOW JUST A FEW AND RUN IN FINITE TIME.
+% [DHB NOTE: NEEDS COMMENTING.  WHAT DOES IT SHOW?]
+% [DHB NOTE: THIS HAD WAY TOO MANY CASES.  I SHORTENED TO TWO.]
+% [DHB NOTE: HOW DOES THIS RELATE TO t_linearFilters?
 
     % Define the time axis for the simulation
     stimulusSamplingInterval = 1/1000;             % 50/1000
@@ -17,8 +18,8 @@ function t_osCurrentsVsLuminanceLevel
     theOI = oiGenerate(noOptics);
     
     % Background luminance levels to be examined
-    luminancesExamined = [50:50:1000]; %  1500 2000 3000];
-
+    luminancesExamined = [100 1000]; 
+    
     % Outer segment time steps to be examined
     osTimeSteps = [0.1]/1000;
 
