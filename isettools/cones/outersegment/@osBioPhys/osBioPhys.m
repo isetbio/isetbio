@@ -45,7 +45,10 @@ classdef osBioPhys < outerSegment
         state; 
         
         %fovealPeripheralCutoffDegs  Eccentricity in degrees beyond which we switch from foveal to peripheral parameters
-        fovealPeripheralCutoffDegs = 2;
+        % The 10 degrees value comes from Fred Rieke. Soon we will have
+        % intermediate eccentricity dynamics (3-5 degrees) so this will
+        % change.
+        fovealPeripheralCutoffDegs = 10;
     end
     
     properties(SetAccess = protected, GetAccess = public)
