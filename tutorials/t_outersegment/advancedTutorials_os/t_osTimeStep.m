@@ -1,19 +1,31 @@
 function t_osTimeStep
+%%t_osTimeStep  Show how to change timebase of os calculation.
 %
-% Demonstrate simulations using three different timebases, one for stimuli (based on stimulus refresh rate), 
-% one for absorptions and eye movements (based on coneMosaic.integrationTime), and a third one for 
-% outer segment current computations (based on os.timeStep) 
-% Also demonstrates usage of the computeForOISequence() method of @coneMosaic, which computes 
-% absorptions and photocurrents for a sequence of sequentially presented optical images with eye movements.
+% Description:
+%    Demonstrate simulations using three different timebases, one for
+%    stimuli (based on stimulus refresh rate), one for absorptions and eye
+%    movements (based on coneMosaic.integrationTime), and a third one for
+%    outer segment current computations (based on os.timeStep)
 %
+%    Also demonstrates usage of the computeForOISequence() method of
+%    @coneMosaic, which computes absorptions and photocurrents for a
+%    sequence of sequentially presented optical images with eye movements.
+%
+%    This is a rather complex tutorial that can demonstrate lots of things.
+%    It has many subfunctions which do lots of the work, and which have no
+%    comments.
+%    [DHB NOTES: This needs more extensive comments before it can be
+%    used in an introductory way.]
+
 % NPC, ISETBIO TEAM, 2016
 %
+% 08/07/17  dhb  Commenting pass.  Decided this was too hard and moved to advanced.
 
 
 %% Init
 ieInit;
 
-% Examine the effects of varying the integrationTime
+%% Examine the effects of varying the integrationTime
 conditionSet = 1;
 
 % Examine effects of varying the response time interval (os.timeStep)
