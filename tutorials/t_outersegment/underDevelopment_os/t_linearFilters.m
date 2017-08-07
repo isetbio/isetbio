@@ -1,4 +1,18 @@
 function t_linearFilters
+%%t_linearFilters
+%
+% Description:
+%   This seems to compute something, perhaps os impulse response, as a function
+%   of background light level.  I can imagine an excellent tutorial coming out
+%   of this, but it needs extensive commenting.
+%
+%   Also, it breaks on plot because the time axis is one shorter than whatever is
+%   being plotted.
+%
+%   [DHB NOTE: THIS IS FOR NPC TO COMMENT.]
+
+% 08/07/17  dhb  Added comment above about my guess as to what this does, and
+%                the note that it is broken.
 
     saveVideos = false;
     
@@ -8,7 +22,7 @@ function t_linearFilters
     oiTimeAxis = oiTimeAxis - mean(oiTimeAxis);
     
     FOV = 1.0;
-    backgroundLuminances = [1 3 5 10 30 50 100 300 500]; 
+    backgroundLuminances = [1 10 100]; 
     osTimeSteps = [0.01 0.05 0.1 0.5 1.0]/1000;
     
     % Compute the stimulus modulation function

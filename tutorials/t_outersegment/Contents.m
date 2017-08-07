@@ -5,6 +5,6 @@
 % t_osFoveaPeriphery            - Illustrate difference in photocurrent response between fovea and periphery
 % t_osLinearize                 - Show how small perturbation linear os impulse responses are obtained
 % t_osNoise                     - Illustrate the noise spectrum for photocurrent.
-% t_osTimeStep                  - 
 %
+% advancedTutorials_os          - Advanced tutorials (directory).
 % underDevelopment_os           - Tutorials that are under development (directory).

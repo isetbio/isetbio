@@ -14,9 +14,8 @@ function t_osTimeStep
 %    This is a rather complex tutorial that can demonstrate lots of things.
 %    It has many subfunctions which do lots of the work, and which have no
 %    comments.
-%
-%    [DHB NOTE: This needs more extensive comments before it can be
-%    used in an introductory way. For NPC to take on.]
+%    [DHB NOTES: This needs more extensive comments before it can be
+%    used in an introductory way.]
 
 % NPC, ISETBIO TEAM, 2016
 %
