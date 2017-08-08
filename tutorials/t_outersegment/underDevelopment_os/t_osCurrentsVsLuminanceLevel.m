@@ -1,6 +1,6 @@
 function t_osCurrentsVsLuminanceLevel
 % [DHB NOTE: NEEDS COMMENTING.  WHAT DOES IT SHOW?]
-% [DHB NOTE: THIS HAD WAY TOO MANY CASES.  I SHORTENED TO TWO.]
+% [DHB NOTE: THIS HAD TOO MANY CASES.  I SHORTENED TO TWO.]
 % [DHB NOTE: HOW DOES THIS RELATE TO t_linearFilters?
 
     % Define the time axis for the simulation

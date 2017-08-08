@@ -1,8 +1,8 @@
 function density = coneDensity(ecc, angleDeg, whichEye, varargin)
-%coneDensity  Compute cone packing density as a function of retinal position
+%%coneDensity  Compute cone packing density as a function of retinal position
 %
-% Usage:
-%     density = coneDensity(ecc, angle, whichEye, varargin)
+% Syntax:
+%     density = coneDensity(ecc, angle, whichEye)
 %
 % Description:
 %     Compute cone packing density as a function of retinal position.
@@ -28,7 +28,8 @@ function density = coneDensity(ecc, angleDeg, whichEye, varargin)
 %      52(10), 7376?7384. http://doi.org/10.1167/iovs.11-7199
 %
 % Example:
-%   density = coneDensity(8*1e-3, 10, 'left');
+%     density = coneDensity(8*1e-3, 10, 'left');
+  
 %
 % See also:
 %   coneMosaic

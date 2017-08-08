@@ -1,4 +1,4 @@
-% t_osLinearize  Show how small perturbation linear os impulse responses are obtained
+%%t_osLinearize  Show how small perturbation linear os impulse responses are obtained
 %
 % Description:
 %    Illustrates the foveal and peripheral cone outer segment temporal

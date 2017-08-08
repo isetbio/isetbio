@@ -22,7 +22,7 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    cMosaic          coneMosaic object
 %
 % Output:
-%    meanRate         Mean absorption rate in R*/sec.
+%    meanRate         Three vector absorption rates for the L,M,S cones in R*/sec.
 %
 % Optional key/value pairs:
 %    perSample                   Normally the returned rate is mean per sec.  Setting
@@ -33,9 +33,6 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %                                If this is passed, it acts on what is passed as this parameter,
 %                                which is taken to be the absorptions in XW format. See RGB2XWFormat
 %                                for a description of XW format.
-%              
-% Return
-%   meanRate - Three vector of mean rates for the (L,M,S) cones (R*/sec)
 
 % 11/2016   JRG   (c) Isetbio team
 % 08/06/17  dhb   Comment cleaning pass.  Added notes where I could not figure it out.

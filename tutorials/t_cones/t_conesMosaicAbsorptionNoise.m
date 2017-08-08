@@ -9,7 +9,7 @@
 %
 %     It does not yet illustrate controlling the 'seed' for the 'frozen' noise case.
 %
-% See also:
+% See also: t_conesMosaicBasic.
 
 % BW, ISETBIO Team, 2016
 %
@@ -27,8 +27,7 @@ scene = sceneCreate('slanted bar');
 oi = oiCreate;
 oi = oiCompute(oi,scene);
 
-%% Look at effect of random (not frozen -> different on every run) Poisson isomerization
-% noise.
+%% Look at effect of random (not frozen -> different on every run) Poisson isomerization noise.
 %
 % Create a cone mosaic and generate isomerizations. The noiseFlag is 'random' by
 % default, but it is set here explictily just because.
