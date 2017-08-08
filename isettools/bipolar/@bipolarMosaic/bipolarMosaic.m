@@ -94,10 +94,10 @@ methods
         
         p = inputParser;
         p.KeepUnmatched = true;      % Keeps spread, stride, eccentricity
-        p.addRequired('cmosaic',@(x)(isequal(class(x),'coneMosaic')));
+        p.addRequired('cmosaic',@(x)(isa(x,'coneMosaic')));
         p.addRequired('cellType', @(x)(ismember(ieParamFormat(x),obj.validCellTypes)));
         
-        p.addParameter('parent',[], @(x)(isequal(class(x),'bipolarLayer')));
+        p.addParameter('parent',[], @(x)(isa(x,'bipolarLayer')));
         p.addParameter('rectifyType', 1, @isnumeric);
         p.addParameter('filterType',  1, @isnumeric);
 
@@ -156,7 +156,7 @@ methods
     
     function bipolarsPerMicron = cellsPerDistance(obj,varargin)
         p = inputParser;
-        p.addRequired('obj',@(x)(isequal(class(obj),'bipolarMosaic')));
+        p.addRequired('obj',@(x)(isa(obj,'bipolarMosaic')));
         p.addParameter('units','m',@ischar);
         p.parse(obj,varargin{:});
         
