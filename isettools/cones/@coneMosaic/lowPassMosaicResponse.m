@@ -1,40 +1,65 @@
-function [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, response, spaceConstants)
-%LOWPASSMOSAICRESPONSE  Low pass filter mosaic responses
-%   [lowPassedResponse, Lmap, Mmap, Smap] = LOWPASSMOSAICRESPONSE(obj, response, spaceConstants)
+function [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, absorptions, spaceConstants)
+%lowPassMosaicResponse  Low pass filter mosaic isomerizations
 %
-%   Spatially low pass filter a mosaic's response using different space
-%   constants for each of the L,M, and S-cone submosaic.
+% Syntax:
+%    [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, response, spaceConstants)
 %
-%   Inputs:
-%   obj               - cone mosaic object
-%   response          - [DHB NOTE: REVEAL WHAT I AM]
-%   spaceConstants    - [DHB NOTE: REVEAL WHAT I AM]
+% Description:
+%    Spatially low pass filter a mosaic's response using different space
+%    constants for each of the L,M, and S-cone submosaic.  This is done after
+%    demosaicing the absorptions using the coneMosaic.demosaiedResponses method.
 %
-%   Outputs:
-%   lowPassedResponse - [DHB NOTE: REVEAL WHAT I AM]  
-%   Lmap              - [DHB NOTE: REVEAL WHAT I AM]  
-%   Mmap              - [DHB NOTE: REVEAL WHAT I AM]  
-%   Smap              - [DHB NOTE: REVEAL WHAT I AM]  
+%    A re-mosaiced version of the low-passed maps is returend, as well 
+%    as low-passed demosaiced images corresponding to the L, M and S
+%    cones.  
 %
-%   Optional parameter name/value pairs chosen from the following:
+%    [DHB NOTE: Need to say what kind of filter is applied and what the space
+%    constant parameter means in the context of the filter parameterization.]
 %
-%   None currently.
+% Input:
+%    obj               - coneMosaic object
+%    absorptions       - The absorptions matrix from the mosaic.  Absorptions is a synonym for isomerizations in ISETBio.
+%    spaceConstants    - Three vector of space constants for L, M, and S cones in microns.
+%
+% Output:
+%    lowPassedResponse - Remosaiced low-passed absorptions 
+%    Lmap              - Demosaiced low-passed L cone plane  
+%    Mmap              - Demosaiced low-passed M cone plane  
+%    Smap              - Demosaiced low-passed S cone plane    
+%
+% Optional key/value pairs:
+%     None.
 
 % NPC, ISETBIO Team, 2016  
+%
+% 08/08/17  dhb  Figured out what the inputs and output are and commented.
   
-    demosaicedResponses = obj.demosaicedResponses(response);
-    lowPassedResponse = 0*response;
-    spaceAxis = obj.patternSupport(1,:,1)*1e6;
-    responseSize = size(response);
+    %% Get desmosaiced responses
+    demosaicedResponses = obj.demosaicedResponses(absorptions);
     
+    %% Initialize
+    lowPassedResponse = 0*absorptions;
+    spaceAxis = obj.patternSupport(1,:,1)*1e6;
+    responseSize = size(absorptions);
+    
+    %% Loop over cone types
     for mosaicIndex = 1:3
+        % Create low pass filter
         lowPassFilter = generateLowPassFilter(ceil(spaceConstants(mosaicIndex)) / (spaceAxis(2)-spaceAxis(1)));
+        
+        % Pad the demosaiced responses for this cone type
         margin = size(lowPassFilter,2);
         paddedResponse = padarray(squeeze(demosaicedResponses(:,:,mosaicIndex)), margin*[1 1], 0);
+        
+        % Convolve
         tmp = conv2(paddedResponse, lowPassFilter, 'same');
         tmp = tmp(margin+(1:responseSize(1)), margin+(1:responseSize(2)));
+        
+        % Pop the result into the places where there is a cone of this type
         indices = find(obj.pattern == mosaicIndex+1);
         lowPassedResponse(indices) = tmp(indices);
+        
+        % Set the returned demosaiced low-pass filtered maps for each cone type
         if (mosaicIndex == 1)
             Lmap = tmp;
             Lmap(1:size(lowPassFilter,1), 1:size(lowPassFilter,2)) = lowPassFilter/max(lowPassFilter(:)) * max(Lmap(:));
@@ -49,6 +74,9 @@ function [lowPassedResponse, Lmap, Mmap, Smap] = lowPassMosaicResponse(obj, resp
     
 end
 
+%% Generate the convolutio kernel
+%
+% [DHB NOTE: Please say what kind of function this is.]
 function kernel2D = generateLowPassFilter(sigma)
     s = sqrt(-log(0.001)/0.5);   % 1/1000
     spaceAxis   = -round(s*sigma):1:round(s*sigma);
