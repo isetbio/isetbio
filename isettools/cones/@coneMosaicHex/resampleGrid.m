@@ -8,7 +8,6 @@ function resampleGrid(obj, resamplingFactor)
     
     % Compute hex grid nodes
     obj.coneLocsHexGrid = computeHexGridNodes(obj);
-    %obj.coneLocsHexGrid = computeHexGridNodesOriginal(obj);
     
     % Decrease patternSampleSize and increase mosaicSize both by the resamplingFactor
     obj.resamplingFactor = resamplingFactor;
@@ -28,12 +27,7 @@ function hexLocs = computeHexGridNodes(obj)
     grid.lambdaMid = obj.lambdaMid;
     if (~isempty(obj.customLambda))
         grid.lambdaMid = obj.customLambda;
-        customRadius = (obj.customLambda*1e-6)/2;
-        % Adjust the geometric size of the pigment.
-        % Note: we are not adjusting the area-collecting pigment size
-        % The user has to do this
-        obj.pigment.width = 2*customRadius;
-        obj.pigment.height = 2*customRadius;  
+        grid.lambdaMin = obj.customLambda;
     end
     
     grid.coneSpacingFunction = @coneSpacingFunction;
@@ -45,8 +39,8 @@ function hexLocs = computeHexGridNodes(obj)
     grid.radius = 1.1*sqrt((grid.width/2)^2 + (grid.height/2)^2);
     grid.borderTolerance = 0.001*obj.lambdaMin;
     
-    if (obj.varyingDensity)
-        hexLocs = generateConePositionsOnVaryingDensityGrid(grid);
+    if (obj.eccBasedConeDensity)
+        hexLocs = generateConePositionsOnVaryingDensityGrid(obj,grid);
     else
         hexLocs = generateConePositionsOnConstantDensityGrid(grid);
     end
@@ -65,38 +59,31 @@ function hexLocs = computeHexGridNodes(obj)
     hexLocs = hexLocs * 1e-6; 
 end
 
-function conePositions = generateConePositionsOnVaryingDensityGrid(gridParams)
-
-    % generate mosaic of highest density
-    conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridParams);
-end
-
-function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridParams)
+function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParams)
     
     % First generate perfect grid
     conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMin, gridParams.rotationAngle);
-    
-    % sample probabilistically according to coneSpacingFunction
-    coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-    normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
-    densityP = 0.956 * 2/sqrt(3) * (1 ./ normalizedConeSeparations).^2;
-    
-    showConeSeparations = false;
-    if (showConeSeparations)
-        figure(9); clf;
-        scatter3(conePositions(:,1), conePositions(:,2), coneSeparations);
-    end
-    
-    keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
-    conePositions = conePositions(keptConeIndices,:);
-    
+
     % Remove cones outside the desired region by applying the passed domainfunction
     d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius);
     conePositions = conePositions(d < gridParams.borderTolerance,:);
     
-    % remove dublicate points
-    [~, ia, ~] = unique(round(conePositions/gridParams.lambdaMin), 'rows');
-    conePositions = conePositions(ia,:);
+    if (obj.saveLatticeAdjustmentProgression)
+        obj.initialLattice = conePositions * 1e-6;
+        obj.latticeAdjustmentSteps = [];
+    end
+    
+    % sample probabilistically according to coneSpacingFunction
+    coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+    normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
+    
+    % Fudge factor needed to maximize agreement between actual and desired density
+    fudgeFactor = 1.00;
+    exponentF = 2.05;
+    densityP = fudgeFactor * (1 ./ normalizedConeSeparations).^exponentF;
+
+    keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
+    conePositions = conePositions(keptConeIndices,:);
 
     % Add jitter
     beginWithJitteredPositions = false;
@@ -104,29 +91,22 @@ function conePositions = generateInitialConePositionsOnVaryingDensityGrid(gridPa
         conePositions = conePositions + randn(size(conePositions))*gridParams.lambdaMin/6;
     end
     
+    if (obj.saveLatticeAdjustmentProgression)
+        obj.latticeAdjustmentSteps(1,:,:) = conePositions * 1e-6;
+    end
     % Iteratively adjust the grid for a smooth coverage of the space
-    conePositions = smoothGrid(conePositions, gridParams);
+    conePositions = smoothGrid(obj, conePositions, gridParams);
 end
 
 % Iteratively adjust the grid for a smooth coverage of the space
-function conePositions = smoothGrid(conePositions, gridParams)
+function conePositions = smoothGrid(obj, conePositions, gridParams)
 
-    conesNum = size(conePositions,1);
-%     continueCheck = input(sprintf('The mosaic will contain %d cones. Carry on with iterative spacing smoothing? [y/n]: ', conesNum), 's');
-%     if (~strcmp(continueCheck, 'y'))
-%         return;
-%     end
-    
     % Convergence parameters
-    % fraction = 0.01;
-    fraction = 0.5;
-    positionalDiffTolerance = fraction * gridParams.lambdaMin;  
+    positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF* gridParams.lambdaMin;  
     deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
-    
-    % fraction = 0.001;
-    fraction = 0.05;
-    dTolerance = fraction * gridParams.lambdaMin;
+   
+    dTolerance = obj.latticeAdjustmentDelaunayToleranceF * gridParams.lambdaMin;
     
     % Initialize convergence
     oldConePositions = inf;
@@ -134,6 +114,9 @@ function conePositions = smoothGrid(conePositions, gridParams)
     
     % Turn off Delaunay triangularization warning
     warning('off', 'MATLAB:qhullmx:InternalWarning');
+    
+    % Number of cones to be adjusted
+    conesNum = size(conePositions,1);
     
     % Iteratively adjust the cone positions until the forces between nodes (conePositions) reach equlibrium.
     notConverged = true;
@@ -210,7 +193,9 @@ function conePositions = smoothGrid(conePositions, gridParams)
         
         % force at all fixed cone positions must be 0
         % netForceVectors(1:size(fixedConesPositions,1),:) = 0;
-        forceMagnitudes(iteration,:) = sqrt(sum(netForceVectors.^2,2))/gridParams.lambdaMin;
+        
+        % Save force magnitudes
+        %forceMagnitudes(iteration,:) = sqrt(sum(netForceVectors.^2,2))/gridParams.lambdaMin;
         
         % update cone positions according to netForceVectors
         conePositions = conePositions + deltaT * netForceVectors;
@@ -236,13 +221,15 @@ function conePositions = smoothGrid(conePositions, gridParams)
             notConverged = false;
         end
         
+        if (obj.saveLatticeAdjustmentProgression)
+            obj.latticeAdjustmentSteps(size(obj.latticeAdjustmentSteps,1)+1,:,:) = conePositions * 1e-6;
+        end 
     end % while (notConverged)
-    fprintf('\nDone with iterative adjustment in %2.1f seconds\n', toc)
+    fprintf('\nDone with iterative adjustment in %2.1f seconds\n', toc);
     
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
 end
-
 
 function conePositions = generateConePositionsOnConstantDensityGrid(gridParams)
     conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMid, gridParams.rotationAngle);
@@ -266,7 +253,6 @@ function lambda = midConeSpacing(obj)
     ang = atan2(midY, midX)/pi*180;
     [coneSpacingInMeters, aperture, density] = coneSize(eccentricityInMeters,ang);
     lambda = coneSpacingInMeters * 1e6;  % in microns
-    
 end
 
 function lambda = minConeSpacing(obj)
@@ -298,9 +284,8 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
     end
     
     % To microns
-    densityScalar = sqrt(1.1931428);
-    X2 = X2 * lambda * densityScalar;
-    Y2 = Y2 * lambda * densityScalar;
+    X2 = X2 * lambda;
+    Y2 = Y2 * lambda;
     marginInConePositions = 0.1;
     indicesToKeep = (X2>=-marginInConePositions) & ...
                     (X2<= cols+marginInConePositions) &...
@@ -314,7 +299,6 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
     % rotate
     R = [cos(rotationAngle) -sin(rotationAngle); sin(rotationAngle) cos(rotationAngle)];
     hexLocs = (R*(hexLocs)')';
-    
 end
 
 function distances = circularDomainFunction(conePositions, center, radius)
@@ -329,40 +313,6 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(c
     [coneSpacingInMeters, aperture, density] = coneSize(eccentricitiesInMeters,angles);
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6; 
 end
-
-function hexLocs = computeHexGridNodesOriginal(obj)
-
-    fprintf('Computing hex mosaic corresponding to rect mosaic with %d rows and %d cols\n', obj.rows, obj.cols);
-    extraCols = round(obj.cols/(sqrt(3)/2)) - obj.cols;
-    rectXaxis2 = (1:(obj.cols+extraCols));
-    [X2,Y2] = meshgrid(rectXaxis2, 1:obj.rows);
-    
-    X2 = X2 * sqrt(3)/2;
-    for iCol = 1:size(Y2,2)
-        Y2(:,iCol) = Y2(:,iCol) - mod(iCol-1,2)*0.5;
-    end
-    
-    densityScalar = sqrt(2/sqrt(3.0));
-    X2 = X2 * densityScalar;
-    Y2 = Y2 * densityScalar;
-    marginInConePositions = 0.1;
-    indicesToKeep = (X2>=-marginInConePositions) & ...
-                    (X2<=obj.cols+marginInConePositions) &...
-                    (Y2>=-marginInConePositions) & ...
-                    (Y2<=obj.rows+marginInConePositions);             
-    xHex = X2(indicesToKeep);
-    yHex = Y2(indicesToKeep);
-   
-    xHex = xHex * obj.patternSampleSize(1);
-    yHex = yHex * obj.patternSampleSize(2);
-    hexLocs = [xHex(:)-mean(xHex(:))   yHex(:)-mean(yHex(:))];
-    
-    % move to center
-    hexLocs(:,1) = hexLocs(:,1) + obj.center(1);
-    hexLocs(:,2) = hexLocs(:,2) + obj.center(2);
-   
-end
-
 
 function pattern = rectSampledHexPattern(obj)
     fprintf('\nResampling grid. Please wait ... ');

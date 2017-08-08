@@ -1,14 +1,14 @@
 classdef coneMosaicHex < coneMosaic
     %CONEMOSAICHEX Create a hexagonal cone mosaic class
     %
-    %   cMosaicHex =  CONEMOSAICHEX(resamplingFactor, varyingDensity, customLambda, varargin);
+    %   cMosaicHex =  CONEMOSAICHEX(resamplingFactor,  varargin);
     %
     % The cone mosaic HEX is a subclass of coneMosaic. It differs because
     % the array of cones is placed on a hexagonal, rather than rectangular,
     % grid. 
     %
     % The hex mosaic is sampled according to the resamplingFactor. The cone
-    % density can be spatially-varying if varyingDensity is set to true.
+    % density can be spatially-varying if eccBasedConeDensity is set to true.
     %
     % The customLambda argument is empty to obtain default performance, but
     % may be set to set the spacing for regularly spaced hexagonal mosaics.
@@ -19,16 +19,25 @@ classdef coneMosaicHex < coneMosaic
     %
     % Example:
     %      resamplingFactor = 8;
-    %      varyingDensity = false;
-    %      customLambda = [];       % If set to empty, @coneMosaiHex chooses
-    %                                 the cone spacing based on the eccentricity 
-    %                                 of the mosaic as determined by the 
-    %                                 coneSize(eccentricityInMeters,ang) function.
-    %                                 If set to a value (specified in microns), 
-    %                                 cone spacing is set to that value. Note that
-    %                                 if the 'varyingDensity' param is  set to true, 
-    %                                 the 'customLambda' param is ignored.
-    % cMosaicHex = coneMosaicHex(resamplingFactor, varyingDensity, customLambda, ...
+    %      eccBasedConeDensity = false;
+    %      customLambda = 3.0;              %If not passed (or set to []) @coneMosaiHex chooses
+    %                                       the cone spacing based on the eccentricity 
+    %                                       of the mosaic as determined by the 
+    %                                       coneSize(eccentricityInMeters,ang) function.
+    %                                       If set to a value (specified in microns), 
+    %                                       cone spacing is set to that value. Note that
+    %                                       if the 'eccBasedConeDensity' param is  set to true, 
+    %                                       the 'customLambda' param is ignored.
+    %     customInnerSegmentDiameter = 2.5; %If not passed (or set to []) @coneMosaiHex chooses
+    %                                        the default pigment.pdWidth, pigment.pdHeight values from
+    %                                        its superclass. If it set to a value (specified in microns)
+    %                                        @coneMosaicHex sets pigment.pdWidth and pigment.pdheight to
+    %                                        sizeForSquareApertureFromDiameterForCircularAperture(customInnerSegmentDiameter)
+    %
+    % cMosaicHex = coneMosaicHex(resamplingFactor, ...
+    %           'eccBasedConeDensity', eccBasedConeDensity, ...
+    %                  'customLambda', 3.0, ...
+    %    'customInnerSegmentDiameter', 2.5, ...
     %                          'name', 'the hex mosaic', ...
     %                          'size', [48 32], ...
     %                     'noiseFlag', 0,  ...
@@ -44,55 +53,124 @@ classdef coneMosaicHex < coneMosaic
         lambdaMin                               % min cone separation in the mosaic
         lambdaMid                               % the cone separation at the middle of the mosaic
         customLambda                            % user-supplied lambda (cone spacing) for regularly spaced mosaics (in microns)
-        varyingDensity                          % whether to have an eccentricity-based spatially-varying density (boolean)
+        customInnerSegmentDiameter              % user-supplied inner segment diameter (for a circular aperture, in microns)
+        eccBasedConeDensity                     % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
-        coneLocsHexGrid                         % computed coneLocs (hex grid)
+        sConeMinDistanceFactor                  % min distance between neighboring S-cones (to make the S-cone lattice semi-regular) = f * local cone separation 
+        sConeFreeRadiusMicrons                  % radius of S-cone free retina, default: 45 microns, which is 0.15, so S-cone free region = 0.3 degs diameter
+        coneLocsHexGrid                         % floating point coneLocs on the hex grid. This is sampled according to the resamplingFactor.
         coneLocsOriginatingRectGrid             % coneLocs of the originating rect grid
         patternOriginatingRectGrid              % cone pattern of the originating rect grid
         patternSampleSizeOriginatingRectGrid    % pattern sample size of the originating rect grid
         fovOriginatingRectGrid                  % FOV of the originating rect grid
         rotationDegs                            % rotation in degrees
+        saveLatticeAdjustmentProgression        % flag indicating whether to save the iterative lattice adjustment steps
+        latticeAdjustmentSteps                  % 3D array with coneLocsHexGrid at each step of the lattice adjustment
+        initialLattice                          % coneLocsHexGrid at iteration 0 (perfect hex grid)
+        latticeAdjustmentPositionalToleranceF   % tolerance for whether to decide that there is no move movement
+    	latticeAdjustmentDelaunayToleranceF     % tolerance for deciding whether to trigger another Delaunay triangularization
     end
     
     % Public methods
     methods
         
         % Constructor
-        function obj = coneMosaicHex(upSampleFactor, varyingDensity, customLambda, varargin)
+        function obj = coneMosaicHex(upSampleFactor, varargin)
             % Initialize the hex cone mosaic class
-            %   cMosaic =  coneMosaicHex(upSampleFactor, varyingDensity, customLambda, ['cone',cone,'os','os]);
+            %   cMosaic =  coneMosaicHex(upSampleFactor, ['varyingDensity', true, 'customLambda', 3, 'customInnerSegmentDiameter'', 2.5, 'cone',cone,'os','os]);
+            
+            % Params that we want to consume (not pass to our super-class @coneMosaic)
+            paramsForConeMosaicHex = {...
+                'fovDegs', ...
+                'eccBasedConeDensity', ...
+                'sConeMinDistanceFactor', ...
+                'sConeFreeRadiusMicrons', ...
+                'customLambda', ...
+                'customInnerSegmentDiameter', ...
+                'rotationDegs', ...
+                'saveLatticeAdjustmentProgression',...
+                'latticeAdjustmentPositionalToleranceF', ...
+                'latticeAdjustmentDelaunayToleranceF' ...
+                };
             
             % Call the super-class constructor.
             vararginForConeMosaic = {};
             vararginForConeHexMosaic = {};
             for k = 1:2:numel(varargin)
-                if (strcmp(varargin{k}, 'rotationDegs'))
+                if (ismember(varargin{k}, paramsForConeMosaicHex))
                     vararginForConeHexMosaic{numel(vararginForConeHexMosaic)+1} = varargin{k};
                     vararginForConeHexMosaic{numel(vararginForConeHexMosaic)+1} = varargin{k+1};
                 else
+                    if (strcmp(varargin{k}, 'center'))
+                        error('Currently coneMosaicHex only supports mosaics centered at 0 eccentricity. Do not pass a ''center'' param.');
+                    end
                     vararginForConeMosaic{numel(vararginForConeMosaic)+1} = varargin{k};
                     vararginForConeMosaic{numel(vararginForConeMosaic)+1} = varargin{k+1};
                 end
             end
             obj = obj@coneMosaic(vararginForConeMosaic{:});
+    
+            % parse input
+            p = inputParser;
+            p.addRequired('resamplingFactor', @isnumeric);
+            p.addParameter('fovDegs', 0.25, @(x)(isnumeric(x)&&(numel(x)==1)));
+            p.addParameter('eccBasedConeDensity', false, @islogical);
+            p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
+            p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
+            p.addParameter('customInnerSegmentDiameter', [], @isnumeric);
+            p.addParameter('customLambda', [], @isnumeric);
+            p.addParameter('rotationDegs', 0, @isnumeric);
+            p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
+            p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
+            p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
+            p.parse(upSampleFactor, vararginForConeHexMosaic{:});
+            
+            % Set input params
+            obj.resamplingFactor = p.Results.resamplingFactor;
+            obj.eccBasedConeDensity = p.Results.eccBasedConeDensity;
+            obj.sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
+            obj.sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
+            obj.customLambda = p.Results.customLambda;
+            obj.customInnerSegmentDiameter = p.Results.customInnerSegmentDiameter;
+            obj.rotationDegs = p.Results.rotationDegs;
+            obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
+            obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
+            obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
+            
+            % Set FOV of the underlying rect mosaic
+            obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
             
             % Get a copy of the original coneLocs
             obj.saveOriginalResState();
             
-            % parse input
-            p = inputParser;
-            p.addRequired('resamplingFactor', @isnumeric);
-            p.addRequired('varyingDensity', @islogical);
-            p.addRequired('customLambda', @isnumeric);
-            p.addParameter('rotationDegs', 0, @isnumeric);
-            p.parse(upSampleFactor, varyingDensity, customLambda, vararginForConeHexMosaic{:});
-            obj.resamplingFactor = p.Results.resamplingFactor;
-            obj.varyingDensity = p.Results.varyingDensity;
-            obj.customLambda = p.Results.customLambda;
-            obj.rotationDegs = p.Results.rotationDegs;
+            % Set custom pigment light collecting dimensions
+            if (~isempty(obj.customInnerSegmentDiameter)) 
+                maxInnerSegmentDiameter = 1e6 * diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
+                if (obj.eccBasedConeDensity) && (obj.customInnerSegmentDiameter>maxInnerSegmentDiameter)
+                   error('The custom inner segment diameter (%2.4f) is > max inner segment diameter (%2.4f) necessary to keep the default cone density. Either set ''eccBasedConeDensity'' to false, or decrease ''customInnerSegmentDiameter''.', obj.customInnerSegmentDiameter, maxInnerSegmentDiameter);
+                end
+                obj.pigment.pdWidth = 1e-6 * sizeForSquareApertureFromDiameterForCircularAperture(obj.customInnerSegmentDiameter);
+                obj.pigment.pdHeight = obj.pigment.pdWidth;
+            end
+            
+            % Set the pigment geometric dimensions
+            if (~isempty(obj.customLambda)) 
+                maxSpacing = 1e6 * diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
+                if (obj.eccBasedConeDensity) && (obj.customLambda > maxSpacing)
+                    error('The custom lambda (%2.4f) is > max separation (%2.4f) in order to keep the default cone density. Either set ''eccBasedConeDensity'' to false, or decrease ''customLambda''.', obj.customLambda, maxSpacing);
+                end
+                obj.pigment.width = 1e-6 * obj.customLambda;
+                obj.pigment.height = obj.pigment.width;
+            end
             
             % Generate sampled hex grid
             obj.resampleGrid(obj.resamplingFactor);
+            
+            % Make s-cone lattice semi-regular, and add s-cone free region.
+            obj.reassignConeIdentities(...
+                'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...   
+                'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);    
+
         end
         
         % Change the FOV of the mosaic
@@ -124,6 +202,9 @@ classdef coneMosaicHex < coneMosaic
         
         % Render (in the passed axesHandle) an activation map for the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
+        
+        % Visualize iterative adjustment of the cone lattice 
+        hFig = plotMosaicProgression(obj);
         
         % Print various infos about the cone mosaic
         displayInfo(obj);

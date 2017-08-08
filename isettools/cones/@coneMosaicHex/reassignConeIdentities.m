@@ -1,8 +1,8 @@
 function reassignConeIdentities(obj, varargin)
 
     p = inputParser;
-    p.addParameter('sConeMinDistanceFactor', 1.0, @isnumeric);
-    p.addParameter('sConeFreeRadiusMicrons', 0.0, @isnumeric);
+    p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
+    p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
     p.parse(varargin{:});
     
     
@@ -10,9 +10,9 @@ function reassignConeIdentities(obj, varargin)
     sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
     sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
     
-    if (p.Results.sConeFreeRadiusMicrons > 0)
+    if (~isempty(p.Results.sConeFreeRadiusMicrons))
         sConeIndices = find(obj.pattern == 4);
-        fprintf('Scones before any S-cone lattice adjustments: %d\n', numel(sConeIndices));
+        fprintf('Scones before making an S-cone free central patch: %d\n', numel(sConeIndices));
         
         [iRows,iCols] = ind2sub(size(obj.pattern), sConeIndices);
         x2Microns = (1e6*sampledHexMosaicXaxis(iCols)).^2;
@@ -22,10 +22,12 @@ function reassignConeIdentities(obj, varargin)
         [addedLconesNum, addedMconesNum] = reassignSconeIdentities(obj, sConeIndices, sConeIndicesToBeReassinged);
         
         sConeIndices = find(obj.pattern == 4);
-        fprintf('Scones after: %d (added Lcones:%d, added Mcones:%d)\n', numel(sConeIndices), addedLconesNum, addedMconesNum);
+        fprintf('Scones after making an S-cone free central patch: %d (added Lcones:%d, added Mcones:%d)\n', numel(sConeIndices), addedLconesNum, addedMconesNum);
+    else
+        fprintf('Will not create an an S-cone free central patch.\n');
     end
     
-    if (p.Results.sConeMinDistanceFactor > 1)  
+    if (~isempty(p.Results.sConeMinDistanceFactor))
         keepLooping = true;
         passIndex = 1;
         while (keepLooping)
@@ -44,7 +46,7 @@ function reassignConeIdentities(obj, varargin)
             eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
             ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
             
-            if (obj.varyingDensity)
+            if (obj.eccBasedConeDensity)
                 [coneSpacing, ~, ~] = coneSize(eccInMeters(:),ang(:));
             else
                 [coneSpacing, ~, ~] = coneSize(0*eccInMeters(:),ang(:));
@@ -91,6 +93,8 @@ function reassignConeIdentities(obj, varargin)
                 keepLooping = false;
             end 
         end % keepLooping
+    else
+        fprintf('Will not adjust the minimum S-cone separation\n.');
     end % p.Results.sConeMinDistanceFactor
     
 end

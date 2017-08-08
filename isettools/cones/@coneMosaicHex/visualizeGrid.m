@@ -23,7 +23,7 @@ p.addParameter('generateNewFigure', false, @islogical);
 p.addParameter('panelPosition', [1 1]);
 p.addParameter('axesHandle', []);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
-p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
+p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
@@ -47,9 +47,16 @@ sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
 if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
     % Note that pigment.pdWidth defines the size of a square collective
     % aperture. Here we compute the equivalent circular aperture
-    dx = sqrt((obj.pigment.pdWidth^2)/pi)*2;
+    dxInner = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
+    dxOuter = [];
+    pause
 elseif (strcmp(visualizedConeAperture, 'geometricArea'))
-    dx = obj.pigment.width;
+    dxOuter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
+    dxInner = []
+elseif (strcmp(visualizedConeAperture, 'both'))
+    dxInner = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
+    dxOuter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
+    pause
 end
 
 if (showCorrespondingRectangularMosaicInstead)
@@ -62,14 +69,27 @@ else
         obj.resamplingFactor, visualizedConeAperture);
 end
 
-pixelOutline.x = [-1 -1 1 1 -1]*dx/2;
-pixelOutline.y = [-1 1 1 -1 -1]*dx/2;
-originalPixelOutline.x = [-1 -1 1 1 -1]*dx/2.0;
-originalPixelOutline.y = [-1 1 1 -1 -1]*dx/2.0;
+if (~isempty(dxOuter)) 
+    pixelOutline.x = [-1 -1 1 1 -1]*dxOuter/2;
+    pixelOutline.y = [-1 1 1 -1 -1]*dxOuter/2;
+else
+    pixelOutline.x = [-1 -1 1 1 -1]*dxInner/2;
+    pixelOutline.y = [-1 1 1 -1 -1]*dxInner/2;
+end
 
-iTheta = (0:20:360)/180*pi;
-apertureOutline.x = dx/2.0 * cos(iTheta);
-apertureOutline.y = dx/2.0 * sin(iTheta);
+iTheta = (0:15:360)/180*pi;
+if (~isempty(dxOuter))  
+    outerApertureOutline.x = dxOuter/2.0 * cos(iTheta);
+    outerApertureOutline.y = dxOuter/2.0 * sin(iTheta);
+else
+    outerApertureOutline = [];
+end
+if (~isempty(dxInner))  
+    innerApertureOutline.x = dxInner/2.0 * cos(iTheta);
+    innerApertureOutline.y = dxInner/2.0 * sin(iTheta);
+else
+    innerApertureOutline = [];
+end
 
 rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
@@ -128,21 +148,36 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none'; % [1 0 0]; 
     faceColor = [1.0 0. 0.];
-    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    if (~isempty(outerApertureOutline))
+        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.9 0.75 0.75], lineStyle);
+    end
+    if (~isempty(innerApertureOutline))
+        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    end
     
     % M-cones
     idx = find(obj.pattern == 3);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0.7 0]; 
     faceColor = [0. 0.7 0.];
-    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    if (~isempty(outerApertureOutline))
+        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.75 0.9 0.75], lineStyle);
+    end
+    if (~isempty(innerApertureOutline))
+        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    end
     
     % S-cones
     idx = find(obj.pattern == 4);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0 1]; 
     faceColor = [0. 0. 1.0];
-    renderPatchArray(axesHandle, apertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    if (~isempty(outerApertureOutline))
+        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.75 0.75 0.9], lineStyle);
+    end
+    if (~isempty(innerApertureOutline))
+        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    end
     
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing the locations of the perfect hex grid
@@ -156,17 +191,17 @@ else
     idx = find(obj.patternOriginatingRectGrid==2);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7]; lineStyle = '-';
-    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==3);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 1.0 0.7];
-    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==4);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 0.7 1.0];
-    renderPatchArray(axesHandle, originalPixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 end
 
 if (~strcmp(showConeDensityContour, 'none'))
@@ -193,8 +228,8 @@ set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel'
 set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
 box(axesHandle, 'on'); grid(axesHandle, 'off');
 title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 16);
-set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-dx sampledHexMosaicXaxis(end)+dx]);
-set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-dx sampledHexMosaicYaxis(end)+dx]);
+set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
+set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
 
 drawnow;
 
