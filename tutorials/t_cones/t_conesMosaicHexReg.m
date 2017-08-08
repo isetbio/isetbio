@@ -1,8 +1,9 @@
-%%t_conesMosaicHex  Generate and use a hexagonal cone mosaic with eccentricity-based cone spacing.
+%%t_conesMosaicHexReg  Generate and use a hexagonal mosaic with fixed (but custom) cone spacing and inner segment diameter.
 %
 % Description:
-%   Shows how to generate a custom hexagonal mosaic, including an S-cone free
-%   region, and a desired S-cone spacing, with an eccentricity based cone spacing.
+%   Shows how to generate a custom regular hexagonal mosaic, including a
+%   desired cone spacing and inner segment diameter. Here we allow S-cones
+%   even at the foveola, and a 4-fold spacing between L/M cones
 %
 %   Then shows how to compute isomerizations for this mosaic to a simple stimulus.
 %
@@ -19,11 +20,13 @@ ieInit; clear; close all;
 %% Set mosaic parameters
 mosaicParams = struct(...
     'name', 'the hex mosaic', ...
-    'resamplingFactor', 5, ...                      % Sets underlying pixel spacing; controls the accuracy of the hex mosaic grid (9 is pretty good, but slow)
+    'resamplingFactor', 9, ...                      % Sets underlying pixel spacing; controls the accuracy of the hex mosaic grid (9 is pretty good, but slow)
     'fovDegs', 0.35, ...                            % FOV in degrees
-    'eccBasedConeDensity', true, ...                % Whether to have an eccentricity based, spatially - varying density
-    'sConeMinDistanceFactor', 3.0, ...              % Min distance between neighboring S-cones = f * local cone separation - used to make the S-cone lattice semi-regular
-    'sConeFreeRadiusMicrons', 45, ...               % Radius of S-cone free retina, in microns
+    'customLambda', 2.0, ...                        $ cone spacing in microns
+    'customInnerSegmentDiameter', 1.6, ...          % inner segment diameter in microns
+    'sConeFreeRadiusMicrons', [], ...               % no S-cone free region
+    'eccBasedConeDensity', false, ...               % Whether to have an eccentricity based, spatially - varying density
+    'sConeMinDistanceFactor', 4.0, ...              % Min distance between neighboring S-cones = f * local cone separation - used to make the S-cone lattice semi-regular
     'spatialDensity', [0 6/10 3/10 1/10]...         % With a LMS density of of 6:3:1
     );
 
@@ -31,19 +34,19 @@ mosaicParams = struct(...
 theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
     'name', mosaicParams.name, ...
     'fovDegs', mosaicParams.fovDegs, ...
+    'customLambda', mosaicParams.customLambda, ...
+    'customInnerSegmentDiameter', mosaicParams.customInnerSegmentDiameter, ... 
     'eccBasedConeDensity', mosaicParams.eccBasedConeDensity, ...
-    'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ... 
-    'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...                   
-    'spatialDensity', mosaicParams.spatialDensity, ...
-    'latticeAdjustmentPositionalToleranceF', 0.01*2, ...        % for best (but much slower results) this should either not get passed or get set to equal or lower than 0.01      
-    'latticeAdjustmentDelaunayToleranceF', 0.001*2 ...          % for best (but much slower results) this should either not get passed or get set to equal or lower than 0.001 
+    'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ...     
+    'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...
+    'spatialDensity', mosaicParams.spatialDensity ...
 );
 
 %% Print some grid info
 theHexMosaic.displayInfo();
 
 %% Visualize the mosaic, showing both the light collecting area (inner segment) and the geometric area
-visualizedAperture = 'both'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
+visualizedAperture = 'lightCollectingArea'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
 theHexMosaic.visualizeGrid('visualizedConeAperture', visualizedAperture, 'generateNewFigure', true);
 
 

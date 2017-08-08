@@ -49,14 +49,12 @@ if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
     % aperture. Here we compute the equivalent circular aperture
     dxInner = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
     dxOuter = [];
-    pause
 elseif (strcmp(visualizedConeAperture, 'geometricArea'))
     dxOuter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
-    dxInner = []
+    dxInner = [];
 elseif (strcmp(visualizedConeAperture, 'both'))
     dxInner = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
     dxOuter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
-    pause
 end
 
 if (showCorrespondingRectangularMosaicInstead)
