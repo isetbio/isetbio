@@ -1,8 +1,8 @@
 %%t_conesMosaicHex  Generate and use a hexagonal cone mosaic with eccentricity-based cone spacing.
 %
 % Description:
-%   Shows how to generate a custom hexagonal mosaic, including an S-cone free
-%   region, and a desired S-cone spacing, with an eccentricity based cone spacing.
+%   Shows how to generate a custom hexagonal mosaic, with an eccentricity based cone spacing 
+%   including an S-cone free region, and a desired S-cone spacing.
 %
 %   Then shows how to compute isomerizations for this mosaic to a simple stimulus.
 %

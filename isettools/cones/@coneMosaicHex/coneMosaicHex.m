@@ -165,10 +165,12 @@ classdef coneMosaicHex < coneMosaic
             % Generate sampled hex grid
             obj.resampleGrid(obj.resamplingFactor);
             
-            % Make s-cone lattice semi-regular, and add s-cone free region.
-            obj.reassignConeIdentities(...
-                'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...   
-                'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);    
+            if ((~isempty(obj.sConeMinDistanceFactor)) || (~isempty(obj.sConeFreeRadiusMicrons)))
+                % Make s-cone lattice semi-regular, and/or add an s-cone free region.
+                obj.reassignConeIdentities(...
+                    'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...   
+                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);    
+            end
 
         end
         
