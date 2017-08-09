@@ -5,7 +5,7 @@
 % t_conesMosaicAbsorptionNoise  - Illustrate noise generation for the coneMosaic object.
 % t_conesMosaicBasic            - Basic introduction to the cone mosaic object.
 % t_conesMosaicHex              - Generate and use a hexagonal cone mosaic with eccentricity-based cone spacing.
-% t_coneMosaicReg               - Generate and use a hexagonal mosaic with fixed (but custom) cone spacing and inner segment diameter.
+% t_coneMosaicHExReg            - Generate and use a hexagonal mosaic with fixed (but custom) cone spacing and inner segment diameter.
 % t_conesMosaicPhotoPigment     -
 %
 % advancedTutorials_cones       - Advanced tutorials (directory).

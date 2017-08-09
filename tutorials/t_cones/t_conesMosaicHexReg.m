@@ -7,7 +7,7 @@
 %
 %   Then shows how to compute isomerizations for this mosaic to a simple stimulus.
 %
-% See also: advancedTutorials/t_conesMosaicHex1, ..., advancedTutorials/t_conesMosaicHex6
+% See also: t_coneMosaicHex
 
 % NPC ISETBIO Team, Copyright 2016
 
@@ -48,7 +48,6 @@ theHexMosaic.displayInfo();
 %% Visualize the mosaic, showing both the light collecting area (inner segment) and the geometric area
 visualizedAperture = 'lightCollectingArea'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
 theHexMosaic.visualizeGrid('visualizedConeAperture', visualizedAperture, 'generateNewFigure', true);
-
 
 %% Compute isomerizations to a simple stimulus for the resulting mosaic.
 % Generate ring rays stimulus
