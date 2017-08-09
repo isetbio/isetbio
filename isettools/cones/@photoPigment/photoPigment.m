@@ -1,34 +1,54 @@
 classdef photoPigment < hiddenHandle
-    %PHOTOPIGMENT Class for single cone photopigment properties
+    %photoPigment  Class for single cone photopigment and related properties
     %
-    %   pigment = PHOTOPIGMENT();
+    % Syntax:
+    %    pigment = photoPigment;
     %
-    % This class contains properties for the photopigment absorption
-    % properties of a single cone cell. 
+    % Description:
+    %    This class contains properties for the photopigment absorption
+    %    properties of a single cone cell. 
     %
-    % For the full cone mosaic, see coneMosaic class
+    %    For the full cone mosaic, see the coneMosaic class
     %
-    % The dominant terms represented here description the photopigment
-    % itself.  In addition, there are a few terms the capture the effective
-    % optical size of the photopigment absorption.
+    %    Most of the terms represented here are descriptions of the photopigment
+    %    itself.  In addition, there are a few terms the capture the effective
+    %    optical size of the photopigment absorption.
     %
-    % By default, we use the data in the isetbio file
-    % data/human/coneAbsorbance.mat to define the cone absorbance.  The
-    % other quantitites are derived from this.
+    %    By default, we use the data in the isetbio file
+    %    data/human/coneAbsorbance.mat to define the cone absorbance.  The
+    %    other quantitites are derived from this.
     %
-    % See t_photoPigment for more information and explanations about this
-    % object.
+    %    [DHB NOTE: Need to explain about width and heigh, pdWidth and pdHeight and
+    %    how these are used.  Perhaps even simplify code not to have both.]
+    %
+    % Input:
+    %    None.
+    %
+    % Output:
+    %    pigment           The created photoPigment object.
+    %   
+    % Optional key/value pairs:
+    %
+    %    'wave'            Vector of wavelengths in nm (400:10:31).
+    %    'opticalDensity'  Three vector of optical densities for L, M and S cone photopigment (default: [0.5 0.5 0.4]).
+    %    'absorbance'      L, M and S cone absorbance spectra. (Default, empty, which cases these to be
+    %                      read from coneAbsorbance.mat.)
+    %    'peakEfficiency'  Peak quantal efficiency for isomerizations for L, M and S cones (default [2 2 2]/3).    
+    %    'width'           Cone width (including gap between cones) in meters (default 2e-6).
+    %    'height'          Cone height (including gap between cones) in meters  (default 2e-6).
+    %    'pdWidth'         Collecting area width in meters (default 2e-6).
+    %    'pdHeight'        Collecting area height in meters (default 2e-6).   
+    %
+    % See also: t_conePhotoPigment, coneMosaic, Macular, lens
     
     % HJ, ISETBIO Team, 2016
-    
-    % See BW queries below
     
     properties  % public properties
         opticalDensity;  % photopigment optical densities for L,M,S
         peakEfficiency;  % peak absorptance efficiency
         
-        width;           % cone width (include gap) in meters
-        height;          % cone height (include gap) in meters
+        width;           % cone width (including gap) in meters
+        height;          % cone height (including gap) in meters
         
         pdWidth;         % photodetector width in meters
         pdHeight;        % photodetector height in meters
@@ -82,8 +102,16 @@ classdef photoPigment < hiddenHandle
             obj.pdHeight = p.Results.pdHeight;
             
             if isempty(p.Results.absorbance)
-                % BW:  Why is coneAbsorbance not cone absorbance?  Should
-                % we change the file on disk so we don't need the 10^?
+                % BW:  Why does coneAbsorbance.mat not contain cone
+                % absorbance directly, rather than log cone absorbance?
+                % Should we change the file on disk so we don't need the
+                % 10^?
+                %
+                % DHB: I once spent a long time to grok the terminology 
+                % of this stuff.  It may be that absorbance is indeed what
+                % we have on disk, and that it is the variable name here that
+                % is wrong.  Or, the file on disk could indeed contain the wrong
+                % thing.  I will see if I can figure this out.
                 obj.absorbance_ = 10 .^ ...
                     ieReadSpectra('coneAbsorbance', obj.wave_);
             else
@@ -91,7 +119,6 @@ classdef photoPigment < hiddenHandle
             end
         end
 
-        
         % get method for dependent variable
         function val = get.absorbance(obj) % inerpolate for absorbance
             val = interp1(obj.wave_, obj.absorbance_, obj.wave, ...

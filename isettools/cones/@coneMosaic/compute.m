@@ -1,74 +1,73 @@
 function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varargin)
-%COMPUTE Compute the cone absorptions, possibly for multiple trials (repeats)
+%compute  Method of coneMosaic, to compute the cone absorptions, possibly for multiple trials (repeats)
 %
-%   @coneMosaic.compute(obj,oi,varargin)
+% Syntax:
+%    [absorptions, current, interpFilters, meanCur] = compute(obj,oi);
+%    [absorptions, current, interpFilters, meanCur] = compute(obj,oiSequence);
 %
-%   Compute the temporal sequence of cone absorptions, which we treat as
-%   isomerizations, R*.  The computation can executed on
-%    * a single optical image (snapshot)
-%    * a single optical image with eye movements, or
-%    * an optical image sequence (oiSequence) with eye movements.
+% Description:
+%    Compute the temporal Sequence of cone absorptions, which we treat as
+%    isomerizations, R*.  The computation can executed on
+%      * a single optical image (snapshot)
+%      * a single optical image with eye movements
+%      * an optical image sequence (oiSequence) with eye movements.
 %
-%   [absorptions, current, interpFilters, meanCur] = COMPUTE(obj,oi,varargin);
-%   [absorptions, current, interpFilters, meanCur] = COMPUTE(obj,oiSequence,varargin);
+%     Any additional key/value pairs will be passed on to routine
+%     the computeForOISequence method, if the input argumment oi is in fact an oiSequence
+%     object.
 %
-%   Inputs:
-%    obj - a coneMosaic object
-%    oi  - optical image, or oiSequence.  See oiCreate for more details
+%     An eye movement path (emPath) can be generated using
+%     the emGenSequence method, or it can be sent in as the 'emPath' variable.
+%     For a single trial, the emPath is a nTime x 2 matrix of (row,col)
+%     positions with respect to the cone mosaic. For the single trial case,
+%     we recommend setting the coneMosaic.emPositions or using
+%     emGenSequence.
 %
-%   Optional inputs (name/value pairs):
-%
-%    'currentFlag'        Compute photocurrent (default false).
-%    'seed' -             Seed to use when obj.noiseFlag is 'frozen (default 1).
-%    'emPath'             Eye movement path (Nx2 matrix) (default
-%                         obj.emPositions). If the input is an oiSequence,
-%                         the eye movement paths can be (nTrials x nTimes x
-%                         2) and multiple trials will be returned (see
-%                         below for more details).
-%    'theExpandedMosaic'  This allows you to set a larger cone mosaic to
-%                         make sure that the eye movements are within the
-%                         mosaic.
-%
-%   Outputs:
-%    absorptions   - cone photon absorptions
-%    current       - cone photocurrent
-%    interpFilters - photon to photocurrent impulse response functions
-%    meanCur       - mean current level
-%
-%   Additional name/value pairs will be passed on to routine
-%   COMPUTEFOROISEQUENCE if the input argumment oi is in fact an oiSequence
-%   object.  See COMPUTEFOROISEQUENCE for more information.
-%
-%   An eye movement path (emPath) can be generated using
-%   coneMosaic.emGenSequence or it can be sent in as the 'emPath' variable.
-%   For a single trial, the emPath is a nTime x 2 matrix of (row,col)
-%   positions with respect to the cone mosaic. For the single trial case,
-%   we recommend setting the coneMosaic.emPositions or using
-%   coneMosaic.emGenSequence.
-%
-%   When using an oiSequence input, you can execute a multiple trial
-%   computation by setting the eye movement variable to a 3D array
-%
+%     When using an oiSequence input, you can execute a multiple trial
+%     computation by setting the eye movement variable to a 3D array
 %          emPath: (nTrials , nTime , 2)
+%     In that case, we return the absorptions and possibly photocurrent for
+%     nTrials in a 4D matrix:  (nTrials x nTime x row x col).
 %
-%   In that case, we return the absorptions and possibly photocurrent for
-%   nTrials in a 4D matrix:  (nTrials x nTime x row x col).
+%     If you set 'currentFlag' to true, then the current is also returned
+%     in a matrix of the same size.
 %
-%   If you set the currentFlag to true, then the current is also returned
-%   in a matrix of the same size.
+%     The cone photon noise is computed according to the setting of the
+%     obj.noiseFlag, which can be 'random','frozen', or 'none'.  If 'frozen',
+%     then you can set the 'seed' parameter.  The default when a mosaic is
+%     created is 'random'.
 %
-%   The cone photon noise is computed according to the setting of the
-%   obj.noiseFlag, which can be 'random','frozen', or 'none'.  If 'frozen',
-%   then you can set the 'seed' parameter.  The default when a mosaic is
-%   created is 'random'.
+%     The cone photocurrent is computed according to obj.os.noiseFlag, which
+%     can also be set to 'random','frozen', or 'none', as above. The default
+%     when an os object is created is 'random'.
 %
-%   The cone photocurrent is computed according to obj.os.noiseFlag, which
-%   can also be set to 'random','frozen', or 'none', as above. The default
-%   when an os object is created is 'random'.
+%   Input:
+%     obj                  A coneMosaic object
+%     oi                   An optical image, or oiSequence. See oiCreate for more details
 %
-%   See also CONEMOSAIC, COMPUTEFOROISEQUENCE.
+% Output:
+%     absorptions          cone photon absorptions
+%     current              cone photocurrent
+%     interpFilters        photon to photocurrent impulse response functions
+%     meanCur              mean current level
 %
+% Optional key/value pairs:
+%     'currentFlag'        Compute photocurrent (default false).
+%     'seed'               Seed to use when obj.noiseFlag is 'frozen (default 1).
+%     'emPath'             Eye movement path (Nx2 matrix) (default
+%                          obj.emPositions). If the input is an oiSequence,
+%                          the eye movement paths can be (nTrials x nTimes x
+%                          2) and multiple trials will be returned (see
+%                          below for more details).
+%     'theExpandedMosaic'  This allows you to set a larger cone mosaic to
+%                          make sure that the eye movements are within the
+%                          mosaic.
+%
+% See also: coneMosaic, computeForOISequence, emGenSequence.
+
 % JRG/BW ISETBIO Team 2016
+% 
+% 08/09/17  dhb  Working on standardizing comment format.  I'm wasnt' happy with my previous pass.
 
 %% If an oi sequence, head that way
 %

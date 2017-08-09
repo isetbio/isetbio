@@ -1,56 +1,67 @@
 classdef coneMosaic < hiddenHandle
-    %CONEMOSAIC - Create a cone mosaic object
-    %   An object of the cone mosaic class defines parameters of the
-    %   retinal cone mosaic, and enables computation of cone isomerizations
-    %   and photocurrent response in an array of cones.
+    %%coneMosaic  Create a cone mosaic object
     %
-    %   cMosaic =  coneMosaic(...,'PARAM1',val1,'PARAM2',val2,...) creates
-    %   the cone mosaic object. Optional parameter name/value pairs are
-    %   listed below.
+    % Syntax:
+    %     cMosaic = coneMosaic;
+    %     cMosaic = coneMosaic('pigment',pp);
     %
-    %   The cone mosaic defines the absorptions and photocurrent in an array
-    %   of cones. The default cone mosaic is rectangular.  There is a
-    %   subclass CONEMOSAICHEX that allows more realistic hexagonal and
-    %   variable spacing mosaics. That subclass is implemented by using a
-    %   finer grid and placing the cones at a subset of locations on the
-    %   grid.
+    % Description:
+    %    An object of the cone mosaic class defines parameters of the
+    %    retinal cone mosaic, and enables computation of cone isomerizations
+    %    and photocurrent response in an array of cones.
     %
-    %   The cone quantum efficiencies are defined by both the macular pigment
-    %   and the pigment. The lens is incoporated as part of the optics.
+    %    cMosaic =  coneMosaic(...,'PARAM1',val1,'PARAM2',val2,...) creates
+    %    the cone mosaic object. Optional parameter name/value pairs are
+    %    listed below.
     %
-    %   The isomerizations (absorptions, R*) are calculated using
-    %   coneMosaic.compute.
+    %    The cone mosaic defines the absorptions and photocurrent in an array
+    %    of cones. The default cone mosaic is rectangular.  There is a
+    %    subclass coneMosaicHex that allows more realistic hexagonal and
+    %    variable spacing mosaics. That subclass is implemented by using a
+    %    finer grid and placing the cones at a subset of locations on the
+    %    grid.
     %
-    %   The isomerizations are converted to photocurrent by the method defined
-    %   in the outerSegment class, coneMosaic.os.  The compute for current is
-    %   coneMosaic.computeCurrent.
+    %    The cone quantum efficiencies are defined by both the macular pigment
+    %    and the pigment. The lens is incoporated as part of the optics.
     %
-    %   Optional parameter name/value pairs chosen from the following:
+    %    The isomerizations (absorptions, R*) are calculated using method
+    %    compute.
     %
-    %   'name'            Mosaic name
-    %   'pigment'         Cone photopigment object (defaults to what photoPigment() sets up).
-    %   'macular'         Macular pigment object (defaults to what Macular() sets up).
-    %   'os'              Outer segment object (defauls to what osLinear() sets up).
-    %   'center'          Position of center of mosaic on the retina. Vector (default [0,0]).
-    %   'wave'            Wavelength samples in nm. Vector (default 400:10:700).
-    %   'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []).
-    %   'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]).
-    %   'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]).
-    %   'integrationTime' Value (default 0.005). Temporal integration in
-    %                     sec. Keep this under 25 ms (0.025) if you are
-    %                     computing photocurrent for decent numerical
-    %                     accuracy.
-    %   'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
-    %                     middle or cone mosaic, 1 unit is 1 cone for rect
-    %                     (DHB NOTE: WHAT ABOUT HEX?)
-    %   'apertureBlur'    Blur by cone aperture? true/false (default false).
-    %   'noiseFlag'       Add photon noise (default) or not. String (default
+    %    The isomerizations are converted to photocurrent by the method defined
+    %    in the outerSegment class, coneMosaic.os.  The compute method for current is
+    %    computeCurrent.
+    %
+    % Input:
+    %    None.
+    %
+    % Output:
+    %    cMosaic           The created coneMosaic object.
+    %
+    % Optional key/value pairs:
+    %
+    %    'name'            Mosaic name
+    %    'pigment'         Cone photopigment object (defaults to what photoPigment() sets up).
+    %    'macular'         Macular pigment object (defaults to what Macular() sets up).
+    %    'os'              Outer segment object (defauls to what osLinear() sets up).
+    %    'center'          Position of center of mosaic on the retina. Vector (default [0,0]).
+    %    'wave'            Wavelength samples in nm. Vector (default 400:10:700).
+    %    'pattern'         Cone type at each position (1-4, K,L,M,S) Matrix (default []).
+    %    'spatialDensity'  Relative density of cone types, K,L,M,S. Vector (default [0 0.6 0.3 0.1]).
+    %    'size'            Spatial size of mosaic (number of rows/cols). Vector (default [72 88]).
+    %    'integrationTime' Value (default 0.005). Temporal integration in
+    %                      sec. Keep this under 25 ms (0.025) if you are
+    %                      computing photocurrent for decent numerical
+    %                      accuracy.
+    %    'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
+    %                      middle of cone mosaic, 1 unit is 1 cone for rect
+    %    'apertureBlur'    Blur by cone aperture? true/false (default false).
+    %    'noiseFlag'       Add photon noise (default) or not. String (default
     %                     'random').  Valid values are 'random', 'frozen', or 'none'.
     %
-    %  ISETBIO wiki: <a href="matlab:
-    %  web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
+    % References:
+    %    ISETBIO wiki: <a href="matlab: web('https://github.com/isetbio/isetbio/wiki/Cone-mosaic','-browser')">cone mosaic</a>.
     %
-    % See also CONEMOSAICHEX, PHOTOPIGMENT, MACULAR, LENS, OUTERSEGMENT
+    % See also coneMosaicHex, photoPigment, Macular, lens, outersegment
     
     % HJ/JRG/BW ISETBIO Team, 2016
 

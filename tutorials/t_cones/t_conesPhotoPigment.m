@@ -1,10 +1,13 @@
 %%t_conesPhotoPigment  Illustrate photoPigment object
 %
 % Description:
-%   The photoPigment object represents the data needed to calculate the
-%   capture of light by the cone photopigment.
+%     The photoPigment object represents the data needed to calculate the
+%     capture of light by cones.  This tutorial illustrates how it works.
 
-% Create photoPigment object with default values
+%% Initialize
+ieInit;
+
+%% Create photoPigment object with default values
 pp = photoPigment
 
 %% Wavelength
