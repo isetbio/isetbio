@@ -102,18 +102,8 @@ classdef photoPigment < hiddenHandle
             obj.pdHeight = p.Results.pdHeight;
             
             if isempty(p.Results.absorbance)
-                % BW:  Why does coneAbsorbance.mat not contain cone
-                % absorbance directly, rather than log cone absorbance?
-                % Should we change the file on disk so we don't need the
-                % 10^?
-                %
-                % DHB: I once spent a long time to grok the terminology 
-                % of this stuff.  It may be that absorbance is indeed what
-                % we have on disk, and that it is the variable name here that
-                % is wrong.  Or, the file on disk could indeed contain the wrong
-                % thing.  I will see if I can figure this out.
-                obj.absorbance_ = 10 .^ ...
-                    ieReadSpectra('coneAbsorbance', obj.wave_);
+                obj.absorbance_ = 10 .^ getLogConeAbsorbance('species','human','source','ptb','wave',obj.wave_);
+                %ieReadSpectra('coneAbsorbance', obj.wave_);
             else
                 obj.absorbance = p.Results.absorbance;
             end

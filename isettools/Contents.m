@@ -7,7 +7,7 @@
 % codedev                       - For developers. Examples and ideas about how to code things. 
 % color                         - Colorimetric support routines.              
 % cones                         - Implementation of calculations for isomerizations, photocurrent, cone mosaics.
-% data                          - Isetbio data tree. May move out of code tree any day now.
+% data                          - Original isetbio data tree. We are working on organizing this into the data tree one level up.
 % deprecate                     - Routines that are obsolete and should be deleted soon.
 % displays                      - Implementation of display modeling. Useful for specifying flat input scenes and modeling experiments.
 % eyemovement                   - Implementation of eye movement object.

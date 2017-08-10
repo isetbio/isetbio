@@ -18,10 +18,16 @@ pp = photoPigment
 
 %%  Absorbance
 %
-% The cone absorbance function used by default is read from the file
-% data/human/coneAbsorbance
+% The cone absorbance function used by default is obtained
+% via data routine getLogConeAbsorbance and converted 
+% to straight (non-log) absorbance when it is stored in the object.
 %
-% It is stored in normalized form
+% Absorbance is sometimes called optical density.
+%
+% The peak absorbance is 1 by convention in how the values
+% are tabulated. In the plot below they are close to 1 because
+% the actual peak occurs at a wavelength between the default
+% 10 nm sampling steps.
 vcNewGraphWin; plot(pp.wave,pp.absorbance)
 
 %% Geometry
