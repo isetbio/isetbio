@@ -1,11 +1,15 @@
 function [log10absorbance,wave,comment] = getLogConeAbsorbance(varargin)
-%%getLogConeAbsorbance  Return the log10 of the cone photopigment absorbance (aka optical density).
+%%getLogConeAbsorbance  Return the log10 of the cone photopigment absorbance (aka optical density)
 %
 % Syntax:
 %    log10absorbance = getLogConeAbsorbance;
 %
 % Description:
 %    Return the log10 of the cone photopigment absorbance (aka optical density).
+%
+%    It's not entirely clear that its best to have this returned as the log10 of
+%    the quantity we ultimately use, but that is the format that Stockman stored
+%    it on on his web page and there are advantages to staying with that.
 %
 % Input:
 %    None.
@@ -17,10 +21,11 @@ function [log10absorbance,wave,comment] = getLogConeAbsorbance(varargin)
 %
 % Optional key/value pairs:
 %     'species'            String specifying species
-%                            'human' (default). Human L, M and S cones.
+%                            'human' (default) - Human L, M and S cones.
 %                            'monkey' - Monkey L, M and S cones.  Currently the same as human.
 %     'source'             Where the data are taken from
-%                            'ptb' (default). Values from Psychtoolbox data (these in turn come from CVRL.)
+%                            'ptb' (default). Values from Psychtoolbox mat file T_log10coneabsorbance_ss.
+%                                             These in turn came from CVRL (http://cvrl.org).
 %     'wave'               Column vector of evenly spaced sample wavelengths in nm (default, (390:830)').
 %
 % See also: getRawData
