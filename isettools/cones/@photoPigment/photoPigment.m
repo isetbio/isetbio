@@ -29,15 +29,17 @@ classdef photoPigment < hiddenHandle
     %   
     % Optional key/value pairs:
     %
-    %    'wave'            Vector of wavelengths in nm (400:10:31).
-    %    'opticalDensity'  Three vector of optical densities for L, M and S cone photopigment (default: [0.5 0.5 0.4]).
-    %    'absorbance'      L, M and S cone absorbance spectra. (Default, empty, which cases these to be
-    %                      read from coneAbsorbance.mat.)
-    %    'peakEfficiency'  Peak quantal efficiency for isomerizations for L, M and S cones (default [2 2 2]/3).    
-    %    'width'           Cone width (including gap between cones) in meters (default 2e-6).
-    %    'height'          Cone height (including gap between cones) in meters  (default 2e-6).
-    %    'pdWidth'         Collecting area width in meters (default 2e-6).
-    %    'pdHeight'        Collecting area height in meters (default 2e-6).   
+    %    'wave'              Vector of wavelengths in nm (400:10:31).
+    %    'species'           The species passed to data read routines (default 'human').
+    %    'opticalDensity'    Three vector of optical densities for L, M and S cone photopigment (default: [0.5 0.5 0.4]).
+    %    'absorbance'        L, M and S cone absorbance spectra. (Default empty, in which case these
+    %                          are obtained through routine getLogConeAbsorbance.)
+    %    'absorbanceSource'  The source string passed to data routine getLogConeAbsorbance (default 'ptb').
+    %    'peakEfficiency'    Peak quantal efficiency for isomerizations for L, M and S cones (default [2 2 2]/3).    
+    %    'width'             Cone width (including gap between cones) in meters (default 2e-6).
+    %    'height'            Cone height (including gap between cones) in meters  (default 2e-6).
+    %    'pdWidth'           Collecting area width in meters (default 2e-6).
+    %    'pdHeight'          Collecting area height in meters (default 2e-6).   
     %
     % See also: t_conePhotoPigment, coneMosaic, Macular, lens
     
@@ -80,8 +82,10 @@ classdef photoPigment < hiddenHandle
             % parse input
             p = inputParser;
             p.addParameter('wave', 400:10:700, @isnumeric);
+            p.addParameter('species','human',@ischar);
             p.addParameter('opticalDensity', [0.5 0.5 0.4], @isnumeric);
             p.addParameter('absorbance', [], @isnumeric);
+            p.addParameter('absorbanceSource','ptb',@ischar)
             p.addParameter('peakEfficiency', [2 2 2]/3, @isnumeric);
             p.addParameter('width', 2e-6, @isnumeric);
             p.addParameter('height', 2e-6, @isnumeric);
@@ -102,8 +106,7 @@ classdef photoPigment < hiddenHandle
             obj.pdHeight = p.Results.pdHeight;
             
             if isempty(p.Results.absorbance)
-                obj.absorbance_ = 10 .^ getLogConeAbsorbance('species','human','source','ptb','wave',obj.wave_);
-                %ieReadSpectra('coneAbsorbance', obj.wave_);
+                obj.absorbance_ = 10 .^ getLogConeAbsorbance('species',p.Results.species,'source',p.Results.absorbanceSource,'wave',obj.wave_);
             else
                 obj.absorbance = p.Results.absorbance;
             end
