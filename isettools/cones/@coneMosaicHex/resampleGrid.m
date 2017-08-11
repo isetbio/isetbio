@@ -272,20 +272,21 @@ function lambda = minConeSpacing(obj)
     lambda = coneSpacingInMeters * 1e6;  % in microns
 end
 
-function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
 
-    extraCols = round(cols/(sqrt(3)/2)) - cols;
+function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
+    scaleF = sqrt(3)/2;
+    extraCols = round(cols/scaleF) - cols;
     rectXaxis2 = (1:(cols+extraCols));
     [X2,Y2] = meshgrid(rectXaxis2, 1:rows);
     
-    X2 = X2 * sqrt(3)/2;
+    X2 = X2 * scaleF ;
     for iCol = 1:size(Y2,2)
         Y2(:,iCol) = Y2(:,iCol) - mod(iCol-1,2)*0.5;
     end
     
-    % To microns
-    X2 = X2 * lambda / sqrt((sqrt(3)/2));
-    Y2 = Y2 * lambda / sqrt((sqrt(3)/2));
+    % Scale back to get correct density
+    X2 = X2 * lambda / sqrt(scaleF);
+    Y2 = Y2 * lambda / sqrt(scaleF);
     marginInConePositions = 0.1;
     indicesToKeep = (X2>=-marginInConePositions) & ...
                     (X2<= cols+marginInConePositions) &...
@@ -293,7 +294,6 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
                     (Y2<= rows+marginInConePositions);             
     xHex = X2(indicesToKeep);
     yHex = Y2(indicesToKeep);
-    
     hexLocs = [xHex(:)-mean(xHex(:)) yHex(:)-mean(yHex(:))];
     
     % rotate
