@@ -8,7 +8,7 @@
 ieInit;
 
 %% Create photoPigment object with default values
-pp = photoPigment
+pp = photoPigment;
 
 %% Wavelength
 %

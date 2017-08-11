@@ -24,21 +24,24 @@ function theData = getRawData(dataName,varargin)
 %
 % Optional key/value pairs:
 %     'datatype'           Type of data to be fetched.
-%                            'matfileonpath' (default). The data can be obtained as theData = load(dataName), because
-%                                                       the data is in a .mat file on the Matlab path.
-%
+%                            'ptbmatfileonpath' (default). The data can be obtained as theData = load(dataName), because
+%                                                          the data is in a .mat file on the Matlab path. The data are
+%                                                          in the PTB tree included with ISETBio.
+%                            'isetbiomatfileonpath'        The data can be obtained as theData = load(dataName), because
+%                                                          the data are in a .mat file on the Matlab path.  The data
+%                                                          are in the datafile tree included with ISETBio.
 % See also:
 
 % 08/10/17  dhb  Drafted.
 
 %% Parse inputs
 p = inputParser;
-p.addParameter('datatype','matfileonpath', @ischar);
+p.addParameter('datatype','ptbmatfileonpath', @ischar);
 p.parse(varargin{:});
 
 %% Handle choices
 switch (p.Results.datatype)
-    case {'matfileonpath'}
+    case {'ptbmatfileonpath','isetbiomatfileonpath'}
         theData = load(dataName);
         
     otherwise
