@@ -7,8 +7,11 @@
 %% Initialize
 ieInit;
 
-%% Create photoPigment object with default values
-pp = photoPigment;
+%% Create photoPigment object
+% 
+% Use 5 nm spacing to make plots look a little nicer than
+% with the default spacing.
+pp = photoPigment('wave',400:5:700);
 
 %% Wavelength
 %
@@ -25,9 +28,7 @@ pp = photoPigment;
 % Absorbance is sometimes called optical density.
 %
 % The peak absorbance is 1 by convention in how the values
-% are tabulated. In the plot below they are close to 1 because
-% the actual peak occurs at a wavelength between the default
-% 10 nm sampling steps.
+% are tabulated.
 vcNewGraphWin; plot(pp.wave,pp.absorbance)
 
 %% Geometry
