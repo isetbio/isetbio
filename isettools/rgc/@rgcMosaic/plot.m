@@ -135,12 +135,19 @@ switch ieParamFormat(plotType)
         cla reset;
         
         % We should subsample the number shown when there are many.
-        center = obj.cellLocation;  % um w.r.t. center of image
+%         center = obj.cellLocation;  % um w.r.t. center of image
         
         % Why are we plotting sqrt(2)* radius?  1 std is radius.
         % But 1.4 radius looks good.  Is that why?
         % (BW)
+%         radius = obj.rfDiameter/2;
+
+        umPerSample = 1e6*obj.get('meters per sample');
+center = RGB2XWFormat(obj.cellLocation);  % um w.r.t. center of image
+        center = center * diag(umPerSample);
+        
         radius = obj.rfDiameter/2;
+        radius = radius * mean(umPerSample);
         ellipseMatrix = obj.ellipseMatrix;
         ieShape('ellipse','center',center,...
             'radius',sqrt(2)*radius,...
@@ -219,11 +226,11 @@ switch ieParamFormat(plotType)
         for ri = startInd:skipInd:size(obj.cellLocation,1)
             for ci = startInd:skipInd:size(obj.cellLocation,2)
                 %         [ri ci]
-                rvStart{ri,ci} = 1+ceil(obj.cellLocation{ri,ci}(1) +ceil((rfMaxR-rfMinR)/2)+1);% - ceil(rfSize(1)/2)+1);
-                rvEnd{ri,ci}   = 1+ceil(obj.cellLocation{ri,ci}(1) +ceil((rfMaxR-rfMinR)/2)) + ceil(rfSize(1)/1);
+                rvStart{ri,ci} = 1+ceil(obj.cellLocation(ri,ci,1) +ceil((rfMaxR-rfMinR)/2)+1);% - ceil(rfSize(1)/2)+1);
+                rvEnd{ri,ci}   = 1+ceil(obj.cellLocation(ri,ci,1) +ceil((rfMaxR-rfMinR)/2) + rfSize(1)/1);
                 
-                cvStart{ri,ci} = 1+ceil(obj.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2)+1);% - ceil(rfSize(2)/2)+1);
-                cvEnd{ri,ci}   = 1+ceil(obj.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2) + ceil(rfSize(2)/1));
+                cvStart{ri,ci} = 1+ceil(obj.cellLocation(ri,ci,2) +ceil((rfMaxC-rfMinC)/2)+1);% - ceil(rfSize(2)/2)+1);
+                cvEnd{ri,ci}   = 1+ceil(obj.cellLocation(ri,ci,2) +ceil((rfMaxC-rfMinC)/2) + rfSize(2)/1);
                 
                 if (rvStart{ri,ci} > 0) && (cvStart{ri,ci} > 0)
                     

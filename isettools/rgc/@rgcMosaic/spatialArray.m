@@ -55,9 +55,13 @@ if isempty(stride), stride = max(1,2*spread); end
 %
 [bpRow,bpCol,~] = size(rgcM.input.cellLocation);
 
-rowSamples = 1:stride:bpRow;   
+% rowSamples = 1:stride:bpRow;   
+% % The multiplicative factor on the col is hex spacing.
+% colSamples = 1:((sqrt(3)/2)*stride):bpCol;
+
+rowSamples = 1:((sqrt(3)/2)*stride):bpRow;   
 % The multiplicative factor on the col is hex spacing.
-colSamples = 1:((sqrt(3)/2)*stride):bpCol;
+colSamples = 1:stride:bpCol;
 
 rowSamples = rowSamples - mean(rowSamples);
 colSamples = colSamples - mean(colSamples);

@@ -91,8 +91,8 @@ for rr = 1:nRows         % Row index
         thisColCenter = cellLocation(rr,cc,2); 
         
         % Offset every other column to create a hexagonal packing.
-        if mod(cc,2), thisRowCenter = thisRowCenter - hexOffset/2;   % Odd
-        else,         thisRowCenter = thisRowCenter + hexOffset/2;   % Even
+        if mod(cc,2), thisRowCenter = thisRowCenter - 2*hexOffset/1;   % Odd
+        else,         thisRowCenter = thisRowCenter;% + hexOffset/2;   % Even
         end
         % Save the new cell center location in bipolar samples
         cellLocation(rr,cc,:) = [thisRowCenter, thisColCenter];
@@ -101,7 +101,7 @@ for rr = 1:nRows         % Row index
         % In order to keep the same area under the DoG surface, need to
         % normalize the diagonal.
         % Q =  (1/(.5*spread)^2)*diag(ellipseMatrix{rr,cc}(1:2));
-        Q =  (1/(spread^2))*diag(ellipseMatrix{rr,cc}(1:2));
+        Q =  (1/((.5*spread)^2))*diag(ellipseMatrix{rr,cc}(1:2));
         
         % For the DoG, we need to do the rotation matrix separately from Q,
         % otherwise the DoG height and width change for the same magnitude
