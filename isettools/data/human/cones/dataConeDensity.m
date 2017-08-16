@@ -14,7 +14,7 @@
 % BW Vistasoft Team, 2016
 
 %% Where the data will be saved
-chdir(fullfile(isetbioDataPath,'human/coneMosaic/'));
+chdir(fullfile(isetbioDataPath,'human/cones/'));
 
 %% With error bars
 %
@@ -108,11 +108,10 @@ grid on;
 
 %%
 
-d = load('coneDensity');
+d = load('coneDensityCurcio1990Fig6');
 hold on
 plot(d.inferior.eccMM(3:end),d.inferior.density(3:end),'-bo');
 grid on;
-
 legend({'young','old','curcio'})
 
 
@@ -121,11 +120,11 @@ ecc = 0:0.1:2;
 curcio = zeros(size(ecc));
 burns  = zeros(size(ecc));
 for ii=1:length(ecc)
-    curcio(ii) = pp.eccDensity('eccMM',ecc(ii));
-    burns(ii)  = pp.eccDensity('eccMM',ecc(ii),'dataSet','burns young');
+    curcio(ii) = getConeDensity('eccentricity',1e-3*ecc(ii));
+    %burns(ii)  = pp.eccDensity(ecc(ii),'dataSet','burns young');
 end
 
-vcNewGraphWin;
-plot(ecc,burns,'r-o',ecc,curcio,'g-x');
-grid on;
+% vcNewGraphWin;
+% plot(ecc,burns,'r-o',ecc,curcio,'g-x');
+% grid on;
 

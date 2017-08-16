@@ -29,8 +29,10 @@ function iStim = ieStimulusBar(varargin)
 %  Returns the same 
 %   iStim = ieStimulusBar(iStim.params);
 %   iStim.cm.window;
-%
+
 % 3/2016 JRG (c) isetbio team
+%
+% 08/16/17  dhb  Fix call to coneDensity -> getConeDensity.
 
 %% Parse inputs
 p = inputParser;
@@ -87,7 +89,7 @@ oi  = oiCreate('wvf human');
 % compute cone packing density
 fLength = oiGet(oi, 'focal length');
 eccMM = 2 * tand(params.radius/2) * fLength * 1e3;
-coneD = coneDensity(eccMM, [params.radius params.theta], params.side);
+coneD = getConeDensity('eccentricity',1e-3*eccMM, 'angle',params.theta, 'whichEye', params.side);
 coneSz(1) = sqrt(1./coneD) * 1e-3;  % avg cone size with gap in meters
 coneSz(2) = coneSz(1);
 

@@ -48,8 +48,10 @@ function iStim = ieStimulusGabor(varargin)
 %   iStim = ieStimulusGabor(params);
 %   vcAddObject(iStim.oi); oiWindow;
 %   iStim.cMosaic.window;
-%
+
 % 3/2016 JRG (c) isetbio team
+%
+% 08/16/17  dhb  Fix call to coneDensity -> getConeDensity.
 
 %% Parse inputs
 p = inputParser;
