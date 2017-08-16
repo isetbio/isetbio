@@ -7,8 +7,10 @@ function [spacing, aperture, density] = coneSize(ecc,ang, varargin)
 %
 % Inputs
 %  ecc - eccentricity in meters
-%  ang - angle in deg (0 on x axis, 90 on y axis)
+%  ang - angle in deg
 %  density - cones per mm2
+%
+%  Coordinate system defined by getConeDensity.
 %
 % Key/value pairs
 %  'whichEye' - 'left','right' [default 'left'] - which eye to compute for.
@@ -22,9 +24,11 @@ function [spacing, aperture, density] = coneSize(ecc,ang, varargin)
 % By default, the aperature is set to 0.7*spacing.  We are not sure this is
 % a perfect number.
 %
-% See also: coneDensity.
-%
+% See also: getConeDensity.
+
 % BW ISETBIO Team, 2016
+%
+% 08/16/17  dhb  Call through new getConeDensity rather than old coneDensity.
 
 p = inputParser;
 vFunc = @(x)(isnumeric(x) && all(0 <= x & x < 30*1e-3));  % Meters
@@ -41,7 +45,7 @@ ang = p.Results.ang;
 whichEye = p.Results.whichEye;
 
 % cones/mm2
-density = coneDensity(ecc,ang,whichEye);
+density = getConeDensity('eccentricity',ecc,'angle',ang,'whichEye',whichEye);
 conesPerMM = sqrt(density);
 conesPerM = conesPerMM*1e3;
 
