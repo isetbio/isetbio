@@ -31,7 +31,9 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %                                 'human' (default)
 %
 %    'coneDensitySource'        Source for cone density estimate
-%                                 'Curcio1990' (default). From Figure 6 of Ref 1 below.  This is in data file coneDensityCurcio1990Fig1.
+%                                 'Curcio1990'         From Figure 6 of Ref 1 below (default).
+%                                 'Song2011Old'        From Table 1 of Ref 2 below, old subjects data.
+%                                 'Song2011Young'      From Table 1 of Ref 2 below, young subjects data.
 %
 %                                  The value for 'coneDensitySource' may be passed as a function handle, in
 %                                  which case the passed function is called direclty with the key/value pairs passed to this
@@ -51,11 +53,13 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %   2) Song, H., Chui, T. Y. P., Zhong, Z., Elsner, A. E., & Burns, S. A.
 %      (2011). Variation of Cone Photoreceptor Packing Density with Retinal
 %      Eccentricity and Age. Investigative Ophthalmology & Visual Science,
-%      52(10), 7376?7384. http://doi.org/10.1167/iovs.11-7199
+%      52(10), 7376-7384. http://doi.org/10.1167/iovs.11-7199
 %
-% See also: coneMosaic, coneSize.
+% See also: coneMosaic, coneSize, makeDataConeDensitySong2011.
 
 % HJ, ISETBIO TEAM, 2015
+%
+% 08/16/17  dhb  Big rewrite.
 
 %% Parse inputs
 p = inputParser;
@@ -83,18 +87,25 @@ end
 switch (params.species)
     case {'human'}
         switch (params.coneDensitySource)
-            case 'Curcio1990'
+            case {'Curcio1990', 'Song2011Old', 'Song2011Young'}
                 % Load the digitized cone density from the ISETBio style mat file.  The
                 % data file has separate structs for inferior, nasal, superior and temporal meridians.
                 % These each have fields 'density' as a function of 'eccMM' in units of cones/mm2.
-                theData = getRawData('coneDensityCurcio1990Fig6','datatype','isetbiomatfileonpath');
-                
+                switch (params.coneDensitySource)
+                    case 'Curcio1990'
+                        theData = getRawData('coneDensityCurcio1990','datatype','isetbiomatfileonpath');
+                    case 'Song2011Old'
+                        theData = getRawData('coneDensitySong2011Old','datatype','isetbiomatfileonpath');
+                    case 'Song2011Young'
+                        theData = getRawData('coneDensitySong2011Young','datatype','isetbiomatfileonpath');
+                end
+                            
                 % Convert eccentricity from meters to mm
-                eccMM = params.eccentricity*0.3;
+                eccMM = params.eccentricity*1e3;
                 
                 % Set up for interpolation for retinal position amplitude on each axis (nasal, superior,
                 % temporal and inferior)
-                onAxisD = zeros(5, numel(params.eccentricity));
+                onAxisD = zeros(5, numel(eccMM));
                 angleQ = [0 90 180 270 360];
                 
                 % Compute packing density for superior and inferior

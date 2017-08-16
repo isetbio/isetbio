@@ -2,4 +2,7 @@
 %
 % Files containing data pertaining to human cones and cone mosiac
 %
-% coneDensityCurcio1990Fig6     - Cone density.  Digitized from Figure 6 of Curcio et al, 1990.  See getConeDensity.
+% coneDensityCurcio1990         - Cone density. Digitized from Figure 6 of Curcio et al, 1990.  See getConeDensity.
+% coneDensitySong2011Old        - Cone density. From Table 1 so Song et al. 2011, old subjects. See makeDataConeDensitySong2011, getConeDensity.
+% coneDensitySong2011Young      - Cone density. From Table 1 so Song et al. 2011, young subjects. See makeDataConeDensitySong2011, getConeDensity.
+
