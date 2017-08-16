@@ -2,19 +2,27 @@ function spikeResp = mosaicSpikes(innerRetina)
 % Convert spikes in the innerRetina object into an NxK matrix where N =
 % number of cells and K = time bins.
 
-spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+for ii = 1:4%length(innerRetina.mosaic)
+    if ii <= length(innerRetina.mosaic)
+        eval(['spikesout' num2str(ii) ' = RGB2XWFormat(innerRetina.mosaic{' num2str(ii) '}.get(''spikes''));']);
+    else
+        eval(['spikesout' num2str(ii) ' = [];']);
+    end
+end
 
-timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
+% spikesout  = RGB2XWFormat(innerRetina.mosaic{1}.get('spikes'));
+% spikesout2 = RGB2XWFormat(innerRetina.mosaic{2}.get('spikes'));
+% spikesout3 = RGB2XWFormat(innerRetina.mosaic{3}.get('spikes'));
+% spikesout4 = RGB2XWFormat(innerRetina.mosaic{4}.get('spikes'));
 
-spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
-spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
-spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
+timeBins = max([size(spikesout1,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
 
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
+spikesoutsm = zeros(size(spikesout1,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
+spikesoutsm(1:size(spikesout1,1) ,1:size(spikesout1,2) ) = spikesout1;
+spikesoutsm(size(spikesout1,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
+
+spikesoutsm(size(spikesout1,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
+spikesoutsm(size(spikesout1,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
 
 clear  spikesout1 spikesout2 spikesout3 spikesout4 
 
@@ -22,7 +30,7 @@ clear  spikesout1 spikesout2 spikesout3 spikesout4
 
 spikesout = double(spikesoutsm);
 pointer = 0;%(blockNum-1)*blocklength;
-spikeResp = zeros(size(spikesoutsm,1),size(spikesoutsm,2)/10);
+spikeResp = zeros(size(spikesoutsm,1),ceil(size(spikesoutsm,2)/10));
 for i = 1:size(spikesoutsm,2)/10
     blocksize = 10;
     endval = i*blocksize;
