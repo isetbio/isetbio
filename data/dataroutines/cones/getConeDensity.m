@@ -61,7 +61,7 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParameter('species','human', @ischar);
-p.addParameter('coneDensitySource',@(x) (ischar(x) | isa(x,'function_handle')));
+p.addParameter('coneDensitySource','Curcio1990',@(x) (ischar(x) | isa(x,'function_handle')));
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@ischar);
@@ -82,7 +82,7 @@ end
 %% Handle choices
 switch (params.species)
     case {'human'}
-        switch (params.coneAbsorbanceSource)
+        switch (params.coneDensitySource)
             case 'Curcio1990'
                 % Load the digitized cone density from the ISETBio style mat file.  The
                 % data file has separate structs for inferior, nasal, superior and temporal meridians.
@@ -115,7 +115,7 @@ switch (params.species)
                 onAxisD(5,:) = onAxisD(1,:);
                 
                 % Interpolate for angle
-                density = interp1(angleQ, onAxisD, params.angle, 'linear');
+                coneDensity = interp1(angleQ, onAxisD, params.angle, 'linear');
                 
                 comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See getConeDensity.';
                 

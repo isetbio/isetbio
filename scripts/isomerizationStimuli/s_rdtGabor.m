@@ -5,13 +5,14 @@
 % I would like to have this script be self-documenting so that we could
 % have a web-page that described the stimuli on the RDT and how to download
 % them.
-%
+
+% 
 
 %%
 ieInit
 
 %%
-chdir(fullfile(isetbioRootPath,'local'));
+chdir(tempdir);
 if ~exist('Gabor','dir')
     mkdir('Gabor')
 end
