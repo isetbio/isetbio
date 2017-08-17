@@ -23,7 +23,8 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %     None.
 %
 % Output:
-%     coneDensity                Cone packing density in cones/mm^2
+%     coneDensity                Cone packing density in cones/mm^2. Returned as a row vector
+%                                of same length as eccentricity and angle.
 %
 %     params                     Structure of key/value pairs used to generate data.
 %
@@ -189,7 +190,7 @@ switch (params.species)
                 onAxisD(5,:) = onAxisD(1,:);
                 
                 % Interpolate for each angle
-                coneDensity = zeros(size(eccMM));
+                coneDensity = zeros(1,length(eccMM));
                 for aa = 1:length(eccMM)
                     coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
                 end
