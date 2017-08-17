@@ -128,10 +128,12 @@ grid on;
 legend({'young','old','curcio'})
 
 %% Get Curcio data via getConeDensity and make sure it matches what is in the file
+%
+% Also shows how to pass eccentricity in mm to getConeDensity.
 eccentricityMm = linspace(0,20,100);
 curcio = zeros(size(eccentricityMm));
 for ii=1:length(eccentricityMm)
-    curcio(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left');
+    curcio(ii) = getConeDensity('eccentricity',eccentricityMm(ii),'angle',270,'whichEye','left','eccentricityUnits','mm');
 end
 vcNewGraphWin; hold on
 plot(dCurcio.inferior.eccMM,dCurcio.inferior.density,'-bo');
@@ -140,12 +142,14 @@ title('Curcio data two ways');
 
 
 %% Get Song data via getConeDensity and make sure it matches what is in the file
+%
+% Also shows how to pass eccentricity in microns to getConeDensity, and angle in radians
 eccentricityMm = linspace(0,4,20);
 songOld = zeros(size(eccentricityMm));
 songYoung = zeros(size(eccentricityMm));
 for ii=1:length(eccentricityMm)
-    songOld(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Old');
-    songYoung(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Young');
+    songOld(ii) = getConeDensity('eccentricity',1e3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Old','eccentricityUnits','um');
+    songYoung(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',3*pi/2,'whichEye','left','coneDensitySource','Song2011Young','angleUnits','rad');
 end
 vcNewGraphWin; hold on
 plot(dOld.inferior.eccMM,dOld.inferior.density,'-ro');

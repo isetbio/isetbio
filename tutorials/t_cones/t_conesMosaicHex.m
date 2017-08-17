@@ -9,9 +9,8 @@
 % See also: advancedTutorials/t_conesMosaicHex1, ..., advancedTutorials/t_conesMosaicHex6
 
 % NPC ISETBIO Team, Copyright 2016
-
-% 08/08/17  NPC   Fixed and cleaned up for updated @coneMosaicHex class
 %
+% 08/08/17  NPC   Fixed and cleaned up for updated @coneMosaicHex class
 
 %% Initialize
 ieInit; clear; close all;
@@ -35,8 +34,8 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
     'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ... 
     'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...                   
     'spatialDensity', mosaicParams.spatialDensity, ...
-    'latticeAdjustmentPositionalToleranceF', 0.01*2, ...        % for best (but much slower results) this should either not get passed or get set to equal or lower than 0.01      
-    'latticeAdjustmentDelaunayToleranceF', 0.001*2 ...          % for best (but much slower results) this should either not get passed or get set to equal or lower than 0.001 
+    'latticeAdjustmentPositionalToleranceF', 0.01*2, ...        % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.01      
+    'latticeAdjustmentDelaunayToleranceF', 0.001*2 ...          % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.001 
 );
 
 %% Print some grid info

@@ -40,14 +40,25 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %
 %                                  The value for 'coneDensitySource' may be passed as a function handle, in
 %                                  which case the passed function is called direclty with the key/value pairs passed to this
-%                                  routine. The passed function must return the same values as getConeDensity does.
+%                                  routine. The passed function must return the same values as getConeDensity does, and handle
+%                                  the same key/value pairs (including unit specification).
 %
-%    'eccentricity'             Retinal eccentricity in meters of retina, default is 0
-%                               There are 1000 mm/m and about 0.30 mm/deg.
+%    'eccentricity'             Retinal eccentricity, default is 0.  Units according
+%                               to value of key 'eccentricityUnits'.
 %
 %    'angle'                    Polar angle of retinal position in degrees (default 0).
 %
 %    'whichEye'                 Which eye, 'left' or 'right' (default 'left').
+%
+%    'eccentriticyUnits'        String specifying units for eccentricity.
+%                                  'm'                  Meters (default).             
+%                                  'mm'                 Millimeters.
+%                                  'um'                 Micrometers.
+%                                  'deg'                Degrees of visual angle, 0.3 mm/deg.
+%
+%    'angleUnits'               String specifying units  for angle.
+%                                  'deg'                Degrees (default).
+%                                  'rad'                Radians.
 %
 % References:
 %   1) Curcio, C. A., Sloan, K. R., Kalina, R. E. and Hendrickson, A. E.
@@ -72,6 +83,8 @@ p.addParameter('coneDensitySource','Curcio1990',@(x) (ischar(x) | isa(x,'functio
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@ischar);
+p.addParameter('eccentricityUnits','m',@ischar);
+p.addParameter('angleUnits','deg',@ischar);
 p.parse(varargin{:});
 
 %% Set up params return.
@@ -81,10 +94,37 @@ params = p.Results;
 %
 % This allows for custom data to be defined by a user, via a function that
 % could live outside of ISETBio.
+%
+% This function needs to handle 
 if (isa(params.coneDensitySource,'function_handle'))
     [coneDensity,params,comment] = params.coneDensitySource(varargin{:});
     return;
 end
+
+%% Handle units
+switch (params.eccentricityUnits)
+    case 'm'
+        eccMM = params.eccentricity*1e3;
+    case 'mm'
+        eccMM = params.eccentricity;
+    case 'um'
+        eccMM = params.eccentricity*1e-3;
+    case 'deg'
+        eccMM = params.eccentricity*0.3;
+    otherwise
+        error('Unknonwn units for eccentricity specified');
+end
+params.eccentricity = NaN;
+
+switch (params.angleUnits)
+    case 'deg'
+        angleDeg = params.angle;
+    case 'rad'
+        angleDeg = 180*params.angle/pi;
+    otherwise
+        error('Unkonwn units for angle specified');
+end
+params.angle = NaN;
 
 %% Handle choices
 switch (params.species)
@@ -102,9 +142,6 @@ switch (params.species)
                     case 'Song2011Young'
                         theData = getRawData('coneDensitySong2011Young','datatype','isetbiomatfileonpath');
                 end
-                            
-                % Convert eccentricity from meters to mm
-                eccMM = params.eccentricity*1e3;
                 
                 % Set up for interpolation for retinal position amplitude on each axis (nasal, superior,
                 % temporal and inferior)
@@ -129,7 +166,7 @@ switch (params.species)
                 onAxisD(5,:) = onAxisD(1,:);
                 
                 % Interpolate for angle
-                coneDensity = interp1(angleQ, onAxisD, params.angle, 'linear');
+                coneDensity = interp1(angleQ, onAxisD, angleDeg, 'linear');
                 
                 comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See getConeDensity.';
                 
