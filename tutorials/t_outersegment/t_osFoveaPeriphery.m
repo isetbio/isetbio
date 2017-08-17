@@ -47,7 +47,7 @@ stimulus = reshape(stimulus, [1 1 nSamples]);
 % Create an os object with peripheral parameters and insert it into a cone
 % mosaic.  Passing a 1 by 1 pattern matrix to the mosaic create call causes
 % the mosaic to have one L cone (because pattern type 2 -> L cone).
-osPeripheral = osBioPhys('eccentricity',10);           
+osPeripheral = osBioPhys('eccentricity',15);           
 osPeripheral.set('noise flag','none');
 cmPeripheral = coneMosaic('os',osPeripheral,'pattern', 2); 
 cmPeripheral.integrationTime = timeStep;
