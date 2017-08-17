@@ -22,8 +22,7 @@ pp = photoPigment('wave',400:5:700);
 %%  Absorbance
 %
 % The cone absorbance function used by default is obtained
-% via data routine coneAbsorbanceReadData and converted 
-% to straight (non-log) absorbance when it is stored in the object.
+% via data routine coneAbsorbanceReadData.
 %
 % Absorbance is sometimes called optical density.
 %

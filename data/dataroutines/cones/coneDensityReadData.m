@@ -160,11 +160,11 @@ switch (params.species)
                 % These each have fields 'density' as a function of 'eccMM' in units of cones/mm2.
                 switch (params.coneDensitySource)
                     case 'Curcio1990'
-                        theData = getRawData('coneDensityCurcio1990','datatype','isetbiomatfileonpath');
+                        theData = rawDataReadData('coneDensityCurcio1990','datatype','isetbiomatfileonpath');
                     case 'Song2011Old'
-                        theData = getRawData('coneDensitySong2011Old','datatype','isetbiomatfileonpath');
+                        theData = rawDataReadData('coneDensitySong2011Old','datatype','isetbiomatfileonpath');
                     case 'Song2011Young'
-                        theData = getRawData('coneDensitySong2011Young','datatype','isetbiomatfileonpath');
+                        theData = rawDataReadData('coneDensitySong2011Young','datatype','isetbiomatfileonpath');
                 end
                 
                 % Set up for interpolation for retinal position amplitude on each axis (nasal, superior,

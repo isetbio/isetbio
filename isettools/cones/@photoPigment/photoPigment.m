@@ -107,7 +107,7 @@ classdef photoPigment < hiddenHandle
             % If absorbance is not specified, we obtain it using the defaults
             % of coneAbsorbanceReadData.  
             if isempty(p.Results.absorbance)
-                obj.absorbance_ = 10 .^ coneAbsorbanceReadData(p.Unmatched,'wave',obj.wave_);
+                obj.absorbance_ = coneAbsorbanceReadData(p.Unmatched,'wave',obj.wave_);
             else
                 obj.absorbance = p.Results.absorbance;
             end

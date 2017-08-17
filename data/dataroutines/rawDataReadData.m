@@ -1,8 +1,8 @@
-function theData = getRawData(dataName,varargin)
-%%getRawData  Return a struct with some raw data in it
+function theData = rawDataReadData(dataName,varargin)
+%%rawDataReadData  Return a struct with some raw data in it
 %
 % Syntax:
-%    theData = getRawData(dataName);
+%    theData = rawDataReadData(dataName);
 %
 % Description:
 %    Return a named piece of raw data as a struct.  This routine
