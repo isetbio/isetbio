@@ -81,7 +81,7 @@ for osIndex = 1:numel(osTypesExamined)
     %% Repeat for foveal dynamics and add to plot
     %
     % Setting 'eccentricity' to 0, for foveal dynamics
-    osPeripheral = eval(sprintf('%s(''eccentricity'',0)', osType));
+    osFoveal = eval(sprintf('%s(''eccentricity'',0)', osType));
     osFoveal.set('noise flag','none');
     cmFoveal = coneMosaic('os',osFoveal, 'pattern', 2); % a single cone
     cmFoveal.integrationTime = timeStep;
