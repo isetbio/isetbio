@@ -16,6 +16,9 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %     to the temporal meridian, 90 degrees to superior, 180 to nasal, and 270
 %     to inferior.
 %
+%     If an eccentricity beyond the range of the underlying data source is requested,
+%     NaN is returned.
+%
 % Input:
 %     None.
 %

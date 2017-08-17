@@ -67,51 +67,53 @@ Old   = OldRaw*10^3;
 Young = YoungRaw*10^3;
 
 %% Build and save cone density structure for young eyes
-dYoung.superior.eccMM = eccentricityMm;
-dYoung.superior.units = 'cones/mm2';
-dYoung.superior.density = Young(1,:);
+superior.eccMM = eccentricityMm;
+superior.units = 'cones/mm2';
+superior.density = Young(1,:);
 
-dYoung.inferior.eccMM = eccentricityMm;
-dYoung.inferior.units = 'cones/mm2';
-dYoung.inferior.density = Young(2,:);
+inferior.eccMM = eccentricityMm;
+inferior.units = 'cones/mm2';
+inferior.density = Young(2,:);
 
-dYoung.nasal.eccMM = eccentricityMm;
-dYoung.nasal.units = 'cones/mm2';
-dYoung.nasal.density = Young(3,:);
+nasal.eccMM = eccentricityMm;
+nasal.units = 'cones/mm2';
+nasal.density = Young(3,:);
 
-dYoung.temporal.eccMM = eccentricityMm;
-dYoung.temporal.units = 'cones/mm2';
-dYoung.temporal.density = Young(4,:);
+temporal.eccMM = eccentricityMm;
+temporal.units = 'cones/mm2';
+temporal.density = Young(4,:);
 
-dYoung.description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS; young eyes.';
+description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS; young eyes.';
 
-save('coneDensitySong2011Young','d');
+save('coneDensitySong2011Young','superior','inferior','nasal','temporal','description');
+dYoung = load('coneDensitySong2011Young');
 
 %% Start a comparison plot
 vcNewGraphWin; 
-plot(dYoung.inferior.eccMM(3:end),dYoung.inferior.density(3:end),'-ro');
+plot(inferior.eccMM(3:end),inferior.density(3:end),'-ro');
 grid on;
 
 %% Build and save cone density structure for old eyes
-dOld.superior.eccMM = eccentricityMm;
-dOld.superior.units = 'cones/mm2';
-dOld.superior.density = Old(1,:);
+superior.eccMM = eccentricityMm;
+superior.units = 'cones/mm2';
+superior.density = Old(1,:);
 
-dOld.inferior.eccMM = eccentricityMm;
-dOld.inferior.units = 'cones/mm2';
-dOld.inferior.density = Old(2,:);
+inferior.eccMM = eccentricityMm;
+inferior.units = 'cones/mm2';
+inferior.density = Old(2,:);
 
-dOld.nasal.eccMM = eccentricityMm;
-dOld.nasal.units = 'cones/mm2';
-dOld.nasal.density = Old(3,:);
+nasal.eccMM = eccentricityMm;
+nasal.units = 'cones/mm2';
+nasal.density = Old(3,:);
 
-dOld.temporal.eccMM = eccentricityMm;
-dOld.temporal.units = 'cones/mm2';
-dOld.temporal.density = Old(4,:);
+temporal.eccMM = eccentricityMm;
+temporal.units = 'cones/mm2';
+temporal.density = Old(4,:);
 
-dOld.description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS; old eyes.';
+description = 'From Table 1 in Variation of Cone Photoreceptor Packing Density with Retinal Eccentricity and Age, Song et al. IOVS; old eyes.';
 
-save('coneDensitySong2011Old','d');
+save('coneDensitySong2011Old','superior','inferior','nasal','temporal','description');
+dOld = load('coneDensitySong2011Old');
 
 %% Add to comparison plot
 hold on
@@ -133,22 +135,22 @@ for ii=1:length(eccentricityMm)
 end
 vcNewGraphWin; hold on
 plot(dCurcio.inferior.eccMM,dCurcio.inferior.density,'-bo');
-plot(eccentricityMm,curcio,'g-x');
+plot(eccentricityMm,curcio,'gx');
 title('Curcio data two ways');
 
 
 %% Get Song data via getConeDensity and make sure it matches what is in the file
-eccentricityMm = linspace(0,20,100);
+eccentricityMm = linspace(0,4,20);
 songOld = zeros(size(eccentricityMm));
 songYoung = zeros(size(eccentricityMm));
 for ii=1:length(eccentricityMm)
-    songOld(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','source','Song2011Old');
-    songYoung(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','source','Song2011Young');
+    songOld(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Old');
+    songYoung(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Young');
 end
 vcNewGraphWin; hold on
-plot(dOld.inferior.eccMM,dOld.inferior.density,'-bo');
-plot(eccentricityMm,songOld,'g-x');
-plot(dYoung.inferior.eccMM,dYoung.inferior.density,'-bo');
-plot(eccentricityMm,songYoung,'g-x');
+plot(dOld.inferior.eccMM,dOld.inferior.density,'-ro');
+plot(eccentricityMm,songOld,'gx');
+plot(dYoung.inferior.eccMM,dYoung.inferior.density,'-ko');
+plot(eccentricityMm,songYoung,'bx');
 title('Song data two ways');
 
