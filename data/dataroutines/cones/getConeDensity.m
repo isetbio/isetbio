@@ -126,9 +126,12 @@ switch (params.angleUnits)
 end
 params.angle = NaN;
 
-%% Make sure eccentricity and angle have the same dimensions
+%% Make sure eccentricity and angle are vectors of the same length.
+if (~isvector(eccMM) | ~isvector(angleDeg))
+    error('Passed eccentricity and angle arguments must be vectors.');
+end
 if (length(eccMM) ~= length(angleDeg))
-    error('Passed eccentricity and angle arguments must have the same dimension.')
+    error('Passed eccentricity and angle vectors must have the same length.')
 end
 
 %% Wrap angles so that they are in range 0 <= angle < 360
@@ -182,8 +185,11 @@ switch (params.species)
                 end
                 onAxisD(5,:) = onAxisD(1,:);
                 
-                % Interpolate for angle
-                coneDensity = interp1(angleQ, onAxisD, angleDeg, 'linear');
+                % Interpolate for each angle
+                coneDensity = zeros(size(eccMM));
+                for aa = 1:length(eccMM)
+                    coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
+                end
                 
                 comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See getConeDensity.';
                 
