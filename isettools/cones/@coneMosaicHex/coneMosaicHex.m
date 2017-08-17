@@ -23,7 +23,7 @@ classdef coneMosaicHex < coneMosaic
     %      customLambda = 3.0;              %If not passed (or set to []) @coneMosaiHex chooses
     %                                       the cone spacing based on the eccentricity 
     %                                       of the mosaic as determined by the 
-    %                                       coneSize(eccentricityInMeters,ang) function.
+    %                                       coneSizeReadData function.
     %                                       If set to a value (specified in microns), 
     %                                       cone spacing is set to that value. Note that
     %                                       if the 'eccBasedConeDensity' param is  set to true, 

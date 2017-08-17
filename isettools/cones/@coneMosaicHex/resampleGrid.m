@@ -250,7 +250,7 @@ function lambda = midConeSpacing(obj)
     midY = obj.center(2);
     eccentricityInMeters = sqrt(midX^2 + midY^2);
     ang = atan2(midY, midX)/pi*180;
-    [coneSpacingInMeters, aperture, density] = coneSize(eccentricityInMeters,ang);
+    [coneSpacingInMeters, aperture, density] = coneSizeReadData(eccentricityInMeters,ang);
     lambda = coneSpacingInMeters * 1e6;  % in microns
 end
 
@@ -267,7 +267,7 @@ function lambda = minConeSpacing(obj)
     end
     eccentricityInMeters = sqrt(minX^2 + minY^2);
     ang = atan2(minY, minX)/pi*180;
-    [coneSpacingInMeters, aperture, density] = coneSize(eccentricityInMeters,ang);
+    [coneSpacingInMeters, aperture, density] = coneSizeReadData(eccentricityInMeters,ang);
     lambda = coneSpacingInMeters * 1e6;  % in microns
 end
 
@@ -309,7 +309,7 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(c
     eccentricitiesInMicrons = sqrt(sum(conePositions.^2,2));
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
     angles = atan2(conePositions(:,2), conePositions(:,1))/pi*180;
-    [coneSpacingInMeters, aperture, density] = coneSize(eccentricitiesInMeters,angles);
+    [coneSpacingInMeters, aperture, density] = coneSizeReadData(eccentricitiesInMeters,angles);
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6; 
 end
 

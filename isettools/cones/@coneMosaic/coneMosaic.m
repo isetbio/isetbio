@@ -287,7 +287,7 @@ classdef coneMosaic < hiddenHandle
             % Units of returns are meters
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
-            [spacing, aperture] = coneSize(ecc,ang, 'whichEye', obj.whichEye);
+            [spacing, aperture] = coneSizeReadData(ecc,ang, 'whichEye', obj.whichEye);
             
             obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
