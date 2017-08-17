@@ -44,9 +44,12 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %                                  the same key/value pairs (including unit specification).
 %
 %    'eccentricity'             Retinal eccentricity, default is 0.  Units according
-%                               to value of key 'eccentricityUnits'.
+%                               to eccentricityUnits.  May be a vector,
+%                               must have same length as angle.
 %
-%    'angle'                    Polar angle of retinal position in degrees (default 0).
+%    'angle'                    Polar angle of retinal position in degrees (default 0).  Units
+%                               according to angleUnits.  May be a vector, must have
+%                               same size as eccentricity.
 %
 %    'whichEye'                 Which eye, 'left' or 'right' (default 'left').
 %
