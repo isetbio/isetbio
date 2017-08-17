@@ -46,6 +46,8 @@ fType = ieParamFormat(fType);
 switch(fType)
     case 'upperleft'
         set(figHdl,'Units','normalized','Position',[0.007 0.55  0.28 0.36]);
+    case 'upperright'
+        set(figHdl,'Units','normalized','Position',[0.30 0.55   0.28 0.36]);
     case 'tall'
         set(figHdl,'Units','normalized','Position',[0.007 0.055 0.28 0.85]);
     case 'wide'
