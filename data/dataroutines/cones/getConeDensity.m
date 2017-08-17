@@ -126,6 +126,23 @@ switch (params.angleUnits)
 end
 params.angle = NaN;
 
+%% Make sure eccentricity and angle have the same dimensions
+if (length(eccMM) ~= length(angleDeg))
+    error('Passed eccentricity and angle arguments must have the same dimension.')
+end
+
+%% Wrap angles so that they are in range 0 <= angle < 360
+index = find(angleDeg < 0);
+while (~isempty(index))
+    angleDeg(index) = angleDeg(index)+360;
+    index = find(angleDeg < 0);
+end
+index = find(angleDeg >= 360);
+while (~isempty(index))
+    angleDeg(index) = angleDeg(index)-360;
+    index = find(angleDeg >= 360);
+end
+
 %% Handle choices
 switch (params.species)
     case {'human'}

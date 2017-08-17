@@ -45,7 +45,6 @@ theHexMosaic.displayInfo();
 visualizedAperture = 'both'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
 theHexMosaic.visualizeGrid('visualizedConeAperture', visualizedAperture, 'generateNewFigure', true);
 
-
 %% Compute isomerizations to a simple stimulus for the resulting mosaic.
 % Generate ring rays stimulus
 scene = sceneCreate('rings rays');
