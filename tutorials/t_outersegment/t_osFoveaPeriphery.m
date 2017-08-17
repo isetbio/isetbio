@@ -2,7 +2,7 @@
 % 
 % Description:
 %     Illustrates the difference between the foveal and peripheral cone outer
-%     segment responses, using the osBioPhys object.
+%     segment responses, using the osBioPhys and the osLinear objects.
 % 
 %     A single cone is created, and its absorption time course is set to have an
 %     impulse at the first time step. Biophysical outer segments are created,
@@ -26,7 +26,7 @@
 % 10/2016 JRG (c) Isetbio team
 %
 % 08/05/17  dhb  Clean up and rewrite to use new key/value interface to osBioPhys
-
+% 08/17/17  npc  Added t_osLinear test
 %% Initialize
 ieInit;
 
@@ -42,12 +42,18 @@ stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens*timeStep;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
+osTypesExamined = {'osLinear', 'osBioPhys'};
+figPositions = {'upper left', 'upper right'};
+for osIndex = 1:numel(osTypesExamined)
+%% Get osType and figPosition
+osType = osTypesExamined{osIndex};
+figPosition = figPositions{osIndex};
 %% Generate a peripheral cone mosaic
 %
 % Create an os object with peripheral parameters and insert it into a cone
 % mosaic.  Passing a 1 by 1 pattern matrix to the mosaic create call causes
 % the mosaic to have one L cone (because pattern type 2 -> L cone).
-osPeripheral = osBioPhys('eccentricity',10);           
+osPeripheral = eval(sprintf('%s(''eccentricity'',15)', osType));           
 osPeripheral.set('noise flag','none');
 cmPeripheral = coneMosaic('os',osPeripheral,'pattern', 2); 
 cmPeripheral.integrationTime = timeStep;
@@ -66,14 +72,14 @@ cmPeripheral.absorptions  = stimulus;
 cmPeripheral.computeCurrent;
 
 %% Plot the peripheral current against time
-vcNewGraphWin; hold on
+vcNewGraphWin([], figPosition); hold on
 timeAxis = (1:nSamples)*timeStep;
 plot(timeAxis,squeeze(cmPeripheral.current),'r','LineWidth',2);
 
 %% Repeat for foveal dynamics and add to plot
 %
 % Setting 'eccentricity' to 0, for foveal dynamics
-osFoveal = osBioPhys('eccentricity',0);
+osPeripheral = eval(sprintf('%s(''eccentricity'',0)', osType));  
 osFoveal.set('noise flag','none');
 cmFoveal = coneMosaic('os',osFoveal, 'pattern', 2); % a single cone
 cmFoveal.integrationTime = timeStep;
@@ -90,9 +96,10 @@ plot(timeAxis,squeeze(cmFoveal.current),'b','LineWidth',2);
 grid on; 
 xlabel('Time (sec)','FontSize',14);
 ylabel('Photocurrent (pa)','FontSize',14);
-title('Impulse response in the dark','FontSize',16);
+title(sprintf('''%s'' impulse response in the dark', osType),'FontSize',16);
 set(gca,'fontsize',14);
 legend('Peripheral','Foveal');
 
+end % osType
 
 

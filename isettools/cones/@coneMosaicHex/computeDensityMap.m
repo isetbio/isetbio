@@ -1,42 +1,54 @@
 % Method to compute the cone density of @coneMosaicHex
 function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMap(obj, computeConeDensityMap)
 
-    deltaX = 3*obj.lambdaMin*1e-6;
-    margin = 4*deltaX;
+    % Sampling interval in microns
+    deltaX = 2*obj.lambdaMin*1e-6;
+    
+    % Sampling grid in microns
+    margin = 2*deltaX;
     mosaicRangeX = obj.center(1) + obj.width*[-1 1]  + [-obj.lambdaMin obj.lambdaMin]*1e-6;
     mosaicRangeY = obj.center(2) + obj.height*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
     gridXPos = (mosaicRangeX(1)+margin):deltaX:(mosaicRangeX(2)-margin);
     gridYPos = (mosaicRangeY(1)+margin):deltaX:(mosaicRangeY(2)-margin);
+    
+    % Allocate memory
     densityMap = zeros(numel(gridYPos), numel(gridXPos));
-
-    halfConeApertureMicrons = 0.5*obj.lambdaMin;
-    coneLocsHexGrid = obj.coneLocsHexGrid * 1e6;
-    coneLocsHexGridX = squeeze(coneLocsHexGrid(:,1));
-    coneLocsHexGridY = squeeze(coneLocsHexGrid(:,2));
     
     if (strcmp(computeConeDensityMap, 'from mosaic'))
+        % Determine density by computing local spacing between a cone and its 6 closest neighbors
+        neigboringConesNum = 6;
+        % radius of cones over which to average the local cone spacing
+        averagingRadiusConesNum = 1;
         for iYpos = 1:numel(gridYPos)
             for iXpos = 1:numel(gridXPos)
-                xoMeters = gridXPos(iXpos);
-                yoMeters = gridYPos(iYpos);
-                xoMicrons = xoMeters * 1e6;
-                yoMicrons = yoMeters * 1e6;
-                eccentricityInMeters = sqrt(xoMeters^2 + yoMeters^2);
-                ang = atan2(yoMeters, xoMeters)/pi*180;
-                [coneSpacingInMeters aperture density] = coneSize(eccentricityInMeters,ang);
-                % count cones within a region 12x12 times the local cone spacing
-                % so our counting area grows proprotionally with the local cone spacing
-                measurementAreaHalfWidthMicrons = 6*coneSpacingInMeters*1e6;
-                measurementAreaInMM2 = (2*measurementAreaHalfWidthMicrons*1e-3)^2;
-                conesWithin = numel(find( ...
-                    coneLocsHexGridX-halfConeApertureMicrons >= xoMicrons-measurementAreaHalfWidthMicrons  & ...
-                    coneLocsHexGridX+halfConeApertureMicrons <= xoMicrons+measurementAreaHalfWidthMicrons  & ...
-                    coneLocsHexGridY-halfConeApertureMicrons >= yoMicrons-measurementAreaHalfWidthMicrons  & ...
-                    coneLocsHexGridY+halfConeApertureMicrons <= yoMicrons+measurementAreaHalfWidthMicrons ));
-                if (conesWithin == 0)
-                   densityMap(iYpos,iXpos) = nan;
+                % initialize spacingInMeters
+                spacingInMeters = 0;
+                measuresNum = 0;
+                % compute spacingInMeters over a regions of (2*averagingRadiusConesNum+1) x (2*averagingRadiusConesNum+1)
+                for i = -averagingRadiusConesNum:averagingRadiusConesNum
+                    ii = iXpos + i;
+                    if (ii < 1) || (ii > numel(gridXPos)); continue; end
+                    for j = -averagingRadiusConesNum:averagingRadiusConesNum
+                        jj = iYpos + j;
+                        if (jj < 1) || (jj > numel(gridYPos)); continue; end
+                        % spacing between target cone and its closese neighbors
+                        xoMeters = gridXPos(ii); yoMeters = gridYPos(jj);
+                        nearestConeDistancesInMeters = pdist2(obj.coneLocsHexGrid, [xoMeters yoMeters], 'Euclidean', 'Smallest',neigboringConesNum);
+                        % sum the mean spacing between target cone and its closese neighbors
+                        spacingInMeters = spacingInMeters + mean(nearestConeDistancesInMeters);
+                        measuresNum = measuresNum + 1;
+                    end
+                end
+                % Only include measures that contain all positions within
+                % the (2*averagingRadiusConesNum+1) x (2*averagingRadiusConesNum+1) area
+                if (measuresNum == (2*averagingRadiusConesNum+1)^2)
+                    spacingInMeters = spacingInMeters / measuresNum;
+                    % spacing in mm
+                    spacingInMM = spacingInMeters * 1e3;
+                    % density in cones/mm2
+                    densityMap(iYpos,iXpos) = (1/spacingInMM)^2;
                 else
-                    densityMap(iYpos,iXpos) = conesWithin / measurementAreaInMM2;
+                    densityMap(iYpos,iXpos) = nan;
                 end
             end
         end

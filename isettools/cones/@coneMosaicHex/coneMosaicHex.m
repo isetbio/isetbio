@@ -112,7 +112,7 @@ classdef coneMosaicHex < coneMosaic
             % parse input
             p = inputParser;
             p.addRequired('resamplingFactor', @isnumeric);
-            p.addParameter('fovDegs', 0.25, @(x)(isnumeric(x)&&(numel(x)==1)));
+            p.addParameter('fovDegs', 0.25, @(x)(isnumeric(x)&&((numel(x)==1)||(numel(x)==2))));
             p.addParameter('eccBasedConeDensity', false, @islogical);
             p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
             p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
@@ -137,7 +137,11 @@ classdef coneMosaicHex < coneMosaic
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
             
             % Set FOV of the underlying rect mosaic
-            obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
+            if (numel(p.Results.fovDegs) == 1)
+                obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
+            else
+                obj.setSizeToFOV(p.Results.fovDegs);
+            end
             
             % Get a copy of the original coneLocs
             obj.saveOriginalResState();

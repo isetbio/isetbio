@@ -83,7 +83,9 @@ end
 if isempty(interpFilters) || isempty(meanCur)
     % These convert a single photon increment on mean to a photocurrent impulse
     % response function
-    [lmsFilters, meanCur] = obj.linearFilters(cMosaic, 'absorptionsInXWFormat', absorptionsInXWFormat);
+    [lmsFilters, meanCur] = obj.linearFilters(cMosaic, ...
+        'absorptionsInXWFormat', absorptionsInXWFormat, ...
+        'eccentricity', obj.eccentricityDegs);
     
     % obj.plot('current filters','meancurrent',meanCur)
     
@@ -171,11 +173,11 @@ switch obj.noiseFlag
         % fprintf('No current noise added.\n')
     case 'random'
         % fprintf('Random noise added.\n')
-        current = osAddNoise(current, 'sampTime',obj.timeStep);
+        current = osAddNoise(current, 'sampTime', cMosaic.integrationTime);
     case 'frozen'
         %warning('ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed', ...
         %	'Frozen noise (seed %d)\n',seed);
-        current = osAddNoise(current, 'sampTime',obj.timeStep,'seed',seed);
+        current = osAddNoise(current, 'sampTime',cMosaic.integrationTime,'seed',seed);
     otherwise
         error('Noise flag %s\n',obj.noiseFlag);
 end

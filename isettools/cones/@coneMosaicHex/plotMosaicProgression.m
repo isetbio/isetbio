@@ -27,7 +27,7 @@ function hFig = plotMosaicProgression(obj)
     row = 3; col = 2; iteration = size(obj.latticeAdjustmentSteps,1);
     plotMosaic(obj, subplotPosVectors, row, col, iteration);
     
-    NicePlot.exportFigToPDF('mosaicConstruction.pdf', hFig, 300);
+    % NicePlot.exportFigToPDF('mosaicConstruction.pdf', hFig, 300);
     
     % Restore the final state of coneLocsHexGrid
     obj.coneLocsHexGrid = squeeze(obj.latticeAdjustmentSteps(end,:,:));
@@ -47,16 +47,16 @@ function plotMosaic(obj, subplotPosVectors, row, col, iteration)
     
     % Compute model mosaic density
     [densityMapModel, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
-    
-    
+   
     % Positions in meters
     xRange = max(abs(obj.coneLocsHexGrid(:)))* [-1 1];
-    displayedXrange = xRange(end)*0.76;
-    displayedYrange = xRange(2)*0.23;
+    displayedXrange = xRange(end)*0.875;
+    displayedYrange = xRange(2)*0.28;
     
     % Center of focal, magnified view of the mosaic
     focusXpoint =  xRange(2)*0.17;
     focusYpoint = -xRange(2)*0.15;
+    
     % Extent of the magnified view
     focusXrange = 2e-6*([-18 18]);
     focusYrange = 2e-6*([-11 11]);

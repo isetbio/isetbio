@@ -36,7 +36,7 @@ function hexLocs = computeHexGridNodes(obj)
     grid.rotationAngle = obj.rotationDegs/180*pi;
     grid.width = obj.width*1e6;
     grid.height = obj.height*1e6;
-    grid.radius = 1.1*sqrt((grid.width/2)^2 + (grid.height/2)^2);
+    grid.radius = 1.5*sqrt(2)* max([grid.width/2 grid.height/2]);
     grid.borderTolerance = 0.001*obj.lambdaMin;
     
     if (obj.eccBasedConeDensity)
@@ -44,10 +44,11 @@ function hexLocs = computeHexGridNodes(obj)
     else
         hexLocs = generateConePositionsOnConstantDensityGrid(grid);
     end
-    
+
     % The cones within the rect mosaic extent
     mosaicRangeX = grid.center(1) + grid.width/2*[-1 1];
     mosaicRangeY = grid.center(2) + grid.height/2*[-1 1];
+    
     indices = find( ...
         hexLocs(:,1) >= mosaicRangeX(1)+obj.lambdaMin/4 & ...
         hexLocs(:,1) <= mosaicRangeX(2)-obj.lambdaMin/4 & ... 
@@ -59,8 +60,7 @@ function hexLocs = computeHexGridNodes(obj)
     hexLocs = hexLocs * 1e-6; 
 end
 
-function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParams)
-    
+function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParams) 
     % First generate perfect grid
     conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMin, gridParams.rotationAngle);
 
@@ -77,14 +77,13 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParam
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
     
-    % Fudge factor needed to maximize agreement between actual and desired density
-    fudgeFactor = 1.00;
-    exponentF = 2.05;
-    densityP = fudgeFactor * (1 ./ normalizedConeSeparations).^exponentF;
+    % Exponent should be 2.0, but 2.25 results in mosaics whose cone density match best the desired cone density.
+    exponentF = 2.25;
+    densityP = (1 ./ normalizedConeSeparations).^exponentF;
 
     keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
     conePositions = conePositions(keptConeIndices,:);
-
+    
     % Add jitter
     beginWithJitteredPositions = false;
     if (beginWithJitteredPositions)
@@ -339,6 +338,11 @@ function pattern = rectSampledHexPattern(obj)
     
     % That's our cone !
     pattern(ind2sub(size(obj.pattern),II)) = obj.patternOriginatingRectGrid(I);
+    
+    % Make cones outside of the desired FOV null
+    outsideBoundaryIndices = find( (abs(xx(:)-obj.center(1)) > obj.width/2) & (abs(yy(:)-obj.center(2)) > obj.height/2) );
+    pattern(ind2sub(size(obj.pattern),outsideBoundaryIndices)) = 0;
+    
     fprintf('Done !\n');
     
     % Show patterns (only for debugging purposes)
