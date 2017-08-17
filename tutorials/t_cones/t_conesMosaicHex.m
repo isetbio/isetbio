@@ -10,7 +10,8 @@
 
 % NPC ISETBIO Team, Copyright 2016
 %
-% 08/08/17  NPC   Fixed and cleaned up for updated @coneMosaicHex class
+% 08/08/17  npc   Fixed and cleaned up for updated @coneMosaicHex class
+% 08/17/17  dhb   Changed parameters to make this go faster.
 
 %% Initialize
 ieInit; clear; close all;
@@ -18,11 +19,11 @@ ieInit; clear; close all;
 %% Set mosaic parameters
 mosaicParams = struct(...
     'name', 'the hex mosaic', ...
-    'resamplingFactor', 5, ...                      % Sets underlying pixel spacing; controls the accuracy of the hex mosaic grid (9 is pretty good, but slow)
-    'fovDegs', 0.35, ...                            % FOV in degrees
+    'resamplingFactor', 2, ...                      % Sets underlying pixel spacing; controls the accuracy of the hex mosaic grid (9 is pretty good, but slow)
+    'fovDegs', 0.2, ...                             % FOV in degrees
     'eccBasedConeDensity', true, ...                % Whether to have an eccentricity based, spatially - varying density
     'sConeMinDistanceFactor', 3.0, ...              % Min distance between neighboring S-cones = f * local cone separation - used to make the S-cone lattice semi-regular
-    'sConeFreeRadiusMicrons', 45, ...               % Radius of S-cone free retina, in microns
+    'sConeFreeRadiusMicrons', 0.15*300, ...         % Radius of S-cone free retina, in microns (300 microns/deg).
     'spatialDensity', [0 6/10 3/10 1/10]...         % With a LMS density of of 6:3:1
     );
 
@@ -34,8 +35,8 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
     'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ... 
     'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...                   
     'spatialDensity', mosaicParams.spatialDensity, ...
-    'latticeAdjustmentPositionalToleranceF', 0.01*2, ...        % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.01      
-    'latticeAdjustmentDelaunayToleranceF', 0.001*2 ...          % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.001 
+    'latticeAdjustmentPositionalToleranceF', 0.01*10, ...        % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.01      
+    'latticeAdjustmentDelaunayToleranceF', 0.001*10 ...          % For best (but much slower results) this should either not get passed or get set to equal or lower than 0.001 
 );
 
 %% Print some grid info
