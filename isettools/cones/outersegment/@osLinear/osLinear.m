@@ -56,6 +56,12 @@ classdef osLinear < outerSegment
         function obj = osLinear(varargin)
             % Initialize the parent class
             obj = obj@outerSegment();
+            
+            % Parse inputs
+            p = inputParser;
+            addParameter(p,'eccentricity',15,@isnumeric);
+            p.parse(varargin{:});
+            obj.eccentricityDegs = p.Results.eccentricity; 
         end
         
         % set function, see osLinearSet for details

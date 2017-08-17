@@ -41,6 +41,7 @@ classdef outerSegment < handle
     properties
         noiseFlag;            % determines whether noise is added
         patchSize;            % spacing between cones (width) in um
+        eccentricityDegs;     % eccentricity in degrees
     end
     
     properties (SetAccess = protected)
@@ -61,6 +62,7 @@ classdef outerSegment < handle
             obj.noiseFlag = 'random';
             % obj.coneCurrentSignal = [];
             obj.timeStep = 1e-4;
+            obj.eccentricityDegs = 0;
         end
         
         function set.noiseFlag(obj, val)

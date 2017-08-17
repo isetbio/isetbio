@@ -83,7 +83,9 @@ end
 if isempty(interpFilters) || isempty(meanCur)
     % These convert a single photon increment on mean to a photocurrent impulse
     % response function
-    [lmsFilters, meanCur] = obj.linearFilters(cMosaic, 'absorptionsInXWFormat', absorptionsInXWFormat);
+    [lmsFilters, meanCur] = obj.linearFilters(cMosaic, ...
+        'absorptionsInXWFormat', absorptionsInXWFormat, ...
+        'eccentricity', obj.eccentricityDegs);
     
     % obj.plot('current filters','meancurrent',meanCur)
     

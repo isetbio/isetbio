@@ -65,10 +65,11 @@ classdef osBioPhys < outerSegment
             p = inputParser;
             addParameter(p,'eccentricity',15,@isnumeric);
             p.parse(varargin{:});
-            eccentricityDegs = p.Results.eccentricity; 
-            
+            obj.eccentricityDegs = p.Results.eccentricity; 
+
             % If eccentricity is greater than foveal/peripheral cutoff, use peripheral parameters
-            if (eccentricityDegs > obj.fovealPeripheralCutoffDegs) 
+            if (obj.eccentricityDegs > obj.fovealPeripheralCutoffDegs) 
+
                     % Peripheral parameters
                     obj.model.sigma = 22;       % rhodopsin activity decay rate (1/sec) - default 22
                     obj.model.phi = 22;         % phosphodiesterase activity decay rate (1/sec) - default 22
