@@ -47,9 +47,9 @@ function reassignConeIdentities(obj, varargin)
             ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
             
             if (obj.eccBasedConeDensity)
-                [coneSpacing, ~, ~] = coneSizeReadData(eccInMeters(:),ang(:));
+                [coneSpacing, ~, ~] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
             else
-                [coneSpacing, ~, ~] = coneSizeReadData(0*eccInMeters(:),ang(:));
+                [coneSpacing, ~, ~] = coneSizeReadData('eccentricity',0*eccInMeters(:),'angle',ang(:));
                 if (~isempty(obj.customLambda))
                     coneSpacing = obj.customLambda/1e6 + 0*coneSpacing;
                 end

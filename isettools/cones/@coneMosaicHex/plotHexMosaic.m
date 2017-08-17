@@ -201,7 +201,7 @@ else
     [X,Y] = meshgrid(gridXPos, gridYPos);
     eccInMeters = sqrt(X.^2 + Y.^2);
     ang = atan2(Y, X)/pi*180;
-    [~, ~, densities] = coneSizeReadData(eccInMeters(:),ang(:));
+    [~, ~, densities] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
     densityMap = reshape(densities, size(X));
 end
 

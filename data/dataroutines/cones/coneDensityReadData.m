@@ -86,7 +86,7 @@ p.addParameter('species','human', @ischar);
 p.addParameter('coneDensitySource','Curcio1990',@(x) (ischar(x) | isa(x,'function_handle')));
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('angle',0, @isnumeric);
-p.addParameter('whichEye','left',@ischar);
+p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
 p.addParameter('eccentricityUnits','m',@ischar);
 p.addParameter('angleUnits','deg',@ischar);
 p.parse(varargin{:});
