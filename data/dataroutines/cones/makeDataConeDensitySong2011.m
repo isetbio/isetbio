@@ -1,4 +1,4 @@
-%%makeDataConeDensitySong2011
+%%coneDensitySong2011MakeData
 %
 % Description:
 %    Script to make data files for cone density from paper:
@@ -127,13 +127,13 @@ plot(dCurcio.inferior.eccMM,dCurcio.inferior.density,'-bo');
 grid on;
 legend({'young','old','curcio'})
 
-%% Get Curcio data via getConeDensity and make sure it matches what is in the file
+%% Get Curcio data via coneDensityReadData and make sure it matches what is in the file
 %
-% Also shows how to pass eccentricity in mm to getConeDensity.
+% Also shows how to pass eccentricity in mm to coneDensityReadData.
 eccentricityMm = linspace(0,20,100);
 curcio = zeros(size(eccentricityMm));
 for ii=1:length(eccentricityMm)
-    curcio(ii) = getConeDensity('eccentricity',eccentricityMm(ii),'angle',270,'whichEye','left','eccentricityUnits','mm');
+    curcio(ii) = coneDensityReadData('eccentricity',eccentricityMm(ii),'angle',270,'whichEye','left','eccentricityUnits','mm');
 end
 vcNewGraphWin; hold on
 plot(dCurcio.inferior.eccMM,dCurcio.inferior.density,'-bo');
@@ -141,15 +141,15 @@ plot(eccentricityMm,curcio,'gx');
 title('Curcio data two ways');
 
 
-%% Get Song data via getConeDensity and make sure it matches what is in the file
+%% Get Song data via coneDensityReadData and make sure it matches what is in the file
 %
-% Also shows how to pass eccentricity in microns to getConeDensity, and angle in radians
+% Also shows how to pass eccentricity in microns to coneDensityReadData, and angle in radians
 eccentricityMm = linspace(0,4,20);
 songOld = zeros(size(eccentricityMm));
 songYoung = zeros(size(eccentricityMm));
 for ii=1:length(eccentricityMm)
-    songOld(ii) = getConeDensity('eccentricity',1e3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Old','eccentricityUnits','um');
-    songYoung(ii) = getConeDensity('eccentricity',1e-3*eccentricityMm(ii),'angle',3*pi/2,'whichEye','left','coneDensitySource','Song2011Young','angleUnits','rad');
+    songOld(ii) = coneDensityReadData('eccentricity',1e3*eccentricityMm(ii),'angle',270,'whichEye','left','coneDensitySource','Song2011Old','eccentricityUnits','um');
+    songYoung(ii) = coneDensityReadData('eccentricity',1e-3*eccentricityMm(ii),'angle',3*pi/2,'whichEye','left','coneDensitySource','Song2011Young','angleUnits','rad');
 end
 vcNewGraphWin; hold on
 plot(dOld.inferior.eccMM,dOld.inferior.density,'-ro');

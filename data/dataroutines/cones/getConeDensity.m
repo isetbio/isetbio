@@ -1,9 +1,9 @@
-function [coneDensity,params,comment] = getConeDensity(varargin)
-%%getConeDensity  Compute cone packing density as a function of retinal position
+function [coneDensity,params,comment] = coneDensityReadData(varargin)
+%%coneDensityReadData  Compute cone packing density as a function of retinal position
 %
 % Syntax:
-%     [coneDensity,params,comment] = getConeDensity;
-%     coneDensity = getConeDensity('eccentricity',8*1e-3,'angle',10,'whichEye','left');
+%     [coneDensity,params,comment] = coneDensityReadData;
+%     coneDensity = coneDensityReadData('eccentricity',8*1e-3,'angle',10,'whichEye','left');
 %
 % Description:
 %     Compute cone packing density as a function of retinal position.
@@ -41,7 +41,7 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %
 %                                  The value for 'coneDensitySource' may be passed as a function handle, in
 %                                  which case the passed function is called direclty with the key/value pairs passed to this
-%                                  routine. The passed function must return the same values as getConeDensity does, and handle
+%                                  routine. The passed function must return the same values as coneDensityReadData does, and handle
 %                                  the same key/value pairs (including unit specification).
 %
 %    'eccentricity'             Retinal eccentricity, default is 0.  Units according
@@ -73,7 +73,7 @@ function [coneDensity,params,comment] = getConeDensity(varargin)
 %      Eccentricity and Age. Investigative Ophthalmology & Visual Science,
 %      52(10), 7376-7384. http://doi.org/10.1167/iovs.11-7199
 %
-% See also: coneMosaic, coneSize, makeDataConeDensitySong2011.
+% See also: coneMosaic, coneSize, coneDensitySong2011MakeData.
 
 % HJ, ISETBIO TEAM, 2015
 %
@@ -195,7 +195,7 @@ switch (params.species)
                     coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
                 end
                 
-                comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See getConeDensity.';
+                comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See coneDensityReadData.';
                 
             otherwise
                 error('Unsupprted source specified');

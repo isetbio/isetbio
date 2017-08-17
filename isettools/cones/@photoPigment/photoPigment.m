@@ -34,7 +34,7 @@ classdef photoPigment < hiddenHandle
     %    'wave'              Vector of wavelengths in nm (400:10:31).
     %    'opticalDensity'    Three vector of optical densities for L, M and S cone photopigment (default: [0.5 0.5 0.4]).
     %    'absorbance'        L, M and S cone absorbance spectra. (Default empty, in which case these
-    %                          are obtained through routine getLogConeAbsorbance.)
+    %                          are obtained through routine coneAbsorbanceReadData.)
     %    'peakEfficiency'    Peak quantal efficiency for isomerizations for L, M and S cones (default [2 2 2]/3).    
     %    'width'             Cone width (including gap between cones) in meters (default 2e-6).
     %    'height'            Cone height (including gap between cones) in meters  (default 2e-6).
@@ -105,9 +105,9 @@ classdef photoPigment < hiddenHandle
             obj.pdHeight = p.Results.pdHeight;
             
             % If absorbance is not specified, we obtain it using the defaults
-            % of getLogConeAbsorbance.  
+            % of coneAbsorbanceReadData.  
             if isempty(p.Results.absorbance)
-                obj.absorbance_ = 10 .^ getLogConeAbsorbance(p.Unmatched,'wave',obj.wave_);
+                obj.absorbance_ = 10 .^ coneAbsorbanceReadData(p.Unmatched,'wave',obj.wave_);
             else
                 obj.absorbance = p.Results.absorbance;
             end

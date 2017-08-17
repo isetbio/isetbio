@@ -1,8 +1,8 @@
-function [log10absorbance,wave,params,comment] = getLogConeAbsorbance(varargin)
-%%getLogConeAbsorbance  Return the log10 of the cone photopigment absorbance (aka optical density)
+function [log10absorbance,wave,params,comment] = coneAbsorbanceReadData(varargin)
+%%coneAbsorbanceReadData  Return the log10 of the cone photopigment absorbance (aka optical density)
 %
 % Syntax:
-%    log10absorbance = getLogConeAbsorbance;
+%    log10absorbance = coneAbsorbanceReadData;
 %
 % Description:
 %    Return the log10 of the cone photopigment absorbance (aka optical density).
