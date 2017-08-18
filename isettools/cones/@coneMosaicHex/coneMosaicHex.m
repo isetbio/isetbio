@@ -55,6 +55,7 @@ classdef coneMosaicHex < coneMosaic
         customInnerSegmentDiameter              % user-supplied inner segment diameter (for a circular aperture, in microns)
         eccBasedConeDensity                     % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
+        marginF                                 % factor determining how much more mosaic to compute
         sConeMinDistanceFactor                  % min distance between neighboring S-cones (to make the S-cone lattice semi-regular) = f * local cone separation 
         sConeFreeRadiusMicrons                  % radius of S-cone free retina, default: 45 microns, which is 0.15, so S-cone free region = 0.3 degs diameter
         coneLocsHexGrid                         % floating point coneLocs on the hex grid. This is sampled according to the resamplingFactor.
@@ -90,6 +91,7 @@ classdef coneMosaicHex < coneMosaic
                 'saveLatticeAdjustmentProgression',...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
+                'marginF' ...
                 };
             
             % Call the super-class constructor.
@@ -122,6 +124,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
+            p.addParameter('marginF', 1.5, @(x)(isnumeric(x)&&(x>0.0)));
             p.parse(upSampleFactor, vararginForConeHexMosaic{:});
             
             % Set input params
@@ -135,7 +138,7 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-            
+            obj.marginF = p.Results.marginF;
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);

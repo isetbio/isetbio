@@ -36,7 +36,7 @@ function hexLocs = computeHexGridNodes(obj)
     grid.rotationAngle = obj.rotationDegs/180*pi;
     grid.width = obj.width*1e6;
     grid.height = obj.height*1e6;
-    grid.radius = 1.5*sqrt(2)* max([grid.width/2 grid.height/2]);
+    grid.radius = obj.marginF*sqrt(2)* max([grid.width/2 grid.height/2]);
     grid.borderTolerance = 0.001*obj.lambdaMin;
     
     if (obj.eccBasedConeDensity)
