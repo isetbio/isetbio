@@ -138,7 +138,11 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-            obj.marginF = p.Results.marginF;
+            if (isempty(p.Results.marginF))
+                obj.marginF = 1.5;
+            else
+                obj.marginF = p.Results.marginF;
+            end
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
