@@ -5,7 +5,7 @@
 %     segment responses, using the osBioPhys and the osLinear objects.
 %
 %     A single cone is created, and its absorption time course is set to have an
-%     impulse at the first time step. Biophysical outer segments are created,
+%     impulse at the first time step. Biophysical and linear outer segments are created,
 %     one with foveal dynamics and one with peripheral dynamics.
 %
 %     This tutorial is a variation of validation routine v_osBioPhysObject.  It works
@@ -43,14 +43,15 @@ stimulus = zeros(nSamples, 1);
 stimulus(1) = flashIntens*timeStep;
 stimulus = reshape(stimulus, [1 1 nSamples]);
 
+%% Loop over both outer segment types
 osTypesExamined = {'osLinear', 'osBioPhys'};
 figPositions = {'upper left', 'upper right'};
 for osIndex = 1:numel(osTypesExamined)
-    %% Get osType and figPosition
+    % Get osType and figPosition
     osType = osTypesExamined{osIndex};
     figPosition = figPositions{osIndex};
     
-    %% Generate a peripheral cone mosaic
+    % Generate a peripheral cone mosaic
     %
     % Create an os object with peripheral parameters and insert it into a cone
     % mosaic.  Passing a 1 by 1 pattern matrix to the mosaic create call causes
@@ -67,18 +68,18 @@ for osIndex = 1:numel(osTypesExamined)
     % compute absorptions from that.
     cmPeripheral.absorptions  = stimulus;
     
-    %% Use the computeCurrent method on the cone mosaic object
+    % Use the computeCurrent method on the cone mosaic object
     %
     % computeCurrent knows it is producing photocurrent from the
     % isomerizations.
     cmPeripheral.computeCurrent;
     
-    %% Plot the peripheral current against time
+    % Plot the peripheral current against time
     vcNewGraphWin([], figPosition); hold on
     timeAxis = (1:nSamples)*timeStep;
     plot(timeAxis,squeeze(cmPeripheral.current),'r','LineWidth',2);
     
-    %% Repeat for foveal dynamics and add to plot
+    % Repeat for foveal dynamics and add to plot
     %
     % Setting 'eccentricity' to 0, for foveal dynamics
     osFoveal = eval(sprintf('%s(''eccentricity'',0)', osType));
@@ -90,7 +91,7 @@ for osIndex = 1:numel(osTypesExamined)
     cmFoveal.computeCurrent();
     current2Scaled = (cmFoveal.current) - cmFoveal.current(1);
     
-    %% Add foveal to the plot
+    % Add foveal to the plot
     %
     % Note that the dynamics are slower in the fovea, but that the
     % amplitude is bigger.
@@ -102,6 +103,6 @@ for osIndex = 1:numel(osTypesExamined)
     set(gca,'fontsize',14);
     legend('Peripheral','Foveal');
     
-end % osType
+end 
 
 
