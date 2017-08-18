@@ -31,7 +31,9 @@ pp = photoPigment('wave',400:5:700);
 vcNewGraphWin; plot(pp.wave,pp.absorbance)
 
 %% Geometry
-ecc = 0.0; ang = 0;
+% 
+% See coneDensityReadData for explanation of retinal coordinate system.
+eccentricity = 0.0; angle = 0;
 
 % Spacing (um), aperture (um), density (cones/mm2)
-[s,a,d] = coneSizeReadData('eccentricity',ecc,'angle',ang)
+[s,a,d] = coneSizeReadData('eccentricity',eccentricity,'angle',angle)
