@@ -6,8 +6,9 @@ function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMa
     
     % Sampling grid in microns
     margin = 2*deltaX;
-    mosaicRangeX = obj.center(1) + obj.width*[-1 1]  + [-obj.lambdaMin obj.lambdaMin]*1e-6;
-    mosaicRangeY = obj.center(2) + obj.height*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
+    mosaicRadius = max([obj.width obj.height]);
+    mosaicRangeX = obj.center(1) + mosaicRadius*[-1 1]  + [-obj.lambdaMin obj.lambdaMin]*1e-6;
+    mosaicRangeY = obj.center(2) + mosaicRadius*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
     gridXPos = (mosaicRangeX(1)+margin):deltaX:(mosaicRangeX(2)-margin);
     gridYPos = (mosaicRangeY(1)+margin):deltaX:(mosaicRangeY(2)-margin);
     

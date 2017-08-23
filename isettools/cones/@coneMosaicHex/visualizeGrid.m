@@ -11,10 +11,6 @@ function hFig = visualizeGrid(obj, varargin)
 %   overlayConeDensityContour   - 'none'
 %   coneDensityContourLevelStep - 5000
 %
-% Includes functions, some of which might get moved out
-%   renderPatchArray
-%   renderHexMesh
-%
 % NPC, ISETBIO TEAM, 2015
 
 %% parse input
@@ -22,6 +18,7 @@ p = inputParser;
 p.addParameter('generateNewFigure', false, @islogical);
 p.addParameter('panelPosition', [1 1]);
 p.addParameter('axesHandle', []);
+p.addParameter('labelConeTypes', true, @islogical);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
 p.addParameter('overlayNullSensors', false, @islogical);
@@ -38,6 +35,7 @@ generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
 visualizedConeAperture = p.Results.visualizedConeAperture;
+labelConeTypes = p.Results.labelConeTypes;
 
 %% Set up cone coordinates and outline
 sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
@@ -75,7 +73,7 @@ else
     pixelOutline.y = [-1 1 1 -1 -1]*dxInner/2;
 end
 
-iTheta = (0:15:360)/180*pi;
+iTheta = (0:60:360)/180*pi;
 if (~isempty(dxOuter))  
     outerApertureOutline.x = dxOuter/2.0 * cos(iTheta);
     outerApertureOutline.y = dxOuter/2.0 * sin(iTheta);
@@ -138,68 +136,87 @@ if (~showCorrespondingRectangularMosaicInstead)
         idx = find(obj.pattern==1);
         [iRows,iCols] = ind2sub(size(obj.pattern), idx);
         edgeColor = [0.4 0.4 0.4]; faceColor = 'none';
-        renderPatchArray(axesHandle, pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
     end
     
     % L-cones
     idx = find(obj.pattern == 2);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none'; % [1 0 0]; 
-    faceColor = [1.0 0. 0.];
+    if (labelConeTypes)
+        faceColorInner = [1 0 0];
+        faceColorOuter = [1 0.5 0.5];
+    else
+        faceColorInner = 0.7*[1 1 1];
+        faceColorOuter = 0.9*[1 1 1];
+    end
     if (~isempty(outerApertureOutline))
-        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.9 0.75 0.75], lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorOuter, lineStyle);
     end
     if (~isempty(innerApertureOutline))
-        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorInner, lineStyle);
     end
     
     % M-cones
     idx = find(obj.pattern == 3);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0.7 0]; 
-    faceColor = [0. 0.7 0.];
+    if (labelConeTypes)
+        faceColorInner = [0 1 0];
+        faceColorOuter = [0.5 1 0.5];
+    else
+        faceColorInner = 0.7*[1 1 1];
+        faceColorOuter = 0.9*[1 1 1];
+    end
+    
     if (~isempty(outerApertureOutline))
-        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.75 0.9 0.75], lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorOuter, lineStyle);
     end
     if (~isempty(innerApertureOutline))
-        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorInner, lineStyle);
     end
     
     % S-cones
     idx = find(obj.pattern == 4);
     [iRows,iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none';% = [0 0 1]; 
-    faceColor = [0. 0. 1.0];
+    if (labelConeTypes)
+        faceColorInner = [0 0 1];
+        faceColorOuter = [0.5 0.5 1];
+    else
+        faceColorInner = 0.7*[1 1 1];
+        faceColorOuter = 0.9*[1 1 1];
+    end
+    
     if (~isempty(outerApertureOutline))
-        renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, [0.75 0.75 0.9], lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorOuter, lineStyle);
     end
     if (~isempty(innerApertureOutline))
-        renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorInner, lineStyle);
     end
     
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing the locations of the perfect hex grid
         meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
-        renderHexMesh(axesHandle, hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
+        coneMosaicHex.renderHexMesh(axesHandle, hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
 else
     % Show the corresponding rectangular mosaic
-    
     % The original rect sensors
     idx = find(obj.patternOriginatingRectGrid==2);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [1.0 0.7 0.7]; lineStyle = '-';
-    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==3);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 1.0 0.7];
-    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
     
     idx = find(obj.patternOriginatingRectGrid==4);
     %[iRows,iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3]; faceColor = [0.7 0.7 1.0];
-    renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
+    coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 end
 
 if (~strcmp(showConeDensityContour, 'none'))
@@ -218,72 +235,21 @@ end
 
 hold(axesHandle, 'off')
 axis(axesHandle, 'equal'); axis(axesHandle, 'xy')
+
+if (isempty(p.Results.axesHandle))
 xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {});
+set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
 set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
 box(axesHandle, 'on'); grid(axesHandle, 'off');
 title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 16);
 set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
 set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
-
 drawnow;
+end
 
 end
 
-
-%% Maybe put in utility directory
-function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, edgeColor, faceColor, lineStyle)
-
-verticesNum = numel(pixelOutline.x);
-x = zeros(verticesNum, numel(xCoords));
-y = zeros(verticesNum, numel(xCoords));
-
-for vertexIndex = 1:verticesNum
-    x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
-    y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
-end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, 'LineWidth', 0.2, 'LineStyle', lineStyle, 'Parent', axesHandle);
-end
-
-%% Separate function??
-function renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle)
-x = []; y = [];
-triangleConeIndices = delaunayn([xHex(:), yHex(:)]);
-for triangleIndex = 1:size(triangleConeIndices,1)
-    coneIndices = triangleConeIndices(triangleIndex, :);
-    xCoords = xHex(coneIndices);
-    yCoords = yHex(coneIndices);
-    for k = 1:numel(coneIndices)
-        x = cat(2, x, xCoords);
-        y = cat(2, y, yCoords);
-    end
-end
-patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle, 'Parent', axesHandle);
-end
-
-function Cout = getContourStruct(C)
-    K = 0; n0 = 1;
-    while n0<=size(C,2)
-       K = K + 1;
-       n0 = n0 + C(2,n0) + 1;
-    end
-
-    % initialize output struct
-    el = cell(K,1);
-    Cout = struct('level',el,'length',el,'x',el,'y',el);
-
-    % fill the output struct
-    n0 = 1;
-    for k = 1:K
-       Cout(k).level = C(1,n0);
-       idx = (n0+1):(n0+C(2,n0));
-       Cout(k).length = C(2,n0);
-       Cout(k).x = C(1,idx);
-       Cout(k).y = C(2,idx);
-       n0 = idx(end) + 1; % next starting index
-    end
-end
 

@@ -31,7 +31,8 @@ function hexLocs = computeHexGridNodes(obj)
     end
     
     grid.coneSpacingFunction = @coneSpacingFunction;
-    grid.domainFunction = @circularDomainFunction;
+    %grid.domainFunction = @circularDomainFunction;
+    grid.domainFunction = @ellipticalDomainFunction;
     grid.center = obj.center*1e6;
     grid.rotationAngle = obj.rotationDegs/180*pi;
     grid.width = obj.width*1e6;
@@ -77,13 +78,12 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParam
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
     
-    % Exponent should be 2.0, but 2.25 results in mosaics whose cone density match best the desired cone density.
-    exponentF = 2.25;
-    densityP = (1 ./ normalizedConeSeparations).^exponentF;
-
+    % Fudge factor needed for cone density to best match best the desired cone density.
+    fudgeF = 0.87;
+    densityP = fudgeF * (1 ./ normalizedConeSeparations).^2;
     keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
     conePositions = conePositions(keptConeIndices,:);
-    
+
     % Add jitter
     beginWithJitteredPositions = false;
     if (beginWithJitteredPositions)
@@ -302,7 +302,27 @@ end
 
 function distances = circularDomainFunction(conePositions, center, radius)
     %  points with positive distance will be excluded
-    distances = -(radius-sqrt((conePositions(:,1)-center(1)).^2+(conePositions(:,2)-center(2)).^2));
+    radii = sqrt((conePositions(:,1)-center(1)).^2+(conePositions(:,2)-center(2)).^2);
+    distances = -(radius-radii);
+end
+
+function distances = ellipticalDomainFunction(conePositions, center, radius)
+    %  points with positive distance will be excluded
+    xx = conePositions(:,1)-center(1);
+    yy = conePositions(:,2)-center(2);
+  
+    % compute ellipse axes lengths
+    largestXYspacing = coneSizeReadData('eccentricity', 1e-6*radius*[1 1], 'angle', [0 90]);
+    if (largestXYspacing(1) < largestXYspacing(2))
+        xa = 1;
+        ya = largestXYspacing(2)/largestXYspacing(1);
+    else
+        xa = largestXYspacing(1)/largestXYspacing(2);
+        ya = 1;
+    end
+    
+    radii = sqrt((xx/xa).^2+(yy/ya).^2);
+    distances = -(radius-radii);
 end
 
 function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(conePositions)

@@ -55,7 +55,7 @@ classdef coneMosaicHex < coneMosaic
         customInnerSegmentDiameter              % user-supplied inner segment diameter (for a circular aperture, in microns)
         eccBasedConeDensity                     % whether to have an eccentricity-based spatially-varying density (boolean)
         resamplingFactor                        % resamplingFactor
-        marginF                                 % factor determining how much more mosaic to compute
+        marginF                                 % factor determining how much more (if >1) or less (<1) mosaic to compute
         sConeMinDistanceFactor                  % min distance between neighboring S-cones (to make the S-cone lattice semi-regular) = f * local cone separation 
         sConeFreeRadiusMicrons                  % radius of S-cone free retina, default: 45 microns, which is 0.15, so S-cone free region = 0.3 degs diameter
         coneLocsHexGrid                         % floating point coneLocs on the hex grid. This is sampled according to the resamplingFactor.
@@ -182,17 +182,7 @@ classdef coneMosaicHex < coneMosaic
                     'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...   
                     'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);    
             end
-
         end
-        
-        % Change the FOV of the mosaic
-        setSizeToFOVForHexMosaic(obj,fov);
-        
-        % Change the cone identities according to arguments passed in varargin
-        reassignConeIdentities(obj, varargin)
-        
-        % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
-        resampleGrid(obj, resamplingFactor);
         
         % Visualize different aspects of the hex grid
         hFig = visualizeGrid(obj, varargin);
@@ -216,21 +206,31 @@ classdef coneMosaicHex < coneMosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
         
         % Visualize iterative adjustment of the cone lattice 
-        hFig = plotMosaicProgression(obj);
+        hFig = plotMosaicProgression(obj, varargin);
         
         % Print various infos about the cone mosaic
         displayInfo(obj);
-        
     end % Public methods
     
     methods (Access = private)
         % Private methods
-        %
-        % These are templated here. The actual code is in the
-        % @coneMosaicHex directory.
         saveOriginalResState(obj);
         restoreOriginalResState(obj);
-    end 
+        
+        % Change the FOV of the mosaic
+        setSizeToFOVForHexMosaic(obj,fov);
+        
+        % Change the cone identities according to arguments passed in varargin
+        reassignConeIdentities(obj, varargin);
+        
+        % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
+        resampleGrid(obj, resamplingFactor);
+    end % Private methods
+    
+    methods (Static)
+        renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, edgeColor, faceColor, lineStyle);
+        renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
+    end % Static methods
     
 end
 
