@@ -17,10 +17,11 @@ classdef photoPigment < hiddenHandle
     %    Default parameters are determined by underlying routines that get 
     %    the required data types. Unmatched key/value pairs passed to
     %    photoPigment are passed on to the underlying routines and can be
-    %    used to adjust the parameters obtained. 
-    %      absorbance    10.^getLogConeAborbance
+    %    used to adjust the parameters obtained.  See help for each routine
+    %    for what the available key/value pairs are.
+    %      absorbance    coneAbsorbanceReadData
     %
-    %    [DHB NOTE: Need to explain about width and heigh, pdWidth and pdHeight and
+    %    [DHB NOTE: Need to explain about width and height, pdWidth and pdHeight and
     %    how these are used.  Perhaps even simplify code not to have both.]
     %
     % Input:

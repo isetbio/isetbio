@@ -248,6 +248,7 @@ classdef coneMosaic < hiddenHandle
             % parameter and create cones of the appropriate size for that
             % retinal location
             p = inputParser;
+            p.KeepUnmatched = true;
             p.addParameter('name', 'cone mosaic', @ischar);
             p.addParameter('pigment', photoPigment(),@(x) isa(x, 'photoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));  
@@ -280,14 +281,17 @@ classdef coneMosaic < hiddenHandle
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
             
-            % Set the cone spacing and aperture given its eccentricity and
-            % angle.  We could specify eye, but are we really sure about
-            % the left right thing in human?
+            % Set the cone spacing and aperture given its eccentricity and angle.
             %
-            % Units of returns are meters
+            % Units of returns are meters.
+            %
+            % passing p.Unmatched first ensures that we override it with the expected units of meters and degrees
+            % used here, independent of what the user passes.  Since the user can't currently pass either eccentricity or
+            % angle, that is OK. Because center is used in other places in coneMosaic, we can't just override it with
+            % the passed 'eccentricity' and 'angle' key value pairs.
             ecc = sqrt(sum(obj.center.^2));
             ang = atan2d(obj.center(2),obj.center(1));
-            [spacing, aperture] = coneSizeReadData('eccentricity', ecc,'angle', ang, 'whichEye', obj.whichEye);
+            [spacing, aperture] = coneSizeReadData( p.Unmatched,'eccentricity', ecc,'eccentricityUnits','m','angle', ang,'angleUnits','deg','whichEye', obj.whichEye);
             
             obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
