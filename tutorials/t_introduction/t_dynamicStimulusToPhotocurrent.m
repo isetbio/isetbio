@@ -123,7 +123,10 @@ visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVisualized, 
 
 end
 
+
+%% ========================================================================
 %% SUPPORT ROUTINES
+%% ========================================================================
 
 %% Params retrieval routines
 function [spatialParams, temporalParams, colorModulationParams,  backgroundParams] = getStimParams(fov, meanLuminance)
