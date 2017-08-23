@@ -257,7 +257,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('name', 'cone mosaic', @ischar);
             p.addParameter('pigment', photoPigment(),@(x) isa(x, 'photoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));  
-            p.addParameter('os', osLinear(), @(x)(isa(x,'outerSegment'))); 
+            p.addParameter('os',[], @(x)(isempty(x) || isa(x,'outerSegment'))); 
             p.addParameter('center',[0 0], @(x)(numel(x) ==2));   
             p.addParameter('whichEye','left', @(x) ismember(x, {'left', 'right'}));   
             p.addParameter('wave', 400:10:700, @isnumeric);       
@@ -270,11 +270,20 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
             p.parse(varargin{:});
             
+            % Construct outersgement if not passed.
+            % Using 0.3 mm/deg as conversion.
+            if (isempty(p.Results.os))
+                eccentricityMeters = norm(p.Results.center);
+                eccentricityDegs = 1e3*eccentricityMeters/0.3;
+                obj.os = osLinear('eccentricity',eccentricityDegs);
+            else
+                obj.os = p.Results.os;
+            end
+            
             % Set properties
             obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
-            obj.os      = p.Results.os;
             
             obj.center          = p.Results.center(:)';
             obj.whichEye        = p.Results.whichEye;
