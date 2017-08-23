@@ -31,6 +31,11 @@ classdef coneMosaic < hiddenHandle
     %    in the outerSegment class, coneMosaic.os.  The compute method for current is
     %    computeCurrent.
     %
+    %    [DHB NOTE: Need to update coordinate system for global isetbio consistency and
+    %    document fact that key/value pairs for underlying read routines get passed on.
+    %    This will take a bit of careful work and coordination.  Probably needs to be done
+    %    on a branch and tested.]
+    %
     % Input:
     %    None.
     %
