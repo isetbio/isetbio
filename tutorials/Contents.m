@@ -11,7 +11,7 @@
 % t_displays                    - Display modeling. Useful for specifying flat input scenes and modeling experiments.
 % t_eyemovement                 - Eye movements.
 % t_human                       - Modeling with human data.
-% t_introduction                - Introductory tutorials.  We should have some.
+% t_introduction                - Introductory tutorials.
 % t_oisequences                 - Temporal sequences of retinal images.
 % t_optics                      - Optics related calculatoins.
 % t_mosaic                      - Support for describing mosaic geometry. This is DHB code from the early 1990s that we may or may not actually be using.
