@@ -78,9 +78,12 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParam
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
     
-    % Fudge factor needed for cone density to best match best the desired cone density.
-    fudgeF = 0.87;
-    densityP = fudgeF * (1 ./ normalizedConeSeparations).^2;
+    % compute ellipse axes lengths
+    [xa, ya] = determineEllipseAxesLength(gridParams.radius);
+    % Compute probability of keeping a cone based on local density
+    densityP = (xa/ya)^2 * (1 ./ normalizedConeSeparations).^2;
+    
+    % Remove cones accordingly
     keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
     conePositions = conePositions(keptConeIndices,:);
 
@@ -312,7 +315,15 @@ function distances = ellipticalDomainFunction(conePositions, center, radius)
     yy = conePositions(:,2)-center(2);
   
     % compute ellipse axes lengths
-    largestXYspacing = coneSizeReadData('eccentricity', 1e-6*radius*[1 1], 'angle', [0 90]);
+    [xa, ya] = determineEllipseAxesLength(radius);
+    
+    radii = sqrt((xx/xa).^2+(yy/ya).^2);
+    distances = -(radius-radii);
+end
+
+function [xa, ya] = determineEllipseAxesLength(mosaicHalfFOVmicrons)
+    % compute ellipse axes lengths
+    largestXYspacing = coneSizeReadData('eccentricity', 1e-6*mosaicHalfFOVmicrons*[1 1], 'angle', [0 90]);
     if (largestXYspacing(1) < largestXYspacing(2))
         xa = 1;
         ya = largestXYspacing(2)/largestXYspacing(1);
@@ -320,10 +331,8 @@ function distances = ellipticalDomainFunction(conePositions, center, radius)
         xa = largestXYspacing(1)/largestXYspacing(2);
         ya = 1;
     end
-    
-    radii = sqrt((xx/xa).^2+(yy/ya).^2);
-    distances = -(radius-radii);
 end
+
 
 function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(conePositions)
     eccentricitiesInMicrons = sqrt(sum(conePositions.^2,2));
