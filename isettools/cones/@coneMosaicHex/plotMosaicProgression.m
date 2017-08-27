@@ -37,22 +37,22 @@ function hFig = plotMosaicProgression(obj, varargin)
     
     row = 1; col = 2; iteration = 1; 
     labelContours = false; labelCones = false;
-    subplotTitle = 'subsampling'; 
+    subplotTitle = 'subsampled lattice'; 
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, false, contourLevels,labelContours,  labelCones, backgroundColor, iteration, subplotTitle );
     
     row = 1; col = 3; iteration = intermediateIterationsToDisplay(1);  
     labelContours = false; labelCones = false;
-    subplotTitle = sprintf('iteration #%d', iteration);
+    subplotTitle = sprintf('iterative step #%d', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
     row = 2; col = 1; iteration = intermediateIterationsToDisplay(2);  
     labelContours = false; labelCones = false; 
-    subplotTitle = sprintf('iteration #%d', iteration);
+    subplotTitle = sprintf('iterative step #%d', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
     row = 2; col = 2; iteration = size(obj.latticeAdjustmentSteps,1); 
     labelContours = true; labelCones = false; 
-    subplotTitle = sprintf('iteration #%d (converged)', iteration);
+    subplotTitle = sprintf('iterative step #%d (converged)', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
     row = 2; col = 3; iteration = size(obj.latticeAdjustmentSteps,1); 

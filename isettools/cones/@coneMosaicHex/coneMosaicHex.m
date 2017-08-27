@@ -124,7 +124,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
-            p.addParameter('marginF', 1.5, @(x)(isnumeric(x)&&(x>0.0)));
+            p.addParameter('marginF', 1.75, @(x)(isnumeric(x)&&(x>0.0)));
             p.parse(upSampleFactor, vararginForConeHexMosaic{:});
             
             % Set input params
@@ -138,16 +138,22 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-            if (isempty(p.Results.marginF))
-                obj.marginF = 1.5;
-            else
-                obj.marginF = p.Results.marginF;
-            end
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
             else
                 obj.setSizeToFOV(p.Results.fovDegs);
+            end
+            
+            if (isempty(p.Results.marginF))
+                if (max(p.Results.fovDegs) >= 1.0)
+                    obj.marginF = 1.5;
+                else
+                    obj.marginF = 1.8;
+                end
+            else
+                obj.marginF = p.Results.marginF;
             end
             
             % Get a copy of the original coneLocs
