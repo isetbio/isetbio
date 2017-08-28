@@ -45,7 +45,7 @@ p.addRequired('spread',@isscalar);        % 1 std. in units of bipolar samples
 % k = 1.032 * r^2;     % scaling of magnitude of surround
 %
 p.addParameter('centerSurroundSizeRatio',sqrt(0.75),@isscalar);
-p.addParameter('centerSurroundAmpRatio', 0.774,@isscalar);
+p.addParameter('centerSurroundAmpRatio', .6*0.774,@isscalar);
 p.addParameter('centerNoise',.15,@isscalar);           % in units of bipolar samples
 p.addParameter('ellipseParams',[],@(x)(ismatrix(x) || isempty(x)));  % A,B,rho
 p.parse(cellLocation,spread,varargin{:});
@@ -67,7 +67,7 @@ sRFsurround         = cell(nRows,nCols);
 
 % Specify the spatial extent of the bipolar samples feeding into one RGC.
 % We make them extend +/- three standard deviations (spread is 1 std dev).
-pts = (-3*spread):(3*spread);
+pts = (-2*spread):(2*spread);
 
 %% Jitter the center positions of each cell.
 
@@ -91,7 +91,7 @@ for rr = 1:nRows         % Row index
         thisColCenter = cellLocation(rr,cc,2); 
         
         % Offset every other column to create a hexagonal packing.
-        if mod(cc,2), thisRowCenter = thisRowCenter - 2*hexOffset/1;   % Odd
+        if mod(cc,2), thisRowCenter = thisRowCenter - 1*hexOffset/1;   % Odd
         else,         thisRowCenter = thisRowCenter;% + hexOffset/2;   % Even
         end
         % Save the new cell center location in bipolar samples
@@ -101,7 +101,7 @@ for rr = 1:nRows         % Row index
         % In order to keep the same area under the DoG surface, need to
         % normalize the diagonal.
         % Q =  (1/(.5*spread)^2)*diag(ellipseMatrix{rr,cc}(1:2));
-        Q =  (1/((.5*spread)^2))*diag(ellipseMatrix{rr,cc}(1:2));
+        Q =  (1/((.25*spread)^2))*diag(ellipseMatrix{rr,cc}(1:2));
         
         % For the DoG, we need to do the rotation matrix separately from Q,
         % otherwise the DoG height and width change for the same magnitude
@@ -130,10 +130,13 @@ for rr = 1:nRows         % Row index
         so_center   = reshape(exp(-0.5*QXY),    size(X));
         so_surround = reshape(k*exp(-0.5*RQXY), size(X));
         
+        so_surf = so_center-so_surround;
+        normFactor = 2/sum(so_surf(:));
         % spatialRFArray{ii,jj} = so;
         % Store calculated parameters, units of conditional intensity
-        sRFcenter{rr,cc}      = so_center;
-        sRFsurround{rr,cc}    = so_surround;
+        sRFcenter{rr,cc}      = normFactor*so_center;
+        sRFsurround{rr,cc}    = normFactor*so_surround;
+        
         
     end
 end

@@ -64,7 +64,7 @@ else, ih = glmprs.ih;
 end
 if ~isempty(ih) % Interpolate ih current
     ihthi = [dt:dt:max(glmprs.iht)]';  % time points for sampling
-    ihhi = interp1(glmprs.iht, ih, ihthi, 'linear', 0);
+    ihhi = interp1q(glmprs.iht', ih, ihthi);
     hlen = length(ihhi);
 else % No ih current
     hlen = 1; ihhi = 0; ihthi = dt;
@@ -76,7 +76,7 @@ end
 % -------------  Static nonlinearity & spiking -------------------
 nsp = 0;
 tsp = zeros(round(slen/5),1);  % allocate space for spike times
-Vmem = interp1([0:slen+1]',Vstm,[.5+dt:dt:slen+.5]', 'linear');
+Vmem = interp1q([0:slen+1]',Vstm,[.5+dt:dt:slen+.5]');
 if (nargout > 2), Ispk = Vmem*0;
 end
 

@@ -78,6 +78,16 @@ for ii = 1 : nCells(1)
         goodCols = inputCol(goodColInds);
         inputValues(goodRowInds,goodColInds,:) = input(goodRows,goodCols,:);
         
+%         badRowInds = (inputRow < 0) | (inputRow > mxRow);
+%         badRows = inputRow(badRowInds);
+%         badColInds = (inputCol < 0) | (inputCol > mxCol);
+%         badCols = inputCol(badColInds);
+        
+%         inputGood = RGB2XWFormat(input(goodRows,goodCols,:));
+%         meanInputGood(1,1,:) = mean(inputGood);
+%         inputBad = repmat(meanInputGood,[length(badRows),length(badCols),1]);
+%         inputValues(badRowInds,badColInds,:) = inputBad;%input(badRows,badCols,:);
+        
         % The inputValues are a time series.  So we put it into XW (which
         % means space-time) formatting.
         inputValues   = RGB2XWFormat(inputValues);

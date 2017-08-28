@@ -45,10 +45,10 @@ p.addParameter('stride',[],@isscalar);
 p.parse(rgcM,varargin{:});
 
 stride = p.Results.stride;
-spread = rgcM.rfDiameter/2;
+spread = rgcM.rfDiameter/1;
 
 % If stride is not set, use 2 std center to center separation.
-if isempty(stride), stride = max(1,2*spread); end
+if isempty(stride), stride = max(1,1*spread); end
 
 %% Figure out the RGC cell locations with respect to the bipolar samples
 

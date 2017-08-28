@@ -69,7 +69,7 @@ p.addParameter('ellipseParams',[],@(x)(ismatrix(x) || isempty(x)));  % A,B,rho
 
 % See notes in RGCRFELLIPSES
 p.addParameter('centerSurroundSizeRatio',sqrt(0.75),@isscalar);
-p.addParameter('centerSurroundAmpRatio', 0.774,@isscalar);
+p.addParameter('centerSurroundAmpRatio', .7*0.774,@isscalar);
 p.parse(rgcM,varargin{:});
 
 rgcM.rfDiameter = p.Results.rfDiameter;
