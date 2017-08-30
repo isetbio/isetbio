@@ -124,7 +124,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
-            p.addParameter('marginF', 1.75, @(x)(isnumeric(x)&&(x>0.0)));
+            p.addParameter('marginF', 1.75, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
             p.parse(upSampleFactor, vararginForConeHexMosaic{:});
             
             % Set input params
