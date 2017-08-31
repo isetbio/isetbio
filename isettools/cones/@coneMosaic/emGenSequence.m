@@ -80,11 +80,15 @@ pos = zeros(nFrames, 2);
 
 nTrialsPos = zeros(nTrials,nFrames,2);
 
+% define cone parameters needed to convert units of mm or deg to cones, and
+% vice versa
+params.w = obj.patternSampleSize(1); % cone size in m
+
 for nn=1:nTrials
     %% generate eye movement for tremor
     if emFlag(1)
         % Load parameters
-        amplitude  = emGet(em, 'tremor amplitude', 'cones/sample');
+        amplitude  = emGet(em, 'tremor amplitude', 'cones/sample', params);
         interval   = emGet(em, 'tremor interval');
         intervalSD = emGet(em, 'tremor interval SD');
         
@@ -110,8 +114,8 @@ for nn=1:nTrials
     % generate eye movement for drift
     if emFlag(2)
         % Load Parameters
-        speed     = emGet(em, 'drift speed', 'cones/sample');
-        speedSD   = emGet(em, 'drift speed SD', 'cones/sample');
+        speed     = emGet(em, 'drift speed', 'cones/sample', params);
+        speedSD   = emGet(em, 'drift speed SD', 'cones/sample', params);
         
         % Generate random move at each sample time
         theta = 360 * randn + 0.1 * (1 : nFrames)';
@@ -126,8 +130,8 @@ for nn=1:nTrials
         interval = emGet(em, 'msaccade interval');
         intervalSD = emGet(em, 'msaccade interval SD');
         dirSD = emGet(em, 'msaccade dir SD', 'deg');
-        speed = emGet(em, 'msaccade speed', 'cones/sample');
-        speedSD = emGet(em, 'msaccade speed SD', 'cones/sample');
+        speed = emGet(em, 'msaccade speed', 'cones/sample', params);
+        speedSD = emGet(em, 'msaccade speed SD', 'cones/sample', params);
         
         % Compute microsaccade occurence times
         t = interval + randn(nFrames, 1) * intervalSD;
