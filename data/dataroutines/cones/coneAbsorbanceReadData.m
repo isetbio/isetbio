@@ -26,12 +26,12 @@ function [absorbance,wave,params,comment] = coneAbsorbanceReadData(varargin)
 % Optional key/value pairs:
 %     'species'                  String specifying species
 %                                  'human' (default) - Human L, M and S cones.
-%                                  'monkey' - Monkey L, M and S cones.  Currently the same as human.
+%                                  'macaque' - Monkey L, M and S cones.  Currently the same as human.
 %
 %     'coneAbsorbanceSource'     Source of the data
 %                                  'StockmanSharpe' (default).
 %                                   Values are StockmanSharpe estimates.  Valid when 'species' is 'human' or
-%                                   'monkey'.  Data taken from Psychtoolbox mat file T_log10coneabsorbance_ss.
+%                                   'macaque'.  Data taken from Psychtoolbox mat file T_log10coneabsorbance_ss.
 %                                   These in turn came from CVRL (http://cvrl.org). We raise 10 to the read
 %                                   data so that we return the absorbance itself, not its log.
 %
@@ -66,7 +66,7 @@ end
 
 %% Handle choices
 switch (params.species)
-    case {'human', 'monkey'}
+    case {'human', 'macaque'}
         switch (params.coneAbsorbanceSource)
             case 'StockmanSharpe'
                 % Load the absorbance from the PTB style T_ file, spline to desired wavelength
