@@ -120,7 +120,7 @@ switch obj.cellType
             % fovea and 3 cones at 40 deg.  Linear.
             spread =  floor(1 + (2/40)*(eccentricity));
         end
-        support = round(3.5*spread);    % Minimum spatial support
+        support = round(4*spread);    % Minimum spatial support
         
         % Standard deviation of the Gaussian for the center, specified in
         % spatial samples on the input mosaic.  Anywhere near the center
@@ -145,7 +145,7 @@ switch obj.cellType
             % fovea and 5 cones at 40 deg.  Linear.
             spread =  floor(2 + (3/40)*(eccentricity));
         end
-        support = round(3.5*spread);    % Minimum spatial support
+        support = round(4*spread);    % Minimum spatial support
         
         % Reference for very broad surround is in header
         obj.sRFcenter   = ampCenter*fspecial('gaussian',[support,support],spread);    % convolutional for now
@@ -167,7 +167,7 @@ switch obj.cellType
             % fovea and 3 cones at 40 deg.  Linear.
             spread =  floor(1 + (2/40)*(eccentricity));
         end
-        support = round(3.5*spread);    % Minimum spatial support
+        support = round(4*spread);    % Minimum spatial support
         
         % ecc = 0 mm yields 1x1 cone input to bp
         % ecc = 30 mm yields 3x3 cone input to bp
