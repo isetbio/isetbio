@@ -1,34 +1,63 @@
 function t_dynamicStimulusToPhotocurrent
+%%t_dynamicStimulusToPhotocurrent  Illustrates how to compute photocurrent responses to a dynamic stimulus.  
 %
 % Description:
 %    Demonstrates how to compute photocurrent responses to a dynamic stimulus 
-%    whose contrast is modulated against an adapting background. 
+%    whose contrast is modulated against an adapting background, with realistic
+%    response noise and eye movements.  If you were trying to model a computational
+%    observer 
+%
 %    Exposes various key isetbio components and how they should be orchestrated. 
-%    key isetbio components exposed: 
+%
+%    Key isetbio components exposed: 
 %      - arbitrary stimulus generated on a computer 
 %      - optical image sequence
 %      - coneMosaic and outerSegment, 
 %      - eyeMovements
 %
-% NPC, ISETBIO Team, 2017
+%    This runs for a while and then produces three figures.
+%      - Figure 1.  This shows the retinal image sequence of the background (uniform field) stimulus
+%        in each computed frame.  The graph at the upper right shows how much of a 
+%        "modulation" has been combined with the background, but in creating this
+%        sequence the "modulation" was set equal to the background, so we just get
+%        a uniform field at each timepoint.  (See comments below where this retinal image
+%        is created for more explanation.)  The x-axis of the graph is time in seconds, and
+%        the time of each frame is given in the image panels.  The frames are at 60 Hz, to
+%        model a typical monitor frame rate.
+%   
+%      - Figure 2. Same as Figure 1, but for the modulation around the background.
+%
+%      - Figure 3. Summarizes photocurrent responses to the modulation.
+%       
 
-% Basic parameters
+% NPC, ISETBIO Team, 2017
+%
+% 09/09/17  dhb  Cosmetic pass, more comments.
+
+%% Initialize
+ieInit;
+
+%% Basic parameters
 eccDegs = 5;            % mosaic eccentricity in visual degrees (> 10 results in peripheral os dynamics)
 fov = 0.5;              % field of view in degrees
 meanLuminance = 50;     % stimulus mean luminance (cd/m2)
 nTrials = 1;            % response instances to compute
 testContrasts = [0.1];  % stimulus contrasts to examine
 
-% Set the random seed
+%% Set the random seed
 rng(1);
 
-% Default params for different components
+%% Default params for different components
+%
+% See support routines at bottom of this tutorial.
 [spatialParams, temporalParams, colorModulationParams, backgroundParams] = getStimParams(fov, meanLuminance);
 [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs);
 
 %% Generate a generic rectangular cone mosaic
+% 
+% Start with default parameters and do some customization.
+fprintf('Setting up cone mosaic\n');
 cm = coneMosaic();
-% Customize mosaic
 cm.setSizeToFOV(mosaicParams.fov);                          % the mosaic's FOV
 cm.center = [eccDegs*300 0]*1e-6;                           % the mosaic's center (here located on the horizontal meridian), specified in meters (there are 300 microns/degree)
 cm.integrationTime = mosaicParams.integrationTimeInSeconds; % the mosaic's integration time
@@ -36,29 +65,40 @@ cm.noiseFlag = mosaicParams.isomerizationNoise;             % isomerization nois
 cm.os = osLinear('eccentricity', eccDegs);                  % linear outer-segment with dynamics consistent with the mosaic's eccentricity
 cm.os.noiseFlag = mosaicParams.osNoise;                     % photocurrent noise
 
-
 %% Create the background scene (zero contrast)
+fprintf('Creating zero contrast background scene\n');
 theBaseColorModulationParams = colorModulationParams;
 theBaseColorModulationParams.coneContrasts = [0 0 0]';
 theBaseColorModulationParams.contrast = 0;
 backgroundScene = gaborSceneCreate(spatialParams, backgroundParams, theBaseColorModulationParams);
 
-%% Compute the background OI
+%% Compute the background optical image (OI).
+%
+% Optical image is the isetbio name for retinal image.
+fprintf('Computing retinal image for background scene.\n');
 BaseOI = opticalImageConstruct(oiParams);
 oiBackground = BaseOI;
 oiBackground = oiCompute(oiBackground, backgroundScene);
 oiModulated = oiBackground;
 
 %% Compute the sequence of background optical images (adapting stimulus)
+%
+% This calls a general routine that produces a blend between the background and a modulation.
+% But we have set the modulation to the background here, so that we just get the background in
+% every frame.  The more general purpose of the oiSequence routine is to modulate a signal around
+% the background, which will be illustrated below.
+fprintf('Computing sequence of retinal images for background\n');
 zeroContrastOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
 zeroContrastOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
-%% Generate the eye movement path (here, zero movement) for the adapting stimulus sequence
+%% Generate the eye movement path for the adapting stimulus sequence
+fprintf('Creating eye movement path\n');
 eyeMovementsNum = zeroContrastOIsequence.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime);
 theZeroContrastEMpaths = colorDetectMultiTrialEMPathGenerate(cm, 1, eyeMovementsNum, 'none');
 
 %% Compute the mosaic response to the adapting stimulus, the outer segment IR functions and the mean photocurrents
 % These outer segment IR functions and mean photocurrents are used later on in the computation of the responses to the different test stimuli
+fprintf('Compute mosaic cone responses (isomerizations and photocurrents) to the background sequence, taking eye movements into account.\n');
 [isomerizationsAdaptingStim, photocurrentsAdaptingStim, osImpulseResponseFunctions, osMeanCurrents] = ...
      cm.computeForOISequence(zeroContrastOIsequence, ...
         'emPaths', theZeroContrastEMpaths, ...
@@ -67,28 +107,32 @@ theZeroContrastEMpaths = colorDetectMultiTrialEMPathGenerate(cm, 1, eyeMovements
         'currentFlag', true);
 
 %% Compute responses to all test stimuli (here different contrasts)
+fprintf('Computing sequence of retinal images for background plus modulated Gabor pattern at each test contrast.\n');
+fprintf('\tParameters currently set to compute for %d test contrasts\n',numel(testContrasts));
 for iContrast = 1:numel(testContrasts)
-    %% Create the modulated scene
+    % Create the modulated scene
     colorModulationParams.contrast = testContrasts(iContrast);
     modulatedScene = gaborSceneCreate(spatialParams, backgroundParams, colorModulationParams);
 
-    %% Compute the optical image of the modulated stimulus
+    % Compute the optical image of the modulated stimulus
     oiModulated = BaseOI;
     oiModulated = oiCompute(oiModulated, modulatedScene);
     
-    %% Compute the stimulus of optical sequences
+    % Compute the stimulus of optical sequences
     stimulusOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
-    %%  Visualize the stimulus oiSequence
+    
+    % Visualize the stimulus oiSequence
 	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
     
-    %% Generate the eye movement paths for all response instances
+    % Generate the eye movement paths for all response instances
     eyeMovementsNum = stimulusOIsequence.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime);
     theEMpaths = colorDetectMultiTrialEMPathGenerate(cm, nTrials, eyeMovementsNum, temporalParams.emPathType);
 
-    %% Compute noise-free responses - this is only used for improving the response visualization. Otherwise it can be skipped
+    % Compute noise-free responses - this is only used for improving the response visualization. Otherwise it can be skipped
     noiseFlags = {cm.noiseFlag, cm.os.noiseFlag};
     cm.noiseFlag = 'none';
     cm.os.noiseFlag = 'none';
+    fprintf('\tTest contrast %d, computing noise-free mosaic responses without eye movements for visualization\n',iContrast);
     [isomerizationsNoiseFree{iContrast}, photocurrentsNoiseFree{iContrast}, ~, ~] = ...
         cm.computeForOISequence(stimulusOIsequence, ...
                     'emPaths', 0*theEMpaths(1,:,:), ...    % zero movement path for the noise-free versions
@@ -96,9 +140,10 @@ for iContrast = 1:numel(testContrasts)
                     'meanCur', osMeanCurrents, ...
                     'currentFlag', true);
      
-    %% Compute the response instances to the test stimulus
+    % Compute the response instances to the test stimulus
     cm.noiseFlag = noiseFlags{1};
     cm.os.noiseFlag = noiseFlags{2};
+    fprintf('\tTest contrast %d, computing noisy mosaic responses with eye movements\n',iContrast);
     [isomerizations{iContrast}, photocurrents{iContrast}, ~, ~] = ...
         cm.computeForOISequence(stimulusOIsequence, ...
                     'emPaths', theEMpaths, ...
@@ -107,8 +152,8 @@ for iContrast = 1:numel(testContrasts)
                     'currentFlag', true);
 end  % iContrast 
 
-
 %% Visualize the computed responses
+fprintf('Creating figures for visualization ...');
 contrastVisualized = 1;                 % Only visualize responses to the first contrast
 trialVisualized = 1;                    % Only visualize the 1st response instance
 maxConesVisualized = 5000;              % Visualize responses from up to this many cones for each of the L-,M- and S-cone types
@@ -121,14 +166,20 @@ visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVisualized, 
     photocurrentsNoiseFree, photocurrents, photocurrentsAdaptingStim, osMeanCurrents, ...
     photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange);
 
+% Wait for figure drawing
+drawnow;
+fprintf('done.\n');
+
 end
 
 
-%% ========================================================================
-%% SUPPORT ROUTINES
-%% ========================================================================
+% ========================================================================
+% SUPPORT ROUTINES
+% ========================================================================
 
-%% Params retrieval routines
+%%getStimParams
+%
+% This one sets up parameters for a stimulus
 function [spatialParams, temporalParams, colorModulationParams,  backgroundParams] = getStimParams(fov, meanLuminance)
     % Gabor parameters
     spatialParams.fieldOfViewDegs = fov;
@@ -158,13 +209,16 @@ function [spatialParams, temporalParams, colorModulationParams,  backgroundParam
     % Temporal parameters
     temporalParams.frameRate = 60;
     temporalParams.windowTauInSeconds = 0.1;
-    temporalParams.stimulusDurationInSeconds = 0.5; % 1000 ms stimulus presentation
+    temporalParams.stimulusDurationInSeconds = 0.5; 
     temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
-    temporalParams.emPathType = 'none';  % choose from {'random',  'frozen', 'none'}
+    temporalParams.emPathType = 'random';  % choose from {'random',  'frozen', 'none'}
     [temporalParams.sampleTimes,temporalParams.TemporalWindow] = flatTopGaussianWindowCreate(temporalParams); 
     temporalParams.nSampleTimes = length(temporalParams.sampleTimes);
 end
 
+%%getPhysioParams
+%
+% This one set up parameters for the optical image and mosaic.
 function [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs)
     % Optics params
     oiParams.offAxis = false;           % true/false - do off axis vignetting or not
@@ -187,7 +241,9 @@ function [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs)
     mosaicParams.osNoise = 'frozen';                    % photocurrent additive noise. choose from {'random',  'frozen', 'none'}
 end
 
-%% Visualization routine
+%%visualizeResponses
+%
+% Rather long function that produces useful visualizations for this tutorial.
 function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVisualized, ...
     photocurrentsNoiseFree, photocurrents, photocurrentsAdaptingStim, osMeanCurrents,...
     photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange)
@@ -363,7 +419,9 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     title('mean S cone response (test)');
 end        
 
-% Method to sort cones according to the magnitude of their photocurrent
+%%peakResponseConeIndices
+%
+% Function to sort cones according to the magnitude of their photocurrent
 % modulations. Currently, this only workds for rect coneMosaics.
 function [peakIncrementConeIndices, peakDecrementConeIndices] = peakResponseConeIndices(cm, currents, osMeanCurrents, coneType)
     if isa(cm, 'coneMosaicHex')
@@ -396,7 +454,9 @@ function [peakIncrementConeIndices, peakDecrementConeIndices] = peakResponseCone
     peakDecrementConeIndices = targetConeIndices(idx);
 end
 
-% Method to generate a flat-top Gaussian temporal modulation
+%%flatTopGaussianWindowCreate
+%
+% Function to generate a flat-top Gaussian temporal modulation
 function [sampleTimes, TemporalWindow] = flatTopGaussianWindowCreate(temporalParams)
     sampleTimes = 0:temporalParams.stimulusSamplingIntervalInSeconds:temporalParams.stimulusDurationInSeconds;
     L = numel(sampleTimes);
@@ -414,7 +474,9 @@ function [sampleTimes, TemporalWindow] = flatTopGaussianWindowCreate(temporalPar
     end
 end
 
-% Method to compute the XYZtoConeExcitation matrix
+%%XYZToCones
+%
+% Function to compute the XYZtoConeExcitation matrix
 function [M, coneFundamentals, coneSpectralSampling] = XYZToCones
     % Here we'll use the Stockman-Sharpe 2-degree fundamentals and the proposed CIE corresponding XYZ functions
     theCones = load('T_cones_ss2');
@@ -426,14 +488,19 @@ function [M, coneFundamentals, coneSpectralSampling] = XYZToCones
     M = ((XYZcolorMatchingFunctions')\(coneFundamentals'))';
 end
 
-% Method to generete a color Gabor isetbio scene generated on a display
+%%gaborSceneCreate
+%
+% Function to generete a color Gabor isetbio scene generated on a display.  This generates 
+% a color Gabor that has known properties with respect to the Stockman-Sharpe cone fundamentals.
+% This would be a common thing to construct in a psychophysical experiment that measured
+% color detection thresholds.
 function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulationParams)
     if (~isfield(spatialParams,'fieldOfViewDegs'))
         error('Spatial parameters must have a fieldOfViewDegs field');
     end
     fieldOfViewDegs = spatialParams.fieldOfViewDegs;
 
-    %% Make the spatial pattern
+    % Make the spatial pattern
     % Make the spatial pattern as a Gabor and convert to a modulation around the mean (mean == 0)
     spatialPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams.contrast));
     spatialModulation = spatialPattern-1;
@@ -522,7 +589,9 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);
 end
 
-% Method to convert stimulus params to a format expected by isetbios's imageHarmonic.
+%%imageHarmonicParamsFromGaborParams
+%
+% Function to convert stimulus params to a format expected by isetbios's imageHarmonic.
 function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,contrast)
     % Set up base parameters
     imageHarmonicParams = spatialParams;
@@ -549,7 +618,9 @@ function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,
     imageHarmonicParams.GaborFlag = gaussianStdImageFraction;
 end
 
-% Method to compute an optical image object
+%%opticalImageConstruct
+%
+% Function to compute an optical image object
 function theOI = opticalImageConstruct(oiParams)
     % Basic create.
     theOI = oiCreate('wvf human', oiParams.pupilDiamMm);
@@ -586,7 +657,9 @@ function theOI = opticalImageConstruct(oiParams)
     end
 end
 
-% Method to create an array of EMpaths, one for each of the nTrials
+%%colorDetectMultiTrialEMPathGenerate
+%
+% Function to create an array of EMpaths, one for each of the nTrials
 function theEMpaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, nTrials, eyeMovementsPerTrial, emPathType, varargin)
     p = inputParser;
     p.addParameter('seed',1, @isnumeric);  
