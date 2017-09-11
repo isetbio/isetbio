@@ -242,6 +242,16 @@ set(handles.editConePeakEfficiency, 'string', str);
 % set macular density
 set(handles.editMacularDensity, 'string', num2str(cm.macular.density));
 
+% Set eccentricity in the window based on the center.  This is specified in
+% meters, and we convert it to deg for the window.
+ecc = sqrt(sum(cm.center.^2));   % Meters
+
+% Why don't we have a builtin variable for this?  Or a way to compute it?
+% I think we do ... help! (BW)
+deg2m = 3.3333e-04;
+ecc = ecc/deg2m;
+set(handles.editEccentricity, 'string', num2str(ecc,2));
+
 % check if absorptions and current are available
 if isempty(cm.absorptions)
     set(handles.menuPlotMosaicMeanAbsorptions, 'Enable', 'off');

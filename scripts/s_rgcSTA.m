@@ -20,6 +20,7 @@ tSteps = 500;
 coneParams.fov = 0.1;
 wnStimulus = 255*round(rand(imSize,imSize,tSteps));
 
+% Stimulus looks off.  Saturated or something.
 tic
 ieStim = ieStimulusMovieCMosaic(wnStimulus,coneParams);
 cMosaic = ieStim.cMosaic;
