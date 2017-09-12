@@ -28,21 +28,36 @@ function t_dynamicStimulusToPhotocurrent
 %      - Figure 2. Same as Figure 1, but for the modulation around the background.
 %
 %      - Figure 3. Summarizes photocurrent responses to the modulation.
+%        Top row panels display photocurrent traces separately for all L-, M-, and S-cones 
+%        to the adapting and the test stimulus for a single trial. Note that there is 
+%        no visible response modulation for the test stimulus. 
+%        Bottom row panels display the averaged (across cones for a single trial) photocurrent 
+%        responses. There are two averaged responses, once across cones which respond
+%        with an increased modulation to the Gabor stimulus and one across cones which respond
+%        with a decreased modulation to the Gabor stimulus. The noise-free averages across the same 
+%        set of cones are also depicted in dashed lines. These simulations demonstrate that spatial
+%        response pooling across cones can be used to extract a reliable
+%        estimate of the underluing response modulation even though individual cone responses 
+%        appear to be burried in noise. The response onset latency, overshoot (150 ms) and mild adaptation (200-400 ms)
+%        are due to the temporal dynamics of the photocurrent impulse response. These dynamics depend 
+%        on stimulus mean luminance as well as cone eccentricity.       
 %       
 
 % NPC, ISETBIO Team, 2017
 %
 % 09/09/17  dhb  Cosmetic pass, more comments.
-
+% 09/12/17  npc  Superimpose eye movements on optical image sequence frames;
+%                allow some time for respose to start returning to baseline, more comments
+%
 %% Initialize
 ieInit;
 
 %% Basic parameters
 eccDegs = 5;            % mosaic eccentricity in visual degrees (> 10 results in peripheral os dynamics)
-fov = 0.5;              % field of view in degrees
-meanLuminance = 50;     % stimulus mean luminance (cd/m2)
+fov = 0.7;              % field of view in degrees
+meanLuminance = 100;    % stimulus mean luminance (cd/m2)
 nTrials = 1;            % response instances to compute
-testContrasts = [0.1];  % stimulus contrasts to examine
+testContrasts = [0.2];  % stimulus contrasts to examine
 
 %% Set the random seed
 rng(1);
@@ -64,6 +79,17 @@ cm.integrationTime = mosaicParams.integrationTimeInSeconds; % the mosaic's integ
 cm.noiseFlag = mosaicParams.isomerizationNoise;             % isomerization noise
 cm.os = osLinear('eccentricity', eccDegs);                  % linear outer-segment with dynamics consistent with the mosaic's eccentricity
 cm.os.noiseFlag = mosaicParams.osNoise;                     % photocurrent noise
+
+
+%% Visualization parameters
+contrastVisualized = 1;                                     % Only visualize responses to the first contrast
+trialVisualized = 1;                                        % Only visualize the 1st response instance
+maxConesVisualized = 5000;                                  % Visualize responses from up to this many cones for each of the L-,M- and S-cone types
+photocurrentModlulationThresholdForInclusionToMeanResponse = 0.2;   % In the computation of inc- and dec- response means only include cones whose modulation is > threshold x maxResponse
+photocurrentRange = [-85 -30];                              % Visualization response range for photocurrents (in pAmps)
+meanLMPhotocurrentRange = 1.2*[-1 1];                       % Visualization response range for modulated photocurrents from L-, and M-cones
+meanSPhotocurrentRange = 1.2*[-1 1];                        % Visualization response range for modulated photocurrents from S-cones
+
 
 %% Create the background scene (zero contrast)
 fprintf('Creating zero contrast background scene\n');
@@ -121,9 +147,6 @@ for iContrast = 1:numel(testContrasts)
     % Compute the stimulus of optical sequences
     stimulusOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
     
-    % Visualize the stimulus oiSequence
-	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
-    
     % Generate the eye movement paths for all response instances
     eyeMovementsNum = stimulusOIsequence.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime);
     theEMpaths = colorDetectMultiTrialEMPathGenerate(cm, nTrials, eyeMovementsNum, temporalParams.emPathType);
@@ -150,21 +173,24 @@ for iContrast = 1:numel(testContrasts)
                     'interpFilters', osImpulseResponseFunctions, ...
                     'meanCur', osMeanCurrents, ...
                     'currentFlag', true);
+                
+    % Visualize the stimulus oiSequence with eye movements superimposed
+     eyeMovementsData = struct(...
+         'show', true, ...
+         'timeAxisMillisecs', cm.timeAxis*1000, ...
+         'posMicrons', squeeze(theEMpaths(trialVisualized, :,:))*cm.pigment.width*1e6 ...
+     );
+ 	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
 end  % iContrast 
 
 %% Visualize the computed responses
 fprintf('Creating figures for visualization ...');
-contrastVisualized = 1;                 % Only visualize responses to the first contrast
-trialVisualized = 1;                    % Only visualize the 1st response instance
-maxConesVisualized = 5000;              % Visualize responses from up to this many cones for each of the L-,M- and S-cone types
-photocurrentRange = [-100 -30];         % Visualization response range for photocurrents (in pAmps)
-meanLMPhotocurrentRange = 1.2*[-1 1];   % Visualization response range for modulated photocurrents from L-, and M-cones
-meanSPhotocurrentRange = 1.2*[-1 1];    % Visualization response range for modulated photocurrents from S--cones
 
 % Visualize photocurrents
 visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVisualized, ...
     photocurrentsNoiseFree, photocurrents, photocurrentsAdaptingStim, osMeanCurrents, ...
-    photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange);
+    photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange, ...
+    photocurrentModlulationThresholdForInclusionToMeanResponse);
 
 % Wait for figure drawing
 drawnow;
@@ -183,8 +209,10 @@ end
 function [spatialParams, temporalParams, colorModulationParams,  backgroundParams] = getStimParams(fov, meanLuminance)
     % Gabor parameters
     spatialParams.fieldOfViewDegs = fov;
-    spatialParams.gaussianFWHMDegs = 0.942/2; % 2.3548 x standard deviation = 0.4 
-    spatialParams.cyclesPerDegree = 1.5*2;
+    spatialParams.gaussianFWHMDegs = 0.30;
+    spatialParams.cyclesPerDegree = 1.75;
+    spatialParams.spatialPhaseDegs = 90;
+    spatialParams.orientationDegs = 0;
     spatialParams.row = 128;
     spatialParams.col = 128;
     spatialParams.ang = 0;
@@ -200,8 +228,8 @@ function [spatialParams, temporalParams, colorModulationParams,  backgroundParam
     colorModulationParams.deltaWl = 4;
 
     % Background parameters
-    lumFactor = 1.0;
-    backgroundParams.backgroundxyY = [0.27 0.30 meanLuminance/lumFactor]'; 
+    lumFactor = 2.0;
+    backgroundParams.backgroundxyY = [0.30 0.33 meanLuminance]'; 
     backgroundParams.monitorFile = 'CRT-Dell';
     backgroundParams.leakageLum = 1.0;
     backgroundParams.lumFactor = lumFactor;
@@ -209,7 +237,7 @@ function [spatialParams, temporalParams, colorModulationParams,  backgroundParam
     % Temporal parameters
     temporalParams.frameRate = 60;
     temporalParams.windowTauInSeconds = 0.1;
-    temporalParams.stimulusDurationInSeconds = 0.5; 
+    temporalParams.stimulusDurationInSeconds = 0.8; 
     temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
     temporalParams.emPathType = 'random';  % choose from {'random',  'frozen', 'none'}
     [temporalParams.sampleTimes,temporalParams.TemporalWindow] = flatTopGaussianWindowCreate(temporalParams); 
@@ -246,15 +274,16 @@ end
 % Rather long function that produces useful visualizations for this tutorial.
 function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVisualized, ...
     photocurrentsNoiseFree, photocurrents, photocurrentsAdaptingStim, osMeanCurrents,...
-    photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange)
+    photocurrentRange, meanLMPhotocurrentRange, meanSPhotocurrentRange, ...
+    photocurrentModlulationThresholdForInclusionToMeanResponse)
 
     currNoiseFree = RGB2XWFormat(squeeze(photocurrentsNoiseFree{contrastVisualized}(trialVisualized,:,:,:)));
     curr = RGB2XWFormat(squeeze(photocurrents{contrastVisualized}(trialVisualized,:,:,:)));
     currAdaptingStim = RGB2XWFormat(squeeze(photocurrentsAdaptingStim(1,:,:,:)));
 
-    [peakIncLconeIndices, peakDecLconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, 'L');
-    [peakIncMconeIndices, peakDecMconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, 'M');
-    [peakIncSconeIndices, peakDecSconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, 'S');
+    [peakIncLconeIndices, peakDecLconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, photocurrentModlulationThresholdForInclusionToMeanResponse, 'L');
+    [peakIncMconeIndices, peakDecMconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, photocurrentModlulationThresholdForInclusionToMeanResponse, 'M');
+    [peakIncSconeIndices, peakDecSconeIndices] = peakResponseConeIndices(cm, currNoiseFree, osMeanCurrents, photocurrentModlulationThresholdForInclusionToMeanResponse, 'S');
 
     incLconesNumVisualized = min([numel(peakIncLconeIndices) maxConesVisualized]);
     incMconesNumVisualized = min([numel(peakIncMconeIndices) maxConesVisualized]);
@@ -311,7 +340,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
 
     hFig = figure();
     clf;
-    set(hFig, 'Position', [10 10 1600 700], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1600 900], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
     plot(timeAxis, peakIncLconeResponsesAdaptingStim', 'r-'); hold on;
     plot(timeAxis, peakDecLconeResponsesAdaptingStim', 'r-');
@@ -373,7 +402,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     legend({...
         sprintf('mean-inc (%d)', incLconesNumVisualized), ...
         sprintf('mean-dec (%d)', decLconesNumVisualized), ...
-        'mean-inc (noise-free)', 'mean-dec (noise-free)'}, 'Location', 'South');
+        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
     grid on; box off;
     title('mean L cone response (test)');
 
@@ -393,7 +422,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     legend({...
         sprintf('mean-inc (%d)', incMconesNumVisualized), ...
         sprintf('mean-dec (%d)', decMconesNumVisualized), ...
-        'mean-inc (noise-free)', 'mean-dec (noise-free)'}, 'Location', 'South');
+        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
 
     grid on; box off;
     title('mean M cone response (test)');
@@ -414,7 +443,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     legend({...
         sprintf('mean-inc (%d)', incSconesNumVisualized), ...
         sprintf('mean-dec (%d)', decSconesNumVisualized), ...
-        'mean-inc (noise-free)', 'mean-dec (noise-free)'}, 'Location', 'South');
+        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
     grid on; box off;
     title('mean S cone response (test)');
 end        
@@ -423,7 +452,7 @@ end
 %
 % Function to sort cones according to the magnitude of their photocurrent
 % modulations. Currently, this only workds for rect coneMosaics.
-function [peakIncrementConeIndices, peakDecrementConeIndices] = peakResponseConeIndices(cm, currents, osMeanCurrents, coneType)
+function [peakIncrementConeIndices, peakDecrementConeIndices] = peakResponseConeIndices(cm, currents, osMeanCurrents, photocurrentModlulationThresholdForInclusionToMeanResponse, coneType)
     if isa(cm, 'coneMosaicHex')
         error('This method only works for rectangular cone mosaics');
     end
@@ -439,15 +468,15 @@ function [peakIncrementConeIndices, peakDecrementConeIndices] = peakResponseCone
     pattern = cm.pattern(:);
     targetConeIndices = find(pattern==coneIndex+1);
     currentModulations = currents(targetConeIndices,:) - osMeanCurrents(coneIndex);
-    thresholdModulation = 0.1*max(abs(currentModulations(:)));
+    thresholdModulation = photocurrentModlulationThresholdForInclusionToMeanResponse*max(abs(currentModulations(:)));
 
-    % Sort cone with positive modulation
+    % Sort cones with positive modulation
     m = max(currentModulations, [], 2);
     [m, idx] = sort(m, 'descend');
     idx = idx(m>thresholdModulation);
     peakIncrementConeIndices = targetConeIndices(idx);
 
-    % Sort cone with negative modulation
+    % Sort cones with negative modulation
     m = min(currentModulations, [], 2);
     [m, idx] = sort(m, 'ascend');
     idx = idx(m<-thresholdModulation);
@@ -459,13 +488,16 @@ end
 % Function to generate a flat-top Gaussian temporal modulation
 function [sampleTimes, TemporalWindow] = flatTopGaussianWindowCreate(temporalParams)
     sampleTimes = 0:temporalParams.stimulusSamplingIntervalInSeconds:temporalParams.stimulusDurationInSeconds;
+    returnToBaseTimeSeconds = 0.1;
+    returnToBaseLineSamples = round(returnToBaseTimeSeconds/temporalParams.stimulusSamplingIntervalInSeconds);
     L = numel(sampleTimes);
     upRampTime = temporalParams.windowTauInSeconds;
     upRampSamples = ceil(upRampTime/temporalParams.stimulusSamplingIntervalInSeconds);
-    downRampSamples = L-upRampSamples+1;
+    downRampSamples = L-upRampSamples+1-returnToBaseLineSamples;
     TemporalWindow = ones(L,1);
     TemporalWindow(1:upRampSamples) = 1-exp(-0.5*(linspace(0,1,upRampSamples)/0.33).^2);
-    TemporalWindow(downRampSamples:L) = TemporalWindow(upRampSamples:-1:1);
+    TemporalWindow(downRampSamples-returnToBaseLineSamples+(1:upRampSamples)) = TemporalWindow(upRampSamples:-1:1);
+    TemporalWindow(downRampSamples-returnToBaseLineSamples+upRampSamples+1:L) = 0;
     visualizeWindow = false;
     if (visualizeWindow)
         figure(2);
@@ -508,7 +540,7 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % Make sure that the contrast and background vectors are both column vectors.
     coneContrast = colorModulationParams.coneContrasts(:);
     backgroundxyY = backgroundParams.backgroundxyY(:);
-    backgroundxyY(3) = backgroundxyY(3)*backgroundParams.lumFactor;
+    backgroundxyY(3) = backgroundxyY(3)/backgroundParams.lumFactor;
 
     % Convert pattern to a color modulation specified in cone space
     [M_XYZToCones, T_cones, S_cones] = XYZToCones();
@@ -534,16 +566,23 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % channel spectra will lead to differences in the retinal image because of
     % chromatic aberration, but given the general similarity of monitor channel
     % spectra we expect these differences to be small.
+    
     display = displayCreate(backgroundParams.monitorFile);
+    
+    % Specify the SPDs
     display = displaySet(display,'spd',backgroundParams.lumFactor*displayGet(display,'spd'));
-
+    
+    % Specify a linear 16-bit LUT
+    displayBits = 16;
+    display = displaySet(display,'gTable', repmat(linspace(0,1,2^displayBits)', [1 3]));
+    
     % Set the viewing distance
     display = displaySet(display,'viewingdistance', spatialParams.viewingDistance);
 
     % Reset the display wavelengths, because everything else follows on this.
     newWls = colorModulationParams.startWl:colorModulationParams.deltaWl:colorModulationParams.endWl;
     display = displaySet(display,'wave',newWls);
-
+    
     % Get display channel spectra.  The S vector displayChannelS is PTB format
     % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
     displayChannelWavelengths = displayGet(display,'wave');
@@ -580,13 +619,13 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % Gamma correct the primary values, so we can pop them into an isetbio
     % scene in some straightforward manner.  It's important to have a lot of
     % steps in the inverse gamma, so that one doesn't truncate very low
-    % contrast scenes.  2^20 seems like a lot.
-    patternRGB = round(ieLUTLinear(patternPrimary,displayGet(display,'inverse gamma',2^20)));
+    % contrast scenes.
+    patternRGB = round(ieLUTLinear(patternPrimary,displayGet(display,'inverse gamma',2^displayBits)));
 
     % Finally, make the actual isetbio scene
     % This combines the image we build and the display properties.
     theScene = sceneFromFile(patternRGB,'rgb',[],display);
-    theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);
+    theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);   
 end
 
 %%imageHarmonicParamsFromGaborParams
@@ -600,7 +639,7 @@ function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,
     imageHarmonicParams.contrast = contrast;
 
     % Computed parameters.  These convert numbers to a form used by underlying
-    % routines.  This one is frequency
+    % routines.  This one is spatial frequency
     cyclesPerImage = spatialParams.fieldOfViewDegs*spatialParams.cyclesPerDegree;
     imageHarmonicParams.freq = cyclesPerImage;
 
