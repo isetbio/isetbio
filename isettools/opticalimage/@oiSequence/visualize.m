@@ -120,9 +120,6 @@ switch format
                 illumRange = [minIllum  maxIllum];
                 meanIlluminance = mean(illumRange);
                 illumMod = max(illumRange) / meanIlluminance - 1;
-%                 if (illumMod < 0.02)
-%                     illumMod = 0.02;
-%                 end
                 illumRange = meanIlluminance + meanIlluminance*illumMod*[-1 1];
             end
         else
@@ -192,10 +189,7 @@ switch format
                 set(gca, 'XTick', [], 'YTick', [])
                 xlabel(sprintf('frame %d (%2.1fms)', oiIndex, currentOIonsetTimeMillisecs));
             end
-            hold on
-            plot(xaxis, yaxis(end)/2*illuminanceMap(150,:)/max(illuminanceMap(:)), 'r-')
-
-            hold off
+            
             if (p.Results.eyeMovementsData.show)
                 hold on
                 if (oiIndex < obj.length )
