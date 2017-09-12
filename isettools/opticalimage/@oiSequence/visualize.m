@@ -19,7 +19,7 @@ p.addParameter('vname','videoName',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
 p.addParameter('showIlluminanceMap', false, @islogical);
-
+p.addParameter('eyeMovementsData', struct('show', false), @(x)(isstruct(x)&&(isfield(x,'show'))));
 p.parse(obj,varargin{:});
 format     = p.Results.format;
 save       = p.Results.save;
@@ -94,7 +94,7 @@ switch format
     case 'montage'
         % Window with snapshots
         colsNum = round(1.3*sqrt(obj.length));
-        rowsNum = ceil(obj.length/colsNum);
+        rowsNum = round(obj.length/colsNum);
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
             'rowsNum', rowsNum, ...
             'colsNum', colsNum+1, ...
@@ -117,7 +117,13 @@ switch format
             if (minIllum == maxIllum)
                 illumRange = [minIllum*0.99 maxIllum*1.01];
             else
-                illumRange = [minIllum maxIllum];
+                illumRange = [minIllum  maxIllum];
+                meanIlluminance = mean(illumRange);
+                illumMod = max(illumRange) / meanIlluminance - 1;
+%                 if (illumMod < 0.02)
+%                     illumMod = 0.02;
+%                 end
+                illumRange = meanIlluminance + meanIlluminance*illumMod*[-1 1];
             end
         else
             XYZmax = 0;
@@ -140,30 +146,35 @@ switch format
             if (oiIndex == 1)
                 % Plot the modulation function
                 subplot('Position', subplotPosVectors(1,1).v);
-                stairs(obj.timeAxis, obj.modulationFunction, 'r', 'LineWidth', 1.5);
+                stairs(obj.timeAxis*1000, obj.modulationFunction, 'r', 'LineWidth', 1.5);
                 if (numel(obj.timeAxis)>1)
                     timeRange = [obj.timeAxis(1) obj.timeAxis(end)];
                 else
                     timeRange = obj.timeAxis(1)+[-0.1 0.1];
                 end
-                set(gca, 'XLim', timeRange, 'FontSize', 12);
+                set(gca, 'XLim', timeRange*1000, 'FontSize', 12);
                 title(sprintf('composition: ''%s''', obj.composition));
-                xlabel('frame index');
                 ylabel('modulation');
             end
             
             % Ask theOIsequence to return the oiIndex-th frame
             currentOI = obj.frameAtIndex(oiIndex);
-            [illuminanceMap, meanIlluminance] = oiCalculateIlluminance(currentOI);
+            currentOIonsetTimeMillisecs = 1000*obj.timeAxis(oiIndex);
+            dataXYZ = oiGet(currentOI, 'xyz');
+            illuminanceMap = squeeze(dataXYZ(:,:,2));
+            meanIlluminance = mean(illuminanceMap(:));
+            %[illuminanceMap, meanIlluminance] = oiCalculateIlluminance(currentOI);
             support = oiGet(currentOI, 'spatial support', 'microns');
             xaxis = support(1,:,1);
             yaxis = support(:,1,2);
             row = 1+floor((oiIndex)/(colsNum+1));
             col = 1+mod((oiIndex),(colsNum+1));
-            
+            if (col > colsNum) || (row > rowsNum)
+                continue;
+            end
             subplot('Position', subplotPosVectors(row,col).v);
             if (p.Results.showIlluminanceMap)
-                illuminanceMap = 0.5 + 0.5*(illuminanceMap-illumRange(1))/(illumRange(2)-illumRange(1));
+                illuminanceMap = (illuminanceMap-illumRange(1))/(illumRange(2)-illumRange(1));
                 imagesc(xaxis, yaxis, illuminanceMap);
                 set(gca, 'CLim', [0 1]);
             else
@@ -179,8 +190,32 @@ switch format
                 ylabel('microns');
             else
                 set(gca, 'XTick', [], 'YTick', [])
-                xlabel(sprintf('frame %d (%2.1fms)', oiIndex, 1000*obj.timeAxis(oiIndex)));
+                xlabel(sprintf('frame %d (%2.1fms)', oiIndex, currentOIonsetTimeMillisecs));
             end
+            hold on
+            plot(xaxis, yaxis(end)/2*illuminanceMap(150,:)/max(illuminanceMap(:)), 'r-')
+
+            hold off
+            if (p.Results.eyeMovementsData.show)
+                hold on
+                if (oiIndex < obj.length )
+                    nextOIonsetTimeMillisecs = 1000*obj.timeAxis(oiIndex+1);
+                else
+                    nextOIonsetTimeMillisecs = 1000*(obj.timeAxis(oiIndex) +(obj.timeAxis(oiIndex)-obj.timeAxis(oiIndex-1)));
+                end
+            
+                % plot eye movements during previous OIs in black
+                idx = find(p.Results.eyeMovementsData.timeAxisMillisecs < currentOIonsetTimeMillisecs);
+                plot(p.Results.eyeMovementsData.posMicrons(idx,1), p.Results.eyeMovementsData.posMicrons(idx,2), 'k.-');
+                 % plot eye movements during current OI in red
+                idx = find(...
+                    p.Results.eyeMovementsData.timeAxisMillisecs >= currentOIonsetTimeMillisecs & ...
+                    p.Results.eyeMovementsData.timeAxisMillisecs < nextOIonsetTimeMillisecs ...
+                );
+                plot(p.Results.eyeMovementsData.posMicrons(idx,1), p.Results.eyeMovementsData.posMicrons(idx,2), 'r.-');
+                hold off;
+            end
+            
             if (p.Results.showIlluminanceMap)
                 colormap(gray(1024));
             end
