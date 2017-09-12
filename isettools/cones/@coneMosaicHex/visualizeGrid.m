@@ -21,6 +21,7 @@ p.addParameter('axesHandle', []);
 p.addParameter('labelConeTypes', true, @islogical);
 p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
+p.addParameter('apertureShape', 'hexagons', @(x)ismember(x, {'hexagons', 'disks'}));
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
@@ -35,6 +36,7 @@ generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
 visualizedConeAperture = p.Results.visualizedConeAperture;
+apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
 
 %% Set up cone coordinates and outline
@@ -73,7 +75,11 @@ else
     pixelOutline.y = [-1 1 1 -1 -1]*dxInner/2;
 end
 
-iTheta = (0:60:360)/180*pi;
+if strcmp(apertureShape, 'hexagons')
+    iTheta = (0:60:360)/180*pi;
+else
+    iTheta = (0:10:360)/180*pi;
+end
 if (~isempty(dxOuter))  
     outerApertureOutline.x = dxOuter/2.0 * cos(iTheta);
     outerApertureOutline.y = dxOuter/2.0 * sin(iTheta);
