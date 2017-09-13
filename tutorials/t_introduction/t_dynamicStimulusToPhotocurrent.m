@@ -42,12 +42,12 @@ function t_dynamicStimulusToPhotocurrent
 %        are due to the temporal dynamics of the photocurrent impulse response. These dynamics depend 
 %        on stimulus mean luminance as well as cone eccentricity.       
 %       
-
 % NPC, ISETBIO Team, 2017
 %
 % 09/09/17  dhb  Cosmetic pass, more comments.
-% 09/12/17  npc  Superimpose eye movements on optical image sequence frames;
-%                allow some time for respose to start returning to baseline, more comments
+% 09/12/17  npc  Superimpose eye movements on optical image sequence frames; 
+%                LUT bugfix.
+%                Aallow some time for respose to start returning to baseline, more comments
 %
 %% Initialize
 ieInit;
@@ -55,7 +55,7 @@ ieInit;
 %% Basic parameters
 eccDegs = 5;            % mosaic eccentricity in visual degrees (> 10 results in peripheral os dynamics)
 fov = 0.7;              % field of view in degrees
-meanLuminance = 100;    % stimulus mean luminance (cd/m2)
+meanLuminance = 100;    % stimulus mean luminance (cd/m2). If you change the mean luminance, pay attention to the primary values so that they are not too close to 0 or 1.
 nTrials = 1;            % response instances to compute
 testContrasts = [0.2];  % stimulus contrasts to examine
 
@@ -86,7 +86,7 @@ contrastVisualized = 1;                                     % Only visualize res
 trialVisualized = 1;                                        % Only visualize the 1st response instance
 maxConesVisualized = 5000;                                  % Visualize responses from up to this many cones for each of the L-,M- and S-cone types
 photocurrentModlulationThresholdForInclusionToMeanResponse = 0.2;   % In the computation of inc- and dec- response means only include cones whose modulation is > threshold x maxResponse
-photocurrentRange = [-85 -30];                              % Visualization response range for photocurrents (in pAmps)
+photocurrentRange = [-75 -20];                              % Visualization response range for photocurrents (in pAmps)
 meanLMPhotocurrentRange = 1.2*[-1 1];                       % Visualization response range for modulated photocurrents from L-, and M-cones
 meanSPhotocurrentRange = 1.2*[-1 1];                        % Visualization response range for modulated photocurrents from S-cones
 
@@ -228,7 +228,7 @@ function [spatialParams, temporalParams, colorModulationParams,  backgroundParam
     colorModulationParams.deltaWl = 4;
 
     % Background parameters
-    lumFactor = 2.0;
+    lumFactor = 1.5;
     backgroundParams.backgroundxyY = [0.30 0.33 meanLuminance]'; 
     backgroundParams.monitorFile = 'CRT-Dell';
     backgroundParams.leakageLum = 1.0;
@@ -340,7 +340,7 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
 
     hFig = figure();
     clf;
-    set(hFig, 'Position', [10 10 1600 900], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 2000 900], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
     plot(timeAxis, peakIncLconeResponsesAdaptingStim', 'r-'); hold on;
     plot(timeAxis, peakDecLconeResponsesAdaptingStim', 'r-');
@@ -394,15 +394,17 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     title('mean L cone response (adapt)');
 
     subplot('Position', subplotPosVectors(2,2).v);
-    plot(timeAxis, mean(peakIncLconeResponses,1), '-', 'Color', LincColor, 'LineWidth', 1.5); hold on;
+    plot(timeAxis, mean(peakIncLconeResponsesNoiseFree,1), '-', 'Color', LincColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0); hold on
+    plot(timeAxis, mean(peakDecLconeResponsesNoiseFree,1), '-', 'Color', LdecColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0);
+    plot(timeAxis, mean(peakIncLconeResponses,1), '-', 'Color', LincColor, 'LineWidth', 1.5); 
     plot(timeAxis, mean(peakDecLconeResponses,1), '-', 'Color', LdecColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakIncLconeResponsesNoiseFree,1), '--', 'Color', LincColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakDecLconeResponsesNoiseFree,1), '--', 'Color', LdecColor, 'LineWidth', 1.5);
+    
     set(gca, 'YLim', osMeanCurrents(1) + meanLMPhotocurrentRange, 'XLim', [timeAxis(1) timeAxis(end)], 'XTick', 0:0.1:1.0, 'YTick', -100:1:0, 'FontSize', 14);
     legend({...
+        'mean-inc, no noise', 'mean-dec, no noise', ...
         sprintf('mean-inc (%d)', incLconesNumVisualized), ...
-        sprintf('mean-dec (%d)', decLconesNumVisualized), ...
-        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
+        sprintf('mean-dec (%d)', decLconesNumVisualized) ...
+        }, 'Location', 'SouthEast');
     grid on; box off;
     title('mean L cone response (test)');
 
@@ -414,15 +416,16 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     title('mean M cone response (adapt)');
 
     subplot('Position', subplotPosVectors(2,4).v);
-    plot(timeAxis, mean(peakIncMconeResponses,1), '-', 'Color', MincColor, 'LineWidth', 1.5); hold on;
+    plot(timeAxis, mean(peakIncMconeResponsesNoiseFree,1), '-', 'Color', MincColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0); hold on;
+    plot(timeAxis, mean(peakDecMconeResponsesNoiseFree,1), '-', 'Color', MdecColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0);
+    plot(timeAxis, mean(peakIncMconeResponses,1), '-', 'Color', MincColor, 'LineWidth', 1.5); 
     plot(timeAxis, mean(peakDecMconeResponses,1), '-', 'Color', MdecColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakIncMconeResponsesNoiseFree,1), '--', 'Color', MincColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakDecMconeResponsesNoiseFree,1), '--', 'Color', MdecColor, 'LineWidth', 1.5)
     set(gca, 'YLim', osMeanCurrents(2) + meanLMPhotocurrentRange, 'XLim', [timeAxis(1) timeAxis(end)], 'XTick', 0:0.1:1.0, 'YTick', -100:1:0, 'FontSize', 14);
     legend({...
+        'mean-inc, no noise', 'mean-dec, no noise', ...
         sprintf('mean-inc (%d)', incMconesNumVisualized), ...
-        sprintf('mean-dec (%d)', decMconesNumVisualized), ...
-        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
+        sprintf('mean-dec (%d)', decMconesNumVisualized) ...
+        }, 'Location', 'SouthEast');
 
     grid on; box off;
     title('mean M cone response (test)');
@@ -435,15 +438,16 @@ function visualizeResponses(cm, trialVisualized, maxConesVisualized, contrastVis
     title('mean S cone response (adapt)');
 
     subplot('Position', subplotPosVectors(2,6).v);
-    plot(timeAxis, mean(peakIncSconeResponses,1), '-', 'Color', SincColor, 'LineWidth', 1.5); hold on;
+    plot(timeAxis, mean(peakIncSconeResponsesNoiseFree,1), '-', 'Color', SincColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0); hold on
+    plot(timeAxis, mean(peakDecSconeResponsesNoiseFree,1), '-', 'Color', SdecColor*0.4+0.6*[1 1 1], 'LineWidth', 8.0);
+    plot(timeAxis, mean(peakIncSconeResponses,1), '-', 'Color', SincColor, 'LineWidth', 1.5);
     plot(timeAxis, mean(peakDecSconeResponses,1), '-', 'Color', SdecColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakIncSconeResponsesNoiseFree,1), '--', 'Color', SincColor, 'LineWidth', 1.5);
-    plot(timeAxis, mean(peakDecSconeResponsesNoiseFree,1), '--', 'Color', SdecColor, 'LineWidth', 1.5);
     set(gca, 'YLim', osMeanCurrents(3) + meanSPhotocurrentRange, 'XLim', [timeAxis(1) timeAxis(end)], 'XTick', 0:0.1:1.0, 'YTick', -100:1:0, 'FontSize', 14);
     legend({...
+        'mean-inc, no noise', 'mean-dec, no noise', ...
         sprintf('mean-inc (%d)', incSconesNumVisualized), ...
-        sprintf('mean-dec (%d)', decSconesNumVisualized), ...
-        'mean-inc, no noise', 'mean-dec, no noise'}, 'Location', 'SouthEast');
+        sprintf('mean-dec (%d)', decSconesNumVisualized) ...
+        }, 'Location', 'SouthEast');
     grid on; box off;
     title('mean S cone response (test)');
 end        
@@ -540,7 +544,7 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % Make sure that the contrast and background vectors are both column vectors.
     coneContrast = colorModulationParams.coneContrasts(:);
     backgroundxyY = backgroundParams.backgroundxyY(:);
-    backgroundxyY(3) = backgroundxyY(3)/backgroundParams.lumFactor;
+    %backgroundxyY(3) = backgroundxyY(3)/backgroundParams.lumFactor;
 
     % Convert pattern to a color modulation specified in cone space
     [M_XYZToCones, T_cones, S_cones] = XYZToCones();
@@ -612,6 +616,13 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % should be OK if both are represented properly in this routine.
     maxPrimary = max(patternPrimaryCalFormat(:));
     minPrimary = min(patternPrimaryCalFormat(:));
+    if ((minPrimary < 0.1) || (maxPrimary > 0.9))
+        fprintf(2,'You may want to adjust the mean luminance or the lumFactor\n');
+        fprintf(2,'Primary value range for the R channel: %2.4f - %2.4f\n', min(patternPrimaryCalFormat(1,:)), max(patternPrimaryCalFormat(1,:)));
+        fprintf(2,'Primary value range for the G channel: %2.4f - %2.4f\n', min(patternPrimaryCalFormat(2,:)), max(patternPrimaryCalFormat(2,:)));
+        fprintf(2,'Primary value range for the B channel: %2.4f - %2.4f\n', min(patternPrimaryCalFormat(3,:)), max(patternPrimaryCalFormat(3,:)));
+    end
+    
     if (maxPrimary > 1 || minPrimary < 0)
         error('RGB primary image is out of gamut.  You need to do something about this.');
     end
@@ -625,7 +636,8 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     % Finally, make the actual isetbio scene
     % This combines the image we build and the display properties.
     theScene = sceneFromFile(patternRGB,'rgb',[],display);
-    theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);   
+    theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs); 
+    fprintf('Mean scene luminance: %2.2f cd/m2\n', sceneGet(theScene, 'mean lum'));
 end
 
 %%imageHarmonicParamsFromGaborParams
