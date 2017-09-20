@@ -28,26 +28,34 @@ function t_dynamicStimulusToPhotocurrent
 %      - Figure 2. Same as Figure 1, but for the modulation around the background.
 %
 %      - Figure 3. Summarizes photocurrent responses to the modulation.
-%        Top row panels display photocurrent traces separately for all L-, M-, and S-cones 
-%        to the adapting and the test stimulus for a single trial. Note that there is 
-%        no visible response modulation for the test stimulus. 
-%        Bottom row panels display the averaged (across cones for a single trial) photocurrent 
-%        responses. There are two averaged responses, once across cones which respond
-%        with an increased modulation to the Gabor stimulus and one across cones which respond
-%        with a decreased modulation to the Gabor stimulus. The noise-free averages across the same 
-%        set of cones are also depicted in dashed lines. These simulations demonstrate that spatial
-%        response pooling across cones can be used to extract a reliable
-%        estimate of the underluing response modulation even though individual cone responses 
-%        appear to be burried in noise. The response onset latency, overshoot (150 ms) and mild adaptation (200-400 ms)
-%        are due to the temporal dynamics of the photocurrent impulse response. These dynamics depend 
-%        on stimulus mean luminance as well as cone eccentricity.       
+%        Top row panels display photocurrent traces separately for all L-,
+%        M-, and S-cones to the adapting and the test stimulus for a single
+%        trial. Note that there is no visible response modulation for the
+%        test stimulus. Bottom row panels display the averaged (across
+%        cones for a single trial) photocurrent responses. There are two
+%        averaged responses, once across cones which respond with an
+%        increased modulation to the Gabor stimulus and one across cones
+%        which respond with a decreased modulation to the Gabor stimulus.
+%        The noise-free averages across the same set of cones are also
+%        depicted in dashed lines. These simulations demonstrate that
+%        spatial response pooling across cones can be used to extract a
+%        reliable estimate of the underlying response modulation even
+%        though individual cone responses appear to be burried in noise.
+%        The response onset latency, overshoot (150 ms) and mild adaptation
+%        (200-400 ms) are due to the temporal dynamics of the photocurrent
+%        impulse response. These dynamics depend on stimulus mean luminance
+%        as well as cone eccentricity. In the panel titles, "adapt" refers
+%        to the background alone, while "test" refers to the moduation on
+%        the background.  In the legend for the bottom panels, the numbers
+%        in parentheses are the number of cones averaged to produce the
+%        corresponding trace.
 %       
 % NPC, ISETBIO Team, 2017
 %
 % 09/09/17  dhb  Cosmetic pass, more comments.
 % 09/12/17  npc  Superimpose eye movements on optical image sequence frames; 
 %                LUT bugfix.
-%                Aallow some time for respose to start returning to baseline, more comments
+%                Allow some time for respose to start returning to baseline, more comments
 %
 %% Initialize
 ieInit;
@@ -71,7 +79,7 @@ rng(1);
 %% Generate a generic rectangular cone mosaic
 % 
 % Start with default parameters and do some customization.
-fprintf('Setting up cone mosaic\n');
+fprintf('Setting up cone mosaic.\n');
 cm = coneMosaic();
 cm.setSizeToFOV(mosaicParams.fov);                          % the mosaic's FOV
 cm.center = [eccDegs*300 0]*1e-6;                           % the mosaic's center (here located on the horizontal meridian), specified in meters (there are 300 microns/degree)
@@ -79,7 +87,6 @@ cm.integrationTime = mosaicParams.integrationTimeInSeconds; % the mosaic's integ
 cm.noiseFlag = mosaicParams.isomerizationNoise;             % isomerization noise
 cm.os = osLinear('eccentricity', eccDegs);                  % linear outer-segment with dynamics consistent with the mosaic's eccentricity
 cm.os.noiseFlag = mosaicParams.osNoise;                     % photocurrent noise
-
 
 %% Visualization parameters
 contrastVisualized = 1;                                     % Only visualize responses to the first contrast
@@ -90,9 +97,8 @@ photocurrentRange = [-75 -20];                              % Visualization resp
 meanLMPhotocurrentRange = 1.2*[-1 1];                       % Visualization response range for modulated photocurrents from L-, and M-cones
 meanSPhotocurrentRange = 1.2*[-1 1];                        % Visualization response range for modulated photocurrents from S-cones
 
-
 %% Create the background scene (zero contrast)
-fprintf('Creating zero contrast background scene\n');
+fprintf('Creating zero contrast background scene.\n');
 theBaseColorModulationParams = colorModulationParams;
 theBaseColorModulationParams.coneContrasts = [0 0 0]';
 theBaseColorModulationParams.contrast = 0;
@@ -113,7 +119,7 @@ oiModulated = oiBackground;
 % But we have set the modulation to the background here, so that we just get the background in
 % every frame.  The more general purpose of the oiSequence routine is to modulate a signal around
 % the background, which will be illustrated below.
-fprintf('Computing sequence of retinal images for background\n');
+fprintf('Computing sequence of retinal images for background.\n');
 zeroContrastOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
 zeroContrastOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
@@ -624,7 +630,7 @@ function theScene = gaborSceneCreate(spatialParams,backgroundParams,colorModulat
     end
     
     if (maxPrimary > 1 || minPrimary < 0)
-        error('RGB primary image is out of gamut.  You need to do something about this.');
+        error('RGB primary image is out of gamut.  You need to do something about this');
     end
 
     % Gamma correct the primary values, so we can pop them into an isetbio
