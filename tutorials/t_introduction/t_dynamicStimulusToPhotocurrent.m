@@ -16,16 +16,19 @@ function t_dynamicStimulusToPhotocurrent
 %      - eyeMovements
 %
 %    This runs for a while and then produces three figures.
-%      - Figure 1.  This shows the retinal image sequence of the background (uniform field) stimulus
-%        in each computed frame.  The graph at the upper right shows how much of a 
-%        "modulation" has been combined with the background, but in creating this
-%        sequence the "modulation" was set equal to the background, so we just get
-%        a uniform field at each timepoint.  (See comments below where this retinal image
-%        is created for more explanation.)  The x-axis of the graph is time in seconds, and
-%        the time of each frame is given in the image panels.  The frames are at 60 Hz, to
-%        model a typical monitor frame rate.
+%      - Figure 1.  This shows the retinal image sequence of the background
+%        (uniform field) stimulus in each computed frame.  The graph at the
+%        upper right shows how much of a "modulation" has been combined
+%        with the background, but in creating this sequence the
+%        "modulation" was set equal to the background, so we just get a
+%        uniform field at each timepoint. (See comments below where this
+%        retinal image is created for more explanation.)  The x-axis of the
+%        graph is time in seconds, and the time of each frame is given in
+%        the image panels.  The frames are at 60 Hz, to model a typical
+%        monitor frame rate.
 %   
-%      - Figure 2. Same as Figure 1, but for the modulation around the background.
+%      - Figure 2. Same as Figure 1, but for the modulation around the
+%        background.
 %
 %      - Figure 3. Summarizes photocurrent responses to the modulation.
 %        Top row panels display photocurrent traces separately for all L-,
@@ -49,7 +52,7 @@ function t_dynamicStimulusToPhotocurrent
 %        the background.  In the legend for the bottom panels, the numbers
 %        in parentheses are the number of cones averaged to produce the
 %        corresponding trace.
-%       
+      
 % NPC, ISETBIO Team, 2017
 %
 % 09/09/17  dhb  Cosmetic pass, more comments.
