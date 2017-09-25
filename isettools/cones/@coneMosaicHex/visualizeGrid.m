@@ -25,7 +25,7 @@ p.addParameter('apertureShape', 'hexagons', @(x)ismember(x, {'hexagons', 'disks'
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayPerfectHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @ischar);
-p.addParameter('coneDensityContourLevelStep', 5000, @isnumeric);
+p.addParameter('coneDensityContourLevels', [100:20:250]*1000, @isnumeric);
 p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
@@ -34,7 +34,7 @@ showPerfectHexMesh = p.Results.overlayPerfectHexMesh;
 showConeDensityContour = p.Results.overlayConeDensityContour;
 generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
-coneDensityContourLevelStep = p.Results.coneDensityContourLevelStep;
+coneDensityContourLevels = p.Results.coneDensityContourLevels;
 visualizedConeAperture = p.Results.visualizedConeAperture;
 apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
@@ -102,24 +102,24 @@ if (isempty(axesHandle))
     if (generateNewFigure)
         hFig = figure(round(rand()*100000));
         if (isempty(panelPosition))
-            figPosition = [rand()*2000 rand()*1000 1300 1300];
+            figPosition = [rand()*2000 rand()*1000 750 750];
         else
-            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 1300 1300];
+            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700 750 750];
         end
     else
         % We want to use the coneMosaic window 
         if (isempty(panelPosition))
             hFig = figure(1);
-            figPosition = [rand()*2000 rand()*1000 1300 1300];
+            figPosition = [rand()*2000 rand()*1000 750 750];
         else
             hFig = figure(panelPosition(1)*10+panelPosition(2));
-            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700  1300 1300];
+            figPosition = [(panelPosition(1)-1)*980 (panelPosition(2)-1)*700  750 750];
         end
     end
     cla;
     set(hFig, 'Position', figPosition, 'Color', [1 1 1]); % , 'MenuBar', 'none', 'NumberTitle', 'off');
     set(hFig, 'Name', titleString);
-    subplot('Position', [0.02 0.01 0.97 0.97]);
+    subplot('Position', [0.1 0.04 0.89 0.92]);
     axesHandle = gca;
 end
 
@@ -226,13 +226,13 @@ else
 end
 
 if (~strcmp(showConeDensityContour, 'none'))
-    contourLevels = coneDensityContourLevelStep: coneDensityContourLevelStep: 250000;
-    plotContoursOverHalfField = true;
+    contourLevels = coneDensityContourLevels;
+    plotContoursOverHalfField = false;
     if (plotContoursOverHalfField)
         idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
         densityMap(idx) = NaN;
     end
-    [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 1.5, 'ShowText', 'on', 'LabelSpacing', 2000);
+    [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
     clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0]);
     set(gca, 'CLim', [10000 250000]);
 end

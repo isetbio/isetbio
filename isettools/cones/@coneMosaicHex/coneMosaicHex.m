@@ -216,6 +216,9 @@ classdef coneMosaicHex < coneMosaic
         
         % Print various infos about the cone mosaic
         displayInfo(obj);
+        
+        % Change the cone identities according to arguments passed in varargin
+        reassignConeIdentities(obj, varargin);
     end % Public methods
     
     methods (Access = private)
@@ -225,9 +228,6 @@ classdef coneMosaicHex < coneMosaic
         
         % Change the FOV of the mosaic
         setSizeToFOVForHexMosaic(obj,fov);
-        
-        % Change the cone identities according to arguments passed in varargin
-        reassignConeIdentities(obj, varargin);
         
         % Sample the original rectangular mosaic using a hex grid sampled at the passed resamplingFactor
         resampleGrid(obj, resamplingFactor);
