@@ -12,55 +12,56 @@ function hFig = plotMosaicProgression(obj, varargin)
     intermediateIterationsToDisplay = p.Results.intermediateIterationsToDisplay;
     
     micronsPerDegree = 300;
+    p.Results.displayedYrangeDegs
     displayedXrangeMicrons = p.Results.displayedXrangeDegs * micronsPerDegree;
     displayedYrangeMicrons = p.Results.displayedYrangeDegs * micronsPerDegree;
-    
     hFig = figure(1);  clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1270 1130]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 880 1300]);
     
-    rowsNum = 3;
-    colsNum = 2;
+    rowsNum = 6;
+    colsNum = 1;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', rowsNum , ...
            'colsNum', colsNum , ...
-           'heightMargin',   0.04, ...
-           'widthMargin',    0.02, ...
-           'leftMargin',     0.05, ...
-           'rightMargin',    0.005, ...
+           'heightMargin',   0.015, ...
+           'widthMargin',    0.00, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    -0.02, ...
            'bottomMargin',   0.05, ...
-           'topMargin',      0.01);
+           'topMargin',      0.00);
        
     backgroundColor = [1 1 1];
     
-    row = 1; col = 1; iteration = 0; 
+    col = 1;
+    row = 1; iteration = 0; 
     labelContours = false; labelCones = false; 
-    subplotTitle = '(A) Initialization';
+    subplotTitle = '(A)';
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, false, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle);
     
     
-    row = 2; col = 1; iteration = 1; 
+    row = 2; iteration = 1; 
     labelContours = false; labelCones = false;
-    subplotTitle = '(B) Subsampling'; 
+    subplotTitle = '(B)'; 
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, false, contourLevels,labelContours,  labelCones, backgroundColor, iteration, subplotTitle );
     
-    row = 3; col = 1; iteration = intermediateIterationsToDisplay(1);  
+    row = 3; iteration = intermediateIterationsToDisplay(1);  
     labelContours = false; labelCones = false;
-    subplotTitle = sprintf('(C) Iteration #%d', iteration);
+    subplotTitle = '(C)';
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
-    row = 1; col = 2; iteration = intermediateIterationsToDisplay(2);  
+    row = 4; iteration = intermediateIterationsToDisplay(2);  
     labelContours = false; labelCones = false; 
-    subplotTitle = sprintf('(D) Iteration #%d', iteration);
+    subplotTitle = '(D)';
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
-    row = 2; col = 2; iteration = size(obj.latticeAdjustmentSteps,1); 
+    row = 5; iteration = size(obj.latticeAdjustmentSteps,1); 
     labelContours = true; labelCones = false; 
-    subplotTitle = sprintf('(E) Iteration #%d (converged)', iteration);
+    subplotTitle = '(E)';
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
-    row = 3; col = 2; iteration = size(obj.latticeAdjustmentSteps,1); 
+    row = 6; iteration = size(obj.latticeAdjustmentSteps,1); 
     labelContours = false; labelCones = true; contourLevels = [];
-    subplotTitle = '(F) Cone type assignment'; 
+    subplotTitle = '(F)'; 
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, true, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle );
     
     % Restore the final state of coneLocsHexGrid
@@ -81,19 +82,21 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
     else
         displayedXrangeMeters = displayedXrangeMicrons/2 * 1e-6 * [-1 1];
     end
-    if (isempty(displayedXrangeMicrons))
-        displayedYrangeMeters = obj.center(2)+ obj.height/2*[-1 1];
+    if (isempty(displayedYrangeMicrons))
+        displayedYrangeMeters = obj.center(2)+ [0 obj.height/2];
     else
-        displayedYrangeMeters = displayedYrangeMicrons/2 * 1e-6 * [-1 1];
+        displayedYrangeMeters = [0 displayedYrangeMicrons/2*1e-6];
     end
     
     % Determine cones to be plotted
     coneApertureMicrons = obj.lambdaMin/1e6;
+    kFactorX = 0.5;
+    kFactorY =-0.5;
     idx = find(...
-            (obj.coneLocsHexGrid(:,1)-0.5*coneApertureMicrons > displayedXrangeMeters(1)) & ...
-            (obj.coneLocsHexGrid(:,1)+0*coneApertureMicrons < displayedXrangeMeters(2)) & ...
-            (obj.coneLocsHexGrid(:,2)-0.5*coneApertureMicrons > displayedYrangeMeters(1)) & ...
-            (obj.coneLocsHexGrid(:,2)+0*coneApertureMicrons < displayedYrangeMeters(2)) ...
+            (obj.coneLocsHexGrid(:,1)-kFactorX*coneApertureMicrons > displayedXrangeMeters(1)) & ...
+            (obj.coneLocsHexGrid(:,1)+kFactorX*coneApertureMicrons < displayedXrangeMeters(2)) & ...
+            (obj.coneLocsHexGrid(:,2)-kFactorY*coneApertureMicrons > displayedYrangeMeters(1)) & ...
+            (obj.coneLocsHexGrid(:,2)+kFactorY*coneApertureMicrons < displayedYrangeMeters(2)) ...
         );
     
     ax = axes('Position', subplotPosVectors(row,col).v, 'units', 'normalized', 'Color', backgroundColor);
@@ -143,15 +146,15 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
     hold off;
     axis 'equal';
     axis 'xy';
-    xTicks = 1e-6*(-1000:50:1000);
+    xTicks = 1e-6*(-1000:20:1000);
     xTickLabels = sprintf('%2.0f\n', xTicks/1e-6);
-    yTicks = 1e-6*(-1000:50:1000);
+    yTicks = 1e-6*(-1000:20:1000);
     yTickLabels = sprintf('%2.0f\n', yTicks/1e-6);
     
     yAxisColor = 'k';
     xAxisColor = 'k';
     
-    if (row == 3)
+    if (row == size(subplotPosVectors,1))
         xlabel('microns');
     else
         xAxisColor = 'none';
@@ -175,6 +178,6 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
         'LineWidth', 1.0);
     grid off; box off;
     
-    title(subplotTitle, 'FontSize', 22, 'FontWeight', 'bold');
+    text(displayedXrangeMeters(1)-40*1e-6, displayedYrangeMeters(2)-2*1e-6, subplotTitle, 'Color', [0 0 0], 'FontSize', 26, 'FontWeight', 'bold');
     drawnow;
 end

@@ -267,9 +267,8 @@ function [oiParams, mosaicParams] = getPhysioParams(fov, eccDegs)
     % Cone mosaic params
     mosaicParams.conePacking = 'rect';                  % we will use a mosaic with a rectangular cone packing. 
     mosaicParams.fov = fov;                             % the field of view of the mosaic
-    mosaicParams.realisticSconeSubmosaic = false;       % if this is set to true, there will be a 0.3 deg S-cone free region and the S-cone lattice will be semiregular
     mosaicParams.LMSRatio = [0.62 0.31 0.07];           % the spatial densities for L-, M-, and S-cones
-    mosaicParams.innerSegmentSizeMicrons = 1.4;         % the inner segment diameter in microns    
+    mosaicParams.innerSegmentSizeMicrons = 1.4;         % the inner segment diameter in microns (square pixels)  
     mosaicParams.apertureBlur = false;                  % do not blur the stimulus by the cone aperture
     mosaicParams.eccentricityDegs = eccDegs;            % eccentricity of the mosaic in degrees
     mosaicParams.integrationTimeInSeconds = 5/1000;     % integration time for isomerizations
