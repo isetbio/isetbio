@@ -198,7 +198,7 @@ switch (params.species)
                 comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See coneDensityReadData.';
                 
             otherwise
-                error('Unsupprted source specified');
+                error('Unsupported source specified');
         end
         
     otherwise
