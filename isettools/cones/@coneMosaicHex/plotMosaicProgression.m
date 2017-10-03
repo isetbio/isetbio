@@ -12,7 +12,6 @@ function hFig = plotMosaicProgression(obj, varargin)
     intermediateIterationsToDisplay = p.Results.intermediateIterationsToDisplay;
     
     micronsPerDegree = 300;
-    p.Results.displayedYrangeDegs
     displayedXrangeMicrons = p.Results.displayedXrangeDegs * micronsPerDegree;
     displayedYrangeMicrons = p.Results.displayedYrangeDegs * micronsPerDegree;
     hFig = figure(1);  clf;
@@ -37,7 +36,6 @@ function hFig = plotMosaicProgression(obj, varargin)
     labelContours = false; labelCones = false; 
     subplotTitle = '(A)';
     plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, displayedYrangeMicrons, false, false, contourLevels, labelContours, labelCones, backgroundColor, iteration, subplotTitle);
-    
     
     row = 2; iteration = 1; 
     labelContours = false; labelCones = false;
@@ -77,6 +75,8 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
         obj.coneLocsHexGrid = squeeze(obj.latticeAdjustmentSteps(iteration,:,:));
     end
     
+    ax = axes('Position', subplotPosVectors(row,col).v, 'units', 'normalized', 'Color', backgroundColor);
+
     if (isempty(displayedXrangeMicrons))
         displayedXrangeMeters = obj.center(1)+ obj.width/2*[-1 1];
     else
@@ -99,8 +99,6 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
             (obj.coneLocsHexGrid(:,2)+kFactorY*coneApertureMicrons < displayedYrangeMeters(2)) ...
         );
     
-    ax = axes('Position', subplotPosVectors(row,col).v, 'units', 'normalized', 'Color', backgroundColor);
-        
     if (labelCones)
         obj.visualizeGrid('axesHandle', ax, 'visualizedConeAperture', 'both');
     else   
@@ -114,7 +112,6 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
         coneAperture.y = coneApertureRadius*sin(iTheta)*1e-6;
         coneMosaicHex.renderPatchArray(ax, coneAperture, squeeze(obj.coneLocsHexGrid(idx,1)), squeeze(obj.coneLocsHexGrid(idx,2)), edgeColor, faceColor, lineStyle);
     end
-    
     hold on
     
     % superimpose density contours
@@ -141,6 +138,7 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
     if (plotHexMesh)
         coneMosaicHex.renderHexMesh(ax, obj.coneLocsHexGrid(idx,1), obj.coneLocsHexGrid(idx,2), [0.5 0.5 0.5], 'none', 0.8, 0.2, '-');
     end
+    
     
     % Finalize plot
     hold off;

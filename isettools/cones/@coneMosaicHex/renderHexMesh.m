@@ -10,5 +10,5 @@ for triangleIndex = 1:size(triangleConeIndices,1)
         y = cat(2, y, yCoords);
     end
 end
-patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle, 'Parent', axesHandle);
+patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, 'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, 'FaceColor', meshFaceColor, 'LineWidth', 1.0, 'LineStyle', lineStyle, 'Parent', axesHandle);
 end

@@ -11,6 +11,7 @@ function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMa
     mosaicRangeY = obj.center(2) + mosaicRadius*[-1 1] + [-obj.lambdaMin obj.lambdaMin]*1e-6;
     gridXPos = (mosaicRangeX(1)+margin):deltaX:(mosaicRangeX(2)-margin);
     gridYPos = (mosaicRangeY(1)+margin):deltaX:(mosaicRangeY(2)-margin);
+    [densityMapSupportX, densityMapSupportY] = meshgrid(gridXPos, gridYPos);
     
     % Allocate memory
     densityMap = zeros(numel(gridYPos), numel(gridXPos));
@@ -60,5 +61,5 @@ function [densityMap, densityMapSupportX, densityMapSupportY] = computeDensityMa
         [~, ~, densities] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
         densityMap = reshape(densities, size(X));
     end
-    [densityMapSupportX, densityMapSupportY] = meshgrid(gridXPos, gridYPos);
+    
 end

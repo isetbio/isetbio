@@ -6,8 +6,9 @@ function hFig = visualizeGrid(obj, varargin)
 %   generateNewFigure  - False
 %   panelPosition      - [1 1]
 %   showCorrespondingRectangularMosaicInstead - False
-%   overlayNullSensorsPerfectHexMesh          - False
-%   overlayPerfectHexMesh       - False
+%   overlayNullSensors         - False
+%   overlayEMpath   - a single EM path that can be overlayed on top of the mosaic
+%   overlayHexMesh       - False
 %   overlayConeDensityContour   - 'none'
 %   coneDensityContourLevelStep - 5000
 %
@@ -23,14 +24,16 @@ p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
 p.addParameter('apertureShape', 'hexagons', @(x)ismember(x, {'hexagons', 'disks'}));
 p.addParameter('overlayNullSensors', false, @islogical);
-p.addParameter('overlayPerfectHexMesh', false, @islogical);
-p.addParameter('overlayConeDensityContour', 'none', @ischar);
+p.addParameter('overlayEMpath', [], @(x)(isnumeric(x) && ((isempty(x)) || (ndims(x)==2))));
+p.addParameter('overlayHexMesh', false, @islogical);
+p.addParameter('overlayConeDensityContour', 'none', @(x)ismember(x, {'none', 'theoretical', 'measured', 'theoretical_and_measured'}));
 p.addParameter('coneDensityContourLevels', [100:20:250]*1000, @isnumeric);
 p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
 showNullSensors = p.Results.overlayNullSensors;
-showPerfectHexMesh = p.Results.overlayPerfectHexMesh;
+overlaidEMpath = p.Results.overlayEMpath;
+showHexMesh = p.Results.overlayHexMesh;
 showConeDensityContour = p.Results.overlayConeDensityContour;
 generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
@@ -61,19 +64,14 @@ if (showCorrespondingRectangularMosaicInstead)
     titleString = sprintf('<RECT grid> cones: %d x %d (%d total)', ...
         size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid));
 else
-    titleString = sprintf('<RECT grid> cones: %d x %d (%d total), <HEX grid> cones: %d (active), %d (total), resampling factor: %d, visualized aperture: %s', ...
-        size(obj.patternOriginatingRectGrid,2), size(obj.patternOriginatingRectGrid,1), numel(obj.patternOriginatingRectGrid), ...
-        numel(find(obj.pattern > 1)), numel(obj.pattern), ...
-        obj.resamplingFactor, visualizedConeAperture);
+    titleString = sprintf('cones: %d (LMS), %d (LMSK), resampleF: %d, aperture: %s', ...
+        numel(find(obj.pattern > 1)), numel(obj.pattern), obj.resamplingFactor, visualizedConeAperture);
 end
 
-if (~isempty(dxOuter)) 
-    pixelOutline.x = [-1 -1 1 1 -1]*dxOuter/2;
-    pixelOutline.y = [-1 1 1 -1 -1]*dxOuter/2;
-else
-    pixelOutline.x = [-1 -1 1 1 -1]*dxInner/2;
-    pixelOutline.y = [-1 1 1 -1 -1]*dxInner/2;
-end
+% The outline of pixels in the original rect grid
+pixelOutline.x = [0 0 1 1 0]*obj.patternSampleSize(1);
+pixelOutline.y = [0 1 1 0 0]*obj.patternSampleSize(1);
+    
 
 if strcmp(apertureShape, 'hexagons')
     iTheta = (0:60:360)/180*pi;
@@ -128,14 +126,23 @@ hold(axesHandle, 'on');
 %% Do the display
 switch showConeDensityContour
     case 'measured'
-        [densityMap, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from mosaic');
+        [densityMapMeasured, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from mosaic');
     case 'theoretical'
-        [densityMap, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
+        [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
+    case 'theoretical_and_measured'
+        [densityMapMeasured, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from mosaic');
+        [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
     case 'none'
     otherwise
         error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
 end
 
+if (showHexMesh)
+        % Superimpose hex mesh showing the locations of the perfect hex grid
+        meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
+        coneMosaicHex.renderHexMesh(axesHandle, hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
+end
+    
 if (~showCorrespondingRectangularMosaicInstead)
     lineStyle = '-';
     if (showNullSensors)
@@ -153,7 +160,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         faceColorInner = [1 0 0];
         faceColorOuter = [1 0.5 0.5];
     else
-        faceColorInner = 0.7*[1 1 1];
+        edgeColor = [0 0 0]; 
+        faceColorInner = 0.8*[1 1 1];
         faceColorOuter = 0.9*[1 1 1];
     end
     if (~isempty(outerApertureOutline))
@@ -171,7 +179,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         faceColorInner = [0 1 0];
         faceColorOuter = [0.5 1 0.5];
     else
-        faceColorInner = 0.7*[1 1 1];
+        edgeColor = [0 0 0]; 
+        faceColorInner = 0.8*[1 1 1];
         faceColorOuter = 0.9*[1 1 1];
     end
     
@@ -190,7 +199,8 @@ if (~showCorrespondingRectangularMosaicInstead)
         faceColorInner = [0 0 1];
         faceColorOuter = [0.5 0.5 1];
     else
-        faceColorInner = 0.7*[1 1 1];
+        edgeColor = [0 0 0]; 
+        faceColorInner = 0.8*[1 1 1];
         faceColorOuter = 0.9*[1 1 1];
     end
     
@@ -201,11 +211,6 @@ if (~showCorrespondingRectangularMosaicInstead)
         coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), edgeColor, faceColorInner, lineStyle);
     end
     
-    if (showPerfectHexMesh)
-        % Superimpose hex mesh showing the locations of the perfect hex grid
-        meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5]; meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
-        coneMosaicHex.renderHexMesh(axesHandle, hexCoords(:,1), hexCoords(:,2), meshEdgeColor, meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
-    end
 else
     % Show the corresponding rectangular mosaic
     % The original rect sensors
@@ -225,16 +230,55 @@ else
     coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, rectCoords(idx,1), rectCoords(idx,2), edgeColor, faceColor, lineStyle);
 end
 
-if (~strcmp(showConeDensityContour, 'none'))
-    contourLevels = coneDensityContourLevels;
-    plotContoursOverHalfField = false;
-    if (plotContoursOverHalfField)
-        idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
-        densityMap(idx) = NaN;
+
+contourLevels = coneDensityContourLevels;
+plotContoursOverHalfField = false;
+    
+switch showConeDensityContour
+    case 'measured'
+        [densityMapMeasured, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from mosaic');
+        if (plotContoursOverHalfField)
+            idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
+            densityMapMeasured(idx) = NaN;
+        end
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, contourLevels, 'LineColor', 'r', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [1 0 0], 'BackgroundColor', [1 1 1]);
+        set(gca, 'CLim', [10000 250000]);
+    
+    case 'theoretical'
+        [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
+        if (plotContoursOverHalfField)
+            idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
+            densityMapTheoretical(idx) = NaN;
+        end
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapTheoretical, contourLevels, 'LineColor', 'b', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 1], 'BackgroundColor', [1 1 1]);
+        set(gca, 'CLim', [10000 250000]);
+        
+    case 'theoretical_and_measured'
+        [densityMapMeasured, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from mosaic');
+        [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = obj.computeDensityMap('from model');
+        if (plotContoursOverHalfField)
+            idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
+            densityMapMeasured(idx) = NaN;
+        end
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, contourLevels, 'LineColor', 'r', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [1 0 0], 'BackgroundColor', [1 1 1]);
+        if (plotContoursOverHalfField)
+            idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
+            densityMapTheoretical(idx) = NaN;
+        end
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapTheoretical, contourLevels, 'LineColor', 'b', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 3000);
+        clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 1], 'BackgroundColor', [1 1 1]);
+        set(gca, 'CLim', [10000 250000]);
+end
+
+if (~isempty(overlaidEMpath))
+    color = 'k';
+    if (~labelConeTypes)
+        color = 'r';
     end
-    [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMap, contourLevels, 'LineColor', 'k', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
-    clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 0]);
-    set(gca, 'CLim', [10000 250000]);
+    plot(overlaidEMpath(:,1)*obj.patternSampleSize(1), overlaidEMpath(:,2)*obj.patternSampleSize(2), 'ks-', 'Color', color, 'LineWidth', 1.5);
 end
 
 %% Arrange axis and fonts
@@ -243,19 +287,17 @@ hold(axesHandle, 'off')
 axis(axesHandle, 'equal'); axis(axesHandle, 'xy')
 
 if (isempty(p.Results.axesHandle))
-xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
-yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
-xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
-yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
-set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
-set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
-box(axesHandle, 'on'); grid(axesHandle, 'off');
-title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 16);
-set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
-set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
-drawnow;
+    xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
+    yTicks = [sampledHexMosaicYaxis(1) obj.center(2) sampledHexMosaicYaxis(end)];
+    xTickLabels = sprintf('%2.0f um\n', xTicks*1e6);
+    yTickLabels = sprintf('%2.0f um\n', yTicks*1e6);
+    set(axesHandle, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
+    set(axesHandle, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'LineWidth', 1.0);
+    box(axesHandle, 'on'); grid(axesHandle, 'off');
+    title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 16);
+    set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
+    set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
+    drawnow;
 end
 
 end
-
-
