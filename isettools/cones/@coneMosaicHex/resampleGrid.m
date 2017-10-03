@@ -38,6 +38,7 @@ function hexLocs = computeHexGridNodes(obj)
     grid.width = obj.width*1e6;
     grid.height = obj.height*1e6;
     grid.radius = obj.marginF*sqrt(2)* max([grid.width/2 grid.height/2]);
+    grid.ellipseAxes = determineEllipseAxesLength(grid.radius);
     grid.borderTolerance = 0.001*obj.lambdaMin;
     
     if (obj.eccBasedConeDensity)
@@ -66,7 +67,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParam
     conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMin, gridParams.rotationAngle);
 
     % Remove cones outside the desired region by applying the passed domainfunction
-    d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius);
+    d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius, gridParams.ellipseAxes);
     conePositions = conePositions(d < gridParams.borderTolerance,:);
     
     if (obj.saveLatticeAdjustmentProgression)
@@ -77,11 +78,8 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj,gridParam
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations/gridParams.lambdaMin;
-    
-    % compute ellipse axes lengths
-    [xa, ya] = determineEllipseAxesLength(gridParams.radius);
-    % Compute probability of keeping a cone based on local density
-    densityP = (xa/ya)^2 * (1 ./ normalizedConeSeparations).^2;
+    fudgeFactor = 0.89;
+    densityP = fudgeFactor * (1./ normalizedConeSeparations).^2;
     
     % Remove cones accordingly
     keptConeIndices = find(rand(size(conePositions,1), 1) < densityP);
@@ -146,7 +144,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
             centroidPositions = (conePositions(triangleConeIndices(:,1),:) + conePositions(triangleConeIndices(:,2),:) + conePositions(triangleConeIndices(:,3),:))/3; 
     
             % Remove centroids outside the desired region by applying the signed distance function
-            d = feval(gridParams.domainFunction, centroidPositions, gridParams.center, gridParams.radius);
+            d = feval(gridParams.domainFunction, centroidPositions, gridParams.center, gridParams.radius, gridParams.ellipseAxes);
             triangleConeIndices = triangleConeIndices(d < gridParams.borderTolerance,:);
             
             % Create list of unique springs (each spring connecting 2 cones)
@@ -203,14 +201,14 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         conePositions = conePositions + deltaT * netForceVectors;
         
         % Find any points that lie outside the domain boundary
-        d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius);
+        d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius, gridParams.ellipseAxes);
         outsideBoundaryIndices = d > 0;
         
         % And project them back to the domain
         if (~isempty(outsideBoundaryIndices))
             % Compute numerical gradient along x-positions
-            dXgradient = (feval(gridParams.domainFunction,[conePositions(outsideBoundaryIndices,1)+deps, conePositions(outsideBoundaryIndices,2)], gridParams.center, gridParams.radius) - d(outsideBoundaryIndices))/deps;
-            dYgradient = (feval(gridParams.domainFunction,[conePositions(outsideBoundaryIndices,1), conePositions(outsideBoundaryIndices,2)+deps], gridParams.center, gridParams.radius) - d(outsideBoundaryIndices))/deps;
+            dXgradient = (feval(gridParams.domainFunction,[conePositions(outsideBoundaryIndices,1)+deps, conePositions(outsideBoundaryIndices,2)], gridParams.center, gridParams.radius, gridParams.ellipseAxes) - d(outsideBoundaryIndices))/deps;
+            dYgradient = (feval(gridParams.domainFunction,[conePositions(outsideBoundaryIndices,1), conePositions(outsideBoundaryIndices,2)+deps], gridParams.center, gridParams.radius, gridParams.ellipseAxes) - d(outsideBoundaryIndices))/deps;
 
             % Project these points back to boundary
             conePositions(outsideBoundaryIndices,:) = conePositions(outsideBoundaryIndices,:) - ...
@@ -236,7 +234,7 @@ end
 function conePositions = generateConePositionsOnConstantDensityGrid(gridParams)
     conePositions = generateConePositionsOnPerfectGrid(gridParams.center, gridParams.radius, gridParams.lambdaMid, gridParams.rotationAngle);
     % Remove cones outside the desired region by applying the passed domainfunction
-    d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius);
+    d = feval(gridParams.domainFunction, conePositions, gridParams.center, gridParams.radius, gridParams.ellipseAxes);
     conePositions = conePositions(d < gridParams.borderTolerance,:);
 end
 
@@ -309,19 +307,16 @@ function distances = circularDomainFunction(conePositions, center, radius)
     distances = -(radius-radii);
 end
 
-function distances = ellipticalDomainFunction(conePositions, center, radius)
+
+function distances = ellipticalDomainFunction(conePositions, center, radius, ellipseAxes)
     %  points with positive distance will be excluded
     xx = conePositions(:,1)-center(1);
     yy = conePositions(:,2)-center(2);
-  
-    % compute ellipse axes lengths
-    [xa, ya] = determineEllipseAxesLength(radius);
-    
-    radii = sqrt((xx/xa).^2+(yy/ya).^2);
+    radii = sqrt((xx/ellipseAxes(1)).^2+(yy/ellipseAxes(2)).^2);
     distances = -(radius-radii);
 end
 
-function [xa, ya] = determineEllipseAxesLength(mosaicHalfFOVmicrons)
+function ellipseAxes = determineEllipseAxesLength(mosaicHalfFOVmicrons)
     % compute ellipse axes lengths
     largestXYspacing = coneSizeReadData('eccentricity', 1e-6*mosaicHalfFOVmicrons*[1 1], 'angle', [0 90]);
     if (largestXYspacing(1) < largestXYspacing(2))
@@ -331,6 +326,7 @@ function [xa, ya] = determineEllipseAxesLength(mosaicHalfFOVmicrons)
         xa = largestXYspacing(1)/largestXYspacing(2);
         ya = 1;
     end
+    ellipseAxes = [xa ya].^2;
 end
 
 

@@ -124,7 +124,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
-            p.addParameter('marginF', 1.75, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
+            p.addParameter('marginF', 1.0, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
             p.parse(upSampleFactor, vararginForConeHexMosaic{:});
             
             % Set input params
@@ -147,10 +147,11 @@ classdef coneMosaicHex < coneMosaic
             end
             
             if (isempty(p.Results.marginF))
-                if (max(p.Results.fovDegs) >= 1.0)
-                    obj.marginF = 1.5;
+                if (max(p.Results.fovDegs) < 1.0)
+                    % for smaller mosaics, generate a little larger lattice in order to reduce positional artifacts near the borders
+                    obj.marginF = 1.0 + (1-p.Results.fovDegs)*0.25;
                 else
-                    obj.marginF = 1.8;
+                    obj.marginF = 1.0;
                 end
             else
                 obj.marginF = p.Results.marginF;
@@ -161,10 +162,10 @@ classdef coneMosaicHex < coneMosaic
             
             % Set custom pigment light collecting dimensions
             if (~isempty(obj.customInnerSegmentDiameter)) 
-                maxInnerSegmentDiameter = 1e6 * diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
-                if (obj.eccBasedConeDensity) && (obj.customInnerSegmentDiameter>maxInnerSegmentDiameter)
-                   error('The custom inner segment diameter (%2.4f) is > max inner segment diameter (%2.4f) necessary to keep the default cone density. Either set ''eccBasedConeDensity'' to false, or decrease ''customInnerSegmentDiameter''.', obj.customInnerSegmentDiameter, maxInnerSegmentDiameter);
-                end
+%                 maxInnerSegmentDiameter = 1e6 * diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.pdWidth);
+%                 if (obj.eccBasedConeDensity) && (obj.customInnerSegmentDiameter>maxInnerSegmentDiameter)
+%                    error('The custom inner segment diameter (%2.4f) is > max inner segment diameter (%2.4f) necessary to keep the default cone density. Either set ''eccBasedConeDensity'' to false, or decrease ''customInnerSegmentDiameter''.', obj.customInnerSegmentDiameter, maxInnerSegmentDiameter);
+%                 end
                 obj.pigment.pdWidth = 1e-6 * sizeForSquareApertureFromDiameterForCircularAperture(obj.customInnerSegmentDiameter);
                 obj.pigment.pdHeight = obj.pigment.pdWidth;
             end

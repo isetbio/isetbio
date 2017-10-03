@@ -171,11 +171,6 @@ end
 
 %% Adjustments for the return
 
-% If a hex mosaic, we  amplify the positions by the resampling factor.
-if (isa(obj, 'coneMosaicHex'))
-    nTrialsPos = nTrialsPos * obj.resamplingFactor;
-end
-
 % Round to discrete cone steps
 nTrialsPos = round(nTrialsPos);
 
