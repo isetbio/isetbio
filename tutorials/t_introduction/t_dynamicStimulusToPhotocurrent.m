@@ -55,6 +55,7 @@ function t_dynamicStimulusToPhotocurrent
       
 % NPC, ISETBIO Team, 2017
 %
+% 09/01/17  npc  Wrote it.
 % 09/09/17  dhb  Cosmetic pass, more comments.
 % 09/12/17  npc  Superimpose eye movements on optical image sequence frames; 
 %                LUT bugfix.
