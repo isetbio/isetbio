@@ -1,7 +1,7 @@
-function nTrialsPos = emGenSequence(obj, nFrames, varargin)
+function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 %EMGENSEQUENCE  Generate sequence of eye movements
 %
-%   nTrialsPos = EMGENSEQUENCE(obj,nFrames,'nTrials',1,'em',emCreate);
+%   [nTrialsPos, nTrialsPosMicrons] = EMGENSEQUENCE(obj,nFrames,'nTrials',1,'em',emCreate);
 %
 % The eye movement samples are created at the same temporal sample rate as the
 % cone integration time.  We only update the position at the beginning of each
@@ -37,7 +37,8 @@ function nTrialsPos = emGenSequence(obj, nFrames, varargin)
 %     nFrames    - number of frames to generate
 %
 % Ouputs:
-%     nTrialsPos - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
+%     nTrialsPos        - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
+%     nTrialsPosMicrons - nTrials x nFrames x 2 matrix of eye positions in units of microns
 %
 % Optional parameter name/value pairs chosen from the following:
 %    'em'              Eye movement structure, see emCreate for details
@@ -173,6 +174,9 @@ end
 
 % Round to discrete cone steps
 nTrialsPos = round(nTrialsPos);
+
+% Return in microns as well
+nTrialsPosMicrons = nTrialsPos * obj.patternSampleSize(1)*1e6;
 
 % The positions in the mosaic is always just 1 sequence of eye movements
 obj.emPositions = squeeze(nTrialsPos(1,:,:)); 
