@@ -13,6 +13,7 @@
 % 08/08/17  npc   Fixed and cleaned up for updated @coneMosaicHex class
 % 08/17/17  dhb   Changed parameters to make this go faster.
 % 09/25/17  npc   Updated to show cone density contours.
+% 10/04/17  npc   Reorganized.
 
 %% Initialize
 ieInit; clear; close all;
@@ -21,90 +22,79 @@ ieInit; clear; close all;
 mosaicParams = struct(...
     'name', 'the hex mosaic', ...
     'resamplingFactor', 9, ...                      % Sets underlying pixel spacing; controls the rectangular sampling of the hex mosaic grid
-    'fovDegs', 0.3, ...                             % FOV in degrees
     'eccBasedConeDensity', true, ...                % Whether to have an eccentricity based, spatially - varying density
     'sConeMinDistanceFactor', 3.0, ...              % Min distance between neighboring S-cones = f * local cone separation - used to make the S-cone lattice semi-regular
-    'sConeFreeRadiusMicrons', 0.15*300, ...         % Radius of S-cone free retina, in microns (300 microns/deg).
+    'sConeFreeRadiusMicrons', 0.15*300, ...         % Radius of S-cone free retina, in microns (here set to 0.15 deg).
     'spatialDensity', [0 6/10 3/10 1/10]...         % With a LMS density of of 6:3:1
     );
 
-% 360 seconds
-lowQuality.tolerance1 = 0.01*10;
-lowQuality.tolerance2 = 0.001*10;
-lowQuality.marginF = 1.3;
-lowQuality.mosaicFileName = 'lowQMosaic.mat';
-lowQuality.saveMosaic = true;
+quality.tolerance1 = 0.5;                           % larger than default tolerances to speed-up computation. For production work, either do not set, or set to equal or lower than 0.01 
+quality.tolerance2 = 0.05;                          % larger than default tolerances to speed-up computation, For production work, either do not set, or set to equal or lower than 0.001 
+quality.marginF = [];                               % How much larger lattice to generate so as to minimize artifacts in cone spacing near the edges. If empty, a dynamic adjustment of margin is done for mosaics < 1.0 degs
 
-% 1040 seconds
-medQuality.tolerance1 = 0.01*3;
-medQuality.tolerance2 = 0.001*3;
-medQuality.marginF = 1.5;
-medQuality.mosaicFileName = 'medQMosaic.mat';
-medQuality.saveMosaic = true;
+%% Set import/export options
+saveMosaic = false;                                 % whether to save the mosaic
+loadMosaic = false;                                 % whether to load a previously saved mosaic
+saveMosaicPDF = false;                              % whether to save a PDF of the mosaic
 
-highQuality.tolerance1 = 0.01;
-highQuality.tolerance2 = 0.001;
-highQuality.marginF = 1.5;
-highQuality.mosaicFileName = 'highQMosaic.mat';
-highQuality.saveMosaic = true;
+%% Set FOVs examined
+fovExamined = [0.4];                                % mosaic FOV % [0.2 0.4 0.8 1.58];
 
-highQuality2.tolerance1 = 0.01;
-highQuality2.tolerance2 = 0.001;
-highQuality2.marginF = 2.0;
-highQuality2.mosaicFileName = 'highQ2Mosaic.mat';
-highQuality2.saveMosaic = true;
+for pIndex = 1:numel(fovExamined)
+    mosaicFOV = fovExamined(pIndex);
+    mosaicParams.fovDegs = mosaicFOV;
+    mosaicFileName = sprintf('mosaic%2.2f.mat', mosaicFOV);
+    
+    if (loadMosaic)
+        load(mosaicFileName);
+    else
+        tic
+        %% Generate the mosaic.  This takes a little while.
+        theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
+            'name', mosaicParams.name, ...
+            'fovDegs', mosaicParams.fovDegs, ...
+            'eccBasedConeDensity', mosaicParams.eccBasedConeDensity, ...
+            'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ... 
+            'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...                   
+            'spatialDensity', mosaicParams.spatialDensity, ...
+            'latticeAdjustmentPositionalToleranceF', quality.tolerance1, ...         
+            'latticeAdjustmentDelaunayToleranceF', quality.tolerance2, ...     
+            'marginF', quality.marginF ... 
+        );
+        fprintf('Time to compute ''%s'' mosaic: %2.1 secods\n', mosaicFileName, toc)
 
+        % Save the mosaic for later analysis
+        if (saveMosaic)
+            save(mosaicFileName, 'theHexMosaic', '-v7.3');
+        end
+    end
+    
+    %% Print mosaic info
+    theHexMosaic.displayInfo();
 
-% Choose between low and high quality params
-qParams = lowQuality;
-qParams = highQuality2;
+    %% Visualize the mosaic, showing both the light collecting area (inner segment) and the geometric area
+    visualizedAperture = 'lightCollectingArea'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
+    theHexMosaic.visualizeGrid(...
+        'visualizedConeAperture', visualizedAperture, ...
+        'apertureShape', 'disks', ...
+        'panelPosition', [1 1], 'generateNewFigure', true);
 
-tic
-%% Generate the mosaic.  This takes a little while.
-theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
-    'name', mosaicParams.name, ...
-    'fovDegs', mosaicParams.fovDegs, ...
-    'eccBasedConeDensity', mosaicParams.eccBasedConeDensity, ...
-    'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ... 
-    'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...                   
-    'spatialDensity', mosaicParams.spatialDensity, ...
-    'latticeAdjustmentPositionalToleranceF', qParams.tolerance1, ...   % This value is too high and is chosen to reduce the compute time. For production work, either do not set, or set to equal or lower than 0.01      
-    'latticeAdjustmentDelaunayToleranceF', qParams.tolerance2, ...     % This value is too high and is chosen to reduce the compute time. For production work, either do not set, or set to equal or lower than 0.001
-    'marginF', qParams.marginF ...                                     % How much larger lattice to generate so as to minimize artifacts in cone spacing near the edges. For production work, do not set this option.
-);
-toc
+    %% Visualize the mosaic with the theoretical and measured cone density plots overlayed
+    hFig = theHexMosaic.visualizeGrid(...
+        'visualizedConeAperture', visualizedAperture, ...
+        'apertureShape', 'disks', ...
+        'labelConeTypes', false, ...
+        'overlayHexMesh', true, ...
+        'overlayConeDensityContour', 'theoretical_and_measured', ...
+        'coneDensityContourLevels', 1000*[170 190 210 220 230], ...    % cones/mm^2
+        'panelPosition', [2 1], 'generateNewFigure', false);
 
-% Save the mosaic for later analysis
-if (qParams.saveMosaic)
-    save(qParams.mosaicFileName, 'theHexMosaic', '-v7.3');
-end
-
-%% Print some grid info
-theHexMosaic.displayInfo();
-
-%% Visualize the mosaic, showing both the light collecting area (inner segment) and the geometric area
-visualizedAperture = 'lightCollectingArea'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
-theHexMosaic.visualizeGrid(...
-    'visualizedConeAperture', visualizedAperture, ...
-    'apertureShape', 'disks', ...
-    'panelPosition', [1 1], 'generateNewFigure', true);
-
-%% Visualize the mosaic with the theoretical cone density plot overlayed
-theHexMosaic.visualizeGrid(...
-    'visualizedConeAperture', visualizedAperture, ...
-    'apertureShape', 'disks', ...
-    'overlayConeDensityContour', 'theoretical', ...
-    'coneDensityContourLevels', (180:20:250)*1000, ...    % cones/mm^2
-    'panelPosition', [1 1], 'generateNewFigure', true);
-
-%% Visualize the mosaic with the actual cone density plot overlayed
-theHexMosaic.visualizeGrid(...
-    'visualizedConeAperture', visualizedAperture, ...
-    'apertureShape', 'disks', ...
-    'overlayConeDensityContour', 'measured', ...
-    'coneDensityContourLevels', (180:20:250)*1000, ...      % cones/mm^2
-    'panelPosition', [2 1], 'generateNewFigure', false);
-
+    %% Export PDF
+    if (saveMosaicPDF)
+        NicePlot.exportFigToPDF(sprintf('%s.pdf',mosaicFileName), hFig, 300);
+    end
+end % pIndex
+    
 %% Compute isomerizations to a simple stimulus for the resulting mosaic.
 % Generate ring rays stimulus
 scene = sceneCreate('rings rays');
