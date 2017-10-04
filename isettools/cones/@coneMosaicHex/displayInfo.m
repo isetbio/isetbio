@@ -3,9 +3,11 @@ function displayInfo(obj)
 %
 % NPC, ISETBIO TEAM, 2015
 
+    [apertureCoverage, geometricCoverage] = obj.retinalCoverage();
     fprintf('\nMosaic info:\n');
     fprintf('%53s %2.1f (w) x %2.1f (h)\n', 'Size (microns):', obj.width*1e6, obj.height*1e6);
-    fprintf('%53s %2.2f (w) x %2.2f (h) \n', 'FOV (deg):', obj.fov(1), obj.fov(2));
+    fprintf('%53s %2.2f (w) x %2.2f (h)\n', 'FOV (deg):', obj.fov(1), obj.fov(2));
+    fprintf('%53s %2.3f (aperture) x %2.3f (geometric)\n', 'Retinal coverages:', apertureCoverage, geometricCoverage);
     fprintf('%53s %0.0f\n', 'Grid resampling factor:', obj.resamplingFactor);
     fprintf('%53s %2.2f (w) x %2.2f (h)\n', 'Cone geometric aperture (microns):', obj.pigment.width*1e6, obj.pigment.height*1e6);
     fprintf('%53s %2.2f (w) x %2.2f (h)\n', 'Cone light colleting aperture (microns):', obj.pigment.pdWidth*1e6, obj.pigment.pdHeight*1e6);
