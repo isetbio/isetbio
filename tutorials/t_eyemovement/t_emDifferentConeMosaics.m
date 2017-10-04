@@ -31,28 +31,35 @@ ieInit;
 %% Set the random seed
 rng(1);
 
+% The mosaic's field of view
 fovDegs = 0.15;
+% The cone integration time - also the time base for eye movements
 integrationTimeMillisecs = 1;
+% Number of eye movement trials to generate
 nTrials = 256;
+% Generate this many eye movements per trial
 eyeMovementsPerTrial = 10100;
+% Spatial position binning (in microns)
 posBins = [-30:2:30];
+% Resampling factor of the hex mosaic.
+resamplingFactor = 6;
 
-%% The default rect mosaic
+
+%% Run the default rect mosaic
 [cm, theEMpaths, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0] = ...
     t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBins);
 % Plot the eye movements during the first trial
 iTrial = 1;
 plotEMs(1, cm, theEMpaths, iTrial, emSpectrumXo, emSpectrumYo, [], [], tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0, posBins);
 
-%% A regular hex cone mosaic with large separation (customLambda: 7 microns) and large inner segment diameter (4 microns)
-resamplingFactor = 6;
+%% Run a regular hex cone mosaic with large separation (customLambda: 7 microns) and large inner segment diameter (4 microns)
 eccBasedConeDensity = false; customLamda = 7; customInnerSegmentDiameter = 4;
 [cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBins);
 % Plot the eye movements during the first trial
 iTrial = 1;
 plotEMs(2, cm, theEMpaths, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBins);
 
-%% An ecc-based hex cone mosaic with small inner segment diameter (1 micron)
+%% Run an ecc-based hex cone mosaic with small inner segment diameter (1 micron)
 eccBasedConeDensity = true; customInnerSegmentDiameter = 1; customLamda = [];
 [cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBins);
 % Plot the eye movements during the first trial
@@ -61,7 +68,8 @@ plotEMs(3, cm, theEMpaths, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpe
 end
 
 function [cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, ...
-    xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBins)
+    xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = ...
+    t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBins)
 % Generate the rect mosaic
 cm = coneMosaic();
 cm.setSizeToFOV(fovDegs);            
@@ -242,11 +250,11 @@ stairs(posBins, xPosMean+xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', '
 stairs(posBins, xPosMean-xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
 stairs(posBins, -yPosMean+yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
 stairs(posBins, -yPosMean-yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
-set(gca, 'XLim', [posBins(1) posBins(end)], 'YLim', maxPos*[-1 1], 'FontSize', 14);
+set(gca, 'XLim', [posBins(1) posBins(end)], 'YLim', maxPos*[-1 1], 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 grid on; box on;
 ylabel('power',  'FontWeight', 'bold');
 hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
-set(hL, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
+set(hL, 'FontSize', 14);
 if (figRow == 3)
 xlabel('position (um)', 'FontWeight', 'bold');
 end
