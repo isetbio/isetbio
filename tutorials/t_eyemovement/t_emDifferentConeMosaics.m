@@ -40,7 +40,7 @@ nTrials = 256;
 % Generate this many eye movements per trial
 eyeMovementsPerTrial = 10100;
 % Spatial position binning (in microns)
-posBinsMicrons = [-30:2:30];
+posBinsMicrons = [-28:2:28];
 % Resampling factor of the hex mosaic.
 resamplingFactor = 6;
 
@@ -176,7 +176,7 @@ end
 
 % convert aperture size to microns
 apertureSizeMicrons = cm.pigment.width*1e6;
-spatialExtent = 24*[-1 1];
+spatialExtent = [posBinsMicrons(1) posBinsMicrons(end)];
 xTicks = (spatialExtent(1):4:spatialExtent(2));
 yTicks = (spatialExtent(1):4:spatialExtent(2));
 xTickLabels = sprintf('%2.0f\n', xTicks);
