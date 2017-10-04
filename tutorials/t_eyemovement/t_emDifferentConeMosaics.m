@@ -12,13 +12,9 @@ function t_emDifferentConeMosaics
 %    The second column plots the x- and y-components of the eye movement from the first trial.
 %    The third column plots the mean spectra of the x- and y-components across all computed trials (256 here)
 %
-%    Notes: The eye movements appear to have similar temporal spectra across all mosaics. 
-%    except for a vertical shift: the power for the rect-mosaic is lower.
-%    However, the spatial distribution of x/y eye positions are not.
-%      
-%    Overall, this demonstrates that the eye movement temporal dynamics are independent of the employed mosaic's 
-%    spatial characteristics (pattern size, the cone spacing, and cone aperture), but currently the
-%    spatial dynamics are not.
+%    Notes: The eye movements appear to have similar spatial and temporal dynamics across all mosaics. 
+%           This demonstrates that the eye movement dynamics are independent of the employed mosaic's 
+%           spatial characteristics (pattern size, the cone spacing, and cone aperture).
 %
 %
 % NPC, ISETBIO Team, 2017
