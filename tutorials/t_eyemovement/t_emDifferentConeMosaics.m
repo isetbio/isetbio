@@ -218,7 +218,7 @@ if (isa(cm, 'coneMosaicHex'))
     if (isempty(customLambda))
         customLambda = nan;
     end
-    title(sprintf('Hex mosaic,  pattern sample size: %2.1f um\ncone sep: %g um, aperture: %2.1f um', cm.patternSampleSize(1)*1e6, customLambda, cm.pigment.pdWidth*1e6));
+    title(sprintf('Hex mosaic,  pattern sample size: %2.1f um\ncone sep: %g um, aperture: %2.1f um (trial #1 emPath)', cm.patternSampleSize(1)*1e6, customLambda, cm.pigment.pdWidth*1e6));
 else
     hold on
     for k = 1:size(conePositionsMicrons,1)
@@ -232,7 +232,7 @@ else
     set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
     set(gca, 'XLim', spatialExtent, 'YLim', spatialExtent);
     axis 'square'
-    title(sprintf('Rect mosaic, pattern sample size: %2.1f um\ncone sep: %g um, aperture: %2.1f um', cm.patternSampleSize(1)*1e6, cm.patternSampleSize(1)*1e6, cm.pigment.pdWidth*1e6));
+    title(sprintf('Rect mosaic, pattern sample size: %2.1f um\ncone sep: %g um, aperture: %2.1f um (trial #1 emPath)', cm.patternSampleSize(1)*1e6, cm.patternSampleSize(1)*1e6, cm.pigment.pdWidth*1e6));
 end
 ylabel('space (microns)',  'FontWeight', 'bold');
 if (figRow == 3)
