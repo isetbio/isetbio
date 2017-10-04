@@ -270,9 +270,9 @@ title(sprintf('mean and std of X/Y eye positions \n(nTrials: %d)', size(theEMpat
 
 % Plot the time course of the x and y eye movement
 subplot('Position', subplotPosVectors(figRow,3).v);
-plot(timeAxisMillisecs, theEMpathsMicrons(iTrial,:,1), 'k-', 'LineWidth', 1.5, 'MarkerSize', 8, 'MarkerEdgeColor', 'm', 'Color', 'm');
+plot(timeAxisMillisecs, theEMpathsMicrons(iTrial,:,1), '-', 'LineWidth', 1.5, 'MarkerSize', 8, 'MarkerEdgeColor', 'm', 'Color', 'm');
 hold on;
-plot(timeAxisMillisecs, theEMpathsMicrons(iTrial,:,2), 'k.-', 'LineWidth', 1.5, 'MarkerSize', 8, 'MarkerEdgeColor', 'b', 'Color', 'b');
+plot(timeAxisMillisecs, theEMpathsMicrons(iTrial,:,2), '-', 'LineWidth', 1.5, 'MarkerSize', 8, 'MarkerEdgeColor', 'b', 'Color', 'b');
 set(gca, 'XLim', [timeAxisMillisecs(1) timeAxisMillisecs(end)], 'YLim', spatialExtent, 'YTick', yTicks);
 grid on; box off;
 set(gca, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
