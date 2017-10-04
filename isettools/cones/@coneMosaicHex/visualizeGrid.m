@@ -7,7 +7,7 @@ function hFig = visualizeGrid(obj, varargin)
 %   panelPosition      - [1 1]
 %   showCorrespondingRectangularMosaicInstead - False
 %   overlayNullSensors         - False
-%   overlayEMpath   - a single EM path that can be overlayed on top of the mosaic
+%   overlayEMpath Microns  - a single EM path (specified in microns) that can be overlayed on top of the mosaic
 %   overlayHexMesh       - False
 %   overlayConeDensityContour   - 'none'
 %   coneDensityContourLevelStep - 5000
@@ -24,7 +24,7 @@ p.addParameter('showCorrespondingRectangularMosaicInstead', false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
 p.addParameter('apertureShape', 'hexagons', @(x)ismember(x, {'hexagons', 'disks'}));
 p.addParameter('overlayNullSensors', false, @islogical);
-p.addParameter('overlayEMpath', [], @(x)(isnumeric(x) && ((isempty(x)) || (ndims(x)==2))));
+p.addParameter('overlayEMpathMicrons', [], @(x)(isnumeric(x) && ((isempty(x)) || (ndims(x)==2))));
 p.addParameter('overlayHexMesh', false, @islogical);
 p.addParameter('overlayConeDensityContour', 'none', @(x)ismember(x, {'none', 'theoretical', 'measured', 'theoretical_and_measured'}));
 p.addParameter('coneDensityContourLevels', [100:20:250]*1000, @isnumeric);
@@ -32,7 +32,7 @@ p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = p.Results.showCorrespondingRectangularMosaicInstead;
 showNullSensors = p.Results.overlayNullSensors;
-overlaidEMpath = p.Results.overlayEMpath;
+overlaidEMpathMicrons = p.Results.overlayEMpathMicrons;
 showHexMesh = p.Results.overlayHexMesh;
 showConeDensityContour = p.Results.overlayConeDensityContour;
 generateNewFigure = p.Results.generateNewFigure;
@@ -273,12 +273,12 @@ switch showConeDensityContour
         set(gca, 'CLim', [10000 250000]);
 end
 
-if (~isempty(overlaidEMpath))
+if (~isempty(overlaidEMpathMicrons))
     color = 'k';
     if (~labelConeTypes)
         color = 'r';
     end
-    plot(overlaidEMpath(:,1)*obj.patternSampleSize(1), overlaidEMpath(:,2)*obj.patternSampleSize(2), 'ks-', 'Color', color, 'LineWidth', 1.5);
+    plot(overlaidEMpathMicrons(:,1)*1e-6, overlaidEMpathMicrons(:,2)*1e-6, 'ks-', 'Color', color, 'LineWidth', 1.5);
 end
 
 %% Arrange axis and fonts
