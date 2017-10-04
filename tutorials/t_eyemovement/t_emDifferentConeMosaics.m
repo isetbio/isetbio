@@ -38,38 +38,42 @@ integrationTimeMillisecs = 1;
 % Number of eye movement trials to generate
 nTrials = 256;
 % Generate this many eye movements per trial
-eyeMovementsPerTrial = 10100;
+eyeMovementsPerTrial = 2100;
 % Spatial position binning (in microns)
-posBins = [-30:2:30];
+posBinsMicrons = [-30:2:30];
 % Resampling factor of the hex mosaic.
 resamplingFactor = 6;
 
 
 %% Run the default rect mosaic
-[cm, theEMpaths, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0] = ...
-    t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBins);
+[cm, theEMpathsMicrons, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0] = ...
+    t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBinsMicrons);
 % Plot the eye movements during the first trial
 iTrial = 1;
-plotEMs(1, cm, theEMpaths, iTrial, emSpectrumXo, emSpectrumYo, [], [], tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0, posBins);
+plotEMs(1, cm, theEMpathsMicrons, iTrial, emSpectrumXo, emSpectrumYo, [], [], tfAxis, xPosMean0, yPosMean0, xPosStd0, yPosStd0, posBinsMicrons);
 
 %% Run a regular hex cone mosaic with large separation (customLambda: 7 microns) and large inner segment diameter (4 microns)
-eccBasedConeDensity = false; customLamda = 7; customInnerSegmentDiameter = 4;
-[cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBins);
+eccBasedConeDensity = false; 
+customLamda = 7; 
+customInnerSegmentDiameter = 4;
+[cm, theEMpathsMicrons, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBinsMicrons);
 % Plot the eye movements during the first trial
 iTrial = 1;
-plotEMs(2, cm, theEMpaths, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBins);
+plotEMs(2, cm, theEMpathsMicrons, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBinsMicrons);
 
 %% Run an ecc-based hex cone mosaic with small inner segment diameter (1 micron)
-eccBasedConeDensity = true; customInnerSegmentDiameter = 1; customLamda = [];
-[cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBins);
+eccBasedConeDensity = true; 
+customInnerSegmentDiameter = 1; 
+customLamda = [];
+[cm, theEMpathsMicrons, emSpectrumX, emSpectrumY, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd] = t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBinsMicrons);
 % Plot the eye movements during the first trial
 iTrial = 1;
-plotEMs(3, cm, theEMpaths, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBins);
+plotEMs(3, cm, theEMpathsMicrons, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBinsMicrons);
 end
 
-function [cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, ...
+function [cm, theEMpathsMicrons, emSpectrumX, emSpectrumY, tfAxis, ...
     xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = ...
-    t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBins)
+    t_emRectMosaic(fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBinsMicrons)
 % Generate the rect mosaic
 cm = coneMosaic();
 cm.setSizeToFOV(fovDegs);            
@@ -80,19 +84,20 @@ cm.integrationTime = integrationTimeMillisecs/1000;
 % Generate eye movement paths
 theEMpaths = zeros(nTrials, eyeMovementsPerTrial, 2);
 for iTrial= 1:nTrials
-    theEMpaths(iTrial, :,:) = cm.emGenSequence(eyeMovementsPerTrial);
+    [theEMpaths(iTrial, :,:), theEMpathsMicrons(iTrial, :,:)] = cm.emGenSequence(eyeMovementsPerTrial);
 end
+theEMpaths = [];
 
 % Compute spatial stats
-[xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpaths, posBins);
+[xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpathsMicrons, posBinsMicrons);
 
 % Compute spectra
-[emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(cm.timeAxis*1000, theEMpaths);
+[emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(cm.timeAxis*1000, theEMpathsMicrons);
 end
 
-function [cm, theEMpaths, emSpectrumX, emSpectrumY, tfAxis, ...
+function [cm, theEMpathsMicrons, emSpectrumX, emSpectrumY, tfAxis, ...
     xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = ...
-    t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBins)
+    t_emHexMosaic(fovDegs, integrationTimeMillisecs, eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor, nTrials, eyeMovementsPerTrial, posBinsMicrons)
 % Generate the hex mosaic
 cm = coneMosaicHex(resamplingFactor, ...
         'fovDegs', fovDegs, ...
@@ -105,44 +110,49 @@ cm = coneMosaicHex(resamplingFactor, ...
 % Set the integration time
 cm.integrationTime = integrationTimeMillisecs/1000; 
 
+% compute coverage
+size(cm.coneLocsHexGrid)
+
 % Generate eye movement paths
 theEMpaths = zeros(nTrials, eyeMovementsPerTrial, 2);
 for iTrial= 1:nTrials
-    theEMpaths(iTrial, :,:) = cm.emGenSequence(eyeMovementsPerTrial);
+    [theEMpaths(iTrial, :,:), theEMpathsMicrons(iTrial, :,:)] = cm.emGenSequence(eyeMovementsPerTrial);
 end
+theEMpaths = [];
 
 % Compute spatial stats
-[xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpaths, posBins);
+[xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpathsMicrons, posBinsMicrons);
 
 % Compute temporal spectra
-[emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(cm.timeAxis*1000, theEMpaths);
+[emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(cm.timeAxis*1000, theEMpathsMicrons);
 end
 
 % ----- Spatial stats analyis routine ------
-function [xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpaths, posBins)
+function [xDistributionMean, yDistributionMean, xDistributionStd, yDistributionStd] = computeEMstats(theEMpathsMicrons, posBinsMicrons)
     
-    dt = posBins(2)-posBins(1);
-    posBins(end+1) = posBins(end)+dt;
-    for emTrial = 1:size(theEMpaths,1)
-        xPath = squeeze(theEMpaths(emTrial,:,1));
-        yPath = squeeze(theEMpaths(emTrial,:,2));
-        [xDistribution(emTrial,:), xBins] = histcounts(xPath, posBins);
-        [yDistribution(emTrial,:), yBins] = histcounts(yPath, posBins);
+    dt = posBinsMicrons(2)-posBinsMicrons(1);
+    posBinsMicrons(end+1) = posBinsMicrons(end)+dt;
+
+    for emTrial = 1:size(theEMpathsMicrons,1)
+        xPath = squeeze(theEMpathsMicrons(emTrial,:,1));
+        yPath = squeeze(theEMpathsMicrons(emTrial,:,2));
+        [xDistribution(emTrial,:), xBins] = histcounts(xPath, posBinsMicrons);
+        [yDistribution(emTrial,:), yBins] = histcounts(yPath, posBinsMicrons);
     end
 
     xDistributionMean = mean(xDistribution,1);
     yDistributionMean = mean(yDistribution,1);
     
-    xDistributionStd = std(xDistribution,0,1);
+    xDistributionStd  = std(xDistribution,0,1);
     yDistributionStd  = std(yDistribution,0,1);
 end
 
 
 % ----- Spectrum analysis routine ----
-function [emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(timeAxisMillisecs, theEMpaths)
-for emTrial = 1:size(theEMpaths,1)
-    emSpectrumX(emTrial,:) = abs(fft(squeeze(theEMpaths(emTrial,:,1))));
-    emSpectrumY(emTrial,:) = abs(fft(squeeze(theEMpaths(emTrial,:,2))));
+function [emSpectrumX, emSpectrumY, tfAxis] = computeEMspectrum(timeAxisMillisecs, theEMpathsMicrons)
+for emTrial = 1:size(theEMpathsMicrons,1)
+    emSpectrumX(emTrial,:) = abs(fft(squeeze(theEMpathsMicrons(emTrial,:,1))));
+    emSpectrumY(emTrial,:) = abs(fft(squeeze(theEMpathsMicrons(emTrial,:,2))));
 end
 emSpectrumX = mean(emSpectrumX, 1);
 %x_ftspectrum = x_ftspectrum / max(x_ftspectrum);
@@ -150,16 +160,13 @@ emSpectrumY = mean(emSpectrumY, 1);
 %y_ftspectrum = y_ftspectrum / max(y_ftspectrum);
 maxF = 1000/(2*(timeAxisMillisecs(2)-timeAxisMillisecs(1)));
 deltaF = maxF / (0.5*numel(timeAxisMillisecs));
-tfAxis = (1:size(theEMpaths,2))*deltaF;
+tfAxis = (1:size(theEMpathsMicrons,2))*deltaF;
 end
 
 
 %----- PLOTTING ROUTINE -------
-function plotEMs(figRow, cm, theEMpaths, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBins)
+function plotEMs(figRow, cm, theEMpathsMicrons, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBinsMicrons)
 
-% convert EMPath from cone index to microns
-patternSampleSizeMicrons = cm.patternSampleSize(1)*1e6;
-theEMpathsMicrons = theEMpaths * patternSampleSizeMicrons;
 xRange = max(max(max(theEMpathsMicrons(:,:,1)))) - min(min(min(theEMpathsMicrons(:,:,1))));
 yRange = max(max(max(theEMpathsMicrons(:,:,2)))) - min(min(min(theEMpathsMicrons(:,:,2))));
 
@@ -201,12 +208,12 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
 
 % Plot eye movements on top of cone mosaic
 subplot('Position', subplotPosVectors(figRow,1).v);
-    
+
 if (isa(cm, 'coneMosaicHex'))
     % Use the visualizeGrid() method to show the mosaic and the eye movemtns
     cm.visualizeGrid(...
         'axesHandle', gca, ...
-        'overlayEMpath', squeeze(theEMpaths(1,:,:)), ...
+        'overlayEMpathMicrons', squeeze(theEMpathsMicrons(1,:,:)), ...  % expects emPath in microns, not cone units
         'overlayNullSensors', true, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'both', ...
@@ -241,16 +248,17 @@ end
 set(gca, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 box(gca, 'on'); grid(gca, 'off');
     
+
+
 subplot('Position', subplotPosVectors(figRow,2).v);
-maxPos = max([max(xPosMean+xPosStd) max(yPosMean+yPosStd)]);
 hold on
-stairs(posBins, xPosMean, 'LineWidth', 1.5, 'Color', 'm');
-stairs(posBins, -yPosMean, 'LineWidth', 1.5, 'Color', 'b');
-stairs(posBins, xPosMean+xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
-stairs(posBins, xPosMean-xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
-stairs(posBins, -yPosMean+yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
-stairs(posBins, -yPosMean-yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
-set(gca, 'XLim', [posBins(1) posBins(end)], 'YLim', maxPos*[-1 1], 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
+stairs(posBinsMicrons, xPosMean, 'LineWidth', 1.5, 'Color', 'm');
+stairs(posBinsMicrons, -yPosMean, 'LineWidth', 1.5, 'Color', 'b');
+stairs(posBinsMicrons, xPosMean+xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
+stairs(posBinsMicrons, xPosMean-xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
+stairs(posBinsMicrons, -yPosMean+yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
+stairs(posBinsMicrons, -yPosMean-yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
+set(gca, 'XLim', [posBinsMicrons(1) posBinsMicrons(end)],'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 grid on; box on;
 ylabel('power',  'FontWeight', 'bold');
 hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
@@ -260,7 +268,7 @@ xlabel('position (um)', 'FontWeight', 'bold');
 end
 ylabel('counts', 'FontWeight', 'bold');
 axis 'square';
-title(sprintf('mean and std of X/Y eye positions \n(nTrials: %d)', size(theEMpaths,1)));
+title(sprintf('mean and std of X/Y eye positions \n(nTrials: %d)', size(theEMpathsMicrons,1)));
     
 
 % Plot the time course of the x and y eye movement
@@ -300,7 +308,7 @@ hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
 set(hL, 'FontSize', 14);
 axis square
 grid on
-title(sprintf('mean spectra of X/Y eye pos movements\n(nTrials: %d)', size(theEMpaths,1)));
+title(sprintf('mean spectra of X/Y eye pos movements\n(nTrials: %d)', size(theEMpathsMicrons,1)));
 end
 
 
