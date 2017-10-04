@@ -9,10 +9,11 @@ function t_emDifferentConeMosaics
 %
 %    Each of the three rows in the generated figure corresponds to one of the three cone mosaics studied.
 %    The first column  plots the cone mosaic with the eye movement from the first trial superimposed in red.
-%    The second column plots the x- and y-components of the eye movement from the first trial.
-%    The third column plots the mean spectra of the x- and y-components across all computed trials (256 here)
+%    The second column  plots the spatial distribution of x- and y-eye positions across all computed trials
+%    The third column plots the x- and y-components of the eye movement from the first trial.
+%    The fourth column plots the mean spectra of the x- and y-components across all computed trials (256 here)
 %
-%    Notes: The eye movements appear to have similar spatial and temporal dynamics across all mosaics. 
+%    Notes: The eye movements have similar spatial and temporal dynamics across all 3 mosaics. 
 %           This demonstrates that the eye movement dynamics are independent of the employed mosaic's 
 %           spatial characteristics (pattern size, the cone spacing, and cone aperture).
 %
@@ -242,7 +243,7 @@ set(gca, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 box(gca, 'on'); grid(gca, 'off');
     
 
-
+maxCount = max([max(xPosMean+xPosStd) max(yPosMean+yPosStd)]);
 subplot('Position', subplotPosVectors(figRow,2).v);
 hold on
 stairs(posBinsMicrons, xPosMean, 'LineWidth', 1.5, 'Color', 'm');
@@ -251,7 +252,8 @@ stairs(posBinsMicrons, xPosMean+xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Co
 stairs(posBinsMicrons, xPosMean-xPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'm');
 stairs(posBinsMicrons, -yPosMean+yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
 stairs(posBinsMicrons, -yPosMean-yPosStd, 'LineWidth', 1.0, 'LineStyle', ':', 'Color', 'b');
-set(gca, 'XLim', [posBinsMicrons(1) posBinsMicrons(end)],'FontSize', 14, 'Color', [0.9 0.9 0.9]);
+plot([posBinsMicrons(1) posBinsMicrons(end)], [0 0], 'k-');
+set(gca, 'XLim', [posBinsMicrons(1) posBinsMicrons(end)], 'YLim', maxCount*[-1 1], 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 grid on; box on;
 ylabel('power',  'FontWeight', 'bold');
 hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
@@ -287,9 +289,11 @@ hold on;
 indices = find(tfAxis < 500);
 plot(tfAxis(indices), emSpectrumX(indices), 'm-', 'LineWidth', 1.5);
 plot(tfAxis(indices), emSpectrumY(indices), 'b-', 'LineWidth', 1.5);
+hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
 if (~isempty(emSpectrumXo))
-    plot(tfAxis(indices), emSpectrumXo(indices), 'k-', 'LineWidth', 1.5);
-    plot(tfAxis(indices), emSpectrumYo(indices), 'k-', 'LineWidth', 1.5);
+    plot(tfAxis(indices), emSpectrumXo(indices), 'k--', 'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
+    plot(tfAxis(indices), emSpectrumYo(indices), 'k--', 'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
+    hL = legend({'x-pos', 'y-pos', 'x-pos (rect mosaic)', 'y-pos (rect mosaic)'}, 'Location', 'SouthWest');
 end
 set(gca, 'XLim', [0.1 500], 'YLim', [1e1 1e5], 'XScale', 'log', 'YScale', 'log');
 set(gca, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
@@ -297,8 +301,7 @@ if (figRow == 3)
 xlabel('frequency (Hz)',  'FontWeight', 'bold');
 end
 ylabel('power',  'FontWeight', 'bold');
-hL = legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
-set(hL, 'FontSize', 14);
+set(hL, 'FontSize', 14, 'Color', [0.9 0.9 0.9]);
 axis square
 grid on
 title(sprintf('mean spectra of X/Y eye pos movements\n(nTrials: %d)', size(theEMpathsMicrons,1)));
