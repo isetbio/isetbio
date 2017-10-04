@@ -166,9 +166,6 @@ end
 %----- PLOTTING ROUTINE -------
 function plotEMs(figRow, cm, theEMpathsMicrons, iTrial, emSpectrumX, emSpectrumY, emSpectrumXo, emSpectrumYo, tfAxis, xPosMean, yPosMean, xPosStd, yPosStd, posBinsMicrons)
 
-xRange = max(max(max(theEMpathsMicrons(:,:,1)))) - min(min(min(theEMpathsMicrons(:,:,1))));
-yRange = max(max(max(theEMpathsMicrons(:,:,2)))) - min(min(min(theEMpathsMicrons(:,:,2))));
-
 % convert cone positions to microns
 if (isa(cm, 'coneMosaicHex'))
     conePositionsMicrons = cm.coneLocs*1e6/cm.resamplingFactor;
@@ -262,7 +259,7 @@ ylabel('space (microns)',  'FontWeight', 'bold');
 if (figRow == 3)
     xlabel('time (msec)', 'FontWeight', 'bold'); 
 end
-title(sprintf('X/Y eye position sequence\nXrange: %2.1f microns; Yrange: %2.1f',xRange, yRange));
+title(sprintf('X/Y eye position sequence\n(trial #%d)', iTrial));
 
 
 subplot('Position', subplotPosVectors(figRow,3).v);
