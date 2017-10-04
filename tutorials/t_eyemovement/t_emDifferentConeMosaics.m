@@ -38,7 +38,7 @@ integrationTimeMillisecs = 1;
 % Number of eye movement trials to generate
 nTrials = 256;
 % Generate this many eye movements per trial
-eyeMovementsPerTrial = 2100;
+eyeMovementsPerTrial = 10100;
 % Spatial position binning (in microns)
 posBinsMicrons = [-30:2:30];
 % Resampling factor of the hex mosaic.
@@ -109,9 +109,6 @@ cm = coneMosaicHex(resamplingFactor, ...
     );
 % Set the integration time
 cm.integrationTime = integrationTimeMillisecs/1000; 
-
-% compute coverage
-size(cm.coneLocsHexGrid)
 
 % Generate eye movement paths
 theEMpaths = zeros(nTrials, eyeMovementsPerTrial, 2);
