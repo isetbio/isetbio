@@ -157,6 +157,14 @@ classdef coneMosaicHex < coneMosaic
                 obj.marginF = p.Results.marginF;
             end
             
+            if (isempty(obj.latticeAdjustmentDelaunayToleranceF))
+                obj.latticeAdjustmentDelaunayToleranceF = 0.01;
+            end
+            
+            if (isempty(obj.latticeAdjustmentPositionalToleranceF))
+                obj.latticeAdjustmentPositionalToleranceF = 0.001;
+            end
+            
             % Get a copy of the original coneLocs
             obj.saveOriginalResState();
             
