@@ -31,7 +31,6 @@ function hexLocs = computeHexGridNodes(obj)
     end
     
     grid.coneSpacingFunction = @coneSpacingFunction;
-    %grid.domainFunction = @circularDomainFunction;
     grid.domainFunction = @ellipticalDomainFunction;
     grid.center = obj.center*1e6;
     grid.rotationAngle = obj.rotationDegs/180*pi;
@@ -44,6 +43,7 @@ function hexLocs = computeHexGridNodes(obj)
     if (obj.eccBasedConeDensity)
         hexLocs = generateConePositionsOnVaryingDensityGrid(obj,grid);
     else
+        grid.domainFunction = @circularDomainFunction;
         hexLocs = generateConePositionsOnConstantDensityGrid(grid);
     end
 
@@ -51,11 +51,22 @@ function hexLocs = computeHexGridNodes(obj)
     mosaicRangeX = grid.center(1) + grid.width/2*[-1 1];
     mosaicRangeY = grid.center(2) + grid.height/2*[-1 1];
     
-    indices = find( ...
-        hexLocs(:,1) >= mosaicRangeX(1)+obj.lambdaMin/4 & ...
-        hexLocs(:,1) <= mosaicRangeX(2)-obj.lambdaMin/4 & ... 
-        hexLocs(:,2) >= mosaicRangeY(1)+obj.lambdaMin/4 & ...
-        hexLocs(:,2) <= mosaicRangeY(2)-obj.lambdaMin/4 );
+    if (obj.eccBasedConeDensity)
+        indices = find( ...
+            hexLocs(:,1) >= mosaicRangeX(1)+obj.lambdaMin/4 & ...
+            hexLocs(:,1) <= mosaicRangeX(2)-obj.lambdaMin/4 & ... 
+            hexLocs(:,2) >= mosaicRangeY(1)+obj.lambdaMin/4 & ...
+            hexLocs(:,2) <= mosaicRangeY(2)-obj.lambdaMin/4 );
+    else
+        radii = sqrt(sum(hexLocs.^2,2));
+        indices = find( ...
+            hexLocs(:,1) >= mosaicRangeX(1)+obj.lambdaMin/4 & ...
+            hexLocs(:,1) <= mosaicRangeX(2)-obj.lambdaMin/4 & ... 
+            hexLocs(:,2) >= mosaicRangeY(1)+obj.lambdaMin/4 & ...
+            hexLocs(:,2) <= mosaicRangeY(2)-obj.lambdaMin/4 & ...
+            radii <= grid.radius);
+    end
+    
     hexLocs = hexLocs(indices,:);
     
     % Return positions in meters
@@ -301,7 +312,7 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
     hexLocs = (R*(hexLocs)')';
 end
 
-function distances = circularDomainFunction(conePositions, center, radius)
+function distances = circularDomainFunction(conePositions, center, radius, nullVar)
     %  points with positive distance will be excluded
     radii = sqrt((conePositions(:,1)-center(1)).^2+(conePositions(:,2)-center(2)).^2);
     distances = -(radius-radii);
