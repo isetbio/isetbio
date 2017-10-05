@@ -149,7 +149,7 @@ classdef coneMosaicHex < coneMosaic
             if (isempty(p.Results.marginF))
                 if (max(p.Results.fovDegs) < 1.0)
                     % for smaller mosaics, generate a little larger lattice in order to reduce positional artifacts near the borders
-                    obj.marginF = 1.0 + (1-p.Results.fovDegs)*0.25;
+                    obj.marginF = 1.0 + (1-max(p.Results.fovDegs))*0.25;
                 else
                     obj.marginF = 1.0;
                 end
