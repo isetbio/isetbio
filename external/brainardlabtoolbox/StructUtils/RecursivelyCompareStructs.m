@@ -14,8 +14,9 @@ function result = RecursivelyCompareStructs(struct1Name, struct1, struct2Name, s
 %
 % For more elabored usage examples see RecursivelyCompareStructsTests.
 %
-% 2/7/17  NPC  Wrote it.
-
+% 02/07/17  NPC  Wrote it.
+% 10/05/17  NPC  If a field is not found in one struct do not throw an
+%                error. Print a message in red and skip to the next field.
 %% Parse input
 p = inputParser;
 p.addParameter('defaultTolerance', 0, @isnumeric);
@@ -94,16 +95,23 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
         struct1FieldNames = sort(fieldnames(struct1));
         struct2FieldNames = sort(fieldnames(struct2));
 
+        if (numel(struct1FieldNames) ~= numel(struct2FieldNames))
+            fprintf(2,'** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames))
+        end
+        
         for fieldIndex = 1:numel(struct1FieldNames)
-
-            fullFieldName1 = sprintf('%s.%s', struct1FullName,struct1FieldNames{fieldIndex});
-            fullFieldName2 = sprintf('%s.%s', struct2FullName,struct2FieldNames{fieldIndex});
-
+            theFieldName = struct1FieldNames{fieldIndex};
+            fullFieldName1 = sprintf('%s.%s', struct1FullName,theFieldName);
+            if (~isfield(struct2, theFieldName))
+                fprintf(2, '**** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
+                continue;
+            end
+            
+            fullFieldName2 = sprintf('%s.%s', struct2FullName,theFieldName);
             field1 = [];
             field2 = [];
-            
-            eval(sprintf('field1 = struct1(structIndex).%s;', struct1FieldNames{fieldIndex}));
-            eval(sprintf('field2 = struct2(structIndex).%s;', struct2FieldNames{fieldIndex}));
+            eval(sprintf('field1 = struct1(structIndex).%s;', theFieldName));
+            eval(sprintf('field2 = struct2(structIndex).%s;', theFieldName));
 
             % Update list of flat struct field names
             flatStruct1FieldNames{numel(flatStruct1FieldNames)+1} = fullFieldName1;
@@ -116,9 +124,9 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                     structToleranceName = structToleranceName(idx(1)+1:end);
                 end
                 if (isempty(structToleranceName))
-                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s', struct1FieldNames{fieldIndex});
+                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s', theFieldName);
                 else
-                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s.%s', structToleranceName,struct1FieldNames{fieldIndex});
+                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s.%s', structToleranceName, theFieldName);
                 end
             end
 
@@ -141,7 +149,7 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                     cell2 = field2{cellIndex};
 
                     % Update toleranceFieldPaths
-                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s{%d}', struct1FieldNames{fieldIndex}, cellIndex);
+                    toleranceFieldPaths{numel(toleranceFieldPaths)+1} = sprintf('%s{%d}', theFieldName, cellIndex);
 
                     % Update list of flat struct field names
                     flatStruct1FieldNames{numel(flatStruct1FieldNames)+1} = sprintf('%s{%d}',fullFieldName1, cellIndex);
@@ -239,11 +247,15 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                     result{numel(result)+1} = sprintf('Character arrays ''%s'' and ''%s'' do not match.', flatStruct1FieldNames{numel(flatStruct1FieldNames)}, flatStruct2FieldNames{numel(flatStruct2FieldNames)});
                 end
 
+            % Fields  do not match
+            elseif (~strcmp(class(field1), class(field2)))
+                result{numel(result)+1} = sprintf('fields ''%s'' and ''%s'' have non-matching types: ''%s'' vs ''%s''.', flatStruct1FieldNames{numel(flatStruct1FieldNames)}, flatStruct2FieldNames{numel(flatStruct2FieldNames)}, class(field1), class(field2));
+            
             % Fields are neither of the above
             else
-                class(field1)
-                class(field2)
-                error('Only comparing numerical, logical, char, cell and struct types\n');
+                    fprintf(2,'Class of field ''%s'': ''%s''\n', flatStruct1FieldNames{numel(flatStruct1FieldNames)}, class(field1));
+                    fprintf(2,'Class of field ''%s'': ''%s''\n', flatStruct1FieldNames{numel(flatStruct2FieldNames)}, class(field2));
+                    error('Only comparing numerical, logical, char, cell and struct types\n');
             end
 
         end
