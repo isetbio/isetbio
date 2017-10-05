@@ -133,7 +133,7 @@ classdef oiSequence
         oiFrame = frameAtIndex(obj, index);
         
         % Visualize the sequence
-        visualize(obj,varargin);
+        [uData, hFig] = visualize(obj,varargin);
         
         function val = timeStep(obj)
             val = obj.timeAxis(2) - obj.timeAxis(1);

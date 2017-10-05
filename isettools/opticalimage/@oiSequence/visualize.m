@@ -29,6 +29,7 @@ FrameRate  = p.Results.FrameRate;
 %%  Show the oiSequence in one of the possible formats
 uData = [];
 vObj = [];    % Video object
+hFig = [];
 
 switch format
     case 'weights'
@@ -134,16 +135,14 @@ switch format
             % Do not exceed XYZ values of 0.5 (for correct rendering)
             XYZmax = 2*XYZmax;
         end
-
-
-        hFig = figure();
-        set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]);
         
+        hFig = figure();
+        set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]); 
         for oiIndex = 1:obj.length
             if (oiIndex == 1)
                 % Plot the modulation function
                 subplot('Position', subplotPosVectors(1,1).v);
-                stairs(obj.timeAxis*1000, obj.modulationFunction, 'r', 'LineWidth', 1.5);
+                bar(obj.timeAxis*1000, obj.modulationFunction, 0.9, 'LineWidth', 1.5, 'FaceColor', [1 0.5 0.5], 'EdgeColor', [1 0 0]);
                 if (numel(obj.timeAxis)>1)
                     timeRange = [obj.timeAxis(1) obj.timeAxis(end)];
                 else
@@ -211,7 +210,7 @@ switch format
             end
             
             if (p.Results.showIlluminanceMap)
-                colormap(gray(1024));
+                colormap(jet(1024));
             end
 
             title(sprintf('mean illum: %2.4f td', meanIlluminance));
