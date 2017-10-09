@@ -262,13 +262,15 @@ switch showConeDensityContour
             idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
             densityMapMeasured(idx) = NaN;
         end
-        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, contourLevels, 'LineColor', 'r', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 2000);
+        contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, contourLevels, 'LineColor', [1 0.7 0.7], 'LineWidth', 4.0, 'ShowText', 'on', 'LabelSpacing', 2000);
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, contourLevels, 'LineColor', 'r', 'LineWidth', 1.5);
         clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [1 0 0], 'BackgroundColor', [1 1 1]);
         if (plotContoursOverHalfField)
             idx = find(~((densityMapSupportX >= 0) & (densityMapSupportY >= 0)));
             densityMapTheoretical(idx) = NaN;
         end
-        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapTheoretical, contourLevels, 'LineColor', 'b', 'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', 3000);
+        contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapTheoretical, contourLevels, 'LineColor', [0.7 0.7 1.0], 'LineWidth', 4.0, 'ShowText', 'on', 'LabelSpacing', 2500);
+        [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapTheoretical, contourLevels, 'LineColor', 'b', 'LineWidth', 1.5);
         clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 1], 'BackgroundColor', [1 1 1]);
         set(gca, 'CLim', [10000 250000]);
 end
