@@ -158,7 +158,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = 'none'; % [1 0 0]; 
     if (labelConeTypes)
         faceColorInner = [1 0 0];
-        faceColorOuter = [1 0.5 0.5];
+        faceColorOuter = [1 0.2 0.2];
     else
         edgeColor = [0 0 0]; 
         faceColorInner = 0.8*[1 1 1];
@@ -177,7 +177,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = 'none';% = [0 0.7 0]; 
     if (labelConeTypes)
         faceColorInner = [0 1 0];
-        faceColorOuter = [0.5 1 0.5];
+        faceColorOuter = [0.2 1 0.2];
     else
         edgeColor = [0 0 0]; 
         faceColorInner = 0.8*[1 1 1];
@@ -197,7 +197,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = 'none';% = [0 0 1]; 
     if (labelConeTypes)
         faceColorInner = [0 0 1];
-        faceColorOuter = [0.5 0.5 1];
+        faceColorOuter = [0.2 0.2 1];
     else
         edgeColor = [0 0 0]; 
         faceColorInner = 0.8*[1 1 1];
