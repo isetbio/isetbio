@@ -29,8 +29,12 @@ switch plotType
 end
 
 %% Get the nice coneMosaicHex image for the average mosaic response over time
+
 % Render activation images for the hex mosaic
+tic
+disp('Calculating activation density map for hex data.');
 [activationsHexImage, ~] = conemosaicH.computeActivationDensityMap(dataHex);
+toc
 
 activationsHexMovie = zeros([size(activationsHexImage),size(dataHex,3)]);
 for frameIndex = 1:size(dataHex,3)
@@ -41,6 +45,9 @@ end
 %% Show movie
 % set(gca, 'CLim', isomerizationsRange, 'XTick', [], 'YTick', []);
 axis 'image'; axis 'xy'
+
 % title('hex mosaic isomerizations (all cones)', 'FontSize', 16);
 % % % % % % %
 uData = ieMovie(activationsHexMovie,varargin{:});
+
+%%

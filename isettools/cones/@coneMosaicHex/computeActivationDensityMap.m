@@ -1,6 +1,15 @@
 function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sampledHexMosaicYaxis] = computeActivationDensityMap(obj, activation)
 % Compute activation images for the hex mosaic (all cones +  LMS submosaics)
 %
+% The variable names could be improved (xxxx).
+%
+% We need to store the activationImage, particularly when it is a
+% movie.  Then we can play it multiple times.
+%
+% Maybe it should be stored in the coneMosaic object, or at least
+% returned by the plot routine for the movie.
+%
+% Good start.  Other 
 % NPC, ISETBIO TEAM, 2015
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1,:,1)) + obj.center(1);
@@ -35,13 +44,21 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
     end
     
     zeroFrame = zeros(interpolationF*obj.rows, interpolationF*obj.cols);
+    
+    % [Row,Col, 3]
     activationImageLMScone = zeros(interpolationF*obj.rows, interpolationF*obj.cols, 3);
 
+    % First is blank, 2,3,4 are L,M,S
+    % Not sure what the algorithm is doing here.
+    % But it is very slow when we have a movie (e.g., 100 temporal samples).
+    % Must rethink.
     for coneID = 2:4
-        ix = find(obj.pattern == coneID);
+        % Calculating individual maps, and then summing at the end
+        fprintf('Cone ID %d\n',coneID);
+        ix = find(obj.pattern == coneID);  % Positions for this cone class
         frame = zeroFrame;
         [r,c] = ind2sub(size(obj.pattern),ix);
-        for k = 1:numel(ix)  
+        for k = 1:numel(ix)  % For each cone position in this cone class
             yy = (r(k)-1)*interpolationF + interpolationF/2 + round(apertureSupport/dx);
             xx = (c(k)-1)*interpolationF + interpolationF/2 + round(apertureSupport/dx);
             xx = xx(xx>0 & xx <= size(frame,2));
@@ -53,7 +70,9 @@ function [activationImage, activationImageLMScone, sampledHexMosaicXaxis, sample
             xxxx = xxx-((c(k)-1)*interpolationF + interpolationF/2)+1 + nSamples;
             frame(yyy, xxx) = frame(yyy,xxx) + activation(r(k),c(k))*apertureKernel(yyyy,xxxx);
         end
+        % frame has been interpolated to the whole image size.
         activationImageLMScone(:,:,coneID-1) = frame;
     end
+    fprintf('Combining cone maps\n');
     activationImage = sum(activationImageLMScone, 3);
 end

@@ -29,7 +29,7 @@ cPupil = [2,3,4,5,6,7];
 for ii=1:sum(cPupil<=pupilMM)
     wvfP = wvfSet(wvfP,'calculated pupil',cPupil(ii));
     wvfP = wvfComputePSF(wvfP);
-    wvfPlot(wvfP,'2d psf space','um',550,20)
+    wvfPlot(wvfP,'2d psf space','um',550,20);
     title(sprintf('Calculated pupil diameter %.1f mm',cPupil(ii)));
 end
 

@@ -56,7 +56,7 @@ end
 %% Pick up the specialized hex routines here
 
 % If not one of ours, pass on to the base class in the otherwise case.
-switch ieParamFormat(type);
+switch ieParamFormat(type)
     case 'conemosaic'
         % Try the NP plotting routine from here ...
         % It brings the image up in the wrong window because we didn't pass
