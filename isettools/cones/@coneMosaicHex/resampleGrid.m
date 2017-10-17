@@ -66,9 +66,15 @@ function hexLocs = computeHexGridNodes(obj)
             hexLocs(:,2) <= mosaicRangeY(2)-obj.lambdaMin/4 & ...
             radii <= grid.radius);
     end
-    
     hexLocs = hexLocs(indices,:);
     
+    % make sure we that the most foveal cone is at (0,0)
+    tmpHexLocs = bsxfun(@minus, hexLocs, obj.center);
+    [~,fovealConeIndex] = min(sum(tmpHexLocs.^2,2));
+    xy0 = squeeze(tmpHexLocs(fovealConeIndex,:));
+    tmpHexLocs = bsxfun(@minus, tmpHexLocs, xy0);
+    hexLocs = bsxfun(@plus, tmpHexLocs, obj.center);
+
     % Return positions in meters
     hexLocs = hexLocs * 1e-6; 
 end
