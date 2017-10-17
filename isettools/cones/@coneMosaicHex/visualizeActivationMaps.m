@@ -7,7 +7,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p = inputParser;
     p.addParameter('figureSize', [920 875], @isnumeric);
     p.addParameter('signalName', ' ', @ischar);
-    p.addParameter('mapType', 'modulated hexagons', @ischar);
+    p.addParameter('mapType', 'modulated disks', @ischar);
     p.addParameter('colorMap', jet(1024), @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);

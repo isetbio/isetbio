@@ -82,7 +82,8 @@ pos = zeros(nFrames, 2);
 nTrialsPos = zeros(nTrials,nFrames,2);
 
 % define cone parameters needed to convert units of mm or deg to cones, and vice versa
-params.w = obj.patternSampleSize(1); % pattern sample size in meters - for rect mosaics this is the same as the cone size, but not so for hex-mosaics
+% pattern sample size in meters - for rect mosaics this is the same as the cone size, but not so for hex-mosaics
+params.w = obj.patternSampleSize(1); 
 
 for nn=1:nTrials
     %% generate eye movement for tremor
