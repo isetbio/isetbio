@@ -47,10 +47,16 @@ function hexLocs = computeHexGridNodes(obj)
         hexLocs = generateConePositionsOnConstantDensityGrid(grid);
     end
 
+    % make sure we that the most foveal cone is at (0,0)
+    tmpHexLocs = bsxfun(@minus, hexLocs, obj.center);
+    [~,fovealConeIndex] = min(sum(tmpHexLocs.^2,2));
+    xy0 = squeeze(tmpHexLocs(fovealConeIndex,:));
+    tmpHexLocs = bsxfun(@minus, tmpHexLocs, xy0);
+    hexLocs = bsxfun(@plus, tmpHexLocs, obj.center);
+    
     % The cones within the rect mosaic extent
     mosaicRangeX = grid.center(1) + grid.width/2*[-1 1];
     mosaicRangeY = grid.center(2) + grid.height/2*[-1 1];
-    
     if (obj.eccBasedConeDensity)
         indices = find( ...
             hexLocs(:,1) >= mosaicRangeX(1)+obj.lambdaMin/4 & ...
@@ -67,13 +73,6 @@ function hexLocs = computeHexGridNodes(obj)
             radii <= grid.radius);
     end
     hexLocs = hexLocs(indices,:);
-    
-    % make sure we that the most foveal cone is at (0,0)
-    tmpHexLocs = bsxfun(@minus, hexLocs, obj.center);
-    [~,fovealConeIndex] = min(sum(tmpHexLocs.^2,2));
-    xy0 = squeeze(tmpHexLocs(fovealConeIndex,:));
-    tmpHexLocs = bsxfun(@minus, tmpHexLocs, xy0);
-    hexLocs = bsxfun(@plus, tmpHexLocs, obj.center);
 
     % Return positions in meters
     hexLocs = hexLocs * 1e-6; 
