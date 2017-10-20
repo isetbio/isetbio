@@ -1,15 +1,15 @@
 function rootPath=isetRootPath()
-% Return the path to the root iset directory
+%%isetRootPath  Return the path to the isetbio isettools directory
 %
-% This function must reside in the directory at the base of the ISET
-% directory structure.  It is used to determine the location of various
-% sub-directories.
-% 
-% Example:
-%   fullfile(isetbioDataPath)
+% Syntax:
+%    rootPath = isetRootPath;
+%
+% Description:
+%    Return base bath of the isetbio isettools directory.
+%
+% See also: isetbioRootPath, isetbioDataPath.
 
-% rootPath=which('isetRootPath');
-% [rootPath,fName,ext]=fileparts(rootPath);
+%% This is easy
 rootPath = fullfile(isetbioRootPath,'isettools',[]);
 
 return
