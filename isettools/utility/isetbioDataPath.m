@@ -12,7 +12,7 @@ function dataPath=isetbioDataPath()
 %    and associated functions at the top level of isetbio.  But, this is a slow
 %    process and we still need this for some older functions to work.
 %
-% See also: isetbioRootPath.
+% See also: isetbioRootPath, isetRootPath.
 
 dataPath=fullfile(isetbioRootPath,'isettools','data',[]);
 
