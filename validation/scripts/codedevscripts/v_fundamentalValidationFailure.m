@@ -11,7 +11,7 @@ function ValidationFunction(runTimeParams)
       
     % Simulate fundamental failure here
     if (true)
-        UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'Fundamental failure message goes here.');
+        UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'Do not panic. This test is working if you see a big red fundamental failure message here.');
         return;
     end
     
