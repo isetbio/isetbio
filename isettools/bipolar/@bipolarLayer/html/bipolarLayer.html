@@ -1,0 +1,259 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>BipolarLayer</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-18"><meta name="DC.source" content="bipolarLayer.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>BipolarLayer</h1><!--introduction--><p>Create a bipolarLayer object</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">History</a></li><li><a href="#5">Public Properties</a></li><li><a href="#8">Protected Properties</a></li><li><a href="#9">Private Properties</a></li><li><a href="#10">Public methods</a></li><li><a href="#11">Constructor</a></li><li><a href="#19">Methods that must only be implemented in the subclasses.</a></li><li><a href="#20">Public Subclass Methods</a></li><li><a href="#22">Protected Subclass Methods</a></li><li><a href="#23">Private Subclass Methods</a></li></ul></div><pre class="codeinput"><span class="keyword">classdef</span> bipolarLayer &lt; cellLayer
+</pre><h2 id="2">Syntax:</h2><pre class="language-matlab">obj = bipolarLayer([coneMosaicObject], params);
+</pre><h2 id="3">Description:</h2><p>Create an bipolarLayer object</p><p>This is a subclass of the general class 'cellLayer'.  It inherits the properties of that class, including slots for an input, fig, center, size, ...</p><p>The bipolarLayer class stores general properties of the bipolar layer patch and stores the bipolarMosaic objects in its mosaic property field. This object has a role that matches the rgcLayer object.</p><h2 id="4">History</h2><p>BW (c) isetbio team</p><pre>  10/18/17  jnm  Comments &amp; formatting</pre><h2 id="5">Public Properties</h2><p>Public read/write properties</p><pre class="codeinput">    properties
+    <span class="keyword">end</span>
+</pre><p>Public, read-only properties.</p><pre class="codeinput">    properties (SetAccess = public, GetAccess = public)
+</pre><p>MOSAIC Cell array holding the bipolar cell mosaics</p><pre class="codeinput">        mosaic;
+
+    <span class="keyword">end</span>
+</pre><h2 id="8">Protected Properties</h2><p>Protected properties; Methods of the parent class and all of its subclasses can set these.</p><pre class="codeinput">    properties (SetAccess = protected)
+    <span class="keyword">end</span>
+</pre><h2 id="9">Private Properties</h2><p>Private properties. Only methods of the parent class can set these</p><pre class="codeinput">    properties(Access = private)
+    <span class="keyword">end</span>
+</pre><h2 id="10">Public methods</h2><pre class="codeinput">    methods
+        <span class="keyword">function</span> obj = bipolarLayer(cMosaic, varargin)
+</pre><h2 id="11">Constructor</h2><p>Taken from the irCreate() code, which was how we called the innerretina object.  We should get rid of this rgcLayerCreate analog and</p><pre>obj = bipolarLayer(coneMosaic, params)</pre><pre>Required:
+  coneMosaic object</pre><pre>Optional
+ 'name'    -   string
+ 'nTrials' -   1</pre><p>Outputs:  bipolarLayer</p><p>BW, ISETBIO Team, 2017</p><p>parse input</p><pre class="codeinput">            p = inputParser;
+            p.addRequired(<span class="string">'cMosaic'</span>,@(x)(isa(cMosaic,<span class="string">'coneMosaic'</span>)));
+
+            p.addParameter(<span class="string">'name'</span>,<span class="string">'bipolarLayer'</span>,@ischar);
+            p.addParameter(<span class="string">'nTrials'</span>,1,@isscalar);
+
+            p.KeepUnmatched = true;
+
+            p.parse(cMosaic,varargin{:});
+
+            obj.name         = p.Results.name;
+            obj.nTrials = p.Results.nTrials;
+</pre><p>We may keep the cone mosaic around and then get rid of the obj.center, .species, .timeStep and .size.  No reason to have both other than confusion.  We can write little methods to get these from the input.</p><pre class="codeinput">            obj.input  = cMosaic;
+</pre><p>The patch size should apply to all of the mosaics.  It is determined by the cone mosaic patch, as is the time step.</p><pre class="codeinput">            obj.size = cMosaic.size;
+</pre><p>The time sample is the integration time of the cones.  Both the absorptions and the current are sampled at this rate</p><pre class="codeinput">            obj.timeStep  = cMosaic.integrationTime;
+</pre><p>Center of the patch with respect to distance (meters) on the retina.  Fovea is (0,0).</p><pre class="codeinput">            obj.center =  cMosaic.center;
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in bipolarLayer (line 72)
+            p.addRequired('cMosaic',@(x)(isa(cMosaic,'coneMosaic')));
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><p>Show the bipolar layer window</p><pre class="codeinput">        <span class="keyword">function</span> hdl = window(obj,varargin)
+            hdl = bipolarLayerWindow(obj);
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+</pre><h2 id="19">Methods that must only be implemented in the subclasses.</h2><pre class="codeinput">    methods (Access=public)
+</pre><h2 id="20">Public Subclass Methods</h2><p>Could define the methods here, or just let them be implicitly defined in the functions themselves</p><pre class="codeinput">        hdl = plot(obj,pType,varargin);
+        str = describe(obj);
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2 id="22">Protected Subclass Methods</h2><p>Methods may be called by the subclasses, but are otherwise private</p><pre class="codeinput">    methods (Access = protected)
+        spConvolve(obj);
+        timeConvolve(obj);
+    <span class="keyword">end</span>
+</pre><h2 id="23">Private Subclass Methods</h2><p>Methods that are totally private (subclasses cannot call these)</p><pre class="codeinput">    methods (Access = private)
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% BipolarLayer
+% Create a bipolarLayer object
+%%%
+classdef bipolarLayer < cellLayer
+    %% Syntax:
+    %   obj = bipolarLayer([coneMosaicObject], params);
+    %
+    %% Description: 
+    % Create an bipolarLayer object
+    %
+    % This is a subclass of the general class 'cellLayer'.  It inherits the
+    % properties of that class, including slots for an input, fig, center,
+    % size, ...
+    %
+    % The bipolarLayer class stores general properties of the bipolar layer
+    % patch and stores the bipolarMosaic objects in its mosaic property
+    % field. This object has a role that matches the rgcLayer object.
+    %
+
+    %% History
+    % BW (c) isetbio team
+    %
+    %    10/18/17  jnm  Comments & formatting
+    
+    %% Public Properties
+    % Public read/write properties
+    properties
+    end
+    %%%
+    % Public, read-only properties.
+    properties (SetAccess = public, GetAccess = public)
+        %%%
+        % MOSAIC Cell array holding the bipolar cell mosaics
+        mosaic;
+                               
+    end
+    %% Protected Properties
+    % Protected properties; Methods of the parent class and all of its
+    % subclasses can set these.
+    properties (SetAccess = protected)       
+    end
+    %% Private Properties
+    % Private properties. Only methods of the parent class can set these
+    properties(Access = private)
+    end
+    
+    %% Public methods
+    methods
+        function obj = bipolarLayer(cMosaic, varargin)
+            %% Constructor
+            %
+            % Taken from the irCreate() code, which was how we called the
+            % innerretina object.  We should get rid of this rgcLayerCreate
+            % analog and
+            %
+            %  obj = bipolarLayer(coneMosaic, params)
+            %
+            %  Required:
+            %    coneMosaic object
+            %
+            %  Optional
+            %   'name'    -   string
+            %   'nTrials' -   1
+            %
+            % Outputs:
+            %  bipolarLayer 
+            %
+            % BW, ISETBIO Team, 2017
+            %%%
+            % parse input
+            p = inputParser;
+            p.addRequired('cMosaic',@(x)(isa(cMosaic,'coneMosaic')));
+            
+            p.addParameter('name','bipolarLayer',@ischar);
+            p.addParameter('nTrials',1,@isscalar);
+            
+            p.KeepUnmatched = true;
+            
+            p.parse(cMosaic,varargin{:});
+            
+            obj.name         = p.Results.name;
+            obj.nTrials = p.Results.nTrials;
+            %%%
+            % We may keep the cone mosaic around and then get rid of the
+            % obj.center, .species, .timeStep and .size.  No reason to have
+            % both other than confusion.  We can write little methods to
+            % get these from the input.
+            obj.input  = cMosaic;
+            %%%
+            % The patch size should apply to all of the mosaics.  It is
+            % determined by the cone mosaic patch, as is the time step.
+            obj.size = cMosaic.size;
+            %%%
+            % The time sample is the integration time of the cones.  Both
+            % the absorptions and the current are sampled at this rate
+            obj.timeStep  = cMosaic.integrationTime;  
+            %%%
+            % Center of the patch with respect to distance (meters) on the
+            % retina.  Fovea is (0,0).
+            obj.center =  cMosaic.center;
+            
+        end
+        %%%
+        % Show the bipolar layer window
+        function hdl = window(obj,varargin)
+            hdl = bipolarLayerWindow(obj);
+        end
+
+    end
+    
+    %% Methods that must only be implemented in the subclasses. 
+    methods (Access=public)
+        %% Public Subclass Methods
+        % Could define the methods here, or just let them be implicitly
+        % defined in the functions themselves
+        hdl = plot(obj,pType,varargin);
+        str = describe(obj);
+    end
+    %% Protected Subclass Methods
+    % Methods may be called by the subclasses, but are otherwise private
+    methods (Access = protected)
+        spConvolve(obj);
+        timeConvolve(obj);
+    end
+    %% Private Subclass Methods
+    % Methods that are totally private (subclasses cannot call these)
+    methods (Access = private)
+    end
+    
+end
+
+
+
+##### SOURCE END #####
+--></body></html>
