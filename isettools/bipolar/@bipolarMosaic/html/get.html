@@ -1,0 +1,254 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Get</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-18"><meta name="DC.source" content="get.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Get</h1><!--introduction--><p>Retrieve the isetbio bipolar object parameters</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Inputs:</a></li><li><a href="#5">History:</a></li><li><a href="#6">Initialize and begin</a></li><li><a href="#8">Parse and put results into structure p.</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> val = get(obj, varargin)
+</pre><h2 id="2">Syntax:</h2><pre>  val = bipolar.get(parameter)</pre><h2 id="3">Description:</h2><p>Gets isetbio bipolar object parameters</p><h2 id="4">Inputs:</h2><pre>  cellLocation           - location of bipolar RF center
+  patchSize              - size of retinal patch from sensor
+  timeStep               - time step of simulation from sensor
+  sRFcenter              - spatial RF of the center on the receptor grid
+  sRFsurround            - spatial RF of surround on the receptor grid
+  temporalDifferentiator - differentiator function
+  responseCenter         - Store the linear response of the center after
+                           convolution
+  responseSurround       - Store the linear response of the surround
+                           after convolution
+  response               - ???
+  threshold              - ???
+  rgbdata                - ???</pre><h2 id="5">History:</h2><p>5/2016 JRG (c) isetbio team</p><pre>  10/18/17  jnm  Comments &amp; formatting</pre><h2 id="6">Initialize and begin</h2><pre class="codeinput">p = inputParser;
+p.CaseSensitive = false;
+p.FunctionName = mfilename;
+p.KeepUnmatched = true;
+</pre><p>Make key properties that can be set required arguments, and require values along with key names.</p><pre class="codeinput">allowableFields = {<span class="keyword">...</span>
+    <span class="string">'cellLocation'</span>,<span class="keyword">...</span>
+    <span class="string">'patchSize'</span>,<span class="keyword">...</span>
+    <span class="string">'timeStep'</span>,<span class="keyword">...</span>
+    <span class="string">'sRFcenter'</span>,<span class="keyword">...</span>
+    <span class="string">'sRFsurround'</span>,<span class="keyword">...</span>
+    <span class="string">'spatialrf'</span>,<span class="keyword">...</span>
+    <span class="string">'temporalDifferentiator'</span>,<span class="keyword">...</span>
+    <span class="string">'threshold'</span>,<span class="keyword">...</span>
+    <span class="string">'rgbdata'</span>,<span class="keyword">...</span>
+    <span class="string">'responseCenter'</span>,<span class="string">'bipolarresponsecenter'</span>,<span class="keyword">...</span>
+    <span class="string">'responseSurround'</span>,<span class="string">'bipolarresponsesurround'</span>,<span class="keyword">...</span>
+    <span class="string">'response'</span>,<span class="string">'bipolarresponse'</span><span class="keyword">...</span>
+    <span class="string">'duration'</span> <span class="keyword">...</span>
+    };
+
+p.addRequired(<span class="string">'what'</span>,@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+</pre><h2 id="8">Parse and put results into structure p.</h2><pre class="codeinput">p.parse(varargin{:}); params = p.Results;
+
+<span class="keyword">switch</span> ieParamFormat(params.what)  <span class="comment">% Lower case and remove spaces</span>
+
+    <span class="keyword">case</span> {<span class="string">'celllocation'</span>}
+        val = obj.cellLocation;
+
+    <span class="keyword">case</span>{<span class="string">'patchsize'</span>}
+        val = obj.patchSize;
+
+    <span class="keyword">case</span>{<span class="string">'timestep'</span>}
+        val = obj.timeStep;
+
+    <span class="keyword">case</span> {<span class="string">'duration'</span>}
+        <span class="comment">% In seconds</span>
+        val = obj.timeStep*size(obj.responseCenter,3);
+
+    <span class="keyword">case</span>{<span class="string">'rgbdata'</span>}
+        val = obj.rgbData;
+
+    <span class="keyword">case</span>{<span class="string">'srfcenter'</span>}
+        val = obj.sRFcenter;
+
+    <span class="keyword">case</span>{<span class="string">'srfsurround'</span>}
+        val = obj.sRFsurround;
+
+    <span class="keyword">case</span> {<span class="string">'spatialrf'</span>}
+        val = obj.sRFcenter - obj.sRFsurround;
+
+    <span class="keyword">case</span>{<span class="string">'temporaldifferentiator'</span>}
+        val = obj.temporalDifferentiator;
+
+    <span class="keyword">case</span>{<span class="string">'threshold'</span>}
+        val = obj.threshold;
+
+    <span class="keyword">case</span>{<span class="string">'responsecenter'</span>,<span class="string">'bipolarresponsecenter'</span>}
+        val = obj.responseCenter;
+
+    <span class="keyword">case</span>{<span class="string">'responsesurround'</span>,<span class="string">'bipolarresponsesurround'</span>}
+        val = obj.responseSurround;
+
+    <span class="keyword">case</span>{<span class="string">'response'</span>,<span class="string">'bipolarresponse'</span>}
+        val = obj.responseCenter - obj.responseSurround;
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">The class bipolarMosaic has no Constant property or Static method named 'get'.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Get
+% Retrieve the isetbio bipolar object parameters
+%%%
+function val = get(obj, varargin)
+%% Syntax:
+%
+%    val = bipolar.get(parameter)
+% 
+%% Description:
+% Gets isetbio bipolar object parameters
+% 
+%% Inputs:
+%    cellLocation           - location of bipolar RF center
+%    patchSize              - size of retinal patch from sensor
+%    timeStep               - time step of simulation from sensor
+%    sRFcenter              - spatial RF of the center on the receptor grid
+%    sRFsurround            - spatial RF of surround on the receptor grid
+%    temporalDifferentiator - differentiator function
+%    responseCenter         - Store the linear response of the center after
+%                             convolution
+%    responseSurround       - Store the linear response of the surround
+%                             after convolution
+%    response               - ???
+%    threshold              - ???
+%    rgbdata                - ???
+
+%% History:
+% 5/2016 JRG (c) isetbio team
+%
+%    10/18/17  jnm  Comments & formatting
+
+%% Initialize and begin
+p = inputParser;
+p.CaseSensitive = false; 
+p.FunctionName = mfilename;
+p.KeepUnmatched = true;
+%%%
+% Make key properties that can be set required arguments, and require
+% values along with key names.
+allowableFields = {...
+    'cellLocation',...
+    'patchSize',...
+    'timeStep',...
+    'sRFcenter',...
+    'sRFsurround',...
+    'spatialrf',...
+    'temporalDifferentiator',...
+    'threshold',...
+    'rgbdata',...
+    'responseCenter','bipolarresponsecenter',...
+    'responseSurround','bipolarresponsesurround',...
+    'response','bipolarresponse'...
+    'duration' ...
+    };
+
+p.addRequired('what',@(x) any(validatestring(ieParamFormat(x),allowableFields)));
+
+%% Parse and put results into structure p.
+p.parse(varargin{:}); params = p.Results;
+
+switch ieParamFormat(params.what)  % Lower case and remove spaces
+
+    case {'celllocation'}        
+        val = obj.cellLocation;
+                
+    case{'patchsize'}
+        val = obj.patchSize;
+        
+    case{'timestep'}
+        val = obj.timeStep;
+        
+    case {'duration'}
+        % In seconds
+        val = obj.timeStep*size(obj.responseCenter,3);
+        
+    case{'rgbdata'}
+        val = obj.rgbData;
+        
+    case{'srfcenter'}
+        val = obj.sRFcenter;
+        
+    case{'srfsurround'}
+        val = obj.sRFsurround;
+        
+    case {'spatialrf'}
+        val = obj.sRFcenter - obj.sRFsurround;
+        
+    case{'temporaldifferentiator'}
+        val = obj.temporalDifferentiator;
+        
+    case{'threshold'}
+        val = obj.threshold;
+        
+    case{'responsecenter','bipolarresponsecenter'}
+        val = obj.responseCenter;
+        
+    case{'responsesurround','bipolarresponsesurround'}
+        val = obj.responseSurround;
+        
+    case{'response','bipolarresponse'}
+        val = obj.responseCenter - obj.responseSurround;
+end
+
+##### SOURCE END #####
+--></body></html>

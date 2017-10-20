@@ -1,0 +1,387 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>BipolarMosaic</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-19"><meta name="DC.source" content="bipolarMosaic.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>BipolarMosaic</h1><!--introduction--><p>Create a bipolar mosaic object</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Input:</a></li><li><a href="#5">Optional Key/Value Pairs</a></li><li><a href="#6">References:</a></li><li><a href="#7">History:</a></li><li><a href="#8">Examples:</a></li><li><a href="#9">Define object</a></li><li><a href="#10">Protected properties.</a></li><li><a href="#16">Private properties. Only methods of the parent class can set these</a></li><li><a href="#18">Public methods</a></li></ul></div><pre class="codeinput"><span class="keyword">classdef</span> bipolarMosaic &lt; cellMosaic
+</pre><h2 id="2">Syntax:</h2><pre class="language-matlab">bp = bipolarMosaic(coneMosaic, <span class="string">'PARAM1'</span>, val1, <span class="string">'PARAM2'</span>, val2, <span class="keyword">...</span><span class="comment">)</span>
+</pre><h2 id="3">Description:</h2><p>Create a bipolar mosaic object</p><p>The bipolar mosaic class is a subclass of cellMosaic. It is used to simulate the processing from the cone outer segment current to the bipolar cell current output.</p><h2 id="4">Input:</h2><pre>  coneMosaic    - cone mosaic object including photocurrent response</pre><h2 id="5">Optional Key/Value Pairs</h2><p>The bipolar object also allows for the simulation of nonlinear subunits within retinal ganglion cell spatial receptive fields.    cellLocation          - location of bipolar RF center    cellType              - there are five different cell types    patchSize             - size of retinal patch from sensor    timeStep              - time step of simulation from sensor    filterType            - bipolar temporal filter type    RFcenter              - spatial RF of the center on receptor grid    sRFsurround           - spatial RF of the surround on receptor grid    rectificationCenter   - nonlinear function for center    rectificationSurround - nonlinear function for surround    responseCenter        - Store the linear response of the center                            after convolution    responseSurround      - Store the linear response of the surround                            after convolution</p><h2 id="6">References:</h2><p>ISETBIO wiki: <a href="https://github.com/isetbio/isetbio/wiki/bipolar">bipolar</a></p><p>Scientific notes and references We do not have a validated model of the bipolar temporal impulse response.  To simulate it, we assume that the RGC responses from the cone photocurrent as measured by EJ is correct.  The bipolar temporal impulse response (tIR) is the response necessary to combine with the cone temporal tIR to equal the RGC tIR.</p><h2 id="7">History:</h2><p>JRG/BW (c) isetbio team, 2016</p><pre>  10/18/17  jnm  Comments &amp; formatting</pre><h2 id="8">Examples:</h2><pre class="codeinput"><span class="comment">%{
+</span><span class="comment">   bp = bipolarMosaic(cMosaic, cellType, varargin);
+</span><span class="comment">%}</span>
+</pre><h2 id="9">Define object</h2><p>Public, read-only properties.</p><pre class="codeinput">properties (SetAccess = private, GetAccess = public)
+<span class="keyword">end</span>
+</pre><h2 id="10">Protected properties.</h2><pre class="codeinput">properties (SetAccess = protected, GetAccess = public)
+</pre><p><b>TODO:</b> We should specify an amplitude for the center and surround. Perhaps we should specify parameters of the receptive fields beyond what is in cellMosaic.</p><p>RectificationCenter nonlinear function for center</p><pre class="codeinput">    rectificationCenter
+</pre><p>RectificationSurround nonlinear function for surround</p><pre class="codeinput">    rectificationSurround
+</pre><p>ResponseCenter Store the linear response of the center after convolution</p><pre class="codeinput">    responseCenter;
+</pre><p>ResponseSurround Store the linear response of the surround after convolution</p><pre class="codeinput">    responseSurround;
+
+<span class="keyword">end</span>
+</pre><h2 id="16">Private properties. Only methods of the parent class can set these</h2><pre class="codeinput">properties(Access = private)
+</pre><p>ConeType on diffuse, off diffuse and on midget bipolars get no S cone input off midget bipolars get L, M, S cone input to center on sbc bipolars get only S cone center and only L+M surround</p><pre class="codeinput">    coneType;
+<span class="keyword">end</span>
+
+properties (Access = public)
+<span class="keyword">end</span>
+</pre><h2 id="18">Public methods</h2><pre class="codeinput">methods
+</pre><p>Constructor</p><pre class="codeinput">    <span class="keyword">function</span> obj = bipolarMosaic(cmosaic, cellType, varargin)
+</pre><p>Initialize the bipolar class</p><pre class="codeinput">        <span class="comment">% Example:</span>
+        <span class="comment">%   bp = bipolarMosaic(cMosaic, cellType, varargin);</span>
+        <span class="comment">%</span>
+        <span class="comment">% JRG/BW ISETBIO Team, 2016</span>
+        p = inputParser;
+</pre><p>KeepUnmatched retains the spread, stride, and eccentricity</p><pre class="codeinput">        p.KeepUnmatched = true;
+        p.addRequired(<span class="string">'cmosaic'</span>, @(x)(isa(x, <span class="string">'coneMosaic'</span>)));
+        p.addRequired(<span class="string">'cellType'</span>, @(x)(ismember(ieParamFormat(x), <span class="keyword">...</span>
+            obj.validCellTypes)));
+
+        p.addParameter(<span class="string">'parent'</span>, [], @(x)(isa(x, <span class="string">'bipolarLayer'</span>)));
+        p.addParameter(<span class="string">'rectifyType'</span>, 1, @isnumeric);
+        p.addParameter(<span class="string">'filterType'</span>,  1, @isnumeric);
+
+        p.parse(cmosaic, cellType, varargin{:});
+</pre><p>The layer object that this is part of.</p><pre class="codeinput">        obj.parent    = p.Results.parent;
+        obj.input     = p.Results.cmosaic;
+</pre><p>Store the spatial pattern of input cones</p><pre class="codeinput">        obj.coneType  = cmosaic.pattern;
+</pre><p>This might be a mistake, but we store the size and time step of the cone mosaic in this mosaic for easy accessibility.  The cMosaic itself is stored in the layer object that contains this mosaic.  Maybe these should just be private variables?</p><pre class="codeinput">        obj.patchSize = cmosaic.size;
+        obj.timeStep  = cmosaic.integrationTime;
+
+        obj.cellType = ieParamFormat(cellType);
+</pre><p>Set the rectification operation</p><pre class="codeinput">        <span class="keyword">switch</span> p.Results.rectifyType
+            <span class="keyword">case</span> 1
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+            <span class="keyword">case</span> 2
+                obj.rectificationCenter = @(x) x.*(x&gt;0);
+                obj.rectificationSurround = @(x) zeros(size(x));
+            <span class="keyword">case</span> 3
+                obj.rectificationCenter = @(x) x.*(x&lt;0);
+                obj.rectificationSurround = @(x) zeros(size(x));
+            <span class="keyword">case</span> 4
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) x;
+            <span class="keyword">case</span> 5
+                obj.rectificationCenter = @(x) x.*(x&gt;0);
+                obj.rectificationSurround = @(x) x.*(x&lt;0);
+            <span class="keyword">otherwise</span>
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+        <span class="keyword">end</span>
+
+        obj.filterType = p.Results.filterType;
+</pre><p>Build spatial receptive fields</p><pre class="codeinput">        obj.initSpace(varargin{:});
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">function</span> window(obj)
+</pre><p>Tip: Retrieve guidata using    gui = guidata(obj.figureHandle);</p><pre class="codeinput">        obj.fig = bipolarWindow(obj);
+    <span class="keyword">end</span>
+
+    <span class="keyword">function</span> bipolarsPerMicron = cellsPerDistance(obj, varargin)
+        p = inputParser;
+        p.addRequired(<span class="string">'obj'</span>, @(x)(isa(obj, <span class="string">'bipolarMosaic'</span>)));
+        p.addParameter(<span class="string">'units'</span>, <span class="string">'m'</span>, @ischar);
+        p.parse(obj, varargin{:});
+
+        patchSizeUM = obj.Parent.size;   <span class="comment">% In microns</span>
+</pre><p>The bipolar mosaics at this point are all the same row/col count. But they may not be in the future.  So, what do we do about that?</p><pre class="codeinput">        bpRowCol = size(obj.Parent.input.mosaic{1}.cellLocation);
+</pre><p>Converts a distance in microns to a number of bipolars per micron</p><pre class="codeinput">        bipolarsPerMicron = bpRowCol(1:2) ./ patchSizeUM;   <span class="comment">% cells/micron</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+properties (Constant)
+</pre><p>ValidCellTypes</p><p>Cell array of strings containing valid values for the cell type. diffuse and parasol are synonyms.  Not sure we should have them both. And, possibly we should have smallbistratified. (BW)</p><pre class="codeinput">    validCellTypes = {<span class="string">'ondiffuse'</span>, <span class="string">'offdiffuse'</span>, <span class="string">'onmidget'</span>, <span class="keyword">...</span>
+        <span class="string">'offmidget'</span>, <span class="string">'onsbc'</span>};
+<span class="keyword">end</span>
+</pre><p>Methods that must only be implemented (Abstract in parent class).</p><p>Methods may be called by the subclasses, but are otherwise private</p><pre class="codeinput">methods (Access = protected)
+<span class="keyword">end</span>
+</pre><p>Methods that are totally private (subclasses cannot call these)</p><pre class="codeinput">methods (Access = private)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in bipolarMosaic (line 122)
+        p.parse(cmosaic, cellType, varargin{:});  
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% BipolarMosaic
+% Create a bipolar mosaic object
+%%%
+classdef bipolarMosaic < cellMosaic
+%% Syntax:
+%
+%   bp = bipolarMosaic(coneMosaic, 'PARAM1', val1, 'PARAM2', val2, ...)
+%
+%% Description:
+% Create a bipolar mosaic object
+%
+% The bipolar mosaic class is a subclass of cellMosaic. It is used to
+% simulate the processing from the cone outer segment current to the
+% bipolar cell current output. 
+%
+%% Input:
+%    coneMosaic    - cone mosaic object including photocurrent response
+%
+%% Optional Key/Value Pairs
+% The bipolar object also allows for the simulation of nonlinear subunits
+% within retinal ganglion cell spatial receptive fields.
+%    cellLocation          - location of bipolar RF center
+%    cellType              - there are five different cell types
+%    patchSize             - size of retinal patch from sensor
+%    timeStep              - time step of simulation from sensor
+%    filterType            - bipolar temporal filter type
+%    RFcenter              - spatial RF of the center on receptor grid
+%    sRFsurround           - spatial RF of the surround on receptor grid
+%    rectificationCenter   - nonlinear function for center
+%    rectificationSurround - nonlinear function for surround
+%    responseCenter        - Store the linear response of the center
+%                            after convolution
+%    responseSurround      - Store the linear response of the surround
+%                            after convolution  
+% 
+%% References:
+% ISETBIO wiki: <https://github.com/isetbio/isetbio/wiki/bipolar bipolar>
+%  
+% Scientific notes and references
+% We do not have a validated model of the bipolar temporal impulse
+% response.  To simulate it, we assume that the RGC responses from the
+% cone photocurrent as measured by EJ is correct.  The bipolar temporal
+% impulse response (tIR) is the response necessary to combine with the
+% cone temporal tIR to equal the RGC tIR.
+%
+
+%% History:
+% JRG/BW (c) isetbio team, 2016
+%
+%    10/18/17  jnm  Comments & formatting
+
+%% Examples:
+%{
+   bp = bipolarMosaic(cMosaic, cellType, varargin);
+%}
+
+%% Define object
+% Public, read-only properties.
+properties (SetAccess = private, GetAccess = public)
+end
+
+%% Protected properties.
+properties (SetAccess = protected, GetAccess = public)
+    %%%
+    % *TODO:* We should specify an amplitude for the center and surround.
+    % Perhaps we should specify parameters of the receptive fields beyond
+    % what is in cellMosaic.
+    %%%
+    % RectificationCenter nonlinear function for center
+    rectificationCenter              
+    %%%
+    % RectificationSurround nonlinear function for surround
+    rectificationSurround            
+    %%%
+    % ResponseCenter Store the linear response of the center after
+    % convolution
+    responseCenter;                  
+    %%%
+    % ResponseSurround Store the linear response of the surround after
+    % convolution
+    responseSurround;
+
+end
+
+%% Private properties. Only methods of the parent class can set these
+properties(Access = private)
+    %%%
+    % ConeType
+    % on diffuse, off diffuse and on midget bipolars get no S cone input
+    % off midget bipolars get L, M, S cone input to center
+    % on sbc bipolars get only S cone center and only L+M surround
+    coneType;
+end
+
+properties (Access = public)
+end
+
+%% Public methods
+methods
+    %%%
+    % Constructor
+    function obj = bipolarMosaic(cmosaic, cellType, varargin)     
+        %%%
+        % Initialize the bipolar class
+
+        % Example:
+        %   bp = bipolarMosaic(cMosaic, cellType, varargin);
+        %
+        % JRG/BW ISETBIO Team, 2016
+        p = inputParser;
+        %%%
+        % KeepUnmatched retains the spread, stride, and eccentricity
+        p.KeepUnmatched = true;
+        p.addRequired('cmosaic', @(x)(isa(x, 'coneMosaic')));
+        p.addRequired('cellType', @(x)(ismember(ieParamFormat(x), ...
+            obj.validCellTypes)));
+        
+        p.addParameter('parent', [], @(x)(isa(x, 'bipolarLayer')));
+        p.addParameter('rectifyType', 1, @isnumeric);
+        p.addParameter('filterType',  1, @isnumeric);
+
+        p.parse(cmosaic, cellType, varargin{:});  
+        %%%
+        % The layer object that this is part of.
+        obj.parent    = p.Results.parent;
+        obj.input     = p.Results.cmosaic;
+        %%%
+        % Store the spatial pattern of input cones
+        obj.coneType  = cmosaic.pattern;
+        %%%
+        % This might be a mistake, but we store the size and time step of
+        % the cone mosaic in this mosaic for easy accessibility.  The
+        % cMosaic itself is stored in the layer object that contains this
+        % mosaic.  Maybe these should just be private variables?
+        obj.patchSize = cmosaic.size; 
+        obj.timeStep  = cmosaic.integrationTime;
+        
+        obj.cellType = ieParamFormat(cellType);
+        %%%
+        % Set the rectification operation
+        switch p.Results.rectifyType
+            case 1
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+            case 2
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) zeros(size(x));                    
+            case 3
+                obj.rectificationCenter = @(x) x.*(x<0);
+                obj.rectificationSurround = @(x) zeros(size(x));  
+            case 4
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) x;
+            case 5
+                obj.rectificationCenter = @(x) x.*(x>0);
+                obj.rectificationSurround = @(x) x.*(x<0);
+            otherwise
+                obj.rectificationCenter = @(x) x;
+                obj.rectificationSurround = @(x) zeros(size(x));
+        end
+        
+        obj.filterType = p.Results.filterType;
+        %%%
+        % Build spatial receptive fields
+        obj.initSpace(varargin{:});
+
+    end
+    
+    function window(obj)
+        %%%
+        % Tip: Retrieve guidata using
+        %    gui = guidata(obj.figureHandle);
+        obj.fig = bipolarWindow(obj);
+    end
+    
+    function bipolarsPerMicron = cellsPerDistance(obj, varargin)
+        p = inputParser;
+        p.addRequired('obj', @(x)(isa(obj, 'bipolarMosaic')));
+        p.addParameter('units', 'm', @ischar);
+        p.parse(obj, varargin{:});
+        
+        patchSizeUM = obj.Parent.size;   % In microns
+        %%%
+        % The bipolar mosaics at this point are all the same row/col count.
+        % But they may not be in the future.  So, what do we do about that?
+        bpRowCol = size(obj.Parent.input.mosaic{1}.cellLocation);    
+        %%%
+        % Converts a distance in microns to a number of bipolars per micron
+        bipolarsPerMicron = bpRowCol(1:2) ./ patchSizeUM;   % cells/micron
+    end
+    
+end
+
+properties (Constant)
+    %%%
+    % ValidCellTypes 
+    %
+    % Cell array of strings containing valid values for the cell type.
+    % diffuse and parasol are synonyms.  Not sure we should have them both.
+    % And, possibly we should have smallbistratified. (BW)
+    validCellTypes = {'ondiffuse', 'offdiffuse', 'onmidget', ...
+        'offmidget', 'onsbc'};
+end
+%%%
+% Methods that must only be implemented (Abstract in parent class).
+%%%
+% Methods may be called by the subclasses, but are otherwise private
+methods (Access = protected)
+end
+%%%
+% Methods that are totally private (subclasses cannot call these)
+methods (Access = private)
+end
+
+end
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,572 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Plot</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-18"><meta name="DC.source" content="plot.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Plot</h1><!--introduction--><p>Plot data from a bipolar mosaic object</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Input:</a></li><li><a href="#5">Optional Key/Value Pairs:</a></li><li><a href="#6">History:</a></li><li><a href="#7">Examples:</a></li><li><a href="#8">Parse inputs</a></li><li><a href="#11">Set the window.</a></li><li><a href="#13">Case: Help</a></li><li><a href="#15">Case: Spatial RF</a></li><li><a href="#17">Case: Surround RF</a></li><li><a href="#19">Case: Mosaic</a></li><li><a href="#29">Case: Response Center</a></li><li><a href="#33">Case: Response Surround</a></li><li><a href="#36">Case: Response Time Series</a></li><li><a href="#40">Case: Response Image</a></li><li><a href="#43">Case: Response Movie</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> hdl = plot(obj, pType, varargin)
+</pre><h2 id="2">Syntax:</h2><pre class="language-matlab">hdl = bp.plot(plotType, varargin)
+</pre><p>Type @bipolarMosaic.plot('help'); to see the plot types.</p><h2 id="3">Description:</h2><p>Plot data from a bipolar mosaic object</p><h2 id="4">Input:</h2><pre>  obj      - ???
+  pType    - plot type
+  varargin - ???</pre><h2 id="5">Optional Key/Value Pairs:</h2><pre>  gamma    - controls image display
+  pos      - positions to plot for time series</pre><h2 id="6">History:</h2><p>5/2016 JRG,BW (c) isetbio team</p><pre>  10/18/17  jnm  Comments &amp; Formatting</pre><h2 id="7">Examples:</h2><pre class="codeinput"><span class="comment">%{
+</span><span class="comment">   bpMosaics = bpL.mosaic;
+</span><span class="comment">   bpMosaics{1}.plot('spatial rf')
+</span><span class="comment">   bpMosaics{1}.plot('mosaic');
+</span><span class="comment">   bpMosaics{1}.plot('response center');
+</span><span class="comment">   bpMosaics{1}.plot('response time series','pos',[5 5]);
+</span><span class="comment">   bpMosaics{1}.plot('response image','gamma',0.3);
+</span><span class="comment">   bpMosaics{1}.plot('response movie');
+</span><span class="comment">%}</span>
+</pre><h2 id="8">Parse inputs</h2><pre class="codeinput">p = inputParser;
+p.CaseSensitive = false;
+p.FunctionName  = mfilename;
+p.KeepUnmatched = true;
+</pre><p>Make key properties that can be set required arguments, and require values along with key names.</p><pre class="codeinput">allowPlots = {<span class="keyword">...</span>
+    <span class="string">'help'</span>,<span class="keyword">...</span>
+    <span class="string">'responsetimeseries'</span>,<span class="string">'responsecenter'</span>,<span class="string">'responsesurround'</span>,<span class="keyword">...</span>
+    <span class="string">'responseimage'</span>,<span class="string">'responsemovie'</span>, <span class="keyword">...</span>
+    <span class="string">'spatialrf'</span>,<span class="string">'surroundrf'</span>,<span class="string">'mosaic'</span>};
+p.addRequired(<span class="string">'pType'</span>,@(x) any(validatestring(ieParamFormat(x),allowPlots)));
+
+p.addParameter(<span class="string">'gamma'</span>,1,@isscalar);
+p.addParameter(<span class="string">'pos'</span>,[],@ismatrix);
+</pre><p>Parse pType Additional parameters are pulled out in the case statements, below.</p><pre class="codeinput">p.parse(pType,varargin{:});
+</pre><h2 id="11">Set the window.</h2><p>&lt; Note: JM - opinion on the question that was already listed here? -&gt; Maybe this should be obj.fig??? &gt;</p><pre class="codeinput"><span class="keyword">if</span> ~strcmpi(pType,<span class="string">'help'</span>), hdl = gcf; <span class="keyword">end</span>
+<span class="comment">%vcNewGraphWin([],'upperLeftBig');</span>
+sz = size(obj.responseCenter);
+</pre><p>Programming: We need to get the units of time from the object, not as per below. Options</p><pre class="codeinput"><span class="keyword">switch</span> ieParamFormat(pType)
+    <span class="keyword">case</span> <span class="string">'help'</span>
+</pre><h2 id="13">Case: Help</h2><pre class="codeinput">        fprintf(<span class="string">'\nKnown %s plot types\n--------------\n'</span>,class(obj));
+        <span class="keyword">for</span> ii=2:length(allowPlots)
+            fprintf(<span class="string">'\t%s\n'</span>,allowPlots{ii});
+        <span class="keyword">end</span>
+        hdl = [];
+        <span class="keyword">return</span>;
+</pre><pre class="codeinput">    <span class="keyword">case</span> <span class="string">'spatialrf'</span>
+</pre><h2 id="15">Case: Spatial RF</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'spatial rf'</span>)
+</pre><pre class="codeinput">        srf = obj.sRFcenter - obj.sRFsurround;
+        sz = size(srf);
+        <span class="keyword">if</span> isequal(sz,[1, 1])
+            disp(<span class="string">'spatial rf is an impulse'</span>);
+            <span class="keyword">return</span>;
+        <span class="keyword">end</span>
+
+        x = (1:sz(2)) - mean(1:sz(2));
+        y = (1:sz(1)) - mean(1:sz(1));
+        surf(x,y,srf); colormap(parula);
+        xlabel(<span class="string">'Cone samples'</span>); zlabel(<span class="string">'Responsivity'</span>)
+</pre><pre class="codeinput">    <span class="keyword">case</span> <span class="string">'surroundrf'</span>
+</pre><h2 id="17">Case: Surround RF</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'surround rf'</span>)
+</pre><pre class="codeinput">        srf = obj.sRFsurround;
+        sz = size(srf);
+        <span class="keyword">if</span> isequal(sz,[1, 1])
+            disp(<span class="string">'spatial rf is an impulse'</span>);
+            <span class="keyword">return</span>;
+        <span class="keyword">end</span>
+
+        x = (1:sz(2)) - mean(1:sz(2));
+        y = (1:sz(1)) - mean(1:sz(1));
+        surf(x,y,srf); colormap(parula);
+        xlabel(<span class="string">'Cone samples'</span>); zlabel(<span class="string">'Responsivity'</span>)
+</pre><pre class="codeinput">    <span class="keyword">case</span> {<span class="string">'mosaic'</span>}
+</pre><h2 id="19">Case: Mosaic</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'mosaic'</span>)
+</pre><p>Shows the RF Array, gets contour lines for mosaic RFs The cell locations are specified with respect to the cone mosaic input layer.  We would like to present them in terms of microns on the cone mosaic surface.  So, we transform the cell locations to microns.</p><p>These are sampled w.r.t. the input mosaic.  We convert to microns</p><pre class="codeinput">        center = obj.cellLocation;
+</pre><p>List the (x,y) positions on the grid and count how many</p><pre class="codeinput">        center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
+        nCells = size(center,1);
+        [r,c,~] = size(obj.cellLocation);
+</pre><p>Convert sample grid positions to distance in microns</p><pre class="codeinput">        metersPerBipolar = obj.patchSize ./ [r,c];
+</pre><p>Determine the RF radius. Calculate the radius.  This seems too special case.  Ask JRG what he intended here.  It seems like he thinks the radius is predetermined to be 1.  But ... At this moment, we are calculating the radius of the support in microns. We probably want to have parameters that define the support and the spread separately.</p><pre class="codeinput">        center = 1e6*center*diag(metersPerBipolar(:));  <span class="comment">% Centers in microns</span>
+        metersPerInput   = obj.input.patternSampleSize(1);
+        radius = (1e6*metersPerInput*size(obj.sRFcenter,1))/2;
+</pre><p>At this point we should have centers and radius in terms of microns.  If life is goo</p><pre class="codeinput">        xMin = min(center(:,2)) - 3*radius; xMax = max(center(:,2)) + 3*radius;
+        yMin = min(center(:,2)) - 3*radius; yMax = max(center(:,2)) + 3*radius;
+        titleS = sprintf(<span class="string">'RF positions and sizes'</span>);
+</pre><p>If there are a lot ... sub sample</p><pre class="codeinput">        maxSamples = 500;
+        <span class="keyword">if</span> size(center,1) &gt; maxSamples
+            center = center(randi(nCells,[maxSamples,1]),:);
+            titleS = sprintf(<span class="string">'Sampled RF positions and sizes (%d of %d)'</span>,maxSamples,size(obj.cellLocation(:),1));
+        <span class="keyword">end</span>
+</pre><p>The whole ellipse thing isn't handled really, is it?  I mean, the parameter is fixed here, and not set.</p><pre class="codeinput">        ellipseMatrix = [1 1 0];
+        ieShape(<span class="string">'ellipse'</span>,<span class="keyword">...</span>
+            <span class="string">'center'</span>,center,<span class="keyword">...</span>
+            <span class="string">'radius'</span>,radius,<span class="keyword">...</span>
+            <span class="string">'ellipseParameters'</span>,ellipseMatrix,<span class="keyword">...</span>
+            <span class="string">'color'</span>,<span class="string">'b'</span>);
+</pre><p>Sets the axis limits</p><pre class="codeinput">        set(gca,<span class="string">'xlim'</span>,[xMin,xMax],<span class="string">'ylim'</span>,[yMin,yMax]);
+        xlabel(sprintf(<span class="string">'Distance (\\mum)'</span>),<span class="string">'fontsize'</span>,14);
+        ylabel(sprintf(<span class="string">'Distance (\\mum)'</span>),<span class="string">'fontsize'</span>,14);
+        title(titleS);
+</pre><pre class="codeinput">    <span class="keyword">case</span>{<span class="string">'responsecenter'</span>}
+</pre><h2 id="29">Case: Response Center</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'response center'</span>)
+@bipolarMosaic.plot(<span class="string">'response center'</span>,<span class="string">'pos'</span>,[1,1]);
+</pre><p>TODO - add cell location</p><pre class="codeinput">        pos = p.Results.pos;
+        <span class="keyword">if</span> isempty(pos)
+</pre><p>Put position in the rows, time in the columns</p><pre class="codeinput">            responseRS = RGB2XWFormat(obj.responseCenter);
+        <span class="keyword">else</span>
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseCenter,3));
+            <span class="keyword">for</span> ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+</pre><p>Show it</p><pre class="codeinput">        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS');
+        xlabel(<span class="string">'Time (sec)'</span>); ylabel(<span class="string">'Response (AU)'</span>);
+        title(<span class="string">'Center response(s)'</span>); grid <span class="string">on</span>
+</pre><pre class="codeinput">    <span class="keyword">case</span>{<span class="string">'responsesurround'</span>}
+</pre><h2 id="33">Case: Response Surround</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'response surround'</span>)
+responseRS = reshape(obj.responseSurround,sz(1)*sz(2),sz(3));
+</pre><pre class="codeinput">        pos = p.Results.pos;
+        <span class="keyword">if</span> isempty(pos)
+</pre><p>Put position in the rows, time in the columns</p><pre class="codeinput">            responseRS = RGB2XWFormat(obj.responseSurround);
+        <span class="keyword">else</span>
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            <span class="keyword">for</span> ii=1:nPos
+                responseRS(ii,:) = obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS);
+        xlabel(<span class="string">'Time (sec)'</span>); ylabel(<span class="string">'Response (AU)'</span>);
+        title(<span class="string">'Bipolar surround response'</span>); grid <span class="string">on</span>
+</pre><pre class="codeinput">    <span class="keyword">case</span>{<span class="string">'responsetimeseries'</span>}
+</pre><h2 id="36">Case: Response Time Series</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'response time series'</span>,<span class="string">'pos'</span>,<span class="keyword">...</span><span class="comment">)</span>
+</pre><p>Open a new window and show the time series, but not in any particular organized way. Only up to 200 samples are shown. Random draws.  We should allow this to be controlled.</p><pre class="codeinput">        pos = p.Results.pos;
+        <span class="keyword">if</span> isempty(pos)
+            responseRS = RGB2XWFormat(obj.responseCenter - obj.responseSurround);
+            nCells = size(responseRS,1);
+        <span class="keyword">else</span>
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            <span class="keyword">for</span> ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:) - obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        tSamples = obj.timeStep*(1:size(obj.responseCenter,3));
+
+        vcNewGraphWin;
+        <span class="keyword">if</span> isempty(pos) &amp;&amp;  nCells &gt; 100
+</pre><p>100 randomly sampled positions</p><pre class="codeinput">            cSamples = randi(nCells,[100,1]);
+            plot(tSamples,responseRS(cSamples,:));
+            title(<span class="string">'Bipolar current (100 samples)'</span>);
+        <span class="keyword">elseif</span> isempty(pos)
+</pre><p>All of the spatial samples</p><pre class="codeinput">            plot(tSamples,responseRS);
+            title(<span class="string">'Bipolar current'</span>);
+        <span class="keyword">else</span>
+            <span class="comment">% From a single point</span>
+            plot(tSamples,responseRS)
+            title(sprintf(<span class="string">'Selected positions'</span>));
+        <span class="keyword">end</span>
+
+        xlabel(sprintf(<span class="string">'Time (sec, \\Deltat %.0f ms)'</span>,obj.timeStep*1e3));
+        ylabel(<span class="string">'Current (a.u.)'</span>);
+        grid <span class="string">on</span>
+</pre><pre class="codeinput">    <span class="keyword">case</span>{<span class="string">'responseimage'</span>}
+</pre><h2 id="40">Case: Response Image</h2><pre class="language-matlab">@bipolarMosaic.plot(<span class="string">'response image'</span>)
+</pre><pre class="codeinput">        response = (obj.get(<span class="string">'response'</span>));
+        patchSizeUM = obj.patchSize*1e6;
+        dx = patchSizeUM/size(response,1);  <span class="comment">% Step in microns</span>
+        rowSamples = dx(1)*(1:size(response,1));
+        rowSamples = rowSamples - mean(rowSamples);
+        colSamples = dx(2)*(1:size(response,2));
+        colSamples = colSamples - mean(colSamples);
+</pre><p>The gamma has to deal with negative numbers, sigh.</p><pre class="codeinput">        <span class="keyword">if</span> p.Results.gamma ~= 1
+            img = mean(response,3);
+            img(img&gt;=0) = img(img&gt;=0).^p.Results.gamma;
+            img(img&lt;0)  = ((-1)*img(img&lt;0)*p.Results.gamma)*-1;
+        <span class="keyword">else</span>
+            img = mean(response,3);
+        <span class="keyword">end</span>
+
+        imagesc(rowSamples,colSamples,img);
+        axis <span class="string">image</span>; colormap(gray(256)); title(<span class="string">'Current (a.u.)'</span>);
+        xlabel(sprintf(<span class="string">'Cell position (\\mum)'</span>));
+</pre><pre class="codeinput">    <span class="keyword">case</span>{<span class="string">'responsemovie'</span>}
+</pre><h2 id="43">Case: Response Movie</h2><p>Pass the varargin along</p><pre class="codeinput">        <span class="keyword">if</span> ~isempty(varargin) &amp;&amp; length(varargin) == 1
+</pre><p>Params are coded in a single struct</p><pre class="codeinput">            varargin{1}.hf = hdl;
+            <span class="keyword">if</span> p.Results.gamma ~= 1
+                varargin{1}.gamma = p.Results.gamma;
+            <span class="keyword">end</span>
+            ieMovie(obj.get(<span class="string">'response'</span>),varargin{:});
+        <span class="keyword">else</span>
+</pre><p>Params are coded in param/value</p><pre class="codeinput">            varargin{end+1} = <span class="string">'gamma'</span>; varargin{end+1} = p.Results.gamma;
+            ieMovie(obj.get(<span class="string">'response'</span>),<span class="string">'hf'</span>,hdl,varargin{:});
+        <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput error">The class bipolarMosaic has no Constant property or Static method named 'plot'.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Plot
+% Plot data from a bipolar mosaic object
+%%%
+function hdl = plot(obj, pType, varargin)
+%% Syntax:
+%
+%   hdl = bp.plot(plotType, varargin)
+%
+% Type @bipolarMosaic.plot('help'); to see the plot types.
+%% Description:
+% Plot data from a bipolar mosaic object
+%
+%% Input:
+%    obj      - ???
+%    pType    - plot type
+%    varargin - ???
+%% Optional Key/Value Pairs:
+%    gamma    - controls image display
+%    pos      - positions to plot for time series
+%
+
+%% History: 
+% 5/2016 JRG,BW (c) isetbio team
+%
+%    10/18/17  jnm  Comments & Formatting
+
+%% Examples:
+%{
+   bpMosaics = bpL.mosaic;
+   bpMosaics{1}.plot('spatial rf')
+   bpMosaics{1}.plot('mosaic');
+   bpMosaics{1}.plot('response center');
+   bpMosaics{1}.plot('response time series','pos',[5 5]);
+   bpMosaics{1}.plot('response image','gamma',0.3);
+   bpMosaics{1}.plot('response movie');
+%}
+%% Parse inputs
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName  = mfilename;
+p.KeepUnmatched = true;
+%%%
+% Make key properties that can be set required arguments, and require
+% values along with key names.
+allowPlots = {...
+    'help',...
+    'responsetimeseries','responsecenter','responsesurround',...
+    'responseimage','responsemovie', ...
+    'spatialrf','surroundrf','mosaic'};
+p.addRequired('pType',@(x) any(validatestring(ieParamFormat(x),allowPlots)));
+
+p.addParameter('gamma',1,@isscalar);
+p.addParameter('pos',[],@ismatrix);
+%%%
+% Parse pType
+% Additional parameters are pulled out in the case statements, below.
+p.parse(pType,varargin{:}); 
+
+%% Set the window.
+% < Note: JM - opinion on the question that was already listed here? ->
+% Maybe this should be obj.fig??? >
+if ~strcmpi(pType,'help'), hdl = gcf; end
+%vcNewGraphWin([],'upperLeftBig');
+sz = size(obj.responseCenter);
+%%%
+% Programming:
+% We need to get the units of time from the object, not as per below.
+% Options
+switch ieParamFormat(pType)
+    case 'help'
+        %% Case: Help
+        fprintf('\nKnown %s plot types\nREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH\n',class(obj));
+        for ii=2:length(allowPlots)
+            fprintf('\t%s\n',allowPlots{ii});
+        end
+        hdl = [];
+        return;
+    case 'spatialrf'
+        %% Case: Spatial RF
+        %   @bipolarMosaic.plot('spatial rf')
+        srf = obj.sRFcenter - obj.sRFsurround;
+        sz = size(srf); 
+        if isequal(sz,[1, 1])
+            disp('spatial rf is an impulse');
+            return;
+        end
+        
+        x = (1:sz(2)) - mean(1:sz(2));    
+        y = (1:sz(1)) - mean(1:sz(1)); 
+        surf(x,y,srf); colormap(parula);
+        xlabel('Cone samples'); zlabel('Responsivity')
+        
+    case 'surroundrf'
+        %% Case: Surround RF
+        %   @bipolarMosaic.plot('surround rf')
+        srf = obj.sRFsurround;
+        sz = size(srf);
+        if isequal(sz,[1, 1])
+            disp('spatial rf is an impulse');
+            return;
+        end
+        
+        x = (1:sz(2)) - mean(1:sz(2));
+        y = (1:sz(1)) - mean(1:sz(1));
+        surf(x,y,srf); colormap(parula);
+        xlabel('Cone samples'); zlabel('Responsivity')
+        
+    case {'mosaic'}
+        %% Case: Mosaic
+        %   @bipolarMosaic.plot('mosaic')
+        % 
+        % Shows the RF Array, gets contour lines for mosaic RFs
+        % The cell locations are specified with respect to the cone mosaic
+        % input layer.  We would like to present them in terms of microns
+        % on the cone mosaic surface.  So, we transform the cell locations
+        % to microns.
+
+        %%%  
+        % These are sampled w.r.t. the input mosaic.  We convert to microns
+        center = obj.cellLocation;  
+        %%%
+        % List the (x,y) positions on the grid and count how many
+        center = reshape(center,[size(obj.cellLocation,1)*size(obj.cellLocation,2),2]);
+        nCells = size(center,1);
+        [r,c,~] = size(obj.cellLocation);
+        %%%
+        % Convert sample grid positions to distance in microns
+        metersPerBipolar = obj.patchSize ./ [r,c];
+        %%%
+        % Determine the RF radius.
+        % Calculate the radius.  This seems too special case.  Ask JRG what
+        % he intended here.  It seems like he thinks the radius is
+        % predetermined to be 1.  But ...
+        % At this moment, we are calculating the radius of the support in
+        % microns. We probably want to have parameters that define the
+        % support and the spread separately.
+        center = 1e6*center*diag(metersPerBipolar(:));  % Centers in microns
+        metersPerInput   = obj.input.patternSampleSize(1);
+        radius = (1e6*metersPerInput*size(obj.sRFcenter,1))/2;  
+        %%%
+        % At this point we should have centers and radius in terms of
+        % microns.  If life is goo
+        xMin = min(center(:,2)) - 3*radius; xMax = max(center(:,2)) + 3*radius;
+        yMin = min(center(:,2)) - 3*radius; yMax = max(center(:,2)) + 3*radius;
+        titleS = sprintf('RF positions and sizes');
+        %%%
+        % If there are a lot ... sub sample
+        maxSamples = 500;
+        if size(center,1) > maxSamples
+            center = center(randi(nCells,[maxSamples,1]),:);
+            titleS = sprintf('Sampled RF positions and sizes (%d of %d)',maxSamples,size(obj.cellLocation(:),1));
+        end
+        %%%
+        % The whole ellipse thing isn't handled really, is it?  I mean, the
+        % parameter is fixed here, and not set.
+        ellipseMatrix = [1 1 0];        
+        ieShape('ellipse',...
+            'center',center,...
+            'radius',radius,...
+            'ellipseParameters',ellipseMatrix,...
+            'color','b');
+        %%%
+        % Sets the axis limits
+        set(gca,'xlim',[xMin,xMax],'ylim',[yMin,yMax]);
+        xlabel(sprintf('Distance (\\mum)'),'fontsize',14);
+        ylabel(sprintf('Distance (\\mum)'),'fontsize',14);
+        title(titleS);
+            
+    case{'responsecenter'}
+        %% Case: Response Center
+        %   @bipolarMosaic.plot('response center')
+        %   @bipolarMosaic.plot('response center','pos',[1,1]);
+        %
+        %
+        % TODO - add cell location
+        pos = p.Results.pos;
+        if isempty(pos)
+            %%%
+            % Put position in the rows, time in the columns
+            responseRS = RGB2XWFormat(obj.responseCenter);
+        else
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseCenter,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:);
+            end
+        end
+        %%%
+        % Show it
+        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS');
+        xlabel('Time (sec)'); ylabel('Response (AU)');
+        title('Center response(s)'); grid on
+        
+    case{'responsesurround'}
+        %% Case: Response Surround
+        %   @bipolarMosaic.plot('response surround')
+        %   responseRS = reshape(obj.responseSurround,sz(1)*sz(2),sz(3));
+        pos = p.Results.pos;
+        if isempty(pos)
+            %%%
+            % Put position in the rows, time in the columns
+            responseRS = RGB2XWFormat(obj.responseSurround);
+        else
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            end
+        end
+        
+        vcNewGraphWin;
+        plot(obj.timeStep*(1:sz(3)),responseRS);
+        xlabel('Time (sec)'); ylabel('Response (AU)');
+        title('Bipolar surround response'); grid on
+        
+    case{'responsetimeseries'}
+        %% Case: Response Time Series
+        %   @bipolarMosaic.plot('response time series','pos',...)
+        %
+        % Open a new window and show the time series, but not in any
+        % particular organized way. Only up to 200 samples are shown.
+        % Random draws.  We should allow this to be controlled.
+        %
+        pos = p.Results.pos;
+        if isempty(pos)
+            responseRS = RGB2XWFormat(obj.responseCenter - obj.responseSurround);  
+            nCells = size(responseRS,1);
+        else
+            nPos = size(pos,1);
+            responseRS = zeros(nPos,size(obj.responseSurround,3));
+            for ii=1:nPos
+                responseRS(ii,:) = obj.responseCenter(pos(ii,1),pos(ii,2),:) - obj.responseSurround(pos(ii,1),pos(ii,2),:);
+            end            
+        end
+        tSamples = obj.timeStep*(1:size(obj.responseCenter,3));
+        
+        vcNewGraphWin;
+        if isempty(pos) &&  nCells > 100
+            %%%
+            % 100 randomly sampled positions
+            cSamples = randi(nCells,[100,1]);
+            plot(tSamples,responseRS(cSamples,:));
+            title('Bipolar current (100 samples)');
+        elseif isempty(pos)
+            %%%
+            % All of the spatial samples
+            plot(tSamples,responseRS);
+            title('Bipolar current');
+        else
+            % From a single point
+            plot(tSamples,responseRS)
+            title(sprintf('Selected positions'));
+        end
+        
+        xlabel(sprintf('Time (sec, \\Deltat %.0f ms)',obj.timeStep*1e3));
+        ylabel('Current (a.u.)');
+        grid on
+        
+    case{'responseimage'}
+        %% Case: Response Image
+        %
+        %   @bipolarMosaic.plot('response image')
+        %
+        response = (obj.get('response'));
+        patchSizeUM = obj.patchSize*1e6;
+        dx = patchSizeUM/size(response,1);  % Step in microns
+        rowSamples = dx(1)*(1:size(response,1)); 
+        rowSamples = rowSamples - mean(rowSamples);
+        colSamples = dx(2)*(1:size(response,2));
+        colSamples = colSamples - mean(colSamples);
+        %%%
+        % The gamma has to deal with negative numbers, sigh.
+        if p.Results.gamma ~= 1
+            img = mean(response,3);
+            img(img>=0) = img(img>=0).^p.Results.gamma;
+            img(img<0)  = ((-1)*img(img<0)*p.Results.gamma)*-1;
+        else
+            img = mean(response,3);
+        end
+        
+        imagesc(rowSamples,colSamples,img);
+        axis image; colormap(gray(256)); title('Current (a.u.)');
+        xlabel(sprintf('Cell position (\\mum)'));
+        
+    case{'responsemovie'}
+        %% Case: Response Movie
+        % Pass the varargin along
+        if ~isempty(varargin) && length(varargin) == 1
+            %%%
+            % Params are coded in a single struct
+            varargin{1}.hf = hdl;
+            if p.Results.gamma ~= 1
+                varargin{1}.gamma = p.Results.gamma;
+            end
+            ieMovie(obj.get('response'),varargin{:});
+        else
+            %%%
+            % Params are coded in param/value
+            varargin{end+1} = 'gamma'; varargin{end+1} = p.Results.gamma;
+            ieMovie(obj.get('response'),'hf',hdl,varargin{:});
+        end
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>
