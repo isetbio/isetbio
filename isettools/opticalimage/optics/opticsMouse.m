@@ -8,7 +8,7 @@ function optics = opticsMouse(pupilRadius)
 % ISETBIO Team, 2016
 
 %%
-if ieNotDefined('pupilRadius'), pupilRadius = 0.00059; end 
+if notDefined('pupilRadius'), pupilRadius = 0.00059; end 
 fLength = 0.001756;  % 1.756 mm
 % NOTES ABOUT FOCAL LENGTH
 % Since the mouse optical system is not symmetric, there are two focal

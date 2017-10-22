@@ -522,7 +522,7 @@ classdef coneMosaic < hiddenHandle
         [interpFilters, meanCur] = computeCurrent(obj, varargin);
         
         % Declare method for computing retinal coverage
-        [apertureCoverage, geometricCoverage] =  retinalCoverage(obj);
+        [apertureCoverage, geometricCoverage] = retinalCoverage(obj);
          
         function val = timeAxis(obj)
             % Call:  obj.timeAxis;
