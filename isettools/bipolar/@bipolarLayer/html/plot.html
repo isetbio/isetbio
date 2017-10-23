@@ -1,0 +1,194 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>plot</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-17"><meta name="DC.source" content="plot.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Required Input:</a></li><li><a href="#5">Optional Key/Value Pairs:</a></li><li><a href="#6">Notes:</a></li><li><a href="#7">History:</a></li><li><a href="#8">Examples:</a></li><li><a href="#9">Parse inputs</a></li><li><a href="#13">Account for parameters</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> hdl = plot(obj, pType, varargin)
+</pre><h2 id="2">Syntax:</h2><pre class="language-matlab">hdl = bipolarLayer.plot(plotType,<span class="keyword">...</span><span class="comment">)</span>
+</pre><h2 id="3">Description:</h2><p><b>Deprecate</b> - plots should be called based on the mosaic, I think.</p><p>Plot the values from one of the mosaics of a bipolarLayer object</p><h2 id="4">Required Input:</h2><pre>pType -  The plot type.  Use @bipolarLayer.plot('help','nMosaic',1) to
+         see implemented plot types.</pre><h2 id="5">Optional Key/Value Pairs:</h2><pre>nMosaic  - Mosaic number to plot
+gamma
+pos
+newWindow</pre><h2 id="6">Notes:</h2><div><ul><li>For most plot types this routine calls rgcMosaic.plot. The selected mosaic from the layer is based on the integer nMosaic.</li><li>We plan to implement cases for the layer that compare across several mosaics.</li></ul></div><h2 id="7">History:</h2><p>JRG/BW (c) isetbio team</p><pre>  10/17/17  jnm  Comments &amp; Formatting</pre><h2 id="8">Examples:</h2><pre class="codeinput"><span class="comment">%{
+</span><span class="comment">   bipolarLayer.plot('mosaic','nMosaic',1);
+</span><span class="comment">   bipolarLayer.plot('movie response','nMosaic',1);
+</span><span class="comment">%}</span>
+</pre><h2 id="9">Parse inputs</h2><pre class="codeinput">p = inputParser;
+p.CaseSensitive = false;
+p.FunctionName  = mfilename;
+p.KeepUnmatched = true;
+
+p.addRequired(<span class="string">'pType'</span>,@ischar);
+
+p.addParameter(<span class="string">'gamma'</span>,1,@isscalar);
+</pre><p>If parameter pos not passed, then assume 1,1</p><pre class="codeinput">p.addParameter(<span class="string">'pos'</span>,[1,1],@isvector);
+p.addParameter(<span class="string">'newWindow'</span>,false,@islogical);
+</pre><p>Will this be one of the mosaics, or use multiple mosaics (0, or maybe a vector?)</p><pre class="codeinput">p.addParameter(<span class="string">'nMosaic'</span>,0,@(x)(isscalar(x) &amp;&amp; (x &gt;= 0)));
+</pre><p>Parse pType</p><pre class="codeinput">p.parse(pType,varargin{:});
+
+nMosaic = p.Results.nMosaic;
+<span class="keyword">if</span> nMosaic &gt; length(obj.mosaic)
+    error(<span class="string">'nMosaic (%d) exceeds number of bipolar layers (%d)\n'</span>,<span class="keyword">...</span>
+        nMosaic,length(obj.mosaic));
+<span class="keyword">end</span>
+</pre><h2 id="13">Account for parameters</h2><pre class="codeinput"><span class="keyword">if</span> p.Results.newWindow; hdl = vcNewGraphWin; <span class="keyword">end</span>
+
+<span class="keyword">if</span> nMosaic == 0
+</pre><p>A plot that uses more than one mosaic.  What the layer is for. We need to make some stuff up for here.</p><pre class="codeinput">    disp(<span class="string">'No layer plots implemented yet.'</span>)
+    <span class="keyword">return</span>;
+<span class="keyword">else</span>
+</pre><p>A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.</p><pre class="codeinput">    hdl = obj.mosaic{nMosaic}.plot(pType,p.Results);
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput error">The class bipolarLayer has no Constant property or Static method named 'plot'.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function hdl = plot(obj, pType, varargin)
+%% Syntax:
+%   hdl = bipolarLayer.plot(plotType,...)
+% 
+%% Description:
+% *Deprecate* - plots should be called based on the mosaic, I think.
+%
+% Plot the values from one of the mosaics of a bipolarLayer object
+% 
+%% Required Input:
+%  pType -  The plot type.  Use @bipolarLayer.plot('help','nMosaic',1) to
+%           see implemented plot types.
+%  
+%% Optional Key/Value Pairs:
+%  nMosaic  - Mosaic number to plot
+%  gamma    
+%  pos
+%  newWindow
+%
+%% Notes:
+% * For most plot types this routine calls rgcMosaic.plot. The selected
+% mosaic from the layer is based on the integer nMosaic.
+% * We plan to implement cases for the layer that compare across several
+% mosaics.
+%
+
+%% History:
+% JRG/BW (c) isetbio team
+%
+%    10/17/17  jnm  Comments & Formatting
+
+%% Examples:
+%{
+   bipolarLayer.plot('mosaic','nMosaic',1);
+   bipolarLayer.plot('movie response','nMosaic',1);
+%}
+
+%% Parse inputs
+
+p = inputParser; 
+p.CaseSensitive = false; 
+p.FunctionName  = mfilename;
+p.KeepUnmatched = true;
+
+p.addRequired('pType',@ischar);
+
+p.addParameter('gamma',1,@isscalar);
+%%%
+% If parameter pos not passed, then assume 1,1
+p.addParameter('pos',[1,1],@isvector);
+p.addParameter('newWindow',false,@islogical);
+%%%
+% Will this be one of the mosaics, or use multiple mosaics (0, or maybe a
+% vector?)
+p.addParameter('nMosaic',0,@(x)(isscalar(x) && (x >= 0)));
+%%%
+% Parse pType
+p.parse(pType,varargin{:}); 
+
+nMosaic = p.Results.nMosaic;
+if nMosaic > length(obj.mosaic)
+    error('nMosaic (%d) exceeds number of bipolar layers (%d)\n',...
+        nMosaic,length(obj.mosaic));
+end
+
+%% Account for parameters
+if p.Results.newWindow; hdl = vcNewGraphWin; end
+
+if nMosaic == 0
+    %%%
+    % A plot that uses more than one mosaic.  What the layer is for.
+    % We need to make some stuff up for here.
+    disp('No layer plots implemented yet.')
+    return;
+else
+    %%%
+    % A plot based on one mosaic.  Call the bipolarMosaic.plot funciton.
+    hdl = obj.mosaic{nMosaic}.plot(pType,p.Results);
+end
+
+end
+
+
+
+##### SOURCE END #####
+--></body></html>

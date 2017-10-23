@@ -1,0 +1,504 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Compute</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-19"><meta name="DC.source" content="compute.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>COMPUTE</h1><!--introduction--><p>Compute bipolar continuous current responses</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Input:</a></li><li><a href="#5">Output:</a></li><li><a href="#6">References:</a></li><li><a href="#7">Notes:</a></li><li><a href="#8">See Also:</a></li><li><a href="#9">History:</a></li><li><a href="#10">Examples</a></li><li><a href="#11">parse input parameters</a></li><li><a href="#13">Spatial filtering and subsampling</a></li><li><a href="#16">Enforce anatomical rules on cone to bipolar connections</a></li><li><a href="#26">Spatial filtering</a></li><li><a href="#28">Temporal filtering</a></li><li><a href="#30">Rectification and temporal convolution issues</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> response = compute(obj, varargin)
+</pre><h2 id="2">Syntax:</h2><p>The bipolar object handles multiple trials, and these are returned separately for the center and surround of the biplar model when use have output arguments, as below.</p><pre class="language-matlab">[~, bpNTrialsCenter, bpNTrialsSurround] = <span class="keyword">...</span>
+        bp.compute(cMosaic, <span class="string">'nTrialsInput'</span>, cMosaicCurrentNTrials);
+</pre><pre class="language-matlab">@bipolarMosaic.compute(varargin);
+</pre><h2 id="3">Description:</h2><p>The bipolars act as a spatial-temporal function that converts the cone photocurrent into bipolar current that is delivered to the retinal ganglion cells. The cone mosaic is the input, and it contains a photocurrent time series (coneMosaic.current).</p><p>The bipolar response is computed with a separable spatio-temporal calculation (first spatial filtering, then temporal filtering) of the cone current to create the bipolar output.</p><p>The critical bipolar mosaic parameters are set up and stored in the @bipolarMosaic object itself. This routine computes the responses based on those settings. See the class definition for the list of parameters.</p><p>The principal decision is whether the bipolar transformation is linear or includes a rectification. This is controlled by the obj.rectifyType parameter. The rectification happens at the end of the function, after both spatial and temporal filtering.</p><h2 id="4">Input:</h2><pre>  obj      - A bipolar object</pre><h2 id="5">Output:</h2><pre>  Response - The response of the bipolar. N.B. The center and
+             surround responses are calculated and stored in the mosaic
+             as responseCenter and responseSurround</pre><h2 id="6">References:</h2><p><b>Meister option</b> - The spatial filtering is followed by a temporal filter that is selected in order to match the impulse response that expect to find at the RGC input.</p><p><b>Chichilnisky option</b> - The cMosaicCurrentNTrials has dimensions (nTrials, row, col, nFrames), as returned by cmosaic.computeCurrent. The full bipolar response simply add bpNTrialsCenter + bpNTrialsSurround.</p><h2 id="7">Notes:</h2><p>
+  <ul>
+      <li><b>Only the last trial reponse is stored in the object
+      itself.</b></li>
+      <li>This feature has not been tested or much used - on our
+      list</li>
+      <li><b>TODO:</b> This could be transformed to be like the rgc
+      computation where each cell has its own spatial RF. Not there yet, just
+      using convolutions.</li>
+      <li><b>TODO:</b> We should set this up as a structure that we use to
+      implement the anatomical rules. Let's send in a struct that defines
+      the anatomical rules (e.g., anatomyRules) with slots that implement
+      the kind of stuff listed here.</li>
+      <li><b>Anatomical rules:</b>
+      <ul style="list-style-type:circle">
+          <li>off Diffuse - Receive no S cone input</li>
+          <li>on Diffuse - Receive no S cone input</li>
+          <li>on Midget - Receive no S cone input</li>
+          <li>offMidget - keep S cones but scale connection strength down
+          75%</li>
+          <li>onSBC - S cone inputs to center, only L/M cone inputs to
+          surround</li>
+      </ul></li>
+  </ul>
+</p><h2 id="8">See Also:</h2><p>See bipolar.m. Wiki <a href="https://github.com/isetbio/isetbio/wiki/bipolar">https://github.com/isetbio/isetbio/wiki/bipolar</a></p><h2 id="9">History:</h2><p>5/2016 JRG (c) isetbio team</p><pre>  10/19/17  jnm  Comments &amp; Formatting</pre><h2 id="10">Examples</h2><pre class="codeinput"><span class="comment">%{
+</span><span class="comment">   [~, bpNTrialsCenter, bpNTrialsSurround] = ...
+</span><span class="comment">           bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);
+</span><span class="comment">%}</span>
+</pre><h2 id="11">parse input parameters</h2><pre class="codeinput">p = inputParser;
+p.addRequired(<span class="string">'obj'</span>, @(x) (isa(x, <span class="string">'bipolarMosaic'</span>)));
+addParameter(p, <span class="string">'coneTrials'</span>,  [], @isnumeric);
+</pre><p>parse - no options at this opint</p><pre class="codeinput">p.parse(obj, varargin{:});
+
+coneTrials = p.Results.coneTrials;
+cmosaic    = obj.input;
+
+<span class="keyword">if</span> isempty(cmosaic.current)
+    error(<span class="string">'No cone photocurrent. Use cmosaic.computeCurrent.'</span>);
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> ~isempty(coneTrials),  nTrials = size(coneTrials, 1);
+<span class="keyword">else</span>,                     nTrials = 1;
+<span class="keyword">end</span>
+</pre><h2 id="13">Spatial filtering and subsampling</h2><p>If the input includes multiple trials, we run across all the trials here.</p><pre class="codeinput"><span class="keyword">for</span> iTrial = 1:nTrials
+</pre><p>This places the cone 3D matrix into a coneNumber x time matrix</p><pre class="codeinput">    <span class="keyword">if</span> ~isempty(coneTrials)
+        osSig = RGB2XWFormat(squeeze(coneTrials(iTrial, :, :, :)));
+    <span class="keyword">else</span>
+        osSig = RGB2XWFormat(cmosaic.current);
+    <span class="keyword">end</span>
+</pre><h2 id="16">Enforce anatomical rules on cone to bipolar connections</h2><pre class="codeinput">    <span class="keyword">switch</span> obj.cellType
+        <span class="keyword">case</span>{<span class="string">'offdiffuse'</span>, <span class="string">'ondiffuse'</span>, <span class="string">'onmidget'</span>}
+            osSigCenter   = osSig;
+            osSigSurround = osSig;
+</pre><p>Remove S cone input for these types of bipolars</p><p>Find the locations indices of the different cone types</p><pre class="codeinput">            [~, ~, S] = coneTypeLocations(cmosaic, <span class="string">'format'</span>, <span class="string">'index'</span>);
+</pre><p>Zero the photocurrent of the S cones. Do this for both the center and the surround.</p><pre class="codeinput">            minval = min(osSig(:));
+            osSigCenter(S(:), :)   = minval*ones(size(osSigCenter(S, :)));
+            osSigSurround(S(:), :) = minval*ones(size(osSigCenter(S, :)));
+
+        <span class="keyword">case</span>{<span class="string">'offmidget'</span>}
+</pre><p>Keep S cone input for off Midget but only weight by 0.25</p><p>Find the locations (row, col) of the different cone types</p><pre class="codeinput">            [~, ~, S] = coneTypeLocations(cmosaic, <span class="string">'format'</span>, <span class="string">'index'</span>);
+            minval = min(osSig(:));
+
+            osSigCenter   = osSig;
+            osSigCenter(S, :)   = 0.25*(osSigCenter(S, :)-minval)+minval;
+
+            osSigSurround   = osSig;
+            osSigSurround(S, :) = 0.25*(osSigSurround(S, :)-minval)+minval;
+
+        <span class="keyword">case</span>{<span class="string">'onsbc'</span>}
+</pre><p>Set L and M cones to zero in SBC center, set S cones to zero in SBC surround.</p><p>Find the indices of the different cone types</p><pre class="codeinput">            [L, M, S] = coneTypeLocations(cmosaic, <span class="string">'format'</span>, <span class="string">'index'</span>);
+</pre><p>This is one long vector of L, M cone indices</p><pre class="codeinput">            LM = [L; M];
+</pre><p>Find the effectively zero outer segment signal for this mosaic</p><pre class="codeinput">            minval = min(osSig(:));
+</pre><p>When the center is an LM cone, make all of the time steps in the center the smallest value</p><pre class="codeinput">            osSigCenter       = osSig;
+            osSigCenter(LM, :) = minval*ones(size(osSigCenter(LM, :)));
+</pre><p>Put effectively zero S-cone signals into the surround</p><pre class="codeinput">            osSigSurround      = osSig;
+            osSigSurround(S, :) = minval*ones(size(osSigSurround(S, :)));
+
+        <span class="keyword">otherwise</span>
+            error(<span class="string">'Unrecognized bipolar mosaic type %s\n'</span>, obj.cellType);
+    <span class="keyword">end</span>
+</pre><p>Put the data back into RGB format, like RGB2XW()</p><pre class="codeinput">    sz = size(cmosaic.current);
+    osSigCenter   = XW2RGBFormat(osSigCenter, sz(1), sz(2));
+    osSigSurround = XW2RGBFormat(osSigSurround, sz(1), sz(2));
+    <span class="comment">% cmosaic.window;</span>
+    <span class="comment">% vcNewGraphWin; ieMovie(osSigCenter);</span>
+</pre><h2 id="26">Spatial filtering</h2><p>Full spatial convolution for every frame. The kernel is only 2D which is why we have a space-only convolution.</p><pre class="codeinput">    bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
+    bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
+    <span class="comment">% vcNewGraphWin; ieMovie(bipolarCenter);</span>
+    <span class="comment">% vcNewGraphWin; ieMovie(bipolarSurround);</span>
+</pre><p>Pull out the samples at the cell locations. It works here because they are evenly spaced (stride). If we have jitter, we need another approach.</p><pre class="codeinput">    strideRow = abs(obj.cellLocation(1, 2, 1) - obj.cellLocation(1, 1, 1));
+    strideCol = abs(obj.cellLocation(2, 1, 2) - obj.cellLocation(1, 1, 2));
+
+    bipolarCenter   = bipolarCenter(1:strideRow:end, 1:strideCol:end, :);
+    bipolarSurround = bipolarSurround(1:strideRow:end, 1:strideCol:end, :);
+</pre><h2 id="28">Temporal filtering</h2><p>Reshape the data for the temporal convolution</p><pre class="codeinput">    [bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
+    bipolarSurround = RGB2XWFormat(bipolarSurround);
+</pre><p>This is the impulse response filter</p><pre class="codeinput">    bipolarFilt = bipolarFilter(obj, cmosaic);
+
+    <span class="comment">% If we wanted to rectify the signal, we could do it here</span>
+    <span class="comment">% obj.rectify(input, 'rType', {hw, fw, none})</span>
+    <span class="comment">% obj.responseCenter   = ...</span>
+    <span class="comment">%    obj.rectificationCenter(bipolarOutputLinearCenter);</span>
+    <span class="comment">% obj.responseSurround = ...</span>
+    <span class="comment">%    obj.rectificationSurround(bipolarOutputLinearSurround);</span>
+    <span class="comment">%</span>
+</pre><h2 id="30">Rectification and temporal convolution issues</h2><p>Rectification - not tested or analyzed</p><p>We have in the past shifted the bipolar response levels to a minimum of zero. That is arbitrary and produces higher contrast signals. It might be OK because we have no real units on the bipolar current. Or, maybe we should leave them alone. Anyway, here we are shifting them to a min of zero.</p><pre class="codeinput">    <span class="comment">% bipolarCenter = obj.rectificationCenter(bipolarCenter ...</span>
+    <span class="comment">%     - (min(bipolarCenter')'*ones(1, size(bipolarCenter, 2))));</span>
+    bipolarCenter = bipolarCenter - (min(bipolarCenter, [], 2) <span class="keyword">...</span>
+        * ones(1, size(bipolarCenter, 2)));
+    tmpCenter = conv2(bipolarFilt, bipolarCenter);
+    <span class="comment">% vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter, row, col); ieMovie(tmp);</span>
+</pre><p>Rectification Not fully tested or analyzed - bipolarSurround = obj.rectificationSurround(bipolarSurround ...     - (min(bipolarSurround')'*ones(1, size(bipolarSurround, 2))));</p><pre class="codeinput">    bipolarSurround = bipolarSurround-(min(bipolarSurround, [], 2) <span class="keyword">...</span>
+        * ones(1, size(bipolarSurround, 2)));
+    tmpSurround = conv2(bipolarFilt, bipolarSurround);
+    <span class="comment">% vcNewGraphWin;</span>
+    <span class="comment">% tmp = XW2RGBFormat(tmpSurround, row, col); ieMovie(tmp);</span>
+
+    <span class="keyword">if</span> ~isempty(coneTrials)
+        <span class="keyword">if</span> iTrial == 1
+            nTrialsCenter = zeros([nTrials, size(XW2RGBFormat(<span class="keyword">...</span>
+                tmpCenter(:, 1:cmosaic.tSamples), row, col))]);
+            nTrialsSurround = zeros([nTrials, size(XW2RGBFormat(<span class="keyword">...</span>
+                tmpSurround(:, 1:cmosaic.tSamples), row, col))]);
+        <span class="keyword">end</span>
+
+        nTrialsCenter(iTrial, :, :, :) = XW2RGBFormat(<span class="keyword">...</span>
+            tmpCenter(:, 1:cmosaic.tSamples), row, col);
+        nTrialsSurround(iTrial, :, :, :) = XW2RGBFormat(<span class="keyword">...</span>
+            tmpSurround(:, 1:cmosaic.tSamples), row, col);
+    <span class="keyword">else</span>
+        nTrialsCenter   = 0;
+        nTrialsSurround = 0;
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> iTrial == nTrials
+</pre><p>Store the last trial in the object</p><pre class="codeinput">        obj.responseCenter   = XW2RGBFormat(tmpCenter(:, <span class="keyword">...</span>
+            1:size(cmosaic.current, 3)), row, col);
+        obj.responseSurround = XW2RGBFormat(tmpSurround(:, <span class="keyword">...</span>
+            1:size(cmosaic.current, 3)), row, col);
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+response = nTrialsCenter - nTrialsSurround;
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput error">The specified superclass 'cellMosaic' contains a parse error, cannot be found on MATLAB's search path, or is shadowed by another file with the same name.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% BIPOLAR.COMPUTE
+% Compute bipolar continuous current responses
+%%%
+function response = compute(obj, varargin)
+%% Syntax:
+% The bipolar object handles multiple trials, and these are returned
+% separately for the center and surround of the biplar model when use have
+% output arguments, as below.
+%
+%   [~, bpNTrialsCenter, bpNTrialsSurround] = ...
+%           bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);
+%
+%   @bipolarMosaic.compute(varargin);
+%
+%% Description:
+% The bipolars act as a spatial-temporal function that converts the cone
+% photocurrent into bipolar current that is delivered to the retinal
+% ganglion cells. The cone mosaic is the input, and it contains a
+% photocurrent time series (coneMosaic.current).
+%
+% The bipolar response is computed with a separable spatio-temporal
+% calculation (first spatial filtering, then temporal filtering) of the
+% cone current to create the bipolar output.
+%
+% The critical bipolar mosaic parameters are set up and stored in the
+% @bipolarMosaic object itself. This routine computes the responses based
+% on those settings. See the class definition for the list of parameters.
+%
+% The principal decision is whether the bipolar transformation is linear or
+% includes a rectification. This is controlled by the obj.rectifyType
+% parameter. The rectification happens at the end of the function, after
+% both spatial and temporal filtering.
+%
+%% Input:
+%    obj      - A bipolar object
+%
+%% Output:
+%    Response - The response of the bipolar. N.B. The center and
+%               surround responses are calculated and stored in the mosaic
+%               as responseCenter and responseSurround
+%
+%% References: 
+% *Meister option* -
+% The spatial filtering is followed by a temporal filter that is selected
+% in order to match the impulse response that expect to find at the RGC
+% input. 
+%
+% *Chichilnisky option* -
+% The cMosaicCurrentNTrials has dimensions (nTrials, row, col, nFrames), as
+% returned by cmosaic.computeCurrent. The full bipolar response simply
+% add bpNTrialsCenter + bpNTrialsSurround.
+%
+%% Notes:
+%
+% <html>
+%   <ul>
+%       <li><b>Only the last trial reponse is stored in the object
+%       itself.</b></li>
+%       <li>This feature has not been tested or much used - on our
+%       list</li>
+%       <li><b>TODO:</b> This could be transformed to be like the rgc
+%       computation where each cell has its own spatial RF. Not there yet, just
+%       using convolutions.</li>
+%       <li><b>TODO:</b> We should set this up as a structure that we use to
+%       implement the anatomical rules. Let's send in a struct that defines
+%       the anatomical rules (e.g., anatomyRules) with slots that implement
+%       the kind of stuff listed here.</li>
+%       <li><b>Anatomical rules:</b>
+%       <ul style="list-style-type:circle">
+%           <li>off Diffuse - Receive no S cone input</li>
+%           <li>on Diffuse - Receive no S cone input</li>
+%           <li>on Midget - Receive no S cone input</li>
+%           <li>offMidget - keep S cones but scale connection strength down
+%           75%</li>
+%           <li>onSBC - S cone inputs to center, only L/M cone inputs to
+%           surround</li>
+%       </ul></li>
+%   </ul>
+% </html>
+%
+%% See Also:
+% See bipolar.m. Wiki <https://github.com/isetbio/isetbio/wiki/bipolar>
+
+%% History:
+% 5/2016 JRG (c) isetbio team
+%
+%    10/19/17  jnm  Comments & Formatting
+
+%% Examples
+%{
+   [~, bpNTrialsCenter, bpNTrialsSurround] = ...
+           bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);
+%}
+
+%% parse input parameters
+p = inputParser;
+p.addRequired('obj', @(x) (isa(x, 'bipolarMosaic')));
+addParameter(p, 'coneTrials',  [], @isnumeric);
+%%%
+% parse - no options at this opint
+p.parse(obj, varargin{:});
+
+coneTrials = p.Results.coneTrials;
+cmosaic    = obj.input;
+
+if isempty(cmosaic.current)
+    error('No cone photocurrent. Use cmosaic.computeCurrent.');
+end
+
+if ~isempty(coneTrials),  nTrials = size(coneTrials, 1);
+else,                     nTrials = 1;
+end
+
+%% Spatial filtering and subsampling
+% If the input includes multiple trials, we run across all the trials here.
+for iTrial = 1:nTrials
+    %%%
+    % This places the cone 3D matrix into a coneNumber x time matrix
+    if ~isempty(coneTrials)
+        osSig = RGB2XWFormat(squeeze(coneTrials(iTrial, :, :, :)));
+    else
+        osSig = RGB2XWFormat(cmosaic.current);
+    end
+    
+    
+    %% Enforce anatomical rules on cone to bipolar connections
+    switch obj.cellType
+        case{'offdiffuse', 'ondiffuse', 'onmidget'}
+            osSigCenter   = osSig;
+            osSigSurround = osSig;
+            %%%
+            % Remove S cone input for these types of bipolars
+            %
+            % Find the locations indices of the different cone types
+            [~, ~, S] = coneTypeLocations(cmosaic, 'format', 'index');
+            %%%
+            % Zero the photocurrent of the S cones. Do this for both the
+            % center and the surround.
+            minval = min(osSig(:));
+            osSigCenter(S(:), :)   = minval*ones(size(osSigCenter(S, :)));
+            osSigSurround(S(:), :) = minval*ones(size(osSigCenter(S, :)));
+            
+        case{'offmidget'}
+            %%%
+            % Keep S cone input for off Midget but only weight by 0.25
+            %
+            % Find the locations (row, col) of the different cone types
+            [~, ~, S] = coneTypeLocations(cmosaic, 'format', 'index');
+            minval = min(osSig(:));
+            
+            osSigCenter   = osSig;
+            osSigCenter(S, :)   = 0.25*(osSigCenter(S, :)-minval)+minval;
+            
+            osSigSurround   = osSig;
+            osSigSurround(S, :) = 0.25*(osSigSurround(S, :)-minval)+minval;
+            
+        case{'onsbc'}
+            %%%
+            % Set L and M cones to zero in SBC center, set S cones to zero
+            % in SBC surround.
+            %
+            % Find the indices of the different cone types
+            [L, M, S] = coneTypeLocations(cmosaic, 'format', 'index');
+            %%%
+            % This is one long vector of L, M cone indices
+            LM = [L; M];
+            %%%
+            % Find the effectively zero outer segment signal for this
+            % mosaic
+            minval = min(osSig(:));
+            %%%
+            % When the center is an LM cone, make all of the time steps in
+            % the center the smallest value
+            osSigCenter       = osSig;
+            osSigCenter(LM, :) = minval*ones(size(osSigCenter(LM, :)));
+            %%%
+            % Put effectively zero S-cone signals into the surround
+            osSigSurround      = osSig;
+            osSigSurround(S, :) = minval*ones(size(osSigSurround(S, :)));
+            
+        otherwise
+            error('Unrecognized bipolar mosaic type %s\n', obj.cellType);
+    end
+    %%%
+    % Put the data back into RGB format, like RGB2XW()
+    sz = size(cmosaic.current);
+    osSigCenter   = XW2RGBFormat(osSigCenter, sz(1), sz(2));
+    osSigSurround = XW2RGBFormat(osSigSurround, sz(1), sz(2));
+    % cmosaic.window;
+    % vcNewGraphWin; ieMovie(osSigCenter);
+    
+    %% Spatial filtering
+    % Full spatial convolution for every frame. The kernel is only 2D
+    % which is why we have a space-only convolution.
+    bipolarCenter   = ieSpaceTimeFilter(osSigCenter, obj.sRFcenter);
+    bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
+    % vcNewGraphWin; ieMovie(bipolarCenter);
+    % vcNewGraphWin; ieMovie(bipolarSurround);
+    %%%
+    % Pull out the samples at the cell locations. It works here because
+    % they are evenly spaced (stride). If we have jitter, we need another
+    % approach.
+    strideRow = abs(obj.cellLocation(1, 2, 1) - obj.cellLocation(1, 1, 1));
+    strideCol = abs(obj.cellLocation(2, 1, 2) - obj.cellLocation(1, 1, 2));
+    
+    bipolarCenter   = bipolarCenter(1:strideRow:end, 1:strideCol:end, :);
+    bipolarSurround = bipolarSurround(1:strideRow:end, 1:strideCol:end, :);
+    
+    %% Temporal filtering
+    % Reshape the data for the temporal convolution
+    [bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
+    bipolarSurround = RGB2XWFormat(bipolarSurround);
+    %%%
+    % This is the impulse response filter
+    bipolarFilt = bipolarFilter(obj, cmosaic);
+    
+    % If we wanted to rectify the signal, we could do it here
+    % obj.rectify(input, 'rType', {hw, fw, none})
+    % obj.responseCenter   = ...
+    %    obj.rectificationCenter(bipolarOutputLinearCenter);
+    % obj.responseSurround = ...
+    %    obj.rectificationSurround(bipolarOutputLinearSurround);
+    %
+    
+    %% Rectification and temporal convolution issues    
+    % Rectification - not tested or analyzed
+    %
+    % We have in the past shifted the bipolar response levels to a minimum
+    % of zero. That is arbitrary and produces higher contrast signals. It
+    % might be OK because we have no real units on the bipolar current.
+    % Or, maybe we should leave them alone. Anyway, here we are shifting
+    % them to a min of zero.
+    
+    % bipolarCenter = obj.rectificationCenter(bipolarCenter ...
+    %     - (min(bipolarCenter')'*ones(1, size(bipolarCenter, 2))));
+    bipolarCenter = bipolarCenter - (min(bipolarCenter, [], 2) ...
+        * ones(1, size(bipolarCenter, 2)));
+    tmpCenter = conv2(bipolarFilt, bipolarCenter);
+    % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter, row, col); ieMovie(tmp);
+    %%%
+    % Rectification
+    % Not fully tested or analyzed -
+    % bipolarSurround = obj.rectificationSurround(bipolarSurround ...
+    %     - (min(bipolarSurround')'*ones(1, size(bipolarSurround, 2))));
+    bipolarSurround = bipolarSurround-(min(bipolarSurround, [], 2) ...
+        * ones(1, size(bipolarSurround, 2)));
+    tmpSurround = conv2(bipolarFilt, bipolarSurround);
+    % vcNewGraphWin;
+    % tmp = XW2RGBFormat(tmpSurround, row, col); ieMovie(tmp);
+    
+    if ~isempty(coneTrials)
+        if iTrial == 1
+            nTrialsCenter = zeros([nTrials, size(XW2RGBFormat(...
+                tmpCenter(:, 1:cmosaic.tSamples), row, col))]);
+            nTrialsSurround = zeros([nTrials, size(XW2RGBFormat(...
+                tmpSurround(:, 1:cmosaic.tSamples), row, col))]);
+        end
+        
+        nTrialsCenter(iTrial, :, :, :) = XW2RGBFormat(...
+            tmpCenter(:, 1:cmosaic.tSamples), row, col);
+        nTrialsSurround(iTrial, :, :, :) = XW2RGBFormat(...
+            tmpSurround(:, 1:cmosaic.tSamples), row, col);
+    else
+        nTrialsCenter   = 0;
+        nTrialsSurround = 0;
+    end
+    
+    if iTrial == nTrials
+        %%%
+        % Store the last trial in the object
+        obj.responseCenter   = XW2RGBFormat(tmpCenter(:, ...
+            1:size(cmosaic.current, 3)), row, col);
+        obj.responseSurround = XW2RGBFormat(tmpSurround(:, ...
+            1:size(cmosaic.current, 3)), row, col);
+    end
+end
+
+response = nTrialsCenter - nTrialsSurround;
+
+end
+
+##### SOURCE END #####
+--></body></html>
