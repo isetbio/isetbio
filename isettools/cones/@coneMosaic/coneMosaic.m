@@ -274,7 +274,7 @@ classdef coneMosaic < hiddenHandle
             % Using 0.3 mm/deg as conversion.
             if (isempty(p.Results.os))
                 eccentricityMeters = norm(p.Results.center);
-                eccentricityDegs = 1e3*eccentricityMeters/0.3;
+                eccentricityDegs = 15;%1e3*eccentricityMeters/0.3;
                 obj.os = osLinear('eccentricity',eccentricityDegs);
             else
                 obj.os = p.Results.os;

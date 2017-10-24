@@ -169,8 +169,8 @@ switch lower(imageType)
                 % same range as the gTable.
                 s = size(gTable,1);
                 if s > 256
-                    fprintf('[%s] Assuming 8bit image and %d bit LUT\n',...
-                            mfilename,log2(s));
+%                     fprintf('[%s] Assuming 8bit image and %d bit LUT\n',...
+%                             mfilename,log2(s));
                     inImg = round(inImg/255*(s-1));
                 end
             end

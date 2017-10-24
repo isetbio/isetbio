@@ -53,12 +53,12 @@ p.addRequired('rgcM',vFunc);
 p.addParameter('bipolarScale',  50, @isnumeric);
 p.addParameter('bipolarContrast',  1, @isnumeric);
 p.addParameter('bipolarTrials',  [], @(x) isnumeric(x)||iscell(x));
-
+p.addParameter('bipolarContrastFlag',1,@isnumeric);
 p.parse(rgcM,varargin{:});
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
 bipolarTrials = p.Results.bipolarTrials;
-
+bipolarContrastFlag = p.Results.bipolarContrastFlag;
 %% Loop over multiple trials
 
 nTrials = 1;
@@ -69,12 +69,17 @@ for iTrial = 1:nTrials
     
     % This is a normalization on the bipolar current.
     % Let's justify or explain or something.
-    
-    if ~isempty(bipolarTrials)
-        % Set the contrast for this trial
-        input   = ieContrast(squeeze(bipolarTrials(iTrial,:,:,:)),'maxC',bipolarContrast);
+
+    if bipolarContrastFlag
+        if ~isempty(bipolarTrials)
+            % Set the contrast for this trial
+            input   = ieContrast(squeeze(bipolarTrials(iTrial,:,:,:)),'maxC',bipolarContrast);
+        else
+            input   = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
+        end
     else
-        input   = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
+        prosthesisBipolarScalingFactor = 0.003;
+        input = prosthesisBipolarScalingFactor*rgcM.input.get('response');
     end
     % vcNewGraphWin; ieMovie(input);
     
@@ -131,7 +136,7 @@ for iTrial = 1:nTrials
     % Store the last trial
     if iTrial == nTrials
         % Store the last linear response in the object
-        rgcM.set('response linear', bipolarScale*(respC - respS));
+        rgcM.set('response linear', 0*rgcM.tonicDrive(1,1,1)+bipolarScale*(respC - respS));
     end
 end
 

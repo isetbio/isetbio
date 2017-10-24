@@ -100,7 +100,7 @@ p.addParameter('coupling',false,@islogical);
 p.addParameter('bipolarTrials',  [], @(x)(isnumeric(x)||iscell(x)));
 p.addParameter('bipolarScale',50,@isnumeric);
 p.addParameter('bipolarContrast',1,@isnumeric);
-
+p.addParameter('bipolarContrastFlag',1,@isnumeric);
 p.parse(rgcL,varargin{:});
 coupling      = p.Results.coupling;
 % bipolarTrials = p.Results.bipolarTrials;
@@ -108,6 +108,8 @@ coupling      = p.Results.coupling;
 % See notes below
 bipolarScale    = p.Results.bipolarScale;
 bipolarContrast = p.Results.bipolarContrast;
+
+bipolarContrastFlag = p.Results.bipolarContrastFlag;
 
 bipolarTrials   = p.Results.bipolarTrials;
 if isempty(bipolarTrials)
@@ -128,7 +130,8 @@ nTrialsSpikes = cell(length(rgcL.mosaic),1);
 for ii=1:length(rgcL.mosaic)
     [~,nTrialsLinearResponseM] = ...
         rgcL.mosaic{ii}.computeSeparable(...
-        'bipolarContrast',bipolarContrast,...
+        'bipolarContrast',bipolarContrast,...       
+        'bipolarContrastFlag',bipolarContrastFlag,...
         'bipolarScale', bipolarScale,...
         'bipolarTrials',bipolarTrials{ii});
 
