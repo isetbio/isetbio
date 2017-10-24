@@ -20,8 +20,8 @@ rng('default');  % To achieve the same result each time
 % or for simulating people with biological variability.
 
 % Human optics
-oi = oiCreate('human');
-vcAddObject(oi);
+oi = oiCreate; 
+% vcAddObject(oi);
 
 % Create a typical cone mosaic and show a little picture
 cSensor = coneMosaic;
@@ -47,10 +47,12 @@ scene  = cell(1,nWave);
 
 cMosaic = coneMosaic;
 cMosaic.integrationTime = 0.10;  % 100 ms
+% cMosaic.window;
 
 %% Plot cone absorptions as 3D
 
-vcNewGraphWin([],'tall');
+vcNewGraphWin([],'tall');  % One window for each level.
+
 for rr = 1:nLevels
     for ww=1:length(wSamples)
         
@@ -75,16 +77,16 @@ for rr = 1:nLevels
         S{ww} = S{ww}(1:n); M{ww} = M{ww}(1:n); L{ww} = L{ww}(1:n);
     end
     
-    sp(rr) = subplot(nLevels,1,rr);
-    sym = {'b.','g.','r.'};
     az = 65.5; el = 30;
+    sMax = 30;
+    subplot(nLevels,1,rr)
     for ww=1:length(wSamples)
         s = mod(ww,length(sym))+1;
-        plot3(L{ww}(:),M{ww}(:),S{ww}(:),sym{s})
-        view([az el])
+        scatter3(L{ww}(:),M{ww}(:),S{ww}(:),'filled')
+        view([az el]); % set(gca,'zlim',[0 sMax]);
         hold on
         xlabel('L-absorptions'); ylabel('M-Absorptions');
         zlabel('S-absorptions'); axis square; grid on
     end
-    title(sp(rr),sprintf('%.0f cd/m^2',luminance(rr)));
+    title(sprintf('%.0f cd/m^2',luminance(rr)));
 end
