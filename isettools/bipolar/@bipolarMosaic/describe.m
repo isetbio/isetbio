@@ -1,21 +1,13 @@
 function str = describe(obj)
-% Syntax:
+% DESCRIBE - Summarize the bipolar mosaic properties in a string
 %
 %   bipolar.describe;
 %
-% Dexcription:
-%    Summarize the bipolar mosaic properties in a string
-%
-% Notes:
-% * @JRG:  How will we handle multiple bipolar mosaics?
-%
-
-% History:
+% ISSUES:
+%   @JRG:  How will we handle multiple bipolar mosaics?
+%   
 % BW ISETBIO Team, 2017
-%
-%    10/18/17  jnm  Comments & formatting
 
-%% Summarize properties
 str = sprintf('Cell type:     \t%s\n',obj.cellType);
 txt = sprintf('Patch size:    \t%.1f um\n',obj.patchSize*1e6);
 str = addText(str,txt);
