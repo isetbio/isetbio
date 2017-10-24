@@ -1,41 +1,55 @@
 function meanRate = coneMeanIsomerizations(cMosaic,varargin)
-%%coneMeanIsomerizations  Calculate the spatial mean photon rate (R*/sec) for the 3 cone types in a mosaic
+% Calculate spatial mean photon rate(R*/sec) for the 3 cone types in mosaic
 % 
 % Syntax:
-%    meanRate = coneMeanIsomerizations(cMosaic);
+%   meanRate = coneMeanIsomerizations(cMosaic);
 %
 % Description:
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
 %    cone types in a mosaic.
-%
-%    [DHB NOTE: I can't figure out just from the code here whether this can
-%    act on a time sequence or works just one frame at at time. There is a
-%    key comment that says "Reshape from 3D (x,y,t) to space x nCones" that
-%    is very confusing, because by the description time on the left has
-%    turned into cones on the right. This comment needs to be
-%    expanded/fixed and then this description needs to make clear whether
-%    or not a time sequence is involved in the input and output, both for
-%    the normal case and for when the absorptions are passed in as a
-%    parameter via the keyword absorptionsInXWFormat.]
 %    
 % Input:
-%    cMosaic          coneMosaic object
+%    cMosaic  - coneMosaic object
 %
 % Output:
-%    meanRate         Three vector absorption rates for the L,M,S cones in R*/sec.
+%    meanRate - Three vector absorption rates for the L, M, and S cones in
+%               R*/sec.
 %
 % Optional key/value pairs:
-%    perSample                   Normally the returned rate is mean per sec.  Setting
-%                                'perSample' to true  makes the mean rate per temporal
-%                                sample bins (default false).
+%    perSample              - Normally the returned rate is mean per sec.
+%                             Setting 'perSample' to true  makes the mean
+%                             rate per temporal sample bins (default false)
 %
-%    absorptionssInXWFormat      If empty (default), works on absorptions in cMosaic.absorptions.
-%                                If this is passed, it acts on what is passed as this parameter,
-%                                which is taken to be the absorptions in XW format. See RGB2XWFormat
-%                                for a description of XW format.
+%    absorptionssInXWFormat - If empty (default), works on absorptions in
+%                             cMosaic.absorptions. If this is passed, it
+%                             acts on what is passed as this parameter,
+%                             which is taken to be the absorptions in XW
+%                             format. See RGB2XWFormat for a description
+%                             of XW format.
+%
+% Notes:
+% * [NOTE: DHB - I can't figure out just from the code here whether this
+%    can act on a time sequence or works just one frame at at time. There
+%    is a key comment that says "Reshape from 3D (x,y,t) to space x nCones"
+%    that is very confusing, because by the description time on the left
+%    has turned into cones on the right. This comment needs to be expanded/ 
+%    fixed and then this description needs to make clear whether or not a
+%    time sequence is involved in the input and output, both for the normal
+%    case and for when the absorptions are passed in as a parameter via the
+%    keyword absorptionsInXWFormat.]
+%
+% See Also:
+%   RGB2XWFormat
+%
+% History:
+%    11/2016   JRG  (c) Isetbio team
+%    08/06/17  dhb  Comment cleaning pass.
+%                   Added notes where I could not figure it out.
 
-% 11/2016   JRG   (c) Isetbio team
-% 08/06/17  dhb   Comment cleaning pass.  Added notes where I could not figure it out.
+% Example:
+%{
+   meanRate = coneMeanIsomerizations(cMosaic)
+%}
 
 %% Validate and parse input parameters
 p = inputParser; 
@@ -55,7 +69,7 @@ coneType = cMosaic.pattern;
 
 %% Compute
 if (~isempty(p.Results.absorptionsInXWFormat))
-    % [DHB NOTE: A commment here about the format would be great.]
+    % [NOTE: DHB - A commment here about the format would be great.]
     pRateXW = p.Results.absorptionsInXWFormat;
     nonNullConeIndices = find(cMosaic.pattern > 1);
     nonNullConeTypes = coneType(nonNullConeIndices);
@@ -64,7 +78,7 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     sConeIndices = find(nonNullConeTypes == 4);
 else
     % Reshape from 3D (x,y,t) to space x nCones
-    % [DHB NOTE: This comment does not parse for me - how does time turn
+    % [NOTE: DHB - This comment does not parse for me - how does time turn
     % into cones?]
     pRate = cMosaic.absorptions;             % Absorptions per sample
     if isempty(pRate), return; end           % Return 0 when no absorptions
