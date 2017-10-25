@@ -1,46 +1,62 @@
 function val = get(obj, varargin)
+% Gets isetbio bipolar object parameters
+%
 % Syntax:
 %
 %    val = bipolar.get(parameter)
 % 
 % Description:
-%    Gets isetbio bipolar object parameters
+%    Retrieves isetbio bipolar object parameters
 % 
 % Inputs:
-%    cellLocation           - location of bipolar RF center
-%    patchSize              - size of retinal patch from sensor
-%    timeStep               - time step of simulation from sensor
-%    sRFcenter              - spatial RF of the center on the receptor grid
-%    sRFsurround            - spatial RF of surround on the receptor grid
-%    temporalDifferentiator - differentiator function
-%    responseCenter         - Store the linear response of the center after
-%                             convolution
-%    responseSurround       - Store the linear response of the surround
-%                             after convolution
-%    response               - ???
-%    threshold              - ???
-%    rgbdata                - ???
+%    cellLocation            - location of bipolar RF center
+%    patchSize               - size of retinal patch from sensor
+%    timeStep                - time step of simulation from sensor
+%    sRFcenter               - spatial RF of the center on receptor grid
+%    sRFsurround             - spatial RF of surround on the receptor grid
+%    temporalDifferentiator  - differentiator function
+%    responseCenter          - Store the linear response of the center
+%                              after convolution
+%    responseSurround        - Store the linear response of the surround
+%                              after convolution
+%    response                - the linear response after convolution
+%    bipolarResponse         - the bipolar response after convolution
+%    bipolarResponseCenter   - the bipolar response of the center after
+%                              convolution
+%    bipolarResponseSurround - the bipolar response of the surround after
+%                              convolution
+%    threshold               - threshold placeholder data?
+%    rgbdata                 - scene RGB data
+%
+% Outputs:
+%    None
+%
 
 %% History:
 % 5/2016 JRG (c) isetbio team
 %
 %    10/18/17  jnm  Comments & formatting
 
+% Examples:
+%{
+   val = bipolar.get(parameter)
+%}
+
 %% Initialize and begin
 p = inputParser;
 p.CaseSensitive = false; 
 p.FunctionName = mfilename;
 p.KeepUnmatched = true;
-%%%
+
 % Make key properties that can be set required arguments, and require
 % values along with key names.
 allowableFields = {...
     'cellLocation', ...
     'duration' ...
     'patchSize', ...
-    'response', 'bipolarresponse'...
-    'responseCenter', 'bipolarresponsecenter', ...
-    'responseSurround', 'bipolarresponsesurround', ...
+    'response', 'bipolarResponse'...
+    'responseCenter', 'bipolarResponseCenter', ...
+    'responseSurround', 'bipolarResponseSurround', ...
     'rgbdata', ...
     'spatialrf', ...
     'sRFcenter', ...

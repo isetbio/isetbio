@@ -1,4 +1,6 @@
 function initSpace(obj, varargin)
+% Initialize space required for the bipolar mosaic
+%
 % Syntax:
 %
 %   @bipolarMosaic.initSpace(varargin)
@@ -11,12 +13,14 @@ function initSpace(obj, varargin)
 %    spans 5 samples, the spatial extent will be 2*5 um. 
 %
 % Input:
-%    eccentricity - ???
-%    spread       - ???
-%    spreadRatio  - ???
-%    stride       - ???
-%    ampCenter    - ???
-%    ampSurround  - ???
+%
+% Optional Key/Value Pairs:
+%    eccentricity - placeholder for eccentricity, affects spread
+%    spread       - placeholder for spread, in microns
+%    spreadRatio  - placeholder for spreadRatio
+%    stride       - placeholder for stride
+%    ampCenter    - placeholder for ampCenter
+%    ampSurround  - placeholder for ampSurround
 %
 % Notes:
 %    * Parasol is synonymous with diffuse.
@@ -40,59 +44,49 @@ function initSpace(obj, varargin)
 % 
 %
 % References:
-% * See 'Extended References' outside of help/doc purview
 % * Field and Chichilnisky, 2010, Nature
-% <http://www.nature.com/nature/journal/v467/n7316/full/nature09424.html>
+%   <http://www.nature.com/nature/journal/v467/n7316/full/nature09424.html>
 % * Dacey, Brainard, Lee, et al., Vision Research, 2000.
+%   <http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf>
+% * Size of the RF
+% * Sampling density (stride) of the RF centers.
+% * References and Built-in Bipolar Types
+%       We have implemented five types of bipolar receptive fields, one
+%       assigned to each of the big five RGC types. Each bipolar type has a
+%       preferential cone selection rule. The critical rule is **no S-cones
+%       for on/off parasol and on-midget**, as per the Chichilnisky primate
+%       data (Field and Chichilnisky, 2010, Nature).
+%   <http://www.nature.com/nature/journal/v467/n7316/full/nature09424.html>
+% * N.B. Parasol is synonymous with diffuse.
+% * The data for the support size is this passage from Dacey, Brainard,
+%   Lee, et al., Vision Research, 2000, page 1808 bottom right.
 % <http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf>
-% 
+%   They write:
+%         "The [spatial] frequency response was bandpass and well fit by a
+%          difference of Gaussians receptive field model. (abstract)"
+%
+%         "For midget bipolar cells, it is known that at retinal
+%          eccentricities up to 10 mm virtually all cells restrict
+%          dendritic contact to single cones (Milam et al., 1993; Wassle et
+%          al., 1994); this was confirmed for the cell whose light response
+%          is illustrated in Fig. 4. B) Also see Boycott & Wassle, 1991,
+%          (European Journal of Neuroscience), Table 1."
+%   On page 1809:
+%       Center/Surround gain ratio is about 1:1.3 (area under the curve)
+%       Surround:Center diameter about 1:10 (Center:surround)
+%       They seem to think that for ganglion cells the gain ratio is about
+%       1:0.5 and the diameter ratio is between 1:2 and 1:5.
+%
+%       Likely the larger RF sizes measured physiological (Dacey et al.) vs
+%       anatomically (B&W) reflect spread of signals among cones (via
+%       direct gap junctions) and probably more important among cone
+%       bipolars (via gap junctions with AII amacrine cells). - Fred
+%
 
 %% History:
 % JRG/BW ISETBIO Team, 2015
 %
 %    10/19/17  jnm  Comments & Formatting
-
-%% Extended References:
-%  Size of the RF
-%  Sampling density (stride) of the RF centers.
-%
-% --- REFERENCES AND BUILTIN bipolar types ---
-%
-% We have implemented five types of bipolar receptive fields, one assigned
-% to each of the big five RGC types. Each bipolar type has a preferential
-% cone selection rule. The critical rule is **no S-cones for on/off
-% parasol and on-midget**, as per the Chichilnisky primate data (Field and
-% Chichilnisky, 2010, Nature).
-% <http://www.nature.com/nature/journal/v467/n7316/full/nature09424.html>
-%
-% N.B. Parasol is synonymous with diffuse.
-%
-% The data for the support size is this passage from Dacey, Brainard, Lee, 
-% et al., Vision Research, 2000, page 1808 bottom right.
-% (http://www.cns.nyu.edu/~tony/vns/readings/dacey-etal-2000.pdf)
-%
-% They write:
-%
-%  "The [spatial] frequency response was bandpass and well fit by a
-%  difference of Gaussians receptive field model. (abstract)"
-%
-%  "For midget bipolar cells, it is known that at retinal eccentricities up
-%  to 10 mm virtually all cells restrict dendritic contact to single cones
-%  (Milam et al., 1993; Wassle et al., 1994); this was confirmed for the
-%  cell whose light response is illustrated in Fig. 4. B) Also see Boycott
-%  & Wassle, 1991,  (European Journal of Neuroscience), Table 1."
-%
-%  On page 1809:
-%   Center/Surround gain ratio is about 1:1.3 (area under the curve)
-%   Surround:Center diameter about 1:10 (Center:surround)
-%   They seem to think that for ganglion cells the gain ratio is about
-%   1:0.5 and the diameter ratio is between 1:2 and 1:5.
-%
-% Likely the larger RF sizes measured physiological (Dacey et al.) vs
-% anatomically (B&W) reflect spread of signals among cones (via direct gap
-% junctions) and probably more important among cone bipolars (via gap
-% junctions with AII amacrine cells). - Fred
-%
 
 %% Parse inputs
 p = inputParser;

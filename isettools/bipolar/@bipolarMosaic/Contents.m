@@ -1,6 +1,7 @@
 % @BIPOLARMOSAIC
 %
-% Files
+% Bipolar Mosaic class and functions
+%
 %   bipolarMosaic - Create a bipolar mosaic object
 %   bipolarSet    - Retrieve isetbio bipolar object parameters
 %   compute       - Compute bipolar continuous current responses
