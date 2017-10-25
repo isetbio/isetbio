@@ -3,23 +3,28 @@ function varargout = v_eyeMovementsPhysio(varargin)
     %% PARAMS TO EXAMINE
     params = struct(...
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
-        'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
-        'integrationTimeSeconds', 10/1000, ...  % Integration time (also eye movement sample time)
+        'emType', 'tremor', ...                 % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
+        'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
         'trialLengthSeconds', 5.0, ...          % Duration of each trial
-        'nTrials', 100 ...                      % How many trials to compute
+        'nTrials', 100, ...                     % How many trials to compute
+        'exportToPDF', true ...                 
     );
 
     % Generate cone mosaic
     cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
     
     % Go !
+    params.integrationTimeSeconds = 5/1000;
     runSimulation(1, params, cm);
     
     % Go !
-    params.integrationTimeSeconds = 0.5/1000;
+    %params.integrationTimeSeconds = 10/1000;
     runSimulation(2, params, cm);
 end
 
+%
+% Function that runs the simulation
+%
 function emData = runSimulation(figNo, params, cm)
 %% Reproduce identical random numbers
 rng('default'); rng(3);
@@ -33,6 +38,14 @@ cm.integrationTime = params.integrationTimeSeconds;
 %% Analyze eye movement dynamics
 % Interval to use for estimating speed
 speedEstimationIntervalSeconds = 100/1000;
+
+% PDF figure name
+if (params.exportToPDF)
+    pdfFigName = sprintf('%s_%s_%2.1fms.pdf', params.mosaicType, params.emType, params.integrationTimeSeconds*1000);
+else
+    pdfFigName = '';
+end
+
 switch params.emType
     case 'tremor'
         detrendingPolynomialOrder = 0;  % 0 (zero-mean), 1 (linear detrending), 2 (2nd order poly detrend) etc ...
@@ -48,10 +61,12 @@ switch params.emType
         error('Unknown em type: ''%s''.', emType);
 end
 % Plot the raw emData for all reps
-plotRawEMdata(figNo, emData);
+plotRawEMdata(figNo, emData, pdfFigName);
 end
 
-% Function to analyze tremor dynamics
+%
+% Function to analyze the dynamics of tremor eye movements
+%
 function emData = analyzeTremorDynamics(theEMpathsArcMin, emTimeAxis, detrendingPolynomialOrder, speedEstimationIntervalSeconds)
 fprintf('\nAnalyzing tremor dynamics ...');
 % save the raw data
@@ -60,7 +75,7 @@ emData.emTimeAxis = emTimeAxis;
 
 % params for FFT
 nPoints = size(theEMpathsArcMin,2);
-nFFT = 2^(1+round(log(nPoints)/log(2)));
+nFFT = 8192*2;
 deltaT = emTimeAxis(2)-emTimeAxis(1);
 maxFreq = 1/(2*deltaT);
 deltaFreq = maxFreq / (nFFT/2);
@@ -70,28 +85,33 @@ frequencyAxis = (0:1:(nFFT-1)) * deltaFreq;
 amplitudeAxisArcMin = (0:2:60)/60;
 
 % analyze each trial separately
+amplitudeAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
     [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
         analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'tremor');
     
+    amplitudeAllTrials = cat(2, amplitudeAllTrials, d.amplitudes);
     % detrend x/y position signals
     [detrendedXpos, d.detrendingXpos] = detrendSignals(emTimeAxis, xPos, detrendingPolynomialOrder);
     [detrendedYpos, d.detrendingYpos] = detrendSignals(emTimeAxis, yPos, detrendingPolynomialOrder);
     
     % perform FT analysis on the detrended positions
     ft = abs(fft(detrendedXpos, nFFT));
-    d.spectrum.amplitudeXpos = ft(1:nFFT/2) * 1/deltaT;
+    d.spectrum.posX = ft(1:nFFT/2) * deltaT;
     ft = abs(fft(detrendedYpos, nFFT));
-    d.spectrum.amplitudeYpos = ft(1:nFFT/2) * 1/deltaT;
+    d.spectrum.posY = ft(1:nFFT/2) * deltaT;
     d.spectrum.frequency = frequencyAxis(1:nFFT/2);
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
+fprintf('median tremor amplitude: %2.3f arc sec\n', median(amplitudeAllTrials)*60);
 end
 
-% Function to analyze drift dynamics
+%
+% Function to analyze the dynamics of drift eye movements
+%
 function emData = analyzeDriftDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds)
 fprintf('\nAnalyzing drift dynamics ...');
 % Save the raw data
@@ -102,16 +122,23 @@ emData.emTimeAxis = emTimeAxis;
 amplitudeAxisArcMin = 0:2:60;
 
 % analyze each trial separately
+speedAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
     [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
         analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'drift');
+    indices = find(~isnan(squeeze(d.speedSignal(:,3))));
+    speedAllTrials = cat(2, speedAllTrials, squeeze(d.speedSignal(indices,3))');
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
+fprintf('median drift speed: %2.2f arc min / sec\n', median(speedAllTrials));
 end
 
+%
+% Function to analyze the dynamics of microsaccade eye movements
+%
 function emData = analyzeMicrosaccadeDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds)
 fprintf('\nAnalyzing microsaccade dynamics ...');
 % Save the raw data
@@ -122,17 +149,29 @@ emData.emTimeAxis = emTimeAxis;
 amplitudeAxisArcMin = 0:2:60;
 
 % analyze each trial separately
+amplitudesAllTrials = [];
+intervalsAllTrials = [];
+durationsAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
     [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
         analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'microsaccade');
+    amplitudesAllTrials = cat(2,amplitudesAllTrials, d.amplitudes);
+    intervalsAllTrials  = cat(2,intervalsAllTrials, d.intervals);
+    durationsAllTrials = cat(2,durationsAllTrials, d.durations);
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
+
+fprintf('median microsaccade amplitude: %2.2f arc min\n', median(amplitudesAllTrials));
+fprintf('median microsaccade interval: %2.2f\n', 1000*median(intervalsAllTrials(~isnan(intervalsAllTrials))));
+fprintf('median microsaccade duration: %2.2f\n', 1000*median(durationsAllTrials(~isnan(durationsAllTrials))));
 end
 
-% Method to extract different components from the eye movement paths
+%
+% Function to compute different components of the eye movement paths
+%
 function [amplitudes, amplitudeHistogram, times, durations, intervals, diffSignal, decimatedSignal, speedSignal, speedHistogram] = ...
     analyzeEMpath(timeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, emType)
 
@@ -192,7 +231,6 @@ end
 % intervals
 intervals = [nan diff(times)];
 
-
 % amplitude histogram
 amplitudeHistogram.count = histcounts(amplitudes, amplitudeAxisArcMin);
 amplitudeHistogram.amplitudeAxis = amplitudeAxisArcMin(1:end-1) + 0.5*(amplitudeAxisArcMin(2)-amplitudeAxisArcMin(1));
@@ -202,7 +240,7 @@ halfBinWidth = round(speedEstimationIntervalSeconds/2/dt);
 actualspeedEstimationIntervalSeconds = (halfBinWidth*2+1)*dt;
 speedXMinArcPerSecond = nan(1,numel(xPos));
 speedYMinArcPerSecond = speedXMinArcPerSecond;
-indices = 1+halfBinWidth:numel(xPos)-halfBinWidth;
+indices = 1+halfBinWidth:round(halfBinWidth/2):numel(xPos)-halfBinWidth;
 speedXMinArcPerSecond(indices) = xPos(indices+halfBinWidth)-xPos(indices-halfBinWidth);
 speedYMinArcPerSecond(indices) = yPos(indices+halfBinWidth)-yPos(indices-halfBinWidth);
 speedXMinArcPerSecond = abs(speedXMinArcPerSecond)/actualspeedEstimationIntervalSeconds;
@@ -212,6 +250,7 @@ speedYMinArcPerSecond = abs(speedYMinArcPerSecond)/actualspeedEstimationInterval
 speedMinArcPerSecond = sqrt(speedXMinArcPerSecond.^2 + speedYMinArcPerSecond.^2);
 speedSignal(:,1) = speedXMinArcPerSecond;
 speedSignal(:,2) = speedYMinArcPerSecond;
+speedSignal(:,3) = speedMinArcPerSecond;
 
 % speed magnitude histogram
 speedAxisArcSecPerSecond = (0:10:1000);
@@ -219,12 +258,18 @@ speedHistogram.count = histcounts(speedMinArcPerSecond*60, speedAxisArcSecPerSec
 speedHistogram.speedAxisArcSecPerSecond = speedAxisArcSecPerSecond(1:end-1) + 0.5*(speedAxisArcSecPerSecond(2)-speedAxisArcSecPerSecond(1));
 end
 
+%
+% Function to remove low frequency trends
+%
 function [detrendedSignal, detrendingSignal] = detrendSignals(timeAxis, signal, detrendingPolynomialOrder)
 [p,s,mu] = polyfit(timeAxis,signal,detrendingPolynomialOrder);
 detrendingSignal = polyval(p,timeAxis,[],mu);
 detrendedSignal = signal - detrendingSignal;
 end
 
+%
+% Function to generate a cone mosaic
+%
 function cm = generateMosaic(mosaicType, integrationTimeSeconds)
 fprintf('\nGenerating mosaic ...');
 
@@ -273,6 +318,9 @@ cm.integrationTime = integrationTimeSeconds;
 fprintf('Done \n');
 end
 
+%
+% Function to generate eye movement paths
+%
 function [theEMpathsArcMin, emTimeAxis] = generateEMpaths(cm, emType, trialLengthSeconds, nTrials)
 fprintf('\nGenerating eye movement paths...');
 % Generate this many eye movements per trial
@@ -304,7 +352,9 @@ emTimeAxis = cm.timeAxis;
 fprintf('Done\n');
 end
 
-
+%
+% Function to plot the drift eye movement analysis
+%
 function plotAnalyzedDriftEMdata(figNo, d)
 fprintf('\nPlotting  drift analysis ...');
 nTrials = size(d.theEMpathsArcMin,1);
@@ -352,17 +402,18 @@ set(gca, 'XLim', XYrange, 'YLim', XYrange, 'XTick', -100:5:100, 'YTick', -100:5:
 addPlotLabels('position (min arc)', 'position (min arc)', 16, sprintf('trial #%d', displayedEMtrial), 'grid on', 'axis square');
 
 subplot(4,3, [7 8]);
-plot(d.emTimeAxis(1:size(stats.speedSignal,1)), squeeze(stats.speedSignal(:,1))*60, 'r.-');
+indices = find(~isnan(squeeze(stats.speedSignal(:,1))));
+plot(d.emTimeAxis(indices), squeeze(stats.speedSignal(indices,1))*60, 'r.-');
 hold on
-plot(d.emTimeAxis(1:size(stats.speedSignal,1)), squeeze(stats.speedSignal(:,2))*60, 'b.-');
+plot(d.emTimeAxis(indices), squeeze(stats.speedSignal(indices,2))*60, 'b.-');
 legend({'x-speed', 'y-speed'});
-set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 sqrt(2.0)*max(stats.speedSignal(:)*60)]);
+set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 250]);
 addPlotLabels('time (seconds)', sprintf('speed \n(arc sec / second)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
 subplot(4,3, [10 11]);
-plot(d.emTimeAxis(1:size(stats.speedSignal,1)), sqrt(squeeze(stats.speedSignal(:,1)).^2 + squeeze(stats.speedSignal(:,2)).^2)*60, 'k.-');
+plot(d.emTimeAxis(indices),squeeze(stats.speedSignal(indices,3))*60, 'k.-');
 legend({'speed'});
-set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 sqrt(2.0)*max(stats.speedSignal(:)*60)]);
+set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 250]);
 addPlotLabels('time (seconds)', sprintf('speed \n(arc sec / second)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
 % Plot speed histogram
@@ -373,6 +424,9 @@ addPlotLabels('drift speed (arc sec / second)', sprintf('normalized\nfreq. of oc
 fprintf('Done\n');
 end
 
+%
+% Function to plot the tremor eye movement analysis
+%
 function plotAnalyzedTremorEMdata(figNo,d)
 fprintf('\nPlotting tremor analysis ...');
 nTrials = size(d.theEMpathsArcMin,1);
@@ -382,14 +436,14 @@ for iTrial = 1:size(d.theEMpathsArcMin,1)
     stats = d.stats{iTrial};
     if (iTrial == 1)
         count = stats.amplitudeHistogram.count;
-        ftAmpXpos = stats.spectrum.amplitudeXpos;
-        ftAmpYpos = stats.spectrum.amplitudeYpos;
+        ftAmpXpos = stats.spectrum.posX;
+        ftAmpYpos = stats.spectrum.posY;
     else
         if (~isempty(stats.amplitudeHistogram.count))
             count = cat(1,count, stats.amplitudeHistogram.count);
         end
-        ftAmpXpos = cat(1,ftAmpXpos, stats.spectrum.amplitudeXpos);
-        ftAmpYpos = cat(1,ftAmpYpos, stats.spectrum.amplitudeYpos);
+        ftAmpXpos = cat(1,ftAmpXpos, stats.spectrum.posX);
+        ftAmpYpos = cat(1,ftAmpYpos, stats.spectrum.posY);
     end
 end % iTrial
 
@@ -408,13 +462,13 @@ set(hFig, 'Position', [10 10 1400 1200], 'Color', [1 1 1]);
 
 % Plot current trial emData
 subplot(4,3,[4 5]);
-XYrange = 10* [-1 1];
+XYrange = 10 * [-1 1];
 hold on
 %plot(d.emTimeAxis, stats.detrendingXpos, '-', 'Color', [1 0.5 0.6], 'LineWidth', 5);
 %plot(d.emTimeAxis, stats.detrendingYpos, '-', 'Color', [0.6 0.5 1.0], 'LineWidth', 5);
 plot(d.emTimeAxis, squeeze(d.theEMpathsArcMin(displayedEMtrial, :,1)), 'r.-', 'MarkerSize', 14);
 plot(d.emTimeAxis, squeeze(d.theEMpathsArcMin(displayedEMtrial, :,2)), 'b.-', 'MarkerSize', 14);
-legend({'detrending X-pos', 'detrending Y-pos', 'eye X-pos', 'eye Y-pos'});
+%legend({'detrending X-pos', 'detrending Y-pos', 'eye X-pos', 'eye Y-pos'});
 legend({'eye X-pos', 'eye Y-pos'});
 set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', XYrange);
 addPlotLabels('', 'position (min arc)', 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
@@ -429,17 +483,20 @@ subplot(4,3,[7 8]);
 stem(stats.times, stats.amplitudes*60, 'mo', 'MarkerFaceColor', [0.8 0.5 0.8], 'MarkerSize', 10);
 hold on;
 plot(d.emTimeAxis(1:end-1), stats.diffSignal*60, 'k.', 'MarkerSize', 14);
-set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 max(stats.amplitudes*60)]);
+set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 30]);
 addPlotLabels('time (seconds)', sprintf('tremor amplitude\n(arc sec)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
 % Plot spectrum for current trial
 subplot(4,3,10);
-plot(stats.spectrum.frequency, stats.spectrum.amplitudeXpos, 'r-', 'LineWidth', 1.5);
+freqLimits = [0.5 1000];
+freqTicks = [0.3 1 3 10 30 100 300 1000];
+spectrumAmplitudeLimits = [1e-3 2];
+plot(stats.spectrum.frequency, stats.spectrum.posX.^2, 'r-', 'LineWidth', 1.5);
 hold on;
-plot(stats.spectrum.frequency, stats.spectrum.amplitudeYpos, 'b-', 'LineWidth', 1.5);
-set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [stats.spectrum.frequency(1) stats.spectrum.frequency(end)], 'YLim', [0.1 max([max(stats.spectrum.amplitudeXpos) max(stats.spectrum.amplitudeYpos)])]);
-addPlotLabels('frequency (Hz)', 'amplitude', 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
+plot(stats.spectrum.frequency, stats.spectrum.posY.^2, 'b-', 'LineWidth', 1.5);
+set(gca, 'XScale', 'log', 'XTick', freqTicks, 'YScale', 'log');
+set(gca, 'XLim', freqLimits, 'YTick', [1e-3 1e-2 1e-1 1e0], 'YLim', spectrumAmplitudeLimits);
+addPlotLabels('frequency (Hz)', sprintf('amplitude\n(spectrum)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
 % Plot mean spectrum across all trials
 subplot(4,3,11);
@@ -447,17 +504,20 @@ plot(stats.spectrum.frequency, meanOverAllTrialsSpectrumXpos, 'r-', 'LineWidth',
 hold on
 plot(stats.spectrum.frequency, meanOverAllTrialsSpectrumYpos, 'b-', 'LineWidth', 1.5);
 set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [stats.spectrum.frequency(1) stats.spectrum.frequency(end)], 'YLim', [0.1 max([max(meanOverAllTrialsSpectrumXpos) max(meanOverAllTrialsSpectrumXpos)])]);
-addPlotLabels('frequency (Hz)', 'amplitude', 16, sprintf('trials: %d', nTrials), 'grid on', '');
+set(gca, 'XLim', freqLimits, 'XTick', freqTicks, 'YTick', [1e-3 1e-2 1e-1 1e0], 'YLim', spectrumAmplitudeLimits);
+addPlotLabels('frequency (Hz)', sprintf('amplitude\n(spectrum)'), 16, sprintf('trials: %d', nTrials), 'grid on', '');
 
 % Plot amplitude histogram
 subplot(4,3,12);
 bar(stats.amplitudeHistogram.amplitudeAxis*60, meanOverAllTrialsFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
-set(gca, 'XLim', [0 45]);
+set(gca, 'XLim', [0 30], 'XTick', 0:5:50);
 addPlotLabels('tremor amplitude (arc sec)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
 fprintf('Done\n');
 end
 
+%
+% Function to plot the microsaccade eye movement analysis
+%
 function plotAnalyzedMicrosaccadeEMdata(figNo,d)
 fprintf('\nPlotting microsaccade analysis ...');
 nTrials = size(d.theEMpathsArcMin,1);
@@ -494,7 +554,7 @@ hFig = figure(figNo); clf;
 set(hFig, 'Position', [10 10 1400 1200], 'Color', [1 1 1]);
 
 % Plot current trial emData
-XYrange = 20 * [-1 1];
+XYrange = 15 * [-1 1];
 subplot(4,3,[4 5]);
 plot(d.emTimeAxis, squeeze(d.theEMpathsArcMin(displayedEMtrial, :,1)), 'r.-', 'MarkerSize', 14);
 hold on
@@ -525,13 +585,13 @@ addPlotLabels('time (seconds)', sprintf('micro-saccade amplitude\n(min arc)'), 1
 % Plot scattegram of durations vs amplitudes
 subplot(4,3,10);
 plot(durations*1000, amplitudes, 'k.');
-set(gca, 'XLim', [0 15]);
+set(gca, 'XLim', [0 15], 'YLim', [0 15]);
 addPlotLabels('duration (ms)', 'amplitude (arc min)', 16, sprintf('%d trials', nTrials), 'grid on', 'square axis');
 
 % Plot scattegram of durations vs intervals
 subplot(4,3,11);
 plot(durations*1000, intervals*1000, 'k.');
-set(gca, 'XLim', [0 15]);
+set(gca, 'XLim', [0 15], 'YLim', [0 3000]);
 addPlotLabels('duration (ms)', 'interval (ms)', 16, sprintf('%d trials', nTrials), 'grid on', 'square axis');
 
 % Plot the amplitude histogram (mean over all trials)
@@ -544,13 +604,16 @@ end
 fprintf('Done\n');
 end
 
-% Function for plotting the raw EMdata for all trials
-function plotRawEMdata(figNo,d)
+%
+% Function to plot the raw EMdata for all trials
+%
+function plotRawEMdata(figNo,d, pdfFigName)
 nTrials = size(d.theEMpathsArcMin,1);
 theEMpathsArcMin = d.theEMpathsArcMin;
 emTimeAxis = d.emTimeAxis;
-maxEMexcursion = 20;
-figure(figNo);
+maxEMexcursion = 10;
+
+hFig = figure(figNo);
 subplot(4,3, [1 2]);
 hold on;
 for iTrial = 1:size(theEMpathsArcMin,1)
@@ -568,9 +631,15 @@ end
 set(gca, 'XLim', maxEMexcursion*[-1 1], 'YLim', maxEMexcursion*[-1 1], 'XTick', -100:5:100, 'YTick', -100:5:100);
 addPlotLabels('', 'position (arc min)', 16, sprintf('%d trials', nTrials), 'grid on', 'square axis');
 
+% Export to PDF
+if (~isempty(pdfFigName))
+    NicePlot.exportFigToPDF(pdfFigName, hFig, 300);
+end
 end
 
+%
 % Function for adding x/y labels etc.
+%
 function  addPlotLabels(theXlabel, theYlabel, theFontSize, theTitle, theGrid, theAxis)
 xlabel(theXlabel, 'FontWeight', 'bold');
 ylabel(theYlabel, 'FontWeight', 'bold');
