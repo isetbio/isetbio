@@ -1,4 +1,6 @@
 function response = compute(obj, varargin)
+% Spatially and temporally filter the cone current to create bipolar output
+%
 % Syntax:
 %    The bipolar object handles multiple trials, and these are returned
 %    separately for the center and surround of the biplar model when use
@@ -30,12 +32,15 @@ function response = compute(obj, varargin)
 %    both spatial and temporal filtering.
 %
 % Input:
-%    obj      - A bipolar object
+%    obj          - A bipolar cone mosaic object
+%
+% Optional Key/Value Pairs:
+%    nTrialsInput - The number of trials
 %
 % Output:
-%    Response - The response of the bipolar. N.B. The center and
-%               surround responses are calculated and stored in the mosaic
-%               as responseCenter and responseSurround
+%    Response     - The response of the bipolar. N.B. The center and
+%                   surround responses are calculated and stored in the
+%                   mosaic as responseCenter and responseSurround
 %
 % References: 
 %   *Meister option* -
@@ -100,26 +105,24 @@ end
 %% Spatial filtering and subsampling
 % If the input includes multiple trials, we run across all the trials here.
 for iTrial = 1:nTrials
-    %%%
     % This places the cone 3D matrix into a coneNumber x time matrix
     if ~isempty(coneTrials)
         osSig = RGB2XWFormat(squeeze(coneTrials(iTrial, :, :, :)));
     else
         osSig = RGB2XWFormat(cmosaic.current);
     end
-    
-    
+
     %% Enforce anatomical rules on cone to bipolar connections
     switch obj.cellType
         case{'offdiffuse', 'ondiffuse', 'onmidget'}
             osSigCenter   = osSig;
             osSigSurround = osSig;
-            %%%
+
             % Remove S cone input for these types of bipolars
             %
             % Find the locations indices of the different cone types
             [~, ~, S] = coneTypeLocations(cmosaic, 'format', 'index');
-            %%%
+
             % Zero the photocurrent of the S cones. Do this for both the
             % center and the surround.
             minval = min(osSig(:));
@@ -127,9 +130,7 @@ for iTrial = 1:nTrials
             osSigSurround(S(:), :) = minval*ones(size(osSigCenter(S, :)));
             
         case{'offmidget'}
-            %%%
             % Keep S cone input for off Midget but only weight by 0.25
-            %
             % Find the locations (row, col) of the different cone types
             [~, ~, S] = coneTypeLocations(cmosaic, 'format', 'index');
             minval = min(osSig(:));
@@ -141,25 +142,23 @@ for iTrial = 1:nTrials
             osSigSurround(S, :) = 0.25*(osSigSurround(S, :)-minval)+minval;
             
         case{'onsbc'}
-            %%%
             % Set L and M cones to zero in SBC center, set S cones to zero
             % in SBC surround.
-            %
             % Find the indices of the different cone types
             [L, M, S] = coneTypeLocations(cmosaic, 'format', 'index');
-            %%%
+
             % This is one long vector of L, M cone indices
             LM = [L; M];
-            %%%
+
             % Find the effectively zero outer segment signal for this
             % mosaic
             minval = min(osSig(:));
-            %%%
+
             % When the center is an LM cone, make all of the time steps in
             % the center the smallest value
             osSigCenter       = osSig;
             osSigCenter(LM, :) = minval*ones(size(osSigCenter(LM, :)));
-            %%%
+
             % Put effectively zero S-cone signals into the surround
             osSigSurround      = osSig;
             osSigSurround(S, :) = minval*ones(size(osSigSurround(S, :)));
@@ -167,7 +166,7 @@ for iTrial = 1:nTrials
         otherwise
             error('Unrecognized bipolar mosaic type %s\n', obj.cellType);
     end
-    %%%
+
     % Put the data back into RGB format, like RGB2XW()
     sz = size(cmosaic.current);
     osSigCenter   = XW2RGBFormat(osSigCenter, sz(1), sz(2));
@@ -182,7 +181,7 @@ for iTrial = 1:nTrials
     bipolarSurround = ieSpaceTimeFilter(osSigSurround, obj.sRFsurround);
     % vcNewGraphWin; ieMovie(bipolarCenter);
     % vcNewGraphWin; ieMovie(bipolarSurround);
-    %%%
+
     % Pull out the samples at the cell locations. It works here because
     % they are evenly spaced (stride). If we have jitter, we need another
     % approach.
@@ -196,7 +195,7 @@ for iTrial = 1:nTrials
     % Reshape the data for the temporal convolution
     [bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
     bipolarSurround = RGB2XWFormat(bipolarSurround);
-    %%%
+
     % This is the impulse response filter
     bipolarFilt = bipolarFilter(obj, cmosaic);
     
@@ -223,7 +222,7 @@ for iTrial = 1:nTrials
         * ones(1, size(bipolarCenter, 2)));
     tmpCenter = conv2(bipolarFilt, bipolarCenter);
     % vcNewGraphWin; tmp = XW2RGBFormat(tmpCenter, row, col); ieMovie(tmp);
-    %%%
+
     % Rectification
     % Not fully tested or analyzed -
     % bipolarSurround = obj.rectificationSurround(bipolarSurround ...
@@ -252,7 +251,6 @@ for iTrial = 1:nTrials
     end
     
     if iTrial == nTrials
-        %%%
         % Store the last trial in the object
         obj.responseCenter   = XW2RGBFormat(tmpCenter(:, ...
             1:size(cmosaic.current, 3)), row, col);
@@ -262,5 +260,4 @@ for iTrial = 1:nTrials
 end
 
 response = nTrialsCenter - nTrialsSurround;
-
 end

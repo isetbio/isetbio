@@ -1,14 +1,23 @@
 function str = describe(obj)
+% Summarize the properties of a bipolar mosaic in a string
+%
 % Syntax:
 %
 %   bipolar.describe;
 %
-% Dexcription:
+% Description:
 %    Summarize the bipolar mosaic properties in a string
 %
+% Inputs:
+%   None
+%
+% Outputs:
+%    str - A string containing the cell type, patch size, sRF center, sRF
+%          surround, time step, and duration properties of the object
 % Notes:
 % * @JRG:  How will we handle multiple bipolar mosaics?
-%
+% * Do we want to have the option to include more parameters (or fewer) as
+%   options for describe?
 
 % History:
 % BW ISETBIO Team, 2017

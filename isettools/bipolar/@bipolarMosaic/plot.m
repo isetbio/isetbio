@@ -1,21 +1,28 @@
 function hdl = plot(obj, pType, varargin)
+% Plot data from a bipolar mosaic object
+%
 % Syntax:
 %
 %   hdl = bp.plot(plotType, varargin)
-%
-%   Type @bipolarMosaic.plot('help'); to see the plot types.
 %
 % Description:
 %    Plot data from a bipolar mosaic object
 %
 % Input:
-%    obj      - ???
-%    pType    - plot type
-%    varargin - ???
+%    pType  - plot type
 %
 % Optional Key/Value Pairs:
-%    gamma    - controls image display
-%    pos      - positions to plot for time series
+%    gamma  - controls image display
+%    pos    - positions to plot for time series
+%
+% Output:
+%    hdl    - the bipolar mosaic plot according to the provided parameters
+%
+% Notes
+%    * Maybe this should be obj.fig??? - question from below
+%    * No case for plot type doesn't match anything in the list (else)
+%    * Need to address the other notes throughout the function
+%    * Type @bipolarMosaic.plot('help') to see the plot types. - Broken?
 %
 
 %% History: 
@@ -57,8 +64,8 @@ p.addParameter('pos', [], @ismatrix);
 p.parse(pType, varargin{:}); 
 
 %% Set the window.
-% < Note: JM - opinion on the question that was already listed here? ->
-% Maybe this should be obj.fig??? >
+% [Note: JM - opinion on the question that was already listed here? ->]
+% Maybe this should be obj.fig???
 if ~strcmpi(pType, 'help'), hdl = gcf; end
 %vcNewGraphWin([], 'upperLeftBig');
 sz = size(obj.responseCenter);
