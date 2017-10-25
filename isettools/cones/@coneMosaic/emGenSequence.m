@@ -85,9 +85,12 @@ nTrialsPos = zeros(nTrials,nFrames,2);
 % pattern sample size in meters - for rect mosaics this is the same as the cone size, but not so for hex-mosaics
 params.w = obj.patternSampleSize(1); 
 
+% Are we only doing micro-saccades?
+microSaccadesOnlyFlag = (emFlag(3) && (~emFlag(1)) && (~emFlag(2)));
+
 for nn=1:nTrials
     %% generate eye movement for tremor
-    if emFlag(1)
+    if emFlag(1) || microSaccadesOnlyFlag 
         % Load parameters
         amplitude  = emGet(em, 'tremor amplitude', 'cones/sample', params);
         interval   = emGet(em, 'tremor interval');
@@ -113,7 +116,7 @@ for nn=1:nTrials
     end
     
     % generate eye movement for drift
-    if emFlag(2)
+    if emFlag(2)  ||  microSaccadesOnlyFlag 
         % Load Parameters
         speed     = emGet(em, 'drift speed', 'cones/sample', params);
         speedSD   = emGet(em, 'drift speed SD', 'cones/sample', params);
@@ -123,6 +126,11 @@ for nn=1:nTrials
         direction = [cosd(theta) sind(theta)];
         s = speed + speedSD * randn(nFrames, 1);
         pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
+    end
+    
+    if (microSaccadesOnlyFlag)
+        % Save eye movements due to drift and tremor
+        driftTremorEMpos = pos;
     end
     
     % generate eye movement for micro-saccade
@@ -166,6 +174,12 @@ for nn=1:nTrials
             pos = pos + cumsum(offset);
         end
     end
+    
+    % Remove eye movements due to drift and tremor
+    if (microSaccadesOnlyFlag)
+        pos = pos - driftTremorEMpos;
+    end
+    
     nTrialsPos(nn,:,:) = pos;
     pos = zeros(nFrames, 2);
 end
