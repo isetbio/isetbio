@@ -43,9 +43,5 @@ cMosaic.compute(oi);
 % the movie of fixations.
 cMosaic.window;
 
-%% When you close the window ...
-%
-% ... an irritating warning will be printed to the command window.
-% Sorry about that.
-% [DHB NOTE: How can we prevent this?]
+%%
 

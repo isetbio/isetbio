@@ -1,11 +1,22 @@
-function bipolarFilt = bipolarFilter(obj, cmosaic, varargin)
+function [bipolarFilt, timeBase] = bipolarFilter(obj, cmosaic, varargin)
 % Estimate bipolar temporal filter 
 %
-%    bipolarFilt = bipolarFilter(obj, cmosaic, 'graph',logical)
+%    [bipolarFilt, timeBase] = bipolarFilter(obj, cmosaic, 'graph',logical)
 % 
 % This routine calculates the bipolar impulse response function such that
-% the convolution of the outersegment and the bipolar equals the impulse
+% the convolution of the outer segment and the bipolar equals the impulse
 % response of the rgc.
+%
+% Inputs:
+%    obj  - bipolarMosaic
+%    cmosaic = coneMosaic
+%
+% Parameter/Values
+%   graph - plot or not
+%
+% Return
+%   bipolarFilt - Filter values
+%   timeBase    - Sample times in seconds.  Same as cMosaic.timeAxis
 %
 % Example:
 %   cMosaic = coneMosaic;
@@ -19,6 +30,9 @@ function bipolarFilt = bipolarFilter(obj, cmosaic, varargin)
 %   vcNewGraphWin; plot(cMosaic.timeAxis,bpFilter,'o-');
 %
 % (c) isetbio team JRG/BW 12/2016
+
+% PROGRAMMING
+%   Ringing at the end of the bipolar filter.  See t_bipolar.mlx.
 
 %% parse input parameters
 p = inputParser;
@@ -92,7 +106,10 @@ gw1 = gw1/sum(gw1);   % Unit area for no DC amplification
 % average isomerizations computed in @osLinear/linearFilters.m, the
 % numerator and denominator of fftBipolarFilt are 0 at the same point,
 % which results in NaN. Here we add a small epsilon 1e-15 to denominator if
-% this happens in order to get rid of the NaN values.
+% this happens in order to get rid of the NaN values. (JRG?)
+% BW:  There is ringing at the end of the bipolar filter calculation.
+%      This may be a cause. In any event, we need to get rid of the
+%      ringing.
 fftBipolarFilt = fft(gw1) .* fft((rgcFilt)) ./ (fft((osFilt)));
 nanInd = isnan(fftBipolarFilt); 
 if sum(nanInd(:))>0

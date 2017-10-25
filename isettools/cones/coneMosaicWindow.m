@@ -301,7 +301,10 @@ switch plotType
         
     case 'Absorption movie'
         ieInWindowMessage('Showing absorption movie',handles)
-        cm.plot('movie absorptions','hf', handles.axes2,'gamma',g);
+        uData = cm.plot('movie absorptions','hf', handles.axes2,'gamma',g);
+        % Save the movie data in the figure
+        disp('Saving movie data in the current figure as userdata');
+        set(gcf,'userdata',uData);
         ieInWindowMessage('',handles)
         
     case 'Mean photocurrent'

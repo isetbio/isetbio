@@ -62,8 +62,12 @@ tDim = ndims(data);     % Time step is always the last dimension
 nFrames = size(data, tDim);
 
 % Scale and gamma correct mov
-data = ieScale(data,0,1) .^ gamma;
-mind = min(data(:)); maxd = max(data(:));
+if gamma ~= 1, data = ieScale(data,0,1) .^ gamma;
+else,          data = ieScale(data,0,1);
+end
+
+% mind = min(data(:)); maxd = max(data(:));
+mind = 0; maxd = 1;
 
 % Create the video object if we plan to save
 if save

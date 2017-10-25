@@ -1,23 +1,34 @@
 function a = coneAbsorptions(obj,varargin)
-%CONEABSORPTIONS  Get isomerizations from one the cone classes
-%   a = CONEABSORPTIONS(obj,varargin)
+%CONEABSORPTIONS  Get isomerizations from one of the cone classes
 %
-%   The isomerizations are returned in a column vector.
+%  absorptions = CONEABSORPTIONS(obj,varargin)
 %
-%   Optional parameter name/value pairs chosen from the following:
+% Optional parameter name/value pairs chosen from the following:
+%   'coneType'  - one of 'L', 'M', or 'S' (default 'L')
 %
-%   'coneType'        'L', 'M', or 'S' (default 'L')
+% Return
+%   'absorptions' - column vector of absorptions in the integration
+%   time
 %
-%    Example: a = CONEABSORPTIONS('coneType','L');
- 
+% Example: 
+%   absorptions = CONEABSORPTIONS('coneType','L');
+%
+
 % HJ ISETBIO Team 2016
+%
+% Note:  Maybe we should allow multiple cone types and return a cell
+% array.
+%
+
+%% Which cone types
 
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
 p.addParameter('coneType','L',@ischar);
 p.parse(obj,varargin{:});
 
-% Pull out the relevant cone type data
+%% Extract the cone type data
+
 switch lower(p.Results.coneType)
     case 'l'
         cType = 2;
@@ -29,11 +40,13 @@ switch lower(p.Results.coneType)
         error('Unknown cone type %s\n',p.Results.coneType);
 end
 
-% Should be a better way to do this.  Help, someone.
-idx = find(obj.pattern == cType);
-[iRows,iCols] = ind2sub(size(obj.pattern), idx);
-a = zeros(size(iRows),1);
-for ii=1:length(iRows)
-    a(ii) = obj.absorptions(iRows(ii),iCols(ii));
-end
+% Positions of this type
+lst = (obj.pattern == cType);
+
+% Absortpions at those positions
+a = obj.absorptions(lst);
+
+% May not be necessary
+a = a(:);
+
 end
