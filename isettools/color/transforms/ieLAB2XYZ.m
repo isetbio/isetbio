@@ -1,38 +1,49 @@
 function xyz = ieLAB2XYZ(lab,whitepoint,useOldCode,labexp)
 % Convert CIE LAB values to CIE XYZ values
 %
-%    XYZ = ieLAB2XYZ(lab,whitepoint,exp,useOldCode)
+% Syntax:
+%   XYZ = ieLAB2XYZ(lab,whitepoint,exp,useOldCode)
 %
-% Converts CIEL*a*b* coordinates to CIE XYZ coordinates.  We will use the
-% makecform routine from the Matlab image processing toolbox for the
-% converison; if the toolbox/routine is not available, we will revert to
-% the older version of the code.
+% Description:
+%    Converts CIEL*a*b* coordinates to CIE XYZ coordinates.  We will use
+%    the makecform routine from the Matlab image processing toolbox for the
+%    converison; if the toolbox/routine is not available, we will revert to
+%    the older version of the code.
 %
-% lab        - LAB image; can either be in XW or RGB format.
-% whitepoint - a 3-vector of the xyz values of the white point.
-% useOldCode - 0 to use Matalb's routines, 1 otherwise
-% labexp     - used by old code; the exponent used in the CIELAB formula.
-%              Default is cube root as used in standard CIELAB. If
-%              specified, use the number as exponent. (note this exponent
-%              here should be the same as the exponent used in vcXYZlab.m)
+% Inputs:
+%    lab        - LAB image; can either be in XW or RGB format.
+%    whitepoint - a 3-vector of the xyz values of the white point.
+%    useOldCode - 0 to use Matalb's routines, 1 otherwise
+%    labexp     - used by old code; the exponent used in the CIELAB formula
+%                 Default is cube root as used in standard CIELAB. If
+%                 specified, use the number as exponent. (note this
+%                 exponent here should be the same as the exponent used in
+%                 vcXYZlab.m)
 %
-% Examples:
-%  vci = vcGetObject('vcimage');
-%  [locs,rgb] = macbethSelect(vci);
-%  dataXYZ = imageRGB2xyz(vci,rgb);
-%  whiteXYZ = dataXYZ(1,:);
-%  lab = ieXYZ2LAB(dataXYZ,whiteXYZ);
-%  xyz = ieLAB2XYZ(lab,whitepoint,exp,useOldCode)
+% Outputs:
+%    xyz        - CIE XYZ Values
 %
-% See also:  ieXYZ2LAB
+% See Also:
+%    ieXYZ2LAB
 %
-% 8/18/15  dhb  Change conditional on exist of makecform, works for p-code
-%               too.
-%          dhb  Always define labexp, since makecform may not exist.
-%          dhb  Change "exp" -> "labexp" to avoid clobbering function exp.
+% History
+%    08/18/15  dhb  Change conditional on exist of makecform, works for
+%                   p-code too.
+%              dhb  Always define labexp, since makecform may not exist.
+%              dhb  Change "exp"->"labexp" to avoid clobbering function exp
+%    10/25/17  jnm  Comments & Formatting
 %
 % Copyright ImagEval Consultants, LLC, 2009.
 
+% Examples:
+%{
+   vci = vcGetObject('vcimage');
+   [locs,rgb] = macbethSelect(vci);
+   dataXYZ = imageRGB2xyz(vci,rgb);
+   whiteXYZ = dataXYZ(1,:);
+   lab = ieXYZ2LAB(dataXYZ,whiteXYZ);
+   xyz = ieLAB2XYZ(lab,whitepoint,exp,useOldCode)
+%}
 if notDefined('lab'), error('No data.'); end
 if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');
@@ -44,12 +55,10 @@ if (exist('makecform','file')) &&  ~useOldCode
     
     % Which version of LAB is this for? 1976.
     % We are worried about the white point.
-
     cform = makecform('lab2xyz','WhitePoint',whitepoint(:)');
     xyz = applycform(lab,cform);
-    
+
     return;
-    
 else
     
     if length(whitepoint) ~= 3
@@ -93,7 +102,5 @@ else
     
     % Return XYZ in appropriate shape
     if ndims(xyz) == 3, xyz = XW2RGBFormat(xyz,r,c); end
-    
 end
-
 end

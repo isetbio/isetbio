@@ -1,21 +1,34 @@
 function srgb = lms2srgb(lms)
 % Convert LMS data to sRGB format for visualization
 %
-%  srgb = lms2srgb(lms)
+% Syntax:
+%   srgb = lms2srgb(lms)
 %
-% See Also: s_HumanColorBlind
+% Description:
+%    Convert LMS data to sRGB format for visualization
 %
-% Example:
-%  scene    = sceneCreate; imgXYZ   = sceneGet(scene,'xyz');
-%  whiteXYZ = sceneGet(scene,'illuminant xyz');
+% Inputs:
+%    lms  - LMS Data - (what format?)
 %
-%  lms = xyz2lms(imgXYZ, 1, 'Brettel', whiteXYZ);  % Protan view
-%  imagesc(lms2srgb(lms))
+% Outputs:
+%    srgb - standard Red-Green-Blue format
 %
-%  lms = xyz2lms(imgXYZ, 0);  % Normal view
-%  imagesc(lms2srgb(lms))
+% See Also:
+%    s_HumanColorBlind
 %
 % (c) ImagEval copyright 2012
+
+% Examples:
+%{
+  scene    = sceneCreate; imgXYZ   = sceneGet(scene,'xyz');
+  whiteXYZ = sceneGet(scene,'illuminant xyz');
+
+  lms = xyz2lms(imgXYZ, 1, 'Brettel', whiteXYZ);  % Protan view
+  imagesc(lms2srgb(lms))
+
+  lms = xyz2lms(imgXYZ, 0);  % Normal view
+  imagesc(lms2srgb(lms))
+%}
 
 srgb = xyz2srgb(imageLinearTransform(lms, colorTransformMatrix('lms2xyz')));
 

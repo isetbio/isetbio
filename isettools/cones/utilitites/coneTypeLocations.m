@@ -1,25 +1,33 @@
 function [l,m,s] = coneTypeLocations(cmosaic,varargin)
-% CONTYPELOCATIONS - Return row/col or indices of the three types of cones
+% Return row/col or indices of the three types of cones
 %
-%   [l,m,s] = coneTypeLocations(cmosaic, 'val', {'index' or 'rowcol'})
+% Syntax:
+%   [l, m, s] = coneTypeLocations(cmosaic, 'val', {'index' or 'rowcol'})
 %
-% Inputs
-%   cmosaic - Cone Mosaic object
+% Description:
+%    A function designed to return the row and column or indices of the
+%    three types of cones (l, m, and s)
+%
+% Input:
+%    cmosaic  - Cone Mosaic object
 %  
-% Parameter-Value inputs
-%   'format' - {rowcol, index}  Return indices (default) or rowcol values
+% Optional Key/Value Pairs:
+%    'format' - {rowcol, index}  Return indices (default) or rowcol values
 % 
-% The l,m,s outputs are either 
+% Notes:
+%    The l,m,s outputs are either 
+%     - an index to each cone type  (default), or
+%     - an Nx2 matrix of the row, col locations of the l, m, & s cone types
 %
-%    an index to each cone type  (default), or
-%    an N x 2 matrix of the row,col locations of the l, m, and s cone types
-%    
-% Example:
-%    cm = coneMosaic;
-%    [l,m,s] = coneTypeLocations(cm);
-%    [l,m,s] = coneTypeLocations(cm,'format','rowcol');
-%
+% History:
 % JRG/BW ISETBIO Team, 2016
+
+% Example:
+%{
+   cm = coneMosaic;
+   [l, m, s] = coneTypeLocations(cm);
+   [l, m, s] = coneTypeLocations(cm, 'format', 'rowcol');
+%}
 
 %%
 p = inputParser;
@@ -30,7 +38,6 @@ p.parse(cmosaic,varargin{:});
 format = p.Results.format;
 
 %% Compute
-
 % Always compute indices
 l  = find(cmosaic.pattern == 2);
 m  = find(cmosaic.pattern == 3);
