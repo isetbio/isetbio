@@ -1,15 +1,30 @@
 function xyz = lms2xyz(lms)
 % Convert stockman lms to xyz 10 deg
 %
-%    xyz = lms2xyz(lms)
+% Syntax:
+%   xyz = lms2xyz(lms)
 %
-% Input:
-%   lms:  Probablyk in RGB image format.  Should check.
-% Example:
+% Description:
+%    Convert stockman lms to xyz 10 deg
 %
-% See also:  xyz2lms
+% Inputs:
+%    lms - Probably in RGB image format. *Should check.*
+%
+% Outputs:
+%    xyz - XYZ Formatted image data
+%
+% Notes:
+%    * Why is the Input variable format in question and not already known?
+%
+% See Also:
+%    xyz2lms
 %
 % (c) ImagEval, 2012
+
+% Examples:
+%{
+   xyz = lms2xyz(lms)
+%}
 
 if notDefined('lms'), error('lms required'); end
 
@@ -28,4 +43,3 @@ elseif ismatrix(lms)
 end
 
 end
-
