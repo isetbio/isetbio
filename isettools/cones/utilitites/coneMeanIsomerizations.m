@@ -51,7 +51,6 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %   RGB2XWFormat
 %
 
-
 % History:
 %    11/2016   jrg  (c) Isetbio team
 %    08/06/17  dhb  Comment cleaning pass.
@@ -61,10 +60,16 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %                   suggestions from Code Analyzer to remove obsolete
 %                   warning supression (I'm running 2017a), and removed
 %                   some stray semi-colons after some "end" statements.
+%    10/26/17  dhb  Make example work, and add comment to example.
 
-% Example:
-%{
-   meanRate = coneMeanIsomerizations(cMosaic)
+% Examples:
+%{ Create default scene, oi, mosaic and get mean LMS isomerizations from mosaic.
+   scene = sceneCreate;
+   oi = oiCreate;
+   oi = oiCompute(oi,scene);
+   cMosaic = coneMosaic;
+   cMosaic.compute(oi);
+   tmp = coneMeanIsomerizations(cMosaic);
 %}
 
 %% Validate and parse input parameters
