@@ -2,15 +2,16 @@
 % 
 % A validation for the precomputed retinal ganglion cell response models.
 % 
-% (c) isetbio team
-% TRG 10/2017
-%% 
-clear
-ieInit;
+% TRG 10/2017, (c) isetbio team
 
+%% Initialize
+clear; close all; ieInit;
+
+%% Define cell types and sample rates to check
 cellTypes = {'onmidget', 'onparasol', 'onsbc', 'offmidget', 'offparasol'};
 sampleRates = [1/100, 1/1000];
-% check the gain of the Pillow rgc temporal response model for different sampling rates
+
+%% Check the gain of the Pillow rgc temporal response model for different sampling rates
 for i=1:length(cellTypes)
     for j=1:length(sampleRates)
         params = {};
