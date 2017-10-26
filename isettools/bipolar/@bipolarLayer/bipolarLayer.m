@@ -1,4 +1,6 @@
 classdef bipolarLayer < cellLayer
+    % Create an bipolarLayer object
+    %
     % Syntax:
     %   obj = bipolarLayer([conemosaicObject], params);    
     %
@@ -14,6 +16,17 @@ classdef bipolarLayer < cellLayer
     %    property field. This object has a role that matches the rgcLayer
     %    object.
     %
+    % Inputs:
+    %    coneMosaic - cone mosaic object including photocurrent response
+    %
+    % Optional Key/Value Pairs:
+    %    name           - the name of the bipolarLayer object.
+    %                     (Default 'bipolarLayer')
+    %    nTrials        - the number of trials. (Default 1)
+    %
+    % Outputs:
+    %    bipolarLayer   - A bipolarLayer object
+    %
 
     % History:
     % BW (c) isetbio team
@@ -27,7 +40,6 @@ classdef bipolarLayer < cellLayer
     %%%
     % Public, read-only properties.
     properties (SetAccess = public, GetAccess = public)
-        %%%
         % MOSAIC Cell array holding the bipolar cell mosaics
         mosaic;
     end
@@ -44,7 +56,7 @@ classdef bipolarLayer < cellLayer
     %% Public methods
     methods
         function obj = bipolarLayer(cMosaic, varargin)
-            %% Constructor
+            %% Create a Bipolar Layer object
             %
             % Taken from the irCreate() code, which was how we called the
             % innerretina object.  We should get rid of this rgcLayerCreate
@@ -77,13 +89,13 @@ classdef bipolarLayer < cellLayer
             
             obj.name         = p.Results.name;
             obj.nTrials = p.Results.nTrials;
-            %%%
+
             % We may keep the cone mosaic around and then get rid of the
             % obj.center, .species, .timeStep and .size.  No reason to have
             % both other than confusion.  We can write little methods to
             % get these from the input.
             obj.input  = cMosaic;
-            %%%
+
             % The patch size should apply to all of the mosaics.  It is
             % determined by the cone mosaic patch, as is the time step.
             obj.size = cMosaic.size;
@@ -91,14 +103,15 @@ classdef bipolarLayer < cellLayer
             % The time sample is the integration time of the cones.  Both
             % the absorptions and the current are sampled at this rate
             obj.timeStep  = cMosaic.integrationTime;  
-            %%%
+
             % Center of the patch with respect to distance (meters) on the
             % retina.  Fovea is (0,0).
             obj.center =  cMosaic.center;
         end
-        %%%
-        % Show the bipolar layer window
+
+        % Return Window handle
         function hdl = window(obj,varargin)
+            % Show the bipolar layer window
             hdl = bipolarLayerWindow(obj);
         end
     end
@@ -114,7 +127,9 @@ classdef bipolarLayer < cellLayer
     %% Protected Subclass Methods
     % Methods may be called by the subclasses, but are otherwise private
     methods (Access = protected)
+        % 1D spatial convolution of array of center & surround responses
         spConvolve(obj);
+        % 1D temporal convolution of array of center & surround responses
         timeConvolve(obj);
     end
     %% Private Subclass Methods

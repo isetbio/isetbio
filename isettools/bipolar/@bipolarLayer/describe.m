@@ -1,10 +1,22 @@
 function str = describe(obj)
+% Summarize the bipolar layer properties in a string% Syntax:
+%
 % Syntax:
 %   @bipolarLayer.describe;
 %
 % Description:
 %    Summarize the bipolar layer properties in a string
 %
+% Inputs:
+%   None
+%
+% Outputs:
+%    str - A string containing the patch size, center, time step, number of
+%          trials, eye side, species, and mosaic-specific row & column
+%          properties of the object
+% Notes:
+% * Do we want to have the option to include more parameters (or fewer) as
+%   options for describe?
 
 % History: 
 % BW ISETBIO Team, 2017
