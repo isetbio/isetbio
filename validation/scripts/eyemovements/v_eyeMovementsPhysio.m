@@ -3,23 +3,23 @@ function varargout = v_eyeMovementsPhysio(varargin)
     %% PARAMS TO EXAMINE
     params = struct(...
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
-        'emType', 'tremor', ...                 % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
+        'emType', 'drift', ...                  % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
         'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
         'trialLengthSeconds', 5.0, ...          % Duration of each trial
-        'nTrials', 100, ...                     % How many trials to compute
+        'nTrials', 10, ...                     % How many trials to compute
         'exportToPDF', true ...                 
     );
 
-    % Generate cone mosaic
+    % Generate our cone mosaic
     cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
     
     % Go !
-    params.integrationTimeSeconds = 5/1000;
+    params.integrationTimeSeconds = 1/1000;
     runSimulation(1, params, cm);
     
     % Go !
     %params.integrationTimeSeconds = 10/1000;
-    runSimulation(2, params, cm);
+    %runSimulation(2, params, cm);
 end
 
 %
@@ -29,36 +29,40 @@ function emData = runSimulation(figNo, params, cm)
 %% Reproduce identical random numbers
 rng('default'); rng(3);
 
-%% Update integration time for mosaic
+%% Update integration time
 cm.integrationTime = params.integrationTimeSeconds;
 
-%% Generate eye movement paths
+%% Generate the eye movement paths
 [theEMpathsArcMin, emTimeAxis] = generateEMpaths(cm, params.emType, params.trialLengthSeconds, params.nTrials);
 
 %% Analyze eye movement dynamics
+
 % Interval to use for estimating speed
-speedEstimationIntervalSeconds = 100/1000;
+speedEstimationIntervalSeconds = 10/1000;
+        
+switch params.emType
+    case 'tremor'
+        detrendingPolynomialOrder = 0;  % 0 (zero-mean), 1 (linear detrending), 2 (2nd order poly detrend) etc ...
+        emData = analyzeTremorDynamics(theEMpathsArcMin, emTimeAxis, detrendingPolynomialOrder, speedEstimationIntervalSeconds);
+        plotAnalyzedTremorEMdata(figNo, emData);
+    case {'drift', 'drift+microsaccade'}
+        if strcmp(params.emType, 'drift')
+            speedEstimationIntervalSeconds = 100/1000;
+         end
+        emData = analyzeDriftDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds, params.emType);
+        plotAnalyzedDriftEMdata(figNo, emData, params.emType);
+    case 'microsaccade'
+        emData = analyzeMicrosaccadeDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds);
+        plotAnalyzedMicrosaccadeEMdata(figNo, emData);
+    otherwise
+        error('Unknown em type: ''%s''.', params.emType);
+end
 
 % PDF figure name
 if (params.exportToPDF)
     pdfFigName = sprintf('%s_%s_%2.1fms.pdf', params.mosaicType, params.emType, params.integrationTimeSeconds*1000);
 else
     pdfFigName = '';
-end
-
-switch params.emType
-    case 'tremor'
-        detrendingPolynomialOrder = 0;  % 0 (zero-mean), 1 (linear detrending), 2 (2nd order poly detrend) etc ...
-        emData = analyzeTremorDynamics(theEMpathsArcMin, emTimeAxis, detrendingPolynomialOrder, speedEstimationIntervalSeconds);
-        plotAnalyzedTremorEMdata(figNo, emData);
-    case 'drift'
-        emData = analyzeDriftDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds);
-        plotAnalyzedDriftEMdata(figNo, emData);
-    case 'microsaccade'
-        emData = analyzeMicrosaccadeDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds);
-        plotAnalyzedMicrosaccadeEMdata(figNo, emData);
-    otherwise
-        error('Unknown em type: ''%s''.', emType);
 end
 % Plot the raw emData for all reps
 plotRawEMdata(figNo, emData, pdfFigName);
@@ -112,7 +116,7 @@ end
 %
 % Function to analyze the dynamics of drift eye movements
 %
-function emData = analyzeDriftDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds)
+function emData = analyzeDriftDynamics(theEMpathsArcMin, emTimeAxis, speedEstimationIntervalSeconds, emType)
 fprintf('\nAnalyzing drift dynamics ...');
 % Save the raw data
 emData.theEMpathsArcMin = theEMpathsArcMin;
@@ -127,7 +131,7 @@ for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
     [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
-        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'drift');
+        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, emType);
     indices = find(~isnan(squeeze(d.speedSignal(:,3))));
     speedAllTrials = cat(2, speedAllTrials, squeeze(d.speedSignal(indices,3))');
     emData.stats{iTrial} = d;
@@ -197,7 +201,7 @@ if (numel(idx) == 0)
 end
 
 dt = (timeAxis(2)-timeAxis(1));
-if (strcmp(emType, 'microsaccade'))
+if ismember(emType, {'microsaccade', 'drift+microsaccade'})
     % compute end-points for each transition
     minDeltaTime = 2/1000;
 else
@@ -253,9 +257,14 @@ speedSignal(:,2) = speedYMinArcPerSecond;
 speedSignal(:,3) = speedMinArcPerSecond;
 
 % speed magnitude histogram
-speedAxisArcSecPerSecond = (0:10:1000);
-speedHistogram.count = histcounts(speedMinArcPerSecond*60, speedAxisArcSecPerSecond);
+speedAxisArcSecPerSecond = (0:5:1000);
+speedAxisArcMinPerSecond = (0:5:1000);
+
+speedHistogram.countArcSec = histcounts(speedMinArcPerSecond*60, speedAxisArcSecPerSecond);
 speedHistogram.speedAxisArcSecPerSecond = speedAxisArcSecPerSecond(1:end-1) + 0.5*(speedAxisArcSecPerSecond(2)-speedAxisArcSecPerSecond(1));
+
+speedHistogram.countArcMin = histcounts(speedMinArcPerSecond, speedAxisArcMinPerSecond);
+speedHistogram.speedAxisArcMinPerSecond = speedAxisArcMinPerSecond(1:end-1) + 0.5*(speedAxisArcMinPerSecond(2)-speedAxisArcMinPerSecond(1));
 end
 
 %
@@ -335,6 +344,8 @@ switch emType
         em = emSet(em, 'em flag', [0 1 0]);
     case 'microsaccade'
         em = emSet(em, 'em flag', [0 0 1]);
+    case 'drift+microsaccade'
+        em = emSet(em, 'em flag', [0 1 1]);
     otherwise
         error('Unknown emType: ''%s''.', emType);
 end % switch
@@ -355,7 +366,7 @@ end
 %
 % Function to plot the drift eye movement analysis
 %
-function plotAnalyzedDriftEMdata(figNo, d)
+function plotAnalyzedDriftEMdata(figNo, d, emType)
 fprintf('\nPlotting  drift analysis ...');
 nTrials = size(d.theEMpathsArcMin,1);
 
@@ -364,20 +375,26 @@ for iTrial = 1:size(d.theEMpathsArcMin,1)
     stats = d.stats{iTrial};
     if (iTrial == 1)
         amplitudeCount = stats.amplitudeHistogram.count;
-        speedCount = stats.speedHistogram.count;
+        speedCountArcSec = stats.speedHistogram.countArcSec;
+        speedCountArcMin = stats.speedHistogram.countArcMin;
     else
         if (~isempty(stats.amplitudeHistogram.count))
             amplitudeCount = cat(1, amplitudeCount, stats.amplitudeHistogram.count);
         end
-        if (~isempty(stats.speedHistogram.count))
-            speedCount = cat(1, speedCount, stats.speedHistogram.count);
+        if (~isempty(stats.speedHistogram.countArcSec))
+            speedCountArcSec = cat(1, speedCountArcSec, stats.speedHistogram.countArcSec);
+        end
+        if (~isempty(stats.speedHistogram.countArcMin))
+            speedCountArcMin = cat(1, speedCountArcMin, stats.speedHistogram.countArcMin);
         end
     end
 end % iTrial
 
 % Compute mean speed across trials
-meanOverAllTrialsSpeedFreq = mean(speedCount,1);
-meanOverAllTrialsSpeedFreq = meanOverAllTrialsSpeedFreq/ max(meanOverAllTrialsSpeedFreq);
+meanOverAllTrialsSpeedArcSecFreq = mean(speedCountArcSec,1);
+meanOverAllTrialsSpeedArcSecFreq = meanOverAllTrialsSpeedArcSecFreq/ max(meanOverAllTrialsSpeedArcSecFreq);
+meanOverAllTrialsSpeedArcMinFreq = mean(speedCountArcMin,1);
+meanOverAllTrialsSpeedArcMinFreq = meanOverAllTrialsSpeedArcMinFreq/ max(meanOverAllTrialsSpeedArcMinFreq);
 
 % Display em for one trial
 displayedEMtrial = nTrials;
@@ -401,26 +418,45 @@ plot(squeeze(d.theEMpathsArcMin(displayedEMtrial, :,1)), squeeze(d.theEMpathsArc
 set(gca, 'XLim', XYrange, 'YLim', XYrange, 'XTick', -100:5:100, 'YTick', -100:5:100);
 addPlotLabels('position (min arc)', 'position (min arc)', 16, sprintf('trial #%d', displayedEMtrial), 'grid on', 'axis square');
 
+if (strcmp(emType, 'drift'))
+    speedLims = [0 250];
+else
+    speedLims = [0 20000];
+end
+
 subplot(4,3, [7 8]);
 indices = find(~isnan(squeeze(stats.speedSignal(:,1))));
 plot(d.emTimeAxis(indices), squeeze(stats.speedSignal(indices,1))*60, 'r.-');
 hold on
 plot(d.emTimeAxis(indices), squeeze(stats.speedSignal(indices,2))*60, 'b.-');
 legend({'x-speed', 'y-speed'});
-set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 250]);
+set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', speedLims);
 addPlotLabels('time (seconds)', sprintf('speed \n(arc sec / second)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
 subplot(4,3, [10 11]);
 plot(d.emTimeAxis(indices),squeeze(stats.speedSignal(indices,3))*60, 'k.-');
 legend({'speed'});
-set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 250]);
+set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', speedLims);
 addPlotLabels('time (seconds)', sprintf('speed \n(arc sec / second)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
+
 % Plot speed histogram
+XTicks = 0:60:3000;
 subplot(4,3,12);
-bar(stats.speedHistogram.speedAxisArcSecPerSecond, meanOverAllTrialsSpeedFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
-set(gca, 'XLim', [0 5*60], 'XTick', 0:60:1000);
+speedLims = [0 250];
+bar(stats.speedHistogram.speedAxisArcSecPerSecond, meanOverAllTrialsSpeedArcSecFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
+set(gca, 'XLim', speedLims, 'XTick', XTicks, 'YLim', [0 1]);
 addPlotLabels('drift speed (arc sec / second)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
+
+if strcmp(emType, 'drift+microsaccade')
+    XTicks = 0:120:30000/60;
+    speedLims = [10 30000/60];
+    subplot(4,3,9);
+    bar(stats.speedHistogram.speedAxisArcMinPerSecond, meanOverAllTrialsSpeedArcMinFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
+    set(gca, 'XLim', speedLims, 'XTick', XTicks,  'YLim', [0 max(meanOverAllTrialsSpeedArcMinFreq(stats.speedHistogram.speedAxisArcMinPerSecond>10))]);
+    addPlotLabels('drift speed (arc min / second)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
+end
+
 fprintf('Done\n');
 end
 
@@ -611,7 +647,7 @@ function plotRawEMdata(figNo,d, pdfFigName)
 nTrials = size(d.theEMpathsArcMin,1);
 theEMpathsArcMin = d.theEMpathsArcMin;
 emTimeAxis = d.emTimeAxis;
-maxEMexcursion = 10;
+maxEMexcursion = 15;
 
 hFig = figure(figNo);
 subplot(4,3, [1 2]);
