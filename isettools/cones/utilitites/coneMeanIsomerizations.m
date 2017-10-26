@@ -3,7 +3,6 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 % 
 % Syntax:
 %   meanRate = coneMeanIsomerizations(cMosaic);
-%   meanRate = cMosaic.coneMeanIsomerizations;
 %
 % Description:
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
@@ -50,6 +49,8 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %
 % See Also:
 %   RGB2XWFormat
+%
+
 
 % History:
 %    11/2016   jrg  (c) Isetbio team
