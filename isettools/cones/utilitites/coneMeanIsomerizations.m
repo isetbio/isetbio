@@ -3,6 +3,7 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 % 
 % Syntax:
 %   meanRate = coneMeanIsomerizations(cMosaic);
+%   meanRate = cMosaic.coneMeanIsomerizations;
 %
 % Description:
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
@@ -38,13 +39,27 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    case and for when the absorptions are passed in as a parameter via the
 %    keyword absorptionsInXWFormat.]
 %
+% * [NOTE: DHB - There is a comment, "Compute means for given integration
+%     time", in the code below.  I am not sure what this means. I think it
+%     means, that we are computing the spatial mean for the numbers in the
+%     mosaic, which in turn correspond to a particular integration time.
+%     But the comment as written is confusing to me, because I am tempted
+%     to interpret it as meaning that an integration time could be passed
+%     to this routine, which I don't think it can. Not changing comment
+%     because I'm not sure I fully understand what the code is doing.]
+%
 % See Also:
 %   RGB2XWFormat
-%
+
 % History:
-%    11/2016   JRG  (c) Isetbio team
+%    11/2016   jrg  (c) Isetbio team
 %    08/06/17  dhb  Comment cleaning pass.
 %                   Added notes where I could not figure it out.
+%    10/26/17  dhb  Reviewed jm changes, added new note, formatted if then
+%                   else statements in a way I like better.  Accepted some
+%                   suggestions from Code Analyzer to remove obsolete
+%                   warning supression (I'm running 2017a), and removed
+%                   some stray semi-colons after some "end" statements.
 
 % Example:
 %{
@@ -89,21 +104,25 @@ else
 end
 
 %% Get the individual cones
-lConeAbsorptions = pRateXW(lConeIndices,:); %#ok<FNDSB>
-mConeAbsorptions = pRateXW(mConeIndices,:); %#ok<FNDSB>
-sConeAbsorptions = pRateXW(sConeIndices,:); %#ok<FNDSB>
+lConeAbsorptions = pRateXW(lConeIndices,:); 
+mConeAbsorptions = pRateXW(mConeIndices,:); 
+sConeAbsorptions = pRateXW(sConeIndices,:); 
 
 %% Compute means for the given integration time
-if ~isempty(lConeAbsorptions), lMean = mean(lConeAbsorptions(:));  
-else                           lMean = 0;
-end;
-
-if ~isempty(mConeAbsorptions), mMean = mean(mConeAbsorptions(:)); 
-else                           mMean = 0;
-end;
-
-if ~isempty(sConeAbsorptions), sMean = mean(sConeAbsorptions(:)); 
-else                           sMean = 0;
+if ~isempty(lConeAbsorptions)
+    lMean = mean(lConeAbsorptions(:));  
+else
+    lMean = 0;
+end
+if ~isempty(mConeAbsorptions)
+    mMean = mean(mConeAbsorptions(:)); 
+else
+    mMean = 0;
+end
+if ~isempty(sConeAbsorptions)
+    sMean = mean(sConeAbsorptions(:)); 
+else
+    sMean = 0;
 end
 
 %% Correct so returned units are absorptions per second or per time bin
