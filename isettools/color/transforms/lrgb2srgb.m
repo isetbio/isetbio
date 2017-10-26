@@ -1,24 +1,34 @@
 function rgb = lrgb2srgb(rgb)
 % Convert linear sRGB values to proper sRGB values
 %
-%    rgb = lrgb2srgb(rgb)
+% Syntax:
+%   rgb = lrgb2srgb(rgb)
 %
-% This routine implements the nonlinear step for converting linear rgb
-% (lrgb) into the frame buffer representations in the srgb representation.
-% The rgb data can be in either RGB or XW format.
+% Description:
+%    This routine implements the nonlinear step for converting linear rgb
+%    (lrgb) into the frame buffer representations in the srgb
+%    representation. The rgb data can be in either RGB or XW format.
 %
-% The inputs are linear rgb values, and the returned values are nonlinear
-% framebuffer values. They are in the range [0,1] 
+%    The inputs are linear rgb values, and the returned values are
+%    nonlinear framebuffer values. They are in the range [0,1]
 %
-% The  gamValue used in the srgb formula combines with a linear regime that
-% makes an overall approximation of the display gamma as 2.2
+%    The gamValue used in the srgb formula combines with a linear regime
+%    that makes an overall approximation of the display gamma as 2.2
 %
-% Previous web references have been deleted from this file because the
-% links are now dead.  The proper link is to the Wikipedia srgb page.
+% Inputs:
+%    rgb - The linear Red-Green-Blue coordinates, prior to manipulation.
 %
-% Reference: Wikipediae sRGB page
+% Outputs:
+%    rgb - The standard Red-Green-Blue coordinates, after manipulation.
 %
-% See also:  xyz2srgb, srgb2lrgb
+% References:
+%    Previous web references have been deleted from this file because the
+%    links are now dead. The proper link is to the Wikipedia srgb page.
+%
+%    <https://en.wikipedia.org/wiki/SRGB>
+%
+% See Also:
+%    xyz2srgb, srgb2lrgb
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 

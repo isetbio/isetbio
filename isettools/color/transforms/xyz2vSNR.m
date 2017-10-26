@@ -1,13 +1,29 @@
 function vSNR = xyz2vSNR(roiXYZ,whitePtXYZ,params)
-%Calculate visual SNR from an XYZ image
+% Calculate visual SNR from an XYZ image
 %
+% Syntax:
 %   vSNR = xyz2vSNR(roiXYZ,whitePtXYZ,params)
 %
+% Description:
+%    Calculate the visual SNR from an XYZ image
 %
-% Example:
-%  params = scParams;
+% Inputs:
+%    roiXYZ     - The XYZ Image
+%    whitePtXYZ - The white point of the image
+%
+% Optional Key/Value Pairs:
+%    params     - Optional s-cielab parameters?
+%
+% Outputs:
+%    vSNR       - the visual signal to noise ratio
 %
 % Copyright ImagEval Consultants, LLC, 2009
+
+% Example:
+%{
+   vSNR = xyz2vSNR(roiXYZ,whitePtXYZ,params)
+   params = scParams;
+%}
 
 if notDefined('roiXYZ'), error('xyz data required'); end
 if notDefined('whitePtXYZ'), error('xyz white point required'); end

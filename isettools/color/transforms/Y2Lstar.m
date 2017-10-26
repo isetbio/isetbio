@@ -1,14 +1,22 @@
 function Lstar = Y2Lstar(Y,Yn)
 % Convert Y (luminance) to L* (CIELAB)
 %
-%  Lstar = Y2Lstar(Y,Yn)
+% Syntax:
+%   Lstar = Y2Lstar(Y,Yn)
 %
-% Purpose:
-%   Convert luminance (1931 CIE Y coordinate) into CIELAB/CIELUV L* The
-%   luminance of the white point (Yn) is required.
+% Description:
+%    Convert luminance (1931 CIE Y coordinate) into CIELAB/CIELUV L* The
+%    luminance of the white point (Yn) is required.
 %
-% References
-%   Wyszecki and Stiles, others.
+% Inputs:
+%    Y     - Luminance
+%    Yn    - Luminance of the white point
+%
+% Outputs:
+%    Lstar - The lightness
+%
+% References:
+%    Wyszecki and Stiles, others.
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 

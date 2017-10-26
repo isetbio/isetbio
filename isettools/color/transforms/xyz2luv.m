@@ -1,33 +1,40 @@
 function luv = xyz2luv(xyz, whitepoint)
 % Convert CIE XYZ values to CIELUV values
 %
-%    luv = xyz2luv(xyz, whitepoint)
+% Syntax:
+%   luv = xyz2luv(xyz, whitepoint)
 %
-% The whitepoint is a 3-vector indicating the XYZ of a white object or
-% patch in the scene. 
+% Description:
+%    The whitepoint is a 3-vector indicating the XYZ of a white object or
+%    patch in the scene. 
 %
-% xyz:  Can be in XW or RGB format.
-% whitepoint: a 3-vector of the xyz values of the white point.
-%     If not given, use [95.05 100 108.88] as default (not recommended).
+% Inputs:
+%    xyz        - Can be in XW or RGB format.
+%    whitepoint - a 3-vector of the xyz values of the white point.
+%                 (Default: [95.05 100 108.88] (not recommended))
 %
-% LUV is returned in the same format (RGB or XW) as the input matrix xyz.
+% Outputs:
+%    LUV        - Returned in identical format as the input matrix xyz.
+%                 (Formats are RGB or XW)
 %
-% Formulae are taken from Hunt's book,page 116. I liked the irony that 116
-% is prominent in the formula and that is the page number in Hunt.  Also,
-% see Wyszecki and Stiles book.
-%
-% Examples:
-%    [val,vci] = vcGetSelectedObject('VCIMAGE');
-%    whitepoint = imageGet(vci,'whitepoint')
-%    xyz = imageGet(vci,'XYZ')
-%    xyz = [xyz; whitepoint]
-%    xyz2luv(xyz,whitepoint)
+% References:
+%    Formulae are taken from Hunt's book,page 116. I liked the irony that
+%    116 is prominent in the formula and that is the page number in Hunt.
+%    Also, see Wyszecki and Stiles book.
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+% Examples:
+%{
+   [val,vci] = vcGetSelectedObject('VCIMAGE');
+   whitepoint = imageGet(vci,'whitepoint')
+   xyz = imageGet(vci,'XYZ')
+   xyz = [xyz; whitepoint]
+   xyz2luv(xyz,whitepoint)
+%}
+
 if notDefined('xyz'), error('XYZ values required.'); end
 if notDefined('whitepoint'), error('White point required.'); end
-
 if (numel(whitepoint)~=3 ),  error('whitepoint must be 3x1 vector'); end
 
 if ndims(xyz) == 3
@@ -53,6 +60,3 @@ luv(:,3) = 13*luv(:,1).*(v - vn);
 if strcmp(iFormat,'RGB'), luv = XW2RGBFormat(luv,r,c); end
 
 end
-
-
-
