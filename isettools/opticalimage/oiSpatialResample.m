@@ -1,22 +1,36 @@
-function oi = oiSpatialResample(oi,dx,units,method)
+function oi = oiSpatialResample(oi,dx,units,method, promptUser)
 % Spatial resample all wavebands of a scene
 %
 %   oi = oiSpatialResample(oi,dx,'units','method')
 %
-% Example:
-%  scene = sceneCreate; scene = sceneSet(scene,'fov',1);
-%  oi = oiCreate; oi = oiCompute;
-%  ieAddObject(oi); oiWindow;
+% The current oi spatial sampling can be measured 
 %
-%  oi = oiSpatialResample(oi,1e-4);
+% oi:           Optical image
+% dx:           New spatial sampling difference
+% units:        Spatial units (default is meters)
+% method:       Interpolation method (default is linear)
+% promptUser:   Set to false to avoid the routine waiting for user to enter a keypress
+%
+% See also:  v_sceneSpatialResample (tests oi, too)
+%
+% Example:
+%  scene = sceneCreate; scene = sceneSet(scene,'fov',10);
+%  oi = oiCreate('diffraction limited'); 
+%  oi = oiCompute(oi,scene);
+%  ieAddObject(oi); oiWindow;         % 7.0 um samples
+%
+%  oi = oiSpatialResample(oi,1e-6);   % 1.0 um samples
 %  ieAddObject(oi); oiWindow;
 %
 % Copyright Imageval Consulting, LLC 2016
 
 %% Set up parameters
-if ieNotDefined('oi'),  error('oi required'); end
-if ieNotDefined('units'),  units  = 'm'; end
-if ieNotDefined('method'), method = 'linear'; end
+if notDefined('oi'),     error('oi required'); end
+if notDefined('dx'),     error('dx required'); end
+if notDefined('units'),  units  = 'm'; end
+if notDefined('method'), method = 'linear'; end
+if notDefined('promptUser'), promptUser = true; end
+%
 % Always work in meters
 dx = dx/ieUnitScaleFactor(units);
 
@@ -33,8 +47,10 @@ yN = ymin:dx:ymax;
 % fprintf('Proposed dx = %f meters\n',dx);
 % fprintf('New scene size %d (rows) %d (cols)\n',length(yN),length(xN));
 if length(xN) > 1000 || length(yN) > 1000
-    fprintf('Very large scene.  Any key to continue\n');
-    pause
+    if (promptUser)
+        fprintf('Very large scene.  Any key to continue\n');
+        pause
+    end
 end
 
 %% Interpolate the image for each waveband
@@ -60,6 +76,8 @@ oi = oiSet(oi,'name',sprintf('%s-%s',n,method));
 sr    = oiGet(oi,'spatial resolution');
 fov   = oiGet(oi,'fov');
 oi    = oiSet(oi,'fov',fov*dx/sr(2));
+
+oi = oiSet(oi,'illuminance',oiCalculateIlluminance(oi));
 
 end
     
