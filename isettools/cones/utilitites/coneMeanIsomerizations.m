@@ -8,10 +8,10 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
 %    cone types in a mosaic.
 %    
-% Input:
+% Inputs:
 %    cMosaic  - coneMosaic object
 %
-% Output:
+% Outputs:
 %    meanRate - Three vector absorption rates for the L, M, and S cones in
 %               R*/sec.
 %
@@ -52,7 +52,7 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %
 
 % History:
-%    11/2016   jrg  (c) Isetbio team
+%    11//xx/16 jrg  (c) Isetbio team
 %    08/06/17  dhb  Comment cleaning pass.
 %                   Added notes where I could not figure it out.
 %    10/26/17  dhb  Reviewed jm changes, added new note, formatted if then
