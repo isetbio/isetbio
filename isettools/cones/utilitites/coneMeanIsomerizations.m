@@ -16,16 +16,17 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %               R*/sec.
 %
 % Optional key/value pairs:
-%    perSample              - Normally the returned rate is mean per sec.
-%                             Setting 'perSample' to true  makes the mean
-%                             rate per temporal sample bins (default false)
+%    'perSample'              - Boolean. Normally the returned rate is mean
+%                               per sec. Setting 'perSample' to true  makes
+%                               the mean rate per temporal sample bins
+%                               (default false)
 %
-%    absorptionssInXWFormat - If empty (default), works on absorptions in
-%                             cMosaic.absorptions. If this is passed, it
-%                             acts on what is passed as this parameter,
-%                             which is taken to be the absorptions in XW
-%                             format. See RGB2XWFormat for a description
-%                             of XW format.
+%    'absorptionssInXWFormat' - Matrix. If empty (default), works on
+%                               absorptions in cMosaic.absorptions. If this
+%                               is passed, it acts on what is passed as
+%                               this parameter, which is taken to be the
+%                               absorptions in XW format. See RGB2XWFormat
+%                               for a description of XW format.
 %
 % Notes:
 % * [NOTE: DHB - I can't figure out just from the code here whether this
