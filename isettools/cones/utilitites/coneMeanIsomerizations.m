@@ -64,7 +64,8 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    10/26/17  dhb  Make example work, and add comment to example.
 
 % Examples:
-%{ Create default scene, oi, mosaic and get mean LMS isomerizations from mosaic.
+%{
+   % Create default scene, oi, mosaic and get mean LMS isomerizations from mosaic.
    scene = sceneCreate;
    oi = oiCreate;
    oi = oiCompute(oi,scene);
