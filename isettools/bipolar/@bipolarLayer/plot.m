@@ -2,16 +2,17 @@ function hdl = plot(obj, pType, varargin)
 % Plot the values from one of the mosaics of a bipolarLayer object
 %
 % Syntax:
-%   hdl = bipolarLayer.plot(pType, ...)
+%   hdl = obj.plot(pType, ...)
 % 
 % Description:
-%    *Deprecate* - plots should be called based on the mosaic, I think.
-%
 %    Plot the values from one of the mosaics of a bipolarLayer object
 %
 % Inputs:
 %    pType     - The plot type. Use @bipolarLayer.plot('help','nMosaic',1)
 %                to see implemented plot types.
+%
+% Outputs:
+%    hdl       - bipolar mosaic plot according to the provided parameters
 %  
 % Optional Key/Value Pairs:
 %    nMosaic   - Mosaic number to plot
@@ -19,20 +20,29 @@ function hdl = plot(obj, pType, varargin)
 %    pos       - positions to plot for time series
 %    newWindow - whether or not to open in a new window
 %
-% Outputs:
-%    hdl       - bipolar mosaic plot according to the provided parameters
-%
 % Notes:
-% * For most plot types this routine calls rgcMosaic.plot. The selected
-%   mosaic from the layer is based on the integer nMosaic.
-% * We plan to implement cases for the layer that compare across several
-%   mosaics.
-% * 'help' described in Inputs is broken?
+% * [NOTE: XXX - For most plot types this routine calls rgcMosaic.plot. The selected
+%   mosaic from the layer is based on the integer nMosaic.]
+%
+% * [NOTE: XXX - We plan to implement cases for the layer that compare across several
+%   mosaics.]
+%
+% * [NOTE: XXX - Plots should be called based on the mosaic, I think.
+%    DHB - This comment was here in this routine, but I don't understand
+%    what it means.]
+%
+% * [NOTE: DHB - Need to specify variable type and default values for key
+%    value pairs.
+%
+% Known bugs/limitations:
+% * [NOTE: XXX - 'help' described in Inputs is broken]
+%
+% * [NOTE: DHB - The examples won't run if selected and entered.  Either
+%    remove or add enough code so that they run.]
 %
 
 % History:
-% JRG/BW (c) isetbio team
-%
+%    xx/xx/xx jrg/bw (c) isetbio team
 %    10/17/17  jnm  Comments & Formatting
 
 % Examples:

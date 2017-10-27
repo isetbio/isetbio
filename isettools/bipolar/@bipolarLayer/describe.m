@@ -1,8 +1,8 @@
 function str = describe(obj)
-% Summarize the bipolar layer properties in a string% Syntax:
+% Summarize the bipolar layer properties in a string
 %
 % Syntax:
-%   @bipolarLayer.describe;
+%   str = obj.describe;
 %
 % Description:
 %    Summarize the bipolar layer properties in a string
@@ -14,16 +14,23 @@ function str = describe(obj)
 %    str - A string containing the patch size, center, time step, number of
 %          trials, eye side, species, and mosaic-specific row & column
 %          properties of the object
+%
 % Notes:
-% * Do we want to have the option to include more parameters (or fewer) as
-%   options for describe?
+% * [NOTE: XXX - Do we want to have the option to include more parameters
+%   (or fewer) as options for describe?]
+%
+% Know bugs/limitations:
+% * [NOTE: DHB - Looks to me that this will break if there is not a bipolar
+%    window already open.  I don't think we want to require a window.
+%    Perhaps code more defensively with a check, or perhaps guidata in fact
+%    does so.]
+%
 
 % History: 
-% BW ISETBIO Team, 2017
-%
+%    xx/xx/xx/ baw  (c)isetbio Team, 2017
 %    10/18/17  jnm  Comments & Formatting
 
-%%
+%% Get data from gui, I think
 gdata = guidata(obj.fig);
 nMosaic = get(gdata.listMosaics, 'Value');
 

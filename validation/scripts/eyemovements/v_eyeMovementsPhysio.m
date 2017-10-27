@@ -3,10 +3,10 @@ function varargout = v_eyeMovementsPhysio(varargin)
     %% PARAMS TO EXAMINE
     params = struct(...
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
-        'emType', 'drift', ...                  % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
+        'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
         'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
         'trialLengthSeconds', 5.0, ...          % Duration of each trial
-        'nTrials', 10, ...                     % How many trials to compute
+        'nTrials', 100, ...                     % How many trials to compute
         'exportToPDF', true ...                 
     );
 
@@ -14,7 +14,7 @@ function varargout = v_eyeMovementsPhysio(varargin)
     cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
     
     % Go !
-    params.integrationTimeSeconds = 1/1000;
+    params.integrationTimeSeconds = 10/1000;
     runSimulation(1, params, cm);
     
     % Go !
@@ -42,7 +42,7 @@ speedEstimationIntervalSeconds = 10/1000;
         
 switch params.emType
     case 'tremor'
-        detrendingPolynomialOrder = 0;  % 0 (zero-mean), 1 (linear detrending), 2 (2nd order poly detrend) etc ...
+        detrendingPolynomialOrder = -1;  % -1 (do not detrend) 0 (zero-mean), 1 (linear detrending), 2 (2nd order poly detrend) etc ...
         emData = analyzeTremorDynamics(theEMpathsArcMin, emTimeAxis, detrendingPolynomialOrder, speedEstimationIntervalSeconds);
         plotAnalyzedTremorEMdata(figNo, emData);
     case {'drift', 'drift+microsaccade'}
@@ -58,14 +58,8 @@ switch params.emType
         error('Unknown em type: ''%s''.', params.emType);
 end
 
-% PDF figure name
-if (params.exportToPDF)
-    pdfFigName = sprintf('%s_%s_%2.1fms.pdf', params.mosaicType, params.emType, params.integrationTimeSeconds*1000);
-else
-    pdfFigName = '';
-end
 % Plot the raw emData for all reps
-plotRawEMdata(figNo, emData, pdfFigName);
+plotRawEMdata(figNo, emData, params);
 end
 
 %
@@ -86,31 +80,37 @@ deltaFreq = maxFreq / (nFFT/2);
 frequencyAxis = (0:1:(nFFT-1)) * deltaFreq;
 
 % tremor amplitude histogram bins
-amplitudeAxisArcMin = (0:2:60)/60;
+amplitudeHistogramEdgesArcMin = (0:2:60)/60;
 
 % analyze each trial separately
 amplitudeAllTrials = [];
+excursionAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
-    [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
-        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'tremor');
+    [d.amplitudes, d.amplitudeHistogram, d.maxExcursion, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
+        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeHistogramEdgesArcMin, speedEstimationIntervalSeconds, 'tremor');
     
     amplitudeAllTrials = cat(2, amplitudeAllTrials, d.amplitudes);
-    % detrend x/y position signals
-    [detrendedXpos, d.detrendingXpos] = detrendSignals(emTimeAxis, xPos, detrendingPolynomialOrder);
-    [detrendedYpos, d.detrendingYpos] = detrendSignals(emTimeAxis, yPos, detrendingPolynomialOrder);
+    excursionAllTrials = cat(1, excursionAllTrials, d.maxExcursion);
+    
+    if (detrendingPolynomialOrder > -1)
+        % detrend x/y position signals before FFT
+        [xPos, d.detrendingXpos] = detrendSignals(emTimeAxis, xPos, detrendingPolynomialOrder);
+        [yPos, d.detrendingYpos] = detrendSignals(emTimeAxis, yPos, detrendingPolynomialOrder);
+    end
     
     % perform FT analysis on the detrended positions
-    ft = abs(fft(detrendedXpos, nFFT));
+    ft = abs(fft(xPos, nFFT));
     d.spectrum.posX = ft(1:nFFT/2) * deltaT;
-    ft = abs(fft(detrendedYpos, nFFT));
+    ft = abs(fft(yPos, nFFT));
     d.spectrum.posY = ft(1:nFFT/2) * deltaT;
     d.spectrum.frequency = frequencyAxis(1:nFFT/2);
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
 fprintf('median tremor amplitude: %2.3f arc sec\n', median(amplitudeAllTrials)*60);
+fprintf('median max excursion: %2.2f arc min\n', median(excursionAllTrials));
 end
 
 %
@@ -123,21 +123,24 @@ emData.theEMpathsArcMin = theEMpathsArcMin;
 emData.emTimeAxis = emTimeAxis;
 
 % microsaccade amplitude histogram bins
-amplitudeAxisArcMin = 0:2:60;
+amplitudeHistogramEdgesArcMin = 0:2:60;
 
 % analyze each trial separately
 speedAllTrials = [];
+excursionAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
-    [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
-        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, emType);
+    [d.amplitudes, d.amplitudeHistogram, d.maxExcursion, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
+        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeHistogramEdgesArcMin, speedEstimationIntervalSeconds, emType);
     indices = find(~isnan(squeeze(d.speedSignal(:,3))));
     speedAllTrials = cat(2, speedAllTrials, squeeze(d.speedSignal(indices,3))');
+    excursionAllTrials = cat(1, excursionAllTrials, d.maxExcursion);
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
 fprintf('median drift speed: %2.2f arc min / sec\n', median(speedAllTrials));
+fprintf('median max excursion: %2.2f arc min\n', median(excursionAllTrials));
 end
 
 %
@@ -150,20 +153,22 @@ emData.theEMpathsArcMin = theEMpathsArcMin;
 emData.emTimeAxis = emTimeAxis;
 
 % microsaccade amplitude histogram bins
-amplitudeAxisArcMin = 0:2:60;
+amplitudeHistogramEdgesArcMin = 0:2:60;
 
 % analyze each trial separately
 amplitudesAllTrials = [];
 intervalsAllTrials = [];
 durationsAllTrials = [];
+excursionAllTrials = [];
 for iTrial = 1:size(theEMpathsArcMin,1)
     xPos = squeeze(theEMpathsArcMin(iTrial,:,1));
     yPos = squeeze(theEMpathsArcMin(iTrial,:,2));
-    [d.amplitudes, d.amplitudeHistogram, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
-        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, 'microsaccade');
+    [d.amplitudes, d.amplitudeHistogram, d.maxExcursion, d.times, d.durations, d.intervals, d.diffSignal, d.decimatedSignal, d.speedSignal, d.speedHistogram] = ...
+        analyzeEMpath(emTimeAxis, xPos, yPos, amplitudeHistogramEdgesArcMin, speedEstimationIntervalSeconds, 'microsaccade');
     amplitudesAllTrials = cat(2,amplitudesAllTrials, d.amplitudes);
     intervalsAllTrials  = cat(2,intervalsAllTrials, d.intervals);
     durationsAllTrials = cat(2,durationsAllTrials, d.durations);
+    excursionAllTrials = cat(1, excursionAllTrials, d.maxExcursion);
     emData.stats{iTrial} = d;
 end % iTrial
 fprintf('Done\n');
@@ -171,13 +176,14 @@ fprintf('Done\n');
 fprintf('median microsaccade amplitude: %2.2f arc min\n', median(amplitudesAllTrials));
 fprintf('median microsaccade interval: %2.2f\n', 1000*median(intervalsAllTrials(~isnan(intervalsAllTrials))));
 fprintf('median microsaccade duration: %2.2f\n', 1000*median(durationsAllTrials(~isnan(durationsAllTrials))));
+fprintf('median max excursion: %2.2f arc min\n', median(excursionAllTrials));
 end
 
 %
 % Function to compute different components of the eye movement paths
 %
-function [amplitudes, amplitudeHistogram, times, durations, intervals, diffSignal, decimatedSignal, speedSignal, speedHistogram] = ...
-    analyzeEMpath(timeAxis, xPos, yPos, amplitudeAxisArcMin, speedEstimationIntervalSeconds, emType)
+function [amplitudes, amplitudeHistogram, maxExcursion, times, durations, intervals, diffSignal, decimatedSignal, speedSignal, speedHistogram] = ...
+    analyzeEMpath(timeAxis, xPos, yPos, amplitudeHistogramEdgesArcMin, speedEstimationIntervalSeconds, emType)
 
 % set return valiables
 amplitudes = [];
@@ -186,6 +192,7 @@ amplitudeHistogram.amplitudeAxis = [];
 times = [];
 durations = [];
 intervals = [];
+maxExcursion = [];
 decimatedSignal = [];
 speedSignal = [];
 speedHistogram.count = [];
@@ -232,12 +239,15 @@ while (k <= numel(idx))
     movementIndex = movementIndex + 1;
 end
 
+% maximum excursion
+maxExcursion = max(sqrt(xPos.^2 + yPos.^2));
+
 % intervals
 intervals = [nan diff(times)];
 
 % amplitude histogram
-amplitudeHistogram.count = histcounts(amplitudes, amplitudeAxisArcMin);
-amplitudeHistogram.amplitudeAxis = amplitudeAxisArcMin(1:end-1) + 0.5*(amplitudeAxisArcMin(2)-amplitudeAxisArcMin(1));
+amplitudeHistogram.count = histcounts(amplitudes, amplitudeHistogramEdgesArcMin);
+amplitudeHistogram.amplitudeAxis = amplitudeHistogramEdgesArcMin(1:end-1) + 0.5*(amplitudeHistogramEdgesArcMin(2)-amplitudeHistogramEdgesArcMin(1));
 
 % compute X and Y speed components in overlaping segments
 halfBinWidth = round(speedEstimationIntervalSeconds/2/dt);
@@ -257,14 +267,14 @@ speedSignal(:,2) = speedYMinArcPerSecond;
 speedSignal(:,3) = speedMinArcPerSecond;
 
 % speed magnitude histogram
-speedAxisArcSecPerSecond = (0:5:1000);
-speedAxisArcMinPerSecond = (0:5:1000);
+speedHistogramEdgesArcSecPerSecond = (0:5:1000);
+speedHisogramEdgesArcMinPerSecond = (0:5:1000);
 
-speedHistogram.countArcSec = histcounts(speedMinArcPerSecond*60, speedAxisArcSecPerSecond);
-speedHistogram.speedAxisArcSecPerSecond = speedAxisArcSecPerSecond(1:end-1) + 0.5*(speedAxisArcSecPerSecond(2)-speedAxisArcSecPerSecond(1));
+speedHistogram.countArcSec = histcounts(speedMinArcPerSecond*60, speedHistogramEdgesArcSecPerSecond);
+speedHistogram.speedHistogramEdgesArcSecPerSecond = speedHistogramEdgesArcSecPerSecond(1:end-1) + 0.5*(speedHistogramEdgesArcSecPerSecond(2)-speedHistogramEdgesArcSecPerSecond(1));
 
-speedHistogram.countArcMin = histcounts(speedMinArcPerSecond, speedAxisArcMinPerSecond);
-speedHistogram.speedAxisArcMinPerSecond = speedAxisArcMinPerSecond(1:end-1) + 0.5*(speedAxisArcMinPerSecond(2)-speedAxisArcMinPerSecond(1));
+speedHistogram.countArcMin = histcounts(speedMinArcPerSecond, speedHisogramEdgesArcMinPerSecond);
+speedHistogram.speedHisogramEdgesArcMinPerSecond = speedHisogramEdgesArcMinPerSecond(1:end-1) + 0.5*(speedHisogramEdgesArcMinPerSecond(2)-speedHisogramEdgesArcMinPerSecond(1));
 end
 
 %
@@ -377,6 +387,7 @@ for iTrial = 1:size(d.theEMpathsArcMin,1)
         amplitudeCount = stats.amplitudeHistogram.count;
         speedCountArcSec = stats.speedHistogram.countArcSec;
         speedCountArcMin = stats.speedHistogram.countArcMin;
+        maxExcursion = stats.maxExcursion;
     else
         if (~isempty(stats.amplitudeHistogram.count))
             amplitudeCount = cat(1, amplitudeCount, stats.amplitudeHistogram.count);
@@ -387,6 +398,7 @@ for iTrial = 1:size(d.theEMpathsArcMin,1)
         if (~isempty(stats.speedHistogram.countArcMin))
             speedCountArcMin = cat(1, speedCountArcMin, stats.speedHistogram.countArcMin);
         end
+        maxExcursion = cat(1, maxExcursion, stats.maxExcursion);
     end
 end % iTrial
 
@@ -397,7 +409,7 @@ meanOverAllTrialsSpeedArcMinFreq = mean(speedCountArcMin,1);
 meanOverAllTrialsSpeedArcMinFreq = meanOverAllTrialsSpeedArcMinFreq/ max(meanOverAllTrialsSpeedArcMinFreq);
 
 % Display em for one trial
-displayedEMtrial = nTrials;
+displayedEMtrial = max([1 round(nTrials/2)]);
 stats = d.stats{displayedEMtrial};
 
 hFig = figure(figNo); clf;
@@ -444,22 +456,32 @@ addPlotLabels('time (seconds)', sprintf('speed \n(arc sec / second)'), 16, sprin
 XTicks = 0:60:3000;
 subplot(4,3,12);
 speedLims = [0 250];
-bar(stats.speedHistogram.speedAxisArcSecPerSecond, meanOverAllTrialsSpeedArcSecFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
+bar(stats.speedHistogram.speedHistogramEdgesArcSecPerSecond, meanOverAllTrialsSpeedArcSecFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
 set(gca, 'XLim', speedLims, 'XTick', XTicks, 'YLim', [0 1]);
 addPlotLabels('drift speed (arc sec / second)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
 
+% Max excusion or speed histogram for drift+microsaccades
+subplot(4,3,9);
 if strcmp(emType, 'drift+microsaccade')
     XTicks = 0:120:30000/60;
     speedLims = [10 30000/60];
-    subplot(4,3,9);
-    bar(stats.speedHistogram.speedAxisArcMinPerSecond, meanOverAllTrialsSpeedArcMinFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
-    set(gca, 'XLim', speedLims, 'XTick', XTicks,  'YLim', [0 max(meanOverAllTrialsSpeedArcMinFreq(stats.speedHistogram.speedAxisArcMinPerSecond>10))]);
+    bar(stats.speedHistogram.speedHisogramEdgesArcMinPerSecond, meanOverAllTrialsSpeedArcMinFreq, 1, 'FaceColor', [0.6 0.6 0.6]);
+    set(gca, 'XLim', speedLims, 'XTick', XTicks,  'YLim', [0 max(meanOverAllTrialsSpeedArcMinFreq(stats.speedHistogram.speedHisogramEdgesArcMinPerSecond>10))]);
     addPlotLabels('drift speed (arc min / second)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
-end
-
+else
+    maxExcursionEdgesArcMin = [0:1:100];
+    maxExcursionCountArcMin = histcounts(maxExcursion, maxExcursionEdgesArcMin);
+    maxExcursionCountArcMin = maxExcursionCountArcMin / max(maxExcursionCountArcMin);
+    maxExcursionEdgesArcMin = maxExcursionEdgesArcMin(1:end-1) + 0.5*(maxExcursionEdgesArcMin(2)-maxExcursionEdgesArcMin(1));
+    bar(maxExcursionEdgesArcMin, maxExcursionCountArcMin, 1, 'FaceColor', [0.6 0.6 0.6]);
+    set(gca, 'XLim', [0 30], 'XTick', 0:5:60,  'YLim', [0 1]);
+    addPlotLabels('max excursion (arc min)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
+end 
 fprintf('Done\n');
 end
 
+
+    
 %
 % Function to plot the tremor eye movement analysis
 %
@@ -474,12 +496,14 @@ for iTrial = 1:size(d.theEMpathsArcMin,1)
         count = stats.amplitudeHistogram.count;
         ftAmpXpos = stats.spectrum.posX;
         ftAmpYpos = stats.spectrum.posY;
+        maxExcursion = stats.maxExcursion;
     else
         if (~isempty(stats.amplitudeHistogram.count))
             count = cat(1,count, stats.amplitudeHistogram.count);
         end
         ftAmpXpos = cat(1,ftAmpXpos, stats.spectrum.posX);
         ftAmpYpos = cat(1,ftAmpYpos, stats.spectrum.posY);
+        maxExcursion = cat(1, maxExcursion, stats.maxExcursion);
     end
 end % iTrial
 
@@ -490,7 +514,7 @@ meanOverAllTrialsSpectrumXpos = mean(ftAmpXpos,1);
 meanOverAllTrialsSpectrumYpos = mean(ftAmpYpos,1);
 
 % Display em and spectrum for one trial
-displayedEMtrial = nTrials;
+displayedEMtrial = max([1 round(nTrials/2)]);
 stats = d.stats{displayedEMtrial};
 
 hFig = figure(figNo); clf;
@@ -514,6 +538,7 @@ plot(squeeze(d.theEMpathsArcMin(displayedEMtrial, :,1)), squeeze(d.theEMpathsArc
 set(gca, 'XLim', XYrange, 'YLim', XYrange, 'XTick', -100:5:100, 'YTick', -100:5:100);
 addPlotLabels('position (min arc)', 'position (min arc)', 16, sprintf('trial #%d', displayedEMtrial), 'grid on', 'axis square');
 
+
 % Plot diff signal for current trial and the detected tremors
 subplot(4,3,[7 8]);
 stem(stats.times, stats.amplitudes*60, 'mo', 'MarkerFaceColor', [0.8 0.5 0.8], 'MarkerSize', 10);
@@ -521,6 +546,16 @@ hold on;
 plot(d.emTimeAxis(1:end-1), stats.diffSignal*60, 'k.', 'MarkerSize', 14);
 set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 30]);
 addPlotLabels('time (seconds)', sprintf('tremor amplitude\n(arc sec)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
+
+subplot(4,3,9);
+maxExcursionEdgesArcMin = [0:1:100];
+maxExcursionCountArcMin = histcounts(maxExcursion, maxExcursionEdgesArcMin);
+maxExcursionCountArcMin = maxExcursionCountArcMin / max(maxExcursionCountArcMin);
+maxExcursionEdgesArcMin = maxExcursionEdgesArcMin(1:end-1) + 0.5*(maxExcursionEdgesArcMin(2)-maxExcursionEdgesArcMin(1));
+bar(maxExcursionEdgesArcMin, maxExcursionCountArcMin, 1, 'FaceColor', [0.6 0.6 0.6]);
+set(gca, 'XLim', [0 30], 'XTick', 0:5:60,  'YLim', [0 1]);
+addPlotLabels('max excursion (arc min)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
+
 
 % Plot spectrum for current trial
 subplot(4,3,10);
@@ -567,6 +602,7 @@ for iTrial = 1:nTrials
         durations = stats.durations;
         amplitudes = stats.amplitudes;
         intervals = stats.intervals;
+        maxExcursion = stats.maxExcursion;
     else
         if (~isempty(stats.amplitudeHistogram.count))
             count = cat(1,count, stats.amplitudeHistogram.count);
@@ -574,6 +610,7 @@ for iTrial = 1:nTrials
         durations = cat(2, durations, stats.durations);
         amplitudes = cat(2, amplitudes, stats.amplitudes);
         intervals = cat(2, intervals , stats.intervals);
+        maxExcursion = cat(1, maxExcursion, stats.maxExcursion);
     end
     decimatedSignal{iTrial}.xyPos = stats.decimatedSignal;
 end % iTrial
@@ -582,7 +619,7 @@ meanOverAllTrialsFreq = mean(count,1);
 meanOverAllTrialsFreq = meanOverAllTrialsFreq/ max(meanOverAllTrialsFreq);
 
 % Display em and diff signal for one trial
-displayedEMtrial = nTrials;
+displayedEMtrial = max([1 round(nTrials/2)]);
 % Stats for current trial
 stats = d.stats{displayedEMtrial};
 
@@ -618,6 +655,16 @@ plot(d.emTimeAxis(1:end-1), stats.diffSignal, 'k.', 'MarkerSize', 14);
 set(gca, 'XLim', [d.emTimeAxis(1) d.emTimeAxis(end)], 'YLim', [0 max([1 max(stats.amplitudes)])]);
 addPlotLabels('time (seconds)', sprintf('micro-saccade amplitude\n(min arc)'), 16, sprintf('trial #%d', displayedEMtrial), 'grid on', '');
 
+% Plot max excursion histogram
+subplot(4,3,9);
+maxExcursionEdgesArcMin = [0:1:100];
+maxExcursionCountArcMin = histcounts(maxExcursion, maxExcursionEdgesArcMin);
+maxExcursionCountArcMin = maxExcursionCountArcMin / max(maxExcursionCountArcMin);
+maxExcursionEdgesArcMin = maxExcursionEdgesArcMin(1:end-1) + 0.5*(maxExcursionEdgesArcMin(2)-maxExcursionEdgesArcMin(1));
+bar(maxExcursionEdgesArcMin, maxExcursionCountArcMin, 1, 'FaceColor', [0.6 0.6 0.6]);
+set(gca, 'XLim', [0 30], 'XTick', 0:5:60,  'YLim', [0 1]);
+addPlotLabels('max excursion (arc min)', sprintf('normalized\nfreq. of occurence'), 16, sprintf('trials: %d', nTrials), 'grid on', 'square axis');
+
 % Plot scattegram of durations vs amplitudes
 subplot(4,3,10);
 plot(durations*1000, amplitudes, 'k.');
@@ -643,7 +690,7 @@ end
 %
 % Function to plot the raw EMdata for all trials
 %
-function plotRawEMdata(figNo,d, pdfFigName)
+function plotRawEMdata(figNo,d, params)
 nTrials = size(d.theEMpathsArcMin,1);
 theEMpathsArcMin = d.theEMpathsArcMin;
 emTimeAxis = d.emTimeAxis;
@@ -651,11 +698,9 @@ maxEMexcursion = 15;
 
 hFig = figure(figNo);
 subplot(4,3, [1 2]);
-hold on;
-for iTrial = 1:size(theEMpathsArcMin,1)
-    plot(emTimeAxis, squeeze(theEMpathsArcMin(iTrial, :,1)), 'r-', 'LineWidth', 1.5);
-    plot(emTimeAxis, squeeze(theEMpathsArcMin(iTrial, :,2)), 'b-', 'LineWidth', 1.5);
-end
+plot(emTimeAxis, squeeze(theEMpathsArcMin(:, :,1)), 'r-', 'LineWidth', 1.5);
+hold on
+plot(emTimeAxis, squeeze(theEMpathsArcMin(:, :,2)), 'b-', 'LineWidth', 1.5);
 set(gca, 'XLim', [emTimeAxis(1) emTimeAxis(end)], 'YLim', maxEMexcursion*[-1 1]);
 addPlotLabels('', 'position (arc min)', 16, sprintf('%d trials', nTrials), 'grid on', '');
 
@@ -667,8 +712,9 @@ end
 set(gca, 'XLim', maxEMexcursion*[-1 1], 'YLim', maxEMexcursion*[-1 1], 'XTick', -100:5:100, 'YTick', -100:5:100);
 addPlotLabels('', 'position (arc min)', 16, sprintf('%d trials', nTrials), 'grid on', 'square axis');
 
-% Export to PDF
-if (~isempty(pdfFigName))
+% PDF figure name
+if (params.exportToPDF)
+    pdfFigName = sprintf('%s_%s_%2.1fms.pdf', params.mosaicType, params.emType, params.integrationTimeSeconds*1000);
     NicePlot.exportFigToPDF(pdfFigName, hFig, 300);
 end
 end
