@@ -17,11 +17,11 @@ function t_emDifferentConeMosaics
 %           This demonstrates that the eye movement dynamics are independent of the employed mosaic's 
 %           spatial characteristics (pattern size, the cone spacing, and cone aperture).
 %
+
+% History:
 %
-% NPC, ISETBIO Team, 2017
-%
-% 10/03/17  npc  Wrote it.
-%
+% 10/03/17  npc  (c) isetbio team, 2017.
+
 %% Initialize
 ieInit;
 
@@ -43,8 +43,6 @@ eyeMovementsPerTrial = 1100;
 
 % Spatial position binning (in microns)
 posBinsMicrons = [-28:2:28];
-
-
 
 %% Run the default rect mosaic
 eccBasedConeDensity = [];
@@ -71,7 +69,6 @@ customLamda = [];
 [coneMosaicOBJ2, theEMpathsMicrons2, emSpectrumX2, emSpectrumY2, tfAxis, xPosMean2, yPosMean2, xPosStd2, yPosStd2] = ...
     t_emMosaic('hex', fovDegs, integrationTimeMillisecs, nTrials, eyeMovementsPerTrial, posBinsMicrons, ...
     eccBasedConeDensity, customLamda, customInnerSegmentDiameter, resamplingFactor);
-
 
 %% Display results
 for trialToDisplay = 1:10
