@@ -1,4 +1,4 @@
-%% Tutorial on controlling eye movement parameters
+%%t_eyeMovements  Tutorial on controlling eye movement parameters
 %
 
 %% Build an eye movement  and cone mosaic structure

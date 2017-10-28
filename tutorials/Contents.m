@@ -9,9 +9,10 @@
 % t_cones                       - Calculations for isomerizations, photocurrent, cone mosaics.
 % t_data                        - Illustrate data sets.
 % t_displays                    - Display modeling. Useful for specifying flat input scenes and modeling experiments.
-% t_eyemovement                 - Eye movements.
+% t_eyemovement                 - Illustrates generation of eye movement patterns.
 % t_human                       - Modeling with human data.
-% t_introduction                - Introductory/overview tutorials.
+% t_recipes                     - Tutorials that approach real
+%                                 computations, providing useful recipes.
 % t_oisequences                 - Temporal sequences of retinal images.
 % t_optics                      - Optics related calculatoins.
 % t_mosaic                      - Support for describing mosaic geometry. This is DHB code from the early 1990s that we may or may not actually be using.
