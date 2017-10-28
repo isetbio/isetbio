@@ -1,6 +1,6 @@
 function varargout = v_eyeMovementsPhysio(varargin)
 
-    %% PARAMS TO EXAMINE
+    % Parameters to examine.
     params = struct(...
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
         'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
@@ -36,7 +36,7 @@ cm.integrationTime = params.integrationTimeSeconds;
 [theEMpathsArcMin, emTimeAxis] = generateEMpaths(cm, params.emType, params.trialLengthSeconds, params.nTrials);
 
 %% Analyze eye movement dynamics
-
+%
 % Interval to use for estimating speed
 speedEstimationIntervalSeconds = 10/1000;
         
