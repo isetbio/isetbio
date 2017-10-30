@@ -55,7 +55,8 @@ switch lower(opticsModel)
     case 'shiftinvariant'
         set(handles.popOpticsModel,'Value',2);
         switchControlVisibility(handles,'off');
-
+    case 'raytrace'
+        % TL: What to do here?
     otherwise
         error('Unknown optics model')
 end

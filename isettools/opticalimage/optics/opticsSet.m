@@ -76,7 +76,7 @@ switch parm
     case {'model','opticsmodel'}
         % Valid choices are 
         % The case and spaces do not matter.
-        valid = {'diffractionlimited', 'shiftinvariant'};
+        valid = {'diffractionlimited', 'shiftinvariant','raytrace'};
         if validatestring(ieParamFormat(val), valid)
             optics.model = ieParamFormat(val);
         else

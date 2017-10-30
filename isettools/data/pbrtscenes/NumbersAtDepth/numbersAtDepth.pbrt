@@ -1,0 +1,191 @@
+# camera default orientation
+LookAt 0 0 0 0 0 -1 0 1 0 
+
+# camera scene position
+ConcatTransform [-1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -0.000000 -0.000000 -7.630000 1.000000] 
+
+# 1_Camera
+Camera "realisticEye" 
+  "string specfile" "navarroAccomodated_5.00.dat" 
+  "float retinaDistance" [16.320000] 
+  "float retinaRadius" [12] 
+  "float pupilDiameter" [4] 
+  "float retinaSemiDiam" [6] 
+  "spectrum ior1" "ior1_5.00dp.spd" 
+  "spectrum ior2" "ior2_5.00dp.spd" 
+  "spectrum ior3" "ior3_5.00dp.spd" 
+  "spectrum ior4" "ior4_5.00dp.spd" 
+
+# integrator
+SurfaceIntegrator "path" 
+  "integer maxdepth" [1] 
+
+# sampler
+Sampler "lowdiscrepancy" 
+  "integer pixelsamples" [256] 
+
+# filter
+PixelFilter "gaussian" 
+  "float alpha" [2] 
+  "float xwidth" [2] 
+  "float ywidth" [2] 
+
+# film
+Film "image" 
+  "integer xresolution" [128] 
+  "integer yresolution" [128] 
+
+WorldBegin
+# 1_DefaultMaterial
+MakeNamedMaterial "1_DefaultMaterial" "string type" "uber" 
+  "rgb Kd" [0.600000 0.600000 0.600000] 
+  "rgb Ks" [0 0 0] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 2_LightMaterial
+MakeNamedMaterial "2_LightMaterial" "string type" "uber" 
+  "rgb Kd" [0.640000 0.640000 0.640000] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010625] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# checkerboard_spectrum
+Texture "checkerboard_spectrum" "spectrum" "imagemap" 
+  "string filename" "resources/checkerboard.exr" 
+# 3_PlaneMaterial
+MakeNamedMaterial "3_PlaneMaterial" "string type" "uber" 
+  "texture Kd" "checkerboard_spectrum" 
+  "rgb Ks" [0 0 0] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010625] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 4_Red
+MakeNamedMaterial "4_Red" "string type" "uber" 
+  "rgb Kd" [0.400000 0.000000 0.000000] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010625] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 1_300
+ObjectBegin "1_300"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/1_300.pbrt"   
+ObjectEnd
+
+# 2_Ground
+ObjectBegin "2_Ground"
+  NamedMaterial "3_PlaneMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/2_Ground.pbrt"   
+ObjectEnd
+
+# 3_100_1
+ObjectBegin "3_100_1"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/3_100_1.pbrt"   
+ObjectEnd
+
+# 4_Wall
+ObjectBegin "4_Wall"
+  NamedMaterial "3_PlaneMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/4_Wall.pbrt"   
+ObjectEnd
+
+# 5_200
+ObjectBegin "5_200"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/5_200.pbrt"   
+ObjectEnd
+
+# 7_175
+ObjectBegin "7_175"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/7_175.pbrt"   
+ObjectEnd
+
+# 8_150
+ObjectBegin "8_150"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/8_150.pbrt"   
+ObjectEnd
+
+# 9_125
+ObjectBegin "9_125"
+  NamedMaterial "4_Red"   
+  Include "scenes/PBRT/pbrt-geometry/9_125.pbrt"   
+ObjectEnd
+
+# 1_300
+# from node 1_300
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "1_300"   
+AttributeEnd
+
+# 2_Ground
+# from node 2_Ground
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "2_Ground"   
+AttributeEnd
+
+# 3_100_1
+# from node 3_100_1
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "3_100_1"   
+AttributeEnd
+
+# 4_Wall
+# from node 4_Wall
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "4_Wall"   
+AttributeEnd
+
+# 5_200
+# from node 5_200
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "5_200"   
+AttributeEnd
+
+# 6_AreaLight
+# from node 6_AreaLight
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  # 6_AreaLight
+  AreaLightSource "diffuse"   
+    "spectrum L" "D65.spd" 
+    "integer nsamples" [8] 
+  NamedMaterial "2_LightMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/6_AreaLight.pbrt"   
+AttributeEnd
+
+# 7_175
+# from node 7_175
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "7_175"   
+AttributeEnd
+
+# 8_150
+# from node 8_150
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "8_150"   
+AttributeEnd
+
+# 9_125
+# from node 9_125
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "9_125"   
+AttributeEnd
+
+WorldEnd
+

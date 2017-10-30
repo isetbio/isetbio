@@ -69,7 +69,10 @@ switch lower(opticsModel)
             d = oiGet(oi,'lens density');
             txt = [txt, sprintf('  Lens density:  %.2f \n',d)];
         end
-        
+    case 'raytrace'
+        txt = [txt, sprintf('Optics (RT)\n')];
+        diameter = opticsGet(optics,'aperture diameter','mm');
+        txt = [txt, sprintf('  Diameter:  %.2f mm\n',diameter)];
     otherwise
         error('Unknown optics model %s. ',opticsModel);
 end

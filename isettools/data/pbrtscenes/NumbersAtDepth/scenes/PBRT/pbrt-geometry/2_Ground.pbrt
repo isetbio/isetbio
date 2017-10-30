@@ -1,0 +1,7 @@
+# 2_Ground
+Shape "trianglemesh" 
+  "integer indices" [0 1 2 0 2 3] 
+  "point P" [-1000 -1000 -100 1000 -1000 -100 1000 1000 -100 -1000 1000 -100] 
+  "float uv" [0 0 0 1 1 1 1 0] 
+  "vector S" [0 1 0 0 1 0 0 1 0 0 1 0] 
+  "normal N" [0 0 1 0 0 1 0 0 1 0 0 1] 
