@@ -8,24 +8,25 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
 %    cone types in a mosaic.
 %    
-% Input:
+% Inputs:
 %    cMosaic  - coneMosaic object
 %
-% Output:
+% Outputs:
 %    meanRate - Three vector absorption rates for the L, M, and S cones in
 %               R*/sec.
 %
 % Optional key/value pairs:
-%    perSample              - Normally the returned rate is mean per sec.
-%                             Setting 'perSample' to true  makes the mean
-%                             rate per temporal sample bins (default false)
+%    'perSample'              - Boolean. Normally the returned rate is mean
+%                               per sec. Setting 'perSample' to true  makes
+%                               the mean rate per temporal sample bins
+%                               (default false)
 %
-%    absorptionssInXWFormat - If empty (default), works on absorptions in
-%                             cMosaic.absorptions. If this is passed, it
-%                             acts on what is passed as this parameter,
-%                             which is taken to be the absorptions in XW
-%                             format. See RGB2XWFormat for a description
-%                             of XW format.
+%    'absorptionssInXWFormat' - Matrix. If empty (default), works on
+%                               absorptions in cMosaic.absorptions. If this
+%                               is passed, it acts on what is passed as
+%                               this parameter, which is taken to be the
+%                               absorptions in XW format. See RGB2XWFormat
+%                               for a description of XW format.
 %
 % Notes:
 % * [NOTE: DHB - I can't figure out just from the code here whether this
@@ -39,21 +40,20 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    keyword absorptionsInXWFormat.]
 %
 % * [NOTE: DHB - There is a comment, "Compute means for given integration
-%     time", in the code below.  I am not sure what this means. I think it
-%     means, that we are computing the spatial mean for the numbers in the
-%     mosaic, which in turn correspond to a particular integration time.
-%     But the comment as written is confusing to me, because I am tempted
-%     to interpret it as meaning that an integration time could be passed
-%     to this routine, which I don't think it can. Not changing comment
-%     because I'm not sure I fully understand what the code is doing.]
+%    time", in the code below.  I am not sure what this means. I think it
+%    means, that we are computing the spatial mean for the numbers in the
+%    mosaic, which in turn correspond to a particular integration time.
+%    But the comment as written is confusing to me, because I am tempted
+%    to interpret it as meaning that an integration time could be passed
+%    to this routine, which I don't think it can. Not changing comment
+%    because I'm not sure I fully understand what the code is doing.]
 %
 % See Also:
 %   RGB2XWFormat
 %
 
-
 % History:
-%    11/2016   jrg  (c) Isetbio team
+%    11/xx/16  jrg  (c) Isetbio team
 %    08/06/17  dhb  Comment cleaning pass.
 %                   Added notes where I could not figure it out.
 %    10/26/17  dhb  Reviewed jm changes, added new note, formatted if then
@@ -61,10 +61,18 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %                   suggestions from Code Analyzer to remove obsolete
 %                   warning supression (I'm running 2017a), and removed
 %                   some stray semi-colons after some "end" statements.
+%    10/26/17  dhb  Make example work, and add comment to example.
 
-% Example:
+% Examples:
 %{
-   meanRate = coneMeanIsomerizations(cMosaic)
+   % Create default scene, oi, mosaic and get the mean LMS isomerizations
+   % from the mosaic.
+   scene = sceneCreate;
+   oi = oiCreate;
+   oi = oiCompute(oi,scene);
+   cMosaic = coneMosaic;
+   cMosaic.compute(oi);
+   tmp = coneMeanIsomerizations(cMosaic);
 %}
 
 %% Validate and parse input parameters
