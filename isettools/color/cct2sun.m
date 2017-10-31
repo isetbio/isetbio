@@ -2,7 +2,7 @@ function spd = cct2sun(wave, cct, units)
 % Correlated color temperature to daylight SPD at specified wavelengths
 %
 % Syntax:
-%   SPD = cct2sun( wave, cct, [units = energy'] )
+%   spd = cct2sun( wave, cct, [units])
 %
 % Description:
 %    Determines daylight/sun spectral power distribution based on
@@ -17,11 +17,10 @@ function spd = cct2sun(wave, cct, units)
 %    spd   - Daylight/sun SPD in units of (relative) energy or photons
 %
 % Optional key/value pairs:
-%    units - Specifies units of returned SPD (spectral power distribution)
-%            (relative energy or relative photons)
-%
-% Notes:
-%    * JNM - Why is there a blank otherwise in the switch case?
+%    units - String that specifies units of returned SPD (spectral power
+%            distribution). Can be 'energy' or 'photons' (default 'energy').
+%            'quanta' is also accepted as as a synonym for 'photons', and
+%            'watts' for energy, but try not to use these.
 %
 % References: 
 %    http://en.wikipedia.org/wiki/Standard_illuminant
@@ -109,8 +108,10 @@ spd = dayBasis(:, 2:3) * M + repmat(dayBasis(:, 1), [1 size(cct, 2)]);
 switch lower(units)
     case {'quanta', 'photons'}
         spd = Energy2Quanta(wave, spd);
+    case {'energy', 'watts'}
+        % Don't need to do anything here.
     otherwise
-        % [Note: JNM - Why is there a blank otherwise?]
+        error('Unknown units specified');
 end
 
 end
