@@ -2,15 +2,18 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 % Draw points superimposed on an xy chromaticity diagram 
 %
 % Syntax:
-%   g = chromaticityPlot(pts, [background='gray'], [nPix=256])
+%   g = chromaticityPlot([pts], [background], [nPix])
 %
 % Description:
 %    Draw points superimposed on an xy chromaticity diagram  The general
 %    surrounding background can be gray (by default), white or black.
 %
 % Inputs:
-%    pts        -  xy values of points on the graph. Default is []
-%    background -  image background color. Default is 'gray'.
+%    pts        -  xy values of points on the graph. Default is [].  This
+%                  is an number of points by 2 matrix, with x values in the
+%                  first column and y in the second.
+%    background -  Image background color. Default is 'gray'.  Other
+%                  options are 'black' and 'white'.
 %    nPix       -  Spatial resolution. Default is 256.
 %    newFig     -  Plot in a new figure. Default is true (1)
 %
@@ -31,8 +34,8 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
    chromaticityPlot;
 %}
 %{
-   % A point on backgrounds at different colors and resolutions
-   pts = [.33, .33];
+   % A few points on backgrounds at different colors and resolutions
+   pts = [[.33, .33] ; [0.40 0.45]];
    chromaticityPlot(pts, 'gray', 256);
    chromaticityPlot(pts, 'black');
    chromaticityPlot(pts, 'white', 384);
