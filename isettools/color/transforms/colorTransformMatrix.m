@@ -15,13 +15,15 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    This routine works with imageLinearTransform
 %       T = colorTransformMatrix('lms2xyz');
 %       xyzImage = imageLinearTransform(lmsImage, T)
-%    returns an NxMx3 xyz Image as expected
+%    would return an NxMx3 xyz image, if lmsImage were in turn NxMx3.
 %
 % Inputs:
 %    matrixtype - Type of color transformation. See some options below:
 %       'lms2opp'    cone coordinate to opponent (Poirson & Wandell 1993)
 %       'opp2lms'    inverse of the above matrix
-%       'xyz2opp'    xyz to opponent (CIE1931 XYZ)
+%       'xyz2opp'    xyz to opponent (CIE1931 XYZ.  Or is it the newer
+%                    XYZ standard - a comment in the code suggests it might
+%                    be.)
 %       'opp2xyz'    inverse of the above matrix
 %
 %       Normalized for D65 (lms=[100 100 100] for D65)
@@ -47,7 +49,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %                 to specify explicitly what you want.
 %
 % Outputs:
-%    result     - an 3x3 color matrix used to convert an image from one
+%    result     - a 3x3 color matrix used to convert an image from one
 %                 color space to another
 %
 % Notes:
@@ -57,6 +59,12 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %     terms but we return the transpose of her result (see the end).]
 %   * [NOTE: XXX - There are multiple instances of 'stockman 2 xyz' and 'xyz 2
 %     stockman', is this going to be problematic?
+%   * [NOTE: DHB - The comment in the header indicated that the xyz2opp and
+%     opp2xyz matrices were with respect to the 1931 CIE standard, but a
+%     comment in the code suggests it is now the 2012 Stockman-Sharpe
+%     replacement. Hard to tell from the actual numbers, without
+%     recomputing the matrices. Someone should check, and then make the
+%     comments in the header and the code match accordingly.]
 %
 % References:
 % * http://en.wikipedia.org/wiki/SRGB
@@ -137,7 +145,7 @@ switch lower(matrixtype)
         result = inv([0.9900   -0.1060   -0.0940; ...
                      -0.6690    0.7420   -0.0270; ...
                      -0.2120   -0.3540    0.9110]);
-        % Gosh, these are old from XZ times. Replaced with Stockman in
+        % Gosh, these are old from XYZ times. Replaced with Stockman in
         % 2012, now that we are starting to perform cone calculations.
 
     case {'hpe2xyz'}
