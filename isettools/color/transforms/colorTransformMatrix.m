@@ -2,7 +2,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 % Gateway routine that returns color space transformation matrices
 %
 % Syntax:
-%   result = colorTransformMatrix(matrixtype, spacetype)
+%   result = colorTransformMatrix(matrixtype, [spacetype])
 %
 % Description:
 %    The routine returns a 3x3 color matrix, MAT, suitable for use with
@@ -15,14 +15,13 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    This routine works with imageLinearTransform
 %       T = colorTransformMatrix('lms2xyz');
 %       xyzImage = imageLinearTransform(lmsImage, T)
-%
-%   returns an NxMx3 xyz Image as expected
+%    returns an NxMx3 xyz Image as expected
 %
 % Inputs:
-%    matrixType - Type of color transformation. See some options below:
+%    matrixtype - Type of color transformation. See some options below:
 %       'lms2opp'    cone coordinate to opponent (Poirson & Wandell 1993)
 %       'opp2lms'    inverse of the above matrix
-%       'xyz2opp'    xyz to opponent (CIE1931 2 degree XYZ)
+%       'xyz2opp'    xyz to opponent (CIE1931 XYZ)
 %       'opp2xyz'    inverse of the above matrix
 %
 %       Normalized for D65 (lms=[100 100 100] for D65)
@@ -42,19 +41,21 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %       'xyz2lrgb'   from XYZ to lRGB values
 %       'lrgb2xyz'   inverse of the above matrix
 %       'cmy2rgb'    converts cyan, magenta, yellow to RGB
-%    spaceType  - (Optional) The type of color space. Possible values
-%                 include '', 2, 10
+%    spaceType  - (Optional) Whether 2 or 10 degree color matching functions
+%                 should be used for xyz2opp and opp2xyz matrices.  [] gets
+%                 you the default value, which is 10 degree. Pass 2 or 10
+%                 to specify explicitly what you want.
 %
 % Outputs:
 %    result     - an 3x3 color matrix used to convert an image from one
 %                 color space to another
 %
 % Notes:
-%   * HPE* transform is the Hunt-Pointer-Estevez transform
-%   * When Xuemei originally built this list, she had in mind
+%   * [NOTE: XXX - HPE* transform is the Hunt-Pointer-Estevez transform]
+%   * [NOTE: XXX - When Xuemei originally built this list, she had in mind
 %     T3x3*colVector At ImagEval, we use rowVector*T3x3. We retained her
-%     terms but we return the transpose of her result (see the end).
-%   * There are multiple instances of 'stockman 2 xyz' and 'xyz 2
+%     terms but we return the transpose of her result (see the end).]
+%   * [NOTE: XXX - There are multiple instances of 'stockman 2 xyz' and 'xyz 2
 %     stockman', is this going to be problematic?
 %
 % References:
