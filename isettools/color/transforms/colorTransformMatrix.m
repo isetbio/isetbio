@@ -228,10 +228,10 @@ switch lower(matrixtype)
         % white is D65 with unit luminance (X, Y, Z = 0.9505, 1.0000,
         % 1.0890). Calculations assume the 2° standard colorimetric
         % observer.[3]
-
         result = [3.241  -1.5374 -0.4986; ...
                  -0.9692  1.8760  0.0416; ...
                   0.0556 -0.2040  1.0570];
+              
         % If user wanted srgb2xyz, we invert the matrix
         if (matrixtype(1) == 's')
             result = inv(result);
@@ -271,4 +271,5 @@ end
 
 % This format works with imageLinearTransform
 result = result';
+
 end
