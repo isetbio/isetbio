@@ -1,38 +1,66 @@
-function imRGB = XW2RGBFormat(imXW,row,col)
+function imRGB = XW2RGBFormat(imXW, row, col)
 % Convert XW format data to RGB format
 %
-%    imRGB = XW2RGBFormat(imXW,row,col);
+% Syntax:
+%   imRGB = XW2RGBFormat(imXW, row, col);
 %
-%   This  routine converts from XW format to RGB format.  The row and
-%   column of the imXW are required input arguments.
+% Description:
+%    This  routine converts from XW format to RGB format. The row and
+%    column of the imXW are required input arguments.
 %
-%   We say matrices in (r,c,w) format are in RGB format.  The dimension, w,
-%   represents the number of data color bands.  When w=3, the data are an RGB
-%   image. But w can be almost anything (e.g., 31 wavelength samples from
-%   400:10:700).  We use this format frequently for spectral data.
+%    We say matrices in (r, c, w) format are in RGB format. The dimension, 
+%    w, represents the number of data color bands. When w=3, the data are
+%    an RGB image. But w can be almost anything (e.g., 31 wavelength
+%    samples from 400:10:700). We use this format frequently for spectral
+%    data.
 %
-%   The RGB format is useful for imaging.  When w = 3, you can use
-%   conventional image() routines.  When w > 3, use imageSPD.
+%    The RGB format is useful for imaging. When w = 3, you can use
+%    conventional image() routines. When w > 3, use imageSPD.
 %
-%   The XW (space-wavelength) format is useful for computation.  In this
-%   format, for example, XW*spectralFunction yields a spectral response.
+%    The XW (space-wavelength) format is useful for computation. In this
+%    format, for example, XW*spectralFunction yields a spectral response.
 %
-%   The inverse routine is RGB2XWFormat.
+%    The inverse routine is RGB2XWFormat.
 %
-% See also: imageSPD, imagescRGB, RGB2XWFormat
+% Inputs:
+%    imXW  - space-wavelength formatted data
+%    row   - imXW row data
+%    col   - imXW column data
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Outputs:
+%    imRGB - the Red-Green-Blue formatted data
+%
+% See Also: 
+%    imageSPD, imagescRGB, RGB2XWFormat
+%
 
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC
+%    10/27/17  jnm  Comments & formatting
 
-if notDefined('imXW'), error('No image data.'); end
-if notDefined('row'),  error('No row size.');   end
-if notDefined('col'),  error('No col size.');   end
+% Examples:
+%{
+   ptbSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]'];
+   isetSRGBs = ptbSRGBs/255;
+   isetSRGBs = XW2RGBFormat(isetSRGBs',4,1);
+%}
+if notDefined('imXW')
+    error('No image data.');
+end
+if notDefined('row')
+    error('No row size.');
+end
+if notDefined('col')
+    error('No col size.');
+end
 
 x = size(imXW, 1);
 w = size(imXW, 2);
 
-if row*col ~= x, error('XW2RGBFormat:  Bad row, col values'); end
+if row*col ~= x
+    error('XW2RGBFormat:  Bad row, col values');
+end
 
-imRGB = reshape(imXW,row,col,w);
+imRGB = reshape(imXW, row, col, w);
 
 end
