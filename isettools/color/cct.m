@@ -21,13 +21,14 @@ function Tc = cct(uvs)
 %          [u1 u2 ... un; v1 v2 ... vn]
 %
 % Outputs:
-%    Tc  - Correlated color temperature
+%    Tc  - Correlated color temperatures.  This comes back as a row vector,
+%          with each entry corresponding to a column of uvs.
 %
 % Notes:
-%    * ToDo:  Make this work for XYZ. 
-%    * ToDo: Make an xyY to uv conversion routine.
-%    * ToDo: Put the cct.mat file in the proper place and give it some
-%      decent structure.
+%    * [NOTE: XXX - TODO:  Make this work for XYZ.]
+%    * [NOTE: XXX - TODO: ake an xyY to uv conversion routine.]
+%    * [NOTE: XXX - TODO: Put the cct.mat file in the proper place and give it some
+%      decent structure.]
 %
 % References:
 %    Wyszecki & Stiles pgs. 227-228
@@ -42,7 +43,7 @@ function Tc = cct(uvs)
 
 % Examples:
 %{
-   colorTemp = cct([.31, .32]')
+   colorTemp = cct([[.31, .32]' [0.33 0.35]'])
 %}
 
 if notDefined('uvs')
@@ -70,10 +71,9 @@ d  = ((us - u) - t .* (vs - v)) ./ sqrt(1 + t .^ 2);
 % Instead of dividing as explained in W&S and checking for negative values.
 % I look at the signs and took differences. This allows us to avoid divide
 % by zero errors.
-
+%
 % ds is padded by zeros to ensure the indices are correct when doing the
 % find operation.
-
 ds = sign(d);
 ds = ds.*(ds~=0) + 1.*(ds==0);
 ds = [ds; zeros(1, Nd)];	
