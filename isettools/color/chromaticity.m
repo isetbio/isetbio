@@ -14,18 +14,15 @@ function xy = chromaticity(XYZ)
 %    images.  The returned data are in as a two dimensional image format, 
 %    with each spatial position containing the corresponding (x, y) value.
 %
+%    There is nothing sacred about using this for XYZ -> xy.  You can pass
+%    any tristimulus coordinates and get the first two corresponding
+%    chromaticity coordinates.  So, for example RGB -> rg.
+%
 % Inputs:
-%    xyz - CIE XYZ color space data. In either XW or RGB format. 
+%    XYZ - CIE XYZ color space data. In either XW or RGB format. 
 %
 % Outputs:
 %    xy  - CIE Chromaticity coordinates
-%
-% Notes:
-%    * It is possible to (ab)use this routine to calculate rg coordinates
-%      from RGB values.
-%    * The listed example generates the following error message:
-%       "Error using XW2RGBFormat (line 61)
-%       XW2RGBFormat:  Bad row, col values"
 %
 
 % History:
@@ -42,7 +39,7 @@ function xy = chromaticity(XYZ)
     XYZ = ieXYZFromEnergy(e, wave);
     chromaticity(XYZ)
 
-    XYZ = XW2RGBFormat(XYZ, 4, 6);
+    XYZ = RGB2XWFormat(XYZ);
     chromaticity(XYZ)
 %}
 
