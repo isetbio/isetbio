@@ -28,7 +28,7 @@ function imRGB = XW2RGBFormat(imXW, row, col)
 %    col   - imXW column data
 %
 % Outputs:
-%    imRGB - the Red-Green-Blue formatted data
+%    imRGB - the RGB format data
 %
 % See Also: 
 %    imageSPD, imagescRGB, RGB2XWFormat
@@ -40,9 +40,8 @@ function imRGB = XW2RGBFormat(imXW, row, col)
 
 % Examples:
 %{
-   ptbSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]'];
-   isetSRGBs = ptbSRGBs/255;
-   isetSRGBs = XW2RGBFormat(isetSRGBs',4,1);
+   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']'/255;
+   rgbSRGBs = XW2RGBFormat(xwSRGBs,2,2);
 %}
 if notDefined('imXW')
     error('No image data.');
