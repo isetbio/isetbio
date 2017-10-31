@@ -1,22 +1,32 @@
-function [spec, XYZ] = daylight(wave, cct, units)
+function [spd, xyz] = daylight(wave, cct, units)
 % Generate a daylight SPD with a correlated color temperature
 %
 % Syntax:
-%   [spd, xyz] = daylight(WAVE, cct, units)
+%   [spd, xyz] = daylight([wave], [cct], [units])
 %
 % Description:
 %    Generates a daylight/sun spectral power distribution based on a
 %    correlated color temperature (cct). 
 %
+%    All the returned spectra are normalized so that the luminance of the
+%    first one is 100 cd/m2.
+%
 % Inputs:
-%    wave  - The wavelength vector in nm
-%    cct   - The correlated color temperature
+%    wave  - The wavelength vector in nm (default 400:10:700).
+%    cct   - The correlated color temperature (default 6500).
 %    units - The corresponding units for the equation. Options are
-%            'photons' or 'energy'
+%            'photons' or 'energy' (default 'energy').
 %
 % Outputs:
-%    spec  - The daylight spectral power distribution
-%    xyz   - CIE XYZ values
+%    spd   - The daylight spectral power distribution, in columns of a
+%            returned matrix.
+%    xyz   - CIE XYZ values, in rows of returned matrix.
+%
+% Notes:
+%   * [NOTE - DHB: Since spectra have been normalized so that first has a 
+%      luminance of 100 cd/m2, should probably figure out what the
+%      corresponding units of the spectra are and tell the user under
+%      description above.
 %
 % See Also:
 %    blackbody, cct2sun
@@ -39,7 +49,7 @@ function [spec, XYZ] = daylight(wave, cct, units)
 %}
 %{
    w = 400:700;
-   [spd, XYZ] = daylight(w,[4000 6500],'photons');
+   [spd, xyz] = daylight(w,[4000 6500],'photons');
    plot(w,spd)
 %}
 %{
@@ -47,6 +57,7 @@ function [spec, XYZ] = daylight(wave, cct, units)
    cct = 4000:1000:10000;  % Correlated color temperature
    spd = daylight(wave,cct,'photons');
 %}
+
 if notDefined('wave')
     wave = 400:10:700;
 end
@@ -57,24 +68,27 @@ if notDefined('cct')
     cct = 6500;
 end
 
-spec = cct2sun(wave, cct, units);
+% Make the spd
+spd = cct2sun(wave, cct, units);
 
 % Scale so first spectrum is 100 cd/m^2.
 units = ieParamFormat(units);
 switch units
     case 'photons'
-        L = ieLuminanceFromPhotons(spec(:, 1)', wave);        
+        L = ieLuminanceFromPhotons(spd(:, 1)', wave);        
     case 'energy'
-        L = ieLuminanceFromEnergy(spec(:, 1)', wave);
+        L = ieLuminanceFromEnergy(spd(:, 1)', wave);
 end
-spec = (spec/L)*100;
+spd = (spd/L)*100;
 
 if nargout == 2
     switch units
         case {'photons', 'quanta'}
-            XYZ = ieXYZFromPhotons(spec', wave);
+            xyz = ieXYZFromPhotons(spd', wave);
         case 'energy'
-            XYZ = ieXYZFromEnergy(spec', wave);
+            xyz = ieXYZFromEnergy(spd', wave);
+        otherwise
+            error('Unknown units specified');
     end
 end
 
