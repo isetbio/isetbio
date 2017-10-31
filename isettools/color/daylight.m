@@ -1,8 +1,8 @@
-function [spd, xyz] = daylight(wave, cct, units)
+function [spd, XYZ] = daylight(wave, cct, units)
 % Generate a daylight SPD with a correlated color temperature
 %
 % Syntax:
-%   [spd, xyz] = daylight([wave], [cct], [units])
+%   [spd, XYZ] = daylight([wave], [cct], [units])
 %
 % Description:
 %    Generates a daylight/sun spectral power distribution based on a
@@ -20,7 +20,7 @@ function [spd, xyz] = daylight(wave, cct, units)
 % Outputs:
 %    spd   - The daylight spectral power distribution, in columns of a
 %            returned matrix.
-%    xyz   - CIE XYZ values, in rows of returned matrix.
+%    XYZ   - CIE XYZ values, in rows of returned matrix.
 %
 % Notes:
 %   * [NOTE - DHB: Since spectra have been normalized so that first has a 
@@ -84,9 +84,9 @@ spd = (spd/L)*100;
 if nargout == 2
     switch units
         case {'photons', 'quanta'}
-            xyz = ieXYZFromPhotons(spd', wave);
+            XYZ = ieXYZFromPhotons(spd', wave);
         case 'energy'
-            xyz = ieXYZFromEnergy(spd', wave);
+            XYZ = ieXYZFromEnergy(spd', wave);
         otherwise
             error('Unknown units specified');
     end
