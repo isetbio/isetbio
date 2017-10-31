@@ -6,7 +6,9 @@ function energy = Quanta2Energy(wavelength, photons)
 %
 % Description:
 %    Convert photons represented at the sampled wavelength positions to
-%    energy (watts or joules).
+%    energy units (watts or joules).  You get watts if photons specifies
+%    photon rate (photons/sec) and joules if it just specifies the number
+%    of photons.
 %
 % Inputs:
 %    wavelength - Column vector describing the wavelength samples [nm]
@@ -23,11 +25,11 @@ function energy = Quanta2Energy(wavelength, photons)
 %                 format that the photon matrix was in (RGB or XW)
 %
 % Notes:
-%    * CAUTION: The input form differs from the Energy2Quanta() call, which
-%      has the energy spectra in the columns.
-%    * ToDo: We should regularize the calls to Energy2Quanta() and this
+%    * [NOTE: XXX - CAUTION: The input form differs from the Energy2Quanta() call, which
+%      has the energy spectra in the columns.]
+%    * [NOTE: XXX - We should regularize the calls to Energy2Quanta() and this
 %      routine, probably by making the other routine take RGB or XW format
-%      as well. Old legacy issues, sigh.
+%      as well. Old legacy issues, sigh.]
 %
 
 % History:
@@ -52,7 +54,9 @@ if isempty(photons)
     energy = [];
     return;
 end
-wavelength = wavelength(:)'; % make wave as row vector
+
+% Make wavelenth as row vector
+wavelength = wavelength(:)'; 
 
 % Fundamental constants
 h = vcConstants('h');		% Planck's constant [J sec]
@@ -68,6 +72,7 @@ switch iFormat
             error('Quanta2Energy: photons third dimension must be nWave');
         end
         photons = RGB2XWFormat(photons);
+        
         % energy = (h*c/(1e-9))*(photons ./ repmat(wavelength, n*m, 1));
         energy = (h*c/1e-9) * bsxfun(@rdivide, photons, wavelength);
         energy = XW2RGBFormat(energy, n, m);
@@ -81,6 +86,7 @@ switch iFormat
             error('Quanta2Energy: quanta must have length of nWave');
         end
         energy = (h*c/1e-9) * bsxfun(@rdivide, photons, wavelength);
+        
     otherwise
         error('Unknown image format');
 end
