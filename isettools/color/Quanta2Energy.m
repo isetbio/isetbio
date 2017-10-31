@@ -30,6 +30,10 @@ function energy = Quanta2Energy(wavelength, photons)
 %    * [NOTE: XXX - We should regularize the calls to Energy2Quanta() and this
 %      routine, probably by making the other routine take RGB or XW format
 %      as well. Old legacy issues, sigh.]
+%    * [NOTE: DHB - When this is passed a single column vector, it doesn't
+%      complain (because that's an illegal format) but rather returns a
+%      single row vector.  Not sure whether we should check and throw an
+%      error for this case.]
 %
 
 % History:
@@ -45,7 +49,7 @@ function energy = Quanta2Energy(wavelength, photons)
    figure; plot(wave, e')
 
    p1 = blackbody(wave, 5000, 'photons');
-   e = Quanta2Energy(wave, p1);            % e is a row vector in XW format
+   e = Quanta2Energy(wave, p1');            % e is a row vector in XW format
    p2 = Energy2Quanta(wave, transpose(e)); % Notice the TRANSPOSE
    figure; plot(wave, p1, 'ro', wave, p2, 'k-')
 %}

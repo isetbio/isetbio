@@ -1,13 +1,14 @@
 function photons = Energy2Quanta(wavelength, energy)
-% Convert energy (watts) to number of photons.
+% Convert energy (watts or joules) to photon units
 %
 % Syntax:
 %   photons = Energy2Quanta(wavelength, energy)
 %
 % Description
 %    Energy (e.g., watts) is returned in units of photons, that is from
-%    watts/sr/m2/nm to photons/sr/m2/nm.  The parameter wavelength is the
-%    vector of sample wavelengths in units of nanometers (nm).
+%    watts/sr/m2/nm to photons/sec/sr/m2/nm.  The parameter wavelength is the
+%    vector of sample wavelengths in units of nanometers (nm).  If you pass
+%    watts, you get photons/sec, if you pass joules you get photons
 %
 %    The return (photons) is in the same format.
 %
@@ -22,20 +23,20 @@ function photons = Energy2Quanta(wavelength, energy)
 %
 % Inputs:
 %    wavelength - the vector of sample wavelengths in nm.
-%    energy     - A matrix containing the spatial samples. Rows represent
-%                 energy at a single wavelength, and columns as a function
-%                 of the wavelengths. (Transpose of XW Format)
+%    energy     - A matrix containing the spatial samples. Each column
+%                 represents one spatial sample, with each row
+%                 corresponding to one wavelength (transpose of XW format).
 %
 % Outputs:
-%    photons    - Matrix in either RGB or XW (space-wavelength) format.
-%                 In the XW format each spatial position is in a row and
-%                 the wavelength varies across columsn. 
+%    photons    - Matrix in same format as input (transpose of XW format).
 %
 % Notes:
-%    - XXX: In the fullness of time, this function will be converted to XW
-%      format; but it will require some effort because they are inserted in
-%      so many important places.  I am going to need a long holiday to make
-%      this change.
+%    - [NOTE - BAW: In the fullness of time, this function will be
+%      converted to XW format; but it will require some effort because they
+%      are inserted in so many important places.  I am going to need a long
+%      holiday to make this change. Currently, this function is not
+%      transparently compatible with its counterpart, Quanta2Energy.  If
+%      this ever happens, fix comments above and in the example.]
 %
 % See Also:
 %   Quanta2Energy
@@ -52,12 +53,12 @@ function photons = Energy2Quanta(wavelength, energy)
    p = Energy2Quanta(wave, in);  
    figure; plot(wave, p);
 
-   % Notice that in the return, out becomes a row vector, consistent with
-   % XW format. Also, notice that we have to transpose p to make this work.
-   % Tragic.
+   % Notice that we have to transpose p when we call the inverse
+   % Quanta2Energy. Tragic.
 
-   out = Quanta2Energy(wave, p');      % out is a row vector, XW format
-   figure; plot(wave, in, 'ro', wave, out', 'k-') 
+   % Now, from Quanta2Energy, out in XW format
+   out = Quanta2Energy(wave, p');     
+   figure; plot(wave, in, 'ro', wave, out', 'k-');
 %}
 
 if ~isvector(wavelength)
