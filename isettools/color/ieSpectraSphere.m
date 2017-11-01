@@ -2,12 +2,12 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 % Calculate spectra that produce XYZ in a sphere around spectrumE 
 %
 % Syntax:
-%   [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, ...
-%       sBasis, sFactor)
+%   [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere([wave], [spectrumE], [N], ...
+%       [sBasis], [sFactor])
 %
 % Description:
-%    Calculate spectra that produce XYZ in a sphere around spectrumE.
-% 
+%     Calculate spectra that produce XYZ in a sphere around spectrumE.
+%
 %    The spectraS, which are also in energy units, are about 5% modulations
 %    of the spectrumE.
 %
@@ -15,13 +15,17 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 %    photons. Scenes always store their data in photons.
 %
 % Inputs:
-%    wave      - Wavelengths (400:10:700);
+%    wave      - Wavelengths (default 400:10:700).
 %    spectrumE - The spectral radiance (E) of the center of the sphere, in
-%                energy units.
-%    N         - Number of samples on the sphere.
-%    sBasis    - Spectral basis used for generating the spectra.
-%    sFactor   - Fractional difference between spectrumE and others 
-%               (default = 0.05)
+%                energy units.  This should be a column vector (default
+%                spectrum of zeros).
+%    N         - Number of samples (default 8)
+%    sBasis    - Spectral basis used for generating the differences.
+%                Basis functions should be in the columns of this matrix,
+%                and there should be 3 of them (default CIE daylight
+%                basis).
+%    sFactor   - Fractional difference between spectrumE and others
+%               (default 0.05)
 %
 % Outputs:
 %    spectraS  - The spectral radiance of the functions
@@ -40,7 +44,6 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 
 % Examples: 
 %{
-   % (default debug test in configuration)
    N = 10; wave = 400:10:700;
    spectrumE = blackbody(wave, 6500, 'energy');
    sBasis = ieReadSpectra('cieDaylightBasis', wave);
@@ -62,7 +65,7 @@ elseif ischar(sBasis)
 end
 if notDefined('sFactor'), sFactor = 0.05; end
 
-cieXYZ = ieReadSpectra('xyz', wave');
+cieXYZ = ieReadSpectra('XYZ', wave');
 
 % Force to column vector.
 spectrumE = spectrumE(:);
