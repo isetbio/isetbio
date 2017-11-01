@@ -1,8 +1,5 @@
 # camera default orientation
-LookAt 0 0 0 0 0 -1 0 1 0 
-
-# camera scene position
-ConcatTransform [-1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -0.000000 -0.000000 -7.630000 1.000000] 
+LookAt 0 0 0 0 1 0 0 0 1
 
 # 1_Camera
 Camera "realisticEye" 

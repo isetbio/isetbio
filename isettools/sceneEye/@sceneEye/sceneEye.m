@@ -331,16 +331,6 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
     methods (Access=public)
         
         [oi, terminalOutput, outputFile] = render(obj,varargin);
-        % we need a method here that renders this object. it needs to do
-        % the following:
-        % 1. Write out a new PBRT in a working directory under the
-        % renderName
-        % 2. Render using docker
-        % 3. Load the output into an ISETBIO OI with the right parameters
-        % 4. Return the OI
-        %
-        % We will try to integrate this with Alicloud and google
-        % methods.
         
         
     end

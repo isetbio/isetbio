@@ -18,8 +18,6 @@ recipe = obj.recipe;
 recipe = setAccommodation(recipe,obj.accommodation,obj.workingDir);
 
 % Film parameters
-[recipe.film.name.value] = sprintf('%s.pbrt',obj.name);
-[recipe.film.name.type] = 'string';
 recipe.film.xresolution.value = obj.resolution;
 recipe.film.yresolution.value = obj.resolution;
 
