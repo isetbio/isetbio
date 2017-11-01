@@ -1,24 +1,40 @@
-function object = initDefaultSpectrum(object, spectralType, wave)
+function ieStruct = initDefaultSpectrum(ieStruct, spectralType, wave)
 % Create a wavelength spectrum structure and attach it to an ISET object
 %
 % Syntax:
-%   object = initDefaultSpectrum(object, spectralType, wave)
+%   ieStruct = initDefaultSpectrum(ieStruct, spectralType, [wave])
 %
 % Description:
-%    The spectrum structure specifies the sample wavelengths.
+%    Initialize a spectrum structure field of a structure.  The spectrum
+%    structure specifies the the  spectrum and sample wavelengths.
 %
-%    We use only three spectral types at present.  These are
+%    This is used for early code where "objects" were in fact structures
+%    (e.g. scene, oi), and is primarly used internally to initialize
+%    spectral fields.
+%
+%    The initialization consists only of attaching a field to the passed
+%    structure that is called 'spectrum', and adding the 'wave' field to
+%    that structure. Something else is required to add in an actual field
+%    that specifies a spectrum.
+%    
 % Inputs:
+%    ieStruct     - The ISET object to which you wish to attach the created
+%                   spectrum structure
 %    spectralType - One of the (currently) three supported types below.
-%           Multispectral - 400:10:700 nm
-%           Monochrome    - 550 nm
-%           Custom        - The user supplies the wavelength samples
+%           'multispectral' - 400:10:700 nm. The strings 'spectral' and
+%                             'hyperspectral' are synonyms for this.
+%           'monochrome'    - 550 nm
+%           'custom'        - The user supplies the wavelength samples
 %    wave         - (Optional) the wavelength samples required for a custom
 %                   spectral type
 %
 % Outputs:
-%    obj          - the ISET object to which you wish to attach the created
-%                   spectrum structure
+%    ieStruct     - The structure with the spectrum field added.
+%
+% Notes:
+%   * [NOTE - DHB: This was very early iset code, and I'm not really sure
+%      how it is used or whether we really want it going forward.  But it
+%      is called in many places, so it won't be easy to get rid of.]
 %
 
 % History:
@@ -33,21 +49,21 @@ function object = initDefaultSpectrum(object, spectralType, wave)
    scene = initDefaultSpectrum(scene, 'custom', 400:50:700);
 %}
 
-if notDefined('object'), error('Object required.'); end
+if notDefined('ieStruct'), error('Input ieStruct required.'); end
 if notDefined('spectralType'), spectralType = 'hyperspectral'; end
 
 switch lower(spectralType)
     case {'spectral', 'multispectral', 'hyperspectral'}
-        object.spectrum.wave = (400:10:700)';
+        ieStruct.spectrum.wave = (400:10:700)';
         
     case 'monochrome'
-        object.spectrum.wave = 550;
+        ieStruct.spectrum.wave = 550;
         
     case 'custom'
         if notDefined('wave')
             error('wave required for custom spectrum');
         end
-        object.spectrum.wave = wave(:);
+        ieStruct.spectrum.wave = wave(:);
         
     otherwise
         error('spectralType not yet defined.');

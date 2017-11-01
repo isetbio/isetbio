@@ -1,13 +1,12 @@
 function XYZ = ieXYZFromPhotons(photons,wave)
-%Convert photon spectral power distribution into CIE XYZ
+% Convert spectral power distribution in photon units into CIE XYZ
 %
 % Syntax:
 %   XYZ = ieXYZFromPhotons(photons,wave)
 %
 % Description:
-%    Converts a spectral power distribution in photons to CIE XYZ values.
-%    The routine converts photons into photons and then calls
-%    ieXYZFromphotons. See the comments about units in that that routine.
+%    Computes CIE XYZ values from a spectral power distribution in photon
+%    units.
 %
 %    The format for photons can be XW or RGB
 %
@@ -16,18 +15,8 @@ function XYZ = ieXYZFromPhotons(photons,wave)
 %    wave    - wavelength. 
 %
 % Outputs:
-%    xyz     - CIE XYZ spectral power distribution
-%
-% Notes:
-%    * A simple way to do this is to call Quanta2photons and
-%      ieXYZFromphotons, i.e.
-%           XYZ = ieXYZFromEnergy(Quanta2Energy(wave,photons),wave);
-%      However, for large input size (e.g. 1k x 1k x 100). This method
-%      could be very slow. Another option is to compute the XYZ
-%      responsivity curve for Quanta units and apply that to the input
-%      photons directly
-%    * "The routine converts photons into photons and then..." - does not
-%      necessarily make sense?
+%    XYZ     - CIE XYZ spectral power distribution. in same format
+%              (XW or RGB) as the input.
 %
 % See Also:
 %   ieXYZFromEnergy
