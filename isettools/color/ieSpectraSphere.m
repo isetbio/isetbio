@@ -6,6 +6,8 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 %       sBasis, sFactor)
 %
 % Description:
+%    Calculate spectra that produce XYZ in a sphere around spectrumE.
+% 
 %    The spectraS, which are also in energy units, are about 5% modulations
 %    of the spectrumE.
 %
@@ -14,9 +16,10 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 %
 % Inputs:
 %    wave      - Wavelengths (400:10:700);
-%    spectrumE - The spectral radiance (E) of the start point
-%    N         - Number of samples
-%    sBasis    - Spectral basis used for generating the differences
+%    spectrumE - The spectral radiance (E) of the center of the sphere, in
+%                energy units.
+%    N         - Number of samples on the sphere.
+%    sBasis    - Spectral basis used for generating the spectra.
 %    sFactor   - Fractional difference between spectrumE and others 
 %               (default = 0.05)
 %
