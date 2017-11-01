@@ -5,43 +5,27 @@ function XYZ = ieXYZFromEnergy(energy, wave)
 %   XYZ = ieXYZFromEnergy(energy, wave)
 %
 % Description:
-%    Calculate the XYZ values of the spectral radiance or irradiance
+%    Calculate CIE XYZ values of the spectral radiance or irradiance
 %    functions in the variable energy. The input format of energy can be
 %    either XW (space-wavelength) or RGB. The wavelength samples of energy
 %    are stored in the variable wave.
 %
-%    Notice, that XW is AN UNUSUAL FORMAT for energy. Often, we put the
-%    SPDs into the columns of the matrix. But in the XW format, the SPDs
-%    are in the rows. Sorry.
-%
-%    The returned values, XYZ, are X, Y, Z in the columns of the matrix. Each
-%    row of energy has a corresponding XYZ value in the corresponding row
-%    of XYZ. This is what we call XW format.
+%    For XW format input, the SPDs are in the rows, and the returned XYZ
+%    values are in the corresponding rows of the returned matrix.  That is,
+%    the return comes back in XW format if the input is in XW format.
 %
 %    The units of Y are candelas/meter-squared if energy is radiance and
-%    lux if energy is irradiance.
-%
-%    The units of radiance are watts/[sr-m2-nm], while the units of
-%    irradiance are Watts/[m2-nm].
+%    lux if energy is irradiance, and if the units of radiance are
+%    watts/[sr-m2-nm] or the units of irradiance are Watts/[m2-nm].
 %
 % Inputs:
 %    energy - Energy in XW (space-wavelength) or RGB formats
 %    wave   - Wavelength samples of energy
 %
 % Outputs:
-%    xyz    - X, Y, and Z are columns in matrix format. Y is in candelas
+%    XYZ    - CIE XYZ values in format matched to input. Y is in candelas
 %             per meter squared (radiance), or lux (irradiance). Units for
-%             radiance are watts per the combination of steradian times
-%             meters squared times nanometer (w/[sr*m^2*nm]), and for
-%             irradiance are watts per the combination of meters squared
-%             times nanometers (w/[m^2*nm])
-%
-% Notes:
-%    * We could consider putting the return into RGB format if it is sent
-%      in that way.
-%    * XXX - Returning in RGB forma is new. I tested it in the scielab
-%      branch with v_ISET and some other calls. But it might cause
-%      something to break somewhere. Stay alert!
+%             radiance are w/[sr*m^2*nm]), and for irradiance w/[m^2*nm].
 %
 % See Also:
 %   ieXYZFromPhotons()
@@ -49,7 +33,10 @@ function XYZ = ieXYZFromEnergy(energy, wave)
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    xx/xx/xx  xxx  Return output in RGB format if input came in that way.
 %    10/27/17  jnm  Comments & formatting
+%    11/01/17  dhb  Remove comments that RGB return is new, since it isn't
+%                   anymore.
 
 % Examples:
 %{
@@ -68,16 +55,13 @@ function XYZ = ieXYZFromEnergy(energy, wave)
    XYZ = ieXYZFromEnergy(e, wave);  
 %}
 
-% Force data into XW format.
+%% Force data into XW format.
 if ndims(energy) == 3
     if length(wave) ~= size(energy, 3)
         error('Bad format for input variable energy.');
     end
 end
 
-% Returning in RGB forma is new. I tested it in the scielab branch with
-% v_ISET and some other calls. But it might cause something to break
-% somewhere. Stay alert!
 iFormat = vcGetImageFormat(energy, wave);
 switch iFormat
     case 'RGB'
