@@ -1,23 +1,22 @@
-function xyz = lms2xyz(lms)
+function XYZ = lms2xyz(lms)
 % Convert stockman lms to xyz 10 deg
 %
 % Syntax:
-%   xyz = lms2xyz(lms)
+%   XYZ = lms2xyz(lms)
 %
 % Description:
-%    Convert stockman lms to xyz 10 degree
+%    Convert Stockman lms to XYZ 10 degree
 %
 % Inputs:
-%    lms - Probably in RGB image format. *Should check.*
+%    lms - In RGB or XW format.
 %
 % Outputs:
-%    xyz - XYZ Formatted image data
+%    XYZ - XYZ in RGB format
 %
 % Notes:
-%    * [Note: XXX - Why is the Input variable format in question and not
-%      already known?]
-%    * [Note: JNM - Why is the XW format below noted as not thoroughly
-%      debugged? Is there something we can do to address this?]
+%  * [Note - DHB: Someday might be nice to have units arg that specified
+%     10 versus 2 degree, perhaps separately for Stockman-Sharpe and XYZ,
+%     and perhaps using key/value pairs.]
 %
 % See Also:
 %    xyz2lms
@@ -26,14 +25,23 @@ function xyz = lms2xyz(lms)
 % History:
 %    xx/xx/12       (c) ImagEval
 %    11/01/17  jnm  Comments, formatting, and adding actual example.
+%    11/02/17  dhb  This tried to be clever about accepting non XW format.
+%                   Took that out.
+%    11/02/17  dhb  Extended example to test XW format and remove notes
+%                   about usefulness of doing so.
 
 % Examples:
 %{
    scene = sceneCreate('reflectance chart');
    vcAddAndSelectObject(scene); sceneWindow
    imgLMS = sceneGet(scene, 'lms');
-   
+   [xwLMS,m,n] = RGB2XWFormat(imgLMS);
    imgXYZ = lms2xyz(imgLMS);
+   xwXYZ = lms2xyz(xwLMS);
+   imgXYZCheck = XW2RGBFormat(xwXYZ,m,n);
+   if (max(abs(imgXYZ(:)-imgXYZCheck(:))))
+      fprintf('Oops. Something wrong with format conversion\n');
+   end
    vcNewGraphWin;
    imagescRGB(lms2srgb(imgXYZ));
 %}
@@ -42,15 +50,13 @@ if notDefined('lms'), error('lms required'); end
 
 if ndims(lms) == 3
     % RGBW format
-    xyz = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
+    XYZ = imageLinearTransform(lms, colorTransformMatrix('lms2xyz'));
 elseif ismatrix(lms)
-    % XW format - Not debugged thoroughly
-    if size(lms, 1) == 3 && size(lms, 2) ~= 3
-        xyz = lms' * colorTransformMatrix('lms2xyz');
-    elseif size(lms, 1) ~= 3 && size(lms, 2) == 3
-        xyz = lms * colorTransformMatrix('lms2xyz');
+    if size(lms, 2) ~= 3
+        error(['Passed lms not in RGB or XW format. ' ...
+               'You might need to transpose input for proper XW']);
     else
-        error('Ambiguous lms shape');
+        XYZ = lms * colorTransformMatrix('lms2xyz');
     end
 end
 
