@@ -2,20 +2,20 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 % Draw points superimposed on an xy chromaticity diagram 
 %
 % Syntax:
-%   g = chromaticityPlot([pts], [background], [nPix])
+%   g = chromaticityPlot([pts], [background], [nPix], [newFig])
 %
 % Description:
 %    Draw points superimposed on an xy chromaticity diagram  The general
 %    surrounding background can be gray (by default), white or black.
 %
 % Inputs:
-%    pts        -  xy values of points on the graph. Default is [].  This
-%                  is an number of points by 2 matrix, with x values in the
-%                  first column and y in the second.
-%    background -  Image background color. Default is 'gray'.  Other
-%                  options are 'black' and 'white'.
-%    nPix       -  Spatial resolution. Default is 256.
-%    newFig     -  Plot in a new figure. Default is true (1)
+%    pts        - xy values of points on the graph. Default is []. This
+%                 is an number of points by 2 matrix, with x values in the
+%                 first column and y in the second.
+%    background - Image background color. Default is 'gray'. Other
+%                 options are 'black' and 'white'.
+%    nPix       - Spatial resolution. Default is 256.
+%    newFig     - Plot in a new figure. Default is 1 (true).
 %
 % Outputs:
 %    g          - The drawn graph of points
@@ -48,18 +48,10 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 %}
 
 %% Defaults
-if notDefined('pts')
-    pts = [];
-end
-if notDefined('background')
-    background = 'gray';
-end
-if notDefined('nPix')
-    nPix = 256;
-end
-if notDefined('newFig')
-    newFig = 1;
-end
+if notDefined('pts'), pts = []; end
+if notDefined('background'), background = 'gray'; end
+if notDefined('nPix'), nPix = 256; end
+if notDefined('newFig'), newFig = 1; end
 g = [];
 
 %% Create a mesh grid of points filled with xy values

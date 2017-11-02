@@ -21,14 +21,14 @@ function Tc = cct(uvs)
 %          [u1 u2 ... un; v1 v2 ... vn]
 %
 % Outputs:
-%    Tc  - Correlated color temperatures.  This comes back as a row vector,
+%    Tc  - Correlated color temperatures. This comes back as a row vector,
 %          with each entry corresponding to a column of uvs.
 %
 % Notes:
 %    * [NOTE: XXX - TODO:  Make this work for XYZ.]
-%    * [NOTE: XXX - TODO: ake an xyY to uv conversion routine.]
-%    * [NOTE: XXX - TODO: Put the cct.mat file in the proper place and give it some
-%      decent structure.]
+%    * [NOTE: XXX - TODO: Make an xyY to uv conversion routine.]
+%    * [NOTE: XXX - TODO: Put the cct.mat file in the proper place and give
+%       it some decent structure.]
 %
 % References:
 %    Wyszecki & Stiles pgs. 227-228

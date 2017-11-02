@@ -1,9 +1,10 @@
-function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBasis, sFactor)
+function [spectraS, XYZ, XYZ0, sBasis] = ...
+    ieSpectraSphere(wave, spectrumE, N, sBasis, sFactor)
 % Calculate spectra that produce XYZ in a sphere around spectrumE 
 %
 % Syntax:
-%   [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere([wave], [spectrumE], [N], ...
-%       [sBasis], [sFactor])
+%   [spectraS, XYZ, XYZ0, sBasis] = ...
+%       ieSpectraSphere([wave], [spectrumE], [N], [sBasis], [sFactor])
 %
 % Description:
 %     Calculate spectra that produce XYZ in a sphere around spectrumE.
@@ -40,15 +41,17 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 
 % History:
 %  xx/xx/12       Copyright Imageval
-%  10/27/17  jnm  Comments & formatting
+%  11/01/17  jnm  Comments & formatting
 
 % Examples: 
 %{
-   N = 10; wave = 400:10:700;
+   N = 10;
+   wave = 400:10:700;
    spectrumE = blackbody(wave, 6500, 'energy');
    sBasis = ieReadSpectra('cieDaylightBasis', wave);
    [spectraS, XYZ] = ieSpectraSphere(wave, spectrumE, N, sBasis)
-   vcNewGraphWin; plot(wave, spectraS);
+   vcNewGraphWin;
+   plot(wave, spectraS);
    plot3(XYZ(:, 1), XYZ(:, 2), XYZ(:, 3), 'o');
    axis equal
 %}
@@ -57,7 +60,8 @@ function [spectraS, XYZ, XYZ0, sBasis] = ieSpectraSphere(wave, spectrumE, N, sBa
 if notDefined('wave'), wave = 400:10:700; end
 if notDefined('spectrumE'), spectrumE = zeros(size(wave)); end
 if notDefined('N'), N = 8; end   % Matches default on sphere
-if notDefined('sBasis'), sBasis = ieReadSpectra('cieDaylightBasis', wave); 
+if notDefined('sBasis')
+    sBasis = ieReadSpectra('cieDaylightBasis', wave); 
 elseif ischar(sBasis)
     % If it is a file name, read it. Otherwise, the user sent in the matrix
     % with columns as basis functions
@@ -70,7 +74,7 @@ cieXYZ = ieReadSpectra('XYZ', wave');
 % Force to column vector.
 spectrumE = spectrumE(:);
 
-%% Make a sphere with sample points are (N+1)*(N+1)
+%% Make a sphere with sample points are (N + 1) * (N + 1)
 [X, Y, Z] = sphere(N);
 % surf(X, Y, Z); colormap(hot)
 

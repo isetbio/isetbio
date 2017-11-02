@@ -40,22 +40,28 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 % Outputs:
 %   LMS       - values in Stockman LMS space
 %
-% See also: 
+% See Also: 
 %   lms2srgb, xyz2lms, colorTransformMatrix
 %
-% HJ/BW, ISETBIO TEAM, 2015
+
+% History:
+%    xx/xx/15  HJ/BW ISETBIO TEAM Created
+%    11/01/17  jnm   Comments, formatting, include code to correctly
+%                    re-route 'default' as a cbType entry
 
 % Examples:
 %{
    scene = sceneCreate('reflectance chart');
-   vcAddAndSelectObject(scene); sceneWindow
+   vcAddAndSelectObject(scene);
+   sceneWindow
    imgXYZ = sceneGet(scene, 'xyz');
    
    whiteXYZ = sceneGet(scene,'illuminant xyz');
    cbType = 'Tritanope'; 
    imgLMS = xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
    
-   vcNewGraphWin; imagescRGB(lms2srgb(imgLMS));
+   vcNewGraphWin;
+   imagescRGB(lms2srgb(imgLMS));
 %}
 
 %% Check input parameters
@@ -63,15 +69,21 @@ if notDefined('imgXYZ'), error('XYZ Image Required'); end
 if notDefined('cbType'), cbType = 0; end
 if notDefined('method'), method = 'Brettel'; end
 
+% if cbType is 'default', reassign to prevent breaking down the line.
+if lower(cbType) == 'default', cbType = 0; end
+
 %% Transform to LMS
 %  Shape of the inputs
 sz = size(imgXYZ);
 if numel(imgXYZ) == 3 % a 3-value XYZ vector
     imgXYZ = reshape(imgXYZ, [1 1 3]);
-elseif ismatrix(imgXYZ) && size(imgXYZ, 2) == 3 % Nx3, XW format
+elseif ismatrix(imgXYZ) && size(imgXYZ, 2) == 3
+    % Nx3, XW format
     imgXYZ = reshape(imgXYZ, [sz(1) 1 3]);
-elseif ndims(imgXYZ) == 3 &&  size(imgXYZ, 3) == 3 % XYZ Image, do nothing
-else error('Unknown input XYZ image format'); 
+elseif ndims(imgXYZ) == 3 &&  size(imgXYZ, 3) == 3
+    % XYZ Image, do nothing
+else
+    error('Unknown input XYZ image format');
 end
 
 % transform image to LMS format

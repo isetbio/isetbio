@@ -5,20 +5,20 @@ function [XW, r, c, w] = RGB2XWFormat(imRGB)
 %   [XW, r, c, w] = RGB2XWFormat(imRGB)
 %
 % Description:
-%    This  routine converts from RGB format to XW format.  The row, column
+%    This  routine converts from RGB format to XW format. The row, column
 %    and w (number of color bands) of the imRGB are also returned, if
 %    requested.
 %
-%    We say matrices in (r, c, w) format are in RGB format.  The dimension,
-%    w, represents the number of data color bands.  When w = 3, the data are
-%    an RGB image. But w can be almost anything (e.g., 31 wavelength
-%    samples from 400:10:700).  We will use this format frequently for
+%    We say matrices in (r, c, w) format are in RGB format. The dimension,
+%    w, represents the number of data color bands. When w = 3, the data
+%    are an RGB image. But w can be almost anything (e.g., 31 wavelength
+%    samples from 400:10:700). We will use this format frequently for
 %    spectral data.
 %
-%    The RGB format is useful for imaging.  When w = 3, you can use
-%    conventional image() routines.  When w > 3, use imageSPD.
+%    The RGB format is useful for imaging. When w = 3, you can use
+%    conventional image() routines. When w > 3, use imageSPD.
 %
-%    The XW (space-wavelength) format is useful for computation.  In this
+%    The XW (space-wavelength) format is useful for computation. In this
 %    format, for example, XW*spectralFunction yields a spectral response.
 %
 %    The inverse routine is XW2RGBFormat
@@ -42,7 +42,8 @@ function [XW, r, c, w] = RGB2XWFormat(imRGB)
 
 % Examples:
 %{
-   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']'/255;
+   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+       [255 3 203]']' / 255;
    rgbSRGBs = XW2RGBFormat(xwSRGBs,2,2);
    [xwCheck,r,w,c] = RGB2XWFormat(rgbSRGBs)
 %}

@@ -2,30 +2,33 @@ function spd = cct2sun(wave, cct, units)
 % Correlated color temperature to daylight SPD at specified wavelengths
 %
 % Syntax:
-%   spd = cct2sun( wave, cct, [units])
+%   spd = cct2sun( [wave], cct, [units])
 %
 % Description:
 %    Determines daylight/sun spectral power distribution based on
 %    correlated color temperature.
 %
 % Inputs:
-%    wave  - Wavelength vector of SPD.
+%    wave  - Wavelength vector of SPD. Default 400:700
 %    cct   - Correlated color temperatures.
 %            (Can be a vector, but should it?)
+%    units - String that specifies units of returned SPD (spectral power
+%            distribution). (Default 'energy') Options are:
+%               'energy'  - Default. Also 'watts', but please use 'energy'
+%               'photons' - Also 'quanta', but please use 'photons'
 %
 % Outputs:
 %    spd   - Daylight/sun SPD in units of (relative) energy or photons
-%
-% Optional key/value pairs:
-%    units - String that specifies units of returned SPD (spectral power
-%            distribution). Can be 'energy' or 'photons' (default 'energy').
-%            'quanta' is also accepted as as a synonym for 'photons', and
-%            'watts' for energy, but try not to use these.
 %
 % References: 
 %    http://en.wikipedia.org/wiki/Standard_illuminant
 %    Judd, Macadam, Wyszecki
 %       http://www.opticsinfobase.org/abstract.cfm?URI=josa-54-8-1031
+%
+% Notes:
+%    * [Note: XXX - There are currently several daylight basis files in the
+%      repository. We need to decide on one, and make sure this matches.] -
+%      wrt ieReadSpectra below.
 %
 % See Also:
 %    daylight
@@ -60,15 +63,9 @@ function spd = cct2sun(wave, cct, units)
    plot(w, spd)
 %}
 
-if notDefined('wave')
-    wave = 400:700;
-end
-if notDefined('cct')
-    error('Correlated color temperature required');
-end
-if notDefined('units')
-    units = 'energy';
-end
+if notDefined('wave'), wave = 400:700; end
+if notDefined('cct'), error('Correlated color temperature required'); end
+if notDefined('units'), units = 'energy'; end
 
 % Calculate the xy chromaticity coordinates.
 mask = 1 .* (cct >= 4000 & cct < 7000 ) + 2 .* (cct >= 7000 & cct < 30000);
@@ -97,13 +94,13 @@ M(1, :) = (-1.3515 - 1.7703  *xd + 5.9114 * yd)  ./ ...
 M(2, :) = (0.0300 - 31.4424 * xd + 30.0717 * yd) ./ ...
    (0.0241 + 0.2562 * xd - 0.7341 * yd);
 
-% Calculate the final daylight SPD.  
-% There are currently several daylight basis files in the repository. We
-% need to decide on one, and make sure this matches.
+% Calculate the final daylight SPD. 
+% [Note: XXX - There are currently several daylight basis files in the
+% repository. We need to decide on one, and make sure this matches.]
 dayBasis = ieReadSpectra('cieDay', wave);
 spd = dayBasis(:, 2:3) * M + repmat(dayBasis(:, 1), [1 size(cct, 2)]);
 
-% Flip to photons/quanta if needed.  Energy or watts would be the
+% Flip to photons/quanta if needed. Energy or watts would be the
 % alternative.
 switch lower(units)
     case {'quanta', 'photons'}

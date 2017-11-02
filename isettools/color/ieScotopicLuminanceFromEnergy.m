@@ -52,12 +52,8 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %}
 
 
-if notDefined('wave')
-    error('wavelength required');
-end
-if notDefined('energy')
-    error('energy required');
-end
+if notDefined('wave'), error('wavelength required'); end
+if notDefined('energy'), error('energy required'); end
 
 switch vcGetImageFormat(energy, wave)
     case 'RGB'
@@ -76,6 +72,6 @@ else
     dWave = 10;
     disp('10 nm band assumed');
 end
-lum = 1745*(xwData*Vprime) * dWave;
+lum = 1745 * (xwData * Vprime) * dWave;
 
 end

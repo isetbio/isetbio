@@ -6,7 +6,7 @@ function xyz = srgb2xyz(srgb)
 %
 % Description:
 %    Convert sRGB image into CIE XYZ values. The input range for srgb
-%    values is (0,1).
+%    values is (0, 1).
 %
 % Inputs:
 %    sRGB - Standard Red-Green-Blue format image
@@ -17,11 +17,18 @@ function xyz = srgb2xyz(srgb)
 % References:
 %    <http://en.wikipedia.org/wiki/SRGB>
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    11/01/17  jnm  Comments & formatting
 
 % Examples:
 %{
-   xyz = srgb2xyz(srgb)
+   ptbSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]'];
+   % The ISET form takes the frame buffer values in the [0, 1] regime
+   isetSRGBs = ptbSRGBs / 255;
+   isetSRGBs = XW2RGBFormat(isetSRGBs', 4, 1);
+   isetXYZ   = srgb2xyz(isetSRGBs);
 %}
 
 % Data format should be in RGB format

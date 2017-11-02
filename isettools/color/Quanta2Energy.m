@@ -25,11 +25,11 @@ function energy = Quanta2Energy(wavelength, photons)
 %                 format that the photon matrix was in (RGB or XW)
 %
 % Notes:
-%    * [NOTE: XXX - CAUTION: The input form differs from the Energy2Quanta() call, which
-%      has the energy spectra in the columns.]
-%    * [NOTE: XXX - We should regularize the calls to Energy2Quanta() and this
-%      routine, probably by making the other routine take RGB or XW format
-%      as well. Old legacy issues, sigh.]
+%    * [NOTE: XXX - CAUTION: The input form differs from the
+%      Energy2Quanta() call, which has the energy spectra in the columns.]
+%    * [NOTE: XXX - We should regularize the calls to Energy2Quanta() and
+%      this routine, probably by making the other routine take RGB or XW
+%      format as well. Old legacy issues, sigh.]
 %    * [NOTE: DHB - When this is passed a single column vector, it doesn't
 %      complain (because that's an illegal format) but rather returns a
 %      single row vector.  Not sure whether we should check and throw an
@@ -49,7 +49,7 @@ function energy = Quanta2Energy(wavelength, photons)
    figure; plot(wave, e')
 
    p1 = blackbody(wave, 5000, 'photons');
-   e = Quanta2Energy(wave, p1');            % e is a row vector in XW format
+   e = Quanta2Energy(wave, p1');           % e is a row vector in XW format
    p2 = Energy2Quanta(wave, transpose(e)); % Notice the TRANSPOSE
    figure; plot(wave, p1, 'ro', wave, p2, 'k-')
 %}
@@ -77,8 +77,9 @@ switch iFormat
         end
         photons = RGB2XWFormat(photons);
         
-        % energy = (h*c/(1e-9))*(photons ./ repmat(wavelength, n*m, 1));
-        energy = (h*c/1e-9) * bsxfun(@rdivide, photons, wavelength);
+        % energy = (h * c / (1e-9)) * (photons ...
+        %     ./ repmat(wavelength, n * m, 1));
+        energy = (h * c / 1e-9) * bsxfun(@rdivide, photons, wavelength);
         energy = XW2RGBFormat(energy, n, m);
 
     case 'XW'
@@ -89,7 +90,7 @@ switch iFormat
         if size(photons, 2) ~= length(wavelength)
             error('Quanta2Energy: quanta must have length of nWave');
         end
-        energy = (h*c/1e-9) * bsxfun(@rdivide, photons, wavelength);
+        energy = (h * c / 1e-9) * bsxfun(@rdivide, photons, wavelength);
         
     otherwise
         error('Unknown image format');

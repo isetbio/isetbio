@@ -11,12 +11,12 @@ function xy = chromaticity(XYZ)
 %    (x, y) are returned in the columns of an Nx2 matrix.
 %
 %    If the data are in RGB format, the three planes should be (X, Y, Z)
-%    images.  The returned data are in as a two dimensional image format, 
+%    images. The returned data are in as a two dimensional image format, 
 %    with each spatial position containing the corresponding (x, y) value.
 %
-%    There is nothing sacred about using this for XYZ -> xy.  You can pass
+%    There is nothing sacred about using this for XYZ -> xy. You can pass
 %    any tristimulus coordinates and get the first two corresponding
-%    chromaticity coordinates.  So, for example RGB -> rg.
+%    chromaticity coordinates. So, for example RGB -> rg.
 %
 % Inputs:
 %    XYZ - CIE XYZ color space data. In either XW or RGB format. 

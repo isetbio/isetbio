@@ -12,10 +12,10 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %    first one is 100 cd/m2.
 %
 % Inputs:
-%    wave  - The wavelength vector in nm (default 400:10:700).
-%    cct   - The correlated color temperature (default 6500).
+%    wave  - The wavelength vector in nm (Default 400:10:700).
+%    cct   - The correlated color temperature (Default 6500).
 %    units - The corresponding units for the equation. Options are
-%            'photons' or 'energy' (default 'energy').
+%            'photons' or 'energy' (Default 'energy').
 %
 % Outputs:
 %    spd   - The daylight spectral power distribution, in columns of a
@@ -39,34 +39,28 @@ function [spd, XYZ] = daylight(wave, cct, units)
 % Examples
 %{
    w = 400:700; 
-   spd = daylight(w,6500,'energy');
-   plot(w,spd)
+   spd = daylight(w, 6500, 'energy');
+   plot(w, spd)
 %}
 %{
    w = 400:700;
-   spd = daylight(w,6500,'photons');
-   plot(w,spd)
+   spd = daylight(w, 6500, 'photons');
+   plot(w, spd)
 %}
 %{
    w = 400:700;
-   [spd, xyz] = daylight(w,[4000 6500],'photons');
-   plot(w,spd)
+   [spd, xyz] = daylight(w, [4000 6500], 'photons');
+   plot(w, spd)
 %}
 %{
    wave = 400:770;         % Wavelength in nanometers
    cct = 4000:1000:10000;  % Correlated color temperature
-   spd = daylight(wave,cct,'photons');
+   spd = daylight(wave, cct, 'photons');
 %}
 
-if notDefined('wave')
-    wave = 400:10:700;
-end
-if notDefined('units')
-    units = 'energy';
-end
-if notDefined('cct')
-    cct = 6500;
-end
+if notDefined('wave'), wave = 400:10:700; end
+if notDefined('units'), units = 'energy'; end
+if notDefined('cct'), cct = 6500; end
 
 % Make the spd
 spd = cct2sun(wave, cct, units);

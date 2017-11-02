@@ -40,7 +40,8 @@ function imRGB = XW2RGBFormat(imXW, row, col)
 
 % Examples:
 %{
-   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']'/255;
+   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+       [255 3 203]']'/255;
    rgbSRGBs = XW2RGBFormat(xwSRGBs,2,2);
 %}
 if notDefined('imXW')

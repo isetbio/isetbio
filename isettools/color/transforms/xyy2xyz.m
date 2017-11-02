@@ -14,9 +14,9 @@ function xyz = xyy2xyz(xyy)
 %    input columns must be x,y, and Y. 
 %
 %    Formula:
-%       X = (x/y)*Y, 
+%       X = (x / y) * Y, 
 %       Z = ((1 - x - y)/y) * Y
-%       Also, note that Y/y = X+Y+Z
+%       Also, note that Y / y = X + Y + Z
 %
 % Inputs:
 %    xyy - Chromacity Coordinates and Luminance
@@ -24,28 +24,33 @@ function xyz = xyy2xyz(xyy)
 % Outputs:
 %    xyz - Standard representation of light and color
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+
+% History: 
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    11/01/17  jnm  Comments & formatting
 
 % Examples:
 %{
-   xyz = xyy2xyz(xyy)
+   testXYZs = [[1 2 1]' [2 1 0.5]' [1 1 1]' [0.6 2.3 4]'];
+   ptbxyYs = XYZToxyY(testXYZs);
+   isetXYZs = xyy2xyz(ptbxyYs')';
 %}
-if size(xyy,2) ~= 3
+if size(xyy, 2) ~= 3
     error('Input must be x,y,Y in the rows.')
 end
 
 xyz = zeros(size(xyy));
 
 % = Y
-xyz(:,2) = xyy(:,3);
+xyz(:, 2) = xyy(:, 3);
 
 % X + Y + Z = Y/y
-sXYZ = xyy(:,3)./xyy(:,2);
+sXYZ = xyy(:, 3) ./ xyy(:, 2);
 
 % X = (x/y)*Y
-xyz(:,1) = (xyy(:,1)./xyy(:,2)) .* xyy(:,3);
+xyz(:, 1) = (xyy(:, 1)./xyy(:, 2)) .* xyy(:, 3);
 
 % Z = (X + Y + Z) - Y - X
-xyz(:,3) = sXYZ - xyy(:,3) - xyz(:,1);
+xyz(:, 3) = sXYZ - xyy(:, 3) - xyz(:, 1);
 
 end

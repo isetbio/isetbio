@@ -22,7 +22,10 @@ function luv = xyz2luv(xyz, whitepoint)
 %    116 is prominent in the formula and that is the page number in Hunt.
 %    Also, see Wyszecki and Stiles book.
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    11/01/17  jnm  Comments & formatting
 
 % Examples:
 %{
@@ -34,12 +37,15 @@ function luv = xyz2luv(xyz, whitepoint)
 %}
 
 if notDefined('xyz'), error('XYZ values required.'); end
-if notDefined('whitepoint'), error('White point required.'); end
-if (numel(whitepoint)~=3 ),  error('whitepoint must be 3x1 vector'); end
+if notDefined('whitepoint')
+    warning('White point required.');
+    whitepoint = [95.05 100 108.88];
+end
+if (numel(whitepoint) ~= 3 ),  error('whitepoint must be 3x1 vector'); end
 
 if ndims(xyz) == 3
     iFormat = 'RGB';
-    [r,c,~] = size(xyz);
+    [r, c, ~] = size(xyz);
     xyz = RGB2XWFormat(xyz);
 else
     iFormat = 'XW';
@@ -47,16 +53,16 @@ end
 
 luv = zeros(size(xyz));
 
-luv(:,1) = Y2Lstar(xyz(:,2),whitepoint(2));
-[u,v]    = xyz2uv(xyz);
-[un,vn]  = xyz2uv(whitepoint);
+luv(:, 1) = Y2Lstar(xyz(:, 2), whitepoint(2));
+[u, v]    = xyz2uv(xyz);
+[un, vn]  = xyz2uv(whitepoint);
 
-luv(:,2) = 13*luv(:,1).*(u - un);
-luv(:,3) = 13*luv(:,1).*(v - vn);
+luv(:, 2) = 13 * luv(:,1) .* (u - un);
+luv(:, 3) = 13 * luv(:,1) .* (v - vn);
 
 % return CIELUV in the appropriate format.
 % Currently it is a XW format.  If the input had three dimensions
 % then we need to change it to that format.
-if strcmp(iFormat,'RGB'), luv = XW2RGBFormat(luv,r,c); end
+if strcmp(iFormat, 'RGB'), luv = XW2RGBFormat(luv, r, c); end
 
 end

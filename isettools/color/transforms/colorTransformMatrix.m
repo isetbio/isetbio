@@ -21,9 +21,8 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    matrixtype - Type of color transformation. See some options below:
 %       'lms2opp'    cone coordinate to opponent (Poirson & Wandell 1993)
 %       'opp2lms'    inverse of the above matrix
-%       'xyz2opp'    xyz to opponent (CIE1931 XYZ.  Or is it the newer
-%                    XYZ standard - a comment in the code suggests it might
-%                    be.)
+%       'xyz2opp'    xyz to opponent (CIE1931 XYZ. Or is it the newer XYZ
+%                    standard - a comment in the code suggests it may be.)
 %       'opp2xyz'    inverse of the above matrix
 %
 %       Normalized for D65 (lms=[100 100 100] for D65)
@@ -43,22 +42,22 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %       'xyz2lrgb'   from XYZ to lRGB values
 %       'lrgb2xyz'   inverse of the above matrix
 %       'cmy2rgb'    converts cyan, magenta, yellow to RGB
-%    spaceType  - (Optional) Whether 2 or 10 degree color matching functions
-%                 should be used for xyz2opp and opp2xyz matrices.  [] gets
-%                 you the default value, which is 10 degree. Pass 2 or 10
-%                 to specify explicitly what you want.
+%    spaceType  - (Optional) Whether 2 degree or 10 degree color matching
+%                 functions should be used for xyz2opp and opp2xyz matrices
+%                 [] gets you the default value, which is 10 degree. Pass 2
+%                 or 10 to specify explicitly what you want.
 %
 % Outputs:
 %    result     - a 3x3 color matrix used to convert an image from one
 %                 color space to another
 %
 % Notes:
-%   * [NOTE: XXX - HPE* transform is the Hunt-Pointer-Estevez transform]
+%   * [NOTE: JNM - HPE* transform is the Hunt-Pointer-Estevez transform]
 %   * [NOTE: XXX - When Xuemei originally built this list, she had in mind
 %     T3x3*colVector At ImagEval, we use rowVector*T3x3. We retained her
 %     terms but we return the transpose of her result (see the end).]
-%   * [NOTE: XXX - There are multiple instances of 'stockman 2 xyz' and 'xyz 2
-%     stockman', is this going to be problematic?
+%   * [NOTE: JNM - There are multiple instances of 'stockman 2 xyz' and
+%     'xyz 2 stockman', is spacing in the calls going to be problematic?
 %   * [NOTE: DHB - The comment in the header indicated that the xyz2opp and
 %     opp2xyz matrices were with respect to the 1931 CIE standard, but a
 %     comment in the code suggests it is now the 2012 Stockman-Sharpe
@@ -74,10 +73,9 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %
 
 % History:
-%    Copyright ImagEval Consultants, LLC, 2003.
-%
-%    4/13/15  dhb  Comment fix: ieReadSpectra('Stockman', wave) ->
-%                  ieReadSpectr('stockman', wave)
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    04/13/15  dhb  Comment fix: ieReadSpectra('Stockman', wave) ->
+%                   ieReadSpectr('stockman', wave)
 
 % Examples:
 %{
@@ -126,12 +124,8 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 	T1*T2
 %}
 
-if notDefined('matrixtype')
-    error('Matrix type required.');
-end
-if notDefined('spacetype')
-    spacetype = [];
-end
+if notDefined('matrixtype'), error('Matrix type required.'); end
+if notDefined('spacetype'),  spacetype = []; end
 
 matrixtype = ieParamFormat(matrixtype);
 
@@ -204,7 +198,7 @@ switch lower(matrixtype)
             result = inv(result);
         end
 
-    case {'rgb2yuv' , 'yuv2rgb'}
+    case {'rgb2yuv', 'yuv2rgb'}
         result = [0.299   0.587   0.114; ...
                  -0.1687 -0.3313  0.5; ...
                   0.5    -0.4187 -0.0813];

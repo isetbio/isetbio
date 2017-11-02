@@ -1,9 +1,10 @@
-function [responsivity, sFactor] = ieResponsivityConvert(responsivity, wave, method)
+function [responsivity, sFactor] = ...
+    ieResponsivityConvert(responsivity, wave, method)
 % Convert sensory responsivity in photons to energy, or vice versa
 %
 % Syntax:
 %   [responsivity, sFactor] = ieResponsivityConvert(responsivity, wave, ...
-%       [method='e2q']);
+%       [method]);
 %
 % Description:
 %    When calculating a sensor responsivity, it is essential to specify
@@ -56,9 +57,10 @@ function [responsivity, sFactor] = ieResponsivityConvert(responsivity, wave, met
 % Inputs:
 %    responsivity - Columns represent color responsivities
 %    wave         - wavelength (nm)
-%    method       - Representation of desired methods. Options are:
-%           'e2q' - Filters specified for energy to work with photons
-%           'q2e' - Filters specified for quanta to work with energy
+%    method       - Representation of the desired methods. The options are:
+%              'e2q' - (Default) Filters specified for energy to work with
+%                      quanta/photons
+%              'q2e' - Filters specified for quanta to work with energy
 %
 % Outputs:
 %    responsivity - The columns of color responsivities after manipulation
@@ -91,12 +93,8 @@ function [responsivity, sFactor] = ieResponsivityConvert(responsivity, wave, met
 if notDefined('responsivity')
     error('Must define color responsivity functions');
 end
-if notDefined('wave')
-    error('Must define wavelength in nanometers');
-end
-if notDefined('method')
-    method = 'e2q';
-end
+if notDefined('wave'), error('Must define wavelength in nanometers'); end
+if notDefined('method'), method = 'e2q'; end
 
 if length(wave) ~= size(responsivity, 1)
     error('Mis-match between wavelength and color filters.');
@@ -107,16 +105,15 @@ switch lower(method)
     case {'e2q', 'energy2quanta', 'e2p', 'energy2photons'}
         % Set up filters that handle energy to handle quanta
         sFactor = Quanta2Energy(wave(:), ones(1, length(wave)));
-        responsivity = diag(sFactor)*responsivity;
     case {'q2e', 'quanta2energy', 'p2e', 'photons2energy'}
         % Set up filters that handle energy to handle quanta
         sFactor = Energy2Quanta(wave(:), ones(1, length(wave))');
-        responsivity = diag(sFactor)*responsivity;
     otherwise
         error('Unknown method');
 end
+responsivity = diag(sFactor) * responsivity;
 
 % The throughput at max should be the same
-responsivity = responsivity*(maxTrans/(max(responsivity(:))));
+responsivity = responsivity * (maxTrans / (max(responsivity(:))));
 
 end

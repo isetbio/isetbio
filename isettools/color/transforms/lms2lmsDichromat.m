@@ -2,7 +2,7 @@ function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
 %% Interpolate missing cone values for colorblind in cone color space (LMS)
 %
 % Syntax:
-%   LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
+%   LMS = lms2lmsDichromat(LMS, [cbType], [method], [varargin])
 %
 % Description:
 %    Interpolate missing cone values for colorblind in cone color space
@@ -19,7 +19,7 @@ function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
 % Inputs:
 %    LMS    - an image in cone space (Stockman LMS Space)
 %    cbType - Type of colorblindness, can be choosen from
-%      {0, 'Trichromat'}             - Trichromatic observer
+%      {0, 'Trichromat'}             - Trichromatic observer. Default.
 %      {1, 'Protan', 'Protanopia'}   - Protanopia observer, missing L cones
 %      {2, 'Deutan', 'Deuteranopia'} - Deuteranope, missing M cones
 %      {3, 'Tritan', 'Tritanopia'}   - Tritanope, missing S cones
@@ -39,11 +39,15 @@ function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
 % See Also:
 %    xyz2lms
 %
-% (HJ) ISETBIO TEAM, 2015
+
+% History:
+%    xx/xx/15   HJ  ISETBIO TEAM
+%    11/01/17  jnm  Comments, formatting & fix example
 
 % Examples:
 %{
-   LMS = lms2lmsDichromat(LMS, colorBlindType, 'linear');
+   imgLMS = sceneGet(scene, 'lms');
+   LMS = lms2lmsDichromat(imgLMS, 0, 'linear');
 %}
 %% Init and Check Inputs
 if notDefined('LMS'), error('LMS image required'); end
@@ -53,7 +57,6 @@ if notDefined('method'), method = 'Brettel'; end
 if ischar(cbType), cbType = ieParamFormat(cbType); end
 method = ieParamFormat(method);
 
-
 %% Interpolate missing cone
 switch method
     case 'brettel'
@@ -62,7 +65,11 @@ switch method
     case 'linear'
         LMS = cbLinear(LMS, cbType);
     case 'constant'
-        if isempty(varargin), val = 0; else val = varargin{1}; end
+        if isempty(varargin)
+            val = 0;
+        else
+            val = varargin{1};
+        end
         LMS = cbConstant(LMS, cbType, val);
 end
 end
@@ -133,11 +140,13 @@ switch cbType
         inflection = whiteLMS(3) / whiteLMS(2);
         
         % Interpolate missing L values for protonate
-        L = LMS(:,:,1); M = LMS(:,:,2); S = LMS(:,:,3);
+        L = LMS(:, :, 1);
+        M = LMS(:, :, 2);
+        S = LMS(:, :, 3);
         lst = ((S ./ M) < inflection);
-        L(lst)  = -(b1*M(lst)  + c1*S(lst))  / a1;
-        L(~lst) = -(b2*M(~lst) + c2*S(~lst)) / a2;
-        LMS(:,:,1) = L;
+        L(lst)  = -(b1 * M(lst)  + c1 * S(lst))  / a1;
+        L(~lst) = -(b2 * M(~lst) + c2 * S(~lst)) / a2;
+        LMS(:, :, 1) = L;
     case {2, 'deutan', 'deuteran', 'deuteranope', 'deuteranopia'}
         a1 = whiteLMS(2) * anchor(9) - whiteLMS(3) * anchor(8);
         b1 = whiteLMS(3) * anchor(7) - whiteLMS(1) * anchor(9);
@@ -150,11 +159,13 @@ switch cbType
         inflection = whiteLMS(3) / whiteLMS(1);
         
         % Interpolate missing M values for deuteranope
-        L = LMS(:,:,1); M = LMS(:,:,2); S = LMS(:,:,3);
+        L = LMS(:, :, 1);
+        M = LMS(:, :, 2);
+        S = LMS(:, :, 3);
         lst = ((S ./ L) < inflection);
-        M(lst)  = -(a1*L(lst)  + c1*S(lst)) / b1;
-        M(~lst) = -(a2*L(~lst) + c2*S(~lst))/ b2;
-        LMS(:,:,2) = M;
+        M(lst)  = -(a1 * L(lst)  + c1 * S(lst)) / b1;
+        M(~lst) = -(a2 * L(~lst) + c2 * S(~lst)) / b2;
+        LMS(:, :, 2) = M;
     case {3, 'tritan', 'tritanope', 'tritanopia'}
         a1 = whiteLMS(2) * anchor(12) - whiteLMS(3) * anchor(11);
         b1 = whiteLMS(3) * anchor(10)  - whiteLMS(1) * anchor(12);
@@ -169,11 +180,13 @@ switch cbType
         inflection = (whiteLMS(2) / whiteLMS(1));
         
         % Interpolate missing M values for tritanope
-        L = LMS(:,:,1); M = LMS(:,:,2); S = LMS(:,:,3);
+        L = LMS(:, :, 1);
+        M = LMS(:, :, 2);
+        S = LMS(:, :, 3);
         lst = ((M ./ L) < inflection);
-        S(lst)  = -(a1*L(lst)  + b1*M(lst)) / c1;
-        S(~lst) = -(a2*L(~lst) + b2*M(~lst))/ c2;
-        LMS(:,:,3) = S;
+        S(lst)  = -(a1 * L(lst)  + b1 * M(lst)) / c1;
+        S(~lst) = -(a2 * L(~lst) + b2 * M(~lst)) / c2;
+        LMS(:, :, 3) = S;
     otherwise
         error('unknown color blind type');
 end
@@ -215,11 +228,11 @@ if ischar(cbType), cbType = ieParamFormat(cbType); end
 switch cbType
     case {0, 'trichromat'} % Trichromatic Observer, do nothing
     case {1, 'protan', 'protanopia', 'protanope'}
-        LMS(:,:,1) = 1.3855*LMS(:,:,2) - 0.285*LMS(:,:,3);
+        LMS(:, :, 1) = 1.3855 * LMS(:, :, 2) - 0.285 * LMS(:, :, 3);
     case {2, 'deutan', 'deuteran', 'deuteranope', 'deuteranopia'}
-        LMS(:,:,2) = 0.6949*LMS(:,:,1) + 0.2614*LMS(:,:,3);
+        LMS(:, :, 2) = 0.6949 * LMS(:, :, 1) + 0.2614 * LMS(:, :, 3);
     case {3, 'tritan', 'tritanope', 'tritanopia'}
-        LMS(:,:,3) = -0.9623*LMS(:,:,1) + 1.7595*LMS(:,:,2);
+        LMS(:, :, 3) = -0.9623 * LMS(:, :, 1) + 1.7595 * LMS(:, :, 2);
     otherwise
         error('unknown color blind type');
 end
@@ -263,11 +276,11 @@ if ischar(cbType), cbType = ieParamFormat(cbType); end
 switch cbType
     case {0, 'trichromat'} % Trichromatic Observer, do nothing
     case {1, 'protan', 'protanopia', 'protanope'}
-        LMS(:,:,1) = val;
+        LMS(:, :, 1) = val;
     case {2, 'deutan', 'deuteran', 'deuteranope', 'deuteranopia'}
-        LMS(:,:,2) = val;
+        LMS(:, :, 2) = val;
     case {3, 'tritan', 'tritanope', 'tritanopia'}
-        LMS(:,:,3) = val;
+        LMS(:, :, 3) = val;
     otherwise
         error('unknown color blind type');
 end

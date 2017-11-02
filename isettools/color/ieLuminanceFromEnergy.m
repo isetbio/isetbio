@@ -2,7 +2,7 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 % Calculate luminance and related quantities from spectral energy
 %
 % Syntax:
-%   lum = ieLuminanceFromEnergy(energy, wave, varargin)
+%   lum = ieLuminanceFromEnergy(energy, wave, [varargin])
 %
 % Description:
 %    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
@@ -37,7 +37,8 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 %    lum    - Luminance, in candelas per meter squared.
 %
 % Optional key/value pairs:
-%    quiet  - Boolean indicating whether or not to suppress output
+%    quiet  - Boolean indicating whether or not to suppress output (Default
+%             is true)
 %
 % References:
 %  http://www.optics.arizona.edu/Palmer/rpfaq/rpfaq.htm
