@@ -17,8 +17,8 @@ function [responsivity, sFactor] = ...
 %
 %    But some important sensors are defined with respect to signal energy.
 %    The most important of these are the XYZ sensors. These are specified 
-%    with respect to energy. It is also the case the the human cone
-%    responses are specified with respect to energy units. 
+%    with respect to energy. It is also the case that the human cone
+%    responses are often specified with respect to energy units. 
 %
 %    In some cases in the code, we convert the input signal in photons to
 %    energy and use the standard XYZ values. 
@@ -55,9 +55,9 @@ function [responsivity, sFactor] = ...
 %    routine converts filters for quanta to work with energy.
 %
 % Inputs:
-%    responsivity - Columns represent color responsivities
-%    wave         - wavelength (nm)
-%    method       - Representation of the desired methods. The options are:
+%    responsivity - Columns represent color responsivities wave         -
+%    wavelength sampling (nm) as a vector method       - Representation of
+%    the desired methods. The options are:
 %              'e2q' - (Default) Filters specified for energy to work with
 %                      quanta/photons
 %              'q2e' - Filters specified for quanta to work with energy
@@ -65,7 +65,26 @@ function [responsivity, sFactor] = ...
 % Outputs:
 %    responsivity - The columns of color responsivities after manipulation
 %                   to the corresponding new format
-%    sFactor      - sensitivity factor?
+%    sFactor      - Sensitivity factor.  A row vector of how how the input
+%    was
+%                   scaled into the output at each wavelength, before a
+%                   final overall scaling.
+%
+% Notes:
+%  * [NOTE - DHB: There is a rescaling of the output at the end of this
+%     routine that makes the max value of the output have the same value as
+%     the max value of the input sensitivities.  This makes it so that
+%     computing with the input and output sensitivies does not produce the
+%     same answer. I don't think this scaling is a good idea, but left it
+%     alone in case other code counts on it. Currently, the example at the
+%     top of the source code, which is meant to show that you get the same
+%     answer working in either energy or quantal units when you do the
+%     conversions right, does not show this because of the rescaling.]
+%  * [NOTE - DHB: To make the example work, I had to read in some energy
+%     sensitivities, the old example method used a function that no longer
+%     exists.  I think ieReadSpectral('stockman',wave) gets cone
+%     sensitivities in energy units, but there doesn't appear to be any
+%     easy way to find out. Check and fix if necessary.]
 %
 % See Also:
 %   ieLuminanceFromEnergy, ieLuminanceFromPhotons, ieXYZFromEnergy.
@@ -78,12 +97,13 @@ function [responsivity, sFactor] = ...
 % Examples:
 %{
    % Signal in photon units
-   signalPhotons = signalSPD;
+   wave = 400:10:700;
+   signalEnergy = ieReadSpectra('D65',wave);
+   signalPhotons = Energy2Quanta(wave(:),signalEnergy(:));
    
    % Signal in energy units
-   signalEnergy = Quanta2Energy(wave, signalPhotons');
-   conesE = humanCones('stockmanAbs', wave);
-   [conesP, sFactor] = ieFilterConvert(conesE, wave, 'e2q');
+   conesE = ieReadSpectra('stockman', wave);
+   [conesP, sFactor] = ieResponsivityConvert(conesE, wave, 'e2q');
 
    % These two calculations produce equal results
    vP = conesP'*signalPhotons(:)  
@@ -93,7 +113,7 @@ function [responsivity, sFactor] = ...
 if notDefined('responsivity')
     error('Must define color responsivity functions');
 end
-if notDefined('wave'), error('Must define wavelength in nanometers'); end
+if notDefined('wave'), error('Must define wavelength sampling in nanometers'); end
 if notDefined('method'), method = 'e2q'; end
 
 if length(wave) ~= size(responsivity, 1)

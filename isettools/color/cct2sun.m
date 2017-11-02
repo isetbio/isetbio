@@ -27,8 +27,8 @@ function spd = cct2sun(wave, cct, units)
 %
 % Notes:
 %    * [Note: XXX - There are currently several daylight basis files in the
-%      repository. We need to decide on one, and make sure this matches.] -
-%      wrt ieReadSpectra below.
+%      repository. We need to decide on one, and make sure this matches, 
+%      see ieReadSpectra below.]
 %
 % See Also:
 %    daylight

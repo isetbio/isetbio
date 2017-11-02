@@ -10,9 +10,14 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    space to another.
 %
 %    Suppose a point is represented by the row vector, p = [R, G, B].
-%    The matrix transforms each color point, p, to an output vector pT
+%    The matrix transforms each color point, p, to an output vector p*T.
 %
-%    This routine works with imageLinearTransform
+%    The convention above is used in many places in isetbio.  But note that
+%    it is opposite from the convention used in the Psychtoolbox and in
+%    DHB's brain.  Need to transpose result if you are working in that
+%    world.
+%
+%    This routine works with imageLinearTransform.  So for example:
 %       T = colorTransformMatrix('lms2xyz');
 %       xyzImage = imageLinearTransform(lmsImage, T)
 %    would return an NxMx3 xyz image, if lmsImage were in turn NxMx3.
@@ -23,6 +28,8 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %       'opp2lms'    inverse of the above matrix
 %       'xyz2opp'    xyz to opponent (CIE1931 XYZ. Or is it the newer XYZ
 %                    standard - a comment in the code suggests it may be.)
+%       'hpe2xyz'    Hunter-Pointer-Estevez cones to XYZ
+%       'xyz2hpe'    XYZ to Hunter-Pointer-Estevez cones
 %       'opp2xyz'    inverse of the above matrix
 %
 %       Normalized for D65 (lms=[100 100 100] for D65)
@@ -52,18 +59,15 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %                 color space to another
 %
 % Notes:
-%   * [NOTE: JNM - HPE* transform is the Hunt-Pointer-Estevez transform]
-%   * [NOTE: XXX - When Xuemei originally built this list, she had in mind
-%     T3x3*colVector At ImagEval, we use rowVector*T3x3. We retained her
-%     terms but we return the transpose of her result (see the end).]
-%   * [NOTE: JNM - There are multiple instances of 'stockman 2 xyz' and
-%     'xyz 2 stockman', is spacing in the calls going to be problematic?
 %   * [NOTE: DHB - The comment in the header indicated that the xyz2opp and
 %     opp2xyz matrices were with respect to the 1931 CIE standard, but a
 %     comment in the code suggests it is now the 2012 Stockman-Sharpe
 %     replacement. Hard to tell from the actual numbers, without
 %     recomputing the matrices. Someone should check, and then make the
-%     comments in the header and the code match accordingly.]
+%     comments in the header and the code match accordingly. More
+%     generally, I am nt sure what this "opp" space is.  Either expand on
+%     definition or get rid of it, I think.  Also, need to be clear about
+%     when XYZ is 1931 and when it has been updated to the new standard.]
 %
 % References:
 % * http://en.wikipedia.org/wiki/SRGB
@@ -75,7 +79,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    04/13/15  dhb  Comment fix: ieReadSpectra('Stockman', wave) ->
-%                   ieReadSpectr('stockman', wave)
+%                   ieReadSpectral('stockman', wave)
 
 % Examples:
 %{
@@ -114,13 +118,13 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 	wave = 400:5:700;
 	xyz = ieReadSpectra('XYZ', wave);
 	stock = ieReadSpectra('stockman', wave);
-	T = colorTransformMatrix('stockman 2 xyz');
+	T = colorTransformMatrix('stockman2xyz');
 	pred = stock*T; plot(xyz(:), pred(:), '.'); axis equal; grid on
 
     % Notice, these aren't perfect inverses. Maybe they should be?  But
     % Stockman and XYZ are not within a perfect linear transformation.
-	T1 = colorTransformMatrix('stockman 2 xyz');
-	T2 = colorTransformMatrix('xyz 2 stockman');
+	T1 = colorTransformMatrix('stockman2xyz');
+	T2 = colorTransformMatrix('xyz2stockman');
 	T1*T2
 %}
 
@@ -263,7 +267,9 @@ switch lower(matrixtype)
         error('Unknown matrix type')
 end
 
-% This format works with imageLinearTransform
+% The original coding of these matrices assumed that the matrices would be
+% applied from the left onto values in columns.  But in isetbio, we apply
+% matrices from the right, ont values in rows.  So, the transpose here.
 result = result';
 
 end

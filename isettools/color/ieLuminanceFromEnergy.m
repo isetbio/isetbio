@@ -2,7 +2,7 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 % Calculate luminance and related quantities from spectral energy
 %
 % Syntax:
-%   lum = ieLuminanceFromEnergy(energy, wave, [varargin])
+%   lum = ieLuminanceFromEnergy(energy, wave)
 %
 % Description:
 %    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
@@ -53,9 +53,8 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 
 % Examples:
 %{
-   wave = 400:10:700;
-   tmp = load('crtSPD'); dsp = tmp.d;
-   energy = displayGet(dsp,'whitespd',wave);
+   wave = 400:10:700;  
+   energy = [blackbody(wave, 5000, 'energy'), blackbody(wave, 6000, 'energy')];
    energy = energy';
    lum = ieLuminanceFromEnergy(energy,wave)
 %}
