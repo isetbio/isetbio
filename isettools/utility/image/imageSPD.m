@@ -57,8 +57,15 @@ end
 if abs(displayFlag) == 1
     % RGB = imageSPD2RGB(SPD,wList,gam);
     XYZ = ieXYZFromPhotons(SPD, wList);
+    
+    % We are considering getting rid of this normalization.  The user
+    % may want to set the relative intensity, so that two scenes with
+    % different levels show up as lighter or darker RGB images as
+    % well.  By including this, we force all the images to be
+    % normalized so tha the brightest point is the same.
     XYZ = XYZ/max(XYZ(:));    
     RGB = xyz2srgb(XYZ);
+    
 elseif abs(displayFlag) == 2    % Gray scale image, used for SWIR, NIR
     RGB = zeros(row,col,3);
     RGB(:,:,1) = reshape(mean(SPD,3),row,col);
