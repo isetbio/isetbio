@@ -1,5 +1,5 @@
 function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
-%% Interpolate missing cone values for colorblind in cone color space (LMS)
+% Interpolate missing cone values for colorblind in cone color space (LMS)
 %
 % Syntax:
 %   LMS = lms2lmsDichromat(LMS, [cbType], [method], [varargin])
@@ -13,43 +13,55 @@ function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
 %       the preserved cones are preserved. The missing cone is assigned a
 %       value that is a piece-wise linear transform of the preserved cones
 %     * interpolation the missing cone using the linear interpolation
-%       proposed by Jiang, Joyce and Wandell, 2015
-%     * returning a zero for the missing cone type  
+%       proposed by Jiang, Farrell and Wandell, 2015
+%     * returning a constant for the missing cone type  
 %
 % Inputs:
 %    LMS    - an image in cone space (Stockman LMS Space)
 %    cbType - Type of colorblindness, can be choosen from
-%      {0, 'Trichromat'}             - Trichromatic observer. Default.
-%      {1, 'Protan', 'Protanopia'}   - Protanopia observer, missing L cones
-%      {2, 'Deutan', 'Deuteranopia'} - Deuteranope, missing M cones
-%      {3, 'Tritan', 'Tritanopia'}   - Tritanope, missing S cones
+%      {0, 'trichromat'}             - Trichromatic observer (default)
+%      {1, 'protan', 'protanopia'}   - Protanopia observer, missing L cones
+%      {2, 'deutan', 'deuteranopia'} - Deuteranope, missing M cones
+%      {3, 'tritan', 'tritanopia'}   - Tritanope, missing S cones
 %    method - Algorithm to be used to interpolate the missing cone values
-%      'Brettel'  - Using Bettel's algorithm (Default)
-%      'Linear'   - Using Linear Interpolation
-%      'Constant' - leave missing cone values as a constant (default 0)
-%
-% Optional Key/Value Pairs:
-%    varargin - More parameters input for different methods
-%      varargin{1} - white LMS values for Brettel mehtod
-%                    extrapolate values for Constant method
+%      'brettel'  - Using Bettel's algorithm (Default)
+%      'linear'   - Using Linear Interpolation
+%      'constant' - leave missing cone values as a constant (default 0)
+%    varargin - Extra arguments for specific methods
+%      varargin{1} - White LMS value for the 'brettel' method, row vector.
+%                    The constant value used for the 'constant' method.
 %
 % Outputs:
 %    LMS - LMS values in Stockman LMS space
+%
+% Notes:
+%  * [NOTE - DHB: I made the example run, but did not actually check that
+%     the output is correct.]
+%  * [NOTE - DHB: Not clear if it is 2 degree or 10 degree XYZ/Stockman.
+%  There
+%     are various constants hard coded into the transformations, so that to
+%     find out one would need to recreate where those constants came from.]
 %
 % See Also:
 %    xyz2lms
 %
 
 % History:
-%    xx/xx/15   HJ  ISETBIO TEAM
+%    xx/xx/15  HJ   ISETBIO TEAM
 %    11/01/17  jnm  Comments, formatting & fix example
 
 % Examples:
 %{
+   scene = sceneCreate;
    imgLMS = sceneGet(scene, 'lms');
    LMS = lms2lmsDichromat(imgLMS, 0, 'linear');
+   xyz2lmsM = colorTransformMatrix('xyz2lms');
+   whiteXYZ = sceneGet(scene,'illuminant xyz');
+   whiteLMS = whiteXYZ(:)'*xyz2lmsM;
+   LMS = lms2lmsDichromat(imgLMS, 'deutan', 'brettel',whiteLMS);
 %}
-%% Init and Check Inputs
+
+%% Init and check inputs
 if notDefined('LMS'), error('LMS image required'); end
 if notDefined('cbType'), cbType = 0; end
 if notDefined('method'), method = 'Brettel'; end
@@ -60,7 +72,7 @@ method = ieParamFormat(method);
 %% Interpolate missing cone
 switch method
     case 'brettel'
-        if isempty(varargin), error('white LMS values required'); end
+        if isempty(varargin), error('White point LMS values required'); end
         LMS = cbBrettel(LMS, cbType, varargin{1});
     case 'linear'
         LMS = cbLinear(LMS, cbType);
@@ -74,41 +86,33 @@ switch method
 end
 end
 
-%% Interpolation with Brettel's Method
+%% Interpolation with Brettel's method
 function LMS = cbBrettel(LMS, cbType, whiteLMS)
-% Interpolation with Brettel's Method
+% Interpolation with Brettel's method
 %
 % Syntax:
 %   LMS = cbBrettel(LMS, cbType, whiteLMS)
 %
 % Description:
-%    Perform your interpolation using Brettel's Method
+%    Perform the interpolation using Brettel's Method
 %
 % Inputs:
-%    LMS      - LMS Color space values
-%    cbType   - Type of Color-blindness
-%    whiteLMS - The LMS White Point
+%    LMS      - LMS color space values
+%    cbType   - Type of color-blindness
+%    whiteLMS - The LMS white point
 %
 % Outputs:
 %    LMS      - LMS Color space values after manipulation to account for
 %               the specified type of color blindness
 %
-% Notes:
-%    * [Note: JNM - Unsure if the definitions I have supplied for the
-%       inputs and output are sufficient]
 
-% Examples:
-%{
-   LMS = cbBrettel(LMS, cbType, whiteLMS)
-%}
-
-% check inputs
+% Check inputs
 if notDefined('LMS'), error('LMS image required'); end
 if notDefined('cbType'), cbType = 0; end
 if notDefined('whiteLMS'), error('white LMS values required'); end
 if ischar(cbType), cbType = ieParamFormat(cbType); end
 
-% define the anchor points
+% Define the anchor points
 % For protan, the anchor wavelength are 475 nm and 575 nm. For deuteranope,
 % the anchor wavelength are 475 nm and 575 nm. For tritanope, the anchor
 % wavelength are 485 nm and 660 nm.
@@ -126,7 +130,7 @@ anchor = [0.1193 0.2123 0.5309
 
 % Interpolate missing cone values
 switch cbType
-    case {0, 'trichromat'} % Trichromatic Observer, do nothing
+    case {0, 'trichromat'} % Trichromatic observer, do nothing
     case {1, 'protan', 'protanopia', 'protanope'}
         a1 = whiteLMS(2) * anchor(9) - whiteLMS(3) * anchor(8);
         b1 = whiteLMS(3) * anchor(7) - whiteLMS(1) * anchor(9);
@@ -139,7 +143,7 @@ switch cbType
         % Divides the space
         inflection = whiteLMS(3) / whiteLMS(2);
         
-        % Interpolate missing L values for protonate
+        % Interpolate missing L values for protonape
         L = LMS(:, :, 1);
         M = LMS(:, :, 2);
         S = LMS(:, :, 3);
@@ -192,34 +196,26 @@ switch cbType
 end
 end
 
-%% Interpolation with Linear Method
+%% Interpolation with linear method
 function LMS = cbLinear(LMS, cbType)
-% Interpolation with Linear Method
+% Interpolation with linear method
 %
 % Syntax:
 %   LMS = cbLinear(LMS, cbType)
 %
 % Description:
-%    Interpolation with Linear Method
+%    Interpolation with linear method
 %
 % Inputs:
-%    LMS      - LMS Color space values
-%    cbType   - Type of Color-blindness
+%    LMS      - LMS color space values
+%    cbType   - Type of color-blindness
 %
 % Outputs:
-%    LMS      - LMS Color space values after manipulation to account for
+%    LMS      - LMS color space values after manipulation to account for
 %               the specified type of color blindness
 %
-% Notes:
-%    * [Note: JNM - Unsure if the definitions I have supplied for the
-%       inputs and output are sufficient]
 
-% Examples:
-%{
-   LMS = cbLinear(LMS, cbType)
-%}
-
-% check inputs
+% Check inputs
 if notDefined('LMS'), error('LMS image required'); end
 if notDefined('cbType'), cbType = 0; end
 if ischar(cbType), cbType = ieParamFormat(cbType); end
@@ -238,33 +234,26 @@ switch cbType
 end
 end
 
-%% Interpolation with Constants
+%% Interpolation with constant
 function LMS = cbConstant(LMS, cbType, val)
-% Interpolation with Constants
+% Interpolation with constant
 %
 % Syntax:
 %   LMS = cbConstant(LMS, cbType, val)
 %
 % Description:
-%    Interpolation with a Constant
+%    Interpolation with a constant value.  Just use that value for the
+%    missing cone type.
 %
 % Inputs:
-%    LMS      - LMS Color space values
-%    cbType   - Type of Color-blindness
+%    LMS      - LMS color space values
+%    cbType   - Type of color-blindness
 %    val      - The requisite constant
 %
 % Outputs:
-%    LMS      - LMS Color space values after manipulation to account for
+%    LMS      - LMS color space values after manipulation to account for
 %               the specified type of color blindness
 %
-% Notes:
-%    * [Note: JNM - Unsure if the definitions I have supplied for the
-%       inputs and output are sufficient]
-
-% Examples:
-%{
-   LMS = cbConstant(LMS, cbType, val)
-%}
 
 % check inputs
 if notDefined('LMS'), error('LMS image required'); end
