@@ -32,7 +32,7 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    them to be returned  outside of this range.
 %
 % Inputs:
-%    xyz  - XYZ values in RBG image format
+%    xyz  - XYZ values, in isetbio RGB image format
 %
 % Outputs:
 %    srgb - Standard Red-Green-Blue values
@@ -57,7 +57,7 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    Original:  <http://www.w3.org/Graphics/Color/sRGB>
 %
 % See Also:
-%    colorTransformMatrix, lrgb2srgb, and imageLinearTransform.
+%    srgb2xzy, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
 %
 
 % History:

@@ -17,6 +17,9 @@ function xyz = srgb2xyz(srgb)
 % References:
 %    <http://en.wikipedia.org/wiki/SRGB>
 %
+% See Also:
+%    xyz2srgb, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
