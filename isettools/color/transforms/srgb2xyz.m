@@ -9,7 +9,7 @@ function xyz = srgb2xyz(srgb)
 %    values is (0, 1).
 %
 % Inputs:
-%    sRGB - Standard Red-Green-Blue format image
+%    sRGB - sRGB input, in isetbio RGB image format.
 %
 % Outputs:
 %    xyz  - CIE XYZ format image
@@ -24,10 +24,8 @@ function xyz = srgb2xyz(srgb)
 
 % Examples:
 %{
-   ptbSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]'];
-   % The ISET form takes the frame buffer values in the [0, 1] regime
-   isetSRGBs = ptbSRGBs / 255;
-   isetSRGBs = XW2RGBFormat(isetSRGBs', 4, 1);
+   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']/255;
+   isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1);
    isetXYZ   = srgb2xyz(isetSRGBs);
 %}
 
