@@ -212,7 +212,6 @@ switch parm
 
         % Clear out derivative luminance/illuminance computations
         oi = oiSet(oi,'illuminance', []);
-        oi = oiSet(oi,'meanilluminance', []);
 
     case {'datamin','dmin'}
         % Only used by compressed photons. Not by user
@@ -231,18 +230,9 @@ switch parm
         oi.data.illuminance = val;
 
     case {'meanillum', 'meanilluminance'}
-        oi.data.meanIll = val;
-
-        % 
-        %     case {'spectrum','wavespectrum','wavelengthspectrumstructure'}
-        %         % Set spectrum structure
-        %         if ~isfield(val, 'wave'), error('Invalid spectrum structure'); end
-        %         % adjust wavelength sampling
-        %         if isfield(oi, 'spectrum')
-        %             oi = oiSet(oi, 'wave', val.wave);
-        %         else
-        %             oi.spectrum = val;
-        %         end
+        % This function sets the mean illuminance
+        oi = oiAdjustIlluminance(oi,val);
+        
     case {'datawave','datawavelength','wave','wavelength'}
         % oi = oiSet(oi,'wave',val)
         % The units are always nanometers.
@@ -258,7 +248,7 @@ switch parm
         % Set the data wavelength term, for now stored in spectrum.  It
         % will get shifted to oi.data.wave at some point.
         if checkfields(oi,'spectrum'), oldWave = oi.spectrum.wave; 
-        else oldWave = [];
+        else, oldWave = [];
         end
         oi.spectrum.wave = val(:);
         
