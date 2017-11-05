@@ -6,10 +6,10 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 %
 % Description:
 %    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
-%    from spectral energy
+%    from spectral power distribution in energy units.
 %
 %    The CIE formula for luminance converts a spectral radiance
-%    distribution (W/m2-sr-nm) into luminance (candelas per meter squared,
+%    distribution (W/[m2-sr-nm]) into luminance (candelas per meter squared,
 %    cd/m2). This routine accepts RGB or XW (space-wavelength) formatted
 %    inputs. In XW format, the spectral distributions are in the rows of
 %    the ENERGY matrix.
@@ -20,25 +20,26 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 %    calculates luminous intensity (cd) from spectral radiant intensity
 %    (W/sr-nm); finally, it calculates luminous flux (lumens, lm) from
 %    spectral power (W/nm). The pairings are:
-%
-%      Luminance:         cd/m2  from W/sr-m2-nm
-%      Illuminance:         lux  from  W/m2-nm
+%      Luminance:         cd/m2  from W/[sr-m2-nm]
+%      Illuminance:         lux  from  W/[m2-nm]
 %      Luminous flux:     lumens from W/nm
-%      Luminous intensity:    cd from W/sr-nm.
+%      Luminous intensity:    cd from W/[sr-nm]
 %
-%    To calculate luminance (or illuminance) from a spectral radiance
+%    To calculate luminance (or illuminance) from a spectral power
 %    distribution in photons, use ieLuminanceFromPhotons() 
 %
 % Inputs:
-%    energy - Spectral radiance distribution in W/(m^2 * sr * nm)
+%    energy - Spectral radiance distribution in W/(m^2 * sr * nm), or other
+%             units as in description above.
 %    wave   - The wavelengths
 %
 % Outputs:
-%    lum    - Luminance, in candelas per meter squared.
+%    lum    - Luminance, in candelas per meter squared, or other units as
+%             in description above.
 %
 % Optional key/value pairs:
-%    quiet  - Boolean indicating whether or not to suppress output (Default
-%             is true)
+%    'quiet' - Boolean indicating whether or not to suppress diagnositic
+%              printout to command window (default is true)
 %
 % References:
 %  http://www.optics.arizona.edu/Palmer/rpfaq/rpfaq.htm

@@ -1,5 +1,5 @@
 function [srgb, lrgb, maxY] = xyz2srgb(xyz)
-%Convert CIE XYZ to sRGB color space
+% Convert CIE XYZ to sRGB color space
 %
 % Syntax:
 %   [srgb, lrgb, maxY] = xyz2srgb(xyz)
@@ -32,7 +32,7 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    them to be returned  outside of this range.
 %
 % Inputs:
-%    xyz  - RBG format image values
+%    xyz  - XYZ values, in isetbio RGB image format
 %
 % Outputs:
 %    srgb - Standard Red-Green-Blue values
@@ -57,14 +57,21 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    Original:  <http://www.w3.org/Graphics/Color/sRGB>
 %
 % See Also:
-%    colorTransformMatrix, lrgb2srgb, and imageLinearTransform.
+%    srgb2xzy, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 
-%%
+% Examples:
+%{
+   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']/255;
+   isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1)
+   isetXYZ   = srgb2xyz(isetSRGBs);
+   againSRGBs = xyz2srgb(isetXYZ)
+%}
+
 % The matrix converts (R, G, B) * matrix.  This is the transpose of the
 % Wikipedia page.
 matrix = colorTransformMatrix('xyz2srgb');

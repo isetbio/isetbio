@@ -6,19 +6,25 @@ function lum = ieLuminanceFromPhotons(photons,wave)
 %
 % Description:
 %    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
-%    from spectral photons
+%    from spectral power distribution in photon units. Which you get
+%    depends on what units the spectral power distribution is in.
+%      Luminance:         cd/m2  from photons/[sec-sr-m2-nm]
+%      Illuminance:         lux  from  photons/[sec-m2-nm]
+%      Luminous flux:     lumens from photons/[sec-nm]
+%      Luminous intensity:    cd from photons/[sec-sr-nm]
 %
 % Inputs:
-%    photons - the Spectral Power Distribution you wish to find the
+%    photons - The spectral power Distribution you wish to find the
 %              luminance of.
 %    wave    - The wavelengths, in nanometers
 %
 % Outputs:
-%    lum     - The luminance, in candelas per meter squared, cd/m2
+%    lum     - The luminance, in candelas per meter squared, cd/m2 if
+%              input was in photons/[sec-sr-mr-nm]. See description.
 %
 % See Also:
 %   ieLuminanceFromEnergy
-
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.

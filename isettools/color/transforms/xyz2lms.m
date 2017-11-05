@@ -1,5 +1,5 @@
 function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
-% Transform an XYZ image to Stockman cone format, colorblind permitted
+% Transform an XYZ image to Stockman LMS cone format, colorblind permitted
 %
 % Syntax:
 %   imgLMS = xyz2lms(imgXYZ, [cbType], [method], [varargin])
@@ -7,8 +7,7 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 % Description:
 %    This function convert XYZ data to LMS in Stockman space. When cbType
 %    is not passed in, or it is set to either 0 or
-%    'trichromats', this is the calculation.  The transformation
-%    can only 
+%    'trichromats', this is the calculation.  
 %
 %    A calculation for color blind dichromats can also be performed.  This
 %    is set by using format the cbType variable. In this case, missing cone
@@ -22,25 +21,24 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %        the preserved cones are preserved. The missing cone is assigned a
 %        value that is a piece-wise linear transform of the preserved cones
 %      * interpolating the missing cone using the linear interpolation
-%        proposed by Jiang, Joyce and Wandell, 2015
-%      * returning a zero for the missing cone type
+%        proposed by Jiang, Farrell and Wandell, 2015
+%      * returning a constant for the missing cone type
 %
 % Inputs:
 %    imgXYZ   - XYZ image to transform
 %    cbType   - Type of colorblindness, can be choosen from
-%      {0, 'trichromats'}            - Trichromatic observer (default)
+%      {0, 'trichromat'}             - Trichromatic observer (default)
 %      {1, 'protan', 'protanopia'}   - Protanopia observer, missing L cones
 %      {2, 'deutan', 'deuteranopia'} - Deuteranope, missing M cones
 %      {3, 'tritan', 'tritanopia'}   - Tritanope, missing S cones
 %
 %    method   - Algorithm to be used to interpolate the missing cone values
-%      'brettel'  - Using Bettel's algorithm (default)
-%      'linear'   - Using Linear Interpolation
-%      'constant' - leave missing cone values as a constant (default 0)
-%
-% Optional Key/Value Pairs:
-%      varargin   - white XYZ values for Brettel method,
-%                   extrapolate values for 'constant' method
+%      'brettel'  - Use Bettel's algorithm (default)
+%      'linear'   - Use linear interpolation algorithm
+%      'constant' - Leave missing cone values as a constant (default 0)
+%    varargin - Extra arguments for specific methods
+%      varargin   - White XYZ value for Brettel method.
+%                   The constant value used for the 'constant' method.
 %
 % Outputs:
 %   LMS           - values in Stockman LMS space
@@ -49,6 +47,7 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %   * [NOTE - DHB: Following exactly what happens with the varargin values
 %      as they are passed down the chain is not trivial. Someday, rewrite
 %      with key value pairs so that the code is clearer.]
+%   * [NOTE - DHB: Not clear if it is 2 degree or 10 degree XYZ/Stockman.]
 %
 % See Also: 
 %   lms2srgb, xyz2lms, colorTransformMatrix
@@ -61,6 +60,8 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %    11/02/17  dhb   I didn't think passing 'default' was a very good thing
 %                    to allow.  Got rid of it.  Might break some calling
 %                    code.  Added error message that says what to do.
+%    11/05/17  dhb   Change 'trichromats' -> 'trichromat'.  This is what
+%                    the called routine wants.
 
 % Examples:
 %{
@@ -79,12 +80,12 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 
 %% Check input parameters
 if notDefined('imgXYZ'), error('XYZ Image Required'); end
-if notDefined('cbType'), cbType = 'trichromats'; end
+if notDefined('cbType'), cbType = 'trichromat'; end
 if notDefined('method'), method = 'Brettel'; end
 
 % if cbType is 'trichomats', reassign to prevent breaking down the line.
 if (ischar(cbType) && strcmp(lower(cbType),'default'))
-    error('Change passed ''default'' cbType to ''trichromats''');
+    error('Change passed ''default'' cbType to ''trichromat''');
 end
 if (ischar(cbType) && strcmp(lower(cbType),'trichromats')), cbType = 0; end
 

@@ -13,7 +13,7 @@ function [responsivity, sFactor] = ...
 %    electron. Different wavelengths must account for the number of
 %    photons, even if the data are expressed in units of energy.
 %
-%    ISET uses photons as the basis for nearly all response calculations.
+%    Isetbio uses photons as the basis for nearly all response calculations.
 %
 %    But some important sensors are defined with respect to signal energy.
 %    The most important of these are the XYZ sensors. These are specified 

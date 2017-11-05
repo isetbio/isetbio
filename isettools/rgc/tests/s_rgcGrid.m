@@ -14,7 +14,9 @@ scene = sceneCreate('grid lines',imSize,lineSpacing);
 scene = sceneSet(scene,'fov',fov);
 oi = oiCreate;    % Standard human optics
 oi = oiCompute(oi,scene);
+ieAddObject(oi); oiWindow;
 
+%%
 nMovements = 25;
 cMosaic = coneMosaic;
 cMosaic.setSizeToFOV(fov);

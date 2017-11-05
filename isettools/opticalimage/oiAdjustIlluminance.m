@@ -32,6 +32,5 @@ s = newLevel/currentLevel;
 photons = oiGet(oi,'photons');
 oi = oiSet(oi,'cphotons',photons*s);
 oi = oiSet(oi,'illuminance',illuminance*s);
-oi = oiSet(oi,'meanilluminance',mean(illuminance(:))*s);
 
 end
