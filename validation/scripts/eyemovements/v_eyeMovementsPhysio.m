@@ -3,18 +3,18 @@ function varargout = v_eyeMovementsPhysio(varargin)
     % Parameters to examine.
     params = struct(...
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
-        'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
+        'emType', 'drift', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
         'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
         'trialLengthSeconds', 10.0, ...          % Duration of each trial
-        'nTrials', 100, ...                     % How many trials to compute
-        'exportToPDF', true ...                 
+        'nTrials', 10, ...                     % How many trials to compute
+        'exportToPDF', false ...                 
     );
 
     % Generate our cone mosaic
     cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
     
     % Go !
-    params.integrationTimeSeconds = 10/1000;
+    params.integrationTimeSeconds = 1/1000;
     figNo = 1;
     runSimulation(figNo, params, cm);
     

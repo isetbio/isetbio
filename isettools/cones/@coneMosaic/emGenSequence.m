@@ -122,7 +122,7 @@ for nn=1:nTrials
         speed     = emGet(em, 'drift speed', 'cones/sample', params);
         speedSD   = emGet(em, 'drift speed SD', 'cones/sample', params);
         
-         % Added by NPCottaris for Monday's skype with BW
+        % Added by NPCottaris for Monday's skype with BW
         correctionForSampleTime = 1000*sampTime;
     
         % Generate random move at each sample time
