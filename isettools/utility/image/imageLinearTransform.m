@@ -26,9 +26,14 @@ function imT = imageLinearTransform(im, T)
 %     T = imageGet(vci,'displayspd');
 %     spectralImage = imageLinearTransform(lmsImage,T);
 %
-% See Also: colorTransformMatrix
+% Notes:
+%  * [NOTE - DHB: It would be good if this accepted XW format too, and
+%    returned XW format in that case.]
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% See Also: colorTransformMatrix
+
+% History:
+%   Copyright ImagEval Consultants, LLC, 2003.
 
 % Save out the image size information
 [r,c,w] = size(im);

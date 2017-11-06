@@ -10,8 +10,8 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %    conditions.  The cone system is used under moderate to bright light
 %    conditions and is called the photopic system.
 %
-%    The energy data format can be either XW or RGB.  WAVE describes the
-%    wavelength samples.
+%    The energy data format can be either XW or RGB.  The wave variable
+%    describes the wavelength samples.
 %
 %    The CIE defines a formula to compute scotopic luminance from the
 %    spectral radiance distribution (energy).
@@ -22,8 +22,8 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %
 %    Km is a scale factor, chosen so that a  blackbody radiator at the
 %    freezing temperature of platinum has 60 scotopic candelas per square
-%    centimeter. (Wyszecki and Stiles p. 377-378 and also p. 384, is 1745.
-%    By comparison, the scale factor for photopic luminance is 683).
+%    centimeter (Wyszecki and Stiles p. 377-378 and also p. 384), and is
+%    1745. By comparison, the scale factor for photopic luminance is 683).
 %
 %    Vprime is the scotopic luminance function
 %
@@ -31,7 +31,7 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %
 % Inputs:
 %    energy - XW (space-time) or RGB formatted energy data
-%    wave   - The Wavelength samples
+%    wave   - The wavelength samples
 %
 % Outputs:
 %    lum    - The CIE calculated scotopic (rod) luminance
@@ -44,14 +44,13 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 % Examples:
 %{
    wave = 400:10:700;
-   tmp = load('crtSPD'); dsp = tmp.d;
+   tmp = load('CRT-Dell'); dsp = tmp.d;
    energy = displayGet(dsp, 'spd', wave);
    energy = energy';
    energy = [1, 1, 1]*energy;
    lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %}
-
-
+   
 if notDefined('wave'), error('wavelength required'); end
 if notDefined('energy'), error('energy required'); end
 
