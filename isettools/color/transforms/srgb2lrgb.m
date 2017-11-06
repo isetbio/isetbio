@@ -1,5 +1,5 @@
 function rgb = srgb2lrgb(rgb)
-% Convert srgb (nonlinear) to linear rgb (lrgb) the linear precursor to srgb   
+% Revert srgb (nonlinear) to its precursor, linear rgb (lrgb)
 %
 % Syntax:
 %   lrgb = srgb2lrgb(srgb)
@@ -12,19 +12,20 @@ function rgb = srgb2lrgb(rgb)
 %    (lrgb). This routine converts the nonlinear (srgb) values into the
 %    desired (lrgb) values.
 %
-%    The input range for srgb values is (0,1); the range for the linear
-%    values is (0,1).
+%    The input range for srgb values is (0, 1); the range for the linear
+%    values is (0, 1).
 %
 % Inputs:
-%    rgb - The standard Red-Green-Blue coordinates, prior to manipulation.
+%    rgb - The standard RGB coordinates, prior to manipulation.
 %
 % Outputs:
-%    rgb - The linear Red-Green-Blue coordinates, after sRGB manipulation.
+%    rgb - The linear RGB coordinates, after sRGB manipulation.
 %
 % Notes:
 % * Imageval scaling changes as of July, 2010, as per discussions with
 %   Brainard.
-% * I am concerned that the input and output variables share a name
+% * [Note: XXX - I am concerned that the input and output variables share
+%   their name]
 %
 % References:
 %    <http://en.wikipedia.org/wiki/SRGB>
@@ -33,7 +34,10 @@ function rgb = srgb2lrgb(rgb)
 % See Also:
 %    lrgb2srgb.m, s_SRGB
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    11/01/17  jnm  Comments & formatting
 
 % Examples:
 %{

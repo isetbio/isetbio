@@ -76,8 +76,19 @@ switch parm
     case {'model','opticsmodel'}
         % Valid choices are 
         % The case and spaces do not matter.
+        % Set the optics model type
+        %
+        % diffractionlimited and shiftinvariant are the legitimate options.
+        % For consistency with ISET, and planning for the future of TL's
+        % EyeModeling implementation, we allow 'raytrace' but rename it to
+        % shiftinvariant.  At some point, we will allow raytrace as a
+        % legitimate name on its own.
+        
+        % The case and spaces in val do not matter.
+        val = ieParamFormat(val);
         valid = {'diffractionlimited', 'shiftinvariant','raytrace'};
-        if validatestring(ieParamFormat(val), valid)
+        if strcmp(val,'raytrace'), val = 'shiftinvariant'; end
+        if validatestring(val, valid)
             optics.model = ieParamFormat(val);
         else
             error('Invalid model %s\n',val);

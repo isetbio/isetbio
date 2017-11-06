@@ -1,17 +1,39 @@
 function lum = ieLuminanceFromPhotons(photons,wave)
-% Calculate luminance (cd/m2) and related quantities (lux,lumens,cd) from 
-% spectral photons
+% Converts photons into energy and then calls ieLuminanceFromEnergy.
 %
-%  lum = ieLuminanceFromPhotons(photons,wave)
+% Syntax:
+%   lum = ieLuminanceFromPhotons(photons, wave)
 %
-% Purpose:
-%   Converts photons into energy and then calls ieLuminanceFromEnergy.
+% Description:
+%    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
+%    from spectral photons
 %
-%   See the comments and example in that file.
+% Inputs:
+%    photons - the Spectral Power Distribution you wish to find the
+%              luminance of.
+%    wave    - The wavelengths, in nanometers
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Outputs:
+%    lum     - The luminance, in candelas per meter squared, cd/m2
+%
+% See Also:
+%   ieLuminanceFromEnergy
 
-energy = Quanta2Energy(wave,photons);
-lum = ieLuminanceFromEnergy(energy,wave);
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC.
+%    10/27/17  jnm  Comments & formatting
+
+% Examples:
+%{
+   wave = 400:770;
+   cct = 4000:1000:10000;
+   spd = daylight(wave, cct, 'photons');
+
+   % Calculate the luminance of these SPDs
+   lum = ieLuminanceFromPhotons(spd', wave(:));
+%}
+energy = Quanta2Energy(wave, photons);
+lum = ieLuminanceFromEnergy(energy, wave);
 
 end

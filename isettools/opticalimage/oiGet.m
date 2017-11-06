@@ -424,21 +424,17 @@ switch parm
     case {'meanilluminance','meanillum'}
         % Get / compute mean illuminance
         % Always update the mean.  Cheap to do.  Forces synchronization.
-        if isempty(oi.data.illuminance)
-            [oi.data.illuminance, oi.data.meanIll] = ...
-                oiCalculateIlluminance(oi);
+        if notDefined('oi.data.illuminance')
+            oi.data.illuminance = oiCalculateIlluminance(oi);
         end
-        oi.data.meanIll = mean(oi.data.illuminance(:));        
-        val = oi.data.meanIll;
+        val = mean(oi.data.illuminance(:)); 
         
     case {'illuminance','illum'}
         if isempty(oi.data.illuminance)
             % calculate and store
-            [val, oi.data.meanIll] = oiCalculateIlluminance(oi);
-            oi.data.illuminance = val;
-        else
-            val = oi.data.illuminance;
+            oi.data.illuminance = oiCalculateIlluminance(oi);
         end
+        val = oi.data.illuminance;
         
     case {'xyz','dataxyz'}
         % oiGet(oi,'xyz');

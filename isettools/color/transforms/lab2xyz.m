@@ -1,8 +1,8 @@
-function xyz = lab2xyz(lab, whitepoint, useOldCode, exp)
+function xyz = lab2xyz(lab, whitepoint, useOldCode, labexp)
 % [Deprecated. Use ieLAB2XYZ] Convert CIE LAB values to CIE XYZ values
 %
 % Syntax:
-%   xyz = vcLAB2xyz(lab, whitepoint, exp, useOldCode)
+%   xyz = vcLAB2xyz(lab, whitepoint, [useOldCode], [labexp])
 %
 % Description:
 %    Converts CIEL*a*b* coordinates to CIE XYZ coordinates.  We will use
@@ -13,8 +13,9 @@ function xyz = lab2xyz(lab, whitepoint, useOldCode, exp)
 % Inputs:
 %    lab        - LAB image; can either be in XW or RGB format. 
 %    whitepoint - a 3-vector of the xyz values of the white point. 
-%    useOldCode - 0 to use Matalb's routines, 0 otherwise
-%    exp        - used by old code; the exponent used in the CIELAB formula
+%    useOldCode - Optional, Default value 0. 0 to use Matalb's routines,
+%                 use 1 otherwise
+%    labexp     - used by old code; the exponent used in the CIELAB formula
 %                 Default is cube root as used in standard CIELAB. If
 %                 specified, use the number as exponent. (note this
 %                 exponent here should be the same as the exponent used in
@@ -22,6 +23,9 @@ function xyz = lab2xyz(lab, whitepoint, useOldCode, exp)
 %
 % Outputs:
 %    xyz        - CIE XYZ Coordinates
+%
+% Notes:
+%    * [Note: JNM - useOldCode has contradictory information about 0]
 %
 % See Also:
 %    xyz2lab
@@ -35,7 +39,7 @@ function xyz = lab2xyz(lab, whitepoint, useOldCode, exp)
    dataXYZ = imageRGB2xyz(vci, rgb);
    whiteXYZ = dataXYZ(1, :);
    lab = xyz2lab(dataXYZ, whiteXYZ);
-   xyz = vcLAB2xyz(lab, whitepoint, exp, useOldCode)
+   xyz = vcLAB2xyz(lab, whitepoint, labexp, useOldCode)
 %}
 warning('Use ieLAB2XYZ');
 
@@ -44,7 +48,11 @@ if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');
 end
 if notDefined('useOldCode'), useOldCode = 0; end
-if notDefined('exp'), if useOldCode, exp = 3; end; end
+if notDefined('labexp')
+    if useOldCode
+        labexp = 3;
+    end
+end
 
 if (exist('makecform', 'file') == 2) &&  ~useOldCode
     % Which version of LAB is this for? 1976. 
@@ -68,13 +76,13 @@ else
     end
     
     % Usual formula for Lstar.   (y = Y/Yn)
-    fy = (lab(:, 1) + 16)/116;
-    y = fy .^ exp;
+    fy = (lab(:, 1) + 16) / 116;
+    y = fy .^ labexp;
     
     % Find out cases where (Y/Yn) is too small and use other formula
     % Y/Yn = 0. 008856 correspond to L=7. 9996
-    yy = find(lab(:, 1)<=7.9996);
-    y(yy) = lab(yy, 1)/903.3;
+    yy = find(lab(:, 1) <= 7.9996);
+    y(yy) = lab(yy, 1) / 903.3;
     fy(yy) = 7.787 * y(yy) + 16/116;
     
     % find out fx, fz
@@ -84,16 +92,18 @@ else
     % find out x=X/Xn, z=Z/Zn
     % when (X/Xn)<0. 008856, fx<0. 206893
     % when (Z/Zn)<0. 008856, fz<0. 206893
-    xx = find(fx<.206893);
-    zz = find(fz<.206893);
-    x = fx.^exp;
-    z = fz.^exp;
-    x(xx) = (fx(xx)-16/116)/7.787;
-    z(zz) = (fz(zz)-16/116)/7.787;
+    xx = find(fx < .206893);
+    zz = find(fz < .206893);
+    x = fx .^ labexp;
+    z = fz .^ labexp;
+    x(xx) = (fx(xx) - 16/116) / 7.787;
+    z(zz) = (fz(zz) - 16/116) / 7.787;
     
     xyz = [x*Xn y*Yn z*Zn];
     
     % Return XYZ in appropriate shape
-    if ndims(xyz) == 3, xyz = XW2RGBFormat(xyz, r, c); end
+    if ndims(xyz) == 3
+        xyz = XW2RGBFormat(xyz, r, c);
+    end
 end
 end
