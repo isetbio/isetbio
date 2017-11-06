@@ -115,14 +115,18 @@ for nn=1:nTrials
         pos = cumsum(pos, 1);
     end
     
+    
     % generate eye movement for drift
-    if emFlag(2)  ||  microSaccadesOnlyFlag 
+    if emFlag(2)  ||  microSaccadesOnlyFlag  
         % Load Parameters
         speed     = emGet(em, 'drift speed', 'cones/sample', params);
         speedSD   = emGet(em, 'drift speed SD', 'cones/sample', params);
         
+         % Added by NPCottaris for Monday's skype with BW
+        correctionForSampleTime = 1000*sampTime;
+    
         % Generate random move at each sample time
-        theta = 360 * randn + 0.1 * (1 : nFrames)';
+        theta = 360 * randn + 0.1 * correctionForSampleTime*(1 : nFrames)';
         direction = [cosd(theta) sind(theta)];
         s = speed + speedSD * randn(nFrames, 1);
         pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
