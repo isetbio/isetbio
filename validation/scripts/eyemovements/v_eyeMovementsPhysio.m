@@ -5,7 +5,7 @@ function varargout = v_eyeMovementsPhysio(varargin)
         'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
         'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
         'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
-        'trialLengthSeconds', 5.0, ...          % Duration of each trial
+        'trialLengthSeconds', 10.0, ...          % Duration of each trial
         'nTrials', 100, ...                     % How many trials to compute
         'exportToPDF', true ...                 
     );
@@ -15,11 +15,13 @@ function varargout = v_eyeMovementsPhysio(varargin)
     
     % Go !
     params.integrationTimeSeconds = 10/1000;
-    runSimulation(1, params, cm);
+    figNo = 1;
+    runSimulation(figNo, params, cm);
     
     % Go !
-    %params.integrationTimeSeconds = 10/1000;
-    %runSimulation(2, params, cm);
+    %params.integrationTimeSeconds = 2/1000;
+    figNo = 2;
+    %runSimulation(figNo, params, cm);
 end
 
 %
