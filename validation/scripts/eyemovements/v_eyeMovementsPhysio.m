@@ -14,7 +14,7 @@ function varargout = v_eyeMovementsPhysio(varargin)
     cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
     
     % Go !
-    params.integrationTimeSeconds = 10/1000;
+    params.integrationTimeSeconds = 1/1000;
     figNo = 1;
     runSimulation(figNo, params, cm);
     
