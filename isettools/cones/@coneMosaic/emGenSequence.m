@@ -245,9 +245,13 @@ for nn=1:nTrials
             
             % Compute saccadde duration. This is such that we would end up
             % right back at the origin, if direction were not perturbed.
+            % Need to have at least one sample.
             saccadeMagnitude = sqrt(curPos(1)^2 + curPos(2)^2);
             saccadeDurationSecs = saccadeMagnitude/curSaccadeSpeedConesPerSec;
             saccadeDurationSamples = round(saccadeDurationSecs/sampTime);
+            if (saccadeDurationSamples == 0)
+                saccadeDurationSamples = 1;
+            end
             
             % Compute the offset we need to add to the positions vector, to
             % put in this saccade.  Start with an array of zeros, and
