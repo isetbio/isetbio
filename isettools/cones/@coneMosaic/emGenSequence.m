@@ -62,11 +62,7 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 % 11/06/17  ncp       Added line to make drift magnitude independent of
 %                     sample time.
 % 11/06/17  dhb, npc  Added comments on microsaccade algorithm.
-% 11/07/17  dhb       Saccade duration was computed as seconds, but treated
-%                     as samples.  For reasonable sample (aka integration)
-%                     times, this produced very short durations.  Plus, it
-%                     was computed from the mean speed, rather than the
-%                     speed on the particular saccade.
+% 11/07/17  dhb       More cleaning and robustness.
 
 %% parse input
 p = inputParser;
