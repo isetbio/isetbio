@@ -32,10 +32,13 @@ function t_wvfZernike
 %  http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
 %
 % History:
+%    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 %    03/12/12  baw, mdl, kp  Created. 
 %    04/29/12  dhb  Tried to tighten vertical spacing and apply uniform
 %                   convention. Some editing of text for clarity.
 %    10/30/17  jnm  Comments & formatting
+%    11/08/17  jnm  Second commenting pass, cleaning up and enforcing
+%                   general commenting conventions
 %	
 % (c) Wavefront Toolbox Team 2011, 2012
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,6 +55,16 @@ function t_wvfZernike
 %   not occur when nominal defocus wl matches the calculated wavelength is
 %   not considered here, but can be quite important when thinking about
 %   real optical quality.
+%   d) [Note: JNM - Below, there was a section stating that only one
+%   wavelength was used, and a variable initialized for the purpose, but it
+%   was never used throughout the tutorial, so I have removed the section
+%   title, the variable, and grouped the other variables initalized in that
+%   section into the appropriate 'Initialize' section]
+%   e) [Note: JNM - There are a number of variables that are initialized
+%   and then never used. Was this done intentionally? As a part of the
+%   testing process? For what purpose are they kept around? Ex. nCols,
+%   nRows, uDataS, defocus]
+%
 
 %% Zernike polynomials
 %
@@ -64,7 +77,7 @@ function t_wvfZernike
 % For example, one such polynomial (known as Astigmatism along 45 degrees) 
 % is given by:
 %
-%          Z3 * sqrt(6) * rho^2 * cos(2*theta)
+%          Z3 * sqrt(6) * rho^2 * cos(2 * theta)
 %
 % where rho and theta are natural polar coordinates representing radial
 % norm and angle on a disk. These can be easily converted to rectangular
@@ -80,24 +93,20 @@ function t_wvfZernike
 % using OSA standards, which is easier to manage in vector form for Matlab, 
 % so we will use it here.
 %
-% Each radial order has (order+1) number of polynomial terms (and
+% Each radial order has (order + 1) number of polynomial terms (and
 % therefore, order+1 number of Zernike coefficients to represent them).
 % Thus, 0th order has 1 term, 1st order has 2 terms, etc.
 %
 % In this tutorial we will be working with up to 10 orders of Zernike
-% polynomials. Counted out, this represents 1+2+3+...+11 = 66 terms for
-% radial orders 0 through 10. The 0th order term (piston) doesn't affect
-% the PSF and we will leave it at 0. Additionally, the 1st order terms
-% (coeffs 1 and 2, known as tip and tilt) only serve to shift the PSF along
-% the x or y axis. They will also be left at 0 for this tutorial. 
+% polynomials. Counted out, this represents 1 + 2 + 3 + ... + 11 = 66 terms
+% for radial orders 0 through 10. The 0th order term (piston) doesn't
+% affect the PSF and we will leave it at 0. Additionally, the 1st order
+% terms (coeffs 1 and 2, known as tip and tilt) only serve to shift the PSF
+% along the x or y axis. They will also be left at 0 for this tutorial.
 
 %% Initialize
 close all;
 ieInit;
-
-%% The tutorial only uses 1 wavelength at a time. So, for plotting, we use
-% this index.
-waveIdx = 1;
 maxMM = 2;
 maxUM = 20;      
 pupilfuncrangeMM = 5;
@@ -125,12 +134,12 @@ wvfPrint(wvf0);
 % coefficients are all zero.
 wvf0 = wvfComputePSF(wvf0);
 wList = wvfGet(wvf0, 'calc wave');
-wvfPlot(wvf0, '2dpsf space normalized', 'um', wList, maxUM);
+wvfPlot(wvf0, '2dpsfspacenormalized', 'um', wList, maxUM);
 
-%% Examine how the first non-zero Zernike coefficient contributes to the PSF.
+%% Examine how the first non-zero Zernike coefficient contributes to PSF.
 %
-% The j = 3 coefficient (4th entry in the Zernike vector is known as oblique astigmatism
-% (with axis at 45 degrees.)
+% The j = 3 coefficient (4th entry in the Zernike vector is known as
+% oblique astigmatism (with axis at 45 degrees.)
 %
 % We start with the default structure , wvf0 created above, which has its
 % vector of zcoeffs set to 66 zeros. Then we use wvfSet to poke in some
@@ -150,13 +159,13 @@ fprintf('Third Zernike coefficient is %g\n', wvfGet(wvf3, 'zcoeffs', 3));
 
 %% Look at the pupil function for astigmatism with axis at 45 degrees.
 %
-% We have used wvfComputePupilFunction separately here, but it is actually also
-% contained within wvfComputePSF, which we will use from now on.
+% We have used wvfComputePupilFunction separately here, but it is actually
+% also contained within wvfComputePSF, which we will use from now on.
 %
 % We can see that the phase changes seem to be aligned with the + and - 45
 % degree axes, which makes sense for oblique astigmatism. 
 wvf3 = wvfComputePupilFunction(wvf3);
-wvfPlot(wvf3, '2d pupil phase space', 'mm', wList, pupilfuncrangeMM);
+wvfPlot(wvf3, '2dpupilphasespace', 'mm', wList, pupilfuncrangeMM);
 
 %% Plot the PSF
 %
@@ -174,7 +183,7 @@ wvf3 = wvfComputePSF(wvf3);
 % diffraction-limited PSF. It has also lost its radial symmetry. We will
 % see that the higher the order of Zernike polynomial, the more complex the
 % associated PSF will be.
-wvfPlot(wvf3, '2d psf space normalized', 'um', wList, maxUM);
+wvfPlot(wvf3, '2dpsfspacenormalized', 'um', wList, maxUM);
 
 %% Examine effect of the j = 5 (6th entry), which is called vertical
 % astigmatism, along the 0 or 90 degree axis. Again we begin with
@@ -185,8 +194,8 @@ wvfPlot(wvf3, '2d psf space normalized', 'um', wList, maxUM);
 vertical_astig = 0.75;                         
 wvf5 = wvfSet(wvf0, 'zcoeffs', vertical_astig, {'vertical_astigmatism'});
 wvf5 = wvfComputePSF(wvf5);
-wvfPlot(wvf5, '2d pupil phase space', 'mm', wList, maxMM);
-wvfPlot(wvf5, '2d psf space normalized', 'um', wList, maxUM);
+wvfPlot(wvf5, '2dpupilphasespace', 'mm', wList, maxMM);
+wvfPlot(wvf5, '2dpsfspacenormalized', 'um', wList, maxUM);
 
 %% Make plots of various pupil functions and their respective
 % point-spread functions for different Zernike polynomials of 1st through
@@ -204,7 +213,8 @@ wvfPlot(wvf5, '2d psf space normalized', 'um', wList, maxUM);
 % pictures on the web. See comment in v_wvfZernikePolynomials for a more
 % expansive discussion.
 wvf0 = wvfCreate;
-wvf0 = wvfSet(wvf0, 'calculated pupil', wvfGet(wvf0, 'measured pupil', 'mm'));
+wvf0 = wvfSet(wvf0, 'calculated pupil', wvfGet(wvf0, 'measured pupil', ...
+    'mm'));
 pupilfuncrangeMM = 4;
 jindices = 1:9;
 maxMM = 4; 
@@ -216,15 +226,19 @@ for ii = jindices
     [n, m] = wvfOSAIndexToZernikeNM(ii);
 
     subplot(3, 1, 1);
-    wvfPlot(wvf, '2d wavefront aberrations space', 'mm', [], pupilfuncrangeMM, 'no window');
-    title(sprintf('Wavefront aberrations for j = %d (n = %d, m = %d)', ii, n, m));
+    wvfPlot(wvf, '2dwavefrontaberrationsspace', 'mm', [], ...
+        pupilfuncrangeMM, 'no window');
+    title(sprintf('Wavefront aberrations for j = %d (n = %d, m = %d)', ...
+        ii, n, m));
 
     subplot(3, 1, 2);
-    wvfPlot(wvf, '2d pupil phase space', 'mm', wList, pupilfuncrangeMM, 'no window');
-    title(sprintf('Pupil function phase for j = %d (n = %d, m = %d)', ii, n, m));
+    wvfPlot(wvf, '2dpupilphasespace', 'mm', wList, pupilfuncrangeMM, ...
+        'no window');
+    title(sprintf('Pupil function phase for j = %d (n = %d, m = %d)', ...
+        ii, n, m));
 
     subplot(3, 1, 3);
-    wvfPlot(wvf, '2d psf space', 'mm', wList, maxMM, 'no window');
+    wvfPlot(wvf, '2dpsfspace', 'mm', wList, maxMM, 'no window');
 end
 
 %% How longitudinal chromatic aberration (LCA) affects the PSF / "Defocus"
@@ -234,7 +248,7 @@ end
 % aberration, where one wavelength is brought into focus but others may be
 % blurry because they are refracted closer or farther from the imaging
 % plane. In this case, the PSF is dependent on wavelength.
-
+%
 % We can set this using the  "in-focus wavelength" of our wvf.
 % This code indicates that the data is given for a nominal focus of 550 nm, 
 % which is also the default in wvfCreate. We also now explictly set the
@@ -244,16 +258,15 @@ wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0, 'measured wavelength', 550); 
 wvf0 = wvfSet(wvf0, 'calc wavelengths', 550); 
 
-% It turns out that all aberrations other than "Defocus" are known
-% to vary only slightly with wavelength. As a result, the Zernike
-% coefficients don't have to be modified, apart from one. This
-% is the j = 0 "defocus" coefficient. It is what typical eyeglasses
-% correct for using + or - diopters lenses. The wavefront toolbox combines
-% the longitudinal chromatic aberration (LCA) into this coefficient when
-% it calculates the pupil function. The LCA itself is computed based
-% on the difference between the measurement wavelength (for which the
-% defocus coefficient is specified) and the wavelength being calclated
-% for.
+% It turns out that all aberrations other than "Defocus" are known to vary
+% only slightly with wavelength. As a result, the Zernike coefficients
+% don't have to be modified, apart from one. This is the j = 0 "defocus"
+% coefficient. It is what typical eyeglasses correct for using + or -
+% diopters lenses. The wavefront toolbox combines the longitudinal
+% chromatic aberration (LCA) into this coefficient when it calculates the
+% pupil function. The LCA itself is computed based on the difference
+% between the measurement wavelength (for which the defocus coefficient is
+% specified) and the wavelength being calclated for.
 wvf0 = wvfComputePSF(wvf0);
 wList = wvfGet(wvf0, 'calc wavelengths');
 vcNewGraphWin;
@@ -271,40 +284,44 @@ wvf1 = wvfCreate;
 wvf1 = wvfSet(wvf1, 'calc wavelengths', theWavelength);
 wList = wvfGet(wvf1, 'calc wavelengths');
 wvf1 = wvfComputePSF(wvf1);
-wvfPlot(wvf1, '1dpsf space normalized', 'mm', wList, maxMM, 'no window');
+wvfPlot(wvf1, '1dpsfspacenormalized', 'mm', wList, maxMM, 'no window');
 
-% To unpack this, we can do explicitly what is done inside the
-% pupil function calculation. First we LCA from
-% the wavelength difference, then act as if the measured wavelength
-% (where there is no LCA) is the calculated wavelength. We do
-% this by changing the measured wavelength specification. Finally, 
-% we add in the LCA to the defocus coefficient.
+% To unpack this, we can do explicitly what is done inside the pupil
+% function calculation. First we LCA from the wavelength difference, then
+% act as if the measured wavelength (where there is no LCA) is the
+% calculated wavelength. We do this by changing the measured wavelength
+% specification. Finally, we add in the LCA to the defocus coefficient.
 wvf2 = wvf1;
-lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf2, 'measured wavelength', 'nm'), wvfGet(wvf2, 'calc wavelengths', 'nm'));
-lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, wvfGet(wvf2, 'measured pupil size'));
-wvf2 = wvfSet(wvf2, 'measured wavelength', wvfGet(wvf2, 'calc wavelengths', 'nm'));
+lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf2, ...
+    'measured wavelength', 'nm'), wvfGet(wvf2, 'calc wavelengths', 'nm'));
+lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, wvfGet(wvf2, ...
+    'measured pupil size'));
+wvf2 = wvfSet(wvf2, 'measured wavelength', wvfGet(wvf2, ...
+    'calc wavelengths', 'nm'));
 wList = wvfGet(wvf2, 'calc wavelengths');
 defocus = wvfGet(wvf2, 'zcoeffs', {'defocus'});
 defocus = defocus + lcaMicrons;
 wvf2 = wvfSet(wvf2, 'zcoeffs', lcaMicrons, {'defocus'});
 wvf2 = wvfComputePSF(wvf2);
-[udataS, pData] = wvfPlot(wvf2, '1dpsf space normalized', 'mm', wList, maxMM, 'no window');
+[udataS, pData] = wvfPlot(wvf2, '1dpsfspacenormalized', 'mm', wList, ...
+    maxMM, 'no window');
 set(pData, 'color', 'b', 'linewidth', 2);
 
 %% How cone geometry affects the PSF: the Stiles-Crawford effect (SCE)
 %
 % The cones that line our retinas are tall rod-shaped cells. They act like
-% waveguides, such that rays parallel to their long axis excite the photoreceptors
-% more readily than rays that are travelling at skewed angles. This has the
-% benefit of reducing the chance that scattered or aberrated rays will
-% excite the cone cells. Although this effect physically comes from the
-% retina, it can be modeled using the pupil function discussed above. The
-% amplitude of the pupil function is altered, such that it decays in the
-% form exp(-alpha*((x-x0)^2+(y-y0)^2)). This physically attenuates rays
-% that enter near the edges of the pupil and lens. Since the phase aberration at
-% the edges of the pupil is usually most severe, SCE can actually improve vision. 
-% Note that generally the position of the pupil with highest transmission 
-% efficiency does not lie in the exact center of the pupil (x0, y0 are nonzero).
+% waveguides, such that rays parallel to their long axis excite the
+% photoreceptors more readily than rays that are travelling at skewed
+% angles. This has the benefit of reducing the chance that scattered or
+% aberrated rays will excite the cone cells. Although this effect
+% physically comes from the retina, it can be modeled using the pupil
+% function discussed above. The amplitude of the pupil function is altered,
+% such that it decays in the form exp(-alpha *((x - x0)^2 + (y - y0)^2)).
+% This physically attenuates rays that enter near the edges of the pupil
+% and lens. Since the phase aberration at the edges of the pupil is usually
+% most severe, SCE can actually improve vision. Note that generally the
+% position of the pupil with highest transmission efficiency does not lie
+% in the exact center of the pupil (x0, y0 are nonzero).
 
 % Begin with an unaberrated pupil and see what its amplitude and phase look
 % like. We'll also plot the associated diffraction-limited PSF.
@@ -314,73 +331,85 @@ maxMM = 2; %MM from the center of the PSF
 pupilfuncrangeMM = 5;
 vcNewGraphWin;
 subplot(2, 2, 1);
-wvfPlot(wvf0, '2d pupil amplitude space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf0, '2dpupilamplitudespace', 'mm', [], pupilfuncrangeMM, ...
+    'no window');
 subplot(2, 2, 2);
-wvfPlot(wvf0, '2d pupil phase space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf0, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
+    'no window');
 subplot(2, 2, 3:4);
-wvfPlot(wvf0, '2d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf0, '2dpsfspace', 'mm', [], maxMM, 'no window');
 sce1DFig = vcNewGraphWin; hold on
-wvfPlot(wvf0, '1d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf0, '1dpsfspace', 'mm', [], maxMM, 'no window');
 
 % To this unaberrated pupil function, we add the Stiles-Crawford
-% parameters, with peakedness taken from Berendschot et al. 2001 (see sceCreate for
-% details). This adds a decaying exponential amplitude to the pupil
-% function, causing less light to be transmitted to the retina.
+% parameters, with peakedness taken from Berendschot et al. 2001 (see
+% sceCreate for details). This adds a decaying exponential amplitude to the
+% pupil function, causing less light to be transmitted to the retina.
 %
 % Compare the diffraction-limited PSF without SCE to the one with SCE. What
 % are the differences? Is the amplitude different? Why? Is the width of the
 % PSF different? Why?
-wvf0SCE = wvfSet(wvf0, 'sceParams', sceCreate(wvfGet(wvf0, 'calc wave'), 'berendschot_data'));
+wvf0SCE = wvfSet(wvf0, 'sceParams', sceCreate(wvfGet(wvf0, ...
+    'calc wave'), 'berendschot_data'));
 wvf0SCE = wvfComputePSF(wvf0SCE);
 vcNewGraphWin;
 subplot(2, 2, 1);
-wvfPlot(wvf0SCE, '2d pupil amplitude space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf0SCE, '2dpupilamplitudespace', 'mm', [], ...
+    pupilfuncrangeMM, 'no window');
 subplot(2, 2, 2);
-wvfPlot(wvf0SCE, '2d pupil phase space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf0SCE, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
+'no window');
 subplot(2, 2, 3:4);
-wvfPlot(wvf0SCE, '2d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf0SCE, '2dpsfspace', 'mm', [], maxMM, 'no window');
 figure(sce1DFig);
-[udataS, pData] = wvfPlot(wvf0SCE, '1d psf space', 'mm', [], maxMM, 'no window');
+[udataS, pData] = wvfPlot(wvf0SCE, '1dpsfspace', 'mm', [], maxMM, ...
+    'no window');
 set(pData, 'color', 'b', 'linewidth', 1);
 
-% Compare the above with how the SCE affects an aberrated PSF. Let's create a
-% PSF with moderate astigmatism along the xy axes.
+% Compare the above with how the SCE affects an aberrated PSF. Let's create
+% a PSF with moderate astigmatism along the xy axes.
 wvf5 = wvfSet(wvf0, 'zcoeffs', 0.75, {'vertical_astigmatism'});
 wvf5 = wvfComputePSF(wvf5);
 vcNewGraphWin;
 subplot(2, 2, 1);
-wvfPlot(wvf5, '2d pupil amplitude space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf5, '2dpupilamplitudespace', 'mm', [], pupilfuncrangeMM, ...
+    'no window');
 subplot(2, 2, 2);
-wvfPlot(wvf5, '2d pupil phase space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf5, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
+    'no window');
 subplot(2, 2, 3:4);
-wvfPlot(wvf5, '2d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf5, '2dpsfspace', 'mm', [], maxMM, 'no window');
 sce1DFig2 = vcNewGraphWin; hold on
-wvfPlot(wvf5, '1d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf5, '1dpsfspace', 'mm', [], maxMM, 'no window');
 
 % Add SCE to the aberrated pupil function.
 %
 % Compare the two aberrated PSFs. How do their peak amplitudes compare?
 % How do their widths compare? How did the symmetry of the PSF change?
 % Which PSF would create a "better image" on the retina?
-wvf5SCE = wvfSet(wvf5, 'sceParams', sceCreate(wvfGet(wvf5, 'calc wave'), 'berendschot_data'));
+wvf5SCE = wvfSet(wvf5, 'sceParams', sceCreate(wvfGet(wvf5, ...
+    'calc wave'), 'berendschot_data'));
 wvf5SCE = wvfComputePSF(wvf5SCE);
 vcNewGraphWin;
 subplot(2, 2, 1);
-wvfPlot(wvf5SCE, '2d pupil amplitude space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf5SCE, '2dpupilamplitudespace', 'mm', [], ...
+    pupilfuncrangeMM, 'no window');
 subplot(2, 2, 2);
-wvfPlot(wvf5SCE, '2d pupil phase space', 'mm', [], pupilfuncrangeMM, 'no window');
+wvfPlot(wvf5SCE, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
+    'no window');
 subplot(2, 2, 3:4);
-wvfPlot(wvf5SCE, '2d psf space', 'mm', [], maxMM, 'no window');
+wvfPlot(wvf5SCE, '2dpsfspace', 'mm', [], maxMM, 'no window');
 figure(sce1DFig2);
-[udataS, pData] = wvfPlot(wvf5SCE, '1d psf space', 'mm', [], maxMM, 'no window');
+[udataS, pData] = wvfPlot(wvf5SCE, '1dpsfspace', 'mm', [], maxMM, ...
+    'no window');
 set(pData, 'color', 'b', 'linewidth', 1);
 
 %% Wavefront measurements of human eyes and the effects of single-vision
 % corrective eyeglasses 
 %
-% We have access to measurements of the pupil function of real human eyes. The
-% optics of these eyes are not perfect, so they have interesting pupil functions
-% and PSF shapes.
+% We have access to measurements of the pupil function of real human eyes.
+% The optics of these eyes are not perfect, so they have interesting pupil
+% functions and PSF shapes.
 
 % Set up the wvf structure
 measMM = 6;
@@ -398,7 +427,7 @@ whichSubjects = [3 7];
 theZernikeCoeffs = theZernikeCoeffs(:, whichSubjects);
 nSubjects = size(theZernikeCoeffs, 2);
 nRows = ceil(sqrt(nSubjects));
-nCols = ceil(nSubjects/nRows);
+nCols = ceil(nSubjects / nRows);
 
 % Stiles Crawford
 wvfHuman0 = wvfSet(wvfHuman0, 'sceParams', sceCreate(wvfGet(wvfHuman0, ...
@@ -413,13 +442,13 @@ for ii = 1:nSubjects
     
     vcNewGraphWin;
     subplot(2, 2, 1);
-    wvfPlot(wvfHuman, '2d pupil amplitude space', 'mm', [], calcMM, ...
+    wvfPlot(wvfHuman, '2dpupilamplitudespace', 'mm', [], calcMM, ...
         'no window');
     subplot(2, 2, 2);
-    wvfPlot(wvfHuman, '2d pupil phase space', 'mm', [], calcMM, ...
+    wvfPlot(wvfHuman, '2dpupilphasespace', 'mm', [], calcMM, ...
         'no window');
     subplot(2, 2, 3:4);
-    wvfPlot(wvfHuman, '2d psf space', 'mm', [], maxMM, 'no window');
+    wvfPlot(wvfHuman, '2dpsfspace', 'mm', [], maxMM, 'no window');
 end
 
 %% Single-vision eyewear generally corrects only the lowest-order
@@ -452,12 +481,12 @@ for ii = 1:nSubjects
     
     vcNewGraphWin;
     subplot(2, 2, 1);
-    wvfPlot(wvfHuman, '2d pupil amplitude space', 'mm', [], calcMM, ...
+    wvfPlot(wvfHuman, '2dpupilamplitudespace', 'mm', [], calcMM, ...
         'no window');
     subplot(2, 2, 2);
-    wvfPlot(wvfHuman, '2d pupil phase space', 'mm', [], calcMM, ...
+    wvfPlot(wvfHuman, '2dpupilphasespace', 'mm', [], calcMM, ...
         'no window');
     subplot(2, 2, 3:4);
-    wvfPlot(wvfHuman, '2d psf space', 'mm', [], maxMM, 'no window');
+    wvfPlot(wvfHuman, '2dpsfspace', 'mm', [], maxMM, 'no window');
 end
 %% End

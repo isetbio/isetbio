@@ -8,7 +8,8 @@ function t_wvfPlot
 % (BW) Wavefront Toolbox Team, 2014-15
 
 %% Clear and close
-close all; ieInit;
+close all;
+ieInit;
 
 %% Set up wfv object
 wvf = wvfCreate;
@@ -26,13 +27,13 @@ wvf = wvfComputePSF(wvf);
 
 %% Make the plot in microns
 unit = 'um';
-[u, p]= wvfPlot(wvf, '1d psf space', unit, wave);
+[u, p]= wvfPlot(wvf, '1dpsfspace', unit, wave);
 set(p, 'color', 'k', 'linewidth', 2)
 title([num2str(wave) ' nm']);
 
 % Normalize the plot
 unit = 'um';
-[u, p]= wvfPlot(wvf, '1d psf space normalized', unit, wave);
+[u, p]= wvfPlot(wvf, '1dpsfspacenormalized', unit, wave);
 set(p, 'color', 'b', 'linewidth', 2)
 title([num2str(wave) ' nm']);
 
@@ -52,34 +53,34 @@ get(p)
 
 %% A multiple axis window
 vcNewGraphWin([], 'tall');
-subplot(3, 1, 1), wvfPlot(wvf, '1d psf space', unit, wave, 'no window');
+subplot(3, 1, 1), wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
 title([num2str(wave) ' nm']);
-subplot(3, 1, 2), wvfPlot(wvf, '1d psf space normalized', unit, wave, ...
+subplot(3, 1, 2), wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, ...
     'no window');
-subplot(3, 1, 3), wvfPlot(wvf, 'image psf', 'um', wave, 20, 'no window');
+subplot(3, 1, 3), wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
 
 %% Pupil amplitude and phase
 unit = 'mm'; maxMM = 2;
-wvfPlot(wvf, 'image pupil amp', unit, wave, maxMM);
+wvfPlot(wvf, 'imagepupilamp', unit, wave, maxMM);
 title(['Pupil function amplitude ' num2str(wave) ' nm']);
-wvfPlot(wvf, 'image pupil phase', unit, wave, maxMM);
+wvfPlot(wvf, 'imagepupilphase', unit, wave, maxMM);
 title(['Pupil function phase ' num2str(wave) ' nm']);
 
 %%  Mesh plots of the psf in angle and space
 unit = 'min';
 maxMIN = 10;
-wvfPlot(wvf, '2d psf angle', unit, wave, maxMIN);
+wvfPlot(wvf, '2dpsfangle', unit, wave, maxMIN);
 title([num2str(wave) ' nm']);
 
 unit = 'mm';
 maxMM = .050;
-wvfPlot(wvf, '2d psf space', unit, wave, maxMM);
+wvfPlot(wvf, '2dpsfspace', unit, wave, maxMM);
 title([num2str(wave) ' nm']);
 
 % These are linepairs / unit and maximum frequency
 unit = 'mm';
 maxF = 300;
-wvfPlot(wvf, '2d otf', unit, wave, maxF);
+wvfPlot(wvf, '2dotf', unit, wave, maxF);
 
 %% Change the calculated PSF wavelength and plot again
 %
@@ -95,22 +96,22 @@ wave = 460;
 wvf = wvfSet(wvf, 'calc wave', wave);
 wvf = wvfComputePSF(wvf);
 unit = 'min';
-wvfPlot(wvf, 'image psf angle', unit, wave);
+wvfPlot(wvf, 'imagepsfangle', unit, wave);
 title(['Relative amplitude ' num2str(wave) ' nm']);
 
 % A multiple axis window
 vcNewGraphWin([], 'tall');
-subplot(3, 1, 1), wvfPlot(wvf, '1d psf space', unit, wave, 'no window');
+subplot(3, 1, 1), wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
 title([num2str(wave) ' nm']);
-subplot(3, 1, 2), wvfPlot(wvf, '1d psf space normalized', unit, wave, ...
+subplot(3, 1, 2), wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, ...
     'no window');
-subplot(3, 1, 3), wvfPlot(wvf, 'image psf', 'um', wave, 20, 'no window');
+subplot(3, 1, 3), wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
 
 % Pupil amplitude and phase
 unit = 'mm'; maxMM = 2;
-wvfPlot(wvf, 'image pupil amp', unit, wave, maxMM);
+wvfPlot(wvf, 'imagepupilamp', unit, wave, maxMM);
 title(['Pupil function amplitude ' num2str(wave) ' nm']);
-wvfPlot(wvf, 'image pupil phase', unit, wave, maxMM);
+wvfPlot(wvf, 'imagepupilphase', unit, wave, maxMM);
 title(['Pupil function phase ' num2str(wave) ' nm']);
 
 end
