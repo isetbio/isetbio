@@ -15,7 +15,7 @@ function nRemaining = vcDeleteSomeObjects(objType,deleteList)
 %   vcDeleteSomeObjects('SCENE'); sceneWindow();
 %   vcDeleteSomeObjects('OI'); oiWindow();
 %   vcDeleteSomeObjects('SENSOR'); sensorImageWindow();
-%   vcDeleteSomeObjects('VCI'); vcimageWindow();
+%   vcDeleteSomeObjects('VCI'); ipWindow();
 %
 %   objType = 'vci'; deleteList = [1 2];
 %   nRemaining = vcDeleteSomeObjects(objType,deleteList);

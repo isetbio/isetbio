@@ -36,7 +36,7 @@ if notDefined('objFig')
             case 'sensor'
                 objFig = sensorWindow;
             case 'vcimage'
-                objFig = vcimageWindow;
+                objFig = ipWindow;
             otherwise
                 error('Unknown obj type %s\n',obj.type);
         end
