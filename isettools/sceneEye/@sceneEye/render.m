@@ -46,6 +46,11 @@ if(obj.numCABands == 0 || obj.numCABands == 1 || obj.debugMode)
     recipe.renderer = struct('type','Renderer','subtype','sampler');
 else
     % Spectral rendering
+    
+    % TODO: Can we get rid of needing this?
+    recipe.camera.chromaticAberrationEnabled.value = 'true';
+    recipe.camera.chromaticAberrationEnabled.type = 'bool';
+    
     nWaveBands = struct('value',obj.numCABands,'type','integer');
     recipe.renderer = struct('type','Renderer', ...
         'subtype','spectralrenderer',...

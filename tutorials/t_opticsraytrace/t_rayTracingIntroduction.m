@@ -76,7 +76,7 @@ myScene.numRays = 64;
 myScene.resolution = 128;
 
 % Now let's render. This may take a few seconds, depending on the number of
-% cores on your machine. On a machine with 8 cores it takes ~15 seconds. 
+% cores on your machine. On a machine with 2 cores it takes ~15 seconds. 
 oi = myScene.render;
 
 % Now we have an optical image that we can use with the rest of ISETBIO. We
@@ -87,7 +87,7 @@ oiWindow;
 
 %% Step through accommodation
 % Now let's render a series of retinal images at different accommodations.
-% This section renders roughly in 1 min on a machine with 8 cores. 
+% This section renders roughly in 1 min on a machine with 2 cores. 
 
 accomm = [1 5 10]; % in diopters
 opticalImages = cell(length(accomm),1);
@@ -107,26 +107,6 @@ for ii = 1:length(accomm)
 end
 
 oiWindow;
-
-%% Turn on chromatic aberration
-% We can render chromatic aberration in the eye by tracing one ray per band
-% of wavelength. The parameter, numCABands determines the number of band we
-% will sample. We will trace a total of numRay x numCABands rays, meaning
-% that the rendering will be ~(numCABands) times slower.
-
-% TODO: This is not producing visible aberration. Why not?
-
-%{
-myScene.name = 'ChromaticAberrationExample';
-myScene.fov = 5; % Make FOV tiny so we can see the effect of CA
-myScene.accommodation = 1;
-myScene.numCABands = 8;
-myScene.numRays = 64; % Up the ray count to improve quality of render
-
-[oi,result] = myScene.render;
-vcAddObject(oi);
-oiWindow;
-%}
 
 
 
