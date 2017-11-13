@@ -97,7 +97,7 @@ M(2, :) = (0.0300 - 31.4424 * xd + 30.0717 * yd) ./ ...
 % Calculate the final daylight SPD. 
 % [Note: XXX - There are currently several daylight basis files in the
 % repository. We need to decide on one, and make sure this matches.]
-dayBasis = ieReadSpectra('cieDay', wave);
+dayBasis = ieReadSpectra('cieDaylightBasis', wave);
 spd = dayBasis(:, 2:3) * M + repmat(dayBasis(:, 1), [1 size(cct, 2)]);
 
 % Flip to photons/quanta if needed. Energy or watts would be the
