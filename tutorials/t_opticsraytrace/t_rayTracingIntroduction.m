@@ -43,7 +43,8 @@ ieInit;
 % TODO: Update the above scenes
 
 % You can select a scene as follows:
-myScene = sceneEye('scene','numbersAtDepth');
+myScene = sceneEye('numbersAtDepth');
+% myScene = sceneEye('/Users/tlian/GitRepos/isetbio/isettools/data/pbrtscenes/NumbersAtDepth_flip/numbersAtDepth.pbrt');
 
 % ISETBIO requires a "working directory." If one is not specified when
 % creating a scene, the default is in isetbioRootPath/local. All data
@@ -113,16 +114,19 @@ oiWindow;
 % will sample. We will trace a total of numRay x numCABands rays, meaning
 % that the rendering will be ~(numCABands) times slower.
 
+% TODO: This is not producing visible aberration. Why not?
+
+%{
 myScene.name = 'ChromaticAberrationExample';
-myScene.fov = 1; % Make FOV tiny so we can see the effect of CA
+myScene.fov = 5; % Make FOV tiny so we can see the effect of CA
 myScene.accommodation = 1;
 myScene.numCABands = 8;
-myScene.numRays = 256; % Up the ray count to improve quality of render
+myScene.numRays = 64; % Up the ray count to improve quality of render
 
-oi = myScene.render;
+[oi,result] = myScene.render;
 vcAddObject(oi);
 oiWindow;
-
+%}
 
 
 

@@ -182,7 +182,7 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
     
     methods
         % Constructor
-        function obj = sceneEye(varargin)
+        function obj = sceneEye(pbrtFile,varargin)
             % Initialize the sceneEye class
             %
             % Reads a PBRT file and fills out the information needed
@@ -191,31 +191,35 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             
             p = inputParser;
             p.KeepUnmatched = true;
+            p.addRequired('pbrtFile',@ischar); % Either a pbrt file or just a scene name
             p.addParameter('name','scene-001',@ischar);
-            % Should have the option to either read a pbrt file or just
-            % select a scene name (i.e. sceneCreate('macbeth')))
-            p.addParameter('pbrtFile','',@ischar);
-            p.addParameter('scene','numbersAtDepth',@ischar);
             p.addParameter('workingDirectory','',@ischar);
-            p.parse(varargin{:});
+            p.parse(pbrtFile,varargin{:});
             
             % Read in PBRT file
-            if(isempty(p.Results.pbrtFile))
-                % Check the 'scene' parameter and load the appropriate pbrt file.
-                switch p.Results.scene
+            [~,name,ext] = fileparts(pbrtFile);
+            
+            if(isempty(ext))
+                % The user has given us a scene name and not a full pbrt
+                % file. Let's find the right file.
+                switch name
                     case('numbersAtDepth')
                         scenePath = fullfile(isetbioDataPath,'pbrtscenes', ...
                             'NumbersAtDepth','numbersAtDepth.pbrt');
+                    case('slantedBar')
+                        scenePath = fullfile(isetbioDataPath,'pbrtscenes', ...
+                            'SlantedBar','slantedBar.pbrt');
                     otherwise
                         error('Did not recognize scene type.');
                 end
             else
-                scenePath = p.Results.pbrtFile;
+                scenePath = pbrtFile;
             end
             
             % Setup working folder
             if(isempty(p.Results.workingDirectory))
-                [~,sceneFolder] = fileparts(scenePath); % Determine scene folder from scene path
+                [path,~,~] = fileparts(scenePath); % Determine scene folder name from scene path
+                [~,sceneFolder] = fileparts(path);
                 obj.workingDir = fullfile(isetbioRootPath,'local',sceneFolder);
             else
                 obj.workingDir = p.Results.workingDirectory;

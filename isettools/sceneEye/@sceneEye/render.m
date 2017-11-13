@@ -61,10 +61,11 @@ end
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(obj.workingDir,strcat(obj.name,'.pbrt'));
-recipe.outputFile = piWrite(recipe,pbrtFile,'overwrite',true);
+recipe.outputFile = pbrtFile;
+piWrite(recipe,'overwritefile',true,'overwritedir',false);
 
 %% Render the pbrt file using docker
-[oi, outFile] = piRender(pbrtFile,'opticsType','lens');
+[oi,terminalOutput] = piRender(recipe);
 
 %% Set OI parameters correctly:
 

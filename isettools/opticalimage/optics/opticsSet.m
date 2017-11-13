@@ -83,11 +83,17 @@ switch parm
         % EyeModeling implementation, we allow 'raytrace' but rename it to
         % shiftinvariant.  At some point, we will allow raytrace as a
         % legitimate name on its own.
+        %
+        % TL: I put back the ray trace model for now, since if we switch to
+        % shiftinvariant it will try to find the lens info in the oi.optics
+        % structure, which is non-existant for ray-tracing. Because of this
+        % it will throw errors when you try to run oiWindow. This requires
+        % more thought about how to handle this...
         
         % The case and spaces in val do not matter.
         val = ieParamFormat(val);
         valid = {'diffractionlimited', 'shiftinvariant','raytrace'};
-        if strcmp(val,'raytrace'), val = 'shiftinvariant'; end
+%        if strcmp(val,'raytrace'), val = 'shiftinvariant'; end
         if validatestring(val, valid)
             optics.model = ieParamFormat(val);
         else
