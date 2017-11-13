@@ -1,16 +1,16 @@
 function [spd, XYZ] = daylight(wave, cct, units)
-% Generate a daylight SPD with a correlated color temperature
+% Generate a daylight SPD with a correlated color temperature (cct)
 %
 % Syntax:
 %   [spd, XYZ] = daylight([wave], [cct], [units])
 %
 % Description:
-%    Generates a daylight/sun spectral power distribution based on a
-%    correlated color temperature (cct). 
+%    Generates a daylight spectral power distribution based on a
+%    correlated color temperature (cct).
 %
-%    All the returned spectra are normalized so that the luminance of the
-%    first one is 100 cd/m2.  See the 3rd example for how to calculate the
-%    luminance of each of the lights.
+%    Tthe returned spectra are normalized so that the luminance of the
+%    first returned spd is 100 cd/m2.  See the 3rd example below for how to
+%    calculate the luminance of each of the lights.
 %
 % Inputs:
 %    wave  - The wavelength vector in nm (Default 400:10:700).
