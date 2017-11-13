@@ -194,6 +194,12 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             p.addRequired('pbrtFile',@ischar); % Either a pbrt file or just a scene name
             p.addParameter('name','scene-001',@ischar);
             p.addParameter('workingDirectory','',@ischar);
+             
+            % An optional parameter used by scenes that consist of only a
+            % planar surface (e.g. slanted bar). We will move the plane to
+            % the given distance in mm.
+            p.addParameter('planeDistance',1000,@isnumeric);
+            
             p.parse(pbrtFile,varargin{:});
             
             % Read in PBRT file
@@ -231,6 +237,12 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             recipe = piRead(obj.pbrtFile);
             recipe.outputFile = obj.pbrtFile;
             
+            % Move planar scenes (e.g. slantedBar) to the desired distance
+            if(strcmp(name,'slantedBar'))
+                recipe = piMoveObject(recipe,'1_WhiteCube','Translate',[0 p.Results.planeDistance 0]);
+                recipe = piMoveObject(recipe,'2_BlackCube','Translate',[0 p.Results.planeDistance 0]);
+            end
+                                    
             % Note: What happens if the recipe doesn't include any of
             % the following, or any of the subfields we call?
             
