@@ -1,21 +1,18 @@
 %% t_slantedBarMTF.m
 %
-% This tutorial shows how you can render a slanted bar through the eye. We
-% can then use this slanted bar to estimate the modulation transfer
-% function of the optical system. 
+% This tutorial shows how you can render a retinal image of "slanted bar."
+% We can then use this slanted bar to estimate the modulation transfer
+% function of the optical system.
 %
-% We also show how the MTF changes with accommodation, as well as the color
-% fringing from the longitudinal chromatic aberration. 
+% We also show how the color fringing along the edge of the bar due to
+% chromatic aberration. 
 %
 % We recommend you go through t_rayTracingIntroduction.m before running
 % this tutorial.
 %
-% Depends on: pbrt2ISET, ISETBIO, Docker
+% Depends on: pbrt2ISET, ISETBIO, Docker, ISET
 %
 % TL ISETBIO Team, 2017
-    
-% TODO:
-% Why is the slanted edge off center? Is the plane not centered correctly?
 
 %% Initialize ISETBIO
 ieInit;
@@ -65,7 +62,7 @@ end
 % As we move the plane in and out of focus we can see the color fringes
 % change due to longitudinal chromatic aberration.
 %
-% This render takes around 4-5 minutes on a machine with 2 cores
+% This render takes around 2 minutes on a machine with 2 cores
 
 % Note: The distance between the back of the retina and the front of the
 % lens is approximately 7.69 mm. When we define accommodation its relative
@@ -74,16 +71,19 @@ end
 % slight shift. In most cases this slight difference does not make a huge
 % difference, but for color fringing it does. In the future we need to fix
 % this discrepancy. 
-planeDistance = [95 100 110] + 7.69;
+planeDistance = [195 200 205] + 7.69;
 
 for ii = 1:length(planeDistance)
     
     myScene = sceneEye('slantedBar','planeDistance',planeDistance(ii));
     myScene.name = sprintf('slantedBar_LCA_%0.2fmm',planeDistance(ii));
     
-    myScene.accommodation = 10;
+    % Zoom in to see the color fringes
+    myScene.fov = 1;
+    
+    myScene.accommodation = 5;
     myScene.numCABands = 8;
-    myScene.numRays = 128;
+    myScene.numRays = 64;
     myScene.resolution = 128;
     
     oi = myScene.render;
@@ -92,10 +92,35 @@ for ii = 1:length(planeDistance)
     oiWindow;
 end
 
-% TODO:
-% Show color fringing from longitudinal chromatic aberration
-% Show how you can use ISO12233 to estimate the MTF
 
 %% Calculate the MTF 
-% We can use the ISO12233 standard to
+% We can use the ISO12233 standard to calculate the MTF from a slanted bar.
+
+% First render the slanted bar. 
+% On a 2 core machine, this took around 1 minute. 
+myScene = sceneEye('slantedBar','planeDistance',200);
+myScene.accommodation = 5;
+myScene.fov = 1;
+myScene.numCABands = 8;
+myScene.numRays = 128;
+myScene.resolution = 128;
+oi = myScene.render;
+
+% Crop out the image so we only have the bar
+cropRadius = myScene.resolution/(2*sqrt(2))-5;
+oiCenter = myScene.resolution/2;
+barOI = oiCrop(oi,round([oiCenter-cropRadius oiCenter-cropRadius ...
+    cropRadius*2 cropRadius*2]));
+
+% Convert to illuminance
+% TODO: Is this the best way to go about calculating the MTF? Should we
+% instead take the 550 nm photons? How should we convert from photons to
+% RGB values to be passed into the ISO12233 routine? 
+barImage = oiGet(barOI,'illuminance');
+
+% Calculate MTF
+deltaX_mm = oiGet(oi,'sample spacing')*10^3; % Get pixel pitch
+% ISET is required for this calculation (not in ISETBIO)
+% TODO: Add this in ISETBIO? 
+[results, fitme, esf, h] = ISO12233(barImage, deltaX_mm(1),[1/3 1/3 1/3]);
 

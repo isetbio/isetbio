@@ -1,4 +1,4 @@
-function [oi, terminalOutput, outputFile] = render(obj, varargin)
+function [ieObject, terminalOutput, outputFile] = render(obj, varargin)
 %RENDER Render a scene3D object and return an optical image.
 %   Given a scene3D object, we have all the information we need to
 %   construct a PBRT file and render it. Therefore, this function does the
@@ -70,30 +70,30 @@ recipe.outputFile = pbrtFile;
 piWrite(recipe,'overwritefile',true,'overwritedir',false);
 
 %% Render the pbrt file using docker
-[oi,terminalOutput] = piRender(recipe);
+[ieObject,terminalOutput] = piRender(recipe);
 
 %% Set OI parameters correctly:
 
-% Scene distance. We set it to infinity, since it doesn't technically apply
-% to the raytracing. 
-oi = oiSet(oi, 'distance', Inf);
-
-% This is the distance between the lens and the focal plane. This is not
-% exactly the same as the focal length for the eye, but it's close. 
-oi = oiSet(oi, 'optics focallength', obj.retinaDistance * 1e-3); 
-
-oi = oiSet(oi,'optics fnumber',obj.retinaDistance/obj.pupilDiameter);
-oi = oiSet(oi,'fov',obj.fov);
-     
-% Clear most of the default optics
-% TODO: Is doing this okay? What's a better way to do this? 
-oi.optics = opticsSet(oi.optics,'model','raytrace');
-oi.optics = opticsSet(oi.optics,'name','PBRT Navarro Eye');
-oi.optics.OTF = [];
-oi.optics.lens = [];
-oi.optics.offaxis = '';
-oi.optics.vignetting = [];
-
+if(~obj.debugMode)
+    % Scene distance. We set it to infinity, since it doesn't technically apply
+    % to the raytracing.
+    ieObject = oiSet(ieObject, 'distance', Inf);
+    
+    % This is the distance between the lens and the focal plane. This is not
+    % exactly the same as the focal length for the eye, but it's close.
+    ieObject = oiSet(ieObject, 'optics focallength', obj.retinaDistance * 1e-3);
+    ieObject = oiSet(ieObject,'optics fnumber',obj.retinaDistance/obj.pupilDiameter);
+    ieObject = oiSet(ieObject,'fov',obj.fov);
+    
+    % Clear most of the default optics
+    % TODO: Is doing this okay? What's a better way to do this?
+    ieObject.optics = opticsSet(ieObject.optics,'model','raytrace');
+    ieObject.optics = opticsSet(ieObject.optics,'name','PBRT Navarro Eye');
+    ieObject.optics.OTF = [];
+    ieObject.optics.lens = [];
+    ieObject.optics.offaxis = '';
+    ieObject.optics.vignetting = [];
+end
 
 end
 
