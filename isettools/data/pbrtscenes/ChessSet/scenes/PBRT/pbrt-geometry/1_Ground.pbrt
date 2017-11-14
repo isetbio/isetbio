@@ -1,0 +1,5 @@
+# 1_Ground
+Shape "trianglemesh" 
+  "integer indices" [0 1 2 0 2 3] 
+  "point P" [-5000 -5000 0 5000 -5000 0 5000 5000 0 -5000 5000 0] 
+  "normal N" [0 0 1 0 0 1 0 0 1 0 0 1] 

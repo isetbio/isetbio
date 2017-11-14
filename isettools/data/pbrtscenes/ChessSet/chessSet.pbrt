@@ -1,0 +1,1143 @@
+# camera default orientation
+LookAt 0 0 0 0 0 -1 0 1 0 
+
+# camera scene position
+ConcatTransform [-1 0 0 0 0 0 -1 0 0 1 0 0 0 -150 -500 1] 
+
+# 1_Camera
+Camera "realisticEye" 
+  "string specfile" "navarroAccomodated_0.58.dat" 
+  "float retinaDistance" [16.320000] 
+  "float retinaRadius" [12] 
+  "float pupilDiameter" [4] 
+  "float retinaSemiDiam" [2.877656] 
+  "spectrum ior1" "ior1_0.58dp.spd" 
+  "spectrum ior2" "ior2_0.58dp.spd" 
+  "spectrum ior3" "ior3_0.58dp.spd" 
+  "spectrum ior4" "ior4_0.58dp.spd" 
+
+# integrator
+SurfaceIntegrator "path" 
+  "integer maxdepth" [1] 
+
+# sampler
+Sampler "lowdiscrepancy" 
+  "integer pixelsamples" [128] 
+
+# filter
+PixelFilter "gaussian" 
+  "float alpha" [2] 
+  "float xwidth" [2] 
+  "float ywidth" [2] 
+
+# film
+Film "image" 
+  "integer xresolution" [128] 
+  "integer yresolution" [128] 
+
+WorldBegin
+# 1_DefaultMaterial
+MakeNamedMaterial "1_DefaultMaterial" "string type" "uber" 
+  "rgb Kd" [0.600000 0.600000 0.600000] 
+  "rgb Ks" [0 0 0] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 2_Filt_004
+MakeNamedMaterial "2_Filt_004" "string type" "uber" 
+  "rgb Kd" [0.004884 0.035564 0.005529] 
+  "rgb Ks" [0.020000 0.020000 0.020000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.024286] 
+  "float index" [1.500000] 
+  "rgb opacity" [1 1 1] 
+# cadyou.com_Sapeli_spectrum
+Texture "cadyou.com_Sapeli_spectrum" "spectrum" "imagemap" 
+  "string filename" "resources/cadyou.com_Sapeli.exr" 
+# 3_GroundMaterial
+MakeNamedMaterial "3_GroundMaterial" "string type" "uber" 
+  "texture Kd" "cadyou.com_Sapeli_spectrum" 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# cadyou.com_Sapeli_spectrum
+Texture "cadyou.com_Sapeli_spectrum" "spectrum" "imagemap" 
+  "string filename" "resources/cadyou.com_Sapeli.exr" 
+# 4_Lyse_brikker_008
+MakeNamedMaterial "4_Lyse_brikker_008" "string type" "uber" 
+  "texture Kd" "cadyou.com_Sapeli_spectrum" 
+  "rgb Ks" [0.140000 0.140000 0.140000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.024286] 
+  "float index" [1.500000] 
+  "rgb opacity" [1 1 1] 
+# Dark_Mahony_spectrum
+Texture "Dark_Mahony_spectrum" "spectrum" "imagemap" 
+  "string filename" "resources/Dark_Mahony.exr" 
+# 5_Mrke_brikker_004
+MakeNamedMaterial "5_Mrke_brikker_004" "string type" "uber" 
+  "texture Kd" "Dark_Mahony_spectrum" 
+  "rgb Ks" [0.140000 0.140000 0.140000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.024286] 
+  "float index" [1.500000] 
+  "rgb opacity" [1 1 1] 
+# 6_Mtl
+MakeNamedMaterial "6_Mtl" "string type" "uber" 
+  "rgb Kd" [0.800000 0.800000 0.800000] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 7_Mtl8
+MakeNamedMaterial "7_Mtl8" "string type" "uber" 
+  "rgb Kd" [0 0 0] 
+  "rgb Ks" [0 0 0] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 8_PlaneMaterial
+MakeNamedMaterial "8_PlaneMaterial" "string type" "uber" 
+  "rgb Kd" [0.640000 0.640000 0.640000] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 1_Ground
+ObjectBegin "1_Ground"
+  NamedMaterial "3_GroundMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/1_Ground.pbrt"   
+ObjectEnd
+
+# 2_Plane
+ObjectBegin "2_Plane"
+  NamedMaterial "8_PlaneMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/2_Plane.pbrt"   
+ObjectEnd
+
+# 3_Mtl8
+ObjectBegin "3_Mtl8"
+  NamedMaterial "7_Mtl8"   
+  Include "scenes/PBRT/pbrt-geometry/3_Mtl8.pbrt"   
+ObjectEnd
+
+# 4_Mtl
+ObjectBegin "4_Mtl"
+  NamedMaterial "6_Mtl"   
+  Include "scenes/PBRT/pbrt-geometry/4_Mtl.pbrt"   
+ObjectEnd
+
+# 5_Bonde_m_033
+ObjectBegin "5_Bonde_m_033"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/5_Bonde_m_033.pbrt"   
+ObjectEnd
+
+# 6_Bonde_001
+ObjectBegin "6_Bonde_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/6_Bonde_001.pbrt"   
+ObjectEnd
+
+# 7_Springer_001
+ObjectBegin "7_Springer_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/7_Springer_001.pbrt"   
+ObjectEnd
+
+# 8_Bonde_m_008
+ObjectBegin "8_Bonde_m_008"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/8_Bonde_m_008.pbrt"   
+ObjectEnd
+
+# 9_Bonde_m_021
+ObjectBegin "9_Bonde_m_021"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/9_Bonde_m_021.pbrt"   
+ObjectEnd
+
+# 10_Bonde_m_022
+ObjectBegin "10_Bonde_m_022"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/10_Bonde_m_022.pbrt"   
+ObjectEnd
+
+# 11_Krone_m_001
+ObjectBegin "11_Krone_m_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/11_Krone_m_001.pbrt"   
+ObjectEnd
+
+# 12_Bonde_003
+ObjectBegin "12_Bonde_003"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/12_Bonde_003.pbrt"   
+ObjectEnd
+
+# 13_Plane_001
+ObjectBegin "13_Plane_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/13_Plane_001.pbrt"   
+ObjectEnd
+
+# 14_Bonde_m_018
+ObjectBegin "14_Bonde_m_018"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/14_Bonde_m_018.pbrt"   
+ObjectEnd
+
+# 15_Bonde_m_011
+ObjectBegin "15_Bonde_m_011"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/15_Bonde_m_011.pbrt"   
+ObjectEnd
+
+# 16_Lber_m_001
+ObjectBegin "16_Lber_m_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/16_Lber_m_001.pbrt"   
+ObjectEnd
+
+# 17_Kant
+ObjectBegin "17_Kant"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/17_Kant.pbrt"   
+ObjectEnd
+
+# 18_Bonde_m_006
+ObjectBegin "18_Bonde_m_006"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/18_Bonde_m_006.pbrt"   
+ObjectEnd
+
+# 19_Bonde_m_003
+ObjectBegin "19_Bonde_m_003"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/19_Bonde_m_003.pbrt"   
+ObjectEnd
+
+# 20_Bonde_m_017
+ObjectBegin "20_Bonde_m_017"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/20_Bonde_m_017.pbrt"   
+ObjectEnd
+
+# 21_Dronning
+ObjectBegin "21_Dronning"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/21_Dronning.pbrt"   
+ObjectEnd
+
+# 22_Bonde_m_024
+ObjectBegin "22_Bonde_m_024"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/22_Bonde_m_024.pbrt"   
+ObjectEnd
+
+# 23_Springer_m
+ObjectBegin "23_Springer_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/23_Springer_m.pbrt"   
+ObjectEnd
+
+# 24_Bonde_m_031
+ObjectBegin "24_Bonde_m_031"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/24_Bonde_m_031.pbrt"   
+ObjectEnd
+
+# 25_Bonde_m_010
+ObjectBegin "25_Bonde_m_010"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/25_Bonde_m_010.pbrt"   
+ObjectEnd
+
+# 26_Bonde_005
+ObjectBegin "26_Bonde_005"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/26_Bonde_005.pbrt"   
+ObjectEnd
+
+# 27_Bonde_m_012
+ObjectBegin "27_Bonde_m_012"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/27_Bonde_m_012.pbrt"   
+ObjectEnd
+
+# 28_Springer_m_001
+ObjectBegin "28_Springer_m_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/28_Springer_m_001.pbrt"   
+ObjectEnd
+
+# 29_Bonde_m_014
+ObjectBegin "29_Bonde_m_014"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/29_Bonde_m_014.pbrt"   
+ObjectEnd
+
+# 30_Tal
+ObjectBegin "30_Tal"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/30_Tal.pbrt"   
+ObjectEnd
+
+# 31_Bonde
+ObjectBegin "31_Bonde"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/31_Bonde.pbrt"   
+ObjectEnd
+
+# 32_Bonde_m_026
+ObjectBegin "32_Bonde_m_026"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/32_Bonde_m_026.pbrt"   
+ObjectEnd
+
+# 33_Springerfod_m
+ObjectBegin "33_Springerfod_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/33_Springerfod_m.pbrt"   
+ObjectEnd
+
+# 34_Konge_m
+ObjectBegin "34_Konge_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/34_Konge_m.pbrt"   
+ObjectEnd
+
+# 35_Bonde_m_019
+ObjectBegin "35_Bonde_m_019"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/35_Bonde_m_019.pbrt"   
+ObjectEnd
+
+# 36_Bonde_m_025
+ObjectBegin "36_Bonde_m_025"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/36_Bonde_m_025.pbrt"   
+ObjectEnd
+
+# 37_Trn_001
+ObjectBegin "37_Trn_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/37_Trn_001.pbrt"   
+ObjectEnd
+
+# 38_Bonde_m_023
+ObjectBegin "38_Bonde_m_023"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/38_Bonde_m_023.pbrt"   
+ObjectEnd
+
+# 39_Bonde_m_007
+ObjectBegin "39_Bonde_m_007"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/39_Bonde_m_007.pbrt"   
+ObjectEnd
+
+# 40_Ramme_001
+ObjectBegin "40_Ramme_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/40_Ramme_001.pbrt"   
+ObjectEnd
+
+# 41_Bonde_m_009
+ObjectBegin "41_Bonde_m_009"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/41_Bonde_m_009.pbrt"   
+ObjectEnd
+
+# 42_Bonde_002
+ObjectBegin "42_Bonde_002"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/42_Bonde_002.pbrt"   
+ObjectEnd
+
+# 43_Bonde_m_030
+ObjectBegin "43_Bonde_m_030"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/43_Bonde_m_030.pbrt"   
+ObjectEnd
+
+# 44_Bonde_m_037
+ObjectBegin "44_Bonde_m_037"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/44_Bonde_m_037.pbrt"   
+ObjectEnd
+
+# 45_Bonde_m_016
+ObjectBegin "45_Bonde_m_016"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/45_Bonde_m_016.pbrt"   
+ObjectEnd
+
+# 46_Bonde_m_032
+ObjectBegin "46_Bonde_m_032"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/46_Bonde_m_032.pbrt"   
+ObjectEnd
+
+# 47_Bonde_006
+ObjectBegin "47_Bonde_006"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/47_Bonde_006.pbrt"   
+ObjectEnd
+
+# 48_Bonde_m_036
+ObjectBegin "48_Bonde_m_036"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/48_Bonde_m_036.pbrt"   
+ObjectEnd
+
+# 49_Springer
+ObjectBegin "49_Springer"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/49_Springer.pbrt"   
+ObjectEnd
+
+# 50_Bonde_m_005
+ObjectBegin "50_Bonde_m_005"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/50_Bonde_m_005.pbrt"   
+ObjectEnd
+
+# 51_Trn_m
+ObjectBegin "51_Trn_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/51_Trn_m.pbrt"   
+ObjectEnd
+
+# 52_Trn_m_001
+ObjectBegin "52_Trn_m_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/52_Trn_m_001.pbrt"   
+ObjectEnd
+
+# 53_Lber
+ObjectBegin "53_Lber"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/53_Lber.pbrt"   
+ObjectEnd
+
+# 54_Bonde_m_002
+ObjectBegin "54_Bonde_m_002"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/54_Bonde_m_002.pbrt"   
+ObjectEnd
+
+# 55_Lber_001
+ObjectBegin "55_Lber_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/55_Lber_001.pbrt"   
+ObjectEnd
+
+# 56_Springerfod_m_001
+ObjectBegin "56_Springerfod_m_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/56_Springerfod_m_001.pbrt"   
+ObjectEnd
+
+# 57_Bonde_m_013
+ObjectBegin "57_Bonde_m_013"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/57_Bonde_m_013.pbrt"   
+ObjectEnd
+
+# 58_Bonde_m_035
+ObjectBegin "58_Bonde_m_035"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/58_Bonde_m_035.pbrt"   
+ObjectEnd
+
+# 59_Springer_002
+ObjectBegin "59_Springer_002"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/59_Springer_002.pbrt"   
+ObjectEnd
+
+# 60_Plane_060
+ObjectBegin "60_Plane_060"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/60_Plane_060.pbrt"   
+ObjectEnd
+
+# 61_Bonde_004
+ObjectBegin "61_Bonde_004"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/61_Bonde_004.pbrt"   
+ObjectEnd
+
+# 62_Bonde_m
+ObjectBegin "62_Bonde_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/62_Bonde_m.pbrt"   
+ObjectEnd
+
+# 63_Trn
+ObjectBegin "63_Trn"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/63_Trn.pbrt"   
+ObjectEnd
+
+# 64_Bonde_m_028
+ObjectBegin "64_Bonde_m_028"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/64_Bonde_m_028.pbrt"   
+ObjectEnd
+
+# 65_Bonde_m_020
+ObjectBegin "65_Bonde_m_020"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/65_Bonde_m_020.pbrt"   
+ObjectEnd
+
+# 66_Bonde_m_027
+ObjectBegin "66_Bonde_m_027"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/66_Bonde_m_027.pbrt"   
+ObjectEnd
+
+# 67_Lber_m
+ObjectBegin "67_Lber_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/67_Lber_m.pbrt"   
+ObjectEnd
+
+# 68_Bonde_m_029
+ObjectBegin "68_Bonde_m_029"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/68_Bonde_m_029.pbrt"   
+ObjectEnd
+
+# 69_Krone_m
+ObjectBegin "69_Krone_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/69_Krone_m.pbrt"   
+ObjectEnd
+
+# 70_Springerfod_001
+ObjectBegin "70_Springerfod_001"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/70_Springerfod_001.pbrt"   
+ObjectEnd
+
+# 71_Bonde_m_015
+ObjectBegin "71_Bonde_m_015"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/71_Bonde_m_015.pbrt"   
+ObjectEnd
+
+# 72_Bonde_m_038
+ObjectBegin "72_Bonde_m_038"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/72_Bonde_m_038.pbrt"   
+ObjectEnd
+
+# 73_Konge
+ObjectBegin "73_Konge"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/73_Konge.pbrt"   
+ObjectEnd
+
+# 74_Bonde_m_004
+ObjectBegin "74_Bonde_m_004"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/74_Bonde_m_004.pbrt"   
+ObjectEnd
+
+# 75_Bonde_m_039
+ObjectBegin "75_Bonde_m_039"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/75_Bonde_m_039.pbrt"   
+ObjectEnd
+
+# 76_Bonde_m_034
+ObjectBegin "76_Bonde_m_034"
+  NamedMaterial "2_Filt_004"   
+  Include "scenes/PBRT/pbrt-geometry/76_Bonde_m_034.pbrt"   
+ObjectEnd
+
+# 77_Bonde_m_001
+ObjectBegin "77_Bonde_m_001"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/77_Bonde_m_001.pbrt"   
+ObjectEnd
+
+# 78_Dronning_m
+ObjectBegin "78_Dronning_m"
+  NamedMaterial "5_Mrke_brikker_004"   
+  Include "scenes/PBRT/pbrt-geometry/78_Dronning_m.pbrt"   
+ObjectEnd
+
+# 79_Bonde_007
+ObjectBegin "79_Bonde_007"
+  NamedMaterial "4_Lyse_brikker_008"   
+  Include "scenes/PBRT/pbrt-geometry/79_Bonde_007.pbrt"   
+ObjectEnd
+
+# 1_Ground
+# from node 1_Ground
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "1_Ground"   
+AttributeEnd
+
+# 2_Plane
+# from node 2_Plane
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "2_Plane"   
+AttributeEnd
+
+# 3_Mtl8
+# from node 3_Mtl8
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "3_Mtl8"   
+AttributeEnd
+
+# 4_Mtl
+# from node 4_Mtl
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "4_Mtl"   
+AttributeEnd
+
+# 5_Bonde_m_033
+# from node 5_Bonde_m_033
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "5_Bonde_m_033"   
+AttributeEnd
+
+# 6_Bonde_001
+# from node 6_Bonde_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "6_Bonde_001"   
+AttributeEnd
+
+# 7_Springer_001
+# from node 7_Springer_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "7_Springer_001"   
+AttributeEnd
+
+# 8_Bonde_m_008
+# from node 8_Bonde_m_008
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "8_Bonde_m_008"   
+AttributeEnd
+
+# 9_Bonde_m_021
+# from node 9_Bonde_m_021
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "9_Bonde_m_021"   
+AttributeEnd
+
+# 10_Bonde_m_022
+# from node 10_Bonde_m_022
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "10_Bonde_m_022"   
+AttributeEnd
+
+# 11_Krone_m_001
+# from node 11_Krone_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "11_Krone_m_001"   
+AttributeEnd
+
+# 12_Bonde_003
+# from node 12_Bonde_003
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "12_Bonde_003"   
+AttributeEnd
+
+# 13_Plane_001
+# from node 13_Plane_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "13_Plane_001"   
+AttributeEnd
+
+# 14_Bonde_m_018
+# from node 14_Bonde_m_018
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "14_Bonde_m_018"   
+AttributeEnd
+
+# 15_Bonde_m_011
+# from node 15_Bonde_m_011
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "15_Bonde_m_011"   
+AttributeEnd
+
+# 16_Lber_m_001
+# from node 16_Lber_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "16_Lber_m_001"   
+AttributeEnd
+
+# 17_Kant
+# from node 17_Kant
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "17_Kant"   
+AttributeEnd
+
+# 18_Bonde_m_006
+# from node 18_Bonde_m_006
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "18_Bonde_m_006"   
+AttributeEnd
+
+# 19_Bonde_m_003
+# from node 19_Bonde_m_003
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "19_Bonde_m_003"   
+AttributeEnd
+
+# 20_Bonde_m_017
+# from node 20_Bonde_m_017
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "20_Bonde_m_017"   
+AttributeEnd
+
+# 21_Dronning
+# from node 21_Dronning
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "21_Dronning"   
+AttributeEnd
+
+# 22_Bonde_m_024
+# from node 22_Bonde_m_024
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "22_Bonde_m_024"   
+AttributeEnd
+
+# 23_Springer_m
+# from node 23_Springer_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "23_Springer_m"   
+AttributeEnd
+
+# 24_Bonde_m_031
+# from node 24_Bonde_m_031
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "24_Bonde_m_031"   
+AttributeEnd
+
+# 25_Bonde_m_010
+# from node 25_Bonde_m_010
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "25_Bonde_m_010"   
+AttributeEnd
+
+# 26_Bonde_005
+# from node 26_Bonde_005
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "26_Bonde_005"   
+AttributeEnd
+
+# 27_Bonde_m_012
+# from node 27_Bonde_m_012
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "27_Bonde_m_012"   
+AttributeEnd
+
+# 28_Springer_m_001
+# from node 28_Springer_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "28_Springer_m_001"   
+AttributeEnd
+
+# 29_Bonde_m_014
+# from node 29_Bonde_m_014
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "29_Bonde_m_014"   
+AttributeEnd
+
+# 30_Tal
+# from node 30_Tal
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "30_Tal"   
+AttributeEnd
+
+# 31_Bonde
+# from node 31_Bonde
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "31_Bonde"   
+AttributeEnd
+
+# 32_Bonde_m_026
+# from node 32_Bonde_m_026
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "32_Bonde_m_026"   
+AttributeEnd
+
+# 33_Springerfod_m
+# from node 33_Springerfod_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "33_Springerfod_m"   
+AttributeEnd
+
+# 34_Konge_m
+# from node 34_Konge_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "34_Konge_m"   
+AttributeEnd
+
+# 35_Bonde_m_019
+# from node 35_Bonde_m_019
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "35_Bonde_m_019"   
+AttributeEnd
+
+# 36_Bonde_m_025
+# from node 36_Bonde_m_025
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "36_Bonde_m_025"   
+AttributeEnd
+
+# 37_Trn_001
+# from node 37_Trn_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "37_Trn_001"   
+AttributeEnd
+
+# 38_Bonde_m_023
+# from node 38_Bonde_m_023
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "38_Bonde_m_023"   
+AttributeEnd
+
+# 39_Bonde_m_007
+# from node 39_Bonde_m_007
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "39_Bonde_m_007"   
+AttributeEnd
+
+# 40_Ramme_001
+# from node 40_Ramme_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "40_Ramme_001"   
+AttributeEnd
+
+# 41_Bonde_m_009
+# from node 41_Bonde_m_009
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "41_Bonde_m_009"   
+AttributeEnd
+
+# 42_Bonde_002
+# from node 42_Bonde_002
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "42_Bonde_002"   
+AttributeEnd
+
+# 43_Bonde_m_030
+# from node 43_Bonde_m_030
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "43_Bonde_m_030"   
+AttributeEnd
+
+# 44_Bonde_m_037
+# from node 44_Bonde_m_037
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "44_Bonde_m_037"   
+AttributeEnd
+
+# 45_Bonde_m_016
+# from node 45_Bonde_m_016
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "45_Bonde_m_016"   
+AttributeEnd
+
+# 46_Bonde_m_032
+# from node 46_Bonde_m_032
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "46_Bonde_m_032"   
+AttributeEnd
+
+# 47_Bonde_006
+# from node 47_Bonde_006
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "47_Bonde_006"   
+AttributeEnd
+
+# 48_Bonde_m_036
+# from node 48_Bonde_m_036
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "48_Bonde_m_036"   
+AttributeEnd
+
+# 49_Springer
+# from node 49_Springer
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "49_Springer"   
+AttributeEnd
+
+# 50_Bonde_m_005
+# from node 50_Bonde_m_005
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "50_Bonde_m_005"   
+AttributeEnd
+
+# 51_Trn_m
+# from node 51_Trn_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "51_Trn_m"   
+AttributeEnd
+
+# 52_Trn_m_001
+# from node 52_Trn_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "52_Trn_m_001"   
+AttributeEnd
+
+# 53_Lber
+# from node 53_Lber
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "53_Lber"   
+AttributeEnd
+
+# 54_Bonde_m_002
+# from node 54_Bonde_m_002
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "54_Bonde_m_002"   
+AttributeEnd
+
+# 55_Lber_001
+# from node 55_Lber_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "55_Lber_001"   
+AttributeEnd
+
+# 56_Springerfod_m_001
+# from node 56_Springerfod_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "56_Springerfod_m_001"   
+AttributeEnd
+
+# 57_Bonde_m_013
+# from node 57_Bonde_m_013
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "57_Bonde_m_013"   
+AttributeEnd
+
+# 58_Bonde_m_035
+# from node 58_Bonde_m_035
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "58_Bonde_m_035"   
+AttributeEnd
+
+# 59_Springer_002
+# from node 59_Springer_002
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "59_Springer_002"   
+AttributeEnd
+
+# 60_Plane_060
+# from node 60_Plane_060
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "60_Plane_060"   
+AttributeEnd
+
+# 61_Bonde_004
+# from node 61_Bonde_004
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "61_Bonde_004"   
+AttributeEnd
+
+# 62_Bonde_m
+# from node 62_Bonde_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "62_Bonde_m"   
+AttributeEnd
+
+# 63_Trn
+# from node 63_Trn
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "63_Trn"   
+AttributeEnd
+
+# 64_Bonde_m_028
+# from node 64_Bonde_m_028
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "64_Bonde_m_028"   
+AttributeEnd
+
+# 65_Bonde_m_020
+# from node 65_Bonde_m_020
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "65_Bonde_m_020"   
+AttributeEnd
+
+# 66_Bonde_m_027
+# from node 66_Bonde_m_027
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "66_Bonde_m_027"   
+AttributeEnd
+
+# 67_Lber_m
+# from node 67_Lber_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "67_Lber_m"   
+AttributeEnd
+
+# 68_Bonde_m_029
+# from node 68_Bonde_m_029
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "68_Bonde_m_029"   
+AttributeEnd
+
+# 69_Krone_m
+# from node 69_Krone_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "69_Krone_m"   
+AttributeEnd
+
+# 70_Springerfod_001
+# from node 70_Springerfod_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "70_Springerfod_001"   
+AttributeEnd
+
+# 71_Bonde_m_015
+# from node 71_Bonde_m_015
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "71_Bonde_m_015"   
+AttributeEnd
+
+# 72_Bonde_m_038
+# from node 72_Bonde_m_038
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "72_Bonde_m_038"   
+AttributeEnd
+
+# 73_Konge
+# from node 73_Konge
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "73_Konge"   
+AttributeEnd
+
+# 74_Bonde_m_004
+# from node 74_Bonde_m_004
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "74_Bonde_m_004"   
+AttributeEnd
+
+# 75_Bonde_m_039
+# from node 75_Bonde_m_039
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "75_Bonde_m_039"   
+AttributeEnd
+
+# 76_Bonde_m_034
+# from node 76_Bonde_m_034
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "76_Bonde_m_034"   
+AttributeEnd
+
+# 77_Bonde_m_001
+# from node 77_Bonde_m_001
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "77_Bonde_m_001"   
+AttributeEnd
+
+# 78_Dronning_m
+# from node 78_Dronning_m
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "78_Dronning_m"   
+AttributeEnd
+
+# 79_Bonde_007
+# from node 79_Bonde_007
+AttributeBegin
+  ConcatTransform [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]   
+  ObjectInstance "79_Bonde_007"   
+AttributeEnd
+
+LightSource "infinite" 
+  "integer nsamples" [4] 
+  "spectrum L" "EqualEnergy.spd" 
+WorldEnd
+

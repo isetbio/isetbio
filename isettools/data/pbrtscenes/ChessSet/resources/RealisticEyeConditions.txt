@@ -1,0 +1,3 @@
+pupilDiameter	retinaSemiDiam	chromAberrFlag	pixelSamples	accom	workingFolder	cameraType	cropFOV	
+4	2.877656	1	4096	1.200000	/Users/tlian/Documents/MATLAB/render_toolbox/rtbScenePupil	navarro	10	
+

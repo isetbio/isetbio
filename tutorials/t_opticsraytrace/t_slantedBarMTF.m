@@ -96,9 +96,10 @@ end
 %% Calculate the MTF 
 % We can use the ISO12233 standard to calculate the MTF from a slanted bar.
 
-% First render the slanted bar. 
-% On a 2 core machine, this took around 1 minute. 
+% First render the slanted bar. You might want to increase the numRays and
+% resolution for less noisy results.
 myScene = sceneEye('slantedBar','planeDistance',200);
+myScene.name = 'slantedBarForMTF';
 myScene.accommodation = 5;
 myScene.fov = 1;
 myScene.numCABands = 8;
@@ -106,7 +107,7 @@ myScene.numRays = 128;
 myScene.resolution = 128;
 oi = myScene.render;
 
-% Crop out the image so we only have the bar
+% Crop the image so we only have the bar
 cropRadius = myScene.resolution/(2*sqrt(2))-5;
 oiCenter = myScene.resolution/2;
 barOI = oiCrop(oi,round([oiCenter-cropRadius oiCenter-cropRadius ...

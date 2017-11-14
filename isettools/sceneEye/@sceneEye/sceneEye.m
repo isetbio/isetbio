@@ -215,6 +215,9 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
                     case('slantedBar')
                         scenePath = fullfile(isetbioDataPath,'pbrtscenes', ...
                             'SlantedBar','slantedBar.pbrt');
+                    case('chessSet')
+                        scenePath = fullfile(isetbioDataPath,'pbrtscenes', ...
+                            'ChessSet','chessSet.pbrt');
                     otherwise
                         error('Did not recognize scene type.');
                 end

@@ -1,0 +1,91 @@
+Scale -1 1 1
+
+# camera default orientation
+LookAt 0 0 0 0 1 0 0 0 1
+
+# 1_Camera
+Camera "realisticEye" 
+  "float fov" [60.000000] 
+  "string specfile" "navarroAccomodated_1.50.dat" 
+  "float retinaDistance" [16.320000] 
+  "float retinaRadius" [12] 
+  "float pupilDiameter" [4] 
+  "float retinaSemiDiam" [0.500000] 
+  "spectrum ior1" "ior1_1.50dp.spd" 
+  "spectrum ior2" "ior2_1.50dp.spd" 
+  "spectrum ior3" "ior3_1.50dp.spd" 
+  "spectrum ior4" "ior4_1.50dp.spd" 
+
+# integrator
+SurfaceIntegrator "path" 
+  "integer maxdepth" [1] 
+
+# sampler
+Sampler "lowdiscrepancy" 
+  "integer pixelsamples" [128] 
+
+# filter
+PixelFilter "gaussian" 
+  "float alpha" [2] 
+  "float xwidth" [2] 
+  "float ywidth" [2] 
+
+# film
+Film "image" 
+  "integer xresolution" [128] 
+  "integer yresolution" [128] 
+
+WorldBegin
+# 1_DefaultMaterial
+MakeNamedMaterial "1_DefaultMaterial" "string type" "uber" 
+  "rgb Kd" [0.600000 0.600000 0.600000] 
+  "rgb Ks" [0 0 0] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 2_BlackMaterial
+MakeNamedMaterial "2_BlackMaterial" "string type" "uber" 
+  "rgb Kd" [0 0 0] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 3_WhiteMaterial
+MakeNamedMaterial "3_WhiteMaterial" "string type" "uber" 
+  "rgb Kd" [0.800000 0.800000 0.800000] 
+  "rgb Ks" [0.500000 0.500000 0.500000] 
+  "spectrum Kr" [300 0 800 0] 
+  "float roughness" [0.010408] 
+  "float index" [1] 
+  "rgb opacity" [1 1 1] 
+# 1_WhiteCube
+ObjectBegin "1_WhiteCube"
+  NamedMaterial "3_WhiteMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/1_WhiteCube.pbrt"   
+ObjectEnd
+
+# 2_BlackCube
+ObjectBegin "2_BlackCube"
+  NamedMaterial "2_BlackMaterial"   
+  Include "scenes/PBRT/pbrt-geometry/2_BlackCube.pbrt"   
+ObjectEnd
+
+# 1_WhiteCube
+# from node 1_WhiteCube
+AttributeBegin
+  ObjectInstance "1_WhiteCube"   
+AttributeEnd
+
+# 2_BlackCube
+# from node 2_BlackCube
+AttributeBegin
+  ObjectInstance "2_BlackCube"   
+AttributeEnd
+
+LightSource "infinite" 
+  "integer nsamples" [4] 
+  "spectrum L" "D65.spd" 
+WorldEnd
+
