@@ -1,48 +1,9 @@
 function xyz = lab2xyz(lab, whitepoint, useOldCode, labexp)
 % [Deprecated. Use ieLAB2XYZ] Convert CIE LAB values to CIE XYZ values
 %
-% Syntax:
-%   xyz = vcLAB2xyz(lab, whitepoint, [useOldCode], [labexp])
-%
-% Description:
-%    Converts CIEL*a*b* coordinates to CIE XYZ coordinates.  We will use
-%    the makecform routine from the Matlab image processing toolbox for the
-%    converison; if the toolbox/routine is not available, we will revert to
-%    the older version of the code. 
-%
-% Inputs:
-%    lab        - LAB image; can either be in XW or RGB format. 
-%    whitepoint - a 3-vector of the xyz values of the white point. 
-%    useOldCode - Optional, Default value 0. 0 to use Matalb's routines,
-%                 use 1 otherwise
-%    labexp     - used by old code; the exponent used in the CIELAB formula
-%                 Default is cube root as used in standard CIELAB. If
-%                 specified, use the number as exponent. (note this
-%                 exponent here should be the same as the exponent used in
-%                 vcXYZlab.m)
-%
-% Outputs:
-%    xyz        - CIE XYZ Coordinates
-%
-% Notes:
-%    * [Note: JNM - useOldCode has contradictory information about 0]
-%
-% See Also:
-%    xyz2lab
-%
-% Copyright ImagEval Consultants, LLC, 2009. 
 
-% Examples:
+error('Deprecated.  Use ieLAB2XYZ');
 %{
-   vci = vcGetObject('vcimage');
-   [locs, rgb] = macbethSelect(vci);
-   dataXYZ = imageRGB2xyz(vci, rgb);
-   whiteXYZ = dataXYZ(1, :);
-   lab = xyz2lab(dataXYZ, whiteXYZ);
-   xyz = vcLAB2xyz(lab, whitepoint, labexp, useOldCode)
-%}
-warning('Use ieLAB2XYZ');
-
 if notDefined('lab'), error('No data.'); end
 if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');
@@ -107,3 +68,4 @@ else
     end
 end
 end
+%}

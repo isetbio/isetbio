@@ -60,7 +60,10 @@ if ndims(energy) == 3
     if length(wave) ~= size(energy, 3)
         error('Bad format for input variable energy.');
     end
+elseif isvector(energy)
+    energy = energy(:)';  % Force to row vector
 end
+
 
 iFormat = vcGetImageFormat(energy, wave);
 switch iFormat

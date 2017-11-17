@@ -3,6 +3,7 @@ function [u, v] = xyz2uv(xyz, format)
 %
 % Syntax:
 %   [uprime, vprime] = xyz2uv(xyz, [format])
+%   uv = xyz2uv(xyz,[format]);
 %
 % Description:
 %    Convert XYZ to uprime, vprime chromaticity coordinates (uniform
@@ -11,6 +12,11 @@ function [u, v] = xyz2uv(xyz, format)
 %    XYZ contains the values in the rows.
 %    format: If you want the (u, v), and not (uprime, vprime) values,
 %    format = 'uv'
+%
+%    If the user asks for just one variable returned, then we return a
+%    2-vector that has uv(1:2), as in
+%
+%    
 % 
 %    N.B. There are two very closely related (u, v) formats. 
 %    These are (u, v) and (u', v'). The relationship between them is 
@@ -74,4 +80,11 @@ v(nz) = 9 * xyz(nz, 2) ./ B(nz);
 
 % Check if the old 1960s (u, v), not (u', v') is being requested.
 if isequal(format, 'uv'), v = v / 1.5; end
+
+% If the user asked for just one ouptut, we combine u and v into a vector
+% and return that
+if nargout == 1
+    u = [u,v];
+end
+
 end

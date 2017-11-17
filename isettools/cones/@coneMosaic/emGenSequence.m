@@ -59,6 +59,10 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 % See also EMCREATE, EMSET, EMGET
 %
 % HJ/BW ISETBIO Team, 2016
+% 11/06/17  ncp       Added line to make drift magnitude independent of
+%                     sample time.
+% 11/06/17  dhb, npc  Added comments on microsaccade algorithm.
+% 11/07/17  dhb       More cleaning and robustness.
 
 %% parse input
 p = inputParser;
@@ -114,15 +118,18 @@ for nn=1:nTrials
         pos = pos .* (2*(randn(size(pos))>0)-1); % shuffle the sign
         pos = cumsum(pos, 1);
     end
-    
-    % generate eye movement for drift
-    if emFlag(2)  ||  microSaccadesOnlyFlag 
+     
+    % Generate eye movement for drift
+    if emFlag(2)  ||  microSaccadesOnlyFlag  
         % Load Parameters
         speed     = emGet(em, 'drift speed', 'cones/sample', params);
         speedSD   = emGet(em, 'drift speed SD', 'cones/sample', params);
         
+        % Make drift magnitude independent of sample time.
+        correctionForSampleTime = 1000*sampTime;
+    
         % Generate random move at each sample time
-        theta = 360 * randn + 0.1 * (1 : nFrames)';
+        theta = 360 * randn + 0.1 * correctionForSampleTime*(1 : nFrames)';
         direction = [cosd(theta) sind(theta)];
         s = speed + speedSD * randn(nFrames, 1);
         pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
@@ -142,35 +149,120 @@ for nn=1:nTrials
         speed = emGet(em, 'msaccade speed', 'cones/sample', params);
         speedSD = emGet(em, 'msaccade speed SD', 'cones/sample', params);
         
-        % Compute microsaccade occurence times
-        t = interval + randn(nFrames, 1) * intervalSD;
-        t(t < 0.3) = 0.3 + 0.1*rand;     % get rid of negative times
-        t = cumsum(t);                   % Add them up
+        % For the logic of this routine to be correct, we are assuming
+        % that the integration time (sampTime) is one second or less.
+        % Check that condition here.
+        if (sampTime > 1)
+            error('Sample time (aka integration time is too long (greater than 1 sec)');
+        end
         
-        % Convert to integer locations of the positions
-        tPos = round(t / sampTime);
+        % Compute microsaccade occurence times.
+        %
+        % The use of randn means that we might end up with some
+        % negative intervals, we just get rid of these by substituting
+        % in a small interval
+        minInterval = 0.010;
+        saccadeIntervals = interval + randn(nFrames, 1) * intervalSD;
+        saccadeIntervals(saccadeIntervals < 0) = minInterval;
+ 
+        % OLD: Old way of getting rid of negative intervals, seems like it will
+        % produce a buildup of intervals around a hard coded 0.3, and
+        % that it could still produce negative intervals.
+        % t(t < 0.3) = 0.3 + 0.1*rand;  
         
-        % Finds the last nonzero element in the tPos array with a value less
-        % than nFrames.  But that element has to be at least 1. BW doesn't
-        % really understand the logic of the model here.
-        tPos = tPos(1:find(tPos <= nFrames, 1, 'last'));
-        tPos = max(tPos,1);   % HJ to check.
+        % Create list of discrete sample times
+        discreteSampleTimes = (0:(nFrames-1))*sampTime;
         
-        % Compute positions
-        for ii = 1 : length(tPos)
-            curPos = pos(tPos(ii), :);
-            duration = round(sqrt(curPos(1)^2 + curPos(2)^2)/speed);
-            direction = atand(curPos(2)/curPos(1)) + dirSD * randn;
-            direction = [cosd(direction) sind(direction)];
-            direction = abs(direction) .* (2*(curPos < 0) - 1);
+        % Ensure at least one saccade
+        if (isempty(saccadeIntervals))
+            saccadeIntervals = 0.5*nFrames/sampTime;
+        end
+
+        % Convert saccade intervals to saccade times, and don't go past the
+        % end of the sample times.  We need to do the latter check because
+        % the list of ossible saccade times was created to be very long, at
+        % least for reasonable integration times.
+        saccadeTimes = cumsum(saccadeIntervals);
+        saccadeTimes = saccadeTimes(saccadeTimes < max(discreteSampleTimes));
+
+        % Find discrete sample time closest to each saccade time
+        discreteSaccadeTimes = zeros(size(saccadeTimes));
+        saccadeTimeIndices = zeros(size(saccadeTimes));
+        for ii = 1:length(saccadeTimes)
+            [~,closestIndex] = min(abs(discreteSampleTimes-saccadeTimes(ii)));
+            discreteSaccadeTimes(ii) = discreteSampleTimes(closestIndex);
+            saccadeTimeIndices(ii) = closestIndex;
+        end 
+        % mean(diff(saccadeTimes))
+        % mean(diff(discreteSaccadeTimes))
+                
+        % Convert to integer sample indices when we'll make a saccade
+        %saccadeTimeIndices = round(saccadeTimes / sampTime);
+        
+        % Truncate the sample time indices to the duration that
+        % we are actually simulating. Need to do this because the list of
+        % possible saccade times was created to be very long, at least for
+        % reasonable integration times.
+        % saccadeTimeIndices = saccadeTimeIndices(saccadeTimeIndices <= nFrames); 
+        % OLD: saccadeTimeIndices = tPos(1:find(saccadeTimeIndices <= nFrames, 1, 'last'));
+        
+        % Make sure we do at least one saccade, and in this case put it in
+        % the middle of the time sequence
+        %tPos = max(tPos,1);   
+        %if (isempty(saccadeTimeIndices))
+        %    saccadeTimeIndices = round(nFrames/2);
+        %end
+        
+        % Comptue saccades by looping over when they happen
+        for ii = 1:length(saccadeTimeIndices)
+            % Find out where we are at the time of a saccade
+            curPos = pos(saccadeTimeIndices(ii), :);
             
+            % Each saccade has a slightly different speed, compute the
+            % speed for this saccade.  Speed starts cones/sample. convert
+            % to cones/sec for clarity of thinking.
+            curSaccadeSpeedConesPerSample = speed + speedSD * randn;
+            if (curSaccadeSpeedConesPerSample < 0), curSaccadeSpeedConesPerSample = speed; end
+            curSaccadeSpeedConesPerSec = curSaccadeSpeedConesPerSample/sampTime;
+            
+            % Saccade duration and direction are computed from the current
+            % position.  The code computes a unit vector headed generally
+            % towards the origin, with some angular noise.  This code makes
+            % our algorithm have the feature that saccade amplitude and
+            % duration is determined by the average distance from fixation
+            % that drift and tremor produce in a inter-saccade interval.
+            % This might be good, but we can't have this feature and
+            % control saccade duration and magnitude independently of drift
+            % and tremor. Indeed, without drift or tremor, there will be no
+            % microsaccades.
+            saccadeAngle = atand(curPos(2)/curPos(1)) + dirSD * randn;
+            saccadeDirection = [cosd(saccadeAngle) sind(saccadeAngle)];
+            saccadeDirection = abs(saccadeDirection) .* (2*(curPos < 0) - 1);
+            
+            % Compute saccadde duration. This is such that we would end up
+            % right back at the origin, if direction were not perturbed.
+            % Need to have at least one sample.
+            saccadeMagnitude = sqrt(curPos(1)^2 + curPos(2)^2);
+            saccadeDurationSecs = saccadeMagnitude/curSaccadeSpeedConesPerSec;
+            saccadeDurationSamples = round(saccadeDurationSecs/sampTime);
+            if (saccadeDurationSamples == 0)
+                saccadeDurationSamples = 1;
+            end
+            
+            % Compute the offset we need to add to the positions vector, to
+            % put in this saccade.  Start with an array of zeros, and
+            % compute position offsets over the duration of the saccade.
             offset = zeros(nFrames, 2);
-            indx = tPos(ii):min(tPos(ii) + duration - 1, nFrames);
-            curSpeed = speed + speedSD * randn;
-            if curSpeed < 0, curSpeed = speed; end
-            offset(indx, 1) = curSpeed*direction(1);
-            offset(indx, 2) = curSpeed*direction(2);
+            indx = saccadeTimeIndices(ii):min(saccadeTimeIndices(ii) + saccadeDurationSamples - 1, nFrames);
             
+            % For each frame of the saccade, add in the offset for that
+            % frame.  We want to go saccadeMagnitude over
+            % saccadeDurationSamples, in the saccade direction.
+            offset(indx, 1) = saccadeMagnitude*saccadeDirection(1)/saccadeDurationSamples;
+            offset(indx, 2) = saccadeMagnitude*saccadeDirection(2)/saccadeDurationSamples;
+            
+            % Convert offsets into cumulative saccade position delta, and
+            % add into the positions we already had.
             pos = pos + cumsum(offset);
         end
     end

@@ -9,11 +9,10 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    metric calculations, such as deltaE2000. The formula for XYZ to
 %    CIELAB require knowledge of the XYZ white point as well.
 %
-%    The Matlab image toolbox routines makecform and applycform have CIELAB
-%    transforms. These are not the default, however, because they are not
-%    in all versions. Instead, we default to the code we used for many
-%    years. But by setting useOldCode = 0, you get the Matlab
-%    implementation.
+%    The Matlab image toolbox routines makecform and applycform have
+%    CIELAB transforms. These are the default. Because they are not in
+%    all versions, we check for the existence and use the old
+%    implementation we relied on for many years.
 %
 % Inputs:
 %    xyz        - Can be in either XW or RGB format.
@@ -43,6 +42,8 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
 %                   p-code too.
 %    10/25/17  jnm  Comments & formatting
+%    11/13/17  baw  Updated comments to match behavior on use of old
+%                   code
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 

@@ -17,7 +17,7 @@ function Tc = cct(uvs)
 %    This routine requires the information in the file: cct.mat
 %
 % Inputs:
-%    uvs - CIE UV - chromaticity coordinates represented as a column vector
+%    uvs - CIE UV - chromaticity coordinates represented as a 2xN matrix
 %          [u1 u2 ... un; v1 v2 ... vn]
 %
 % Outputs:
@@ -25,10 +25,12 @@ function Tc = cct(uvs)
 %          with each entry corresponding to a column of uvs.
 %
 % Notes:
-%    * [NOTE: XXX - TODO:  Make this work for XYZ.]
-%    * [NOTE: XXX - TODO: Make an xyY to uv conversion routine.]
-%    * [NOTE: XXX - TODO: Put the cct.mat file in the proper place and give
-%       it some decent structure.]
+%    * [NOTE: DHB - TODO: Put the cct.mat file in the proper place and give
+%       it some decent structure. - 
+%       NOTE: BW.  It has the table, notes, source
+%       and labels.  It is in data/lights.  What do you propose?] 
+%    * [NOTE: BW  Seems like we have xyYToXYZ in the PTB external along
+%       with xyy2xyz in isettools/color.  Let's resolve.
 %
 % References:
 %    Wyszecki & Stiles pgs. 227-228
@@ -40,10 +42,28 @@ function Tc = cct(uvs)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
+%    11/11/17  bw   Added examples to responding to NOTES 
 
 % Examples:
 %{
-   colorTemp = cct([[.31, .32]' [0.33 0.35]'])
+   % Two uv values
+   uvs = [[.31, .32]' [0.33 0.35]'];
+   colorTemp = cct(uvs)
+%}
+%{
+   % Starting with blackbody.
+   % Note the 'uv' flag, rather than uprime vprime return on xyz2uv
+   wave = 400:10:700;
+   bb = blackbody(wave,6000,'energy');
+   XYZ = ieXYZFromEnergy(bb,wave);
+   uv = xyz2uv(XYZ,'uv')';
+   fprintf('Correlated color temperature %f\n',cct(uv));
+%}
+%{
+  % Starting with xyY
+  xyY = [.3221 .3322 100];
+  XYZ = xyy2xyz(xyY); 
+  fprintf('Correlated color temperatre %f\n', cct(xyz2uv(XYZ,'uv')'));
 %}
 
 if notDefined('uvs')
