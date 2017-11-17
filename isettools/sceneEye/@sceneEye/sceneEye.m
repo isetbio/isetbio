@@ -1,18 +1,18 @@
 classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem to need it to avoid errors. 
-    
-    %%sceneEye Create a sceneEye object
+    % sceneEye - Create a sceneEye object
     %
-    %   sceneEye will contain all the information needed to construct a
-    %   new PBRT file which we can then render to get an optical
-    %   image. Ideally, sceneEye should be analogous to the "scene"
-    %   object in ISET and have similar commands. Unlike the ISET
-    %   "scene", however, we follow ISETBIO convention and have it as
-    %   a MATLAB class.
+    %   sceneEye contains the information needed to construct a new PBRT
+    %   file that we can then render to get a retinal image. 
     %
-    %   This code is starting out in service of the eyeModel always
-    %   uses the eye model file. It may generalize later.
+    %   sceneEye is analogous to the "scene" structure in ISETBIO (and
+    %   ISET), and it will support similar commands. Unlike the
+    %   ISET/ISETBIO "scene", as for new entities we created it as a
+    %   MATLAB class.
     %
-    %   Workflow
+    %   This code is starting out in service of the eyeModel.  We may
+    %   extend to replace the scene structure (some day).
+    %
+    % Example
     %     thisScene = sceneEye('name',xxx,'pbrtFile',xxx);
     %     thisScene.accommodation = double
     %     ...
@@ -33,7 +33,15 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
     % myScene.eyePos = [x y z]; 
     %
     % Is there a way to ensure they put in a 3x1 vector for eyePos, other
-    % than just rigourous error checking in the code?
+    % than just rigourous error checking in the code? NOTE: BW.  Yes, I
+    % think so, using the myScene.set('eyePos', val) approach, or perhaps
+    % myScene.set.eyePos = val.  In these cases the set operation can pass
+    % through an input parser that validates the input value (I think).
+    %
+    % NOTES: BW, I wonder if recipe should be a slot in here or whether we
+    % should use myScene.render(recipe,varargin);  The current way does
+    % make sense, since this is actually a scene.
+    %
     
     properties (GetAccess=public, SetAccess=public)
         
