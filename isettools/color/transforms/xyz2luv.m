@@ -28,12 +28,14 @@ function luv = xyz2luv(xyz, whitepoint)
 %    11/02/17  dhb  Force error if white point not specified, but provide
 %                   old default value, which should make it easy to fix any
 %                   calling code that breaks.
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
    whitepoint = [95.05 100 108.88];
-   xyz = [77 88 25 ; whitepoint]
-   xyz2luv(xyz,whitepoint)
+   xyz = [77 88 25; whitepoint]
+   xyz2luv(xyz, whitepoint)
 %}
 
 if notDefined('xyz'), error('XYZ values required.'); end
@@ -53,15 +55,15 @@ end
 luv = zeros(size(xyz));
 
 luv(:, 1) = Y2Lstar(xyz(:, 2), whitepoint(2));
-[u, v]    = xyz2uv(xyz);
-[un, vn]  = xyz2uv(whitepoint);
+[u, v] = xyz2uv(xyz);
+[un, vn] = xyz2uv(whitepoint);
 
 luv(:, 2) = 13 * luv(:,1) .* (u - un);
 luv(:, 3) = 13 * luv(:,1) .* (v - vn);
 
 % return CIELUV in the appropriate format.
-% Currently it is a XW format.  If the input had three dimensions
-% then we need to change it to that format.
+% Currently it is a XW format.  If the input had three dimensions then we
+% need to change it to that format.
 if strcmp(iFormat, 'RGB'), luv = XW2RGBFormat(luv, r, c); end
 
 end

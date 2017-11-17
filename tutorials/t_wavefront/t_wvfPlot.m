@@ -1,9 +1,15 @@
 function t_wvfPlot
-%
 % Illustrate ways to create plots of the wvf structure using wvfPlot call.
 %
-% NOTE: Should improve and demonstrate/explain control over sampling
-% resolutions.
+% Description:
+%    Illustrate a number of ways to create plots of the wvf structure using
+%    the wvfPlot call.
+%
+% Notes:
+%    * [Note: XXX - Should improve and demonstrate/explain control over
+%      sampling resolutions.]
+%    * [Note: JNM - What would constitute "additional fussing" below to
+%      better fine-tune results (See comment L25-28)]
 %
 % (BW) Wavefront Toolbox Team, 2014-15
 

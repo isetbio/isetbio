@@ -26,7 +26,8 @@ function lab = xyz2lab(xyz, whitepoint, useOldCode)
 %      CIELAB transforms. These are not the default, however, because they
 %      are not in all versions. Instead, we default to the code we used
 %      for many years. But by setting useOldCode = 0, you get the Matlab
-%      implementation.
+%      implementation. [Note: JNM - What version(s) are they (not) present
+%      in? How can we use this to determine version support going forward?]
 %    - TODO: Must specify if XYZ is 2 deg or 10 deg XYZ? CIELAB probably
 %      requires one of them. I think XYZ 10. Must check. Or do we just
 %      specify in the methods - BW ). 
@@ -39,6 +40,11 @@ function lab = xyz2lab(xyz, whitepoint, useOldCode)
 %    lab2xyz
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+
+% History:
+%    xx/xx/03       (c) ImagEval Consultants, LLC, 2003.
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -110,8 +116,8 @@ else
     fx = 7.787 * x(xx) + 16/116;
     fy = 7.787 * fy + 16/116;
     fz = 7.787 * z(zz) + 16/116;
-    x = x .^ (1/3);
-    z = z .^ (1/3);
+    x = x .^ (1 / 3);
+    z = z .^ (1 / 3);
     x(xx) = fx;
     y(yy) = fy;
     z(zz) = fz;
@@ -120,8 +126,8 @@ else
     lab(:, 3) = 200 * (y - z);
 
     % return lab in the appropriate shape
-    % Currently it is a XW format. If the input had three dimensions
-    % then we need to change it to that format.
+    % Currently it is a XW format. If the input had three dimensions then
+    % we need to change it to that format.
     if ndims(xyz) == 3
         lab = XW2RGBFormat(lab, r, c);
     end

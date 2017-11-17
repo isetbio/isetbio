@@ -43,6 +43,8 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
 %                   p-code too.
 %    10/25/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
+%
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
@@ -78,16 +80,19 @@ else
 
     if ndims(xyz) == 3
         [r, c, ~] = size(xyz);
-        lab = zeros(r*c, 3);
+        lab = zeros(r * c, 3);
 
-        x = xyz(:, :, 1)/Xn; x = x(:);
-        y = xyz(:, :, 2)/Yn; y = y(:);
-        z = xyz(:, :, 3)/Zn; z = z(:);
+        x = xyz(:, :, 1) / Xn;
+        x = x(:);
+        y = xyz(:, :, 2) / Yn;
+        y = y(:);
+        z = xyz(:, :, 3) / Zn;
+        z = z(:);
 
     elseif ismatrix(xyz)
-        x = xyz(:, 1)/Xn;
-        y = xyz(:, 2)/Yn;
-        z = xyz(:, 3)/Zn;
+        x = xyz(:, 1) / Xn;
+        y = xyz(:, 2) / Yn;
+        z = xyz(:, 3) / Zn;
 
         % allocate space
         lab = zeros(size(xyz));
@@ -110,11 +115,11 @@ else
     lab(yy, 1) = 903.3 * fy;
 
     % a* b* calculation
-    fx = 7.787 * x(xx) + 16/116;
-    fy = 7.787 * fy + 16/116;
-    fz = 7.787 * z(zz) + 16/116;
-    x = x .^ (1/3);
-    z = z .^ (1/3);
+    fx = 7.787 * x(xx) + 16 / 116;
+    fy = 7.787 * fy + 16 / 116;
+    fz = 7.787 * z(zz) + 16 / 116;
+    x = x .^ (1 / 3);
+    z = z .^ (1 / 3);
     x(xx) = fx;
     y(yy) = fy;
     z(zz) = fz;

@@ -37,6 +37,8 @@ function imRGB = XW2RGBFormat(imXW, row, col)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC
 %    10/27/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -44,22 +46,14 @@ function imRGB = XW2RGBFormat(imXW, row, col)
        [255 3 203]']'/255;
    rgbSRGBs = XW2RGBFormat(xwSRGBs,2,2);
 %}
-if notDefined('imXW')
-    error('No image data.');
-end
-if notDefined('row')
-    error('No row size.');
-end
-if notDefined('col')
-    error('No col size.');
-end
+if notDefined('imXW'), error('No image data.'); end
+if notDefined('row'), error('No row size.'); end
+if notDefined('col'), error('No col size.'); end
 
 x = size(imXW, 1);
 w = size(imXW, 2);
 
-if row*col ~= x
-    error('XW2RGBFormat:  Bad row, col values');
-end
+if row * col ~= x, error('XW2RGBFormat:  Bad row, col values'); end
 
 imRGB = reshape(imXW, row, col, w);
 

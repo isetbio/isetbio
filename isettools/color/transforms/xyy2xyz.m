@@ -7,11 +7,11 @@ function XYZ = xyy2xyz(xyy)
 % Description:
 %    It is common to represent the color of a light using xyY (chromaticity
 %    coordinates and luminance). This routine converts from the xyY
-%    representation to the standard XYZ representation. 
+%    representation to the standard XYZ representation.
 %
-%    The values are all represented in n X 3 format.  For XYZ, the first
-%    column is X, second  column is Y and third is Z.  Similarly, the
-%    input columns must be x,y, and Y. 
+%    The values are all represented in n X 3 format. For XYZ, the first
+%    column is X, second  column is Y and third is Z. Similarly, the input
+%    columns must be x,y, and Y.
 %
 %    Formula:
 %       X = (x / y) * Y, 
@@ -28,6 +28,8 @@ function XYZ = xyy2xyz(xyy)
 % History: 
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -51,7 +53,7 @@ XYZ(:, 2) = xyy(:, 3);
 sXYZ = xyy(:, 3) ./ xyy(:, 2);
 
 % X = (x/y)*Y
-XYZ(:, 1) = (xyy(:, 1)./xyy(:, 2)) .* xyy(:, 3);
+XYZ(:, 1) = (xyy(:, 1) ./ xyy(:, 2)) .* xyy(:, 3);
 
 % Z = (X + Y + Z) - Y - X
 XYZ(:, 3) = sXYZ - xyy(:, 3) - XYZ(:, 1);

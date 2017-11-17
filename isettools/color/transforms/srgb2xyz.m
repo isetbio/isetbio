@@ -24,10 +24,13 @@ function xyz = srgb2xyz(srgb)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
-   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']/255;
+   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+        [255 3 203]'] / 255;
    isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1);
    isetXYZ   = srgb2xyz(isetSRGBs);
 %}

@@ -2,13 +2,20 @@ function t_wvfPupilSize
 %
 % Explore the effect of changing the pupil size in the calculation.
 %
-% We load the Thibos wavefront data collected at some pupil diameter.
-% There are a few options.  We set these data into the zernicke
-% coefficients.
+% Description:
+%    We load the Thibos wavefront data collected at some pupil diameter.
+%    There are a few options. We set these data into the zernicke
+%    coefficients.
 %
-% We then set the calculated pupil size and compute the expected
-% pointspread function.  That function changes as the pupil diameter gets
-% smaller.
+%    We then set the calculated pupil size and compute the expected
+%    pointspread function. That function changes as the pupil diameter gets
+%    smaller.
+%
+%
+% Notes:
+%    * [Note: JNM - Would it be possible to include an explanation for how
+%      the different pupil sizes (from Thibos) would affect the
+%      calculations, and the eventual output]
 %
 % (BW) (c) Wavefront Toolbox Team, 2014
 

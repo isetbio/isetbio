@@ -6,10 +6,10 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %
 % Description:
 %    This function convert XYZ data to LMS in Stockman space. When cbType
-%    is not passed in, or it is set to either 0 or
-%    'trichromats', this is the calculation.  
+%    is not passed in, or it is set to either 0 or 'trichromats', this is
+%    the calculation.
 %
-%    A calculation for color blind dichromats can also be performed.  This
+%    A calculation for color blind dichromats can also be performed. This
 %    is set by using format the cbType variable. In this case, missing cone
 %    types are estimated from values of remaining cone types. This is a
 %    different from something else one might do for dichromats, namely just
@@ -37,8 +37,8 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %      'linear'   - Use linear interpolation algorithm
 %      'constant' - Leave missing cone values as a constant (default 0)
 %    varargin - Extra arguments for specific methods
-%      varargin   - White XYZ value for Brettel method.
-%                   The constant value used for the 'constant' method.
+%      varargin   - White XYZ value for Brettel method. This also provides
+%                   the constant value used for the 'constant' method.
 %
 % Outputs:
 %   LMS           - values in Stockman LMS space
@@ -58,10 +58,12 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %    11/01/17  jnm   Comments, formatting, include code to correctly
 %                    re-route 'default' as a cbType entry
 %    11/02/17  dhb   I didn't think passing 'default' was a very good thing
-%                    to allow.  Got rid of it.  Might break some calling
-%                    code.  Added error message that says what to do.
-%    11/05/17  dhb   Change 'trichromats' -> 'trichromat'.  This is what
+%                    to allow. Got rid of it. Might break some calling
+%                    code. Added error message that says what to do.
+%    11/05/17  dhb   Change 'trichromats' -> 'trichromat'. This is what
 %                    the called routine wants.
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{

@@ -14,14 +14,14 @@ function [u, v] = xyz2uv(xyz, format)
 % 
 %    N.B. There are two very closely related (u, v) formats. 
 %    These are (u, v) and (u', v'). The relationship between them is 
-%    uprime = u and vprime = 1.5*v
+%    uprime = u and vprime = 1.5 * v
 %
 %    The u', v' was an improvement made in the 1960s or so, and this
 %    routine (by default) returns those values. The reason is because this
 %    is mainly what people want. This function returns the (u'v') value
 %    because, well, it is more modern and it is used in the LUV format.
 %
-%    X+Y+Z=0 is returned as u=v=0.
+%    X + Y + Z = 0 is returned as u = v = 0.
 %
 % Inputs:
 %    xyz    - the normalized CIE XYZ coordinates
@@ -42,6 +42,8 @@ function [u, v] = xyz2uv(xyz, format)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -49,7 +51,8 @@ function [u, v] = xyz2uv(xyz, format)
    d65 = ieReadSpectra('D65', wave);
    XYZ = ieXYZFromEnergy(d65', wave);   
    [uP, vP] = xyz2uv(XYZ)
-   u = uP, v = vP/1.5
+   u = uP;
+   v = vP / 1.5;
  
    [u, v] = xyz2uv(XYZ, 'uv')
 %}
@@ -66,8 +69,8 @@ u = zeros(size(xyz, 1), 1);
 v = zeros(size(u));
 
 % Whenever B is valid, we set the u, v values to something legitimate. I am
-% not sure what they should be when X+Y+Z is zero, as above. For now, we
-% are leaving them as zero.
+% not sure what they should be when X + Y + Z is zero, as above. For now,
+% we are leaving them as zero.
 nz = (B > 0);
 u(nz) = 4 * xyz(nz, 1) ./ B(nz); 
 v(nz) = 9 * xyz(nz, 2) ./ B(nz); 

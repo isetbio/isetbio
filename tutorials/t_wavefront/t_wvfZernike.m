@@ -1,36 +1,75 @@
 function t_wvfZernike
-%
 % Representing wavefront aberrations using Zernike polynomials.
 %
-% This tutorial explains a method of representing the wavefront aberration
-% function using a set of functions known as Zernike polynomials. The
-% wavefront aberration function models the effect of the human cornea, 
-% lens, and pupil on the optical wavefront propagating through them.
-% Absorption is modeled by an amplitude < 1, and phase aberrations are
-% modeled by a complex phasor of the form exp(i*2*pi*[summation of Zernike
-% polynomials]/wavelength). From Fourier optics, the eye's point spread
-% function (PSF) can be computed from the wavefront aberration function, or
-% pupil function, by taking the Fourier transform: PSF = fft2(pupil
-% function).
+% Description:
+%    This tutorial explains a method of representing the wavefront
+%    aberration function using a set of functions known as Zernike
+%    polynomials. The wavefront aberration function models the effect of
+%    the human cornea, lens, and pupil on the optical wavefront propagating
+%    through them. Absorption is modeled by an amplitude < 1, and phase
+%    aberrations are modeled by a complex phasor of the form 
 %
-% The Zernike polynomials form an orthogonal basis set over a unit disk.
-% They are useful because they can isolate aberrations into separate
-% components, each of which is given a weight and has potential for being
-% corrected. For example, rather than seeing an entire aberrated wavefront, 
-% we can instead look at the amount of astigmatism in the 45 degree
-% direction and how it contributes to the PSF on its own by knowing the
-% measured Zernike coefficient associated with it.
+%       exp(i * 2 * pi * [summation of Zernike polynomials] / wavelength).
 %
-% The tutorial introduces the concept of Zernike polynomials; shows the
-% pupil function and how it is formed using Zernkie polynomials; shows the
-% associated point-spread functions for given pupil functions; demonstrates
-% and explains longitudinal chromatic aberration; demonstrates and explains
-% Stiles-Crawford effect; looks at measured human data and shows how
-% eyeglasses only allow us to correct certain wavefront aberrations.
+%    From Fourier optics, the eye's point spread function (PSF) can be
+%    computed from the wavefront aberration function, or pupil function, by
+%    taking the Fourier transform: PSF = fft2(pupil function).
+%
+%    The Zernike polynomials form an orthogonal basis set over a unit disk.
+%    They are useful because they can isolate aberrations into separate
+%    components, each of which is given a weight and has potential for
+%    being corrected. For example, rather than seeing an entire aberrated
+%    wavefront, we can instead look at the amount of astigmatism in the 45
+%    degree direction and how it contributes to the PSF on its own by
+%    knowing the measured Zernike coefficient associated with it.
+%
+%    The tutorial introduces the concept of Zernike polynomials; shows the
+%    pupil function and how it is formed using Zernkie polynomials; shows
+%    the associated point-spread functions for given pupil functions;
+%    demonstrates and explains longitudinal chromatic aberration;
+%    demonstrates and explains Stiles-Crawford effect; looks at measured
+%    human data and shows how eyeglasses only allow us to correct certain
+%    wavefront aberrations.
 %
 % References:
-%  http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
+%   http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
+%   http://www.traceytechnologies.com/resources_wf101.htm
 %
+% Notes:
+%    * [Note: XXX - This might usefully be separated in several shorter
+%      tutorials.]
+%
+%    * [Note: XXX - Introduce notion of a figure of merit for quality of
+%      PSF, and compute some explicitly for various cases considered.]
+%
+%    * [Note: XXX - The fact that for an aberrated eye, the best optical
+%      quality does not occur when nominal defocus wl matches the
+%      calculated wavelength is not considered here, but can be quite
+%      important when thinking about real optical quality.]
+%
+%    * [Note: JNM - Below, there was a section stating that only one
+%      wavelength was to be used, and a variable initialized for the
+%      purpose, but it was never used throughout the tutorial, so I have
+%      removed the section title, the variable itself, and grouped the
+%      other variables initalized in that section into the appropriately
+%      named 'Initialize' section]
+%
+%    * [Note: JNM - There are a number of variables that are initialized
+%      and then never used. Was this done intentionally? As a part of the
+%      testing process? For what purpose are they kept around? Ex. nCols,
+%      nRows, uDataS, defocus]
+%
+%    * [Note: JNM - the defocus value is summed with lcaMicrons, and then
+%      lcaMicrons is used as  the defocus value? (L311-313) - is this done
+%      intentionally, or is it an accident? Same question about the
+%      variables that are initialized and used once, by name and then never
+%      again. Is there a purpose to this? Ex. oblique_astig]
+%
+% See Also:
+%    wvfOSAIndexToVectorIndex
+%
+% (c) Wavefront Toolbox Team 2011, 2012
+
 % History:
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 %    03/12/12  baw, mdl, kp  Created. 
@@ -40,31 +79,6 @@ function t_wvfZernike
 %    11/08/17  jnm  Second commenting pass, cleaning up and enforcing
 %                   general commenting conventions
 %	
-% (c) Wavefront Toolbox Team 2011, 2012
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% GENERAL
-%
-% NOTES
-%   a) This might usefully be separated in several shorter tutorials.
-%
-%   b) Introduce notion of a figure of merit for quality of PSF, and
-%   compute some explicitly for various cases considered.
-%
-%   c) The fact that for an aberrated eye, the best optical quality does
-%   not occur when nominal defocus wl matches the calculated wavelength is
-%   not considered here, but can be quite important when thinking about
-%   real optical quality.
-%   d) [Note: JNM - Below, there was a section stating that only one
-%   wavelength was used, and a variable initialized for the purpose, but it
-%   was never used throughout the tutorial, so I have removed the section
-%   title, the variable, and grouped the other variables initalized in that
-%   section into the appropriate 'Initialize' section]
-%   e) [Note: JNM - There are a number of variables that are initialized
-%   and then never used. Was this done intentionally? As a part of the
-%   testing process? For what purpose are they kept around? Ex. nCols,
-%   nRows, uDataS, defocus]
-%
 
 %% Zernike polynomials
 %
@@ -108,21 +122,21 @@ function t_wvfZernike
 close all;
 ieInit;
 maxMM = 2;
-maxUM = 20;      
+maxUM = 20;
 pupilfuncrangeMM = 5;
 
 %% Use Zernike polynomials to specify a diffraction limited PSF.
 %
 % Use wvfCreate to create a wavefront variable to explore with.
 %
-% This wavefront by default has the 0's for all zernike coeffs
-% Notice that the calcpupilMM is by default 3, meaning we are simulating
-% the wavefront PSF for a pupil of 3MM diameter. This code dumps
-% out the structure so you can get a sense of what is in it.
+% This wavefront by default has the 0's for all zernike coeffs. Notice that
+% the calcpupilMM is by default 3, meaning we are simulating the wavefront
+% PSF for a pupil of 3MM diameter. This code dumps out the structure so you
+% can get a sense of what is in it.
 % 
 % The validation script v_wvfDiffractionPSF compares the diffraction
-% limited PSFs obtained in this manner with those obtained by
-% computing an Airy disk and shows that they match.
+% limited PSFs obtained in this manner with those obtained by computing an
+% Airy disk and shows that they match.
 wvf0 = wvfCreate;
 wvfPrint(wvf0);
 
@@ -145,15 +159,14 @@ wvfPlot(wvf0, '2dpsfspacenormalized', 'um', wList, maxUM);
 % vector of zcoeffs set to 66 zeros. Then we use wvfSet to poke in some
 % non-zero oblique astigmatism.
 %
-% Note that for low order coefficents with names, we wvfSet understands
-% the names. See wvfOSAIndexToVectorIndex for a list
-% of available names.
+% Note that for low order coefficents with names, we wvfSet understands the
+% names. See wvfOSAIndexToVectorIndex for a list of available names.
 %
-% We could also just specify 3 to the set function, as that is
-% the corresponding OSA index. This direct usage is illustrated by the
-% wvfGet call, and the same usage works for the wvfSet. (You can also
-% get via names for the low order terms.)
-oblique_astig = 0.75;                             
+% We could also just specify 3 to the set function, as that is the
+% corresponding OSA index. This direct usage is illustrated by the wvfGet
+% call, and the same usage works for the wvfSet. (You can also get via
+% names for the low order terms.)
+oblique_astig = 0.75;
 wvf3 = wvfSet(wvf0, 'zcoeffs', oblique_astig, {'oblique_astigmatism'});
 fprintf('Third Zernike coefficient is %g\n', wvfGet(wvf3, 'zcoeffs', 3));
 
@@ -171,27 +184,26 @@ wvfPlot(wvf3, '2dpupilphasespace', 'mm', wList, pupilfuncrangeMM);
 %
 % While the pupil functions are well specified by Zernike polynomials, it's
 % hard to get meaning from them. We'd much prefer to look at the PSF, which
-% gives us an idea of how the pupil will blur an image. 
-% This is essentially done by applying a Fourier Transform to the pupil
-% function.
-wvf3 = wvfComputePSF(wvf3); 
+% gives us an idea of how the pupil will blur an image. This is essentially
+% done by applying a Fourier Transform to the pupil function.
+wvf3 = wvfComputePSF(wvf3);
 
 % Now we can plot the normalized PSF for a pupil only whose only aberration
 % is the 45 degree astigmatism.
 %
-% As you can see, this no longer looks like the narrower
-% diffraction-limited PSF. It has also lost its radial symmetry. We will
-% see that the higher the order of Zernike polynomial, the more complex the
-% associated PSF will be.
+% As you can see, this no longer looks like the narrower diffraction-
+% limited PSF. It has also lost its radial symmetry. We will see that the
+% higher the order of Zernike polynomial, the more complex the associated
+% PSF will be.
 wvfPlot(wvf3, '2dpsfspacenormalized', 'um', wList, maxUM);
 
 %% Examine effect of the j = 5 (6th entry), which is called vertical
-% astigmatism, along the 0 or 90 degree axis. Again we begin with
-% the wvf0, which has a vector of zero zcoeffs in it by default.
+% astigmatism, along the 0 or 90 degree axis. Again we begin with the wvf0,
+% which has a vector of zero zcoeffs in it by default.
 %
 % We can see that unlike the 3rd coefficient, this coefficient for
 % astigmatism is aligned to the x and y axes.
-vertical_astig = 0.75;                         
+vertical_astig = 0.75;
 wvf5 = wvfSet(wvf0, 'zcoeffs', vertical_astig, {'vertical_astigmatism'});
 wvf5 = wvfComputePSF(wvf5);
 wvfPlot(wvf5, '2dpupilphasespace', 'mm', wList, maxMM);
@@ -207,7 +219,7 @@ wvfPlot(wvf5, '2dpsfspacenormalized', 'um', wList, maxUM);
 % in addition to the pupil function phase (radians), and the PSF.
 %
 % The wavefront aberration plots we get match those
-%  http://www.traceytechnologies.com/resources_wf101.htm
+%   http://www.traceytechnologies.com/resources_wf101.htm
 % except for the fact that their green is postive and our red is positive.
 % Note that there is considerable disagreement about the Zernikes in the
 % pictures on the web. See comment in v_wvfZernikePolynomials for a more
@@ -217,7 +229,7 @@ wvf0 = wvfSet(wvf0, 'calculated pupil', wvfGet(wvf0, 'measured pupil', ...
     'mm'));
 pupilfuncrangeMM = 4;
 jindices = 1:9;
-maxMM = 4; 
+maxMM = 4;
 for ii = jindices
     vcNewGraphWin;
     insertCoeff = 0.75;
@@ -249,14 +261,13 @@ end
 % blurry because they are refracted closer or farther from the imaging
 % plane. In this case, the PSF is dependent on wavelength.
 %
-% We can set this using the  "in-focus wavelength" of our wvf.
-% This code indicates that the data is given for a nominal focus of 550 nm, 
-% which is also the default in wvfCreate. We also now explictly set the
-% wavelength for which the PSF is calculated to 550 nm (this is also the
-% default. 
+% We can set this using the  "in-focus wavelength" of our wvf. This code
+% indicates that the data is given for a nominal focus of 550 nm, which is
+% also the default in wvfCreate. We also now explictly set the wavelength
+% for which the PSF is calculated to 550 nm (this is also the default.
 wvf0 = wvfCreate;
-wvf0 = wvfSet(wvf0, 'measured wavelength', 550); 
-wvf0 = wvfSet(wvf0, 'calc wavelengths', 550); 
+wvf0 = wvfSet(wvf0, 'measured wavelength', 550);
+wvf0 = wvfSet(wvf0, 'calc wavelengths', 550);
 
 % It turns out that all aberrations other than "Defocus" are known to vary
 % only slightly with wavelength. As a result, the Zernike coefficients
@@ -270,7 +281,7 @@ wvf0 = wvfSet(wvf0, 'calc wavelengths', 550);
 wvf0 = wvfComputePSF(wvf0);
 wList = wvfGet(wvf0, 'calc wavelengths');
 vcNewGraphWin;
-maxMM = 3; 
+maxMM = 3;
 wvfPlot(wvf0, '1dpsfspacenormalized', 'mm', wList, maxMM, 'no window');
 hold on;
 
@@ -338,7 +349,8 @@ wvfPlot(wvf0, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
     'no window');
 subplot(2, 2, 3:4);
 wvfPlot(wvf0, '2dpsfspace', 'mm', [], maxMM, 'no window');
-sce1DFig = vcNewGraphWin; hold on
+sce1DFig = vcNewGraphWin;
+hold on
 wvfPlot(wvf0, '1dpsfspace', 'mm', [], maxMM, 'no window');
 
 % To this unaberrated pupil function, we add the Stiles-Crawford
@@ -379,7 +391,8 @@ wvfPlot(wvf5, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
     'no window');
 subplot(2, 2, 3:4);
 wvfPlot(wvf5, '2dpsfspace', 'mm', [], maxMM, 'no window');
-sce1DFig2 = vcNewGraphWin; hold on
+sce1DFig2 = vcNewGraphWin;
+hold on
 wvfPlot(wvf5, '1dpsfspace', 'mm', [], maxMM, 'no window');
 
 % Add SCE to the aberrated pupil function.

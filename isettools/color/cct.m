@@ -28,7 +28,7 @@ function Tc = cct(uvs)
 %    * [NOTE: XXX - TODO:  Make this work for XYZ.]
 %    * [NOTE: XXX - TODO: Make an xyY to uv conversion routine.]
 %    * [NOTE: XXX - TODO: Put the cct.mat file in the proper place and give
-%       it some decent structure.]
+%      it some decent structure.]
 %
 % References:
 %    Wyszecki & Stiles pgs. 227-228
@@ -40,6 +40,8 @@ function Tc = cct(uvs)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -75,7 +77,7 @@ d  = ((us - u) - t .* (vs - v)) ./ sqrt(1 + t .^ 2);
 % ds is padded by zeros to ensure the indices are correct when doing the
 % find operation.
 ds = sign(d);
-ds = ds.*(ds~=0) + 1.*(ds==0);
+ds = ds .* (ds~=0) + 1 .* (ds==0);
 ds = [ds; zeros(1, Nd)];	
 
 j  = find( abs(diff(ds)) == 2 )';

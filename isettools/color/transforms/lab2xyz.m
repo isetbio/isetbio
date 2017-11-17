@@ -65,7 +65,9 @@ else
     if length(whitepoint) ~= 3
         error('White point is not a three-vector');
     else
-        Xn = whitepoint(1); Yn = whitepoint(2); Zn = whitepoint(3);
+        Xn = whitepoint(1);
+        Yn = whitepoint(2);
+        Zn = whitepoint(3);
     end
     
     % We will always work in XW format. If input is in RGB format, we
@@ -86,8 +88,8 @@ else
     fy(yy) = 7.787 * y(yy) + 16/116;
     
     % find out fx, fz
-    fx = lab(:, 2)/500 + fy;
-    fz = fy - lab(:, 3)/200;
+    fx = lab(:, 2) / 500 + fy;
+    fz = fy - lab(:, 3) / 200;
     
     % find out x=X/Xn, z=Z/Zn
     % when (X/Xn)<0. 008856, fx<0. 206893
@@ -99,7 +101,7 @@ else
     x(xx) = (fx(xx) - 16/116) / 7.787;
     z(zz) = (fz(zz) - 16/116) / 7.787;
     
-    xyz = [x*Xn y*Yn z*Zn];
+    xyz = [x * Xn, y * Yn, z * Zn];
     
     % Return XYZ in appropriate shape
     if ndims(xyz) == 3

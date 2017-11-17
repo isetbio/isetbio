@@ -1,8 +1,14 @@
 function t_wvfAstigmatism
-%
 % Compute the wavefront-based PSF for various astigmatism and blur levels.
 %
-% This illustrates the effect of Zernicke coefficients 4 and 5.
+% Description:
+%    Compute the wavefront-based point-spread function for various
+%    astigmatism and blur levels.
+%
+%    This illustrates the effect of Zernicke coefficients 4 and 5.
+%
+% Notes:
+%    * [Note: JNM - Why is 'z' calculated and then never used?]
 %
 % (c) Wavefront Toolbox Team, 2012
 
@@ -35,8 +41,8 @@ for ii=1:size(Zvals, 1)
         {'defocus' 'vertical_astigmatism'});
     wvfParams = wvfComputePSF(wvfParams);
     
-    % Don't open a new window with each plot.  Let them accumulate in the
-    % subplots.
+    % Don't open a new window with each plot. Allow them to accumulate in
+    % the subplots.
     subplot(3, 3, ii)
     wvfPlot(wvfParams, '2dpsfspace', 'um', wList, maxUM, 'nowindow');
     title(sprintf('Defocus = %.1f Astig == %.1f\n', Zvals(ii, 1), ...
