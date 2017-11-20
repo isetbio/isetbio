@@ -65,16 +65,13 @@ end
 %
 % This render takes around 2 minutes on a machine with 2 cores
 
-% Note: The distance between the back of the retina and the front of the
-% lens is approximately 7.69 mm. When we define accommodation its relative
-% to the front of the lens, but for PBRT the distance to the plane is
-% relative to the retina. We account for this discrepancy by adding a
+% Note: The distance between the back of the lens and the front of the lens
+% is approximately 7.69 mm. When we define accommodation its relative to
+% the front of the lens, but for PBRT the distance to the plane is relative
+% to the back of the lens. We account for this discrepancy by adding a
 % slight shift. In most cases this slight difference does not make a huge
 % difference, but for color fringing it does. In the future we need to fix
-% this discrepancy. 
-% NOTE: BW, this number (7.69 mm) might be right for back of the lens to to
-% retina, but not for front of the lens to retina, which is about 16mm.
-% Confused here.
+% this discrepancy.
 planeDistance = [195 200 205] + 7.69;
 
 for ii = 1:length(planeDistance)
