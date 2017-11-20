@@ -195,11 +195,14 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             p.addParameter('name','scene-001',@ischar);
             p.addParameter('workingDirectory','',@ischar);
              
-            % An optional parameter used by scenes that consist of only a
+            % Optional parameters used by scenes that consist of only a
             % planar surface (e.g. slanted bar). We will move the plane to
-            % the given distance in mm.
+            % the given distance in mm and attach the given texture, if
+            % applicable. 
             p.addParameter('planeDistance',1000,@isnumeric);
-            
+            p.addParameter('planeTexture', ...
+                fullfile(piRootPath,'data','imageTextures','squareResolutionChart.exr'),@ischar);
+            p.addParameter('planeSize',[1000 1000],@isnumeric);
             p.parse(pbrtFile,varargin{:});
             
             % Read in PBRT file
@@ -218,6 +221,10 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
                     case('chessSet')
                         scenePath = fullfile(isetbioDataPath,'pbrtscenes', ...
                             'ChessSet','chessSet.pbrt');
+                    case('texturedPlane')
+                        % Textured plane scene is located in pbrt2ISET. 
+                        scenePath = fullfile(piRootPath,'data','texturedPlane',...
+                            'texturedPlane.pbrt');
                     otherwise
                         error('Did not recognize scene type.');
                 end
@@ -238,12 +245,26 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             
             % Parse PBRT file
             recipe = piRead(obj.pbrtFile);
-            recipe.outputFile = obj.pbrtFile;
+            % recipe.outputFile = obj.pbrtFile;
+            recipe.inputFile = scenePath;
             
-            % Move planar scenes (e.g. slantedBar) to the desired distance
+            % Apply optional parameters to unique scenes
             if(strcmp(name,'slantedBar'))
                 recipe = piMoveObject(recipe,'1_WhiteCube','Translate',[0 p.Results.planeDistance 0]);
                 recipe = piMoveObject(recipe,'2_BlackCube','Translate',[0 p.Results.planeDistance 0]);
+            elseif(strcmp(name,'texturedPlane'))
+                % Scale and translate
+                planeSize = p.Results.planeSize;
+                scaling = [planeSize(1) 1000 planeSize(2)]./[1000 1000 1000]; 
+                recipe = piMoveObject(recipe,'Plane','Scale',scaling); 
+                recipe = piMoveObject(recipe,'Plane','Translate',[0 p.Results.planeDistance 0]); 
+                % Texture
+                [pathTex,nameTex,extTex] = fileparts(p.Results.planeTexture);
+                copyfile(p.Results.planeTexture,obj.workingDir);
+                if(isempty(pathTex))
+                    error('Image texture must be an absolute path.');
+                end
+                recipe = piWorldFindAndReplace(recipe,'dummyTexture.exr',strcat(nameTex,extTex));
             end
                                     
             % Note: What happens if the recipe doesn't include any of
@@ -251,9 +272,8 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             
             % Check to make sure this PBRT file has a realistic eye.
             if(~strcmp(recipe.camera.subtype,'realisticEye'))
-                error('This PBRT file does not include a "realistic eye" camera class.')
-                % TODO: Overwrite the camera class with a realistic eye if
-                % this happens.
+                % error('This PBRT file does not include a "realistic eye" camera class.')
+                recipe.camera = piCameraCreate('realisticEye');
             end
             
             % Set properties
@@ -273,9 +293,13 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
             % is "%s_%f.dat" This is not foolproof, so maybe we can think
             % of a more robust way to do this in the future?
             obj.lensFile = recipe.camera.specfile.value;
-            % Use regular expressions to find any floats within the string
-            value = regexp(obj.lensFile, '(\d+,)*\d+(\.\d*)?', 'match');
-            obj.accommodation = str2double(value{1});
+            if(strcmp(obj.lensFile,''))
+                obj.accommodation = [];
+            else
+                % Use regular expressions to find any floats within the string
+                value = regexp(obj.lensFile, '(\d+,)*\d+(\.\d*)?', 'match');
+                obj.accommodation = str2double(value{1});
+            end
             
             obj.numRays = recipe.sampler.pixelsamples.value;
             
@@ -296,13 +320,6 @@ classdef sceneEye < hiddenHandle % TL: What does this hiddenHandle mean? I seem 
                 obj.numCABands = 0;
             end
             
-            % What happens if there is no look at, only a Transform?
-            % TODO:
-            % 1. Read Look At
-            % 2. Transform it to find new Look At
-            % 3. Populate eyePos/eyeTo/eyeUp using Look At
-            % else
-            % 1. Directly populate eyePos/eyeTo/eyeUp using Look At
             if(~isempty(recipe.lookAt))
                 obj.eyePos = recipe.lookAt.from;
                 obj.eyeTo = recipe.lookAt.to;

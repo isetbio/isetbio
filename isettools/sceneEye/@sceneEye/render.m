@@ -15,6 +15,10 @@ function [ieObject, terminalOutput, outputFile] = render(obj, varargin)
 recipe = obj.recipe;
 
 % Apply any accommodation changes
+if(isempty(obj.accommodation))
+    obj.accommodation = 5;
+    warning('No accommodation! Setting to 5 diopters.');
+end
 recipe = setAccommodation(recipe,obj.accommodation,obj.workingDir);
 
 % Film parameters
