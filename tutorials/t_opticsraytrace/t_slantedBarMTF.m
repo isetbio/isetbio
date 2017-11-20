@@ -16,6 +16,7 @@
 
 %% Initialize ISETBIO
 ieInit;
+if ~piDockerExists, piDockerConfig; end
 
 %% Render a fast image of the slanted bar first
 
@@ -71,6 +72,9 @@ end
 % slight shift. In most cases this slight difference does not make a huge
 % difference, but for color fringing it does. In the future we need to fix
 % this discrepancy. 
+% NOTE: BW, this number (7.69 mm) might be right for back of the lens to to
+% retina, but not for front of the lens to retina, which is about 16mm.
+% Confused here.
 planeDistance = [195 200 205] + 7.69;
 
 for ii = 1:length(planeDistance)

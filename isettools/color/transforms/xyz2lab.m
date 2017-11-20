@@ -1,43 +1,6 @@
 function lab = xyz2lab(xyz, whitepoint, useOldCode)
 % [Deprecated. Use ieXYZ2LAB] Convert CIE XYZ values to CIE LAB values
 %
-% Syntax:
-%   lab = xyz2lab(xyz, whitepoint, [useOldCode])
-%
-% Description:
-%    Convert CIE XYZ into CIE L*a*b*. The CIELAB values are used for color
-%    metric calculations, such as deltaE2000. The formula for XYZ to
-%    CIELAB require knowledge of the XYZ white point as well.
-%
-% Inputs:
-%    xyz        - Either XW or RGB format.
-%    whitepoint - A 3-vector of the xyz values of the white point.
-%    useOldCode - Optional variable whether or not to use matlab
-%                 functions. Default value is false.
-%
-% Outputs:
-%    CIELAB     - Values are returned in the same format (RGB or XW) as the
-%                 input XYZ. 
-%
-% Notes:
-%    - Read about CIELAB formulae in Wyszecki and Stiles, page 167 and
-%      other standard texts. 
-%    - The Matlab image toolbox routines makecform and applycform have
-%      CIELAB transforms. These are not the default, however, because they
-%      are not in all versions. Instead, we default to the code we used
-%      for many years. But by setting useOldCode = 0, you get the Matlab
-%      implementation.
-%    - TODO: Must specify if XYZ is 2 deg or 10 deg XYZ? CIELAB probably
-%      requires one of them. I think XYZ 10. Must check. Or do we just
-%      specify in the methods - BW ). 
-%
-% References:
-%    For a (very small) problem with the official formula, see
-%    <http://www.brucelindbloom.com/index.html?LContinuity.html>
-%
-% See Also:
-%    lab2xyz
-%
 % Copyright ImagEval Consultants, LLC, 2003.
 
 % Examples:
@@ -48,8 +11,9 @@ function lab = xyz2lab(xyz, whitepoint, useOldCode)
    whiteXYZ = dataXYZ(1, :);
    lab = xyz2lab(dataXYZ, whiteXYZ);
 %}
-warning('Use ieXYZ2LAB');
+error('Deprecated. Use ieXYZ2LAB');
 
+%{
 if notDefined('xyz'), error('No data.'); end
 if notDefined('whitepoint'), error('Whitepoint is required'); end
 if notDefined('useOldCode'), useOldCode = false; end
@@ -128,3 +92,4 @@ else
 end
 
 end
+%}

@@ -1,15 +1,16 @@
 function [spd, XYZ] = daylight(wave, cct, units)
-% Generate a daylight SPD with a correlated color temperature
+% Generate a daylight SPD with a correlated color temperature (cct)
 %
 % Syntax:
 %   [spd, XYZ] = daylight([wave], [cct], [units])
 %
 % Description:
-%    Generates a daylight/sun spectral power distribution based on a
-%    correlated color temperature (cct). 
+%    Generates a daylight spectral power distribution based on a
+%    correlated color temperature (cct).
 %
-%    All the returned spectra are normalized so that the luminance of the
-%    first one is 100 cd/m2.
+%    Tthe returned spectra are normalized so that the luminance of the
+%    first returned spd is 100 cd/m2.  See the 3rd example below for how to
+%    calculate the luminance of each of the lights.
 %
 % Inputs:
 %    wave  - The wavelength vector in nm (Default 400:10:700).
@@ -22,12 +23,6 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %            returned matrix.
 %    XYZ   - CIE XYZ values, in rows of returned matrix.
 %
-% Notes:
-%   * [NOTE - DHB: Since spectra have been normalized so that first has a 
-%      luminance of 100 cd/m2, should probably figure out what the
-%      corresponding units of the spectra are and tell the user under
-%      description above.
-%
 % See Also:
 %    blackbody, cct2sun
 %
@@ -35,6 +30,7 @@ function [spd, XYZ] = daylight(wave, cct, units)
 % History:
 %    xx/xx/10       Copyright Imageval
 %    10/30/17  jnm  Comments & formatting
+%    11/13/17  baw  Added example for computing luminance of all spds
 
 % Examples
 %{
@@ -49,8 +45,10 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %}
 %{
    w = 400:700;
-   [spd, xyz] = daylight(w, [4000 6500], 'photons');
+   [spd, xyz] = daylight(w, [4000:1000:8000], 'photons');
    plot(w, spd)
+   % luminance of all the lights
+   L = ieLuminanceFromPhotons(spd', w);   
 %}
 %{
    wave = 400:770;         % Wavelength in nanometers
