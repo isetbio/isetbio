@@ -1,4 +1,4 @@
-%% t_eyeMovement.m
+%% t_eyeMovement3D.m
 %
 % This tutorial shows how to move the eye throughout the scene. We will use
 % the chess set scene for this tutorial. 
