@@ -30,7 +30,7 @@ function varargout = v_wvfComputeConePSF(varargin)
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
-P
+
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
