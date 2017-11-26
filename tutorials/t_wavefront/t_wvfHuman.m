@@ -8,8 +8,11 @@
 % * [NOTE: DHB - The appearance of the two optical images is surprisingly
 %   different. This should be expanded to compare the PSFs, or something else,
 %   so that the tutorial makes clear why so different.
-
 %
+
+% History:
+%   11/26/17  dhb  Simplify not to use wvfCreate (which didn't preserve
+%                  lens density).  Change name to t_ rather than s_. 
 
 %% Initialize
 clear; close all; ieInit;
