@@ -1,6 +1,8 @@
 % wvfComputeAverageObserverConePSF
 %
-%  OBSOLETE - NEEDS TO BE REWRITTEN
+% OBSOLETE - NEEDS TO BE REWRITTEN.  The underlying routines themselves
+% need a careful think and debug; they are currently listed as under
+% development.
 %
 % Compute the cone PSFs of an average observer.  Done by combining measurements
 % from a dataset of Zernike coefficients for a number of observers.
@@ -12,13 +14,14 @@
 %   ComputePSFTest, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
-% 3/14/12  MDL  Changed most struct field assignments to use wvfSet(). Updated
+% 3/14/12  mdl  Changed most struct field assignments to use wvfSet(). Updated
 %               to set fieldSampleRateMMperPixel instead of sizeOfFieldPixels
 % 8/29/11  dhb  Wrote it.
 
-%% Clear
-error('This function is obsolete.');
+%% This is under development
+error('This script is under development.');
 
+%% Clear
 clear; close all;
 
 %% Load cone sensitivities, set weighting spectrum.
