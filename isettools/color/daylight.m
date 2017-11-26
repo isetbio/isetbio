@@ -32,7 +32,6 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %    10/30/17  jnm  Comments & formatting
 %    11/13/17  baw  Added example for computing luminance of all spds
 %    11/16/17  jnm  Formatting
-%
 
 % Examples
 %{
