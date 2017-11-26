@@ -16,7 +16,7 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %    The CIE defines a formula to compute scotopic luminance from the
 %    spectral radiance distribution (energy).
 %
-%       scotopicLuminance = Km * (xwData*Vprime) * deltaLambda;
+%       scotopicLuminance = Km * (xwData * Vprime) * deltaLambda;
 %
 %    xwData are the space-wavelength representation of the signal (energy).
 %
@@ -40,14 +40,17 @@ function lum = ieScotopicLuminanceFromEnergy(energy, wave)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
    wave = 400:10:700;
-   tmp = load('CRT-Dell'); dsp = tmp.d;
+   tmp = load('CRT-Dell');
+   dsp = tmp.d;
    energy = displayGet(dsp, 'spd', wave);
    energy = energy';
-   energy = [1, 1, 1]*energy;
+   energy = [1, 1, 1] * energy;
    lum = ieScotopicLuminanceFromEnergy(energy, wave)
 %}
    

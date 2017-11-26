@@ -30,7 +30,7 @@ function varargout = v_wvfComputeConePSF(varargin)
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
-
+P
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
@@ -416,11 +416,12 @@ drawnow;
 
 end
 
-% Need to come back to this code and get it working.
+%% Need to come back to this code and get it working.
 %
-% %% TEST2.  Optimize focus and add to the plot.
+% TEST2.  Optimize focus and add to the plot.
 % %
-% % This takes a long time.
+% % This takes a long time and the underlying routines are not currently
+% working.
 % 
 % 
 % %Should be using sets/gets

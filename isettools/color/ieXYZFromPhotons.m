@@ -1,8 +1,8 @@
-function XYZ = ieXYZFromPhotons(photons,wave)
+function XYZ = ieXYZFromPhotons(photons, wave)
 % Convert spectral power distribution in photon units into CIE XYZ
 %
 % Syntax:
-%   XYZ = ieXYZFromPhotons(photons,wave)
+%   XYZ = ieXYZFromPhotons(photons, wave)
 %
 % Description:
 %    Computes CIE XYZ values from a spectral power distribution in photon
@@ -26,13 +26,15 @@ function XYZ = ieXYZFromPhotons(photons,wave)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    xx/xx/14  HJ   ISETBIO TEAM, 2014
 %    10/27/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
    wave = 400:5:700;  
-   d65Energy = ieReadSpectra('D65',wave);
-   d65Photons = Energy2Quanta(wave(:),d65Energy(:));
-   d65XYZ = ieXYZFromPhotons(d65Photons(:)',wave)
+   d65Energy = ieReadSpectra('D65', wave);
+   d65Photons = Energy2Quanta(wave(:), d65Energy(:));
+   d65XYZ = ieXYZFromPhotons(d65Photons(:)', wave)
 %}
 
 % Force data into XW format.
@@ -42,13 +44,13 @@ if isempty(iFormat), error('unknown input format'); end
 switch iFormat
     case 'RGB'
         % RGB format
-        [xwData,r,c] = RGB2XWFormat(photons);
+        [xwData, r, c] = RGB2XWFormat(photons);
     otherwise
         % XW format
         xwData = photons;
 end
 
-if size(xwData,2) ~= length(wave)
+if size(xwData, 2) ~= length(wave)
     error('Problem converting input variable photons into XW format.');
 end
 
@@ -68,15 +70,14 @@ else
     disp('10 nm band assumed');
 end
 
-XYZ = 683 * dWave * (xwData*S);
+XYZ = 683 * dWave * (xwData * S);
 
 % If it was sent in RGB, return it in RGB
 switch iFormat
     case 'RGB'
-        XYZ = XW2RGBFormat(XYZ,r,c);
+        XYZ = XW2RGBFormat(XYZ, r, c);
     otherwise
         % XW format, do nothing
 end
 
 end
-

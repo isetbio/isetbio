@@ -45,20 +45,24 @@ function photons = Energy2Quanta(wavelength, energy)
 % History: 
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
    wave = 400:10:700;  
    in = [blackbody(wave, 5000, 'energy'), blackbody(wave, 6000, 'energy')];
    p = Energy2Quanta(wave, in);  
-   figure; plot(wave, p);
+   figure;
+   plot(wave, p);
 
    % Notice that we have to transpose p when we call the inverse
    % Quanta2Energy. Tragic.
 
    % Now, from Quanta2Energy, out in XW format
    out = Quanta2Energy(wave, p');     
-   figure; plot(wave, in, 'ro', wave, out', 'k-');
+   figure;
+   plot(wave, in, 'ro', wave, out', 'k-');
 %}
 
 if ~isvector(wavelength)

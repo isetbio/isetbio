@@ -38,10 +38,20 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
 %                send in this vector.
 %
 % Notes:
-%    * [NOTE - XXX: We used to set this with ieSessionSet and manage it with
-%      ieSessionGet and matlab setpref/getpref. Now, not so much. This code
-%      is left here as a reminder that we might reconsider. (WP option
+%    * [NOTE - XXX: We used to set this with ieSessionSet and manage it
+%      with ieSessionGet and matlab setpref/getpref. Now, not so much. This
+%      code is left here as a reminder that we might reconsider. (WP option
 %      section, currently hardcoded to d65).]
+%    * [Note - XXX: wp switch section - We should think about whether we
+%      want whiteSPD to be persistent]
+%    * [Note - XXX: wp switch section - We used to set this with
+%      ieSessionSet and manage it with ieSessionGet and matlab
+%      setpref/getpref. Now, not so much. This code is left here as a
+%      reminder that we might reconsider.]
+%    * TODO - If wList a single number, then we interpret it as one of the
+%      common visible wavelength ranges. This feature is here for backwards
+%      compatibility. But I am trying to eliminate all such calls. -
+%      Eliminate calls of this nature.
 %
 
 % History:
@@ -52,7 +62,8 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
 %{
    wList = [400:5:700];
    bMatrix = colorBlockMatrix(wList);
-   figure; plot(wList, bMatrix)
+   figure;
+   plot(wList, bMatrix)
 %}
 %{
    wList = [400:5:900]; 
@@ -65,7 +76,8 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
    wList = [400:5:700];
    bMatrix = colorBlockMatrix(wList);
    whiteSPDPhotons = [1, 1, 1] * pinv(bMatrix);
-   figure; plot(wList, whiteSPDPhotons)
+   figure;
+   plot(wList, whiteSPDPhotons)
 %}
 
 if notDefined('wList')
@@ -127,7 +139,7 @@ end
 %   ones(1, length(wList)) * bMatrix = (1, 1, 1)
 % Examples below show how to change from default in which equal photon
 % equal to (1, 1, 1) 
-% We should think about whether we want whiteSPD to persistent
+% We should think about whether we want whiteSPD to be persistent
 % We used to set this with ieSessionSet and manage it with ieSessionGet and
 % matlab setpref/getpref. Now, not so much. This code is left here as a
 % reminder that we might reconsider.
@@ -137,11 +149,11 @@ switch lower(wp)
         % Make equal energy (1, 1, 1)
         ee = ones(length(wList), 1);
         eePhotons = Energy2Quanta(wList, ee);
-        whiteSPD  = eePhotons/max(eePhotons);
+        whiteSPD  = eePhotons / max(eePhotons);
     case 'd65'
         % Make D65 (1, 1, 1)
         d65Photons = blackbody(wList, 6500, 'photons');
-        whiteSPD = d65Photons/max(d65Photons);
+        whiteSPD = d65Photons / max(d65Photons);
     otherwise
         % ep (equal photon spd) goes here
         % Default is equal photon count maps to (1, 1, 1)

@@ -29,6 +29,9 @@ function spd = cct2sun(wave, cct, units)
 %    * [Note: XXX - There are currently several daylight basis files in the
 %      repository. We need to decide on one, and make sure this matches, 
 %      see ieReadSpectra below.]
+%    * [Note: JNM - if you do not provide wave, you must have [] in it's
+%      place, or the function will error. Ex. cct2sun([],cct) not
+%      cct2sun(,cct)]
 %
 % See Also:
 %    daylight
@@ -37,6 +40,8 @@ function spd = cct2sun(wave, cct, units)
 % History:
 %    08/14/00  xxx  Last Updated
 %    10/30/17  jnm  Comments & formatting
+%    11/17/17  jnm  Note, final example & formatting
+%
 
 % Examples:
 %{
@@ -61,6 +66,10 @@ function spd = cct2sun(wave, cct, units)
    w = 400:700;
    spd = cct2sun(w, [4000 6500], 'photons');
    plot(w, spd)
+%}
+%{
+   spd = cct2sun([],[4000:5000]);
+   plot(400:700, spd)
 %}
 
 if notDefined('wave'), wave = 400:700; end

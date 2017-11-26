@@ -40,8 +40,10 @@ function [spectraS, XYZ, XYZ0, sBasis] = ...
 %
 
 % History:
-%  xx/xx/12       Copyright Imageval
-%  11/01/17  jnm  Comments & formatting
+%    xx/xx/12       Copyright Imageval
+%    11/01/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples: 
 %{
@@ -84,13 +86,13 @@ dXYZ = [X(:), Y(:), Z(:)];
 %% Calculate the spectra
 
 % Now, we the find spectral weights on sBasis such that 
-%  dXYZ = cieXYZ'*sBasis*w
-%  w = inv(cieXYZ'*sBasis)*dXYZ'; 
+%  dXYZ = cieXYZ' * sBasis * w
+%  w = inv(cieXYZ' * sBasis) * dXYZ'; 
 % Or really, the spectra that produce these dXYZ. These spectra will have
 % negative values. But we will add in the spectrumE (after scaling
 % for about a 5% change).
-spectraS = sBasis*((cieXYZ'*sBasis)\dXYZ'); 
-spectraS = spectraS * sFactor * norm(spectrumE)/norm(spectraS(:, 1));
+spectraS = sBasis * ((cieXYZ' * sBasis) \ dXYZ'); 
+spectraS = spectraS * sFactor * norm(spectrumE) / norm(spectraS(:, 1));
 spectraS = spectraS + repmat(spectrumE, 1, size(spectraS, 2));
 % vcNewGraphWin; plot(wave, spectraS);
 
