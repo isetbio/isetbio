@@ -33,6 +33,14 @@ function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 %    09/07/11  dhb  Rename. Use wvfParams for i/o.
 %	 11/14/17  jnm  Comments & formatting
 
+% From Jenn's notes when she worked on this in November 2017.
+% wvfComputeOptimizedConePSF
+%     - Note: Was the input/output parameter intended to be non-private?
+%         I think I found the problem. wvfParams is not passed into the function directly, but is called regardless.
+%     - Note: How should the inlineMinFunction be addressed?
+%     - Note: Example is not working! (Trying, but still struggling)
+%     - Please check that all of my commentary inside the inline function is accurate. I am only like 50% certain of most of it. I have also neglected to include an example
+
 % Examples:
 %{
     %% Load cone sensitivities, set weighting spectrum.
