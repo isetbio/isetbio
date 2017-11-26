@@ -7,7 +7,7 @@ function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 % Description:
 %    Optimize the PSF seen by the cones, given the cone sensitivities, a
 %    weighting spectral power distribution, and a criterion. Optimization
-%    is performed on the defocus parameter
+%    is performed on the defocus parameter. 
 %
 % Inputs:
 %    wvfParams - 
@@ -16,7 +16,14 @@ function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 %    wvfParams - 
 %
 % Notes:
-%    * [Note: JNM - The example is broken, but at least 'semi-present' now]
+%    * [NOTE: DHB - This function is under development. The idea is that
+%       the amound of defocus that produces the best PSF, as seen by a
+%       particular cone class, is not determined trivially and is best
+%       found via numerical optimization. We may never need this, and
+%       certainly don't need it right now. I am moving to an
+%       "underDevelopment_wavefront" directory and putting in an error
+%       message at the top so that people don't think it might work.]
+%    * [NOTE: JNM - The example is broken, but at least 'semi-present' now]
 %
 
 % History:
@@ -57,6 +64,9 @@ function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 
     wvfParams0 = wvfComputeOptimizedConePSF(wvfParams0)
 %}
+
+%% This is not yet working.
+error('This function is under development and not yet working');
 
 options = optimset('fmincon');
 options = optimset(options, 'Diagnostics', 'off', 'Display', 'off', ...

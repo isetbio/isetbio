@@ -67,7 +67,14 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 %                           wavelength, in microns.
 %
 % Notes:
-%    * [Note: JNM - The example is broken, but at least 'semi-present' now]
+%    * [NOTE: DHB - This function is under development. The idea is that
+%       the amound of defocus that produces the best PSF, at a particular
+%       wavelength, is not determined trivially and is best found via
+%       numerical optimization. We may never need this, and certainly don't
+%       need it right now. I am moving to an "underDevelopment_wavefront"
+%       directory and putting in an error message at the top so that people
+%       don't think it might work.]
+%    * [NOTE: JNM - The example is broken, but at least 'semi-present' now]
 %
 
 % History:
@@ -93,6 +100,9 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
     wvf0 = wvfComputePSF(wvf0);
     wvf0 = wvfComputeOptimizedConePSF(wvf0);
 %}
+
+%% This is not yet working.
+error('This function is under development and not yet working');
 
 index = find(wvfParams.optimizeWl == wvfParams.wls);
 if (isempty(index))
