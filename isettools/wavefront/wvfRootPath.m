@@ -1,8 +1,8 @@
-function rootPath=wvfRootPath()
+function wvfRoot=wvfRootPath()
 % Return the path to the root wavefront optics toolbox directory
 %
 % Syntax:
-%   d = wvfRootPath
+%   wvfRoot = wvfRootPath
 %
 % Description:
 %    This function must reside in the directory at the base of the
@@ -13,19 +13,15 @@ function rootPath=wvfRootPath()
 %    None.
 %
 % Outputs:
-%    rootPath - The path to the root wavefront optics toolbox
+%    wvfRoot - The path to the root wavefront optics toolbox
 %
-% Notes:
-%    * [Note: JNM - Is there a reason that the other arguments of fileparts
-%      (fName, ext) are present, but not returned?]
 
 % Examples:
 %{
-   d = wvfRootPath
+   wvfRoot = wvfRootPath
 %}
 
-rootPath=which('wvfRootPath');
-
-[rootPath, fName, ext]=fileparts(rootPath);
+wvfRoot = which('wvfRootPath');
+wvfRoot = fileparts(wvfRoot);
 
 return
