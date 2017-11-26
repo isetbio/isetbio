@@ -1,0 +1,47 @@
+% t_wvfHuman
+%
+% Description:
+%    Use the WVF methods to create an approximation to human optics in
+%    isetbio, and compare to Marimont and Wandell model.
+%
+% Notes:
+% * [NOTE: DHB - The appearance of the two optical images is surprisingly
+%   different. This should be expanded to compare the PSFs, or something else,
+%   so that the tutorial makes clear why so different.
+
+%
+
+%% Initialize
+clear; close all; ieInit;
+
+%% Create  simple scene
+scene = sceneCreate('gridlines');
+scene = sceneSet(scene,'fov',1);
+
+%% Create wavefront for human eyes
+%
+% Note that averaging the coefficients to get the sample mean
+% is not the same as finding optics for a typical human observer.
+% Averaging the coefficients does not yield a PSF whose phase structure
+% is like that of individual observers.  Nicolas Cottaris has analyzed
+% this in some detail as part of the IBIOColorDetect project.
+pupilMM = 4.5; zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
+wave = (400:10:700)';
+
+%% Create a default human oi structure with wavefront optics
+oiW = oiCreate('wvf human',pupilMM,zCoefs,wave);
+
+% Compute with wavefront version and display
+oiW = oiCompute(scene,oiW); oiW = oiSet(oiW,'name','Wavefront');
+vcAddAndSelectObject(oiW); oiWindow;
+
+%% The standard default optics, Marimont and Wandell PSF.
+oiM = oiCreate('human');
+
+% Compute with M/W version and display
+oiM = oiCompute(scene,oiM); oiM = oiSet(oiM,'name','Marimont');
+vcAddAndSelectObject(oiM); oiWindow;
+
+
+
+
