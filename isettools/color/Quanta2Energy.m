@@ -39,13 +39,15 @@ function energy = Quanta2Energy(wavelength, photons)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
    
 
 % Examples:
 %{
    wave = 400:10:700;  
    p = blackbody(wave, 3000:1000:8000, 'photons');
-   e = Quanta2Energy(wave, p'); e = diag(1./e(:, 11))*e;
+   e = Quanta2Energy(wave, p'); e = diag(1 ./ e(:, 11)) * e;
    figure; plot(wave, e')
 
    p1 = blackbody(wave, 5000, 'photons');

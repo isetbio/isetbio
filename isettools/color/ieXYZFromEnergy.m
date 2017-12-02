@@ -23,9 +23,10 @@ function XYZ = ieXYZFromEnergy(energy, wave)
 %    wave   - Wavelength samples of energy
 %
 % Outputs:
-%    XYZ    - CIE XYZ values in format matched to input. Y is in candelas
-%             per meter squared (radiance), or lux (irradiance). Units for
-%             radiance are w/[sr*m^2*nm]), and for irradiance w/[m^2*nm].
+%    XYZ    - CIE XYZ values in format matched to the input. Y is in
+%             candelas per meter squared (radiance), or lux (irradiance).
+%             Units for radiance are w / [sr * m^2 * nm]), and for
+%             irradiance w / [m^2 * nm].
 %
 % See Also:
 %   ieXYZFromPhotons()
@@ -92,7 +93,7 @@ else
 end
 
 % The return value has three columns, [X, Y, Z].
-XYZ = 683 * dWave * (xwData*S);
+XYZ = 683 * dWave * (xwData * S);
 
 % If it was sent in RGB, return it in RGB
 switch iFormat

@@ -27,6 +27,7 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 % History:
 %    xx/xx/11       Copyright ImagEval LLC
 %    10/30/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
 
 % Examples:
 %{
@@ -44,7 +45,8 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
    % Compare two types of points 
    pts = [.33, .33];
    chromaticityPlot(pts, 'gray', 256);
-   hold on, plot(pts(1), pts(2), '.')
+   hold on;
+   plot(pts(1), pts(2), '.')
 %}
 
 %% Defaults
@@ -98,7 +100,7 @@ switch background
             g = vcNewGraphWin([], [], 'Color', [0 0 0]);
         end
     case 'gray'
-        backXYZ = backXYZ * Y_val/2;
+        backXYZ = backXYZ * Y_val / 2;
         if newFig
             g = vcNewGraphWin([], [], 'Color', [0.7 0.7 0.7]);
         end

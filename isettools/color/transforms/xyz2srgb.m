@@ -11,9 +11,9 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    the [0, 1] range as required by the sRGB standard.
 %
 %    The sRGB color space is a display-oriented representation that matches
-%    a Sony Trinitron. The monitor white point is assumed to be D65.  The
+%    a Sony Trinitron. The monitor white point is assumed to be D65. The
 %    white point chromaticity are (.3127, .3290), and for an sRGB display
-%    (1, 1, 1) is assumed to map to XYZ = ( 0.9504    0.9999    1.0891).
+%    (1, 1, 1) is assumed to map to XYZ = (0.9504 0.9999 1.0891).
 %    The RGB primaries of an srgb display have xy coordinates of
 %    xy = [.64, .3; .33, .6; .15, .06]
 %
@@ -21,9 +21,9 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    at low levels the value is linear and at high levels the gamma is 2.4.
 %    See the wikipedia page for a discussion.
 %
-%    sRGB values run from [0 1].  At Imageval this assumption changed from
+%    sRGB values run from [0 1]. At Imageval this assumption changed from
 %    the range [0 255] on July 2010. This was based on the wikipedia entry
-%    and discussions with Brainard.  Prior calculations of delta E are not
+%    and discussions with Brainard. Prior calculations of delta E are not
 %    changed by this scale factor.
 %
 %    The linear srgb values (lRGB) can also be returned. These are the
@@ -41,8 +41,7 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %
 % Notes:
 %    This xyz -> sRGB matrix is supposed to work for XYZ values scaled so
-%    that the maximum Y value is around 1.  In the Wikipedia page, they
-%    write:
+%    that the maximum Y value is around 1. In the Wikipedia page, they say:
 %       if you start with XYZ values going to 100 or so, divide them by 100
 %       first, or apply the matrix and then scale by a constant factor to
 %       the [0, 1] range).
@@ -53,8 +52,8 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %       (X, Y, Z = 0.9505, 1.0000, 1.0890).
 %
 % References:
-%    Modern:    http://en.wikipedia.org/wiki/SRGB>
-%    Original:  <http://www.w3.org/Graphics/Color/sRGB>
+%    Modern: <http://en.wikipedia.org/wiki/SRGB>
+%    Original: <http://www.w3.org/Graphics/Color/sRGB>
 %
 % See Also:
 %    srgb2xzy, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
@@ -63,25 +62,28 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
-   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' [255 3 203]']/255;
+   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+        [255 3 203]'] / 255;
    isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1)
-   isetXYZ   = srgb2xyz(isetSRGBs);
+   isetXYZ = srgb2xyz(isetSRGBs);
    againSRGBs = xyz2srgb(isetXYZ)
 %}
 
-% The matrix converts (R, G, B) * matrix.  This is the transpose of the
+% The matrix converts (R, G, B) * matrix. This is the transpose of the
 % Wikipedia page.
 matrix = colorTransformMatrix('xyz2srgb');
 
 % Notice that (1, 1, 1) maps into D65 with unit luminance (Y)
 % matrix = colorTransformMatrix('srgb2xyz');
-% ones(1, 3)*matrix
+% ones(1, 3) * matrix
 
 % The linear transform is built on the assumption that the maximum
-% luminance is 1.0.  If the inputs are all within [0, 1], I suppose we
+% luminance is 1.0. If the inputs are all within [0, 1], I suppose we
 % should leave the data alone. If the maximum XYZ value is outside the
 % range, we need to scale. We return the true maximum luminance in the
 % event the user wants to invert, later.
@@ -98,8 +100,8 @@ if min(xyz(:)) < 0
 end
 lrgb = imageLinearTransform(xyz, matrix);
 
-% The sRGB values must be clipped to 0, 1 range.  
-% The linear values may be outside the range.  This is also described on
+% The sRGB values must be clipped to 0, 1 range. 
+% The linear values may be outside the range. This is also described on
 % the Wikipedia page.
 srgb = lrgb2srgb(ieClip(lrgb, 0, 1));
 
