@@ -1,91 +1,97 @@
-function ieFormatFigure( fig, fontname, fontsize, figsize, border )
-%Formats a figure for presentations or papers.
+function ieFormatFigure(fig, fontName, fontSize, figSize, border)
+% Formats a figure for presentations or papers.
 %
-%   ieFormatFigure( [FIG], [FONTNAME], [FONTSIZE], [FIGSIZE], [BORDER] )
+% Syntax:
+%   ieFormatFigure([fig], [fontName], [fontSize], [figSize], [border])
 %
-%  The font style, font size,figure size and border size can be adjusted.
-%  All parameters are optional.  Using this makes it easier to save the
-%  figure in an appropriate format for Adobe Illustrator. 
+% Description:
+%    The font style, font size, figure size and border size can be adjusted.
+%    All parameters are optional. Using this makes it easier to save the
+%    figure in an appropriate format for Adobe Illustrator. 
 %
-% FIG     : Figure handle.
-% FONTNAME: Name of the font as a string.
-% FONTSIZE: Size of the font (points) as a vector. 
-%           Format: [axes_labels tick_labels]
-% FIGSIZE : Size of the figure [width height] (inches) as a vector.
-% BORDER  : Space around the figure (inches) as a vector.
-%           Format: [left bottom right top] or
-%                   [left/right  botom/top]
+% Inputs:
+%    This function has no required inputs.
 %
-% Default settings of the inputs are:
-%   FIG     : gcf (current figure)
-%   FONTNAME: 'Helvetica'
-%   FONTSIZE: [18 14]
-%   FIGSIZE : [6 6]
-%   BORDER  : [0.75 0.35]
+%    fig      - (Optional)Figure handle.
+%               Default 0
+%    fontName - (Optional) Name of the font as a string.
+%               Default 'Helvetica'
+%    fontSize - Size of the font (points) as a vector.
+%               Default [18 14]
+%               Format: [axes_labels tick_labels]
+%    figSize  - Size of the figure [width height] (inches) as a vector.
+%               Default [6 6]
+%    border   - Space around the figure (inches) as a vector.
+%               Default [0.75 0.35]
+%               Format: [left bottom right top] or
+%                       [left/right  botom/top]
 %
-% Note: Function has a problem settiing the font size of the legend
-% sometimes.  If the legend font is the wrong size, call this function
-% again.  The second call corrects the problem.  We believe this to be a
-% Matlab problem.
+% Outputs:
+%    None.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Notes:
+%    * [Note: XXX - Function has a problem settiing the font size of the
+%      legend sometimes. If the legend font is the wrong size, call this
+%      function again. The second call corrects the problem. We believe
+%      this to be a Matlab problem.] [Note: JNM - Is this still happening
+%      with the current version of MATLAB?]
+%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/22/17  jnm  Formatting
+
+% Examples:
+%{
+    ieFormatFigure();
+    ieFormatFigure(0,'Arial');
+%}
+
 % Format the input parameters.
-
 % Load default paramemters.
-
-if notDefined('fig'),      fig = 0;  end          % Root
-if notDefined('fontname'), fontname = 'Helvetica'; end
-if notDefined('fontsize'), fontsize = [18 14];     end
-if notDefined('figsize'),  figsize  = [6.5 6.5];   end
-if notDefined('border'),   border = [1 0.5];       end
+if notDefined('fig'), fig = 0; end
+if notDefined('fontname'), fontName = 'Helvetica'; end
+if notDefined('fontsize'), fontSize = [18 14]; end
+if notDefined('figsize'), figSize = [6.5 6.5]; end
+if notDefined('border'), border = [1 0.5]; end
 
 % Check the fontsize.
-
-if (length(fontsize) == 1),   fontsize = [fontsize fontsize];  end
+if (length(fontSize) == 1), fontSize = [fontSize fontSize]; end
 
 % Check the figure size.
-if (length(figsize) == 1), figsize = [figsize figsize];    end
+if (length(figSize) == 1), figSize = [figSize figSize]; end
 
 % Check the border.
-if (length(border) == 2), border = [border(1) border(1) border(2) border(2)]; end
+if (length(border) == 2)
+    border = [border(1) border(1) border(2) border(2)];
+end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Get the figure axes.
+if (~notDefined('fig') ~= 1 || fig == 0), fig = gcf; end
+axs = get(fig, 'CurrentAxes');
 
-if (~notDefined('fig') ~= 1 || fig == 0),    fig = gcf;    end
-axs = get( fig, 'CurrentAxes' );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Get the current figure position.
+if (strcmp(get(fig, 'Units'), 'inches') == 1)
+    pos = get(fig, 'Position'); 
+else
+    pos = [0 0 0 0];
+end
 
-if (strcmp(get(fig, 'Units'),'inches') == 1),    pos = get(fig, 'Position'); 
-else   pos = [0 0 0 0];   end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set the figure properties.
+set(fig, 'Units', 'inches');
+set(fig, 'Position', [pos(1:2) figSize]);
+set(fig, 'PaperPosition', [4.25 - figSize(1) / 2, 5.5 - figSize(2) / 2, ...
+    figSize]);
+set(fig, 'Color', [1 1 1]);
 
-set( fig,         'Units', 'inches' );
-set( fig,      'Position', [pos(1:2) figsize] );
-set( fig, 'PaperPosition', [4.25-figsize(1)/2 5.5-figsize(2)/2 figsize] );
-set( fig,         'Color', [1 1 1] );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set the axes properties.
+set(get(axs, 'Title'), 'FontName', fontName, 'FontSize', fontSize(1));
+set(get(axs, 'XLabel'), 'FontName', fontName, 'FontSize', fontSize(1));
+set(get(axs, 'YLabel'), 'FontName', fontName, 'FontSize', fontSize(1));
+set(get(axs, 'ZLabel'), 'FontName', fontName, 'FontSize', fontSize(1));
+set(axs, 'FontName', fontName, 'FontSize', fontSize(2));
 
-set( get(axs,  'Title'), 'FontName', fontname, ...
-   'FontSize', fontsize(1) );
-set( get(axs, 'XLabel'), 'FontName', fontname, ...
-	'FontSize', fontsize(1) );
-set( get(axs, 'YLabel'), 'FontName', fontname, ...
-   'FontSize', fontsize(1) );
-set( get(axs, 'ZLabel'), 'FontName', fontname, ...
-   'FontSize', fontsize(1) );
-set( axs,                'FontName', fontname, ...
-   'FontSize', fontsize(2) );
-
-set( axs,    'Units', 'inches' );
-set( axs, 'Position', [border(1:2) (figsize-border(1:2)-border(3:4))] );
+set(axs, 'Units', 'inches');
+set(axs, 'Position', [border(1:2), (figSize - border(1:2) - border(3:4))]);
 
 return;

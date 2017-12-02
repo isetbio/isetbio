@@ -1,30 +1,56 @@
-function ucData = ieUncompressData(cData,mn,mx,bitDepth)
-%Invert the data compression, ieCompressData
+function ucData = ieUncompressData(cData, mn, mx, bitDepth)
+% Invert the data compression, ieCompressData
 %
-%   ucData = ieUncompressData(cData,mn,mx,bitDepth)
+% Syntax:
+%   ucData = ieUncompressData(cData, mn, mx, bitDepth)
 %
-%  This routine uncompresses the multispectral data stored in SCENE and
-%  OPTICALIMAGE structures. The formula is:
+% Description:
+%     This routine uncompresses the multispectral data stored in SCENE and
+%     OPTICALIMAGE structures. The formula is:
 %
-%       ucData = ((mx-mn)/mxCompress)*(double(cData)) + mn
+%         ucData = ((mx - mn) / mxCompress) * (double(cData)) + mn
 %
-%  This routine, like ieCompressData, is called only through sceneGet and
-%  sceneSet (or oiGet and oiSet).
+%	 This routine, like ieCompressData, is called only through sceneGet and
+%	 sceneSet (or oiGet and oiSet).
 %
-%  The returned ucData value is always double precision unless there is a
-%  memory error.  In that case, we try with single precision.
+%	 The returned ucData value is always double precision unless there is a
+%	 memory error. In that case, we try with single precision.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Inputs:
+%    cData    - Compressed data
+%    mn       - Minimum
+%    mx       - Maximum
+%    bitDepth - Bit depth to determine Max Compression
+%
+% Outputs:
+%    ucData   - uncompressed data
+%
+% Notes:
+%    * [Note: JNM - I removed the empty "if s > mxCompress" loop]
+%
+% See Also:
+%    ieCompressData
+%
 
-% if notDefined('bitDepth'),error('bitDepth required'); end
-mxCompress = (2^bitDepth) - 1;
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/21/17  jnm  Formatting
+%
 
-if mn > mx,      error('Min/Max error.');
-elseif mn == mx, s = mx;       % In this case, cData should be all zeros
-else             s = (mx - mn);
-end
-if s > mxCompress
+% Examples:
+%{
+    ieUncompressData(0:10, 0, 2, 2)
+%}
 
+% if notDefined('bitDepth'), error('bitDepth required'); end
+mxCompress = (2 ^ bitDepth) - 1;
+
+if mn > mx
+    error('Min/Max error.');
+elseif mn == mx
+    s = mx;       % In this case, cData should be all zeros
+else
+    s = (mx - mn);
 end
 
 try
@@ -32,10 +58,9 @@ try
     s  = double(s);
     mn = double(mn);
 
-    % Compression formula is:   cData = uint(mxCompress * (data - mn)/(s));
+    % Compression formula is: cData = uint(mxCompress * (data - mn)/(s));
     % Uncompression formula is the inverse
-    ucData = (s/mxCompress)*double(cData) + mn;
-
+    ucData = (s / mxCompress) * double(cData) + mn;
 
 catch
     % If we run out of memory, we return single precision and warn user.
@@ -43,10 +68,10 @@ catch
     s  = single(s);
     mn = single(mn);
 
-    % Compression formula is:   cData = uint(mxCompress * (data - mn)/(s));
+    % Compression formula is: cData = uint(mxCompress * (data - mn)/(s));
     % Uncompression formula is the inverse
-    ucData = (s/mxCompress)*single(cData) + mn;
-    warning('ISET:ieUncompress','Photons: Single precision'); 
+    ucData = (s / mxCompress) * single(cData) + mn;
+    warning('ISET:ieUncompress', 'Photons: Single precision'); 
 end
 
 end
