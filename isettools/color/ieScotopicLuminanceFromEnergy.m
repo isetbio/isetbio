@@ -1,8 +1,8 @@
-function lum = ieScotopicLuminanceFromEnergy(energy, wave)
+function lum = ieScotopicLuminanceFromEnergy(energy,wave)
 % Compute the scotopic (rod) luminance from spectral energy
 %
 % Syntax:
-%   lum = ieScotopicLuminanceFromEnergy(energy, wave)
+%   lum = ieScotopicLuminanceFromEnergy(energy,wave)
 %
 % Description:
 %    The CIE scotopic luminance function describes wavelength sensitivity
