@@ -1,136 +1,176 @@
-function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(fullname,imageType,varargin)
-% Read image monochrome, rgb, or multispectral data, return multispectral
-% photons
+function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
+    fullname, imageType, varargin)
+% Read image color data, return multispectral photons
 %
+% Syntax:
 %   [photons, illuminant, basis, comment, mcCOEF ] = ...
-%             vcReadImage(fullname,imageType,varargin)
+%             vcReadImage(fullname, imageType, varargin)
 %
-% The image data in fullname are converted into photons.  The other
-% parameters can be returned if needed.  This routine is called pretty much
-% only by sceneFromFile.
+% Description:
+%    The image data in fullname are converted into photons. The other
+%    parameters can be returned if needed. This routine is called pretty
+%    much only by sceneFromFile.
 %
-% There are several different image file types. This program tries to
-% determine the type from the file name.  If that fails, the user is
-% queried.
+%    There are several different image file types. This program tries to
+%    determine the type from the file name. If the function is unable to
+%    determine the filetype from the name, the user will be queried.
 %
-% INPUTS
-%  fullname:  Either a file name or possible RGB data read from a file
-%             An empty input filename produces a return, with no error
-%             message, to work smoothly with canceling vcSelectImage.
+% Inputs:
+%    fullname   - (Optional) Either a file name or possible RGB data read
+%                 from a file. An empty input filename produces a return,
+%                 with no error message, to work smoothly with canceling
+%                 vcSelectImage. Default is to select an image based on
+%                 imageType using vcSelectImage.
+%    imageType  - (Optional) The type of input data. Default is 'rgb' There
+%                 are two general types: {'rgb' 'unispectral' 'monochrome'}
+%                 and {'multispectral', 'hyperspectral'}. The two sets,
+%                 colloquially singular and multiple are broken into the
+%                 following main breakdowns:
+%           singular - varargin{1} can be either the file name of a display
+%                      (displayCreate) structure, or the display structure
+%                      itself. The data in the proscribed format is
+%                      returned as photons estimated by puttig the data
+%                      into the display framebuffer. If there is no display
+%                      calibration file, we arrange the values so that the
+%                      display code returns the same RGB values as the
+%                      original file.
+%           multiple - In this case the data is stored as coefficients and
+%                      basis functions. We build the spectral
+%                      representation here. These, along with a comment and
+%                      measurement of the scene illuminant (usually
+%                      measured using a PhotoResearch PR-650 spectral
+%                      radiometer) can be returned.
+%               The input types below have the following specific
+%               individual characterists
+%           'rgb'    - The default imageType. varargin{2} contains the
+%                      doSub flag. If true, the input image will be
+%                      converted to a subpixel rendered image. The
+%                      conversion is done by replacing each pixel with the
+%                      subpixel structure of the display. Seethe function
+%                      displayCompute for the details of this conversion.
+%                      By default, doSub is set to False. Note that, for
+%                      large image, turning on doSub could be extremely an
+%                      slow process.
+%    varargin   - (Optional) Variable of varying length, depending on the
+%                 imageType of the call. Default is 
 %
-%  imageType: The type of input data.  There are two general types
+% Outputs:
+%    photons    - RGB format of photon data (r, c, w)
+%    illuminant - An illuminant structure
+%    basis      - A structure containing the basis functions for a
+%                 multispectral SPD
+%    comment    - A comment string
+%    mcCOEF     - Coefficients for basis functions for multispectral SPD
 %
-%   'rgb','unispectral','monochrome':
-%     In this case, varargin{1} can be either
-%       * file name to a display (displayCreate) structure
-%       * the display structure itself.
-%     In that case, the data in the RGB or other format are returned as
-%     photons estimated by putting the data into the display framebuffer.
+% Notes:
+%    * [Note: JNM - Removed break point at the check for whether or not
+%      imageType exists.]
+%    * [Note: JNM - There are a number of programming notes, would it be
+%      better to combine them in another fashion? Or should we leave them
+%      as-is for the most part?]
+%    * [Note: XXX - TODO: Make this a function. [photons, basis] =
+%      ieReadMultispectralCoef(fullname);]
+%    * [Note: XXX - (Copied from below. Who is Joyce and why hasn't the
+%      explanation been added yet?) The variable photons should be stored,
+%      there is no linear model. We fill the basis slots. Also, we allow
+%      the photons to be stored in 'photons' or 'data'. We allow the
+%      wavelength to be stored in 'wave' or 'wavelength'. Ask Joyce why.]
+%    * [Note: JNM - Why use warndlg instead of warning?]
 %
-%     If there is no display calibration file, we arrange the values so
-%     that the display code returns the same RGB values as in the original
-%     file.
-%     In 'rgb' case, varargin{2} is used as doSub flag. If true, the input
-%     image will be converted to subpixel rendered image. The conversion is
-%     done by replacing each pixel with the subpixel structure of the
-%     display. See displayCompute for details of this conversion. By
-%     default, doSub is set to False. Note that, for large image, turning
-%     on doSub could be extremely slow.
+% See Also:
+%    displayCompute, v_displayLUT, vcSelectImage, sceneFromFile
 %
-%   'multispectral','hyperspectral': In this case the data are stored as
-%     coefficients and basis functions. We build the spectral
-%     representation here. These, along with a comment and measurement of
-%     the scene illuminant (usually measured using a PhotoResearch PR-650
-%     spectral radiometer) can be returned.
+
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/29/17  jnm  Formatting & notes
 %
-% RETURNS
-%  photons:     RGB format of photon data (r,c,w)
-%  illuminant:  An illuminant structure
-%  basis:       Structure containing basis functions for multispectral SPD
-%  comment:
-%  mcCOEF:      Coefficients for basis functions for multispectral SPD
-%
+
 % Examples:
-%
-%   See v_displayLUT.m for example calls.
-%
-% Copyright ImagEval Consultants, LLC, 2005.
+%{
+    fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
+    photons = vcReadImage(fName,'rgb');
+%}
 
 if notDefined('imageType'), imageType = 'rgb'; end
 if notDefined('fullname')
-    [fullname,imageType] = vcSelectImage(imageType);
+    [fullname, imageType] = vcSelectImage(imageType);
 end
 
 if isempty(fullname), photons = []; return; end
 
 % These are loaded for a file, when they are returned.
-mcCOEF = []; comment = '';
+mcCOEF = [];
+comment = '';
 
 imageType = ieParamFormat(imageType);
 
 switch lower(imageType)
     
-    case {'rgb','unispectral','monochrome'}
-        if isempty(varargin) || isempty(varargin{1}), dispCal = [];
-        else dispCal = varargin{1};
+    case {'rgb', 'unispectral', 'monochrome'}
+        if isempty(varargin) || isempty(varargin{1})
+            dispCal = [];
+        else
+            dispCal = varargin{1};
         end
         
-        % doSub indicates whether or not to use subpixel rendering
-        % techniques
-        if length(varargin) > 1, doSub = varargin{2};
-        else doSub = false;
+        % doSub indicates if we should use subpixel rendering techniques
+        if length(varargin) > 1
+            doSub = varargin{2};
+        else
+            doSub = false;
         end
         
         % if we do subpixel rendering, the user could specify how many
         % samples per dixel to be used in scene generation
-        if length(varargin) > 2, sz = varargin{3};
-        else sz = [];
+        if length(varargin) > 2
+            sz = varargin{3};
+        else
+            sz = [];
         end
         
-        % Programming Note (HJ):
-        %   scene rendered without subpixel (doSub=false) could be
-        %   different from the one rendered with subpixel of size [m n],
-        %   where m and n indicates the number of pixels per dixel in row
-        %   and columns. This kind of inconsistancy will occur especially
-        %   when pixels per dixel is not [1 1].
-        %   
-        %   To be more accurate, please turn off subpixel rendering if the
-        %   samples per dixel gets very small.
-        %
-        % (HJ)
+        % [Note: HJ - Programming Note: Scene rendered without subpixel
+        % (doSub=false) could be different from the one rendered with
+        % subpixel of size [m n], where m and n indicates the number of
+        % pixels per dixel in row and columns. This kind of inconsistancy
+        % will occur especially when pixels per dixel is not [1 1]. To be
+        % more accurate, please turn off subpixel rendering if the samples
+        % per dixel gets very small.]
         
         % Read the image data and convert them to double
-        if ischar(fullname), inImg = double(imread(fullname));
-        else                 inImg = double(fullname);
+        if ischar(fullname)
+            inImg = double(imread(fullname));
+        else
+            inImg = double(fullname);
         end
         
-        % An rgb image.
+        % A rgb image.
         if isempty(dispCal)
             if ismatrix(inImg), inImg = repmat(inImg, [1 1 3]); end
             if ndims(inImg) ~= 3
-                error('Bad number of dimensions %.0f of image',ndims(img));
+                error('Bad number of dimensions %.0f of image', ...
+                    ndims(img));
             end
             % If there is no display calibration file, we arrange the
             % photon values so that the scene window shows the same RGB
             % values as in the original file.
-            %
             fprintf('[%s]: Assuming input data is 8 bit\n', mfilename);
             fprintf('[%s]: Using block matrix primaries\n', mfilename);
-            [xwImg,r,c,~] = RGB2XWFormat(inImg/255);
+            [xwImg, r, c, ~] = RGB2XWFormat(inImg / 255);
             
-            % Prevent DR > 10,000.  See ieCompressData.
+            % Prevent DR > 10, 000. See ieCompressData.
             xwImg = ieClip(xwImg, 1e-3, 1);
             
-            % When we render the RGB data in xwImg, they are multipled
-            % by the colorBlockMatrix.  By storing the photons this
-            % way, the displayed image in the scene window will be the
-            % same as the original RGB image.
-            photons = xwImg*pinv(colorBlockMatrix(31));
+            % When we render the RGB data in xwImg, they are multipled by
+            % the colorBlockMatrix. By storing the photons this way, the
+            % displayed image in the scene window will be the same as the
+            % original RGB image.
+            photons = xwImg * pinv(colorBlockMatrix(31));
             
         else
-            % The user sent a display calibration file. If the user
-            % sent a string, read the file.  If the user sent in the
-            % display structure, set it.
+            % The user sent a display calibration file. If the user sent a
+            % string, read the file. If the user sent in the display
+            % structure, set it.
             if ischar(dispCal)
                 d = displayCreate(dispCal);
             elseif isstruct(dispCal) && isequal(dispCal.type, 'display')
@@ -140,44 +180,40 @@ switch lower(imageType)
             end
             
             % Get the parameters from the display
-            wave   = displayGet(d, 'wave');  % Primary wavelengths
+            wave = displayGet(d, 'wave');  % Primary wavelengths
             gTable = displayGet(d, 'gamma table');
             
             np = displayGet(d, 'n primaries');
-            if ismatrix(inImg)
-                inImg = repmat(inImg, [1 1 np]);
-            end
+            if ismatrix(inImg), inImg = repmat(inImg, [1 1 np]); end
             
-            % pad third dimension of inImg to nprimaries
-            % padding is mainly for multi-primary displays, e.g. rgbw
-            % display. Padding zeros might not be a good idea, but we don't
-            % have a general solution
-            inImg = padarray(inImg, [0 0 np-size(inImg,3)], 0, 'post');
-            assert(size(inImg, 3)==np, 'bad image size');
+            % Pad the third dimension of inImg to nprimaries. The padding
+            % is mainly for multi-primary displays, e.g. rgbw display.
+            % Padding zeros might not be a good idea, but we don't have a
+            % general solution
+            inImg = padarray(inImg, [0 0 np-size(inImg, 3)], 0, 'post');
+            assert(size(inImg, 3) == np, 'bad image size');
             
-            % Check whether the gTable has enough entries for this
-            % image
-            if max(inImg(:)) > size(gTable,1)
+            % Check whether the gTable has enough entries for this image
+            if max(inImg(:)) > size(gTable, 1)
                 error('Img exceeds gTable');
             elseif max(inImg(:)) <= 1
                 % DAC values are [0, 2^nBits - 1]
-                inImg = round(inImg*(size(gTable,1)-1));
+                inImg = round(inImg * (size(gTable, 1) - 1));
             elseif max(inImg(:)) <= 255
-                % We believe this is an 8 bit image.  We check whether
-                % the gTable is 8 or 10 or whatever.  If it is not 8
-                % bit, then we stretch the image values out to span the
-                % same range as the gTable.
-                s = size(gTable,1);
+                % We believe this is an 8 bit image. We check whether the
+                % gTable is 8 or 10 or whatever. If it is not 8 bit, then
+                % we stretch the image values out to span the same range as
+                % the gTable.
+                s = size(gTable, 1);
                 if s > 256
-                    fprintf('[%s] Assuming 8bit image and %d bit LUT\n',...
-                            mfilename,log2(s));
-                    inImg = round(inImg/255*(s-1));
+                    fprintf(['[%s] Assuming an 8bit image and a %d bit' ...
+                        ' LUT\n'], mfilename, log2(s));
+                    inImg = round(inImg / 255 * (s - 1));
                 end
             end
             
-            % Convert the DAC values to linear intensities for the
-            % channels.
-            inImg  = ieLUTDigital(inImg,gTable);
+            % Convert DAC values to linear intensities for the channels.
+            inImg = ieLUTDigital(inImg, gTable);
             
             % Subpixel rendering
             if doSub
@@ -185,11 +221,10 @@ switch lower(imageType)
             end
             spd = displayGet(d, 'spd');   % Primary SPD in energy
             
-            [xwImg,r,c] = RGB2XWFormat(inImg);
+            [xwImg, r, c] = RGB2XWFormat(inImg);
             
-            % Convert energy units to quanta
-            % This step could be slow, espetially when we use sub-pixel
-            % sampling
+            % Convert energy units to quanta. This step could be slow,
+            % especially when we use sub-pixel sampling
             if numel(xwImg) < ieSessionGet('image size threshold') ...
                     || ~ieSessionGet('waitBar') % small image
                 % compute directly
@@ -201,8 +236,8 @@ switch lower(imageType)
                 photons = zeros(size(xwImg, 1), length(wave));
                 for ii = 1 : length(wave)
                     photons(:, ii) = Energy2Quanta(wave(ii), ...
-                                     (xwImg * spd(ii,:)')')';
-                    waitbar(ii/length(wave), wBar);
+                                     (xwImg * spd(ii, :)')')';
+                    waitbar(ii / length(wave), wBar);
                 end
                 delete(wBar);
             end
@@ -211,146 +246,162 @@ switch lower(imageType)
             amQuanta = Energy2Quanta(wave, am(:));
             photons = bsxfun(@plus, photons, amQuanta');
         end
-        photons = XW2RGBFormat(photons,r,c);
+        photons = XW2RGBFormat(photons, r, c);
         
-    case {'multispectral','hyperspectral'}
-        
-        % These are always there.  Illuminant should be there, too.  But
+    case {'multispectral', 'hyperspectral'}
+        % These are always there. Illuminant should be there, too. But
         % sometimes it isn't, so we check below, separately.
         
         % See if the representation is a linear model with basis functions
-        variables = whos('-file',fullname);
-        if ieVarInFile(variables,'mcCOEF')
+        variables = whos('-file', fullname);
+        if ieVarInFile(variables, 'mcCOEF')
             disp('Reading multispectral data with mcCOEF.')
             
             % Make this a function.
-            % [photons,basis] = ieReadMultispectralCoef(fullname);
-            
+            % [photons, basis] = ieReadMultispectralCoef(fullname);
             
             % The data are stored using a linear model
             load(fullname, 'mcCOEF', 'basis', 'comment');
             
             % Resample basis functions to the user specified wavelength
-            % list.  vcReadImage(fullname,'multispectral',[400:20:800]);
+            % list. vcReadImage(fullname, 'multispectral', [400:20:800]);
             if ~isempty(varargin) && ~isempty(varargin{1})
-                oldWave    = basis.wave; %#ok
-                newWave    = varargin{1};
-                nBases     = size(basis.basis,2);
-                extrapVal  = 0;
-                newBases   = zeros(length(newWave),nBases);
+                oldWave = basis.wave; %#ok
+                newWave = varargin{1};
+                nBases = size(basis.basis, 2);
+                extrapVal = 0;
+                newBases = zeros(length(newWave), nBases);
                 for ii=1:nBases
-                    newBases(:,ii) = interp1(oldWave(:), basis.basis(:,ii), newWave(:),'linear',extrapVal);
+                    newBases(:, ii) = interp1(oldWave(:), ...
+                        basis.basis(:, ii), newWave(:), 'linear', ...
+                        extrapVal);
                 end
                 basis.basis = newBases;
                 basis.wave = newWave;
             end
             
             % The image data should be in units of photons
-            photons = imageLinearTransform(mcCOEF,basis.basis');
-            % vcNewGraphWin; imageSPD(photons,basis.wave);
+            photons = imageLinearTransform(mcCOEF, basis.basis');
+            % vcNewGraphWin;
+            % imageSPD(photons, basis.wave);
             
             % These lines are left in because there must be different file
-            % types out there somewhere.  Sometimes we stored the mean, and
+            % types out there somewhere. Sometimes we stored the mean, and
             % sometimes we didn't.
-            if ieVarInFile(variables,'imgMean')
+            if ieVarInFile(variables, 'imgMean')
                 disp('Saved using principal component method');
-                load(fullname,'imgMean')
+                load(fullname, 'imgMean')
                 
                 % Resample the image mean to the specified wavelength list
                 if ~isempty(varargin)&& ~isempty(varargin{1})
-                    extrapVal  = 0;
-                    imgMean = interp1(oldWave(:), imgMean(:), newWave(:),'linear',extrapVal); %#ok
+                    extrapVal = 0;
+                    imgMean = interp1(oldWave(:), imgMean(:), ...
+                        newWave(:), 'linear', extrapVal); %#ok
                 end
                 
-                % Sometimes we run out of memory here.  So we should have a
+                % Sometimes we run out of memory here. So we should have a
                 % try/catch sequence.
                 %
-                % The saved function was calculated using principal components,
-                % not just the SVD.  Hence, the mean is stored and we must add
-                % it into the computed image.
-                [photons,r,c] = RGB2XWFormat(photons);
+                % The saved function was calculated using principal
+                % components, not just the SVD. Hence, the mean is stored
+                % and we must add it into the computed image.
+                [photons, r, c] = RGB2XWFormat(photons);
                 try
-                    photons = repmat(imgMean(:),1,r*c) + photons';
+                    photons = repmat(imgMean(:), 1, r * c) + photons';
                 catch ME
                     % Probably a memory error. Try with single precision.
-                    if strcmp(ME.identifier,'MATLAB:nomem')
-                        photons = repmat(single(imgMean(:)),1,r*c) + single(photons');
+                    if strcmp(ME.identifier, 'MATLAB:nomem')
+                        photons = repmat(single(imgMean(:)), 1, r * c) ...
+                            + single(photons');
                     else
                         ME.identifier
                     end
                 end
                 
-                photons = double(XW2RGBFormat(photons',r,c));
-                % figure(1); imagesc(sum(img,3)); axis image; colormap(gray)
-                
+                photons = double(XW2RGBFormat(photons', r, c));
+                % figure(1);
+                % imagesc(sum(img, 3));
+                % axis image;
+                % colormap(gray)
             else
                 disp('Saved using svd method');
             end
             
             % Deal with the illuminant
-            if ieVarInFile(variables,'illuminant')
-                load(fullname,'illuminant')
+            if ieVarInFile(variables, 'illuminant')
+                load(fullname, 'illuminant')
             else
                 % illuminant = [];
-                warndlg('No illuminant information in %s\n',fullname);
+                warndlg('No illuminant information in %s\n', fullname);
             end
             
             % Force photons to be positive
-            photons = max(photons,0);
+            photons = max(photons, 0);
             
         else
             % The variable photons should be stored, there is no linear
-            % model. We fill the basis slots.  Also, we allow the photons
-            % to be stored in 'photons' or 'data'.  We allow the wavelength
-            % to be stored in 'wave' or 'wavelength'.  Ask Joyce why.
+            % model. We fill the basis slots. Also, we allow the photons
+            % to be stored in 'photons' or 'data'. We allow the wavelength
+            % to be stored in 'wave' or 'wavelength'. Ask Joyce why.
             disp('Reading multispectral data with raw data.')
             
             % Make this function.
-            % [photons,basis] = ieReadMultispectralRaw(fullname);
+            % [photons, basis] = ieReadMultispectralRaw(fullname);
             
-            if ieVarInFile(variables,'photons'), load(fullname,'photons');
-            elseif ieVarInFile(variables,'data')
-                load(fullname,'data'); photons = data; clear data;
-            else error('No photon data in file');
+            if ieVarInFile(variables, 'photons')
+                load(fullname, 'photons');
+            elseif ieVarInFile(variables, 'data')
+                load(fullname, 'data');
+                photons = data;
+                clear data;
+            else
+                error('No photon data in file');
             end
-            if ieVarInFile(variables,'comment'),  load(fullname,'comment'); end
-            if ieVarInFile(variables,'wave'), load(fullname,'wave');
-            elseif ieVarInFile(variables,'wavelength')
-                load(fullname,'wavelength');
-                wave = wavelength; clear wavelength;
+            if ieVarInFile(variables, 'comment')
+                load(fullname, 'comment');
+            end
+            if ieVarInFile(variables, 'wave')
+                load(fullname, 'wave');
+            elseif ieVarInFile(variables, 'wavelength')
+                load(fullname, 'wavelength');
+                wave = wavelength;
+                clear wavelength;
             end
             
             % Pull out the photons
             if ~isempty(varargin) && ~isempty(varargin{1})
                 newWave = varargin{1};
                 perfect = 0;
-                idx = ieFindWaveIndex(wave,varargin{1},perfect);
-                photons = photons(:,:,idx);
+                idx = ieFindWaveIndex(wave, varargin{1}, perfect);
+                photons = photons(:, :, idx);
                 wave = newWave;
                 % oldWave = wave;
                 % wave = newWave;
             end
-            basis.basis = []; basis.wave = round(wave);
+            basis.basis = [];
+            basis.wave = round(wave);
         end
         
         % For linear model or no linear model, either way, we try to find
         % illuminant and resample.
         illuminant = [];
-        if ieVarInFile(variables,'illuminant'), load(fullname,'illuminant')
-        else        warndlg('No illuminant information in %s\n',fullname);
+        if ieVarInFile(variables, 'illuminant')
+            load(fullname, 'illuminant')
+        else
+            warndlg('No illuminant information in %s\n', fullname);
         end
         illuminant = illuminantModernize(illuminant);
         
         % Resample the illuminant to the specified wavelength list
         if ~isempty(varargin)&& ~isempty(varargin{1})
             % Resample the illuminant wavelength to the new wave in the
-            % call to this function.  This interpolates the illuminant
-            % data, as well.
-            illuminant = illuminantSet(illuminant,'wave',newWave(:));
+            % call to this function. This will also interpolate the
+            % illuminant data.
+            illuminant = illuminantSet(illuminant, 'wave', newWave(:));
         end
         
     otherwise
-        fprintf('%s\n',imageType);
+        fprintf('%s\n', imageType);
         error('Unknown image type.');
 end
 

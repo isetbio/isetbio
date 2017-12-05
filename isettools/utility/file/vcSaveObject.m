@@ -1,29 +1,49 @@
-function fullName = vcSaveObject(obj,fullName)
-% Save an ISET object into a .mat file. 
+function fullName = vcSaveObject(obj, fullName)
+% Deprecated. Use vcExportObject. Save an ISET object into a .mat file. 
 %
-%   fullName = vcSaveObject(obj,[fullName]);
+% Syntax:
+%   fullName = vcSaveObject(obj, [fullName]);
 %
-% Users should generally use vcExportObject.
+% Description:
+%    Users should generally use vcExportObject. If you absolutely must use
+%    this routine:
 %
-% If you must use this routine:
+%    The object is saved with the proper type of name so that it can be
+%    loaded using vcLoadObject() at a later. When called directly, the
+%    parameters and data are all saved.
 %
-% The object is saved with the proper type of name so that it can be loaded
-% using vcLoadObject() at a later.  When called directly, the parameters
-% and data are all saved.  
+%    If you wish to save only the parameters, without the data, then use
+%    vcExportObject and set the clearDataFlag. 
 %
-% If you wish to save only the parameters, without the data, then use
-% vcExportObject and set the clearDataFlag.  
+%    The ISET objects that can be saved are: scene, opticalImage, optics,
+%        isa, pixel, or vcImage.
 %
-% The ISET objects that can be saved are: 
-% 
-%   SCENE,OPTICALIMAGE,OPTICS,ISA,PIXEL, or VCIMAGE.
-%   
+% Inputs:
+%    obj      - The object you wish to save.
+%    fullName - Full file name and path
+%
+% Outputs:
+%    fullName - Full file name and path
+%
+% See Also:
+%    vcExportObject
+%
+
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/29/17  jnm  Formatting
+%
+
 % Examples:
-%  fullName = vcSaveObject(scene);
-%  fullName = vcSaveObject(oi,'c:\u\brian\Matlab\myFileName.mat')
-%  fullName = vcSaveObject(optics,'c:\u\brian\Matlab\myOptics.mat')
-%
-% Copyright ImagEval Consultants, LLC, 2005.
+%{
+    scene = sceneCreate;
+    oi = oiCreate;
+    fullName = vcSaveObject(scene);
+    fullName = vcSaveObject(oi, ['c:\Users\Admin\Documents\MATLAB\' ...
+        'toolboxes\myFileName.mat'])
+    fullName = vcSaveObject(optics, ['c:\Users\Admin\Documents\MATLAB\' ...
+        'toolboxes\myOptics.mat'])
+%}
 
 if notDefined('obj'), error('Object required.'); end
 
@@ -31,35 +51,29 @@ objType = vcGetObjectType(obj);
 objType = vcEquivalentObjtype(objType);
 
 if notDefined('fullName')
-    fullName = vcSelectDataFile(objType,'w','mat'); 
+    fullName = vcSelectDataFile(objType, 'w', 'mat'); 
 end
 if isempty(fullName), return; end
 
 switch(lower(objType))
     case 'scene'
         scene = obj;
-        save(fullName,'scene');
-        
+        save(fullName, 'scene');
     case 'optics'
         optics = obj;
-        save(fullName,'optics');
-        
+        save(fullName, 'optics');
     case 'opticalimage'
         opticalimage = obj;
-        save(fullName,'opticalimage');
-        
+        save(fullName, 'opticalimage');
     case 'isa'
         sensor = obj;
-        save(fullName,'sensor');
-        
+        save(fullName, 'sensor');
     case 'pixel'
         pixel = obj;
-        save(fullName,'pixel');
-        
+        save(fullName, 'pixel');
     case 'vcimage'
         vcimage = obj;
-        save(fullName,'ip');
-   
+        save(fullName, 'ip');
     otherwise
         error('Unknown object type');
 end
