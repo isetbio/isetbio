@@ -77,7 +77,7 @@ end
 % And convert to support in cycles per degree using 300 um per degree,
 % which is the number that appears to be baked into the optics object.
 uMPerMm = 1000;
-uMPerDeg = p.Results.umPerDeg;
+uMPerDeg = p.Results.uMPerDegree;
 [xSfGridCyclesMm,ySfGridCyclesMm] = meshgrid(sfValuesCyclesMm{1},sfValuesCyclesMm{2});
 xSfGridCyclesDeg = uMPerDeg*xSfGridCyclesMm/uMPerMm;
 ySfGridCyclesDeg = uMPerDeg*ySfGridCyclesMm/uMPerMm;
