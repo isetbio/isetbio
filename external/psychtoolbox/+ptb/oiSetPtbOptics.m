@@ -1,7 +1,10 @@
 function oi = oiSetPtbOptics(oi,varargin)
-%oiSetPtbOptics  Put a line spread function from PTB into an oi.
+% Put a line spread function from PTB into an oi.
+%
+% Syntax:
 %    oi = oiSetPtbOptics(oi,varargin)
 % 
+% Description
 %    Psychtoolbox has code to generate a number of standard line spread
 %    functions.  This routine takes one of those methods and does the
 %    apprpriate massaging to insert it into the optics structure of a
@@ -12,32 +15,46 @@ function oi = oiSetPtbOptics(oi,varargin)
 %
 %    This lives in the +ptb package, prepend ptb. when callling.
 %
-%    Inputs:
-%    oi - Optical image object to update.
-%
-%    Outputs:
-%    oi - Updated optical image object.
-%
- %   Optional parameter name/value pairs chosen from the following:
-%
-%   'opticsModel'            Line spread type (default, DavilaGeisler)
-%                             'Geisler'       - See PTB's GeislerLSFMinutes
-%                             'GeislerLsfAsPsf' - Take G lsf and treat it directly as psf
-%                             'DavilaGeisler' - See PTB's DavilaGeislerLSFMinutes
-%                             'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
-%                             'Westheimer'    - See PTB's WestheimerLSFMinutes
-%                             'Williams'      - See PTB's WilliamsMTF
-%
-%    The cases of GeislerLsfAsPsf and DavilaGeislerLsfAsPsf are to see if
-%    we better reproduce some of the Geisler and colleagues results on the
-%    assumption that this is what they did. It is not meant as a good
+%    The PSF cases of GeislerLsfAsPsf and DavilaGeislerLsfAsPsf are to see
+%    if we better reproduce some of the Geisler and colleagues results on
+%    the assumption that this is what they did. It is not meant as a good
 %    estimate of the human psf, although the difference between doing this
 %    and the right conversion from lsf to psf is fairly subtle.
+%
+% Inputs:
+%    oi - Optical image object to update.
+%
+% Outputs:
+%    oi - Updated optical image object.
+%
+% Optional key/value pairs:
+%
+%   'opticsModel' -     Line spread type (default, DavilaGeisler)
+%                         'Geisler'         - See PTB's GeislerLSFMinutes
+%                         'GeislerLsfAsPsf' - Take Geisler lsf and treat it
+%                                             directly as psf
+%                         'DavilaGeisler'   - See PTB's DavilaGeislerLSFMinutes
+%                         'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat
+%                                             it directly as a psf
+%                         'Westheimer'    - See PTB's WestheimerLSFMinutes
+%                         'Williams'      - See PTB's WilliamsMTF
+%
+%    'uMPerDegree' -    Scalar, conversion factor between degrees of visual
+%                       angle and um on the retina.  (Default 300).
+%                       
+% See also:
+%
+
+% History:
+%   12/05/17    dhb   Cleaning up comments a little.
+%                     Add uMPerDegree key/value pair.
+%
 
 %% Parse input
 p = inputParser;
 p.addRequired('oi',@isstruct);
 p.addParameter('opticsModel', 'DavilaGeisler', @ischar);
+p.addParameter('uMPerDegree', 300, @isscalar);
 p.parse(oi,varargin{:});
 
 %% Pull out optics structure and get wls
@@ -60,7 +77,7 @@ end
 % And convert to support in cycles per degree using 300 um per degree,
 % which is the number that appears to be baked into the optics object.
 uMPerMm = 1000;
-uMPerDeg = 300;
+uMPerDeg = p.Results.umPerDeg;
 [xSfGridCyclesMm,ySfGridCyclesMm] = meshgrid(sfValuesCyclesMm{1},sfValuesCyclesMm{2});
 xSfGridCyclesDeg = uMPerDeg*xSfGridCyclesMm/uMPerMm;
 ySfGridCyclesDeg = uMPerDeg*ySfGridCyclesMm/uMPerMm;
