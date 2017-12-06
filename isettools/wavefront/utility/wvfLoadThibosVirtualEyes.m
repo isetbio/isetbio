@@ -3,7 +3,7 @@ function [sample_mean, sample_cov] = ...
 % Load Thibos mean and covariance of Zernicke coefficients for human data
 %
 % Syntax:
-%   [sample_mean, sample_cov] = wvfLoadThibosVirtualEyes(pupilDiameterMM)
+%   [sample_mean, sample_cov] = wvfLoadThibosVirtualEyes([pupilDiameterMM])
 %
 % Description:
 %    Load statistical summary of the Zernicke polynomial coeffcients
@@ -31,12 +31,19 @@ function [sample_mean, sample_cov] = ...
 %
 %    There are no specific comments about the data.
 %
+%    At one point, DHB compared these calculations to the figures in the
+%    Autrusseau paper. He also compared the values of the Zernike
+%    polynomial coefficients that we load to the data shown in Figure 6
+%    of the JOSA-A paper. These align as well.
+%
 % Inputs:
-%    pupilDiameterMM - The diameter of the pupil in MM
+%    pupilDiameterMM - The diameter of the pupil in mm that was used for
+%                      the measurements.  This can be 7.5, 6.0, 4.5 or 3.0.
+%                      If this is not passed, it defaults to 6.0.
 %
 % Outputs:
-%    sample_mean     - Zernike mean
-%    sample_cov      - Zernike covariance
+%    sample_mean     - Zernike mean vector
+%    sample_cov      - Zernike covariance matrix
 %
 % References:
 %    * A related paper:  Autrusseau, Thibos and Shevell (2011)
@@ -46,10 +53,6 @@ function [sample_mean, sample_cov] = ...
 %      http://www.sciencedirect.com/science/article/pii/S0042698911003099
 %
 % Notes:
-%    * [Note: DHB - compared these calculations to the figures in the
-%      Autrusseau paper. He also compared the values of the Zernike
-%      polynomial coefficients that we load to the data shown in Figure 6
-%      of the JOSA-A paper. These align as well.]
 %    * [Note: JNM - The first example doesn't work. is the function that is
 %      being called spelled incorrectly? Not instantiated?]
 %
@@ -63,9 +66,8 @@ function [sample_mean, sample_cov] = ...
 
 % Examples:
 %{
-    % Does not work!
-    pd = 6.0;
-    [sample_mean sample_cov] = vwfLoadHuman(pd);
+    measPupilDiameter = 6.0;
+    [sample_mean sample_cov] = wvfLoadThibosVirtualEyes(measPupilDiameter);
 %}
 %{
     s3 = wvfLoadThibosVirtualEyes(3.0);
@@ -107,8 +109,7 @@ switch pupilDiameterMM
     case 4.5
         load('IASstats45', 'S', 'sample_mean');
     case 3.0
-        load('IASstats30', 'S', 'sample_mean');
-        
+        load('IASstats30', 'S', 'sample_mean');      
     otherwise
         error('Unknown pupil size %.1f. Options are 3, 4.5, 6, 7.5.\n', ...
             pupilDiameterMM)
