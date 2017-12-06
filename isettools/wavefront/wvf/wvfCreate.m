@@ -2,7 +2,7 @@ function wvf = wvfCreate(varargin)
 % Create the wavefront parameters structure.
 %
 % Syntax:
-%   wvf = wvfCreate([varargin])
+%   wvf = wvfCreate;
 %
 % Description:
 %    Create the wavefront parameters structure.
@@ -17,24 +17,22 @@ function wvf = wvfCreate(varargin)
 %    wvf      - The wavefront object
 %
 % Optional key/value pairs:
-%    varargin - The optional arguments, structured as param, val pairs.
-%               Options, and their defaults include the following:
-%                   'name'                               - 'default'
-%                   'type'                               - 'wvf'
-%                   'zcoeffs'                            - 0
-%                   'measured pupil'                     - 8
-%                   'measured wl'                        - 550
-%                   'measured optical axis'              - 0
-%                   'measured observer accommodation'    - 0
-%                   'measured observer focus correction' - 0
-%                   'sample interval domain'             - 'psf'
-%                   'spatial samples'                    - 201
-%                   'ref pupil plane size'               - 16.212
-%                   'calc pupil size'                    - 3
-%                   'calc wavelengths'                   - 550
-%                   'calc optical axis'                  - 0
-%                   'calc observer accommodation'        - 0
-%                   'calc observer focus correction'     - 0
+%     'name'                               - 'default'
+%     'type'                               - 'wvf'
+%     'zcoeffs'                            - 0
+%     'measured pupil'                     - 8
+%     'measured wl'                        - 550
+%     'measured optical axis'              - 0
+%     'measured observer accommodation'    - 0
+%     'measured observer focus correction' - 0
+%     'sample interval domain'             - 'psf'
+%     'spatial samples'                    - 201
+%     'ref pupil plane size'               - 16.212
+%     'calc pupil size'                    - 3
+%     'calc wavelengths'                   - 550
+%     'calc optical axis'                  - 0
+%     'calc observer accommodation'        - 0
+%     'calc observer focus correction'     - 0
 %
 % See Also:
 %    wvfSet, wvfGet, sceCreate, sceGet
@@ -44,6 +42,9 @@ function wvf = wvfCreate(varargin)
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 %    07/20/12  dhb  Get rid of weighting spectrum, replace with cone psf
 %                   info structure
+%    12/06/17  dhb  Use input parser to handle key/value pairs.  This was
+%                   previously being done in a manner that may not have
+%                   matched up with the documentation.
 
 % Examples:
 %{
@@ -59,7 +60,7 @@ p.addParameter('name', 'default', @ischar);
 p.addParameter('type', 'wvf', @ischar);
 
 % Zernike coefficients and related
-p.addParameter('zcoeffs', 0, @isscalar);
+p.addParameter('zcoeffs', 0, @isnumeric);
 p.addParameter('measuredpupil', 8, @isscalar);
 p.addParameter('measuredwl', 550, @isscalar);
 p.addParameter('measuredopticalaxis', 0, @isscalar);
@@ -120,15 +121,5 @@ wvf = wvfSet(wvf, 'calc cone psf info', conePsfInfo);
 
 % Stiles Crawford Effect parameters. 
 wvf = wvfSet(wvf, 'sce params', sceCreate([], 'none'));
-
-% Handle any additional arguments via wvfSet
-if ~isempty(varargin)
-    if isodd(length(varargin))
-        error('Arguments must be (pair, val) pairs');
-    end
-    for ii=1:2:(length(varargin) - 1)
-        wvf = wvfSet(wvf, varargin{ii}, varargin{ii+1});
-    end
-end
 
 return
