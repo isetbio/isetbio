@@ -53,8 +53,9 @@ function [sample_mean, sample_cov] = ...
 %      http://www.sciencedirect.com/science/article/pii/S0042698911003099
 %
 % Notes:
-%    * [Note: JNM - The first example doesn't work. is the function that is
-%      being called spelled incorrectly? Not instantiated?]
+%    * [Note: DHB - What was measurement wavelength.  Add note about phase
+%       of average zcoeffs not matching any individual observer.  NCP
+%       worked this all out somewhere, we need to bring that into isetbio.]
 %
 % See Also:
 %    s_wvfThibosModel
