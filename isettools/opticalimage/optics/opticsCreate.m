@@ -83,7 +83,7 @@ switch lower(opticsType)
         if length(varargin)>2, wave = varargin{3}; wave = wave(:); end 
         
         % Create wavefront parameters
-        wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
+        wvfP = wvfCreate('calc wavelengths',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
         wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
         wvfP = wvfComputePSF(wvfP);
         % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);

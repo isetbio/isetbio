@@ -71,18 +71,22 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
 %    12/5/17   dhb  Convert to using input parser, not backwards
 %                   compatible for showBar arg. Sharpen comments. Add plot
 %                   of output to example. Make number of samples for output
-%                   and umPerSample 
+%                   and umPerSample parameters that can be set.
 
 % Examples:
 %{
     % Create wavefront structure with reasonable parameters.
-    pupilMM = 3;
-    zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
+    pupilMM = 6;
+    zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
-    wvfP = wvfCreate('wave', wave, 'zcoeffs', zCoefs, 'name', ...
-        sprintf('human-%d', pupilMM));
+    wvfP = wvfCreate('calc wavelengths', wave, ...
+        'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
+        'name', sprintf('human-%d', pupilMM));
 
-    % Convert to siData format and save
+    % Set a little defocus, just to make the PSF a bit more interesting
+    wvfP = wvfSet(wvfP,'zcoeff',0.5,'defocus');
+
+    % Convert to siData format and save.
     [siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',true);
     fName = sprintf('psfSI-%s', wvfGet(wvfP, 'name'));
     ieSaveSIDataFile(siPSFData.psf, siPSFData.wave,siPSFData.umPerSamp,...
@@ -110,7 +114,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     pupilMM = 3;
     zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
-    wvfP = wvfCreate('wave', wave, 'zcoeffs', zCoefs, 'name', ...
+    wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
         sprintf('human-%d', pupilMM));
 
     % Convert to siData format.
