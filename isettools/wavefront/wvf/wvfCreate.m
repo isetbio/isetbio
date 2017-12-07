@@ -10,6 +10,13 @@ function wvf = wvfCreate(varargin)
 %    The default parameters will give you diffraction limited PSF
 %    for 550 nm light and a 3 mm pupil.
 %
+%    Many of the keys specified in the key/value pair section below accept
+%    synonyms.  The key listed is our preferred usage, see the code in
+%    wvfKeySynonyms for available synonyms.
+%   
+%    The properties that may be specified here using key/value pairs may
+%    also be set using wvfSet.
+%
 % Inputs:
 %    None required:
 %
@@ -33,9 +40,11 @@ function wvf = wvfCreate(varargin)
 %     'calc optical axis'                  - 0
 %     'calc observer accommodation'        - 0
 %     'calc observer focus correction'     - 0
+%     'sce params'                         - Struct specifying no sce
+%                                            correction
 %
 % See Also:
-%    wvfSet, wvfGet, sceCreate, sceGet
+%    wvfSet, wvfGet, wvfKeySynonyms, sceCreate, sceGet
 %
 
 % History:
@@ -78,7 +87,13 @@ p.addParameter('calcwavelengths', 550, @isnumeric);
 p.addParameter('calcopticalaxis', 0, @isscalar);
 p.addParameter('calcobserveraccommodation', 0), @isscalar;
 p.addParameter('calcobserverfocuscorrection', 0, @isscalar);
+
+% SCE parameters
+p.addParameter('sceparams',sceCreate([],'none'), @isstruct);
+
+% Massage varargin and parse
 ieVarargin = ieParamFormat(varargin);
+ieVarargin = wvfKeySynonyms(ieVarargin);
 p.parse(ieVarargin{:});
 
 %% Now set all of the properties that are specified by the parse above.
@@ -108,6 +123,11 @@ wvf = wvfSet(wvf, 'calc optical axis', p.Results.calcopticalaxis);
 wvf = wvfSet(wvf, 'calc observer accommodation', p.Results.calcobserveraccommodation);
 wvf = wvfSet(wvf, 'calc observer focus correction', p.Results.calcobserverfocuscorrection);
 
+% Stiles Crawford Effect parameters
+wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);
+
+%% Additional properties not settable on create
+
 % Cone sensitivities and weighting spectrum for combining the PSFs across
 % wavelengths. We keep these as a structure at something resembling a
 % wide range of wavelength samples, along with the wavelength info. 
@@ -118,8 +138,5 @@ conePsfInfo.S = S_cones_ss2;
 conePsfInfo.T = T_cones_ss2;
 conePsfInfo.spdWeighting = ones(conePsfInfo.S(3), 1);
 wvf = wvfSet(wvf, 'calc cone psf info', conePsfInfo);
-
-% Stiles Crawford Effect parameters. 
-wvf = wvfSet(wvf, 'sce params', sceCreate([], 'none'));
 
 return
