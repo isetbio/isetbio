@@ -73,7 +73,7 @@ grid on
 %% Diffraction case at multiple wavelength
 % This section tests whether things work OK for a few wavelengths at once.
 wave = (500:50:600); wave = wave(:);
-wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
+wvfP = wvfCreate('calc wavelengths',wave,'name',sprintf('Diffraction-limited'));
 wvfP = wvfComputePSF(wvfP);
 
 % Edit the choice of wavelength a few times to compare.  They are all OK, I

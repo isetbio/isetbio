@@ -114,7 +114,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     pupilMM = 3;
     zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
-    wvfP = wvfCreate('wave', wave, 'zcoeffs', zCoefs, 'name', ...
+    wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
         sprintf('human-%d', pupilMM));
 
     % Convert to siData format.
