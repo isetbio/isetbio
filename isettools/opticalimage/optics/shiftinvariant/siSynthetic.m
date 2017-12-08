@@ -46,6 +46,10 @@ function optics = siSynthetic(psfType,oi,varargin)
 % Do not write out file
 %  optics = siSynthetic('custom',oi,'custom',[]);  
 %
+% Notes:
+%  * [Note: DHB - This currently has nSamples hard coded at 128, which
+%     is unfortunate.]
+%
 % Copyright ImagEval Consultants, LLC, 2005.
 
 

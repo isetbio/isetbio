@@ -1,25 +1,47 @@
-function [siData, wvfP] = wvf2PSF(wvfP, showBar)
-% Convert a wvf structure to ISET shift-invariant PSF data
+function [siData, wvfP] = wvf2PSF(wvfP, varargin)
+% Convert a wvf structure to isetbio shift-invariant PSF data structure
 %
 % Syntax:
-%   [siData, wvfP] = wvf2PSF(wvfP, [showbar])
+%   [siData, wvfP] = wvf2PSF(wvfP)
 %
 % Description:
-%    For examples of how to convert to an optical iamge, which is perhaps
-%    more practical, see wvf2oi.m
+%    For each wavelength in wvfP, compute the PSF place it into an isetbio
+%    (inheritied from iset) shift-invariant PSF structure that can then be
+%    passed smoothly into an optical image structure in isetbio.
 %
-%    For each wavelength in wvf, compute the PSF with proper units and
-%    place it in an ISET shift-invariant PSF format that can be used for
-%    human optics simulation.
+%    Note that we also have wvf2oi, which converts the PSF specified by the
+%    wavefront structure into an optical image (oi) structure. That may
+%    really be what you want to do.
 %
-%    The wvfP is the main wavefront optics toolbox structure. The psf is
-%    computed at the wave values in the structure. The updated structure
-%    with the PSFs can be returned.
+%    The input wvfP is the main wavefront optics toolbox structure. The PSF
+%    is computed at the wavelength values in the structure. The updated
+%    structure with the PSFs can be obtained via wvfGet calls.
 %
-%    The data can be saved in ISET format using ieSaveSIDataFile as in the
-%    example below. which loads the standard human data for a particular
-%    pupil size. Alternatively, the siData can be converted to an optics
-%    structure with the function siSynthetic.
+%    The output siData structure is an iset/isetbio structure that
+%    describes shift invariant PSFs. We convert to this structure, because
+%    then we already have code that knows how to push this into an optical
+%    image structure.
+%
+%    You need to think a litte bit about how to choose the number of samples
+%    and um per pixel onto which the PSF will be computed.  For human
+%    retina, there are about 300 um per degree and foveal cone spacing is
+%    about 0.3 um. Typical PSFs are bigger than a cone  If you use the
+%    default values of 128 samples and 0.25 um/pixel, the PSF will probably
+%    be sampled OK as and captured reasonably well for many use cases.  But
+%    it is probably worth plotting you compute to make sure this is true.
+%
+%    Note also that is some places, the siData structure is currently
+%    assumed to have 128 samples, so changing this to be what you need
+%    might cause something else to break.
+%
+%    If you don't want to use wvf2oi, or if you want an optics structure
+%    rather than an oi, you could create the optics structure directly
+%    using siSynthetic, and then stick that into an optical image
+%    structure. This is illustrated in the Examples section below.
+%
+%    The siData-format PSF data can be saved using ieSaveSIDataFile as
+%    illustrated in the Examples section below, for example if you wanted
+%    to pre-compute some PSFs and then load them later.
 %
 % Inputs:
 %    wvfP    - Wavefront Optics Toolbox structure
@@ -28,94 +50,133 @@ function [siData, wvfP] = wvf2PSF(wvfP, showBar)
 %
 % Outputs:
 %    siData  - Shift-Invariant PSF format used for human optics simulation
-%    wvfP    - Wavefront Optics Toolbox structure containing PSF
+%    wvfP    - Wavefront structure updated to contain PSF.
 %
+% Optional key/value pairs
+%    showBar -      Boolean, show the wait bar? (Default false)
+%    nPSFSamples -  Scalar, number of x and y samples to use when computing
+%                   the PSF for the siData structure. (Default 128)
+%    umPerSample -  Scalar, number of retinal microns per PSF pixel.  The
+%                   same number is used for x and y. (Default 0.25)
+%    
 % Notes:
-%    * [Note: JNM - What dictates the hard-coded values such as pixels,
-%      microns per sample, etc... below?]
 %
 % See Also:
-%    wvf2oi
+%    wvf2oi, wvfGet, siSynthetic, ieSaveSIDataFile.
 %
 
 % History:
 %    xx/xx/12       Copyright Imageval 2012
 %    11/13/17  jnm  Comments & formatting
+%    12/5/17   dhb  Convert to using input parser, not backwards
+%                   compatible for showBar arg. Sharpen comments. Add plot
+%                   of output to example. Make number of samples for output
+%                   and umPerSample parameters that can be set.
 
-% Example:
+% Examples:
 %{
+    % Create wavefront structure with reasonable parameters.
+    pupilMM = 6;
+    zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
+    wave = [450:100:650]';
+    wvfP = wvfCreate('calc wavelengths', wave, ...
+        'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
+        'name', sprintf('human-%d', pupilMM));
+
+    % Set a little defocus, just to make the PSF a bit more interesting
+    wvfP = wvfSet(wvfP,'zcoeff',0.5,'defocus');
+
+    % Convert to siData format and save.
+    [siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',true);
+    fName = sprintf('psfSI-%s', wvfGet(wvfP, 'name'));
+    ieSaveSIDataFile(siPSFData.psf, siPSFData.wave,siPSFData.umPerSamp,...
+        fName);
+
+    % Plot the PSF from the input structure and the siData version.
+    %
+    % Not sure if [m,n] and [x,y] conventions are right in the siData plot,
+    % but since everything is square here that is OK for now.  To fix it, 
+    % would need to know convention fo umPerSamp vector order as well as
+    % that for imagesc.
+    vcNewGraphWin([],'tall');
+    subplot(2,1,1);
+    wvfPlot(wvfP, 'image psf', 'um', 550, 15, 'no window');
+    [m,n,k] = size(siPSFData.psf);
+    samplesy = ((1:m)-mean(1:m))*siPSFData.umPerSamp(1);
+    samplesx = ((1:n)-mean(1:n))*siPSFData.umPerSamp(2);
+    subplot(2,1,2);
+    imagesc([samplesx(1), samplesx(end)],[samplesy(1) samplesy(end)], ...
+        siPSFData.psf(:,:,2)); axis('square');
+    xlim([-15 15]); ylim([-15 15]);
+%}
+%{
+    % Example of use with siSynthetic.
     pupilMM = 3;
     zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
-    wvfP = wvfCreate('wave', wave, 'zcoeffs', zCoefs, 'name', ...
+    wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
         sprintf('human-%d', pupilMM));
 
-    [d, wvfP] = wvf2PSF(wvfP);
-    fName = sprintf('psfSI-%s', wvfGet(wvfP, 'name'));
-    ieSaveSIDataFile(d.psf, d.wave, d.umPerSamp, fName);
+    % Convert to siData format.
+    %
+    % siSynthetic currently only works if the number of samples in the PSF
+    % is 128, so we compute with that to avoid an error.  If siSynthetic is
+    % ever generalized, we could relax that here.
+    [siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',false,'nPSFSamples',128);
 
+    % Convert to optics and then oi using siSynthetic
     oi = oiCreate('human'); 
-    optics = siSynthetic('custom', oi, d);
+    optics = siSynthetic('custom', oi, siPSFData);
     flength = 0.017;  % Human focal length is 17 mm
     oi = oiSet(oi, 'optics fnumber', flength/pupilMM);
     oi = oiSet(oi, 'optics flength', flength);
-    oi = oiSet(oi, 'optics', optics);
-
-    vcNewGraphWin([], 'tall');
-    subplot(2, 1, 1), wvfPlot(wvfP, 'image psf', 'um', 550, 15, ...
-        'no window');
-    subplot(2, 1, 2), wvfPlot(wvfP, 'image psf', 'um', 550, 15, ...
-        'no window');
+    oi = oiSet(oi, 'optics', optics);  
 %}
 
-
 %% Parameters
-if notDefined('wvfP'), error('wvf parameters required.'); end
-if notDefined('showBar'), showBar = true; end
+p = inputParser;
+p.addRequired('wvfP',@isstruct);
+p.addParameter('showBar',false,@islogical);
+p.addParameter('nPSFSamples',128,@isscalar);
+p.addParameter('umPerSample',0.25,@isscalar);
+p.parse(wvfP,varargin{:});
+
+%% Get info from wvf
 wave = wvfGet(wvfP, 'calc wave');
-nWave = wvfGet(wvfP, 'calc nwave');
+nWave = wvfGet(wvfP,'calc nwave');
 
-% Use WVF to compute the PSFs
-wvfP = wvfComputePSF(wvfP, showBar);
-
-% Set up to interpolate the PSFs for ISET
+%% Use wvfCompute to compute the psf at all wavelengths
 %
-% number of pixels and spacing in microns between samples
-nPix = 128;                  % Number of pixels
-umPerSamp = [0.25, 0.25];    % In microns
-iSamp = (1:nPix) * umPerSamp(1);
+% And store result back into the wvf structure.  We will get this
+% below in a manner that keeps the units clear.
+wvfP = wvfComputePSF(wvfP, p.Results.showBar);
+
+%% Set up to interpolate the PSFs for passing into isetbio.
+%
+% Set up number of samples for siData PSF and spacing in microns between samples.
+nPSFSamples = p.Results.nPSFSamples;                  
+umPerSample = p.Results.umPerSample;
+
+iSamp = (1:nPSFSamples) * umPerSample;
 iSamp = iSamp - mean(iSamp);
 iSamp = iSamp(:);
-psf = zeros(nPix, nPix, nWave);
+psf = zeros(nPSFSamples, nPSFSamples, nWave);
 
-if showBar, wBar = waitbar(0, 'Creating PSF'); end
+%% Do the interplation
+if p.Results.showBar, wBar = waitbar(0, 'Creating PSF'); end
 for ii=1:nWave
-    if showBar, waitbar(ii / nWave, wBar); end
+    if (p.Results.showBar), waitbar(ii / nWave, wBar); end
     thisPSF = wvfGet(wvfP, 'psf', wave(ii));
-    % vcNewGraphWin; imagesc(thisPSF)
     samp = wvfGet(wvfP, 'samples space', 'um', wave(ii));
     samp = samp(:);
-    psf(:, :, ii) = interp2(samp, samp', thisPSF, iSamp, iSamp');
-    % wvfPlot(wvfP, 'image psf space', 'um', wave(ii), 50)
+    psf(:,:,ii) = interp2(samp, samp', thisPSF, iSamp, iSamp');
 end
-if showBar, close(wBar); end
+if (p.Results.showBar), close(wBar); end
 
+%% Store result in well-formed siData structure
 siData.psf = psf;
 siData.wave = wave;
-siData.umPerSamp = umPerSamp;
+siData.umPerSamp = [umPerSample umPerSample];
 
 end
 
-%% From ISET script on how to create an SI data file
-% % Now, write out a file containing the relevant point spread function
-% % data, along with related variables.
-% umPerSample = [0.25, 0.25];                % Sample spacing
-% 
-% % Point spread is a little square in the middle of the image
-% h = zeros(128, 128);
-% h(48:79, 48:79) = 1;
-% h = h / sum(h(:));
-% for ii=1:length(wave), psf(:, :, ii) = h; end     % PSF data
-% 
-% % Save the data
-% ieSaveSIDataFile(psf, wave, umPerSample, 'SI-pillBox');

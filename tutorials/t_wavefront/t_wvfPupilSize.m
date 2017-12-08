@@ -28,7 +28,7 @@ zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 
 % Create the wvf parameter structure with the appropriate values
 wave = (400:10:700)';
-wvfP = wvfCreate('wave', wave, 'zcoeffs', zCoefs, 'name', ...
+wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
     sprintf('%d-pupil', pupilMM));
 wvfP = wvfSet(wvfP, 'measured pupil', pupilMM);
 

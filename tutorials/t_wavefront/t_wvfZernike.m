@@ -429,7 +429,7 @@ measMM = 6;
 calcMM = 3;
 maxMM = 3;
 theWavelengthNM = 550;
-wvfHuman0 = wvfCreate('measured pupil', measMM, 'calculated pupil', ...
+wvfHuman0 = wvfCreate('measured pupil', measMM, 'calc pupil size', ...
     calcMM);
 wvfHuman0 = wvfSet(wvfHuman0, 'wavelength', theWavelengthNM);
 
