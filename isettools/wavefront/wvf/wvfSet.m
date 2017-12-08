@@ -72,7 +72,9 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %       'calc wave'             - Wavelengths to calculate over (nm, *)
 %       'calc cone psf info'    - Structure with cone sensitivities and
 %                                 weight spectrum for computing cone psfs.
-%
+%    Retinal scale
+%       'um per degree'         - Conversion between um on retina and
+%                                 degree of visual angle.
 %    Stiles Crawford Effect
 %       'sce params'            - The Stiles-Crawford Effect structure
 %
@@ -97,10 +99,12 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 % See Also:
 %    wvfGet, wvfCreate, wvfComputePupilFunction, wvfComputePSF, sceCreate,
 %    sceGet
+%
 
 % History:
 %    xx/xx/11 DHB/BW (c) Wavefront Toolbox Team 2011, 2012
 %    11/01/17  jnm   Comments & formatting
+%
 
 % Examples:
 %{
@@ -121,6 +125,7 @@ end
 if ~exist('val', 'var'), error('val must be defined'); end
 
 parm = ieParamFormat(parm);
+parm = wvfKeySynonyms(parm);
 
 %% Set the parameters in a big case statement
 switch parm
@@ -412,11 +417,20 @@ switch parm
         % for aggregating the polychromatic psf down to cone psfs.
         wvf.conePsfInfo = val;
         
-    %% Stiles-Crawford Effect
-    % Angular dependence of the cone absorptions are calculated by the
-    % parameters in this structure. Values from the structure are retrieved
-    % and set using sceGet/Set
+    case {'umperdegree'}
+        % Factor used to convert between um on the retina and degrees of
+        % visual angle. It might be that we don't need to set the stale
+        % flag when we change this, but doing so is safe for sure.
+        wvf.umPerDegree = val;
+        wvf.PUPILFUNCTION_STALE = true;
+        
     case {'sceparams', 'stilescrawford'}
+        % Stiles-Crawford Effect structure.
+        %
+        % Angular dependence of the cone absorptions are calculated by the
+        % parameters in this structure. Values from the structure are retrieved
+        % and set using sceGet/Set
+        %
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         wvf.PUPILFUNCTION_STALE = true;

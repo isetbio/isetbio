@@ -8,6 +8,9 @@
 %
 %   Then show how to do this using the wavefront optics.
 %
+%   This tutorial also serves some validation purposes, as it checks that
+%   various ways of doing the same thing give the same answer.
+%
 % See also:
 %
 
@@ -169,13 +172,13 @@ legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet 
 
 %% Now start again, and work with wavefront optics PSFs
 %
-% Use Thibos measurements, but set a little defocus to make
+% Use Thibos measurements, but set some defocus to make
 % the PSF more interesting.
 pupilMM = 6; zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
 wvfP = wvfCreate('calc wavelengths', theWl, ...
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
         'name', sprintf('human-%d', pupilMM));
-    wvfP = wvfSet(wvfP,'zcoeff',0.5,'defocus');
+wvfP = wvfSet(wvfP,'zcoeffs',1,'defocus');
 wvfP = wvfComputePSF(wvfP);
 
 % Convert to oi using wvf2oi.  When we get the psf data
@@ -183,16 +186,27 @@ wvfP = wvfComputePSF(wvfP);
 % minutes.
 oi3 = wvf2oi(wvfP);
 udata3 = oiPlot(oi3,'psf',[],theWl);
-psfFig3 = figure;
+supportRowSize = size(udata3.x,1);
+centerPosition = floor(supportRowSize/2)+1;
+psfFig3 = figure; hold on
 plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
-    'c','LineWidth',2);
+    'c','LineWidth',6);
+
+% Get and plot the psf obtained directly from the wvf structure.
+psf3FromWvf = wvfGet(wvfP,'1d psf',theWl);
+psf3FromWvfSpatialSamples1D = wvfGet(wvfP,'psf angular samples','min',theWl);
+plot(psf3FromWvfSpatialSamples1D, ...
+    psf3FromWvf/max(psf3FromWvf),...
+    'b','LineWidth',4);
 
 % Get isetbio format OTF back out of the oi struct, at the specified wavelength
 optics3 = oiGet(oi3,'optics');
 otf3 = opticsGet(optics3,'otf data',theWl);
 
-% Derive the psf back from the otf using the PTB routine.
+% Derive the psf back from the otf using the PTB routine OtfToPsf.  As
+% often happens, we have independently done the same things in isetbio and
+% PTB, and here we want to make sure that we get the same answer.
 %
 % Before calling the PTB routine OtfToPsf, we have to convert to the zero
 % sf at center representation, using fftshift.
@@ -204,10 +218,32 @@ ySfGridCyclesDegree3 = uMPerDegree*ySfGridCyclesMm3/uMPerMm;
 centerPosition3 = floor(length(sfValuesCyclesMm3{1})/2)+1;
 position1DMinutes3 = xGridMinutes(centerPosition3,:);
 wvfHuman1DPsf3 = psf3(centerPosition,:);
-figure(psfFig3); hold on;
-plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'k:','LineWidth',2);
+figure(psfFig3);
+plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',2);
 
+% Do the conversion using si format
+%
+% siSynthetic currently only works if the number of samples in the PSF
+% is 128, so we compute with that to avoid an error.  If siSynthetic is
+% ever generalized, we could relax that here.
+[siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',false,'nPSFSamples',128);
 
+% Convert to optics and then oi using siSynthetic
+oi4 = oiCreate('human');
+optics = siSynthetic('custom', oi4, siPSFData);
+oi4 = oiSet(oi4, 'optics', optics);
+
+udata4 = oiPlot(oi4,'psf',[],theWl);
+supportRowSize4 = size(siPSFData.psf,1);
+centerPosition4 = floor(supportRowSize4/2)+1;
+figure(psfFig3);
+plot(60*udata4.x(centerPosition4,:)/uMPerDegree, ...
+    udata4.psf(centerPosition4,:)/max(udata4.psf(centerPosition4,:)),...
+    'k','LineWidth',1);
+
+% flength = 0.017;  % Human focal length is 17 mm
+% oi = oiSet(oi, 'optics fnumber', flength/pupilMM);
+% oi = oiSet(oi, 'optics flength', flength);
 
 
 
