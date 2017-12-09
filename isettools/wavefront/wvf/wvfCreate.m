@@ -59,7 +59,7 @@ function wvf = wvfCreate(varargin)
 %                   up across calculations.  Default is 300, whereas 330
 %                   used to be hard coded in the wvf calculations.  The
 %                   difference messed up comparison with oi based
-%                   calculations.
+%                   calculation
 
 % Examples:
 %{
