@@ -723,8 +723,21 @@ switch parm
         
         wave = wvfGet(wvf, 'calc wave');
         if ~isempty(varargin), wave = varargin{1}; end
-        psf = wvfGet(wvf, 'psf', wave);   % vcNewGraphWin; mesh(psf)
-        val = fftshift(psf2otf(psf));   % vcNewGraphWin; mesh(val)
+        psf = wvfGet(wvf, 'psf', wave);
+        
+        %% Compute otf
+        %
+        % The commented out code is how we used to do this. The current
+        % code mirrors PTB's PsfToOtf.  We would then apply an ifftshift to
+        % this to put it into isetbio's optics format.
+        %val = fftshift(psf2otf(psf));  
+        val = fftshift(fft2(ifftshift(psf)));
+        
+        % We don't require that the input psf be symmetric, so there could be
+        % actual imaginary values.  Thus we do our best to make a good guess.
+        if (all(abs(imag(val(:))) < 1e-10))
+            val = abs(val);
+        end
         
     case {'otfsupport'}
         % wvfGet(wvf, 'otfsupport', unit, wave)
