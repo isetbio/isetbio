@@ -13,14 +13,15 @@ function val = wvfGet(wvf, parm, varargin)
 %    where unit specifies the spatial scale of the returned value:
 %       length: 'm', 'cm', 'mm', 'um', 'nm'.
 %       angle: 'deg', 'min', 'sec'
+%
 %    The wavefront to psf calculations are fundamentally performed in
-%    angular units. The conversion here to spatial units is done assumming
-%    .33 mm per degree, which is a reasonable number for the human eye. At
-%    some future date this should stop being hardcoded and be inherited
-%    from an optics structure to which the wavefront object is attached.
+%    angular units. The conversion here to spatial units is done using the
+%    value set in the object's field umPerDegree.  This defaults to 300 in
+%    wvfCreate, which is a reasonable number for the human eye, but can be
+%    set at create time or using wvfSet.
 %
 %    A leading + indicates that this is a get only parameter and may not
-%    be set.
+%    be set directly.
 %
 % Inputs:
 %    wvf      - The wavefront object
@@ -105,6 +106,9 @@ function val = wvfGet(wvf, parm, varargin)
 %       +'diffraction psf'        - Diffraction limite PSF
 %       +'cone psf'               - PSF as seen by cones for given
 %                                   weighting spectrum.
+%    Retinal scale
+%       'um per degree'         - Conversion between um on retina and
+%                                 degree of visual angle.
 %      Stiles Crawford Effect
 %        'sce params'             - The whole structure
 %        'sce x0'                 - 
@@ -135,20 +139,23 @@ function val = wvfGet(wvf, parm, varargin)
 %
 % See Also:
 %    wvfSet, wvfCreate, wvfComputePupilFunction, wvfComputePSF, sceCreate,
-%    sceGet
+%    sceGet, wvfOSAIndexToVectorIndex.
 %
 
 % History:
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
+%    12/08/17  dhb  Pass parm through synonym routine.
+%              dhb  Don't center the returned 1D psf. That really messes
+%                   things up if the max psf is not at the center, as can
+%                   occur with aberrations and defocus.
+%              dhb  umPerDegree is now obtained from the wvf structure.
+%
 
 % Examples:
 %{
-    % * Compute diffraction limited psf
+    % Compute diffraction limited psf
     wvfP = wvfCreate;
     wvfP = wvfComputePSF(wvfP);
-    % [Note: JNM - Having the below line present creates an extra empty
-    % window, so I've commented it out]
-    % vcNewGraphWin;
     wvfPlot(wvfP, 'image psf', 'um', 550);
 
     psf = wvfGet(wvfP, 'diffraction psf', 550);
@@ -156,16 +163,21 @@ function val = wvfGet(wvf, parm, varargin)
     mesh(psf)
 %}
 %{
-    % * Strehl is ratio of diffraction and current
+    % Strehl is ratio of diffraction and current
     wvfP = wvfCreate;
     wvfP = wvfComputePSF(wvfP);
     wvfGet(wvfP, 'strehl', 550)
 %}
 %{
-    % * Blur and recompute. 4th coefficient is defocus
+    % Blur and recompute. 5th coefficient is defocus, 
+    % see wvfOSAIndexToVectorIndex.
+    % In case you didn't happen know that, you could also call
+    %   wvfP = wvfSet(wvfP,'zcoeffs',0.3,'defocus')
+    % to the same effect as the code setting the defocus
+    % below.
     wvfP = wvfCreate;
 	z = wvfGet(wvfP, 'zcoeffs');
-    z(4) = 0.3;
+    z(5) = 0.3;
     wvfP = wvfSet(wvfP, 'zcoeffs', z);
 	wvfP = wvfComputePSF(wvfP);
     wvfGet(wvfP, 'strehl', 550)
@@ -192,14 +204,7 @@ end
 val = [];
 
 parm = ieParamFormat(parm);
-if strcmp(parm, 'wave')
-    warning('Change wave to calc wave');
-    dbstop;
-end
-if strcmp(parm, 'samplesamples')
-    warning('Change wave to nsamples');
-    dbstop;
-end
+parm = wvfKeySynonyms(parm);
 
 %% We will subdivide the gets over time
 %  We plan to create get functions, such as wvfpsfGet(), or wvfsceGet, to
@@ -648,7 +653,7 @@ switch parm
         
         % This parameter matters for the OTF and PSF quite a bit. It
         % is the number of um per degree on the retina.
-        mPerDeg = (330 * 10^-6);      % Meters per deg
+        mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);   
         unit = 'deg';
         wave = wvfGet(wvf, 'calc wave');
         if ~isempty(varargin), unit = varargin{1}; end
@@ -664,7 +669,7 @@ switch parm
     case {'psfspatialsample'}
         % This parameter matters for the OTF and PSF quite a bit. It
         % is the number of um per degree on the retina.
-        umPerDeg = (330 * 10^-6);
+        umPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
         unit = 'mm';
         wList = wvfGet(wvf, 'measured wavelength');
         if ~isempty(varargin), unit = varargin{1}; end
@@ -675,7 +680,7 @@ switch parm
         val = wvfGet(wvf, 'psf angular sample', 'deg', wList);
         
         % Convert to meters and then to selected spatial scale
-        val = val * umPerDeg;  % Sample in meters assuming 300 um/deg
+        val = val * umPerDeg;  
         val = val * ieUnitScaleFactor(unit);
         
     case {'pupilspatialsamples'}
@@ -763,11 +768,15 @@ switch parm
         if length(varargin) > 1, wave = varargin{2}; end
         val = wvfGet(wvf, 'psf spatial samples', unit, wave);
         
-        
-        %% Stiles Crawford Effect
-        % Account for angle sensitivity of the cone photoreceptors
-        %
+    case {'umperdegree'}
+        % Conversion factor between um on retina and visual angle in degreees.
+        val = wvf.umPerDegree;
+         
     case 'sce'
+        % The cases below handle the Stiles Crawford Effect (SCE)
+        % parameters.
+        %
+        % Account for angle sensitivity of the cone photoreceptors
         if isfield(wvf, 'sceParams'), val = wvf.sceParams; end
         
     case 'scex0'
@@ -968,7 +977,7 @@ switch parm
         end
         
     case '1dpsf'
-        % One dimensional slice through the PSF.
+        % One dimensional row slice through the PSF.
         %   wvfGet(wvf, '1d psf', wList, row)
         
         % Force user to code to explicitly compute the PSF if it isn't
@@ -987,7 +996,8 @@ switch parm
         if ~isempty(varargin), wList = varargin{1}; end
         if length(varargin) > 1, whichRow = varargin{2}; end
         
-        psf = psfCenter(wvfGet(wvf, 'psf', wList));
+        % Get the 2D psf and then return the specified row
+        psf = wvfGet(wvf, 'psf', wList);
         val = psf(whichRow, :);
         
     case 'conepsf'
