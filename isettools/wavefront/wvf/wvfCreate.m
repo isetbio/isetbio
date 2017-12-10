@@ -40,6 +40,7 @@ function wvf = wvfCreate(varargin)
 %     'calc optical axis'                  - 0
 %     'calc observer accommodation'        - 0
 %     'calc observer focus correction'     - 0
+%     'um per degree'                      - 300
 %     'sce params'                         - Struct specifying no sce
 %                                            correction
 %
@@ -54,6 +55,11 @@ function wvf = wvfCreate(varargin)
 %    12/06/17  dhb  Use input parser to handle key/value pairs.  This was
 %                   previously being done in a manner that may not have
 %                   matched up with the documentation.
+%    12/08/17  dhb  Add um per degree.  We need control over this to match
+%                   up across calculations.  Default is 300, whereas 330
+%                   used to be hard coded in the wvf calculations.  The
+%                   difference messed up comparison with oi based
+%                   calculation
 
 % Examples:
 %{
@@ -87,6 +93,9 @@ p.addParameter('calcwavelengths', 550, @isnumeric);
 p.addParameter('calcopticalaxis', 0, @isscalar);
 p.addParameter('calcobserveraccommodation', 0), @isscalar;
 p.addParameter('calcobserverfocuscorrection', 0, @isscalar);
+
+% Retinal parameters
+p.addParameter('umperdegree', 300, @isscalar);
 
 % SCE parameters
 p.addParameter('sceparams',sceCreate([],'none'), @isstruct);
@@ -122,6 +131,9 @@ wvf = wvfSet(wvf, 'calc wavelengths', p.Results.calcwavelengths);
 wvf = wvfSet(wvf, 'calc optical axis', p.Results.calcopticalaxis);
 wvf = wvfSet(wvf, 'calc observer accommodation', p.Results.calcobserveraccommodation);
 wvf = wvfSet(wvf, 'calc observer focus correction', p.Results.calcobserverfocuscorrection);
+
+% Conversion between degrees of visual angle and mm
+wvf = wvfSet(wvf, 'um per degree',p.Results.umperdegree);
 
 % Stiles Crawford Effect parameters
 wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);

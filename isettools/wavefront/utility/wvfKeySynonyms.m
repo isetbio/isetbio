@@ -5,19 +5,27 @@ function keyValues = wvfKeySynonyms(keyValues)
 %   keyValues = wvfKeySynonyms(keyValues)
 %
 % Description:
-%   Check each string in the odd entries of the passed string cell
-%   array, and convert each to the canonical form understood by the
-%   wvf code.
+%   Check a passed string, or each string in the odd entries of a passed
+%   string cell array, and convert each to the canonical form understood by
+%   the wvf code.
 %
 %   Typical usage would be to pass varargin through this, resulting
 %   in a cell array of strings that could be passed to the input parser,
 %   where the input parser understood only one of each set of synonyms.
 %
+%   The other usage would be to pass the parm value for wvfSet/wvfGet
+%   through this.
+%
+%   Use of this function encapsulates all of the synonyms we accept, and
+%   makes sure they are used consistently across the wvf functions.
+%
 % Inputs:
-%   keyValues - a cell array of strings.  Odd entries are converted.
+%   keyValues - single string a cell array of strings.  The single string
+%               or the odd entries of the cell array converted.
 %
 % Outputs:
-%   KeyValues - a cell array of strings, after conversion.
+%   KeyValues - string or a cell array of strings, after conversion.
+%               Output format matches input format.
 %
 % See also:
 %  ieParamFormat, wvfCreate, wvfGet, wvfSet
@@ -25,56 +33,77 @@ function keyValues = wvfKeySynonyms(keyValues)
 % History:
 %   12/07/17  dhb  Wrote.
 
+%% Handle case where a single string is passed
+%
+% This converts input into a cell array.  We 
+% reconvert after the synonym replacement section.
+if (ischar(keyValues))
+    keyValuesCell = {keyValues};
+elseif (iscell(keyValues))
+    keyValuesCell = keyValues;
+else
+    error('Input must be a string or a cell array of strings');
+end
+
 %% Loop over keys and convert each according to synoyms
-for kk = 1:2:length(keyValues)
-    switch (keyValues{kk})
+for kk = 1:2:length(keyValuesCell)
+    switch (keyValuesCell{kk})
         case {'name'}
-            keyValues{kk} = 'name';
+            keyValuesCell{kk} = 'name';
         case {'type'}
-            keyValues{kk} = 'type';
+            keyValuesCell{kk} = 'type';
         case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', ...
                 'measuredpupildiameter'}
-            keyValues{kk} = 'measuredpupil';
+            keyValuesCell{kk} = 'measuredpupil';
         case {'measuredwave', 'measuredwl', 'measuredwavelength'}
-            keyValues{kk} = 'measuredwl';
+            keyValuesCell{kk} = 'measuredwl';
         case {'measuredopticalaxis', 'measuredopticalaxisdeg'}
-            keyValues{kk} = 'measuredopticalaxis';
+            keyValuesCell{kk} = 'measuredopticalaxis';
         case {'measuredobserveraccommodation', ...
                 'measuredobserveraccommodationdiopters'}
-            keyValues{kk} = 'measuredobserveraccommodation';
+            keyValuesCell{kk} = 'measuredobserveraccommodation';
         case {'measuredobserverfocuscorrection', ...
                 'measuredobserverfocuscorrectiondiopters'}
-            keyValues{kk} = 'measuredobserverfocuscorrection';
+            keyValuesCell{kk} = 'measuredobserverfocuscorrection';
         case {'zcoeffs', 'zcoeff', 'zcoef'}
-            keyValues{kk} = 'zcoeffs';
+            keyValuesCell{kk} = 'zcoeffs';
         case {'sampleintervaldomain'}
-            keyValues{kk} = 'sampleintervaldomain';
+            keyValuesCell{kk} = 'sampleintervaldomain';
         case {'numberspatialsamples', 'spatialsamples', 'npixels', ...
                 'fieldsizepixels'}
-            keyValues{kk} = 'spatialsamples';
+            keyValuesCell{kk} = 'spatialsamples';
         case {'refpupilplanesize', 'refpupilplanesizemm', 'fieldsizemm'}
-            keyValues{kk} = 'refpupilplanesize';
+            keyValuesCell{kk} = 'refpupilplanesize';
         case {'refpupilplanesampleinterval', 'fieldsamplesize', ...
                 'refpupilplanesampleintervalmm', 'fieldsamplesizemmperpixel'}
-            keyValues{kk} = 'refpupilplanesampleinterval';
+            keyValuesCell{kk} = 'refpupilplanesampleinterval';
         case {'refpsfsampleinterval' 'refpsfarcminpersample', ...
                 'refpsfarcminperpixel'}
-            keyValues{kk} = 'refpsfsampleinterval';           
+            keyValuesCell{kk} = 'refpsfsampleinterval';
         case {'calcpupilsize', 'calcpupildiameter', 'calculatedpupil', ...
-                'calculatedpupildiameter'}    
-            keyValues{kk} = 'calcpupilsize';       
+                'calculatedpupildiameter'}
+            keyValuesCell{kk} = 'calcpupilsize';
         case {'calcopticalaxis'}
-            keyValues{kk} = 'calcopticalaxis'; 
+            keyValuesCell{kk} = 'calcopticalaxis';
         case {'calcobserveraccommodation'}
-            keyValues{kk} = 'calcobserveraccommodation';
-     case {'calcobserverfocuscorrection', 'defocusdiopters'}
-            keyValues{kk} = 'calcobserverfocuscorrection';
-     case {'calcwave', 'calcwavelengths', 'wavelengths', 'wavelength', ...
+            keyValuesCell{kk} = 'calcobserveraccommodation';
+        case {'calcobserverfocuscorrection', 'defocusdiopters'}
+            keyValuesCell{kk} = 'calcobserverfocuscorrection';
+        case {'calcwave', 'calcwavelengths', 'wavelengths', 'wavelength', ...
                 'wls', 'wave'}
-            keyValues{kk} = 'calcwavelengths';         
+            keyValuesCell{kk} = 'calcwavelengths';
         case {'calcconepsfinfo'}
-            keyValues{kk} = 'calcconepsfinfo';         
+            keyValuesCell{kk} = 'calcconepsfinfo';
+        case {'umperdegree'}
+            keyValuesCell{kk} = 'umperdegree';
         case {'sceparams', 'stilescrawford'}
-            keyValues{kk} = 'sceparams';     
+            keyValuesCell{kk} = 'sceparams';
     end
+end
+
+%% Handle case where a single string is passed
+if (ischar(keyValues))
+    keyValues = keyValuesCell{1};
+elseif (iscell(keyValuesCell))
+    keyValues = keyValuesCell;
 end

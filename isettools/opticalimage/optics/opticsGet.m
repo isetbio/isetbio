@@ -57,7 +57,7 @@ function val = opticsGet(optics,parm,varargin)
 %   otf = oiGet(oi,'optics otf data',450); 
 %   vcNewGraphWin; mesh(fftshift(abs(otf)));
 %         
-%  The direct calld using opticsGet are:
+%  The direct calls using opticsGet are:
 %   optics     = oiGet(oi,'optics');
 %   otf450     = opticsGet(optics,'otf data',450);
 %   otfSupport = opticsGet(optics,'otf support');  % Cycles/mm
@@ -607,6 +607,7 @@ switch parm
         if length(otfWave)>1, val = otfWave(2) - otfWave(1);
         else val = 1;
         end
+        
     case {'psfdata'}
         % To return the psf at 500 nm use
         %    psf = opticsGet(optics,'psfData',500);

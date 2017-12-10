@@ -93,6 +93,7 @@ switch parm
         
     case {'fnumber','f#'}
         optics.fNumber = val;
+        
     case {'focallength','flength'}
         optics.focalLength = val;
         

@@ -1,14 +1,14 @@
 function oi = oiSetPtbOptics(oi,varargin)
-% Put a line spread function from PTB into an oi.
+% Put line spread function or point spread function from PTB into an oi.
 %
 % Syntax:
-%    oi = oiSetPtbOptics(oi,varargin)
+%    oi = oiSetPtbOptics(oi)
 % 
 % Description
-%    Psychtoolbox has code to generate a number of standard line spread
-%    functions.  This routine takes one of those methods and does the
-%    apprpriate massaging to insert it into the optics structure of a
-%    passed isetbio oi object.
+%    Psychtoolbox has code to generate a number of standard line spread and
+%    point spread functions.  This routine takes one of those methods and
+%    does the apprpriate massaging to insert it into the optics structure
+%    of a passed isetbio oi object.
 %
 %    There is nothing terribly deep here, but this routine takes care of
 %    all the fussing.
@@ -40,7 +40,9 @@ function oi = oiSetPtbOptics(oi,varargin)
 %                         'Williams'      - See PTB's WilliamsMTF
 %
 %    'uMPerDegree' -    Scalar, conversion factor between degrees of visual
-%                       angle and um on the retina.  (Default 300).
+%                       angle and um on the retina (default 300). You want
+%                       this value to match the conversions specified in
+%                       the passed oi struct.
 %                       
 % See also:
 %
@@ -74,8 +76,7 @@ end
 %
 % We'll also keep it around in cycles/mm.
 %
-% And convert to support in cycles per degree using 300 um per degree,
-% which is the number that appears to be baked into the optics object.
+% And convert to support in cycles per degree.
 uMPerMm = 1000;
 uMPerDeg = p.Results.uMPerDegree;
 [xSfGridCyclesMm,ySfGridCyclesMm] = meshgrid(sfValuesCyclesMm{1},sfValuesCyclesMm{2});

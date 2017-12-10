@@ -130,6 +130,7 @@ xlabel('Arc min')
 set(gca,'xlim',[-2 2])
 grid on
 legend('WVF','ISETBIO','PTB');
+
 UnitTest.validationData('wvf0', wvf0);
 
 %% Repeat the PSF calculation with a wavelength offset
@@ -165,6 +166,7 @@ plot(arcminutes(index),ptbPSF(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,w));
+
 UnitTest.validationData('wvf1', wvf1);
 UnitTest.validationData('ptbPSF1', ptbPSF);
 
