@@ -1,35 +1,44 @@
-function contrast = ieContrast(input,varargin)
+function contrast = ieContrast(input, varargin)
 % Convert a signal to a unit contrast
 %
-%    contrast = ieContrast(input,varargin)
+% Syntax:
+%   contrast = ieContrast(input, varargin)
 %
-% Input:
-%   input - Usually a current signal input to a class
+% Description:
+%    Convert a signal to a unit contrast. The signal mean is subtracted and
+%    the signal is scaled so that the entire range is 1 unit.
 %
-% Input parameters
-%   maxC - max contrast, a number between 0 and 1
+%    N.B. If the data are constant, then the return is all zero contrast.
+%
+% Inputs:
+%    input    - Usually a current signal input to a class
+%    varargin - A variable array of parameters. Options include:
+%           maxC - max contrast, a number between 0 and 1
 %
 % Output:
-%   contrast - The input converted to a contrast
+%    contrast - The input converted to a contrast
 %
-% The signal mean is subtracted and the signal is scaled so that the entire
-% range is 1 unit.  
-%
-% N.B. If the data are constant, then the return is all zero contrast.
-%
-% Example
-%   ieContrast(input,'maxC',0.5)
-%
-% See also: computeSeparable.m
+% See Also:
+%    computeSeparable.m
 % 
-% JRG/BW ISETBIO Team, 2016
+
+% History:
+%    xx/xx/16  JRG/BW  ISETBIO Team, 2016
+%    11/30/17  jnm  Formatting
+%
+
+% Example
+%{
+    input = 1:50;
+    ieContrast(input, 'maxC', 0.5)
+%}
 
 %% Parse
 p = inputParser;
-p.addRequired('input',@isnumeric);
-p.addParameter('maxC',1,@(x)((x >= 0) && ( x <= 1)));
+p.addRequired('input', @isnumeric);
+p.addParameter('maxC', 1, @(x)((x >= 0) && ( x <= 1)));
 
-p.parse(input,varargin{:});
+p.parse(input, varargin{:});
 input = p.Results.input;
 maxC  = p.Results.maxC;
 
@@ -41,7 +50,7 @@ if range == 0
     contrast = zeros(size(input));
 else
     mn = mean(input(:));
-    contrast = maxC*(input - mn)/range;
+    contrast = maxC * (input - mn) / range;
 end
 
 end

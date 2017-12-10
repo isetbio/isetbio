@@ -1,12 +1,17 @@
 function optics = siSynthetic(psfType,oi,varargin)
-%Create synthetic shift-invariant optics 
+% Create synthetic shift-invariant optics and insert into optics structure
 %
-%  optics = siSynthetic(psfType,oi,varargin)
+% Syntax:
+%   optics = siSynthetic(psfType,oi,varargin)
 %
-% This code was used for testing the shift-invariant optics.  We build on
-% this to let the user create a custom shift-invariant optics.
+% Description:
+%   This code was used for testing the shift-invariant optics.  We build on
+%   this to let the user create a custom shift-invariant optics.
 %
-% By default, the optics (custom) fields are filled in using simple values.
+%   By default, the optics (custom) fields are filled in using simple
+%   values.
+%
+%   Must keep spatial sampling parameters pretty consistent across usages.
 %
 % psfType:  'gaussian' --  bivariate normals.  
 %           'custom'   --  read a file with variables explained below
@@ -46,12 +51,11 @@ function optics = siSynthetic(psfType,oi,varargin)
 % Do not write out file
 %  optics = siSynthetic('custom',oi,'custom',[]);  
 %
-% Notes:
-%  * [Note: DHB - This currently has nSamples hard coded at 128, which
-%     is unfortunate.]
-%
-% Copyright ImagEval Consultants, LLC, 2005.
 
+% History:
+%                 Copyright ImagEval Consultants, LLC, 2005.
+% 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
+%           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
 
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
@@ -62,9 +66,18 @@ outFile = [];
 % Wavelength samples
 wave     = oiGet(oi,'wave');
 nWave    = length(wave);
-nSamples = 128;                  % 128 samples, spaced 0.25 um
-OTF      = zeros(nSamples,nSamples,nWave);
-dx(1:2)  = 0.25e-3;              % The units are mm per samp
+
+% Make array for new OTF
+optics = oiGet(oi,'optics');
+otfSamples = opticsGet(optics,'otf size');
+if (otfSamples(1) ~= otfSamples(2))
+    error('OTF must be on square support');
+end
+nSamples = otfSamples(2);                 
+OTF = zeros(nSamples,nSamples,nWave);
+
+% Get spacing of psf in mm of retina
+dx(1:2) = opticsGet(optics,'psf spacing','mm');
 
 %% Create psf and OTF
 
@@ -117,18 +130,21 @@ switch lower(psfType)
         
         % Check the parameters for consistency
         [m,n,nWave] = size(psfIn);
-        if length(wave) ~= nWave, 
+        if length(wave) ~= nWave 
             error('Mis-match between wavelength and psf');
         end
         if m ~= nSamples || n ~= nSamples
-            error('Not sure why we have this constraint');
+            error('Need input and output number of samples to match');
         end
-        
-        
-        %% OTF computation 
-        
+        if (mmPerSamp(2) ~= dx(2) || mmPerSamp(1) ~= dx(1))
+            error('Cannot yet change psf sampling here.')
+        end
+              
+        % OTF computation 
+        %
         % This is the sampling grid of the psfIn.  
-        % Units at this point are in mm.  
+        % Units at this point are in mm. The psf gets interpolated
+        % to the desired sampling size and then converted to an OTF.
         x = (1:n)*mmPerSamp(2); x = x - mean(x(:));
         y = (1:m)*mmPerSamp(1); y = y - mean(y(:));
         [xInGrid, yInGrid] = meshgrid(x,y);
@@ -143,12 +159,12 @@ switch lower(psfType)
             psf = fftshift(psf);      % Place center of psf at (1,1)
             OTF(:,:,ii) = fft2(psf);  % figure(1); mesh(OTF(:,:,ii))
         end
+        
     otherwise
         error('Unspecified PSF format');
 end
 
 %% Find OI sample spacing.  The OTF line spacing is managed in lines/mm
-
 nyquistF = 1 ./ (2*dx);   % Line pairs (cycles) per mm
 fx = unitFrequencyList(nSamples)*nyquistF(2);
 fy = unitFrequencyList(nSamples)*nyquistF(1);

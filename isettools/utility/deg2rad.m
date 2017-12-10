@@ -1,14 +1,42 @@
-function r = deg2rad(d)
-%Convert degrees to radians
+function r = deg2rad(d, units)
+% Convert degrees to radians
 %
-%  r = deg2rad(d)
+% Syntax:
+%   r = deg2rad(d, [units])
 %
-% See also: rad2deg.  
-%    Perhaps this routine should also adopt the varargin structure in that
-%    function.
+% Description:
+%    Convert degrees to radians. Apply additional conversions if
+%    appropriate units are provided. (Ex. arcmin, arcsec)
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Inputs:
+%    d     - Degrees to convert
+%    units - Units to apply to radians in conversion. 
+%
+% Outputs:
+%    r     - measurement in Radians (unless other unit specified)
+%
+% Notes:
+%    * [Note: XXX - Perhaps this routine should also adopt the varargin
+%      structure in that function.]
+%    * [Note: JNM - Added in units section (that changed from rad2deg) -
+%      please check over my work!]
+%
+% See Also:
+%    rad2deg
 
-r = (pi/180)*d;
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    12/01/17  jnm  Formatting, Add units argument, if statement based on
+%                   units argument, and scale multiplier. 
 
+% Examples:
+%{
+    deg2rad(90)
+    deg2rad(90, 'arcmin')
+%}
+
+if notDefined('units')
+    r = (pi / 180) * d;
+else
+    r = (pi / 180) * d * ieUnitScaleFactor(units);
 end

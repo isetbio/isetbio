@@ -1,40 +1,61 @@
-function [idx1,idx2] = ieWave2Index(waveList,wave)
-%Convert a wavelength to an index into the wave list.
+function [idx1, idx2] = ieWave2Index(waveList, wave)
+% Convert a wavelength to an index into the wave list.
 %
-%    [idx1,idx2] = ieWave2Index(waveList,wave)
-%   
-% If only one return argument is requested, then the index closest to the
-% specified wavelength. If two indices are requested, these are the indices
-% whose wavelength values bound the input wave value.  These are always
-% ordered (idx1 < idx2).
+% Syntax:
+%   [idx1, idx2] = ieWave2Index(waveList, wave)
 %
-% Example
-%   waveList = sceneGet(scene,'wave');
-%   idx = ieWave2Index(waveList,503)
-%   [idx1,idx2] = ieWave2Index(waveList,487)
+% Description:
+%    If only one return argument is requested, then the index closest to
+%    the specified wavelength. If two indices are requested, these are the
+%    indices whose wavelength values bound the input wave value. These are
+%    always ordered (idx1 < idx2).
 %
-% See also: ieFieldHeight2Index()
+% Inputs:
+%    waveList - Wavelength list
+%    wave     - Specified wavelength
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Outputs:
+%    idx1     - If only argument, closest indext to 'wave'. Else, lower
+%               bound index around input wave value
+%    idx2     - (Optional) If requested, upper bound index around the input
+%               wave value
+%
+% Notes:
+%    * [Note: XXX - Programming Note: We could return weights that might be
+%      used for interpolation such as idx1 wgt1 idx2 wgt2 if requested.]
+%
+% See Also:
+%    ieFieldHeight2Index
 
-% Programming Note:  We could return weights that might be used for
-% interpolation such as idx1 wgt1 idx2 wgt2 if requested.
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/21/17  jnm  Formatting
+%
 
-[v,idx1] = min(abs(waveList - wave));
+% Examples:
+%{
+    scene = sceneCreate;
+	waveList = sceneGet(scene, 'wave');
+	idx = ieWave2Index(waveList, 503)
+	[idx1, idx2] = ieWave2Index(waveList, 487)
+%}
+
+[v, idx1] = min(abs(waveList - wave));
 
 % Determine two indices that bound the wavelength value.
 if nargout == 2
     if waveList(idx1) > wave
-        % Send back the index below.  Order everything properly
-        idx2 = max(1,idx1 - 1);
-        tmp = idx1; idx1 = idx2; idx2 = tmp;
+        % Send back the index below. Order everything properly
+        idx2 = max(1, idx1 - 1);
+        tmp = idx1;
+        idx1 = idx2;
+        idx2 = tmp;
     elseif waveList(idx1) < wave
-        % Send back the index above.  No need to order
-        idx2 = min(length(waveList),idx1 + 1);
+        % Send back the index above. No need to order
+        idx2 = min(length(waveList), idx1 + 1);
     else
         idx2 = idx1;
     end
 end
-
 
 return;

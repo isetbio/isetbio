@@ -12,8 +12,6 @@ function varargout = randraw(distribName, distribParams, varargin)
 % 3)  Y = randraw( distribName, distribParams, sampleSize );
 %           returns array Y of size = sampleSize of random variates from distribName  
 %           distribution with parameters distribParams
-% Example:
-%    Y = randraw('poisson',7,5000); hist(Y,50)
 %
 %               ALPHABETICAL LIST OF THE SUPPORTED DISTRIBUTIONS:
 %  ____________________________________________________________________
@@ -61,6 +59,7 @@ function varargout = randraw(distribName, distribParams, varargin)
 % |        Lomax                              |    'lomax'             |
 % |        Lorentz                            |    'lorentz'           |
 % |        Maxwell                            |    'maxwell'           |
+% |        Nakagami                           |    'nakagami'          |
 % |        Negative Binomial                  |    'negbinom'          |
 % |        Normal                             |    'norm'              |
 % |        Normal-Inverse-Gaussian (NIG)      |    'nig'               |
@@ -72,6 +71,7 @@ function varargout = randraw(distribName, distribParams, varargin)
 % |        Quadratic                          |    'quadr'             |
 % |        Rademacher                         |    'rademacher'        |
 % |        Rayleigh                           |    'rayl'              |
+% |        Rice                               |    'rice'              |
 % |        Semicircle                         |    'semicirc'          |
 % |        Skellam                            |    'skellam'           |
 % |        Student's-t                        |    't'                 |
@@ -79,7 +79,7 @@ function varargout = randraw(distribName, distribParams, varargin)
 % |        Truncated Normal                   |    'normaltrunc'       |
 % |        Tukey-Lambda                       |    'tukeylambda'       |
 % |        U-shape                            |    'u'                 |
-% |        Uniform (continuous)               |    'unifrom'           |
+% |        Uniform (continuous)               |    'uniform'           |
 % |        Von Mises                          |    'vonmises'          |
 % |        Wald                               |    'wald'              |
 % |        Weibull                            |    'weibull'           |
@@ -89,6 +89,30 @@ function varargout = randraw(distribName, distribParams, varargin)
 % |        Zipf                               |    'zipf'              |
 % |___________________________________________|________________________|
 
+%  Version 2.0 - August 2007
+%         1) New distributions support: Nakagami and Rician !
+%         2) Small typo corrections in comments
+%  Version 1.8 - February 2007
+%         GIG distribution (thanks to Mr. Demetris Lamnisos)
+%           Computational exceptions in the reparameterized GIG generation were fixed
+%  Version 1.7 - December 2006
+%         GIG distribution (thanks to Dr. Junbin Gao)
+%           Computational exceptions in the reparameterized GIG generation were fixed
+%  Version 1.6 - September 2006
+%         Exception handling: BINOMIAL distribution - special case for n*p~=0 
+%         Geometric distibution: additional note in help section 
+%  Version 1.5 - December 2005
+%        'true' and 'false' functions were replased by ones and zeros to support Matlab releases 
+%         below 6.5
+%  Version 1.4 - September 2005 -
+%      Bugs fix:
+%        1) GAMMA distribution (thanks to Earl Lawrence):
+%             special case for a<1
+%        2) GIG distribution (thanks to Panagiotis Braimakis):
+%            typo in help 
+%            code adjustment to overcome possible computational overflows
+%        3) CHI SQUARE distribution
+%            typo in help
 %  Version 1.3 - July 2005 -
 %      Bug fix:
 %         Typo in GIG distribution generation:
@@ -107,14 +131,35 @@ function varargout = randraw(distribName, distribParams, varargin)
 %                                   usage string was changed to 'binom' ( 'binomial' works too ).
 %  Version 1.0 - March 2005 -  Initial version
 %  Alex Bar Guy  &  Alexander Podgaetsky
-%    alex@wavion.co.il
+%    alex.barguy@gmail.com
 
-% These programs are distributed in the hope that they will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+% Copyright (c) 2005, Alex Bar-Guy
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+%
+% * Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in
+% the documentation and/or other materials provided with the distribution
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%                       SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%                       INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 
 % Any comments and suggestions please send to:
-%    alex@wavion.co.il
+%    alex.barguy@gmail.com
 
 % Reference links:
 %   1) http://mathworld.wolfram.com/topics/StatisticalDistributions.html
@@ -165,6 +210,7 @@ if strcmp(runMode, 'distribHelp')
                          indxs = strfind( printLine, 'randraw' );
                     end
                end
+               pause(0.02);
                fprintf( '\n%s', printLine );
           end
           if ~isempty( strfind( tline, [ 'START ', distribNameInner,' HELP' ] ) )
@@ -173,6 +219,9 @@ if strcmp(runMode, 'distribHelp')
      end
      fprintf( '\n\n' );
      fclose( fid );
+     if nargout > 0
+          varargout{1} = [];
+     end
      return;
 end
 
@@ -354,7 +403,7 @@ if strcmp(runMode, 'genRun')
                     %
                     % EXAMPLES:
                     %  1.   y = randraw('bern', 0.5, [1 1e5]);
-                    %  2.   y = randraw('bern', 0,1, 1, 1e5);
+                    %  2.   y = randraw('bern', 0.1, 1, 1e5);
                     %  3.   y = randraw('bern', 0.9, 1e5 );
                     %  4.   randraw('bern');                     
                     % END bernoulli HELP END bern HELP
@@ -568,9 +617,9 @@ if strcmp(runMode, 'genRun')
                               indxs1 = find(u1 < r);
                               indxs2 = find(u1 >= r);
                               clear('u1');
-                              l = false( indxsSize );
+                              l = logical( zeros( indxsSize ) );
                               l( [ indxs1( log(u2(indxs1)) < (max_ab-1)*log(1-w(indxs1)) ), ...
-                                   indxs2( log(u2(indxs2)) < (min_ab-1)*log(w(indxs2)/t) ) ] ) = true;
+                                   indxs2( log(u2(indxs2)) < (min_ab-1)*log(w(indxs2)/t) ) ] ) = 1;
 
                               clear('u1');
                               clear('u2');
@@ -628,10 +677,10 @@ if strcmp(runMode, 'genRun')
                               indxs1 = find(l1);
                               indxs2 = find(l2);
                               clear('u1');
-                              l = false( indxsSize );
+                              l = logical( zeros( indxsSize ) );
 
                               l( [ indxs1(log(u2(l1)) < (max_ab -1)*log((1-w(l1))/(1-t))), ...
-                                   indxs2(log(u2(l2))< (min_ab -1) * log(w(l2)/t)) ] ) = true;
+                                   indxs2(log(u2(l2))< (min_ab -1) * log(w(l2)/t)) ] ) = 1;
 
                               if a == min_ab
                                    out(indxs(l)) = w(l);
@@ -839,14 +888,6 @@ if strcmp(runMode, 'genRun')
                     validateParam(funcName, 'Binomial', 'binomial', '[n, p]', 'n', n, {'> 0','==integer'});
                     validateParam(funcName, 'Binomial', 'binomial', '[n, p]', 'p', p, {'> 0','< 1'});
                     
-                    % if n large and p near 1, generate j=Binom(n,1-p), return n-j
-
-                    switchFlag = 0;
-                    if n*p <= 1
-                         p = 1-p;
-                         switchFlag = 1;
-                    end
-
                     if n*p > 1e3 & n > 1e3
 
                          out = round( n*p + sqrt(n*p*(1-p))*randn( sampleSize ) );
@@ -857,42 +898,60 @@ if strcmp(runMode, 'genRun')
 
                     else
 
+                         % if n large and p near 1, generate j=Binom(n,1-p), return n-j
+                         switchFlag = 0;
+                         if n>100 & p>0.99
+                              p = 1-p;
+                              switchFlag = 1;
+                         end
+
                          mode = floor( (n+1)*p );
                          q = 1 - p;
                          h = p/q;
 
                          pmode = exp( gammaln(n+1) - gammaln(n-mode+1) - gammaln(mode+1) + ...
                               mode*log(p) + (n-mode)*log(1-p) );
-                         
-                         i = mode + 1;
-                         t = pmode;
-                         while t*2147483648 > 1
-                              t = t * h*(n-i+1)/i;
-                              i = i + 1;
-                         end
-                         last = i - 2;
 
-                         t = pmode;
-                         j = -1;
-                         for i=mode-1:-1:0
-                              t = t * (i+1)/h/(n-i);
-                              if t*2147483648 < 1
-                                   j=i;
-                                   break;
+                         if( 1-pmode < 5e-10 )
+                              % "Fast Generation of Discrete Random Variables", p.3  citation:
+                              % "For ... discrete variates with an infinite number of probabilities, we select only
+                              % those for which, for a sample of size 2^31(10^9.33), the expected number of occurences exceeds
+                              % 0.5. The other probabilities are assumed zero. For those unusual situations where occurrences
+                              % with probability less than 5 × 10^?10 must be accounted for, special tail-handling procedures
+                              % should be used."
+                              out = mode*ones( sampleSize );
+                              
+                         else
+
+                              i = mode + 1;
+                              t = pmode;
+                              while t*2147483648 > 1
+                                   t = t * h*(n-i+1)/i;
+                                   i = i + 1;
                               end
+                              last = i - 2;
+
+                              t = pmode;
+                              j = -1;
+                              for i=mode-1:-1:0
+                                   t = t * (i+1)/h/(n-i);
+                                   if t*2147483648 < 1
+                                        j=i;
+                                        break;
+                                   end
+                              end
+                              offset=j+1;
+                              sizeP = last-offset+1;
+
+                              P = zeros(1, sizeP);
+
+                              P(mode-offset+1:last-offset+1) = ...
+                                   round( 2^30*pmode*cumprod([1, h*(n-(mode+1:last)+1)./(mode+1:last)] ) );
+                              P(mode-offset:-1:1) = ...
+                                   round( 2^30*pmode*cumprod( (mode:-1:offset+1)./(h*(n-(mode-1:-1:offset)))) );
+
+                              out = randFrom5Tbls( P, offset, sampleSize);
                          end
-                         offset=j+1;
-                         sizeP = last-offset+1;
-
-                         P = zeros(1, sizeP);
-
-                         P(mode-offset+1:last-offset+1) = ...
-                              round( 2^30*pmode*cumprod([1, h*(n-(mode+1:last)+1)./(mode+1:last)] ) );
-                         P(mode-offset:-1:1) = ...
-                              round( 2^30*pmode*cumprod( (mode:-1:offset+1)./(h*(n-(mode-1:-1:offset)))) );
-
-                         out = randFrom5Tbls( P, offset, sampleSize);
-
                     end
                     if switchFlag
                          out = n - out;
@@ -1134,8 +1193,8 @@ if strcmp(runMode, 'genRun')
                     %   Continuous skewed distributions
                     %
                     % NOTES:
-                    %   1. Chi square distribution with r degrees of freedom is sum of r  i.i.d Normal 
-                    %      distributions with mean 0 and variance=1;
+                    %   1. Chi square distribution with r degrees of freedom is sum of r squared i.i.d Normal 
+                    %      distributions with zero mean and variance equal to 1;
                     %   2. It is a special case of the gamma distribution where:
                     %       the scale parameter is 2 and the shape parameter has the value r/2;
                     %
@@ -1629,8 +1688,9 @@ if strcmp(runMode, 'genRun')
                     %  1.   y = randraw('gamma', [2], [1 1e5]);
                     %  2.   y = randraw('gamma', [0 10 2], 1, 1e5);
                     %  3.   y = randraw('gamma', [3], 1e5 );
-                    %  4.   y = randraw('gamma', [1 3 2], [1e5 1] );
-                    %  5.   randraw('gamma');
+                    %  4.   y = randraw('gamma', [1/3], 1e5 );
+                    %  5.   y = randraw('gamma', [1 3 2], [1e5 1] );
+                    %  6.   randraw('gamma');
                     %
                     % END gamma HELP END gama HELP
                     
@@ -1652,62 +1712,69 @@ if strcmp(runMode, 'genRun')
                          m = 0;
                          b = 1;
                          a  = distribParams(1);
-                         validateParam(funcName, 'Gamma', 'gamma', '[m, b, a]', 'a', a, {'> 0'});
+                         validateParam(funcName, 'Gamma', 'gamma', '[m, b, a]', 'a', a, {'> 0'});                         
+                    end
+                    
+                    if a < 1
+                         % If a<1, one can use GAMMA(a)=GAMMA(1+a)*UNIFORM(0,1)^(1/a);
+                         out = m + b*(feval(funcName, 'gamma', 1+a, sampleSize)).*(rand(sampleSize).^(1/a));                         
                          
-                    end
-                    
-                    d = a - 1/3;
-                    c = 1/sqrt(9*d);
-
-                    x = randn( sampleSize );
-                    v = 1+c*x;
-
-                    indxs = find(v <= 0);
-                    while ~isempty(indxs)
-                         indxsSize = size( indxs );
-                         xNew = randn( indxsSize );
-                         vNew = a+c*xNew;
-
-                         l = (vNew > 0);
-                         v( indxs( l ) ) = vNew(l);
-                         x( indxs( l ) ) = xNew(l);
-                         indxs = indxs( ~l );
-                    end
-
-                    u = rand( sampleSize );
-                    v = v.^3;
-                    x2 = x.^2;
-                    out = d*v;
-
-                    indxs = find( (u>=1-0.0331*x2.^2) & (log(u)>=0.5*x2+d*(1-v+log(v))) );
-                    while ~isempty(indxs)
-                         indxsSize = size( indxs );
-
-                         x = randn( indxsSize );
+                    else
+                         
+                         d = a - 1/3;
+                         c = 1/sqrt(9*d);
+                         
+                         x = randn( sampleSize );
                          v = 1+c*x;
-                         indxs1 = find(v <= 0);
-                         while ~isempty(indxs1)
-                              indxsSize1 = size( indxs1 );
-                              xNew = randn( indxsSize1 );
+                         
+                         indxs = find(v <= 0);
+                         while ~isempty(indxs)
+                              indxsSize = size( indxs );
+                              xNew = randn( indxsSize );
                               vNew = a+c*xNew;
-
-                              l1 = (vNew > 0);
-                              v( indxs1(l1) ) = vNew(l1);
-                              x( indxs1(l1) ) = xNew(l1);
-                              indxs1 = indxs1( ~l1 );
+                              
+                              l = (vNew > 0);
+                              v( indxs( l ) ) = vNew(l);
+                              x( indxs( l ) ) = xNew(l);
+                              indxs = indxs( ~l );
                          end
-
-                         u = rand( indxsSize );
-                         v = v .* v .* v;
-                         x2 = x.*x;
-
-                         l = (u<1-0.0331*x2.*x2) | (log(u)<0.5*x2+d*(1-v+log(v)));
-                         out( indxs( l ) ) = d*v(l);
-                         indxs = indxs( ~l );
-                    end
-
-                    out = m + b*out;
-                    
+                         
+                         u = rand( sampleSize );
+                         v = v.^3;
+                         x2 = x.^2;
+                         out = d*v;
+                         
+                         indxs = find( (u>=1-0.0331*x2.^2) & (log(u)>=0.5*x2+d*(1-v+log(v))) );
+                         while ~isempty(indxs)
+                              indxsSize = size( indxs );
+                              
+                              x = randn( indxsSize );
+                              v = 1+c*x;
+                              indxs1 = find(v <= 0);
+                              while ~isempty(indxs1)
+                                   indxsSize1 = size( indxs1 );
+                                   xNew = randn( indxsSize1 );
+                                   vNew = a+c*xNew;
+                                   
+                                   l1 = (vNew > 0);
+                                   v( indxs1(l1) ) = vNew(l1);
+                                   x( indxs1(l1) ) = xNew(l1);
+                                   indxs1 = indxs1( ~l1 );
+                              end
+                              
+                              u = rand( indxsSize );
+                              v = v .* v .* v;
+                              x2 = x.*x;
+                              
+                              l = (u<1-0.0331*x2.*x2) | (log(u)<0.5*x2+d*(1-v+log(v)));
+                              out( indxs( l ) ) = d*v(l);
+                              indxs = indxs( ~l );
+                         end % while ~isempty(indxs)
+                         
+                         out = m + b*out;
+                         
+                    end % if a < 1, else ...
+               
                case {'geometric', 'geom', 'furry'}
                     % START geometric HELP START geom HELP START furry HELP
                     % THE GEOMETRIC DISTRIBUTION
@@ -1736,6 +1803,16 @@ if strcmp(runMode, 'genRun')
                     %     the number of trials required to realize the first 
                     %     success is ~Geometric(p).
                     %  4. For the k'th success, see the Negative Binomial distribution.
+                    %  5. There is another definition of Geometric distribution:
+                    %       In a series of Bernoulli trials, with Prob(success) = p, 
+                    %       it defines probability that there are n failures before first success.
+                    %       Then: 
+                    %        Pdf(n) = p*(1-p)^n; n = 0, 1, 2, 3 ...
+                    %        Mean = q/p;
+                    %        Var = q/p^2                    
+                    %       The only difference between two definitions is shift by one.
+                    %       To generate a random variable according to this definition run:
+                    %         y=randraw('geom', p, sampleSize) - 1;
                     %
                     % USAGE:
                     %   randraw('geom', p, sampleSize) - generate sampleSize number
@@ -1763,10 +1840,10 @@ if strcmp(runMode, 'genRun')
                     % THE GENERALIZED INVERSE GAUSSIAN DISTRIBUTION
                     %     GIG(lam, chi, psi)
                     %
-                    % pdf = (psi/chi)^(lam/2)*y.^(lam-1)/(2*c(lam, sqrt(chi*psi))) .* exp(-1/2*(chi./y + psi*y));  y > 0 
+                    % pdf = (psi/chi)^(lam/2)*y.^(lam-1)/(2*besselk(lam, sqrt(chi*psi))) .* exp(-1/2*(chi./y + psi*y));  y > 0 
                     %
-                    % Mean = sqrt( chi / psi ) * besselk(lam+1,sqrt(chi*psi))/besselk(lam,sqrt(chi*psi));
-                    % Variance = chi/psi * besselk(lam+2,sqrt(chi*psi))/besselk(lam,sqrt(chi*psi)) - Mean^2;
+                    % Mean = sqrt( chi / psi ) * besselk(lam+1,sqrt(chi*psi),1)/besselk(lam,sqrt(chi*psi),1);
+                    % Variance = chi/psi * besselk(lam+2,sqrt(chi*psi),1)/besselk(lam,sqrt(chi*psi),1) - Mean^2;
                     %
                     % PARAMETERS:
                     %   chi>0,  psi>=0  if lam<0;
@@ -1782,7 +1859,7 @@ if strcmp(runMode, 'genRun')
                     % NOTES:
                     %    1) GIG(lam, chi, psi) = 1/c * GIG(lam, chi*c, psi/c), for all c>=0
                     %    2) GIG(lam, chi, psi) = sqrt(chi/psi) * GIG(lam, sqrt(psi*chi), sqrt(psi*chi));
-                    %    3) GIG(lam, chi, psi) = 1 / GIG(lam, chi, psi);
+                    %    3) GIG(lam, chi, psi) = 1 / GIG(-lam, psi, chi);
                     %   
                     %   Special cases of GIG distribution are the gamma distribution (chi=0), the
                     %     reciprocal gamma distribution (psi=0), the inverse Gaussian distribution
@@ -1800,7 +1877,8 @@ if strcmp(runMode, 'genRun')
                     %  3.   y = randraw('gig', [0, 1.1, 2.2], 1e5 );
                     %  4.   y = randraw('gig', [2.5, 3.5, 4.5], [1e5 1] );
                     %  5.   y = randraw('gig', [0.5, 0.6, 0.7], [1e5 1] );
-                    %  6.   randraw('gig');                       
+                    %  6.   y = randraw('gig', [0, 1.3718, 1], [1e5 1]);
+                    %  7.   randraw('gig');                       
                     % END gig HELP
                     
                     % Reference:
@@ -1841,52 +1919,47 @@ if strcmp(runMode, 'genRun')
                     
                     h = lam;
                     b = sqrt( chi * psi );
-                                        
-                    if h<=1 & b<=1                         
+                          
+                    m = ( h-1+sqrt((h-1)^2+b^2) ) / b;  % Mode
+                    log_1_over_pm = -(h-1)/2*log(m) + b/4*(m + (1/m));
+
+                    r = (6*m + 2*h*m - b*m^2 + b)/(4*m^2);
+                    s = (1 + h - b*m)/(2*m^2);
+                    p = (3*s - r^2)/3;
+                    q = (2*r^3)/27 - (r*s)/27 + b/(-4*m^2);
+                    eta = sqrt(-(p^3)/27);
+                         
+                    y1  = 2*exp(log(eta)/3) * cos(acos(-q/(2*eta))/3) - r/3;
+                    y2  = 2*exp(log(eta)/3) * cos(acos(-q/(2*eta))/3 + 2/3*pi) - r/3;
+                         
+                    if (h<=1 & b<=1) | abs(q/eta)>2 | y1<0 | y2>0
                          % without shifting by m                        
                                                  
-                         ym = (-h-1 + sqrt((h+1)^2 + b^2))/b;                         
-                         xm = ( h-1 + sqrt((h-1)^2 + b^2))/b;
+                         ym = (-h-1 + sqrt((h+1)^2 + b^2))/b;
+                        
                          % a = vplus/uplus
-                         a = exp(-0.5*h*log(xm*ym) + 0.5*log(xm/ym) + b/4*(xm + 1/xm - ym - 1.0/ym));
-                         % c = 1/log(sqrt(hx(xm)))
-                         c = -(h-1)/2* log(xm) + b/4*(xm + 1/xm);
-                         % vminus = 0
+                         a = exp(-0.5*h*log(m*ym) + 0.5*log(m/ym) + b/4*(m + 1/m - ym - 1.0/ym));
 
                          u = rand( sampleSize );
                          v = rand( sampleSize );
                          out = a * (v./u);
-                         indxs = find( log(u) > (h-1)/2*log(out) - b/4*(out + 1./out) + c );
+                         indxs = find( log(u) > (h-1)/2*log(out) - b/4*(out + 1./out) + log_1_over_pm );
                          while ~isempty( indxs )
                               indxsSize = size( indxs );
                               u = rand( indxsSize );
                               v = rand( indxsSize );
                               outNew = a * (v./u);
-                              l = log(u) <= (h-1)/2*log(outNew) - b/4*(outNew + 1./outNew) + c;
+                              l = log(u) <= (h-1)/2*log(outNew) - b/4*(outNew + 1./outNew) + log_1_over_pm;
                               out( indxs( l ) ) = outNew(l);
                               indxs = indxs( ~l );
                          end                      
 
                     else % if h<=1 & b<=1
-                         % with shifting by m
+                         % with shifting by m                         
                          
-                         % Mode of the reparameterized distribution GIG(lam, b, b)
-                         m = ( h-1+sqrt((h-1)^2+b^2) ) / b;  % Mode
-                         pm = exp((h-1)/2*log(m) - b/4*(m + (1/m))); % sqrt(hx(m))
-
-                         r = (6*m + 2*h*m - b*m^2 + b)/(4*m^2);
-                         s = (1 + h - b*m)/(2*m^2);
-                         p = (3*s - r^2)/3;
-                         q = (2*r^3)/27 - (r*s)/27 + b/(-4*m^2);
-                         eta = sqrt(-(p^3)/27);
-                         
-                         y1  = 2*exp(log(eta)/3) * cos(acos(-q/(2*eta))/3) - r/3;
-                         y2  = 2*exp(log(eta)/3) * cos(acos(-q/(2*eta))/3 + 2/3*pi) - r/3;
-
-
-                         vplus = exp( log(1/pm) + log(1/y1) + (h-1)/2*log(1/y1 + m) - ...
+                         vplus = exp( log_1_over_pm + log(1/y1) + (h-1)/2*log(1/y1 + m) - ...
                               b/4*(1/y1 + m + 1/(1/y1 + m)) );
-                         vminus = -exp( log(1/pm) + log(-1/y2) + (h-1)/2*log(1/y2 + m) - ...
+                         vminus = -exp( log_1_over_pm + log(-1/y2) + (h-1)/2*log(1/y2 + m) - ...
                               b/4*(1/y2 + m + 1/(1/y2 + m)) );  
                          
                          u = rand( sampleSize );
@@ -1907,7 +1980,7 @@ if strcmp(runMode, 'genRun')
                          end
                          
                          out = z + m;
-                         indxs = find( log(u) > (log(1/pm) + (h-1)/2*log(out) - b/4*(out + 1./out)) );
+                         indxs = find( log(u) > (log_1_over_pm + (h-1)/2*log(out) - b/4*(out + 1./out)) );
                          
                          while ~isempty(indxs),
                               indxsSize = size( indxs );                             
@@ -1928,7 +2001,7 @@ if strcmp(runMode, 'genRun')
                               end
                               
                               outNew = z + m;
-                              l = ( log(u) <= (log(1/pm) + (h-1)/2*log(outNew) - b/4*(outNew + 1./outNew)) );
+                              l = ( log(u) <= (log_1_over_pm + (h-1)/2*log(outNew) - b/4*(outNew + 1./outNew)) );
                               out( indxs(l) ) = outNew( l );
                               indxs = indxs( ~l );
                               
@@ -2530,18 +2603,18 @@ if strcmp(runMode, 'genRun')
                     % THE LOG-NORMAL DISTRIBUTION
                     % (sometimes: Cobb-Douglas or antilognormal distribution)
                     %
-                    % pdf = 1/(k*sqrt(2*pi)) * exp(-1/2*((log(y)-a)/k)^2)
-                    % cdf = 1/2*(1 + erf((log(y)-a)/(k*sqrt(2))));
+                    % pdf = 1/(y*sigma*sqrt(2*pi)) * exp(-1/2*((log(y)-mu)/sigma)^2)
+                    % cdf = 1/2*(1 + erf((log(y)-mu)/(sigma*sqrt(2))));
                     % 
-                    % Mean = exp( a + k^2/2 );
-                    % Variance = exp(2*a+k^2)*( exp(k^2)-1 );
-                    % Skewness = (exp(1)+2)*sqrt(exp(1)-1), for a=0 and k=1;
-                    % Kurtosis = exp(4) + 2*exp(3) + 3*exp(2) - 6; for a=0 and k=1;
-                    % Mode = exp(a-k^2);
+                    % Mean = exp( mu + sigma^2/2 );
+                    % Variance = exp(2*mu+sigma^2)*( exp(sigma^2)-1 );
+                    % Skewness = (exp(1)+2)*sqrt(exp(1)-1), for mu=0 and sigma=1;
+                    % Kurtosis = exp(4) + 2*exp(3) + 3*exp(2) - 6; for mu=0 and sigma=1;
+                    % Mode = exp(mu-sigma^2);
                     %
                     % PARAMETERS:
-                    %  a - location
-                    %  k - scale (k>0)
+                    %  mu - location
+                    %  sigma - scale (sigma>0)
                     %
                     % SUPPORT:
                     %   y,  y>0
@@ -2551,16 +2624,18 @@ if strcmp(runMode, 'genRun')
                     %
                     % NOTES:
                     %  1) The LogNormal distribution is always right-skewed
-                    %  2) Parameters a and k are the mean and standard deviation 
+                    %  2) Parameters mu and sigma are the mean and standard deviation 
                     %     of y in (natural) log space.
+                    %  3) mu = log(mean(y)) - 1/2*log(1 + var(y)/(mean(y))^2);
+                    %  4) sigma = sqrt( log( 1 + var(y)/(mean(y))^2) );
                     %
                     % USAGE:
                     %   randraw('lognorm', [], sampleSize) - generate sampleSize number
                     %         of variates from the standard Lognormal distribution with 
-                    %         loaction parameter a=0 and scale parameter k=1;                    
-                    %   randraw('lognorm', [a, k], sampleSize) - generate sampleSize number
+                    %         loaction parameter mu=0 and scale parameter sigma=1;                    
+                    %   randraw('lognorm', [mu, sigma], sampleSize) - generate sampleSize number
                     %         of variates from the Lognormal distribution with 
-                    %         loaction parameter 'a' and scale parameter 'k';
+                    %         loaction parameter 'mu' and scale parameter 'sigma';
                     %   randraw('lognorm') - help for the Lognormal distribution;
                     %
                     % EXAMPLES:
@@ -2573,15 +2648,15 @@ if strcmp(runMode, 'genRun')
                     
                     checkParamsNum(funcName, 'Lognormal', 'lognorm', distribParams, [0, 2]);
                     if numel(distribParams)==2
-                         a  = distribParams(1);
-                         k  = distribParams(2);
-                         validateParam(funcName, 'Lognormal', 'lognorm', '[a, k]', 'k', k, {'> 0'});
+                         mu  = distribParams(1);
+                         sigma  = distribParams(2);
+                         validateParam(funcName, 'Lognormal', 'lognorm', '[mu, sigma]', 'sigma', sigma, {'> 0'});
                     else
-                         a = 0;
-                         k = 1;
+                         mu = 0;
+                         sigma = 1;
                     end
 
-                    out = exp( a + k * randn( sampleSize ) );
+                    out = exp( mu + sigma * randn( sampleSize ) );
 
                case {'maxwell'}
                     % START maxwell HELP
@@ -2630,6 +2705,68 @@ if strcmp(runMode, 'genRun')
                     out = sqrt( randn(sampleSize).^2 + randn(sampleSize).^2 + ...
                          randn(sampleSize).^2 ) * a;
 
+               case {'nakagamim', 'nakagami-m', 'nakagami'}
+                    % START nakagamim HELP START nakagami-m HELP START nakagami HELP                   
+                    % THE NAKAGAMI DISTRIBUTION
+                    %
+                    % ( sometimes: Nakagami-m distribution )
+                    %
+                    % pdf(y) = 2/gamma(m) * (m/omega)^m * y.^(2*m-1).*exp(-m*y.^2/omega); 
+                    % cdf(y) = gammainc(m/omega*y.^2, m);
+                    %
+                    % Mean     = gamma(m+0.5)/gamma(m)*(omega/m)^0.5;
+                    % Variance = omega*(1-1/m*(gamma(m+0.5)/gamma(m))^2);
+                    % Median = sqrt(omega);
+                    % Mode = sqrt(2)/2*((2*m-1)*omega/m)^0.5;
+                    %
+                    % PARAMETERS:
+                    %   m - shape parameter (m > 0)
+                    %   omega - spread parameter (omega>0)
+                    %
+                    % SUPPORT:
+                    %   y, y > 0
+                    %
+                    % CLASS:
+                    %   Continuous skewed distribution                      
+                    %
+                    % NOTES:
+                    %   1) Nakagami distribution is am important distribution in
+                    %      fading channel modeling in wireless communication.
+                    %   2) If Y has a Nakagami distributin with parameters 'm' and 
+                    %      'omega', then Y^2 has a gamma distribution with shape parameter
+                    %      'm' and scale parameter 'omega/m'
+                    %
+                    % USAGE:                 
+                    %   randraw('nakagami', m, sampleSize) - generate sampleSize number
+                    %         of variates from the Nakagami distribution with shape
+                    %         parameter 'm' and spread parameter omega=1;                    
+                    %   randraw('nakagami', [m, omega], sampleSize) - generate sampleSize number
+                    %         of variates from the Nakagami distribution with shape
+                    %         parameter 'm' and spread parameter 'omega';
+                    %   randraw('nakagami') - help for the Nakagami distribution;
+                    %
+                    % EXAMPLES:
+                    %  1.   y = randraw('nakagami', 1.1, [1 1e5]);
+                    %  2.   y = randraw('nakagami', [0.6, 2], 1, 1e5);
+                    %  3.   y = randraw('nakagami', [3, 2.5], 1e5 );
+                    %  4.   randraw('nakagami'); 
+                    % END nakagamim HELP END nakagami-m HELP END nakagami HELP
+                    
+                    checkParamsNum(funcName, 'Nakagami', 'nakagamim', distribParams, [1 2]);
+                    
+                    if numel(distribParams) == 2
+                         m = distribParams(1);
+                         omega = distribParams(2);
+                         validateParam(funcName, 'Nakagami', 'nakagamim', '[m, omega]', 'm', m, {'> 0'});
+                         validateParam(funcName, 'Nakagami', 'nakagamim', '[m, omega]', 'omega', omega, {'> 0'});
+                    else
+                         m = distribParams(1);
+                         omega = 1;
+                         validateParam(funcName, 'Nakagami', 'nakagamim', '[m, omega]', 'm', m, {'> 0'});
+                    end                    
+                    
+                    out = sqrt( randraw('gamma', [0, omega/m, m], sampleSize) );
+ 
                case {'negativebinomial', 'negbinomial', 'negbinom', 'pascal'}
                     % START negbinom HELP START pascal HELP
                     % THE NEGATIVE BINOMIAL DISTRIBUTION
@@ -2757,7 +2894,7 @@ if strcmp(runMode, 'genRun')
                     % USAGE:
                     %   randraw('norm', [], sampleSize) - generate sampleSize number
                     %         of variates from the standard Normal distribution;                  
-                    %   randraw('norm', [a, k], sampleSize) - generate sampleSize number
+                    %   randraw('norm', [mu, sigma], sampleSize) - generate sampleSize number
                     %         of variates from the Normal distribution with 
                     %         mean 'mu' and std 'sigma';
                     %   randraw('norm') - help for the Lognormal distribution;
@@ -2794,6 +2931,9 @@ if strcmp(runMode, 'genRun')
                     %            normpdf and normcdf are the PDF and CDF for the standard normal distribution respectvely
                     %            ( run randraw('normal') for help).
                     %                                        
+                    %   Mean = mu - sigma*(normpdf((b-mu)/sigma)-normpdf((a-mu)/sigma))/(normcdf((b-mu)/sigma)-normcdf((a-mu)/sigma));
+                    %   Variance = sigma^2 * ( 1 - ((b-mu)/sigma*normpdf((b-mu)/sigma)-(a-mu)/sigma*normpdf((a-mu)/sigma))/(normcdf((b-mu)/sigma)-normcdf((a-mu)/sigma)) - ...
+                    %                           ((normpdf((b-mu)/sigma)-normpdf((a-mu)/sigma))/(normcdf((b-mu)/sigma)-normcdf((a-mu)/sigma)))^2 );
                     %
                     % PARAMETERS:  
                     %   a  - lower truncation point;
@@ -2821,6 +2961,9 @@ if strcmp(runMode, 'genRun')
                     %  4.   y = randraw('normaltrunc', [-13.1, 15.2, 20.1, 3.3], [1e5 1] );
                     %  5.   randraw('normaltrunc');                    
                     % END normaltrunc HELP END normaltruncated HELP END gausstrunc HELP
+                    
+                    % See http://www.econ.umn.edu/~kortum/courses/fall02/lecture4k.pdf
+                    %     http://hydrology.ifas.ufl.edu/publications/jawitz_2004_AWR.pdf
                     
                     checkParamsNum(funcName, 'Truncated Normal', 'normaltrunc', distribParams, [4]);
                     
@@ -3078,13 +3221,13 @@ if strcmp(runMode, 'genRun')
                     %  Discrete distributions
                     %
                     % NOTES:
-                    %  1. If lambda is an integer, Mode also equals (lambda–1).
+                    %  1. If lambda is an integer, Mode also equals (lambda+1).
                     %  2. The Poisson distribution is commonly used as an approximation 
                     %     to the Binomial distribution when probability of success is very small.
                     %  3. In queueing theory, when interarrival times are ~Exponential, the number of arrivals in a
                     %     fixed interval are ~Poisson.
-                    %  4. Errors in observations with integer values (i.e., miscounting) are ~Poisson.
-                    %
+                    %  4. Errors in observations with integer values (i.e., miscounting) are ~Poisson.   
+                    %  
                     % USAGE:
                     %   randraw('po', lambda, sampleSize) - generate sampleSize
                     %         number of variates from the Poisson distribution with 
@@ -3323,13 +3466,66 @@ if strcmp(runMode, 'genRun')
                     %   5.   randraw('rayl'); 
                     %
                     %  SEE ALSO:
-                    %    CHI, MAXWELL, WEIBULL distributions
+                    %    CHI, MAXWELL, RICE, WEIBULL  distributions
                     % END rayl HELP END rayleigh HELP
 
                     checkParamsNum(funcName, 'Rayleigh', 'rayl', distribParams, [1]);
                     sigma = distribParams(1);
                     
                     out = sqrt(-2 * sigma^2 * log(rand( sampleSize ) ));
+
+               case {'rice', 'rician'}
+                    % START rice HELP START rician HELP
+                    % THE RICE DISTRIBUTION
+                    %
+                    %  (Rician distribution)
+                    %
+                    %  pdf  = besseli(0,y*v/sigma^2).*y/sigma^2.*exp(-(y.^2+v^2)/(2*sigma^2));
+                    %
+                    %  Mean = sigma*sqrt(pi/2)*L;
+                    %  Variance = 2*sigma^2 + v^2 - pi*sigma^2/2*L^2;                   
+                    %    where L = exp(-v^2/(4*sigma^2))*((1+v^2/(2*sigma^2))*besseli(0,v^2/(4*sigma^2)) + v^2/(2*sigma^2)*besseli(1,v^2/(4*sigma^2)));
+                    %
+                    % PARAMETERS:
+                    %   v - noncentrality parameter (v>=0)
+                    %   sigma - scale parameter (sigma>0)
+                    %
+                    % SUPPORT:
+                    %   y,  y > 0 
+                    %
+                    % CLASS:
+                    %   Continuous skewed distributions
+                    %
+                    % NOTES:
+                    %  1. When v=0 the distribution reduces to a Rayleigh distribution.
+                    %  2. If Y has a Rice distribution with noncentrality parameter v and
+                    %     scale parameter sigma, then (Y/sigma)^2 has a noncentral chi-square
+                    %     distribution with two degrees of freedom and noncentrality parameter
+                    %     (v/sigma)^2
+                    %
+                    %  USAGE:
+                    %   randraw('rice', [v, sigma], sampleSize) - generate sampleSize number
+                    %         of variates from the Rice distribution with noncentrality 
+                    %         parameter 'v' and scale parameter 'sigma';
+                    %   randraw('rice') - help for the Rice distribution;
+                    %
+                    %  EXAMPLES:
+                    %   1.   y = randraw('rice', [0, 1], [1 1e5]);
+                    %   2.   y = randraw('rice', [0.5, 2], 1, 1e5);
+                    %   3.   y = randraw('rice', [1, 3], 1e5 );
+                    %   4.   randraw('rice'); 
+                    %
+                    %  SEE ALSO:
+                    %    RAYLEIGH distribution
+                    % END rice HELP END rician HELP
+
+                    checkParamsNum(funcName, 'Rice', 'rice', distribParams, [2]);
+                    v = distribParams(1);
+                    validateParam(funcName, 'Rice', 'rice', '[v, sigma]', 'v', v, {'>= 0'});
+                    sigma = distribParams(2);
+                    validateParam(funcName, 'Rice', 'rice', '[v, sigma]', 'sigma', sigma, {'> 0'});
+
+                    out = sigma*sqrt(randraw('chisqnc', [(v/sigma)^2, 2], sampleSize));
 
                case {'semicirc', 'semicircle', 'wigner'}
                     % START semicirc HELP START semicircle HELP START wigner HELP
@@ -4087,7 +4283,7 @@ return;
 
 
 function validateParam(funcName, distribName, runDistribName, distribParamsName, paramName, param, conditionStr)
-condLogical = true;
+condLogical = 1;
 eqCondStr = [];
 for nn = 1:length(conditionStr)
      if nn==1
@@ -4200,3 +4396,36 @@ for ii = 1:N
 end
 
 return;
+
+
+
+
+% Pearsonb type 4
+%http://www-cdf.fnal.gov/publications/cdf6820_pearson4.pdf
+
+
+
+
+
+
+
+
+
+% Lognormal
+% pdf = 1/(y*sigma*sqrt(2*pi)) * exp(-1/2*((log(y)-mu)/sigma)^2)
+% cdf = 1/2*(1 + erf((log(y)-mu)/(sigma*sqrt(2))));
+
+% % Truncated Lognormal
+% N=0;
+% m0 = 0.5 * exp(N*mu + N^2*sigma.^2/2).*(erf((log(b)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2))-erf((log(a)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2)));
+% N=1;
+% m1 = 0.5 * exp(N*mu + N^2*sigma.^2/2).*(erf((log(b)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2))-erf((log(a)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2)));
+% N=2;
+% m2 = 0.5 * exp(N*mu + N^2*sigma.^2/2).*(erf((log(b)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2))-erf((log(a)-mu)./sigma/sqrt(2)-N*sigma/sqrt(2)));
+% 
+% Mean = m1./m0;
+% Variance = m2./m0 - (m1./m0).^2;
+% 
+% PHIl = 1/2*(1 + erf((log(a)-mu)/(sigma*sqrt(2))));
+% PHIr = 1/2*(1 + erf((log(b)-mu)/(sigma*sqrt(2))));
+% out = exp( mu + sigma*( sqrt(2)*erfinv(2*(PHIl+(PHIr-PHIl)*rand(sampleSize))-1) ) );
