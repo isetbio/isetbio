@@ -59,18 +59,18 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %                 color space to another
 %
 % Notes:
-%   * [NOTE: DHB - The comment in the header indicated that the xyz2opp and
-%     opp2xyz matrices were with respect to the 1931 CIE standard, but a
-%     comment in the code suggests it is now the 2012 Stockman-Sharpe
-%     replacement. Hard to tell from the actual numbers, without
-%     recomputing the matrices. Someone should check, and then make the
-%     comments in the header and the code match accordingly. More
-%     generally, I am nt sure what this "opp" space is.  Either expand on
-%     definition or get rid of it, I think.  Also, need to be clear about
-%     when XYZ is 1931 and when it has been updated to the new standard.]
+%    * [NOTE: DHB - The comment in the header indicated that the xyz2opp
+%      and opp2xyz matrices were with respect to the 1931 CIE standard, but
+%      a comment in the code suggests it is now the 2012 Stockman-Sharpe
+%      replacement. Hard to tell from the actual numbers, without
+%      recomputing the matrices. Someone should check, and then make the
+%      comments in the header and the code match accordingly. More
+%      generally, I am nt sure what this "opp" space is.  Either expand on
+%      definition or get rid of it, I think.  Also, need to be clear about
+%      when XYZ is 1931 and when it has been updated to the new standard.]
 %
 % References:
-% * http://en.wikipedia.org/wiki/SRGB
+%    http://en.wikipedia.org/wiki/SRGB
 %
 % See Also:
 %    colorTransformMatrixCreate
@@ -80,6 +80,8 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    04/13/15  dhb  Comment fix: ieReadSpectra('Stockman', wave) ->
 %                   ieReadSpectral('stockman', wave)
+%    11/17/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -89,26 +91,30 @@ function result = colorTransformMatrix(matrixtype, spacetype)
     % Suppose we have a monitor whose peak luminance is 75 cd/m2.
     % To determine the lRGB for some XYZ value, say XYZ = (30, 50, 20) and
     % we calculate as follows:
-    XYZ = [30, 50, 20];  XYZ = XYZ/75;  chromaticity(XYZ)
+    XYZ = [30, 50, 20];
+    XYZ = XYZ/75;
+    chromaticity(XYZ)
 
-    % We divide because the matrix maps unit luminance for RGB =(1, 1, 1)
+    % We divide because the matrix maps unit luminance for RGB = (1, 1, 1)
     % and the actual luminance is 75.
 	m = colorTransformMatrix('xyz2lrgb');
-    lRGB = XYZ*m   % This describes linear RGB for a 75 cd/m2 max
+    lRGB = XYZ * m   % This describes linear RGB for a 75 cd/m2 max
 
     % To return to XYZ given that it is a 75 cd/m2 display we do this:
     m = colorTransformMatrix('lrgb2xyz');
-    unscaledXYZ = lRGB*m;
-	estXYZ = unscaledXYZ*75
+    unscaledXYZ = lRGB * m;
+	estXYZ = unscaledXYZ * 75
 %}
 %{
     % A separate example
     % (luminance, red-green, blue-yellow)
 	T = colorTransformMatrix('xyz2opp')
-	p = [70    70    40]; p*T
+	p = [70 70 40];
+    p * T
 
     % Make an image of the XYZ matching functions:
-	XYZ = ieReadSpectra('XYZ.mat', 370:730); imXYZ = zeros(361, 20, 3);
+	XYZ = ieReadSpectra('XYZ.mat', 370:730);
+    imXYZ = zeros(361, 20, 3);
 	for ii=1:3, imXYZ(:, :, ii) = repmat(XYZ(:, ii), 1, 20); end
     T = colorTransformMatrix('xyz2srgb');
 	imRGB = imageLinearTransform(imXYZ, T);
@@ -119,30 +125,33 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 	xyz = ieReadSpectra('XYZ', wave);
 	stock = ieReadSpectra('stockman', wave);
 	T = colorTransformMatrix('stockman2xyz');
-	pred = stock*T; plot(xyz(:), pred(:), '.'); axis equal; grid on
+	pred = stock * T;
+    plot(xyz(:), pred(:), '.');
+    axis equal;
+    grid on
 
     % Notice, these aren't perfect inverses. Maybe they should be?  But
     % Stockman and XYZ are not within a perfect linear transformation.
 	T1 = colorTransformMatrix('stockman2xyz');
 	T2 = colorTransformMatrix('xyz2stockman');
-	T1*T2
+	T1 * T2
 %}
 
 if notDefined('matrixtype'), error('Matrix type required.'); end
-if notDefined('spacetype'),  spacetype = []; end
+if notDefined('spacetype'), spacetype = []; end
 
 matrixtype = ieParamFormat(matrixtype);
 
 switch lower(matrixtype)
     case {'lms2opp'}
-        result = [0.9900   -0.1060   -0.0940; ...
-                 -0.6690    0.7420   -0.0270; ...
-                 -0.2120   -0.3540    0.9110];
+        result = [0.9900 -0.1060 -0.0940; ...
+                 -0.6690  0.7420 -0.0270; ...
+                 -0.2120 -0.3540  0.9110];
 
     case {'opp2lms'}
-        result = inv([0.9900   -0.1060   -0.0940; ...
-                     -0.6690    0.7420   -0.0270; ...
-                     -0.2120   -0.3540    0.9110]);
+        result = inv([0.9900 -0.1060 -0.0940; ...
+                     -0.6690  0.7420 -0.0270; ...
+                     -0.2120 -0.3540  0.9110]);
         % Gosh, these are old from XYZ times. Replaced with Stockman in
         % 2012, now that we are starting to perform cone calculations.
 
@@ -156,9 +165,9 @@ switch lower(matrixtype)
     case {'xyz2hpe'}
         % Inverse of Hunt-Pointer-Estevez transformation from cone
         % to XYZ, normalized for D65 (lms=[100 100 100] for D65).
-        result = [0.4002    0.7076   -0.0808; ...
-                 -0.2263    1.1653    0.0457; ...
-                  0         0         0.9182];
+        result = [0.4002 0.7076 -0.0808; ...
+                 -0.2263 1.1653  0.0457; ...
+                  0      0       0.9182];
 
     case {'xyz2sto', 'xyz2stockman', 'xyz2lms'}
         % Stockman cone coordinates
@@ -167,15 +176,15 @@ switch lower(matrixtype)
         %   XYZ  = ieReadSpectra('XYZ', wave);
         %   sto  = ieReadSpectra('stockman', wave);
         %   result = inv(XYZ' * XYZ) * XYZ' * sto
-        result = [0.2689   -0.3962    0.0214;
-                  0.8518    1.1770   -0.0247;
-                 -0.0358    0.1055    0.5404]';
+        result = [0.2689 -0.3962  0.0214;
+                  0.8518  1.1770 -0.0247;
+                 -0.0358  0.1055  0.5404]';
 
     case {'stockman2xyz', 'sto2xyz', 'lms2xyz'}
         % Stockman cone coordinates
-        result = [1.7896    0.6079   -0.0499;
-                 -1.2865    0.4072    0.0808;
-                  0.3645   -0.0379    1.8040]';
+        result = [1.7896  0.6079 -0.0499;
+                 -1.2865  0.4072  0.0808;
+                  0.3645 -0.0379  1.8040]';
 
     case {'xyz2opp', 'opp2xyz'}
         if notDefined('spacetype')
@@ -184,20 +193,20 @@ switch lower(matrixtype)
         if (spacetype == 2)
             result = [278.7336  721.8031 -106.5520; ...
                      -448.7736  289.8056   77.1569; ...
-                       85.9513 -589.9859  501.1089]/1000;
+                       85.9513 -589.9859  501.1089] / 1000;
         elseif (spacetype == 10)
             result = [288.5613  659.7617 -130.5654; ...
                      -464.8864  326.2702   62.4200; ...
-                       79.8787 -554.7976  481.4746]/1000;
+                       79.8787 -554.7976  481.4746] / 1000;
         end
         if matrixtype(1) == 'o'
             result = inv(result);
         end
 
     case {'xyz2yiq', 'yiq2xyz' }
-        result = [0          1.0000    0; ...
-                  1.4070    -0.8420   -0.4510; ...
-                  0.9320    -1.1890    0.2330];
+        result = [0       1.0000  0; ...
+                  1.4070 -0.8420 -0.4510; ...
+                  0.9320 -1.1890  0.2330];
         if matrixtype(1) == 'y'
             result = inv(result);
         end

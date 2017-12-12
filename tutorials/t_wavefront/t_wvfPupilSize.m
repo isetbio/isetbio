@@ -2,13 +2,20 @@ function t_wvfPupilSize
 %
 % Explore the effect of changing the pupil size in the calculation.
 %
-% We load the Thibos wavefront data collected at some pupil diameter.
-% There are a few options.  We set these data into the zernicke
-% coefficients.
+% Description:
+%    We load the Thibos wavefront data collected at some pupil diameter.
+%    There are a few options. We set these data into the zernicke
+%    coefficients.
 %
-% We then set the calculated pupil size and compute the expected
-% pointspread function.  That function changes as the pupil diameter gets
-% smaller.
+%    We then set the calculated pupil size and compute the expected
+%    pointspread function. That function changes as the pupil diameter gets
+%    smaller.
+%
+%
+% Notes:
+%    * [Note: JNM - Would it be possible to include an explanation for how
+%      the different pupil sizes (from Thibos) would affect the
+%      calculations, and the eventual output]
 %
 % (BW) (c) Wavefront Toolbox Team, 2014
 
@@ -21,16 +28,17 @@ zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 
 % Create the wvf parameter structure with the appropriate values
 wave = (400:10:700)';
-wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('%d-pupil',pupilMM));
-wvfP = wvfSet(wvfP,'measured pupil',pupilMM);
+wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
+    sprintf('%d-pupil', pupilMM));
+wvfP = wvfSet(wvfP, 'measured pupil', pupilMM);
 
 %% Calculate the effect of varying the pupil diameter
-cPupil = [2,3,4,5,6,7];
-for ii=1:sum(cPupil<=pupilMM)
-    wvfP = wvfSet(wvfP,'calculated pupil',cPupil(ii));
+cPupil = [2, 3, 4, 5, 6, 7];
+for ii=1:sum(cPupil <= pupilMM)
+    wvfP = wvfSet(wvfP, 'calculated pupil', cPupil(ii));
     wvfP = wvfComputePSF(wvfP);
-    wvfPlot(wvfP,'2d psf space','um',550,20);
-    title(sprintf('Calculated pupil diameter %.1f mm',cPupil(ii)));
+    wvfPlot(wvfP, '2dpsfspace', 'um', 550, 20);
+    title(sprintf('Calculated pupil diameter %.1f mm', cPupil(ii)));
 end
 
 end

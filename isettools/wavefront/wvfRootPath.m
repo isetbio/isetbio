@@ -1,17 +1,27 @@
-function rootPath=wvfRootPath()
+function wvfRoot=wvfRootPath()
 % Return the path to the root wavefront optics toolbox directory
 %
-% This function must reside in the directory at the base of the Wavefront
-% Optics Tolbox directory structure.  It is used to determine the location
-% of various sub-directories.
-% 
-% Example:
-%   d = wvfRootPath
+% Syntax:
+%   wvfRoot = wvfRootPath
 %
+% Description:
+%    This function must reside in the directory at the base of the
+%    Wavefront Optics Tolbox directory structure. It is used to determine
+%    the location of various sub-directories.
 % 
+% Inputs:
+%    None.
+%
+% Outputs:
+%    wvfRoot - The path to the root wavefront optics toolbox
+%
 
-rootPath=which('wvfRootPath');
+% Examples:
+%{
+   wvfRoot = wvfRootPath
+%}
 
-[rootPath,fName,ext]=fileparts(rootPath);
+wvfRoot = which('wvfRootPath');
+wvfRoot = fileparts(wvfRoot);
 
 return

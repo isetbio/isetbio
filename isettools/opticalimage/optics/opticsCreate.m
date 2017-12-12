@@ -71,19 +71,21 @@ switch lower(opticsType)
         % Optics based on Zernike polynomial wavefront model estimated by
         % Thibos.
         % 
-        % opticsCreate('wvf human',pupilMM,zCoefs,wave);
+        % opticsCreate('wvf human',[pupilMM],[zCoefs],[wave],[umPerDegree]);      
         
         % Defaults
         pupilMM = 3;
         zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
         wave = 400:10:700; wave = wave(:);
+        umPerDegree = 300;
 
-        if ~isempty(varargin), pupilMM = varargin{1}; end
-        if length(varargin)>1, zCoefs = varargin{2};  end
-        if length(varargin)>2, wave = varargin{3}; wave = wave(:); end 
+        if (~isempty(varargin) & ~isempty(varargin{1})), pupilMM = varargin{1}; end
+        if (length(varargin)>1 & ~isempty(varargin{2})), zCoefs = varargin{2};  end
+        if (length(varargin)>2 & ~isempty(varargin{3})), wave = varargin{3}; wave = wave(:); end 
+        if (length(varargin)>3 & ~isempty(varargin{4})), umPerDegree = varargin{4}; end
         
         % Create wavefront parameters
-        wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
+        wvfP = wvfCreate('calc wavelengths',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM),'umPerDegree',umPerDegree);
         wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
         wvfP = wvfComputePSF(wvfP);
         % [u,p,f] = wvfPlot(wvfP,'2d psf space','um',550);

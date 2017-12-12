@@ -1,17 +1,41 @@
-function d = rad2deg(r,varargin)
+function d = rad2deg(r, units)
 % Convert radians to degrees
 %
-%  d = rad2deg(r)
+% Syntax:
+%   d = rad2deg(r, units)
 %
-% Also converts to minutes by extra argument.
-%   rad2deg(r);
-%   rad2deg(r,'arcmin');
-%   rad2deg(r,'arcsec');
+% Description:
+%    Convert a measurement in Radians to Degrees. If 'arcmin' or 'arcsec'
+%    are provided, convert to minutes.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Inputs:
+%    r     - Radians
+%    units - (Optional) units, 'arcmin' or 'arcsec'
+%
+% Outputs:
+%    d     - Calculated degrees
+%
+% Notes:
+%    * [Note: JNM - Changed varargin to units to support the function.
+%      Fixed examples]
+%
 
-if isempty(varargin), d = (180/pi)*r; 
-else                  d = r*ieUnitScaleFactor(varargin{1});
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    11/20/17  jnm  Formatting
+
+% Examples:
+%{
+    r = pi;
+    rad2deg(r);
+    rad2deg(r, "arcmin");
+    rad2deg(r, "arcsec");
+%}
+
+if isempty(units)
+    d = (180 / pi) * r; 
+else
+    d = r * ieUnitScaleFactor(units{1});
 end   
 
 end

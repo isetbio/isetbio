@@ -70,6 +70,7 @@ end
 
 %% Generate spatial frequency grids
 [xSfGridCyclesDeg,ySfGridCyclesDeg] = PositionGridMinutesToSfGridCyclesDeg(xGridMinutes,yGridMinutes);
+
 %% Compute otf
 otf = fftshift(fft2(ifftshift(psf)));
 

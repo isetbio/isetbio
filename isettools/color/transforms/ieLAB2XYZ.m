@@ -26,7 +26,16 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 % See Also:
 %    ieXYZ2LAB
 %
-% See examples in the source
+% History
+%    08/18/15  dhb  Change conditional on exist of makecform, works for
+%                   p-code too.
+%              dhb  Always define labexp, since makecform may not exist.
+%              dhb  Change "exp"->"labexp" to avoid clobbering function exp
+%    10/25/17  jnm  Comments & Formatting
+%    11/01/17  jnm  Fixed final reference to exp instead of labexp
+%    11/17/17  jnm  Formatting & fix example (useOldCode was not
+%                   instantiated, replaced with a 0)
+%
 %
 % Copyright ImagEval Consultants, LLC, 2009.
 
@@ -37,17 +46,8 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
    dataXYZ = imageRGB2xyz(vci, rgb);
    whiteXYZ = dataXYZ(1, :);
    lab = ieXYZ2LAB(dataXYZ, whiteXYZ);
-   xyz = ieLAB2XYZ(lab, whitepoint, labexp, useOldCode)
+   xyz = ieLAB2XYZ(lab, whitepoint, labexp, 0)
 %}
-
-% History
-%    08/18/15  dhb  Change conditional on exist of makecform, works for
-%                   p-code too.
-%              dhb  Always define labexp, since makecform may not exist.
-%              dhb  Change "exp"->"labexp" to avoid clobbering function exp
-%    10/25/17  jnm  Comments & Formatting
-%    11/01/17  jnm  Fixed final reference to exp instead of labexp
-
 if notDefined('lab'), error('No data.'); end
 if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');
@@ -86,7 +86,7 @@ else
     % Y/Yn = 0.008856 correspond to L=7.9996
     yy = find(lab(:, 1) <= 7.9996);
     y(yy) = lab(yy, 1) / 903.3;
-    fy(yy) = 7.787 * y(yy) + 16/116;
+    fy(yy) = 7.787 * y(yy) + 16 / 116;
     
     % find out fx, fz
     fx = lab(:, 2)/500 + fy;
@@ -102,7 +102,7 @@ else
     x(xx) = (fx(xx) - 16/116) / 7.787;
     z(zz) = (fz(zz) - 16/116) / 7.787;
     
-    xyz = [x*Xn y*Yn z*Zn];
+    xyz = [x * Xn, y * Yn, z * Zn];
     
     % Return XYZ in appropriate shape
     if ndims(xyz) == 3

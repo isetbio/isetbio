@@ -39,13 +39,15 @@ function [XW, r, c, w] = RGB2XWFormat(imRGB)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
    xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
        [255 3 203]']' / 255;
-   rgbSRGBs = XW2RGBFormat(xwSRGBs,2,2);
-   [xwCheck,r,w,c] = RGB2XWFormat(rgbSRGBs)
+   rgbSRGBs = XW2RGBFormat(xwSRGBs, 2, 2);
+   [xwCheck, r, w, c] = RGB2XWFormat(rgbSRGBs)
 %}
 s = size(imRGB);
 
@@ -55,7 +57,7 @@ if length(s) < 3
     s(3) = 1;
 end
 
-XW = reshape(imRGB, s(1)*s(2), s(3));
+XW = reshape(imRGB, s(1) * s(2), s(3));
 
 r = s(1);
 c = s(2);

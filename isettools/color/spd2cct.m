@@ -27,6 +27,8 @@ function [CCT, uv] = spd2cct(wave, spds)
 %    10/27/17  jnm  Comments & formatting
 %    10/31/17  dhb  Remove unused units arg, as per note query.  Deleted
 %                   the note.
+%    11/16/17  jnm  Formatting
+%
 
 % Examples:
 %{
@@ -41,16 +43,16 @@ function [CCT, uv] = spd2cct(wave, spds)
 %}
 
 % Convert to XYZ
-XYZ = ieXYZFromEnergy(spds',wave);
+XYZ = ieXYZFromEnergy(spds', wave);
 
 % ISET returns uprime and vprime, which were defined in the 1960s. The flag
 % makes sure we get 'uv' instead.
-[u,v] =  xyz2uv(XYZ, 'uv');
+[u, v] =  xyz2uv(XYZ, 'uv');
 
 % Format for cct routine. u in first row, v in second
 uv = [u,v]';  
 
 % Get temp
-CCT = cct( uv );
+CCT = cct(uv);
 
 end
