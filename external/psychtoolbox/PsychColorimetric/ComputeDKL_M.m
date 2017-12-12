@@ -1,5 +1,5 @@
-function M = ComputeDKL_M(bg,T_cones,T_Y)
-% M = ComputeDKL_M(bg,T_cones,T_Y)
+function [M,LMLumWeights] = ComputeDKL_M(bg,T_cones,T_Y)
+% [M,LMLumWeights] = ComputeDKL_M(bg,T_cones,T_Y)
 % 
 % Compute the matrix that converts between incremental cone
 % coordinates and DKL space.  The order of
@@ -26,6 +26,7 @@ function M = ComputeDKL_M(bg,T_cones,T_Y)
 % 11/17/05  dhb  Require passing of cones and luminance.
 %           dhb  Fixed definition of M_raw to handle arbitrary L,M scaling.
 % 10/5/12   dhb  Comment specifying coordinate system convention.  Supress extraneous printout.
+% 04/13/17  dhb  Return weights that give luminance from sum of L and M cone excitations.
 
 % If cones and luminance are passed, find how L and
 % M cone incrments sum to best approximate change in

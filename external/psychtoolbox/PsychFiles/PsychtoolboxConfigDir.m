@@ -20,6 +20,7 @@ function ThePath=PsychtoolboxConfigDir(subDir)
 %          4/28/08    mk  Made compatible with Octave, added 'subDir'
 %                         option.
 %          6/14/09    mk  Remove Octave code -> Not needed anymore.
+%          4/10/17    mk  Some cleanup and error reporting improvements.
 
 persistent PTBPrefPath %#ok<REDEF>
 
@@ -49,14 +50,11 @@ if isempty(ThePath)
         StringStart = [HomeDir(1:(end-1)) '/.'];
     elseif IsWindows
         [ErrMsg,StringStart] = dos('echo %AppData%');
-        % end-1 to trim trailing carriage return
-        %StringStart = StringStart(1:(end-1));
-		StringStart = deblank(StringStart);
+        StringStart = deblank(StringStart);
         if strcmp(StringStart,'%AppData%')
             FoundHomeDir = 0;
             [ErrMsg,HomeDir] = dos('echo %UserProfile%');
-            %HomeDir = HomeDir(1:(end-1));
-			HomeDir = deblank(HomeDir);
+            HomeDir = deblank(HomeDir);
             if strcmp(HomeDir,'%UserProfile%')
                 HomeDir = uigetdir('','Please find your home folder for me');
                 if ischar(HomeDir)
@@ -93,26 +91,13 @@ if isempty(ThePath)
     if exist(TheDir,'dir')
         ThePath = TheDir; %#ok<NASGU>
     else
-        % Could just use:
-        % [DirMade, DirMessage] = mkdir(TheDir);
-        % but I've had problems (in OS 9) having mkdir fail when string passed is too
-        % long.  I don't know if that has been fixed in other OS's, so this is safe:
-        %         if IsLinux
-        %             [DirMade, DirMessage] = mkdir(StringStart(1:(end-1)),'.Psychtoolbox'); %#ok<NASGU>
-        %         else
-        %             [DirMade, DirMessage] = mkdir(StringStart,'Psychtoolbox'); %#ok<NASGU>
-        %         end
-
-        % MK: Let's find it out. Above breaks for certain on all Octave
-        % installations, while this likely works on both Octave and all
-        % recent Matlabs:
         [DirMade, DirMessage] = mkdir(TheDir);
         
         if DirMade
             TheDir = [StringStart 'Psychtoolbox'];
             ThePath=TheDir; %#ok<NASGU>
         else % if exist(TheDir,'dir')
-            error(sprintf('I could not create a folder to store your preferences in\n\n%s [%s]\n\nWhat are the permissions on that folder?',StringStart, DirMessage)); %#ok<SPERR>
+            error(sprintf('I could not create this folder to store your preferences in:\n\n%s\nReason: [%s]\n\nValid filename? What are the permissions on that folder?',TheDir, DirMessage)); %#ok<SPERR>
         end % if exist(TheDir,'dir'); else
     end
 
@@ -136,7 +121,7 @@ if exist('subDir', 'var')
     if ~exist(ThePath, 'dir')
         [DirMade, DirMessage] = mkdir(ThePath);
         if DirMade == 0
-            error(sprintf('I could not create a folder to store your preferences in\n\n%s [%s]\n\nWhat are the permissions on that folder?',StringStart, DirMessage)); %#ok<SPERR>
+            error(sprintf('I could not create this folder to store your preferences in:\n\n%s\nReason: [%s]\n\nValid filename? What are the permissions on that folder?',ThePath, DirMessage)); %#ok<SPERR>
         end
     end
 end

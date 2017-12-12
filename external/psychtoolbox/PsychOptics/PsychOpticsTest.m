@@ -1,15 +1,16 @@
-% PSYCHOPTICSTEST
+% Basic tests and comparisons of PsychOptics routines
 %
-% Some basic tests and comparisons of PsychOptics routines, in particular our ability
-% to go back and forth between LSFs and PSFs and between PSFs and OTFs.
-%
-% Also useful for remembering the usage of various routines.
-%
-% This also makes some useful plots that compare different estimates of
-% monochromatic human optics from the older literature.  These estimates
-% are probably not as good as using wavefront methods (see isetbio at
-% isetbio.org for data and code), but it is useful to have them for
-% comparing with calculations in the literature that used these estimates.
+% Description:
+%     Basic tests and comparisons of PsychOptics routines, in particular our ability
+%     to go back and forth between LSFs and PSFs and between PSFs and OTFs.
+% 
+%     Also useful for remembering the usage of various routines.
+% 
+%     This also makes some useful plots that compare different estimates of
+%     monochromatic human optics from the older literature.  These estimates
+%     are probably not as good as using wavefront methods (see isetbio at
+%     isetbio.org for data and code), but it is useful to have them for
+%     comparing with calculations in the literature that used these estimates.
 
 %% Clear
 clear; close all; 

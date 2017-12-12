@@ -1,5 +1,5 @@
-function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations] = ComputeRawConeFundamentals(params,staticParams)
-% [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations] = ComputeRawConeFundamentals(params,staticParams)
+function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams] = ComputeRawConeFundamentals(params,staticParams)
+% [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams] = ComputeRawConeFundamentals(params,staticParams)
 %
 % Function to compute normalized cone quantal sensitivities from underlying
 % pieces and parameters.
@@ -8,26 +8,32 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % energy sensitivities.  In that case, use EnergyToQuanta to convert
 %   T_energy = EnergyToQuanta(S,T_quantal')'
 % and then renormalize.  (You call EnergyToQuanta because you're converting
-% sensitivities, which go the opposite directoin from spectra.)
+% sensitivities, which go the opposite direction from spectra.)
 %
-% The routine also returns two quantal sensitivity functions.  The first
-% gives the probability that a photon will be absorbed.  The second is the
-% probability that the photon will cause a photopigment isomerization.  It
-% is the latter that is what you want to compute isomerization rates from
-% retinal illuminance. See note at the end of function FillInPhotoreceptors
-% for some information about convention.  In particular, this routine takes
-% pre-retinal absorption into account in its computation of probability of
-% absorptions and isomerizations, so that the relevant retinal illuminant
-% is one computed without accounting for those factors.  This routine does
-% not account for light attenuation due to the pupil, however.  The only
-% use of pupil size here is becuase of its slight effect on lens density as
-% accounted for in the CIE standard.
+% The routine also returns two types of quantal sensitivity functions.  The
+% first gives the probability that a photon will be absorbed.  These are
+% returned in variable T_quantalAbsorptionsNormalized adn
+% T_quantalAbsoprions, with the first being normalized. The second is the
+% probability that the photon will cause a photopigment isomerization. This
+% is returned in T_quantalIsomerizations.
+%
+% It is T_quantalIsomerizations that you want to use to compute
+% isomerization rates from retinal illuminance. See note at the end of
+% function FillInPhotoreceptors for some information about conventions.  In
+% particular, this routine takes pre-retinal absorption into account in its
+% computation of probability of absorptions and isomerizations, so that the
+% relevant retinal illuminance is one computed without accounting for those
+% factors.  This routine does not account for light attenuation due to the
+% pupil, however.  The only use of pupil size here is becuase of its slight
+% effect on lens density as accounted for in the CIE standard.  Nor does it
+% account for the collecting area of a photoreceptor, for cones the inner
+% segment diameter.
 %
 % In the passed params structure, you can either pass the lambdaMax values
 % for the photopigment, in which case the absorbance is computed from the
 % specified nomogram, or you can pass the absorbance values directly in
 % T_xxx format.  A typical choice in this case would be
-% 10.^T_lgo10coneabsorbance_ss for the Stockman-Sharpe/CIE estimates.
+% 10.^T_log10coneabsorbance_ss for the Stockman-Sharpe/CIE estimates.
 %
 % The typical use of this function is to be called by
 % ComputeCIEConeFundamentals, which sets up the passed structures acording
@@ -56,7 +62,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % normalized) referred to the cornea.  FillInPhotoceptors also computes a
 % field isomerizationAbsorptance, which takes the quantal efficiency of
 % isomerizations (probability of an isomerization given an absorption into
-% acount.  This routine does not do that.
+% acount.
 %
 % It would probably be clever to unify the two sets of routines a little
 % more, but we may never get to it.  The routine ComputeCIEConeFundamentals
@@ -67,6 +73,9 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % See ComputeCIEConeFundamentals for the breakdown of how the Asano et al.
 % (2016) individual differences model is specified in params.indDiffParams.
 %
+% See ComputeCIEConeFundamentals for documentation of the adjIndDiffParams
+% output argument.
+%
 % See also: ComputeCIEConeFundamentals, CIEConeFundamentalsTest,
 % FitConeFundamentalsWithNomogram,
 %           FitConeFundamentalsTest, DefaultPhotoreceptors,
@@ -75,7 +84,8 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % 8/12/11  dhb  Starting to make this actually work.
 % 8/14/11  dhb  Change name, expand comments.
 % 8/10/13  dhb  Expand comments.  Return unscaled quantal efficiencies too.
-% 2/26/16  dhb, ms  Add in Asano et al. (2016) individual observer adjustments.
+% 2/26/16  dhb, ms  Add in Asano et al. (2016) individual observer adjustments
+% 3/30/17  ms   Added output argument returning adjusted ind differences
 
 % Handle bad value
 index = find(params.axialDensity <= 0.0001);
@@ -144,6 +154,8 @@ if (any(lens > 1))
     error('You have passed parameters that make lens transmittance greater than 1');
 end
 %lens(lens > 1) = 1;
+adjIndDiffParams.lens = lens;
+
 if (OLDMACWAY)
     fprintf('Using old way of adjusting macular pigment density.  Consider switching to newer implementation via the params.indDiffParams field\n');
     mac = 10.^-(-log10(staticParams.macularTransmittance)+params.extraMac);
@@ -153,6 +165,7 @@ end
 if (any(mac > 1))
     error('You have passed parameters that make macular pigment transmittance greater than 1');
 end
+adjIndDiffParams.mac = mac;
 %mac(mac > 1) = 1;
 
 % Compute nomogram if absorbance wasn't passed directly.  We detect
@@ -201,12 +214,14 @@ elseif (size(absorbance,1) == 3)
     MDensity = params.axialDensity(2) * (1 + params.indDiffParams.dphotopigment(2)/100);
     SDensity = params.axialDensity(3) * (1 + params.indDiffParams.dphotopigment(3)/100);
     absorptance = AbsorbanceToAbsorptance(absorbance,staticParams.S,[LDensity ; MDensity ; SDensity]);
+    adjIndDiffParams.dphotopigment = [LDensity MDensity SDensity];
 elseif (size(absorbance,1) == 1 && params.DORODS)
     if (length(params.indDiffParams.dphotopigment) ~= 1)
         error('Density adjustment parameter length not right for rods');
     end
     RodDensity = params.axialDensity(1) + params.indDiffParams.dphotopigment(1)/100;
     absorptance = AbsorbanceToAbsorptance(absorbance,staticParams.S,RodDensity);
+    adjIndDiffParams.dphotopigment = RodDensity;
 else
     error('Unexpected number of photopigment lambda max values passed');
 end
@@ -240,5 +255,3 @@ for i = 1:size(T_quantalAbsorptions,1)
     T_quantalIsomerizations = T_quantalAbsorptions*staticParams.quantalEfficiency(i);
     T_quantalAbsorptionsNormalized(i,:) = T_quantalAbsorptions(i,:)/max(T_quantalAbsorptions(i,:));
 end
-
-

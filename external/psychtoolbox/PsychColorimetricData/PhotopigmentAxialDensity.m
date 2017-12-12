@@ -27,16 +27,16 @@ function densities = PhotopigmentAxialDensity(receptorTypes,species,source,field
 %		Human (Default).
 %
 % Supported sources:
-% 	Rodieck (Human) (Default).
-%   StockmanSharpe (Human).
-%   CIE (Human).
-%   Tsujimuar (Human, melanopsin gc's)
+% 		Rodieck (Human) (Default).
+%   		StockmanSharpe (Human).
+%   		CIE (Human).
+%   		Tsujimura (Human; melanopsin-containing RGCs)
 %
 % The CIE method takes a field size argument.  This
 % overrides the specified foveal or not part of the
 % cone string.  If the field type is not passed and
-% the method is CIE, it is set to 10-degrees for Scone, Mcone,
-% and Lcone, and to 2-degrees for FovealScone, FovealMCone, and
+% the method is CIE, it is set to 10-degrees for SCone, MCone,
+% and LcCne, and to 2-degrees for FovealSCone, FovealMCone, and
 % FovealLCone.
 %
 % The fieldSizeDegrees argument is ignored for sources other than

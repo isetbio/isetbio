@@ -33,8 +33,8 @@ function varargout = plotellipse(varargin)
 % Copyright Richard Brown. This code can be freely reused and modified so
 % long as it retains this copyright clause
 
-error(nargchk(4, 6, nargin, 'struct'));
-error(nargchk(0, 1, nargout, 'struct'));
+narginchk(4, 6, nargin, 'struct'));
+narginchk(0, 1, nargout, 'struct'));
 
 % Parse and check inputs
 if ishandle(varargin{1})

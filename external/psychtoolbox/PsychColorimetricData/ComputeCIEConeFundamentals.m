@@ -1,6 +1,8 @@
-function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations] = ComputeCIEConeFundamentals(S,fieldSizeDegrees,ageInYears,pupilDiameterMM,lambdaMax,whichNomogram,LserWeight, ...
+function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams,params,staticParams] = ...
+    ComputeCIEConeFundamentals(S,fieldSizeDegrees,ageInYears,pupilDiameterMM,lambdaMax,whichNomogram,LserWeight, ...
     DORODS,rodAxialDensity,fractionPigmentBleached,indDiffParams)
-% [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations] = ComputeCIEConeFundamentals(S,fieldSizeDegrees,ageInYears,pupilDiameterMM,[lambdaMax],[whichNomogram],[LserWeight], ...
+% [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams,params,staticParams] = ...
+%   ComputeCIEConeFundamentals(S,fieldSizeDegrees,ageInYears,pupilDiameterMM,[lambdaMax],[whichNomogram],[LserWeight], ...
 %   [DORODS],[rodAxialDensity],[fractionPigmentBleached],indDiffParams)
 %
 % Function to compute normalized cone quantal sensitivities
@@ -10,8 +12,8 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % may want energy sensitivities.  In that case, use EnergyToQuanta to convert
 %   T_energy = EnergyToQuanta(S,T_quantal')'
 % and then renormalize.  (You call EnergyToQuanta because you're converting
-% sensitivities, which go the opposite directoin from spectra.)
-% The routine also returns two quantal sensitivity functions.  The first gives
+% sensitivities, which go the opposite direction from spectra.)
+% The routine also returns two quantal sensitivity functions. The first gives
 % the probability that a photon will be absorbed.  The second is the probability
 % that the photon will cause a photopigment isomerization.  It is the latter
 % that is what you want to compute isomerization rates from retinal illuminance.
@@ -64,7 +66,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % for LserWeight is 0.56.  After travelling it for a distance to try to get better
 % agreement between the nomogram based fundamentals and the tabulated fundamentals
 % I (DHB) gave up and decided that using a single lambdaMax is as good as anything
-% else I could come up with. If you are interested, see FitConeFundametnalsTest.
+% else I could come up with. If you are interested, see FitConeFundamentalsTest.
 %
 % NOTE 1: When we first implemented the CIE standard, adding this shifting feature
 % seemed like a good idea to allow exploration of individual differences in photopigments.
@@ -72,7 +74,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % spectral sensitivities, and this is not so good.  We are phasing out our
 % use of this feature in favor of simply shifting the tabulated
 % photopigment absorbances, and indeed in favor of adopting the method
-% published by Asano, Fairchild, & Blondé (2016), PLOS One, doi: 10.1371/journal.pone.0145671
+% published by Asano, Fairchild, & Blonde (2016), PLOS One, doi: 10.1371/journal.pone.0145671
 % to tailor the CIE fundamentals to individual observers.  This is done by
 % passing the argument indDiffParams, which is a structure as follows.
 %     'linear' gets the Asano et al. behavior
@@ -89,6 +91,32 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % obtained them.  To do this, pass argument lambdaMaxShift with the same
 % number of entries as the number of absorbances that are used.
 %
+% The adjIndDiffParams outputsis a struct which is populated by ComputeRawConeFundamentals.
+% It contains the actual parameter values for the parameters adjusted using the indDiffParams 
+% input. It contains the following fields:
+%    adjIndDiffParams.mac - the adjusted macular pigment transmittance as a function of wavelength
+%                           as calculated in line 151 of ComputeRawConeFundamentals.
+%    adjIndDiffParams.lens - the adjusted lens transmittance as a function of wavelength as calculated
+%                            in line 41 of ComputeRawConeFundamentals.
+%    adjIndDiffParams.dphotopigment - 3-vector of the adjusted photopigment axial density for
+%                                     L, M and S cones (in that order), as calculated in lines
+%                                     200-202 of ComputeRawConeFundamentals; or rods, as calculated
+%                                     in line 216 of ComputeRawConeFundamentals if params.DORODS is true.
+%
+% For both adjIndDiffParams.mac and adjIndDiffParams.lens, the wavelength
+% spacing is the same as in the S input variable of this function.
+%
+% The params and staticParams outputs are the argument strucutures that
+% were passed to ComputeRawConeFundamentals by this routine to do the work.
+% These can be useful if you'd like, say, to susequently use
+% ComputeRawConeFundamentals to produce estimates for (e.g.) melanopsin or
+% the rods, where you keep everything else as consistent as possible to
+% what this routine does. Note that this is all a bit klugy for historical
+% reasons, as there is redundancy between what you can/might do with
+% adjIndDiffParams and with these two return outputs. In particular, these
+% two return outputs would let you call ComputeRawConeFundamentals and get
+% adjIndDiffParams directly from there.
+%
 % This function also has an option to compute rod spectral sensitivities, using
 % the pre-retinal values that come from the CIE standard.  Set DORODS to true on
 % call.  You then need to explicitly pass a single lambdaMax value.  You can
@@ -102,7 +130,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 %
 % Finally, you can adjust the returned spectral sensitivities to account for
 % the possibility that some of the pigment in the cones is bleached.  Pass
-% a column vector with same length as number of spectral sensitivities being
+% a column vector with same length as number of spectral sensitivities beingt
 % computed.  You need to estimate the fraction elsewhere.
 %
 % Relevant to individual differences, S & S (2000) estimate the wavelength difference
@@ -128,6 +156,8 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % 02/08/16 dhb, ms  Add lambdaMaxShift argument.
 %          ms   Don't do two way check when lambdaMax is shifted.
 % 02/24/16 dhb, ms  Started to implement Asano et al. individual difference model
+% 3/30/17  ms   Added output argument returning adjusted ind differences
+% 8/1/17   dhb, ms  Added return of params and staticParams.
 
 %% Are we doing rods rather than cones?
 if (nargin < 8 || isempty(DORODS))
@@ -261,7 +291,7 @@ end
 %
 % See comment in ComputeRawConeFundamentals about the fact that
 % we ought to unify this routine and what FillInPhotoreceptors does.
-[T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations] = ComputeRawConeFundamentals(params,staticParams);
+[T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomerizations,adjIndDiffParams] = ComputeRawConeFundamentals(params,staticParams);
 
 %% A little reality check.
 %
@@ -281,4 +311,3 @@ if (CHECK_FOR_AGREEMENT)
 end
 
 end
-

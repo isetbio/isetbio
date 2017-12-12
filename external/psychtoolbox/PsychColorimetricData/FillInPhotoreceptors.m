@@ -282,7 +282,7 @@ else
             error('There is a directly supplied absorbance and also a nomogram source field specified.  One or the other must go away');
     else
         % The PTB-style data file containing the absorbance may be specified and loaded.  Otherwise
-        % it is assumed that the absorbance field has the right data at the right wavelenght sampling.
+        % it is assumed that the absorbance field has the right data at the right wavelength sampling.
         if (ischar(photoreceptors.absorbance))
             theAbsorbanceStr = photoreceptors.absorbance;
             eval(['load(''T_' theAbsorbanceStr ''');']);

@@ -139,7 +139,7 @@ function count = cprintf(style,format,varargin)
 
   % Process the text string
   if nargin<2, format = style; style='text';  end
-  %error(nargchk(2, inf, nargin, 'struct'));
+  %narginchk(2, inf, nargin, 'struct'));
   %str = sprintf(format,varargin{:});
 
   % In compiled mode

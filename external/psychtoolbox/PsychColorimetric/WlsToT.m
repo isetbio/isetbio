@@ -5,7 +5,7 @@ function T = WlsToT(wls,sd)
 % with the passed wavelength sampling.
 %
 % Arguments may be either [start delta n] description or
-% a list of wavelenghts.
+% a list of wavelengths.
 %
 % The second input sd is the standard deviation of a Gaussian
 % blur function which may be incorporated into the T matrix

@@ -14,7 +14,9 @@ function [cal, cals, fullFilename] = LoadCalFile(filespec, whichCal, dir)
 % If whichCal is specified, the whichCal'th calibration
 % in the file is returned.  If whichCal > nCals, an
 % empty calibration is returned.  whichCal defaults
-% to the most recent calibration.
+% to the most recent calibration, if not passed or passed
+% as the empty matrix.  You can also pass Inf for whichCal
+% to get the most recent calibration.
 %
 % If the specified file cannot be found, returns empty matrix.
 %
