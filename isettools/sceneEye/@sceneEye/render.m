@@ -71,7 +71,7 @@ end
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(obj.workingDir,strcat(obj.name,'.pbrt'));
 recipe.outputFile = pbrtFile;
-piWrite(recipe,'overwritefile',true,'overwritedir',false);
+piWrite(recipe,'overwritepbrtfile',true,'overwriteresources',false,'overwritelensfile',false);
 
 %% Render the pbrt file using docker
 [ieObject,terminalOutput] = piRender(recipe);

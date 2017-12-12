@@ -54,10 +54,10 @@ rtbWriteSpectrumFile(wave,aqu,fullfile(workingFolder, iorNames{2}));
 rtbWriteSpectrumFile(wave,len,fullfile(workingFolder, iorNames{3}));
 rtbWriteSpectrumFile(wave,vit,fullfile(workingFolder, iorNames{4}));
 
-renderRecipe.camera.ior1.value = iorNames{1};
-renderRecipe.camera.ior2.value = iorNames{2};
-renderRecipe.camera.ior3.value = iorNames{3};
-renderRecipe.camera.ior4.value = iorNames{4};
+renderRecipe.camera.ior1.value = fullfile(workingFolder,iorNames{1});
+renderRecipe.camera.ior2.value = fullfile(workingFolder,iorNames{2});
+renderRecipe.camera.ior3.value = fullfile(workingFolder,iorNames{3});
+renderRecipe.camera.ior4.value = fullfile(workingFolder,iorNames{4});
 
 %% Attach lens file and set retina radius
 
@@ -68,6 +68,6 @@ writeNavarroLensFile(navarroAccom,fullfile(workingFolder,lensFile));
 fprintf('Wrote out a new lens file: \n')
 fprintf('%s \n \n',fullfile(workingFolder,lensFile));
 
-renderRecipe.camera.specfile.value = lensFile;
+renderRecipe.camera.specfile.value = fullfile(workingFolder,lensFile);
 
 end

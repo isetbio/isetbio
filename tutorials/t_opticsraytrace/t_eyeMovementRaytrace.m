@@ -1,4 +1,4 @@
-%% t_eyeMovement.m
+%% t_eyeMovementRaytrace.m
 %
 % This tutorial shows how to move the eye throughout the scene. We will use
 % the chess set scene for this tutorial. 
@@ -37,10 +37,10 @@ for ii = 1:length(xShift)
     myScene.eyePos = originalPos + [xShift(ii) 0 0];
     myScene.name = sprintf('eyePos_%0.2f',xShift(ii));
     
-    oi = myScene.render;
-    imageFrames{ii} = oiGet(oi,'rgb');
+    oiLeft = myScene.render;
+    imageFrames{ii} = oiGet(oiLeft,'rgb');
     
-    vcAddAndSelectObject(oi);
+    vcAddAndSelectObject(oiLeft);
     oiWindow;
 end
 
@@ -64,10 +64,10 @@ for ii = 1:length(xShift)
     myScene.eyeTo = originalTo + [xShift(ii) 0 0];
     myScene.name = sprintf('eyeTo_%0.2f',xShift(ii));
     
-    oi = myScene.render;
-    imageFrames{ii} = oiGet(oi,'rgb');
+    oiLeft = myScene.render;
+    imageFrames{ii} = oiGet(oiLeft,'rgb');
     
-    vcAddAndSelectObject(oi);
+    vcAddAndSelectObject(oiLeft);
     oiWindow;
 end
 
@@ -79,14 +79,13 @@ end
 ipd = 64; % Average interpupillary distance
 
 myScene = sceneEye('chessSet');
-myScene.resolution = 128; 
-myScene.numRays = 128;
 
+myScene.eyeTo = [0 1000 150];
 leftEyePos = myScene.eyePos - [ipd/2 0 0];
 rightEyePos = myScene.eyePos + [ipd/2 0 0];
 
 % Set accommodation to the right distance
-dist = sqrt(sum(myScene.eyePos.^2 + leftEyePos.^2)); % in mm
+dist = sqrt(sum((myScene.eyeTo - leftEyePos).^2)); % in mm
 myScene.accommodation = 1/(dist*10^-3);
 
 % Plot the arrangement (top down)
@@ -99,14 +98,15 @@ plot(myScene.eyeTo(1),myScene.eyeTo(2),'bx');
 
 myScene.eyePos = leftEyePos;
 myScene.name = 'leftEye';
-oi = myScene.render;
-vcAddAndSelectObject(oi);
+oiLeft = myScene.render;
+vcAddAndSelectObject(oiLeft);
 oiWindow;
     
 myScene.eyePos = rightEyePos;
 myScene.name = 'rightEye';
-oi = myScene.render;
-vcAddAndSelectObject(oi);
+oiRight = myScene.render;
+vcAddAndSelectObject(oiRight);
 oiWindow;
+
 
     
