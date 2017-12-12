@@ -26,10 +26,12 @@ function Tc = cct(uvs)
 %
 % Notes:
 %    * [NOTE: BW  Seems like we have xyYToXYZ in the PTB external along
-%       with xyy2xyz in isettools/color.  Let's resolve. DHB. This may be
-%       because other PTB routines that we do need call the PTB version. Or
-%       because it is hard to import things at a more granular level than
-%       one directory at at time.]
+%       with xyy2xyz in isettools/color.  Let's resolve. DHB. This may
+%       be because other PTB routines that we do need call the PTB
+%       version. Or because it is hard to import things at a more
+%       granular level than one directory at at time. BW The two
+%       functions return the same values but different format.  I
+%       stuck a little check in here and let's move on.]
 %    * [NOTE: XXX - TODO:  Make this work for XYZ.]
 %    * [NOTE: XXX - TODO: Make an xyY to uv conversion routine.]
 %
@@ -50,7 +52,8 @@ function Tc = cct(uvs)
 %{
    % Two uv values
    uvs = [[.31, .32]' [0.33 0.35]'];
-   colorTemp = cct(uvs)
+   colorTemp = cct(uvs);
+   fprintf('Correlated color temperature %f\n',colorTemp);
 %}
 %{
    % Starting with blackbody.
@@ -66,12 +69,12 @@ function Tc = cct(uvs)
   xyY = [.3221 .3322 100];
   XYZ = xyy2xyz(xyY); 
   fprintf('Correlated color temperatre %f\n', cct(xyz2uv(XYZ,'uv')'));
+  err = xyYToXYZ(xyY') - XYZ';
+  assert(max(abs(err)) < 1e-12) 
 %}
 
-if notDefined('uvs')
-    error('uv coordinates are required');
-elseif (size(uvs, 1) ~= 2)
-    error('uv must be 2xN'); 
+if notDefined('uvs'),       error('uv coordinates are required');
+elseif (size(uvs, 1) ~= 2), error('uv must be 2xN'); 
 end
 
 tmp = load('cct.mat');

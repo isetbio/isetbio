@@ -26,22 +26,19 @@ function spd = cct2sun(wave, cct, units)
 %       http://www.opticsinfobase.org/abstract.cfm?URI=josa-54-8-1031
 %
 % Notes:
-%    * [Note: XXX - There are currently several daylight basis files in the
-%      repository. We need to decide on one, and make sure this matches, 
-%      see ieReadSpectra below.]
 %    * [Note: JNM - if you do not provide wave, you must have [] in it's
 %      place, or the function will error. Ex. cct2sun([],cct) not
 %      cct2sun(,cct)]
 %
 % See Also:
 %    daylight
-%
 
 % History:
 %    08/14/00  xxx  Last Updated
 %    10/30/17  jnm  Comments & formatting
 %    11/17/17  jnm  Note, final example & formatting
-%
+%    12/12/17  bw   Checked and removed daylight basis comment, which
+%                   was fixed
 
 % Examples:
 %{
