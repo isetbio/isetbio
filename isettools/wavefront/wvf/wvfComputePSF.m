@@ -67,12 +67,45 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
     psf = cell(nWave, 1);
     for wl = 1:nWave
         % Convert the pupil function to the PSF.
-        % Requires only an ff2. 
+        % Requires only an fft2. 
         % Scale so that psf sums to unity.
         pupilfunc{wl} = wvfGet(wvf, 'pupil function', wList(wl));
-        amp = fft2(pupilfunc{wl});
-        inten = (amp .* conj(amp));   %intensity
-        psf{wl} = real(fftshift(inten));
+
+        % Compute fft of pupil function to obtain the psf.
+        % The insertion of the ifftshift before the fft2 is because the
+        % pupil function is centered on its support, and we think that in
+        % Matlab-land, we should insert ifftshift before transforming
+        % centered data.
+        %
+        % We convert to intensity because that is how Fourier optics works.
+        amp = fftshift(fft2(ifftshift(pupilfunc{wl})));
+        inten = (amp .* conj(amp));
+        
+        % We used to not use the ifftshift. Indeed, the ifftshift does not seem to
+        % matter here, but my understanding of the way fft2 works, we want
+        % it.  The reason it doesn't matter is because we don't care about the
+        % phase of the fft.  Set DOCHECKS here to true to recompute the old
+        % way and verify that we get the same answer to numerical
+        % precision. And a few other things.
+        DOCHECKS = false;
+        if (DOCHECKS)
+            amp1 = fft2(pupilfunc{wl});
+            inten1 = fftshift((amp1 .* conj(amp1)));
+            if (max(abs(inten(:)-inten1(:))) > 1e-8*mean(inten(:)))
+                fprintf('The ifftshift matters in computation of psf from pupil function\n');
+            end
+            if (max(abs(amp(:)-amp1(:))) > 1e-8*mean(amp(:)))
+                fprintf('The ifftshift matters in computation of amp from pupil function, as expected.\n');
+            end
+            if (max(abs(imag(inten(:)))) > 1e-8*mean(inten(:)))
+                fprintf('Max absolute value of imaginary part of inten is %g\n',max(abs(imag(inten(:)))));
+            end
+        end
+        
+        % Given the way we computed intensity, should not need to take the
+        % real part, but this way we avoid any very small imaginary bits
+        % that arise because of numerical roundoff.
+        psf{wl} = real(inten);
         psf{wl} = psf{wl} / sum(sum(psf{wl}));
     end
     
