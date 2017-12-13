@@ -16,31 +16,30 @@ function energy = Quanta2Energy(wavelength, photons)
 %                 In the XW format each spatial position is in a row and
 %                 the wavelength varies across columsn. The output, ENERGY, 
 %                 [watts or Joules] is returned in  same format as input
-%                 (RGB or XW). CAUTION: The input form differs from the 
-%                 Energy2Quanta() call, which uses the energy spectra in
-%                 the columns.
+%                 (RGB or XW). 
+%
+%                 CAUTION: The input form of photons differs from the
+%                 Energy2Quanta() call, which places the energy spectra
+%                 in the columns.  The exception to this is when the
+%                 photons is a vector with dimension equal to the
+%                 number of wavelengths.  In that case, we carry on as
+%                 if there is a single spatial position for both row
+%                 or col format.
 %
 % Outputs:
 %    energy     - The energy, in watts or joules, is returned in the same
 %                 format that the photon matrix was in (RGB or XW)
 %
 % Notes:
-%    * [NOTE: XXX - CAUTION: The input form differs from the
-%      Energy2Quanta() call, which has the energy spectra in the columns.]
-%    * [NOTE: XXX - We should regularize the calls to Energy2Quanta() and
-%      this routine, probably by making the other routine take RGB or XW
-%      format as well. Old legacy issues, sigh.]
-%    * [NOTE: DHB - When this is passed a single column vector, it doesn't
-%      complain (because that's an illegal format) but rather returns a
-%      single row vector.  Not sure whether we should check and throw an
-%      error for this case.]
-%
+%    * [NOTE: BW - The conflict with the call in Energy2Quanta()
+%    remains annoying, even though many functions work with it. Not
+%    sure whether we will ever fix this, but see comments in the function.]
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
 %    11/16/17  jnm  Formatting
-%
+%    12/12/17   bw  Format, comments, example
    
 
 % Examples:
@@ -49,8 +48,10 @@ function energy = Quanta2Energy(wavelength, photons)
    p = blackbody(wave, 3000:1000:8000, 'photons');
    e = Quanta2Energy(wave, p'); e = diag(1 ./ e(:, 11)) * e;
    figure; plot(wave, e')
-
-   p1 = blackbody(wave, 5000, 'photons');
+%}
+%{
+   wave = 400:10:700;  
+   p1 = blackbody(wave, 5000, 'photons');  % A column vector
    e = Quanta2Energy(wave, p1');           % e is a row vector in XW format
    p2 = Energy2Quanta(wave, transpose(e)); % Notice the TRANSPOSE
    figure; plot(wave, p1, 'ro', wave, p2, 'k-')

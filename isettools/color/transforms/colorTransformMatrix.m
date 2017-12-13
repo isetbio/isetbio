@@ -5,12 +5,13 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %   result = colorTransformMatrix(matrixtype, [spacetype])
 %
 % Description:
-%    The routine returns a 3x3 color matrix, MAT, suitable for use with
-%    rgbLinearTransform, to convert an NxMx3 color image from one color
-%    space to another.
+%    The routine returns a 3x3 color matrix, result, suitable for use
+%    with imageLinearTransform, to convert an RGB (NxMx3) color image
+%    from one color space to another.
 %
 %    Suppose a point is represented by the row vector, p = [R, G, B].
-%    The matrix transforms each color point, p, to an output vector p*T.
+%    The matrix, T, transforms each color point, p, to an output
+%    vector p*T.
 %
 %    The convention above is used in many places in isetbio.  But note that
 %    it is opposite from the convention used in the Psychtoolbox and in
@@ -18,9 +19,11 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    world.
 %
 %    This routine works with imageLinearTransform.  So for example:
+%
 %       T = colorTransformMatrix('lms2xyz');
 %       xyzImage = imageLinearTransform(lmsImage, T)
-%    would return an NxMx3 xyz image, if lmsImage were in turn NxMx3.
+%
+%    would return an NxMx3 xyz image, if lmsImage is in RGB (NxMx3) format.
 %
 % Inputs:
 %    matrixtype - Type of color transformation. See some options below:
@@ -65,7 +68,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %      replacement. Hard to tell from the actual numbers, without
 %      recomputing the matrices. Someone should check, and then make the
 %      comments in the header and the code match accordingly. More
-%      generally, I am nt sure what this "opp" space is.  Either expand on
+%      generally, I am not sure what this "opp" space is.  Either expand on
 %      definition or get rid of it, I think.  Also, need to be clear about
 %      when XYZ is 1931 and when it has been updated to the new standard.]
 %

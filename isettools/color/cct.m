@@ -24,17 +24,6 @@ function Tc = cct(uvs)
 %    Tc  - Correlated color temperatures. This comes back as a row vector,
 %          with each entry corresponding to a column of uvs.
 %
-% Notes:
-%    * [NOTE: BW  Seems like we have xyYToXYZ in the PTB external along
-%       with xyy2xyz in isettools/color.  Let's resolve. DHB. This may
-%       be because other PTB routines that we do need call the PTB
-%       version. Or because it is hard to import things at a more
-%       granular level than one directory at at time. BW The two
-%       functions return the same values but different format.  I
-%       stuck a little check in here and let's move on.]
-%    * [NOTE: XXX - TODO:  Make this work for XYZ.]
-%    * [NOTE: XXX - TODO: Make an xyY to uv conversion routine.]
-%
 % References:
 %    Wyszecki & Stiles pgs. 227-228
 %
@@ -47,6 +36,8 @@ function Tc = cct(uvs)
 %    10/30/17  jnm  Comments & formatting
 %    11/11/17  bw   Added examples to responding to NOTES 
 %    11/16/17  jnm  Formatting
+%    12/12/17  bw   Added xyy2uv routine.  Compared it with PTB
+%                   routine.
 
 % Examples:
 %{
@@ -69,6 +60,10 @@ function Tc = cct(uvs)
   xyY = [.3221 .3322 100];
   XYZ = xyy2xyz(xyY); 
   fprintf('Correlated color temperatre %f\n', cct(xyz2uv(XYZ,'uv')'));
+%}
+%{
+  xyY = [.3221 .3322 100];
+  XYZ = xyy2xyz(xyY); 
   err = xyYToXYZ(xyY') - XYZ';
   assert(max(abs(err)) < 1e-12) 
 %}

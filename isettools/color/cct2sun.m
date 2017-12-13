@@ -25,11 +25,6 @@ function spd = cct2sun(wave, cct, units)
 %    Judd, Macadam, Wyszecki
 %       http://www.opticsinfobase.org/abstract.cfm?URI=josa-54-8-1031
 %
-% Notes:
-%    * [Note: JNM - if you do not provide wave, you must have [] in it's
-%      place, or the function will error. Ex. cct2sun([],cct) not
-%      cct2sun(,cct)]
-%
 % See Also:
 %    daylight
 
@@ -101,8 +96,6 @@ M(2, :) = (0.0300 - 31.4424 * xd + 30.0717 * yd) ./ ...
    (0.0241 + 0.2562 * xd - 0.7341 * yd);
 
 % Calculate the final daylight SPD. 
-% [Note: XXX - There are currently several daylight basis files in the
-% repository. We need to decide on one, and make sure this matches.]
 dayBasis = ieReadSpectra('cieDaylightBasis', wave);
 spd = dayBasis(:, 2:3) * M + repmat(dayBasis(:, 1), [1 size(cct, 2)]);
 
