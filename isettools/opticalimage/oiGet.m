@@ -483,6 +483,7 @@ switch parm
         if ~isempty(varargin)
             val = val*ieUnitScaleFactor(varargin{1});
         end
+        
     case {'width'}
         % Width in meters is default - We need to handle 'skip' case 
         d = oiGet(oi,'focalPlaneDistance');  % Distance from lens to image
