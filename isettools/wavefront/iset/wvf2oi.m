@@ -76,11 +76,19 @@ end
 
 % Make the frequency support in ISET as the same number of samples with the
 % wavelength with the highest frequency support from WVF.
+%
+% This support is set up with sf 0 at the center of the
+% returned vector, which matches how the wvf object returns
+% the otf.
 fx = wvfGet(wvf, 'otf support', 'mm', maxWave);
 fy = fx;
 [X, Y] = meshgrid(fx, fy);
 c0 = find(X(1, :) == 0);
 r0 = find(Y(:, 1) == 0);
+tmpN = length(fx);
+if (floor(tmpN/2)+1 ~= c0)
+    error('We do not quite understand where sf 0 should be in the sf array');
+end
 
 %% Set up the OTF variable for use in the ISETBIO representation
 nWave = length(wave);
@@ -93,9 +101,18 @@ otf = zeros(nSamps, nSamps, nWave);
 % support in the wvf structure at different wavelengths.
 for ww=1:length(wave)
     f = wvfGet(wvf, 'otf support', 'mm', wave(ww));
+    if (f(floor(length(f)/2)+1 ~= 0))
+        error('wvf otf support does not have 0 sf in the expected location');
+    end
     thisOTF = wvfGet(wvf, 'otf', wave(ww));
     est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
     
+    % Isetbio wants the otf with (0,0) sf at the upper right.  We
+    % accomplish this by applying ifftshift to the wvf centered format.
+    otf(:, :, ww) = ifftshift(est);
+    
+    % THIS WAS THE OLD WAY OF DOING THE SHFIT, WHICH I (DHB) DON'T THINK IS
+    % QUITE RIGHT.
     % It is tragic that fftshift does not shift so that the DC term is in
     % (1, 1). Rather, fftshift puts the DC at the the highest position.
     % So, we don't use this
@@ -108,7 +125,7 @@ for ww=1:length(wave)
     
     % We identified the (r, c) that represent frequencies of 0 (i.e., DC).
     % We circularly shift so that that (r, c) is at the (1, 1) position.
-    otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);  
+    %otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);  
 end
 
 %% Is PSF real?
