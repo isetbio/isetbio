@@ -66,14 +66,17 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 %                   current calculation.
 %    07/24/12  dhb  Switch sign of y coord to match OSA standard.
 %    11/07/17  jnm  Comments & formatting
-%
+%    12/13/17  dhb  Redo definition of center position in grid to always
+%                   have a sample at (0,0) in the pupil plane, and for this
+%                   to match up with where Matlab likes this by convention.
+%                   Improves stability of resutls wrt to even/odd support
+%                   when sampling is a little coarse.
 
 % Examples:
 %{
 	wvf = wvfCreate;
 	wvf = wvfComputePupilFunction(wvf);
 %}
-
 
 %% Parameter checking
 if notDefined('wvf'), error('wvf required'); end
@@ -103,13 +106,7 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         wvfGet(wvf, 'calc observer focus correction') - ...
         wvfGet(wvf, 'measured observer focus correction');
     
-    % I replaced the formula with the function (BW).
-    %     defocusCorrectionMicrons = ...
-    %         defocusCorrectionDiopters * (measPupilSizeMM )^2 ...
-    %         / (16 * sqrt(3));
-    % with the function written for this purpose
-    % (wvfDefocusDioptersToMicrons). There was no difference, so I think we
-    % are OK.
+    % Convert defocus from diopters to microns
     defocusCorrectionMicrons = wvfDefocusDioptersToMicrons(...
         defocusCorrectionDiopters, measPupilSizeMM);
     
@@ -157,10 +154,32 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         % Autrussea et al. 2011.
         nPixels = wvfGet(wvf, 'spatial samples');
         pupilPlaneSizeMM = wvfGet(wvf, 'pupil plane size', 'mm', thisWave);
-        pupilPos = (0:(nPixels - 1)) * (pupilPlaneSizeMM / nPixels) ...
-            - pupilPlaneSizeMM / 2;
+        
+        % The commented out code here led to very large differences in the
+        % psf depending on whether the support for the pupil function was
+        % even or odd.  The new code respects the conventions of Matlab's
+        % fft routines as to where 0 should be in the matrix, prior to an
+        % fftshift.  This makes the effect of going from even to odd
+        % considerably smaller, and the more densely we sample the pupil
+        % plane the smaller the deviations become.  So we are currently
+        % considering this code to be correct, on the view that there is in
+        % fact a small effect of discrete sampling.  The effect is quite
+        % dependent on how finely the pupil plane is sampled, perhaps not
+        % surprisingly. It crops up when the sampling is a bit coarse.
+        % That said, the new code seems to be considerably more stable than
+        % the old with respect to the switch between even/odd sampling.
+        pupilPos = (1:nPixels) - (floor(nPixels/2) + 1);
+        pupilPos = pupilPos*(pupilPlaneSizeMM / nPixels);
+        % pupilPos = (0:(nPixels - 1)) * (pupilPlaneSizeMM / nPixels) ...
+        %   - pupilPlaneSizeMM / 2;
+        
+        % Do the meshgrid thing and flip y.  The commented out code is the
+        % old way we did this, but that has the feature of moving 0 to the
+        % wrong place in the support.  So we think it is better to
+        % multiply by -1.
         [xpos, ypos] = meshgrid(pupilPos);
-        ypos = ypos(end:-1:1, :);
+        ypos = -ypos;
+        % ypos = ypos(end:-1:1, :);
         
         % Set up the amplitude of the pupil function. This depends entirely
         % on the SCE correction.  For x, y positions within the pupil, rho
