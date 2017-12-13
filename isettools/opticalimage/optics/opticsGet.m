@@ -103,6 +103,7 @@ function val = opticsGet(optics,parm,varargin)
 %      {'otf wave'}        - wavelength samples of the otf data
 %      {'otf binwidth'}    - difference between wavelength samples
 %      {'psf data'}        - psf data, calculated from the stored otfdata
+%      {'diffraction limited psf data'} - diffraction limited psf data
 %      {'psf spacing'}
 %      {'psf support'}
 %      {'incoherentcutoffspatialfrequency'}*    - Vector of incoherent cutoff freq
@@ -492,12 +493,12 @@ switch parm
             val = OTF;
         end
 
-    case {'psf'}
-        % psf = opticsGet(optics,'psf',thisWave,units,nSamp,freqOverSample);
-        % Pointspread at a particular wavelength, spatial sampling in some
-        % units ('um','mm', etc.) some number of spatial samples, and some
-        % amount of oversampling on the frequency calculation to make the
-        % curve smooth.
+    case {'diffractionlimitedpsfdata'}
+        % psf = opticsGet(optics,'diffractionlimitedpsfdata',thisWave,units,nSamp,freqOverSample);
+        % Diffraction limited ointspread function at a particular
+        % wavelength, spatial sampling in some units ('um','mm', etc.) some
+        % number of spatial samples, and some amount of oversampling on the
+        % frequency calculation to make the curve smooth.
         %
         if isempty(varargin), error('You must specify wavelength'); 
         else   thisWave = varargin{1};

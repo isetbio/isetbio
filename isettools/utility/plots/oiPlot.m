@@ -810,7 +810,7 @@ switch lower(pType)
                 % The opticsGet() for diffraction limited should be
                 % adjusted so that this code becomes shorter.
                 
-                psf = opticsGet(optics,'psf',thisWave,units,nSamp,oSample);
+                psf = opticsGet(optics,'diffractionlimitedpsfdata',thisWave,units,nSamp,oSample);
                 fSupport = opticsGet(optics,'dlFSupport matrix',thisWave,units,nSamp);
                 fSupport = fSupport*oSample;
                 
