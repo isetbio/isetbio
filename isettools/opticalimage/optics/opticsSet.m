@@ -53,9 +53,11 @@ function optics = opticsSet(optics,parm,val,varargin)
 %      {'off axis method'}  - Set to 'Skip' to turn off or 'cos4th'
 %      {'cos4thdata'}       - Cached cos4th data
 %
-% Copyright ImagEval Consultants, LLC, 2005.
-%
-% See also OIGET OISET OPTICSGET
+% See also: OIGET OISET OPTICSGET
+
+% History:
+%                  Copyright ImagEval Consultants, LLC, 2005.
+
 
 if ~exist('optics','var') || isempty(optics),  error('No optics specified.'); end
 if ~exist('parm','var') || isempty(parm),      error('No parameter specified.'); end
@@ -182,6 +184,8 @@ switch parm
     case {'otffx'}
         % Units are cyc/mm
         %- frequency samples across col of otfdata
+        %- these seem to have 0 at entry floor(n/2)+1,
+        %  while the actual otf is not shifted this way.
         optics.OTF.fx = val;
     case {'otffy'}
         % Units are cyc/mm
