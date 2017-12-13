@@ -712,12 +712,15 @@ switch parm
             / wvfGet(wvf, 'spatial samples');
 
     case {'middlerow'}
+        % This matches conventions for psf and otf when we use the PTB
+        % routines to obtain these.
         val = floor(wvfGet(wvf, 'npixels') / 2) + 1;
         
     case {'otf'}
         % Return the otf from the psf
         %
         % wvfGet(wvf, 'otf', wave)
+        % 
         % What should the units be? c / (nPSFSamples * units), I think we
         % should deal with this explicitly here.
         
@@ -725,13 +728,20 @@ switch parm
         if ~isempty(varargin), wave = varargin{1}; end
         psf = wvfGet(wvf, 'psf', wave);
         
-        %% Compute otf
+        % Compute otf
         %
-        % The commented out code is how we used to do this. The current
-        % code mirrors PTB's PsfToOtf.  We would then apply an ifftshift to
-        % this to put it into isetbio's optics format.
-        %val = fftshift(psf2otf(psf));  
-        val = fftshift(fft2(ifftshift(psf)));
+        % Use PTB PsfToOft to convert to (0,0) sf at center otf
+        % representation.  Note that this differs from the isetbio
+        % optics structure convention, where (0,0) sf is at the upper
+        % right.
+        %
+        % It might make sense to switch to the isetbio optics convention, but then
+        % the OTF support below would not be right, since it assumes the
+        % center reprentation (as does unitFrequencyList, which is itself
+        % an isetbio utility.  To convert to the (0,0) sf at upper right
+        % (isetbio optics) convention, apply ifftshift to the value
+        % computed below.
+        [~,~,val] = PsfToOtf([],[],psf);
         
         % We don't require that the input psf be symmetric, so there could be
         % actual imaginary values.  Thus we do our best to make a good guess.
@@ -756,8 +766,7 @@ switch parm
         nSamp = length(samp);
         dx = samp(2) - samp(1);
         nyquistF = 1 / (2 * dx);   % Line pairs (cycles) per unit space
-        val = unitFrequencyList(nSamp) * nyquistF;
-        
+        val = unitFrequencyList(nSamp) * nyquistF;   
 
     case {'lsf'}
         % wave = wvfGet(wvf, 'calc wave');
@@ -768,6 +777,7 @@ switch parm
         wave = wvfGet(wvf, 'calc wave');
         if length(varargin) > 1, wave = varargin{1}; end
         
+        % Get OTF
         otf  = wvfGet(wvf, 'otf', wave);
         mRow = wvfGet(wvf, 'middle row');
         val  = fftshift(abs(fft(otf(mRow, :))));
