@@ -10,7 +10,8 @@ function fList = unitFrequencyList(N)
 %
 %    The range that comes back, say when N = 100 or N = 101, the DC term is
 %    at location 51. The general rule is that if N is even the DC location
-%    is at N/2 +1. If N is odd, the DC location is at (N+1)/2.
+%    is at N/2+1 = floor(N/2)+1. If N is odd, the DC location is at (N+1)/2 =
+%    floor(N/2)+1.
 % 
 %    The main purpose is to get the zero (DC) term into the proper position
 %    where Matlab expects it. Then, once we know the maximum frequency
@@ -30,13 +31,14 @@ function fList = unitFrequencyList(N)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/20/17  jnm  Formatting
-%
+%    12/12/17  dhb  Expand on comments, make example work.
 
 % Examples:
 %{
+    nyquistFrequency = 10;
     fList = unitFrequencyList(50);  
     fList = unitFrequencyList(51);
-    dataFrequencies = fList * nyquistFrequency;
+    dataFrequencies = fList * nyquistFrequency
 %}
 
 if notDefined('N'), N = 6; end
