@@ -573,6 +573,7 @@ switch parm
                 val = (val*10^3)/ieUnitScaleFactor(unit);
             end
         end
+        
     case {'otffy'}
         % cycles/mm!!! Non-standard unit. Must fix up some day.
         if checkfields(optics,'OTF','fy'), val= optics.OTF.fy(:)'; end
@@ -585,6 +586,7 @@ switch parm
                 val = (val*10^3)/ieUnitScaleFactor(unit);
             end
         end
+        
     case {'otfsize'}
         % Row and col samples
         if checkfields(optics,'OTF','OTF'),
@@ -687,13 +689,14 @@ switch parm
         if length(varargin) >= 1, units = varargin{1}; 
         else units = 'mm'; end
         fx = opticsGet(optics,'otf fx',units); 
-        peakF = max(fx(:));
         if isempty(fx), error('No otffx calculated yet. Fix me.'); end
+        peakF = max(fx(:));
 
         % Peak frequency in cycles/meter.  1/peakF is meters.  We have two
         % samples in that distance, so the sample spacing is half that
         % distance.
         val = 1/(2*peakF);
+        
     case {'psfsupport'}
         % opticsGet(optics,'psf support',unit) Returns mesh grid of X and Y
         % values.  Used for mesh plotting often. X/Y could be mixed up in 1
