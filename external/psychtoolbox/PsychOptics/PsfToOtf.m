@@ -88,7 +88,7 @@ if (~isempty(xGridMinutes) & ~isempty(yGridMinutes))
     % Generate spatial frequency grids
     [xSfGridCyclesDeg,ySfGridCyclesDeg] = PositionGridMinutesToSfGridCyclesDeg(xGridMinutes,yGridMinutes);
     
-elseif (isempty(xGridMinutes) & isempty(yMinutes))
+elseif (isempty(xGridMinutes) & isempty(yGridMinutes))
     % This case is OK, we set the output grids to empty
     xSfGridCyclesDeg = [];
     ySfGridCyclesDeg = [];
