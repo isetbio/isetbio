@@ -77,17 +77,15 @@ end
 % Make the frequency support in ISET as the same number of samples with the
 % wavelength with the highest frequency support from WVF.
 %
-% This support is set up with sf 0 at the center of the
-% returned vector, which matches how the wvf object returns
-% the otf.
+% This support is set up with sf 0 at the center of the returned vector,
+% which matches how the wvf object returns the otf.
 fx = wvfGet(wvf, 'otf support', 'mm', maxWave);
 fy = fx;
 [X, Y] = meshgrid(fx, fy);
 c0 = find(X(1, :) == 0);
-r0 = find(Y(:, 1) == 0);
 tmpN = length(fx);
 if (floor(tmpN/2)+1 ~= c0)
-    error('We do not quite understand where sf 0 should be in the sf array');
+    error('We do not understand where sf 0 should be in the sf array');
 end
 
 %% Set up the OTF variable for use in the ISETBIO representation
@@ -101,7 +99,7 @@ otf = zeros(nSamps, nSamps, nWave);
 % support in the wvf structure at different wavelengths.
 for ww=1:length(wave)
     f = wvfGet(wvf, 'otf support', 'mm', wave(ww));
-    if (f(floor(length(f)/2)+1 ~= 0))
+    if (f(floor(length(f)/2)+1) ~= 0)
         error('wvf otf support does not have 0 sf in the expected location');
     end
     thisOTF = wvfGet(wvf, 'otf', wave(ww));
@@ -127,13 +125,6 @@ for ww=1:length(wave)
     % We circularly shift so that that (r, c) is at the (1, 1) position.
     %otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);  
 end
-
-%% Is PSF real?
-%
-% I sure wish this was real all the time. Sometimes (often?) it is. 
-% psf = otf2psf(otf(:, :, ww));
-% if ~isreal(psf), disp('psf not real'); end
-% vcNewGraphWin; mesh(psf)
 
 %% Place the frequency support and OTF data into an ISET structure.
 %
