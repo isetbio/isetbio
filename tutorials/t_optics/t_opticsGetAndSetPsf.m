@@ -142,30 +142,30 @@ optics = opticsSet(optics,'otf data',insertOtf);
 
 %% Make sure everything is hunky-dory by making the plot using isetbio's fcn
 oi = oiSet(oi,'optics',optics);
-udata = oiPlot(oi,'psf',[],theWl);
+[udata,oiPlotFig] = oiPlot(oi,'psf',[],theWl); close(oiPlotFig);
 figure(psfFig);
 plot(60*udata.x(centerPosition,:)/uMPerDegree,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k-','LineWidth',2);
 
 %% Let's do this through the routine and show that we get the same answer
 oi2 = oiCreate('wvf human');
 oi2 = ptb.oiSetPtbOptics(oi2);
-udata2 = oiPlot(oi2,'psf',[],theWl);
+[udata2,oiPlotFig] = oiPlot(oi2,'psf',[],theWl); close(oiPlotFig);
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/uMPerDegree,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'r:','LineWidth',2);
 
 %% Add Westheimer and Williams estimates for fun
 oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','Westheimer');
-udata2 = oiPlot(oi2,'psf',[],theWl);
+[udata2,oiPlotFig] = oiPlot(oi2,'psf',[],theWl); close(oiPlotFig)
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/uMPerDegree,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'c','LineWidth',2);
 oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','Williams');
-udata2 = oiPlot(oi2,'psf',[],theWl);
+[udata2,oiPlotFig] = oiPlot(oi2,'psf',[],theWl); close(oiPlotFig)
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/uMPerDegree,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'y','LineWidth',2);
 
 %% And finally plot the Davila-Geisler lsf if we take it directly as the psf.
 oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','DavilaGeislerLsfAsPsf');
-udata2 = oiPlot(oi2,'psf',[],theWl);
+[udata2,oiPlotFig] = oiPlot(oi2,'psf',[],theWl); close(oiPlotFig)
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/uMPerDegree,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'k:','LineWidth',2);
 legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet Again','Westheimer','Williams','D/G Lsf as Psf'});
@@ -179,37 +179,66 @@ legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet 
 % to use consistent parameters across all of them, so we take some care
 % to define and set spatial sampling for the PSF here, as well as
 % umPerDegree.
+
+% Here we test with odd number of psf samples.
 pupilMM = 6; zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
-psfSpatialSamples = 200;
-psfUmPerSample = 0.25;
+defocusAmount = 1;
 umPerDegree = 300;
-psfMinPerSample = 60*psfUmPerSample/umPerDegree;
-wvfP = wvfCreate('calc wavelengths', theWl, ...
+umForPSFSampling = 100;
+psfSpatialSamplesOdd = 201;
+psfUmPerSampleOdd = umForPSFSampling/psfSpatialSamplesOdd;
+psfMinPerSampleOdd = 60*psfUmPerSampleOdd/umPerDegree;
+wvfPOdd = wvfCreate('calc wavelengths', theWl, ...
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
-        'spatialSamples',psfSpatialSamples, ...
+        'spatialSamples',psfSpatialSamplesOdd, ...
         'umPerDegree',umPerDegree, ...
         'name', sprintf('human-%d', pupilMM));
-wvfP = wvfSet(wvfP,'ref psf sample interval',psfMinPerSample);
-wvfP = wvfSet(wvfP,'zcoeffs',1,'defocus');
-wvfP = wvfComputePSF(wvfP);
+wvfPOdd = wvfSet(wvfPOdd,'ref psf sample interval',psfMinPerSampleOdd);
+wvfPOdd = wvfSet(wvfPOdd,'zcoeffs',defocusAmount,'defocus');
+wvfPOdd = wvfComputePSF(wvfPOdd);
 
 % Get and plot the psf obtained directly from the wvf structure.
 % This is what we ought to get back from an oi/optics structure,
 % if we put it in correctly.
 psfFig3 = figure; hold on
-psf3FromWvf = wvfGet(wvfP,'1d psf',theWl);
-psf3FromWvfSpatialSamples1D = wvfGet(wvfP,'psf angular samples','min',theWl);
-plot(psf3FromWvfSpatialSamples1D, ...
-    psf3FromWvf/max(psf3FromWvf),...
+psf3FromWvfOdd = wvfGet(wvfPOdd,'1d psf',theWl);
+psf3FromWvfSpatialSamples1DOdd = wvfGet(wvfPOdd,'psf angular samples','min',theWl);
+plot(psf3FromWvfSpatialSamples1DOdd, ...
+    psf3FromWvfOdd/max(psf3FromWvfOdd),...
     'c','LineWidth',6);
 
-% Convert to oi using wvf2oi.  When we get the psf data
+% Now do the same thing with an even number of samples, close to the odd
+% number we set up above
+psfSpatialSamplesEven = psfSpatialSamplesOdd-1;
+psfUmPerSampleEven = umForPSFSampling/psfSpatialSamplesEven;
+psfMinPerSampleEven = 60*psfUmPerSampleEven/umPerDegree;
+wvfPEven = wvfCreate('calc wavelengths', theWl, ...
+        'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
+        'spatialSamples',psfSpatialSamplesEven, ...
+        'umPerDegree',umPerDegree, ...
+        'name', sprintf('human-%d', pupilMM));
+wvfPEven = wvfSet(wvfPEven,'ref psf sample interval',psfMinPerSampleEven);
+wvfPEven = wvfSet(wvfPEven,'zcoeffs',defocusAmount,'defocus');
+wvfPEven = wvfComputePSF(wvfPEven);
+
+% Plot comparing odd and even support psfs obtained with wvf code
+psfFigOddEven = figure; hold on
+plot(psf3FromWvfSpatialSamples1DOdd,psf3FromWvfOdd,...
+    'c','LineWidth',6);
+psf3FromWvfEven = wvfGet(wvfPEven,'1d psf',theWl);
+psf3FromWvfSpatialSamples1DEven = wvfGet(wvfPEven,'psf angular samples','min',theWl);
+plot(psf3FromWvfSpatialSamples1DEven,psf3FromWvfEven,...
+    'b','LineWidth',4);
+xlim([-10 10]);
+
+% Convert to oi using wvf2oi. When we get the psf data
 % using oiPlot, the support is in microns.  Convert to 
 % minutes and plot.
-oi3 = wvf2oi(wvfP);
-udata3 = oiPlot(oi3,'psf',[],theWl);
+oi3 = wvf2oi(wvfPOdd);
+[udata3,oiPlotFig] = oiPlot(oi3,'psf',[],theWl); close(oiPlotFig)
 supportRowSize = size(udata3.x,1);
 centerPosition = floor(supportRowSize/2)+1;
+figure(psfFig3);
 plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
     'b','LineWidth',4);
@@ -237,14 +266,14 @@ plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',2);
 
 %% Not yet working
 % % Do the conversion using si format
-% [siPSFData, wvfP] = wvf2PSF(wvfP,'nPSFSamples',psfSpatialSamples, ...
+% [siPSFData, wvfP] = wvf2PSF(wvfP,'nPSFSamples',psfSpatialSamplesOdd, ...
 %     'umPerSample',psfUmPerSample, ...
 %     'showBar',false);
 % 
 % % Convert to optics and then oi using siSynthetic
 % oi4 = oiCreate('human');
 % optics4 = oiGet(oi4,'optics');
-% optics4 = opticsSet(optics4,'otf',zeros(psfSpatialSamples,psfSpatialSamples));
+% optics4 = opticsSet(optics4,'otf',zeros(psfSpatialSamplesOdd,psfSpatialSamplesOdd));
 % oi4 = oiSet(oi4,'optics',optics4);
 % optics4 = siSynthetic('custom', oi4, siPSFData);
 % oi4 = oiSet(oi4, 'optics', optics4);
