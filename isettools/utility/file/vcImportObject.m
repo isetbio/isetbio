@@ -42,7 +42,6 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/28/17  jnm  Formatting
 %    11/29/17  jnm  Note about example
-%
 
 % Examples:
 %{

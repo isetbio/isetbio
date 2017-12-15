@@ -1,33 +1,37 @@
-function [imgMean, basis, coef, varExplained] = hcBasis(hc,bType,mType)
+function [imgMean, basis, coef, varExplained] = hcBasis(hc, bType, mType)
 % Create wavelength basis functions and coefficients for an hc image
 %
-%  [imgMean, basis, coef, varExplained] = ...
-%                  hcBasis(hc,cType,bType)
+% Syntax:
+%   [imgMean, basis, coef, varExplained] = hcBasis(hc, [cType], [bType])
 %
-% INPUTS
-%  hc:     Hypercube data
-%  bType: Basis calculation type
-%           if < 1, a fraction specifying required variance explained
-%           if >= 1, a number of bases 
-%  mType:  Mean removal computation  
-%           'mean svd'  - pull out the mean before the svd
-%           'canonical' - leave the mean as part of the basis calculation.
-%           In this case imgMean is returned as empty.
+% Description:
+%    The original image is recreated using:
+%         d = RGB2XWFormat(coef) * basis' + repmat(imgMean, row * col, 1);
+%         hcimage(XW2RGBFormat(d, row, col))
 %
-% RETURNS
-%  imgMean:   Mean SPD of the pixels  (nWave,1)
-%  basis:     Wavelength basis
-%  coef:      RGB format (row,col,nBases)
-%  varExplained:  The hc variance explained by nbases
+% Inputs:
+%    hc           - Hypercube data
+%    bType        - (Optional) Basis calculation type. Default is 0.995
+%            if < 1, a fraction specifying required variance explained
+%            if >= 1, a number of bases 
+%    mType        - (Optional) Mean removal computation. Default canonical.
+%            'mean svd'  - pull out the mean before the svd
+%            'canonical' - leave the mean as part of the basis calculation.
+%                          In this case imgMean is returned as empty.
 %
-% The original image is recreated  using 
+% Outputs:
+%    imgMean      - Mean SPD of the pixels (nWave, 1)
+%    basis        - Wavelength basis
+%    coef         - RGB format (row, col, nBases)
+%    varExplained - The hc variance explained by nbases
 %
-%  d = RGB2XWFormat(coef)*basis'+ repmat(imgMean,row*col,1);
-%  hcimage(XW2RGBFormat(d,row,col))
+% See Also:
+%    hcimage, and hc<TAB>
 %
-% See also:  hcimage, and hc<TAB>
-%
-% Copyright ImagEval Consultants, LLC, 2012.
+
+% History:
+%    xx/xx/12       Copyright ImagEval Consultants, LLC, 2012.
+%    12/05/17  jnm  Formatting
 
 %% Check arguments
 if notDefined('hc'), error('Hypercube data required'); end
@@ -36,9 +40,9 @@ if notDefined('mType'), mType = 'canonical'; end
 
 % The basis methods are
 %  1 - Return the mean in the first column and the svd basis in the 2nd
-%  through higher components
-%  2 -  When the image is large, we might sample points randomly and find a
-%  best 'statistical' svd from these random samples
+%      through higher components
+%  2 - When the image is large, we might sample points randomly and find a
+%      best 'statistical' svd from these random samples
 imgMean = [];
 
 mType = ieParamFormat(mType);
@@ -46,30 +50,33 @@ switch mType
     case 'meansvd'
         % Suppose the original data are d, and they are stored in (wave x
         % space) format, in the transpose of XW.
-        % d = wMean + hcBasis*hcCoefs;
+        %  d = wMean + hcBasis * hcCoefs;
         %
         % vcReadImage does this:
         %  tmp = load(fullname);
-        %  mcCOEF = tmp.mcCOEF; basis = tmp.basis;
-        %  photons = imageLinearTransform(mcCOEF,basis.basis');
+        %  mcCOEF = tmp.mcCOEF;
+        %  basis = tmp.basis;
+        %  photons = imageLinearTransform(mcCOEF, basis.basis');
         %
         % The imageLinearTransform routine applies a right side multiply to
-        % the data.  Specifically, if an image point is represented by the
-        % row vector, p = [R,G,B] the matrix transforms each color point,
+        % the data. Specifically, if an image point is represented by the
+        % row vector, p = [R, G, B] the matrix transforms each color point, 
         % p, to an output vector pT
 
-        [row,col,~] = size(hc);
+        [row, col, ~] = size(hc);
         % Convert so rows are space and columns are wavelength
         hc = RGB2XWFormat(hc);
         
         % Remove the mean
-        imgMean = mean(hc,1);   % vcNewGraphWin; plot(imgMean)
-        hc = hc - repmat(imgMean,row*col,1);
+        imgMean = mean(hc, 1);
+        %  vcNewGraphWin;
+        %  plot(imgMean)
+        hc = hc - repmat(imgMean, row * col, 1);
         %
-        % Compute the svd.  hc = U * S * basis'
-        [~, S, basis] = svd(hc,'econ');
+        % Compute the svd. hc = U * S * basis'
+        [~, S, basis] = svd(hc, 'econ');
         S = diag(S);
-        relativeVariance = cumsum(S.^2)/sum(S.^2);
+        relativeVariance = cumsum(S .^ 2) / sum(S .^ 2);
         
         % Find the number of bases to keep
         if bType < 1
@@ -81,36 +88,37 @@ switch mType
         end
 
         % Clip the unwanted basis terms
-        basis = basis(:,1:nbases);
-        % vcNewGraphWin; plot(basis(:,1:nbases))
+        basis = basis(:, 1:nbases);
+        % vcNewGraphWin;
+        % plot(basis(:, 1:nbases))
         
         % Find the basis coefficients
-        coef = hc*basis;
+        coef = hc * basis;
         % To get back to the original hc data
-        %  d = coef*basis'+ repmat(imgMean,row*col,1);
-        % Have a look:   hcimage(XW2RGBFormat(d,row,col))
+        %  d = coef * basis' + repmat(imgMean, row * col, 1);
+        % Have a look:   hcimage(XW2RGBFormat(d, row, col))
         
         % Make the coefficients an RGB image so we can use
-        % imageLinearTransform in vcReadImage
-        coef = XW2RGBFormat(coef,row,col);
+        %  imageLinearTransform in vcReadImage
+        coef = XW2RGBFormat(coef, row, col);
         %
-        % tmp = imageLinearTransform(coef,basis');
-        % tmp = RGB2XWFormat(tmp);
-        % tmp = tmp + repmat(imgMean,row*col,1);
-        % tmp = XW2RGBFormat(tmp,row,col);
-        % hcimage(tmp)
+        %  tmp = imageLinearTransform(coef, basis');
+        %  tmp = RGB2XWFormat(tmp);
+        %  tmp = tmp + repmat(imgMean, row*col, 1);
+        %  tmp = XW2RGBFormat(tmp, row, col);
+        %  hcimage(tmp)
     case 'canonical'
-        % Do not pull out the mean.  Just fit
-        %  d = C*weights, where the columns of C are the basis functions.
-        %  The first one will be pretty close to the mean.
-        [row,col,~] = size(hc);
+        % Do not pull out the mean. Just fit d = C * weights, where the
+        % columns of C are the basis functions. The first one will be
+        % pretty close to the mean.
+        [row, col, ~] = size(hc);
         % Convert so rows are space and columns are wavelength
         hc = RGB2XWFormat(hc);
         
-        % Compute the svd.  hc = U * S * basis'
-        [~, S, basis] = svd(hc,'econ');
+        % Compute the svd. hc = U * S * basis'
+        [~, S, basis] = svd(hc, 'econ');
         S = diag(S);
-        relativeVariance = cumsum(S.^2)/sum(S.^2);
+        relativeVariance = cumsum(S .^ 2) / sum(S .^ 2);
         
         % Find the number of bases to keep
         if bType < 1
@@ -122,21 +130,22 @@ switch mType
         end
 
         % Clip the unwanted basis terms
-        basis = basis(:,1:nbases);
-        % vcNewGraphWin; plot(basis(:,1:nbases))
+        basis = basis(:, 1:nbases);
+        % vcNewGraphWin;
+        % plot(basis(:, 1:nbases))
         
         % Find the basis coefficients
-        coef = hc*basis;
+        coef = hc * basis;
         % To get back to the original hc data
-        %  d = coef*basis'+ repmat(imgMean,row*col,1);
-        % Have a look:   hcimage(XW2RGBFormat(d,row,col))
+        %  d = coef * basis' + repmat(imgMean, row * col, 1);
+        % Have a look:   hcimage(XW2RGBFormat(d, row, col))
         
         % Make the coefficients an RGB image so we can use
         % imageLinearTransform in vcReadImage
-        coef = XW2RGBFormat(coef,row,col);
+        coef = XW2RGBFormat(coef, row, col);
         
     otherwise
-        error('Unknown method %s\n',mType);
+        error('Unknown method %s\n', mType);
 end
 varExplained = relativeVariance(nbases);
 

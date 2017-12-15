@@ -1,36 +1,58 @@
-function [figH,m, cbH] = imageMontage(hc, slices, numCols, figNum)
-%Create a window with a montage of the slices in the hypercube data
+function [figH, m, cbH] = imageMontage(hc, slices, numCols, figNum)
+% Create a window with a montage of the slices in the hypercube data
 %
-% [figH,m,cbH] = imageMontage(hc, [slices=[]], [numCols=[]], figNum=figure)
+% Syntax:
+%   [figH, m, cbH] = imageMontage(hc, [slices], [numCols], [figNum])
 %
-% hc:          Hypercube data
-% wavebands:   Indices into the cube, not the actual wavelengths
-% cmap:        Color map to use, not sure that should be here.
-% crop:        Should become a rect
-% numCols:     Number of columns in the montage
-% figNum:      Specify the figure
-% flip:        Flip the image somehow or other
+% Description:
+%    Create a window with a montage of the slices in the hypercube data
 %
-% Example (requires hc data, not shipped by default):
-%   fname = fullfile(isetbioDataPath,'images','hyperspectral','surgicalSWIR.mat');
-%   d = load(fname,'hc');
-%   nWave = size(d.hc,3);
-%   [figH, m] = imageMontage(d.hc,1:10:nWave);
-%   colormap(gray)
+% Inputs:
+%    hc      - Hypercube data
+%    slices  - (Optional) Slices to create a montage with. Default is [].
+%    numCols - (Optional) Number of columns in the montage. Default is [].
+%    figNum  - (Optional) Specify the figure. Default is Figure's Default.
 %
-% See also:  imageMakeMontage, 
+% Outputs:
+%    figH    - The hypercube figure
+%    m       - 
+%    cbH     - 
 %
-% (c) Imageval, 2012
+% Notes:
+%    * [Note: JNM - removed listed input variables that were not actually
+%      in the header. Variables removed: wavebands, cmap, crop, flip.]
+%    * [Note: JNM - Example is not working since the hypercube is not
+%      correctly instantiated.]
+%
+% See Also:
+%    imageMakeMontage
+%
+
+% History:
+%    xx/xx/12       (c) Imageval, 2012
+%    12/07/17  jnm  Formatting
+
+% Examples:
+%{
+    % (requires hc data, not shipped by default):
+    fname = fullfile(isetbioDataPath, 'images', 'hyperspectral', ...
+        'surgicalSWIR.mat');
+    d = load(fname, 'hc');
+    nWave = size(d.hc, 3);
+    [figH, m] = imageMontage(d.hc, 1:10:nWave);
+    colormap(gray)
+%}
 
 if notDefined('slices'), slices = []; end
-if ~exist('numCols','var'), numCols = [];end
-if ~exist('figNum','var'), figH = figure;
-else figH = figure(figNum);
+if ~exist('numCols', 'var'), numCols = []; end
+if ~exist('figNum', 'var')
+    figH = figure;
+else
+    figH = figure(figNum);
 end
 
 %% 
-
-m = imageMakeMontage(hc,slices,[],numCols);
+m = imageMakeMontage(hc, slices, [], numCols);
 imagesc(double(m));
 axis image;
 cbH = colorbar;

@@ -33,7 +33,6 @@ function [fullName, imageType] = vcSelectImage(imageType, imgDir, ext)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/29/17  jnm  Formatting, added note
-%
 
 % Examples:
 %{

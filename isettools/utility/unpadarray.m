@@ -23,7 +23,6 @@ function outArray = unpadarray(inArray, unpadSize)
 
 % History:
 %    11/20/17  jnm  Formatting, example & heading text
-%
 
 % Examples:
 %{

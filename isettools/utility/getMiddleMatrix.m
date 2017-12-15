@@ -31,7 +31,6 @@ function middleM = getMiddleMatrix(m, sz)
 %    03/19/15  HJ/BW Changed from round to floor. No effect on
 %                    validationfastall. Should be ok?
 %    12/01/17  jnm   Formatting
-%
 
 % Examples:
 %{

@@ -1,14 +1,31 @@
 function parser = ieInputParser()
-%% Get an inputParser configured with ISETBIO conventions
+% Get an inputParser configured with ISETBIO conventions
 %
-% parser = ieInputParser() returns an instance of the built-in inputParser
-% class, with its properties set to ISETBIO defaults.
+% Syntax:
+%	parser = ieInputParser()
 %
-% See also inputParser
+% Description:
+%    returns an instance of the built-in inputParser class, with its
+%    properties set to ISETBIO defaults.
 %
-% parser = ieInputParser()
+% Inputs:
+%    None.
 %
-% Copyright (c) 2015 ISETBIO Team
+% Outputs:
+%    parser - The input parser object
+%
+% See Also:
+%    inputParser
+%
+
+% History:
+%    xx/xx/15       Copyright (c) 2015 ISETBIO Team
+%    12/15/17  jnm  Formatting
+
+% Examples:
+%{
+    parser = ieInputParser()
+%}
 
 parser = inputParser();
 
@@ -17,9 +34,7 @@ parser.KeepUnmatched = true;
 parser.StructExpand = false;
 
 % PartialMatching is not an option in Matlab < ~8.2/R2013b
-%   That's OK.  We just want to turn it off when we have the choice.
-if ~verLessThan('matlab', '8.2')
-    parser.PartialMatching = false;
-end
+% [Note: XXX - That's OK. We just want it off when we have the choice.]
+if ~verLessThan('matlab', '8.2'), parser.PartialMatching = false; end
 
 end

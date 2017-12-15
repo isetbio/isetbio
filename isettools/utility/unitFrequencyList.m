@@ -30,7 +30,6 @@ function fList = unitFrequencyList(N)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/20/17  jnm  Formatting
-%
 
 % Examples:
 %{

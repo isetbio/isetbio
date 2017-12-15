@@ -1,16 +1,30 @@
-function dCell = cellDelete(c,dList)
+function dCell = cellDelete(c, dList)
 % Delete some cells from a list of cells 
 %
-%   dCell = cellDelete(c,dList);
+% Syntax:
+%   dCell = cellDelete(c, dList);
 %
-%Purpose:
-%    Delete a the cell entries in the integer list, dList.  Return the
+% Description:
+%    Delete a the cell entries in the integer list, dList. Return the
 %    (shortened) cell array. 
 %
-% Example:
-%  a = {'a','b','c','d'}; b = cellDelete(a,[1,3]);
+% Inputs:
+%    c     - The cell array
+%    dList - The cell entries to remove
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Outputs:
+%    dCell - The modified cell array
+%
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    12/12/17  jnm  Formatting
+
+% Example:
+%{
+	a = {'a', 'b', 'c', 'd'};
+    b = cellDelete(a, [1, 3]);
+%}
 
 if notDefined('c'), error('Cell required.'); end
 if notDefined('dList'), error('Delete list required.'); end

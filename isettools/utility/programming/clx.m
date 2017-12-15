@@ -1,13 +1,28 @@
-% Script to clear many things:
-% clear mex
-% clear all
-% close all
-% close hidden
-% clear fun
-% ARW 061903
+function clx
+% Script to clear many things
+%
+% Syntax:
+%   clx;
+%
+% Description:
+%    Clear many things, including: mex, all, fun
+%       and
+%    Close many things, including: all, hidden
+%
+% Inputs:
+%    None.
+%
+% Outputs:
+%    None.
+%
+
+% History:
+%    06/19/03  ARW  Created
+%    12/12/17  JNM  Formatted
 
 clear mex
 clear all
+
 % Important to close windows prior to clearing variables
 % (sometimes the closerequestfunction on a window
 % is set to something funny -- want to force it
