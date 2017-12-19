@@ -78,8 +78,25 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
         % centered data.
         %
         % We convert to intensity because that is how Fourier optics works.
-        amp = fftshift(fft2(ifftshift(pupilfunc{wl})));
-        inten = (amp .* conj(amp));
+        wvfComputePSFBackCompat = false;
+        if (ispref('isetbioBackCompat','wvfComputePSF'))
+            if (getpref('isetbioBackCompat','wvfComputePSF'))
+                 wvfComputePSFBackCompat = true;
+            end
+        end
+        if (wvfComputePSFBackCompat)
+            amp = fft2(pupilfunc{wl});
+            inten = (amp .* conj(amp));
+            psf{wl} = real(fftshift(inten));
+        else
+            amp = fftshift(fft2(ifftshift(pupilfunc{wl})));
+            inten = (amp .* conj(amp));
+            
+            % Given the way we computed intensity, should not need to take the
+            % real part, but this way we avoid any very small imaginary bits
+            % that arise because of numerical roundoff.
+            psf{wl} = real(inten);
+        end
         
         % We used to not use the ifftshift. Indeed, the ifftshift does not seem to
         % matter here, but my understanding of the way fft2 works, we want
@@ -102,10 +119,7 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
             end
         end
         
-        % Given the way we computed intensity, should not need to take the
-        % real part, but this way we avoid any very small imaginary bits
-        % that arise because of numerical roundoff.
-        psf{wl} = real(inten);
+        % Make sure psf sums to unit volume.
         psf{wl} = psf{wl} / sum(sum(psf{wl}));
     end
     
