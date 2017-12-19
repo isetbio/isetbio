@@ -39,7 +39,8 @@ function isetbioLocalHook
     % have a transient life, so that we make a set of code modifications
     % and control their behavior in a pointwise fashion.  This will help
     % with carefully updating validations.
-    setpref('isetbioBackCompat','opticsCreate',true);
+    setpref('isetbioBackCompat','opticsCreate_OpticsHuman',true);
+    setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',true);
     setpref('isetbioBackCompat','wvfGet',true);
     setpref('isetbioBackCompat','wvf2oi',true);
     setpref('isetbioBackCompat','wvfComputePupilFunction',true);
