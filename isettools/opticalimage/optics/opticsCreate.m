@@ -180,28 +180,36 @@ end
 
 %---------------------------------------
 function optics = opticsHuman(pupilRadius)
-% We use the shift-invariant method for the human and place the estimated
-% human OTF, using humanOTF from Marimont and Wandell, in the OTF fields.
+% Use the shift-invariant method place the estimated human OTF, using
+% humanOTF from Marimont and Wandell, in the OTF fields.
 % 
 % The frequency support is calculated in cyc/deg but stored in units of
 % cyc/mm.
 %
-% In the wvf code, use 300 microns/deg as the conversion factor. This value
-% corresponds to a distance of 17.188mm (human focal length).
+% In the wvf code, use we 300 microns/deg as the conversion factor. This value
+% corresponds to a focal length of 17.188 mm or the human eye.  Here we use
+% 17 mm, and a 3 mm pupil.
 
 % The pupil radius is specified in meters.
 if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 
-% Human focal length is ~17 mm.  The number below corresponds more
-% exactly to 300 um per degree. This number is pretty baked into the
-% Marimont and Wandell optics, so we bake it in here.
-umPerDegree = 300;
-focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
+% Human focal length is ~17 mm.  This corresponds to 296.71 
+% um per degree.  Elsewhere we use 300 um per degree, but 17mm
+% is what we've had here and is what the Marimont and Wandell
+% optics is based on so we keep that here.
+focalLengthMM = 17;
 fLength = focalLengthMM*1e-3;  
 
+% Calculate umPerDegree.  We don't use this here, but this was on the way
+% to understanding what various numbers we have hard coded into various
+% places of the code.
+mmPerDegree = 2*focalLengthMM*tand(0.5);
+umPerDegree = mmPerDegree*1e-3;
+
+% Start setting up the optics structure.
 optics.type = 'optics';
 optics.name = 'human';
-optics      = opticsSet(optics, 'model', 'shiftInvariant');
+optics = opticsSet(optics, 'model', 'shiftInvariant');
 
 % Convert from pupil size and focal length to f number and focal length,
 % because that is what we can set.  This implies a number of mm per degree.
@@ -227,7 +235,8 @@ optics = opticsSet(optics, 'otfData', OTF2D);
 % microns, so there are about 3 cyc/mm.  To convert from cyc/deg to cyc/mm
 % we divide by 0.3. That is:
 %  (cyc/deg * (1/mm/deg)) cyc/mm.  1/mm/deg = 1/.3
-fSupport = fSupport * (1/(umPerDegree*1e-3));  
+umPerDegreeForSupport = 300;
+fSupport = fSupport * (1/(umPerDegreeForSupport*1e-3));  
 
 fx     = fSupport(1, :, 1);
 fy     = fSupport(:, 1, 2);
