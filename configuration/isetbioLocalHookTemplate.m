@@ -43,6 +43,7 @@ function isetbioLocalHook
     setpref('isetbioBackCompat','wvfGet',true);
     setpref('isetbioBackCompat','wvf2oi',true);
     setpref('isetbioBackCompat','wvfComputePupilFunction',true);
+    setpref('isetbioBackCompat','wvfComputePSF',true);
 end
 
 function generatePreferenceGroup(p)
