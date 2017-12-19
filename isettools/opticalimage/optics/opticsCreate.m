@@ -104,12 +104,21 @@ switch lower(opticsType)
         % because that is what we can set.  This implies a number of mm per degree,
         % and we back it out the other way here so that it is all
         % consistent.
-        focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
-        fLength = focalLengthMM*1e-3;
-        pupilRadius = (pupilDiameterMM/2)*1e-3;
-        optics = opticsSet(optics, 'fnumber', fLength/(2*pupilRadius));  
-        optics = opticsSet(optics, 'focalLength', fLength); 
-        
+        opticsCreate_OpticsHumanWvfBackCompat = false;
+        if (ispref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
+            if (getpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
+                opticsCreate_OpticsHumanWvfBackCompat = true;
+            end
+        end
+        if (opticsCreate_OpticsHumanWvfBackCompat)
+        else
+            focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
+            fLength = focalLengthMM*1e-3;
+            pupilRadius = (pupilDiameterMM/2)*1e-3;
+            optics = opticsSet(optics, 'fnumber', fLength/(2*pupilRadius));
+            optics = opticsSet(optics, 'focalLength', fLength);
+        end
+            
         % Add default Lens by default
         optics.lens = Lens;
 
@@ -235,12 +244,13 @@ optics = opticsSet(optics, 'otfData', OTF2D);
 % exactly consistent with a focal length of 17 mm.  This bit keeps backward
 % compatibility, based on a preference. The new way bases umPerDegree off
 % of the focal length above.
-if (ispref('isetbioBackCompat','opticsCreate'))
-    if (getpref('isetbioBackCompat','opticsCreate'))
-        opticsCreateBackCompat = true;
+opticsCreate_OpticsHumanBackCompat = false;
+if (ispref('isetbioBackCompat','opticsCreate_OpticsHuman'))
+    if (getpref('isetbioBackCompat','opticsCreate_OpticsHuman'))
+        opticsCreate_OpticsHumanBackCompat = true;
     end
 end
-if (opticsCreateBackCompat)
+if (opticsCreate_OpticsHumanBackCompat)
     umPerDegreeForSupport = 300;
 else
     umPerDegreeForSupport = umPerDegree;
