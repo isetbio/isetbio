@@ -168,19 +168,29 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         % surprisingly. It crops up when the sampling is a bit coarse.
         % That said, the new code seems to be considerably more stable than
         % the old with respect to the switch between even/odd sampling.
-        pupilPos = (1:nPixels) - (floor(nPixels/2) + 1);
-        pupilPos = pupilPos*(pupilPlaneSizeMM / nPixels);
-        % pupilPos = (0:(nPixels - 1)) * (pupilPlaneSizeMM / nPixels) ...
-        %   - pupilPlaneSizeMM / 2;
-        
-        % Do the meshgrid thing and flip y.  The commented out code is the
-        % old way we did this, but that has the feature of moving 0 to the
-        % wrong place in the support.  So we think it is better to
-        % multiply by -1.
-        [xpos, ypos] = meshgrid(pupilPos);
-        ypos = -ypos;
-        % ypos = ypos(end:-1:1, :);
-        
+        wvfComputePupilFunctionBackCompat = false;
+        if (ispref('isetbioBackCompat','wvfComputePupilFunction'))
+            if (getpref('isetbioBackCompat','wvfComputePupilFunction'))
+                wvfComputePupilFunctionBackCompat = true;
+            end
+        end
+        if (wvfComputePupilFunctionBackCompat)
+            pupilPos = (0:(nPixels - 1)) * (pupilPlaneSizeMM / nPixels) ...
+                - pupilPlaneSizeMM / 2;
+            [xpos, ypos] = meshgrid(pupilPos);
+            ypos = ypos(end:-1:1, :);
+        else
+            pupilPos = (1:nPixels) - (floor(nPixels/2) + 1);
+            pupilPos = pupilPos*(pupilPlaneSizeMM / nPixels);
+            
+            % Do the meshgrid thing and flip y.  The commented out code is the
+            % old way we did this, but that has the feature of moving 0 to the
+            % wrong place in the support.  So we think it is better to
+            % multiply by -1.
+            [xpos, ypos] = meshgrid(pupilPos);
+            ypos = -ypos;
+        end
+ 
         % Set up the amplitude of the pupil function. This depends entirely
         % on the SCE correction.  For x, y positions within the pupil, rho
         % is used to set the pupil function amplitude.

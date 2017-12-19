@@ -741,7 +741,19 @@ switch parm
         % an isetbio utility.  To convert to the (0,0) sf at upper right
         % (isetbio optics) convention, apply ifftshift to the value
         % computed below.
-        [~,~,val] = PsfToOtf([],[],psf);
+        %
+        % Backwards compatible section is how we used to do this.
+        wvfGetBackCompat = false;
+        if (ispref('isetbioBackCompat','wvfGet'))
+            if (getpref('isetbioBackCompat','wvfGet'))
+                wvfGetBackCompat = true;
+            end
+        end
+        if (wvfGetBackCompat)
+            val = fftshift(psf2otf(psf));
+        else
+            [~,~,val] = PsfToOtf([],[],psf);
+        end
         
         % We don't require that the input psf be symmetric, so there could be
         % actual imaginary values.  Thus we do our best to make a good guess.

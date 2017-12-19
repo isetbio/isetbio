@@ -107,23 +107,33 @@ for ww=1:length(wave)
     
     % Isetbio wants the otf with (0,0) sf at the upper right.  We
     % accomplish this by applying ifftshift to the wvf centered format.
-    otf(:, :, ww) = ifftshift(est);
-    
-    % THIS WAS THE OLD WAY OF DOING THE SHFIT, WHICH I (DHB) DON'T THINK IS
-    % QUITE RIGHT.
-    % It is tragic that fftshift does not shift so that the DC term is in
-    % (1, 1). Rather, fftshift puts the DC at the the highest position.
-    % So, we don't use this
-    %
-    %   otf(:, :, ww) = fftshift(otf(:, :, ww));
-    %
-    % Rather, we use circshift. This is also the process followed in the
-    % psf2otf and otf2psf functions in the image processing toolbox. Makes
-    % me think that Mathworks had the same issue. Very annoying. (BW)
-    
-    % We identified the (r, c) that represent frequencies of 0 (i.e., DC).
-    % We circularly shift so that that (r, c) is at the (1, 1) position.
-    %otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);  
+    wvf2oiBackCompat = false;
+    if (ispref('isetbioBackCompat','wvf2oi'))
+        if (getpref('isetbioBackCompat','wvf2oi'))
+            wvf2oiBackCompat = true;
+        end
+    end
+    if (wvf2oiBackCompat)
+        % This is the old way.
+        %
+        % It is tragic that fftshift does not shift so that the DC term is in
+        % (1, 1). Rather, fftshift puts the DC at the the highest position.
+        % So, we don't use this
+        %
+        %   otf(:, :, ww) = fftshift(otf(:, :, ww));
+        %
+        % Rather, we use circshift. This is also the process followed in the
+        % psf2otf and otf2psf functions in the image processing toolbox. Makes
+        % me think that Mathworks had the same issue. Very annoying. (BW)
+        
+        % We identified the (r, c) that represent frequencies of 0 (i.e., DC).
+        % We circularly shift so that that (r, c) is at the (1, 1) position.
+        r0 = c0;
+        otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);
+    else
+        % This is the new way, which seems cleaner to me (DHB).
+        otf(:, :, ww) = ifftshift(est);
+    end
 end
 
 %% Place the frequency support and OTF data into an ISET structure.

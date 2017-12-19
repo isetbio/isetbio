@@ -231,13 +231,22 @@ wave = opticsGet(optics, 'wave');
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, [], wave);
 optics = opticsSet(optics, 'otfData', OTF2D);
 
-% Support is returned in cyc/deg. At the human retina, 1 deg is about 300
-% microns, so there are about 3 cyc/mm.  To convert from cyc/deg to cyc/mm
-% we divide by 0.3. That is:
-%  (cyc/deg * (1/mm/deg)) cyc/mm.  1/mm/deg = 1/.3
-umPerDegreeForSupport = 300;
-fSupport = fSupport * (1/(umPerDegreeForSupport*1e-3));  
+% In the old code, we had umPerDegree at 300, even though this is not
+% exactly consistent with a focal length of 17 mm.  This bit keeps backward
+% compatibility, based on a preference. The new way bases umPerDegree off
+% of the focal length above.
+if (ispref('isetbioBackCompat','opticsCreate'))
+    if (getpref('isetbioBackCompat','opticsCreate'))
+        opticsCreateBackCompat = true;
+    end
+end
+if (opticsCreateBackCompat)
+    umPerDegreeForSupport = 300;
+else
+    umPerDegreeForSupport = umPerDegree;
+end
 
+fSupport = fSupport * (1/(umPerDegreeForSupport*1e-3));
 fx     = fSupport(1, :, 1);
 fy     = fSupport(:, 1, 2);
 optics = opticsSet(optics, 'otffx', fx(:)');

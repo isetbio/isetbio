@@ -20,7 +20,7 @@ function ieValidateFullOne(varargin)
 %% Close all figures so that we start with a clean slate
 close all;
 
-%% We will use preferences for the 'isetbioValidation' project
+%% We will use preferences for the 'isetbio' project
 thisProject = 'isetbio';
 UnitTest.usePreferencesForProject(thisProject, 'reset');
 
