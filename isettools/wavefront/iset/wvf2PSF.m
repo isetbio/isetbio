@@ -80,6 +80,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
     wvfP = wvfCreate('calc wavelengths', wave, ...
+        'meas
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
         'name', sprintf('human-%d', pupilMM));
 
