@@ -20,13 +20,16 @@ function varargout = v_wvfComputeConePSF(varargin)
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
-%
+
+% History:
 % 8/21/11  dhb  Wrote it.
 % 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 % 7/20/12  dhb  Got TEST1 to work without crashing, and possibly even to be correct.
 % 7/23/12  dhb  OTF plot is looking vaguely reasonable.
 %               Added Autrusseau equal energy OTFs for comparison
 % 8/18/15  dhb  UnitTestToolbox'ize.
+% 12/20/17 dhb  Use wvfLoadThibosVirtualEyes to load, rather than directly
+%               loading the file.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -56,7 +59,7 @@ plotLimitFreq = 80;
 %% Test data
 dataSource = 'AutrusseauStandard';
 switch (dataSource)
-    case 'AutrusseauStandard';
+    case 'AutrusseauStandard'
         % This is the Autrusseau standard observer.
         %
         % Their coefficients are for a measured
@@ -85,7 +88,7 @@ switch (dataSource)
         % Note that the comparison to Figure 11 of their
         % paper is not meaningful for this case.
         whichSubject = 1;
-        load('IASstats60','sample_mean');
+        sample_mean = wvfLoadThibosVirtualEyes(6);
         theZernikeCoeffs = sample_mean;
         theZernikeCoeffs = theZernikeCoeffs(1:15);
         measPupilMM = 6;
