@@ -45,6 +45,7 @@ function optics = opticsCreate(opticsType,varargin)
 % 12/11/17  dhb    Allow umPerDegree to be passed for wvfhuman.
 % 12/13/17  dhb    For wvfhuman, make sure oi focal length and f number are
 %                  set to match specified pupil diameter and umPerDegree.
+% 12/20/17  dhb    Set meas pupil size for wvfHuman calcs.
 
 if notDefined('opticsType'), opticsType = 'default'; end
 
@@ -77,8 +78,19 @@ switch lower(opticsType)
         optics.lens = Lens;
 
     case {'wvfhuman'}
-        % Optics based on Zernike polynomial wavefront model estimated by
-        % Thibos.    
+        % Optics based on mean Zernike polynomial wavefront model estimated by
+        % Thibos, for 3 mm pupil. This is not actually representative of any
+        % particular observer, because the mean Zernike polynomials do not 
+        % capture the phase information. 
+        
+        % This controls whether we are backwards compatible prior to otf
+        % branch work.  The flag is used in a few places below.
+        opticsCreate_OpticsHumanWvfBackCompat = false;
+        if (ispref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
+            if (getpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
+                opticsCreate_OpticsHumanWvfBackCompat = true;
+            end
+        end
         
         % Defaults
         pupilDiameterMM = 3;
@@ -91,8 +103,12 @@ switch lower(opticsType)
         if (length(varargin)>2 & ~isempty(varargin{3})), wave = varargin{3}; wave = wave(:); end 
         if (length(varargin)>3 & ~isempty(varargin{4})), umPerDegree = varargin{4}; end
         
-        % Create wavefront parameters
+        % Create wavefront parameters.  Be sure to set both measured and
+        % calc pupil size.
         wvfP = wvfCreate('calc wavelengths',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilDiameterMM),'umPerDegree',umPerDegree);
+        if (~opticsCreate_OpticsHumanWvfBackCompat)
+            wvfP = wvfSet(wvfP,'measured pupil size',pupilDiameterMM);
+        end
         wvfP = wvfSet(wvfP,'calc pupil size',pupilDiameterMM);
         wvfP = wvfComputePSF(wvfP);
         
@@ -104,14 +120,7 @@ switch lower(opticsType)
         % because that is what we can set.  This implies a number of mm per degree,
         % and we back it out the other way here so that it is all
         % consistent.
-        opticsCreate_OpticsHumanWvfBackCompat = false;
-        if (ispref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
-            if (getpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
-                opticsCreate_OpticsHumanWvfBackCompat = true;
-            end
-        end
-        if (opticsCreate_OpticsHumanWvfBackCompat)
-        else
+        if (~opticsCreate_OpticsHumanWvfBackCompat)
             focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
             fLength = focalLengthMM*1e-3;
             pupilRadius = (pupilDiameterMM/2)*1e-3;
