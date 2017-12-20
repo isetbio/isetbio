@@ -44,7 +44,3 @@ oiM = oiCreate('human');
 % Compute with M/W version and display
 oiM = oiCompute(scene,oiM); oiM = oiSet(oiM,'name','Marimont');
 vcAddAndSelectObject(oiM); oiWindow;
-
-
-
-
