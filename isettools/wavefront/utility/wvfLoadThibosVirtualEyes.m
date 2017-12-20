@@ -1,9 +1,10 @@
-function [sample_mean, sample_cov] = ...
+function [sample_mean, sample_cove] = ...
     wvfLoadThibosVirtualEyes(pupilDiameterMM)
 % Load Thibos mean and covariance of Zernicke coefficients for human data
 %
 % Syntax:
-%   [sample_mean, sample_cov] = wvfLoadThibosVirtualEyes([pupilDiameterMM])
+%   [sample_mean, sample_cov] = ...
+%     wvfLoadThibosVirtualEyes([pupilDiameterMM])
 %
 % Description:
 %    Load statistical summary of the Zernicke polynomial coeffcients
