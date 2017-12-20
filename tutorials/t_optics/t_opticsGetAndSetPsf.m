@@ -172,24 +172,24 @@ legend({sprintf('Wvf Human @%d nm',theWl),'Davila-Geisler','D/G Again','D/G Yet 
 
 %% Now start again, and work with wavefront optics PSFs
 %
-% Use Thibos measurements, but set some defocus to make
-% the PSF more interesting.
+% Use Thibos measurements, but set some defocus to make the PSF more
+% interesting.
 %
-% To get all the ways to come out consistently, we need to be careful
-% to use consistent parameters across all of them, so we take some care
-% to define and set spatial sampling for the PSF here, as well as
-% umPerDegree.
-
+% To get all the ways to come out consistently, we need to be careful to
+% use consistent parameters across all of them, so we take some care to
+% define and set spatial sampling for the PSF here, as well as umPerDegree.
+%
 % Here we test with odd number of psf samples.
 pupilMM = 6; zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
 defocusAmount = 1;
 umPerDegree = 300;
 umForPSFSampling = 100;
-psfSpatialSamplesOdd = 201;
+psfSpatialSamplesOdd = 601;
 psfUmPerSampleOdd = umForPSFSampling/psfSpatialSamplesOdd;
 psfMinPerSampleOdd = 60*psfUmPerSampleOdd/umPerDegree;
 wvfPOdd = wvfCreate('calc wavelengths', theWl, ...
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
+        'calc pupil', pupilMM, ...
         'spatialSamples',psfSpatialSamplesOdd, ...
         'umPerDegree',umPerDegree, ...
         'name', sprintf('human-%d', pupilMM));
@@ -214,26 +214,30 @@ psfUmPerSampleEven = umForPSFSampling/psfSpatialSamplesEven;
 psfMinPerSampleEven = 60*psfUmPerSampleEven/umPerDegree;
 wvfPEven = wvfCreate('calc wavelengths', theWl, ...
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
+        'calc pupil', pupilMM, ...
         'spatialSamples',psfSpatialSamplesEven, ...
         'umPerDegree',umPerDegree, ...
         'name', sprintf('human-%d', pupilMM));
 wvfPEven = wvfSet(wvfPEven,'ref psf sample interval',psfMinPerSampleEven);
 wvfPEven = wvfSet(wvfPEven,'zcoeffs',defocusAmount,'defocus');
 wvfPEven = wvfComputePSF(wvfPEven);
+psf3FromWvfEven = wvfGet(wvfPEven,'1d psf',theWl);
+psf3FromWvfSpatialSamples1DEven = wvfGet(wvfPEven,'psf angular samples','min',theWl);
 
-% Plot comparing odd and even support psfs obtained with wvf code
+% Plot comparing odd and even support psfs obtained with wvf code. This
+% agreement gets very good when the support is finely sampled.
 psfFigOddEven = figure; hold on
 plot(psf3FromWvfSpatialSamples1DOdd,psf3FromWvfOdd,...
     'c','LineWidth',6);
-psf3FromWvfEven = wvfGet(wvfPEven,'1d psf',theWl);
-psf3FromWvfSpatialSamples1DEven = wvfGet(wvfPEven,'psf angular samples','min',theWl);
 plot(psf3FromWvfSpatialSamples1DEven,psf3FromWvfEven,...
-    'b','LineWidth',4);
+    'r','LineWidth',4);
 xlim([-10 10]);
+xlabel('Postion (arcmin)');
+ylabel('PSF');
+title('Even/Odd Support Comparison');
 
-% Convert to oi using wvf2oi. When we get the psf data
-% using oiPlot, the support is in microns.  Convert to 
-% minutes and plot.
+% Convert wvf structure to oi using wvf2oi. When we get the psf data using
+% oiPlot, the support is in microns.  Convert to minutes and plot.
 oi3 = wvf2oi(wvfPOdd);
 [udata3,oiPlotFig] = oiPlot(oi3,'psf',[],theWl); close(oiPlotFig)
 supportRowSize = size(udata3.x,1);
@@ -243,7 +247,8 @@ plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
     'b','LineWidth',4);
 
-% Get isetbio format OTF back out of the oi struct, at the specified wavelength
+% Get isetbio format OTF back out of the oi struct, at the specified
+% wavelength
 optics3 = oiGet(oi3,'optics');
 otf3 = opticsGet(optics3,'otf data',theWl);
 
@@ -251,8 +256,8 @@ otf3 = opticsGet(optics3,'otf data',theWl);
 % often happens, we have independently done the same things in isetbio and
 % PTB, and here we want to make sure that we get the same answer.
 %
-% Before calling the PTB routine OtfToPsf, we have to convert to the zero
-% sf at center representation, using fftshift.
+% Before calling the PTB routine OtfToPsf on the otf, we have to convert to
+% the zero sf at center representation. This is done using fftshift.
 sfValuesCyclesMm3 = opticsGet(optics3,'otf support','mm');
 [xSfGridCyclesMm3,ySfGridCyclesMm3] = meshgrid(sfValuesCyclesMm3{1},sfValuesCyclesMm3{2});
 xSfGridCyclesDegree3 = uMPerDegree*xSfGridCyclesMm3/uMPerMm;
@@ -263,6 +268,10 @@ position1DMinutes3 = xGridMinutes3(centerPosition3,:);
 wvfHuman1DPsf3 = psf3(centerPosition,:);
 figure(psfFig3);
 plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',2);
+xlim([-10 10]);
+xlabel('Postion (arcmin)');
+ylabel('Normalized PSF');
+title('Multiple PSF Comparison');
 
 %% Not yet working
 % % Do the conversion using si format
