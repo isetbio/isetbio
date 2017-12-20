@@ -1,24 +1,38 @@
 function filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
-%% Write a given spectral power distribution to a text file.
+% Write a given spectral power distribution to a text file.
 %
-% filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
-% Writes the given wavelengths and magnitudes to a spectrum data text
-% file, with the given filename.
+% Syntax:
+%   filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
 %
-% The text file will contain one wavelength-magnitude pair on each line.
-% This format is suitable for specifying spectra to PBRT or Mitsuba.  For
-% example:
-%   300 0.1
-%   550 0.5
-%   800 0.9
-% where 300, 550, and 800 are wavelengths in namometers, and 0.1, 0.5, and
-% 0.9 are arbitrary magnutudes at each wavelength.
+% Description:
+%    Writes the given wavelengths and magnitudes to a spectrum data text
+%    file, with the given filename.
 %
-% Returns the given filename, for convenience.
+%    The text file will contain one wavelength-magnitude pair on each line.
+%    This format is suitable for specifying spectra to PBRT or Mitsuba. For
+%    example:
+%       300 0.1
+%       550 0.5
+%       800 0.9
+%    where 300, 550, and 800 are wavelengths in namometers, and 0.1, 0.5,
+%    and 0.9 are arbitrary magnutudes at each wavelength.
 %
-%%% RenderToolbox4 Copyright (c) 2012-2016 The RenderToolbox Team.
-%%% About Us://github.com/RenderToolbox/RenderToolbox4/wiki/About-Us
-%%% RenderToolbox4 is released under the MIT License.  See LICENSE file.
+% Inputs:
+%    wavelengths - The wavelengths
+%    magnitudes  - The magnitudes
+%    filename    - The file to write the wavelength/magnitude pairs to
+%
+% Outputs:
+%    filename    - The file the wavelength/magnitude pairs are written to
+%
+% References:
+%    About Us://github.com/RenderToolbox/RenderToolbox4/wiki/About-Us
+%    RenderToolbox4 is released under the MIT License. See LICENSE file.
+%
+
+% History:
+%	 xx/xx/12       RenderToolbox4 Copyright 2012-2016 RenderToolbox Team.
+%    12/19/17  jnm  Formatting
 
 parser = inputParser();
 parser.addRequired('wavelengths', @isnumeric);
@@ -31,20 +45,15 @@ filename = parser.Results.filename;
 
 %% Set up the output file.
 [filePath, fileBase, fileExt] = fileparts(filename);
-if ~isempty(filePath) && ~exist(filePath, 'dir')
-    mkdir(filePath);
-end
-
-if isempty(fileExt)
-    filename = fullfile(filePath, [fileBase, '.spd']);
-end
+if ~isempty(filePath) && ~exist(filePath, 'dir'), mkdir(filePath); end
+if isempty(fileExt), filename = fullfile(filePath, [fileBase, '.spd']); end
 
 %% Check sanity of wavelengths and magnitudes.
 nWls = numel(wavelengths);
 nMags = numel(magnitudes);
 if nMags ~= nWls
-    warning('Number of wavelengths %d must match number of magnitudes %d.', ...
-        nWls, nMags);
+    warning(['Number of wavelengths %d must match number of ' ...
+        'magnitudes %d.'], nWls, nMags);
 end
 
 %% Write the spectrum to file.
