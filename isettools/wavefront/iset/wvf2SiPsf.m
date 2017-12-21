@@ -1,8 +1,8 @@
-function [siData, wvfP] = wvf2PSF(wvfP, varargin)
+function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
 % Convert a wvf structure to isetbio shift-invariant PSF data structure
 %
 % Syntax:
-%   [siData, wvfP] = wvf2PSF(wvfP)
+%   [siData, wvfP] = wvf2SiPsf(wvfP)
 %
 % Description:
 %    For each wavelength in wvfP, compute the PSF place it into an isetbio
@@ -50,7 +50,9 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
 %
 % Outputs:
 %    siData  - Shift-Invariant PSF format used for human optics simulation
-%    wvfP    - Wavefront structure updated to contain PSF.
+%    wvfP    - Wavefront structure updated with PSF computed via
+%              wvfP = wvfComputePSF(wvfP).  Returned only because this can
+%              be a little slow and we might want it in the caller.
 %
 % Optional key/value pairs
 %    showBar -      Boolean, show the wait bar? (Default false)
@@ -72,6 +74,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
 %                   compatible for showBar arg. Sharpen comments. Add plot
 %                   of output to example. Make number of samples for output
 %                   and umPerSample parameters that can be set.
+%    12/21/17  dhb  Change name. Try to prevent NaN's in interpolated PSFs.
 
 % Examples:
 %{
@@ -80,7 +83,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     zCoeffs = wvfLoadThibosVirtualEyes(pupilMM);
     wave = [450:100:650]';
     wvfP = wvfCreate('calc wavelengths', wave, ...
-        'meas
+        'measured wavelength', 550, ...
         'zcoeffs', zCoeffs, 'measured pupil', pupilMM, ...
         'name', sprintf('human-%d', pupilMM));
 
@@ -88,7 +91,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     wvfP = wvfSet(wvfP,'zcoeff',0.5,'defocus');
 
     % Convert to siData format and save.
-    [siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',true);
+    [siPSFData, wvfP] = wvf2SiPsf(wvfP,'showBar',true);
     fName = sprintf('psfSI-%s', wvfGet(wvfP, 'name'));
     ieSaveSIDataFile(siPSFData.psf, siPSFData.wave,siPSFData.umPerSamp,...
         fName);
@@ -123,7 +126,7 @@ function [siData, wvfP] = wvf2PSF(wvfP, varargin)
     % siSynthetic currently only works if the number of samples in the PSF
     % is 128, so we compute with that to avoid an error.  If siSynthetic is
     % ever generalized, we could relax that here.
-    [siPSFData, wvfP] = wvf2PSF(wvfP,'showBar',false,'nPSFSamples',128);
+    [siPSFData, wvfP] = wvf2SiPsf(wvfP,'showBar',false,'nPSFSamples',128);
 
     % Convert to optics and then oi using siSynthetic
     oi = oiCreate('human'); 
@@ -157,10 +160,8 @@ wvfP = wvfComputePSF(wvfP, p.Results.showBar);
 % Set up number of samples for siData PSF and spacing in microns between samples.
 nPSFSamples = p.Results.nPSFSamples;                  
 umPerSample = p.Results.umPerSample;
-
-iSamp = (1:nPSFSamples) * umPerSample;
-iSamp = iSamp - mean(iSamp);
-iSamp = iSamp(:);
+outSamp = ((1:nPSFSamples) - (floor(nPSFSamples/2)+1)) * umPerSample;
+outSamp = outSamp(:);
 psf = zeros(nPSFSamples, nPSFSamples, nWave);
 
 %% Do the interplation
@@ -168,9 +169,17 @@ if p.Results.showBar, wBar = waitbar(0, 'Creating PSF'); end
 for ii=1:nWave
     if (p.Results.showBar), waitbar(ii / nWave, wBar); end
     thisPSF = wvfGet(wvfP, 'psf', wave(ii));
-    samp = wvfGet(wvfP, 'samples space', 'um', wave(ii));
-    samp = samp(:);
-    psf(:,:,ii) = interp2(samp, samp', thisPSF, iSamp, iSamp');
+    inSamp = wvfGet(wvfP, 'samples space', 'um', wave(ii));
+    inSamp = inSamp(:);
+    
+    % If the in and out sampling are effectively the same, don't
+    % interpolate.  Also, be explicit about extrapval. 0 seems like
+    % an excellent choice.  This may also avoid the NaNs.
+    if (max(abs(inSamp(:)-outSamp(:))) < 1e-10)
+        psf(:,:,ii) = thisPSF;
+    else
+        psf(:,:,ii) = interp2(inSamp, inSamp', thisPSF, outSamp, outSamp','linear',0);
+    end
 end
 if (p.Results.showBar), close(wBar); end
 
