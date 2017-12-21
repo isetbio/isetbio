@@ -6,16 +6,19 @@
 %   we want to build isetbio optics using various estimates of optical quality
 %   in the literature.
 %
-%   Then show how to do this using the wavefront optics.
+%   Then show how to do this using the wavefront optics, in several
+%   different ways.
 %
-%   This tutorial also serves some validation purposes, as it checks that
-%   various ways of doing the same thing give the same answer.
+%   This tutorial also serves some validation purposes, as the plots allow
+%   one to check that various ways of doing the same thing give the same
+%   answer.
 %
 % See also:
 %
 
 % History:
-%   2/5/17  dhb  Wrote starting with an extant tutorial.
+%   02/5/17  dhb   Wrote starting with an extant tutorial.
+%   12/21/17 dhb   Many more comparisons
 
 %% Initialize
 clear; ieInit;
@@ -205,7 +208,7 @@ psf3FromWvfOdd = wvfGet(wvfPOdd,'1d psf',theWl);
 psf3FromWvfSpatialSamples1DOdd = wvfGet(wvfPOdd,'psf angular samples','min',theWl);
 plot(psf3FromWvfSpatialSamples1DOdd, ...
     psf3FromWvfOdd/max(psf3FromWvfOdd),...
-    'c','LineWidth',6);
+    'c','LineWidth',10);
 
 % Now do the same thing with an even number of samples, close to the odd
 % number we set up above
@@ -228,13 +231,13 @@ psf3FromWvfSpatialSamples1DEven = wvfGet(wvfPEven,'psf angular samples','min',th
 % agreement gets very good when the support is finely sampled.
 psfFigOddEven = figure; hold on
 plot(psf3FromWvfSpatialSamples1DOdd,psf3FromWvfOdd,...
-    'c','LineWidth',6);
+    'c','LineWidth',8);
 plot(psf3FromWvfSpatialSamples1DEven,psf3FromWvfEven,...
     'r','LineWidth',4);
 xlim([-10 10]);
 xlabel('Postion (arcmin)');
 ylabel('PSF');
-title('Even/Odd Support Comparison');
+title('Even/Odd Support Comparison, These Should Almost Match');
 
 % Convert wvf structure to oi using wvf2oi. When we get the psf data using
 % oiPlot, the support is in microns.  Convert to minutes and plot.
@@ -245,7 +248,7 @@ centerPosition = floor(supportRowSize/2)+1;
 figure(psfFig3);
 plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
-    'b','LineWidth',4);
+    'b','LineWidth',7);
 
 % Get isetbio format OTF back out of the oi struct, at the specified
 % wavelength
@@ -267,38 +270,46 @@ centerPosition3 = floor(length(sfValuesCyclesMm3{1})/2)+1;
 position1DMinutes3 = xGridMinutes3(centerPosition3,:);
 wvfHuman1DPsf3 = psf3(centerPosition,:);
 figure(psfFig3);
-plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',2);
+plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',4);
+
+% Do the conversion using iset shift-invariant format
+[siPSFData] = wvf2SiPsf(wvfPOdd,'nPSFSamples',psfSpatialSamplesOdd, ...
+    'umPerSample',psfUmPerSampleOdd, ...
+    'showBar',false);
+
+% Convert to optics and then to oi using siSynthetic.  This is probably to
+% be avoided in preference to the other methods above, but should work if
+% you get all the arguments right.
+oi4 = oiCreate('human');
+optics4 = oiGet(oi4,'optics');
+
+% We need to make the psf spacing/sampling of the optics structure match that of our
+% shift-invariant psf structure, because siSynthetic doesn't want to have
+% to spline this stuff, at least for now. This should match up to what we
+% are using above.  We can set the otf support, and we have that, so that's
+% what we do.
+optics4 = opticsSet(optics4,'otf fx',sfValuesCyclesMm3{1},'mm');
+optics4 = opticsSet(optics4,'otf fy',sfValuesCyclesMm3{2},'mm');
+optics4 = opticsSet(optics4,'otf',zeros(psfSpatialSamplesOdd,psfSpatialSamplesOdd));
+oi4 = oiSet(oi4, 'optics', optics4);
+optics4 = siSynthetic('custom', oi4, siPSFData);
+oi4 = oiSet(oi4, 'optics', optics4);
+
+% Add to plot
+[udata4,oiPlotFig] = oiPlot(oi4,'psf',[],theWl); close(oiPlotFig);
+supportRowSize4 = size(udata4.x,1);
+centerPosition4 = floor(supportRowSize4/2)+1;
+figure(psfFig3);
+plot(60*udata4.x(centerPosition4,:)/uMPerDegree, ...
+    udata4.psf(centerPosition4,:)/max(udata4.psf(centerPosition4,:)),...
+    'k','LineWidth',2);
+
+% Plot axes and labels
 xlim([-10 10]);
 xlabel('Postion (arcmin)');
 ylabel('Normalized PSF');
-title('Multiple PSF Comparison');
+title('Multiple PSF Comparison, These Should Match');
 
-%% Not yet working
-% % Do the conversion using si format
-% [siPSFData, wvfP] = wvf2PSF(wvfP,'nPSFSamples',psfSpatialSamplesOdd, ...
-%     'umPerSample',psfUmPerSample, ...
-%     'showBar',false);
-% 
-% % Convert to optics and then oi using siSynthetic
-% oi4 = oiCreate('human');
-% optics4 = oiGet(oi4,'optics');
-% optics4 = opticsSet(optics4,'otf',zeros(psfSpatialSamplesOdd,psfSpatialSamplesOdd));
-% oi4 = oiSet(oi4,'optics',optics4);
-% optics4 = siSynthetic('custom', oi4, siPSFData);
-% oi4 = oiSet(oi4, 'optics', optics4);
-% 
-% udata4 = oiPlot(oi4,'psf',[],theWl);
-% supportRowSize4 = size(udata4.x,1);
-% centerPosition4 = floor(supportRowSize4/2)+1;
-% figure(psfFig3);
-% plot(60*udata4.x(centerPosition4,:)/uMPerDegree, ...
-%     udata4.psf(centerPosition4,:)/max(udata4.psf(centerPosition4,:)),...
-%     'k','LineWidth',1);
-% xlim([-15 15]);
-% 
-% % flength = 0.017;  % Human focal length is 17 mm
-% % oi = oiSet(oi, 'optics fnumber', flength/pupilMM);
-% % oi = oiSet(oi, 'optics flength', flength);
 
 
 

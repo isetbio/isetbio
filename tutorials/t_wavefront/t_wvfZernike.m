@@ -13,7 +13,9 @@ function t_wvfZernike
 %
 %    From Fourier optics, the eye's point spread function (PSF) can be
 %    computed from the wavefront aberration function, or pupil function, by
-%    taking the Fourier transform: PSF = fft2(pupil function).
+%    taking the Fourier transform: PSF = fft2(pupil function).  We tend to 
+%    do this through PsfToOtf, however, so that we can keep all the fftshift
+%    and ifftshift stuff consistent across routines.  See also OtfToPsf.
 %
 %    The Zernike polynomials form an orthogonal basis set over a unit disk.
 %    They are useful because they can isolate aberrations into separate
