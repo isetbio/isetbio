@@ -64,8 +64,8 @@ inFile = [];
 outFile = [];
 
 % Wavelength samples
-wave     = oiGet(oi,'wave');
-nWave    = length(wave);
+wave = oiGet(oi,'wave');
+nWave = length(wave);
 
 % Make array for new OTF
 optics = oiGet(oi,'optics');
@@ -79,8 +79,7 @@ OTF = zeros(nSamples,nSamples,nWave);
 % Get spacing of psf in mm of retina
 dx(1:2) = opticsGet(optics,'psf spacing','mm');
 
-%% Create psf and OTF
-
+%% Create PSF and OTF
 switch lower(psfType)
     case 'gaussian'
         % Create a Gaussian set of PSFs.
@@ -99,9 +98,16 @@ switch lower(psfType)
             % biNormal calculation.
             psf         = biNormal(xSpread(jj)/dx(2),ySpread(jj)/dx(1),0,nSamples);
             psf         = psf/sum(psf(:));
-            psf         = fftshift(psf);  % Place center of psf at (1,1)
-            OTF(:,:,jj) = fft2(psf);
+            
+            % Use PsfToOtf to make the change, and then put center in upper
+            % right to match isetbio conventions.  Commented out below is
+            % the older code, which may or may not do the same thing
+            [~,~,centeredOTF] = PsfToOtf([],[],psf);
+            OTF(:,:,jj) = ifftshift(centeredOTF); 
+            %psf = fftshift(psf);   
+            %OTF(:,:,jj) = fft2(psf);
         end
+        
     case 'custom'
         %% Get PSF data 
         if isempty(varargin)
@@ -121,7 +127,7 @@ switch lower(psfType)
             if ~isfield(tmp,'umPerSamp'), error('Missing wave variable');
             else mmPerSamp = (tmp.umPerSamp)/1000; end
         elseif isstruct(varargin{1})
-            % The data were sent in as a struct
+            % The data were sent in as a iset shift-invariat PSF struct
             psfIn = varargin{1}.psf;
             wave  = varargin{1}.wave;
             mmPerSamp = (varargin{1}.umPerSamp)/1000;
@@ -136,7 +142,7 @@ switch lower(psfType)
         if m ~= nSamples || n ~= nSamples
             error('Need input and output number of samples to match');
         end
-        if (mmPerSamp(2) ~= dx(2) || mmPerSamp(1) ~= dx(1))
+        if (max(abs(mmPerSamp(2)-dx(2))) > 1e-10 || max(abs(mmPerSamp(1)-dx(1))) > 1e-10)
             error('Cannot yet change psf sampling here.')
         end
               
@@ -155,9 +161,15 @@ switch lower(psfType)
         
         for ii=1:nWave
             psf = interp2(xInGrid,yInGrid,psfIn(:,:,ii),xOutGrid,yOutGrid,'linear',0);
-            psf = psf/sum(psf(:));    % figure(1); mesh(psf)
-            psf = fftshift(psf);      % Place center of psf at (1,1)
-            OTF(:,:,ii) = fft2(psf);  % figure(1); mesh(OTF(:,:,ii))
+            psf = psf/sum(psf(:));    
+            
+            % Use PsfToOtf to make the change, and then put center in upper
+            % right to match isetbio conventions.  Commented out below is
+            % the older code, which may or may not do the same thing
+            [~,~,centeredOTF] = PsfToOtf([],[],psf);
+            OTF(:,:,ii) = ifftshift(centeredOTF); 
+            %psf = fftshift(psf);   
+            %OTF(:,:,ii) = fft2(psf);
         end
         
     otherwise
