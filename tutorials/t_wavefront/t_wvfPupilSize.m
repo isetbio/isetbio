@@ -70,6 +70,12 @@ measPupilMM = [7.5 6 4.5 3];
 calcPupilMM = 3;
 for ii = 1:sum(measPupilMM >= calcPupilMM)
     zCoefs = wvfLoadThibosVirtualEyes(measPupilMM(ii));
+    
+    % Uncomment the next line if you want to try this with diffraction
+    % limited rather than Thibos optics.  This shows that we get the same
+    % psf no matter what pupil size we say was measured, as expected.
+    % zCoefs = zeros(size(zCoefs));
+    
     wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, ...
         'measured pupil size', measPupilMM(ii), 'calc pupil size', calcPupilMM, ...
         'name', sprintf('%d-pupil', measPupilMM(ii)));
