@@ -53,7 +53,7 @@ function isetbioLocalHook
     setpref('isetbioBackCompat','wvf2oi',false);
     setpref('isetbioBackCompat','wvfComputePupilFunction',false);
     setpref('isetbioBackCompat','wvfComputePSF',false);
-    setpref('isetbioBackCompat','opticsGet',true);
+    setpref('isetbioBackCompat','opticsGet',false);
 end
 
 function generatePreferenceGroup(p)
