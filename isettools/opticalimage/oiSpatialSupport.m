@@ -1,18 +1,24 @@
 function sSupport = oiSpatialSupport(oi,units)
-%Calculate the spatial positions of the optical image sample points
+% Calculate the spatial positions of the optical image sample points
 %
+% Syntax:
 %   sSupport = oiSpatialSupport(oi,[units = 'meters'] )
 %
-% Determine the spatial support for the optical image. The positions are
-% specified in x and y positions measured on the surface of the image
-% sensor. The units (meters, mm, um) can be specified.
+% Description:
+%   Determine the spatial support for the optical image. The positions are
+%   specified in x and y positions measured on the surface of the image
+%   sensor. The units (meters, mm, um) can be specified.
 %
+
+% History:
+%                 Copyright ImagEval Consultants, LLC, 2003.
+
 % Examples:
-%  sSupportmm = oiSpatialSupport(oi,'millimeters');
-%  sSupportum = oiSpatialSupport(oi,'microns');
-%  sSupportm = oiSpatialSupport(oi);
-%
-% Copyright ImagEval Consultants, LLC, 2003.
+%{
+ sSupportmm = oiSpatialSupport(oi,'millimeters');
+ sSupportum = oiSpatialSupport(oi,'microns');
+ sSupportm = oiSpatialSupport(oi);
+%}
 
 if notDefined('units'), units = 'meters'; end
 
