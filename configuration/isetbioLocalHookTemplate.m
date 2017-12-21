@@ -45,6 +45,7 @@ function isetbioLocalHook
     setpref('isetbioBackCompat','wvf2oi',true);
     setpref('isetbioBackCompat','wvfComputePupilFunction',true);
     setpref('isetbioBackCompat','wvfComputePSF',true);
+    setpref('isetbioBackCompat','opticsGet',true);
     
     setpref('isetbioBackCompat','opticsCreate_OpticsHuman',false);
     setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',false);
@@ -52,6 +53,7 @@ function isetbioLocalHook
     setpref('isetbioBackCompat','wvf2oi',false);
     setpref('isetbioBackCompat','wvfComputePupilFunction',false);
     setpref('isetbioBackCompat','wvfComputePSF',false);
+    setpref('isetbioBackCompat','opticsGet',true);
 end
 
 function generatePreferenceGroup(p)
