@@ -14,7 +14,6 @@
 %   srgb2lrgb            - Revert srgb (nonlinear) to its precursor, linear rgb (lrgb)
 %   srgb2xyz             - Transform srgb to CIE XYZ
 %   xyy2xyz              - Convert data from CIE xyY to CIE XYZ values
-%   xyz2lab              - [Deprecated. Use ieXYZ2LAB] Convert CIE XYZ values to CIE LAB values
 %   xyz2lms              - Transform an XYZ image to Stockman LMS cone format, colorblind permitted
 %   xyz2luv              - Convert CIE XYZ values to CIELUV values
 %   xyz2srgb             - Convert CIE XYZ to sRGB color space

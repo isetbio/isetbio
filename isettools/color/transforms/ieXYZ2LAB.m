@@ -5,14 +5,17 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %   lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %
 % Description:
-%    Convert CIE XYZ into CIE L*a*b*. The CIELAB values are used for color
-%    metric calculations, such as deltaE2000. The formula for XYZ to
-%    CIELAB require knowledge of the XYZ white point as well.
+%    The CIELAB values are used for color metric calculations in the
+%    engineering and psychology communities.  Let us know if you
+%    would like to have the deltaE2000. The formula for XYZ to CIELAB
+%    requires specifying the XYZ values of the white point.
 %
-%    The Matlab image toolbox routines makecform and applycform have
-%    CIELAB transforms. These are the default. Because they are not in
-%    all versions, we check for the existence and use the old
-%    implementation we relied on for many years.
+%    The Matlab image toolbox routines makecform and applycform are
+%    the default CIELAB transforms. The Matlab implementation converts
+%    CIE 1931 XYZ to CIE 1976 L*a*b*. 
+%
+%    We include, as an option, the version we implemented prior to
+%    Matlab's addition of this functionality.
 %
 % Inputs:
 %    xyz        - Can be in either XW or RGB format.
@@ -63,9 +66,9 @@ if notDefined('whitepoint'), error('Whitepoint is required'); end
 if notDefined('useOldCode'), useOldCode = false; end
 
 if (exist('makecform', 'file')) &&  ~useOldCode
-    % This is where we want to be, but it only exists in the relatively
-    % recent Matlab routines.
-    % Matlab's implementation is only for CIELAB 1976
+    % Convert CIE 1931 XYZ to CIE 1976 L*a*b*
+    % Their notes suggest using the image processing toolbox xyz2lab
+    % function. 
     cform = makecform('xyz2lab', 'WhitePoint', whitepoint(:)');
     lab = applycform(xyz, cform);
 else

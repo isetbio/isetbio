@@ -18,22 +18,21 @@ function energy = Quanta2Energy(wavelength, photons)
 %                 [watts or Joules] is returned in  same format as input
 %                 (RGB or XW). 
 %
-%                 CAUTION: The input form of photons differs from the
-%                 Energy2Quanta() call, which places the energy spectra
-%                 in the columns.  The exception to this is when the
-%                 photons is a vector with dimension equal to the
-%                 number of wavelengths.  In that case, we carry on as
-%                 if there is a single spatial position for both row
-%                 or col format.
+%                 N.B. The input form of the photons variable differs
+%                 from format used by Energy2Quanta().  That function
+%                 places the  spectra in the columns, not the rows.
+%                 See this example
 %
+%            wave = 400:10:700;
+%            p1 = blackbody(wave, 5000, 'photons');  % p1 is a column        
+%            e = Quanta2Energy(wave, p1');           % e is a row         
+%            p2 = Energy2Quanta(wave, transpose(e)); % Notice the TRANSPOSE
+%                 
 % Outputs:
 %    energy     - The energy, in watts or joules, is returned in the same
 %                 format that the photon matrix was in (RGB or XW)
 %
-% Notes:
-%    * [NOTE: BW - The conflict with the call in Energy2Quanta()
-%    remains annoying, even though many functions work with it. Not
-%    sure whether we will ever fix this, but see comments in the function.]
+% See also:  Energy2Quanta
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
