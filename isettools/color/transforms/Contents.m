@@ -6,7 +6,6 @@
 %   colorTransformMatrix - Gateway routine that returns color space transformation matrices
 %   ieLAB2XYZ            - Convert CIE LAB values to CIE XYZ values
 %   ieXYZ2LAB            - Convert CIE XYZ values to CIE LAB values
-%   lab2xyz              - [Deprecated. Use ieLAB2XYZ] Convert CIE LAB values to CIE XYZ values
 %   lms2lmsDichromat     - Interpolate missing cone values for colorblind in cone color space (LMS)
 %   lms2srgb             - Convert LMS data to sRGB format for visualization
 %   lms2xyz              - Convert stockman lms to xyz 10 deg

@@ -39,7 +39,7 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %      specify in the methods - BW ). 
 %
 % See Also:
-%    lab2xyz
+%    ieLAB2XYZ
 %
 % History
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
@@ -48,7 +48,7 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    11/13/17  baw  Updated comments to match behavior on use of old
 %                   code
 %    11/17/17  jnm  Formatting
-%
+%    12/21/17  baw  Sent reference to ieLAB2XYZ
 
 % Copyright ImagEval Consultants, LLC, 2003.
 

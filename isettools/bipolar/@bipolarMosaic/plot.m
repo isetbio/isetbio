@@ -20,25 +20,26 @@ function hdl = plot(obj, pType, varargin)
 %
 % Notes
 %    * Maybe this should be obj.fig??? - question from below
-%    * No case for plot type doesn't match anything in the list (else)
 %    * Need to address the other notes throughout the function
-%    * Type @bipolarMosaic.plot('help') to see the plot types. - Broken?
-%
+%    * Note: BW fix response center plot.
 
 %% History: 
 % 5/2016 JRG, BW (c) isetbio team
 %
 %    10/18/17  jnm  Comments & Formatting
+%    12/21/17  baw  Changed example.  Tested 'help'.  Added otherwise
+%    case.  
 
 %% Examples:
 %{
-   bpMosaics = bpL.mosaic;
-   bpMosaics{1}.plot('spatial rf')
-   bpMosaics{1}.plot('mosaic');
-   bpMosaics{1}.plot('response center');
-   bpMosaics{1}.plot('response time series', 'pos', [5 5]);
-   bpMosaics{1}.plot('response image', 'gamma', 0.3);
-   bpMosaics{1}.plot('response movie');
+   s_initRetina;
+   bpMosaic = bpL.mosaic{1};
+   bpMosaic.plot('spatial rf')
+   bpMosaic.plot('mosaic');
+   bpMosaic.plot('response center');   
+   bpMosaic.plot('response time series', 'pos', [5 5]);
+   bpMosaic.plot('response image', 'gamma', 0.3);
+   bpMosaic.plot('response movie');
 %}
 %% Parse inputs
 p = inputParser; 
@@ -58,20 +59,16 @@ p.addRequired('pType', @(x) any(validatestring(ieParamFormat(x), ...
 
 p.addParameter('gamma', 1, @isscalar);
 p.addParameter('pos', [], @ismatrix);
-%%%
-% Parse pType
-% Additional parameters are pulled out in the case statements, below.
+
+% Additional parameters are read in the case statements, below.
 p.parse(pType, varargin{:}); 
 
 %% Set the window.
-% [Note: JM - opinion on the question that was already listed here? ->]
-% Maybe this should be obj.fig???
+
 if ~strcmpi(pType, 'help'), hdl = gcf; end
 %vcNewGraphWin([], 'upperLeftBig');
 sz = size(obj.responseCenter);
-%%%
-% Programming:
-% We need to get the units of time from the object, not as per below.
+
 % Options
 switch ieParamFormat(pType)
     case 'help'
@@ -321,6 +318,8 @@ switch ieParamFormat(pType)
             varargin{end+1} = 'gamma'; varargin{end+1} = p.Results.gamma;
             ieMovie(obj.get('response'), 'hf', hdl, varargin{:});
         end
+    otherwise
+        error('Unknown plot type %s\n',pType);
 end
 
 end

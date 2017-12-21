@@ -31,12 +31,12 @@ function im = ieClip(im, lowerBound, upperBound)
 %    im         - The clipped data
 %
 % Notes:
-%    * [Note: JNM - TODO: upgrade/replace disp calls with fprintf?]
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/30/17  jnm  Formatting
+%    12/21/17  BW   Fixed note by using fprintf and fixed exist()
 
 % Examples:
 %{
@@ -60,21 +60,20 @@ if nargin == 1
     % Only im sent in. Default is [0, 1]
     lowerBound = 0;
     upperBound = 1;
-    disp('ieClip:  Setting range to 0 1');
+    fprintf('ieClip:  Setting range to 0 1');
 elseif nargin == 2
     % Reads this as [-l, l]
     lowerBound = -abs(lowerBound);
     upperBound = abs(lowerBound);
-    s = sprintf('ieClip:  Setting range to [%.3e, %.3e]', lowerBound, ...
+    fprintf('ieClip:  Setting range to [%.3e, %.3e]', lowerBound, ...
         upperBound);
-    disp(s);
 end
 
 if ~(~exist('lowerBound', 'var') || isempty(lowerBound))
     im(im<lowerBound) = lowerBound;
 end
 
-if ~(~exist('upperBound') || isempty(upperBound))
+if ~(~exist('upperBound','var') || isempty(upperBound))
     im(im > upperBound) = upperBound;
 end
 

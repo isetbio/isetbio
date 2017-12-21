@@ -8,7 +8,7 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %    Generates a daylight spectral power distribution based on a
 %    correlated color temperature (cct).
 %
-%    Tthe returned spectra are normalized so that the luminance of the
+%    The returned spectra are normalized so that the luminance of the
 %    first returned spd is 100 cd/m2.  See the 3rd example below for how to
 %    calculate the luminance of each of the lights.
 %
