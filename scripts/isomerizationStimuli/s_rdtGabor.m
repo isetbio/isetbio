@@ -26,7 +26,7 @@ fList = round(fList*100)/100;
 cList = logspace(-2,-0.3,5);  %5
 cList = round(cList*100)/100;
 aList = [0, pi/4, pi/2, 3*pi/4];
-aListDeg = rad2deg(aList);
+aListDeg = ieRad2deg(aList);
 
 %% Create and save the iStim versionn of the Gaboor patch
 pG.nSteps = 100; 

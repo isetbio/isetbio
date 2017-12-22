@@ -16,9 +16,6 @@ function mpd = dpi2mperdot(dpi, unit)
 %    mpd  - Meter-based units per dot. (Microns unless otherwise specified)
 %
 % Notes:
-%    * [Note: JNM - The ~isempty(dpi) throws an error when no dpi is
-%      provided, contrary to the expected behavior of going to the else
-%      statement (and an empty return). Does this need to be addressed?]
 %
 % See Also:
 %    mperdot2dpi
@@ -32,6 +29,7 @@ function mpd = dpi2mperdot(dpi, unit)
     mpd = dpi2mperdot(dpi, 'meters')
 %}
 
+if notDefined('dpi'),  dpi = []; end
 if notDefined('unit'), unit = 'um'; end
 
 % (X dot/inch * inch/micron )^-1 yields microns/dot. 2.54*1e4 microns/inch

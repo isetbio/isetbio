@@ -44,7 +44,7 @@ function TEE = retinalLocationToTEE(theta, rho, eyeSide)
 %  ee = zeros(size(theta));
 %
 %  for ii = 1:length(theta)
-%     d = rad2deg(theta(ii));
+%     d = ieRad2deg(theta(ii));
 %     ee(ii) = retinalLocationToTEE(d, 5, 'right');
 %  end
 %  x = x .* ee/5;

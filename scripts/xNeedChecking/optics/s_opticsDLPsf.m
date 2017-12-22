@@ -35,7 +35,7 @@ title(sprintf('F/# = %.2f  Foc Leng = %.2f (mm)',fNumber,fLength));
 %% Show the linespread in units of arc min rather than position (um)
 vcNewGraphWin
 posMM    = uData.x/1000;                             % Microns to mm
-aMinutes = rad2deg(atan2(posMM,fLength),'arcmin');   % Angle in radians
+aMinutes = ieRad2deg(atan2(posMM,fLength),'arcmin');   % Angle in radians
 
 mesh(aMinutes,uData.wavelength,uData.lsWave);
 view(30,20);
@@ -55,13 +55,13 @@ r = size(uData.x,1);
 mid = ceil(r/2);
 psfMid = uData.psf(mid,:);
 posMM  = uData.x(mid,:)/1000;               % Microns to mm
-posMinutes = rad2deg(atan2(posMM,fLength),'arcmin');
+posMinutes = ieRad2deg(atan2(posMM,fLength),'arcmin');
 
 vcNewGraphWin;
 plot(posMinutes,psfMid)
 xlabel('Arc min')
 AiryRingMM = AiryRingUM/1000;
-AiryRingMinutes = rad2deg(atan2(AiryRingMM,fLength),'arcmin'); % Radians
+AiryRingMinutes = ieRad2deg(atan2(AiryRingMM,fLength),'arcmin'); % Radians
 set(gca,'xlim',2*[-AiryRingMinutes AiryRingMinutes])
 
 pDiameter = oiGet(oi,'optics pupil diameter','mm');
@@ -73,7 +73,7 @@ title(str);
 uData = oiPlot(oi,'lswavelength');
 posMM = uData.x/1000;
 aRadians = atan2(posMM,fLength);    % This is angle in radians
-aMinutes = rad2deg(aRadians,'arcmin');          % This is angle in arc min
+aMinutes = ieRad2deg(aRadians,'arcmin');          % This is angle in arc min
 plot(aMinutes,uData.lsWave(1,:),'-',...
     aMinutes,uData.lsWave(16,:),'r:',...
     aMinutes,uData.lsWave(31,:),'g--')
@@ -94,7 +94,7 @@ r = size(uData.x,1);
 mid = ceil(r/2);
 psfMid = uData.psf(mid,:);
 posMM = uData.x(mid,:)/1000;               % Microns to mm
-posMinutes = rad2deg(atan2(posMM,fLength),'arcmin');
+posMinutes = ieRad2deg(atan2(posMM,fLength),'arcmin');
 
 vcNewGraphWin
 plot(posMinutes,psfMid)

@@ -198,7 +198,7 @@ switch parm
         %  tan(r) = opp/adj, where adj is viewing distance (vd)
         %  opp1 = vd*tan(r1), opp2 = vd*tan(r2)
         %  d = sqrt((opp1^2) + (opp1^2))
-        %  diagonalFOV = rad2deg(atan2(d,vd))
+        %  diagonalFOV = ieRad2deg(atan2(d,vd))
         vd = sceneGet(scene,'distance');
         rW = sceneGet(scene,'wAngular');
         rH = sceneGet(scene,'hAngular');

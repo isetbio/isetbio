@@ -487,7 +487,7 @@ switch parm
         % Width in meters is default - We need to handle 'skip' case 
         d = oiGet(oi,'focalPlaneDistance');  % Distance from lens to image
         fov = oiGet(oi,'wangular');          % FOV (horizontal, width)
-        % rad2deg(2*atan((0.5*width)/imageDistance)) = fov
+        % ieRad2deg(2*atan((0.5*width)/imageDistance)) = fov
         val = 2*d*tand(fov/2);
         if ~isempty(varargin)
             val = val*ieUnitScaleFactor(varargin{1});

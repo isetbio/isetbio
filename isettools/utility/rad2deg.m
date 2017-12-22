@@ -1,5 +1,5 @@
 function d = rad2deg(r, units)
-% Convert radians to degrees
+% Deprecated.  Use ieRad2deg or matlab version rad2deg.
 %
 % Syntax:
 %   d = rad2deg(r, units)
@@ -32,10 +32,13 @@ function d = rad2deg(r, units)
     rad2deg(r, "arcsec");
 %}
 
-if isempty(units)
-    d = (180 / pi) * r; 
-else
-    d = r * ieUnitScaleFactor(units{1});
-end   
-
+error('Use ieRad2deg or matlab version of rad2deg');
 end
+
+% if isempty(units)
+%     d = (180 / pi) * r; 
+% else
+%     d = r * ieUnitScaleFactor(units{1});
+% end   
+% 
+% end
