@@ -216,13 +216,13 @@ if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 % is what we've had here and is what the Marimont and Wandell
 % optics is based on so we keep that here.
 focalLengthMM = 17;
-fLength = focalLengthMM*1e-3;  
+fLengthMeters = focalLengthMM*1e-3;  
 
 % Calculate umPerDegree.  We don't use this here, but this was on the way
 % to understanding what various numbers we have hard coded into various
 % places of the code.
 mmPerDegree = 2*focalLengthMM*tand(0.5);
-umPerDegree = mmPerDegree*1e-3;
+umPerDegree = mmPerDegree*1e3;
 
 % Start setting up the optics structure.
 optics.type = 'optics';
@@ -231,15 +231,15 @@ optics = opticsSet(optics, 'model', 'shiftInvariant');
 
 % Convert from pupil size and focal length to f number and focal length,
 % because that is what we can set.  This implies a number of mm per degree.
-optics = opticsSet(optics, 'fnumber', fLength/(2*pupilRadius));  
-optics = opticsSet(optics, 'focalLength', fLength);  
+optics = opticsSet(optics, 'fnumber', fLengthMeters/(2*pupilRadius));  
+optics = opticsSet(optics, 'focalLength', fLengthMeters);  
 
 % Specify method for optics
 optics = opticsSet(optics, 'otfMethod', 'humanOTF');
 
 % Compute the OTF and store it.  We use a default pupil radius, dioptric
 % power, and so forth.
-dioptricPower = 1/fLength;      % About 60 diopters
+dioptricPower = 1/fLengthMeters;      % About 60 diopters
 
 % We used to assign the same wave as in the current scene to optics, if the
 % wave was not yet assigned.  
