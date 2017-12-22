@@ -448,8 +448,8 @@ switch parm
         % OTF values can be complex. They are related to the PSF data by
         % the fft.  We use PstToOtf to do this, so we use consistent
         % conventions throughout isetbio.  But, we still have to be
-        % carefule about whether the OTF is zero centered or centered with
-        % DC term at the upper right.   
+        % careful about whether the OTF is zero centered or centered with
+        % DC term at the upper left.   
         opticsModel = opticsGet(optics,'model');
         thisWave = [];
         switch lower(opticsModel)

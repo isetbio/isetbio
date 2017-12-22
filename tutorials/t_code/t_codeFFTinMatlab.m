@@ -75,7 +75,7 @@ figure(1); subplot(1,3,1); colormap(gray); mesh(g);
 % center of the image in the (1,1) position.  We do this using ifftshift.
 % We can then take the fft2 of the result to produce the OTF.
 %
-% This OTF will have the DC term in the upper right, at (1,1).
+% This OTF will have the DC term in the upper left, at (1,1).
 gFT = fft2(ifftshift(g));
 subplot(1,3,2); mesh(abs(gFT)); 
 

@@ -738,7 +738,7 @@ switch parm
         % It might make sense to switch to the isetbio optics convention, but then
         % the OTF support below would not be right, since it assumes the
         % center reprentation (as does unitFrequencyList, which is itself
-        % an isetbio utility.  To convert to the (0,0) sf at upper right
+        % an isetbio utility.  To convert to the (0,0) sf at upper left
         % (isetbio optics) convention, apply ifftshift to the value
         % computed below.
         %

@@ -105,7 +105,7 @@ for ww=1:length(wave)
     thisOTF = wvfGet(wvf, 'otf', wave(ww));
     est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
     
-    % Isetbio wants the otf with (0,0) sf at the upper right.  We
+    % Isetbio wants the otf with (0,0) sf at the upper left.  We
     % accomplish this by applying ifftshift to the wvf centered format.
     wvf2oiBackCompat = false;
     if (ispref('isetbioBackCompat','wvf2oi'))
