@@ -38,16 +38,17 @@ sparams.fov = 0.3;
 ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParameters',sparams);
 % ois.visualize;
 
-% Assert values from November 19, 2016 (BW)
+% Assert values from December 22, 2017 (DHB)
+% Updated by hand from previous values because of changes to optics code.
 tolerance = 1E-3;
 
 % Check the oiCreate part
 photonsFixed = oiGet(ois.oiFixed,'photons');
-quantityOfInterest = sum(photonsFixed(:))/1.3379e+19 - 1;
+quantityOfInterest = sum(photonsFixed(:))/1.3085e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiFixed photons',tolerance);
 
 photonsModulated = oiGet(ois.oiModulated,'photons');
-quantityOfInterest = sum(photonsModulated(:))/1.3379e+19 - 1;
+quantityOfInterest = sum(photonsModulated(:))/1.3085e+19 - 1;
 UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 
 % This tests the generation of the sequence because the sequence is built
@@ -62,7 +63,7 @@ cMosaic.compute(ois);
 
 tolerance = 2E-2;
 totalAbsorptions = sum(cMosaic.absorptions(:));
-quantityOfInterest = (totalAbsorptions/120009) - 1;
+quantityOfInterest = (totalAbsorptions/116255) - 1;
 UnitTest.assertIsZero(quantityOfInterest,'coneMosaic absorptions',tolerance);
 
 % assert((sum(cMosaic.absorptions(:))/121450) - 1 < 1e-3);
