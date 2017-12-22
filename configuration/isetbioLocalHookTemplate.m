@@ -39,21 +39,13 @@ function isetbioLocalHook
     % have a transient life, so that we make a set of code modifications
     % and control their behavior in a pointwise fashion.  This will help
     % with carefully updating validations.
-    setpref('isetbioBackCompat','opticsCreate_OpticsHuman',true);
-    setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',true);
-    setpref('isetbioBackCompat','wvfGet',true);
-    setpref('isetbioBackCompat','wvf2oi',true);
-    setpref('isetbioBackCompat','wvfComputePupilFunction',true);
-    setpref('isetbioBackCompat','wvfComputePSF',true);
-    setpref('isetbioBackCompat','opticsGet',true);
-    
-    setpref('isetbioBackCompat','opticsCreate_OpticsHuman',false);
-    setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',false);
-    setpref('isetbioBackCompat','wvfGet',false);
-    setpref('isetbioBackCompat','wvf2oi',false);
-    setpref('isetbioBackCompat','wvfComputePupilFunction',false);
-    setpref('isetbioBackCompat','wvfComputePSF',false);
-    setpref('isetbioBackCompat','opticsGet',false);
+    % setpref('isetbioBackCompat','opticsCreate_OpticsHuman',true);
+    % setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',true);
+    % setpref('isetbioBackCompat','wvfGet',true);
+    % setpref('isetbioBackCompat','wvf2oi',true);
+    % setpref('isetbioBackCompat','wvfComputePupilFunction',true);
+    % setpref('isetbioBackCompat','wvfComputePSF',true);
+    % setpref('isetbioBackCompat','opticsGet',true);
 end
 
 function generatePreferenceGroup(p)
