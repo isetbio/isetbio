@@ -34,6 +34,8 @@ function lrgb = srgb2lrgb(srgb)
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
 %    12/12/17  baw  Changed variable names to srgb/lrgb to respond to note
+%    12/21/17  dhb  Make sure output dimensionality matches input, to
+%                   preserve RGB or XW format from input to output.
 
 % Examples:
 %{
@@ -52,6 +54,10 @@ function lrgb = srgb2lrgb(srgb)
 if max(srgb(:)) > 1
     warning('srgb2lrgb: srgb appears to be outside the (0,1) range');
 end
+
+% Allocate lrgb as same size as srgb.  Need to to this so that format
+% (RGB or XW) is preserved by this routine.
+lrgb = zeros(size(srgb));
 
 % Change to linear rgb values
 big = (srgb > 0.04045);
