@@ -96,7 +96,9 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/11/17  jnm  Formatting
-%
+%    12/22/17  dhb  Use opticsGet(...'diffractionlimitedpsfdata'...) to get
+%                   diffraction limited psf, not opticsGet(...'psf'...).
+%                   The latter seemed unfortunately named.
 
 % Examples:
 %{
@@ -1025,7 +1027,7 @@ switch lower(pType)
                 % The opticsGet() for diffraction limited should be
                 % adjusted so that this code becomes shorter.
                 
-                psf = opticsGet(optics, 'psf', thisWave, units, nSamp, ...
+                psf = opticsGet(optics, 'diffractionlimitedpsfdata', thisWave, units, nSamp, ...
                     oSample);
                 fSupport = opticsGet(optics, 'dlFSupport matrix', ...
                     thisWave, units, nSamp);
