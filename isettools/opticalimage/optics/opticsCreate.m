@@ -66,11 +66,11 @@ switch lower(opticsType)
         % Optics for the Marimont and Wandell human eye
         
         % Pupil radius in meters.  Default is 3 mm
-        pupilRadius = 0.0015;
-        if (~isempty(varargin) & ~isempty(varargin{1})), pupilRadius = varargin{1}; end
+        pupilRadiusMeters = 0.0015;
+        if (~isempty(varargin) & ~isempty(varargin{1})), pupilRadiusMeters = varargin{1}; end
         
         % This creates shift-invariant optics.
-        optics = opticsHuman(pupilRadius);
+        optics = opticsHuman(pupilRadiusMeters);
         optics = opticsSet(optics, 'model', 'shift invariant');
         optics = opticsSet(optics, 'name', 'human-MW');
         
@@ -122,10 +122,10 @@ switch lower(opticsType)
         % consistent.
         if (~opticsCreate_OpticsHumanWvfBackCompat)
             focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
-            fLength = focalLengthMM*1e-3;
-            pupilRadius = (pupilDiameterMM/2)*1e-3;
-            optics = opticsSet(optics, 'fnumber', fLength/(2*pupilRadius));
-            optics = opticsSet(optics, 'focalLength', fLength);
+            fLengthMeters = focalLengthMM*1e-3;
+            pupilRadiusMeters = (pupilDiameterMM/2)*1e-3;
+            optics = opticsSet(optics, 'fnumber', fLengthMeters/(2*pupilRadiusMeters));
+            optics = opticsSet(optics, 'focalLength', fLengthMeters);
         end
             
         % Add default Lens by default
