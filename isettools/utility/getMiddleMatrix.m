@@ -16,7 +16,7 @@ function middleM = getMiddleMatrix(m, sz)
 % Outputs:
 %    middleM - The requested middle data
 % 
-% Notes:
+% See also:
 %
 
 % History:
