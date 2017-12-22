@@ -7,7 +7,7 @@ function [OTF2D, fSupport, wave] = humanOTF(pRadius, D0, fSupport, wave)
 % Inputs
 %  pRadius  - Pupil radius in meters
 %  D0       - Dioptric power (1/m)
-%  fSupport - Frequency support  (cyc/deg)
+%  fSupport - Frequency support (cyc/deg)
 %  wave     - wavelength (nm) 
 % 
 % Outputs

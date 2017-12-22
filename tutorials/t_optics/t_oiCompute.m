@@ -1,10 +1,17 @@
-% t_oiCompute
-%
 % Walk through the calculations in oiCompute.
 %
-% Illustrates how scene radiance is converted through a lens to an optical image (irradiance)
+% Description:
+%   Walk through the calculations in oiCompute.
+%   Illustrates how scene radiance is converted through a lens to an optical image (irradiance)
 %
-% Copyright ImagEval Consultants, LLC, 2010.
+% See also:
+
+% History:
+%                   Copyright ImagEval Consultants, LLC, 2010.
+% 12/21/17   dhb    Clear fSupport and sSupport above line 75, so this
+%                   runs. It was broken when I got to it.
+% 12/21/17   dhb    Ablate direct calls to fft2/ifft2 in deference to common
+%                   routine.
 
 %% This is the basic radiance to irradiance code 
 % Creates an array of points
@@ -62,7 +69,7 @@ title(sprintf('F-number = %d',fnBig))
 %% Here is the psf plot method, including the OTF and PSF
 %
 % This is just copied from the oiPlot code, really.
-
+%
 % Specify units
 units = 'um';
 
@@ -70,6 +77,7 @@ units = 'um';
 % The opticsGet() for diffraction limited should be
 % adjusted so that this code becomes shorter.
 % idx  = ieFindWaveIndex(wavelength,thisWave);
+clear fSupport sSupport;
 nSamp = 100;   % Number of frequency steps from 0 to incoherent cutoff
 val = opticsGet(optics,'dlFSupport',thisWave,units,nSamp);
 [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(val{1},val{2});
@@ -88,9 +96,9 @@ fSupport = fSupport*s;
 %
 deltaSpace = 1/(2*max(fSupport(:)));
 
-% Diffraction limited MTF
+% Diffraction limited OTF/PSF
 otf = dlMTF(oi,fSupport,thisWave,units);
-psf = fftshift(ifft2(otf));
+[~,~,psf] = OtfToPsf([],[],fftshift(otf));
 
 samp = (-nSamp:(nSamp-1));
 [X,Y] = meshgrid(samp,samp);
@@ -120,4 +128,3 @@ mesh(x,y,psf);
 hold on; plot3(adX,adY,adZ,'k.'); hold off;
 colormap(0.5*copper + 0.5*ones(size(copper)))
 
-%% End

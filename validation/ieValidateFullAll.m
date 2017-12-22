@@ -1,7 +1,7 @@
 function ieValidateFullAll(varargin)
 % Full data check (no figures, no publish) of all validation functions
 %
-%    validateFullAll(param,val, ...)
+%    ieValidateFullAll(param,val, ...)
 %
 % Possible parameters are:
 %    'verbosity' -    high, med, low ...
@@ -12,9 +12,9 @@ function ieValidateFullAll(varargin)
 %    'asAssertion' - true/false
 %
 % Examples:
-%   validateFullAll('verbosity','high');
-%   validateFullAll('Numeric Tolerance',1000*eps);
-%   validateFullAll('generate plots',true);
+%   ieValidateFullAll('verbosity','high');
+%   ieValidateFullAll('Numeric Tolerance',1000*eps);
+%   ieValidateFullAll('generate plots',true);
 %
 % NC, ISETBIO Team, Copyright 2015
 
@@ -36,8 +36,8 @@ UnitTest.setPref('generatePlots',  false);
 UnitTest.setPref('closeFigsOnInit', true);
 
 %% Verbosity Level
-% valid options are: 'none', min', 'low', 'med', 'high', 'max'
-UnitTest.setPref('verbosity', 'high');
+% Valid options are: 'none', min', 'low', 'med', 'high', 'max'
+UnitTest.setPref('verbosity', 'low');
 
 %% Numeric tolerance for comparison to ground truth data
 if (~ispref(thisProject, 'numericTolerance'))
@@ -93,7 +93,7 @@ vScriptsList = eval(listingScript);
 obj = UnitTest.runValidationSession(vScriptsList, fullValidationMode);
 
 if asAssertion
-    % assert no failed validations
+    % Assert no failed validations
     summary = [obj.summaryReport{:}];
     success = ~any([summary.fullFailed]);
     assert(success, 'One or more validations failed.');

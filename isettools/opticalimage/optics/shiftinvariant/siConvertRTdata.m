@@ -24,8 +24,14 @@ function [optics, inName, outName] = siConvertRTdata(inName,fieldHeight,outName)
 %
 %     fieldHeight = 1.0;
 %     siConvertRTdata(inName,fieldHeight,fullfile(baseDir,'siZemaxExample10.mat'));
-%
-% Copyright ImagEval Consultants, LLC, 2005.
+
+% History:
+%               Copyright ImagEval Consultants, LLC, 2005.
+% 12/21/17 dhb  Replace fftshift(fft2(psf) with call to PsfToOtf with an
+%               ifftshift.  This is how I think it should be done.  Because
+%               this routine is not currently called anywhere in isetbio, I
+%               don't have a good way to test. But the change matches the
+%               change I implemented and tested in siSynthetic.
 
 if notDefined('inName'),    inName = vcSelectDataFile; end
 if notDefined('fieldHeight')
@@ -48,11 +54,13 @@ OTF = zeros(nSamples,nSamples,length(rtWave));
 for ii=1:length(rtWave), 
     psf         = opticsGet(rtOptics,'rtpsfdata',fieldHeight,rtWave(ii));
     psf         = psf/sum(psf(:)); 
-    OTF(:,:,ii) = fftshift(fft2(psf)); 
-    % figure;  
-    % mesh(abs(OTF(:,:,ii)))
-    % mesh(abs(fft2(OTF(:,:,ii))))
-    % mesh(psf)
+    
+    % Use PsfToOtf to make the change, and then put center in upper
+    % right to match isetbio conventions.  Commented out below is
+    % the older code, which may or may not do the same thing
+    [~,~,centeredOTF] = PsfToOtf([],[],psf);
+    OTF(:,:,jj) = ifftshift(centeredOTF);
+    % OTF(:,:,ii) = fftshift(fft2(psf)); 
 end
 
 % Check this - we converted from mm to meters ... make sure everything

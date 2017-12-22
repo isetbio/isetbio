@@ -76,11 +76,17 @@ end
 
 % Make the frequency support in ISET as the same number of samples with the
 % wavelength with the highest frequency support from WVF.
+%
+% This support is set up with sf 0 at the center of the returned vector,
+% which matches how the wvf object returns the otf.
 fx = wvfGet(wvf, 'otf support', 'mm', maxWave);
 fy = fx;
 [X, Y] = meshgrid(fx, fy);
 c0 = find(X(1, :) == 0);
-r0 = find(Y(:, 1) == 0);
+tmpN = length(fx);
+if (floor(tmpN/2)+1 ~= c0)
+    error('We do not understand where sf 0 should be in the sf array');
+end
 
 %% Set up the OTF variable for use in the ISETBIO representation
 nWave = length(wave);
@@ -93,30 +99,42 @@ otf = zeros(nSamps, nSamps, nWave);
 % support in the wvf structure at different wavelengths.
 for ww=1:length(wave)
     f = wvfGet(wvf, 'otf support', 'mm', wave(ww));
+    if (f(floor(length(f)/2)+1) ~= 0)
+        error('wvf otf support does not have 0 sf in the expected location');
+    end
     thisOTF = wvfGet(wvf, 'otf', wave(ww));
     est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
     
-    % It is tragic that fftshift does not shift so that the DC term is in
-    % (1, 1). Rather, fftshift puts the DC at the the highest position.
-    % So, we don't use this
-    %
-    %   otf(:, :, ww) = fftshift(otf(:, :, ww));
-    %
-    % Rather, we use circshift. This is also the process followed in the
-    % psf2otf and otf2psf functions in the image processing toolbox. Makes
-    % me think that Mathworks had the same issue. Very annoying. (BW)
-    
-    % We identified the (r, c) that represent frequencies of 0 (i.e., DC).
-    % We circularly shift so that that (r, c) is at the (1, 1) position.
-    otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);  
+    % Isetbio wants the otf with (0,0) sf at the upper left.  We
+    % accomplish this by applying ifftshift to the wvf centered format.
+    wvf2oiBackCompat = false;
+    if (ispref('isetbioBackCompat','wvf2oi'))
+        if (getpref('isetbioBackCompat','wvf2oi'))
+            wvf2oiBackCompat = true;
+        end
+    end
+    if (wvf2oiBackCompat)
+        % This is the old way.
+        %
+        % It is tragic that fftshift does not shift so that the DC term is in
+        % (1, 1). Rather, fftshift puts the DC at the the highest position.
+        % So, we don't use this
+        %
+        %   otf(:, :, ww) = fftshift(otf(:, :, ww));
+        %
+        % Rather, we use circshift. This is also the process followed in the
+        % psf2otf and otf2psf functions in the image processing toolbox. Makes
+        % me think that Mathworks had the same issue. Very annoying. (BW)
+        
+        % We identified the (r, c) that represent frequencies of 0 (i.e., DC).
+        % We circularly shift so that that (r, c) is at the (1, 1) position.
+        r0 = c0;
+        otf(:, :, ww) = circshift(est, -1 * [r0 - 1, c0 - 1]);
+    else
+        % This is the new way, which seems cleaner to me (DHB).
+        otf(:, :, ww) = ifftshift(est);
+    end
 end
-
-%% Is PSF real?
-%
-% I sure wish this was real all the time. Sometimes (often?) it is. 
-% psf = otf2psf(otf(:, :, ww));
-% if ~isreal(psf), disp('psf not real'); end
-% vcNewGraphWin; mesh(psf)
 
 %% Place the frequency support and OTF data into an ISET structure.
 %

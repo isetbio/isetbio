@@ -1,11 +1,16 @@
-%% t_opticsPSFPlot
-%
 % Plot the point spread function (PSF) for diffraction limited optics
 %
-% This is the implementation that generates the point spread function (PSF)
-% from diffraction limited optics. The code here is embedded in oiPlot/OTF.
+% Description:
+%   This is the implementation that generates the point spread function (PSF)
+%   from diffraction limited optics. The code here is embedded in oiPlot/OTF.
 %
-% Copyright ImagEval Consultants, LLC, 2012.
+% See also:
+%
+
+% History:
+%                    Copyright ImagEval Consultants, LLC, 2012.
+%  12/21/17   dhb    Ablate direct calls to fft2/ifft2 in deference to common
+%                    routine.
 
 %% Initialize. Not needed, but often convenient.
 ieInit;
@@ -47,7 +52,7 @@ deltaSpace = 1/(2*max(fSupport(:)));
 
 %% Calculate the diffraction limited MTF
 otf = dlMTF(oi,fSupport,thisWave,units);
-psf = fftshift(ifft2(otf));
+[~,~,psf] = OtfToPsf([],[],fftshift(otf));
 
 samp = (-nSamp:(nSamp-1));
 [X,Y] = meshgrid(samp,samp);
@@ -76,6 +81,3 @@ hold on; plot3(adX,adY,adZ,'k.'); hold off;
 mp = ones(256,3)*0.3;
 colormap(0.5*mp + 0.5*ones(size(mp)))
 xlabel('um'); ylabel('um'); zlabel('Relative intensity');
-
-
-%% End

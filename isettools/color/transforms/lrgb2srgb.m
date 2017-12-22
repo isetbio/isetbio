@@ -1,8 +1,8 @@
-function rgb = lrgb2srgb(rgb)
+function srgb = lrgb2srgb(lrgb)
 % Convert linear sRGB values to proper sRGB values
 %
 % Syntax:
-%   rgb = lrgb2srgb(rgb)
+%   srgb = lrgb2srgb(lrgb)
 %
 % Description:
 %    This routine implements the nonlinear step for converting linear rgb
@@ -16,10 +16,10 @@ function rgb = lrgb2srgb(rgb)
 %    that makes an overall approximation of the display gamma as 2.2
 %
 % Inputs:
-%    rgb - The linear RGB coordinates, prior to manipulation.
+%    lrgb - The linear RGB coordinates, prior to manipulation.
 %
 % Outputs:
-%    rgb - The standard RGB coordinates, after manipulation.
+%    srgb - The standard RGB coordinates, after manipulation.
 %
 % References:
 %    Previous web references have been deleted from this file because the
@@ -34,16 +34,18 @@ function rgb = lrgb2srgb(rgb)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
+%    12/22/17  dhb  Don't use same variable name for input and output
 
-if (max(rgb(:)) > 1 || min(rgb(:)) < 0)
+if (max(lrgb(:)) > 1 || min(lrgb(:)) < 0)
     error('Linear rgb values must be between 0 and 1'); 
 end
 
 % These are framebuffer values, but they live in the [0, 1] space. The
 % transformation, which has a linear and power part, is intended to
 % approximate a gamma of 2.2 as a whole. 
-big = (rgb > 0.0031308);
-rgb(~big) = rgb(~big) * 12.92;
-rgb(big) = 1.055 * rgb(big) .^ (1 / 2.4) - 0.055;
+srgb = zeros(size(lrgb));
+big = (lrgb > 0.0031308);
+srgb(~big) = lrgb(~big) * 12.92;
+srgb(big) = 1.055 * lrgb(big) .^ (1 / 2.4) - 0.055;
 
 end

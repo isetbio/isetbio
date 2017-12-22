@@ -21,10 +21,9 @@ function ieGIF(data, varargin)
 %
 
 % History:
-%    xx/xx/16 bw, jrg  ISETBIO Team (BW/JRG) 2016
-%    11/22/17  jnm  Formatting. Added support for Windows in call - need to
-%    check if this is necessary?
-%
+%    xx/xx/16  bw, jrg  ISETBIO Team (BW/JRG) 2016
+%    11/22/17  jnm      Formatting. Added support for Windows in call -
+%                       need to check if this is necessary?
 
 % Example:
 %{

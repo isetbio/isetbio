@@ -1,7 +1,6 @@
-%% Adaptive optics data for the human point spread function
+% Adaptive optics data for the human point spread function
 %
-%  s_wvfThibosModel
-%
+% Description:
 % Using adaptive optics, a group led by Thibos collected many different
 % wavefronts in the human eye for a range of pupil sizes.  The data are
 % summarized using a simple statistical model of the Zernicke polynomial
@@ -20,17 +19,20 @@
 % the Wavefront toolbox. This script calculates the PSF for example
 % subjects.
 %
-% See also:  VirtualEyesDemo and wvfLoadThibosVirtualEyes 
+% See also: wvfLoadThibosVirtualEyes 
 %
-% Copyright Wavefront Toolbox Team, 2012
+
+% History:
+%                  Copyright Wavefront Toolbox Team, 2012
+%  12/21/17  dhb   Comments
 
 %% Initialize ISET
 % Set the largest size in microns for plotting
 % Set the pupil diameter in millimeters
 s_initISET
 maxUM = 30;    
-measPupilMM = 4.5;    % This selects which Thibos data set
-calcPupilMM = 3.0;    % For this pupil size
+measPupilMM = 4.5;    % This selects which Thibos data set to load
+calcPupilMM = 3.0;    % Calculate for this pupil size
 
 %%  Load the statistical wavefront properties 
 % The Zernike coefficients describing the wavefront aberrations are each
@@ -84,9 +86,8 @@ thisGuy = wvfSet(thisGuy,'calc wave',[450:100:650]');     % Must be a column vec
 thisGuy = wvfComputePSF(thisGuy);
 
 %% Plot the PSFs of the sample mean subject for several wavelengths
-
+%
 % These illustrate the strong axial chromatic aberration.
-
 wave  = wvfGet(thisGuy,'calc wave');
 nWave = wvfGet(thisGuy,'calc nwave');
 vcNewGraphWin([],'tall');
@@ -129,7 +130,6 @@ for ii = 1:nSubjects
 end
 colormap(gray(256));
 
-
 vcNewGraphWin([],'tall');
 thisWave = wave(2);
 for ii = 1:nSubjects
@@ -148,6 +148,5 @@ for ii = 1:nSubjects
 end
 colormap(gray(256));
 
-%% END
 
 

@@ -78,7 +78,7 @@
 %
 % ISET (subidr iset). Interface with ISET/VSET software.
 %   wvf2oi                                    Convert wavefront data to ISET optical image with optics
-%   wvf2PSF                                   Convert a wvf structure to ISET shift-invariant PSF data
+%   wvf2SiPsf                                 Convert a wvf structure to ISET shift-invariant PSF data format
 %
 % DOCS (subdir docs).  Various documentation.  Mainly PDF of relevant papers.
 %

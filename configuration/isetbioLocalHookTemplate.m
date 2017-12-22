@@ -16,7 +16,7 @@ function isetbioLocalHook
 % hooks folder and delete "Template" from the filename.  The TbTb will then
 % run it when you deploy isetbio.
 
-    % Specify project-specific preferences
+    % Specify project-specific preferences for unit test toolbox
     p = struct(...
             'projectName',           'isetbio', ...                                                                                   % The project's name (also the preferences group name)
             'validationRootDir',     fullfile(isetbioRootPath, 'validation'), ...                                                     % Directory location where the 'scripts' subdirectory resides.
@@ -34,6 +34,18 @@ function isetbioLocalHook
     generatePreferenceGroup(p);
     UnitTest.usePreferencesForProject(p.projectName);
     
+    % These are some other isetbio prefs, which preserve or give up
+    % backwards compatibilty in various routines.  These are intended to
+    % have a transient life, so that we make a set of code modifications
+    % and control their behavior in a pointwise fashion.  This will help
+    % with carefully updating validations.
+    % setpref('isetbioBackCompat','opticsCreate_OpticsHuman',true);
+    % setpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf',true);
+    % setpref('isetbioBackCompat','wvfGet',true);
+    % setpref('isetbioBackCompat','wvf2oi',true);
+    % setpref('isetbioBackCompat','wvfComputePupilFunction',true);
+    % setpref('isetbioBackCompat','wvfComputePSF',true);
+    % setpref('isetbioBackCompat','opticsGet',true);
 end
 
 function generatePreferenceGroup(p)

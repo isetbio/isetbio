@@ -16,14 +16,15 @@ function [xSfGridCyclesDeg,ySfGridCyclesDeg,otf] = PsfToOtf(xGridMinutes,yGridMi
 %    Spatial frequencies are returned using the same conventions.
 %
 %    If you want the spatial frequency representation to have frequency
-%    (0,0) in the upper right, as seems to be the more standard Matlab
+%    (0,0) in the upper left, as seems to be the more standard Matlab
 %    convention, apply ifftshift to the returned value.  That is
-%       otfUpperRight = ifftshift(otf);
+%       otfUpperLeft = ifftshift(otf);
 %    And then if you want to put it back in the form for passing to our
 %    OtfToPsf routine, apply fftshift:
-%       otf = fftshift(otfUpperRight);
-%    The isetbio code (isetbio.org) thinks about OTFs in the upper right
-%    format, which is one place where you'd want to know this convention.
+%       otf = fftshift(otfUpperLeft);
+%    The isetbio code (isetbio.org) thinks about OTFs in the upper left
+%    format, at least for its optics structure, which is one place where
+%    you'd want to know this convention.
 %
 %    No normalization is performed.  If the phase of the OTF are very small
 %    (less than 1e-10) the routine assumes that the input psf was spatially
@@ -88,7 +89,7 @@ if (~isempty(xGridMinutes) & ~isempty(yGridMinutes))
     % Generate spatial frequency grids
     [xSfGridCyclesDeg,ySfGridCyclesDeg] = PositionGridMinutesToSfGridCyclesDeg(xGridMinutes,yGridMinutes);
     
-elseif (isempty(xGridMinutes) & isempty(yMinutes))
+elseif (isempty(xGridMinutes) & isempty(yGridMinutes))
     % This case is OK, we set the output grids to empty
     xSfGridCyclesDeg = [];
     ySfGridCyclesDeg = [];

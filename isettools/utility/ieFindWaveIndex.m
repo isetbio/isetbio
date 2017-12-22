@@ -29,7 +29,6 @@ function idx = ieFindWaveIndex(wave, waveVal, perfect)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/30/17  jnm  Formatting & fix example
-%
 
 % Examples:
 %{

@@ -62,7 +62,8 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
 %
 
 % History:
-%    xx/xx/12   bw  (c) Wavefront Toolbox Team
+%    xx/xx/12   bw    (c) Wavefront Toolbox Team
+%    12/21/17   dhb   Use PsfToOtf to get the OTF for plotting.
 
 % Examples:
 %{
@@ -283,8 +284,10 @@ switch(pType)
         % nyquistF = 1 / (2 * dx);   % Line pairs (cycles) per unit space
         % freq = unitFrequencyList(nSamp) * nyquistF;
         
-        % Compute OTF
-        otf = fftshift(fft2(psf));
+        % Compute OTF, with DC at center for visualazation.  Not entirely
+        % clear why we don't simply get the otf from the wvf structure
+        % using wvfGet, shift to zero center using fftshift, and plot that.
+        [~,~,otf] = PsfToOtf([],[],psf);
         
         % Restrict to parameter range
         if ~isempty(pRange)

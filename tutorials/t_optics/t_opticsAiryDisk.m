@@ -1,8 +1,15 @@
-%% t_airyDisk
+% Plot an Airy disk for diffraction limited optics.
 %
-% Plotting an Airy disk for diffraction limited optics.
+% Description:
+%   Plot an Airy disk for diffraction limited optics.
 %
-% Copyright ImagEval Consultants, LLC, 2010.
+% See also:
+%
+
+% History:
+%                  Copyright ImagEval Consultants, LLC, 2010.
+%   12/21/17  dhb  Ablate direct calls to fft2/ifft2 in deference to common
+%                  routine.
 
 %% Initialize
 ieInit;
@@ -37,7 +44,7 @@ deltaSpace = 1/(2*peakF);
 otf = dlMTF(oi,fSupport,thisWave,units);
 
 % Derive the psf from the OTF
-psf = fftshift(ifft2(otf));
+[~,~,psf] = OtfToPsf([],[],fftshift(otf));
 
 % Make the spatial support for the PSF
 clear sSupport
@@ -56,6 +63,7 @@ radius = (2.44*fNumber*thisWave*10^-9)/2 * ieUnitScaleFactor(units);
 nCircleSamples = 200;
 [~, ptsXY]=ieShape('circle','nSamp',nCircleSamples,'radius',radius);
 adX = ptsXY(:,1); adY = ptsXY(:,2); adZ = zeros(size(ptsXY(:,1)));
+
 %% Plot the diffraction limited PSF.  
 x = sSupport(:,:,1); y = sSupport(:,:,2);
 mesh(x,y,psf);
@@ -73,4 +81,3 @@ title(sprintf('Point spread (%.0f nm)',thisWave));
 udata.x = x; udata.y = y; udata.psf = psf;
 set(gcf,'userdata',udata);
 
-%% End

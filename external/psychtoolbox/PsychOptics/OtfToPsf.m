@@ -15,7 +15,12 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %    floor(n/2)+1 in each dimension.  This is the form we mostly want to
 %    look at and use.  
 %
-%    If you want spatial frequency in the upper right, apply 
+%    The OTF is assummed to have the DC term in the center poistion,
+%    floor(n/2)+1 of the passed matrix.  If you have your hands on an OTF
+%    with the DC term in the upper left position (1,1), apply fftshift to
+%    it before passing to this routine.  The DC in upper left is the Matlab
+%    native format for applying the ifft, and is also the format stored by
+%    isetbio in its optics structure.
 %
 %    Positions are returned using the same conventions.
 %

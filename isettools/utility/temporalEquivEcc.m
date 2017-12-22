@@ -52,7 +52,6 @@ function ecc = temporalEquivEcc(center, varargin)
 % History:
 %    xx/xx/17   BW  ISETBIO Team, 2017
 %    11/20/17  jnm  Comments & formatting
-%
 
 % Examples:
 %{

@@ -105,9 +105,7 @@ switch oiType
             oi.optics.transmittance.wave = (370:730)';
             oi.optics.transmittance.scale = ones(length(370:730),1);
         end
-        
-        
-        
+
     % The following two are used for testing.  They are not really
     % models.
     case {'uniformd65'}
