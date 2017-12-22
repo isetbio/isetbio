@@ -35,7 +35,6 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
-%
 
 % Examples:
 %{

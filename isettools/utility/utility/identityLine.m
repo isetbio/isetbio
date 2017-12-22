@@ -1,13 +1,28 @@
 function p = identityLine(ax)
-%Draw an identity line on the current axis
+% Draw an identity line on the current axis
 %
+% Syntax:
 %   p = identityLine(ax)
 %
-% Example:
-%   plot(1:10,randn(1,10),'o')
-%   identityLine(gca);
+% Description:
+%    Draw an identity line on the current axis
 %
-% (c) Stanford VISTA Team
+% Inputs:
+%    ax - The axis in question
+%
+% Outputs:
+%    p  - The line to be drawn
+%
+
+% History:
+%    xx/xx/xx       (c) Stanford VISTA Team
+%    12/15/17  jnm  Formatting
+
+% Examples:
+%{
+    plot(1:10, randn(1, 10), 'o')
+    identityLine(gca);
+%}
 
 if notDefined('ax'), ax = gca; end
 
@@ -21,7 +36,7 @@ mx = max(xlim(2), ylim(2));
 p = line([mn mx], [mn mx], 'color', [.5 .5 .5], 'linestyle', '--');
 
 % Set line properties.  These probably want to come in as an argument
-set(p,'linewidth',2);
+set(p, 'linewidth', 2);
 grid on
 
 end

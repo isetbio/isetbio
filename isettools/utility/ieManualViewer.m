@@ -24,7 +24,6 @@ function ieManualViewer(mType)
 % History:
 %    xx/xx/06       Copyright ImagEval Consultants, LLC, 2006.
 %    11/22/17  jnm  Formatting & issue addressed in notes section.
-%
 
 % Examples:
 %{

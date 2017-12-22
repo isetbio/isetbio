@@ -32,7 +32,6 @@ function fullName = vcSaveObject(obj, fullName)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting
-%
 
 % Examples:
 %{

@@ -27,7 +27,6 @@ function imageType = ieImageType(fullName)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/23/17  jnm  Formatting
 %    11/29/17  jnm  Add note about future update/todo
-%
 
 % Example:
 %{

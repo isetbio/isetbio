@@ -29,7 +29,6 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 % History:
 %    xx/xx/16  JRG/HJ/BW  Isetbio Team, 2016
 %    11/21/17  jnm  Formatting
-%
 
 % Examples:
 %{
