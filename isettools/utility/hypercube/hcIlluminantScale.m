@@ -1,49 +1,61 @@
 function [illScale, meanSPD] = hcIlluminantScale(hcIlluminant)
 % Estimate the relative illuminant intensity across space
 %
+% Syntax:
 %   [illScale, meanSPD] = hcIlluminant(hcIlluminant)
 %
-% Inputs:
-%  hcIlluminant:  Hypercube illuminant data
+% Description:
+%    Estimate the relative illuminant intensity across a space.
 %
-% Returns:
-%   illScale: Relative intensity of the illuminant across the image
-%   meanSPD:  Illuminant SPD (mean)
-%
-% The img is a relative weighting so it does not matter if we find this in
-% energy units or photon units ... the scalar will be the same
-%
-% Example:
-%
+%    The img is a relative weighting so it does not matter if we find this
+%    in energy units or photon units ... the scalar will be the same
 % 
-% See also:  s_hcHyspexToISET
+% Inputs:
+%	 hcIlluminant - Hypercube illuminant data
 %
-% Copyright Imageval, LLC , 2013
+% Outputs:
+%	 illScale     - Relative intensity of the illuminant across the image
+%    meanSPD	  - Illuminant SPD (mean)
+%
+% See Also:
+%    s_hcHyspexToISET
+%
+
+% History:
+%    xx/xx/13       Copyright Imageval, LLC , 2013
+%    12/05/17  jnm  Formatting
+
+% Examples:
+%{
+%}
 
 if notDefined('hcIlluminant'), error('hypercube illuminant required');end
 
-[hcIlluminant,r,c] = RGB2XWFormat(hcIlluminant);
-meanSPD = mean(hcIlluminant,1);
-% vcNewGraphWin; plot(meanSPD)
+[hcIlluminant, r, c] = RGB2XWFormat(hcIlluminant);
+meanSPD = mean(hcIlluminant, 1);
+% vcNewGraphWin;
+% plot(meanSPD)
 
-% In XW format, each column is a SPD at a pixel.  We want to describe all
+% In XW format, each column is a SPD at a pixel. We want to describe all
 % of the pixels by a scale factor with respect to the meanIllSPDEnergy
 %
-%   energyXW = weightPerPixel*meanIllSPDEnergy
-%      e = w*m
-%      w = e*m'*(m*m')^-1
+%   energyXW = weightPerPixel * meanIllSPDEnergy
+%      e = w * m
+%      w = e * m' * (m * m') ^ -1
 %   or
-%      w = e*pinv(m)
+%      w = e * pinv(m)
 %
-illScale = double(hcIlluminant)*pinv(meanSPD(:)');
-illScale = reshape(illScale,r,c);
+illScale = double(hcIlluminant) * pinv(meanSPD(:)');
+illScale = reshape(illScale, r, c);
 
 % Normalize so that the weights are between 0 and 1, and correct the ill
 % spd so that everything is reasonable.
-mx       = max(illScale(:));
-illScale = illScale/mx;
-meanSPD  = mx*meanSPD;
+mx = max(illScale(:));
+illScale = illScale / mx;
+meanSPD = mx * meanSPD;
 
-% vcNewGraphWin; imagesc(illScale); colormap(gray)
+% vcNewGraphWin;
+% imagesc(illScale);
+% colormap(gray)
 
 end

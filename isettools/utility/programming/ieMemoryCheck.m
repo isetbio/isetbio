@@ -1,22 +1,40 @@
-function m = ieMemoryCheck(unit,level)
-%Calculate the memory use in the calling routine or base
+function m = ieMemoryCheck(unit, level)
+% Calculate the memory use in the calling routine or base
 %
-%    m = ieMemoryCheck(unit,level)
+% Syntax:
+%   m = ieMemoryCheck(unit, level)
 %
-% The output can be presented in megabytes ('MB') kilobytes ('KB') or bytes
-%('B').
+% Description:
+%    Calculate the memory use in the calling routine or base.
 %
-% Example
-%    m = ieMemoryCheck('KB','base')
-%    m = ieMemoryCheck('MB','caller')
+%    The output can be presented in the formats, megabytes ('MB'), 
+%    kilobytes ('KB'), or bytes ('B')
 %
-% Copyright ImagEval, LLC, 2005
+% Inputs:
+%    unit  - (Optional) The unit in which to present the output. Options
+%            are 'mb', 'kb', and 'b'. Default is 'b' (bytes).
+%    level - (Optional) The level of memory you are querying. Options are
+%            base and caller. Default is caller.
+%
+% Outputs:
+%    m     - The memory in use, in the specified units.
+%
 
-if notDefined('unit'),  unit = 'b'; end
+% History:
+%    xx/xx/05       Copyright ImagEval, LLC, 2005
+%    12/12/17  jnm  Formatting
+
+% Examples:
+%{
+    m = ieMemoryCheck('KB', 'base')
+    m = ieMemoryCheck('MB', 'caller')
+%}
+
+if notDefined('unit'), unit = 'b'; end
 if notDefined('level'), level = 'caller'; end
 
 m = 0; 
-t = evalin(level,'whos');  
+t = evalin(level, 'whos');  
 for ss = 1:length(t), m = m + (t(ss).bytes); end
 
 switch lower(unit)
@@ -28,6 +46,6 @@ switch lower(unit)
         s = 1;
 end
 
-if nargout == 0, fprintf('Memory %f %s\n',m/s,unit); end
+if nargout == 0, fprintf('Memory %f %s\n', m/s, unit); end
 
 end

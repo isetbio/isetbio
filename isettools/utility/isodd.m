@@ -23,7 +23,6 @@ function cal = isodd(x)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting & variable renaming
-%
 
 % Examples:
 %{

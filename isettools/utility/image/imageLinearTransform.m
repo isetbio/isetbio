@@ -1,51 +1,72 @@
 function imT = imageLinearTransform(im, T)
 % Apply a linear transformation to the color channels of an RGB image 
 %
-%  imT = imageLinearTransform(im,T)
+% Syntax:
+%   imT = imageLinearTransform(im, T)
 %
-% The image data (im) are in N x M X W format, (e.g., W=3 if RGB or W = 31
-% if the wavelength samples are 400:10:700). The routine applies a right
-% side multiply to the data. Specifically, if an image point is represented
-% by the row vector, p = [R,G,B] the matrix transforms each color point, p,
-% to an output vector pT.  In this case, T has 3 rows.
+% Description:
+%    The image data (im) are in the N x M X W format, (e.g., W = 3 if RGB
+%    or W = 31 if the wavelength samples are 400:10:700). The routine
+%    applies a right side multiply to the data. Specifically, if an image
+%    point is represented by the row vector, p = [R, G, B] the matrix
+%    transforms each color point, p, to an output vector pT. In this case,
+%    T has 3 rows.
 %
-% If the data are viewed as wavelength samples, say [w1,w2,...wn], then the
-% transform T must have n rows.
+%    If the data are viewed as wavelength samples, say [w1, w2, ...wn], 
+%    then the transform T must have n rows.
 %
-% This routine works with colorTransformMatrix, which provides access to
-% various standard color transformation matrices. 
+%    This routine works with colorTransformMatrix, which provides access to
+%    various standard color transformation matrices. 
 %
-% This routine works with im in the format (N x M x W) and a T matrix size
-% (W x K), where K is the number of output channels.
+%    This routine works with im in the format (N x M x W) and a T matrix
+%    size (W x K), where K is the number of output channels.
 %
-% Example:
-%   Returns an NxMx3 xyz Image
-%     T = colorTransformMatrix('lms2xyz');
-%     xyzImage = imageLinearTransform(lmsImage,T);
+% Inputs:
+%    im  - The original image, in N x M x W format.
+%    T   - The transform to enact upon the image.
 %
-%     T = imageGet(vci,'displayspd');
-%     spectralImage = imageLinearTransform(lmsImage,T);
+% Outputs:
+%    imT - The transformed image
 %
 % Notes:
-%  * [NOTE - DHB: It would be good if this accepted XW format too, and
-%    returned XW format in that case.]
+%    * [NOTE - DHB: It would be good if this accepted XW format too, and
+%      returned XW format in that case.]
+%    * [Note: JNM - Has DHB's note been addressed?]
+%    * [Note: JNM - Changed example because the existing one called
+%      imageGet - which does not show up. Changed from LMS to RGB to XYZ to
+%      RGB -- appears to be working just fine.]
 %
-% See Also: colorTransformMatrix
+% See Also:
+%    colorTransformMatrix
+%
 
 % History:
-%   Copyright ImagEval Consultants, LLC, 2003.
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    12/07/17  jnm  Formatting & change example
+
+% Examples:
+%{
+    % Returns an N x M x 3 xyz Image
+    XYZ = ieReadSpectra('XYZ.mat', 370:730);
+    imXYZ = zeros(361, 20, 3);
+    for ii=1:3
+        imXYZ(:, :, ii) = repmat(XYZ(:, ii), 1, 20);
+    end
+    T = colorTransformMatrix('xyz2srgb');
+    imRGB = imageLinearTransform(imXYZ, T);
+    imagescRGB(imRGB);
+%}
 
 % Save out the image size information
-[r,c,w] = size(im);
+[r, c, w] = size(im);
 
-if size(T,1) ~= w, error('image/T data sizes mismatch'); end
+if size(T, 1) ~= w, error('image/T data sizes mismatch'); end
 
-% We reshape the image data into a r*c x w matrix
-%
+% We reshape the image data into a (r * c) x w matrix
 im = RGB2XWFormat(im);
 
 % Then we multiply and reformat. 
 imT = im * T;
-imT = XW2RGBFormat(imT,r,c);
+imT = XW2RGBFormat(imT, r, c);
 
 end

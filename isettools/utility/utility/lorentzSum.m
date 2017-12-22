@@ -1,22 +1,28 @@
 function val = lorentzSum(params, x)
 % Compute sum of Lorentzian components
 %
-%    val = lorentzSum(params, x)
+% Syntax:
+%	val = lorentzSum(params, x)
 %
-%  This function computes sum of output of multiple lorentzian components.
-%  Value of Lorentzian component can be computed as
-%    y = S / (1 + (x/f)^2)^n
-%  Here, S, f and n are constant parameters
+% Description:
+%    This function computes sum of output of multiple lorentzian components
+%
+%    Value of Lorentzian component can be computed using the constants S,
+%    f, and n as, 
+%       y = S / (1 + (x / f) ^ 2) ^ n
 %
 %  Inputs:
-%    params - n-by-3 parameter matrix, each row contains S,f,n values for
-%             one Lorentzian component
-%    x      - positions to be evaluated
+%    params - A n-by-3 parameter matrix, with each row containing S, f, and
+%             n values for one Lorentzian component.
+%    x      - The positions to be evaluated
 %
-%  Output:
-%    val  - sum of output of Lorentzian components, same size as x
+%  Outputs:
+%    val    - The sum of output of Lorentzian components, same size as x
 %
-% (HJ) ISETBIO TEAM, 2014
+
+% History:
+%    xx/xx/14  HJ   ISETBIO TEAM, 2014
+%    12/14/17  jnm  Formatting
 
 %% Check inputs
 if ~exist('params', 'var'), error('parameters required'); end
@@ -33,7 +39,8 @@ params = abs(params);
 
 %  Loop and compute val for each component
 for ii = 1 : size(params, 1)
-    val = val + params(ii, 1) ./ (1+(x/params(ii, 2)).^2).^ params(ii, 3);
+    val = val + params(ii, 1) ...
+        ./ (1 + (x / params(ii, 2)) .^ 2) .^ params(ii, 3);
 end
 
 end

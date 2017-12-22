@@ -34,7 +34,6 @@ function [slope, offset] = ieFitLine(x, y, method)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/30/17  jnm  Formatting, add example
-%
 
 % Examples:
 %{

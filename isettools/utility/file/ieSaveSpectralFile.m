@@ -34,7 +34,6 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/27/17  jnm  Formatting
 %    11/29/17  jnm  Added Note about example
-%
 
 % Examples:
 %{

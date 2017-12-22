@@ -23,7 +23,6 @@ function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName)
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010
 %    11/27/17  jnm  Formatting
 %    11/29/17  jnm  Added note in notes section, and note in example
-%
 
 % Examples:
 %{

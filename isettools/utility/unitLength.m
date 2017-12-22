@@ -26,7 +26,6 @@ function u = unitLength(v)
 % History:
 %    xx/xx/12       (c) Imageval Consulting, LLC 2012
 %    11/20/17  jnm  Formatting
-%
 
 % Examples:
 %{

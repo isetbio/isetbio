@@ -1,14 +1,24 @@
 function cData = imageContrast(data)
 % Compute the image contrast in an RGB style image
 %
-% cData = imageContrast(data)
+% Syntax:
+%   cData = imageContrast(data)
 %
+% Description:
 %    The image contrast is the intensity minus the mean divided by the
-%    mean.  Such an image always has zero mean, and can be useful for
+%    mean. Such an image always has zero mean, and can be useful for
 %    computing the image MTF, discarding the DC term.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Inputs:
+%    data  - RGB style image data
+%
+% Outputs:
+%    cData - Calculated image contrast data values
+%
 
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    12/06/17  jnm  Formatting
 
 cData = zeros(size(data));
 

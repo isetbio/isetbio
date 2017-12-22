@@ -30,7 +30,6 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
-%
 
 % Examples:
 %{

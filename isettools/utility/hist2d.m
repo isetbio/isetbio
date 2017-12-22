@@ -28,7 +28,8 @@ function Hout = hist2d(D, Xn, Yn, Xrange, Yrange)
 
 % Examples:
 %{
-    hist2d([randn(1, 10000); randn(1, 10000)])
+    hist2d([randn(1, 10000);
+    randn(1, 10000)])
 %}
 
 % first supply optional arguments

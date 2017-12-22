@@ -1,36 +1,56 @@
-function [p,l] = plotSpectrumLocus(fig)
+function [p, l] = plotSpectrumLocus(fig)
+% Draw the outline of spectrum locus on the chromacity diagram
 %
-%   [p,l] = plotSpectrumLocus([fig])
+% Syntax:
+%   [p, l] = plotSpectrumLocus([fig])
 %
-%  Draw the outline of the spectrum locus on the chromaticity
-%  diagram.  It is a white background with a grid.
+% Description:
+%    Draw the outline of the spectrum locus on the chromaticity
+%    diagram.  It is a white background with a grid.
 %
-% See also: chromaticityPlot
+% Inputs:
+%    fig - The figure on which to draw
 %
-% Example:
-%   plotSpectrumLocus;
+% Outputs:
+%    p   - The plot
+%    l   - The line
 %
-% Copyright Imageval 2003
+% See Also:
+%    chromaticityPlot
+%
 
-if notDefined('fig'), vcNewGraphWin; 
-else figure(fig);
+% History:
+%    xx/xx/03       Copyright Imageval 2003
+%    12/11/17  jnm  Formatting
+%
+
+% Examples:
+%{
+    plotSpectrumLocus;
+%}
+
+if notDefined('fig')
+    vcNewGraphWin; 
+else
+    figure(fig);
 end
 
 wave = 370:730;
-XYZ = ieReadSpectra('XYZ',wave);
+XYZ = ieReadSpectra('XYZ', wave);
 
 % Here are the shifts in the chromaticity of the display
 % as the display intensity shifts
 spectrumLocus = chromaticity(XYZ);
 
-% These are the (x,y) points of the spectral lines
-p = plot(spectrumLocus(:,1),spectrumLocus(:,2),'-');
+% These are the (x, y) points of the spectral lines
+p = plot(spectrumLocus(:, 1), spectrumLocus(:, 2), '-');
 hold on;
 
 % Add a line to close up the outer rim of the spectrum locus curve
-l = line([spectrumLocus(1,1),spectrumLocus(end,1)],...
-    [spectrumLocus(1,2),spectrumLocus(end,2)]);
+l = line([spectrumLocus(1, 1), spectrumLocus(end, 1)], ...
+    [spectrumLocus(1, 2), spectrumLocus(end, 2)]);
 hold on;
-axis equal; grid on
+axis equal;
+grid on
 
 return;
