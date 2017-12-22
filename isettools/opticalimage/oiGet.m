@@ -628,8 +628,8 @@ switch parm
                     aSupport.x = aSupport.x*60*60;
                     aSupport.y = aSupport.y*60*60;
                 case 'radians'
-                    aSupport.x = deg2rad(aSupport.x);
-                    aSupport.y = deg2rad(aSupport.y);
+                    aSupport.x = ieDeg2rad(aSupport.x);
+                    aSupport.y = ieDeg2rad(aSupport.y);
                 otherwise
                     error('Unknown angular unit %s\n',unit);
             end

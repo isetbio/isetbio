@@ -563,7 +563,7 @@ switch parm
         % units can be degrees, arcmin, arcsec
         val = sceneGet(scene,'fov')/sceneGet(scene,'cols');
         if ~isempty(varargin)
-            val = deg2rad(val);
+            val = ieDeg2rad(val);
             val = val*ieUnitScaleFactor(varargin{1}); 
         end
 

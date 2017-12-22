@@ -1,4 +1,7 @@
 function r = deg2rad(d, units)
+% renamed to ieDeg2rad and depreciated because of conflict with Matlab
+% deg2rad. 
+%
 % Convert degrees to radians
 %
 % Syntax:
@@ -34,9 +37,11 @@ function r = deg2rad(d, units)
     deg2rad(90)
     deg2rad(90, 'arcmin')
 %}
-
-if notDefined('units')
-    r = (pi / 180) * d;
-else
-    r = (pi / 180) * d * ieUnitScaleFactor(units);
+error('Use ieDeg2rad or matlab version of deg2rad');
 end
+
+% if notDefined('units')
+%     r = (pi / 180) * d;
+% else
+%     r = (pi / 180) * d * ieUnitScaleFactor(units);
+% end
