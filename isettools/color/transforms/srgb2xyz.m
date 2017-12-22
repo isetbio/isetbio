@@ -25,7 +25,7 @@ function xyz = srgb2xyz(srgb)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
-%
+
 
 % Examples:
 %{

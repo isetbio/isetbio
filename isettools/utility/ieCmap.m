@@ -14,14 +14,10 @@ function cm = ieCmap(cName, num, gam)
 %               {'by', 'blueyellow'}
 %               {'bw', 'blackwhite', 'luminance'}
 %    num   - (Optional) Number of elements in the color map. Default 256.
-%    gam   - (Optional) Luminance, but not for rg or bw. Default 1.
+%    gam   - (Optional) Set gamma value (default = 1)
 %
 % Outputs:
 %    cm    - The color map to return
-%
-% Notes:
-%    * [Note: XXX - (Copied from below) Check whether we want a gamma on
-%      the r/g/b levels. Could be an option]
 %
 
 % History:
@@ -30,20 +26,20 @@ function cm = ieCmap(cName, num, gam)
 
 % Examples:
 %{
-    rg  = ieCmap('rg', 256);
-    plot(rg)
+    rg  = ieCmap('rg', 256,1);
+    imagesc(rand(128,128)); colormap(rg); colorbar;
+    rg  = ieCmap('rg', 256, .5); colormap(rg); colorbar;
 %}
 %{
 	by  = ieCmap('by', 256);
     plot(by)
+    imagesc(rand(128,128)); colormap(by); colorbar;
 %}
 %{
 	lum = ieCmap('bw', 256, 0.3);
     plot(lum)
 %}
 
-% [Note: XXX - Check whether we want a gamma on the r/g/b levels. Could be
-% an option]
 if notDefined('cName'), cName = 'rg'; end
 if notDefined('num'), num = 256; end
 if notDefined('gam'), gam = 1; end
@@ -60,10 +56,13 @@ switch cName
         cm = [a(:), a(:), flipud(a(:))];
         
     case {'luminance', 'blackwhite', 'bw'}
-        cm = gray(num) .^ gam;
+        cm = gray(num);
         
     otherwise
         error('Unknown color map name %s\n', cName);
 end
 
-return
+% All maps can have the gamma applied
+cm = cm.^gam;
+
+end

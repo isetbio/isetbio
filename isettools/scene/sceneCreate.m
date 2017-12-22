@@ -1106,34 +1106,38 @@ end
 %-----------------------
 function scene = sceneLstarSteps(scene,barWidth,nBars,deltaE)
 %% Scene with vertical bars in equal L* steps
-%
-% scene = sceneCreate('lstar',50,5,10);
-% vcAddAndSelectObject(scene); sceneWindow;
+%{
+ scene = sceneCreate('lstar',50,11,10);
+ ieAddObject(scene); sceneWindow;
+%}
 
 scene = initDefaultSpectrum(scene,'hyperspectral');
+wave = sceneGet(scene,'wave');
+il = illuminantCreate('equal photons');
+illEnergy = illuminantGet(il,'energy');
+whitepoint = ieXYZFromEnergy(illEnergy,wave);
 
-% Create the Y values that will define the intensities of the spd.  First,
-% equal spaced L* values
+% Create the Y values that will define the the relative spd
+% intensities.  First, equal spaced L* values
 L = (0:(nBars-1))*deltaE;
 LAB = zeros(nBars,3);
 LAB(:,1) = L(:);
 
-% Transform them to Y values
-C = makecform('lab2xyz');
-XYZ = applyCform(LAB,C);
-Y = XYZ(:,2); Y = Y/max(Y(:));
-% vcNewGraphWin; plot(Y)
+% Transform these to Y values
+XYZ = ieLAB2XYZ(LAB,double(whitepoint));
+reflectance = XYZ(:,2)/whitepoint(2);
 
-% Create equal photons illuminant
-il = illuminantCreate('equal photons',sceneGet(scene,'nwave'),100);
+% Scene illuminant
+nWave = sceneGet(scene,'nwave');
 scene = sceneSet(scene,'illuminant',il);
 
 % Now, make the photon image
+illPhotons = illuminantGet(il,'photons');
 photons = ones(128,barWidth*nBars,nWave);
 for ii=1:nBars
     start = barWidth*(ii-1) + 1; stop = barWidth*ii;
     for jj=1:nWave
-        photons(:,start:stop,jj) = Y(ii)*illPhotons(jj);
+        photons(:,start:stop,jj) = reflectance(ii)*illPhotons(jj);
     end
 end
 

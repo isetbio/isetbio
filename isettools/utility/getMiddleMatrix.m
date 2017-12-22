@@ -17,13 +17,6 @@ function middleM = getMiddleMatrix(m, sz)
 %    middleM - The requested middle data
 % 
 % Notes:
-%    * [Note: HJ/BW - Changed from round to floor on March 19, 2015. We are
-%      worried, but it had no effect on validationfastall and the routine
-%      is only called in a few places where this should be OK. Delete this
-%      comment after a few months.]
-%    * [Note: JNM - 1) Is it safe to delete the prior note? 2) The change
-%      to floor seems to only be in one of two instances? Is this half-
-%      change accidental or intentional?]
 %
 
 % History:
@@ -31,7 +24,7 @@ function middleM = getMiddleMatrix(m, sz)
 %    03/19/15  HJ/BW Changed from round to floor. No effect on
 %                    validationfastall. Should be ok?
 %    12/01/17  jnm   Formatting
-%
+%    12/21/17  BW    Eliminated note.
 
 % Examples:
 %{

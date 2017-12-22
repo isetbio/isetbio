@@ -1,5 +1,5 @@
-function rgb = srgb2lrgb(rgb)
-% Revert srgb (nonlinear) to its precursor, linear rgb (lrgb)
+function lrgb = srgb2lrgb(srgb)
+% Transform srgb (nonlinear) to linear rgb (lrgb)
 %
 % Syntax:
 %   lrgb = srgb2lrgb(srgb)
@@ -16,30 +16,26 @@ function rgb = srgb2lrgb(rgb)
 %    values is (0, 1).
 %
 % Inputs:
-%    rgb - The standard RGB coordinates, prior to manipulation.
+%    srgb - The standard SRGB coordinates, prior to manipulation.
 %
 % Outputs:
-%    rgb - The linear RGB coordinates, after sRGB manipulation.
-%
-% Notes:
-%    * [Note: XXX - Imageval scaling changes as of July, 2010, as per
-%      discussions with Brainard.]
-%    * [Note: XXX - I am concerned that the input and output variables
-%      share their name]
+%    lrgb - The linear RGB coordinates, prior to the sRGB scaling and
+%           exponent
 %
 % References:
 %    <http://en.wikipedia.org/wiki/SRGB>
 %    <http://www.w3.org/Graphics/Color/sRGB (techy)>
 %
 % See Also:
-%    lrgb2srgb, s_SRGB
-%
+%    lrgb2srgb
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
-%
+%    12/12/17  baw  Changed variable names to srgb/lrgb to respond to note
+%    12/21/17  dhb  Make sure output dimensionality matches input, to
+%                   preserve RGB or XW format from input to output.
 
 % Examples:
 %{
@@ -49,14 +45,23 @@ function rgb = srgb2lrgb(rgb)
    e = ones(1, 3) * m;
    e = round(e * 1000) / 1000
 %}
+%{
+   srgb = [1,1,1]*0.5;
+   lrgb = srgb2lrgb(srgb)
+   lrgb2srgb(lrgb)
+%}
 
-if max(rgb(:)) > 1
+if max(srgb(:)) > 1
     warning('srgb2lrgb: srgb appears to be outside the (0,1) range');
 end
 
+% Allocate lrgb as same size as srgb.  Need to to this so that format
+% (RGB or XW) is preserved by this routine.
+lrgb = zeros(size(srgb));
+
 % Change to linear rgb values
-big = (rgb > 0.04045);
-rgb(~big) = rgb(~big) / 12.92;
-rgb(big) = ((rgb(big) + 0.055) / 1.055) .^ 2.4;
+big = (srgb > 0.04045);
+lrgb(~big) = srgb(~big) / 12.92;
+lrgb(big) = ((srgb(big) + 0.055) / 1.055) .^ 2.4;
 
 end
