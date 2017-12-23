@@ -38,10 +38,10 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 % Examples:
 %{
     % ieSaveSpectralFile(wave, cones, 'Stockman Fundamentals from XXX');
-    c = 'foo';
+    comment = 'foo';
     wavelength = [400, 500, 600]';
     variable = [1, 1, 1]';
-    fullpathname = ieSaveSpectralFile(wavelength, variable, c)
+    fullpathname = ieSaveSpectralFile(wavelength, variable, comment)
     data = ieReadSpectra(fullpathname, [400:50:600])
 %}
 

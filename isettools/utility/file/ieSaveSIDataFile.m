@@ -26,7 +26,6 @@ function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName) %#ok<INUSL>
 
 % Examples:
 %{
-    % [Note: JNM - Opens GUI to retrieve file as fName is not specified.]
     psf = rand(128, 128, 31);
     wave = 400:10:700;
     umPerSamp = [0.25, 0.25];
