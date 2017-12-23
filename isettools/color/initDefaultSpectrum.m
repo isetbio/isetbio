@@ -21,12 +21,12 @@ function ieStruct = initDefaultSpectrum(ieStruct, spectralType, wave)
 %    ieStruct     - The ISET object to which you wish to attach the created
 %                   spectrum structure
 %    spectralType - One of the (currently) three supported types below.
-%           'multispectral' - 400:10:700 nm. The strings 'spectral' and
-%                             'hyperspectral' are synonyms for this.
+%           'multispectral' - Default 400:10:700 nm
 %           'monochrome'    - 550 nm
 %           'custom'        - The user supplies the wavelength samples
+%           (should be deprecated)
 %    wave         - (Optional) the wavelength samples required for a custom
-%                   spectral type
+%                   spectral type (should be deprecated)
 %
 % Outputs:
 %    ieStruct     - The structure with the spectrum field added.
@@ -53,7 +53,7 @@ if notDefined('ieStruct'), error('Input ieStruct required.'); end
 if notDefined('spectralType'), spectralType = 'hyperspectral'; end
 
 switch lower(spectralType)
-    case {'spectral', 'multispectral', 'hyperspectral'}
+    case {'multispectral', 'hyperspectral','spectral'}
         ieStruct.spectrum.wave = (400:10:700)';
         
     case 'monochrome'

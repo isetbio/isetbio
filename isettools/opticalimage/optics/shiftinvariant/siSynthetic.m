@@ -1,6 +1,8 @@
 function optics = siSynthetic(psfType,oi,varargin)
 % Create synthetic shift-invariant optics and insert into optics structure
 %
+% This function and its cousins may not be around for long in ISETBIO.
+%
 % Syntax:
 %   optics = siSynthetic(psfType,oi,varargin)
 %
@@ -15,7 +17,7 @@ function optics = siSynthetic(psfType,oi,varargin)
 %
 % psfType:  'gaussian' --  bivariate normals.  
 %           'custom'   --  read a file with variables explained below
-% oi:        Optical image
+% oi:        Optical image - Must be shift invariant type
 %
 % varargin for gaussian:                        
 %   waveSpread: size of the PSF spread at each of the wavelength
@@ -30,44 +32,50 @@ function optics = siSynthetic(psfType,oi,varargin)
 % See also:  s_SIExamples, ieSaveSIOpticsFile
 %  s_FFTinMatlab for an explanation of some of the operations in here.
 %
+
 % Examples:
-%  oi = vcGetObject('oi'); wave = oiGet(oi,'wave');
-%  psfType = 'gaussian'; 
-%  waveSpread = wave/wave(1);
-%
-% Circularly symmetric Gaussian
-%  xyRatio = ones(1,length(wave));
-%  optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
-%
+%{
+  oi = oiCreate('shift invariant');
+  oi = initDefaultSpectrum(oi,'spectral');
+  wave = oiGet(oi,'wave');
+  psfType = 'gaussian'; 
+  waveSpread = wave/wave(1);
+
+ % Circularly symmetric Gaussian
+  xyRatio = ones(1,length(wave));
+  optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
+  oi = oiSet(oi,'optics',optics);
+  oiPlot(oi,'otf 550');
+%}
+%{
 % Make one with an asymmetric Gaussian
-%  xyRatio = 2*ones(1,length(wave));
-%  optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
-%
-% Convert a custom file to an optics structure
-%  ieSaveSIOpticsFile(rand(128,128,31),(400:10:700),[0.25,0.25],'custom.mat');
-%  inFile = 'custom'; outFile = 'deleteMe.mat'
-%  optics = siSynthetic('custom',oi,inFile,outFile);
-%
-% Do not write out file
-%  optics = siSynthetic('custom',oi,'custom',[]);  
-%
+  xyRatio = 2*ones(1,length(wave));
+  optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
+  oi = oiSet(oi,'optics',optics);
+  oiPlot(oi,'otf 550');
+%}
 
 % History:
 %                 Copyright ImagEval Consultants, LLC, 2005.
 % 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
 %           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
-
+%           BW    We might just eliminate a lot of this set of SI methods.  
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
 if notDefined('oi'), oi = vcGetObject('oi'); end
-inFile = [];
+
+if ~strcmp(oiGet(oi,'optics model'),'shiftinvariant')
+    error('oi model must be "shift invariant"');
+end
+
+inFile  = [];
 outFile = [];
 
 % Wavelength samples
 wave = oiGet(oi,'wave');
 nWave = length(wave);
 
-% Make array for new OTF
+%% Make array for new OTF
 optics = oiGet(oi,'optics');
 otfSamples = opticsGet(optics,'otf size');
 if (otfSamples(1) ~= otfSamples(2))
@@ -87,7 +95,9 @@ switch lower(psfType)
         xSpread = varargin{1};    % Spread is in units of um here
         xyRatio = varargin{2};
         ySpread  = xSpread(:) .* xyRatio(:);
-        if length(varargin) == 3, outFile = varargin{3}; else outFile = []; end
+        if length(varargin) == 3, outFile = varargin{3}; 
+        else, outFile = []; 
+        end
         
         % Convert spread from microns to millimeters because OTF data are stored in
         % line pairs per mm
@@ -114,18 +124,18 @@ switch lower(psfType)
             % Find a file by asking user
             inFile = ...
                 vcSelectDataFile('stayPut','r','mat','Select custom SI optics');
-            if isempty(inFile), 
+            if isempty(inFile) 
                 disp('User canceled'); optics = []; return;
             end
         elseif ischar(varargin{1})
             % This is a file name.  Load it and get parameters
             tmp = load(varargin{1});
             if ~isfield(tmp,'psf'),  error('Missing psf variable');
-            else psfIn = tmp.psf; end
+            else, psfIn = tmp.psf; end
             if ~isfield(tmp,'wave'), error('Missing wave variable');
-            else wave = tmp.wave; end
+            else, wave = tmp.wave; end
             if ~isfield(tmp,'umPerSamp'), error('Missing wave variable');
-            else mmPerSamp = (tmp.umPerSamp)/1000; end
+            else, mmPerSamp = (tmp.umPerSamp)/1000; end
         elseif isstruct(varargin{1})
             % The data were sent in as a iset shift-invariat PSF struct
             psfIn = varargin{1}.psf;
@@ -196,7 +206,7 @@ optics = opticsSet(optics,'otfwave',wave);
 optics.lens.density = 0;
 
 if isempty(outFile), return;
-else                 vcSaveObject(optics,outFile);
+else,                 vcSaveObject(optics,outFile);
 end
 
 end

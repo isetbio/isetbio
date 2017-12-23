@@ -1,4 +1,4 @@
-function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName)
+function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName) %#ok<INUSL>
 % Write file with data for shift-invariant optics
 %
 % Syntax:
@@ -30,10 +30,12 @@ function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName)
     psf = rand(128, 128, 31);
     wave = 400:10:700;
     umPerSamp = [0.25, 0.25];
-    fName = ieSaveSIDataFile(psf, wave, umPerSamp)
- 
-    oi = vcGetObject('OI');
-    optics = siSynthetic('custom', oi, fName);  
+    fname = tempname;
+    ieSaveSIDataFile(psf, wave, umPerSamp, fname);
+
+    oi = oiCreate;
+    optics = siSynthetic('custom', oi, fname);
+    delete(fname);
 %}
 
 if notDefined('psf'), error('psf volume required'); end

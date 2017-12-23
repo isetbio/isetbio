@@ -37,6 +37,8 @@ function [zzgrid, xvec] = ffndgrid(x, f, delta, limits, aver)
 %             linspace(xl1, xu1, Nx1) depending on delta.
 %
 % Notes:
+%    * [Note:  BW External function.  We aren't worrying about it.  Probably it
+%    should be in external.]
 %    * [Note: XXX - The vector limits can be padded with NaNs if only
 %      certain limits are desired, e g if xl1 and fl are wanted:
 %            ffndgrid(x, f, [], [.5 nan nan nan 45])

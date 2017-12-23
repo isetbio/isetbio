@@ -9,10 +9,10 @@ function bool = ieVarInFile(fullname, varName)
 %
 % Inputs:
 %    fullname - Typically, this is the file name. But if you already have
-%               the variables loaded via the below
+%               the variables loaded, say
 %                     variables = whos('-file', fullname);
-%               we notice that fullname is a struct and we treat it as an
-%               array of variables.
+%               we notice the struct and do the right thing.
+%
 %    varName  - The variable name string.
 %
 % Outputs:
@@ -20,25 +20,19 @@ function bool = ieVarInFile(fullname, varName)
 %               contained in the file.
 %
 % Notes:
-%    * [Note: JNM - Second example does not work the way it appears to be
-%      called. Should this be addressed or removed?]
+% 
 
 % Examples:
 %{
     fullname = fullfile(isetbioDataPath, 'human', 'XYZ.mat');
-    ieVarInFile(fullname, 'data')
-    ieVarInFile(fullname, 'xyz')
+    ieVarInFile(fullname, 'data')  % True
+    ieVarInFile(fullname, 'XYZ')   % False
 %}
 %{
-    % [Note: JNM - This function does not perform as what appears to be
-    % expected based on the rest of the function. The created variables
-    % structure follows 1 row with 9 entries for each of the 4 variables.
-    % Calling variables returns the columns from the struct.]
-
     % Alternate calling convention
     fullname = fullfile(isetbioDataPath, 'human', 'XYZ.mat');
     variables = whos('-file', fullname);
-    ieVarInFile(variables, 'xyz')
+    ieVarInFile(variables, 'data')
 %}
 
 % Decide if fullname is a file or a list of variables

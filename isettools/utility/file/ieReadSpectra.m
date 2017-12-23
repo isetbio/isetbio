@@ -9,7 +9,12 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 %    Spectral data are stored in files that include both the sampled data
 %    and the wavelength values. This routine reads the stored values and
 %    returns them interpolated or extrapolated to the values in parameter
-%    wave. Also see ieReadColorFilter.
+%    wave. 
+%
+%    IMPORTANT: Color filters, as opposed to general spectral
+%    functions, are handled a little differently because we also store
+%    their names. See the functions ieReadColorFilter and
+%    ieSaveColorFilter
 %
 %    The spectral files are created by ieSaveSpectralFile, and the format
 %    is determined by that function.
@@ -37,11 +42,6 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 %    partialName - Partial filename
 % 
 % Notes:
-%    * [Note: XXX - IMPORTANT: Color filters are handled a little
-%      differently because we also store their names. See the functions
-%      ieReadColorFilter and ieSaveColorFilter]
-%    * [Note: XXX - If you are reading a color filter, you should probably
-%      use ieReadColorFilter rather than this routine]
 %
 % See Also:
 %    ieReadColorFilter, ieSaveSpectralFile
@@ -53,11 +53,9 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 
 % Examples:
 %{
-    % [Note: JNM - GUI to query user for file as name is missing]
-    fullName = vcSelectDataFile([]);
     wave = 400:10:700;
-    data = ieReadSpectra(fullName, wave)
-    [data, wave] = ieReadSpectra(fullName)
+    data = ieReadSpectra('D65', wave)
+    [data, wave] = ieReadSpectra('D50',400:5:660)
 %}
 
 if notDefined('fname'), fname = ''; end
