@@ -30,11 +30,6 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 %    None.
 %
 % Notes:
-%    * [Note: XXX - Function has a problem settiing the font size of the
-%      legend sometimes. If the legend font is the wrong size, call this
-%      function again. The second call corrects the problem. We believe
-%      this to be a Matlab problem.] [Note: JNM - Is this still happening
-%      with the current version of MATLAB?]
 %
 
 % History:
@@ -94,4 +89,4 @@ set(axs, 'FontName', fontName, 'FontSize', fontSize(2));
 set(axs, 'Units', 'inches');
 set(axs, 'Position', [border(1:2), (figSize - border(1:2) - border(3:4))]);
 
-return;
+end

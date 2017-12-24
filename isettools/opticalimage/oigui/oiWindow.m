@@ -1103,31 +1103,27 @@ return;
 function menuHelp_Callback(hObject, eventdata, handles)
 return;
 
-% --------------------------------------------------------------------
-% function menuHelpISETmanual_Callback(hObject, eventdata, handles)
-% ieManualViewer('pdf','ISET_Manual');
-% return;
 
 % --------------------------------------------------------------------
 function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
-web('http://imageval.com/documentation/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpOpticsOnline_Callback(hObject, eventdata, handles)
 % Help | Optics functions
-web('http://www.imageval.com/public/ISET-Functions/ISET/opticalimage/optics/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpOIOnline_Callback(hObject, eventdata, handles)
 % Help | Optics functions
-web('http://www.imageval.com/public/ISET-Functions/ISET/opticalimage/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 % Help | ISET functions
-web('http://www.imageval.com/public/ISET-Functions/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;

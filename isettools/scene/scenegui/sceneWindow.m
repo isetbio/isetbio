@@ -1177,25 +1177,19 @@ function menuHelp_Callback(hObject, eventdata, handles)
 return
 
 % --------------------------------------------------------------------
-% function menuHelpISETmanual_Callback(hObject, eventdata, handles)
-% % Help | Iset manual (pdf)
-% ieManualViewer('pdf','ISET_Manual');
-% return
-
-% --------------------------------------------------------------------
 function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
-web('http://imageval.com/documentation/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return
 
 % --------------------------------------------------------------------
 function menuHelpSceneProgrammers_Callback(hObject, eventdata, handles)
 % Help | Scene Programmers (online)
-web('http://www.imageval.com/public/ISET-Functions/ISET/scene/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return
 
 % --------------------------------------------------------------------
 function menuHelpProgGuide_Callback(hObject, eventdata, handles)
 % Help | Iset Programmers (online)
-ieManualViewer('manual');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return
