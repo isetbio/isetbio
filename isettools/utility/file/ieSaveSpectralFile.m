@@ -19,12 +19,6 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %                   double, single, compressed32, compressed16 
 %
 % Notes:
-%    * [Note: JNM - Example only works if you save the data file as
-%      fullpathname.mat, otherwise will return an error when you attempt to
-%      read the file. Is this a problem with the function? Please note that
-%      I commented out the first line of the example because it calls
-%      variables that are not instantiated and it didn't seem to relate to
-%      the rest of the example.]
 %
 % See Also:
 %   ieSaveColorFilter, ieReadColorFilter
@@ -34,15 +28,17 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/27/17  jnm  Formatting
 %    11/29/17  jnm  Added Note about example
+%    12/24/17   BW  Fixed problems noted by JNM
 
 % Examples:
 %{
-    % ieSaveSpectralFile(wave, cones, 'Stockman Fundamentals from XXX');
     comment = 'foo';
     wavelength = [400, 500, 600]';
     variable = [1, 1, 1]';
-    fullpathname = ieSaveSpectralFile(wavelength, variable, comment)
+    fname = fullfile(tempdir,'sifile.mat');
+    fullpathname = ieSaveSpectralFile(wavelength, variable, comment,fname)
     data = ieReadSpectra(fullpathname, [400:50:600])
+    delete(fullpathname)
 %}
 
 if notDefined('data') , error('data required.'); end
@@ -91,6 +87,6 @@ switch dFormat
         error('Unknown data format %s\n', dFormat);
 end
 
-save fullpathname wavelength data comment dFormat;
+save(fullpathname,'wavelength','data','comment','dFormat');
 
 end
