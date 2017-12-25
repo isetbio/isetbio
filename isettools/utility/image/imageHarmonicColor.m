@@ -53,38 +53,31 @@ function [img, parms] = imageHarmonicColor(parms)
 
 % Examples:
 %{
-    [img, p] = imageHarmonic;
-    figure;
-    imagesc(img)
-    colormap(gray);
-    axis image
+    params = harmonicP;
+    vcNewGraphWin; imagesc(img)
+    colormap(gray); axis image
 
-    parms.row = 32;
-    parms.col = 32;
+    clear params;
+    parms.row = 32; parms.col = 32;
     parms.contrast = 1; 
     parms.ph = pi / 2;
     parms.freq = 2;
-    parms.ang = pi / 6;
+    parms.ang = pi/6;
     parms.GaborFlag = 0.2;
-    parms.color = 2
-    [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
+    parms.color = 2;
+    img = imageHarmonic(parms);
+    vcNewGraphWin; imagesc(img); colormap(gray); axis image
 %}
 %{
     % Now, for a sum of two harmonics
+    params = harmonicP;
     parms.freq(2) = 3;
     parms.ang(2) = parms.ang(1);
     parms.contrast(2) = 1;
     parms.ph(2) = pi / 2;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
-    plot(img(16, :))
+    vcNewGraphWin; imagesc(img); colormap(gray); axis image
+    vcNewGraphWin; plot(img(16, :))
 %}
 
 % parms = paramsGaborColorOpponent()

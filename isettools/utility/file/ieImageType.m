@@ -19,8 +19,6 @@ function imageType = ieImageType(fullName)
 %    imageType - The image type. Options are monochrome and RGB.
 %
 % Notes:
-%    * [Note: JNM - TODO: When 2015B is cycled out, replace instances of
-%      strfind with contains.]
 %
 
 % History:

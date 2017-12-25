@@ -32,17 +32,16 @@ function figH = hcimage(hc, varargin)
 % History:
 %    xx/xx/xx       (c) Imageval
 %    12/05/17  jnm  Formatting
+%    12/25/17   BW  Made movie work fixed other errors.
 
 % Examples:
 %{
-    % The example doesn't work! File path hyperspectral (let alone file
-    % itself) does not exist!
-    fname = fullfile(isetbioDataPath, 'images', 'hyperspectral', ...
-        'surgicalSWIR.mat');
-    load(fname, 'hc');
+    fname = fullfile(isetbioDataPath, 'images', 'multispectral', ...
+            'StuffedAnimals_tungsten-hdrs.mat');
+    photons = vcReadImage(fname,'multispectral');
     nWave = size(hc, 3);
-    hcimage(hc, 'image montage');
-    hcimage(hc, 'movie');
+    hcimage(photons, 'image montage');
+    hcimage(photons, 'movie');
 %}
 
 if notDefined('hc'), error('hypercube image data required'); end
@@ -77,11 +76,17 @@ switch dType
 
     case 'movie'
         % Show the hypercube data as a movie
-        hc = 256 * double(hc / max(hc(:)));
-        mp = mplay(hc); 
-        mFig = mp.hfig;
-        set(mFig, 'name', sprintf('Hypercube wavebands: %d', size(hc, 3)));
-        
+        if exist('implay','file')
+            % Maybe we should be using a different player?
+            hc = double(hc / max(hc(:)));
+            implay(hc);
+        else
+            % May not work
+            hc = 256 * double(hc / max(hc(:)));
+            mp = mplay(hc);
+            mFig = mp.hfig;
+            set(mFig, 'name', sprintf('Hypercube wavebands: %d', size(hc, 3)));
+        end
     otherwise
         error('Unknown hc image display type: %s', dType);
 end

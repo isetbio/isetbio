@@ -63,19 +63,9 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %    mcCOEF     - Coefficients for basis functions for multispectral SPD
 %
 % Notes:
-%    * [Note: JNM - Removed break point at the check for whether or not
-%      imageType exists.]
 %    * [Note: JNM - There are a number of programming notes, would it be
 %      better to combine them in another fashion? Or should we leave them
 %      as-is for the most part?]
-%    * [Note: XXX - TODO: Make this a function. [photons, basis] =
-%      ieReadMultispectralCoef(fullname);]
-%    * [Note: XXX - (Copied from below. Who is Joyce and why hasn't the
-%      explanation been added yet?) The variable photons should be stored,
-%      there is no linear model. We fill the basis slots. Also, we allow
-%      the photons to be stored in 'photons' or 'data'. We allow the
-%      wavelength to be stored in 'wave' or 'wavelength'. Ask Joyce why.]
-%    * [Note: JNM - Why use warndlg instead of warning?]
 %
 % See Also:
 %    displayCompute, v_displayLUT, vcSelectImage, sceneFromFile
@@ -331,7 +321,7 @@ switch lower(imageType)
                 load(fullname, 'illuminant')
             else
                 % illuminant = [];
-                warndlg('No illuminant information in %s\n', fullname);
+                warning('No illuminant information in %s\n', fullname);
             end
             
             % Force photons to be positive
@@ -341,11 +331,9 @@ switch lower(imageType)
             % The variable photons should be stored, there is no linear
             % model. We fill the basis slots. Also, we allow the photons
             % to be stored in 'photons' or 'data'. We allow the wavelength
-            % to be stored in 'wave' or 'wavelength'. Ask Joyce why.
+            % to be stored in 'wave' or 'wavelength'.
             disp('Reading multispectral data with raw data.')
             
-            % Make this function.
-            % [photons, basis] = ieReadMultispectralRaw(fullname);
             
             if ieVarInFile(variables, 'photons')
                 load(fullname, 'photons');
@@ -387,7 +375,7 @@ switch lower(imageType)
         if ieVarInFile(variables, 'illuminant')
             load(fullname, 'illuminant')
         else
-            warndlg('No illuminant information in %s\n', fullname);
+            warning('No illuminant information in %s\n', fullname);
         end
         illuminant = illuminantModernize(illuminant);
         

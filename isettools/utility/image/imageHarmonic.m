@@ -55,10 +55,9 @@ function [img, parms] = imageHarmonic(parms)
 %{
     [img, p] = imageHarmonic;
     vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
-
+    imagesc(img); colormap(gray); axis image
+%}
+%{
     parms.row = 32;
     parms.col = 32;
     parms.contrast = 1; 
@@ -67,30 +66,24 @@ function [img, parms] = imageHarmonic(parms)
     parms.ang = pi / 6;
     parms.GaborFlag = 0.2;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
+    vcNewGraphWin; imagesc(img); colormap(gray); axis image
 %}
 %{
     % Now, for a sum of two harmonics
-    parms.freq = [1, 3];
+    clear params;
+    parms.GaborFlag = .2;
+
+    parms.freq = [6, 2];
     parms.ang = [0, pi / 2];
-    parms.contrast = [0.5 0.5];
+    parms.contrast = [0.7 0.5];
     parms.ph = [ 0 0];
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
-    plot(img(16, :))
-
+    vcNewGraphWin;  imagesc(img); colormap(gray); axis image
+%}
+%{
     parms.GaborFlag = 0;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;
-    imagesc(img)
-    colormap(gray);
-    axis image
+    vcNewGraphWin;   imagesc(img); colormap(gray); axis image
 %}
 
 % If no parameters sent, use the default.
@@ -122,9 +115,9 @@ y = y - y(end) / 2;
 
 % Calculate the gabor window, or, if the space parameter is negative, the
 % half-cosine
-if parms.GaborFlag
+if parms(1).GaborFlag
     sigmaParam = parms.GaborFlag * min(parms.row, parms.col);
-    if (parms.GaborFlag > 0)
+    if (parms(1).GaborFlag > 0)
         g = fspecial('gauss', size(X), sigmaParam);
     else
         xArg = pi * parms.col * X / (-2 * sigmaParam);

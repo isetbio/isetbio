@@ -19,7 +19,9 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 %    rect   - rectangle used for cropping
 %
 % Notes:
-%    * [Note: JNM - Example does not work!]
+%
+% See also:  hcimage, hcimageRotateClip
+
 
 % History:
 %    xx/xx/xx       (c) Imageval
@@ -27,8 +29,8 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 
 % Examples:
 %{
-    img = macbethChartCreate;
-    [hc, rect] = hcimageCrop(img, [], 1)
+    mcc = macbethChartCreate;
+    [hc, rect] = hcimageCrop(mcc.data, [], 1);
 %}
 
 if notDefined('img'), error('hyper cube image required'); end
