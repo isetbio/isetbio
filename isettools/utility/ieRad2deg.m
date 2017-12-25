@@ -16,8 +16,6 @@ function d = ieRad2deg(r, units)
 %    d     - Calculated degrees
 %
 % Notes:
-%    * [Note: JNM - Changed varargin to units to support the function.
-%      Fixed examples]
 %
 
 % History:

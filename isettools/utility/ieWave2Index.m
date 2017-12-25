@@ -21,8 +21,6 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 %               wave value
 %
 % Notes:
-%    * [Note: XXX - Programming Note: We could return weights that might be
-%      used for interpolation such as idx1 wgt1 idx2 wgt2 if requested.]
 %
 % See Also:
 %    ieFieldHeight2Index
@@ -39,7 +37,7 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 	[idx1, idx2] = ieWave2Index(waveList, 487)
 %}
 
-[v, idx1] = min(abs(waveList - wave));
+[~, idx1] = min(abs(waveList - wave));
 
 % Determine two indices that bound the wavelength value.
 if nargout == 2

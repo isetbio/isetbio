@@ -26,7 +26,6 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 %    ucData   - uncompressed data
 %
 % Notes:
-%    * [Note: JNM - I removed the empty "if s > mxCompress" loop]
 %
 % See Also:
 %    ieCompressData

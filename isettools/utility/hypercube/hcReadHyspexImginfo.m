@@ -18,11 +18,9 @@ function info = hcReadHyspexImginfo(filename)
 %    info     - The ENVI image header information
 %
 % Notes:
-%    * [Note: JNM - When 2015B is cycled out for regression testing, update
-%      the isempty(strfind(...) statements to contains(...)]
+%
 % See Also:
 %    hcReadHyspex
-%
 
 % History:
 %    xx/xx/xx  th   Created. Author: trym.haavardsholm@ffi.no
