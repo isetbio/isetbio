@@ -16,12 +16,7 @@ function [oType, p] = ieParameterOtype(param)
 %    p     - The parameter
 %    
 % Notes:
-%    * [Note: XXX - This routine will require continual maintenace to
-%      maintain consistency with the specific object gets and sets.]
-%    * TODO:  We will need to add 'cone' and 'macular'
-%    * TODO: Need to decide where the rt/raytrace goes. Not organized
-%      correctly yet. A lot of these should go away because they are
-%      related to objects not in ISETBIO, but only in ISET.
+%    * [Note:  BW - Removed  ISET specific cases.  ]
 %    * [Note: JNM - rtpsfsize was listed 2x in the switch case for
 %      ieParamFormat. I left it in oi and removed it from optics (based on
 %      order of case appearance. If this is not correct, please let me know
@@ -33,26 +28,14 @@ function [oType, p] = ieParameterOtype(param)
 
 % Examples:
 %{
-    oType = ieParameterOtype('sensor dsnu')
     [oType, p] = ieParameterOtype('optics/fnumber')
-%}
-%{
-    % Some will work without disambiguation because they are unique
-    oType = ieParameterOtype('dsnu')
-%}
-%{
-    % We also can take in the varargin, such as for units
-	[oType, p] = ieParameterOtype('pixel/size');
 %}
 %{
     % This one won't work because size is available for too many objects
 	ieParameterOtype('size')
 %}
 %{
-  [o p] = ieParameterOtype('dsnu sigma')
-  ieParameterOtype('sensor dsnu sigma')
   [o p] = ieParameterOtype('oi size')
-  [o p] = ieParameterOtype('pixel size')
   [o p] = ieParameterOtype('scene/hfov')
   [o p] = ieParameterOtype('scene hfov')
   [o p] = ieParameterOtype('optics/fnumber')
@@ -74,16 +57,10 @@ switch ieParamFormat(param)
         oType = 'optics'; return;
     case 'lens'
         oType = 'lens'; return;
-    case 'macular'
-        oType = 'macular'; return;
-    case 'cone'
-        oType = 'cone'; return
-    case 'sensor'
-        oType = 'sensor'; return;
-    case 'pixel'
-        oType = 'pixel'; return;
-        % case {'vci', 'ip'}
-        %     oType = 'ip'; return;
+        %     case 'macular'  % Should delete, I think.  Part of cone
+        %         oType = 'macular'; return;
+        %     case 'cone'     % Should delete, I think.
+        %         oType = 'cone'; return
     case {'em', 'eyemove', 'eyemovement'}
         oType = 'em'; return;
 end
@@ -111,12 +88,12 @@ if ~isempty(pos)
             oType = 'optics';
         case 'lens'
             oType = 'lens';
-        case 'sensor'
-            oType = 'sensor';
-        case 'pixel'
-            oType = 'pixel';
-            %         case {'vci', 'ip'}
-            %             oType = 'ip';
+            %         case 'sensor'
+            %             oType = 'sensor';
+            %         case 'pixel'
+            %             oType = 'pixel';
+            %             %         case {'vci', 'ip'}
+            %             %             oType = 'ip';
         case {'em', 'eyemove', 'eyemovement'}
             oType = 'em';
     end

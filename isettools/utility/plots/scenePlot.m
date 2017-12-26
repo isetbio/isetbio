@@ -68,12 +68,6 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %    g        - The figure handle information
 %
 % Notes:
-%    * [Note: JNM - in radiancevlineimage case below, y was defined and
-%      then x used, I have changed it to x in both places. Please advise if
-%      both are supposed to be set (y was unused and x called before
-%      definition is how I noticed this).]
-%    * [Note: JNM - illuminantimage didn't have handle initiated. Fixed]
-%    * [Note: JNM - When 2015B phases out, replace strfind with contains.]
 %
 % See Also:
 %    s_scenePlot, oiPlot, scenePlotRadiance
@@ -82,15 +76,15 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/11/17  jnm  Formatting, fix examples section, some edits.
+%    12/25/17   BW  Addressed JNM comments. Added example info
 
 % Examples:
 %{
-    % See s_scenePlot
+    % See s_scenePlot for additional examples
     s = sceneCreate;
     ieAddObject(s); sceneWindow;
     scenePlot(s,'radiance v line spectrum');
     scenePlot(s,'radiance h line spectrum');
-
 %}
 
 if notDefined('scene'), scene = vcGetObject('scene'); end
