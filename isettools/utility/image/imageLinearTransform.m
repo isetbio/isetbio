@@ -65,8 +65,10 @@ function imT = imageLinearTransform(im, T)
     imagescRGB(imRGB);
 %}
 
-%% Determine image format, converting to XW
-if ndims(im) == 3
+%% Determine image format to convert to XW
+
+% Not sure why, but ismatrix() did not work here.
+if ndims(im) == 3 || ((ndims(im) == 2) && (size(T,1) == 1)) %#ok<ISMAT>
     iFormat = 'RGB';
     % Save  the image row/col information
     [r, c, w] = size(im);

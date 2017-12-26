@@ -91,7 +91,7 @@ if ischar(I)
         if strcmp(I((end-2):end),'mat')
             if ieVarInFile(I, 'scene'), load(I,'scene'); return; end
         end
-    else error('No file named %s\n',I);
+    else, error('No file named %s\n',I);
     end
 end
 %% Determine the photons and illuminant structure
@@ -161,7 +161,7 @@ switch lower(imType)
         
         % Set field of view
         if ischar(I), imgSz = size(imread(I), 2); 
-        else imgSz = size(I, 2); end
+        else, imgSz = size(I, 2); end
         imgFov = imgSz * displayGet(d, 'deg per dot');
         scene  = sceneSet(scene, 'h fov', imgFov);
         scene  = sceneSet(scene,'distance',displayGet(d,'viewing distance'));
@@ -194,7 +194,7 @@ if ieSessionGet('gpu compute')
 end
 
 if ischar(I), scene = sceneSet(scene, 'filename', I); 
-else scene = sceneSet(scene, 'filename', 'numeric input');
+else, scene = sceneSet(scene, 'filename', 'numeric input');
 end
 scene = sceneSet(scene, 'photons', photons);
 scene = sceneSet(scene, 'illuminant', il);
@@ -202,7 +202,7 @@ scene = sceneSet(scene, 'illuminant', il);
 % Name the scene with the file name or just announce that we received rgb
 % data.  Also, check whether the file contains 'fov' and 'dist' variables
 % and stick them into the scene if they are there
-if ischar(I), 
+if ischar(I) 
     [~, n, ~] = fileparts(I);  % This will be the name
     if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'fov')
         load(I,'fov'); scene = sceneSet(scene,'fov',fov);
@@ -210,7 +210,7 @@ if ischar(I),
     if strcmp(I((end-2):end),'mat') && ieVarInFile(I,'dist')
         load(I,'dist'), scene = sceneSet(scene,'distance',dist);
     end
-else n = 'rgb image';
+else, n = 'rgb image';
 end
 
 if exist('d', 'var'), n = [n ' - ' displayGet(d, 'name')]; end
