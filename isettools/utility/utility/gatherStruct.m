@@ -5,7 +5,10 @@ function obj = gatherStruct(obj)
 %	function obj = gatherStruct(obj)
 %
 % Description:
-%    Gather distributed struct to current working directory
+%    Gather distributed struct to current working directory. This
+%    function is only useful in context of gpu  computing. If there's
+%    no distributed field (e.g. gpuArray) in obj, the output will be
+%    the same as the input.
 %
 % Inputs:
 %	 obj  - A variable or structure, for structure, we will gather
@@ -15,9 +18,6 @@ function obj = gatherStruct(obj)
 %	 obj  - The gathered obj
 %
 % Notes:
-%	 * [Note: XXX - This function is only useful in context of gpu
-%      computing. If there's no distributed field (e.g. gpuArray) in obj,
-%      the output will be the same as the input.]
 %
 % See Also:
 %	 gather, vcAddObject, vcAddAndSelectObject

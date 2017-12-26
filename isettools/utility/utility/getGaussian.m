@@ -6,32 +6,41 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 %
 % Description:
 %    This routine generalizes the fspecial call because the bivariate
-%    Gaussian can have a general layerariance matrix.
+%    Gaussian can have a general coariance matrix.
 %
 % Inputs:
 %    rfSupport            - The support structure, containing x and y.
-%    rfCov                - A 2 x 2 layer covariance matrix
+%    rfCov                - A 2 x 2  covariance matrix
 %
 % Outputs:
 %    gaussianDistribution - The 2D Gaussian distribution
 %
-% cov is a 2x2 layer covariance matrix.
-%
 % Notes:
-%    * [Note: the meshgrid in the example below does not require both
-%      -10:10 inputs to create the desired output.]
 
 % History:
 %    xx/xx/09       (c) Stanford Synapse Team 2009
 %    12/15/17  jnm  Formatting
-
+%    12/26/17   BW  Added examples
+%
 % Examples:
 %{
+    % No angle, just scale along axes
     [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
     rfCcov = [5 0; 0 9]; 
     g = getGaussian(rfS, rfCcov);
-    vcNewGraphWin;
-    mesh(rfS.X, rfS.Y, g);
+    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
+%}
+%{
+    % Orientation set in the quadratic form
+    rfCcov = [5 -2.5; -2.5 5]; 
+    g = getGaussian(rfS, rfCcov);
+    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
+%}
+%{
+    % Build the quadratic form
+    A = [1 0; 1 1]; rfCof = A*A';
+    g = getGaussian(rfS, rfCcov);
+    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
 %}
 
 %% N-dimensional Gaussian
