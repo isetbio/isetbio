@@ -14,12 +14,8 @@ function imageShowImage(vci, gam, trueSizeFlag, figNum)
 % image processing window.
 %
 % Notes:
-%    * [Note: BAW - TODO: I am concerned about the ordering of the ^ gam
-%      and the scale operations. Perhaps scaling should be first, and then
-%      the gamma. As things stand, we apply gamma and then scale. I am also
-%      unsured why the sRGB doesn't look better. Especially since it looks
-%      good in the other windows.]
-
+%    * Scaling is (x^g)*scale, which is equivalent to (x*scale^(1/g))^g
+%
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/08/17  jnm  Formatting
