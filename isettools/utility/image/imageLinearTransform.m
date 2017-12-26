@@ -1,29 +1,34 @@
 function imT = imageLinearTransform(im, T)
-% Apply a linear transformation to the color channels of an RGB image 
+% Apply a linear transformation to the channels of an RGB or XW image 
 %
 % Syntax:
 %   imT = imageLinearTransform(im, T)
 %
 % Description:
-%    The image data (im) are in the N x M X W format, (e.g., W = 3 if RGB
-%    or W = 31 if the wavelength samples are 400:10:700). The routine
-%    applies a right side multiply to the data. Specifically, if an image
-%    point is represented by the row vector, p = [R, G, B] the matrix
-%    transforms each color point, p, to an output vector pT. In this case,
-%    T has 3 rows.
+%    The image data (im) can be in the N x M X W format, (e.g., W = 3
+%    if RGB or W = 31 if the wavelength samples are 400:10:700). The
+%    routine applies a right side multiply to the data. Specifically,
+%    if an image point is represented by the row vector, p = [R, G, B]
+%    the matrix transforms each color point, p, to an output vector
+%    pT. In this case, T has 3 rows.
+%
+%    The image can also be in XW format, in which case the transform
+%    is applied as XW * T, where T is expressed as a column vector.
 %
 %    If the data are viewed as wavelength samples, say [w1, w2, ...wn], 
 %    then the transform T must have n rows.
 %
-%    This routine works with colorTransformMatrix, which provides access to
-%    various standard color transformation matrices. 
+%    This routine works with colorTransformMatrix function (see
+%    Example), which provides access to various standard color
+%    transformation matrices.
 %
 %    This routine works with im in the format (N x M x W) and a T matrix
-%    size (W x K), where K is the number of output channels.
+%    size (W x K), where K is the number of output channels.  It also
+%    works with an im in XW format, again with T in (W x K) format.
 %
 % Inputs:
-%    im  - The original image, in N x M x W format.
-%    T   - The transform to enact upon the image.
+%    im  - The original image, in N x M x W format or XW format.
+%    T   - The transform to act upon the image.
 %
 % Outputs:
 %    imT - The transformed image
@@ -31,12 +36,13 @@ function imT = imageLinearTransform(im, T)
 % Notes:
 %
 % See Also:
-%    colorTransformMatrix
+%    colorTransformMatrix, RGB2XWFormat
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/07/17  jnm  Formatting & change example
+%    12/26/17   BW  Added XW format handling
 
 % Examples:
 %{
