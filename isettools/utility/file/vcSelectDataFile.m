@@ -45,12 +45,6 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 %                  operation is canceled, will be []. 
 %
 % Notes:
-%    * [Note: JNM - I commented out the ieReadSpectralData line in the
-%      example since that function name doesn't exist. Did you mean
-%      ieReadSpectra? If not, is this a function that still needs to be
-%      written? Or should this function be deprecated?]
-%    * [Note: XXX - TODO: Possibly, we should enforce the extension on the
-%      returned file name?]
 %
 
 % History:
@@ -140,6 +134,7 @@ end
 chdir(curDir)
 if isequal(fname, 0) || isequal(pname, 0)
     fullName = [];
+    disp('User canceled');
 else
     fullName = fullfile(pname, fname);
     pDir = pname;

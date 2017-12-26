@@ -29,12 +29,6 @@ function imT = imageLinearTransform(im, T)
 %    imT - The transformed image
 %
 % Notes:
-%    * [NOTE - DHB: It would be good if this accepted XW format too, and
-%      returned XW format in that case.]
-%    * [Note: JNM - Has DHB's note been addressed?]
-%    * [Note: JNM - Changed example because the existing one called
-%      imageGet - which does not show up. Changed from LMS to RGB to XYZ to
-%      RGB -- appears to be working just fine.]
 %
 % See Also:
 %    colorTransformMatrix
@@ -56,17 +50,39 @@ function imT = imageLinearTransform(im, T)
     imRGB = imageLinearTransform(imXYZ, T);
     imagescRGB(imRGB);
 %}
+%{
+    % Same operation for XW format input
+    XYZ = ieReadSpectra('XYZ.mat', 370:730);
+    imXYZ = zeros(361, 20, 3);
+    for ii=1:3
+        imXYZ(:, :, ii) = repmat(XYZ(:, ii), 1, 20);
+    end
+    [imXYZ,r,c] = RGB2XWFormat(imXYZ);
+    T = colorTransformMatrix('xyz2srgb');
+    imXW = imageLinearTransform(imXYZ, T);
 
-% Save out the image size information
-[r, c, w] = size(im);
+    imRGB = XW2RGBFormat(imXW,r,c);
+    imagescRGB(imRGB);
+%}
 
+%% Determine image format, converting to XW
+if ndims(im) == 3
+    iFormat = 'RGB';
+    % Save  the image row/col information
+    [r, c, w] = size(im);
+    
+    % Reshape the image data into a (r * c) x w format (XW)
+    im = RGB2XWFormat(im);
+else
+    iFormat = 'XW';
+    [~, w] = size(im);
+end
 if size(T, 1) ~= w, error('image/T data sizes mismatch'); end
 
-% We reshape the image data into a (r * c) x w matrix
-im = RGB2XWFormat(im);
-
-% Then we multiply and reformat. 
+%% We multiply and reformat back to RGB if necessary
 imT = im * T;
-imT = XW2RGBFormat(imT, r, c);
+if isequal(iFormat,'RGB')
+    imT = XW2RGBFormat(imT, r, c);
+end
 
 end

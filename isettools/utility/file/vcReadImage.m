@@ -63,9 +63,6 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %    mcCOEF     - Coefficients for basis functions for multispectral SPD
 %
 % Notes:
-%    * [Note: JNM - There are a number of programming notes, would it be
-%      better to combine them in another fashion? Or should we leave them
-%      as-is for the most part?]
 %
 % See Also:
 %    displayCompute, v_displayLUT, vcSelectImage, sceneFromFile

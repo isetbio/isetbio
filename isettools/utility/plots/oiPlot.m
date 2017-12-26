@@ -91,7 +91,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %      existing default.]
 %
 % See Also:
-%    s_oiPlot, and scenePlot
+%    s_oiPlot, scenePlot
 %
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
@@ -102,24 +102,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 
 % Examples:
 %{
-    % Examples do not work!
-    oi = vcGetObject('oi');
-    rows = round(oiGet(oi, 'rows') / 2);
-
-    uData = oiPlot(oi, 'irradiance hline', [1, rows])
-    uData = oiPlot(oi, 'illuminance fft hline', [1, rows])
-
-    uData = oiPlot(oi, 'contrast hline', [1, rows])
-
-    uData = oiPlot(oi, 'irradiance image grid')
-    uData = oiPlot(oi, 'irradiance image grid', [], 40)
-    uData = oiPlot(oi, 'irradiance image wave', [], 500, 40);
-
-    uData = oiPlot(oi, 'irradiance energy roi');
-
-    uData = oiPlot(oi, 'psf 550', 'um')
-    uData = oiPlot(oi, 'otf 550', 'um')
-    uData = oiPlot(oi, 'ls wavelength')
+See s_oiPlot.m
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
@@ -785,7 +768,7 @@ end
 
 if exist('udata', 'var'), set(gcf, 'userdata', udata); end
 
-return;
+end
 
 % Brought into this file from a separate function
 function udata = oiPlotIrradiance(oi, dataType, roiLocs)
@@ -810,18 +793,15 @@ function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 %    udata    - User Data structure.
 %
 % Notes:
-%    * [Note: JNM - The function specified that the user data and the
-%      graphWin figure number are returned, but the return only has a
-%      single argument?]
-%    * [Note: JNM - Should we include an error for if roiLocs is not
-%      defined since no default value is provided?]
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/12/17  jnm  Formatting
+%    12/25/17   BW  Fixed by adding roiLocs test.
 
 if notDefined('dataType'), dataType = 'photons'; end
+if notDefined('roiLocs'), error('roi locs required'); end
 
 wave = oiGet(oi, 'wave');
 irradiance = vcGetROIData(oi, roiLocs, dataType);
@@ -863,7 +843,7 @@ else
     end
 end
 
-return;
+end
 
 % Moved into oiPlot June, 2012.
 function uData = plotOTF(oi, pType, varargin)
@@ -935,7 +915,7 @@ switch lower(pType)
         % plotOTF(oi, 'otf', thisWave, nSamp);
         % OTF at a selected wavelength.
         units = 'mm';  % Units are cycles/mm
-        if strfind(pType, '550')
+        if strfind(pType, '550') %#ok<*STRIFCND>
             thisWave = 550;
         elseif length(varargin) >= 1
             thisWave = varargin{1};
@@ -1267,7 +1247,7 @@ switch lower(pType)
         error('Unknown plotOTF data type.');
 end
 
-return;
+end
 
 function uData = plotIlluminanceMesh(oi, yScale)
 % Plot optical image illuminance (lux) as a mesh
@@ -1328,7 +1308,7 @@ xlabel('um');
 ylabel('um');
 title('Illuminance');
 
-return;
+end
 
 function uData = oiPlotCIE(oi, dataType, roiLocs)
 % [Move?] plotting CIE data from optical image.
@@ -1414,7 +1394,7 @@ uData.roiLocs = roiLocs;
 oName = oiGet(oi, 'name');
 set(gcf, 'Name', sprintf('ISET-OI: %s', oName));
 
-return
+end
 
 function sz = selectPlotSupport(data, prct)
 % Used with getMiddleMatrix to pull out the 'interesting' center of a plot
@@ -1459,8 +1439,8 @@ l = (data(centerRow, :) < prct * mx);
 if max(l) == 0
     sz = centerRow - 1;
 else
-    [v, idx] = max(data(centerRow, l));
+    [~, idx] = max(data(centerRow, l));
     sz = max(25, centerRow - idx);
 end
 
-return;
+end
