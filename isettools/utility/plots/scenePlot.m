@@ -16,9 +16,9 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %        Radiance
 %          {'radiance hline'}          - Photons, Horizontal line radiance
 %          {'radiance vline'}          - Photons, Vertical line radiance
-%          {'radiance hline image'}    - Photons, Horizontal line radiance
+%          {'radiance hline spectrum'} - Photons, Horizontal line radiance
 %                                        as a spectrogram image
-%          {'radiance vline image'}    - Photons, Vertical line radiance as
+%          {'radiance vline spectrum'} - Photons, Vertical line radiance as
 %                                        a spectogram image
 %          {'radiance fft'}            - Single wavelength, Contrast
 %                                        spatial frequency amplitude
@@ -68,20 +68,15 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %    g        - The figure handle information
 %
 % Notes:
-%    * [Note: JNM - Is there a reason for us using warndlg instead of
-%      warning when calling out warnings?]
 %    * [Note: JNM - in radiancevlineimage case below, y was defined and
 %      then x used, I have changed it to x in both places. Please advise if
 %      both are supposed to be set (y was unused and x called before
 %      definition is how I noticed this).]
-%    * [Note: JNM - Several case definitions were missing commas. If this
-%      was intentional I can go back and remove them, but that doesn't
-%      appear to be what was intended.]
 %    * [Note: JNM - illuminantimage didn't have handle initiated. Fixed]
 %    * [Note: JNM - When 2015B phases out, replace strfind with contains.]
 %
 % See Also:
-%    oiPlot, scenePlotRadiance
+%    s_scenePlot, oiPlot, scenePlotRadiance
 %
 
 % History:
@@ -90,26 +85,12 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 
 % Examples:
 %{
-    % A line plot of the radiance, starting at the (x, y) point [1, rows]
-    % scene = vcGetObject('SCENE');
-    scene = sceneCreate;
-    rows = round(sceneGet(scene, 'rows') / 2);
-    scenePlot(scene, 'hline radiance', [1, rows]);
+    % See s_scenePlot
+    s = sceneCreate;
+    ieAddObject(s); sceneWindow;
+    scenePlot(s,'radiance v line spectrum');
+    scenePlot(s,'radiance h line spectrum');
 
-    % A region of interest
-    % Fourier Transform of the luminance in the row
-    uData = scenePlot(scene, 'luminance fft hline', [1, rows])
-
-    % Radiance image with an overlaid spatial grid
-    scenePlot(scene, 'radiance image with grid')
-
-    scenePlot(scene, 'illuminant photons')
-    scenePlot(scene, 'depth map')
-
-    % Reflectance data from an ROI
-    % scene = vcGetObject('scene');
-    [roiLocs, roiRect] = vcROISelect(scene);
-    [f, uData] = scenePlot(scene, 'reflectance', roiLocs);
 %}
 
 if notDefined('scene'), scene = vcGetObject('scene'); end
@@ -128,6 +109,7 @@ if notDefined('roiLocs')
               'luminancehline', ...
               'luminancefftvline', ...
               'luminanceffthline', ...
+              'radiancevlinespectrum','radiancehlinespectrum',...
               'luminancevline', 'vlineluminance', ...
               'contrasthline', 'hlinecontrast', ...
               'contrastvline', 'vlinecontrast'}
@@ -209,7 +191,7 @@ switch lower(pType)
         
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
 
@@ -244,7 +226,7 @@ switch lower(pType)
 
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         
@@ -267,18 +249,18 @@ switch lower(pType)
             grid on;
             set(gca, 'xtick', ieChooseTickMarks(pos.y, nTicks))
         end
-        colormap(mp)
+        colormap(mp); colorbar;
         
         udata.wave = wave;
         udata.pos = pos.y;
         udata.data = data';
         udata.cmd = 'mesh(pos, wave, data)';
         
-    case  {'radiancehlineimage'}
+    case  {'radiancehlinespectrum'}
         % Horizontal line radiance as a spectrogram image (photons)
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         
@@ -291,18 +273,19 @@ switch lower(pType)
         imagesc(x, wave, data');
         ylabel('Wavelength (nm)')
         xlabel('Horizontal position (mm)');
-        colormap(hot);
+        colormap(hot); colorbar;
         
         udata.wave = wave;
         udata.pos = x;
         udata.data = data';
+        udata.roiLocs = roiLocs;
         udata.cmd = 'imagesc(x, wave, data'')';
         
-    case {'radiancevlineimage'}
+    case {'radiancevlinespectrum'}
         % Vertical line radiance as a spectogram image (photons)
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
 
@@ -320,6 +303,7 @@ switch lower(pType)
         udata.wave = wave;
         udata.pos = x;
         udata.data = data';
+        udata.roiLocs = roiLocs;
         udata.cmd = 'imagesc(y, wave, data'')';
 
     case {'reflectanceroi', 'reflectance'}
@@ -370,7 +354,7 @@ switch lower(pType)
         
         data = sceneGet(scene, 'photons', selectedWave);
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         % Remove mean to generate contrast
@@ -410,7 +394,7 @@ switch lower(pType)
         
         data = sceneGet(scene, 'photons', selectedWave);
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         % Remove mean to generate contrast
@@ -546,7 +530,7 @@ switch lower(pType)
     case {'luminancehline'}
         data = sceneGet(scene, 'luminance');
         if isempty(data)
-            warndlg(sprintf('luminance data are unavailable.'));
+            warning('luminance data are unavailable.');
             return;
         end
         lum = data(roiLocs(2), :);
@@ -569,7 +553,7 @@ switch lower(pType)
 
         data = sceneGet(scene, 'luminance');
         if isempty(data)
-            warndlg(sprintf('luminance data are unavailable.'));
+            warning('luminance data are unavailable.');
             return;
         end
         lum = data(roiLocs(2), :);
@@ -592,7 +576,7 @@ switch lower(pType)
     case {'luminancevline', 'vlineluminance'}
         data = sceneGet(scene, 'luminance');
         if isempty(data)
-            warndlg(sprintf('luminance data are unavailable.'));
+            warning('luminance data are unavailable.');
             return;
         end
         lum = data(:, roiLocs(1));
@@ -614,7 +598,7 @@ switch lower(pType)
 
         data = sceneGet(scene, 'luminance');
         if isempty(data)
-            warndlg(sprintf('luminance data are unavailable.'));
+            warning('luminance data are unavailable.');
             return;
         end
         lum = data(:, roiLocs(1));
@@ -687,7 +671,7 @@ switch lower(pType)
 
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         data = squeeze(data(roiLocs(2), :, :));
@@ -695,7 +679,7 @@ switch lower(pType)
         % Percent contrast
         mn = mean(data(:));
         if mn == 0
-            warndlg('Zero mean.  Cannot compute contrast.');
+            warning('Zero mean.  Cannot compute contrast.');
             return;
         end
         data = 100 * (data - mn) / mn;
@@ -718,7 +702,7 @@ switch lower(pType)
     case {'contrastvline', 'vlinecontrast'} 
         data = sceneGet(scene, 'photons');
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
         wave = sceneGet(scene, 'wave');
@@ -727,7 +711,7 @@ switch lower(pType)
         % Percent contrast
         mn = mean(data(:));
         if mn == 0
-            warndlg('Zero mean.  Cannot compute contrast.');
+            warning('Zero mean.  Cannot compute contrast.');
             return;
         end
         data = 100 * (data - mn) / mn;
@@ -755,7 +739,7 @@ switch lower(pType)
         selectedWave = wave(round(length(wave) / 2));
         data = sceneGet(scene, 'photons', selectedWave);
         if isempty(data)
-            warndlg(sprintf('Photon data are unavailable.'));
+            warning('Photon data are unavailable.');
             return;
         end
 
@@ -773,7 +757,7 @@ switch lower(pType)
         
     case {'luminancemeshlinear', 'luminancemeshlog10', 'luminancemeshlog'}
         % scenePlot(scene, 'luminance mesh linear')
-        if strfind(pType, 'log')
+        if strfind(pType, 'log') %#ok<*STRIFCND>
             yScale = 'log';
         else
             yScale = 'linear';
