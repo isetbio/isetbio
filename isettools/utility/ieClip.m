@@ -77,4 +77,4 @@ if ~(~exist('upperBound','var') || isempty(upperBound))
     im(im > upperBound) = upperBound;
 end
 
-return;
+end

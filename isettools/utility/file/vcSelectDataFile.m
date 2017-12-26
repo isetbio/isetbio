@@ -58,8 +58,6 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
     fullName = vcSelectDataFile('session', 'r', 'tif')
     fullName = vcSelectDataFile('data', 'w')
     fullName = vcSelectDataFile('data', 'r')
-
-    data = ieReadSpectral(vcSelectDataFile('sensor'))
 %}
 
 if notDefined('dataType'), dataType = 'session'; end

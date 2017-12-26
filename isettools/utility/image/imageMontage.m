@@ -34,13 +34,9 @@ function [figH, m, cbH] = imageMontage(hc, slices, numCols, figNum)
 
 % Examples:
 %{
-    % (requires hc data, not shipped by default):
-    fname = fullfile(isetbioDataPath, 'images', 'hyperspectral', ...
-        'surgicalSWIR.mat');
-    d = load(fname, 'hc');
-    nWave = size(d.hc, 3);
-    [figH, m] = imageMontage(d.hc, 1:10:nWave);
-    colormap(gray)
+    hc = macbethChartCreate;
+    imageMontage(hc.data);
+    colormap(gray); axis image
 %}
 
 if notDefined('slices'), slices = []; end
