@@ -15,7 +15,6 @@ function txt = addText(txt, str)
 %    txt - Modified string to return
 %
 % Notes:
-%    * [Note: JNM - mrMessage does not seem to be included by default?]
 %
 
 % History:

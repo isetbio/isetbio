@@ -74,13 +74,6 @@ if ischar(fullName),    spd = ieReadSpectra(fullName,wave);
 else                    spd = fullName;
 end
 
-% OK, this is awkward.  Almost all of the data we have stored on disk are
-% in energy format.  Almost all of the calculations we perform are on
-% photons.  So, I normally do this conversion.  If I were a better person,
-% each of the data files would have a units field (e.g., quanta/sr/s/m2 and
-% so forth) and I wouldn't have to guess.  This will come in the next
-% release.
-
 % If the scene has a current illuminant, say it is a multispectral scene,
 % then we change the illuminant information also for multiply and divide.
 switch op

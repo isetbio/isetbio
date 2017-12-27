@@ -1,4 +1,4 @@
-function [ieObject, terminalOutput, outputFile] = render(obj, varargin)
+function [ieObject, terminalOutput] = render(obj, varargin)
 % Render a scene3D object and return an optical image.
 %
 % Syntax:
@@ -21,10 +21,8 @@ function [ieObject, terminalOutput, outputFile] = render(obj, varargin)
 % Outputs:
 %    ieObject       - The Optical Image object
 %    terminalOutput - Terminal output
-%    outputFile     - The file containing the image
 %
 % Notes:
-%    * [Note: JNM - The output argument outputFile appears to be unused?]
 %    * TODO: Is clearing most of the default optics okay? Determine if
 %      there is a better way to accomplish this.
 %    * TODO: Is it possible to remove the need to specify the type and

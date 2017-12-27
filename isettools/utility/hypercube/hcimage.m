@@ -8,7 +8,7 @@ function figH = hcimage(hc, varargin)
 %    Display a hypercube image.
 %
 % Inputs:
-%    hc       - The hypercube
+%    hc       - The hypercube data
 %    varargin - (Optional) Array of arguments representing the display type
 %               and various other related information. Possibe options are:
 %               dType -  The Display type, with the options of 'mean gray',
@@ -21,12 +21,9 @@ function figH = hcimage(hc, varargin)
 %    figH     - The resulting figure
 %
 % Notes:
-%    * [Note: JNM - varargin{1} is referenced for everything, including
-%      within image montage, where varargin{1} was already used to
-%      calculate the display type.]
 %
 % See Also:
-%    mplay, imageMontage
+%    mplay, imageMontage, hcimageCrop
 %
 
 % History:
@@ -40,7 +37,7 @@ function figH = hcimage(hc, varargin)
             'StuffedAnimals_tungsten-hdrs.mat');
     photons = vcReadImage(fname,'multispectral');
     nWave = size(hc, 3);
-    hcimage(photons, 'image montage');
+    hcimage(photons, 'image montage',[1 3 5]);
     hcimage(photons, 'movie');
 %}
 
@@ -66,7 +63,7 @@ switch dType
     case {'imagemontage', 'montage'}
         nWave = size(hc, 3);
         if length(varargin) > 1
-            slices = varargin{1}; 
+            slices = varargin{2}; 
         else
             slices = 1:nWave;
         end
