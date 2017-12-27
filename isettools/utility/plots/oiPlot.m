@@ -76,12 +76,6 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %
 % This is a list of the plot types
 % Notes:
-%    * [Note: XXX - TODO: This function includes within it the previous
-%      functions plotOTF and oiPlotIrradiance. Those have been deprecated.
-%      We should write a script that tests all the different plotting calls
-%      for this function and for scenePlot. We should create a sensorPlot
-%      function that is analogous.]
-%    * [Note: JNM - TODO: Fix examples.]
 %    * [Note: JNM - TODO: Check note in illuminancefft case -- is it
 %      broken? Or does the note need to be removed?]
 %    * [Note: JNM - roiLocs are listed as optional, however a number of the
@@ -508,11 +502,7 @@ switch pType
         
     case {'illuminancefft', 'fftilluminance'}
         % oiPlot(oi, 'illuminance fft')
-        % Spatial frequency amplitude at a single wavelength. Axis range
-        % could be better.
-        
-        % [Note: XXX - This seems wrong ... it should be a get on
-        % illuminance, not photons.]
+
         data = oiGet(oi, 'illuminance');
         sz = size(data);
         udata.x = 1:sz(2);
@@ -880,9 +870,11 @@ function uData = plotOTF(oi, pType, varargin)
 %      notes below, so we can determine which are safe to remove. There are
 %      several such notes.]
 %    * [Note: BW - We get the OTF slightly differently for the different
-%      models. If we rewrote opticsGet to check for the optics model, we
-%      could do things a little more simply here. Maybe we should put this
-%      code into opticsGet.] - Copied from below.
+%      models. If we rewrote opticsGet to check for the optics model,
+%      we could do things a little more simply here. Maybe we should
+%      put this code into opticsGet.  I think DHB is unifying these
+%      computations, and we should make sure that he handles the
+%      plotting case, too]
 %    * TODO: Determine how to better select the number of samples for the
 %      spatial frequency. Currently 100 samples, the number of which is
 %      arbitrarily chosen. 
@@ -1403,11 +1395,11 @@ function sz = selectPlotSupport(data, prct)
 %   sz = selectPlotSupport(data, prct)
 %
 % Description:
-%    Sometimes we have a large surface to plot but the interesting part is
-%    near the middle of the data set. Rather than plotting the entire surf
-%    or mesh(data) we pull out a central region. This routine encapsulates
-%    the method for choosing the  extent of data we pull out. This routine
-%    is used in conjunction with getMiddleMatrix.
+%    Sometimes we have a large surface to plot but the interesting
+%    part is near the middle of the data set. Rather than plotting the
+%    entire surf or mesh(data) we pull out a central region. This  is
+%    the method for choosing the  size of the data we pull out. This
+%    method is used in conjunction with getMiddleMatrix.
 %
 % Inputs:
 %    data - The data set to plot
@@ -1420,15 +1412,13 @@ function sz = selectPlotSupport(data, prct)
 % Notes:
 %	 * [Note: XXX - What if data are a vector? Can we adjust this routine
 %	   to make it work?]
-%    * [Note: JNM - if the values are unused, why is v created rather than
-%    just the empty placeholder ~ used? (Change [v, idx] to [~, idx])]
 %
 %  See Also:
-%    meshPlot
-%
+%    meshPlot, plotOTF
+
 if notDefined('prct'), prct = 0.01; end
 
-r = size(data, 1);
+r  = size(data, 1);
 mx = max(data(:));
 centerRow = round(r / 2);
 

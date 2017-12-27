@@ -37,6 +37,9 @@ uData = oiPlot(oi,'irradiance image wave',[],500,40);
 %%
 uData = oiPlot(oi,'irradiance fft',[],450);
 
+%%
+uData = oiPlot(oi,'illuminance fft');
+
 %%  Get some roiLocs
 % uData = oiPlot(oi,'irradiance energy roi');
 
