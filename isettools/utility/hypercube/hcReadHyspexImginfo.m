@@ -1,13 +1,16 @@
 function info = hcReadHyspexImginfo(filename)
-% Read ENVI image header files
+% Read ENVI image header files (special purpose for hyperspectral
+% data)
 %
 % Syntax:
 %   info = hcReadHyspexImginfo(filename)
 %
 % Description:
-%    Reads the ENVI image header information to a struct in info. If
-%    filename is not a headerfile with extension .hdr, the extension is
-%    changed to .hdr the resulting file is assumed to exist.
+%    The ENVI data were used in an ISET data collection project, and
+%    this is a special case for that project.  The code reads the ENVI
+%    image header information to a struct in info. If filename is not
+%    a headerfile with extension .hdr, the extension is changed to
+%    .hdr the resulting file is assumed to exist.
 %
 %    Renamed for use in ISET-4.0.  Taken from read_ENVI_imginfo
 %
@@ -25,6 +28,8 @@ function info = hcReadHyspexImginfo(filename)
 % History:
 %    xx/xx/xx  th   Created. Author: trym.haavardsholm@ffi.no
 %    12/06/17  jnm  Formatting
+%    12/27/17   BW  This is not of general utility, but left in
+%    anyway.
 
 [pathstr, name, ext] = fileparts(filename);
 
