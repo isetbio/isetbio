@@ -65,7 +65,7 @@ nWaves = length(inCutFreq);
 OTF2D = zeros(r, c, nWaves);
 
 % The OTF formula used here places DC in the center of the matrix. We want
-% DC to be in the (1,1) position, so we apply an fftshift at the last step
+% DC to be in the (1,1) position, so we apply an ifftshift at the last step
 % This part can be boosted by gpu computing
 for ii = 1 : nWaves
     nFreq = rho / inCutFreq(ii);
