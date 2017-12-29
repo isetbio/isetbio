@@ -26,9 +26,9 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %           Irradiance (Irr)
 %               {'irradiance photons roi'} - Irr within an ROI of the image
 %               {'irradiance energy roi'} - Irr within an ROI of the image
-%               {'irradiance vline'} - Horizontal line spectral irradiance
+%               {'irradiance vline'} - Vertical line spectral irradiance
 %                                      (photons) - (space x wavelength)
-%               {'irradiance hline'} - Vertical line spectral irradiance
+%               {'irradiance hline'} - Horizontal line spectral irradiance
 %                                      (photons) - (space x wavelength)
 %               {'irradiance fft'} - 2D FFT of radiance at some wavelength
 %               {'irradiance image grid'} - Show spatial grid on irr image

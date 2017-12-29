@@ -9,10 +9,10 @@ scene = sceneSet(scene,'fov',4);
 oi = oiCreate; oi = oiCompute(oi,scene);
 
 %%
-[uData, g] = oiPlot(oi,'vline',[20 20]);
+[uData, g] = oiPlot(oi,'irradiance vline',[20 20]);
 
 %%
-[uData, g] = oiPlot(oi,'hline',[20 20]);
+[uData, g] = oiPlot(oi,'irradiance hline',[20 20]);
 
 %%
 [uData, g] = oiPlot(oi,'illuminance hline',[20 20]);
