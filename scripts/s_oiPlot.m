@@ -15,6 +15,7 @@ oi = oiCreate; oi = oiCompute(oi,scene);
 %% Irradiadiance along a vertical line
 % 
 % Plotted as a function of position and wavelength.
+%
 % If I knew why we need two positional arguments, I would
 % tell you here.
 [uData, g] = oiPlot(oi,'irradiance vline',[20 20]);
