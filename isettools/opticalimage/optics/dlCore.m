@@ -4,7 +4,8 @@ function OTF2D = dlCore(rho, inCutFreq)
 %    OTF2D = dlCore(rho,inCutFreq)
 %
 % This routine calculates the 2D optical transfer function (OTF) of a
-% diffraction limited optical system.
+% diffraction limited optical system.  The OTF is returned with DC in the
+% (1,1) (upper left) position.  Apply fftshift to put DC in the center.
 %
 % The 2D OTF depends only a few parameters. These are the radial distance
 % (rho) of each spatial frequency from the origin, and the input cutoff
