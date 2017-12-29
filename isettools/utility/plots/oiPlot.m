@@ -2,7 +2,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Gateway routine for plotting optical image (oi) properties
 %
 % Syntax:
-%   [udata, g] = oiPlot([oi], [pType], [xy], [wave])
+%   [udata, g] = oiPlot([oi], [pType], [roiLocs], [varargin])
 %
 % Description:
 %    Gateway routine to plot the irradiance or illuminance data in the
@@ -21,7 +21,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Inputs:
 %    oi      - (Optional) The optical Image structure. Default is to
 %              retrieve an oi object using vcGetObject.
-%    pType   - The plot type. Default is 'illuminance hline'. There are a
+%    pType   - (Optional). The plot type. Default is 'illuminance hline'. There are a
 %              vast number available, listed below, sorted by category:
 %           Irradiance (Irr)
 %               {'irradiance photons roi'} - Irr within an ROI of the image
@@ -63,12 +63,11 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   3 * incoherent cutoff). Number of spatial samples to
 %                   plot in the line spread can be set (default: 40).
 %               {'lens transmittance'} - Spectral lens transmittance. 
-%                   Computed from the lens density in the human case.
-%
-%   
+%                   Computed from the lens density in the human case. 
 %    roiLocs - (Optional) Region of Interest Locations. Default depends on
 %              the plot type in order select the region of interest.
-%    wave    - The wavelength
+%    wave/gSpacing - Additional arguments passed through varargin specify
+%              wavelength and/or grid spacing.
 %
 % Outputs:
 %    udata   - User data structure
@@ -87,16 +86,18 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % See Also:
 %    s_oiPlot, scenePlot
 %
+
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/11/17  jnm  Formatting
 %    12/22/17  dhb  Use opticsGet(...'diffractionlimitedpsfdata'...) to get
 %                   diffraction limited psf, not opticsGet(...'psf'...).
 %                   The latter seemed unfortunately named.
+%    12/28/17  dhb  Separated out into separate grouped switch statements.
 
 % Examples:
 %{
-See s_oiPlot.m
+s_oiPlot
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
@@ -105,6 +106,7 @@ if notDefined('pType'), pType = 'hlineilluminance'; end
 % Reformat the parameter - no spaces, all lower case
 pType = ieParamFormat(pType);
 
+% Set spatial locations to plot, if not set already
 if notDefined('roiLocs')
     % oiWindow;
     switch pType
@@ -132,9 +134,12 @@ g = vcNewGraphWin;
 mp = 0.4 * gray + 0.4 * ones(size(gray));
 colormap(mp);
 
+% Here we have a series of switches, each grouping together
+% plots of different basic types
+%
+% The first group is irradiance related
+isIrradiancePlot = true;
 switch pType
-    
-    % Irradiance related
     case {'irradiancephotonsroi'}
         %[uData, g] = oiPlot(oi, 'irradiance photons roi', roiLocs);
         udata = oiPlotIrradiance(oi, 'photons', roiLocs);
@@ -389,10 +394,18 @@ switch pType
         udata.xCoords = xCoords;
         udata.yCoords = yCoords;
         
-        % Illuminance and chromaticity
+    otherwise
+        % If we're here, pType did not specify an irradiance plot
+        isIrradiancePlot = false;  
+end
+
+% Switch for lluminance and chromaticity plots
+isIlluminancePlot = true;
+switch (pType)
     case {'illuminanceroi'}
         % Histogram of illuminance in an ROI
         udata = oiPlotCIE(oi, 'illuminance', roiLocs);
+        
     case {'chromaticityroi'}
         % Graph of chromaticity coords in an ROI
         udata = oiPlotCIE(oi, 'chromaticity', roiLocs);
@@ -422,6 +435,7 @@ switch pType
     case {'illuminancemeshlog'}
         % Mesh plot of image log illuminance
         udata = plotIlluminanceMesh(oi, 'log');
+        
     case {'illuminancemeshlinear'}
         % Mesh plot of image illuminance
         udata = plotIlluminanceMesh(oi, 'linear');
@@ -515,7 +529,14 @@ switch pType
         zlabel('Amplitude');
         title('Illuminance amplitude spectrum');
         
-        % Contrast related
+    otherwise
+        % If w're here, it wasn't an illuminance related plot
+        isIlluminancePlot = false;
+end
+
+% Contrast related plots
+isContrastPlot = true;
+switch (pType)
     case {'contrasthline', 'hlinecontrast'}
         % oiPlot(oi, 'contrast hline')
         % Plot percent contrast (difference from the mean as a percentage
@@ -592,7 +613,13 @@ switch pType
         udata.cmd = 'mesh(pos, wave, data)';
         set(g, 'Name', sprintf('Line %.0f', roiLocs(1)));
         
-        % Depth related
+    otherwise
+        isContrastPlot = false;
+end
+
+% Depth related
+isDepthPlot = true;
+switch (pType)
     case {'depthmap'}
         % oiPlot(oi, 'depth map')
         dmap = oiGet(oi, 'depth map');
@@ -607,6 +634,7 @@ switch pType
             set(g, 'Name', namestr);
         end
         udata.dmap = dmap;
+        
     case {'depthmapcontour', 'depthcontour'}
         % oiPlot(oi, 'depth contour')
         dmap = oiGet(oi, 'depth map');
@@ -625,7 +653,13 @@ switch pType
         axis off;
         set(g, 'Name', namestr);
         
-        % Optics related
+    otherwise
+        isDepthPlot = false;
+end
+
+% Optics related
+isOpticsPlot = true;
+switch (pType)
     case {'lenstransmittance'}
         % oiPlot(oi, 'lens transmittance')
         % If human, uses the lens object attached to oi.
@@ -753,14 +787,20 @@ switch pType
         colormap(jet)
         
     otherwise
-        error('Unknown oiPlot type %s.', pType);
+        isOpticsPlot = false;
 end
 
+% Check that a known pType was specified
+if (~isIrradiancePlot & ~isIlluminancePlot & ~isContrastPlot & ...
+        ~isDepthPlot & ~isOpticsPlot)
+            error('Unknown oiPlot type %s.', pType);
+end
+
+% Set user data for return
 if exist('udata', 'var'), set(gcf, 'userdata', udata); end
 
 end
 
-% Brought into this file from a separate function
 function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 % Plot mean irradiance within a selected ROI of the optical image window
 %
@@ -781,8 +821,6 @@ function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 %
 % Outputs:
 %    udata    - User Data structure.
-%
-% Notes:
 %
 
 % History:
@@ -835,7 +873,6 @@ end
 
 end
 
-% Moved into oiPlot June, 2012.
 function uData = plotOTF(oi, pType, varargin)
 % Plot OTF functions associated with the optics in an optical image
 %
@@ -864,7 +901,7 @@ function uData = plotOTF(oi, pType, varargin)
 %    uData - The user data structure.
 %
 % Notes:
-%	 * [Note: JNM - When 2015B cycles out, replace strfind with contains]
+%	 * [Note: JNM - When 2015b cycles out, replace strfind with contains]
 %    * TODO: Implement raytrace
 %    * [Note: JNM - TODO: Someone needs to check over the "Note: XXX - "
 %      notes below, so we can determine which are safe to remove. There are
@@ -1201,6 +1238,7 @@ switch lower(pType)
                 [fX, fY] = meshgrid(fSamp, fSamp);
                 fSupport(:, :, 1) = fX * peakF;
                 fSupport(:, :, 2) = fY * peakF;
+                
                 % The fftshift centers the OTF data so that DC is in the
                 % middle.
                 otf = dlMTF(oi, fSupport, wavelength, units);
@@ -1303,7 +1341,7 @@ title('Illuminance');
 end
 
 function uData = oiPlotCIE(oi, dataType, roiLocs)
-% [Move?] plotting CIE data from optical image.
+% Plot CIE data from optical image.
 %
 % Syntax:
 %   uData = oiPlotCIE(oi, dataType, roiLocs)

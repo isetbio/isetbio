@@ -1,6 +1,10 @@
-%% Script for testing the oiPlot routine
+% Script for testing the oiPlot routine
+%
+% Description:
+%   Exercises various plot options available for the optical image
+%   structure, via routine oiPlot.
 
-%% 
+%% Initialize isetbio
 ieInit
 
 %% Initialize the oi structure
@@ -8,18 +12,23 @@ scene = sceneCreate;
 scene = sceneSet(scene,'fov',4);
 oi = oiCreate; oi = oiCompute(oi,scene);
 
-%%
+%% Irradiadiance along a vertical line
+% 
+% Plotted as a function of position and wavelength.
+% If I knew why we need two positional arguments, I would
+% tell you here.
 [uData, g] = oiPlot(oi,'irradiance vline',[20 20]);
 
-%%
+%% Irradiadiance along a horizontal line
+% 
+% Plotted as a function of position and wavelength.
 [uData, g] = oiPlot(oi,'irradiance hline',[20 20]);
 
-%%
+%% Retinal illuminance along a horiztonal line
 [uData, g] = oiPlot(oi,'illuminance hline',[20 20]);
 
+%% 
 rows = round(oiGet(oi,'rows')/2);
-
-%%
 uData = oiPlot(oi,' irradiance hline',[1,rows]);
 
 %%
