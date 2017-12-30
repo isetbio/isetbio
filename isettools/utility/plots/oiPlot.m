@@ -98,6 +98,10 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   done in a manner consistent with recent changes to
 %                   optics, and tried to comment key points more fully.
 %                   Removed note that I should take a look.
+%              dhb  Add ifftshift for fft calls, since we view data as an
+%                   image with zero in the center.  Doesn't matter because 
+%                   only the amplitude is being plotted, but seemed like
+%                   good coding practice.
 
 % Examples:
 %{
@@ -259,14 +263,13 @@ switch pType
         
         % Plot and attach data to figure.
         %
-        % * [Note: DHB - I think that strictly speaking there should be an
-        % ifftshift in front of the fft2 call, if one views what is in data
-        % as an image with (0,0) at the center.  It probably doesn't matter
-        % since we're not looking at the phase of the fft.  I don't have
-        % the nerve to change this, however.]
+        % The ifftshift in front of the fft2 call is because we view what
+        % is in data as an image with (0,0) at the center.  It doesn't
+        % matter since we're not looking at the phase of the fft, but seems
+        % best to have as good coding practice.
         udata.x = 1:sz(2);
         udata.y = 1:sz(1);
-        udata.z = fftshift(abs(fft2(data)));
+        udata.z = fftshift(abs(fft2(ifftshift(data))));
         udata.cmd = 'mesh(x, y, z)';
         mesh(udata.x, udata.y, udata.z);
         xlabel('Cycles/ROI-image');
@@ -528,16 +531,15 @@ switch (pType)
     case {'illuminancefft', 'fftilluminance'}
         % oiPlot(oi, 'illuminance fft')
 
-        % * [Note: DHB - I think that strictly speaking there should be an
-        % ifftshift in front of the fft2 call, if one views what is in data
-        % as an image with (0,0) at the center.  It probably doesn't matter
-        % since we're not looking at the phase of the fft.  I don't quite
-        % have the nerve to change this, however.]
+        % The ifftshift in front of the fft2 call is because we view what
+        % is in data as an image with (0,0) at the center.  It doesn't
+        % matter since we're not looking at the phase of the fft, but seems
+        % best to have as good coding practice.
         data = oiGet(oi, 'illuminance');
         sz = size(data);
         udata.x = 1:sz(2);
         udata.y = 1:sz(1);
-        udata.z = fftshift(abs(fft2(data)));
+        udata.z = fftshift(abs(fft2(ifftshift(data))));
         udata.cmd = 'mesh(x, y, z)';
         mesh(udata.x, udata.y, udata.z);
         xlabel('Cycles/image');
