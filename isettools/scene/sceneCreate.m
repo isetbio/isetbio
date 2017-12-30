@@ -568,7 +568,7 @@ scene = sceneSet(scene,'illuminant',il);
 photons = zeros(sz(1),sz(2),nWave);
 for ii=1:nWave, photons(:,:,ii) = d*p(ii); end
 
-% Allocate space for the (compressed) photons
+% Allocate space for the photons
 scene = sceneSet(scene,'photons',photons);
 
 % By setting the fov here, we will not override the value in

@@ -16,7 +16,7 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %    comment      - (Optional) A string with a comment. Default is blank.
 %    fullpathname - (Optional) Full path name for output file.
 %    dFormat      - (Optional) Data format. Default is double. Options are
-%                   double, single, compressed32, compressed16 
+%                   double, single
 %
 % Notes:
 %
@@ -64,25 +64,21 @@ if notDefined('fullpathname')
 end
 if notDefined('dFormat'), dFormat = 'double'; end
 
-% Manage data format for compression.
-% This was put in for handling the hyperspectral face data. The file sizes
-% were on the order of 2GB. For distribution we decided to save them as
-% uint16 in the compressed photon format. BW/JEF
+% Manage data format 
 switch dFormat
     case 'double'
         % Do nothing - Typical for filters and simple data
     case 'single'
-        % Not yet used
         data = single(data);
-    case 'compressed32'
-        % Compression is used for image data
-        [s, mn, mx] = ieCompressData(data, 32);
-        clear data;
-        data.s = s; data.mn = mn; data.mx = mx;
-    case 'compressed16'
-        [s, mn, mx] = ieCompressData(data, 32);
-        clear data;
-        data.s = s; data.mn = mn; data.mx = mx;
+        %     case 'compressed32'
+        %         % Compression is used for image data
+        %         [s, mn, mx] = ieCompressData(data, 32);
+        %         clear data;
+        %         data.s = s; data.mn = mn; data.mx = mx;
+        %     case 'compressed16'
+        %         [s, mn, mx] = ieCompressData(data, 32);
+        %         clear data;
+        %         data.s = s; data.mn = mn; data.mx = mx;
     otherwise
         error('Unknown data format %s\n', dFormat);
 end

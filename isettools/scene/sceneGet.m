@@ -244,7 +244,7 @@ switch parm
         % sceneGet(scene,'photons',[wavelength]);
         % Read photon data.  It is possible to ask for just a single
         % waveband.
-        % Data are returned as doubles (uncompressed).
+        % Data are returned as doubles
         if checkfields(scene,'data','photons')
             if isempty(varargin)
                 % allPhotons = sceneGet(scene,'photons')
@@ -259,7 +259,7 @@ switch parm
     case {'roiphotons','roiphotonsspd'}
         % sceneGet(scene,'photons roi',rectOrlocs);
         % Read photon spd from a region of interest. Data are returned as
-        % doubles (uncompressed).
+        % doubles.
         % The roi can be xy locs or it can be a rect,
         %  [col, row, height, width]
         % The number of returned points is (height+1) * (width+1)
@@ -407,7 +407,7 @@ switch parm
     case {'roienergy'}
         % sceneGet(scene,'energy roi',rectOrlocs);
         % Read photon spd from a region of interest. Data are returned as
-        % doubles (uncompressed).
+        % doubles.
         % The roi can be xy locs or it can be a rect,
         %  [col, row, height, width]
         % The number of returned points is (height+1) * (width+1)

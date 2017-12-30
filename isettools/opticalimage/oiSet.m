@@ -33,12 +33,6 @@ function oi = oiSet(oi,parm,val,varargin)
 %    oi = oiSet(oi,'optics',optics);
 %    oi = oiSet(oi,'optics fnumber',2.8); oiGet(oi,'optics fnumber')
 %
-% N.B.: Because of the large size of the photon data (row,col,wavelength)
-% and the high dynamic range, they are stored in a special compressed
-% format.  They also permit the user to read and write individual
-% wavelength planes. Data sent in and returned are always in double()
-% format.
-%
 % After writing to the photons field, the illuminance and mean illuminance
 % fields are set to empty.
 %
@@ -83,7 +77,7 @@ function oi = oiSet(oi,parm,val,varargin)
 %
 % Private variables used by ISET but not normally set by the user
 %
-%   Used for management of compressed photons
+%   Used for management of space allocated to photons
 %      {'bit depth'}
 %
 %   Used to cache optical image illuminance
@@ -205,16 +199,15 @@ switch parm
         % Clear out derivative luminance/illuminance computations
         oi = oiSet(oi,'illuminance', []);
 
-    case {'datamin','dmin'}
-        % Only used by compressed photons. Not by user
-        error('datamin and datamax are not used anymore');
-        % oi.data.dmin = val;
-    case {'datamax','dmax'}
-        % Only used by compressed photons. Not by user
-        error('datamin and datamax are not used anymore');
-        % oi.data.dmax = val;
+        %     case {'datamin','dmin'}
+        %         error('datamin and datamax are not used anymore');
+        %         oi.data.dmin = val;
+        %     case {'datamax','dmax'}
+        %         error('datamin and datamax are not used anymore');
+        %         % oi.data.dmax = val;
     case 'bitdepth'
-        % Only used by compressed photons
+        % Only used to control space allocated to photons (single or
+        % double)
         oi.data.bitDepth = val;
 
     case {'illuminance', 'illum'}

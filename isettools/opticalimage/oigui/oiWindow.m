@@ -369,7 +369,7 @@ end
 ill = oiGet(oi,'illuminance');
 meanIll = oiGet(oi,'meanIlluminance');
 
-oi = oiSet(oi,'compressedPhotons',irrad*s);
+oi = oiSet(oi,'photons',irrad*s);
 if ~isempty(ill), oi = oiSet(oi,'illuminance',s*ill); end
 if ~isempty(meanIll), oi = oiSet(oi,'meanIlluminance',s*meanIll); end
 

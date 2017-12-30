@@ -49,7 +49,7 @@ data = bsxfun(@times, d, reshape(illPhotons, [1 1 nWave]));
 
 scene = sceneSet(scene,'illuminantPhotons',illPhotons);
 
-% Allocate space for the (compressed) photons
+% Allocate space for the photons
 scene = sceneSet(scene,'photons',data);
 scene = sceneSet(scene,'fov',40);
 

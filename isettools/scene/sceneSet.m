@@ -173,7 +173,7 @@ switch parm
         % scene = sceneSet(scene,'energy',energy,wave);
         % 
         % The user specified the scene in units of energy.  We convert to
-        % photons and set the data as compressed photons for them.
+        % photons and set the data as photons for them.
         %
         wave = sceneGet(scene,'wave');
         photons = zeros(size(val));
