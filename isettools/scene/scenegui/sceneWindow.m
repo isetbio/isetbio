@@ -248,7 +248,7 @@ if ~checkfields(scene,'data','luminance')
     [lum, meanL] = sceneCalculateLuminance(scene);
     scene = sceneSet(scene,'luminance',lum);
     scene = sceneSet(scene,'meanLuminance',meanL);
-    vcReplaceAndSelectObject(scene,val);
+    ieReplaceObject(scene,val);
 end
 
 % Plots log10 or linear luminance
@@ -264,7 +264,7 @@ function menPlotLumLin_Callback(hObject, eventdata, handles)
 
 if ~checkfields(scene,'data','luminance')
     [scene.data.luminance, scene.data.meanL] = sceneCalculateLuminance(scene);
-    vcReplaceAndSelectObject(scene,val);
+    ieReplaceObject(scene,val);
 end
 
 % Plots log10 or linear luminance as a mesh.
@@ -975,7 +975,7 @@ if isempty(newName),  return;
 else    scene = sceneSet(scene,'name',newName);
 end
 
-vcReplaceAndSelectObject(scene,val)
+ieReplaceObject(scene,val)
 sceneRefresh(hObject,eventdata,handles);
 
 return;
@@ -1132,7 +1132,7 @@ w = sceneGet(s,'wavelength');
 newWave = ieReadNumber('Enter new wavelength',w,'%.0f');
 s = sceneSet(s,'wave',newWave);
 
-vcReplaceAndSelectObject(s);
+ieReplaceObject(s);
 sceneRefresh(hObject, eventdata, handles);
 
 return;

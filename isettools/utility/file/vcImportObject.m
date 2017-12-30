@@ -75,7 +75,7 @@ switch lower(objType)
             if ~preserveDataFlag
                 oi = oiClearData(oi);
             end
-            vcReplaceAndSelectObject(oi, newVal);
+            ieReplaceObject(oi, newVal);
         end
     otherwise
         error('Unknown object type.');

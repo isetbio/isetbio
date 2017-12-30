@@ -48,7 +48,7 @@ function [scene,fullName] = sceneSPDScale(scene,fullName,op,skipIlluminant)
 %   scene = sceneCreate('uniformD65',128);
 %   skipIlluminant = 1;
 %   scene = sceneSPDScale(scene,ref,'*',skipIlluminant);
-%   vcReplaceAndSelectObject(scene); sceneWindow;
+%   ieReplaceObject(scene); sceneWindow;
 %
 % The resulting scene will still have a D65 illuminant and the energy will
 % be that illuminant times the ref function.

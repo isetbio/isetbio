@@ -103,18 +103,19 @@ hFOV = sceneGet(scene,'hfov')
 % ISETBIO is designed to have a relatively small number of parameters to
 % set and a large number of parameters to get.
 %
-% You can see the scene structure and its parameters by typing
+% You can see the scene structure by typing
 scene
 
 %% More about gets and sets
-% The objects in ISETBio can be addressed directly - but please don't. If
-% you are ever tempted to set the objects directly, go get a cup of tea.
-% When you come back, use a sceneSet.
+% The objects in ISETBIO are structs, and their values can be set directly
+% - but please don't. If you are tempted to set the objects directly,
+% go have a cup of tea. When you return, use sceneSet.
 
 % You can see the scene parameters you can set by typing
-% help sceneSet
+%    help sceneSet
+%    help sceneGet
+%
 % For a nicer formatting, use the Matlab doc command
-% For example, you might try
 %   doc sceneGet
 %   doc sceneSet
 
@@ -144,16 +145,16 @@ sceneGet(scene,'sample spacing','um')
 sceneGet(scene,'sample spacing','m')
 
 %% Creating a scene from a file
-% ISETBio includes a few multispectral scenes.  These are large files, so the
+% ISETBIO includes a few multispectral scenes.  These are large files, so the
 % default distribution only includes one example.  We have another 100 or
 % so that are available.
 fname = fullfile(isetbioDataPath,'images','multispectral','stuffedAnimals_tungsten-hdrs.mat');
 scene = sceneFromFile(fname,'multispectral');
-vcAddAndSelectObject(scene); sceneWindow;
+ieAddObject(scene); sceneWindow;
 
 %% Plotting
 % Many scene properties that can be plotted either from the scene Window or
-% using scenePlot. For example, ISETBio scenes specify a uniform illuminant by
+% using scenePlot. For example, ISETBIO scenes specify a uniform illuminant by
 % default.  You can plot the illuminant in energy units by this command.
 scenePlot(scene,'illuminant energy roi');
 
@@ -163,15 +164,14 @@ scenePlot(scene,'illuminant energy roi');
 %  vcNewGraphWin; plot(wave,illuminant); grid on
 %  xlabel('wave (nm)'); ylabel('Energy (watts/sr/nm/m^2)')
 
-
 %% You can change the illumination's spectral power distribution
 % In this case, we create a blackbody illuminant and reilluminate the
 % scene.
 bb = blackbody(sceneGet(scene,'wave'),6500,'energy');
 scene = sceneAdjustIlluminant(scene,bb);
-vcReplaceAndSelectObject(scene); sceneWindow;
+ieReplaceObject(scene); sceneWindow;
 
-%% ISETBio keeps track of units
+%% ISETBIO helps you keep track of units
 % In this case, we plot the illuminant in units of photons, rather than
 % energy.
 scenePlot(scene,'illuminant photons roi');

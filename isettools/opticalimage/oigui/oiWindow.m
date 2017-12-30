@@ -80,7 +80,7 @@ vcDeleteSelectedObject('OPTICALIMAGE');
 [val,oi] = vcGetSelectedObject('OPTICALIMAGE');
 if isempty(oi)
     oi = oiCreate;
-    vcReplaceAndSelectObject(oi,1);
+    ieReplaceObject(oi,1);
 end
 
 oiRefresh(hObject, eventdata, handles);
@@ -212,7 +212,7 @@ function btnSimulate_Callback(hObject, eventdata, handles)
 
 scene = vcGetObject('scene');
 if isempty(scene), ieInWindowMessage('No scene data.',handles); beep; return;
-else ieInWindowMessage('',handles); end
+else, ieInWindowMessage('',handles); end
 
 oi = vcGetObject('OPTICALIMAGE');
 
@@ -223,7 +223,7 @@ oi = oiCompute(scene,oi);
 oi = oiSet(oi,'consistency',1);
 
 % Save the OI in the vcSESSION as the selected optical image.
-vcReplaceAndSelectObject(oi);
+ieReplaceObject(oi);
 
 % hObject = oiwindow;
 oiRefresh(hObject, eventdata, handles);
@@ -373,7 +373,7 @@ oi = oiSet(oi,'photons',irrad*s);
 if ~isempty(ill), oi = oiSet(oi,'illuminance',s*ill); end
 if ~isempty(meanIll), oi = oiSet(oi,'meanIlluminance',s*meanIll); end
 
-vcReplaceAndSelectObject(oi,val)
+ieReplaceObject(oi,val)
 oiRefresh(hObject, eventdata, handles);
 
 return;
@@ -393,7 +393,7 @@ if isempty(newName),  return;
 else    oi = oiSet(oi,'name',newName);
 end
 
-vcReplaceAndSelectObject(oi,val)
+ieReplaceObject(oi,val)
 oiRefresh(hObject, eventdata, handles);
 
 return;
