@@ -1,28 +1,43 @@
-%%t_sceneIntroduction  An introduction to ISETBio scene objects
+%%t_sceneIntroduction  An introduction to ISETBIO scene objects
 %
-% An introduction to ISETBio objects and functions: Scene
+% An introduction to ISETBIO objects and functions: Scene
 %
-% ISETBio is structured around a few key objects that are important parts of
-% the image acquisition pipeline. These are the scene, optical image,
-% sensor, and image processor.
+% ISETBIO is structured around a few key objects.  Conceptually, the first
+% two are  the scene (spectral radiance) and the optical image (spectral
+% irradiance at the retina).  The next objects are the cone mosaic, the
+% bipolar layer, and then the retinal ganglion cell layer.
 %
-% A main goal of this script is to illustrate the ISETBio programming style.
-% By using ISETBio objects properly, the code and analysis are much easier to
-% understand. The implementation of these objects was written before Matlab
-% implemented its classes and thus doesn't rely on their organization.  But
-% many of the principles are the same.
+% A main goal of this script is to illustrate the ISETBIO programming style
+% for the scene. Using ISETBIO objects properly will make your code and
+% analysis are much easier to understand. 
 %
-% For each object there are three fundamental operations:  Create, set
-% parameters, and get parameters.
+% The scene and optical image (oi) were implemented before Matlab provided
+% object-oriented programming with classes and methods. But many of the
+% principles pf our implementaiton are the same. Thus, the scene and oi are
+% represented as Matlab structs along and a set of object-oriented
+% functions that interact with these structs.
 %
-% This script introduces the first and simplest ISETBio object: a scene. The
-% scene describes the radiance field.  For the present tutorial we  work
-% with a simple planar radiance image, such as the image on a display
-% surface.  We have some implementations for 3D scenes that should be
-% incorporated by mid-2014.
+% For the scene and oi representations there are six fundamental operations:
+% Create, set parameters, get parameters, compute, plot and a window
+% function.
+%
+% The newer objects (such as cone mosaics and bipolar cells and retinal
+% ganglion cells) are implemented using Matlab's classes and methods.
+% Conceptually, the programming is the same, based on creating, setting,
+% getting, computing, plotting and a window interface.
+%
+% This script introduces the ISETBIO scene. The scene describes the
+% radiance field.  For the present tutorial we  work with a simple planar
+% radiance image, such as the image on a display surface.
+%
+% We have implemented more advanced methods based on 3D scenes created
+% using quantitative computer graphics.  These methods are integrated with
+% ISETBIO, but they require installing the pbrt2ISET toolbox (described on
+% the Home wiki page.
 %
 % Notes:
-%   A) Use t_<tab> at the Matlab command line to see the list of ISETBio tutorials.
+%   Use t_<tab> at the Matlab command line to see a list of all ISETBIO
+%   tutorials.
 %
 % See also: t_oiIntroduction
 
@@ -30,19 +45,15 @@
 
 %% Initializing ISETBio
 %
-% While not necessary, initialization keeps the work space clean
+% Initialization clear the database where we store ISETBIO scenes
+% and optical images.  The variables themselves are not cleaned. You can
+% use the "clear" command to remove these variables.
 ieInit;
 
 %% Create a scene and explore some of its features
-% The create function initiates the object. Typically, there are many
-% different initial formats. For the scene, the optics including color
-% targets, patterns, charts, and images.
-
-% ISETBio sceneCreate builds a number of predefined scenes
-% You can see the range of possibilities by typing
-%    help sceneCreate, or 
-%    doc sceneScreate
-% into the Matlab prompt.
+% The create function initiates the scene struct. There are many different
+% pre-defined test scenes including color targets, patterns, charts, and
+% images.
 
 % Create a scene: Here is a simple scene of a color chart
 scene = sceneCreate('macbeth d65');
@@ -50,26 +61,29 @@ scene = sceneCreate('macbeth d65');
 % To put the scene object into a window of the graphical user interface
 % (GUI), first we use the command ISETBio that adds the scene to the ISETBio
 % database:
-vcAddObject(scene);
+ieAddObject(scene);
 
 % Then we call the function sceneWindow which displays the object This call
 % opens the  graphical interface and displays the current scene
 sceneWindow;
 
-% When the window appears, you can scale the window size and adjust the
-% font size as well (Edit | Change Font Size). There are many other options
-% in the pull down menus for cropping, transposing, and measuring scene
-% properties.
+% You can scale the window size and adjust the font size as well 
+%
+%   (Edit | Change Font Size)
+%
+% There are many other options in the pull down menus for cropping,
+% transposing, and measuring scene properties.
 
-%% The way to interact with an object is through gets and sets.
-% For example, each object has a name and a type.
+%% Interact with an object parameters using the get and set functions
+
+% Each object has a name and a type.  To see its name, you use sceneGet()
 name = sceneGet(scene,'name')
 
-%% There are many other scene parameters you can get
-% For example a scene has a horizontal field of view
+% You can use sceneGet to read many scene parameters  For example a scene
+% has a horizontal field of view
 hFOV = sceneGet(scene,'hfov')
 
-%% Use sceneSet to change a scene property
+% Use sceneSet to change a scene property
 scene = sceneSet(scene,'hfov',0.5);  % In degrees of visual angle
 
 % Confirm that the set worked
@@ -81,23 +95,21 @@ hFOV = sceneGet(scene,'hfov')
 % if you know the image distance and horizontal field of view, you can
 % compute the spatial sample spacing.
 %
-% In designing the sets/gets, the author must select an approach:  Do we
-% allow the user to set anything and then update the other parameters for
+% In designing the objects, we had to select an approach:  Do we allow the
+% user to set anything and then update the other parameters for
 % consistency, or do we only allow the user to set specific parameters and
-% through this limitation enforce consistency.  ISETBio uses the 2nd method:
-% Only some parameters can be set.
+% through this limitation enforce consistency.  
 %
-% That is why there are more gets than sets.  You can get parameters that
-% depend on the sets.
+% ISETBIO is designed to have a relatively small number of parameters to
+% set and a large number of parameters to get.
 %
-% You can see the scene structure and its parameters simply by
-% typing
+% You can see the scene structure and its parameters by typing
 scene
 
 %% More about gets and sets
-% While the objects in ISETBio can be addressed directly - please don't.
-% If you are ever tempted to set the objects directly, go get a cup of
-% coffee.  When you come back, you will feel like using a sceneSet
+% The objects in ISETBio can be addressed directly - but please don't. If
+% you are ever tempted to set the objects directly, go get a cup of tea.
+% When you come back, use a sceneSet.
 
 % You can see the scene parameters you can set by typing
 % help sceneSet

@@ -334,7 +334,7 @@ switch parm
     case 'data'
        if checkfields(oi,'data'), val = oi.data; end;
        
-   case {'photons', 'cphotons'}
+   case {'photons'}
        % Read photon data.  
        % Data are returned as doubles.
        if checkfields(oi,'data','photons')

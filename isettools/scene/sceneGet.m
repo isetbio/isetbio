@@ -240,7 +240,7 @@ switch parm
     case 'data'
         if checkfields(scene,'data'), val = scene.data; end;
         
-    case {'photons','cphotons'}
+    case {'photons'}
         % sceneGet(scene,'photons',[wavelength]);
         % Read photon data.  It is possible to ask for just a single
         % waveband.
@@ -390,7 +390,7 @@ switch parm
     case 'energy'
         % sceneGet(scene,'energy',[wavelength]);
         % Get the energy, possibly just one waveband
-        if isempty(varargin),
+        if isempty(varargin)
             val = sceneGet(scene,'photons');
             wave = sceneGet(scene,'wave');
             [XW,r,c] = RGB2XWFormat(val);
@@ -414,7 +414,7 @@ switch parm
         % So, [col,row,0,0] returns 1 point and [col,row,1,1] returns 4
         % points.
         if isempty(varargin), error('ROI required')
-        else roiLocs = varargin{1};
+        else, roiLocs = varargin{1};
         end
         val = vcGetROIData(scene,roiLocs,'energy');
        
@@ -422,7 +422,7 @@ switch parm
         % sceneGet(scene,'roi mean energy', roi)
         % Return the mean energy spd in a region of interest
         if isempty(varargin), error('ROI required')
-        else roiLocs = varargin{1};
+        else, roiLocs = varargin{1};
         end
         val = sceneGet(scene,'roi energy', roiLocs);
         val = mean(val,1);

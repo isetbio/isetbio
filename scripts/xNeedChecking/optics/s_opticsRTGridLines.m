@@ -72,7 +72,7 @@ optics  = opticsSet(optics,'rtObjectDistance',sceneGet(scene,'distance','mm'));
 irradiance = rtGeometry(scene,optics);
 
 % Copy the resulting data into the optical image structure
-oi = oiSet(oi,'cphotons',irradiance);
+oi = oiSet(oi,'photons',irradiance);
 oi = oiSet(oi,'name','Geometry only');
 vcAddAndSelectObject('oi',oi); oiWindow;
 
@@ -84,7 +84,7 @@ oi = oiSet(oi,'psfStruct',svPSF);
 
 % Apply
 outIrrad = rtPrecomputePSFApply(oi,angStep);
-oi = oiSet(oi,'cphotons',outIrrad);
+oi = oiSet(oi,'photons',outIrrad);
 oi = oiSet(oi,'name','Stepwise-RT');
 vcAddAndSelectObject('oi',oi); oiWindow;
 

@@ -34,7 +34,7 @@ oi = oiSet(oi,'data wave',sceneGet(scene,'wave'));
 
 % Calculate the irradiance of the optical image in photons/(s m^2 nm)
 if showWaitBar, wBar = waitbar(0,[wStr,' Calculating irradiance...']); end
-oi   = oiSet(oi,'cphotons',oiCalculateIrradiance(scene,oi));
+oi   = oiSet(oi,'photons',oiCalculateIrradiance(scene,oi));
 
 % We should insert a geometric distortion function here. This could be a
 % button on the window that indicates we want the distortion computed.

@@ -29,7 +29,7 @@ function scene = sceneSet(scene,parm,val,varargin)
 %
 %  Basic
 %      {'name'}          - An informative name describing the scene
-%      {'type'}          - The string 'scene'
+%      {'type'}          - Always the string 'scene'.  Do not set.
 %      {'distance'}      - Object distance from the optics (meters)
 %      {'wangular'}      - Width (horizontal) field of view
 %      {'magnification'} - Always 1 for scenes.
@@ -40,24 +40,23 @@ function scene = sceneSet(scene,parm,val,varargin)
 %         row x col x nWave array representing the scene radiance in
 %         photons.  Typically these values are only stored with single
 %         precision to save space.
-%         If you set bit depth to 64, they will be stored as double
-%               s = sceneSet(s,'bit depth',64);
 %
-%        {'peak photon radiance'} - Used for monochromatic scenes mainly; not a
-%            variable, but a function
+%        {'peak photon radiance'} - Used for monochromatic scenes mainly;
+%        not a variable, but a function
 %
-%         N.B. After writing to the 'photons' field we clear the luminance
-%         data.  To fill the luminance slot use:
+%        N.B. After writing to the 'photons' field we clear the luminance
+%        data.  To fill the luminance slot use:
 %
-%            [lum, meanL] = sceneCalculateLuminance(scene);
-%            scene = sceneSet(scene,'luminance',lum);
+%          [lum, meanL] = sceneCalculateLuminance(scene);
+%          scene = sceneSet(scene,'luminance',lum);
 %
-%         N.B. To adjust the scene mean luminance, use sceneAdjustLuminance
+%       To adjust the mean luminance of a scene, use sceneAdjustLuminance
+%
 % Depth
-%      {'depth map'} - Stored in meters.  Used with RenderToolbox
-%      synthetic scenes.  (See scene3D pdcproject directory).
+%      {'depth map'} - Stored in meters.  Used with pbrt2ISET scenes and
+%                      advanced optics cases where depth plays a role.
 %
-% Scene color information
+% Scene wavelength information
 %      {'spectrum'}   - structure that contains wavelength information
 %        {'wavelength'} - Wavelength sample values (nm)
 %
@@ -73,7 +72,7 @@ function scene = sceneSet(scene,parm,val,varargin)
 %
 % Private variables used by ISET but not set by the user
 %
-%    Used for management of compressed photons
+%    Used for management of precision
 %      {'bitdepth'}
 %      {'knownReflectance'} - For scenes when a reflectance is known
 %                             (reflectance,i,j,w)
@@ -94,9 +93,13 @@ parm = ieParamFormat(parm);
 
 switch parm 
     case {'name','scenename'}
-        if ischar(val), scene.name = val; else error('val is not str'); end
+        if ischar(val), scene.name = val; else, error('val is not str'); end
     case 'type'
-        scene.type = val;
+        if ~strcmp(scene.type,'scene')
+            warning('scene type must always be "scene"');
+            scene.type = 'scene';
+        end
+        
     case {'filename'}
         % When the data are ready from a file, we may save the file name.
         % Happens, perhaps, when reading multispectral image data.
@@ -132,10 +135,10 @@ switch parm
         if val ~= 1, warndlg('Scene must have magnification 1'); end
         scene.magnification = 1;
 
-    case {'data','datastructure'}
+    case {'data'}
         scene.data = val;
         
-    case {'photons','cphotons','compressedphotons'}
+    case {'photons'}
         % sceneSet(scene,'photons',val,[wavelength])
         % val is typically a 3D (row,col,wave) matrix.
       
@@ -177,9 +180,7 @@ switch parm
         [r,c,w] = size(photons);
         if w ~= length(wave), error('Data mismatch'); end
         
-        % h = waitbar(0,'Energy to photons');
         for ii=1:w
-            % waitbar(ii/w,h);           
             % Get the first image plane from the energy hypercube.
             % Make it a row vector
             tmp = val(:,:,ii); tmp = tmp(:)';
@@ -188,48 +189,46 @@ switch parm
             % Reshape it and place it in the photon hypercube
             photons(:,:,ii) = reshape(tmp,r,c);
         end
-        % close(h);
-        scene = sceneSet(scene,'cphotons',photons);
+        scene = sceneSet(scene,'photons',photons);
 
     case {'peakradiance','peakphotonradiance'}
         % Used with monochromatic scenes to set the radiance in photons.
         % scene = sceneSet(scene,'peak radiance',1e17);
         oldPeak = sceneGet(scene,'peak radiance');
         p  = sceneGet(scene,'photons');
-        scene = sceneSet(scene,'cphotons',val*(p/oldPeak));
-    case {'peakenergyradiance'}
-        % As above, but for energy.  Useful for equating energy in a series
-        % of monochromatic images.
-        error('Peak energy radiance not yet implemented');
+        scene = sceneSet(scene,'photons',val*(p/oldPeak));
+        %     case {'peakenergyradiance'}
+        %         % Could be implemented as above, but for energy.  Useful
+        %         for equating energy in a series of monochromatic images.
+        %
     case {'depthmap'}
         % Depth map is always in meters
         scene.depthMap = val;
         
         % As of July 2014 or so, these are no longer used
-    case {'datamin','dmin'}
-        % These are photons (radiance)
-        scene.data.dmin = val;
-    case {'datamax','dmax'}
-        % These are photon (radiance)
-        scene.data.dmax = val;
-        %%%%%%%%%%%%%%
+        %     case {'datamin','dmin'}
+        %         % These are photons (radiance)
+        %         scene.data.dmin = val;
+        %     case {'datamax','dmax'}
+        %         % These are photon (radiance)
+        %         scene.data.dmax = val;
         
     case 'bitdepth'
         % Bit depth controls whether the data are stored as single (32) or
         % double (64)
         if val ~= 32 && val ~=64, error('Bad bit depth %i\n',val);
-        else                      scene.data.bitDepth = val;
+        else,                     scene.data.bitDepth = val;
         end
         % scene = sceneClearData(scene);
         
-        % Not sure this is used much or at all any more.  It is in
-        % sceneIlluminantScale alone, as far as I can tell. - BW
     case 'knownreflectance'
         % We  store a known reflectance at location (i,j) for wavelength
         % w. This information is used to set the illuminant level properly
         % and to keep track of reflectances.
+        % val is [reflectance, row, col, wave]
+        
         if length(val) ~= 4 || val(1) > 1 || val(1) < 0
-            error('known reflectance is [reflectance,row,col,wave]'); 
+            error('known reflectance is [reflectance,row,col,wave]');
         end
         scene.data.knownReflectance = val;
 
@@ -238,7 +237,7 @@ switch parm
         % is dangerous because this value could be inconsistent with the
         % photons if we are not careful.
         if strcmp(sceneGet(scene,'type'),'scene'), scene.data.luminance = val;
-        else error('Cannot set luminance of a non-scene structure.');
+        else, error('Cannot set luminance of a non-scene structure.');
         end
     case {'meanluminance','meanl'}
         % This leaves open the possibility that the mean differs from the

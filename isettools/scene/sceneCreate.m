@@ -260,7 +260,7 @@ switch sceneName
         end
         scene = sceneMackay(scene,radFreq,sz);
     case {'harmonic','sinusoid'}
-        if isempty(varargin),
+        if isempty(varargin)
             [scene,parms] = sceneHarmonic(scene);
         elseif length(varargin) == 1
             parms = varargin{1};
@@ -340,7 +340,7 @@ switch sceneName
         
     case {'lined65','impulse1dd65'}
         if isempty(varargin), sz = 64;
-        else sz = varargin{1};
+        else, sz = varargin{1};
         end
         scene = sceneLine(scene,'D65',sz);
     case {'lineee','impulse1dee'}
@@ -644,7 +644,7 @@ sPhotons = XW2RGBFormat(sPhotons,r,c);
 
 % We compute the product of the surface reflectance and illuminant photons
 % here
-% scene = sceneSet(scene,'cphotons',surface.data .* photons);
+% scene = sceneSet(scene,'photons',surface.data .* photons);
 scene = sceneSet(scene,'photons',sPhotons);
 
 % Store the light source
@@ -719,7 +719,7 @@ d = sqrt(X.^2 + Y.^2);
 l = (d < r);
 img(l) = 128;  % figure; imagesc(img)
 
-scene = sceneSet(scene,'cphotons',repmat(img,[1,1,nWave]));
+scene = sceneSet(scene,'photons',repmat(img,[1,1,nWave]));
 
 % Set up an illuminant
 wave = sceneGet(scene,'wave');
@@ -803,7 +803,7 @@ scene = sceneSet(scene,'illuminant',il);
 illP = sceneGet(scene,'illuminant photons');
 for ii=1:nWave, d(:,:,ii) = d(:,:,ii)*illP(ii); end
 
-scene = sceneSet(scene,'cphotons',d);
+scene = sceneSet(scene,'photons',d);
 
 end
 
@@ -1033,7 +1033,7 @@ img = ieClip(img,1e-4,1);
 
 % This routine returns an RGB image.  We take the green channel and expand
 % it
-scene = sceneSet(scene,'cphotons',repmat(img(:,:,2),[1,1,nWave]));
+scene = sceneSet(scene,'photons',repmat(img(:,:,2),[1,1,nWave]));
 
 %
 wave = sceneGet(scene,'wave');
@@ -1098,7 +1098,7 @@ img = imgZonePlate(imSize);
 % Prevent dynamic range problem with ieCompressData
 img = ieClip(img,1e-4,1);
 
-scene = sceneSet(scene,'cphotons',repmat(img,[1,1,nWave]));
+scene = sceneSet(scene,'photons',repmat(img,[1,1,nWave]));
 scene = sceneSet(scene,'horizontalfieldofview',fieldOfView);
 
 end

@@ -102,7 +102,7 @@ end
 
 
 % Create a new, combined oi with the combined photons and depth map
-oi = oiSet(oiD{1},'cphotons',photons);
+oi = oiSet(oiD{1},'photons',photons);
 oi = oiSet(oi,'depth map',dMap);
 % vcAddAndSelectObject(oi); oiWindow
 

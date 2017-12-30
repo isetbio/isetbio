@@ -39,12 +39,6 @@ function oi = oiSet(oi,parm,val,varargin)
 % wavelength planes. Data sent in and returned are always in double()
 % format.
 %
-% When you write to 'photons', the compression fields used by cphotons are
-% cleared. When reading and writing a waveband in compressed mode, it is
-% assumed that the compression fields already exist.  We do not compress
-% each individual waveband, though this would be possible (i.e., to have an
-% array of min/max values for each waveband).
-%
 % After writing to the photons field, the illuminance and mean illuminance
 % fields are set to empty.
 %
@@ -57,8 +51,8 @@ function oi = oiSet(oi,parm,val,varargin)
 %      {'magnification'}
 %
 %      {'data'}  - Irradiance information
-%        {'cphotons'}   - Compressed photons; can be set one waveband at a
-%                         time: oi = oiSet(oi,'cphotons',data,wavelength);
+%        {'photons'}   - Photons; can be set one waveband at a
+%                        time: oi = oiSet(oi,'photons',data,wavelength);
 %
 % Wavelength information
 %      {'spectrum'}            - Spectrum structure
@@ -175,10 +169,8 @@ switch parm
     case {'lens', 'lenspigment'}
         oi.optics.lens = val;
 
-    case {'photons', 'cphotons', 'compressedphotons'}
+    case {'photons'}
         % oiSet(oi,'photons',val)
-        % cphotons is obsolete and should not be used.  It will go away
-        % before long.
         if ~(isa(val,'double') || isa(val,'single') || isa(val,'gpuArray'))
             error('Photons must be type double / single / gpuArray');
         end

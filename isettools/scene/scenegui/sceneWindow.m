@@ -1006,7 +1006,7 @@ function menuEditTranspose_Callback(hObject, eventdata, handles)
 % Edit | Transform | Transpose
 [val,scene] = vcGetSelectedObject('SCENE');
 photons     = imageTranspose(sceneGet(scene,'photons'));
-scene       = sceneSet(scene,'cphotons',photons);
+scene       = sceneSet(scene,'photons',photons);
 illF        = sceneGet(scene,'illuminant format');
 switch illF
     case 'spatial spectral'
@@ -1083,7 +1083,7 @@ function menuEditRotCCW_Callback(hObject, eventdata, handles)
 % Edit | Transform | Rotate | CounterClockWise
 [val,scene] = vcGetSelectedObject('SCENE');
 photons     = imageRotate(sceneGet(scene,'photons'),'ccw');
-scene       = sceneSet(scene,'cphotons',photons);
+scene       = sceneSet(scene,'photons',photons);
 
 illF        = sceneGet(scene,'illuminant format');
 switch illF

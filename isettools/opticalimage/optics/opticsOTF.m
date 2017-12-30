@@ -115,9 +115,6 @@ for ii=1:length(wave)
     % But we think it arises because of rounding error.  We haven't seen
     % this in years, however.
     % figure(1); imagesc(abs(filteredIMG)); colormap(gray)
-    %
-    % What about dmin and dmax on the 'cphotons' set.  Is that OK?
-    % oi = oiSet(oi,'photons',filteredIMG,wave(ii));
     p(:,:,ii) = filteredIMG;
 end
 
