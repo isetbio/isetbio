@@ -73,15 +73,15 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %    udata   - User data structure
 %    g       - Figure/Graph Handle
 %
-% This is a list of the plot types
 % Notes:
-%    * [Note: JNM - TODO: Check note in illuminancefft case -- is it
-%      broken? Or does the note need to be removed?]
 %    * [Note: JNM - roiLocs are listed as optional, however a number of the
 %      functions will break if they have not been provided because there is
 %      not language in place to generate them in all of the cases. Ex. the
 %      plot type chromaticityroi requires them but does not have an
 %      existing default.]
+%    * [Note: DHB - Someday might convert code that gets and plots lsf to
+%       use PTB wrapper routines in external, to improve overall
+%       consistency.
 %
 % See Also:
 %    s_oiPlot, scenePlot
@@ -94,6 +94,10 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   diffraction limited psf, not opticsGet(...'psf'...).
 %                   The latter seemed unfortunately named.
 %    12/28/17  dhb  Separated out into separate grouped switch statements.
+%    12/30/17  dhb  Went through and verified that various OTF things are
+%                   done in a manner consistent with recent changes to
+%                   optics, and tried to comment key points more fully.
+%                   Removed note that I should take a look.
 
 % Examples:
 %{
@@ -232,6 +236,7 @@ switch pType
         %
         % The mean is not included in the graph to help with the dynamic
         % range.
+        %
         % Axis range could be better.
         if isempty(varargin)
             wave = oiGet(oi, 'wave');
@@ -252,7 +257,13 @@ switch pType
         % Remove the mean
         data = data - mean(data(:));
         
-        % Plot and attach data to figure
+        % Plot and attach data to figure.
+        %
+        % * [Note: DHB - I think that strictly speaking there should be an
+        % ifftshift in front of the fft2 call, if one views what is in data
+        % as an image with (0,0) at the center.  It probably doesn't matter
+        % since we're not looking at the phase of the fft.  I don't have
+        % the nerve to change this, however.]
         udata.x = 1:sz(2);
         udata.y = 1:sz(1);
         udata.z = fftshift(abs(fft2(data)));
@@ -517,6 +528,11 @@ switch (pType)
     case {'illuminancefft', 'fftilluminance'}
         % oiPlot(oi, 'illuminance fft')
 
+        % * [Note: DHB - I think that strictly speaking there should be an
+        % ifftshift in front of the fft2 call, if one views what is in data
+        % as an image with (0,0) at the center.  It probably doesn't matter
+        % since we're not looking at the phase of the fft.  I don't quite
+        % have the nerve to change this, however.]
         data = oiGet(oi, 'illuminance');
         sz = size(data);
         udata.x = 1:sz(2);
@@ -902,19 +918,13 @@ function uData = plotOTF(oi, pType, varargin)
 %
 % Notes:
 %	 * [Note: JNM - When 2015b cycles out, replace strfind with contains]
-%    * TODO: Implement raytrace
+%    * [Note: XXX - TODO: Implement raytrace
 %    * [Note: JNM - TODO: Someone needs to check over the "Note: XXX - "
 %      notes below, so we can determine which are safe to remove. There are
 %      several such notes.]
-%    * [Note: BW - We get the OTF slightly differently for the different
-%      models. If we rewrote opticsGet to check for the optics model,
-%      we could do things a little more simply here. Maybe we should
-%      put this code into opticsGet.  I think DHB is unifying these
-%      computations, and we should make sure that he handles the
-%      plotting case, too]
-%    * TODO: Determine how to better select the number of samples for the
+%    * [Note: XXX: Determine how to better select the number of samples for the
 %      spatial frequency. Currently 100 samples, the number of which is
-%      arbitrarily chosen. 
+%      arbitrarily chosen.] 
 %
 
 % History:
@@ -965,33 +975,40 @@ switch lower(pType)
             case {'dlmtf', 'diffractionlimited'}
                 % Compute the otf data
                 
-                % Specify frequency support and compute the dl MTF
+                % Specify frequency support and compute the dl MTF. Note
+                % that DC is in the center of the support vectors, while
+                % OTF returned by dlMTF has DC at the (1,1) upper left
+                % position.
+                %
+                % Multiply returned support by 2 just to make it big
                 fSupport = opticsGet(optics, 'dl fsupport matrix', ...
                     thisWave, units, nSamp);
-                fSupport = fSupport * 2;  % Make the support big
+                fSupport = fSupport * 2;  
                 otf = dlMTF(oi, fSupport, thisWave, units);
                 
-                % DC is at (1, 1); we plot with DC in the center.
+                % DC is at (1, 1) in the returned OTF; we plot with DC in
+                % the center.
                 otf = fftshift(otf);
                 figTitle = sprintf('DL OTF at %.0f', thisWave);
                 
             case {'shiftinvariant'}
-                % In this case, the otf data must be stored
+                % Get OTF from optics structure.  Error if it wasn't there.
                 otf = opticsGet(optics, 'otf data', thisWave);
                 if isempty(otf), error('No OTF data'); end
                 
-                % Units are cycles/mm of optics support
+                % Units are cycles/mm of optics support.  Note that DC is
+                % in the center of the support vectors, while OTF returned
+                % below has DC at the (1,1) upper left position.
                 s = opticsGet(optics, 'otfSupport');
                 fSupport(:, :, 1) = s{1};
                 fSupport(:, :, 2) = s{2};
                 
-                % Transform so DC is in center
+                % Transform so DC is in center for plotting.
                 otf = fftshift(otf);
                 figTitle = sprintf('abs(OTF) at %.0f nm', thisWave);
                 
             case {'raytrace'}
                 error('Ray trace plot: Not yet implemented');
-                % figTitle = sprintf('abs(OTF) at %.0f nm', thisWave);
                 
             otherwise
                 error('Unknown optics model: %s\n', opticsModel);
@@ -1127,10 +1144,9 @@ switch lower(pType)
         
         % [Note: XXX - The spaceSamp and nSamp parameters are not clearly
         % enough defined. The reason we care is because the code is broken
-        % when spaceSamp is not 40. 
-        % The problem appears to be that lsfWave computed below might have
-        % only 60 samples and we might ask for, say 120. So, we should at
-        % least check.]
+        % when spaceSamp is not 40. The problem appears to be that lsfWave
+        % computed below might have only 60 samples and we might ask for,
+        % say 120. So, we should at least check.]
         
         % The incoherent cutoff frequency has units of cycles/micron
         % So, 1/inCutoff has units of microns/Nyquist
@@ -1215,7 +1231,7 @@ switch lower(pType)
         opticsModel = opticsGet(optics, 'opticsModel');
         units = 'um';
         
-        % [Note: BW - We get the OTF slightly differently for the different
+        % * [Note: BW - We get the OTF slightly differently for the different
         % models. If we rewrote opticsGet to check for the optics model, we
         % could do things a little more simply here. Maybe we should put
         % this code into opticsGet.]
@@ -1225,8 +1241,10 @@ switch lower(pType)
                 % OTF. These run from [-peakF, +peakF]. We make 100
                 % samples, which is pretty arbitrary. Not sure how to
                 % choose this better. Should be using unitFrequencyList()
-                % here. TODO: Determine how to better select the number of
-                % samples for the spatial frequency.
+                % here.
+                %
+                % * [Note: BW - Determine how to better select the number of
+                % samples for the spatial frequency.]
                 if length(varargin) >= 1
                     peakF = varargin{1};
                 else
@@ -1239,12 +1257,12 @@ switch lower(pType)
                 fSupport(:, :, 1) = fX * peakF;
                 fSupport(:, :, 2) = fY * peakF;
                 
-                % The fftshift centers the OTF data so that DC is in the
-                % middle.
+                % Here the OTF has DC at (1,1).  Will deal with that below.
                 otf = dlMTF(oi, fSupport, wavelength, units);
                 
             case {'shiftinvariant'}
-                % Data are stored in OTF slot
+                % Data are stored in OTF slot, with DC at (1,1).  Will deal
+                % with that below.
                 s = opticsGet(optics, 'otfSupport');
                 fSupport(:, :, 1) = s{1};
                 fSupport(:, :, 2) = s{2};
@@ -1260,6 +1278,8 @@ switch lower(pType)
         
         fx = fSupport(1, :, 1);
         otfWave = zeros(length(fx), nWave);
+        
+        % Convert from DC at (1,1) to DC at center, using fftshift.
         for ii = 1:nWave, otfWave(:, ii) = fftshift(otf(1, :, ii)); end
         
         mesh(fx, wavelength, otfWave');
