@@ -18,17 +18,6 @@ function oi = wvf2oi(wvf)
 % Outputs:
 %    oi  - ISETBIO optical image
 %
-% Notes:
-%  * [NOTE: DHB - There is an interpolation in the loop that computes the
-%     otf wavelength by wavelength.  This appears to be there to handle the
-%     possibility that the frequency support in the wvf structure could be
-%     different for different wavelengths. Does that ever happen?  If we
-%     check and it doesn't, I think we could save a little time by getting
-%     rid of the interpolation.]
-%  * [NOTE: DHB - It might be worth checking that it is OK just to set the
-%     wavelength on the optics, even if the oi itself has different wavelength
-%     sampling.]
-%
 % See Also:
 %    oiCreate, oiPlot
 %
@@ -36,6 +25,8 @@ function oi = wvf2oi(wvf)
 % History:
 %	 xx/xx/12       Copyright Wavefront Toolbox Team 2012
 %    11/13/17  jnm  Comments & formatting
+%    01/01/18  dhb  Set name and oi wavelength from wvf.
+%              dhb  Check for need to interpolate, skip if not.
 
 % Examples
 %{
@@ -45,7 +36,7 @@ function oi = wvf2oi(wvf)
     oiPlot(oi, 'psf550');
 %}
 %{
-    wvf = wvfCreate;
+    wvf = wvfCreate('wave',[400 550 700]');
     wvf = wvfSet(wvf, 'zcoeff', 1, 'defocus');
 	wvf = wvfComputePSF(wvf);
     oi = wvf2oi(wvf);
@@ -71,6 +62,11 @@ end
 %
 % This support is set up with sf 0 at the center of the returned vector,
 % which matches how the wvf object returns the otf.
+%
+% This section is here in case the frequency support for the wvf otf varies
+% with wavelength.  Not sure that it ever does. There is a conditional that
+% skips the inerpolation if the frequency support at a wavelength matches
+% that with the maximum, so this doesn't cost us much time.
 fx = wvfGet(wvf, 'otf support', 'mm', maxWave);
 fy = fx;
 [X, Y] = meshgrid(fx, fy);
@@ -95,7 +91,11 @@ for ww=1:length(wave)
         error('wvf otf support does not have 0 sf in the expected location');
     end
     thisOTF = wvfGet(wvf, 'otf', wave(ww));
-    est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
+    if (all(f == fx))
+        est = thisOTF;
+    else
+        est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
+    end
     
     % Isetbio wants the otf with (0,0) sf at the upper left.  We
     % accomplish this by applying ifftshift to the wvf centered format.
@@ -132,11 +132,13 @@ end
 %
 % Build template with standard defaults
 oi = oiCreate;
+oi = oiSet(oi,'name',wvfGet(wvf,'name'));
 
 % Copy the OTF parameters.
 oi = oiSet(oi, 'optics OTF fx', fx);
 oi = oiSet(oi, 'optics OTF fy', fy);
 oi = oiSet(oi, 'optics otfdata', otf);
 oi = oiSet(oi, 'optics OTF wave', wave);
+oi = oiSet(oi, 'wave', wave);
 
 end
