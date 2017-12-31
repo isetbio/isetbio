@@ -1,11 +1,11 @@
-function ieGIF(data, varargin)
+function gifName = ieGIF(data, varargin)
 % Save movie data (x, y, t) as a GIF
 %
 % Syntax:
-%   [data, vObj] = ieGIF(data, [step], [vname], [delay], [hf])
+%   fileName = ieGIF(data, [step], [vname], [delay], [hf])
 % 
 % Description:
-%    Save the movie contained in data as a movie into a GIF
+%    Save the movie contained in data into a GIF
 %
 % Inputs:
 %    data  - (row, col, color, time) or (row, col, time) (Required)
@@ -14,10 +14,10 @@ function ieGIF(data, varargin)
 %    None.
 %
 % Optional key/value pairs:
-%    step  - How many times frames to step over. Default = 1
-%    vname - (video file name) Default = '/local/test.gif'
-%    Delay - (pause between frames) Default = 0.03
-%    hf    - Figure for showing data Default = vcNewGraphWin()
+%    step    - How many times frames to step over. (Default = 1)
+%    gifName - gif file name  (Default = 'isetbioRootPath/local/test.gif')
+%    Delay   - Delay between frames (Default = 0.03 sec)
+%    hf      - Figure for showing data Default = vcNewGraphWin()
 %
 
 % History:
@@ -37,35 +37,36 @@ p.addParameter('delay', .03, @isnumeric);
 p.addParameter('step', 1, @isnumeric);
 p.KeepUnmatched = true;
 
-if isunix || ismac
-    p.addParameter('vname', [isetbioRootPath '/local/test.gif'], @ischar);
-else
-    p.addParameter('vname', [isetbioRootPath '\local\test.gif'], @ischar);
-end
+p.addParameter('gifName', fullfile(isetbioRootPath,'local','test.gif'), @ischar);
 
 p.parse(data, varargin{:});
-data  = p.Results.data;
-step  = p.Results.step;
-vname      = p.Results.vname;
-delay  = p.Results.delay;
+data    = p.Results.data;
+step    = p.Results.step;
+gifName = p.Results.gifName;
+delay   = p.Results.delay;
 
 %% Make GIF
-figure(1)
+vcNewGraphWin;
+cm = gray(max(data(:)));
+colormap(cm); axis image; axis off;
+
 for fr1 = 1:step:size(data, 3)
     
     imnew(:, :, 1, :) = data(:, :, fr1);
-    imagesc(imnew)
-    colormap gray;
-    axis image;
-    drawnow;
+    image(imnew);
+    % imagesc(imnew)
+    % colormap gray;
+    axis image; drawnow;
     frame = getframe(1);
     im = frame2im(frame);
       
     [imind, cm] = rgb2ind(im, 256);
     if fr1 == 1
-        imwrite(imind, cm, vname, 'gif', 'Loopcount', inf);
+        imwrite(imind, cm, gifName, 'gif', 'Loopcount', inf);
     else
-        imwrite(imind, cm, vname, 'gif', 'WriteMode', 'append', ...
+        imwrite(imind, cm, gifName, 'gif', 'WriteMode', 'append', ...
             'DelayTime', delay);
     end
+end
+
 end

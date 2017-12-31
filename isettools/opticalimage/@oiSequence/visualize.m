@@ -1,9 +1,26 @@
 function [uData, hFig] = visualize(obj,varargin)
-% Visualize aspects of the OI sequence
+% Visualize an OI sequence
+%
+% Syntax
+%   oiSequence.visualize;
+%
+% Description
+%
+% Inputs (required)
+%
+% Inputs (optional)
+%  format    - {'movie', 'weights', 'montage'} (default 'movie')
+%  save      - Save a video file (boolean, false)
+%  FrameRate - Frames per second (default 20)
+%  vname  - Video file name for saving
+%  showIlluminanceMap  -
+%  eyeMovementsData    -  Show eye movement data (boolean, false)
+%
+% Return
+%   uData - Displayed data
+%   hFig  - Figure handle
 %
 % Parameter/value
-%  format - {weights, movie, montage}
-%  save   - Save a video file
 %
 % NP/BW ISETBIO Team, 2016
 
@@ -29,7 +46,6 @@ FrameRate  = p.Results.FrameRate;
 %%  Show the oiSequence in one of the possible formats
 uData = [];
 vObj = [];    % Video object
-hFig = [];
 
 switch format
     case 'weights'
@@ -92,6 +108,7 @@ switch format
             close(vObj);
         end
 
+        uData.movie = d;
     case 'montage'
         % Window with snapshots
         colsNum = round(1.3*sqrt(obj.length));

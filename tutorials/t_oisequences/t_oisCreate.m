@@ -12,10 +12,9 @@ ieInit
 
 %% Harmonic
 %
-% This code relies on the sceneCreate('harmonic', ...) function to create
-% harmonics.  Typically, we create a pair where one has positive contrast
-% and a second has 0 contrast.  This produces a simple modulating oi
-% sequence
+% This code uses sceneCreate('harmonic', ...) function to create harmonics.
+% We create a pair where one has positive contrast and a second has 0
+% contrast but equal mean.  This produces a contrast modulating oi sequence
 
 clear hparams
 % The modulating harmonic parameters.  The possibilities are defined in the
@@ -39,7 +38,10 @@ stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
 % have a weighted sum of the two where the weights sum to 1.
 ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
 
-ois.visualize;
+uData = ois.visualize;
+
+% Could save it as a gif.  Or a movie?
+% fname = ieGIF(uData.movie);
 
 %% We can change the parameters for different effects
 
