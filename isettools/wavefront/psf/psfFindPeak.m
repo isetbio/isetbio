@@ -32,18 +32,12 @@ function [peakRow, peakCol] = psfFindPeak(input)
 %{
     [pR pC] = psfFindPeak([0 1 10 1; 1 2 5 1; 1 1 1 4])
 %}
-BUGGY = 0;
 
-if (BUGGY)
-    [nil, peakRow] = max(max(input, [], 2));
-    [nil, peakCol] = max(max(input, [], 1));
-else
-    [m, n] = size(input);
-    [nil, ind] = max(input(:));
-    [peakRow, peakCol] = ind2sub([m, n], ind);
-    if (input(peakRow, peakCol) ~= max(input(:)))
-        error('Value at max location is not input maximum. Hmmm.');
-    end
+[m, n] = size(input);
+[~, ind] = max(input(:));
+[peakRow, peakCol] = ind2sub([m, n], ind);
+if (input(peakRow, peakCol) ~= max(input(:)))
+    error('Value at max location is not input maximum. Hmmm.');
 end
 
 end
