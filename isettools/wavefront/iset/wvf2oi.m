@@ -25,16 +25,8 @@ function oi = wvf2oi(wvf)
 %     different for different wavelengths. Does that ever happen?  If we
 %     check and it doesn't, I think we could save a little time by getting
 %     rid of the interpolation.]
-%  * [NOTE: DHB - NCP and I spent a lot of time last summer suffering
-%     through the psf <-> otf calculations as part of the IBIOColorDetect
-%     project, and the fftshift conventions.]
-%  * [NOTE: DHB - There is a note that PSF might start real but that the
-%     PSF implied by the OTF computed here might not be.  We should check
-%     into that.  We don't want imaginary PSFs showing up in calculations.
-%     Perhaps this is handled by the oi methods, in that perhaps they
-%     enforce that the psf obtained from the otf is in fact real.]
 %  * [NOTE: DHB - It might be worth checking that it is OK just to set the
-%     wavelength on the OTF, even if the oi itself has different wavelength
+%     wavelength on the optics, even if the oi itself has different wavelength
 %     sampling.]
 %
 % See Also:
