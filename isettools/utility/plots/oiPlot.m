@@ -151,6 +151,7 @@ switch pType
     case {'irradiancephotonsroi'}
         %[uData, g] = oiPlot(oi, 'irradiance photons roi', roiLocs);
         udata = oiPlotIrradiance(oi, 'photons', roiLocs);
+        
     case {'irradianceenergyroi'}
         %[uData, g] = oiPlot(oi, 'irradiance energy roi', roiLocs);
         udata = oiPlotIrradiance(oi, 'energy', roiLocs);
