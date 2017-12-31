@@ -2,10 +2,18 @@
 %
 % Description:
 %   Exercises various plot options available for the optical image
-%   structure, via routine oiPlot.
+%   structure, via routine oiPlot.  There are more options available
+%   than shown here, but this gives you the idea.
+%
+% See also: oiPlot, oiGet.
+%
+
+% History
+%   12/30/17  dhb  Added comments, changed name from scripts/s_oiPlot ->
+%                  tutorials/t_optics/t_oiPlot
 
 %% Initialize isetbio
-ieInit
+ieInit;
 
 %% Initialize the oi structure
 scene = sceneCreate; 
