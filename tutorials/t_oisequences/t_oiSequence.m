@@ -1,10 +1,20 @@
-% t_oiSequence
-%
+%% t_oiSequence
 % Demonstrate the oiSequence class.
 %
-% For some purposes the oisCreate() function presents a simpler approach to
-% creating a sequence. That function has several built-in cases, and more
-% may be added.
+% Description
+%  An oiSequence describes a dynamic retinal image, essentially a retinal
+%  image video.  The oiSequence is not a general video, but it applies to
+%  the case in which there is one basic stimulus that is either mixed with
+%  a background or whose contrast is scaled over time.  Eye movements are
+%  also included.  This simplification enables us to compute many
+%  psychophysical stimuli efficiently; but it is not completely general.
+%
+% See also: oisCreate
+%
+% Note:
+%   For some purposes the oisCreate() function presents a simpler approach
+%   to creating a sequence. That function has several built-in cases, and
+%   more may be added.
 %
 % NPC, ISETBIO TEAM, 2016
 
