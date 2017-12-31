@@ -2,7 +2,7 @@
 
 warndlg('Requires some clicking')
 
-s_scenePlot
+t_scenePlot
 
 t_oiPlot
 
