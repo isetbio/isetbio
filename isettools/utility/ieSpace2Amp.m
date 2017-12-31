@@ -43,6 +43,8 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
     lum = data(5, :);
     pos = sceneSpatialSupport(scene, 'mm');
     [freq, fftlum] = ieSpace2Amp(pos.x, lum, 1);
+    vcNewGraphWin; plot(freq,fftlum); grid on
+    xlabel('Frequency (cy/mm)'); ylabel('Amp');
 %}
 
 if notDefined('pos'), errordlg('You must define positions'); end

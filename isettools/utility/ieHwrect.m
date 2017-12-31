@@ -5,9 +5,10 @@ function hwr = ieHwrect(signal, effectiveZero)
 %   hwr = ieHwrect(signal, effectiveZero)
 %
 % Description:
-%    The effective zero level for the rectification can change, so we send
-%    in a parameter. Default is 0. This converts any values below
-%    effectiveZero to being effectiveZero.
+%    The effective zero level for rectification can depend on the signal we
+%    are analyzing. This routine lets the user  specify the effective zero
+%    level as a parameter (Default is 0). Any signal values below
+%    effectiveZero  are set to effectiveZero.
 %
 % Inputs:
 %    signal        - The wave to rectify

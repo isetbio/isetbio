@@ -60,8 +60,13 @@ function s = ieHwhm2SD(h, gDim)
     g = fspecial('gauss', 50, s); 
     x = 1:50;
     x = x - mean(x(:));
-    mesh(x, x, g/max(g(:)));
-    axis equal
+    vcNewGraphWin; mesh(x, x, g/max(g(:))); view([0,0])
+%}
+%{
+    % Now change to 5 units
+    s = ieHwhm2SD(5, 2);
+    g = fspecial('gauss', 50, s); 
+    vcNewGraphWin; mesh(x, x, g/max(g(:))); view([0,0])
 %}
 
 if notDefined('h'), error('Half width half max required'); end

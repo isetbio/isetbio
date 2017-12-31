@@ -1,4 +1,5 @@
-% Explains the Matlab conventions for transforming from space to the frequency domain.
+% Explains the Matlab conventions for transforming from space to the
+% frequency domain.
 %
 % Description:
 %   Tries to elucidate the mysteries of coordinate transform conventions
@@ -71,7 +72,8 @@ isreal(s)
 % and see that everything still works for odd dimension.
 theDim = 129;
 g = fspecial('gaussian',theDim,2);
-figure(1); subplot(1,3,1); colormap(gray); mesh(g);
+vcNewGraphWin([],'wide');
+subplot(1,3,1); colormap(gray); mesh(g);
 
 % To calculate the OTF of the point spread function, we should place the
 % center of the image in the (1,1) position.  We do this using ifftshift.
@@ -93,13 +95,14 @@ gFTAndBack = fftshift(ifft2(gFT));
 subplot(1,3,3); mesh(abs(gFTAndBack)); 
 
 %% Image example
-%
+
 % Again, the image center is not in (1,1).  It is in the center.
 tmp = load('trees');
 cmap = gray(128);
 imgC = cmap(tmp.X);
 imgC = imgC(1:theDim,1:theDim);
-figure(2); subplot(1,4,1); colormap(gray); imagesc(imgC); axis image
+vcNewGraphWin([],'wide');
+subplot(1,4,1); colormap(gray); imagesc(imgC); axis image
 
 % Before we transform the image, we want to place its center in the (1,1)
 % position.  This produces a weird looking beast, but it is what fft2 wants

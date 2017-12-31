@@ -21,12 +21,12 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %                 with no error message, to work smoothly with canceling
 %                 vcSelectImage. Default is to select an image based on
 %                 imageType using vcSelectImage.
-%    imageType  - (Optional) The type of input data. Default is 'rgb' There
-%                 are two general types: {'rgb' 'unispectral' 'monochrome'}
-%                 and {'multispectral', 'hyperspectral'}. The two sets,
-%                 colloquially singular and multiple are broken into the
-%                 following main breakdowns:
-%           singular - varargin{1} can be either the file name of a display
+%    imageType  - (Optional) The type of input data. Default is 'rgb'.
+%                 There are two general types: {'rgb' 'unispectral'
+%                 'monochrome'} and {'multispectral', 'hyperspectral'}.
+%                 These have different options for varargin.
+%           {'rgb' 'unispectral' 'monochrome'}
+%                      varargin{1} can be either the file name of a display
 %                      (displayCreate) structure, or the display structure
 %                      itself. The data in the proscribed format is
 %                      returned as photons estimated by puttig the data
@@ -34,15 +34,7 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %                      calibration file, we arrange the values so that the
 %                      display code returns the same RGB values as the
 %                      original file.
-%           multiple - In this case the data is stored as coefficients and
-%                      basis functions. We build the spectral
-%                      representation here. These, along with a comment and
-%                      measurement of the scene illuminant (usually
-%                      measured using a PhotoResearch PR-650 spectral
-%                      radiometer) can be returned.
-%               The input types below have the following specific
-%               individual characterists
-%           'rgb'    - The default imageType. varargin{2} contains the
+%                      if 'rgb', then varargin{2} may contain a
 %                      doSub flag. If true, the input image will be
 %                      converted to a subpixel rendered image. The
 %                      conversion is done by replacing each pixel with the
@@ -51,8 +43,13 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %                      By default, doSub is set to False. Note that, for
 %                      large image, turning on doSub could be extremely an
 %                      slow process.
-%    varargin   - (Optional) Variable of varying length, depending on the
-%                 imageType of the call. Default is 
+%           {'multispectral', 'hyperspectral'}
+%                      The data are stored as coefficients and
+%                      basis functions. We build the spectral
+%                      representation here. These, along with a comment and
+%                      measurement of the scene illuminant (usually
+%                      measured using a PhotoResearch PR-650 spectral
+%                      radiometer) can be returned.
 %
 % Outputs:
 %    photons    - RGB format of photon data (r, c, w)
@@ -76,6 +73,12 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %{
     fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
     photons = vcReadImage(fName,'rgb');
+    vcNewGraphWin; imageSPD(photons,400:10:700);
+%}
+%{
+    thisDisplay = displayCreate('LCD-Apple.mat');
+    photons = vcReadImage(fName,'rgb',thisDisplay);
+    vcNewGraphWin; imageSPD(photons,displayGet(thisDisplay,'wave'));
 %}
 
 if notDefined('imageType'), imageType = 'rgb'; end
