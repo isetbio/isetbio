@@ -5,9 +5,9 @@ function val = opticsGet(optics,parm,varargin)
 %
 % The optics parameters are stored in two different groups of fields.
 %
-% There are two optics models implemented. The method in use can be
-% selected by the popup menu in the optics window. The method is selected
-% by the parameter oiSet(oi,'optics model',<model type>);
+% There are two optics models implemented. The method can be
+% selected by the popup menu in the optics window or programatically via
+% oiSet(oi,'optics model',<model type>);
 %
 % (1) By default, we use a diffraction limited calculation with the
 % f-number and focal length determined from the window interface.  Other
@@ -34,16 +34,26 @@ function val = opticsGet(optics,parm,varargin)
 %
 % About the OTF and PSF
 %  We store the OTF data with DC at (1,1).  This is true throughout
-%  isetbio. To understand the implications for certain calculations see the
-%  script and tutorial in t_codeFFTinMatlab.
+%  isetbio. To understand the implications for certain calculations see
+%  t_codeFFTinMatlab.
 %
-%  Although Matlab uses this representation, when we make graphs and
-%  images we put the center of the image at the center -- of course -- and
-%  we also put the DC value of the OTF in the middle of the image.  Hence,
-%  when we return the frequency support or the spatial support we create
-%  values for frequencies that run from negative to positive.  Similarly,
-%  when we compute the spatial support we create spatial samples that run
-%  below and above zero.
+%  Although we use the Matlab-style representation (DC at (1,1)) for the
+%  OTF, when we make graphs and images we put the center of the image at
+%  the center -- of course -- and we also put the DC value of the OTF in
+%  the middle of the image.  Hence, when we return the frequency support or
+%  the spatial support we create values for frequencies that run from
+%  negative to positive with 0 sf in the middle. Similarly, when we compute
+%  the spatial support we create spatial samples that run below and above
+%  zero. If we've done things correctly, 0 sf should at location
+%  floor(N/2)+1, where N is the number of frequency samples.  To convert
+%  the OTF so that it matches up with this representation, apply fftshift
+%  to it.
+%
+%  To get the PSF from the OTF, we use the PTB routine OtfToPsf.  This
+%  expects the DC term in the middle, so we call
+%    [~,~,PSF] = OtfToPsf([],[],fftshift(OTF))
+%  to do the converstion.  The null args to OtfToPsf involve the support
+%  and are not needed here.
 %
 % Example:
 %  These examples illustrate calls to opticsGet via oiGet, the usual way.

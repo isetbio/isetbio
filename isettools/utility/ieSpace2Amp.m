@@ -5,11 +5,18 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 %   [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 %
 % Description:
-%    The returned amplitudes are abs(fft(data)) of the data vector. The
-%    spatial frequency value units are in cycles per unit of the input
-%    data. For example, if the input data are in mm, then the output data
-%    are in cycles per mm. If the input data are in meters, then the
-%    output is cycles per meter
+%    The returned amplitudes are abs(fft(ifftshift(data))) of the data
+%    vector. The spatial frequency value units are in cycles per unit of
+%    the input data. For example, if the input data are in mm, then the
+%    output data are in cycles per mm. If the input data are in meters,
+%    then the output is cycles per meter.
+%
+%    The use of the ifftshift is because of the convention that these are
+%    data as a function of space, with the natural position of the origin
+%    being in the center of the input vector.  Because we are returning
+%    only the amplitude, the ifftshift has no effect. But it would matter
+%    if we were looking at the phase, too, so it seems wise to include it
+%    as a matter of convention.
 %
 % Inputs:
 %    pos       - Positions in spatial units (e.g., microns)
@@ -27,6 +34,7 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
+%    12/30/17  dhb  Add in ifftshift.
 
 % Examples:
 %{
@@ -42,7 +50,14 @@ if notDefined('data'), errordlg('You must define a vector of data'); end
 if notDefined('scaleData'), scaleData = 0; end
 
 nSamp = length(data);
-fData = abs(fft(data));
+fData = abs(fft(ifftshift(data)));
+
+% Uncomment this code to persuade yourself that the ifftshift has no
+% effect.
+% tData = abs(fft(data));
+% if (max(abs(tData(:)-fData(:))) > 1e-10)
+%     error('Adding in ifftshift has unexpected effect');
+% end
 
 % Scale the data to a peak of 1 before analyzing. Was default. Uh oh.
 % Keep an eye on what has changed.

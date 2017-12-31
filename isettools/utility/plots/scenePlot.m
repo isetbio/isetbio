@@ -70,7 +70,7 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 % Notes:
 %
 % See Also:
-%    s_scenePlot, oiPlot, scenePlotRadiance
+%    t_scenePlot, oiPlot, scenePlotRadiance
 %
 
 % History:
@@ -80,7 +80,7 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 
 % Examples:
 %{
-    % See s_scenePlot for additional examples
+    % See t_scenePlot for additional examples
     s = sceneCreate;
     ieAddObject(s); sceneWindow;
     scenePlot(s,'radiance v line spectrum');
