@@ -40,8 +40,9 @@ ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneP
 
 uData = ois.visualize;
 
-% Could save it as a gif.  Or a movie?
-% fname = ieGIF(uData.movie);
+% Save as a gif for the wiki page.
+% gifName = fullfile(isetbioRootPath,'wiki','images','oisHarmonic.gif');
+% ieGIF(uData.movie,'gifName',gifName);
 
 %% We can change the parameters for different effects
 
