@@ -4,7 +4,7 @@ warndlg('Requires some clicking')
 
 s_scenePlot
 
-s_oiPlot
+t_oiPlot
 
 s_sensorPlot
 

@@ -84,7 +84,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %       consistency.
 %
 % See Also:
-%    s_oiPlot, scenePlot
+%    t_oiPlot, scenePlot
 %
 
 % History:
@@ -105,7 +105,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 
 % Examples:
 %{
-s_oiPlot
+t_oiPlot
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
