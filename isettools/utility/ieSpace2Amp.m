@@ -21,7 +21,9 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 % Inputs:
 %    pos       - Positions in spatial units (e.g., microns)
 %    data      - vector of data values for each spatial position
-%    scaleData - Whether or not to scale the results
+%    scaleData - Whether or not to scale the results. If this is true
+%                (default is false), then the amplitude is normalized to a
+%                peak of 1.
 %
 % Outputs:
 %    freq      - Frequency

@@ -29,6 +29,14 @@ function [n, m] = wvfOSAIndexToZernikeNM(j)
 %{
     wvfOSAIndexToZernikeNM(15)
 %}
+%{
+    j = 1:100;
+    [n, m] = wvfOSAIndexToZernikeNM(j);
+    jCheck = wvfZernikeNMToOSAIndex(n, m);
+    if (any(jCheck ~= j))
+        error('Zernike index conversion routines do not invert properly');
+    end
+%}
 
 % Radial order n
 n = ceil((-3 + sqrt(9 + 8 * j)) / 2 );
@@ -36,10 +44,4 @@ m = 2 * j - n .* (n + 2);
 
 return
 
-%% Validation code
-j = 1:100;
-[n, m] = wvfOSAIndexToZernikeNM(j);
-jCheck = wvfZernikeNMToOSAIndex(n, m);
-if (any(jCheck ~= j))
-    error('Zernike index conversion routines do not invert properly');
-end
+

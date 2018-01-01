@@ -53,8 +53,6 @@ function [sample_mean, sample_cov] = ...
 %      with typical and extreme retinal image quality
 %      http://www.sciencedirect.com/science/article/pii/S0042698911003099
 %
-% Notes:
-%
 % See Also:
 %    t_wvfPupilSize
 % 

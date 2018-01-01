@@ -20,10 +20,6 @@ function radius = psfFindCriterionRadius(inPSF, criterion)
 % Outputs:
 %    radius    - The radius around the PSF's peak
 %
-% Notes:
-%    * [Note: JNM - Possibly add error checking for if inPSF or criterion
-%      are not supplied?]
-%
 
 % History:
 %    09/16/07  dhb  Wrote it.
@@ -37,9 +33,10 @@ function radius = psfFindCriterionRadius(inPSF, criterion)
 %{
     wvfP = wvfCreate;
     wvfP = wvfComputePSF(wvfP);
-    myPSF = wvfGet(wvfP, 'psf')
+    myPSF = wvfGet(wvfP, 'psf');
     rad = psfFindCriterionRadius(myPSF, 0.5)
 %}
+
 % Normalize so it sums to one
 inPSF = inPSF / sum(inPSF(:));
 inPSF = psfCenter(inPSF);
@@ -54,12 +51,13 @@ radiusMat = MakeRadiusMat(nLinearPixels, nLinearPixels, peakCol, peakRow);
 % Find the criterion radius
 maxRadius = max(radiusMat(:));
 radius = maxRadius;
-for i = 1:floor(maxRadius)
-    index = find(radiusMat <= i);
-    mass(i) = sum(inPSF(index));
-    if (mass(i) > criterion)
-        lambda = (criterion - mass(i - 1)) / (mass(i) - mass(i - 1));
-        radius = (1 - lambda) * (i - 1) + lambda * i;
+mass = zeros(floor(maxRadius));
+for ii = 1:floor(maxRadius)
+    index = radiusMat <= ii;
+    mass(ii) = sum(inPSF(index));
+    if (mass(ii) > criterion)
+        lambda = (criterion - mass(ii - 1)) / (mass(ii) - mass(ii - 1));
+        radius = (1 - lambda) * (ii - 1) + lambda * ii;
         break;
     end
 end
