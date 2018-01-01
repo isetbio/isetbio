@@ -9,18 +9,20 @@ function [data, vObj] = ieMovie(data, varargin)
 %    The letters representing row, column, time, and color. Of those, color
 %    is an optional input.
 %
+%    The 'save' 
+%
 % Inputs:
-%    data - 
+%    data - (x, y, t) or (x, y, c, t)
 %
 % Outputs:
-%    data - 
-%    vObj - 
+%    data - (x, y, t) or (x, y, c, t)
+%    vObj - Matlab video object
 %
-% Name-value pairs
+% Optional key/val pairs
 %                                             Default
 %  step:   How many times frames to step over. (1);
 %  show:   Display the movie                   (true)
-%  save:   Write video to a file
+%  save:   Write video to an 'MPEG-4' file     (false)
 %  vname:  Video file name                     (vName)
 %  FrameRate: Video frame rate                 (20) - Only for video object
 %  hf:        Figure for showing data          (vcNewGraphWin())
@@ -61,16 +63,20 @@ p.addParameter('gamma', 1, @isnumeric);
 p.addParameter('ax', gca, @isgraphics);
 
 p.parse(data, varargin{:});
-data = p.Results.data;
-step = p.Results.step;
-save = p.Results.save;
+data  = p.Results.data;
+step  = p.Results.step;
+save  = p.Results.save;
 vname = p.Results.vname;
-show = p.Results.show;
+show  = p.Results.show;
 FrameRate = p.Results.FrameRate;
 gamma = p.Results.gamma;
-ax = p.Results.ax;
+ax    = p.Results.ax;
+
+% User set a video name.  So, figure they want it saved.
+if ~strcmp(vname,'videoName'), save = true; end
 
 %% Create the movie and video object
+
 % Video object & select the axes
 vObj = [];
 axes(ax);
@@ -94,7 +100,7 @@ maxd = 1;
 
 % Create the video object if we plan to save
 if save
-    vObj = VideoWriter(vname);
+    vObj = VideoWriter(vname,'MPEG-4');
     vObj.FrameRate = FrameRate;
     open(vObj);
 end

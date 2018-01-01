@@ -149,13 +149,13 @@ switch oType
         optics = oi.optics;
         if isempty(parm), val = optics;
         elseif   isempty(varargin), val = opticsGet(optics,parm);
-        else     val = opticsGet(optics,parm,varargin{1});
+        else,     val = opticsGet(optics,parm,varargin{1});
         end
         return;
     case 'lens'
         lens = oi.optics.lens;
         if isempty(parm), val = lens;
-        else val = lens.get(parm,varargin{:});
+        else, val = lens.get(parm,varargin{:});
         end
         return;
     otherwise
@@ -248,7 +248,7 @@ switch parm
         else
             scene = vcGetSelectedObject('Scene');
             if isempty(scene), sDist = 1e10;
-            else sDist = sceneGet(scene,'distance');
+            else, sDist = sceneGet(scene,'distance');
             end
         end
         val = opticsGet(oiGet(oi,'optics'),'imagedistance',sDist);
@@ -285,7 +285,7 @@ switch parm
     case 'aspectratio'
         r = oiGet(oi,'rows'); c = oiGet(oi,'cols'); 
         if (isempty(c) || c == 0), disp('No OI'); return; 
-        else val = r/c; 
+        else, val = r/c; 
         end
 
         % Terms related to the optics
@@ -339,7 +339,7 @@ switch parm
       if ~isempty(varargin), val = val*ieUnitScaleFactor(varargin{1}); end
 
     case 'data'
-       if checkfields(oi,'data'), val = oi.data; end;
+       if checkfields(oi,'data'), val = oi.data; end
        
    case {'photons'}
        % Read photon data.  
@@ -416,14 +416,14 @@ switch parm
         
     case 'roienergy'
        if isempty(varargin), error('ROI required')
-       else roiLocs = varargin{1};
+       else, roiLocs = varargin{1};
        end
        val = vcGetROIData(oi,roiLocs,'energy');
     
         
     case 'roimeanenergy'
        if isempty(varargin), error('ROI required')
-       else roiLocs = varargin{1};
+       else, roiLocs = varargin{1};
        end
        val = oiGet(oi,'roienergy', roiLocs);
        val = mean(val,1);
@@ -458,7 +458,7 @@ switch parm
     case 'binwidth'     
         wave = oiGet(oi,'wave');
         if length(wave) > 1, val = wave(2) - wave(1);
-        else val = 1;
+        else, val = 1;
         end
     case {'datawave','photonswave','photonswavelength','wave', 'wavelength'}
         % oiGet(oi,'wave') 
@@ -468,7 +468,7 @@ switch parm
         % transition to that wonderful day, we return the optics spectrum
         % if there is no oi spectrum. Always a column vector, even if
         % people stick it in the wrong way.
-        if checkfields(oi,'spectrum', 'wave'), 
+        if checkfields(oi,'spectrum', 'wave') 
             val = oi.spectrum.wave(:); 
         end
         %         elseif checkfields(oi,'optics','spectrum', 'wave'),
@@ -536,7 +536,7 @@ switch parm
             % For optical images we return a default based on the scene.
             % This is used when no optical image has been calculated.
             scene = vcGetObject('scene');
-            if isempty(scene),
+            if isempty(scene)
                 disp('No scene or oi.  Using 128 rows');
                 r = 128; % Make something up
             else
@@ -595,7 +595,9 @@ switch parm
         % We should probably call:  
         %   opticsGet(optics,'dist per deg',unit) 
         % which is preferable to this call.
-        if isempty(varargin), units = 'm'; else units = varargin{1}; end
+        if isempty(varargin), units = 'm'; 
+        else, units = varargin{1}; 
+        end
         val = oiGet(oi,'distance per degree',units);   % meters
         val = 1 / val;
         % val = oiGet(oi,'fov')/oiGet(oi,'width');
@@ -662,7 +664,7 @@ switch parm
         % Default is cycles per degree
         % val = oiGet(oi,'frequencyResolution',units);
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         val = oiFrequencySupport(oi,units);
     case {'maxfrequencyresolution','maxfreqres'}
@@ -670,7 +672,7 @@ switch parm
         % oiGet(oi,'maxfreqres',units) you can get cycles/{meters,mm,microns}
         % 
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         % val = oiFrequencySupport(oi,units);
         if isempty(varargin), units = []; end
@@ -679,7 +681,7 @@ switch parm
     case {'frequencysupport','fsupportxy','fsupport2d','fsupport'}
         % val = oiGet(oi,'frequency support',units);
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         [xSupport, ySupport] = meshgrid(fResolution.fx,fResolution.fy);
@@ -687,14 +689,14 @@ switch parm
     case {'frequencysupportcol','fsupportx'}
         % val = oiGet(oi,'frequency support col',units);
         if isempty(varargin), units = 'cyclesPerDegree'; 
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         l=find(abs(fResolution.fx) == 0); val = fResolution.fx(l:end);
     case {'frequencysupportrow','fsupporty'}
         % val = oiGet(oi,'frequency support row',units);
         if isempty(varargin), units = 'cyclesPerDegree'; 
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         l=find(abs(fResolution.fy) == 0); val = fResolution.fy(l:end);
@@ -706,7 +708,7 @@ switch parm
     case {'customcompute','booleancustomcompute'}
         % 1 or 0
         if checkfields(oi,'customCompute'), val = oi.customCompute; 
-        else val = 0;
+        else, val = 0;
         end
         
         % Visual information
@@ -728,9 +730,9 @@ switch parm
         if isempty(varargin)
             oiW = ieSessionGet('oi window handle');
             if isempty(oiW), gam = 1;
-            else             gam = str2double(get(oiW.editGamma,'string'));
+            else,            gam = str2double(get(oiW.editGamma,'string'));
             end
-        else gam = varargin{1}; 
+        else, gam = varargin{1}; 
         end
         
         wList   = oiGet(oi,'wave');

@@ -1,4 +1,4 @@
-function [uData, hFig] = visualize(obj,varargin)
+function [uData, vObj] = visualize(obj,varargin)
 % Visualize an OI sequence
 %
 % Syntax
@@ -12,7 +12,7 @@ function [uData, hFig] = visualize(obj,varargin)
 %  format    - {'movie', 'weights', 'montage'} (default 'movie')
 %  save      - Save a video file (boolean, false)
 %  FrameRate - Frames per second (default 20)
-%  vname  - Video file name for saving
+%  vname     - Video file name when saving (default videoName);
 %  showIlluminanceMap  -
 %  eyeMovementsData    -  Show eye movement data (boolean, false)
 %
@@ -46,6 +46,8 @@ save       = p.Results.save;
 vname      = p.Results.vname;
 FrameRate  = p.Results.FrameRate;
 
+if ~strcmp(vname,'videoName'), save = true; end
+
 %%  Show the oiSequence in one of the possible formats
 uData = [];
 vObj = [];    % Video object
@@ -53,7 +55,7 @@ vObj = [];    % Video object
 switch format
     case 'weights'
         % Graph the weights'
-        hFig = vcNewGraphWin;
+        vcNewGraphWin;
         plot(obj.timeAxis, obj.modulationFunction);
         xlabel('Time (ms)'); ylabel('Modulation');
         title(sprintf('Composition: %s',obj.composition));
@@ -65,12 +67,6 @@ switch format
         illMod   = oiGet(obj.oiModulated,'illuminance');
         name     = oiGet(obj.oiModulated,'name');
         
-        if save
-            vObj = VideoWriter(vname);
-            vObj.FrameRate = FrameRate;
-            open(vObj);
-        end
-        
         % This code is general, and it could become an obj.get.movie;
         % Or obj.get.illuminanceMovie
         % The algorithm for mixing these is problematic because we
@@ -81,13 +77,14 @@ switch format
         mx1 = max(illFixed(:)); mx2 = max(illMod(:));
         mx = max(mx1,mx2);
         d = zeros([size(illFixed),length(obj.timeAxis)]);
+        
+        % Monochrome image function, below, needs 0 256 by default, it seems
         illFixed = 256*illFixed/mx; illMod = 256*illMod/mx;
         
         switch obj.composition
             case 'blend'
                 for ii=1:nFrames
                     d(:,:,ii) = illFixed*(1-wgts(ii)) + illMod*wgts(ii);
-                    % To make a video, we should do this type of thing
                 end
             case 'add'
                 for ii=1:nFrames
@@ -98,51 +95,52 @@ switch format
         end
         
         %  Show the movie data
-        hFig = vcNewGraphWin; 
+        vcNewGraphWin; 
         colormap(gray(max(d(:)))); axis image; axis off;
         for ii=1:nFrames
             image(d(:,:,ii)); axis image; title(name); drawnow;
-            if save,  F = getframe; writeVideo(vObj,F); end
         end
         
         % Write the video object if save is true
         if save
-            writeVideo(vObj,F);
-            close(vObj);
+            disp('Saving video')
+            [~, vObj] = ieMovie(uData.movie,'vname',vname);
         end
 
         uData.movie = d;
     case 'moviergb'
-        % Show the oi as an illuminance movie
+        % Show the oi as an RGB movie
         wgts     = obj.modulationFunction;
         nFrames  = length(wgts);
-        rgbFixed = oiGet(obj.oiFixed,'rgb');
-        rgbMod   = oiGet(obj.oiModulated,'rgb');
+        
+        % I am not sure why this does not work as well with
+        % oiGet(oi,'rgb');  There appears to be some scaling in that case
+        % that shifts the means.
+        xyzMod   = oiGet(obj.oiModulated,'xyz');
+        xyzFixed = oiGet(obj.oiFixed,'xyz');
+        rgbMod   = xyz2rgb(xyzMod);
+        rgbFixed = xyz2rgb(xyzFixed);
         name     = oiGet(obj.oiModulated,'name');
+
         
-        if save
-            vObj = VideoWriter(vname);
-            vObj.FrameRate = FrameRate;
-            open(vObj);
-        end
-        
-        % This code is general, and it could become an obj.get.movie;
-        % Or obj.get.illuminanceMovie
+        % This code is general, and it could become an obj.get.moviergb;
+        % Or obj.get.movieilluminance (above).
+        %
         % The algorithm for mixing these is problematic because we
         % calculate the max between the two scenes.  This normalization can
         % lead to unwanted problems (as it did for vernier coding).  I need
         % to have the data come here in real physical units and deal with
         % it appropriately.
-        mx1 = max(rgbFixed(:)); mx2 = max(rgbMod(:));
-        mx = max(mx1,mx2);
-        d = zeros([size(rgbFixed),3,length(obj.timeAxis)]);
-        rgbFixed = 256*rgbFixed/mx; illMod = 256*rgbMod/mx;
+        mx1 = max(rgbFixed(:)); mx2 = max(rgbMod(:)); mx = max(mx1,mx2);
+        d = zeros([size(rgbFixed),length(obj.timeAxis)]);
+        rgbFixed = rgbFixed/mx; rgbMod = rgbMod/mx;
         
         switch obj.composition
             case 'blend'
+                % We think the mean of rgbFixed and mean of rgbMod should
+                % probably be the same in this case.
                 for ii=1:nFrames
                     d(:,:,:,ii) = rgbFixed*(1-wgts(ii)) + rgbMod*wgts(ii);
-                    % To make a video, we should do this type of thing
                 end
             case 'add'
                 for ii=1:nFrames
@@ -153,21 +151,20 @@ switch format
         end
         
         %  Show the movie data
-        hFig = vcNewGraphWin; 
+        vcNewGraphWin; 
         axis image; axis off;
-        % Probably imagescRGB is not so good without a fixed scale!
         for ii=1:nFrames
-            imagescRGB(d(:,:,:,ii)); axis image; title(name); drawnow;
-            if save,  F = getframe; writeVideo(vObj,F); end
+            imagesc(d(:,:,:,ii),[0 256]); axis image; title(name); drawnow;
         end
         
+        uData.movie = d;
+
         % Write the video object if save is true
         if save
-            writeVideo(vObj,F);
-            close(vObj);
+            disp('Saving video')
+            [~, vObj] = ieMovie(uData.movie,'vname',vname);
         end
 
-        uData.movie = d;
     case 'montage'
         % Window with snapshots
         colsNum = round(1.3*sqrt(obj.length));
@@ -212,7 +209,7 @@ switch format
             XYZmax = 2*XYZmax;
         end
         
-        hFig = figure();
+        vcNewGraphWin;
         set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]); 
         for oiIndex = 1:obj.length
             if (oiIndex == 1)

@@ -99,10 +99,7 @@ hparams(1).contrast  = 0;
     'testParameters',hparams,...
     'sceneParameters',sparams);
 
-% Does not do color properly.
-% ois.visualize;
-ieAddObject(scenes{2}); sceneWindow;
-ieAddObject(ois.oiModulated); oiWindow;
+uData = ois.visualize('format','moviergb','vname','myVideo','save',true);
 
 %% Vernier
 %
