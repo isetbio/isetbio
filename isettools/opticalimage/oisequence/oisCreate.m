@@ -35,7 +35,8 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %
 % BW ISETBIO Team, 2016
 %
-% See also: oiSequence, sceneCreate;
+% See also: oiSequence, sceneCreate, sceneHarmonic, humanConeContrast,
+%           humanConeIsolating
 
 % Examples
 % Harmonics

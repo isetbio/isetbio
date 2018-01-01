@@ -26,7 +26,7 @@ function val = displayGet(d, parm, varargin)
 %
 % Color conversion and metric
 %     {'rgb2xyz'}              - Linear rgb to CIE (1931) XYZ
-%     {'rgb2lms'}              = Linear rgb to Stockman cones
+%     {'rgb2lms'}              - Linear rgb to Stockman cones (row format)
 %     {'lms2rgb'}              - Stockman cones to linear RGB (for cone
 %                                isolation)
 %     {'white xyz'}            - Display white point in CIE (1931) XYZ
@@ -187,28 +187,23 @@ switch parm
         % rgb2lms = displayGet(dsp,'rgb2lms')
         % rgb2lms = displayGet(dsp,'rgb2lms',wave)
         %
-        % The matrix is scaled so that L+M of white equals Y of white.
-        %
-        % RGB as a column vector mapped to LMS column
+        % RGB as a row vector is mapped to an LMS row
         %
         %     c(:)' = r(:)' * rgb2lms
-        % We do this so we can use the routine:
+        %
+        % This matrix format is used here
         %
         %   imageLinearTransform(img,rgb2lms)
         %
         wave = displayGet(d,'wave');
+        
+        % The Stockman Energy Fundamentals include the photopigment,
+        % default lens and default macular pigment (BW, I think).
         coneFile = fullfile(isetbioDataPath,'human','stockman');
-        cones = ieReadSpectra(coneFile,wave);     % plot(wave,spCones)
-        spd = displayGet(d, 'spd', wave);         % plot(wave,displaySPD)
+        cones = ieReadSpectra(coneFile,wave);   % plot(wave,spCones)
+        spd = displayGet(d, 'spd', wave);       % plot(wave,displaySPD)
         val = cones'* spd;                  
         val = val';
-        
-        % Scale the transform so that sum L and M values sum to Y-value of
-        % white 
-        %         e = displayGet(d,'white spd',wave);
-        %         whiteXYZ = ieXYZFromEnergy(e',wave);
-        %         whiteLMS = sum(val);
-        %         val = val*(whiteXYZ(2)/(whiteLMS(1)+whiteLMS(2)));
         
     case {'lms2rgb'}
         % Linear rgb to Stockman cone coordinates
