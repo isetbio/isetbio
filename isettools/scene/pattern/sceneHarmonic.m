@@ -51,6 +51,8 @@ function [scene,params] = sceneHarmonic(scene, params, wave)
 
   params.backSPD   = backSPD;
   params.modSPD    = modSPD(:,1);
+  params.wave      = wave;
+
   params.contrast  = 1;   
   params.freq      = 6; 
   params.GaborFlag = 0.2;

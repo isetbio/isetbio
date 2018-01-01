@@ -8,7 +8,7 @@ function [uData, hFig] = visualize(obj,varargin)
 %
 % Inputs (required)
 %
-% Inputs (optional)
+% Optional key/value pairs
 %  format    - {'movie', 'weights', 'montage'} (default 'movie')
 %  save      - Save a video file (boolean, false)
 %  FrameRate - Frames per second (default 20)
@@ -30,14 +30,17 @@ p = inputParser;
 p.addRequired('obj');
 
 % For video case ...
-p.addParameter('format','movie',@ischar);
+p.addParameter('format','movieilluminance',@ischar);
 p.addParameter('save',false,@islogical);
 p.addParameter('vname','videoName',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('step',1,@isnumeric);
 p.addParameter('showIlluminanceMap', false, @islogical);
 p.addParameter('eyeMovementsData', struct('show', false), @(x)(isstruct(x)&&(isfield(x,'show'))));
+
+varargin = ieParamFormat(varargin);
 p.parse(obj,varargin{:});
+
 format     = p.Results.format;
 save       = p.Results.save;
 vname      = p.Results.vname;
@@ -54,7 +57,7 @@ switch format
         plot(obj.timeAxis, obj.modulationFunction);
         xlabel('Time (ms)'); ylabel('Modulation');
         title(sprintf('Composition: %s',obj.composition));
-    case 'movie'
+    case 'movieilluminance'
         % Show the oi as an illuminance movie
         wgts     = obj.modulationFunction;
         nFrames  = length(wgts);
@@ -99,6 +102,62 @@ switch format
         colormap(gray(max(d(:)))); axis image; axis off;
         for ii=1:nFrames
             image(d(:,:,ii)); axis image; title(name); drawnow;
+            if save,  F = getframe; writeVideo(vObj,F); end
+        end
+        
+        % Write the video object if save is true
+        if save
+            writeVideo(vObj,F);
+            close(vObj);
+        end
+
+        uData.movie = d;
+    case 'moviergb'
+        % Show the oi as an illuminance movie
+        wgts     = obj.modulationFunction;
+        nFrames  = length(wgts);
+        rgbFixed = oiGet(obj.oiFixed,'rgb');
+        rgbMod   = oiGet(obj.oiModulated,'rgb');
+        name     = oiGet(obj.oiModulated,'name');
+        
+        if save
+            vObj = VideoWriter(vname);
+            vObj.FrameRate = FrameRate;
+            open(vObj);
+        end
+        
+        % This code is general, and it could become an obj.get.movie;
+        % Or obj.get.illuminanceMovie
+        % The algorithm for mixing these is problematic because we
+        % calculate the max between the two scenes.  This normalization can
+        % lead to unwanted problems (as it did for vernier coding).  I need
+        % to have the data come here in real physical units and deal with
+        % it appropriately.
+        mx1 = max(rgbFixed(:)); mx2 = max(rgbMod(:));
+        mx = max(mx1,mx2);
+        d = zeros([size(rgbFixed),3,length(obj.timeAxis)]);
+        rgbFixed = 256*rgbFixed/mx; illMod = 256*rgbMod/mx;
+        
+        switch obj.composition
+            case 'blend'
+                for ii=1:nFrames
+                    d(:,:,:,ii) = rgbFixed*(1-wgts(ii)) + rgbMod*wgts(ii);
+                    % To make a video, we should do this type of thing
+                end
+            case 'add'
+                for ii=1:nFrames
+                    d(:,:,:,ii) = rgbFixed + rgbMod*wgts(ii);
+                end     
+            otherwise
+                error('Unknown composition method: %s\n',obj.composition);
+        end
+        
+        %  Show the movie data
+        hFig = vcNewGraphWin; 
+        axis image; axis off;
+        % Probably imagescRGB is not so good without a fixed scale!
+        for ii=1:nFrames
+            imagescRGB(d(:,:,:,ii)); axis image; title(name); drawnow;
             if save,  F = getframe; writeVideo(vObj,F); end
         end
         

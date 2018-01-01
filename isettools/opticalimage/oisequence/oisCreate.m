@@ -35,8 +35,8 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 %
 % BW ISETBIO Team, 2016
 %
-% See also: oiSequence, sceneCreate, sceneHarmonic, humanConeContrast,
-%           humanConeIsolating
+% See also: t_oisCreate, oiSequence, sceneCreate, sceneHarmonic,
+%           humanConeContrast, humanConeIsolating
 
 % Examples
 % Harmonics
@@ -113,10 +113,15 @@ switch oisType
         if length(tparams) ~= 2, error('Specify two harmonic param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
-
+        
+        % Color case requires specification of wave for SPDs
+        if isfield(tparams(1),'wave'), wave = tparams(1).wave; 
+        else, wave = 400:10:700;
+        end
+        
         % Create basic harmonics
         for ii=1:2
-            scene{ii} = sceneCreate('harmonic',tparams(ii));
+            scene{ii} = sceneCreate('harmonic',tparams(ii),wave);
             sname = sprintf('F %d C %.2f', tparams(ii).freq, tparams(ii).contrast);
             scene{ii} = sceneSet(scene{ii},'name',sname);
         end

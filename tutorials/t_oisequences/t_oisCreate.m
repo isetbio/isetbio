@@ -1,16 +1,19 @@
 % t_oisCreate
 %
-% Create oiSequences using the oisCreate() function.  This functions
-% provides a general interface for a few classic psychophysical stimuli.
+% The oisCreate() function simplifies creating some classic psychophysical
+% stimuli as oiSequences. This script shows how to create Gaussian envelope
+% harmonic (Gabor) oiSequences for both monochrome and color, Vernier
+% stimuli, and a flash. 
 %
-% The oiSequence() class is illustrated in t_oiSequence.m
+% Writing directly with the oiSequence() class is illustrated in
+% t_oiSequence.m 
 %
 % BW, ISETBIO TEAM, 2017
 
 %%
 ieInit
 
-%% Harmonic
+%% Harmonic - monochrome
 %
 % This code uses sceneCreate('harmonic', ...) function to create harmonics.
 % We create a pair where one has positive contrast and a second has 0
@@ -36,7 +39,9 @@ stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
 
 % The two harmonics are 'blended', which means at each moment in time we
 % have a weighted sum of the two where the weights sum to 1.
-ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
+ois = oisCreate('harmonic','blend',stimWeights, ...
+    'testParameters',hparams,...
+    'sceneParameters',sparams);
 
 uData = ois.visualize;
 
@@ -44,18 +49,60 @@ uData = ois.visualize;
 % gifName = fullfile(isetbioRootPath,'wiki','images','oisHarmonic.gif');
 % ieGIF(uData.movie,'gifName',gifName);
 
-%% We can change the parameters for different effects
+%% Change the spatial frequency parameter
 
-% Frequency changin
-hparams(1) = hparams(2); hparams(1).freq = 4;
-ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
+hparams(2).freq = 10;
+hparams(1) = hparams(2); 
+hparams(1).contrast = 0;
+
+ois = oisCreate('harmonic','blend',stimWeights, ...
+                'testParameters',hparams,...
+                'sceneParameters',sparams);
 ois.visualize;
 
-%% A little phase shifting
+%% A little phase shifting, causing apparent motion
 
-hparams(1) = hparams(2); hparams(1).ph = 0;
-ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
+hparams(2).freq = 2;
+hparams(2).ph =  pi/6;
+hparams(1) = hparams(2); 
+hparams(1).ph = 0;
+
+ois = oisCreate('harmonic','blend',stimWeights, ...
+                'testParameters',hparams,...
+                'sceneParameters',sparams);
 ois.visualize;
+
+
+%% A color Gabor patch
+
+% Set up the color SPDs for background and test modulation
+dsp        = displayCreate('LCD-Apple.mat');
+wave       = displayGet(dsp,'wave');
+backSPD    = displayGet(dsp,'spd primaries')*0.5*ones(3,1);
+backSPD    = Energy2Quanta(wave,backSPD);
+[~,modSPD] = humanConeIsolating(dsp);
+modSPD     = Energy2Quanta(wave,modSPD);
+
+clear hparams
+hparams(2)           = harmonicP;
+hparams(2).freq = 6; 
+hparams(2).GaborFlag = .2;
+hparams(2).ang       = pi/6;
+
+hparams(2).backSPD   = backSPD;
+hparams(2).modSPD    = modSPD(:,1);  % Could be a mixture of the modSPDs
+hparams(2).wave      = wave;
+hparams(1)           = hparams(2);
+hparams(1).contrast  = 0;
+
+[ois, scenes] = oisCreate('harmonic','blend',stimWeights, ...
+    'testParameters',hparams,...
+    'sceneParameters',sparams);
+
+% Does not do color properly.
+% ois.visualize;
+ieAddObject(scenes{2}); sceneWindow;
+ieAddObject(ois.oiModulated); oiWindow;
 
 %% Vernier
 %
@@ -82,7 +129,9 @@ sparams.fov = 1;
 stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
 
 % You can return the scenes, if you like.
-[vernier, scenes] = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
+[vernier, scenes] = oisCreate('vernier','add', stimWeights,...
+    'testParameters',vparams,...
+    'sceneParameters',sparams);
 vernier.visualize;
 
 % To see the scenes, prior to creating the optical image
@@ -91,7 +140,9 @@ vernier.visualize;
 % Change up the parameters
 vparams(2).barColor = 0.5; 
 
-vernier = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
+vernier = oisCreate('vernier','add', stimWeights,...
+    'testParameters',vparams,...
+    'sceneParameters',sparams);
 vernier.visualize;
 
 %% Impulse (temporal)
@@ -101,7 +152,8 @@ clear iparams
 sparams.fov = 1; sparams.luminance = 100;
 stimWeights = zeros(1,50); stimWeights(10:13) = 1;
 
-impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
+impulse = oisCreate('impulse','add', stimWeights,...
+    'sceneParameters',sparams);
 
 impulse.visualize;
 
