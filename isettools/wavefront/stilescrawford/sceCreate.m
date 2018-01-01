@@ -48,8 +48,7 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %    sceP.xo          - SCE x center's position in mm relative to pupil's
 %    sceP.yo          - SCE y center's position in mm relative to pupil's
 %
-% Notes:
-%    * TODO
+% TODO:
 %       i) There should also be an sceSet
 %       ii) Could allow unit specification rather than defaulting to
 %       mm-based units.
@@ -57,8 +56,9 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %       such as field size and position.
 %       iv) Is the additive correction of the Berendschot numbers (as
 %       opposed to, say, multiplicative) appropriate?
-%    * [Note: JNM - Why is Digitized hard-coded to false (0) immediately
-%      before the if statement?]
+%       v) Reconcile the two versions of the Berendschot data.  Perhaps
+%       move where the data are coded and stored out of this routine to a
+%       more centralized location.
 %
 % See Also:
 %    sceGet
@@ -70,7 +70,6 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %    08/19/12  dhb  Expanded data options, better comments about the source
 %                   of data.
 %    11/10/17  jnm  Comments & formatting
-%
 
 % Examples:
 %{
