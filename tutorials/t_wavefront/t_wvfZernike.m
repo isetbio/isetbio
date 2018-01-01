@@ -32,45 +32,20 @@ function t_wvfZernike
 %    demonstrates and explains Stiles-Crawford effect; looks at measured
 %    human data and shows how eyeglasses only allow us to correct certain
 %    wavefront aberrations.
+% 
+%    The fact that for an aberrated eye, the best optical quality does not
+%    occur when nominal defocus wl matches the calculated wavelength is not
+%    considered here, but can be quite important when thinking about real
+%    optical quality. An interesting extension of this tutorial would be to
+%    use a figure of merit for the optical quality (e.g., the Strehl
+%    ratio) and show how it varies as a function of defocus. 
 %
 % References:
 %   http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
 %   http://www.traceytechnologies.com/resources_wf101.htm
 %
-% Notes:
-%    * [Note: XXX - This might usefully be separated in several shorter
-%      tutorials.]
+% See Also: wvfOSAIndexToVectorIndex
 %
-%    * [Note: XXX - Introduce notion of a figure of merit for quality of
-%      PSF, and compute some explicitly for various cases considered.]
-%
-%    * [Note: XXX - The fact that for an aberrated eye, the best optical
-%      quality does not occur when nominal defocus wl matches the
-%      calculated wavelength is not considered here, but can be quite
-%      important when thinking about real optical quality.]
-%
-%    * [Note: JNM - Below, there was a section stating that only one
-%      wavelength was to be used, and a variable initialized for the
-%      purpose, but it was never used throughout the tutorial, so I have
-%      removed the section title, the variable itself, and grouped the
-%      other variables initalized in that section into the appropriately
-%      named 'Initialize' section]
-%
-%    * [Note: JNM - There are a number of variables that are initialized
-%      and then never used. Was this done intentionally? As a part of the
-%      testing process? For what purpose are they kept around? Ex. nCols,
-%      nRows, uDataS, defocus]
-%
-%    * [Note: JNM - the defocus value is summed with lcaMicrons, and then
-%      lcaMicrons is used as  the defocus value? (L311-313) - is this done
-%      intentionally, or is it an accident? Same question about the
-%      variables that are initialized and used once, by name and then never
-%      again. Is there a purpose to this? Ex. oblique_astig]
-%
-% See Also:
-%    wvfOSAIndexToVectorIndex
-%
-% (c) Wavefront Toolbox Team 2011, 2012
 
 % History:
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
@@ -79,8 +54,8 @@ function t_wvfZernike
 %                   convention. Some editing of text for clarity.
 %    10/30/17  jnm  Comments & formatting
 %    11/08/17  jnm  Second commenting pass, cleaning up and enforcing
-%                   general commenting conventions
-%	
+%                   general commenting conventions	
+%    01/01/18  dhb  Handled notes.
 
 %% Zernike polynomials
 %
@@ -172,7 +147,7 @@ oblique_astig = 0.75;
 wvf3 = wvfSet(wvf0, 'zcoeffs', oblique_astig, {'oblique_astigmatism'});
 fprintf('Third Zernike coefficient is %g\n', wvfGet(wvf3, 'zcoeffs', 3));
 
-%% Look at the pupil function for astigmatism with axis at 45 degrees.
+% Look at the pupil function 
 %
 % We have used wvfComputePupilFunction separately here, but it is actually
 % also contained within wvfComputePSF, which we will use from now on.
@@ -300,10 +275,11 @@ wvf1 = wvfComputePSF(wvf1);
 wvfPlot(wvf1, '1dpsfspacenormalized', 'mm', wList, maxMM, 'no window');
 
 % To unpack this, we can do explicitly what is done inside the pupil
-% function calculation. First we LCA from the wavelength difference, then
-% act as if the measured wavelength (where there is no LCA) is the
+% function calculation. First we get LCA from the wavelength difference,
+% then act as if the measured wavelength (where there is no LCA) is the
 % calculated wavelength. We do this by changing the measured wavelength
-% specification. Finally, we add in the LCA to the defocus coefficient.
+% specification. Finally, we add in the LCA to the current defocus
+% coefficient.
 wvf2 = wvf1;
 lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf2, ...
     'measured wavelength', 'nm'), wvfGet(wvf2, 'calc wavelengths', 'nm'));
@@ -314,9 +290,9 @@ wvf2 = wvfSet(wvf2, 'measured wavelength', wvfGet(wvf2, ...
 wList = wvfGet(wvf2, 'calc wavelengths');
 defocus = wvfGet(wvf2, 'zcoeffs', {'defocus'});
 defocus = defocus + lcaMicrons;
-wvf2 = wvfSet(wvf2, 'zcoeffs', lcaMicrons, {'defocus'});
+wvf2 = wvfSet(wvf2, 'zcoeffs', defocus, {'defocus'});
 wvf2 = wvfComputePSF(wvf2);
-[udataS, pData] = wvfPlot(wvf2, '1dpsfspacenormalized', 'mm', wList, ...
+[~, pData] = wvfPlot(wvf2, '1dpsfspacenormalized', 'mm', wList, ...
     maxMM, 'no window');
 set(pData, 'color', 'b', 'linewidth', 2);
 
@@ -376,7 +352,7 @@ wvfPlot(wvf0SCE, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
 subplot(2, 2, 3:4);
 wvfPlot(wvf0SCE, '2dpsfspace', 'mm', [], maxMM, 'no window');
 figure(sce1DFig);
-[udataS, pData] = wvfPlot(wvf0SCE, '1dpsfspace', 'mm', [], maxMM, ...
+[~, pData] = wvfPlot(wvf0SCE, '1dpsfspace', 'mm', [], maxMM, ...
     'no window');
 set(pData, 'color', 'b', 'linewidth', 1);
 
@@ -415,7 +391,7 @@ wvfPlot(wvf5SCE, '2dpupilphasespace', 'mm', [], pupilfuncrangeMM, ...
 subplot(2, 2, 3:4);
 wvfPlot(wvf5SCE, '2dpsfspace', 'mm', [], maxMM, 'no window');
 figure(sce1DFig2);
-[udataS, pData] = wvfPlot(wvf5SCE, '1dpsfspace', 'mm', [], maxMM, ...
+[~, pData] = wvfPlot(wvf5SCE, '1dpsfspace', 'mm', [], maxMM, ...
     'no window');
 set(pData, 'color', 'b', 'linewidth', 1);
 
@@ -441,8 +417,6 @@ theZernikeCoeffs = importdata(sDataFile);
 whichSubjects = [3 7];
 theZernikeCoeffs = theZernikeCoeffs(:, whichSubjects);
 nSubjects = size(theZernikeCoeffs, 2);
-nRows = ceil(sqrt(nSubjects));
-nCols = ceil(nSubjects / nRows);
 
 % Stiles Crawford
 wvfHuman0 = wvfSet(wvfHuman0, 'sceParams', sceCreate(wvfGet(wvfHuman0, ...
