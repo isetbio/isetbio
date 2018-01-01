@@ -7,24 +7,27 @@ function t_wvfAstigmatism
 %
 %    This illustrates the effect of Zernicke coefficients 4 and 5.
 %
-% Notes:
-%    * [Note: JNM - Why is 'z' calculated and then never used?]
-%
-% (c) Wavefront Toolbox Team, 2012
+
+% History:
+%                 (c) Wavefront Toolbox Team, 2012
+% 01/01/18 dhb    Handled JNM notes.
 
 %% Initialize and set parameters
 ieInit;
 
-%% Ranges for plotting
-% maxMIN = 2;
-% maxMM  = 1;
+%% Range for plotting
 maxUM  = 20;
 
 %% Set up default parameters structure with diffraction limited default
+%
+% The ranges for coefficients here and below are reasonable given typical
+% variation within human population.  If we look at the diagonal of the
+% covariance matrix for coefficients that we get from the Thibos
+% measurements (see wvfLoadThibosVirtualEyes we see that for the third
+% through sixth coefficients, the standard deviations (sqrt of variances on
+% the diagonal) range between about 0.25 and about 0.5.
 wvfP = wvfCreate;
 wvfParams = wvfComputePSF(wvfP);
-% [Note: JNM - Why is 'z' calculated and then never used?]
-z = wvfGet(wvfParams, 'zcoeffs');
 z4 = -0.5:0.5:0.5;
 z5 = -0.5:0.5:0.5;
 [Z4, Z5] = meshgrid(z4, z5);
@@ -48,4 +51,3 @@ for ii=1:size(Zvals, 1)
     title(sprintf('Defocus = %.1f Astig == %.1f\n', Zvals(ii, 1), ...
         Zvals(ii, 2)));
 end
-%%

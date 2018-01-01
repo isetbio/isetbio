@@ -13,9 +13,6 @@ function [peakRow, peakCol] = psfFindPeak(input)
 %    multiple locations with the identical maximal value -- it's just
 %    whatever the max() routine picks.
 %
-%    The old method of finding row and column  maxima can screw up in this
-%    case, by returing the coordinates of a point that isn't a maximum.
-%
 % Inputs:
 %    input   - Two-dimensional PSF input
 %
