@@ -21,38 +21,21 @@ function outPSF = psfCircularlyAverage(inPSF)
 %    12/22/09  dhb  Make computation a little more fine grained.
 %    07/23/12  dhb  Match out volume to in volume.
 %    11/13/17  jnm  Comments & Formatting
-%
+%    01/01/18  dhb  Simplified example
 
 % Examples:
 %{
-    % This example only shows the circularly averaged PSF for L-cones
-    theZernikeCoeffs = importdata('autrusseauStandardObserver.txt');
-    % Cone sensitivities and equal energy weighting spectrum
-    load('T_cones_ss2');
-    conePsfInfo.S = S_cones_ss2;
-    conePsfInfo.T = T_cones_ss2;
-    conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
-
-    wls = SToWls([400 10 31]);
     wvf0 = wvfCreate;
-
-    % Set important parameters - Autrusseau std. observer
-    wvf0 = wvfSet(wvf0,'measured pupil size',6);
-    wvf0 = wvfSet(wvf0,'calc pupil size',6);
-    wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,1));
-    wvf0 = wvfSet(wvf0,'measured wavelength',570);
-    wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
-    wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
-    wvf0 = wvfSet(wvf0,'number spatial samples',497);
-    sce = sceCreate(wls,'none');
-    wvf0 = wvfSet(wvf0,'sce params',sce);
-
-    wvfParams1 = wvf0;
-    wvfParams1 = wvfComputePSF(wvfParams1);
-    conePsf1 = wvfGet(wvfParams1,'cone psf');
-
-    lpsf = conePsf1(:,:,1);
-    lpsf = psfCircularlyAverage(lpsf);
+    oblique_astig = 0.75;
+    wvf0 = wvfSet(wvf0, 'zcoeffs', oblique_astig, {'oblique_astigmatism'});
+    wvf0 = wvfComputePSF(wvf0);
+    psf0 = wvfGet(wvf0,'psf');
+    psfC = psfCircularlyAverage(psf0);
+    figure; clf;  
+    subplot(1,2,1); mesh(psf0); title('Astigmatic PSF');
+    view(0,90); axis('equal'); axis([50 150 50 150]); 
+    subplot(1,2,2); mesh(psfC); title('Circularly Averaged PSF');
+    view(0,90); axis('equal'); axis([50 150 50 150]); 
 %}
 
 % Define quantization. Four was used in early code, but 1 makes more sense.

@@ -20,54 +20,39 @@ function [averagePSF] = psfAverageMultiple(inputPSFs, CHECKINSFDOMAIN)
 % Outputs:
 %    averagePSF      - The PSF, averaged along the third dimension
 %
-% Notes:
-%    * [Note: DHB - (from below) I really have no idea why I wrote this
-%      bit, as it really just verifies the the Fourier transform is
-%      invertible. But now that it's here, I left it. It may be that I once
-%      thought it was a good idea to average the modulus of the otf, and
-%      started down that road without going all the way down it. If we ever
-%      want to average the modulus, one could start with this check code.]
 
 % History:
 %    07/19/07  dhb  Wrote it.
 %    09/09/11  dhb  Do it in the space domain, optional check in sf domain.
 %              dhb  Take array, not cell array.
 %    11/13/17  jnm  Comments, formatting, and example
+%    01/01/18  dhb  Example turning, get rid of frequency domain check.
 
 % Examples:
-
 %{
-    wvfParams0 = wvfCreate;
-    wvf0 = wvfComputePSF(wvfParams0);
-    avglpsfo = psfAverageMultiple(wvf0.conePsfInfo.T);
+    wvf0 = wvfCreate('wave',[400 550 700]');
+    wvf0 = wvfComputePSF(wvf0);
+    psfCell = wvfGet(wvf0,'psf');
+    [m,n] = size(psfCell{1});
+    p = length(psfCell);
+    psfMatrix = zeros(m,n,p);
+    for kk = 1:p
+        psfMatrix(:,:,kk) = psfCell{kk};
+    end
+    avgPsf = psfAverageMultiple(psfMatrix);
+
+    figure; clf;  
+    subplot(2,2,1); mesh(psfCell{1}); title('PSF 400 nm');
+    zlim([0 0.02]); view(-37.5,30); 
+    subplot(2,2,2); mesh(psfCell{2}); title('PSF 550 nm');
+    zlim([0 0.02]); view(-37.5,30); 
+    subplot(2,2,3); mesh(psfCell{3}); title('PSF 700 nm');
+    zlim([0 0.02]); view(-37.5,30); 
+    subplot(2,2,4); mesh(avgPsf); title('Average PSF');
+    zlim([0 0.02]); view(-37.5,30); 
 %}
 
-averagePSF = mean(inputPSFs, 3);
+% Not very hard
+averagePSF = mean(inputPSFs,3);
 
-% Optional check in SF domain.
-%
-% Note from DHB: I really have no idea why I wrote this bit, as it really
-% just verifies the the Fourier transform is invertible. But now that it's
-% here, I left it. It may be that I once thought it was a good idea to
-% average the modulus of the otf, and started down that road without going
-% all the way down it. If we ever want to average the modulus, one could
-% start with this check code.
-if (nargin < 2 || isempty(CHECKINSFDOMAIN))
-    CHECKINSFDOMAIN = 0;
-end
-
-if (CHECKINSFDOMAIN)
-    nInputs = size(inputPSFs, 3);
-    inputOTFs = zeros(size(inputPSFs));
-    for i = 1:nInputs
-        inputOTFs(:, :, i) = psf2otf(inputPSFs(:, :, i));
-    end
-    averageOTF = mean(inputOTFs, 3);
-    averagePSFCheck = otf2psf(averageOTF);
-    checkDiff = averagePSF(:) - averagePSFCheck(:);
-    if (max(abs(checkDiff)) > 1e-8)
-        error('AveragePSF space/sf domain disagreement\n');
-    else
-        %fprintf('AveragePSF space/sf domain agreement\n');
-    end
 end
