@@ -6,15 +6,16 @@ function [img, parms] = imageHarmonic(parms)
 %
 % Description:
 %    Creates a sum of windowed, oriented, spatial harmonics. The basic
-%    function for each of the harmonics is this:
+%    function for each of the harmonics is
+%
 %        contrast * window ...
 %           .* cos(2 * pi * f *([cos(ang) * X + sin(ang) * Y] + ph)) + 1
 %
-%    When key fields are vectors (freq, contrast, ang, ph) then the return
-%    produces the sum of these harmonics. The sum always has a mean of 1.
+%    The sum always modulates around 1. 
 %
 %    The harmonic parameters are in the structure parms. The fields are
-%    defined below.
+%    defined below. When the parameter fields are vectors (freq, contrast,
+%    ang, ph), the return is the sum of these harmonics.
 %
 %    The Gabor Flag is used to set the window values (a Gaussian). When the
 %    flag is non-zero, the value specifies the standard deviation of the
@@ -27,8 +28,9 @@ function [img, parms] = imageHarmonic(parms)
 %    is a circular half-cosine, and the parameter is the length of the
 %    half-cosine (that is, like the radius).
 %
-%    Default parameters are applied if parms is not sent in. You can see
-%    the defaults by requesting them on return as below.
+%    If parms is not set, we use defaults. These parameters are produced by
+%    the funciton harmonicP, and you can see them by requesting them on
+%    return as below.
 %
 % Inputs:
 %    parms - (Optional) The harmonic parameters. The possible parameters
