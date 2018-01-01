@@ -38,9 +38,11 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %      requires one of them. I think XYZ 10. Must check. Or do we just
 %      specify in the methods - BW ). 
 %
+% Copyright ImagEval Consultants, LLC, 2003.
+%
 % See Also:
 %    ieLAB2XYZ
-%
+
 % History
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
 %                   p-code too.
@@ -50,7 +52,6 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    11/17/17  jnm  Formatting
 %    12/21/17  baw  Sent reference to ieLAB2XYZ
 
-% Copyright ImagEval Consultants, LLC, 2003.
 
 % Examples:
 %{

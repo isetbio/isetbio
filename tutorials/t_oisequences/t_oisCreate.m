@@ -59,9 +59,9 @@ ois.visualize;
 
 %% Vernier
 %
-% The line offset case is managed using the sceeCreate('vernier', ...)
-% scene generations.  The code for the vernier stimuli needs
-% simplification, checking, and improvement. (BW).
+% The line offset case is managed using the sceneCreate('vernier', ...).
+% The code for the vernier stimuli needs simplification, checking, and
+% improvement. (BW).
 % 
 
 clear vparams; 
@@ -88,13 +88,11 @@ vernier.visualize;
 % To see the scenes, prior to creating the optical image
 % ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 
-%% Change up the parameters
+% Change up the parameters
 vparams(2).barColor = 0.5; 
 
 vernier = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
 vernier.visualize;
-
-
 
 %% Impulse (temporal)
 

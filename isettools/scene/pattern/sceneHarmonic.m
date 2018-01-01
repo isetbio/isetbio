@@ -1,17 +1,60 @@
-function [scene,p] = sceneHarmonic(scene,params, wave)
+function [scene,params] = sceneHarmonic(scene, params, wave)
 %% Create a scene of a (windowed) harmonic function.
 %
-% Harmonic parameters are: parms.freq, parms.row, parms.col, parms.ang
-% parms.ph, parms.contrast
+% Syntax
+%  [scene,p] = sceneHarmonic(scene,params, wave)
 %
-% Missing default parameters are supplied by imageHarmonic.
+% Description
+%  Create a Gabor scene (harmonic modulated by a Gaussian). The Harmonic
+%  parameters are:  
+%   params.name 
+%   params.ang
+%   params.contrast
+%   params.freq
+%   params.ph
+%   params.row, parms.col
+%   params.GaborFlag
+%
+%  If you do not supply harmonic parameters, we use the default returned by
+%  the function harmonicP
 %
 % The frequency is with respect to the image (cyces/image).  To determine
 % cycles/deg, use cpd: freq/sceneGet(scene,'fov');
 %
+% Imageval Consulting, LLC Copyright 2006
 
+% Examples
+%{
+  params = harmonicP;
+  scene = sceneInit;
+  scene = sceneHarmonic(scene,params);
+  scene = sceneComplete(scene);
+  ieAddObject(scene); sceneWindow;
+%}
+%{
+  params.freq = 5;
+  params.ang  = pi/3;
+  params.GaborFlag = 0.2;
+  scene = sceneHarmonic(scene,params);
+  ieAddObject(scene); sceneWindow;
+%}
+
+%% Build the image from harmonic parameters
+if notDefined('params')
+    params = harmonicP; 
+    warning('Using default harmonic parameters'); 
+end
+img = imageHarmonic(params);
+
+% To reduce rounding error problems for large dynamic range, we set the
+% lowest value to something slightly more than zero.
+img(img==0) = 1e-4;
+img   = img/(2*max(img(:)));    % Forces mean reflectance to 25% gray
+
+%% Build scene from img 
+
+if notDefined('scene'), scene = sceneInit; end
 scene = sceneSet(scene,'name','harmonic');
-
 if notDefined('wave')
     scene = initDefaultSpectrum(scene,'hyperspectral');
 else
@@ -20,37 +63,21 @@ end
 
 nWave = sceneGet(scene,'nwave');
 
-% TODO: Adjust pass the parameters back from the imgHarmonic window. In
-% other cases, they are simply attached to the global parameters in
-% vcSESSION.  We can get them by a getappdata call in here, but not if we
-% close the window as part of imageSetHarmonic
-if notDefined('params')
-    [h, params] = imageSetHarmonic; waitfor(h);
-    img = imageHarmonic(params);
-    p   = params;
-else
-    [img,p] = imageHarmonic(params);
-end
-
-% To reduce rounding error problems for large dynamic range, we set the
-% lowest value to something slightly more than zero.  This is due to the
-% ieCompressData scheme.
-img(img==0) = 1e-4;
-img   = img/(2*max(img(:)));    % Forces mean reflectance to 25% gray
-
 % Mean illuminant at 100 cd
-wave = sceneGet(scene,'wave');
-il = illuminantCreate('equal photons',wave,100);
+wave  = sceneGet(scene,'wave');
+il    = illuminantCreate('equal photons',wave,100);
 scene = sceneSet(scene,'illuminant',il);
 
-img = repmat(img,[1,1,nWave]);
-[img,r,c] = RGB2XWFormat(img);
+% Build up the photons
+photons = repmat(img,[1,1,nWave]);
+[photons,r,c] = RGB2XWFormat(photons);
 illP = illuminantGet(il,'photons');
-img = img*diag(illP);
-img = XW2RGBFormat(img,r,c);
-scene = sceneSet(scene,'photons',img);
+photons = photons*diag(illP);
+photons = XW2RGBFormat(photons,r,c);
+scene = sceneSet(scene,'photons',photons);
 
-% set scene field of view
+%% set scene field of view
 scene = sceneSet(scene, 'h fov', 1);
+scene = sceneAdjustLuminance(scene,100);
 
 end
