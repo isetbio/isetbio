@@ -5,9 +5,19 @@ function [r, c] = sample2space(rSamples, cSamples, rowDelta, colDelta)
 %   [r, c] = sample2space(rSamples, cSamples, rowDelta, colDelta)
 %
 % Description:
-%    We treat the center of the samples as (0, 0) and use the sampling
+%    We treat the center of the samples as (0, 0) and use the sample
 %    spacing to calculate the locations of the other samples. The locations
 %    r and c are in the same units as the deltas.
+%
+%    For rows and columns separately, this routine uses the mean of the
+%    passed sample values as the center location, and subtracts this from
+%    the samples.  It then multiples by the delta. 
+%
+%    The use of the mean is fine, but note that it differs a little from
+%    Matlab's conventions for the center of an array, which wants
+%    coordinate 0 at location floor(N/2)+1, where N is the dimension of the
+%    spatial support. At least, this is Matlab's convention for the FFT,
+%    prior to application of ifftshift.
 %
 % Inputs:
 %    rSamples - Row Samples
@@ -26,9 +36,10 @@ function [r, c] = sample2space(rSamples, cSamples, rowDelta, colDelta)
 
 % Examples:
 %{
-    oi = sceneCreate;
-    [r, c] = sample2space(sceneGet(oi, 'rows'), sceneGet(oi, 'cols'), ...
-      sceneGet(oi, 'hres'), sceneGet(oi, 'wres'));
+    scene = sceneCreate;
+    [r, c] = sample2space(...
+      1:sceneGet(scene, 'rows'), 1:sceneGet(scene, 'cols'), ...
+      sceneGet(scene, 'hres'), sceneGet(scene, 'wres'));
 
     % Note unfortunate terminology in sceneGet:
     %   hres is height resolution; 

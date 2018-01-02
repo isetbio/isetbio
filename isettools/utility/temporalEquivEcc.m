@@ -1,36 +1,47 @@
-function ecc = temporalEquivEcc(center, varargin)
+function tee = temporalEquivEcc(center, varargin)
 % Equivalent temporal eccentricity according to Kalmar/Chichilnisky
 %
 % Syntax:
-%   ecc = temporalEquivEcc(center, [eyeSide])
+%   tee = temporalEquivEcc(center)
 %
 % Description:
-%    Calculate the spatial RF diameter for ON Parasol cell at a particular
-%    TEE See Chichilnisky, E. J., and Rachel S. Kalmar. "Functional
+%    Calculate the temporal equivalent eccentricity using formula from
+%    Chichilnisky, E. J., and Rachel S. Kalmar. "Functional
 %    asymmetries in ON and OFF ganglion cells of primate retina." The
-%    Journal of Neuroscience 22.7 (2002), Fig. 5, pg. 2741. 2STD fit in
-%    micrometers. This function compensates for the observation that
+%    Journal of Neuroscience 22.7 (2002).
+%
+%    This function compensates for the observation that
 %    "contour lines of constant RGC density are circular in the temporal
 %    half but elliptical in the nasal half of the retina" (Chichilnisky &
 %    Kalmar, pg. 2738, 2002).
 %
-%    The TEE is used to calculate the diameter of the receptive field size
-%    at that location, given by Fig. 5 Chichilnisky & Kalmar (2002).
-%
-%     TEE = sqrt((0.61 * X ^ 2) + Y ^ 2) (corrected from the publication)
+%    The TEE can be used, for example, to calculate the diameter of the receptive field size
+%    at a retinal location.
+%      TEE = sqrt((0.61 * X ^ 2) + Y ^ 2) (corrected from the publication)
 %
 % Inputs:
-%    center  - position of mosaic center in mm, fovea is (0, 0)
-%    eyeSide - (Optional) Which side of the eye? (Default is 'left')
+%    center  - position on retina in mm, fovea is (0, 0)
 %
 % Outputs:
-%    ecc     - Calculated temporal eccentricity
+%    tee     - Calculated temporal equivalent eccentricity
+%
+% Optional key/value pairs:
+%    'eyeSide' - Which eye? (Default is 'left').  Not yet
+%                implemented in code.
 %
 % Notes:
-%    * [Note: BAW - This is the code from JRG. Not sure it is all the same.
+%    * [Note: DHB - This routine is not really done.  No implementation of
+%       which eye yet, and what the coordinate system is, is not specified.
+%       And, the current code doesn't take the quadrant of the retina into
+%       account. Maybe the commented out code in the note from BAW  below
+%       is right.  All needs to be fixed up before we use this for anything
+%       serious. It is only called from the rgc method initSpace.  I put in
+%       an error message on execution, as this seemed really broken.]
+%    * [Note: DHB - Key 'eyeSide' is not well name, 'whichEye' would be
+%      better.
+%    * [Note: BAW - Below is the from JRG. Not sure it is all the same.
 %      In general, I am not sure we should use this for human work.]
-%
-% References:
+
 %     % Convert angle in degrees to radians
 %     theta = (pi / 180) * theta;
 %     
@@ -55,8 +66,12 @@ function ecc = temporalEquivEcc(center, varargin)
 
 % Examples:
 %{
-    temporalEquivEcc([1, 2, 1, 4, 3, 1, 2],'eyeSide', 'left')
+    temporalEquivEcc([1, -1],'eyeSide', 'left')
+    temporalEquivEcc([-1, 1],'eyeSide', 'left')
 %}
+
+error('This routine is too unfinished to use. See Notes in source.');
+
 
 %%
 p = inputParser;
@@ -64,9 +79,10 @@ p.addRequired('center', @isvector);
 p.addParameter('eyeSide', 'left', @ischar);
 p.parse(center, varargin{:});
 
+
 % Not handled yet. See above.
 % eyeSide = p.Results.eyeSide;
 
-ecc = sqrt((0.61 * center(1) ^ 2) + center(2) ^ 2);
+tee = sqrt((0.61 * center(1) ^ 2) + center(2) ^ 2);
 
 end
