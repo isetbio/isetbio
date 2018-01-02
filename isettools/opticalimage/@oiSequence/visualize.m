@@ -7,13 +7,13 @@ function [uData, vObj] = visualize(obj,plotType,varargin)
 % Description
 %   This is a plot method for the oiSequence class.  The plot types
 %   implemented are
-%       
-%       movie rgb
-%       weights
-%       montage
 %
 % Inputs (required)
 %   plotType - {'movie illuminance','movie rgb','weights','montage'}
+%      movie illuminance - Gray scale (luminance) video of the stimulus
+%      movie rgb -  Video of the stimuli
+%      weights   -  Plot showing time series of weights
+%      montage   -  Large montage of the frames and first panel of weights
 %
 % Optional key/value pairs
 %   save      - Save a the movie  (boolean, false)
@@ -103,13 +103,14 @@ switch ieParamFormat(plotType)
         end
         
         %  Show the movie data.  20Hz Frame rate.
-        vcNewGraphWin; 
+        h = vcNewGraphWin; 
         colormap(gray(max(d(:)))); axis image; axis off;
         for ii=1:nFrames
             image(d(:,:,ii)); 
             axis image; title(name); drawnow;
             pause(0.05);
         end
+        delete(h);
         
         uData.movie = d;
 
@@ -158,7 +159,7 @@ switch ieParamFormat(plotType)
         end
         
         %  Show the movie data.  20Hz Frame rate.
-        vcNewGraphWin; 
+        h = vcNewGraphWin; 
         axis image; axis off;
         for ii=1:nFrames
             % imagesc(d(:,:,:,ii),[0 256]); 
@@ -166,7 +167,8 @@ switch ieParamFormat(plotType)
             axis image; title(name); drawnow;
             pause(0.05);
         end
-        
+        delete(h);
+
         uData.movie = d;
 
         % Write the video object if save is true
@@ -223,8 +225,8 @@ switch ieParamFormat(plotType)
             XYZmax = 2*XYZmax;
         end
         
-        vcNewGraphWin;
-        set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 730]); 
+        h = vcNewGraphWin;
+        set(h, 'Color', [1 1 1], 'Position', [10 10 1700 730]); 
         for oiIndex = 1:obj.length
             if (oiIndex == 1)
                 % Plot the modulation function
