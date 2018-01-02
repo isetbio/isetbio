@@ -1,12 +1,13 @@
 % t_oisCreate
 %
-% The oisCreate() function simplifies creating some classic psychophysical
-% stimuli as oiSequences. This script shows how to create Gaussian envelope
-% harmonic (Gabor) oiSequences for both monochrome and color, Vernier
-% stimuli, and a flash. 
+% The oisCreate function produces some classic psychophysical stimuli as
+% oiSequences. This script shows how to use that function.
 %
-% Writing directly with the oiSequence() class is illustrated in
-% t_oiSequence.m 
+% The script creates Gaussian envelope harmonic (Gabor) oiSequences for
+% both monochrome and color, Vernier stimuli, and a flash.
+%
+% Implementing directly with the oiSequence() class is illustrated in
+% t_oiSequence.m
 %
 % BW, ISETBIO TEAM, 2017
 
