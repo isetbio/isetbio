@@ -31,6 +31,7 @@ function idx = ieFindWaveIndex(wave, waveVal, perfect)
 %    idx     - A vector of booleans showing which of the instances of wave
 %              match the corresponding waveVal entries.
 %
+% See also: ieFindWaveIndex
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.

@@ -12,6 +12,7 @@ function sFactor = ieUnitScaleFactor(unitName)
 %
 % Inputs:
 %    unitName - the unit you wish to convert to. Options include:
+%       From meters to:
 %           nm     - nanometer(s)
 %           um     - micrometer, micron(s)
 %           mm     - millimeter(s)
@@ -20,9 +21,11 @@ function sFactor = ieUnitScaleFactor(unitName)
 %           km     - kilometer(s)
 %           in     - inch(es)
 %           ft     - foot/feet
+%       From seconds to:
 %           sec    - sec(ond)
 %           ms     - millisecond
 %           us     - microsecond
+%       From radions to:
 %           deg    - degrees
 %           arcmin - arcmin
 %           arcsec - arcsec
@@ -37,8 +40,18 @@ function sFactor = ieUnitScaleFactor(unitName)
 
 % Examples:
 %{
-    ieUnitScaleFactor('in')
-    ieUnitScaleFactor('sec')
+    nMeters = 1; nInches = 39.3701;
+
+    % Get number of inches from number of meters
+    % Inches is fun for an example.  But never use them.
+    nMeters*ieUnitScaleFactor('in')
+
+    % Get number of meters from number of inches
+    nInches/ieUnitScaleFactor('in')
+%}
+%{
+    ieUnitScaleFactor('ms')
+    ieUnitScaleFactor('deg')
 %}
 
 if notDefined('unitName'), error('Unit name must be defined.'); end
