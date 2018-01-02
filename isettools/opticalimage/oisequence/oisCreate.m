@@ -46,8 +46,9 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
    hparams(1) = hparams(2); hparams(1).contrast = 0; 
    sparams.fov = 1; 
    stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-   ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
-   ois.visualize;
+   ois = oisCreate('harmonic','blend',stimWeights, ...
+        'testParameters',hparams,'sceneParameters',sparams);
+   ois.visualize('movie illuminance');
 %}
 
 % Vernier
@@ -57,8 +58,9 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
    vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
    sparams.fov = 1;
    stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-   [vernier, scenes] = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
-   vernier.visualize;
+   [vernier, scenes] = oisCreate('vernier','add', stimWeights,...
+       'testParameters',vparams,'sceneParameters',sparams);
+   vernier.visualize('movie illuminance');
 
    ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %}

@@ -72,14 +72,14 @@ modulationRegion.radiusInMicrons = 250;
 % region using a monophasic modulation function
 theOIsequence(1) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction1, ...
     'composition', 'add', 'modulationRegion', modulationRegion);
-theOIsequence(1).visualize;
+theOIsequence(1).visualize('movie illuminance');
 
 %% Blending with a background
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
 theOIsequence(2) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction2, ...
     'composition', 'add', 'modulationRegion', modulationRegion);
-theOIsequence(2).visualize;
+theOIsequence(2).visualize('movie illuminance');
 
 %% Adding a grating
 
@@ -87,7 +87,7 @@ theOIsequence(2).visualize;
 % (a grating) is ADDED with the oiBackground using a monophasic modulation function
 theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
     'composition', 'add');
-theOIsequence(3).visualize;
+theOIsequence(3).visualize('movie illuminance');
 
 %% Blending a grating
 
@@ -95,19 +95,19 @@ theOIsequence(3).visualize;
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
 theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
     'composition', 'blend');
-theOIsequence(4).visualize;
+theOIsequence(4).visualize('movie illuminance');
 
 %%
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground  over an 250 micron radius using a biphasic modulation function
 theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction3, ...
     'composition', 'blend', 'modulationRegion', modulationRegion);
-theOIsequence(5).visualize;
+theOIsequence(5).visualize('movie illuminance');
 
 %%
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
-    theOIsequence(k).visualize('format', 'montage');
+    theOIsequence(k).visualize('montage');
 end
 
 %%
