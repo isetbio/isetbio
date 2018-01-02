@@ -1,64 +1,72 @@
-function [uData, vObj] = visualize(obj,varargin)
+function [uData, vObj] = visualize(obj,plotType,varargin)
 % Visualize an OI sequence
 %
 % Syntax
-%   oiSequence.visualize;
+%   oiSequence.visualize(plotType, ...);
 %
 % Description
+%   This is a plot method for the oiSequence class.  The plot types
+%   implemented are
+%       
+%       movie rgb
+%       weights
+%       montage
 %
 % Inputs (required)
+%   plotType - {'movie illuminance','movie rgb','weights','montage'}
 %
 % Optional key/value pairs
-%  format    - {'movie', 'weights', 'montage'} (default 'movie')
-%  save      - Save a video file (boolean, false)
-%  FrameRate - Frames per second (default 20)
-%  vname     - Video file name when saving (default videoName);
-%  showIlluminanceMap  -
-%  eyeMovementsData    -  Show eye movement data (boolean, false)
+%   save      - Save a the movie  (boolean, false)
+%   FrameRate - Frames per second (default 20)
+%   vname     - Video file name when saving (default videoName);
+%   showIlluminanceMap  -
+%   eyeMovementsData    -  Show eye movement data (boolean, false)
 %
 % Return
 %   uData - Displayed data
-%   hFig  - Figure handle
-%
-% Parameter/value
+%   vObj  - Video object for movie case
 %
 % NP/BW ISETBIO Team, 2016
+%
+% See also:  t_oisCreate
 
 %% Interpret parameter values
 p = inputParser;
 
 p.addRequired('obj');
+p.addRequired('plotType',@ischar);
 
 % For video case ...
-p.addParameter('format','movieilluminance',@ischar);
-p.addParameter('save',false,@islogical);
-p.addParameter('vname','videoName',@ischar);
+p.addParameter('vname','',@ischar);
 p.addParameter('FrameRate',20,@isnumeric);
-p.addParameter('step',1,@isnumeric);
+
+% Must ask NP more about this
 p.addParameter('showIlluminanceMap', false, @islogical);
 p.addParameter('eyeMovementsData', struct('show', false), @(x)(isstruct(x)&&(isfield(x,'show'))));
 
 varargin = ieParamFormat(varargin);
-p.parse(obj,varargin{:});
+p.parse(obj,plotType,varargin{:});
 
-format     = p.Results.format;
-save       = p.Results.save;
 vname      = p.Results.vname;
 FrameRate  = p.Results.FrameRate;
 
-if ~strcmp(vname,'videoName'), save = true; end
+save = false;
+if ~isempty(vname), save = true; end
 
 %%  Show the oiSequence in one of the possible formats
-uData = [];
-vObj = [];    % Video object
+uData = [];    % Returned data.
+vObj  = [];    % Video object
 
-switch format
+switch ieParamFormat(plotType)
     case 'weights'
         % Graph the weights'
         vcNewGraphWin;
         plot(obj.timeAxis, obj.modulationFunction);
-        xlabel('Time (ms)'); ylabel('Modulation');
+        xlabel('Time (ms)'); ylabel('Weight');
         title(sprintf('Composition: %s',obj.composition));
+        grid on;
+        uData.time = obj.timeAxis; 
+        uData.wgts = obj.modulationFunction;
     case 'movieilluminance'
         % Show the oi as an illuminance movie
         wgts     = obj.modulationFunction;
@@ -94,20 +102,27 @@ switch format
                 error('Unknown composition method: %s\n',obj.composition);
         end
         
-        %  Show the movie data
+        %  Show the movie data.  20Hz Frame rate.
         vcNewGraphWin; 
         colormap(gray(max(d(:)))); axis image; axis off;
         for ii=1:nFrames
-            image(d(:,:,ii)); axis image; title(name); drawnow;
+            image(d(:,:,ii)); 
+            axis image; title(name); drawnow;
+            pause(0.05);
         end
         
+        uData.movie = d;
+
         % Write the video object if save is true
         if save
-            disp('Saving video')
-            [~, vObj] = ieMovie(uData.movie,'vname',vname);
+            disp('Saving video ...')
+            [~, vObj] = ieMovie(uData.movie,...
+                'vname',vname,...
+                'FrameRate',FrameRate,...
+                'show',false);
+            disp('Done')
         end
 
-        uData.movie = d;
     case 'moviergb'
         % Show the oi as an RGB movie
         wgts     = obj.modulationFunction;
@@ -122,15 +137,7 @@ switch format
         rgbFixed = xyz2rgb(xyzFixed);
         name     = oiGet(obj.oiModulated,'name');
 
-        
-        % This code is general, and it could become an obj.get.moviergb;
-        % Or obj.get.movieilluminance (above).
-        %
-        % The algorithm for mixing these is problematic because we
-        % calculate the max between the two scenes.  This normalization can
-        % lead to unwanted problems (as it did for vernier coding).  I need
-        % to have the data come here in real physical units and deal with
-        % it appropriately.
+        % Scale the RGB data to [0,1] with a common scale factor
         mx1 = max(rgbFixed(:)); mx2 = max(rgbMod(:)); mx = max(mx1,mx2);
         d = zeros([size(rgbFixed),length(obj.timeAxis)]);
         rgbFixed = rgbFixed/mx; rgbMod = rgbMod/mx;
@@ -150,11 +157,14 @@ switch format
                 error('Unknown composition method: %s\n',obj.composition);
         end
         
-        %  Show the movie data
+        %  Show the movie data.  20Hz Frame rate.
         vcNewGraphWin; 
         axis image; axis off;
         for ii=1:nFrames
-            imagesc(d(:,:,:,ii),[0 256]); axis image; title(name); drawnow;
+            % imagesc(d(:,:,:,ii),[0 256]); 
+            image(d(:,:,:,ii)); 
+            axis image; title(name); drawnow;
+            pause(0.05);
         end
         
         uData.movie = d;
@@ -162,11 +172,15 @@ switch format
         % Write the video object if save is true
         if save
             disp('Saving video')
-            [~, vObj] = ieMovie(uData.movie,'vname',vname);
+            [~, vObj] = ieMovie(uData.movie,...
+                'vname',vname,...
+                'FrameRate',FrameRate,...
+                'show',false);
+            disp('Done')
         end
 
     case 'montage'
-        % Window with snapshots
+        % Window with snapshots and possibly eye movements.
         colsNum = round(1.3*sqrt(obj.length));
         rowsNum = round(obj.length/colsNum);
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -291,7 +305,7 @@ switch format
         end
 
     otherwise
-        error('Unknown format %s\n',format);
+        error('Unknown plot type %s\n',plotType);
 end
 
 end

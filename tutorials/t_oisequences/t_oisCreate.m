@@ -43,11 +43,15 @@ ois = oisCreate('harmonic','blend',stimWeights, ...
     'testParameters',hparams,...
     'sceneParameters',sparams);
 
-uData = ois.visualize;
+vname = fullfile(isetbioRootPath,'local','oisVideo1.mp4');
+ois.visualize('movieilluminance','vname',vname);
 
 % Save as a gif for the wiki page.
 % gifName = fullfile(isetbioRootPath,'wiki','images','oisHarmonic.gif');
 % ieGIF(uData.movie,'gifName',gifName);
+
+% Now, show the time series of weights
+ois.visualize('weights');
 
 %% Change the spatial frequency parameter
 
@@ -56,9 +60,9 @@ hparams(1) = hparams(2);
 hparams(1).contrast = 0;
 
 ois = oisCreate('harmonic','blend',stimWeights, ...
-                'testParameters',hparams,...
-                'sceneParameters',sparams);
-ois.visualize;
+    'testParameters',hparams,...
+    'sceneParameters',sparams);
+ois.visualize('movie illuminance');
 
 %% A little phase shifting, causing apparent motion
 
@@ -68,10 +72,10 @@ hparams(1) = hparams(2);
 hparams(1).ph = 0;
 
 ois = oisCreate('harmonic','blend',stimWeights, ...
-                'testParameters',hparams,...
-                'sceneParameters',sparams);
-ois.visualize;
+    'testParameters',hparams,...
+    'sceneParameters',sparams);
 
+ois.visualize('movie illuminance');
 
 %% A color Gabor patch
 
@@ -86,7 +90,7 @@ modSPD     = Energy2Quanta(wave,modSPD);
 clear hparams
 hparams(2)           = harmonicP;
 hparams(2).freq = 6; 
-hparams(2).GaborFlag = .2;
+hparams(2).GaborFlag = 0.2;
 hparams(2).ang       = pi/6;
 
 hparams(2).backSPD   = backSPD;
@@ -95,11 +99,12 @@ hparams(2).wave      = wave;
 hparams(1)           = hparams(2);
 hparams(1).contrast  = 0;
 
-[ois, scenes] = oisCreate('harmonic','blend',stimWeights, ...
+ois = oisCreate('harmonic','blend',stimWeights, ...
     'testParameters',hparams,...
     'sceneParameters',sparams);
 
-uData = ois.visualize('format','moviergb','vname','myVideo','save',true);
+vname = fullfile(isetbioRootPath,'local','oisVideo2.mp4');
+ois.visualize('movie rgb','vname',vname);
 
 %% Vernier
 %
@@ -113,11 +118,14 @@ clear vparams;
 vparams(2) = vernierP;
 
 % A black background
-vparams(2).name = 'offset'; vparams(2).bgColor = 0; 
+vparams(2).name = 'offset'; 
+vparams(2).bgColor = 0; 
 
 % The bar is added to the black background
 vparams(1) = vparams(2);
-vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
+vparams(1).barWidth = 0; 
+vparams(1).bgColor = 0.5; 
+vparams(1).name = 'uniform';
 
 % The scene
 sparams.fov = 1;
@@ -129,7 +137,7 @@ stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
 [vernier, scenes] = oisCreate('vernier','add', stimWeights,...
     'testParameters',vparams,...
     'sceneParameters',sparams);
-vernier.visualize;
+vernier.visualize('movie illuminance');
 
 % To see the scenes, prior to creating the optical image
 % ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
@@ -140,18 +148,18 @@ vparams(2).barColor = 0.5;
 vernier = oisCreate('vernier','add', stimWeights,...
     'testParameters',vparams,...
     'sceneParameters',sparams);
-vernier.visualize;
+vernier.visualize('movie illuminance');
 
 %% Impulse (temporal)
 
 clear iparams
 
 sparams.fov = 1; sparams.luminance = 100;
-stimWeights = zeros(1,50); stimWeights(10:13) = 1;
+stimWeights = zeros(1,50); stimWeights(20:23) = 1;
 
 impulse = oisCreate('impulse','add', stimWeights,...
     'sceneParameters',sparams);
 
-impulse.visualize;
+impulse.visualize('movie illuminance');
 
 %%
