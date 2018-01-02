@@ -71,7 +71,7 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
    sparams.fov = 1; sparams.luminance = 100;
    stimWeights = zeros(1,50); stimWeights(2:4) = 1;
    impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
-   impulse.visualize;
+   impulse.visualize('movie illuminance');
 %}
 
 
@@ -152,7 +152,7 @@ switch oisType
         % of the line on the same constant background
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;
+        % ois.visualize('movie illuminance');
     case 'vernier'
         % oisCreate('vernier', ...); 
         if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
@@ -185,7 +185,7 @@ switch oisType
 
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;
+        % ois.visualize('movie illuminance');
         
     case 'impulse'
         % oisCreate('impulse', 'add', weights,'sparams',sparams);
@@ -218,7 +218,7 @@ switch oisType
         
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;  % Not working right.  Something about image scale
+        % ois.visualize('movie illuminance');  
         
         
     otherwise

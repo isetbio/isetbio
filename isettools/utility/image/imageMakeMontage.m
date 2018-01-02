@@ -18,10 +18,6 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
 %    coords    - Image coordinate data
 %
 % Notes:
-%    * [Note: JNM - Example isn't working due to no instantiated hypercube.
-%      Can we get this fixed please? My macbeth chart addition allows
-%      something to display, but I imagine that's not what is intended for
-%      this example.]
 %
 % See also:
 %   imageMontage

@@ -36,7 +36,7 @@ hparams(1) = harmonicP;
 hparams(2) = hparams(1); hparams(2).contrast = 0;
 sparams.fov = 0.3;
 ois = oisCreate('harmonic','blend',weights, 'testParameters',hparams,'sceneParameters',sparams);
-% ois.visualize;
+% ois.visualize('movie illuminance');
 
 % Assert values from December 22, 2017 (DHB)
 % Updated by hand from previous values because of changes to optics code.
