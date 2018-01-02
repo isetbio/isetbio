@@ -20,10 +20,9 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 %    idx2     - (Optional) If requested, upper bound index around the input
 %               wave value
 %
-% Notes:
+% See also:
+%    ieFieldHeight2Index, ieFindWaveIndex
 %
-% See Also:
-%    ieFieldHeight2Index
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
@@ -55,4 +54,4 @@ if nargout == 2
     end
 end
 
-return;
+end
