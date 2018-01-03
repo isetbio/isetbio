@@ -1,19 +1,22 @@
 function optics = opticsCreate(opticsType,varargin)
 %OPTICSCREATE  Create an optics structure
+%
+% Syntax
 %   optics = OPTICSCREATE(opticsType,varargin)
 %
-% This function is typically called through oiCreate.  The optics structure
-% is attached to the oi and manipulated by oiSet and oiGet.
+% Description
+%  This function is typically called through oiCreate.  The optics structure
+%  is attached to the oi and manipulated by oiSet and oiGet.
 %
-% The optics structure contains a variety of parameters, such as f-number
-% and focal length.  There are two types of optics models:  diffraction
-% limited and shift-invariant.  See the discussion in opticsGet for more
-% detail.
+%  The optics structure contains a variety of parameters, such as f-number
+%  and focal length.  There are two types of optics models:  diffraction
+%  limited and shift-invariant.  See the discussion in opticsGet for more
+%  detail.
 %
-% Optics structures do not start out with a wavelength spectrum structure.
-% This information is stored in the optical image.
+%  Optics structures do not start out with a wavelength spectrum structure.
+%  This information is stored in the optical image.
 %
-% For diffraction-limited optics, the key parameter is the f-number.
+%  For diffraction-limited optics, the key parameter is the f-number.
 %         
 % Specifying human optics  creates a shift-invariant optics structure with
 % human OTF data.
@@ -21,9 +24,10 @@ function optics = opticsCreate(opticsType,varargin)
 %      {'human'}     - Uses Marimont and Wandell (Hopkins) method (default)
 %                      opticsCreate('human',[pupilRadiusMeters=0.00015])
 %      {'wvf human'} - Uses Wavefront toolbox and Thibos data
-%                      opticsCreate('wvf human',[wave=400:10:700],
+%                      opticsCreate('wvf human', ...
 %                                   [pupilMM=3],
 %                                   [zCoefs=wvfLoadThibosVirtualEyes]
+%                                   [wave = 400:10:700]
 %                                   [umPerDegree=300]);
 %      {'diffraction'} - 46 deg field of view, f number 4 optics.
 %
@@ -67,7 +71,9 @@ switch lower(opticsType)
         
         % Pupil radius in meters.  Default is 3 mm
         pupilRadiusMeters = 0.0015;
-        if (~isempty(varargin) & ~isempty(varargin{1})), pupilRadiusMeters = varargin{1}; end
+        if (~isempty(varargin) && ~isempty(varargin{1}))
+            pupilRadiusMeters = varargin{1}; 
+        end
         
         % This creates shift-invariant optics.
         optics = opticsHuman(pupilRadiusMeters);
@@ -98,10 +104,10 @@ switch lower(opticsType)
         wave = 400:10:700; wave = wave(:);
         umPerDegree = 300;
 
-        if (~isempty(varargin) & ~isempty(varargin{1})), pupilDiameterMM = varargin{1}; end
-        if (length(varargin)>1 & ~isempty(varargin{2})), zCoefs = varargin{2};  end
-        if (length(varargin)>2 & ~isempty(varargin{3})), wave = varargin{3}; wave = wave(:); end 
-        if (length(varargin)>3 & ~isempty(varargin{4})), umPerDegree = varargin{4}; end
+        if (~isempty(varargin) && ~isempty(varargin{1})), pupilDiameterMM = varargin{1}; end
+        if (length(varargin)>1 && ~isempty(varargin{2})), zCoefs = varargin{2};  end
+        if (length(varargin)>2 && ~isempty(varargin{3})), wave = varargin{3}; wave = wave(:); end 
+        if (length(varargin)>3 && ~isempty(varargin{4})), umPerDegree = varargin{4}; end
         
         % Create wavefront parameters.  Be sure to set both measured and
         % calc pupil size.

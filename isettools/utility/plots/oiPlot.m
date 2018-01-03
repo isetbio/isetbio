@@ -810,8 +810,8 @@ switch (pType)
 end
 
 % Check that a known pType was specified
-if (~isIrradiancePlot & ~isIlluminancePlot & ~isContrastPlot & ...
-        ~isDepthPlot & ~isOpticsPlot)
+if (~isIrradiancePlot && ~isIlluminancePlot && ~isContrastPlot && ...
+        ~isDepthPlot && ~isOpticsPlot)
             error('Unknown oiPlot type %s.', pType);
 end
 
