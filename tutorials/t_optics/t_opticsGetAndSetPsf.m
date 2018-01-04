@@ -19,6 +19,7 @@
 % History:
 %   02/5/17  dhb   Wrote starting with an extant tutorial.
 %   12/21/17 dhb   Many more comparisons
+%   01/04/18 dhb   Add explicit tests of comparisons that should match.
 
 %% Initialize
 clear; ieInit;
@@ -120,12 +121,14 @@ xlabel('x (minutes)');
 ylabel('y (minutes)');
 title('PSF');
 
-%% Get Davila-Geisler PSF and plot against what isetbio wvf looks like
+%% Get Davila-Geisler PSF and add to plot.
 DavilaGeislerLsf = DavilaGeislerLSFMinutes(position1DMinutes);
 DavilaGeislerPsf = LsfToPsf(DavilaGeislerLsf);
 psfFig = figure; clf; hold on
 plot(position1DMinutes,wvfHuman1DPsf/max(wvfHuman1DPsf),'r','LineWidth',4);
-plot(position1DMinutes,DavilaGeislerPsf(centerPosition,:)/max(DavilaGeislerPsf(centerPosition,:)),'g-','LineWidth',4);
+plot(position1DMinutes, ...
+    DavilaGeislerPsf(centerPosition,:)/max(DavilaGeislerPsf(centerPosition,:)), ...
+    'g-','LineWidth',4);
 xlim([-4 4]);
 xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
@@ -148,13 +151,19 @@ oi = oiSet(oi,'optics',optics);
 [udata,oiPlotFig] = oiPlot(oi,'psf',[],theWl); close(oiPlotFig);
 figure(psfFig);
 plot(60*udata.x(centerPosition,:)/uMPerDegree,udata.psf(centerPosition,:)/max(udata.psf(centerPosition,:)),'k-','LineWidth',2);
+if (max(abs(DavilaGeislerPsf(centerPosition,:)-udata.psf(centerPosition,:))) > 1e-6)
+    error('Inserted via optics/oi set PSF does not come back as we inserted it.');
+end
 
-%% Let's do this through the routine and show that we get the same answer
+%% Let's do this through the PTB external routine and show that we get the same answer
 oi2 = oiCreate('wvf human');
 oi2 = ptb.oiSetPtbOptics(oi2);
 [udata2,oiPlotFig] = oiPlot(oi2,'psf',[],theWl); close(oiPlotFig);
 figure(psfFig);
 plot(60*udata2.x(centerPosition,:)/uMPerDegree,udata2.psf(centerPosition,:)/max(udata2.psf(centerPosition,:)),'r:','LineWidth',2);
+if (max(abs(DavilaGeislerPsf(centerPosition,:)-udata2.psf(centerPosition,:))) > 1e-6)
+    error('Inserted via PTB external routine PSF does not come back as we inserted it.');
+end
 
 %% Add Westheimer and Williams estimates for fun
 oi2 = ptb.oiSetPtbOptics(oi2,'opticsModel','Westheimer');
@@ -239,6 +248,12 @@ xlabel('Postion (arcmin)');
 ylabel('PSF');
 title('Even/Odd Support Comparison, These Should Almost Match');
 
+% Interpolate the even back to the odd support and actually check
+checkPSF = interp1(psf3FromWvfSpatialSamples1DEven,psf3FromWvfEven,psf3FromWvfSpatialSamples1DOdd);
+if (max(abs(psf3FromWvfOdd(:)-checkPSF(:))) > 1e-7)
+    error('Even and odd support PSFs not close enough to each other');
+end
+
 % Convert wvf structure to oi using wvf2oi. When we get the psf data using
 % oiPlot, the support is in microns.  Convert to minutes and plot.
 oi3 = wvf2oi(wvfPOdd);
@@ -249,6 +264,9 @@ figure(psfFig3);
 plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
     'b','LineWidth',7);
+if (max(abs(psf3FromWvfOdd-udata3.psf(floor(psfSpatialSamplesOdd/2)+1,:))) > 1e-10)
+    error('Inserting wvf PSF via wvf2oi does not work right');
+end
 
 % Get isetbio format OTF back out of the oi struct, at the specified
 % wavelength
@@ -271,6 +289,9 @@ position1DMinutes3 = xGridMinutes3(centerPosition3,:);
 wvfHuman1DPsf3 = psf3(centerPosition,:);
 figure(psfFig3);
 plot(position1DMinutes3,wvfHuman1DPsf3/max(wvfHuman1DPsf3),'r','LineWidth',4);
+if (max(abs(psf3FromWvfOdd-wvfHuman1DPsf3)) > 1e-10)
+    error('Manuel derivation of PSF from OTF does not give expeced answer');
+end
 
 % Do the conversion using iset shift-invariant format
 [siPSFData] = wvf2SiPsf(wvfPOdd,'nPSFSamples',psfSpatialSamplesOdd, ...
@@ -303,6 +324,9 @@ figure(psfFig3);
 plot(60*udata4.x(centerPosition4,:)/uMPerDegree, ...
     udata4.psf(centerPosition4,:)/max(udata4.psf(centerPosition4,:)),...
     'k','LineWidth',2);
+if (max(abs(psf3FromWvfOdd-udata4.psf(centerPosition4,:))) > 1e-10)
+    error('Inserting PSF via wvf2SiPsf and siSynthetic does not work right');
+end
 
 % Plot axes and labels
 xlim([-10 10]);
