@@ -44,6 +44,7 @@ function [idx1, idx2] = ieFieldHeight2Index(fieldHeightList, height)
 %{
     % NOT WORKING!!!
     % This example is in meters
+    optics = opticsCreate;
     fieldHeightList = opticsGet(optics, 'rtPSFfieldHeight');  % meters
     fhIdx = ieFieldHeight2Index(fieldHeightList, 2e-4)
     [idx1, idx2]  = ieFieldHeight2Index(fieldHeightList, 2e-4)
@@ -51,6 +52,7 @@ function [idx1, idx2] = ieFieldHeight2Index(fieldHeightList, height)
 %{
     % NOT WORKING!!!
     % This example is in millimeters
+    optics = opticsCreate;
     fieldHeightList = opticsGet(optics, 'rtPSFfieldHeight', 'mm'); 
     fhIdx = ieFieldHeight2Index(fieldHeightList, 0.2)
 %}
