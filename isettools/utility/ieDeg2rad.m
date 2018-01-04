@@ -16,9 +16,11 @@ function r = ieDeg2rad(d, units)
 %    r     - measurement in Radians (unless other unit specified)
 %
 % Notes:
+%    * [Note - DHB: Could consider deprecating as per discussion in issue 277.]
 %
 % See Also:
-%    rad2deg
+%    rad2deg, deg2rad
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
