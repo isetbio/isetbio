@@ -15,6 +15,9 @@ function MP = ieN2MegaPixel(N, precision)
 % Outputs:
 %    MP        - The megapixel count
 %
+% Examples are included within the code.
+%
+
 % Example:
 %{
 	N = 1024 * 1024;

@@ -30,7 +30,7 @@ function im = ieClip(im, lowerBound, upperBound)
 % Outputs:
 %    im         - The clipped data
 %
-% Notes:
+% Examples are included within the code.
 %
 
 % History:

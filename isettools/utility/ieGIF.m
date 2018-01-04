@@ -18,6 +18,8 @@ function gifName = ieGIF(data, varargin)
 %    gifName - file name (extension must be .gif, 
 %              default is fullfile(isetbioRootPath,'local','test.gif'))
 %
+% Examples are included within the code.
+%
 
 % History:
 %    xx/xx/16  bw, jrg  ISETBIO Team (BW/JRG) 2016
@@ -40,6 +42,7 @@ But if I try to pass it an M-by-N-by-3-by-P it seems to treat each RGB
 color channel as a separate grayscale frame. Is there now way to write an
 animated color GIF without a for loop over the frames?
 %}
+
 %% Parse inputs
 p = inputParser;
 p.addRequired('data', @isnumeric);
@@ -54,7 +57,6 @@ gifName = p.Results.gifName;
 delay   = p.Results.delay;
 
 %% Make GIF modern way
-
 [r,c,w]=size(data);
 data = reshape(data,r,c,1,w);
 imwrite(data, gifName, 'gif', 'Loopcount', inf, 'DelayTime',delay);
