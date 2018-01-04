@@ -49,12 +49,7 @@ if(obj.numCABands == 0 || obj.numCABands == 1 || obj.debugMode)
     % No spectral rendering
     recipe.renderer = struct('type','Renderer','subtype','sampler');
 else
-    % Spectral rendering
-    
-    % TODO: Can we get rid of needing this?
-    recipe.camera.chromaticAberrationEnabled.value = 'true';
-    recipe.camera.chromaticAberrationEnabled.type = 'bool';
-    
+    % Spectral rendering    
     nWaveBands = struct('value',obj.numCABands,'type','integer');
     recipe.renderer = struct('type','Renderer', ...
         'subtype','spectralrenderer',...
@@ -69,8 +64,8 @@ else
 end
 
 %% Write out the adjusted recipe into a PBRT file
-pbrtFile = fullfile(obj.workingDir,strcat(obj.name,'.pbrt'));
-recipe.outputFile = pbrtFile;
+outputFile = fullfile(obj.workingDir,strcat(obj.name,'.pbrt'));
+recipe.outputFile = outputFile;
 piWrite(recipe,'overwritefile',true,'overwritedir',false);
 
 %% Render the pbrt file using docker
@@ -83,14 +78,16 @@ if(~obj.debugMode)
     % to the raytracing.
     ieObject = oiSet(ieObject, 'distance', Inf);
     
-    % This is the distance between the lens and the focal plane. This is not
-    % exactly the same as the focal length for the eye, but it's close.
+    % For the optics focal length, we use the distance between the back of
+    % the lens and the retina. Although it is not exactly the same as the
+    % focal length for the eye (which also changes with accommodation), it
+    % should be close enough for our purposes.
     ieObject = oiSet(ieObject, 'optics focallength', obj.retinaDistance * 1e-3);
     ieObject = oiSet(ieObject,'optics fnumber',obj.retinaDistance/obj.pupilDiameter);
     ieObject = oiSet(ieObject,'fov',obj.fov);
     
-    % Clear most of the default optics
-    % TODO: Is doing this okay? What's a better way to do this?
+    % Clear default optics that do not apply to the ray-traced optical
+    % image. We may want to add these in in the future. 
     ieObject.optics = opticsSet(ieObject.optics,'model','raytrace');
     ieObject.optics = opticsSet(ieObject.optics,'name','PBRT Navarro Eye');
     ieObject.optics.OTF = [];
