@@ -12,6 +12,9 @@
 %     isetbio.org for data and code), but it is useful to have them for
 %     comparing with calculations in the literature that used these estimates.
 
+% History:
+%   01/04/18  dhb   Added some regression tests.
+
 %% Clear
 clear; close all; 
 
@@ -79,6 +82,10 @@ if (DavilaGeislerPSFDerived(centerPosition,centerPosition) ~= max(DavilaGeislerP
 end
 
 %% Make a figure that compares the original and derived LSFs
+%
+% The LSF we get by going from LSF -> PSF -> LSF matches pretty
+% well.  The LSF we get from Westheimer's PSF differs, which I
+% believe is real inconsitency between Westheimer's PSF and LSF.
 fig1 = figure;
 set(gcf,'Position',[100 100 1200 800]);
 set(gca, 'FontSize', 14);
@@ -91,6 +98,9 @@ xlabel('Position (minutes');
 ylabel('Normalized LSF');
 title('Westheimer')
 legend({'Original','Recovered from Derived PSF','Recovered from Formula PSF'},'Location','NorthEast');
+if (max(abs(WestLSF(:)-WestLSFFromPSFDerived(:))) > 5e-3)
+    error('Westheimer LSF -> PSF -> LSF is not close enough');
+end
 
 subplot(2,2,2); hold on
 plot(positionMinutes1D,DavilaGeislerLSF,'r','LineWidth',4);
@@ -100,6 +110,9 @@ xlabel('Position (minutes)');
 ylabel('Normalized LSF');
 title('Davila-Geisler');
 legend({'Original','Recovered from PSF'},'Location','NorthEast');
+if (max(abs(DavilaGeislerLSF(:)-DavilaGeislerLSFFromPSFDerived(:))) > 5e-3)
+    error('DavilaGeisler LSF -> PSF -> LSF is not close enough');
+end    
 
 subplot(2,2,3); hold on
 plot(positionMinutes1D,WestPSFDerived(centerPosition,:)/max(WestPSFDerived(centerPosition,:)),'r','LineWidth',4);
@@ -163,6 +176,9 @@ xlabel('Cycles/Deg');
 ylabel('OTF');
 title('Diffraction Limited OTFs');
 legend({'Derived from Anaytic PSF', 'Analytic OTF'},'Location','NorthEast');
+if (max(abs(Diffraction_3_633_OTFFromPSFAnalytic(:) - Diffraction_3_633_OTFFromAnalytic(:))) > 5e-2)
+    error('Diffraction limited analytic and derived OTFs are not close enough');
+end  
 
 % Then the psfs.  These are not exactly the same, although it is difficult
 % to tell just from looking at the graph.
@@ -174,6 +190,9 @@ xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
 title('Diffraction Limited PSFs')
 legend({'Derived from Anaytic OTF', 'Analytic PSF'},'Location','NorthEast');
+if (max(abs(Diffraction_3_633_PSFFromOTFFromAnalytic(:)/max(Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)) - Diffraction_3_633_PSFAnalytic(:)/max(Diffraction_3_633_PSFAnalytic(centerPosition,:)))) > 1e-3)
+    error('Diffraction limited analytic and derived PSFs are not close enough');
+end  
 
 % Williams otf along with tabulated points from their Table 1.
 % The fit in the paper smooths the measurements and by eye the deviations
