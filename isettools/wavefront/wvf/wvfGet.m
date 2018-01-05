@@ -747,7 +747,8 @@ switch parm
             % backwards compatible.  But soon this will go away.
             val = ifftshift(fftshift(psf2otf(psf)));
         else
-            [~,~,val] = ifftshift(PsfToOtf([],[],psf));
+            [~,~,val] = PsfToOtf([],[],psf);
+            val = ifftshift(val);
         end
         
         % We don't require that the input psf be symmetric, so there could be
