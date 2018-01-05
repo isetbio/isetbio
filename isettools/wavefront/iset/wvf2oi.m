@@ -90,7 +90,9 @@ for ww=1:length(wave)
     if (f(floor(length(f)/2)+1) ~= 0)
         error('wvf otf support does not have 0 sf in the expected location');
     end
-    thisOTF = wvfGet(wvf, 'otf', wave(ww));
+    
+    % Apply fftshift to convert otf to DC in center, so interp will work right.
+    thisOTF = fftshift(wvfGet(wvf, 'otf', wave(ww)));
     if (all(f == fx))
         est = thisOTF;
     else
