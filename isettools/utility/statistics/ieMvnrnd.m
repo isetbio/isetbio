@@ -7,32 +7,39 @@ function s = ieMvnrnd(mu, Sigma, K)
 % Description:
 %    This is a multivariate normal random number generator.
 %
-%    The data will be d dimensional.  n is the number of samples, although
-%    this can be specified two ways (see below).
+%    Draw n random d-dimensional vectors from a multivariate
+%    Gaussian distribution with mean mu (n x d) and covariance matrix
+%    Sigma (d x d).  K specifies how many samples for each row of mu.
+%
+%    This can be used if you want to avoid dependence on Matlab's mvnrnd,
+%    which is in the statistics toolbox.
 %
 % Inputs:
 %    mu    - (Optional) A matrix of n x d, that is, n samples, by d
 %            dimensions. Default is the scalar value 0.
 %    Sigma - (Optional) A covariance matrix of d x d. Default is the scalar
 %            value 1.
-%    K     - The total number of samples. Typically used when mu contains
-%            one row, at which point there is a repmat which rewrites mu to
-%            K rows for K samples.  Matlab calls K the number of 'cases'.
+%    K     - (Optional) The number of samples per row of mu. Typically used when mu
+%            contains one row, at which point there is a repmat which
+%            rewrites mu to K rows for K samples.  Matlab calls K the
+%            number of 'cases'. If not passed, this defaults to 1.
 %
 % Outputs:
 %    s     - The requested random numbers
 %
-% Notes:
-%    * [Note: XXX - Draw n random d-dimensional vectors from a multivariate
-%      Gaussian distribution with mean mu (n x d) and covariance matrix
-%      Sigma (d x d).  K specifies how many samples for each condition.]
-%    * [Note: JNM - Do we want to include a check for if K is defined?]
+% Optional key/value pairs:
+%    None.
 %
+% Examples are included within the code.  There is also a comment at the
+% end of the routine explaining the algorithm.
+%
+% See also: randn, normrnd, mvnrnd
 
 % History:
 %    05/xx/04  XXX?   Add Third arg.
 %    xx/xx/14  HJ/BW  ISETBIO TEAM, 2014
 %    12/13/17  JNM    Formatting
+
 % Examples:
 %{
     % Univariate
@@ -99,8 +106,7 @@ s = randn(n, d) * U + mu;
 
 end
 
-%%
-% {{{ END OF CODE --- Guess I should provide an explanation:
+% Logic behind the code:
 % 
 % We can draw from axis aligned unit Gaussians with randn(d)
 %     x ~ A * exp(-0.5 * x' * x)
@@ -133,4 +139,3 @@ end
 %     U = sqrt(Lambda) * E'
 % If any Lambdas are negative then Sigma just isn't even positive
 % semi-definite so we can give up.
-% }}}
