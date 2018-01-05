@@ -1,8 +1,6 @@
 function optics = siSynthetic(psfType,oi,varargin)
 % Create synthetic shift-invariant optics and insert into optics structure
-%
-% This function and its cousins may not be around for long in ISETBIO.
-%
+%%
 % Syntax:
 %   optics = siSynthetic(psfType,oi,varargin)
 %
@@ -15,22 +13,30 @@ function optics = siSynthetic(psfType,oi,varargin)
 %
 %   Must keep spatial sampling parameters pretty consistent across usages.
 %
-% psfType:  'gaussian' --  bivariate normals.  
-%           'custom'   --  read a file with variables explained below
-% oi:        Optical image - Must be shift invariant type
+%  This function and its cousins may not be around for long in ISETBIO.
 %
-% varargin for gaussian:                        
-%   waveSpread: size of the PSF spread at each of the wavelength
-%             for gaussian this is in microns (um)
-%   xyRatio:   Ratio of spread in x and y directions
-%   filename:  Output file name for the optics
+% Inputs:
+%   psfType:  'gaussian' --  bivariate normals.  
+%             'custom'   --  read a file with variables explained below
+%   oi:        Optical image - Must be shift invariant type
 %
-% varargin for custom
-%   inData  - filename or struct with psf, umPerSamp, and wave data
-%   outFile - Optional
+%   varargin for gaussian:                        
+%     waveSpread: size of the PSF spread at each of the wavelength
+%                 for gaussian this is in microns (um)
+%     xyRatio:    Ratio of spread in x and y directions
+%     filename:   Output file name for the optics
 %
-% See also:  s_SIExamples, ieSaveSIOpticsFile
-%  s_FFTinMatlab for an explanation of some of the operations in here.
+%    varargin for custom
+%      inData  - filename or struct with psf, umPerSamp, and wave data
+%      outFile - Optional
+%
+% Outputs:
+%   optics:  The created optics structure.
+%
+% Optional key/value pairs:
+%   None.
+%
+% See also:  s_SIExamples, ieSaveSIOpticsFile, t_codeFFTinMatlab
 %
 
 % Examples:
@@ -85,6 +91,7 @@ function optics = siSynthetic(psfType,oi,varargin)
 % 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
 %           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
 %           BW    We might just eliminate a lot of this set of SI methods.  
+%           dhb   Created working example for 'custom'
 
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
