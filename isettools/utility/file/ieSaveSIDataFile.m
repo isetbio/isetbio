@@ -31,10 +31,7 @@ function fName = ieSaveSIDataFile(psf, wave, umPerSamp, fName) %#ok<INUSL>
     umPerSamp = [0.25, 0.25];
     fname = tempname;
     ieSaveSIDataFile(psf, wave, umPerSamp, fname);
-
-    oi = oiCreate;
-    optics = siSynthetic('custom', oi, fname);
-    delete(fname);
+    delete([fname '.mat']);
 %}
 
 if notDefined('psf'), error('psf volume required'); end

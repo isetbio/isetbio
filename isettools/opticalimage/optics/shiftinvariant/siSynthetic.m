@@ -35,24 +35,49 @@ function optics = siSynthetic(psfType,oi,varargin)
 
 % Examples:
 %{
-  oi = oiCreate('shift invariant');
-  oi = initDefaultSpectrum(oi,'spectral');
-  wave = oiGet(oi,'wave');
-  psfType = 'gaussian'; 
-  waveSpread = wave/wave(1);
+    oi = oiCreate('shift invariant');
+    oi = initDefaultSpectrum(oi,'spectral');
+    wave = oiGet(oi,'wave');
+    psfType = 'gaussian'; 
+    waveSpread = wave/wave(1);
 
- % Circularly symmetric Gaussian
-  xyRatio = ones(1,length(wave));
-  optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
-  oi = oiSet(oi,'optics',optics);
-  oiPlot(oi,'otf 550');
+    % Circularly symmetric Gaussian
+    xyRatio = ones(1,length(wave));
+    optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
+    oi = oiSet(oi,'optics',optics);
+    oiPlot(oi,'otf 550');
 %}
 %{
-% Make one with an asymmetric Gaussian
-  xyRatio = 2*ones(1,length(wave));
-  optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
-  oi = oiSet(oi,'optics',optics);
-  oiPlot(oi,'otf 550');
+    % Make one with an asymmetric Gaussian
+    xyRatio = 2*ones(1,length(wave));
+    optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
+    oi = oiSet(oi,'optics',optics);
+    oiPlot(oi,'otf 550');
+%}
+%{
+    % Create oi and get info about OTF/PSF dimensions and support
+    oi = oiCreate;
+    optics = oiGet(oi,'optics');
+    dx(1:2) = opticsGet(optics,'psf spacing','um');
+    fx = opticsGet(optics,'otf fx');
+    nSamples = length(fx);
+
+    % Create an SI data file and then use it. We create a delta function
+    % PSF.  Need to match what is in oi for siSynthetic to work.
+    psf = zeros(nSamples, nSamples, 31);
+    psf(floor(nSamples/2)+1,floor(nSamples/2)+1,:) = 1;
+    wave = 400:10:700;
+    umPerSamp = dx;
+    fname = tempname;
+    ieSaveSIDataFile(psf, wave, umPerSamp, fname);
+
+    % Use siSynthetic to get optics and put those into the oi.
+    optics = siSynthetic('custom', oi, fname);
+    oi = oiSet(oi,'optics',optics);
+    delete([fname '.mat']);
+
+    % Since PSF was delta, should get all 1's in OTF
+    oiPlot(oi,'otf 550');  
 %}
 
 % History:
@@ -60,6 +85,7 @@ function optics = siSynthetic(psfType,oi,varargin)
 % 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
 %           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
 %           BW    We might just eliminate a lot of this set of SI methods.  
+
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
 if notDefined('oi'), oi = vcGetObject('oi'); end

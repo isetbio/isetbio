@@ -35,8 +35,6 @@ function [fullName, imageType] = vcSelectImage(imageType, imgDir, ext)
 %{
     fullName = vcSelectImage()
     fullName = vcSelectImage('rgb')
-    fullName = vcSelectImage('rgb', pwd)
-    fullName = vcSelectImage('monochrome')
     fullName = vcSelectImage('multispectral')
 %}
 

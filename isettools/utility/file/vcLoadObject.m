@@ -20,11 +20,17 @@ function [newVal,fullName] = vcLoadObject(objType,fullName,val)
 % The object types that can be loaded are SCENE, OPTICALIMAGE, ISA, or
 % VCIMAGE
 %
-% Examples:
-%   newVal = vcLoadObject('SCENE');
-%
+
 % Copyright ImagEval Consultants, LLC, 2005.
-%%
+
+% Examples:
+%{
+    % * [Note: DHB - This does not seem to actually work
+    %    in that selecting any of the available files in the dialog
+    %    produces a warning that "Variable 'scene' not found."
+    newVal = vcLoadObject('SCENE');
+%}
+
 if notDefined('objType'), objType = 'scene'; end
 if notDefined('val'), newVal = vcNewObjectValue(objType);
 else, newVal = val; end
