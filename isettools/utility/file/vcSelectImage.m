@@ -5,11 +5,11 @@ function [fullName, imageType] = vcSelectImage(imageType, imgDir, ext)
 %   [fullName, imageType] = vcSelectImage([imageType], [imgDir], [ext])
 %
 % Description:
-%    The fullName contains the full path. The imageType specifies the color
-%    type of the image (monochrome, multispectral, rgb, hyperspectral).
-%
-%    If imgDir is not set, the routine assumes the file is in the ISET
-%    images directory.
+%    Interface to select an image. The imageType specifies the color
+%    type of the image (monochrome, multispectral, rgb,
+%    hyperspectral).  This string is used to set the initial ISETBIO
+%    directory for selecting the image. The imageType string is
+%    ignored if you set the imgDir explicitly.
 %
 % Inputs:
 %    imageType - (Optional) The image color type. Options are monochrome,
@@ -36,6 +36,7 @@ function [fullName, imageType] = vcSelectImage(imageType, imgDir, ext)
     fullName = vcSelectImage()
     fullName = vcSelectImage('rgb')
     fullName = vcSelectImage('multispectral')
+    fullName = vcSelectImage('',fullfile(isetbioDataPath,'images'));
 %}
 
 if notDefined('imageType'), imageType = ''; end

@@ -5,32 +5,33 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 %   fullName = vcSelectDataFile([dataType], [rw], [ext], [windowTitle])
 %
 % Description:
-%    Select a data file name for reading or writing.
+%    Select a data file name for reading or writing.  This routine
+%    maintains a persistent variable that remembers your last choice.
+%    This makes it simpler for the user to open the selection in the
+%    same directory multiple times, without having to change the
+%    command window's directory.
 %
-%    dataType is used to suggest the starting directory. Include stayput
-%    (i.e., don't change), or sensor, optics, and any of the directory
-%    names inside of data.
-%
-%    To choose a data file for reading or writing, use this routine. The
-%    parameter dataType is a clue about the proper directory to use to find
-%    or write the file. 
+%    dataType is used to suggest the starting directory. There are
+%    various shortcut options (see below), or you could use a full
+%    directory path.
 %
 %    To specify whether the file is for reading or writing, use rw = 'r'
 %    for reading and rw = 'w' for writing. Default is read.
 %
 %    You may also pass in an extension to use for filtering file names.
-%    Returns fulName = [] on Cancel.
+%    Returns fullName = [] on Cancel.
 %
 % Inputs:
-%    dataType    - (Optional) Suggestions of a starting directory
-%                  (directory names inside of the data?) Default is
-%                  session. Options are:
-%                      {'session', 'stayput'}
-%                                    - The last selected directory, or the
-%                                      current working directory if none
-%                                      was selected previously.
-%                      {'data'}      - data.
-%                      {'algorithm'} - ISET-Algorithms
+%    dataType    - Suggestions of a starting directory
+%                  Options are:
+%                      {'','stayput'} - The last selected directory,
+%                        stored in the persistent directory variable.
+%                      {'data'} - isetbioDataPath
+%                      {'sub-directory of data'} - A string that is one
+%                      of the sub-directories of isetbioDataPath
+%                       'bipolar','color','fonts','lights','images',
+%                       'optics','pbrtscenes','surfaces'
+%                      {directory-string} - Name of an existing directory
 %    rw          - (Optional) Read/Write determination of the file. Default
 %                  is 'r'. Options are 'r' for read, and 'w' for write.
 %    ext         - (Optional) A file extension used to filter filenames.
@@ -54,13 +55,13 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 % Examples:
 %{
     fullName = vcSelectDataFile()
-    fullName = vcSelectDataFile('session', 'r')
-    fullName = vcSelectDataFile('session', 'r', 'tif')
+    fullName = vcSelectDataFile('', 'r')
+    fullName = vcSelectDataFile('', 'r', 'tif')
     fullName = vcSelectDataFile('data', 'w')
-    fullName = vcSelectDataFile('data', 'r')
+    fullName = vcSelectDataFile('color', 'r')
 %}
 
-if notDefined('dataType'), dataType = 'session'; end
+if notDefined('dataType'), dataType = ''; end
 if notDefined('rw'), rw = 'r'; end
 if notDefined('ext'), ext = '*'; end
 
@@ -71,47 +72,24 @@ curDir = pwd;
 persistent pDir;
 
 switch lower(dataType)
-    case {'session', 'stayput'}
+    case {'stayput',''}
+        % Use the persistent directory name we have stored
         if isempty(pDir)
             fullPath = pwd;
         else
             fullPath = pDir;
-        end
-    case {'algorithm'}
-        fullPath = fullfile(isetRootPath, 'ISET-Algorithms');
-        if ~exist(fullPath, 'dir')
-            if  ~isempty(pDir)
-                fullPath = pDir;
-            else
-                fullPath = isetRootPath;
-            end
         end
     case {'data'}
+        % Go to the isetbio data directory
         fullPath = fullfile(isetbioDataPath);
 
-        % Check that directory exists. If not, try using the last directory
-        % Otherwise, just go to data.
-        if ~exist(fullPath, 'dir')
-            if  ~isempty(pDir)
-                fullPath = pDir;
-            else
-                fullPath = isetRootPath;
-            end
-        end
-    case {'displays'}
-        fullPath = fullfile(isetbioDataPath, 'displays');
-        if ~exist(fullPath, 'dir')
-            if  ~isempty(pDir)
-                fullPath = pDir;
-            else
-                fullPath = isetRootPath;
-            end
-        end
+    case {'bipolar','color','fonts','lights','images','optics','pbrtscenes','surfaces'}
+        fullPath = fullfile(isetbioDataPath,dataType);
+        
     otherwise
-        if isempty(pDir)
-            fullPath = pwd;
+        if exist(dataType,'dir'), fullPath = dataType; 
         else
-            fullPath = pDir;
+            error('Could not find directory %s\n',dataType);
         end
 end
 
