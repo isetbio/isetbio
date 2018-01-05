@@ -248,7 +248,7 @@ if ~checkfields(scene,'data','luminance')
     [lum, meanL] = sceneCalculateLuminance(scene);
     scene = sceneSet(scene,'luminance',lum);
     scene = sceneSet(scene,'meanLuminance',meanL);
-    vcReplaceAndSelectObject(scene,val);
+    ieReplaceObject(scene,val);
 end
 
 % Plots log10 or linear luminance
@@ -264,7 +264,7 @@ function menPlotLumLin_Callback(hObject, eventdata, handles)
 
 if ~checkfields(scene,'data','luminance')
     [scene.data.luminance, scene.data.meanL] = sceneCalculateLuminance(scene);
-    vcReplaceAndSelectObject(scene,val);
+    ieReplaceObject(scene,val);
 end
 
 % Plots log10 or linear luminance as a mesh.
@@ -975,7 +975,7 @@ if isempty(newName),  return;
 else    scene = sceneSet(scene,'name',newName);
 end
 
-vcReplaceAndSelectObject(scene,val)
+ieReplaceObject(scene,val)
 sceneRefresh(hObject,eventdata,handles);
 
 return;
@@ -1006,7 +1006,7 @@ function menuEditTranspose_Callback(hObject, eventdata, handles)
 % Edit | Transform | Transpose
 [val,scene] = vcGetSelectedObject('SCENE');
 photons     = imageTranspose(sceneGet(scene,'photons'));
-scene       = sceneSet(scene,'cphotons',photons);
+scene       = sceneSet(scene,'photons',photons);
 illF        = sceneGet(scene,'illuminant format');
 switch illF
     case 'spatial spectral'
@@ -1083,7 +1083,7 @@ function menuEditRotCCW_Callback(hObject, eventdata, handles)
 % Edit | Transform | Rotate | CounterClockWise
 [val,scene] = vcGetSelectedObject('SCENE');
 photons     = imageRotate(sceneGet(scene,'photons'),'ccw');
-scene       = sceneSet(scene,'cphotons',photons);
+scene       = sceneSet(scene,'photons',photons);
 
 illF        = sceneGet(scene,'illuminant format');
 switch illF
@@ -1132,7 +1132,7 @@ w = sceneGet(s,'wavelength');
 newWave = ieReadNumber('Enter new wavelength',w,'%.0f');
 s = sceneSet(s,'wave',newWave);
 
-vcReplaceAndSelectObject(s);
+ieReplaceObject(s);
 sceneRefresh(hObject, eventdata, handles);
 
 return;
@@ -1177,25 +1177,19 @@ function menuHelp_Callback(hObject, eventdata, handles)
 return
 
 % --------------------------------------------------------------------
-% function menuHelpISETmanual_Callback(hObject, eventdata, handles)
-% % Help | Iset manual (pdf)
-% ieManualViewer('pdf','ISET_Manual');
-% return
-
-% --------------------------------------------------------------------
 function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
-web('http://imageval.com/documentation/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return
 
 % --------------------------------------------------------------------
 function menuHelpSceneProgrammers_Callback(hObject, eventdata, handles)
 % Help | Scene Programmers (online)
-web('http://www.imageval.com/public/ISET-Functions/ISET/scene/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return
 
 % --------------------------------------------------------------------
 function menuHelpProgGuide_Callback(hObject, eventdata, handles)
 % Help | Iset Programmers (online)
-ieManualViewer('manual');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return

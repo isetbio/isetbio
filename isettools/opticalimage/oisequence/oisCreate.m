@@ -1,63 +1,80 @@
 function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
-% OISCREATE - oi sequence creation
+% OISCREATE - Convenient script for common oi sequences
 %
-% An oiSequence specifies certain simple retinal images that vary over
-% time, such as stimuli used in typical psychophysical experiments.
+% Syntax
+%  [ois, scene] = oisCreate(oisType,composition, modulation, ...)
 %
-%    [ois, scenes] = OISCREATE(oisType,composition,modulation,'PARAM1',val ...)
+% Description
+%  An oiSequence specifies certain simple retinal images that vary over
+%  time, such as stimuli used in typical psychophysical experiments. This
+%  function produces several common oiSequences.
 %
-%  Required parameters
+%  The sequence is a mixture of a fixed OI and a modulated OI. The mixture
+%  is determined by a time series of weights.  The weights are used for a
+%  mixture that is either an addition
+%
+%        oiFixed + w*oiModulated, 
+%
+%  or a blend
+%
+%        w*oiFixed + (1-w)*oiModulated 
+%
+% Input (required)
 %   'oisType'      - One of 'vernier','harmonic','impulse'.
 %   'composition'  - 'add' or 'blend'
 %   'modulation'   - Series of weights describing the add or blend
 %
-%  Optional parameter/val types chosen from the following 
-%    'testParameters'  -  Parameters for the test targets 
-%    'sceneParameters' -  General scene parameters (e.g., fov, luminance)
-%    
-%    The sequence is a mixture of a fixed OI and a modulated OI. The
-%    mixture is determined by a time series of weights.  The weights are
-%    used for a mixture that is either an addition
+% Optional parameter/val pairs
+%   'testParameters'  -  Struct of parameters for the test targets 
+%   'sceneParameters' -  Struct of scene parameters (e.g., fov, luminance)
 %
-%        oiFixed + w*oiModulated, 
+% ISETBIO wiki
+%  web('https://github.com/isetbio/isetbio/wiki/OI-Sequences','-browser')
 %
-%    or a blend
-%
-%        w*oiFixed + (1-w)*oiModulated 
-%
-%  Harmonics
-%   clear hparams
-%   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
-%   hparams(1) = hparams(2); hparams(1).contrast = 0; 
-%   sparams.fov = 1; 
-%   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   ois = oisCreate('harmonic','blend',stimWeights, 'testParameters',hparams,'sceneParameters',sparams);
-%   ois.visualize;
-%
-%  Vernier
-%   clear vparams; vparams(2) = vernierP; 
-%   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
-%   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
-%   sparams.fov = 1;
-%   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
-%   [vernier, scenes] = oisCreate('vernier','add', stimWeights,'testParameters',vparams,'sceneParameters',sparams);
-%   vernier.visualize;
-%
-%   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
-%
-% Impulse (temporal)
-%   clear iparams
-%   sparams.fov = 1; sparams.luminance = 100;
-%   stimWeights = zeros(1,50); stimWeights(2:4) = 1;
-%   impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
-%   impulse.visualize;
-%
-% See also SCENECREATE
-%
-% ISETBIO wiki: <a href="matlab:
-%    web('https://github.com/isetbio/isetbio/wiki/OI-Sequences','-browser')">Optical image sequences</a>.
+% See examples in the code
 %
 % BW ISETBIO Team, 2016
+%
+% See also: t_oisCreate, oiSequence, sceneCreate, sceneHarmonic,
+%           humanConeContrast, humanConeIsolating
+
+% Examples
+% Harmonics
+%{
+   clear hparams
+   hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
+   hparams(1) = hparams(2); hparams(1).contrast = 0; 
+   sparams.fov = 1; 
+   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
+   ois = oisCreate('harmonic','blend',stimWeights, ...
+        'testParameters',hparams,'sceneParameters',sparams);
+   ois.visualize('movie illuminance');
+%}
+
+% Vernier
+%{
+   clear vparams; vparams(2) = vernierP; 
+   vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
+   vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
+   sparams.fov = 1;
+   stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
+   [vernier, scenes] = oisCreate('vernier','add', stimWeights,...
+       'testParameters',vparams,'sceneParameters',sparams);
+   vernier.visualize('movie illuminance');
+
+   ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
+%}
+
+% Impulse (temporal)
+%{
+   clear iparams
+   sparams.fov = 1; sparams.luminance = 100;
+   stimWeights = zeros(1,50); stimWeights(2:4) = 1;
+   impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
+   impulse.visualize('movie illuminance');
+%}
+
+
 
 %% Inputs
 p = inputParser;
@@ -94,14 +111,19 @@ sparams = p.Results.sceneParameters;   % Scene parameters, only one set.
 %%
 switch oisType
     case 'harmonic'
-        % oisCreate('harmonic', ...); % See examples
+        % oisCreate('harmonic', ...);
         if length(tparams) ~= 2, error('Specify two harmonic param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
-
+        
+        % Color case requires specification of wave for SPDs
+        if isfield(tparams(1),'wave'), wave = tparams(1).wave; 
+        else, wave = 400:10:700;
+        end
+        
         % Create basic harmonics
         for ii=1:2
-            scene{ii} = sceneCreate('harmonic',tparams(ii));
+            scene{ii} = sceneCreate('harmonic',tparams(ii),wave);
             sname = sprintf('F %d C %.2f', tparams(ii).freq, tparams(ii).contrast);
             scene{ii} = sceneSet(scene{ii},'name',sname);
         end
@@ -130,9 +152,9 @@ switch oisType
         % of the line on the same constant background
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;
+        % ois.visualize('movie illuminance');
     case 'vernier'
-        % oisCreate('vernier', ...);   % See examples
+        % oisCreate('vernier', ...); 
         if length(tparams) ~= 2, error('Specify two vernier param sets.'); end
         scene = cell(1,2);
         OIs = cell(1, 2);
@@ -163,10 +185,10 @@ switch oisType
 
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;
+        % ois.visualize('movie illuminance');
         
     case 'impulse'
-        % oisCreate('impulse', 'add', weights,'sparams',sparams); % See examples
+        % oisCreate('impulse', 'add', weights,'sparams',sparams);
         scene = cell(1,2);
         OIs = cell(1, 2);
         
@@ -196,7 +218,7 @@ switch oisType
         
         ois = oiSequence(OIs{1}, OIs{2}, sampleTimes, modulation, ...
             'composition', composition);
-        % ois.visualize;  % Not working right.  Something about image scale
+        % ois.visualize('movie illuminance');  
         
         
     otherwise

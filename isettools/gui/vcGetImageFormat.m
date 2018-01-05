@@ -17,7 +17,7 @@ function iFormat = vcGetImageFormat(data,wave)
 %   data = rand(10,10,31);
 %   wave = 400:10:700;
 %   vcGetImageFormat(data,wave)
-%   data = rgb2XWformat(data);
+%   data = RGB2XWformat(data);
 %   vcGetImageFormat(data,wave);
 %
 % See also changeColorSpace for another way to handle some of the image

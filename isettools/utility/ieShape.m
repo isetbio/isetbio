@@ -33,8 +33,7 @@ function [h, pts] = ieShape(shape, varargin)
 %                length of the line along the y-axis
 %
 % Notes:
-%    * [Note: XXX - TODO: We want a fill color, too, don't we. Wonder how
-%      to do that?]
+%    * [Note: BW.  We could add a fill color. Set 'MarkerFaceColor']
 
 % History:
 %    xx/xx/xx  BW   ISETBIO Team

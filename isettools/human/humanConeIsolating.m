@@ -1,47 +1,80 @@
-function [coneIsolating, monitor2cones] = humanConeIsolating(dsp)
-% Monitor colors (R,G,B) for cone isolation
+function [coneIsolating, spd] = humanConeIsolating(dsp)
+% Each column has linear (R,G,B) that is cone isolation
 %
-% [coneIsolating,monitor2cones] = humanConeIsolating(displayStructure)
+% Syntax
+%   [coneIsolating, spd] = humanConeIsolating(display)
 %
-% Calculate the three monitor RGB vectors that isolate cone responses for
-% the Stockman L,M and S-cones. These RGB values are returned as the
-% columns of the 3x3 coneIsolating matrix. The inverse matrix, mapping from
-% monitor values into LMS space, is given in monitor2cones.
+% Description
+%  The columns of coneIsolating are the linear RGB vector directions that
+%  isolate the L,M, and S (Stockman) cones. The linear RGB are scaled so
+%  that max(abs(x)) = 0.5, making it possible to add these vectors into a
+%  background with linear RGB of [0.5,0.5,0.5]
+%  
+%  The Examples show how to calculate with the display spectral power
+%  distribution of the monitor to compute cone contrast.
 %
-% The units used in these calculations are designed around the normalized
-% RGB values from the monitor space.  Hence, the LMS values are not in
-% physical coordinates (e.g., absorptions).  
+% Input
+%  display - A display model (displayCreate)
 %
-% To calculate this use the display spectral power distribution of the
-% monitor, which is energy units of watts/sr/...
+% Optional key/val pairs
+%  None
 %
-% Example:
-%   dsp = displayCreate('LCD-Apple');
-%   signalDirs = humanConeIsolating(dsp)
-%   coneIsolatingSPD = displayGet(dsp,'spd')*signalDirs; 
-%   vcNewGraphWin; plot(displayGet(dsp,'wave'),coneIsolatingSPD);
+% Return
+%   coneIsolating - linear RGB cone isolating values, 
+%         scaled to max(abs(x)) = 0.5
+%   spd - Spectral power distributions of the three directions
 %
 % Copyright ImagEval Consultants, LLC, 2005.
-
-warning('Deprecated, use displayGet(d, ''rgb2lms'') instead');
-if notDefined('dsp'), dsp = displayCreate;  end
-
-wave = displayGet(dsp,'wave');
-cones = ieReadSpectra('stockman',wave);  % Energy
-
-spd = displayGet(dsp,'spd');             % Energy
-
-% cones*spd*(r,g,b)
-monitor2cones = cones'*spd;
-
-% First column of coneIsolating, col1, maps into cone isolating direction
 %
-%    monitor2cones * col1 = (1,0,0)
-%
-% and so forth 
-if size(monitor2cones,1) == size(monitor2cones, 2)
-    coneIsolating = inv(monitor2cones);
-else
-    warning('monitor to cones not invertible, returning empty');
-    coneIsolating = [];
+% See also: humanConeContrast, displayCreate
+
+% Example:
+%{
+   % Set the default color order starting with RGB
+   co = [1  0  0;
+      0 0.5 0;
+      0  0  1;
+      0 0.75 0.75;
+      0.75 0 0.75;
+      0.75 0.75 0;
+      0.25 0.25 0.25];
+   set(groot,'defaultAxesColorOrder',co)
+%}
+%{
+   % Calculate RGB directions for cone isolation on this monitor
+   dsp = displayCreate('LCD-Apple');
+   [rgbDirs, spd] = humanConeIsolating(dsp);
+   disp(rgbDirs)
+%}
+%{
+   % Plot the spd
+   wave = displayGet(dsp,'wave');
+   vcNewGraphWin; plot(wave,spd); grid on
+   xlabel('Wave (nm)'); ylabel('Relative energy')
+%}
+%{
+   % Check that these spd values are cone isolating
+   coneFile = fullfile(isetbioDataPath,'human','stockman');
+   cones = ieReadSpectra(coneFile,wave);
+   id = cones'*spd;
+   id = id/max(id(:))
+%}
+
+% This is a row transform, [r,g,b]*rgb2lms
+coneIsolating = displayGet(dsp,'lms2rgb');
+
+% Convert to the column form for easier computing
+coneIsolating = coneIsolating';
+
+% Scale so that the largest value in any column is abs(0.5)
+% That way, when we add these into a background that is 0.5, 0.5, 0.5 we
+% get a realizable display stimulus
+mx = max(abs(coneIsolating));
+coneIsolating = coneIsolating ./ (2*mx);
+
+% If the user asked for the three spds, compute them
+if nargout == 2
+    spd = displayGet(dsp,'spd')*coneIsolating;
+end
+
 end

@@ -26,9 +26,6 @@ function [fullName, imageType] = vcSelectImage(imageType, imgDir, ext)
 % Notes:
 %    * [Note: XXX - Programming notes: I am concerned whether the imageType
 %      is always determined correctly.]
-%    * [Note: JNM - Not sure we can technically classify the example as
-%      'working', since it merely opens a GUI to allow the user to select a
-%      file for use.]
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
@@ -56,6 +53,7 @@ fullName = vcSelectDataFile('stayput', 'r', ext);
 
 if isempty(fullName)
     imageType = '';
+    disp('User canceled');
 elseif nargout == 2
     % Try to determine the image type, if this is requested.
     imageType = ieImageType(fullName);

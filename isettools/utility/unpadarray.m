@@ -17,17 +17,31 @@ function outArray = unpadarray(inArray, unpadSize)
 %    outArray  - the unpadded array
 %
 % Notes:
-%    * [Note: XXX - Inverts padarray. Not much tested yet. Work on it.]
-%    * [Note: XXX - Roughly an inverse. Tested quite thoroughly. Hmmm.]
 %
+% See also: padarray
 
 % History:
 %    11/20/17  jnm  Formatting, example & heading text
+%    12/26/17   BW  more tests in example
 
 % Examples:
 %{
-    j = padarray([1 2; 3 4], [2,2]);
-    unpadarray(j, [2,2])
+    test = rand(128,128);
+    j = padarray(test, [2,2]);
+    test2 = unpadarray(j, [2,2]);
+    isequal(test,test2)
+
+    pd = [3,4];
+    j = padarray(test, pd);
+    test2 = unpadarray(j, pd);
+    isequal(test,test2)
+
+    pd = [9,9];
+    j = padarray(test, pd);
+    test2 = unpadarray(j, pd);
+    isequal(test,test2)
+
+
 %}
 
 if notDefined('inArray'), error('Input array required'); end

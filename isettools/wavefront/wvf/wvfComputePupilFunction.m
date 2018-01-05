@@ -71,6 +71,7 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 %                   to match up with where Matlab likes this by convention.
 %                   Improves stability of resutls wrt to even/odd support
 %                   when sampling is a little coarse.
+%    01/01/18  dhb  Consistency check to numerical precision.
 
 % Examples:
 %{
@@ -296,7 +297,7 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         % same answer.
         kindex = find(norm_radius <= calcPupilSizeMM / measPupilSizeMM);
         areapixcheck = numel(kindex);
-        if (areapix(ii) ~= areapixcheck)
+        if (max(abs(areapix(ii)-areapixcheck)) > 1e-10)
             error('Two ways of computing areapix do not agree');
         end
     end

@@ -30,7 +30,7 @@ function im = ieClip(im, lowerBound, upperBound)
 % Outputs:
 %    im         - The clipped data
 %
-% Notes:
+% Examples are included within the code.
 %
 
 % History:
@@ -77,4 +77,4 @@ if ~(~exist('upperBound','var') || isempty(upperBound))
     im(im > upperBound) = upperBound;
 end
 
-return;
+end

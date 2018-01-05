@@ -43,14 +43,11 @@ function RGB = imageSPD(SPD, wList, gam, row, col, displayFlag, ...
 %    RGB         - The Resulting RGB image
 %
 % Notes:
-%    * [Note: JNM - Why do we use errordlg instead of just error here?]
 %    * [Note: JNM - The value 0 for displayFlag is clearly called out
 %      above, yet the value was not present in the if statements for
 %      calculations. I changed the if displayFlag == 1 to <= 1, so that for
 %      a displayFlag of 0 it will be calculated as if RGB, but will not
 %      display further on. This matches the language described above.]
-%    * [Note: JNM - I added a section for default value for row & col, as
-%      it was breaking the examples, and it was easy enough to code]
 %
 
 % History:
@@ -87,27 +84,28 @@ if notDefined('wList')
     else 
         wList = sceneGet(vcGetObject('scene'), 'wave');
         if length(wList) ~= w
-            errordlg('Problem interpreting imageSPD wavelength list.');
-            return;
+            error('Problem interpreting imageSPD wavelength list.');
         end
     end
 end
 
 % Convert the SPD data to a visible color image (1) or gray scale (2) based
-% on the absolute value
+% on the absolute value.  The value is 0 or negative, so no imagesc()
+% is called.
 if abs(displayFlag) <= 1
-    % RGB = imageSPD2RGB(SPD, wList, gam);
+    % Make RGB image, but do not display
     XYZ = ieXYZFromPhotons(SPD, wList);
     
-    % We are considering getting rid of this normalization. The user may
-    % want to set the relative intensity, so that two scenes with different
-    % levels show up as lighter or darker RGB images as well. By including
-    % this, we force all the images to be normalized so tha the brightest
-    % point is the same.
+    % We are considering getting rid of this normalization. The user
+    % may want to set the relative intensity, so that two scenes with
+    % different levels show up as lighter or darker RGB images as
+    % well. By including this, we force all the images to be
+    % normalized so that the brightest point is the same.
     XYZ = XYZ/max(XYZ(:));    
     RGB = xyz2srgb(XYZ);
     
-elseif abs(displayFlag) == 2    % Gray scale image, used for SWIR, NIR
+elseif abs(displayFlag) == 2    
+    % Gray scale image, used for SWIR, NIR
     RGB = zeros(row, col, 3);
     RGB(:, :, 1) = reshape(mean(SPD, 3), row, col);
     RGB(:, :, 2) = RGB(:, :, 1);
@@ -117,7 +115,7 @@ else
 end
 
 % If the displayFlag is positive, then we want the data to be displayed,
-% not just converted.
+% not just converted.  Hence the imagesc() calls
 if displayFlag >= 1
     if ~isequal(gam, 1), RGB = RGB .^ gam; end
     

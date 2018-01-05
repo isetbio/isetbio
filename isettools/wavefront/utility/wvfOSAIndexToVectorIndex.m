@@ -42,12 +42,6 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 %    vectorIndex - List of WVF Toolbox-appropriate indices
 %    jIndex      - List of OSA J Values
 %
-% Notes:
-%    * [Note: XXX - I would add 'tip' as a synonym for one of the two tilts
-%      below, if I knew which one it was.]
-%    * [Note: JNM - Is there intentionally not a comma between 'defocus'
-%      and 'vertical_astigmatism' in the validation code below?]
-%
 % See Also:
 %    wvfOSAIndexToZernikeNM, wvfZernikeNMToOSAIndex, zernfun
 %
@@ -59,6 +53,11 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 % Examples:
 %{
     wvfInd = wvfOSAIndexToVectorIndex([20:5:50])
+%}
+%{
+[vectorIndex] = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
+[vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
+    'defocus', 'vertical_astigmatism', 'primary_spherical'})
 %}
 
 % If a single string, that's OK. We put it to a singleton cell.
@@ -121,9 +120,6 @@ end
 
 vectorIndex = jIndex + 1;
 
-return
+end
 
-%% Validation code
-[vectorIndex] = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
-[vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
-    'defocus' 'vertical_astigmatism', 'primary_spherical'})
+

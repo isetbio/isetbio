@@ -52,7 +52,9 @@ if rdtDownloadFlag
     
     rdt = Rdtrdt('isetbio');
     rdt.crp('/resources/data/cmosaics');
-    data = rdt.readArtifact('rings-rays', 'type', 'mat');
+    rdt.listArtifacts('print',true);
+
+    data = rdt.readArtifact('coneMosaicDataFace', 'type', 'mat');
     cMosaic = data.cMosaic;
 
 end

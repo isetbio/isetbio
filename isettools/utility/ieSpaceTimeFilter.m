@@ -17,11 +17,14 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 %    sig      - Signal
 %    kernel   - Two or three-dimensional field indicating whether the
 %               calculation is in space-only, or space-time.
-%    varargin - Variable Array containing ???
 %
 % Outputs:
 %    resp     - the requested filtered signal
 %
+% Optional key/value pairs
+%    pad - Pad parameter for convn call.  Options are 'full','same' or
+%    'valid'
+
 % Notes:
 %    * TODO: Think about when we can use the separable case.
 %
@@ -33,10 +36,10 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 % Examples:
 %{
     sig = randn(128, 128, 64);
-	kernel = ones(3, 3);
+	kernel = ones(3,3);
 	resp = ieSpaceTimeFilter(sig, kernel, 'pad', 'same');
 	var(resp(:))
-    % Should be close to 9, except for border
+    % Should be close to 9 (numel(kernel)), except for border
 %}
 
 %% Parse parameters
@@ -45,7 +48,8 @@ p.addRequired('sig', @isnumeric);
 p.addRequired('kernel', @isnumeric);
 
 % Parameter/Value options
-p.addParameter('pad', 'same', @ischar);
+vFunc = @(x)(ismember(x,{'full','same','valid'}));
+p.addParameter('pad', 'same', vFunc);
 p.parse(sig, kernel, varargin{:});
 pad = p.Results.pad;
 

@@ -31,9 +31,6 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 %    fullName         - the full file name and path.
 %
 % Notes:
-%    * [Note: JNM - Example does not work as currently written
-%      (rtZemaxExample.mat file does not exist?) - how can we correct the
-%      example so that it functions as designed?]
 %    * [Note: JNM - TODO: unify vcLoad (below) and vcLoadObject, as per
 %      below note in the function.]
 %
@@ -45,10 +42,10 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 
 % Examples:
 %{
-    newVal = vcImportObject('SCENE');
-    newVal = vcImportObject('ISA')
-    fullName = fullfile(isetbioDataPath, 'optics', 'rtZemaxExample.mat');
-    vcImportObject('OPTICS', fullName);
+    scene = sceneCreate;
+    fname = tempname;
+    save(fname,'scene');
+    newVal = vcImportObject('SCENE',fname);
 %}
 
 if notDefined('objType'), objType = 'SCENE'; end
@@ -78,7 +75,7 @@ switch lower(objType)
             if ~preserveDataFlag
                 oi = oiClearData(oi);
             end
-            vcReplaceAndSelectObject(oi, newVal);
+            ieReplaceObject(oi, newVal);
         end
     otherwise
         error('Unknown object type.');

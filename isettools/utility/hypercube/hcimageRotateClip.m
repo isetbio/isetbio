@@ -19,8 +19,8 @@ function [cImg, cPixels] = hcimageRotateClip(hc, clipPrctile, nRot)
 %    cPixels     - The hypercube pixel data
 %
 % Notes:
-%    * [Note: JNM - Example does not work. the hypercube image (img) has
-%      not been defined.]
+%
+% See also: hcimage, hcImageCrop
 
 % History:
 %    xx/xx/12       (c) Imageval, 2012
@@ -32,8 +32,8 @@ function [cImg, cPixels] = hcimageRotateClip(hc, clipPrctile, nRot)
     clipPrctile = 99.9;
     nRot = 1;
     [hc, cPixels] = hcimageRotateClip(img.data, clipPrctile, nRot);
-    vcNewGraphWin;
-    imagesc(cPixels)
+    vcNewGraphWin; imageSPD(img.data);
+    vcNewGraphWin;  imageSPD(hc);
 %}
 
 if notDefined('hc'); error('hyper cube image required'); end

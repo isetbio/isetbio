@@ -1,5 +1,5 @@
 function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
-% Create an image comprising a montage of the slices in hc
+% Create image data comprising a montage of the slices in hc
 %
 % Syntax:
 %   img = imageMakeMontage(hc, [sliceList], [nCols], [backVal])
@@ -18,10 +18,6 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
 %    coords    - Image coordinate data
 %
 % Notes:
-%    * [Note: JNM - Example isn't working due to no instantiated hypercube.
-%      Can we get this fixed please? My macbeth chart addition allows
-%      something to display, but I imagine that's not what is intended for
-%      this example.]
 %
 % See also:
 %   imageMontage
@@ -33,17 +29,11 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
 
 % Examples:
 %{
-    % Example doesn't work without the hypercube being instantiated
-    %
-    % This is cheating since I'm using a Macbeth Chart instead of a
-    % hypercube, but I only know how to instantiate the chart...
     hc = macbethChartCreate;
     [img, coords] = imageMakeMontage(hc.data);
 	vcNewGraphWin;
     imagesc(img);
-    colormap(gray);
-    axis equal;
-    axis off;
+    colormap(gray); axis equal; axis off;
 %}
 
 %%

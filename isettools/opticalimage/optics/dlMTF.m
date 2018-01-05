@@ -5,7 +5,8 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 % [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,[fSupport],[wave],[units])
 %
 % Compute the diffraction limited 2D OTF (OTF2D) at each wavelength for the
-% optics within the optical image. 
+% optics within the optical image. The OTF is returned with DC in the (1,1)
+% (upper left) position.  Apply fftshift to put DC in the center.
 %
 % The diffraction limited OTF only depends on the optics.  But for some
 % units and conditions we need to know properties of the optical image to

@@ -7,12 +7,10 @@ function t_wvfZernickeSet
 %
 %    We create an image of the slanted bar and pass it through the optics.
 %
-% Notes:
-%    * [Note: JNM - Can we please include explanations for why the included
-%      default values are chosen, other potential options, or reasonable
-%      alternatives for the selections?]
-%
-% BW Wavefront Toolbox Team, 2014
+
+% History:
+%             BW   Wavefront Toolbox Team, 2014
+%   01/01/18  dhb  Handled JMN notes
 
 %% Initialize
 ieInit;
@@ -23,16 +21,25 @@ scene = sceneCreate('slanted bar');
 %% Create wavefront object and push it into an optical image object
 wvf = wvfCreate;
 wvf = wvfComputePSF(wvf);
-% wavefront object, plot type, plot units, wavefront list, plot range
+
+% Plot for wavefront object
+% Args give plot type, plot units, wavefront list, plot range
 wvfPlot(wvf, '2dpsfspace', 'um', 550, 20);
 oi = wvf2oi(wvf);
 
-%% Make an ISET optical image
+%% Compute the optical image
 oi = oiCompute(oi, scene);
 vcAddObject(oi);
 oiWindow;
 
 %% Change the defocus coefficient
+%
+% The ranges for coefficients here and below are reasonable given typical
+% variation within human population.  If we look at the diagonal of the
+% covariance matrix for coefficients that we get from the Thibos
+% measurements (see wvfLoadThibosVirtualEyes we see that for the third
+% through sixth coefficients, the standard deviations (sqrt of variances on
+% the diagonal) range between about 0.25 and about 0.5.
 wvf = wvfCreate;
 D = [0, 0.5, 1];
 for ii=1:length(D)

@@ -80,7 +80,7 @@ vcDeleteSelectedObject('OPTICALIMAGE');
 [val,oi] = vcGetSelectedObject('OPTICALIMAGE');
 if isempty(oi)
     oi = oiCreate;
-    vcReplaceAndSelectObject(oi,1);
+    ieReplaceObject(oi,1);
 end
 
 oiRefresh(hObject, eventdata, handles);
@@ -212,7 +212,7 @@ function btnSimulate_Callback(hObject, eventdata, handles)
 
 scene = vcGetObject('scene');
 if isempty(scene), ieInWindowMessage('No scene data.',handles); beep; return;
-else ieInWindowMessage('',handles); end
+else, ieInWindowMessage('',handles); end
 
 oi = vcGetObject('OPTICALIMAGE');
 
@@ -223,7 +223,7 @@ oi = oiCompute(scene,oi);
 oi = oiSet(oi,'consistency',1);
 
 % Save the OI in the vcSESSION as the selected optical image.
-vcReplaceAndSelectObject(oi);
+ieReplaceObject(oi);
 
 % hObject = oiwindow;
 oiRefresh(hObject, eventdata, handles);
@@ -369,11 +369,11 @@ end
 ill = oiGet(oi,'illuminance');
 meanIll = oiGet(oi,'meanIlluminance');
 
-oi = oiSet(oi,'compressedPhotons',irrad*s);
+oi = oiSet(oi,'photons',irrad*s);
 if ~isempty(ill), oi = oiSet(oi,'illuminance',s*ill); end
 if ~isempty(meanIll), oi = oiSet(oi,'meanIlluminance',s*meanIll); end
 
-vcReplaceAndSelectObject(oi,val)
+ieReplaceObject(oi,val)
 oiRefresh(hObject, eventdata, handles);
 
 return;
@@ -393,7 +393,7 @@ if isempty(newName),  return;
 else    oi = oiSet(oi,'name',newName);
 end
 
-vcReplaceAndSelectObject(oi,val)
+ieReplaceObject(oi,val)
 oiRefresh(hObject, eventdata, handles);
 
 return;
@@ -1103,31 +1103,27 @@ return;
 function menuHelp_Callback(hObject, eventdata, handles)
 return;
 
-% --------------------------------------------------------------------
-% function menuHelpISETmanual_Callback(hObject, eventdata, handles)
-% ieManualViewer('pdf','ISET_Manual');
-% return;
 
 % --------------------------------------------------------------------
 function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
-web('http://imageval.com/documentation/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpOpticsOnline_Callback(hObject, eventdata, handles)
 % Help | Optics functions
-web('http://www.imageval.com/public/ISET-Functions/ISET/opticalimage/optics/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpOIOnline_Callback(hObject, eventdata, handles)
 % Help | Optics functions
-web('http://www.imageval.com/public/ISET-Functions/ISET/opticalimage/index.html','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;
 
 % --------------------------------------------------------------------
 function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 % Help | ISET functions
-web('http://www.imageval.com/public/ISET-Functions/','-browser');
+web('https://github.com/isetbio/isetbio/wiki','-browser');
 return;

@@ -244,7 +244,7 @@ switch sceneName
         scene = sceneMultispectral(scene);
     case 'rgb'
         if isempty(varargin), scene = sceneRGB(scene);
-        else scene = sceneRGB(varargin{1});end
+        else, scene = sceneRGB(varargin{1});end
         
     case {'mackay','rayimage','ringsrays'}
         % Also called the Siemens star pattern
@@ -260,15 +260,15 @@ switch sceneName
         end
         scene = sceneMackay(scene,radFreq,sz);
     case {'harmonic','sinusoid'}
-        if isempty(varargin),
+        if isempty(varargin)
             [scene,parms] = sceneHarmonic(scene);
         elseif length(varargin) == 1
             parms = varargin{1};
-            [scene,parms] = sceneHarmonic(scene,parms);
+            [scene,parms] = sceneHarmonic(scene, parms);
         else
             parms = varargin{1};
-            wave = varargin{2};
-            [scene,parms] = sceneHarmonic(scene,parms, wave);
+            wave  = varargin{2};
+            [scene,parms] = sceneHarmonic(scene, parms, wave);
         end
     case {'sweep','sweepfrequency'}
         % These are always equal photon type.  Could add a third argument
@@ -280,12 +280,12 @@ switch sceneName
         scene = sceneSweep(scene,sz,maxFreq);
     case {'ramp','linearintensityramp','rampequalphoton'}
         if isempty(varargin),  sz = 32;
-        else                   sz = varargin{1};
+        else,                  sz = varargin{1};
         end
         scene = sceneRamp(scene,sz);
     case {'uniform','uniformee','uniformequalenergy'}   %Equal energy
         if isempty(varargin),  sz = 32;
-        else                   sz = varargin{1};
+        else,                  sz = varargin{1};
         end
         scene = sceneUniform(scene,'equalenergy',sz);
         
@@ -314,7 +314,7 @@ switch sceneName
         % We should include an option for wavelength so that we extend into
         % the IR
         if isempty(varargin),  sz = 32;
-        else                   sz = varargin{1};
+        else,                  sz = varargin{1};
         end
         scene = sceneUniform(scene,'D65',sz);
     case {'uniformbb'}
@@ -340,7 +340,7 @@ switch sceneName
         
     case {'lined65','impulse1dd65'}
         if isempty(varargin), sz = 64;
-        else sz = varargin{1};
+        else, sz = varargin{1};
         end
         scene = sceneLine(scene,'D65',sz);
     case {'lineee','impulse1dee'}
@@ -379,9 +379,9 @@ switch sceneName
         %   s = sceneCreate('vernier','display',p);
         %   vcAddObject(s); sceneWindow;
         %
-        if ~isempty(varargin), type = varargin{1}; else type = 'object'; end
+        if ~isempty(varargin), type = varargin{1}; else, type = 'object'; end
         if length(varargin) > 1,  params = varargin{2};
-        else                      params = [];
+        else,                     params = [];
         end
         scene = sceneVernier(scene, type, params);
         return;
@@ -568,7 +568,7 @@ scene = sceneSet(scene,'illuminant',il);
 photons = zeros(sz(1),sz(2),nWave);
 for ii=1:nWave, photons(:,:,ii) = d*p(ii); end
 
-% Allocate space for the (compressed) photons
+% Allocate space for the photons
 scene = sceneSet(scene,'photons',photons);
 
 % By setting the fov here, we will not override the value in
@@ -592,13 +592,13 @@ if notDefined('illuminantType'), illuminantType = 'd65'; end
 if notDefined('args'), args = []; end
 
 if (isempty(args) || isempty(args{1})), patchSize = 16;
-else patchSize = args{1};
+else, patchSize = args{1};
 end
 
 % Create the scene variable
 if isempty(args) || length(args) < 2 || isempty(args{2})
         scene = initDefaultSpectrum(scene,'hyperspectral');
-else    scene = sceneSet(scene,'wave',args{2});
+else,   scene = sceneSet(scene,'wave',args{2});
 end
 wave = sceneGet(scene,'wave');
 
@@ -644,7 +644,7 @@ sPhotons = XW2RGBFormat(sPhotons,r,c);
 
 % We compute the product of the surface reflectance and illuminant photons
 % here
-% scene = sceneSet(scene,'cphotons',surface.data .* photons);
+% scene = sceneSet(scene,'photons',surface.data .* photons);
 scene = sceneSet(scene,'photons',sPhotons);
 
 % Store the light source
@@ -719,7 +719,7 @@ d = sqrt(X.^2 + Y.^2);
 l = (d < r);
 img(l) = 128;  % figure; imagesc(img)
 
-scene = sceneSet(scene,'cphotons',repmat(img,[1,1,nWave]));
+scene = sceneSet(scene,'photons',repmat(img,[1,1,nWave]));
 
 % Set up an illuminant
 wave = sceneGet(scene,'wave');
@@ -789,7 +789,7 @@ switch lower(spectralType)
         il = illuminantCreate(spectralType,wave);
     case {'blackbody','bb'}
         if isempty(varargin), cTemp = 5000;
-        else                  cTemp = varargin{1};
+        else,                 cTemp = varargin{1};
         end
         il = illuminantCreate('blackbody',wave,cTemp);
     otherwise
@@ -803,7 +803,7 @@ scene = sceneSet(scene,'illuminant',il);
 illP = sceneGet(scene,'illuminant photons');
 for ii=1:nWave, d(:,:,ii) = d(:,:,ii)*illP(ii); end
 
-scene = sceneSet(scene,'cphotons',d);
+scene = sceneSet(scene,'photons',d);
 
 end
 
@@ -934,16 +934,16 @@ for ii=1:nLines
     x = endPoints(ii,1); y = endPoints(ii,2);
     u = -x; v = -y;
     % Flip so x is the lower one
-    if x > 0,
+    if x > 0
         tmp = [x,y]; x = u; y = v; u = tmp(1); v = tmp(2);
     end
     
     if ~isequal(u,x), slope = (y - v) / (u - x);
-        for jj=x:0.2:u,
+        for jj=x:0.2:u
             kk = round(jj*slope);
             img(round(kk + (imSize/2)) + 1, round(jj + (imSize/2)) + 1) = 1;
         end
-    else img(:, (imSize/2) + 1) = 1;
+    else, img(:, (imSize/2) + 1) = 1;
     end
 end
 
@@ -1015,32 +1015,32 @@ scene = sceneSet(scene,'photons',img);
 
 end
 %-----------------------
-function scene = sceneMOTarget(scene,parms)
-%% Moire/Orientation target
-
-if notDefined('parms'), parms = []; end
-
-scene = sceneSet(scene,'name','MOTarget');
-scene = initDefaultSpectrum(scene,'hyperspectral');
-nWave = sceneGet(scene,'nwave');
-
-% Select one among sinusoidalim, squareim, sinusoidalim_line,
-% squareim_line, flat img = MOTarget('squareim',parms);
-img = MOTarget('sinusoidalim',parms);
-
-% Prevent dynamic range problem with ieCompressData
-img = ieClip(img,1e-4,1);
-
-% This routine returns an RGB image.  We take the green channel and expand
-% it
-scene = sceneSet(scene,'cphotons',repmat(img(:,:,2),[1,1,nWave]));
-
-%
-wave = sceneGet(scene,'wave');
-illPhotons = ones(size(wave))*sceneGet(scene,'data max');
-scene = sceneSet(scene,'illuminantPhotons',illPhotons);
-
-end
+% function scene = sceneMOTarget(scene,parms)
+% %% Moire/Orientation target
+% 
+% if notDefined('parms'), parms = []; end
+% 
+% scene = sceneSet(scene,'name','MOTarget');
+% scene = initDefaultSpectrum(scene,'hyperspectral');
+% nWave = sceneGet(scene,'nwave');
+% 
+% % Select one among sinusoidalim, squareim, sinusoidalim_line,
+% % squareim_line, flat img = MOTarget('squareim',parms);
+% img = MOTarget('sinusoidalim',parms);
+% 
+% % Prevent dynamic range problem with ieCompressData
+% img = ieClip(img,1e-4,1);
+% 
+% % This routine returns an RGB image.  We take the green channel and expand
+% % it
+% scene = sceneSet(scene,'photons',repmat(img(:,:,2),[1,1,nWave]));
+% 
+% %
+% wave = sceneGet(scene,'wave');
+% illPhotons = ones(size(wave))*sceneGet(scene,'data max');
+% scene = sceneSet(scene,'illuminantPhotons',illPhotons);
+% 
+% end
 
 %-------------------
 function scene = sceneCheckerboard(scene,checkPeriod,nCheckPairs,spectralType)
@@ -1098,7 +1098,7 @@ img = imgZonePlate(imSize);
 % Prevent dynamic range problem with ieCompressData
 img = ieClip(img,1e-4,1);
 
-scene = sceneSet(scene,'cphotons',repmat(img,[1,1,nWave]));
+scene = sceneSet(scene,'photons',repmat(img,[1,1,nWave]));
 scene = sceneSet(scene,'horizontalfieldofview',fieldOfView);
 
 end

@@ -28,29 +28,30 @@ function t = plotTextString(str, position, delta, fontSize)
 %    fontSize - (Optional) The text's font size. Default is 12.
 %
 % Outputs:
-%    t        - The text struct
+%    t        - The text string
 %
 % Notes:
-%    * [Note: XXX - TODO: Positions aren't right. Fix.]
-%    * [Note: XXX - TODO: We need to account for the scale type when
-%      setting these positions.  Not done properly yet.  Also, it would be
-%      better to account for the string length, too.  At the very least, we
-%      could count the number of letters to set the value of delta.]
-%    * [Note: JNM - TODO: We should add a check for if delta is a single
-%      argument vs a pair of arguments. Ex. if length(delta) == 1,
-%      delta = [delta delta]; end]
 %
 
 % History:
 %    xx/xx/06       Copyright Imageval Consulting, LLC 2006
 %    12/11/17  jnm  Formatting
+%    12/26/17   BW  Added examples and responded to JNM
 
 % Example:
 %{
 	txt = 'Hello World';
+    vcNewGraphWin; plot(1:10,1:10,'o');
 	t = plotTextString(txt, 'ul');
+	t = plotTextString(txt, 'ul',[.1 .1])
+	t = plotTextString(txt, 'ul',[.1 .1],18)
+
+	t = plotTextString(txt, 'lr',[.1 .1],18)
+	t = plotTextString(txt, 'll',[.1 .1],10)
+
 %}
 
+%%
 if notDefined('position'), position = 'ur'; end
 if notDefined('delta'), delta = [0.2, 0.2]; end
 if notDefined('fontSize'), fontSize = 12; end
@@ -58,9 +59,9 @@ if notDefined('fontSize'), fontSize = 12; end
 xlim = get(gca, 'xlim');
 ylim = get(gca, 'ylim');
 
-xscale = get(gca, 'xscale');
-yscale = get(gca, 'yscale');
+if length(delta) == 1, delta(2) = delta(1); end
 
+%%
 switch lower(position)
     case 'ul'
         x = xlim(1) + (xlim(2) - xlim(1)) * delta(1); 
@@ -78,8 +79,8 @@ switch lower(position)
         error('Unknown position');
 end
 
-% Display
+%% Display
 t = text(x, y, str);
 set(t, 'Background', 'w', 'Fontsize', fontSize);
 
-return;
+end

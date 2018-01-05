@@ -1,7 +1,7 @@
-function vcReplaceAndSelectObject(obj,val)
+function ieReplaceObject(obj,val)
 %Replace an object and set as selected in the vcSESSION variable
 %
-%   vcReplaceAndSelectObject(obj,[val])
+%   ieReplaceObject(obj,[val])
 %
 % Replace an existing object in the vcSESSION global variable.
 % The object type can be SCENE,VCIMAGE,OPTICALIMAGE, or ISA.
@@ -11,8 +11,8 @@ function vcReplaceAndSelectObject(obj,val)
 % the first entry, replacing nothing.
 %
 % Examples
-%  vcReplaceAndSelectObject(oi,3);
-%  vcReplaceAndSelectObject(ISA,val);
+%  ieReplaceObject(oi,3);
+%  ieReplaceObject(ISA,val);
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 

@@ -29,9 +29,6 @@ dPlane = (depthEdges(1) <= dMap) & (dMap < depthEdges(2));
 nWave   = sceneGet(scene,'nWave');
 photons = sceneGet(scene,'photons');
 
-% Be careful using 'cphotons' with gets and sets.  Keep better notes.  When
-% we get and reset 'cphotons' data, there is some problem with adjusting
-% the dmin and dmax values in a loop.
 for ii=1:nWave
     p = photons(:,:,ii);
     
@@ -46,7 +43,7 @@ end
 % figure; imageSPD(photons,sceneGet(scene,'wave'));
 
 % Put in the photons
-scene   = sceneSet(scene,'cphotons',photons);
+scene   = sceneSet(scene,'photons',photons);
 
 % Adjust the depth map; in this case, it is more or less an index to those
 % parts of the scene that were saved.  The ones that were out of the depth

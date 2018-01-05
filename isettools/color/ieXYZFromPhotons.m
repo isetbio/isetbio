@@ -19,7 +19,7 @@ function XYZ = ieXYZFromPhotons(photons, wave)
 %              (XW or RGB) as the input.
 %
 % See Also:
-%   ieXYZFromEnergy
+%   ieXYZFromEnergy, Quanta2Energy, vcGetImageFormat
 %
 
 % History:

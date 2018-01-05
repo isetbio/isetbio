@@ -10,18 +10,15 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 %    figure in an appropriate format for Adobe Illustrator. 
 %
 % Inputs:
-%    This function has no required inputs.
-%
-%    fig      - (Optional)Figure handle.
-%               Default 0
+%    fig      - (Optional) Figure handle. Default 0
 %    fontName - (Optional) Name of the font as a string.
 %               Default 'Helvetica'
-%    fontSize - Size of the font (points) as a vector.
+%    fontSize - (Optional) Size of the font (points) as a vector.
 %               Default [18 14]
 %               Format: [axes_labels tick_labels]
-%    figSize  - Size of the figure [width height] (inches) as a vector.
+%    figSize  - (Optional) Size of the figure [width height] (inches) as a vector.
 %               Default [6 6]
-%    border   - Space around the figure (inches) as a vector.
+%    border   - (Optional) Space around the figure (inches) as a vector.
 %               Default [0.75 0.35]
 %               Format: [left bottom right top] or
 %                       [left/right  botom/top]
@@ -29,12 +26,7 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 % Outputs:
 %    None.
 %
-% Notes:
-%    * [Note: XXX - Function has a problem settiing the font size of the
-%      legend sometimes. If the legend font is the wrong size, call this
-%      function again. The second call corrects the problem. We believe
-%      this to be a Matlab problem.] [Note: JNM - Is this still happening
-%      with the current version of MATLAB?]
+% Examples are included within the code.
 %
 
 % History:
@@ -43,16 +35,17 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 
 % Examples:
 %{
-    ieFormatFigure();
-    ieFormatFigure(0,'Arial');
+    theFig = figure; plot(1:10,1:10,'ro'); xlabel('x axis');
+    ieFormatFigure([],[],[20 16]);
+    ieFormatFigure(theFig,'Times');
 %}
 
 % Format the input parameters.
 % Load default paramemters.
 if notDefined('fig'), fig = 0; end
-if notDefined('fontname'), fontName = 'Helvetica'; end
-if notDefined('fontsize'), fontSize = [18 14]; end
-if notDefined('figsize'), figSize = [6.5 6.5]; end
+if notDefined('fontName'), fontName = 'Helvetica'; end
+if notDefined('fontSize'), fontSize = [18 14]; end
+if notDefined('figSize'), figSize = [6.5 6.5]; end
 if notDefined('border'), border = [1 0.5]; end
 
 % Check the fontsize.
@@ -94,4 +87,4 @@ set(axs, 'FontName', fontName, 'FontSize', fontSize(2));
 set(axs, 'Units', 'inches');
 set(axs, 'Position', [border(1:2), (figSize - border(1:2) - border(3:4))]);
 
-return;
+end

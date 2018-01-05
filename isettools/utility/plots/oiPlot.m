@@ -2,7 +2,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Gateway routine for plotting optical image (oi) properties
 %
 % Syntax:
-%   [udata, g] = oiPlot([oi], [pType], [xy], [wave])
+%   [udata, g] = oiPlot([oi], [pType], [roiLocs], [varargin])
 %
 % Description:
 %    Gateway routine to plot the irradiance or illuminance data in the
@@ -21,14 +21,14 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Inputs:
 %    oi      - (Optional) The optical Image structure. Default is to
 %              retrieve an oi object using vcGetObject.
-%    pType   - The plot type. Default is 'illuminance hline'. There are a
+%    pType   - (Optional). The plot type. Default is 'illuminance hline'. There are a
 %              vast number available, listed below, sorted by category:
 %           Irradiance (Irr)
 %               {'irradiance photons roi'} - Irr within an ROI of the image
 %               {'irradiance energy roi'} - Irr within an ROI of the image
-%               {'irradiance vline'} - Horizontal line spectral irradiance
+%               {'irradiance vline'} - Vertical line spectral irradiance
 %                                      (photons) - (space x wavelength)
-%               {'irradiance hline'} - Vertical line spectral irradiance
+%               {'irradiance hline'} - Horizontal line spectral irradiance
 %                                      (photons) - (space x wavelength)
 %               {'irradiance fft'} - 2D FFT of radiance at some wavelength
 %               {'irradiance image grid'} - Show spatial grid on irr image
@@ -63,63 +63,49 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   3 * incoherent cutoff). Number of spatial samples to
 %                   plot in the line spread can be set (default: 40).
 %               {'lens transmittance'} - Spectral lens transmittance. 
-%                   Computed from the lens density in the human case.
-%
-%   
+%                   Computed from the lens density in the human case. 
 %    roiLocs - (Optional) Region of Interest Locations. Default depends on
 %              the plot type in order select the region of interest.
-%    wave    - The wavelength
+%    wave/gSpacing - Additional arguments passed through varargin specify
+%              wavelength and/or grid spacing.
 %
 % Outputs:
 %    udata   - User data structure
 %    g       - Figure/Graph Handle
 %
-% This is a list of the plot types
 % Notes:
-%    * [Note: XXX - TODO: This function includes within it the previous
-%      functions plotOTF and oiPlotIrradiance. Those have been deprecated.
-%      We should write a script that tests all the different plotting calls
-%      for this function and for scenePlot. We should create a sensorPlot
-%      function that is analogous.]
-%    * [Note: JNM - TODO: Fix examples.]
-%    * [Note: JNM - TODO: Check note in illuminancefft case -- is it
-%      broken? Or does the note need to be removed?]
 %    * [Note: JNM - roiLocs are listed as optional, however a number of the
 %      functions will break if they have not been provided because there is
 %      not language in place to generate them in all of the cases. Ex. the
 %      plot type chromaticityroi requires them but does not have an
 %      existing default.]
+%    * [Note: DHB - Someday might convert code that gets and plots lsf to
+%       use PTB wrapper routines in external, to improve overall
+%       consistency.
 %
 % See Also:
-%    s_oiPlot, and scenePlot
+%    t_oiPlot, scenePlot
 %
+
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/11/17  jnm  Formatting
 %    12/22/17  dhb  Use opticsGet(...'diffractionlimitedpsfdata'...) to get
 %                   diffraction limited psf, not opticsGet(...'psf'...).
 %                   The latter seemed unfortunately named.
+%    12/28/17  dhb  Separated out into separate grouped switch statements.
+%    12/30/17  dhb  Went through and verified that various OTF things are
+%                   done in a manner consistent with recent changes to
+%                   optics, and tried to comment key points more fully.
+%                   Removed note that I should take a look.
+%              dhb  Add ifftshift for fft calls, since we view data as an
+%                   image with zero in the center.  Doesn't matter because 
+%                   only the amplitude is being plotted, but seemed like
+%                   good coding practice.
 
 % Examples:
 %{
-    % Examples do not work!
-    oi = vcGetObject('oi');
-    rows = round(oiGet(oi, 'rows') / 2);
-
-    uData = oiPlot(oi, 'irradiance hline', [1, rows])
-    uData = oiPlot(oi, 'illuminance fft hline', [1, rows])
-
-    uData = oiPlot(oi, 'contrast hline', [1, rows])
-
-    uData = oiPlot(oi, 'irradiance image grid')
-    uData = oiPlot(oi, 'irradiance image grid', [], 40)
-    uData = oiPlot(oi, 'irradiance image wave', [], 500, 40);
-
-    uData = oiPlot(oi, 'irradiance energy roi');
-
-    uData = oiPlot(oi, 'psf 550', 'um')
-    uData = oiPlot(oi, 'otf 550', 'um')
-    uData = oiPlot(oi, 'ls wavelength')
+t_oiPlot
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
@@ -128,6 +114,7 @@ if notDefined('pType'), pType = 'hlineilluminance'; end
 % Reformat the parameter - no spaces, all lower case
 pType = ieParamFormat(pType);
 
+% Set spatial locations to plot, if not set already
 if notDefined('roiLocs')
     % oiWindow;
     switch pType
@@ -155,12 +142,16 @@ g = vcNewGraphWin;
 mp = 0.4 * gray + 0.4 * ones(size(gray));
 colormap(mp);
 
+% Here we have a series of switches, each grouping together
+% plots of different basic types
+%
+% The first group is irradiance related
+isIrradiancePlot = true;
 switch pType
-    
-    % Irradiance related
     case {'irradiancephotonsroi'}
         %[uData, g] = oiPlot(oi, 'irradiance photons roi', roiLocs);
         udata = oiPlotIrradiance(oi, 'photons', roiLocs);
+        
     case {'irradianceenergyroi'}
         %[uData, g] = oiPlot(oi, 'irradiance energy roi', roiLocs);
         udata = oiPlotIrradiance(oi, 'energy', roiLocs);
@@ -250,6 +241,7 @@ switch pType
         %
         % The mean is not included in the graph to help with the dynamic
         % range.
+        %
         % Axis range could be better.
         if isempty(varargin)
             wave = oiGet(oi, 'wave');
@@ -270,10 +262,15 @@ switch pType
         % Remove the mean
         data = data - mean(data(:));
         
-        % Plot and attach data to figure
+        % Plot and attach data to figure.
+        %
+        % The ifftshift in front of the fft2 call is because we view what
+        % is in data as an image with (0,0) at the center.  It doesn't
+        % matter since we're not looking at the phase of the fft, but seems
+        % best to have as good coding practice.
         udata.x = 1:sz(2);
         udata.y = 1:sz(1);
-        udata.z = fftshift(abs(fft2(data)));
+        udata.z = fftshift(abs(fft2(ifftshift(data))));
         udata.cmd = 'mesh(x, y, z)';
         mesh(udata.x, udata.y, udata.z);
         xlabel('Cycles/ROI-image');
@@ -412,10 +409,18 @@ switch pType
         udata.xCoords = xCoords;
         udata.yCoords = yCoords;
         
-        % Illuminance and chromaticity
+    otherwise
+        % If we're here, pType did not specify an irradiance plot
+        isIrradiancePlot = false;  
+end
+
+% Switch for lluminance and chromaticity plots
+isIlluminancePlot = true;
+switch (pType)
     case {'illuminanceroi'}
         % Histogram of illuminance in an ROI
         udata = oiPlotCIE(oi, 'illuminance', roiLocs);
+        
     case {'chromaticityroi'}
         % Graph of chromaticity coords in an ROI
         udata = oiPlotCIE(oi, 'chromaticity', roiLocs);
@@ -445,6 +450,7 @@ switch pType
     case {'illuminancemeshlog'}
         % Mesh plot of image log illuminance
         udata = plotIlluminanceMesh(oi, 'log');
+        
     case {'illuminancemeshlinear'}
         % Mesh plot of image illuminance
         udata = plotIlluminanceMesh(oi, 'linear');
@@ -525,16 +531,16 @@ switch pType
         
     case {'illuminancefft', 'fftilluminance'}
         % oiPlot(oi, 'illuminance fft')
-        % Spatial frequency amplitude at a single wavelength. Axis range
-        % could be better.
-        
-        % [Note: XXX - This seems wrong ... it should be a get on
-        % illuminance, not photons.]
+
+        % The ifftshift in front of the fft2 call is because we view what
+        % is in data as an image with (0,0) at the center.  It doesn't
+        % matter since we're not looking at the phase of the fft, but seems
+        % best to have as good coding practice.
         data = oiGet(oi, 'illuminance');
         sz = size(data);
         udata.x = 1:sz(2);
         udata.y = 1:sz(1);
-        udata.z = fftshift(abs(fft2(data)));
+        udata.z = fftshift(abs(fft2(ifftshift(data))));
         udata.cmd = 'mesh(x, y, z)';
         mesh(udata.x, udata.y, udata.z);
         xlabel('Cycles/image');
@@ -542,7 +548,14 @@ switch pType
         zlabel('Amplitude');
         title('Illuminance amplitude spectrum');
         
-        % Contrast related
+    otherwise
+        % If w're here, it wasn't an illuminance related plot
+        isIlluminancePlot = false;
+end
+
+% Contrast related plots
+isContrastPlot = true;
+switch (pType)
     case {'contrasthline', 'hlinecontrast'}
         % oiPlot(oi, 'contrast hline')
         % Plot percent contrast (difference from the mean as a percentage
@@ -619,7 +632,13 @@ switch pType
         udata.cmd = 'mesh(pos, wave, data)';
         set(g, 'Name', sprintf('Line %.0f', roiLocs(1)));
         
-        % Depth related
+    otherwise
+        isContrastPlot = false;
+end
+
+% Depth related
+isDepthPlot = true;
+switch (pType)
     case {'depthmap'}
         % oiPlot(oi, 'depth map')
         dmap = oiGet(oi, 'depth map');
@@ -634,6 +653,7 @@ switch pType
             set(g, 'Name', namestr);
         end
         udata.dmap = dmap;
+        
     case {'depthmapcontour', 'depthcontour'}
         % oiPlot(oi, 'depth contour')
         dmap = oiGet(oi, 'depth map');
@@ -652,7 +672,13 @@ switch pType
         axis off;
         set(g, 'Name', namestr);
         
-        % Optics related
+    otherwise
+        isDepthPlot = false;
+end
+
+% Optics related
+isOpticsPlot = true;
+switch (pType)
     case {'lenstransmittance'}
         % oiPlot(oi, 'lens transmittance')
         % If human, uses the lens object attached to oi.
@@ -780,14 +806,20 @@ switch pType
         colormap(jet)
         
     otherwise
-        error('Unknown oiPlot type %s.', pType);
+        isOpticsPlot = false;
 end
 
+% Check that a known pType was specified
+if (~isIrradiancePlot && ~isIlluminancePlot && ~isContrastPlot && ...
+        ~isDepthPlot && ~isOpticsPlot)
+            error('Unknown oiPlot type %s.', pType);
+end
+
+% Set user data for return
 if exist('udata', 'var'), set(gcf, 'userdata', udata); end
 
-return;
+end
 
-% Brought into this file from a separate function
 function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 % Plot mean irradiance within a selected ROI of the optical image window
 %
@@ -809,19 +841,14 @@ function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 % Outputs:
 %    udata    - User Data structure.
 %
-% Notes:
-%    * [Note: JNM - The function specified that the user data and the
-%      graphWin figure number are returned, but the return only has a
-%      single argument?]
-%    * [Note: JNM - Should we include an error for if roiLocs is not
-%      defined since no default value is provided?]
-%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/12/17  jnm  Formatting
+%    12/25/17   BW  Fixed by adding roiLocs test.
 
 if notDefined('dataType'), dataType = 'photons'; end
+if notDefined('roiLocs'), error('roi locs required'); end
 
 wave = oiGet(oi, 'wave');
 irradiance = vcGetROIData(oi, roiLocs, dataType);
@@ -863,9 +890,8 @@ else
     end
 end
 
-return;
+end
 
-% Moved into oiPlot June, 2012.
 function uData = plotOTF(oi, pType, varargin)
 % Plot OTF functions associated with the optics in an optical image
 %
@@ -894,18 +920,14 @@ function uData = plotOTF(oi, pType, varargin)
 %    uData - The user data structure.
 %
 % Notes:
-%	 * [Note: JNM - When 2015B cycles out, replace strfind with contains]
-%    * TODO: Implement raytrace
+%	 * [Note: JNM - When 2015b cycles out, replace strfind with contains]
+%    * [Note: XXX - TODO: Implement raytrace
 %    * [Note: JNM - TODO: Someone needs to check over the "Note: XXX - "
 %      notes below, so we can determine which are safe to remove. There are
 %      several such notes.]
-%    * [Note: BW - We get the OTF slightly differently for the different
-%      models. If we rewrote opticsGet to check for the optics model, we
-%      could do things a little more simply here. Maybe we should put this
-%      code into opticsGet.] - Copied from below.
-%    * TODO: Determine how to better select the number of samples for the
+%    * [Note: XXX: Determine how to better select the number of samples for the
 %      spatial frequency. Currently 100 samples, the number of which is
-%      arbitrarily chosen. 
+%      arbitrarily chosen.] 
 %
 
 % History:
@@ -935,7 +957,7 @@ switch lower(pType)
         % plotOTF(oi, 'otf', thisWave, nSamp);
         % OTF at a selected wavelength.
         units = 'mm';  % Units are cycles/mm
-        if strfind(pType, '550')
+        if strfind(pType, '550') %#ok<*STRIFCND>
             thisWave = 550;
         elseif length(varargin) >= 1
             thisWave = varargin{1};
@@ -956,33 +978,40 @@ switch lower(pType)
             case {'dlmtf', 'diffractionlimited'}
                 % Compute the otf data
                 
-                % Specify frequency support and compute the dl MTF
+                % Specify frequency support and compute the dl MTF. Note
+                % that DC is in the center of the support vectors, while
+                % OTF returned by dlMTF has DC at the (1,1) upper left
+                % position.
+                %
+                % Multiply returned support by 2 just to make it big
                 fSupport = opticsGet(optics, 'dl fsupport matrix', ...
                     thisWave, units, nSamp);
-                fSupport = fSupport * 2;  % Make the support big
+                fSupport = fSupport * 2;  
                 otf = dlMTF(oi, fSupport, thisWave, units);
                 
-                % DC is at (1, 1); we plot with DC in the center.
+                % DC is at (1, 1) in the returned OTF; we plot with DC in
+                % the center.
                 otf = fftshift(otf);
                 figTitle = sprintf('DL OTF at %.0f', thisWave);
                 
             case {'shiftinvariant'}
-                % In this case, the otf data must be stored
+                % Get OTF from optics structure.  Error if it wasn't there.
                 otf = opticsGet(optics, 'otf data', thisWave);
                 if isempty(otf), error('No OTF data'); end
                 
-                % Units are cycles/mm of optics support
+                % Units are cycles/mm of optics support.  Note that DC is
+                % in the center of the support vectors, while OTF returned
+                % below has DC at the (1,1) upper left position.
                 s = opticsGet(optics, 'otfSupport');
                 fSupport(:, :, 1) = s{1};
                 fSupport(:, :, 2) = s{2};
                 
-                % Transform so DC is in center
+                % Transform so DC is in center for plotting.
                 otf = fftshift(otf);
                 figTitle = sprintf('abs(OTF) at %.0f nm', thisWave);
                 
             case {'raytrace'}
                 error('Ray trace plot: Not yet implemented');
-                % figTitle = sprintf('abs(OTF) at %.0f nm', thisWave);
                 
             otherwise
                 error('Unknown optics model: %s\n', opticsModel);
@@ -1118,10 +1147,9 @@ switch lower(pType)
         
         % [Note: XXX - The spaceSamp and nSamp parameters are not clearly
         % enough defined. The reason we care is because the code is broken
-        % when spaceSamp is not 40. 
-        % The problem appears to be that lsfWave computed below might have
-        % only 60 samples and we might ask for, say 120. So, we should at
-        % least check.]
+        % when spaceSamp is not 40. The problem appears to be that lsfWave
+        % computed below might have only 60 samples and we might ask for,
+        % say 120. So, we should at least check.]
         
         % The incoherent cutoff frequency has units of cycles/micron
         % So, 1/inCutoff has units of microns/Nyquist
@@ -1206,7 +1234,7 @@ switch lower(pType)
         opticsModel = opticsGet(optics, 'opticsModel');
         units = 'um';
         
-        % [Note: BW - We get the OTF slightly differently for the different
+        % * [Note: BW - We get the OTF slightly differently for the different
         % models. If we rewrote opticsGet to check for the optics model, we
         % could do things a little more simply here. Maybe we should put
         % this code into opticsGet.]
@@ -1216,8 +1244,10 @@ switch lower(pType)
                 % OTF. These run from [-peakF, +peakF]. We make 100
                 % samples, which is pretty arbitrary. Not sure how to
                 % choose this better. Should be using unitFrequencyList()
-                % here. TODO: Determine how to better select the number of
-                % samples for the spatial frequency.
+                % here.
+                %
+                % * [Note: BW - Determine how to better select the number of
+                % samples for the spatial frequency.]
                 if length(varargin) >= 1
                     peakF = varargin{1};
                 else
@@ -1229,12 +1259,13 @@ switch lower(pType)
                 [fX, fY] = meshgrid(fSamp, fSamp);
                 fSupport(:, :, 1) = fX * peakF;
                 fSupport(:, :, 2) = fY * peakF;
-                % The fftshift centers the OTF data so that DC is in the
-                % middle.
+                
+                % Here the OTF has DC at (1,1).  Will deal with that below.
                 otf = dlMTF(oi, fSupport, wavelength, units);
                 
             case {'shiftinvariant'}
-                % Data are stored in OTF slot
+                % Data are stored in OTF slot, with DC at (1,1).  Will deal
+                % with that below.
                 s = opticsGet(optics, 'otfSupport');
                 fSupport(:, :, 1) = s{1};
                 fSupport(:, :, 2) = s{2};
@@ -1250,6 +1281,8 @@ switch lower(pType)
         
         fx = fSupport(1, :, 1);
         otfWave = zeros(length(fx), nWave);
+        
+        % Convert from DC at (1,1) to DC at center, using fftshift.
         for ii = 1:nWave, otfWave(:, ii) = fftshift(otf(1, :, ii)); end
         
         mesh(fx, wavelength, otfWave');
@@ -1267,7 +1300,7 @@ switch lower(pType)
         error('Unknown plotOTF data type.');
 end
 
-return;
+end
 
 function uData = plotIlluminanceMesh(oi, yScale)
 % Plot optical image illuminance (lux) as a mesh
@@ -1328,10 +1361,10 @@ xlabel('um');
 ylabel('um');
 title('Illuminance');
 
-return;
+end
 
 function uData = oiPlotCIE(oi, dataType, roiLocs)
-% [Move?] plotting CIE data from optical image.
+% Plot CIE data from optical image.
 %
 % Syntax:
 %   uData = oiPlotCIE(oi, dataType, roiLocs)
@@ -1414,7 +1447,7 @@ uData.roiLocs = roiLocs;
 oName = oiGet(oi, 'name');
 set(gcf, 'Name', sprintf('ISET-OI: %s', oName));
 
-return
+end
 
 function sz = selectPlotSupport(data, prct)
 % Used with getMiddleMatrix to pull out the 'interesting' center of a plot
@@ -1423,11 +1456,11 @@ function sz = selectPlotSupport(data, prct)
 %   sz = selectPlotSupport(data, prct)
 %
 % Description:
-%    Sometimes we have a large surface to plot but the interesting part is
-%    near the middle of the data set. Rather than plotting the entire surf
-%    or mesh(data) we pull out a central region. This routine encapsulates
-%    the method for choosing the  extent of data we pull out. This routine
-%    is used in conjunction with getMiddleMatrix.
+%    Sometimes we have a large surface to plot but the interesting
+%    part is near the middle of the data set. Rather than plotting the
+%    entire surf or mesh(data) we pull out a central region. This  is
+%    the method for choosing the  size of the data we pull out. This
+%    method is used in conjunction with getMiddleMatrix.
 %
 % Inputs:
 %    data - The data set to plot
@@ -1440,15 +1473,13 @@ function sz = selectPlotSupport(data, prct)
 % Notes:
 %	 * [Note: XXX - What if data are a vector? Can we adjust this routine
 %	   to make it work?]
-%    * [Note: JNM - if the values are unused, why is v created rather than
-%    just the empty placeholder ~ used? (Change [v, idx] to [~, idx])]
 %
 %  See Also:
-%    meshPlot
-%
+%    meshPlot, plotOTF
+
 if notDefined('prct'), prct = 0.01; end
 
-r = size(data, 1);
+r  = size(data, 1);
 mx = max(data(:));
 centerRow = round(r / 2);
 
@@ -1459,8 +1490,8 @@ l = (data(centerRow, :) < prct * mx);
 if max(l) == 0
     sz = centerRow - 1;
 else
-    [v, idx] = max(data(centerRow, l));
+    [~, idx] = max(data(centerRow, l));
     sz = max(25, centerRow - idx);
 end
 
-return;
+end

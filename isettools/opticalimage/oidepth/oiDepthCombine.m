@@ -46,7 +46,7 @@ for ii = 1:nWave
 end
 
 % Put the new photons into the final output oi.
-oi = oiSet(oi,'cphotons',photons);
+oi = oiSet(oi,'photons',photons);
 oi = oiSet(oi,'depth map',oiDmap);
 oi = oiSet(oi,'illuminance',oiCalculateIlluminance(oi));
 oi = oiSet(oi,'name','Combined');
@@ -109,7 +109,7 @@ return
 
 
 % Create a new, combined oi with the combined photons and depth map
-oi = oiSet(oiD{1},'cphotons',photons);
+oi = oiSet(oiD{1},'photons',photons);
 oi = oiSet(oi,'depth map',dMap);
 % vcAddAndSelectObject(oi); oiWindow
 

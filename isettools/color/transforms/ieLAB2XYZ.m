@@ -26,6 +26,8 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 % See Also:
 %    ieXYZ2LAB
 %
+% See examples in the source
+%
 % History
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
 %                   p-code too.
@@ -48,6 +50,15 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
    lab = ieXYZ2LAB(dataXYZ, whiteXYZ);
    xyz = ieLAB2XYZ(lab, whitepoint, labexp, 0)
 %}
+
+% History
+%    08/18/15  dhb  Change conditional on exist of makecform, works for
+%                   p-code too.
+%              dhb  Always define labexp, since makecform may not exist.
+%              dhb  Change "exp"->"labexp" to avoid clobbering function exp
+%    10/25/17  jnm  Comments & Formatting
+%    11/01/17  jnm  Fixed final reference to exp instead of labexp
+
 if notDefined('lab'), error('No data.'); end
 if notDefined('whitepoint')
     error('A whitepoint is required for conversion to CIELAB (1976).');

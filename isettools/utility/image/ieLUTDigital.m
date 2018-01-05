@@ -36,7 +36,6 @@ function RGB = ieLUTDigital(DAC, gTable)
 %    RGB    - Calculated linear RGB values
 %
 % Notes:
-%    * [Note: JNM - Why are some singular elements inside parentheses? L65]
 %
 % See Also:
 %    ieLUTLinear, ieLUTInvert

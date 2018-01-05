@@ -19,7 +19,7 @@ function bool = ieVarInFile(fullname, varName)
 %    bool     - The boolean value indicating whether or not the variable is
 %               contained in the file.
 %
-% Notes:
+% Examples are included within the code.
 % 
 
 % Examples:

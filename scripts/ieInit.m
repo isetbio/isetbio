@@ -3,8 +3,10 @@
 % This script 
 %
 %   * Closes down current instance of ISETBIO
-%   * Clears the workspace and open figures
-%   * Starts a fresh version
+%   * Closes figures
+%   * Starts a fresh version of ISETBIO
+%
+%   * User variables are NOT cleared
 %
 % BW, ISETBIO Team, Copyright 2015
 

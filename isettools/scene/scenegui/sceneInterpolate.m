@@ -39,7 +39,7 @@ if checkfields(scene,'data','photons')
     scene = sceneClearData(scene);
     photons = imresize(photons,[newRow,newCol]);
     % photons = imageInterpolate(photons,newRow,newCol);
-    scene = sceneSet(scene,'cphotons',photons);
+    scene = sceneSet(scene,'photons',photons);
 end
 
 if checkfields(scene,'depthMap')

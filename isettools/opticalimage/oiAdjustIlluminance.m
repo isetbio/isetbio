@@ -30,7 +30,7 @@ end
 s = newLevel/currentLevel;
 
 photons = oiGet(oi,'photons');
-oi = oiSet(oi,'cphotons',photons*s);
+oi = oiSet(oi,'photons',photons*s);
 oi = oiSet(oi,'illuminance',illuminance*s);
 
 end

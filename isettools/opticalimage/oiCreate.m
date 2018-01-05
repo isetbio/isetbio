@@ -12,18 +12,29 @@ function oi = oiCreate(oiType,varargin)
 %      oi = oiCreate('default');
 %      oi = initDefaultSpectrum('hyperspectral');
 %
-% Types of OI structures
+% Inputs
+%  oiType - the type of oi structure.  Options are
 %  {'human','default'}  - Human shift-invariant optics based on Marimont
 %                   and Wandell (1994, JOSA)
 %  {'wvf human'}    - Human shift-invariant optics based on mean
 %                   wavefront abberration from Thibos et al. (2009,
-%                   Ophthalmic & Physiological Optics)
+%                   Ophthalmic & Physiological Optics).  Optional
+%                   parameters can be passed for this case (see below).
 %  {'diffraction'}  - Diffraction limited optics,f/4, no diffuser or data
 %
 % These two are used for testing and not typically called for experiments.
 %
 %  {'uniformd65'}   - Turns off offaxis to make uniform D65 image
 %  {'uniformee'}    - Turns off offaxis to make uniform equal energy image
+%
+% Optional parameters (in order)
+%
+%   'wvf human' -  pupilMM (default 3mm)
+%                  zCoefs  (default wvfLoadThibosVirtualEyes)
+%                  wave    (default 400:10:700)
+%             umPerDegree  (300 um)
+%
+%   e.g., oiCreate('wvf human',pupilMM, zCoefs, wave, umPerDegree);
 %
 % Lens transmittance
 %   The human models include a lens object within the optics structure.
@@ -35,18 +46,33 @@ function oi = oiCreate(oiType,varargin)
 %   in the transmittance structure are interpolated as needed during the
 %   calculation. 
 %
-% Example:
-%   oi = oiCreate('human');
-%   oi = oiCreate('uniform d65');  % Used for lux-sec vs. snr measurements.
-%   oi = oiCreate('uniform EE');   %
-%   oi = oiCreate('diffraction');
-%   oi = oiCreate('wvf human');
-%   pupilMM = 4; oi = oiCreate('wvf human',pupilMM)
+% Copyright ImagEval Consultants, LLC, 2003.
 %
 % See also:  sceneCreate, opticsCreate
-%
-% Copyright ImagEval Consultants, LLC, 2003.
 
+% Examples
+%{
+   % Marimont/Wandell model
+   oi = oiCreate('human');
+%}
+%{
+   oi = oiCreate('diffraction');
+   oiPlot(oi,'lsf wavelength');
+%}
+%{
+   % Mean Thibos et al. data.  Not too blurry.
+   oi = oiCreate('wvf human');
+   pupilMM = 2; oi = oiCreate('wvf human',pupilMM)
+   oiPlot(oi,'lsf wavelength'); title(sprintf('%d mm',pupilMM))
+%}
+%{
+   % Bigger pupil, much blurrier.  You can barely see outside of 520-580 nm.
+   oi = oiCreate('wvf human');
+   pupilMM = 5; oi = oiCreate('wvf human',pupilMM)
+   oiPlot(oi,'lsf wavelength'); title(sprintf('%d mm',pupilMM))
+%}
+
+%%
 if notDefined('oiType'),  oiType = 'human'; end
 
 % Default is to use the diffraction limited calculation
@@ -80,6 +106,7 @@ switch oiType
         oi = oiCreate('diffraction limited');
         oi = oiSet(oi, 'diffuser method','skip');
         oi = oiSet(oi, 'consistency',1);
+        
         oi = oiSet(oi, 'optics', opticsCreate('wvf human',varargin{:}));
         oi = oiSet(oi, 'name','human-WVF');
         oi = oiSet(oi, 'lens', Lens('wave', oiGet(oi, 'optics wave')));

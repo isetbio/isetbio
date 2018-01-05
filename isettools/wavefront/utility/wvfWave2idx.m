@@ -1,13 +1,14 @@
 function idx = wvfWave2idx(wvf, wList)
-% Convert the wavelength list (wList) to indices relative to the list
+% Convert wavelengths in wList to indices relative to wvf calc wavelengths
 %
 % Syntax:
 %   idx = wvfWave2idx(wvf, wList)
 %
 % Description:
-%    Convert the wavelength list (wList) to indices relative to the list
+%    Convert the passed wavelength list (wList) to indices relative to the 
+%    calculated wavelength list.  Matching is done to 1 nm precision.
 %
-%    For example, if wvfGet(wvf, 'wave') is [400 500 600], 
+%    For example, if wvfGet(wvf, 'calc wavelengths') is [400 500 600], 
 %    and wList is [500, 600] then idx is [2, 3].
 %
 % Inputs:
@@ -15,12 +16,10 @@ function idx = wvfWave2idx(wvf, wList)
 %    wList - The wavelength list
 %
 % Outputs:
-%    idx   - The indices of wvf that are in the wavelengths
+%    idx   - The indices of wvf that are in the calculated wavelengths
 %
-% Notes:
-%    * [Note: XXX - Currently only returns exact matches within rouding to
-%      1 nm. And throws an error if there are none.]
-%    * [Note: XXX - Is this really only for 'calc wavelengths'?  Should we
+% TODO:
+%    * Is this really only for 'calc wavelengths'?  Should we
 %      have a flag for 'measured wavelength' and 'sce wavelength'?]
 %
 
@@ -31,7 +30,7 @@ function idx = wvfWave2idx(wvf, wList)
 % Examples:
 %{
   wvf = wvfCreate;
-  wvf = wvfSet(wvf, 'wave', 400:10:700);
+  wvf = wvfSet(wvf, 'calc wave', 400:10:700);
   wList = 500:100:700;
   idx = wvfWave2idx(wvf, wList)
 %}
@@ -44,4 +43,5 @@ idx = find(ismember(round(wave), round(wList)));
 
 % Error if no match
 if isempty(idx), error('wvfWave2idx: No matching wavelength in list'); end
-return
+
+end

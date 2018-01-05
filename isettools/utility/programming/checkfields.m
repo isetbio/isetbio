@@ -6,9 +6,7 @@ function bool = checkfields(s, varargin)
 %
 % Description:
 %    We often check for a field that is nested within other fields within a
-%    structure. We have been doing this with a series of nested or grouped
-%    isfield statements. This got annoying, so I wrote this routine as a
-%    replacement. It extends the functionality of 'isfield'.
+%    structure. This routine extends the functionality of 'isfield'.
 %
 %    Suppose there is a structure, pixel.OP.pd.type; You can verify that
 %    the sequence of nested structures is present via the call
@@ -27,7 +25,9 @@ function bool = checkfields(s, varargin)
 %
 % Notes:
 %    * [Note: JNM - This requires the sequence to be in order, and from the
-%      beginning. See Example below for clarification.]
+%      beginning. See Example below for clarification.][BW:  We could
+%      write another routine to see if the string is somewhere in the
+%      list.  Not sure it is needed.]
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.

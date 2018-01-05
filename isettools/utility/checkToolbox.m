@@ -13,10 +13,11 @@ function [valid, toolboxes] = checkToolbox(toolboxName)
 %
 % Outputs:
 %    valid        - The boolean value indicating the installation status of
-%                  the desired toolbox.
-%    toolboxes    - Array listing all of the toolboxes
+%                   the desired toolbox.
+%    toolboxes    - Array listing all of the toolboxes, as returned by the
+%                   ver command.
 %
-% Notes:
+% Examples are included within the code.
 %
 
 % Examples:

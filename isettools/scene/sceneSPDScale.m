@@ -48,7 +48,7 @@ function [scene,fullName] = sceneSPDScale(scene,fullName,op,skipIlluminant)
 %   scene = sceneCreate('uniformD65',128);
 %   skipIlluminant = 1;
 %   scene = sceneSPDScale(scene,ref,'*',skipIlluminant);
-%   vcReplaceAndSelectObject(scene); sceneWindow;
+%   ieReplaceObject(scene); sceneWindow;
 %
 % The resulting scene will still have a D65 illuminant and the energy will
 % be that illuminant times the ref function.
@@ -73,13 +73,6 @@ nWave   = sceneGet(scene,'nwave');
 if ischar(fullName),    spd = ieReadSpectra(fullName,wave);
 else                    spd = fullName;
 end
-
-% OK, this is awkward.  Almost all of the data we have stored on disk are
-% in energy format.  Almost all of the calculations we perform are on
-% photons.  So, I normally do this conversion.  If I were a better person,
-% each of the data files would have a units field (e.g., quanta/sr/s/m2 and
-% so forth) and I wouldn't have to guess.  This will come in the next
-% release.
 
 % If the scene has a current illuminant, say it is a multispectral scene,
 % then we change the illuminant information also for multiply and divide.
@@ -126,7 +119,7 @@ end
 % Place the adjusted data in the scene structure
 [XW,r,c,~] = RGB2XWFormat(energy);
 photons = XW2RGBFormat(Energy2Quanta(wave,XW')',r,c);
-scene   = sceneSet(scene,'cphotons',photons);
+scene   = sceneSet(scene,'photons',photons);
 if ~skipIlluminant
     scene   = sceneSet(scene,'illuminant energy',illE);
 end

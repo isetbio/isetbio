@@ -1,48 +1,38 @@
 function val = oiGet(oi,parm,varargin)
-%OIGET - Get properties and derived quantities from an optical image structure
+% Get properties and derived quantities from an optical image structure
 %
-%     val = oiGet(oi,parm,varargin)
+% Syntax:
+%   val = oiGet(oi,parm,varargin)
 %
-%  Optical image parameters are stored in a structure. Some parameters are
-%  stored directly, others are calculated from  the data structure.  We
-%  store the unique values and calculate many derived values in this
-%  routine.
-%
-%  The optical image structures are stored in a cell array, vcSESSION.OPTICALIMAGE{}
-%
-%  To retrieve the currently selected optical image, use either
+% Description:
+%   Optical image parameters are stored in a structure. Some parameters are
+%   stored directly, others are calculated from  the data structure.  We
+%   store the unique values and calculate many derived values in this
+%   routine.
+% 
+%   The optical image structures are stored in a cell array, vcSESSION.OPTICALIMAGE{}
+% 
+%   To retrieve the currently selected optical image, use either
 %     oi = vcGetObject('OI');
 %     [val, oi] = vcGetSelectedObject('OI');
-%
-%  A '*' indicates that the syntax sceneGet(scene,param,unit) can be used, where
-%  unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
-%  'um', 'nm'.  Default is meters ('m').
-%
-%  The optics data structure is stored in the oi as oi.optics. It is
-%  possible to retrieve the optics parameters as
-%
+% 
+%   A '*' indicates that the syntax sceneGet(scene,param,unit) can be used, where
+%   unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
+%   'um', 'nm'.  Default is meters ('m').
+% 
+%   The optics data structure is stored in the oi as oi.optics. It is
+%   possible to retrieve the optics parameters as
+% 
 %      v = oiGet(oi,'optics fnumber');
-%  
-%  The lens data structure is stored as oi.optics.lens.  You can query the
-%  lens properties using
-%  
-%     v = oiGet(oi,'lens property');
-%
-%  To see the full range of optics parameters, use doc opticsGet.
-%
-% Examples:
-%    oiGet(oi,'rows')
-%    oiGet(oi,'wave')
-%    oiGet(oi,'optics')
-%    oiGet(oi,'area','mm')
-%    oiGet(oi,'wres','microns')
-%    oiGet(oi,'angularresolution')
-%    oiGet(oi,'distPerSamp','mm')
-%    oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
-%    oiGet(oi,'optics off axis method')
-%    oiGet(oi,'lens');   % Lens object
-%
-%  General properties
+% 
+%   The lens data structure is stored as oi.optics.lens.  You can query the
+%   lens properties using
+% 
+%      v = oiGet(oi,'lens property');
+% 
+%   To see the full range of optics parameters, use doc opticsGet.
+% 
+%   General properties
 %      {'name'}           - optical image name
 %      {'type'}           - 'opticalimage'
 %      {'filename'}       - if read from a file, could store here
@@ -60,8 +50,8 @@ function val = oiGet(oi,parm,varargin)
 %      {'heightandwidth'}*- (height,width)
 %      {'area'}*          - optical image area
 %      {'centerpixel'}    - (row,col) of point at center of image
-%
-% Irradiance
+% 
+%    Irradiance
 %      {'data'}                 - Data structure
 %        {'photons'}            - Irradiance data
 %        {'photons noise'}      - Irradiance data with photon noise for 50 msec
@@ -77,14 +67,14 @@ function val = oiGet(oi,parm,varargin)
 %        {'mean illuminance'}   - Mean illuminance
 %        {'illuminance'}        - Spatial array of optical image illuminance
 %        {'xyz'}                - (row,col,3) image of the irradiance XYZ values
-%
-% Wavelength information
+% 
+%    Wavelength information
 %      {'spectrum'}     - Wavelength information structure
 %        {'binwidth'}   - spacing between samples
 %        {'wave'}       - wavelength samples (nm)
 %        {'nwave'}      - number of wavelength samples
-%
-% Resolution
+% 
+%    Resolution
 %      {'hspatial resolution'}*   - height spatial resolution
 %      {'wspatial resolution'}*   - width spatial resolution    
 %      {'sample spacing'}*        - (width, height) spatial resolution
@@ -102,17 +92,17 @@ function val = oiGet(oi,parm,varargin)
 %            oiGet(oi,'maxFrequencyResolution','um')
 %      {'frequency support col','fsupportx'}*  - Frequency support for cols
 %      {'frequency support row','fsupporty'}*  - Frequency support for rows
-%
-% Depth
-%     {'depthMap'}   - Pixel wise depth map in meters
-%
-% Optics information
+% 
+%   Depth
+%      {'depthMap'}   - Pixel wise depth map in meters
+% 
+%   Optics information
 %      {'optics'}           - See opticsSet/Get
 %      {'optics model'}     - diffraction limited, shift invariant, ray
 %                             trace
 %      {'diffuser method'}   - 'skip','blur' (gaussian),'birefringent'
 %      {'diffuser blur'}     - S.D. of Gaussian blur
-%
+% 
 %      {'psfstruct'}        - Entire shift-variant PSF structure
 %       {'sampled rt psf'}     - Precomputed shift-variant psfs
 %       {'psf sample angles'}  - Vector of sample angle
@@ -120,11 +110,28 @@ function val = oiGet(oi,parm,varargin)
 %       {'psf image heights'}  - Vector of sampled image heights (use optics)
 %       {'raytrace optics name'}  - Optics used to derive shift-variant psf
 %       {'rt psf size'}        - row,col dimensions of the psf
-%
-% Misc
+% 
+%   Misc
 %      {'rgb image'}         - RGB rendering of OI data
-%
-% Copyright ImagEval Consultants, LLC, 2003-2015.
+% 
+
+% History
+%                Copyright ImagEval Consultants, LLC, 2003-2015.
+% 12/30/17  dhb  Started to put comments into isetbio standard format.
+
+% Examples:
+%{
+oiGet(oi,'rows')
+oiGet(oi,'wave')
+oiGet(oi,'optics')
+oiGet(oi,'area','mm')
+oiGet(oi,'wres','microns')
+oiGet(oi,'angularresolution')
+oiGet(oi,'distPerSamp','mm')
+oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
+oiGet(oi,'optics off axis method')
+oiGet(oi,'lens');   % Lens object
+%}
 
 if ~exist('parm','var') || isempty(parm)
     error('Param must be defined.');
@@ -142,13 +149,13 @@ switch oType
         optics = oi.optics;
         if isempty(parm), val = optics;
         elseif   isempty(varargin), val = opticsGet(optics,parm);
-        else     val = opticsGet(optics,parm,varargin{1});
+        else,     val = opticsGet(optics,parm,varargin{1});
         end
         return;
     case 'lens'
         lens = oi.optics.lens;
         if isempty(parm), val = lens;
-        else val = lens.get(parm,varargin{:});
+        else, val = lens.get(parm,varargin{:});
         end
         return;
     otherwise
@@ -241,7 +248,7 @@ switch parm
         else
             scene = vcGetSelectedObject('Scene');
             if isempty(scene), sDist = 1e10;
-            else sDist = sceneGet(scene,'distance');
+            else, sDist = sceneGet(scene,'distance');
             end
         end
         val = opticsGet(oiGet(oi,'optics'),'imagedistance',sDist);
@@ -278,7 +285,7 @@ switch parm
     case 'aspectratio'
         r = oiGet(oi,'rows'); c = oiGet(oi,'cols'); 
         if (isempty(c) || c == 0), disp('No OI'); return; 
-        else val = r/c; 
+        else, val = r/c; 
         end
 
         % Terms related to the optics
@@ -332,9 +339,9 @@ switch parm
       if ~isempty(varargin), val = val*ieUnitScaleFactor(varargin{1}); end
 
     case 'data'
-       if checkfields(oi,'data'), val = oi.data; end;
+       if checkfields(oi,'data'), val = oi.data; end
        
-   case {'photons', 'cphotons'}
+   case {'photons'}
        % Read photon data.  
        % Data are returned as doubles.
        if checkfields(oi,'data','photons')
@@ -409,14 +416,14 @@ switch parm
         
     case 'roienergy'
        if isempty(varargin), error('ROI required')
-       else roiLocs = varargin{1};
+       else, roiLocs = varargin{1};
        end
        val = vcGetROIData(oi,roiLocs,'energy');
     
         
     case 'roimeanenergy'
        if isempty(varargin), error('ROI required')
-       else roiLocs = varargin{1};
+       else, roiLocs = varargin{1};
        end
        val = oiGet(oi,'roienergy', roiLocs);
        val = mean(val,1);
@@ -451,7 +458,7 @@ switch parm
     case 'binwidth'     
         wave = oiGet(oi,'wave');
         if length(wave) > 1, val = wave(2) - wave(1);
-        else val = 1;
+        else, val = 1;
         end
     case {'datawave','photonswave','photonswavelength','wave', 'wavelength'}
         % oiGet(oi,'wave') 
@@ -461,7 +468,7 @@ switch parm
         % transition to that wonderful day, we return the optics spectrum
         % if there is no oi spectrum. Always a column vector, even if
         % people stick it in the wrong way.
-        if checkfields(oi,'spectrum', 'wave'), 
+        if checkfields(oi,'spectrum', 'wave') 
             val = oi.spectrum.wave(:); 
         end
         %         elseif checkfields(oi,'optics','spectrum', 'wave'),
@@ -529,7 +536,7 @@ switch parm
             % For optical images we return a default based on the scene.
             % This is used when no optical image has been calculated.
             scene = vcGetObject('scene');
-            if isempty(scene),
+            if isempty(scene)
                 disp('No scene or oi.  Using 128 rows');
                 r = 128; % Make something up
             else
@@ -588,7 +595,9 @@ switch parm
         % We should probably call:  
         %   opticsGet(optics,'dist per deg',unit) 
         % which is preferable to this call.
-        if isempty(varargin), units = 'm'; else units = varargin{1}; end
+        if isempty(varargin), units = 'm'; 
+        else, units = varargin{1}; 
+        end
         val = oiGet(oi,'distance per degree',units);   % meters
         val = 1 / val;
         % val = oiGet(oi,'fov')/oiGet(oi,'width');
@@ -655,7 +664,7 @@ switch parm
         % Default is cycles per degree
         % val = oiGet(oi,'frequencyResolution',units);
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         val = oiFrequencySupport(oi,units);
     case {'maxfrequencyresolution','maxfreqres'}
@@ -663,7 +672,7 @@ switch parm
         % oiGet(oi,'maxfreqres',units) you can get cycles/{meters,mm,microns}
         % 
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         % val = oiFrequencySupport(oi,units);
         if isempty(varargin), units = []; end
@@ -672,7 +681,7 @@ switch parm
     case {'frequencysupport','fsupportxy','fsupport2d','fsupport'}
         % val = oiGet(oi,'frequency support',units);
         if isempty(varargin), units = 'cyclesPerDegree';
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         [xSupport, ySupport] = meshgrid(fResolution.fx,fResolution.fy);
@@ -680,14 +689,14 @@ switch parm
     case {'frequencysupportcol','fsupportx'}
         % val = oiGet(oi,'frequency support col',units);
         if isempty(varargin), units = 'cyclesPerDegree'; 
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         l=find(abs(fResolution.fx) == 0); val = fResolution.fx(l:end);
     case {'frequencysupportrow','fsupporty'}
         % val = oiGet(oi,'frequency support row',units);
         if isempty(varargin), units = 'cyclesPerDegree'; 
-        else units = varargin{1};
+        else, units = varargin{1};
         end
         fResolution = oiGet(oi,'frequencyresolution',units);
         l=find(abs(fResolution.fy) == 0); val = fResolution.fy(l:end);
@@ -699,7 +708,7 @@ switch parm
     case {'customcompute','booleancustomcompute'}
         % 1 or 0
         if checkfields(oi,'customCompute'), val = oi.customCompute; 
-        else val = 0;
+        else, val = 0;
         end
         
         % Visual information
@@ -721,9 +730,9 @@ switch parm
         if isempty(varargin)
             oiW = ieSessionGet('oi window handle');
             if isempty(oiW), gam = 1;
-            else             gam = str2double(get(oiW.editGamma,'string'));
+            else,            gam = str2double(get(oiW.editGamma,'string'));
             end
-        else gam = varargin{1}; 
+        else, gam = varargin{1}; 
         end
         
         wList   = oiGet(oi,'wave');
@@ -750,8 +759,7 @@ switch parm
         % Get the photons that are within the specified depth map region
         error('Not yet implemented.  See oiCombineDepth for algorithm');
     otherwise
-        error(['Unknown parameter: ',parm]);
-        
+        error(['Unknown parameter: ',parm]);        
  end
 
 end

@@ -83,7 +83,7 @@ if isempty(irradiance), close(wBar); return; end  % Error condition
 
 % Copy the geometrically distorted irradiance data into the optical image
 % structure 
-oi = oiSet(oi,'cphotons',irradiance);
+oi = oiSet(oi,'photons',irradiance);
 
 % Pre-compute the OTF
 % We need to let the user set the angStep in the interface.  This is a good

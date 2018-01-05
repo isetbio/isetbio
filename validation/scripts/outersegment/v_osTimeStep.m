@@ -172,7 +172,7 @@ function [theConeMosaic, theOIsequence, ...
     theOIsequence = oiSequenceGenerate(theScene, theOI, oiTimeAxis, modulationFunction, 'CENTER');
     if (runtimeParams.generatePlots)
         %theOIsequence.visualize('format', 'montage');
-        theOIsequence.visualize();
+        theOIsequence.visualize('movie illuminance');
     end
     
     % Generate the cone mosaic with eye movements for theOIsequence

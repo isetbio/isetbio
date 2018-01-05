@@ -68,6 +68,7 @@ function fullName = ieSaveMultiSpectralImage(fullName, mcCOEF, basis, ...
     oFile = fullfile(isetRootPath, 'deleteMe.mat');
     ieSaveMultiSpectralImage(oFile, coef, basis, comment, imgMean, ...
         illuminant);
+    delete(oFile);
 %}
 
 if notDefined('mcCOEF'), error('Coefficients required');     end

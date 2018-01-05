@@ -1,69 +1,68 @@
 function imageType = ieImageType(fullName)
-% Determine the type of image in a file
+%Determine the type of image in a file
 %
-% Syntax:
 %   imageType = ieImageType(fullName)
 %
-% Description:
-%    Check the file extensions to see if this is an RGB type
-%    file (e.g. jpeg, jpg, tif, gif, bmp).
+% Description
+% - Check the file extensions for an RGB type (e.g. jpeg,jpg,tif,gif,bmp).
+% - If not, read the directory name. If it contains one of the image type
+%   strings (see below), return that string. 
+% - Finally, ask the user to identify the type of data. 
 %
-%    If not, read the directory name. If this contains one of the image
-%    type strings (see below), then return that string. Otherwise, we ask
-%    the user to identify the type of data. 
-%
-% Inputs:
-%    fullName  - the full file name
-%
-% Outputs:
-%    imageType - The image type. Options are monochrome and RGB.
-%
-% Notes:
-%    * [Note: JNM - TODO: When 2015B is cycled out, replace instances of
-%      strfind with contains.]
-%
-
-% History:
-%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
-%    11/23/17  jnm  Formatting
-%    11/29/17  jnm  Add note about future update/todo
-
-% Example:
+% Examples:
 %{
-    fname = fullfile(isetbioDataPath, 'images', 'MultiSpectral', ...
-        'Fruit-hdrs.mat');
-    ieImageType(fname)
+   fname = fullfile(isetRootPath,'data','images','Monochrome','Fruit-hdrs.mat');
+   ieImageType
+   fname = fullfile(isetRootPath,'data','images','Multispectral','Fruit-hdrs.mat');
+   ieImageType(fname)
+   fname = fullfile(isetRootPath,'data','images','Fruit-hdrs.png');
+   ieImageType(fname)
 %}
+%
+% Copyright ImagEval Consultants, LLC, 2003.
 
-[p, imageType, ext] = fileparts(fullName);
+[imagePath,~,ext] = fileparts(fullName);
+
+% Try to determine the type based on the extension
 switch(lower(ext))
-    case {'.jpg', '.jpeg', '.tif', '.tiff', '.bmp', '.gif'}
-        if strfind(fullName, 'data\images\Targets')
+    case {'.jpg','.jpeg','.tif','.tiff','.bmp','.gif','.png'}
+        
+        % Two special tests for monochrome targets
+        test1 = fullfile('data','images','targets');
+        if strfind(lower(fullName),test1) %#ok<*STRIFCND>
             % Could be an EIA target.
             imageType = 'monochrome';
-        elseif strfind(fullName, 'data\images\Monochrome')
+        elseif strfind(lower(fullName),'monochrome')
             imageType = 'monochrome';
-        else       
+        else
+            % Most likely it is rgb
             imageType = 'rgb';
         end
         return;
     otherwise
+        % Just pass through
 end
 
-while ~isempty(imageType)
-    imageType = lower(imageType);
-    
-    % If this is not a recognized type, ask the user.
-    if (strcmp(imageType, 'monochrome') || ...
-            strcmp(imageType, 'multispectral') || ...
-            strcmp(imageType, 'rgb') )
-        return;
-    end
-    [p, imageType] = fileparts(p);
+% Check the path string for a clue
+imageType = '';
+imagePath = lower(imagePath);
+if strfind(imagePath,'monochrome'), imageType = 'monochrome';
+elseif strfind(imagePath,'multispectral'), imageType = 'multispectral';
+elseif strfind(imagePath,'rgb'), imageType = 'rgb';
 end
+if ~isempty(imageType), return; end
 
 % If nothing in the path matches one of the known types, ask the user.
-imageType = ieReadString(['Enter file type {monochrome, rgb, or ' ...
-    'multispectral}'], 'rgb');
+% This could be ieSelectString The Matlab fonts are awful in the
+% listdlg box.  Maybe some day they will be nicer.
+imTypes = {'monochrome','rgb','multispectral'};
+[v, ok] = listdlg(...
+    'PromptString','Select file type',...
+    'SelectionMode','single', ...
+    'ListString',imTypes);
+
+if ok, imageType = imTypes{v};
+else,  disp('User canceled'); imageType = ''; return; 
+end
 
 end

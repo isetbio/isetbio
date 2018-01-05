@@ -31,12 +31,16 @@ function j = wvfZernikeMNToOSAIndex(n,m)
 
 % Examples:
 %{
-    % NMT naming
     osa_ind = wvfZernikeNMToOSAIndex(0,0)
+    osa_ind = wvfZernikeNMToOSAIndex(4,6)
 %}
 %{
-    % MNT naming
-    osa_ind = wvfZernikeMNToOSAIndex(4,6)
+    j = 1:100;
+    [n, m] = wvfOSAIndexToZernikeNM(j);
+    jCheck = wvfZernikeNMToOSAIndex(n, m);
+    if (any(jCheck ~= j))
+        error('Zernike index conversion routines do not invert properly');
+    end
 %}
 
 % Get j

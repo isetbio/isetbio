@@ -15,7 +15,7 @@ function mpd = dpi2mperdot(dpi, unit)
 % Outputs:
 %    mpd  - Meter-based units per dot. (Microns unless otherwise specified)
 %
-% Notes:
+% Examples are included within the code.
 %
 % See Also:
 %    mperdot2dpi

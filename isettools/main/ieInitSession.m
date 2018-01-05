@@ -46,7 +46,7 @@ iePref = getpref('ISET');
 if ~checkfields(iePref,'waitbar')
      setpref('ISET','waitbar',0);
      vcSESSION.GUI.waitbar = 0;
-else vcSESSION.GUI.waitbar = iePref.waitbar;
+else, vcSESSION.GUI.waitbar = iePref.waitbar;
 end
 
 % Check gpu computing

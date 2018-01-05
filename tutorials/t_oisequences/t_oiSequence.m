@@ -1,10 +1,20 @@
-% t_oiSequence
-%
+%% t_oiSequence
 % Demonstrate the oiSequence class.
 %
-% For some purposes the oisCreate() function presents a simpler approach to
-% creating a sequence. That function has several built-in cases, and more
-% may be added.
+% Description
+%  An oiSequence describes a dynamic retinal image, essentially a retinal
+%  image video.  The oiSequence is not a general video, but it applies to
+%  the case in which there is one basic stimulus that is either mixed with
+%  a background or whose contrast is scaled over time.  Eye movements are
+%  also included.  This simplification enables us to compute many
+%  psychophysical stimuli efficiently; but it is not completely general.
+%
+% See also: oisCreate
+%
+% Note:
+%   For some purposes the oisCreate() function presents a simpler approach
+%   to creating a sequence. That function has several built-in cases, and
+%   more may be added.
 %
 % NPC, ISETBIO TEAM, 2016
 
@@ -62,14 +72,14 @@ modulationRegion.radiusInMicrons = 250;
 % region using a monophasic modulation function
 theOIsequence(1) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction1, ...
     'composition', 'add', 'modulationRegion', modulationRegion);
-theOIsequence(1).visualize;
+theOIsequence(1).visualize('movie illuminance');
 
 %% Blending with a background
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
 theOIsequence(2) = oiSequence(oiBackground, oiModulated, oiTimeAxis, modulationFunction2, ...
     'composition', 'add', 'modulationRegion', modulationRegion);
-theOIsequence(2).visualize;
+theOIsequence(2).visualize('movie illuminance');
 
 %% Adding a grating
 
@@ -77,7 +87,7 @@ theOIsequence(2).visualize;
 % (a grating) is ADDED with the oiBackground using a monophasic modulation function
 theOIsequence(3) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
     'composition', 'add');
-theOIsequence(3).visualize;
+theOIsequence(3).visualize('movie illuminance');
 
 %% Blending a grating
 
@@ -85,19 +95,19 @@ theOIsequence(3).visualize;
 % (a grating) is BLENDED with the oiBackground using a monophasic modulation function
 theOIsequence(4) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction1,  ...
     'composition', 'blend');
-theOIsequence(4).visualize;
+theOIsequence(4).visualize('movie illuminance');
 
 %%
 % oiSequence object for computing a sequence of ois where the oiModulated
 % (a grating) is BLENDED with the oiBackground  over an 250 micron radius using a biphasic modulation function
 theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modulationFunction3, ...
     'composition', 'blend', 'modulationRegion', modulationRegion);
-theOIsequence(5).visualize;
+theOIsequence(5).visualize('movie illuminance');
 
 %%
 % Plot the oisequences
 for k = 1:numel(theOIsequence)
-    theOIsequence(k).visualize('format', 'montage');
+    theOIsequence(k).visualize('montage');
 end
 
 %%

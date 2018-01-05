@@ -2,7 +2,7 @@ function [hc, blur] = hcBlur(hc, sd)
 % Blur each plane in a hypercube with conv2
 %
 % Syntax:
-%   hc = hcBlur(hc, sd)
+%   [hc, blur] = hcBlur(hc, sd)
 %
 % Description:
 %    Blur each plane in a hypercube with conv2. The spatial blur is a
@@ -21,11 +21,21 @@ function [hc, blur] = hcBlur(hc, sd)
 % History:
 %    xx/xx/12       (c) Imageval 2012
 %    12/05/17  jnm  Formatting
+%    12/27/17   BW  Fixed blur bug and changed return
+
+% Example
+%{
+  mcc = sceneCreate;
+  hc = sceneGet(scene,'photons');
+  [hc, blurFunction] = hcBlur(hc,5);
+  imageSPD(hc,sceneGet(mcc,'wave'));
+  vcNewGraphWin; mesh(blurFunction); colormap(jet)
+%}
 
 if notDefined('hc'), error('Hypercube data required.'); end
 if notDefined('sd'), sd = 3; end
 
-blur = fspecial('gaussian', [sd sd]);
+blur = fspecial('gaussian', 3*sd, sd);
 nWave = size(hc, 3);
 h = waitbar(0, 'Blurring');
 for ii=1:nWave

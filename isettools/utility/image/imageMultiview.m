@@ -20,12 +20,6 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 %    selectedObjs - The selected objects
 %
 % Notes:
-%    * [Note: JNM - Examples do not work. Index exceeds matrix dimensions
-%      pretty much always....?]
-%    * [Note: JNM - I must be missing a toolbox containing imageGet, since
-%      it's in so many different places, yet I don't have it? Searching on
-%      the Mathworks website and Google is returning a few too many
-%      options... Is there a specific toolbox?]
 %
 % See Also:
 %    imageMontage
@@ -34,19 +28,15 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 % History:
 %    xx/xx/13       Copyright Imageval Consultants, LLC, 2013
 %    12/07/17  jnm  Formatting
-
+%    12/26/17   BW  Removed vcimage/imageGet.  Fixed examples.
+%
 % Examples:
 %{
+    scene = sceneCreate; ieAddObject(scene); 
+    scene = sceneCreate('macbeth tungsten'); ieAddObject(scene); 
     objType = 'scene';
-    imageMultiview(objType);
-
-    selectedObjs = [1 6];
-    imageMultiview(objType, selectedObjs);
-%}
-%{
-    objType = 'vcimage';
-    selectedObjs = [2 3 5];
-    imageMultiview(objType, selectedObjs, true);
+    imageMultiview(objType,[1 2],true);
+    imageMultiview(objType,[1 2]);
 %}
 
 if notDefined('objType'), error('Object type required.'); end
@@ -103,10 +93,6 @@ for ii=selectedObjs
         case 'OPTICALIMAGE'
             oiShowImage(objList{ii}, true, gam);
             t =sprintf('OI %d - %s', ii, oiGet(objList{ii}, 'name'));
-
-        case 'VCIMAGE'
-            imageShowImage(objList{ii}, gam, true, f);
-            t = sprintf('VCI %d - %s', ii, imageGet(objList{ii}, 'name'));
 
         otherwise
             error('Unsupported object type %s\n', objType);

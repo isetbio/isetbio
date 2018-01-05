@@ -49,7 +49,7 @@ oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 
 % Show the OI window
-vcReplaceAndSelectObject(oi);
+ieReplaceObject(oi);
 oiWindow;
 
 %% End

@@ -1,4 +1,5 @@
 function ucData = ieUncompressData(cData, mn, mx, bitDepth)
+% Deprecated.
 % Invert the data compression, ieCompressData
 %
 % Syntax:
@@ -23,10 +24,7 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 %    bitDepth - Bit depth to determine Max Compression
 %
 % Outputs:
-%    ucData   - uncompressed data
-%
-% Notes:
-%    * [Note: JNM - I removed the empty "if s > mxCompress" loop]
+%    ucData   - data
 %
 % See Also:
 %    ieCompressData
@@ -35,11 +33,6 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
-
-% Examples:
-%{
-    ieUncompressData(0:10, 0, 2, 2)
-%}
 
 % if notDefined('bitDepth'), error('bitDepth required'); end
 mxCompress = (2 ^ bitDepth) - 1;

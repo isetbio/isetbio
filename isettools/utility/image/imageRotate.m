@@ -31,22 +31,19 @@ function imT = imageRotate(im, rotType)
 % History:
 %    xx/xx/09       Copyright ImagEval Consultants, LLC, 2009
 %    12/07/17  jnm  Formatting
+%    12/26/17   BW  Adjusted example
 
 % Examples:
 %{
-    im = macbethChartCreate;
-    imT1 = imageRotate(im.data, 'cw');
-    imT2 = imageRotate(im.data, 'ccw');
-    imT3 = imageRotate(im.data, 30);
-
-    subplot(2,2,1)
-    imagesc(im.data(:,:,25))
-    subplot(2,2,2)
-    imagesc(imT1(:,:,25))
-    subplot(2,2,3)
-    imagesc(imT2(:,:,25))
-    subplot(2,2,4)
-    imagesc(imT3(:,:,25))
+    rgb = sceneGet(sceneCreate,'rgb'); 
+    imT1 = imageRotate(rgb, 'cw');
+    imT2 = imageRotate(rgb, 'ccw');
+    imT3 = imageRotate(rgb, 30);
+    vcNewGraphWin;
+    subplot(2,2,1), imagesc(rgb),  axis image
+    subplot(2,2,2), imagesc(imT1), axis image
+    subplot(2,2,3), imagesc(imT2), axis image
+    subplot(2,2,4), imagesc(imT3), axis image
 %}
 
 if ndims(im)~=3, error('Input must be rgb image (row x col x w)'); end
