@@ -6,7 +6,7 @@ function figNum = plotSetUpWindow(figNum)
 %
 % Description:
 %    This routine could, ultimately, take into account the user's display
-%    says or other window positions.
+%    size or other window positions.
 %
 % Inputs:
 %    figNum - (Optional) The figure number. Default the most recent figure.
