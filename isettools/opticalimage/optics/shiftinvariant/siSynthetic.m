@@ -1,6 +1,6 @@
 function optics = siSynthetic(psfType,oi,varargin)
 % Create synthetic shift-invariant optics and insert into optics structure
-%%
+%
 % Syntax:
 %   optics = siSynthetic(psfType,oi,varargin)
 %
@@ -38,6 +38,15 @@ function optics = siSynthetic(psfType,oi,varargin)
 %
 % See also:  s_SIExamples, ieSaveSIOpticsFile, t_codeFFTinMatlab
 %
+% Examples are included within the code.
+%
+
+% History:
+%                 Copyright ImagEval Consultants, LLC, 2005.
+% 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
+%           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
+%           BW    We might just eliminate a lot of this set of SI methods.  
+%           dhb   Created working example for 'custom'
 
 % Examples:
 %{
@@ -85,13 +94,6 @@ function optics = siSynthetic(psfType,oi,varargin)
     % Since PSF was delta, should get all 1's in OTF
     oiPlot(oi,'otf 550');  
 %}
-
-% History:
-%                 Copyright ImagEval Consultants, LLC, 2005.
-% 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
-%           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
-%           BW    We might just eliminate a lot of this set of SI methods.  
-%           dhb   Created working example for 'custom'
 
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
