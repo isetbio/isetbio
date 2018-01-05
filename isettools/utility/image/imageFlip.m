@@ -18,6 +18,11 @@ function imT = imageFlip(im, flipType)
 % Outputs:
 %    imT      - The flipped image data.
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are included within the code.
+%  
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
@@ -25,8 +30,9 @@ function imT = imageFlip(im, flipType)
 
 % Examples:
 %{
+    % Create an image, any image
     list = 1:4;
-    wave = 400:10:700;    % nanometers
+    wave = 400:10:700;   
     macbethReflectance = macbethReadReflectance(wave);
     XYZ = ieReadSpectra('XYZ',wave);
     lgt = ieReadSpectra('D65',wave);
@@ -34,25 +40,20 @@ function imT = imageFlip(im, flipType)
     [U S V] = svd(macbethReflectance);
     W = S * V';
     mccXYZ = XYZ' * diag(lgt) * U(:,list) * W(list,:);
-
     imRGB = xyz2srgb(XW2RGBFormat(mccXYZ',4,6));
-    imRGB = imageFlip(imRGB,'updown');
 
+    % Flip
     imT1 = imageFlip(imRGB, 'upDown');
     imT2 = imageFlip(imRGB, 'leftRight');
 
-    % subplot(2,3,1)
-    % plot(imT1(:,:,1))
-    % subplot(2,3,2)
-    % plot(imT1(:,:,2))
-    % subplot(2,3,3)
-    % plot(imT1(:,:,3))
-    % subplot(2,3,4)
-    % plot(imT2(:,:,1))
-    % subplot(2,3,5)
-    % plot(imT2(:,:,2))
-    % subplot(2,3,6)
-    % plot(imT2(:,:,3))
+    % Show what happened
+    figure; clf;
+    subplot(1,3,1); title('Original');
+    imshow(imRGB); 
+    subplot(1,3,2); title('Flip up-down');
+   	imshow(imT1);
+    subplot(1,3,3); title('Flip left-right');
+    imshow(imT2);
 %}
 
 if ndims(im)~=3, error('Input must be rgb image (row x col x w)'); end
