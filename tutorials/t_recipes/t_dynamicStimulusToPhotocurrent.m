@@ -190,7 +190,7 @@ for iContrast = 1:numel(testContrasts)
          'timeAxisMillisecs', cm.timeAxis*1000, ...
          'posMicrons', squeeze(theEMpaths(trialVisualized, :,:))*cm.pigment.width*1e6 ...
      );
- 	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
+ 	stimulusOIsequence.visualize('montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
 end  % iContrast 
 
 %% Visualize the computed responses
