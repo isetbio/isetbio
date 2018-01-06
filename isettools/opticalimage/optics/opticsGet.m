@@ -129,6 +129,16 @@ function val = opticsGet(optics,parm,varargin)
 %         {'wave'}          - Wavelength samples
 %         {'scale'}         - Spectral radiance scale factor
 %      {'lens'}             - The lens object
+%
+% Notes:
+%   * [Note - DHB:  See notes in code below about usage for
+%   'diffractionlimitedpsfdata' and corresponding frequency support calls.
+%   These are only used in oiPlot to plot a diffraction limited function,
+%   and should be used with caution.  We may want to re-write to be more
+%   consistent in our usage across different ways of getting the dl
+%   information, but this would be fairly involved and may not be worth it.]
+%   * [Note - DHB: Not all options appear to be documented in the above
+%   header comments.]
 
 % History:
 %                    Copyright ImagEval Consultants, LLC, 2005.
@@ -379,7 +389,6 @@ switch parm
             error('No lens or transmittance');
         end
         
-
     case {'lens'}
         % New lens object.
         val = optics.lens;
@@ -396,8 +405,8 @@ switch parm
         % support out to the incoherent cutoff frequency).  This can be
         % used for plotting, for example
         %
-        % DHB NOTE: The returned array has dimension = 2*nSamp.  This is
-        % confusing, to me at least.
+        % * [Note - DHB: The returned array has dimension = 2*nSamp.  This is
+        % confusing, to me at least.]
 
         if length(varargin) < 1, error('Must specify wavelength'); else thisWave = varargin{1}; end
         if length(varargin) < 2, units = 'mm'; else units = varargin{2}; end
@@ -518,19 +527,23 @@ switch parm
         % number of spatial samples, and some amount of oversampling on the
         % frequency calculation to make the curve smooth.
         %
+        % * [Note - DHB: The frequency support for this is what you get by calling
+        % fopticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp) and
+        % then multiplying by frequencyOverSample.
         if isempty(varargin), error('You must specify wavelength'); 
         else   thisWave = varargin{1};
         end
         if length(varargin) < 2, units = 'um'; else units = varargin{2}; end
         if length(varargin) < 3, nSamp = 100; else nSamp = varargin{3}; end
-        if length(varargin) < 4, oSample = 1; else oSample = varargin{4}; end
+        if length(varargin) < 4, freqOverSampleSample = 1; else freqOverSample = varargin{4}; end
         
-        fSupport = opticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp);
-        fSupport = fSupport*oSample;        
-
         %  Oversample the frequency to get a smoother PSF image.
         %  You can specify the factor for oversampling in the
         %  calling arguments.
+        fSupport = opticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp);
+        fSupport = fSupport*freqOverSampleSample;        
+
+        % Get the OTF on the frequency support.
         otf = dlMTF(optics,fSupport,thisWave,units);
         
         % Derive the psf from the OTF
