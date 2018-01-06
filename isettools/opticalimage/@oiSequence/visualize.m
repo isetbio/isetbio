@@ -26,9 +26,13 @@ function [uData, vObj] = visualize(obj,plotType,varargin)
 %   uData - Displayed data
 %   vObj  - Video object for movie case
 %
-% NP/BW ISETBIO Team, 2016
-%
 % See also:  t_oisCreate
+
+% History:
+%                  NP/BW ISETBIO Team, 2016
+%  01/06/18  dhb   Don't print text into command window.
+%                  If we want text sometimes, add key/value 'verbose' pair
+%                  and set default to false.
 
 %% Interpret parameter values
 p = inputParser;
@@ -116,12 +120,12 @@ switch ieParamFormat(plotType)
 
         % Write the video object if save is true
         if save
-            disp('Saving video ...')
+            %disp('Saving video ...')
             [~, vObj] = ieMovie(uData.movie,...
                 'vname',vname,...
                 'FrameRate',FrameRate,...
                 'show',false);
-            disp('Done')
+            %disp('Done')
         end
 
     case 'moviergb'
@@ -173,12 +177,12 @@ switch ieParamFormat(plotType)
 
         % Write the video object if save is true
         if save
-            disp('Saving video')
+            %disp('Saving video')
             [~, vObj] = ieMovie(uData.movie,...
                 'vname',vname,...
                 'FrameRate',FrameRate,...
                 'show',false);
-            disp('Done')
+            %disp('Done')
         end
 
     case 'montage'
