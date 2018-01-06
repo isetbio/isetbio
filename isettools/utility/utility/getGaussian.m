@@ -1,27 +1,38 @@
 function gaussianDistribution =  getGaussian(rfSupport, rfCov)
-% Creates a 2D gaussian distribution
+% Create a 2D Gaussian distribution pdf
 %
 % Syntax:
 %	gaussianDistribution =  getGaussian(rfSupport, rfCov)
 %
 % Description:
+%    Create a 2D Gaussian distribution pdf.
+%    
 %    This routine generalizes the fspecial call because the bivariate
 %    Gaussian can have a general coariance matrix.
 %
+%    You could also use mvnpdf, if you are willing to assume the presence
+%    of the statistics toolbox.
+%
 % Inputs:
-%    rfSupport            - The support structure, containing x and y.
+%    rfSupport            - The support structure, containing fields X and
+%                           Y as produced by meshgrid.
 %    rfCov                - A 2 x 2  covariance matrix
 %
 % Outputs:
-%    gaussianDistribution - The 2D Gaussian distribution
+%    gaussianDistribution - The 2D Gaussian distribution on the grid.
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
+%
+% Examples are included within the code.
+%
+% See also: mvnpdf
 
 % History:
 %    xx/xx/09       (c) Stanford Synapse Team 2009
 %    12/15/17  jnm  Formatting
 %    12/26/17   BW  Added examples
-%
+
 % Examples:
 %{
     % No angle, just scale along axes

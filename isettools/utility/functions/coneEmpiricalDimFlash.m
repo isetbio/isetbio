@@ -1,20 +1,22 @@
 function response = coneEmpiricalDimFlash(coef, t)
-% Damped oscillator with S-shaped onset describing dim flash responses
+% Return estimate of the Schnapf et al. dim flash cone photocurrent response.
 %
 % Syntax:
-%   response = coneEmpiricalDimFlash(coeffs, time)
+%   response = coneEmpiricalDimFlash(coeffs, t)
 %
 % Description:
-%    Following Schnapf, Baylor, 1990: Damped oscillator with S-shaped onset
+%    Using the coefficients and time provided by the user, calculate an
+%    emprically-derived description of the dim flash cone photocurrent
+%    response, following the formula in the Schnapf et al., 1990.
 %
-%    Using the coefficients and time provided by the user, calculate the
-%    empirical linear flash response (for dim flashes), following the
-%    formula in the referenced paper.
+%    The fit uses a damped oscillator with S-shaped onset.
 %
 %    The calculation is as follows:
 %       fit = scFact * (((t / TR) ^ 3) / (1 + ((t / TR) ^ 3))) ...
 %             * exp(-((t / TD))) ...
 %             * cos(((2 * pi * t) / TP) + (2 * pi * Phi / 360));
+%
+%    See the papter, Table 2 (p. 693) for some coefficient values.
 %
 % Inputs:
 %    coef     - The coefficients for the calculations. They will follow the
@@ -27,11 +29,12 @@ function response = coneEmpiricalDimFlash(coef, t)
 %    t        - Time (in milliseconds)
 %
 % Outputs:
-%    response - The calculated linear flash response fit
+%    response - The calculated flash response
 %
 % References:
-%    * VISUAL TRANSDUCTION IN CONES OF THE MONKEY MACACA FASCICULARIS P.693
-%      https://goo.gl/EfqVwK (shortened link)
+%    * Schnapf et al., 1990, Visual transduction in cones of the monkey
+%      Macaca Fascicularis, p. 693.  Paper available at
+%      https://goo.gl/EfqVwK
 
 % History:
 %    04/xx/11  Angueyra  Created 

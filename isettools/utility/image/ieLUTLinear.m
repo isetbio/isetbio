@@ -5,8 +5,13 @@ function DAC = ieLUTLinear(RGB, invGammaTable)
 %   DAC = ieLUTLinear(RGB, invGammaTable)
 %
 % Description:
-%    The RGB values are assumed to be in the range of [0, 1]. They are
-%    assumed to be linear with respect to radiance (intensity).
+%    Convert linear RGB values through a gamma table to DAC values.  This
+%    operation is often called gamma correction, and is used to produce the
+%    values we pass to display hardware so as to produce desired linear RGB
+%    values.
+%
+%    The input RGB values are assumed to be in the range of [0, 1].
+%    They are assumed to be linear with respect to radiance (intensity).
 %
 %    The input RGB should be an M x N x nPrimaries 3D matrix. However, if
 %    the input is NxnPrimaries or it is an nPrimaries vector, we handle
@@ -37,6 +42,11 @@ function DAC = ieLUTLinear(RGB, invGammaTable)
 %
 % Outputs:
 %    DAC           - Converted DAC Values. Follows input RGB's sizing.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Examples are included within the code.
 %  
 % See Also:
 %   ieLUTDigital, ieLUTInvert

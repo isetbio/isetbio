@@ -1,8 +1,6 @@
 function optics = siSynthetic(psfType,oi,varargin)
 % Create synthetic shift-invariant optics and insert into optics structure
 %
-% This function and its cousins may not be around for long in ISETBIO.
-%
 % Syntax:
 %   optics = siSynthetic(psfType,oi,varargin)
 %
@@ -15,51 +13,88 @@ function optics = siSynthetic(psfType,oi,varargin)
 %
 %   Must keep spatial sampling parameters pretty consistent across usages.
 %
-% psfType:  'gaussian' --  bivariate normals.  
-%           'custom'   --  read a file with variables explained below
-% oi:        Optical image - Must be shift invariant type
+%  This function and its cousins may not be around for long in ISETBIO.
 %
-% varargin for gaussian:                        
-%   waveSpread: size of the PSF spread at each of the wavelength
-%             for gaussian this is in microns (um)
-%   xyRatio:   Ratio of spread in x and y directions
-%   filename:  Output file name for the optics
+% Inputs:
+%   psfType:  'gaussian' --  bivariate normals.  
+%             'custom'   --  read a file with variables explained below
+%   oi:        Optical image - Must be shift invariant type
 %
-% varargin for custom
-%   inData  - filename or struct with psf, umPerSamp, and wave data
-%   outFile - Optional
+%   varargin for gaussian:                        
+%     waveSpread: size of the PSF spread at each of the wavelength
+%                 for gaussian this is in microns (um)
+%     xyRatio:    Ratio of spread in x and y directions
+%     filename:   Output file name for the optics
 %
-% See also:  s_SIExamples, ieSaveSIOpticsFile
-%  s_FFTinMatlab for an explanation of some of the operations in here.
+%    varargin for custom
+%      inData  - filename or struct with psf, umPerSamp, and wave data
+%      outFile - Optional
 %
-
-% Examples:
-%{
-  oi = oiCreate('shift invariant');
-  oi = initDefaultSpectrum(oi,'spectral');
-  wave = oiGet(oi,'wave');
-  psfType = 'gaussian'; 
-  waveSpread = wave/wave(1);
-
- % Circularly symmetric Gaussian
-  xyRatio = ones(1,length(wave));
-  optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
-  oi = oiSet(oi,'optics',optics);
-  oiPlot(oi,'otf 550');
-%}
-%{
-% Make one with an asymmetric Gaussian
-  xyRatio = 2*ones(1,length(wave));
-  optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
-  oi = oiSet(oi,'optics',optics);
-  oiPlot(oi,'otf 550');
-%}
+% Outputs:
+%   optics:  The created optics structure.
+%
+% Optional key/value pairs:
+%   None.
+%
+% See also:  s_SIExamples, ieSaveSIOpticsFile, t_codeFFTinMatlab
+%
+% Examples are included within the code.
+%
 
 % History:
 %                 Copyright ImagEval Consultants, LLC, 2005.
 % 12/08/17  dhb   Take number of otf samples from oi, not hard code at 128.
 %           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
 %           BW    We might just eliminate a lot of this set of SI methods.  
+%           dhb   Created working example for 'custom'
+
+% Examples:
+%{
+    oi = oiCreate('shift invariant');
+    oi = initDefaultSpectrum(oi,'spectral');
+    wave = oiGet(oi,'wave');
+    psfType = 'gaussian'; 
+    waveSpread = wave/wave(1);
+
+    % Circularly symmetric Gaussian
+    xyRatio = ones(1,length(wave));
+    optics = siSynthetic(psfType,oi,waveSpread,xyRatio);
+    oi = oiSet(oi,'optics',optics);
+    oiPlot(oi,'otf 550');
+%}
+%{
+    % Make one with an asymmetric Gaussian
+    xyRatio = 2*ones(1,length(wave));
+    optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);
+    oi = oiSet(oi,'optics',optics);
+    oiPlot(oi,'otf 550');
+%}
+%{
+    % Create oi and get info about OTF/PSF dimensions and support
+    oi = oiCreate;
+    optics = oiGet(oi,'optics');
+    dx(1:2) = opticsGet(optics,'psf spacing','um');
+    fx = opticsGet(optics,'otf fx');
+    nSamples = length(fx);
+
+    % Create an SI data file and then use it. We create a delta function
+    % PSF.  Need to match what is in oi for siSynthetic to work.
+    psf = zeros(nSamples, nSamples, 31);
+    psf(floor(nSamples/2)+1,floor(nSamples/2)+1,:) = 1;
+    wave = 400:10:700;
+    umPerSamp = dx;
+    fname = tempname;
+    ieSaveSIDataFile(psf, wave, umPerSamp, fname);
+
+    % Use siSynthetic to get optics and put those into the oi.
+    optics = siSynthetic('custom', oi, fname);
+    oi = oiSet(oi,'optics',optics);
+    delete([fname '.mat']);
+
+    % Since PSF was delta, should get all 1's in OTF
+    oiPlot(oi,'otf 550');  
+%}
+
 %% Parameter initializiation
 if notDefined('psfType'), psfType = 'gaussian'; end
 if notDefined('oi'), oi = vcGetObject('oi'); end

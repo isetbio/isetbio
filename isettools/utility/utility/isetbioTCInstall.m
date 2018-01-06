@@ -26,9 +26,6 @@ function tabComplete = isetbioTCInstall()
 %      update those functions some time later, we need to update this file
 %      as well.]
 %
-%  See also:
-%    isetbioACUninstall
-%
 
 % History:
 %    xx/xx/14  HJ   ISETBIO TEAM, 2014

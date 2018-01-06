@@ -149,6 +149,9 @@ function val = wvfGet(wvf, parm, varargin)
 %                   things up if the max psf is not at the center, as can
 %                   occur with aberrations and defocus.
 %              dhb  umPerDegree is now obtained from the wvf structure.
+%              dhb  Return otf with DC in upper left, not centered, to
+%                   match isetbio conventions.  Changed calls to this to 
+%                   keep everything working.
 %
 
 % Examples:
@@ -185,7 +188,7 @@ function val = wvfGet(wvf, parm, varargin)
 %{
 	wvf = wvfCreate;
     wvf = wvfComputePSF(wvf);
-	otf = wvfGet(wvf, 'otf');
+	otf = fftshift(wvfGet(wvf, 'otf'));
     f = wvfGet(wvf, 'otf support', 'mm');
 	vcNewGraphWin;
     mesh(f, f, otf);
@@ -718,31 +721,21 @@ switch parm
         
     case {'otf'}
         % Return the otf from the psf
-        %
         % wvfGet(wvf, 'otf', wave)
-        % 
-        % What should the units be? c / (nPSFSamples * units), I think we
-        % should deal with this explicitly here.
         
         wave = wvfGet(wvf, 'calc wave');
         if ~isempty(varargin), wave = varargin{1}; end
+        if (length(wave) > 1)
+            error('Getting otf only works if ask for a single wavelength');
+        end
         psf = wvfGet(wvf, 'psf', wave);
         
-        % Compute otf
+        % Compute OTF
         %
         % Use PTB PsfToOft to convert to (0,0) sf at center otf
         % representation.  Note that this differs from the isetbio
         % optics structure convention, where (0,0) sf is at the upper
-        % right.
-        %
-        % It might make sense to switch to the isetbio optics convention, but then
-        % the OTF support below would not be right, since it assumes the
-        % center reprentation (as does unitFrequencyList, which is itself
-        % an isetbio utility.  To convert to the (0,0) sf at upper left
-        % (isetbio optics) convention, apply ifftshift to the value
-        % computed below.
-        %
-        % Backwards compatible section is how we used to do this.
+        % left, so we then apply ifftshift to put it there.
         wvfGetBackCompat = false;
         if (ispref('isetbioBackCompat','wvfGet'))
             if (getpref('isetbioBackCompat','wvfGet'))
@@ -750,9 +743,12 @@ switch parm
             end
         end
         if (wvfGetBackCompat)
-            val = fftshift(psf2otf(psf));
+            % With the 01/05/18 addition of the fftshift, this is no longer
+            % backwards compatible.  But soon this will go away.
+            val = ifftshift(fftshift(psf2otf(psf)));
         else
             [~,~,val] = PsfToOtf([],[],psf);
+            val = ifftshift(val);
         end
         
         % We don't require that the input psf be symmetric, so there could be
@@ -790,7 +786,7 @@ switch parm
         if length(varargin) > 1, wave = varargin{1}; end
         
         % Get OTF
-        otf  = wvfGet(wvf, 'otf', wave);
+        otf  = fftshift(wvfGet(wvf, 'otf', wave));
         mRow = wvfGet(wvf, 'middle row');
         val  = fftshift(abs(fft(otf(mRow, :))));
         
