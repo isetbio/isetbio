@@ -162,5 +162,3 @@ impulse = oisCreate('impulse','add', stimWeights,...
     'sceneParameters',sparams);
 
 impulse.visualize('movie illuminance');
-
-%%

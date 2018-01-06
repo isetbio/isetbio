@@ -1,14 +1,23 @@
-%% ieInit
+% Initialize isetbio session.
 %
-% This script 
+% Descritpion:
+%   This script initializes an isetbio session.  It
 %
-%   * Closes down current instance of ISETBIO
-%   * Closes figures
-%   * Starts a fresh version of ISETBIO
+%     * Closes down current instance of ISETBIO
+%     * Closes figures
+%     * Starts a fresh version of ISETBIO
+%     * Suppresses warning 'MATLAB:Figure:RecursionOnClose'
 %
-%   * User variables are NOT cleared
+%     * User variables are NOT cleared
 %
-% BW, ISETBIO Team, Copyright 2015
+%     The warning stays suppressed until you exit Matlab.
+%     If you want it back, type 
+%       warning('on','MATLAB:Figure:RecursionOnClose');
+%     at the Matlab prompt.
+
+% History:
+%                  BW, ISETBIO Team, Copyright 2015
+% 01/06/18  dhb    Suppress warning 'MATLAB:Figure:RecursionOnClose'.
 
 %% Check if there is a running instance, closes it, and clears workspace
 ieMainClose;   % Closes open ISETBIO windows
@@ -38,7 +47,8 @@ ieSessionSet('version',thisVersion);
 %     Window.
 %
 
-ieInitSession;           % Initializes the vcSESSION database variables
+ % Initializes the vcSESSION database variables
+ieInitSession; 
 ieSessionSet('dir',pwd);
 sessionFileName = 'isetSession.mat';
 ieSessionSet('name',sessionFileName);
@@ -47,4 +57,6 @@ ieSessionSet('name',sessionFileName);
 clear sessionFileName
 clear thisVersion
 
-%% END
+%% Suppress a warning that we don't like
+warning('off','MATLAB:Figure:RecursionOnClose');
+
