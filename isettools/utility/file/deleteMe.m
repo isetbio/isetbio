@@ -1,26 +1,27 @@
 function [newVal,fullName] = vcLoadObject(objType,fullName,val)
-% Load an ISET object into the vcSESSION structure
+% To be deprecated: Loads an ISET object from a file into the vcSESSION structure
 %
 %     [newVal,fullName] = vcLoadObject(objType,[fullName], [val])
 %
-% Users should use vcImportObject instead.  That routine calls this one
-% when appropriate, but handles more types of objects.
+% Use vcImportObject instead.  That routine calls this one when
+% appropriate, but handles more types of objects and a more general
+% case.
 %
-% If you must use this routine:
+% Description
 %
-% ISET objects can be saved as Matlab (.mat) files and then loaded. This
-% routine imports the data from an ISET object.
+%   ISETBIO objects can be saved as Matlab (.mat) files and then
+%   loaded. This routine imports the data from an ISET object.
 %
-% The data are loaded and stored in the vcSESSION data structure. You can
-% assign it a particular slot in the cell array of objects using VAL, or if
-% no VAL is passed to this routine the object will be given a new value.
-% The file name used to import the data is also assigned to the object
-% name.  
+%    The data are loaded and stored in the vcSESSION data structure. You can
+%    assign it a particular slot in the cell array of objects using VAL, or if
+%    no VAL is passed to this routine the object will be given a new value.
+%    The file name used to import the data is also assigned to the object
+%    name.  
 %
-% The object types that can be loaded are SCENE, OPTICALIMAGE, ISA, or
-% VCIMAGE
+%    The object types that can be loaded are SCENE, OPTICALIMAGE, ISA, or
+%    VCIMAGE
 %
-
+%
 % Copyright ImagEval Consultants, LLC, 2005.
 
 % Examples:
@@ -28,6 +29,9 @@ function [newVal,fullName] = vcLoadObject(objType,fullName,val)
     % * [Note: DHB - This does not seem to actually work
     %    in that selecting any of the available files in the dialog
     %    produces a warning that "Variable 'scene' not found."
+    scene = sceneCreate;
+    ieAddObject(scene);
+    vc
     newVal = vcLoadObject('SCENE');
 %}
 
