@@ -52,6 +52,10 @@ function t_dynamicStimulusToPhotocurrent
 %        the background.  In the legend for the bottom panels, the numbers
 %        in parentheses are the number of cones averaged to produce the
 %        corresponding trace.
+%
+%    You may need to increase the size of your Matlab Java heap to run
+%    this.  You do that in Preferences:Matlab:Java Heap Memory, at least in
+%    2017a under OS/X.  Set to something bigger than the default.
       
 % NPC, ISETBIO Team, 2017
 %
