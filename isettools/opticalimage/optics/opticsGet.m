@@ -541,7 +541,7 @@ switch parm
         %  You can specify the factor for oversampling in the
         %  calling arguments.
         fSupport = opticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp);
-        fSupport = fSupport*freqOverSampleSample;        
+        fSupport = fSupport*freqOverSample;        
 
         % Get the OTF on the frequency support.
         otf = dlMTF(optics,fSupport,thisWave,units);
