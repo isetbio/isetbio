@@ -140,57 +140,15 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         rho = wvfGet(wvf, 'sce rho');
         
         % Set up pupil coordinates
-        %
-        % 3/9/2012, MDL: Removed nested for-loop for calculating the
-        % SCE. Note previous code had x as rows of matrix, y as columns of
-        % matrix. This has been changed so that x is columns, y is rows.
-        %
-        % 7/24/12, DHB: The above change produces a change of the
-        % orientation of the pupil function/psf relative to  Heidi's
-        % original code. I think Heidi's was not right.  But we also need
-        % to flip the y coordinate, so that positive values go up in the
-        % image.  I did this and I think it now matches Figure 7 of the OSA
-        % Zernike standards document.  Also, doing this makes my pictures
-        % of the PSF approximately match the orientation in Figure 4b in
-        % Autrussea et al. 2011.
         nPixels = wvfGet(wvf, 'spatial samples');
         pupilPlaneSizeMM = wvfGet(wvf, 'pupil plane size', 'mm', thisWave);
+        pupilPos = (1:nPixels) - (floor(nPixels/2) + 1);
+        pupilPos = pupilPos*(pupilPlaneSizeMM / nPixels);
         
-        % The commented out code here led to very large differences in the
-        % psf depending on whether the support for the pupil function was
-        % even or odd.  The new code respects the conventions of Matlab's
-        % fft routines as to where 0 should be in the matrix, prior to an
-        % fftshift.  This makes the effect of going from even to odd
-        % considerably smaller, and the more densely we sample the pupil
-        % plane the smaller the deviations become.  So we are currently
-        % considering this code to be correct, on the view that there is in
-        % fact a small effect of discrete sampling.  The effect is quite
-        % dependent on how finely the pupil plane is sampled, perhaps not
-        % surprisingly. It crops up when the sampling is a bit coarse.
-        % That said, the new code seems to be considerably more stable than
-        % the old with respect to the switch between even/odd sampling.
-        wvfComputePupilFunctionBackCompat = false;
-        if (ispref('isetbioBackCompat','wvfComputePupilFunction'))
-            if (getpref('isetbioBackCompat','wvfComputePupilFunction'))
-                wvfComputePupilFunctionBackCompat = true;
-            end
-        end
-        if (wvfComputePupilFunctionBackCompat)
-            pupilPos = (0:(nPixels - 1)) * (pupilPlaneSizeMM / nPixels) ...
-                - pupilPlaneSizeMM / 2;
-            [xpos, ypos] = meshgrid(pupilPos);
-            ypos = ypos(end:-1:1, :);
-        else
-            pupilPos = (1:nPixels) - (floor(nPixels/2) + 1);
-            pupilPos = pupilPos*(pupilPlaneSizeMM / nPixels);
-            
-            % Do the meshgrid thing and flip y.  The commented out code is the
-            % old way we did this, but that has the feature of moving 0 to the
-            % wrong place in the support.  So we think it is better to
-            % multiply by -1.
-            [xpos, ypos] = meshgrid(pupilPos);
-            ypos = -ypos;
-        end
+        % Do the meshgrid thing and flip y.  Empirically the flip makes
+        % things work out right.
+        [xpos, ypos] = meshgrid(pupilPos);
+        ypos = -ypos;
  
         % Set up the amplitude of the pupil function. This depends entirely
         % on the SCE correction.  For x, y positions within the pupil, rho

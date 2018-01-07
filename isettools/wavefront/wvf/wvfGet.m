@@ -736,20 +736,8 @@ switch parm
         % representation.  Note that this differs from the isetbio
         % optics structure convention, where (0,0) sf is at the upper
         % left, so we then apply ifftshift to put it there.
-        wvfGetBackCompat = false;
-        if (ispref('isetbioBackCompat','wvfGet'))
-            if (getpref('isetbioBackCompat','wvfGet'))
-                wvfGetBackCompat = true;
-            end
-        end
-        if (wvfGetBackCompat)
-            % With the 01/05/18 addition of the fftshift, this is no longer
-            % backwards compatible.  But soon this will go away.
-            val = ifftshift(fftshift(psf2otf(psf)));
-        else
-            [~,~,val] = PsfToOtf([],[],psf);
-            val = ifftshift(val);
-        end
+        [~,~,val] = PsfToOtf([],[],psf);
+        val = ifftshift(val);
         
         % We don't require that the input psf be symmetric, so there could be
         % actual imaginary values.  Thus we do our best to make a good guess.
