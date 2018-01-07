@@ -147,16 +147,7 @@ function val = opticsGet(optics,parm,varargin)
 
 %% Control some printout
 RESPECT_THE_COMMAND_WINDOW = true;
-
-% This controls whether we are backwards compatible prior to otf
-% branch work.  The flag is used in a few places below.
-opticsGetBackCompat = false;
-if (ispref('isetbioBackCompat','opticsGet'))
-    if (getpref('isetbioBackCompat','opticsGet'))
-        opticsGetBackCompat = true;
-    end
-end
-          
+      
 val = [];
 if ~exist('optics','var') || isempty(optics), 
     error('No optics specified.'); 
@@ -547,12 +538,8 @@ switch parm
         otf = dlMTF(optics,fSupport,thisWave,units);
         
         % Derive the psf from the OTF
-        if (opticsGetBackCompat)
-            val = fftshift(ifft2(otf));
-        else
-            [~,~,val] = OtfToPsf([],[],fftshift(otf));
-        end
-        
+        [~,~,val] = OtfToPsf([],[],fftshift(otf));
+    
     case {'degreesperdistance','degperdist'}
         % opticsGet(optics,'deg per dist','mm')
         % We use this constant to convert from the input spatial frequency units
@@ -684,22 +671,11 @@ switch parm
                 % Get diffraction limited OTF and derive PSF from it.
                 otf = dlMTF(optics,fSupport,thisWave,units);
                 if length(thisWave) == 1
-                    if (opticsGetBackCompat)
-                        val = fftshift(ifft2(otf));
-                        val = abs(val);
-                    else
-                        [~,~,val] = OtfToPsf([],[],fftshift(otf));
-                    end
+                    [~,~,val] = OtfToPsf([],[],fftshift(otf));
                 else
                     val = zeros(size(otf));
-                    if (opticsGetBackCompat)
-                        for ii=1:length(thisWave)
-                            val(:,:,ii) = fftshift(ifft2(otf(:,:,ii)));
-                        end
-                    else
-                        for ii=1:length(thisWave)
-                            [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf));
-                        end
+                    for ii=1:length(thisWave)
+                        [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf));
                     end
                 end
 
@@ -710,12 +686,7 @@ switch parm
                     if ~isempty(varargin)
                         % Just do one specified wavelength
                         otf = opticsGet(optics,'otfData',varargin{1});
-                        if (opticsGetBackCompat)
-                            % Just at the interpolated wavelength
-                            val = fftshift(ifft2(otf));
-                        else
-                            [~,~,val] = OtfToPsf([],[],fftshift(otf));
-                        end
+                        [~,~,val] = OtfToPsf([],[],fftshift(otf));
                     else
                         % Do all the wavelenghts
                         %
@@ -723,14 +694,8 @@ switch parm
                         % the OTF, not reach into the structure directly.
                         % But, this works.
                         val = zeros(size(optics.OTF.OTF));
-                        if (opticsGetBackCompat)
-                            for ii=1:length(otfWave)
-                                val(:,:,ii) = fftshift(ifft2(optics.OTF.OTF(:,:,ii)));
-                            end
-                        else
-                            for ii=1:length(thisWave)
-                                [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
-                            end
+                        for ii=1:length(thisWave)
+                            [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
                         end
                     end
                     
