@@ -1,10 +1,6 @@
 function t_linearFilters
 % Compute the photocurrent at different mean field levels
 %
-% As things stand, this can only be run as a whole.  Copying and pasting
-% the cells doesn't work because it has internal functions (e.g.,
-% oiGenerate).  We should re-write so it can be from the editor.
-%
 % Description:
 %   Computes L-, M- and S-cone outer segment photocurrent responses to
 %   luminance step stimuli of fixed height presented on different
@@ -15,6 +11,14 @@ function t_linearFilters
 %   stimulus) affects the cone outer-segment linear impulse response
 %   (luminance adaptation) and, thus, the ensuing cone photocurrent
 %   responses, and how this adaptation depends on cone type.
+%
+% NOTES
+%   * Copying and pasting the cells doesn't work because it has internal
+%   functions (e.g., oiGenerate).  We should re-write so the tutorial can
+%   be run from the editor.
+%
+%   * Should we separate the plots by cone type? Should we use
+%   vcNewGraphWin? 
 %
 % NPC, ISETBIO TEAM, 2016
 %
@@ -42,6 +46,10 @@ osNoise = 'none';
 osTimeStep = 0.2/1000;
 theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
 
+modulationFunction = cell(numel(backgroundLuminances),1);
+photocurrents      = cell(numel(backgroundLuminances),1);
+isomerizations     = cell(numel(backgroundLuminances),1);
+osLinearFilters    = cell(numel(backgroundLuminances),1);
 for iLum = 1:numel(backgroundLuminances)
     fprintf('Computing os linear filters for background luminance %2.1f cd/m2  [%d/%d]\n',  backgroundLuminances(iLum), iLum, numel(backgroundLuminances));
     
@@ -107,7 +115,7 @@ for iLum = 1:numel(backgroundLuminances)
         set(hFig, 'Position', [10 10 1380 650+50*iLum], 'Color', [0.1 0.1 0.1]);
     end
 
-    legends{numel(legends)+1} = sprintf('lum: %2.1f cd/m2', backgroundLuminances(iLum));
+    legends{numel(legends)+1} = sprintf('lum: %2.1f cd/m2', backgroundLuminances(iLum)); %#ok<AGROW>
     color = squeeze(colorIR(iLum,:));
     if (isempty(timeAxis))
         theTimeAxis = (1:length(responses{iLum}))*integrationTime;
