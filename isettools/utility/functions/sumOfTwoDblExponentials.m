@@ -1,8 +1,8 @@
-function y = sumoftwodblexponentials(coef, x)
+function y = sumOfTwoDblExponentials(coef, x)
 % Compute sum of two double exponential functions, with no mean offset.
 %
 % Syntax:
-%   y = sumoftwodblexponential(coef, x)
+%   y = sumOfTwoDblExponentials(coef, x)
 %
 % Description:
 %    Compute sum of two double exponential functions, with no mean offset.
@@ -17,8 +17,7 @@ function y = sumoftwodblexponentials(coef, x)
 %               3 - A2 - Variable to multiply the second exponent by
 %               4 - C2 - The negative is multiplied by the absolute value
 %                        of x and then the exponent thereof is calculated
-%    x    - The only variable to repeat in the calculations, the absolute
-%           value of this variable will be used in both mini-functions
+%    x    - The values on which to compute the double exponential
 %
 % Outputs:
 %    y    - The calculated sum of the double exponential functions.

@@ -32,6 +32,7 @@ function [data, vObj] = ieMovie(data, varargin)
 % History:
 %    xx/xx/16   bw  ISETBIO Team 2016
 %    11/22/17  jnm  Formatting
+%    01/06/18  dhb  Suppress warning for big videos.
 
 % Examples:
 %{
@@ -101,6 +102,9 @@ end
 
 % Create the video object if we plan to save
 if save
+    % Suppress warning
+    wState = warning('off','MATLAB:audiovideo:VideoWriter:mp4FramePadded');
+    
     vObj = VideoWriter(vname,'MPEG-4');
     vObj.FrameRate = FrameRate;
     open(vObj);
@@ -142,6 +146,9 @@ end
 if save
     writeVideo(vObj, F);
     close(vObj);
+    
+    % Restore warning state
+    warning(wState);
 end
 
 end

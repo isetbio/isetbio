@@ -20,6 +20,11 @@ function g = biNormal(xSpread, ySpread, theta, N)
 % Outputs:
 %    g       - The resulting image after calculation
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are included within the code.
+%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.

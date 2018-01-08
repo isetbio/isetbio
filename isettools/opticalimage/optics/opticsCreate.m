@@ -89,15 +89,6 @@ switch lower(opticsType)
         % particular observer, because the mean Zernike polynomials do not 
         % capture the phase information. 
         
-        % This controls whether we are backwards compatible prior to otf
-        % branch work.  The flag is used in a few places below.
-        opticsCreate_OpticsHumanWvfBackCompat = false;
-        if (ispref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
-            if (getpref('isetbioBackCompat','opticsCreate_OpticsHumanWvf'))
-                opticsCreate_OpticsHumanWvfBackCompat = true;
-            end
-        end
-        
         % Defaults
         pupilDiameterMM = 3;
         zCoefs = wvfLoadThibosVirtualEyes(pupilDiameterMM);
@@ -112,9 +103,7 @@ switch lower(opticsType)
         % Create wavefront parameters.  Be sure to set both measured and
         % calc pupil size.
         wvfP = wvfCreate('calc wavelengths',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilDiameterMM),'umPerDegree',umPerDegree);
-        if (~opticsCreate_OpticsHumanWvfBackCompat)
-            wvfP = wvfSet(wvfP,'measured pupil size',pupilDiameterMM);
-        end
+        wvfP = wvfSet(wvfP,'measured pupil size',pupilDiameterMM);
         wvfP = wvfSet(wvfP,'calc pupil size',pupilDiameterMM);
         wvfP = wvfComputePSF(wvfP);
         
@@ -126,13 +115,11 @@ switch lower(opticsType)
         % because that is what we can set.  This implies a number of mm per degree,
         % and we back it out the other way here so that it is all
         % consistent.
-        if (~opticsCreate_OpticsHumanWvfBackCompat)
-            focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
-            fLengthMeters = focalLengthMM*1e-3;
-            pupilRadiusMeters = (pupilDiameterMM/2)*1e-3;
-            optics = opticsSet(optics, 'fnumber', fLengthMeters/(2*pupilRadiusMeters));
-            optics = opticsSet(optics, 'focalLength', fLengthMeters);
-        end
+        focalLengthMM = (umPerDegree*1e-3)/(2*tand(0.5));
+        fLengthMeters = focalLengthMM*1e-3;
+        pupilRadiusMeters = (pupilDiameterMM/2)*1e-3;
+        optics = opticsSet(optics, 'fnumber', fLengthMeters/(2*pupilRadiusMeters));
+        optics = opticsSet(optics, 'focalLength', fLengthMeters);
             
         % Add default Lens by default
         optics.lens = Lens;
@@ -254,22 +241,7 @@ wave = opticsGet(optics, 'wave');
 % The human optics are an SI case, and we store the OTF at this point.  
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, [], wave);
 optics = opticsSet(optics, 'otfData', OTF2D);
-
-% In the old code, we had umPerDegree at 300, even though this is not
-% exactly consistent with a focal length of 17 mm.  This bit keeps backward
-% compatibility, based on a preference. The new way bases umPerDegree off
-% of the focal length above.
-opticsCreate_OpticsHumanBackCompat = false;
-if (ispref('isetbioBackCompat','opticsCreate_OpticsHuman'))
-    if (getpref('isetbioBackCompat','opticsCreate_OpticsHuman'))
-        opticsCreate_OpticsHumanBackCompat = true;
-    end
-end
-if (opticsCreate_OpticsHumanBackCompat)
-    umPerDegreeForSupport = 300;
-else
-    umPerDegreeForSupport = umPerDegree;
-end
+umPerDegreeForSupport = umPerDegree;
 
 fSupport = fSupport * (1/(umPerDegreeForSupport*1e-3));
 fx     = fSupport(1, :, 1);

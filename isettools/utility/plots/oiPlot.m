@@ -21,8 +21,9 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Inputs:
 %    oi      - (Optional) The optical Image structure. Default is to
 %              retrieve an oi object using vcGetObject.
-%    pType   - (Optional). The plot type. Default is 'illuminance hline'. There are a
-%              vast number available, listed below, sorted by category:
+%    pType   - (Optional). The plot type. Default is 'illuminance hline'.
+%              There are a vast number available, listed below, sorted by
+%              category:
 %           Irradiance (Irr)
 %               {'irradiance photons roi'} - Irr within an ROI of the image
 %               {'irradiance energy roi'} - Irr within an ROI of the image
@@ -65,7 +66,8 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %               {'lens transmittance'} - Spectral lens transmittance. 
 %                   Computed from the lens density in the human case. 
 %    roiLocs - (Optional) Region of Interest Locations. Default depends on
-%              the plot type in order select the region of interest.
+%              the plot type in order select the region of interest, which
+%              is sometimes a line and sometimes a rectangle.
 %    wave/gSpacing - Additional arguments passed through varargin specify
 %              wavelength and/or grid spacing.
 %
@@ -76,9 +78,11 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 % Notes:
 %    * [Note: JNM - roiLocs are listed as optional, however a number of the
 %      functions will break if they have not been provided because there is
-%      not language in place to generate them in all of the cases. Ex. the
-%      plot type chromaticityroi requires them but does not have an
-%      existing default.]
+%      not language in place to generate them for all of the cases.  What
+%      needs to be done in such cases is to add the pType to one of the two
+%      cases at the top of the routine, where the users is asked to select
+%      and roi.  One case is when the roi should be a line, the other is
+%      when it should be a rectangle.
 %    * [Note: DHB - Someday might convert code that gets and plots lsf to
 %       use PTB wrapper routines in external, to improve overall
 %       consistency.
@@ -454,6 +458,7 @@ switch (pType)
     case {'illuminancemeshlinear'}
         % Mesh plot of image illuminance
         udata = plotIlluminanceMesh(oi, 'linear');
+        
     case {'illuminanceffthline'}
         % oiPlot(oi, 'illuminance fft hline')
         % The mean is removed to keep the dynamic range reasonable.

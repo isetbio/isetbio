@@ -19,6 +19,11 @@ function y = ieNormpdf(x, mu, sigma)
 %    y     - The normal probability density function. Size of the result
 %            will depend on the input arguments size.
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are included within the code.
+%
 % References:
 %    [1]  M. Abramowitz and I. A. Stegun, "Handbook of Mathematical
 %         Functions", Government Printing Office, 1964, 26.1.26.
@@ -53,11 +58,13 @@ if nargin < 3, sigma = 1; end
 if nargin < 2; mu = 0; end
 if nargin < 1, error('Requires at least one input argument.'); end
 
-% Should do a size check that arguments are all the same
-% if errorcode > 0
-%     error('Requires non-scalar arguments to match in size.');
-% end
+% Check for size agreement in args.  This won't catch all errors,
+% if the number of elements is the same but the dimensions differ.
+if (numel(x) ~= numel(mu) | numel(x) ~= numel(sigma) )
+    error('Requires arguments to match in size.');
+end
 
+% Check that sigma is positive
 if ~isempty(find(sigma <= 0, 1)), error('Sigma must be > 0'); end
 
 xn = (x - mu) ./ sigma;
