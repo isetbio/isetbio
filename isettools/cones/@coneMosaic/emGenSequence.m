@@ -1,7 +1,7 @@
-function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
+function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nEyeMovements, varargin)
 %EMGENSEQUENCE  Generate sequence of eye movements
 %
-%   [nTrialsPos, nTrialsPosMicrons] = EMGENSEQUENCE(obj,nFrames,'nTrials',1,'em',emCreate);
+%   [nTrialsPos, nTrialsPosMicrons] = EMGENSEQUENCE(obj,nEyeMovements,'nTrials',1,'em',emCreate);
 %
 % The eye movement samples are created at the same temporal sample rate as the
 % cone integration time.  We only update the position at the beginning of each
@@ -33,12 +33,12 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 % cone integration time. See the code below.
 %
 % Inputs:
-%     obj        - cone mosaic object
-%     nFrames    - number of frames to generate
+%     obj               - cone mosaic object
+%     nEyeMovements     - number of eye movements to generate
 %
 % Ouputs:
-%     nTrialsPos        - nTrials x nFrames x 2 matrix of eye positions in units of cone positions
-%     nTrialsPosMicrons - nTrials x nFrames x 2 matrix of eye positions in units of microns
+%     nTrialsPos        - nTrials x nEyeMovements x 2 matrix of eye positions in units of cone positions
+%     nTrialsPosMicrons - nTrials x nEyeMovements x 2 matrix of eye positions in units of microns
 %
 % Optional parameter name/value pairs chosen from the following:
 %    'em'              Eye movement structure, see emCreate for details
@@ -54,7 +54,7 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 %
 %      emParameters = emCreate;
 %      <Set em parameters> 
-%      coneMosaic.emGenSequence(nFrames,'nTrials',1,'em',emParameters);
+%      coneMosaic.emGenSequence(nEyeMovements,'nTrials',1,'em',emParameters);
 %
 % See also EMCREATE, EMSET, EMGET
 %
@@ -66,7 +66,7 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, nFrames, varargin)
 
 %% parse input
 p = inputParser;
-p.addRequired('nFrames', @isscalar);
+p.addRequired('nEyeMovements', @isscalar);
 p.addParameter('nTrials',1,@isscalar);
 p.addParameter('em', emCreate, @isstruct);
 p.addParameter('rSeed', [], @isscalar);
@@ -74,16 +74,16 @@ p.addParameter('rSeed', [], @isscalar);
 % set parameters
 sampTime  = obj.integrationTime;
 
-p.parse(nFrames, varargin{:});
+p.parse(nEyeMovements, varargin{:});
 em = p.Results.em;
 em = emSet(em, 'sample time', sampTime);
 nTrials = p.Results.nTrials;
 
 if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
 emFlag = emGet(em, 'em flag');
-pos = zeros(nFrames, 2);
+pos = zeros(nEyeMovements, 2);
 
-nTrialsPos = zeros(nTrials,nFrames,2);
+nTrialsPos = zeros(nTrials,nEyeMovements,2);
 
 % define cone parameters needed to convert units of mm or deg to cones, and vice versa
 % pattern sample size in meters - for rect mosaics this is the same as the cone size, but not so for hex-mosaics
@@ -101,11 +101,11 @@ for nn=1:nTrials
         intervalSD = emGet(em, 'tremor interval SD');
         
         % Compute time of tremor occurs
-        t = interval + randn(nFrames, 1) * intervalSD;
+        t = interval + randn(nEyeMovements, 1) * intervalSD;
         t(t < 0.001) = 0.001; % get rid of negative values
         tPos = cumsum(t);
         tPos = max(1, round(tPos / sampTime));
-        indx = 1:find(tPos <= nFrames, 1, 'last');
+        indx = 1:find(tPos <= nEyeMovements, 1, 'last');
         tPos = tPos(indx);
         
         % Generate random step at the selected times
@@ -129,9 +129,9 @@ for nn=1:nTrials
         correctionForSampleTime = 1000*sampTime;
     
         % Generate random move at each sample time
-        theta = 360 * randn + 0.1 * correctionForSampleTime*(1 : nFrames)';
+        theta = 360 * randn + 0.1 * correctionForSampleTime*(1 : nEyeMovements)';
         direction = [cosd(theta) sind(theta)];
-        s = speed + speedSD * randn(nFrames, 1);
+        s = speed + speedSD * randn(nEyeMovements, 1);
         pos = filter(1,[1 -1],bsxfun(@times, direction, s)) + pos;
     end
     
@@ -162,7 +162,7 @@ for nn=1:nTrials
         % negative intervals, we just get rid of these by substituting
         % in a small interval
         minInterval = 0.010;
-        saccadeIntervals = interval + randn(nFrames, 1) * intervalSD;
+        saccadeIntervals = interval + randn(nEyeMovements, 1) * intervalSD;
         saccadeIntervals(saccadeIntervals < 0) = minInterval;
  
         % OLD: Old way of getting rid of negative intervals, seems like it will
@@ -171,11 +171,11 @@ for nn=1:nTrials
         % t(t < 0.3) = 0.3 + 0.1*rand;  
         
         % Create list of discrete sample times
-        discreteSampleTimes = (0:(nFrames-1))*sampTime;
+        discreteSampleTimes = (0:(nEyeMovements-1))*sampTime;
         
         % Ensure at least one saccade
         if (isempty(saccadeIntervals))
-            saccadeIntervals = 0.5*nFrames/sampTime;
+            saccadeIntervals = 0.5*nEyeMovements/sampTime;
         end
 
         % Convert saccade intervals to saccade times, and don't go past the
@@ -203,14 +203,14 @@ for nn=1:nTrials
         % we are actually simulating. Need to do this because the list of
         % possible saccade times was created to be very long, at least for
         % reasonable integration times.
-        % saccadeTimeIndices = saccadeTimeIndices(saccadeTimeIndices <= nFrames); 
-        % OLD: saccadeTimeIndices = tPos(1:find(saccadeTimeIndices <= nFrames, 1, 'last'));
+        % saccadeTimeIndices = saccadeTimeIndices(saccadeTimeIndices <= nEyeMovements); 
+        % OLD: saccadeTimeIndices = tPos(1:find(saccadeTimeIndices <= nEyeMovements, 1, 'last'));
         
         % Make sure we do at least one saccade, and in this case put it in
         % the middle of the time sequence
         %tPos = max(tPos,1);   
         %if (isempty(saccadeTimeIndices))
-        %    saccadeTimeIndices = round(nFrames/2);
+        %    saccadeTimeIndices = round(nEyeMovements/2);
         %end
         
         % Comptue saccades by looping over when they happen
@@ -252,8 +252,8 @@ for nn=1:nTrials
             % Compute the offset we need to add to the positions vector, to
             % put in this saccade.  Start with an array of zeros, and
             % compute position offsets over the duration of the saccade.
-            offset = zeros(nFrames, 2);
-            indx = saccadeTimeIndices(ii):min(saccadeTimeIndices(ii) + saccadeDurationSamples - 1, nFrames);
+            offset = zeros(nEyeMovements, 2);
+            indx = saccadeTimeIndices(ii):min(saccadeTimeIndices(ii) + saccadeDurationSamples - 1, nEyeMovements);
             
             % For each frame of the saccade, add in the offset for that
             % frame.  We want to go saccadeMagnitude over
@@ -273,7 +273,7 @@ for nn=1:nTrials
     end
     
     nTrialsPos(nn,:,:) = pos;
-    pos = zeros(nFrames, 2);
+    pos = zeros(nEyeMovements, 2);
 end
 
 %% Adjustments for the return

@@ -51,6 +51,7 @@ function [coneIsolating, spd] = humanConeIsolating(dsp)
    wave = displayGet(dsp,'wave');
    vcNewGraphWin; plot(wave,spd); grid on
    xlabel('Wave (nm)'); ylabel('Relative energy')
+   legend('L-isolating','M-isolating','S-isolating');
 %}
 %{
    % Check that these spd values are cone isolating
