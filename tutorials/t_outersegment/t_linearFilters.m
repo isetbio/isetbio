@@ -13,6 +13,7 @@ function t_linearFilters
 %     depends on cone type.
 %
 % See also: t_osTimeStep
+%
 
 % NPC, ISETBIO TEAM, 2016
 %
