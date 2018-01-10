@@ -75,9 +75,9 @@ classdef coneMosaicHex < coneMosaic
     methods
         
         % Constructor
-        function obj = coneMosaicHex(upSampleFactor, varargin)
+        function obj = coneMosaicHex(resamplingFactor, varargin)
             % Initialize the hex cone mosaic class
-            %   cMosaic =  coneMosaicHex(upSampleFactor, ['varyingDensity', true, 'customLambda', 3, 'customInnerSegmentDiameter'', 2.5, 'cone',cone,'os','os]);
+            %   cMosaic =  coneMosaicHex(resamplingFactor, ['varyingDensity', true, 'customLambda', 3, 'customInnerSegmentDiameter'', 2.5, 'cone',cone,'os','os]);
             
             % Params that we want to consume (not pass to our super-class @coneMosaic)
             paramsForConeMosaicHex = {...
@@ -125,7 +125,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
             p.addParameter('marginF', 1.0, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
-            p.parse(upSampleFactor, vararginForConeHexMosaic{:});
+            p.parse(resamplingFactor, vararginForConeHexMosaic{:});
             
             % Set input params
             obj.resamplingFactor = p.Results.resamplingFactor;
@@ -138,7 +138,7 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-            
+
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);

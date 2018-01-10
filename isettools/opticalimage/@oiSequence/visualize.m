@@ -48,6 +48,9 @@ p.addParameter('FrameRate',20,@isnumeric);
 p.addParameter('showIlluminanceMap', false, @islogical);
 p.addParameter('eyeMovementsData', struct('show', false), @(x)(isstruct(x)&&(isfield(x,'show'))));
 
+% Whether to use vcGraphWin or matlab's figure for rendering
+p.addParameter('backendRenderer', 'vcGraphWin', @(x)(ischar(x)&&(ismember(x,{'vcGraphWin', 'figure'}))));
+
 varargin = ieParamFormat(varargin);
 p.parse(obj,plotType,varargin{:});
 
@@ -228,8 +231,13 @@ switch ieParamFormat(plotType)
             % Do not exceed XYZ values of 0.5 (for correct rendering)
             XYZmax = 2*XYZmax;
         end
-        
-        h = vcNewGraphWin;
+
+        if strcmp(p.Results.backendRenderer,'vcGraphWin')
+            h = vcNewGraphWin;
+        else
+            h = figure();
+            uData.figHandle = h;
+        end
         set(h, 'Color', [1 1 1], 'Position', [10 10 1700 730]); 
         for oiIndex = 1:obj.length
             if (oiIndex == 1)
