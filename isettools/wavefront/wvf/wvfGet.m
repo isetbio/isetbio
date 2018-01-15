@@ -1032,6 +1032,7 @@ switch parm
         
         % Defaults
         val = wvfComputeConePSF(wvf);
+        
     otherwise
         error('Unknown parameter %s\n', parm);
 

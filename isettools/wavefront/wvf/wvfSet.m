@@ -261,7 +261,7 @@ switch parm
         % size of the sampling in the pupil plane at the measurement
         % wavelength, and then compute/set everything else as needed.
         %
-        % Because the sampling in the pupil and psf domains is yoked, its
+        % Because the sampling in the pupil and psf domains is yoked, it is
         % important to choose values that do not produce discretization
         % artifacts in either domain. We don't have an automated way to do
         % this, but the default numbers here were chosen by experience

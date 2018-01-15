@@ -11,7 +11,8 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 %
 %    The pupil size should be that used to normalize the radius of the
 %    Zernike coefficients; that is the size with respect to which the
-%    measurements were made.
+%    measurements were made.  In the wavefront code, you get this using
+%      wvfGet(wvf,'measured pupil size');
 %
 %    The sign convention is that a positive number in diopters leads to a
 %    positive number in microns. Some care is required when using this

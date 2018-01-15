@@ -13,6 +13,9 @@ function radius = psfFindCriterionRadius(inPSF, criterion)
 %
 %    The passed PSF does not need to be centered or circularly averaged.
 %
+%    The answer comes back in pixels, so you need to convert to more
+%    interesting units in the code that calls this utility function.
+%
 % Inputs:
 %    inPSF     - Circularly symmetric PSF
 %    criterion - Criterion fraction of the mass
