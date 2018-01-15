@@ -75,6 +75,9 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
 %                   of output to example. Make number of samples for output
 %                   and umPerSample parameters that can be set.
 %    12/21/17  dhb  Change name. Try to prevent NaN's in interpolated PSFs.
+%    01/15/18  dhb  First example was broken.  Fixed. Second example was
+%                   also broken, but the desired example is in a tutorial
+%                   so pointed to that.
 
 % Examples:
 %{
@@ -118,27 +121,10 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
     delete([fName '.mat']);
 %}
 %{
-    % Example of use with siSynthetic.
-    pupilMM = 3;
-    zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
-    wave = [450:100:650]';
-    wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, 'name', ...
-        sprintf('human-%d', pupilMM));
-
-    % Convert to siData format.
-    %
-    % siSynthetic currently only works if the number of samples in the PSF
-    % is 128, so we compute with that to avoid an error.  If siSynthetic is
-    % ever generalized, we could relax that here.
-    [siPSFData, wvfP] = wvf2SiPsf(wvfP,'showBar',false,'nPSFSamples',128);
-
-    % Convert to optics and then oi using siSynthetic
-    oi = oiCreate('human'); 
-    optics = siSynthetic('custom', oi, siPSFData);
-    flength = 0.017;  % Human focal length is 17 mm
-    oi = oiSet(oi, 'optics fnumber', flength/pupilMM);
-    oi = oiSet(oi, 'optics flength', flength);
-    oi = oiSet(oi, 'optics', optics);  
+    % See this tutorial for use with siSynthetic to create an oi with a 
+    % PSF from wvf2SiPsf, plus better ways to start with a wvf and get it
+    % into an OI.
+    t_opticsGetAndSetPsf
 %}
 
 %% Parameters
