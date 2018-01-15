@@ -1,20 +1,23 @@
 % Function to synchronize external functions in isetbio with their origins. 
 % 
-% Usage:
-%       % Synchronize ISETBIO's external PTB routines
-%       synchronizeISETBIOWithRepository('PTB_DHB');
-%
-%       % Synchronize ISETBIO's external RTB-3 routines
-%       % THIS SHOULD BE UPDATED TO RTB-4
-%       synchronizeISETBIOWithRepository('RT3_DHB');
-%
-%       % Synchronize ISETBIO's external BrainardLab Toolbox routines
-%       synchronizeISETBIOWithRepository('BLTB_DHB');
+% Examples are provided in the code.
 %
 %  11/20/2014 npc   Wrote it.
 %  4/27/2015 npc    Modification to support synchronization of any repository with isetbio, not just PTB 
 %
 
+% Examples:
+%{
+    % Synchronize ISETBIO's external PTB routines
+    synchronizeISETBIOWithRepository('PTB_DHB');
+
+    % Synchronize ISETBIO's external RTB-3 routines
+    % THIS SHOULD BE UPDATED TO RTB-4
+    synchronizeISETBIOWithRepository('RT3_DHB');
+
+    % Synchronize ISETBIO's external BrainardLab Toolbox routines
+    synchronizeISETBIOWithRepository('BLTB_DHB');
+%}
 function synchronizeISETBIOWithRepository(repositoryName)
    
     if (nargin ~= 1)

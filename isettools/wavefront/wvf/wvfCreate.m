@@ -15,7 +15,8 @@ function wvf = wvfCreate(varargin)
 %    wvfKeySynonyms for available synonyms.
 %   
 %    The properties that may be specified here using key/value pairs may
-%    also be set using wvfSet.
+%    also be set using wvfSet.  And, wvfSet gives more details of what they
+%    mean.
 %
 % Inputs:
 %    None required:
@@ -42,7 +43,10 @@ function wvf = wvfCreate(varargin)
 %     'calc observer focus correction'     - 0
 %     'um per degree'                      - 300
 %     'sce params'                         - Struct specifying no sce
-%                                            correction
+%                                            correction.
+%     'calc cone psf info'                 - Default structure returned by
+%                                            conePsfInfoCreate.
+% Examples are included in the code.     
 %
 % See Also:
 %    wvfSet, wvfGet, wvfKeySynonyms, sceCreate, sceGet
@@ -100,6 +104,9 @@ p.addParameter('umperdegree', 300, @isscalar);
 % SCE parameters
 p.addParameter('sceparams',sceCreate([],'none'), @isstruct);
 
+% Cone PSF information
+p.addParameter('calcconepsfinfo',conePsfInfoCreate,@isstruct);
+
 % Massage varargin and parse
 ieVarargin = ieParamFormat(varargin);
 ieVarargin = wvfKeySynonyms(ieVarargin);
@@ -138,17 +145,7 @@ wvf = wvfSet(wvf, 'um per degree',p.Results.umperdegree);
 % Stiles Crawford Effect parameters
 wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);
 
-%% Additional properties not settable on create
-
-% Cone sensitivities and weighting spectrum for combining the PSFs across
-% wavelengths. We keep these as a structure at something resembling a
-% wide range of wavelength samples, along with the wavelength info. 
-% When we use them, we spline down to the wavelength sampling of the psfs.
-% These follow PTB spectral conventions.
-load('T_cones_ss2');
-conePsfInfo.S = S_cones_ss2;
-conePsfInfo.T = T_cones_ss2;
-conePsfInfo.spdWeighting = ones(conePsfInfo.S(3), 1);
-wvf = wvfSet(wvf, 'calc cone psf info', conePsfInfo);
+% Cone PSF information
+wvf = wvfSet(wvf, 'calc cone psf info', p.Results.calcconepsfinfo);
 
 return

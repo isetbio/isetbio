@@ -1,4 +1,4 @@
-% t_opticsGetAndSetPsf
+% Show how to set and get PSFs in isetbio optics related structures
 %
 % Description:
 %   First, show how to get and set psf's in units of minutes of arc, or from otfs

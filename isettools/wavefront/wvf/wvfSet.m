@@ -60,7 +60,9 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %                                 wavelength (arcminute/pixel)
 %    Calculations
 %       'zcoeffs'               - Zernike coefficients, OSA standard
-%                                 numbering/coordinates
+%                                 numbering/coordinates.  These are used to
+%                                 synthesize the pupil function in microns,
+%                                 and should be passed in those units.
 %       'calc pupil size'       - Pupil size for calculation (mm, *)
 %       'calc optical axis'     - Optical axis to compute for (deg)
 %       'calc observer accommodation' -
@@ -193,6 +195,7 @@ switch parm
         % These specify the measured (or assumed) wavefront aberrations in
         % terms of a Zernike polynomial expansion. Exanding these gives us
         % the wavefront abberations in microns over the measured pupil.
+        % That is, these coefficients are in units of microns.
         %
         % The coefficients represent measurements that were made (or
         % assumed to be made) at a particular optical axis, state of
