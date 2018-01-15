@@ -90,8 +90,9 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
     % Set a little defocus, just to make the PSF a bit more interesting
     wvfP = wvfSet(wvfP,'zcoeff',0.5,'defocus');
 
-    % Convert to siData format and save.
-    [siPSFData, wvfP] = wvf2SiPsf(wvfP,'showBar',true);
+    % Convert to siData format and save.  201 is the number of default 
+    % samples in the wvfP object, and we need to match that here.
+    [siPSFData, wvfP] = wvf2SiPsf(wvfP,'showBar',true,'nPSFSamples',201);
     fName = sprintf('psfSI-%s', wvfGet(wvfP, 'name'));
     ieSaveSIDataFile(siPSFData.psf, siPSFData.wave,siPSFData.umPerSamp,...
         fName);
@@ -112,6 +113,9 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
     imagesc([samplesx(1), samplesx(end)],[samplesy(1) samplesy(end)], ...
         siPSFData.psf(:,:,2)); axis('square');
     xlim([-15 15]); ylim([-15 15]);
+    
+    % Clean up
+    delete([fName '.mat']);
 %}
 %{
     % Example of use with siSynthetic.
