@@ -1,4 +1,4 @@
-aarch function varargout = v_wvfDiffractionPSF(varargin)
+function varargout = v_wvfDiffractionPSF(varargin)
 %
 % Checks that diffraction-limited PSFs are correct.
 %
