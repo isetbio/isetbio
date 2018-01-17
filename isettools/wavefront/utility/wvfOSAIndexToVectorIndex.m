@@ -55,9 +55,9 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
     wvfInd = wvfOSAIndexToVectorIndex([20:5:50])
 %}
 %{
-[vectorIndex] = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
-[vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
-    'defocus', 'vertical_astigmatism', 'primary_spherical'})
+vectorIndex = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
+[vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', 'defocus', ...
+    'vertical_astigmatism', 'primary_spherical'})
 %}
 
 % If a single string, that's OK. We put it to a singleton cell.
