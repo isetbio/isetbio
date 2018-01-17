@@ -109,7 +109,8 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 
 % Examples:
 %{
-t_oiPlot
+    % ETTBSkip
+    t_oiPlot
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end
