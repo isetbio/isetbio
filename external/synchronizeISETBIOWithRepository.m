@@ -8,7 +8,7 @@
 
 % Examples:
 %{
-    % ETTBSkip.
+    % ETTBSkip
     % Running these can get you stale files if your source
     % is out of date, so don't auto-exacute these examples.
 

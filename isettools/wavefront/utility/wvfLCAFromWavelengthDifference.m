@@ -148,10 +148,12 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM, wl2NM, ...
 	for ii=1:length(w)
         d3(ii) = wvfLCAFromWavelengthDifference(w0, w(ii), 'iset');
     end
-	vcNewGraphWin;
-    plot(w, d1, '-', w, d2, '--', w, d3, ':');
+	vcNewGraphWin; hold on
+    plot(w, d1, 'r-', 'LineWidth', 4);
+    plot(w, d2, '--g','LineWidth', 3);
+    plot(w, d3, ':b', 'LineWidth', 2);
     xlabel('Wave (nm)');
-    ylabel('Diopters')
+    ylabel('Diopters');
 %}
 
 %% Set which calculation to use
@@ -186,7 +188,9 @@ switch (whichCalc)
         lcaDiopters = (n1 - n2) ./ (nD * rM);
     case 'iset'
         % This formula is always with respect to a fixed wavelength
-        warning('ISET:  Always with respect to 580nm');
+        if (wl1NM ~= 580)
+            error('''iset'' method assumes that the first wavelength is 580 nm');
+        end
         lcaDiopters = humanWaveDefocus(wl2NM);
     otherwise
         error('Unknown LCA method');
