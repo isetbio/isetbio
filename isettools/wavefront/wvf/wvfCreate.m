@@ -11,7 +11,7 @@ function wvf = wvfCreate(varargin)
 %    for 550 nm light and a 3 mm pupil.
 %
 %    Many of the keys specified in the key/value pair section below accept
-%    synonyms.  The key listed is our preferred usage, see the code in
+%    synonyms. The key listed is our preferred usage, see the code in
 %    wvfKeySynonyms for available synonyms.
 %   
 %    The properties that may be specified here using key/value pairs may
@@ -56,12 +56,12 @@ function wvf = wvfCreate(varargin)
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 %    07/20/12  dhb  Get rid of weighting spectrum, replace with cone psf
 %                   info structure
-%    12/06/17  dhb  Use input parser to handle key/value pairs.  This was
+%    12/06/17  dhb  Use input parser to handle key/value pairs. This was
 %                   previously being done in a manner that may not have
 %                   matched up with the documentation.
-%    12/08/17  dhb  Add um per degree.  We need control over this to match
-%                   up across calculations.  Default is 300, whereas 330
-%                   used to be hard coded in the wvf calculations.  The
+%    12/08/17  dhb  Add um per degree. We need control over this to match
+%                   up across calculations. Default is 300, whereas 330
+%                   used to be hard coded in the wvf calculations. The
 %                   difference messed up comparison with oi based
 %                   calculation
 
@@ -114,7 +114,7 @@ p.parse(ieVarargin{:});
 
 %% Now set all of the properties that are specified by the parse above.
 %
-% This is done via wvfSet.  
+% This is done via wvfSet. 
 wvf = [];
 wvf = wvfSet(wvf, 'name', p.Results.name);
 wvf = wvfSet(wvf, 'type', p.Results.type);
@@ -124,11 +124,14 @@ wvf = wvfSet(wvf, 'zcoeffs', p.Results.zcoeffs);
 wvf = wvfSet(wvf, 'measured pupil', p.Results.measuredpupil);
 wvf = wvfSet(wvf, 'measured wl', p.Results.measuredwl);
 wvf = wvfSet(wvf, 'measured optical axis', p.Results.measuredopticalaxis);
-wvf = wvfSet(wvf, 'measured observer accommodation', p.Results.measuredobserveraccommodation);
-wvf = wvfSet(wvf, 'measured observer focus correction', p.Results.measuredobserverfocuscorrection);
+wvf = wvfSet(wvf, 'measured observer accommodation', ...
+    p.Results.measuredobserveraccommodation);
+wvf = wvfSet(wvf, 'measured observer focus correction', ...
+    p.Results.measuredobserverfocuscorrection);
 
 % Spatial sampling parameters
-wvf = wvfSet(wvf, 'sample interval domain', p.Results.sampleintervaldomain);
+wvf = wvfSet(wvf, 'sample interval domain', ...
+    p.Results.sampleintervaldomain);
 wvf = wvfSet(wvf, 'spatial samples', p.Results.spatialsamples);
 wvf = wvfSet(wvf, 'ref pupil plane size', p.Results.refpupilplanesize);
 
@@ -136,8 +139,10 @@ wvf = wvfSet(wvf, 'ref pupil plane size', p.Results.refpupilplanesize);
 wvf = wvfSet(wvf, 'calc pupil size', p.Results.calcpupilsize);
 wvf = wvfSet(wvf, 'calc wavelengths', p.Results.calcwavelengths);
 wvf = wvfSet(wvf, 'calc optical axis', p.Results.calcopticalaxis);
-wvf = wvfSet(wvf, 'calc observer accommodation', p.Results.calcobserveraccommodation);
-wvf = wvfSet(wvf, 'calc observer focus correction', p.Results.calcobserverfocuscorrection);
+wvf = wvfSet(wvf, 'calc observer accommodation', ...
+    p.Results.calcobserveraccommodation);
+wvf = wvfSet(wvf, 'calc observer focus correction', ...
+    p.Results.calcobserverfocuscorrection);
 
 % Conversion between degrees of visual angle and mm
 wvf = wvfSet(wvf, 'um per degree',p.Results.umperdegree);

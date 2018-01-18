@@ -9,6 +9,8 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 %    All parameters are optional. Using this makes it easier to save the
 %    figure in an appropriate format for Adobe Illustrator. 
 %
+%    Examples are included within the code.
+%
 % Inputs:
 %    fig      - (Optional) Figure handle. Default 0
 %    fontName - (Optional) Name of the font as a string.
@@ -16,8 +18,8 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 %    fontSize - (Optional) Size of the font (points) as a vector.
 %               Default [18 14]
 %               Format: [axes_labels tick_labels]
-%    figSize  - (Optional) Size of the figure [width height] (inches) as a vector.
-%               Default [6 6]
+%    figSize  - (Optional) Size of the figure [width height] (inches) as a
+%               vector. Default [6 6]
 %    border   - (Optional) Space around the figure (inches) as a vector.
 %               Default [0.75 0.35]
 %               Format: [left bottom right top] or
@@ -26,12 +28,14 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 % Outputs:
 %    None.
 %
-% Examples are included within the code.
+% Optional key/value pairs:
+%    None.
 %
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/22/17  jnm  Formatting
+%    01/16/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

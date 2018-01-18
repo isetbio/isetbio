@@ -1,9 +1,10 @@
 function fullmatrix = upperQuad2FullMatrix(upperRight, nRows, nCols)
 % Duplicates the upper right quad of a matrix in the other quads
 %
-% Description:
-%    fullmatrix = upperQuad2FullMatrix(upperRight, nRows, nCols)
+% Syntax:
+%   fullmatrix = upperQuad2FullMatrix(upperRight, nRows, nCols)
 %
+% Description:
 %    For a full matrix (nRows x nCols), suppose upperRight is the upper
 %    right quadrant of a matrix. 
 %
@@ -15,16 +16,32 @@ function fullmatrix = upperQuad2FullMatrix(upperRight, nRows, nCols)
 %    an odd number of rows, the middle data are always attached to the
 %    upper quadrants.
 %
+%    Examples in code.
+%
+% Inputs:
+%    upperRight - Smaller matrix that will be duplicated across the 'full'
+%                 matrix via replication and mirroring.
+%    nRows      - Number of rows in the matrix
+%    nCols      - Number of columns in the matrix
+%
+% Outputs:
+%    fullmatrix - The expanded matrix
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * [Note: JNM - nRows and nCols appear to be 'suggestions' rather than
+%      strictly enforced?]
 
 % History:
 %    xx/xx/05       (c) ImagEval Consultants, LLC, 2005.
 %    11/17/17  jnm  Formatting
-%
-% Copyright ImagEval Consultants, LLC, 2005.
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Example:
 %{
-    upperRight = [1, 2, 3;4, 5, 6;7, 8, 9];
+    upperRight = [1, 2, 3; 4, 5, 6; 7, 8, 9];
     nRows = 5;
     nCols = 6;
     fullmatrix = upperQuad2FullMatrix(upperRight, nRows, nCols)

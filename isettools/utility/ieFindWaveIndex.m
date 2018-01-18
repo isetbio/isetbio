@@ -21,6 +21,8 @@ function idx = ieFindWaveIndex(wave, waveVal, perfect)
 %    entries, and there will be different vector lengths returned. We
 %    announce this mis-match condition.
 %
+%    Examples contained within the code.
+%
 % Inputs:
 %    wave    - The vector of possible wavelengths.
 %    waveVal - The vector of wavelengths whose indices are desired. 
@@ -31,11 +33,16 @@ function idx = ieFindWaveIndex(wave, waveVal, perfect)
 %    idx     - A vector of booleans showing which of the instances of wave
 %              match the corresponding waveVal entries.
 %
-% See also: ieFindWaveIndex
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
+%    ieFindWaveIndex
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/30/17  jnm  Formatting & fix example
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

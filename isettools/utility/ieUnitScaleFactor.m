@@ -10,6 +10,8 @@ function sFactor = ieUnitScaleFactor(unitName)
 %    and oiGet/Set operations and oiSpatialSupport. By using this routine,
 %    we can specify the units for various returned quantities.
 %
+%    Examples in code
+%
 % Inputs:
 %    unitName - the unit you wish to convert to. Options include:
 %       From meters to:
@@ -32,11 +34,15 @@ function sFactor = ieUnitScaleFactor(unitName)
 %
 % Outputs:
 %    sFactor  - the requested scale factor
-%      
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

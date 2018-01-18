@@ -41,6 +41,6 @@ function diopters = wvfDefocusMicronsToDiopters(microns, pupilSizeMM)
 
 % Here is the forward formula from the web site listed above in the
 % comments to wvfDefocusDioptersToMicrons.
-diopters = (16 * sqrt(3)) * microns / (pupilSizeMM^2);
+diopters = (16 * sqrt(3)) * microns / (pupilSizeMM ^ 2);
 
 end

@@ -1,39 +1,67 @@
-function scene = sceneSpatialResample(scene,dx,units,method, promptUser)
+function scene = sceneSpatialResample(scene, dx, units, method, promptUser)
 % Spatial resample all wavebands of a scene
 %
-%   scene = spatialResample(scene,dx,'units','method')
+% Syntax:
+%	scene = spatialResample(scene, dx, [units], [method], [promptUser])
 %
-% scene:        ISET scene
-% dx:           New sample spacing
-% units:        Sample spatial units (e.g., 'um','mm', default = 'm')
-% method:       linear, cubic or spline interpolation (default = 'linear')
-% promptUser:   Set to false to avoid the routine waiting for user to enter a keypress
+% Description:
+%    Spatial resample all wavebands of a scene
 %
-% Example:
-%  scene = sceneCreate; scene = sceneSet(scene,'fov',3);
-%  ieAddObject(scene); sceneWindow;
+%    N.B. The source contains executable examples of usage, which can be
+%    accessed by typing 'edit sceneSpatialResample.m' in the command window
 %
-%  scene = sceneSpatialResample(scene,100,'um');
-%  ieAddObject(scene); sceneWindow;
+% Inputs:
+%    scene      - ISET scene
+%    dx         - New sample spacing
+%    units      - (Optional) Sample spatial units. Default 'm' (for meters)
+%    method     - (Optional) linear, cubic or spline interpolation.
+%                 Default 'linear'.
+%    promptUser - (Optional) Whether or not to prompt the user to begin.
+%                 Default true. Set to false to avoid waiting for user to
+%                 press a key.
 %
-% See also: sceneSpatialSupport, oiSpatialResample
+% Outputs:
+%    scene      - The ISET scene after modification
 %
-% BW Copyright ISETBIO Team, 2016
+% See Also:
+%    sceneSpatialSupport, oiSpatialResample
+%
+
+% History:
+%    xx/xx/16  BW   Copyright ISETBIO Team, 2016
+%    12/20/17  jnm  Formatting
+
+% Examples:
+%{
+    scene = sceneCreate;
+    scene = sceneSet(scene, 'fov', 3);
+    ieAddObject(scene);
+    sceneWindow;
+%}
+%{
+    scene = sceneCreate;
+    scene = sceneSpatialResample(scene, 100, 'um');
+    ieAddObject(scene);
+    sceneWindow;
+%}
 
 %% Set up parameters
-if notDefined('scene'),  error('scene required'); end
-if notDefined('units'),  units  = 'm'; end
+if notDefined('scene'), error('scene required'); end
+if notDefined('dx'), error('Sample spacing required'); end
+if notDefined('units'), units = 'm'; end
 if notDefined('method'), method = 'linear'; end
 if notDefined('promptUser'), promptUser = true; end
 % Always work in meters
-dx = dx/ieUnitScaleFactor(units);
+dx = dx / ieUnitScaleFactor(units);
 
-mLum = sceneGet(scene,'mean luminance');
+mLum = sceneGet(scene, 'mean luminance');
 
 % Find the spatial support of the current scene, and its max/min
-ss = sceneSpatialSupport(scene,'meters');   % x and y spatial support
-xmin = min(ss.x(:)); xmax = max(ss.x(:));
-ymin = min(ss.y(:)); ymax = max(ss.y(:));
+ss = sceneSpatialSupport(scene, 'meters'); % x and y spatial support
+xmin = min(ss.x(:));
+xmax = max(ss.x(:));
+ymin = min(ss.y(:));
+ymax = max(ss.y(:));
 
 % Set up the new spatial support
 % We want height/rows = dx exactly, if possible
@@ -41,42 +69,41 @@ ymin = min(ss.y(:)); ymax = max(ss.y(:));
 xN = xmin:dx:xmax;
 yN = ymin:dx:ymax;
 
-% fprintf('Current  dx = %f meters\n',ss.y(2) - ss.y(1));
-% fprintf('Proposed dx = %f meters\n',dx);
-% fprintf('New scene size %d (rows) %d (cols)\n',length(yN),length(xN));
+% fprintf('Current  dx = %f meters\n', ss.y(2) - ss.y(1));
+% fprintf('Proposed dx = %f meters\n', dx);
+% fprintf('New scene size %d (rows) %d (cols)\n', length(yN), length(xN));
 if length(xN) > 1000 || length(yN) > 1000
     if (promptUser)
-        fprintf('Very large scene.  Any key to continue\n');
+        fprintf('Very large scene. Any key to continue\n');
         pause
     end
 end
 
 %% Interpolate the image for each waveband
-nWave = sceneGet(scene,'nwave');
-wave  = sceneGet(scene,'wave');
+nWave = sceneGet(scene, 'nwave');
+wave = sceneGet(scene, 'wave');
 
 % Precompute meshgrid for speed outside of loop
-[X,Y]   = meshgrid(ss.x,ss.y);
-[Xq,Yq] = meshgrid(xN,yN);
+[X, Y] = meshgrid(ss.x, ss.y);
+[Xq, Yq] = meshgrid(xN, yN);
 
-photonsN = zeros(length(yN),length(xN),nWave);
+photonsN = zeros(length(yN), length(xN), nWave);
 for ii=1:nWave
-    photons = sceneGet(scene,'photons',wave(ii));
-    photonsN(:,:,ii) = interp2(X,Y,photons,Xq,Yq,method);
+    photons = sceneGet(scene, 'photons', wave(ii));
+    photonsN(:, :, ii) = interp2(X, Y, photons, Xq, Yq, method);
 end
 
 % Change up the photons and thus the row/col
-scene = sceneSet(scene,'photons',photonsN);
-n = sceneGet(scene,'name');
-scene = sceneSet(scene,'name',sprintf('%s-%s',n,method));
+scene = sceneSet(scene, 'photons', photonsN);
+n = sceneGet(scene, 'name');
+scene = sceneSet(scene, 'name', sprintf('%s-%s', n, method));
 
 % Now adjust the FOV so that the dx works out perfectly
-sr    = sceneGet(scene,'spatial resolution');
-fov   = sceneGet(scene,'fov');
-scene = sceneSet(scene,'fov',fov*dx/sr(2));
+sr = sceneGet(scene, 'spatial resolution');
+fov = sceneGet(scene, 'fov');
+scene = sceneSet(scene, 'fov', fov * dx / sr(2));
 
 % The spatial resampling can have a small effect
-scene = sceneSet(scene,'mean luminance',mLum);
+scene = sceneSet(scene, 'mean luminance', mLum);
 
 end
-    

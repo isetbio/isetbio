@@ -1,4 +1,4 @@
-function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
+function microns = wvfDefocusDioptersToMicrons(diopters, pupilSizeMM)
 % Convert defocus in diopters to defocus in microns
 %
 % Syntax:
@@ -28,7 +28,7 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 %
 %       The main consideration in doing this is that the Zernike
 %       coefficients are normalized so that they have unit rms across the
-%       pupil- while the dioptric value is just related to the curvature,
+%       pupil- while the dioptric value is just related to the curvature, 
 %       so this makes it work out that the Zernike defocus term in microns
 %       depends on pupil size for a fixed dioptric power. Larry Thibos
 %       probably explains this in one of his papers, I had to sit down and
@@ -40,6 +40,9 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 %
 % Outputs:
 %    microns     - Defocus, in microns
+%
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    This formula is also available at the following two sites.
@@ -57,6 +60,7 @@ function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 % History:
 %    06/05/12  dhb  Wrote this as separate function.
 %    11/10/17  jnm  Formatting
+%    01/10/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

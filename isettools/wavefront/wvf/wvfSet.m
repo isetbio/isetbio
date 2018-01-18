@@ -211,9 +211,9 @@ switch parm
         % standards
     case {'zcoeffs', 'zcoeff', 'zcoef'}
         % wvfSet(wvf, 'zcoeffs', val, jIndex);
-        % jIndex is optional, and can be a vector of j values
-        % or a string array of coefficient names that are converted to
-        % indices using wvfOSAIndexToVectorIndex. 
+        % jIndex is optional, and can be a vector of j values or a string
+        % array of coefficient names that are converted to indices using
+        % wvfOSAIndexToVectorIndex. 
         %
         % Note that j indices start at 0, and that is the convention
         % followed here. We add 1 in the routine to be compliant with
@@ -431,8 +431,8 @@ switch parm
         % Stiles-Crawford Effect structure.
         %
         % Angular dependence of the cone absorptions are calculated by the
-        % parameters in this structure. Values from the structure are retrieved
-        % and set using sceGet/Set
+        % parameters in this structure. Values from the structure are
+        % retrieved and set using sceGet/Set
         %
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;

@@ -18,6 +18,28 @@ function oi = wvf2oi(wvf)
 % Outputs:
 %    oi  - ISETBIO optical image
 %
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%  * [NOTE: DHB - There is an interpolation in the loop that computes the
+%     otf wavelength by wavelength.  This appears to be there to handle the
+%     possibility that the frequency support in the wvf structure could be
+%     different for different wavelengths. Does that ever happen?  If we
+%     check and it doesn't, I think we could save a little time by getting
+%     rid of the interpolation.]
+%  * [NOTE: DHB - NCP and I spent a lot of time last summer suffering
+%     through the psf <-> otf calculations as part of the IBIOColorDetect
+%     project, and the fftshift conventions.]
+%  * [NOTE: DHB - There is a note that PSF might start real but that the
+%     PSF implied by the OTF computed here might not be.  We should check
+%     into that.  We don't want imaginary PSFs showing up in calculations.
+%     Perhaps this is handled by the oi methods, in that perhaps they
+%     enforce that the psf obtained from the otf is in fact real.]
+%  * [NOTE: DHB - It might be worth checking that it is OK just to set the
+%     wavelength on the OTF, even if the oi itself has different wavelength
+%     sampling.]
+%
 % See Also:
 %    oiCreate, oiPlot
 %
@@ -27,6 +49,7 @@ function oi = wvf2oi(wvf)
 %    11/13/17  jnm  Comments & formatting
 %    01/01/18  dhb  Set name and oi wavelength from wvf.
 %              dhb  Check for need to interpolate, skip if not.
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples
 %{
@@ -36,7 +59,7 @@ function oi = wvf2oi(wvf)
     oiPlot(oi, 'psf550');
 %}
 %{
-    wvf = wvfCreate('wave',[400 550 700]');
+    wvf = wvfCreate('wave', [400 550 700]');
     wvf = wvfSet(wvf, 'zcoeff', 1, 'defocus');
 	wvf = wvfComputePSF(wvf);
     oi = wvf2oi(wvf);
@@ -49,7 +72,7 @@ wave = wvfGet(wvf, 'calc wave');
 
 %% First we figure out the frequency support.
 fMax = 0;
-for ww=1:length(wave)
+for ww = 1:length(wave)
     f = wvfGet(wvf, 'otf support', 'mm', wave(ww));
     if max(f(:)) > fMax
        fMax = max(f(:));
@@ -72,7 +95,7 @@ fy = fx;
 [X, Y] = meshgrid(fx, fy);
 c0 = find(X(1, :) == 0);
 tmpN = length(fx);
-if (floor(tmpN/2)+1 ~= c0)
+if (floor(tmpN / 2) + 1 ~= c0)
     error('We do not understand where sf 0 should be in the sf array');
 end
 
@@ -87,11 +110,13 @@ otf = zeros(nSamps, nSamps, nWave);
 % support in the wvf structure at different wavelengths.
 for ww=1:length(wave)
     f = wvfGet(wvf, 'otf support', 'mm', wave(ww));
-    if (f(floor(length(f)/2)+1) ~= 0)
-        error('wvf otf support does not have 0 sf in the expected location');
+    if (f(floor(length(f) / 2) + 1) ~= 0)
+        error(['wvf otf support does not have 0 sf in the '
+            'expected location']);
     end
     
-    % Apply fftshift to convert otf to DC in center, so interp will work right.
+    % Apply fftshift to convert otf to DC in center, so that interp will
+    % work right.
     thisOTF = fftshift(wvfGet(wvf, 'otf', wave(ww)));
     if (all(f == fx))
         est = thisOTF;
@@ -99,7 +124,7 @@ for ww=1:length(wave)
         est = interp2(f, f', thisOTF, X, Y, 'cubic', 0);
     end
     
-    % Isetbio wants the otf with (0,0) sf at the upper left.  We
+    % Isetbio wants the otf with (0, 0) sf at the upper left.  We
     % accomplish this by applying ifftshift to the wvf centered format.
     otf(:, :, ww) = ifftshift(est);
 end
@@ -108,7 +133,7 @@ end
 %
 % Build template with standard defaults
 oi = oiCreate;
-oi = oiSet(oi,'name',wvfGet(wvf,'name'));
+oi = oiSet(oi, 'name', wvfGet(wvf, 'name'));
 
 % Copy the OTF parameters.
 oi = oiSet(oi, 'optics OTF fx', fx);

@@ -17,6 +17,9 @@ function [n, m] = wvfOSAIndexToZernikeNM(j)
 % Outputs: 
 %    j - Can be a vector, in which case so are m and n.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    wvfOSAIndexToVectorIndex, wvfOSAIndexToZernikeNM, zernfun
 %
@@ -24,6 +27,7 @@ function [n, m] = wvfOSAIndexToZernikeNM(j)
 % History:
 %    xx/xx/13  DHB  (c) Wavefront Toolbox Team, 2013
 %    11/09/17  jnm  Formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

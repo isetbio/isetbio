@@ -17,10 +17,14 @@ function hwr = ieHwrect(signal, effectiveZero)
 % Outputs:
 %    hwr           - Half-wave rectification
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/16  JRG/HJ/BW  Isetbio Team, 2016
 %    11/22/17  jnm  Formatting
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

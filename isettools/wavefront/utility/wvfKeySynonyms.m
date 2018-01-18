@@ -9,9 +9,9 @@ function keyValues = wvfKeySynonyms(keyValues)
 %   string cell array, and convert each to the canonical form understood by
 %   the wvf code.
 %
-%   Typical usage would be to pass varargin through this, resulting
-%   in a cell array of strings that could be passed to the input parser,
-%   where the input parser understood only one of each set of synonyms.
+%   Typical usage would be to pass varargin through this, resulting in a
+%   cell array of strings that could be passed to the input parser, where
+%   the input parser understood only one of each set of synonyms.
 %
 %   The other usage would be to pass the parm value for wvfSet/wvfGet
 %   through this.
@@ -27,16 +27,20 @@ function keyValues = wvfKeySynonyms(keyValues)
 %   KeyValues - string or a cell array of strings, after conversion.
 %               Output format matches input format.
 %
-% See also:
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
 %  ieParamFormat, wvfCreate, wvfGet, wvfSet
 
 % History:
-%   12/07/17  dhb  Wrote.
+%	 12/07/17  dhb  Wrote.
+%    01/10/18  jnm  Formatting update
 
 %% Handle case where a single string is passed
 %
-% This converts input into a cell array.  We 
-% reconvert after the synonym replacement section.
+% This converts input into a cell array. We reconvert after the synonym
+% replacement section.
 if (ischar(keyValues))
     keyValuesCell = {keyValues};
 elseif (iscell(keyValues))
@@ -75,7 +79,8 @@ for kk = 1:2:length(keyValuesCell)
         case {'refpupilplanesize', 'refpupilplanesizemm', 'fieldsizemm'}
             keyValuesCell{kk} = 'refpupilplanesize';
         case {'refpupilplanesampleinterval', 'fieldsamplesize', ...
-                'refpupilplanesampleintervalmm', 'fieldsamplesizemmperpixel'}
+                'refpupilplanesampleintervalmm', ...
+                'fieldsamplesizemmperpixel'}
             keyValuesCell{kk} = 'refpupilplanesampleinterval';
         case {'refpsfsampleinterval' 'refpsfarcminpersample', ...
                 'refpsfarcminperpixel'}
@@ -89,8 +94,8 @@ for kk = 1:2:length(keyValuesCell)
             keyValuesCell{kk} = 'calcobserveraccommodation';
         case {'calcobserverfocuscorrection', 'defocusdiopters'}
             keyValuesCell{kk} = 'calcobserverfocuscorrection';
-        case {'calcwave', 'calcwavelengths', 'wavelengths', 'wavelength', ...
-                'wls', 'wave'}
+        case {'calcwave', 'calcwavelengths', 'wavelengths', ...
+                'wavelength', 'wls', 'wave'}
             keyValuesCell{kk} = 'calcwavelengths';
         case {'calcconepsfinfo'}
             keyValuesCell{kk} = 'calcconepsfinfo';

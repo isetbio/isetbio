@@ -1,5 +1,5 @@
 function tee = temporalEquivEcc(center, varargin)
-% Equivalent temporal eccentricity according to Kalmar/Chichilnisky
+% (IN PROG.) Equivalent temporal eccentricity acc. to Kalmar/Chichilnisky
 %
 % Syntax:
 %   tee = temporalEquivEcc(center)
@@ -15,9 +15,11 @@ function tee = temporalEquivEcc(center, varargin)
 %    half but elliptical in the nasal half of the retina" (Chichilnisky &
 %    Kalmar, pg. 2738, 2002).
 %
-%    The TEE can be used, for example, to calculate the diameter of the receptive field size
-%    at a retinal location.
+%    The TEE can be used, for example, to calculate the diameter of the
+%    receptive field size at a retinal location.
 %      TEE = sqrt((0.61 * X ^ 2) + Y ^ 2) (corrected from the publication)
+%
+%    Examples contained in code.
 %
 % Inputs:
 %    center  - position on retina in mm, fovea is (0, 0)
@@ -46,8 +48,9 @@ function tee = temporalEquivEcc(center, varargin)
 %     theta = (pi / 180) * theta;
 %     
 %     %% Apply formula for TEE
-%     if ((theta > (pi / 2) && theta < (3 * pi / 2)) && eyeSide==1 ) || ...
-%             ((theta < (pi / 2) || theta > (3 * pi / 2)) && eyeSide==0 )
+%     if ((theta > (pi / 2) && theta < (3 * pi / 2)) && eyeSide == 1) ...
+%             || ((theta < (pi / 2) || theta > (3 * pi / 2)) ...
+%             && eyeSide == 0)
 %         
 %         [xrad, yrad] = pol2cart(theta, rho);
 %         

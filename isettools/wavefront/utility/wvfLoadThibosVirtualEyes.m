@@ -46,6 +46,9 @@ function [sample_mean, sample_cov] = ...
 %    sample_mean     - Zernike mean vector
 %    sample_cov      - Zernike covariance matrix
 %
+% Optional key/value pairs:
+%    None.
+%
 % References:
 %    * A related paper:  Autrusseau, Thibos and Shevell (2011)
 %      Vision Research
@@ -60,6 +63,7 @@ function [sample_mean, sample_cov] = ...
 % History:
 %    xx/xx/12       Copyright Wavefront Toolbox Team, 2012
 %    11/09/17  jnm  Formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

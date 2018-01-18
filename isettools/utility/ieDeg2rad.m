@@ -15,8 +15,12 @@ function r = ieDeg2rad(d, units)
 % Outputs:
 %    r     - measurement in Radians (unless other unit specified)
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
-%    * [Note - DHB: Could consider deprecating as per discussion in issue 277.]
+%    * [Note: DHB - Could consider deprecating as per our discussion in
+%      issue 277.]
 %
 % See Also:
 %    rad2deg, deg2rad
@@ -28,6 +32,8 @@ function r = ieDeg2rad(d, units)
 %                   units argument, and scale multiplier. 
 %    12/22/17  BW   Introduced, removed deg2rad to avoid matlab
 %                   conflict, replaced throughout code.
+%    01/11/18  jnm  Formatting update to match Wiki.
+
 % Examples:
 %{
     ieDeg2rad(90)

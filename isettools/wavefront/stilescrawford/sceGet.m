@@ -20,6 +20,9 @@ function val = sceGet(sceP, parm, varargin)
 % Outputs:
 %    val      - The value of the desired parameter
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    sceCreate
 %

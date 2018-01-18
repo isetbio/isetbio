@@ -8,6 +8,8 @@ function outArray = unpadarray(inArray, unpadSize)
 %    This function is an inversion of the function padarray. Unpads evenly
 %    from both side of the array. 
 %
+%    Examples in code.
+%
 % Inputs:
 %    inArray   - Input array to unpad
 %    unpadSize - Can be a single integer (rows) or a 1x2 vector (for rows &
@@ -16,6 +18,9 @@ function outArray = unpadarray(inArray, unpadSize)
 % Outputs:
 %    outArray  - the unpadded array
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %
 % See also: padarray
@@ -23,25 +28,24 @@ function outArray = unpadarray(inArray, unpadSize)
 % History:
 %    11/20/17  jnm  Formatting, example & heading text
 %    12/26/17   BW  more tests in example
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
-    test = rand(128,128);
-    j = padarray(test, [2,2]);
-    test2 = unpadarray(j, [2,2]);
-    isequal(test,test2)
+    test = rand(128, 128);
+    j = padarray(test, [2, 2]);
+    test2 = unpadarray(j, [2, 2]);
+    isequal(test, test2)
 
-    pd = [3,4];
+    pd = [3, 4];
     j = padarray(test, pd);
     test2 = unpadarray(j, pd);
-    isequal(test,test2)
+    isequal(test, test2)
 
-    pd = [9,9];
+    pd = [9, 9];
     j = padarray(test, pd);
     test2 = unpadarray(j, pd);
-    isequal(test,test2)
-
-
+    isequal(test, test2)
 %}
 
 if notDefined('inArray'), error('Input array required'); end

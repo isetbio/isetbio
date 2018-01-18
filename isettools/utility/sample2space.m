@@ -19,6 +19,8 @@ function [r, c] = sample2space(rSamples, cSamples, rowDelta, colDelta)
 %    spatial support. At least, this is Matlab's convention for the FFT,
 %    prior to application of ifftshift.
 %
+%    Examples in code.
+%
 % Inputs:
 %    rSamples - Row Samples
 %    cSamples - Column Samples
@@ -29,10 +31,14 @@ function [r, c] = sample2space(rSamples, cSamples, rowDelta, colDelta)
 %    r        - Row spatial data
 %    c        - Column spatial data
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/20/17  jnm  Formatting
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

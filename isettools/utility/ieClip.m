@@ -21,6 +21,8 @@ function im = ieClip(im, lowerBound, upperBound)
 %           - If both are [] (blank) - no bounding will occur
 %       * Providing the data and a lower and an upper bound
 %
+%    Examples are included within the code.
+%
 % Inputs:
 %    im         - The data you wish to clip
 %    lowerBound - (Optional) If upperBound exists, the lowerBound, else the
@@ -30,13 +32,15 @@ function im = ieClip(im, lowerBound, upperBound)
 % Outputs:
 %    im         - The clipped data
 %
-% Examples are included within the code.
+% Optional key/value pairs:
+%    None.
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/30/17  jnm  Formatting
 %    12/21/17  BW   Fixed note by using fprintf and fixed exist()
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
