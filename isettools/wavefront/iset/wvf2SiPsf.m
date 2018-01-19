@@ -2,7 +2,7 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
 % Convert a wvf structure to isetbio shift-invariant PSF data structure
 %
 % Syntax:
-%   [siData, wvfP] = wvf2SiPsf(wvfP)
+%   [siData, wvfP] = wvf2SiPsf(wvfP, [varargin])
 %
 % Description:
 %    For each wavelength in wvfP, compute the PSF place it into an isetbio
@@ -77,7 +77,7 @@ function [siData, wvfP] = wvf2SiPsf(wvfP, varargin)
 %    01/15/18  dhb  First example was broken.  Fixed. Second example was
 %                   also broken, but the desired example is in a tutorial
 %                   so pointed to that.
-%    01/17/18  jnm  Formatting update to match Wiki.
+%    01/18/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

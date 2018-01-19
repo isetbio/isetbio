@@ -19,7 +19,7 @@ function wvf = wvfCreate(varargin)
 %    mean.
 %
 % Inputs:
-%    None required:
+%    None required.
 %
 % Outputs:
 %    wvf      - The wavefront object

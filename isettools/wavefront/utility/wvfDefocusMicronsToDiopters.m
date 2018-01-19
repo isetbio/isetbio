@@ -27,12 +27,15 @@ function diopters = wvfDefocusMicronsToDiopters(microns, pupilSizeMM)
 % Outputs
 %    diopters    - The defocus, in diopters
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    wvfDefocusDioptersToMicrons.
 
 % History:
 %    02/05/17  dhb  Wrote this as separate function.
-%    11/10/17  jnm  Formatting
+%    11/18/17  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

@@ -23,6 +23,11 @@ function [averagePSF] = psfAverageMultiple(inputPSFs, CHECKINSFDOMAIN)
 % Optional key/value pairs:
 %    None.
 %
+% Notes:
+%    * TODO: Remove references to CHECKINSFDOMAIN since it is no longer
+%      used in the function (and comment referenced in inputs section does
+%      not exist)
+%
 
 % History:
 %    07/19/07  dhb  Wrote it.
@@ -30,7 +35,7 @@ function [averagePSF] = psfAverageMultiple(inputPSFs, CHECKINSFDOMAIN)
 %              dhb  Take array, not cell array.
 %    11/13/17  jnm  Comments, formatting, and example
 %    01/01/18  dhb  Example turning, get rid of frequency domain check.
-%    01/11/18  jnm  Formatting update to match Wiki
+%    01/18/18  jnm  Note, formatting update to match Wiki.
 
 % Examples:
 %{

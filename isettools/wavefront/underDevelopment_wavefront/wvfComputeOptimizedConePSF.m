@@ -10,10 +10,13 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
 %    is performed on the defocus parameter. 
 %
 % Inputs:
-%    wvfIn - 
+%    wvfIn - The wavefront object
 %
 % Outputs:
-%    wvfOut - 
+%    wvfOut - The modified wavefront object
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [NOTE: DHB - This function is under development. The idea is that
@@ -24,7 +27,18 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
 %       "underDevelopment_wavefront" directory and putting in an error
 %       message at the top so that people don't think it might work.]
 %    * [NOTE: JNM - The example is broken, but at least 'semi-present' now]
-%
+%    * From Jenn's notes when she worked on this in November 2017.
+%      wvfComputeOptimizedConePSF:
+%       - Note: Was the input/output parameter intended to be non-private?
+%           I think I found the problem. wvfParams is not passed into the
+%           function directly, but is called regardless.
+%       - Note: How should the inlineMinFunction be addressed?
+%       - Note: Example is not working! (Trying, but still struggling)
+%       - Please check that all of my commentary inside the inline function
+%         is accurate. I am only like 50% certain of most of it. I have
+%         also neglected to include an example.
+%    * [Note: JNM - defocusFound is created but not used?]
+
 
 % History:
 %    08/26/11  dhb  Wrote it.
@@ -32,14 +46,9 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
 %              dhb  Print warning if optimal value is at search bound.
 %    09/07/11  dhb  Rename. Use wvfParams for i/o.
 %	 11/14/17  jnm  Comments & formatting
+%    01/18/18  jnm  Formatting update to match Wiki, move notes from my
+%    last check-in to the notes section.
 
-% From Jenn's notes when she worked on this in November 2017.
-% wvfComputeOptimizedConePSF
-%     - Note: Was the input/output parameter intended to be non-private?
-%         I think I found the problem. wvfParams is not passed into the function directly, but is called regardless.
-%     - Note: How should the inlineMinFunction be addressed?
-%     - Note: Example is not working! (Trying, but still struggling)
-%     - Please check that all of my commentary inside the inline function is accurate. I am only like 50% certain of most of it. I have also neglected to include an example
 
 % Examples:
 %{
@@ -64,7 +73,7 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
     wvfParams0 = wvfSet(wvfParams0,'fieldSampleSize',16.212/201);
     wvfParams0 = wvfSet(wvfParams0,'fieldsizemm',16.212);
     wvfParams0.T_cones = T_cones;
-    whichRow = floor(wvfGet(wvfParams0,'npixels')/2) + 1;
+    whichRow = floor(wvfGet(wvfParams0,'npixels') / 2) + 1;
     wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'none'));
     wvfParams0 = wvfComputePSF(wvfParams0);
     wvfParams0.coneWeights = [1 1 0];
@@ -85,12 +94,12 @@ vlb = -diopterBound;
 vub = -vlb;
 
 % Optimize focus
-defocusFound = fmincon(@(defocus) InlineMinFunction(defocus,wvfIn), defocusStart, [], [], [], [], vlb, vub, [], options);
+defocusFound = fmincon(@(defocus) InlineMinFunction(defocus,wvfIn), ...
+    defocusStart, [], [], [], [], vlb, vub, [], options);
 if (abs(x) >= diopterBound)
     fprintf(['WARNING: defocus found in wvfComputeOptimizedConePSF is '...
         'at search limit of %0.1f diopters\n'], diopterBound)
 end
 [~, wvfOut] = InlineMinFunction(x,wvfIn);
-
 
     end

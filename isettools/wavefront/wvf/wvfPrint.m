@@ -19,8 +19,6 @@ function wvf = wvfPrint(wvf, varargin)
 %    *Needs attention*
 %
 % Notes:
-%    * [Note: JNM - Measurement conditions and calculation parameters
-%      contain the same information, are both sections necessary?]
 %    * TODO: Fill out optional key/value pairs section
 %
 % See Also:
