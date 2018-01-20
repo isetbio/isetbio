@@ -2,7 +2,7 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 % Convert CIE LAB values to CIE XYZ values
 %
 % Syntax:
-%   XYZ = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
+%   xyz = ieLAB2XYZ(lab, whitepoint, [useOldCode], [labexp])
 %
 % Description:
 %    Converts CIEL*a*b* coordinates to CIE XYZ coordinates. We will use
@@ -16,17 +16,18 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 %    useOldCode - 0 to use Matalb's routines, 1 otherwise
 %    labexp     - used by old code; the exponent used in the CIELAB formula
 %                 Default is cube root as used in standard CIELAB. If
-%                 specified, use the number as exponent. (note this
-%                 exponent here should be the same as the exponent used in
-%                 vcXYZlab.m)
+%                 specified, use the number as exponent. 
 %
 % Outputs:
-%    xyz        - CIE XYZ Values
+%    xyz        - CIE XYZ values
+% 
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    ieXYZ2LAB
 %
-% See examples in the source
+% Examples are provided in the source code.
 %
 % History
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
@@ -37,27 +38,18 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 %    11/01/17  jnm  Fixed final reference to exp instead of labexp
 %    11/17/17  jnm  Formatting & fix example (useOldCode was not
 %                   instantiated, replaced with a 0)
-%
-%
-% Copyright ImagEval Consultants, LLC, 2009.
+%                   Copyright ImagEval Consultants, LLC, 2009.
+%    01/20/18  dhb  Fix example so it works. 
 
 % Examples:
 %{
-   vci = vcGetObject('vcimage');
-   [locs, rgb] = macbethSelect(vci);
-   dataXYZ = imageRGB2xyz(vci, rgb);
-   whiteXYZ = dataXYZ(1, :);
-   lab = ieXYZ2LAB(dataXYZ, whiteXYZ);
-   xyz = ieLAB2XYZ(lab, whitepoint, labexp, 0)
-%}
+   dataXYZ = [100 100 100 ; 50 100 75; 80 90 110];
+   whiteXYZ = [100 100 100];
+   lab = ieXYZ2LAB(dataXYZ, whiteXYZ)
+   xyz = ieLAB2XYZ(lab, whiteXYZ)
+   xyz = ieLAB2XYZ(lab, whiteXYZ, true)
 
-% History
-%    08/18/15  dhb  Change conditional on exist of makecform, works for
-%                   p-code too.
-%              dhb  Always define labexp, since makecform may not exist.
-%              dhb  Change "exp"->"labexp" to avoid clobbering function exp
-%    10/25/17  jnm  Comments & Formatting
-%    11/01/17  jnm  Fixed final reference to exp instead of labexp
+%}
 
 if notDefined('lab'), error('No data.'); end
 if notDefined('whitepoint')
