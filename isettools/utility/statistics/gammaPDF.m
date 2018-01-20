@@ -10,10 +10,33 @@ function y = gammaPDF(t, tau, n)
 %
 %    See formula various places, but Boynton et al. is a good place.
 %
-%    This is used to set the centerTR and the surroundTR. A different
-%    function is used to set cpTR and fbTR (twoGammaResp). Why is this? We
-%    haven't replaced it yet, sigh.
+%    This is used to set the center and surround response in some of our
+%    cell response modeling, although sometimes we use twoGammaResp.
 %
+%  For a reference to RGC impulse response functions see:
+%    Udi Kaplan and Ethan Bardete (Chapter 2) They dynamics of primate
+%    retinal ganglion cells Progress in Brain Research  2001, vol 134.
+%
+% Inputs:
+%    t        - Vector of input times.
+%    tau      - Scalar. Time constant of the gamma.
+%    n        - Scalar. The number parameter of the gamma.
+%
+% Outputs:
+%    y        - The gamma as a function of apssed time.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the code.
+%  
+% See also:
+%    twoGammaResp
+
+% History
+%   01/20/18  dhb  Fixed examples so they all work when run in a clean
+%                  workspace.  Document inputs and outputs.
+
 % Examples:
 %{
     t = 0:0.01:1;
@@ -36,27 +59,20 @@ function y = gammaPDF(t, tau, n)
     plot(t, c)
 %}
 %{
+    t = 0:0.01:1;
     tau = 0.05;
     n = 4; s = gammaPDF(t, tau, n);
     plot(t, s)
     plot(t, c - 0.7*s)
 %}
-%  Something like an RGC impulse response.
-%
-%   t = 0:0.005:0.3; tau = .01; n = 3;
-%   c = gammaPDF(t, tau, n); plot(t, c)
-%   tau = 0.02; n = 3; s = gammaPDF(t, tau, n); plot(t, s)
-%   plot(t, c - 0.9*s)
-%   grid on
-%
-%  We could digitize some examples and then fit these parameters.
-%
-%  For a reference to RGC impulse response functions see:
-%
-%    Udi Kaplan and Ethan Bardete (Chapter 2) They dynamics of primate
-%    retinal ganglion cells Progress in Brain Research  2001, vol 134.
-%
-% Copyright Vista Team Stanford, 2011
+%{
+    %  Something like an RGC impulse response.
+    t = 0:0.005:0.3; tau = .01; n = 3;
+    c = gammaPDF(t, tau, n); plot(t, c)
+    tau = 0.02; n = 3; s = gammaPDF(t, tau, n); plot(t, s)
+    plot(t, c - 0.9*s)
+    grid on
+%}
 
 if notDefined('t'), error('Time steps required'); end
 if notDefined('tau'), tau = 1; end
