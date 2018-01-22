@@ -5,7 +5,7 @@
 %
 % Description:
 %     Run all the examples in the isetbio tree,
-%     except those that contain a line of the form
+%     excepthose that contain a line of the form
 %     "% ETTBSkip"
 %
 % See also:

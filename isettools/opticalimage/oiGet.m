@@ -122,20 +122,20 @@ function val = oiGet(oi,parm,varargin)
 
 % Examples:
 %{
-scene = sceneCreate;
-oi = oiCreate;
-oi = oiCompute(oi,scene);
+    scene = sceneCreate;
+    oi = oiCreate;
+    oi = oiCompute(oi,scene);
 
-oiGet(oi,'rows')
-oiGet(oi,'wave')
-oiGet(oi,'optics')
-oiGet(oi,'area','mm')
-oiGet(oi,'wres','microns')
-oiGet(oi,'angularresolution')
-oiGet(oi,'distPerSamp','mm')
-oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
-oiGet(oi,'optics off axis method')
-oiGet(oi,'lens');   % Lens object
+    oiGet(oi,'rows')
+    oiGet(oi,'wave')
+    oiGet(oi,'optics')
+    oiGet(oi,'area','mm')
+    oiGet(oi,'wres','microns')
+    oiGet(oi,'angularresolution')
+    oiGet(oi,'distPerSamp','mm')
+    oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
+    oiGet(oi,'optics off axis method')
+    oiGet(oi,'lens');   % Lens object
 %}
 
 if ~exist('parm','var') || isempty(parm)
