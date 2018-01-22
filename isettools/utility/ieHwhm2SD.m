@@ -43,6 +43,11 @@ function s = ieHwhm2SD(h, gDim)
 % Outputs:
 %    s    - The calculated standard deviation
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code.
+%
 % References:
 %    en.wikipedia.org/wiki/Multivariate_normal_distribution#Bivariate_case
 %    - Shortened URL: https://goo.gl/BnDTZ8
@@ -51,6 +56,7 @@ function s = ieHwhm2SD(h, gDim)
 % History:
 %    xx/xx/07       Copyright ImagEval Consultants, LLC, 2007.
 %    11/22/17  jnm  Formatting
+%    01/22/18  dhb  Make examples run in clean workspace.
 
 % Examples:
 %{
@@ -66,6 +72,8 @@ function s = ieHwhm2SD(h, gDim)
     % Now change to 5 units
     s = ieHwhm2SD(5, 2);
     g = fspecial('gauss', 50, s); 
+    x = 1:50;
+    x = x - mean(x(:));
     vcNewGraphWin; mesh(x, x, g/max(g(:))); view([0,0])
 %}
 

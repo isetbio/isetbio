@@ -5,7 +5,7 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %   lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %
 % Description:
-%    The CIELAB values are used for color metric calculations in the
+%    The CIELAB values are used for colorimetric calculations in the
 %    engineering and psychology communities.  Let us know if you
 %    would like to have the deltaE2000. The formula for XYZ to CIELAB
 %    requires specifying the XYZ values of the white point.
@@ -26,6 +26,11 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    lab        - CIE Lab values are returned in the same format
 %                 (RGB or XW) as the input XYZ. 
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code
+%
 % References:
 %    Read about CIELAB formulae in Wyszecki and Stiles, page 167 and other
 %    standard texts.
@@ -38,28 +43,28 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %      requires one of them. I think XYZ 10. Must check. Or do we just
 %      specify in the methods - BW ). 
 %
-% Copyright ImagEval Consultants, LLC, 2003.
 %
 % See Also:
 %    ieLAB2XYZ
 
-% History
+% History:
+%                   Copyright ImagEval Consultants, LLC, 2003.
+%
 %    08/18/15  dhb  Change conditional on exist of makecform, works for
 %                   p-code too.
 %    10/25/17  jnm  Comments & formatting
-%    11/13/17  baw  Updated comments to match behavior on use of old
-%                   code
+%    11/13/17  baw  Updated comments to match behavior on use of old code
 %    11/17/17  jnm  Formatting
 %    12/21/17  baw  Sent reference to ieLAB2XYZ
-
+%    01/22/17  dhb  Fixed example.
 
 % Examples:
 %{
-   vci = vcGetObject('vcimage');
-   [locs, rgb] = macbethSelect(vci); 
-   dataXYZ = imageRGB2xyz(vci, rgb);
-   whiteXYZ = dataXYZ(1, :);
-   lab = ieXYZ2LAB(dataXYZ, whiteXYZ);
+   dataXYZ = [100 100 100 ; 50 100 75; 80 90 110];
+   whiteXYZ = [100 100 100];
+   lab = ieXYZ2LAB(dataXYZ, whiteXYZ)
+   lab2 = ieXYZ2LAB(dataXYZ, whiteXYZ, true)
+   xyz = ieLAB2XYZ(lab, whiteXYZ)
 %}
 
 if notDefined('xyz'), error('No data.'); end

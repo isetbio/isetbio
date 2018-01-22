@@ -116,11 +116,16 @@ function val = oiGet(oi,parm,varargin)
 % 
 
 % History
-%                Copyright ImagEval Consultants, LLC, 2003-2015.
-% 12/30/17  dhb  Started to put comments into isetbio standard format.
+%                  Copyright ImagEval Consultants, LLC, 2003-2015.
+%   12/30/17  dhb  Started to put comments into isetbio standard format.
+%   01/22/18  dhb  Example runs in clean workspace.
 
 % Examples:
 %{
+scene = sceneCreate;
+oi = oiCreate;
+oi = oiCompute(oi,scene);
+
 oiGet(oi,'rows')
 oiGet(oi,'wave')
 oiGet(oi,'optics')

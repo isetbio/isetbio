@@ -5,7 +5,7 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 %   xyz = ieLAB2XYZ(lab, whitepoint, [useOldCode], [labexp])
 %
 % Description:
-%    Converts CIEL*a*b* coordinates to CIE XYZ coordinates. We will use
+%    Converts CIE L*a*b* coordinates to CIE XYZ coordinates. We will use
 %    the makecform routine from the Matlab image processing toolbox for the
 %    converison; if the toolbox/routine is not available, we will revert to
 %    the older version of the code.
@@ -48,7 +48,6 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
    lab = ieXYZ2LAB(dataXYZ, whiteXYZ)
    xyz = ieLAB2XYZ(lab, whiteXYZ)
    xyz = ieLAB2XYZ(lab, whiteXYZ, true)
-
 %}
 
 if notDefined('lab'), error('No data.'); end

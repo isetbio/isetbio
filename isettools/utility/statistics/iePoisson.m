@@ -46,7 +46,6 @@ function [val, seed] = iePoisson(lambda, varargin)
 
 % Examples:
 %{
-% (see Run Configuration in Debug):
     % Matrix form
 	nSamp = 128; 
     lambda = round(rand(nSamp, nSamp) * 10);

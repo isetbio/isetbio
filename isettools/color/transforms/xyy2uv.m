@@ -16,14 +16,18 @@ function uv = xyy2uv(xyy,format)
 % Inputs:
 %    xyy - Nx3 [x,y,Y], chromacity Coordinates and Luminance 
 %    format - Specifies the uv space. By default format ='' returns
-%             u-prime v-prime, but format = 'uv' returns those values.
-%             N.B. The 'uv' format is used for correlated
-%             color temperature.
+%             u-prime v-prime, but format = 'uv' returns striaght uv values.
+%             N.B. The 'uv' format is used for correlated color temperature.
 %
 % Outputs:
 %    uv - Nx2 [u-prime,v-prime] representation, or [u,v] if format='uv'
 %
-% See also: xyy2xyz, xyz2uv
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code.
+%
+% See also: xyy2xyz, xyz2uv,cct2sun
 
 % History
 %    12.12.2017 BW first draft
@@ -31,8 +35,8 @@ function uv = xyy2uv(xyy,format)
 % Examples:
 %{
    xyY = [.3221 .3322 100];
-   xyy2uv(XYZ,'uv')   % u,v used for cct2sun
-   xyy2uv(XYZ)        % uprime, vprime format
+   xyy2uv(xyY,'uv')   % u,v used for cct2sun
+   xyy2uv(xyY)        % uprime, vprime format
 %}
 
 % Default is uprime, vprime format
