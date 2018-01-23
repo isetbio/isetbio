@@ -106,7 +106,7 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 % History:
 %    xx/xx/11 DHB/BW    (c) Wavefront Toolbox Team 2011, 2012
 %    11/01/17 jnm       Comments & formatting
-%    01/16/18 dhb .     Make example work.
+%    01/16/18 dhb       Make example work.
 
 % Examples:
 %{
