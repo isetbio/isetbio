@@ -36,9 +36,6 @@ function s = ieHwhm2SD(h, gDim)
 %
 %          s = h / (2 * sqrt(ln(2));
 %
-%    Examples contained in code. Type edit ieHwhm2SD in the command window
-%    to view.
-%
 % Inputs:
 %    h    - The required half-width half-max
 %    gDim - (Optional) The dimension of the Gaussian. Default 2.
@@ -49,6 +46,9 @@ function s = ieHwhm2SD(h, gDim)
 % Optional key/value pairs:
 %    None.
 %
+% Examples are provided in the source code. Type edit ieHwhm2SD in the
+% command window to view.
+%
 % References:
 %    en.wikipedia.org/wiki/Multivariate_normal_distribution#Bivariate_case
 %    - Shortened URL: https://goo.gl/BnDTZ8
@@ -57,6 +57,7 @@ function s = ieHwhm2SD(h, gDim)
 % History:
 %    xx/xx/07       Copyright ImagEval Consultants, LLC, 2007.
 %    11/22/17  jnm  Formatting
+%    01/22/18  dhb  Make examples run in clean workspace.
 
 % Examples:
 %{
@@ -72,6 +73,8 @@ function s = ieHwhm2SD(h, gDim)
     % Now change to 5 units
     s = ieHwhm2SD(5, 2);
     g = fspecial('gauss', 50, s); 
+    x = 1:50;
+    x = x - mean(x(:));
     vcNewGraphWin; mesh(x, x, g/max(g(:))); view([0,0])
 %}
 
