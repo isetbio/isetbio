@@ -33,6 +33,7 @@ function scene = sceneInterpolateW(scene, newWave, pLum)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+
 % Examples:
 %{
     scene = sceneCreate;

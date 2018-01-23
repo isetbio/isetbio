@@ -19,14 +19,15 @@ function [hc, blur] = hcBlur(hc, sd)
 %
 
 % History:
-%    xx/xx/12       (c) Imageval 2012
-%    12/05/17  jnm  Formatting
-%    12/27/17   BW  Fixed blur bug and changed return
+%  xx/xx/12       (c) Imageval 2012
+%  12/05/17  jnm  Formatting
+%  12/27/17   BW  Fixed blur bug and changed return
+%  01/23/18  dhb  Fix example so it runs.
 
-% Example
+% Examples:
 %{
   mcc = sceneCreate;
-  hc = sceneGet(scene,'photons');
+  hc = sceneGet(mcc,'photons');
   [hc, blurFunction] = hcBlur(hc,5);
   imageSPD(hc,sceneGet(mcc,'wave'));
   vcNewGraphWin; mesh(blurFunction); colormap(jet)
