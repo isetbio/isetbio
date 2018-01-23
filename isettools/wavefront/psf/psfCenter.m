@@ -19,8 +19,7 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%    * [Note: JNM - Please check example 2 for accuracy and terseness]
+% Examples are provided in the source code.
 %
 
 % History:
@@ -29,6 +28,7 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
 %    07/23/12  dhb  Match out volume to in volume.
 %    11/13/17  jnm  Comments, example & formatting
 %    01/11/18  jnm  Formatting update to match Wiki
+%    01/23/18  dhb  Delete broken example. One working one is enough.
 
 % Examples:
 %{
@@ -56,35 +56,6 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
     view(0, 90);
     axis('equal');
     axis([0 150 0 150]);
-%}
-%{
-    % This example only shows the circularly averaged PSF for L-cones
-    theZernikeCoeffs = importdata('autrusseauStandardObserver.txt');
-    % Cone sensitivities and equal energy weighting spectrum
-    load('T_cones_ss2');
-    conePsfInfo.S = S_cones_ss2;
-    conePsfInfo.T = T_cones_ss2;
-    conePsfInfo.spdWeighting = ones(conePsfInfo.S(3), 1);
-
-    wls = SToWls([400 10 31]);
-    wvf0 = wvfCreate;
-
-    % Set important parameters - Autrusseau std. observer
-    wvf0 = wvfSet(wvf0, 'measured pupil size', 6);
-    wvf0 = wvfSet(wvf0, 'calc pupil size', 6);
-    wvf0 = wvfSet(wvf0, 'zcoeffs', theZernikeCoeffs(:, 1));
-    wvf0 = wvfSet(wvf0, 'measured wavelength', 570);
-    wvf0 = wvfSet(wvf0, 'calc wavelengths', wls);
-    wvf0 = wvfSet(wvf0, 'calc cone psf info', conePsfInfo);
-    wvf0 = wvfSet(wvf0, 'number spatial samples', 497);
-    sce = sceCreate(wls, 'none');
-    wvf0 = wvfSet(wvf0, 'sce params', sce);
-
-    wvfParams1 = wvf0;
-    wvfParams1 = wvfComputePSF(wvfParams1);
-    conePsf1 = wvfGet(wvfParams1, 'cone psf');
-
-    lpsf = psfCenter(conePsf1(:, :, 1));
 %}
 
 % Use interpolation to recenter
