@@ -59,7 +59,7 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
     wvfInd = wvfOSAIndexToVectorIndex([20:5:50])
 %}
 %{
-    [vectorIndex] = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
+    vectorIndex = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
     [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
         'defocus', 'vertical_astigmatism', 'primary_spherical'})
 %}
