@@ -109,7 +109,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 
 % Examples:
 %{
-    % ETTBSkip
+    % ETTBSkip.  The tutorial is auto run when we test tutorials.
     t_oiPlot
 %}
 

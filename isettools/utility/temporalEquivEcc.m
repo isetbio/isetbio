@@ -69,8 +69,7 @@ function tee = temporalEquivEcc(center, varargin)
 
 % Examples:
 %{
-    % ETTBSkip - This example known not to work.  Remove this line when it i
-    % fixed.
+    % ETTBSkip - This example known not to work.  Remove line when fixed.
     temporalEquivEcc([1, -1],'eyeSide', 'left')
     temporalEquivEcc([-1, 1],'eyeSide', 'left')
 %}

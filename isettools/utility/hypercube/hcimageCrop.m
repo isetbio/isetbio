@@ -29,7 +29,7 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 
 % Examples:
 %{
-    % ETTBSkip
+    % ETTBSkip.  Requires user input.
     %
     % To get this to work, you need to understand now
     % function imcrop works.

@@ -80,8 +80,8 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 
 % Examples:
 %{
-    % ETTBSkip
-    % See t_scenePlot for additional examples
+    % ETTBSkip.  Requires user input.
+    % Also see t_scenePlot for additional examples
     s = sceneCreate;
     ieAddObject(s); sceneWindow;
     scenePlot(s,'radiance v line spectrum');

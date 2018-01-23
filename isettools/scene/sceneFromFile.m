@@ -62,7 +62,7 @@ function [scene, I] = sceneFromFile(...
 
 % Examples:
 %{
-    % ETTBSkip
+    % ETTBSkip.  These and those skipped below require user input.
     scene = sceneFromFile;
     vcAddAndSelectObject(scene);
     sceneWindow

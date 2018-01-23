@@ -40,9 +40,6 @@ function scene = sceneInterpolateW(scene, newWave, pLum)
     scene = sceneInterpolateW(scene, [400:10:700]);
 %}
 %{
-    % ETTBSkip. This example is broken.  I am not immediately sure why.
-    % Fix and then remove these lines to add back to autorun set.
-
     % Monochromatic scene
     scene = sceneCreate;
     scene = sceneInterpolateW(scene, 550);
@@ -50,14 +47,8 @@ function scene = sceneInterpolateW(scene, newWave, pLum)
     sceneWindow;
 %}
 %{
-    % ETTBSkip. This example is broken.  I am not immediately sure why.
-    % Fix and then remove these lines to add back to autorun set.
-
     % Do not preserve luminance
     scene = sceneCreate;
-    scene = sceneInterpolateW(scene, 850);
-    vcAddAndSelectObject(scene);
-    sceneWindow;
     scene = sceneInterpolateW(scene, [400:2:700], 0);
     vcAddAndSelectObject(scene); sceneWindow;
 %}

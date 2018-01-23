@@ -31,7 +31,7 @@ function [fullName, imageType] = vcSelectImage(imageType, ext)
 
 % Examples:
 %{
-    % ETTBSkip
+    % ETTBSkip.  Requires user input.
     fullName = vcSelectImage()
     fullName = vcSelectImage('rgb')
     fullName = vcSelectImage('unispectral')
