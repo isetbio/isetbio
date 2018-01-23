@@ -864,7 +864,7 @@ d = sqrt(X .^ 2 + Y .^ 2);
 l = (d < r);
 img(l) = 128; % figure; imagesc(img)
 
-scene = sceneSet(scene, 'cphotons', repmat(img, [1, 1, nWave]));
+scene = sceneSet(scene, 'photons', repmat(img, [1, 1, nWave]));
 
 % Set up an illuminant
 wave = sceneGet(scene, 'wave');

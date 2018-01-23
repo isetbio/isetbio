@@ -159,7 +159,7 @@ if ~isempty(photons)
     end
 
     if showBar, waitbar(0.7, h, 'Compressing and storing'); end
-    scene = sceneSet(scene, 'compressed photons', newPhotons);
+    scene = sceneSet(scene, 'photons', newPhotons);
     
     % Calculate and store the scene luminance
     % scene = sceneSet(scene, 'luminance', sceneCalculateLuminance(scene));
