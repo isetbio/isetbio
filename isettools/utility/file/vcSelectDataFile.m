@@ -54,6 +54,7 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 
 % Examples:
 %{
+    % ETTBSkip
     fullName = vcSelectDataFile()
     fullName = vcSelectDataFile('', 'r')
     fullName = vcSelectDataFile('', 'r', 'tif')

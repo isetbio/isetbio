@@ -8,6 +8,10 @@
 
 % Examples:
 %{
+    % ETTBSkip
+    % Running these can get you stale files if your source
+    % is out of date, so don't auto-exacute these examples.
+
     % Synchronize ISETBIO's external PTB routines
     synchronizeISETBIOWithRepository('PTB_DHB');
 

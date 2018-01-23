@@ -30,7 +30,7 @@ function fullName = vcExportObject(obj, fullName, clearDataFlag)
 % Examples:
 %{
     scene = sceneCreate;
-    fullName = vcExportObject(scene, './myCompany');
+    fullName = vcExportObject(scene, fullfile(tempdir,'myCompany'));
 %}
 
 if notDefined('obj'), error('You must define an object to save.'); end

@@ -40,6 +40,8 @@ function obj = set(obj, varargin)
 
 %% Examples:
 %{
+   % ETTBSkip - Example is broken.  Remove this line when fixed.
+   % Need to define veriables before it will work.
    innerRetinaSU.mosaic{1}.set('dt',1);
 %}
 

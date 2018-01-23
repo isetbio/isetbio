@@ -31,7 +31,8 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 % History:
 %    xx/xx/09       (c) Stanford Synapse Team 2009
 %    12/15/17  jnm  Formatting
-%    12/26/17   BW  Added examples
+%    12/26/17   BW  Added examples.
+%    01/20/18  dhb  Make examples work.
 
 % Examples:
 %{
@@ -43,14 +44,16 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 %}
 %{
     % Orientation set in the quadratic form
+    [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
     rfCcov = [5 -2.5; -2.5 5]; 
     g = getGaussian(rfS, rfCcov);
     vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
 %}
 %{
     % Build the quadratic form
-    A = [1 0; 1 1]; rfCof = A*A';
-    g = getGaussian(rfS, rfCcov);
+    [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
+    A = [1 0; 1 1]; rfCov = A*A';
+    g = getGaussian(rfS, rfCov);
     vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
 %}
 
