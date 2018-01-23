@@ -10,6 +10,11 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 %    converison; if the toolbox/routine is not available, we will revert to
 %    the older version of the code.
 %
+%    Either the 2 or 10 degree XYZ values may be used, depending on field
+%    size.  If the size is less than 4 degrees, then the 2-deg fundamentals
+%    are recommended.  If more than 4 degrees, then the 10-deg
+%    fundamentals.
+%
 % Inputs:
 %    lab        - LAB image; can either be in XW or RGB format.
 %    whitepoint - a 3-vector of the xyz values of the white point.
@@ -24,10 +29,10 @@ function xyz = ieLAB2XYZ(lab, whitepoint, useOldCode, labexp)
 % Optional key/value pairs:
 %    None.
 %
+% Examples are provided in the source code
+%
 % See Also:
 %    ieXYZ2LAB
-%
-% Examples are provided in the source code.
 %
 % History
 %    08/18/15  dhb  Change conditional on exist of makecform, works for

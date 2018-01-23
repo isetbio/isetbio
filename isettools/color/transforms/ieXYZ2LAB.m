@@ -14,6 +14,11 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    the default CIELAB transforms. The Matlab implementation converts
 %    CIE 1931 XYZ to CIE 1976 L*a*b*. 
 %
+%    Either the 2 or 10 degree XYZ values may be used, depending on field
+%    size.  If the size is less than 4 degrees, then the 2-deg fundamentals
+%    are recommended.  If more than 4 degrees, then the 10-deg
+%    fundamentals.
+%
 %    We include, as an option, the version we implemented prior to
 %    Matlab's addition of this functionality.
 %
@@ -38,12 +43,6 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    For a (very small) problem with the official formula, see
 %    <http://www.brucelindbloom.com/index.html?LContinuity.html>
 %
-% Notes:
-%    * TODO: Must specify if XYZ is 2 deg or 10 deg XYZ? CIELAB probably
-%      requires one of them. I think XYZ 10. Must check. Or do we just
-%      specify in the methods - BW ). 
-%
-%
 % See Also:
 %    ieLAB2XYZ
 
@@ -57,6 +56,7 @@ function lab = ieXYZ2LAB(xyz, whitepoint, useOldCode)
 %    11/17/17  jnm  Formatting
 %    12/21/17  baw  Sent reference to ieLAB2XYZ
 %    01/22/17  dhb  Fixed example.
+%              dhb  Dealt with note wondering about 2 versus 10 degree.
 
 % Examples:
 %{
