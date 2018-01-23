@@ -34,8 +34,8 @@ function rgb = sceneShowImage(scene, displayFlag, gam)
 %{
     scene = sceneCreate;
     rgb = sceneShowImage(scene);
-    sceneShowImage(scene)
-    sceneShowImage(scene, 0)
+    sceneShowImage(scene);
+    sceneShowImage(scene, 0);
 %}
 
 if notDefined('scene'), cla; return;  end
