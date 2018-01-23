@@ -44,19 +44,6 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %                and their defaults include the following:
 %          'patchSize' - Patch size. Default 16 pixels e.g. patchSize = 8;
 %          'spectrum' - wavelength samples. 
-
-
-%   Examples:
-%{
-    % Macbeth Example
-    scene = sceneCreate('macbeth', 32);
-
-    patchSize = 8;
-    spectrum.wave = (380:4:1068)';
-    scene = sceneCreate('macbethEE_IR', patchSize, spectrum);
-%}
-
-%
 %
 %   The size of the individual patches and the wavelength sampling are both
 %   parameters. They can be set using the calling procedure
@@ -169,6 +156,16 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 % See also:  sceneFromFile
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+
+% Examples:
+%{
+    % Macbeth Example
+    scene = sceneCreate('macbeth', 32);
+
+    patchSize = 8;
+    spectrum.wave = (380:4:1068)';
+    scene = sceneCreate('macbethEE_IR', patchSize, spectrum);
+%}
 
 if notDefined('sceneName'), sceneName = 'default'; end
 parms = []; % Returned in some cases, not many.

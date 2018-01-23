@@ -36,9 +36,11 @@ function sceneWBCreate(sceneAll, workDir)
 
 % Examples:
 %{
+    % ETTBSkip.  This example throws an error.  Fix and then delete these
+    % comment lines to add back to autorun.
+
     scene = sceneCreate;
     sceneWBCreate(scene);
-
     sceneWBCreate(scene, pwd);
 %}
 

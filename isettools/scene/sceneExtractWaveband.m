@@ -40,6 +40,9 @@ function sceneW = sceneExtractWaveband(scene, waveList)
 
 % Examples:
 %{
+    % ETTBSkip.  This example is broken.  I could not immediately get it
+    % to work.  Fix, and then get rid of these comment lines.
+    scene = sceneCreate('macbethD65');
 	sceneMonochrome = sceneExtractWaveband(scene, 500);
 %}
 

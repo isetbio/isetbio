@@ -58,19 +58,23 @@ function [scene, I] = sceneFromFile(...
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    01/03/18  jnm  Formatting
+%    01/23/18  dhb  Skip autorun on examples that require user input.
 
 % Examples:
 %{
+    % ETTBSkip
     scene = sceneFromFile;
     vcAddAndSelectObject(scene);
     sceneWindow
 %}
 %{
+    % ETTBSkip
     [scene, fname] = sceneFromFile;
     vcAddAndSelectObject(scene);
     sceneWindow
 %}
 %{
+    % ETTBSkip
     fullFileName = vcSelectImage;
     imgType = ieImageType(fullFileName);
     scene = sceneFromFile(fullFileName, imgType);
@@ -78,6 +82,7 @@ function [scene, I] = sceneFromFile(...
     sceneWindow
 %}
 %{
+    % ETTBSkip
     fullFileName = vcSelectImage;
     imgType = 'multispectral';
     scene = sceneFromFile(fullFileName, imgType);
@@ -85,6 +90,7 @@ function [scene, I] = sceneFromFile(...
     sceneWindow
 %}
 %{
+    % ETTBSkip
     imgType = 'rgb';
     meanLuminance = 10;
     fullFileName = vcSelectImage;
