@@ -103,6 +103,7 @@ function scene = sceneSet(scene, parm, val, varargin)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+%    01/23/18  dhb  Throw error on unknown parameter.
 
 %  Examples:
 %{
@@ -378,7 +379,7 @@ switch parm
         scene.illuminant.spectrum = val;
         
     otherwise
-        disp(['Unknown sceneSet parameter: ', parm]);
+        error(['Unknown sceneSet parameter: ', parm]);
 end
 
 end
