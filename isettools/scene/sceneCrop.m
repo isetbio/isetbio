@@ -33,7 +33,7 @@ function [scene, rect] = sceneCrop(scene, rect)
 
 % Examples:
 %{
-    % ETTBSkip.  Requires user input, so don't autorun this example
+    % ETTBSkip.  Requires user input, so do not auto run this example
     [val, scene] = vcGetSelectedObject('SCENE');
 	newScene = sceneCrop(scene);
 %}

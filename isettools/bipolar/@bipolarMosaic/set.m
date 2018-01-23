@@ -40,8 +40,7 @@ function obj = set(obj, varargin)
 
 %% Examples:
 %{
-   % ETTBSkip - Example is broken.  Remove this line when fixed.
-   % Need to define veriables before it will work.
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
    innerRetinaSU.mosaic{1}.set('dt',1);
 %}
 

@@ -79,7 +79,7 @@ function response = compute(obj, varargin)
 
 % Examples:
 %{
-   % ETTBSkip. Needs fixing - needed variables not defined.
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
    [~, bpNTrialsCenter, bpNTrialsSurround] = ...
            bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);
 %}

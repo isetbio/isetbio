@@ -39,8 +39,7 @@ function val = get(obj, varargin)
 
 % Examples:
 %{
-   % ETTBSkip - Example is broken.  Remove this line when fixed.
-   % Need to define veriables before it will work.
+   % ETTBSkip - Example is broken.  Variables undefined. Remove this line when fixed.
    val = bipolar.get(parameter)
 %}
 

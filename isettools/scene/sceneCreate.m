@@ -738,7 +738,6 @@ sPhotons = surface * diag(iPhotons);
 sPhotons = XW2RGBFormat(sPhotons, r, c);
 
 % Compute product of the surface reflectance and illuminant photons here
-% scene = sceneSet(scene, 'cphotons', surface.data .* photons);
 scene = sceneSet(scene, 'photons', sPhotons);
 
 % Store the light source

@@ -151,7 +151,7 @@ end
 % Place the adjusted data in the scene structure
 [XW, r, c, ~] = RGB2XWFormat(energy);
 photons = XW2RGBFormat(Energy2Quanta(wave, XW')', r, c);
-scene = sceneSet(scene, 'cphotons', photons);
+scene = sceneSet(scene, 'photons', photons);
 if ~skipIlluminant, scene = sceneSet(scene, 'illuminant energy', illE); end
 
 % Update the scene luminance information

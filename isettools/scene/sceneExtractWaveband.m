@@ -40,8 +40,6 @@ function sceneW = sceneExtractWaveband(scene, waveList)
 
 % Examples:
 %{
-    % ETTBSkip.  This example is broken.  I could not immediately get it
-    % to work.  Fix, and then get rid of these comment lines.
     scene = sceneCreate('macbethD65');
 	sceneMonochrome = sceneExtractWaveband(scene, 500);
 %}
@@ -50,7 +48,7 @@ if notDefined('scene'), scene = vcGetObject('scene'); end
 if notDefined('waveList'), error('Wave list must be defined'); end
 
 sceneW = scene;
-sceneW = sceneSet(sceneW, 'cphotons', ...
+sceneW = sceneSet(sceneW, 'photons', ...
     sceneGet(scene, 'photons', waveList));
 sceneW = sceneSet(sceneW, 'wave', waveList);
 

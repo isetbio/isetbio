@@ -33,7 +33,7 @@ function hdl = plot(obj, pType, varargin)
 
 % Examples:
 %{
-   % ETTBSkip - Example is broken.  Remove this line when fixed.
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
    s_initRetina;
    bpL.plot('help')
    bpL.plot('mosaic', 'nMosaic', 1);
