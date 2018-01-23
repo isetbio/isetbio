@@ -14,4 +14,4 @@
 % History:
 %   01/17/18  dhb  Wrote it.
 
-ExecuteExamplesInDirectory(isetbioRootPath,'verbose',true);
+ExecuteExamplesInDirectory(isetbioRootPath,'verbose',false);
