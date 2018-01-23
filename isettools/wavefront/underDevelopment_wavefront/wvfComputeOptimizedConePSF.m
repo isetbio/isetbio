@@ -38,7 +38,7 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
 %         is accurate. I am only like 50% certain of most of it. I have
 %         also neglected to include an example.
 %    * [Note: JNM - defocusFound is created but not used?]
-
+%
 
 % History:
 %    08/26/11  dhb  Wrote it.
@@ -47,41 +47,19 @@ function wvfOut = wvfComputeOptimizedConePSF(wvfIn)
 %    09/07/11  dhb  Rename. Use wvfParams for i/o.
 %	 11/14/17  jnm  Comments & formatting
 %    01/18/18  jnm  Formatting update to match Wiki, move notes from my
-%    last check-in to the notes section.
-
+%                    last check-in to the notes section.
 
 % Examples:
 %{
-    %% Load cone sensitivities, set weighting spectrum.
-    S = [400 5 61];
-    wls = SToWls(S);
-    load T_cones_ss2;
-    T_cones = SplineCmf(S_cones_ss2,T_cones_ss2,S);
-    load spd_D65
-    weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
+    % Compute cone weighted PSFs using default parameters for conePsfInfo.
+    wvf = wvfCreate('wave',400:10:700);
+    wvf = wvfComputePSF(wvf);
 
-    % Specify datafile for Zernike coefficients
-    zernikeFile = 'sampleZernikeCoeffs.txt';
-    measpupilMM = 6;
-    theZernikeCoeffs = importdata(zernikeFile);
-
-    wvfParams0 = wvfCreate;
-    wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
-    wvfParams0 = wvfSet(wvfParams0,'calculated pupil',3);
-    wvfParams0 = wvfSet(wvfParams0,'wave',wls);
-    wvfParams0 = wvfSet(wvfParams0,'defocusDiopters',0);
-    wvfParams0 = wvfSet(wvfParams0,'fieldSampleSize',16.212/201);
-    wvfParams0 = wvfSet(wvfParams0,'fieldsizemm',16.212);
-    wvfParams0.T_cones = T_cones;
-    whichRow = floor(wvfGet(wvfParams0,'npixels') / 2) + 1;
-    wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'none'));
-    wvfParams0 = wvfComputePSF(wvfParams0);
-    wvfParams0.coneWeights = [1 1 0];
-    wvfParams0.criterionFraction = 0.9;
-
-    wvfParams0 = wvfComputeOptimizedConePSF(wvfParams0)
+    % Criterion fraction
+    criterionFraction = 0.5;
 %}
 
+% Set up fmincon options
 options = optimset('fmincon');
 options = optimset(options, 'Diagnostics', 'off', 'Display', 'off', ...
     'LargeScale', 'off', 'Algorithm', 'active-set');
@@ -94,12 +72,21 @@ vlb = -diopterBound;
 vub = -vlb;
 
 % Optimize focus
-defocusFound = fmincon(@(defocus) InlineMinFunction(defocus,wvfIn), ...
-    defocusStart, [], [], [], [], vlb, vub, [], options);
+defocusFound = fmincon(@(defocus) InlineMinFunction(defocus,wvfIn,criterionFraction), defocusStart, [], [], [], [], vlb, vub, [], options);
 if (abs(x) >= diopterBound)
     fprintf(['WARNING: defocus found in wvfComputeOptimizedConePSF is '...
         'at search limit of %0.1f diopters\n'], diopterBound)
 end
 [~, wvfOut] = InlineMinFunction(x,wvfIn);
 
-    end
+
+end
+
+%% Error function. 
+%
+% This returns the quantity to be minimized in the search over defocus.
+function f = SearchErrorFunction(defocusDiopters,wvf,criterionFraction)
+
+f = wvfComputeConeAverageCriterionRadius(wvf,defocusDiopters,criterionFraction);
+
+end
