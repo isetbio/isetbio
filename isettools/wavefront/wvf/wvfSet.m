@@ -106,13 +106,16 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %    xx/xx/11  DHB/BW  (c) Wavefront Toolbox Team 2011, 2012
 %    11/01/17  jnm     Comments & formatting
 %    01/18/18  jnm     Formatting update to match Wiki.
+%    01/16/18 dhb       Make example work.
 
 % Examples:
 %{
+   wvf = wvfCreate;
+   sce = sceCreate;
    wvf = wvfSet(wvf, 'measured pupil', 8);
    wvf = wvfSet(wvf, 'stiles crawford', sce);
    wvf = wvfSet(wvf, 'name', 'test wvf');
-   wvf = wvfSet(wvf, 'zcoeffs', z);
+   wvf = wvfSet(wvf, 'zcoeffs', 0);
 %}
 
 %% Arg checks and parse.
