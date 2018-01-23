@@ -48,8 +48,6 @@ if notDefined('scene'), scene = vcGetObject('scene'); end
 if notDefined('waveList'), error('Wave list must be defined'); end
 
 sceneW = scene;
-sceneW = sceneSet(sceneW, 'photons', ...
-    sceneGet(scene, 'photons', waveList));
 sceneW = sceneSet(sceneW, 'wave', waveList);
 
 end
