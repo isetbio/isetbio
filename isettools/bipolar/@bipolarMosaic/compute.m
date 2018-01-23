@@ -77,7 +77,7 @@ function response = compute(obj, varargin)
 %
 %    10/19/17  jnm  Comments & Formatting
 
-%% Examples
+% Examples:
 %{
    [~, bpNTrialsCenter, bpNTrialsSurround] = ...
            bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);

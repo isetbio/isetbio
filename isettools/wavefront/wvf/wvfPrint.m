@@ -28,7 +28,7 @@ function wvf = wvfPrint(wvf, varargin)
 % History:
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 
-% Examples
+% Examples:
 %{
     wvf0 = wvfCreate;
     wvfPrint(wvf0);

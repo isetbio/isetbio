@@ -17,7 +17,7 @@ function figHdl = vcNewGraphWin(figHdl, fType, varargin)
 %           upperleftbig  (for 2x2 format)
 %   This list may grow.
 %
-% Examples
+% Examples:
 %  vcNewGraphWin;
 %  vcNewGraphWin([],'upper left')   
 %  vcNewGraphWin([],'tall')

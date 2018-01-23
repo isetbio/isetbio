@@ -1424,7 +1424,7 @@ function scene = sceneLstarSteps(scene, barWidth, nBars, deltaE)
 %    None.
 %
 
-% Examples
+% Examples:
 %{
 	scene = sceneCreate('lstar', 50, 11, 10);
     ieAddObject(scene); sceneWindow;

@@ -50,7 +50,7 @@ function oi = oiCreate(oiType,varargin)
 %
 % See also:  sceneCreate, opticsCreate
 
-% Examples
+% Examples:
 %{
    % Marimont/Wandell model
    oi = oiCreate('human');

@@ -30,7 +30,7 @@ function [specRad, XYZ] = blackbody(wave, temps, unitType, eqWave)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Examples
+% Examples:
 %{
   wave = 400:10:700; 
   sp = blackbody(wave,5000,'energy')

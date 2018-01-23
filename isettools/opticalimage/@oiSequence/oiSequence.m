@@ -21,7 +21,7 @@ classdef oiSequence
     %   'composition'     -  add or blend or xor the fixed and modulated OIs
     %   'modulationRegion'-  choose a region of interest for the modulation
     %
-    % Examples
+    % Examples:
     %   oiSequence = oiSequence(oiBackground, oiModulated, ...
     %                      modulationFunctionTimeAxis, modulationFunction)
     %

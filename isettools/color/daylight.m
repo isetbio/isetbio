@@ -33,7 +33,7 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %    11/13/17  baw  Added example for computing luminance of all spds
 %    11/16/17  jnm  Formatting
 
-% Examples
+% Examples:
 %{
    w = 400:700; 
    spd = daylight(w, 6500, 'energy');

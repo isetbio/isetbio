@@ -38,9 +38,9 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 % See also: t_oisCreate, oiSequence, sceneCreate, sceneHarmonic,
 %           humanConeContrast, humanConeIsolating
 
-% Examples
-% Harmonics
+% Examples:
 %{
+   % Harmonic
    clear hparams
    hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
    hparams(1) = hparams(2); hparams(1).contrast = 0; 
@@ -50,9 +50,8 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
         'testParameters',hparams,'sceneParameters',sparams);
    ois.visualize('movie illuminance');
 %}
-
-% Vernier
 %{
+   % Vernier
    clear vparams; vparams(2) = vernierP; 
    vparams(2).name = 'offset'; vparams(2).bgColor = 0; vparams(1) = vparams(2); 
    vparams(1).barWidth = 0; vparams(1).bgColor = 0.5; vparams(1).name = 'uniform';
@@ -64,17 +63,14 @@ function [ois, scene] = oisCreate(oisType,composition, modulation, varargin)
 
    ieAddObject(scenes{1}); ieAddObject(scenes{2}); sceneWindow;
 %}
-
-% Impulse (temporal)
 %{
+   % Impulse (temporal)
    clear iparams
    sparams.fov = 1; sparams.luminance = 100;
    stimWeights = zeros(1,50); stimWeights(2:4) = 1;
    impulse = oisCreate('impulse','add', stimWeights,'sceneParameters',sparams);
    impulse.visualize('movie illuminance');
 %}
-
-
 
 %% Inputs
 p = inputParser;

@@ -6,7 +6,7 @@ function val = ieReadNumber(str,defaultValue,fmt)
 % Graphical wrapper to query the user for a number.  You can also enter a
 % vector, say by typing in 1:10, and the return values will be (1:10);
 %
-% Examples
+% Examples:
 %  val = ieReadNumber('Enter column number')
 %  val = ieReadNumber('Enter column number',1/17,' %.3f')
 %
