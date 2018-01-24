@@ -42,7 +42,7 @@ function y = weberFechner(coef, x)
 %    01/06/18  dhb  Added comments that express our current lack of
 %                   understanding.
 
-% Example
+% Examples:
 %{
    x = logspace(-1,2,50);
    y = weberFechner(1,x);

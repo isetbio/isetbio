@@ -8,11 +8,16 @@ function u = unitLength(v)
 %    Assuming v is a matrix, we set the length of each row of v to be the
 %    specified unit length.
 %
+%    Examples in the code.
+%
 % Inputs:
 %    v - input matrix
 %
 % Outputs:
 %    u - output matrix
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * TODO: Optimize this function for speed and functionality.
@@ -26,6 +31,7 @@ function u = unitLength(v)
 % History:
 %    xx/xx/12       (c) Imageval Consulting, LLC 2012
 %    11/20/17  jnm  Formatting
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -118,7 +124,7 @@ end
 %   len = vectorlength(m, dim);
 %   
 %   % figure out scale factor
-%   if flag==1
+%   if flag == 1
 %     if isempty(dim)
 %       temp = sqrt(sum(~isnan(m(:))));
 %     else

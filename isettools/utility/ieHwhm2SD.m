@@ -2,7 +2,7 @@ function s = ieHwhm2SD(h, gDim)
 % Convert half width half max to standard deviation for Gaussian
 %
 % Syntax:
-%   s = ieHwhm2SD(h, gDim)
+%   s = ieHwhm2SD(h, [gDim])
 %
 % Description:
 %	 Convert half width and half max to a standard deviation for Gaussian
@@ -38,10 +38,16 @@ function s = ieHwhm2SD(h, gDim)
 %
 % Inputs:
 %    h    - The required half-width half-max
-%    gDim - The dimension of the Gaussian
+%    gDim - (Optional) The dimension of the Gaussian. Default 2.
 %
 % Outputs:
 %    s    - The calculated standard deviation
+%
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code. Type edit ieHwhm2SD in the
+% command window to view.
 %
 % References:
 %    en.wikipedia.org/wiki/Multivariate_normal_distribution#Bivariate_case
@@ -51,6 +57,7 @@ function s = ieHwhm2SD(h, gDim)
 % History:
 %    xx/xx/07       Copyright ImagEval Consultants, LLC, 2007.
 %    11/22/17  jnm  Formatting
+%    01/22/18  dhb  Make examples run in clean workspace.
 
 % Examples:
 %{
@@ -66,6 +73,8 @@ function s = ieHwhm2SD(h, gDim)
     % Now change to 5 units
     s = ieHwhm2SD(5, 2);
     g = fspecial('gauss', 50, s); 
+    x = 1:50;
+    x = x - mean(x(:));
     vcNewGraphWin; mesh(x, x, g/max(g(:))); view([0,0])
 %}
 

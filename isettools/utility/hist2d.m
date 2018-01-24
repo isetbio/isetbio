@@ -22,6 +22,9 @@ function Hout = hist2d(D, Xn, Yn, Xrange, Yrange)
 % Outputs:
 %    Hout   - The histograph data
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    linspace
 %
@@ -36,9 +39,7 @@ function Hout = hist2d(D, Xn, Yn, Xrange, Yrange)
 if nargin < 3, Yn = 20; end
 if nargin < 2, Xn = 20; end
 if ~isreal(D), D = [real(D(:)) imag(D(:))]; end
-if (size(D, 1) < size(D, 2) && size(D, 1) > 1)
-    D = D.';
-end
+if (size(D, 1) < size(D, 2) && size(D, 1) > 1), D = D.'; end
 if size(D, 2) ~= 2
     error('The input data matrix must have 2 rows or 2 columns');
 end
@@ -72,6 +73,6 @@ figure, surf(X, Y, H);
 colorbar;
 shading flat;
 axis square tight; 
-if nargout>0, Hout = H; end
+if nargout > 0, Hout = H; end
 
 end

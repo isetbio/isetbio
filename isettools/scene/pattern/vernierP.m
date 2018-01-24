@@ -23,7 +23,7 @@ function params = vernierP(varargin)
 %  barColor  - Bar color, e.g., [.6 .4 .2]
 %  pattern   - Spatial pattern
 %
-% Examples
+% Examples:
 %   p = vernierP; 
 %   p.name = 'example'; s = sceneCreate('vernier','display',p);
 %   ieAddObject(s); sceneWindow;

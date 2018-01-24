@@ -1,20 +1,30 @@
 function scene = sceneInitGeometry(scene)
 % Initialize scene distance parameter.  
 %
-%   scene = sceneInitGeometry(scene);
+% Syntax:
+%	scene = sceneInitGeometry(scene);
 %
-%  We are leaving this trivial routine here for potential future
-%  development.
+% Description:
+%    We are leaving this trivial routine here for potential future
+%    development.
 %
-%  If the parameter is already set, then it is not modified by this
-%  routine.
+%    If the parameter is already set, then it is not modified by this
+%    routine.
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Inputs:
+%    scene - The scene structure
+%
+% Outputs:
+%    scene - The modified scene structure
+%
 
+%  History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    12/21/17  jnm  Formatting
 
 % Set scene distance in meters
 if notDefined('scene.distance')
-    scene = sceneSet(scene,'distance',1.2);
+    scene = sceneSet(scene,'distance', 1.2);
 end
 
 end

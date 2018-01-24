@@ -18,21 +18,26 @@ function idx = wvfWave2idx(wvf, wList)
 % Outputs:
 %    idx   - The indices of wvf that are in the calculated wavelengths
 %
-% TODO:
-%    * Is this really only for 'calc wavelengths'?  Should we
-%      have a flag for 'measured wavelength' and 'sce wavelength'?]
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * TODO:
+%       Is this really only for 'calc wavelengths'?  Should we have a flag
+%       for 'measured wavelength' and 'sce wavelength'?
 %
 
 % History:
 %    xx/xx/xx  xxx  wavefront toolbox team
 %    11/09/17  jnm  Formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
-  wvf = wvfCreate;
-  wvf = wvfSet(wvf, 'calc wave', 400:10:700);
-  wList = 500:100:700;
-  idx = wvfWave2idx(wvf, wList)
+    wvf = wvfCreate;
+    wvf = wvfSet(wvf, 'calc wave', 400:10:700);
+    wList = 500:100:700;
+    idx = wvfWave2idx(wvf, wList)
 %}
 
 % Get the wavelengths in the structure

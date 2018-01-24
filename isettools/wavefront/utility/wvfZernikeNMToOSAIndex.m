@@ -1,4 +1,4 @@
-function j = wvfZernikeMNToOSAIndex(n,m)
+function j = wvfZernikeNMToOSAIndex(n, m)
 % Convert from Zernike 2-index standard index to OSA single-zernike index
 %
 % Syntax:
@@ -17,9 +17,11 @@ function j = wvfZernikeMNToOSAIndex(n,m)
 % Outputs:
 %    j - Can be a vector, in which case n and m would also be vectors.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * Validation code s postpended to wvfZernikeNMToOSAIndex
-%    * [Note: JNM - Which is the correct name then?]
 %
 % See Also:
 %    wvfZernikeNMToOSAIndex, zernfun
@@ -28,6 +30,8 @@ function j = wvfZernikeMNToOSAIndex(n,m)
 % History:
 %    07/29/12  dhb  Wrote it.
 %    11/09/17  jnm  Formatted
+%    01/11/18  jnm  Formatting update to match Wiki, rename to match
+%                   function's filename. (From MNTo... to NMTo...)
 
 % Examples:
 %{

@@ -10,8 +10,8 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 % Inputs:
 %    img    - Hypercube input (required)
 %    rect   - (Optional) If you know the rect, send it in. Default is to
-%             use cPlane in a square root to avoid problems with bright,
-%             saturating pixels when creating the rect.
+%             show a compressed image in a window created by Matlab's imcrop
+% .           function, and get that to return the rect.
 %    cPlane - (Optional) Which plane to use for cropping. Default 1
 %
 % Outputs:
@@ -29,6 +29,10 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 
 % Examples:
 %{
+    % ETTBSkip.  Requires user input.
+    %
+    % To get this to work, you need to understand now
+    % function imcrop works.
     mcc = macbethChartCreate;
     [hc, rect] = hcimageCrop(mcc.data, [], 1);
 %}

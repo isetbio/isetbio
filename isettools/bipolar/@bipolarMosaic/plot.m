@@ -32,6 +32,7 @@ function hdl = plot(obj, pType, varargin)
 
 %% Examples:
 %{
+   % ETTBSkip - Example is broken. Remove this line when fixed.
    s_initRetina;
    bpMosaic = bpL.mosaic{1};
    bpMosaic.plot('spatial rf')
@@ -41,6 +42,7 @@ function hdl = plot(obj, pType, varargin)
    bpMosaic.plot('response image', 'gamma', 0.3);
    bpMosaic.plot('response movie');
 %}
+
 %% Parse inputs
 p = inputParser; 
 p.CaseSensitive = false; 

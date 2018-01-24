@@ -20,8 +20,8 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %    wvf      - The wavefront object prior to manipulation.
 %    parm     - The parameter you wish to alter
 %    val      - The value to assign to the parameter
-%    varargin - (Optional) Character string describing the parameter and/or
-%               its value??
+%    varargin - (Optional) Character strings containing parameter key/value
+%               pairs, shown below.
 %
 % Outputs:
 %    wvf      - The wavefront object after manipulation
@@ -29,54 +29,55 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 % Optional key/value pairs:
 %    Options are divided into sections due to their number.
 %    Bookkeeping:
-%       'name'                  - Object name
-%       'type'                  - Type of object (should always be 'wvf')
+%       'name'                    - Object name
+%       'type'                    - Type of object (should always be 'wvf')
 %    Measured Data (used for calculations)
-%       'measured pupil size'   - The pupil size for the measured wavefront
-%                                 aberration (mm)
-%       'measured wave'         - The wavefront aberration measurement
-%                                 wavelength (nm)
-%       'measured optical axis' - Measured optical axis (deg)
+%       'measured pupil size'     - The pupil size for the measured
+%                                   wavefront aberration (mm)
+%       'measured wave'           - The wavefront aberration measurement
+%                                   wavelength (nm)
+%       'measured optical axis'   - Measured optical axis (deg)
 %       'measured observer accommodation' -
-%                                 Observer accommodation at aberration
-%                                 measurement time (diopters)
+%                                   Observer accommodation at aberration
+%                                   measurement time (diopters)
 %       'measured observer focus correction' -
-%                                 Focus correction added for observer at
-%                                 measurement time (diopters)
+%                                   Focus correction added for observer at
+%                                   measurement time (diopters)
 %    Spatial Sampling
-%       'sample interval domain' -
-%                                 Which domain has sample interval held
-%                                 constant with wavelength ('psf', 'pupil')
-%       'number spatial samples' -
-%                                 Number of spatial samples (pixel) for
-%                                 pupil function and psf
-%       'ref pupil plane size'  - Size of sampled pupil plane at
-%                                 measurement wavelength (mm)
+%       'sample interval domain'  - Which domain has sample interval held
+%                                   constant with wavelength
+%                                   ('psf', 'pupil')
+%       'number spatial samples'  - Number of spatial samples (pixel) for
+%                                   pupil function and psf
+%       'ref pupil plane size'    - Size of sampled pupil plane at
+%                                   measurement wavelength (mm)
 %       'ref pupil plane sample interval' -
-%                                 Pixel sample interval in pupil plane at
-%                                 measurement wavelength (mm)
-%       'ref psf sample interval' -
-%                                 Sampling interval for psf at measurment
-%                                 wavelength (arcminute/pixel)
+%                                   Pixel sample interval in pupil plane at
+%                                   measurement wavelength (mm)
+%       'ref psf sample interval' - Sampling interval for psf at measurment
+%                                   wavelength (arcminute/pixel)
 %    Calculations
-%       'zcoeffs'               - Zernike coefficients, OSA standard
-%                                 numbering/coordinates
-%       'calc pupil size'       - Pupil size for calculation (mm, *)
-%       'calc optical axis'     - Optical axis to compute for (deg)
+%       'zcoeffs'                 - Zernike coefficients, OSA standard
+%                                   numbering/coordinates. These are used
+%                                   to synthesize the pupil function in
+%                                   microns, and should therefore be passed
+%                                   in those units.
+%       'calc pupil size'         - Pupil size for calculation (mm, *)
+%       'calc optical axis'       - Optical axis to compute for (deg)
 %       'calc observer accommodation' -
-%                                 Observer accommodation at calculation
-%                                 time (diopters)
+%                                   Observer accommodation at calculation
+%                                   time (diopters)
 %       'calc observer focus correction' -
-%                                 Focus correction added optically for
-%                                 observer at calculation time (diopters)
-%       'calc wave'             - Wavelengths to calculate over (nm, *)
-%       'calc cone psf info'    - Structure with cone sensitivities and
-%                                 weight spectrum for computing cone psfs.
+%                                   Focus correction added optically for
+%                                   observer at calculation time (diopters)
+%       'calc wave'               - Wavelengths to calculate over (nm, *)
+%       'calc cone psf info'      - Structure with cone sensitivities and
+%                                   weight spectrum for computing cone psfs
 %    Retinal scale
-%       'um per degree'         - Conversion between um on retina and
-%                                 degree of visual angle.
+%       'um per degree'           - Conversion between um on retina and
+%                                   degree of visual angle.
 %    Stiles Crawford Effect
-%       'sce params'            - The Stiles-Crawford Effect structure
+%       'sce params'              - The Stiles-Crawford Effect structure
 %
 % References:
 %    The Strehl ratio, http://en.wikipedia.org/wiki/Strehl_ratio
@@ -102,16 +103,19 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %
 
 % History:
-%    xx/xx/11 DHB/BW    (c) Wavefront Toolbox Team 2011, 2012
-%    11/01/17 jnm       Comments & formatting
-%
+%    xx/xx/11  DHB/BW  (c) Wavefront Toolbox Team 2011, 2012
+%    11/01/17  jnm     Comments & formatting
+%    01/18/18  jnm     Formatting update to match Wiki.
+%    01/16/18 dhb       Make example work.
 
 % Examples:
 %{
+   wvf = wvfCreate;
+   sce = sceCreate;
    wvf = wvfSet(wvf, 'measured pupil', 8);
    wvf = wvfSet(wvf, 'stiles crawford', sce);
    wvf = wvfSet(wvf, 'name', 'test wvf');
-   wvf = wvfSet(wvf, 'zcoeffs', z);
+   wvf = wvfSet(wvf, 'zcoeffs', 0);
 %}
 
 %% Arg checks and parse.
@@ -193,6 +197,7 @@ switch parm
         % These specify the measured (or assumed) wavefront aberrations in
         % terms of a Zernike polynomial expansion. Exanding these gives us
         % the wavefront abberations in microns over the measured pupil.
+        % That is, these coefficients are in units of microns.
         %
         % The coefficients represent measurements that were made (or
         % assumed to be made) at a particular optical axis, state of
@@ -208,9 +213,9 @@ switch parm
         % standards
     case {'zcoeffs', 'zcoeff', 'zcoef'}
         % wvfSet(wvf, 'zcoeffs', val, jIndex);
-        % jIndex is optional, and can be a vector of j values
-        % or a string array of coefficient names that are converted to
-        % indices using wvfOSAIndexToVectorIndex. 
+        % jIndex is optional, and can be a vector of j values or a string
+        % array of coefficient names that are converted to indices using
+        % wvfOSAIndexToVectorIndex. 
         %
         % Note that j indices start at 0, and that is the convention
         % followed here. We add 1 in the routine to be compliant with
@@ -258,7 +263,7 @@ switch parm
         % size of the sampling in the pupil plane at the measurement
         % wavelength, and then compute/set everything else as needed.
         %
-        % Because the sampling in the pupil and psf domains is yoked, its
+        % Because the sampling in the pupil and psf domains is yoked, it is
         % important to choose values that do not produce discretization
         % artifacts in either domain. We don't have an automated way to do
         % this, but the default numbers here were chosen by experience
@@ -318,7 +323,8 @@ switch parm
         % formula in the pupil plane is that the pixel sampling interval
         % in cycles/radian is:
         %
-        %   pupilPlaneCyclesRadianPerPix = pupilPlaneField/[lambda*npixels]
+        %   pupilPlaneCyclesRadianPerPix = pupilPlaneField / ...
+        %       [lambda * npixels]
         %
         % where npixels is the number of linear pixels and lambda is the
         % wavelength. This formula may be found as Eq 10 of Ravikumar et
@@ -331,16 +337,16 @@ switch parm
         % obtain that the number of radians in the PSF image is the inverse
         % of the sampling interval:
         %
-        %   radiansInPsfImage = [lambda*npixels]/pupilPlaneField
+        %   radiansInPsfImage = [lambda * npixels] / pupilPlaneField
         %
         % which then gives us the number of radiansPerPixel in the PSF
         % image as
         %
-        %   radiansPerPixel = lambda/pupilPlaneField
+        %   radiansPerPixel = lambda / pupilPlaneField
         %
         % The formula below implements this, with a conversion from radians
-        % to minutes with factor (180*60/3.1416) and converts wavelength to
-        % mm from nm with factor (.001*.001)
+        % to minutes with factor (180 * 60 / 3.1416) and converts
+        % wavelength to mm from nm with factor (.001 * .001)
         %
         % DHB, 5/22/12, based on earler comments that were here. Someone
         % else might take a look at the paper referenced above and the
@@ -428,8 +434,8 @@ switch parm
         % Stiles-Crawford Effect structure.
         %
         % Angular dependence of the cone absorptions are calculated by the
-        % parameters in this structure. Values from the structure are retrieved
-        % and set using sceGet/Set
+        % parameters in this structure. Values from the structure are
+        % retrieved and set using sceGet/Set
         %
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;

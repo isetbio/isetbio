@@ -20,10 +20,14 @@ function [peakRow, peakCol] = psfFindPeak(input)
 %    peakRow - Corresponding row to PSF Max
 %    peakCol - Corresponding column to PSF Max
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    12/22/09  dhb  Encapsulate this as a function with improved method.
 %    11/10/17  jnm  Comments & formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

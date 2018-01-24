@@ -130,12 +130,16 @@ function val = wvfGet(wvf, parm, varargin)
 % Outputs:
 %    val      - The value associated with the parameter passed via 'parm'
 %
+% Optional key/value pairs:
+%    *Needs attention*
+%
 % Notes:
 %    * [Note: JNM - From 'refpupilplanesampleinterval' case -- shouldn't
 %      all of these options have 'measured' in the title?]
 %    * [Note: JNM - From 'pupilplanesize' - What if varargin{2} is empty?]
 %    * [Note: JNM - Some input options for parm are missing their
 %      definitions, can we specify these please?]
+%    * TODO: Fill out optional key/value pairs section.
 %
 % See Also:
 %    wvfSet, wvfCreate, wvfComputePupilFunction, wvfComputePSF, sceCreate,
@@ -788,7 +792,7 @@ switch parm
         val = wvfGet(wvf, 'psf spatial samples', unit, wave);
         
     case {'umperdegree'}
-        % Conversion factor between um on retina and visual angle in degreees.
+        % Conversion factor between um on retina & visual angle in degreees
         val = wvf.umPerDegree;
          
     case 'sce'
@@ -1032,6 +1036,7 @@ switch parm
         
         % Defaults
         val = wvfComputeConePSF(wvf);
+        
     otherwise
         error('Unknown parameter %s\n', parm);
 

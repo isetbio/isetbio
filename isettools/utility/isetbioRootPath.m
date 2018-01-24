@@ -7,11 +7,16 @@ function rootPath = isetbioRootPath()
 % Description:
 %    This points at the top level of the isetbio tree on the Matlab path.
 %
+%    Examples are included within the code.
+%
 % Inputs:
 %    None.
 %
 % Outputs:
 %    rootPath - The root directory for isetbio
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: XXX - This function works by using the function mfilename to
@@ -29,6 +34,7 @@ function rootPath = isetbioRootPath()
 %    10/19/17  dhb  Changed to work based on mfilename, the previous method
 %                   broke if the root directory was not called 'isetbio'.
 %    11/21/17  jnm  Formatting
+%    01/16/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
@@ -45,7 +51,7 @@ rootPath = fileparts(fileparts(fileparts(pathToMe)));
 % This is an older way of doing it, which breaks when isetbio is not
 % installed in a directory called isetbio. This can happen sometimes (if
 % you've checked out a branch), so we changed to the above.
-% rootPath=which('isetbio/Contents');
-% [rootPath,~,~]=fileparts(rootPath);
+% rootPath = which('isetbio/Contents');
+% [rootPath,~,~] = fileparts(rootPath);
 
 return

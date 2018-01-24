@@ -109,7 +109,8 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 
 % Examples:
 %{
-t_oiPlot
+    % ETTBSkip.  The tutorial is auto run when we test tutorials.
+    t_oiPlot
 %}
 
 if notDefined('oi'), oi = vcGetObject('OI'); end

@@ -13,26 +13,26 @@ function [data, vObj] = ieMovie(data, varargin)
 %   file.
 %
 % Inputs:
-%    data - (x, y, t) or (x, y, c, t)
+%    data      - The movie matrix, in the format (x, y, t) or (x, y, c, t)
 %
 % Outputs:
-%    data - (x, y, t) or (x, y, c, t)
-%    vObj - Matlab video object
+%    data      - The movie matrix, in the format (x, y, t) or (x, y, c, t)
+%    vObj      - Matlab video object
 %
-% Optional key/val pairs
-%                                             Default
-%  step:      How many times frames to step over. (1);
-%  show:      Display the movie                   (true)
-%  vname:     Video file name                     ('')
-%  gamma:     Gamma exponent (d.^gamma)
-%  ax:        Display axis
-%  FrameRate: Video frame rate                    (20) - For video object
+% Optional key/val pairs:
+%    step      - How many times frames to step over. Default 1.
+%    show      - Display the movie. Default true.
+%    vname     - Video file name. Default ''.
+%    gamma     - Gamma exponent. Default d .^ gamma
+%    ax        - Display axis. Default NONE.
+%    FrameRate - Video frame rate. Default 20 - For video object.
 %
 
 % History:
 %    xx/xx/16   bw  ISETBIO Team 2016
 %    11/22/17  jnm  Formatting
 %    01/06/18  dhb  Suppress warning for big videos.
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -42,7 +42,8 @@ function [data, vObj] = ieMovie(data, varargin)
 %{
     vname = fullfile([tempname,'.mp4'])
     ieMovie(rand(50, 50, 20), 'show', true, 'vname', vname);
-    ieMovie(rand(50, 50, 20), 'show', true, 'vname', vname, 'FrameRate', 5);
+    ieMovie(rand(50, 50, 20), 'show', true, 'vname', vname, ...
+        'FrameRate', 5);
     delete(vname);
 %}
 %{
@@ -64,17 +65,15 @@ p.addParameter('gamma', 1, @isnumeric);
 p.addParameter('ax', gca, @isgraphics);
 
 p.parse(data, varargin{:});
-data  = p.Results.data;
-step  = p.Results.step;
+data = p.Results.data;
+step = p.Results.step;
 vname = p.Results.vname;
-show  = p.Results.show;
-gam   = p.Results.gamma;
+show = p.Results.show;
+gam = p.Results.gamma;
 FrameRate = p.Results.FrameRate;
 
-% User set a video name.  So, figure they want it saved.
-if ~isempty(vname), save = true; 
-else, save = false;
-end
+% User set a video name. So, figure they want it saved.
+if ~isempty(vname), save = true; else, save = false; end
 
 %% Create the movie and video object
 
@@ -96,9 +95,7 @@ if mind < 0 || maxd > 1
 end
 
 % Apply gamma correct
-if gam ~= 1
-    data = data.^ gam;
-end
+if gam ~= 1, data = data .^ gam; end
 
 % Create the video object if we plan to save
 if save
@@ -114,7 +111,7 @@ end
 % on the screen (or not)
 if isequal(tDim, 4)
     % RGB data
-    for ii=1:step:size(data, tDim)
+    for ii = 1:step:size(data, tDim)
         imagesc(data(:, :, :, ii));
         axis image;
         set(gca, 'xticklabel', '', 'yticklabel', '');

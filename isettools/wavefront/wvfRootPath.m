@@ -15,6 +15,9 @@ function wvfRoot=wvfRootPath()
 % Outputs:
 %    wvfRoot - The path to the root wavefront optics toolbox
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % Examples:
 %{

@@ -14,6 +14,9 @@ function dataPath = isetbioDataPath()
 %    dataPath - The path to the old-style directory containing the data
 %               bundled with isetbio.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note: XXX - We are trying to make this directory go away, in favor
 %      for the data directory and associated functions at the top level of

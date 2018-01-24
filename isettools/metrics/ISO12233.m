@@ -37,17 +37,20 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 %
-% See also: ieISO12233, ISOFindSlantedBar
-%
 
-
+% Hisory:
+%   01/17/18  dhb  Deleted broken example that relied on sensorGet.
+%                  Skip auto-execute of other examples, as they need
+%                  user input and/or print warnings.
 
 % Examples:
 %{
+  % ETTBSkip
   % Interactive usage 
   ISO12233;
-   %}
+  %}
 %{
+  % ETTBSkip
   deltaX = 0.006; % Six micron pixel.  deltaX Units appear to be mm.
   [results, fitme, esf] = ISO12233([],deltaX,[]);
 
@@ -59,15 +62,6 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
   barImage = reshape(barImage,r,c,3);
   wgts = [ 0.3 0.6 0.1];
   [results, fitme, esf] = ISO12233(barImage, deltaX, wgts, 'luminance');
-%}
-
-%{
-   % Converting from cyc/mm to cycles/deg
-   sw = sensorGet(sensor,'width','mm');       % Sensor with in mm
-   cycPerSensor = 1/sw;                       % 1 Cycle/Sensor in lpm
-   cycPerScene  = 1/sensorGet(sensor,'fov');  % 1 Cycle/sensor in cpd
-   lpm2cpd = cycPerScene/cycPerSensor;        % Converts lpm to cpd
-   results.freq = results.freq*lpm2cpd;
 %}
 
 % PROGRAMMING TODO: 

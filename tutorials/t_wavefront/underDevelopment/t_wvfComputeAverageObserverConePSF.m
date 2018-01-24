@@ -1,8 +1,10 @@
-% wvfComputeAverageObserverConePSF
+% t_wvfComputeAverageObserverConePSF
 %
-% OBSOLETE - NEEDS TO BE REWRITTEN.  The underlying routines themselves
-% need a careful think and debug; they are currently listed as under
-% development.
+% OBSOLETE - NEEDS TO BE REWRITTEN.
+%
+% NICOLAS WROTE A NEWER VERSION THAT DOES THIS CLEANLY.  NEED TO MOVE THAT
+% FROM IBIOCOLORDETECT INTO ISETBIO, AND THEN ILLUSTRATE IN A SHORT CLEAN
+% TUTORIAL.
 %
 % Compute the cone PSFs of an average observer.  Done by combining measurements
 % from a dataset of Zernike coefficients for a number of observers.

@@ -16,14 +16,17 @@ function fList = unitFrequencyList(N)
 %    where Matlab expects it. Then, once we know the maximum frequency
 %    (Nyquist) in our measurement, we can multiply the returned list here
 %    times that maximum frequency.
-% 
+%
+%    Examples in the code.
+%
 % Inputs:
 %    N     - Number of samples to make a list for.
 %
 % Outputs:
 %    fList - Frequency List
 %
-% See also:
+% Optional key/value pairs:
+%    None.
 %
 
 % History:
@@ -32,6 +35,7 @@ function fList = unitFrequencyList(N)
 %    12/12/17  dhb  Expand on comments, make example work.
 %    12/21/17  dhb  Slicker finding of center, floor(N/2)+1.  Works
 %                   for odd and even, gives same answer as what was here.
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -44,7 +48,7 @@ function fList = unitFrequencyList(N)
 if notDefined('N'), N = 6; end
 
 % Figure out which entry represents DC
-mid = floor(N/2) + 1;
+mid = floor(N / 2) + 1;
 
 % Here is a list of frequencies
 c = 1:N;

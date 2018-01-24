@@ -14,7 +14,7 @@ function [sens,fs,ft] = humanSpaceTime(model,fs,ft)
 %  The space and time variables are either in the time/space domain or
 %  frequency domain, depending on the call.  See below for examples.
 %
-% Example:
+% Examples:
 %    [sens,fs,ft] = humanSpaceTime('kelly79',logspace(-0.2,log10(30),20),logspace(-0.2,log10(60),20));
 %    surf(ft,fs,sens); set(gca,'xscale','log','yscale','log');
 %    set(gca,'xlim',[0 60],'ylim',[0 30]); 

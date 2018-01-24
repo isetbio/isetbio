@@ -16,9 +16,10 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
 %    peakRow - Row location of the input PSF Peak
 %    peakCol - Column location of the input PSF Peak
 %
-% Notes:
-
-%    * [Note: JNM - Please check the example for accuracy and terseness]
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code.
 %
 
 % History:
@@ -26,6 +27,8 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
 %    08/22/11  dhb  A 'round' should be a 'floor', I think.
 %    07/23/12  dhb  Match out volume to in volume.
 %    11/13/17  jnm  Comments, example & formatting
+%    01/11/18  jnm  Formatting update to match Wiki
+%    01/23/18  dhb  Delete broken example. One working one is enough.
 
 % Examples:
 %{
@@ -33,15 +36,26 @@ function [outPSF, peakRow, peakCol] = psfCenter(inPSF)
     oblique_astig = 0.75;
     wvf0 = wvfSet(wvf0, 'zcoeffs', oblique_astig, {'oblique_astigmatism'});
     wvf0 = wvfComputePSF(wvf0);
-    psf0 = wvfGet(wvf0,'psf');
-    [m,n] = size(psf0);
-    psfOffCenter = psf0(1:round(3*m/4),1:round(3*n/4));
+    psf0 = wvfGet(wvf0, 'psf');
+    [m, n] = size(psf0);
+    psfOffCenter = psf0(1:round(3 * m / 4), 1:round(3 * n / 4));
     psfCenter = psfCenter(psfOffCenter);
-    figure; clf;  
-    subplot(1,2,1); mesh(psfOffCenter); title('Off Center PSF');
-    view(0,90); axis('equal'); axis([0 150 0 150]); 
-    subplot(1,2,2); mesh(psfCenter); title('Centered PSF');
-    view(0,90); axis('equal'); axis([0 150 0 150]); 
+    figure;
+    clf;
+
+    subplot(1, 2, 1);
+    mesh(psfOffCenter);
+    title('Off Center PSF');
+    view(0, 90);
+    axis('equal');
+    axis([0 150 0 150]);
+
+    subplot(1, 2, 2);
+    mesh(psfCenter);
+    title('Centered PSF');
+    view(0, 90);
+    axis('equal');
+    axis([0 150 0 150]);
 %}
 
 % Use interpolation to recenter

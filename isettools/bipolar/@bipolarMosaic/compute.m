@@ -77,8 +77,9 @@ function response = compute(obj, varargin)
 %
 %    10/19/17  jnm  Comments & Formatting
 
-%% Examples
+% Examples:
 %{
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
    [~, bpNTrialsCenter, bpNTrialsSurround] = ...
            bp.compute(cMosaic, 'nTrialsInput', cMosaicCurrentNTrials);
 %}

@@ -30,17 +30,18 @@ function [specRad, XYZ] = blackbody(wave, temps, unitType, eqWave)
 %
 % Copyright ImagEval Consultants, LLC, 2005.
 
-% Examples
+% Examples:
 %{
-  wave = 400:10:700; 
-  sp = blackbody(wave,5000,'energy')
-  temps = [3000, 5000]; sp = blackbody(wave, temps,'quanta');
-  vcNewGraphWin; plot(wave,sp)
+	wave = 400:10:700; 
+	sp = blackbody(wave,5000,'energy')
+	temps = [3000, 5000]; sp = blackbody(wave, temps,'quanta');
+	vcNewGraphWin; plot(wave,sp)
 %}
-%{ 
-  [sp XYZ] = blackbody(wave,3000:500:8000,'photons',600);
-  vcNewGraphWin; plot(wave,sp)
-  chromaticityPlot(chromaticity(XYZ))
+%{
+	wave = 400:10:700; 
+	[sp XYZ] = blackbody(wave,3000:500:8000,'photons',600);
+	vcNewGraphWin; plot(wave,sp)
+	chromaticityPlot(chromaticity(XYZ))
 %}
 
 if notDefined('wave'),  error('Must define wavelength.'); end

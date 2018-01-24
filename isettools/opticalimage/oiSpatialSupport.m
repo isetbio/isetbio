@@ -9,15 +9,33 @@ function sSupport = oiSpatialSupport(oi,units)
 %   specified in x and y positions measured on the surface of the image
 %   sensor. The units (meters, mm, um) can be specified.
 %
+% Inputs:
+%   oi -        The optical image structure.
+%   units -     String specifying units that support is returned in.
+%               See oiGet(oi,'spatial resolution') for info on available
+%               units.
+%
+% Outputs:
+%   sSupport  - Struct with fields x and y, each specifing the spatial
+%               support of the corresponding dimension of the oi.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code.
+%
 
 % History:
 %                 Copyright ImagEval Consultants, LLC, 2003.
 
 % Examples:
 %{
- sSupportmm = oiSpatialSupport(oi,'millimeters');
- sSupportum = oiSpatialSupport(oi,'microns');
- sSupportm = oiSpatialSupport(oi);
+   scene = sceneCreate;
+   oi = oiCreate;
+   oi = oiCompute(oi,scene);
+   sSupportmm = oiSpatialSupport(oi,'millimeters')
+   sSupportum = oiSpatialSupport(oi,'microns')
+   sSupportm = oiSpatialSupport(oi)
 %}
 
 if notDefined('units'), units = 'meters'; end

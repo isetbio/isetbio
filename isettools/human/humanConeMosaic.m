@@ -20,7 +20,7 @@ function [xy,coneType,densities,rSeed] = humanConeMosaic(sz,densities,umConeWidt
 % The order of the vector densities should K,L,M,S -> 1,2,3,4, but we patch
 % up some cases when only (L,M,S) are sent in.  Not preferred.
 %%
-% Examples
+% Examples:
 %   sz        = [50,50];
 %   densities = [0.14 .5 .3 .06];
 %   [xy, coneType] = humanConeMosaic(sz,densities);
