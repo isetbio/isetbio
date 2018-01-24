@@ -46,11 +46,12 @@ function varExplained = sceneToFile(fname, scene, bType, mType)
     scene = sceneCreate;
     vcAddAndSelectObject(scene);
     sceneWindow;
-    sceneToFile(fullfile(tempdir,'deleteMePlease'), scene, 0.999);
-    scene2 = sceneFromFile('deleteMePlease', 'multispectral');
-    vcAddAndSelectObject(scene2);
+    fname = fullfile(tempdir,'deleteMePlease');
+    sceneToFile(fname, scene, 0.999);
+    scene2 = sceneFromFile(fname, 'multispectral');
+    ieAddObject(scene2);
     sceneWindow;
-    sceneToFile(fullfile(tempdir,'deleteMePlease'), scene, []);
+    sceneToFile(fname, scene, []);
 %}
 
 if notDefined('fname'), error('Need output file name for now'); end
