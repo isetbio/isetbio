@@ -31,10 +31,14 @@ function varExplained = sceneToFile(fname, scene, bType, mType)
 % Outputs:
 %	 varExplained - Fraction of variance explained by the linear model
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples of usage are provided in the source code, and can be
+% accessed by typing 'edit sceneToFile.m' in MATLAB's command window.
+%
 % Notes:
-%    * TODO: Add depth image as potential output, not just dist
-%    * N.B. The source contains executable examples of usage, which can be
-%      accessed by typing 'edit sceneToFile.m' in MATLAB's command window.
+%    * [NOTE: XXX - Add depth image as potential output, not just dist.]
 %
 
 % History:
