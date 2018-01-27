@@ -14,6 +14,7 @@
 
 % History:
 %   01/04/18  dhb   Added some regression tests.
+%   01/25/18  dhb   Typo fix on direction of one check conversion.
 
 %% Clear
 clear; close all; 
@@ -131,7 +132,7 @@ xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
 title('Davila-Geisler and Williams et al. PSFs')
 
-%% PSF <-> MTF conversions
+%% PSF <-> OTF conversions
 
 % Make a diffraction limited psf and convert to OTF.
 %
@@ -146,7 +147,7 @@ Diffraction_3_633_PSFAnalytic = Diffraction_3_633_PSFAnalytic/sum(Diffraction_3_
 
 % Convert the otf back to psf.  This should definitely match what we started with or else
 % something is badly wrong.
-[xGridMinutes,yGridMinutes,Diffraction_3_633_PSFFromOTFFromAnalytic] = PsfToOtf(xSfGridCyclesDeg,ySfGridCyclesDeg,Diffraction_3_633_OTFFromPSFAnalytic);
+[xGridMinutes,yGridMinutes,Diffraction_3_633_PSFFromOTFFromPSFAnalytic] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,Diffraction_3_633_OTFFromPSFAnalytic);
 
 % Make an OTF directly from an analytic formula that is different from the Airy function and convert that back to PSF
 radiusSfCyclesDeg2D = sqrt(xSfGridCyclesDeg.^2 + ySfGridCyclesDeg.^2);
@@ -180,17 +181,16 @@ if (max(abs(Diffraction_3_633_OTFFromPSFAnalytic(:) - Diffraction_3_633_OTFFromA
     error('Diffraction limited analytic and derived OTFs are not close enough');
 end  
 
-% Then the psfs.  These are not exactly the same, although it is difficult
-% to tell just from looking at the graph.
+% Then the psfs.
 subplot(2,2,2); hold on
-plot(xGridMinutes(centerPosition,:),Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)/max(Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)),'r','LineWidth',4);
+plot(xGridMinutes(centerPosition,:),Diffraction_3_633_PSFFromOTFFromPSFAnalytic(centerPosition,:)/max(Diffraction_3_633_PSFFromOTFFromPSFAnalytic(centerPosition,:)),'r','LineWidth',4);
 plot(positionMinutes1D,Diffraction_3_633_PSFAnalytic(centerPosition,:)/max(Diffraction_3_633_PSFAnalytic(centerPosition,:)),'g-','LineWidth',2);
 xlim([-4 4]);
 xlabel('Position (minutes');
 ylabel('Normalized PSF Slice');
 title('Diffraction Limited PSFs')
 legend({'Derived from Anaytic OTF', 'Analytic PSF'},'Location','NorthEast');
-if (max(abs(Diffraction_3_633_PSFFromOTFFromAnalytic(:)/max(Diffraction_3_633_PSFFromOTFFromAnalytic(centerPosition,:)) - Diffraction_3_633_PSFAnalytic(:)/max(Diffraction_3_633_PSFAnalytic(centerPosition,:)))) > 1e-3)
+if (max(abs(Diffraction_3_633_PSFFromOTFFromPSFAnalytic(:)/max(Diffraction_3_633_PSFFromOTFFromPSFAnalytic(centerPosition,:)) - Diffraction_3_633_PSFAnalytic(:)/max(Diffraction_3_633_PSFAnalytic(centerPosition,:)))) > 1e-10)
     error('Diffraction limited analytic and derived PSFs are not close enough');
 end  
 
