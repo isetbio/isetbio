@@ -21,7 +21,6 @@ function t_wavefrontSampling
 %     recommended. Not sure why we would want to do this, other than
 %     visualizing the PSF with higher fidelity.
 %
-%
 %     (3) Shows that when the 'sample interval domain' is set to 'pupil' 
 %     the PSF is sampled in manner that depends on the wavelength (sampling
 %     is finer in shorter wavelengths than in longer wavelengths. This also
