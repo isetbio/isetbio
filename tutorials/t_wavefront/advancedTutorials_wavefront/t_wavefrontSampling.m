@@ -13,13 +13,12 @@ function t_wavefrontSampling
 %     See figure (1).
 %     
 %     (2) Shows that by increasing the 'reference pupil size', the 
-%     spatial resolution with which the PSF is computed is increased. 
-%     This occurs at the expense of a reduced resolution in the OTF. 
+%     spatial resolution with which the PSF is computed is increased, and
+%     the spatial support of the OTF is expanded. So increasing the
+%     reference pupil size may be advantageous in cases where stimuli have
+%     a lot of energy in the very high frequency range (perhaps in Adaptive Optics
+%     experiments with small spots/high frequency gratings).
 %     See figure (2).
-%     Note: Since the optical image of a scene is computed  in the Fourier 
-%     domain, setting the reference pupil to a larger size is not 
-%     recommended. Not sure why we would want to do this, other than
-%     visualizing the PSF with higher fidelity.
 %
 %     (3) Shows that when the 'sample interval domain' is set to 'pupil' 
 %     the PSF is sampled in manner that depends on the wavelength (sampling
