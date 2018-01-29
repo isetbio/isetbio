@@ -15,13 +15,14 @@ function t_wavefrontSampling
 %     (2) Shows that by increasing the 'reference pupil size', the 
 %     spatial resolution with which the PSF is computed is increased. 
 %     This occurs at the expense of a reduced resolution in the OTF. 
+%     See figure (2).
 %     Note: Since the optical image of a scene is computed  in the Fourier 
 %     domain, setting the reference pupil to a larger size is not 
 %     recommended. Not sure why we would want to do this, other than
 %     visualizing the PSF with higher fidelity.
-%     See figure (2).
 %
-%     (3) Shows that when the 'sample domain interval' is set to 'pupil' 
+%
+%     (3) Shows that when the 'sample interval domain' is set to 'pupil' 
 %     the PSF is sampled in manner that depends on the wavelength (sampling
 %     is finer in shorter wavelengths than in longer wavelengths. This also
 %     results in different spatial supports at different wavelengths.
@@ -29,7 +30,7 @@ function t_wavefrontSampling
 %
 
 % History
-%   01/25/18  npc  Wrote it.
+%   01/29/18  npc  Wrote it.
 
 wavelengths = [450 500 550 600];
 
@@ -92,6 +93,24 @@ end
 
 end
 
+%% Method to generate a custom WVF object
+function theWVF = createWVF(sampleDomain, spatialSamples, referencePupilSize, wavelengths)
+if (~isempty(referencePupilSize))
+    theWVF = wvfCreate('calc wavelengths', wavelengths, ...
+        'ref pupil plane size', referencePupilSize, ...
+        'spatial samples', spatialSamples, ...
+        'sample interval domain', sampleDomain);
+else
+    theWVF = wvfCreate('calc wavelengths', wavelengths, ...
+        'spatial samples', spatialSamples, ...
+        'sample interval domain', sampleDomain);
+end
+% Compute the PSF
+theWVF = wvfComputePSF(theWVF);
+end
+
+
+%% Method to extract and plot the PSF/OTF out of the WVF
 function plotWVFsampling(figNo, theWVF, figName, resetFigure, legends, plotID)
 
 markerSizes = [10 6];
@@ -134,6 +153,7 @@ for iWave = 1:numel(wavelengths)
 end
 end
 
+%% Method to plot the PSF
 function plotPSF(psf, support, range, view, targetWavelength, col, legends, markerColor, markerSize)
 psf = psf / max(psf(:));
 centerPos = floor(size(psf,1)/2)+1;
@@ -161,6 +181,8 @@ xlabel('space (arc min)');
 title(sprintf('PSF (%2.0f nm)', targetWavelength));
 end
 
+
+%% Method to plot the OTF
 function plotOTF(otf, support, range, view, targetWavelength, col, legends, markerColor, markerSize)
 otfMag = fftshift(abs(otf));
 centerPos = floor(size(otfMag,1)/2)+1;
@@ -186,19 +208,4 @@ if (col>1)
 end
 xlabel('sp. freq. (c/deg)');
 title(sprintf('OTF (%2.0f nm)', targetWavelength));
-end
-
-function theWVF = createWVF(sampleDomain, spatialSamples, referencePupilSize, wavelengths)
-if (~isempty(referencePupilSize))
-    theWVF = wvfCreate('calc wavelengths', wavelengths, ...
-        'ref pupil plane size', referencePupilSize, ...
-        'spatial samples', spatialSamples, ...
-        'sample interval domain', sampleDomain);
-else
-    theWVF = wvfCreate('calc wavelengths', wavelengths, ...
-        'spatial samples', spatialSamples, ...
-        'sample interval domain', sampleDomain);
-end
-% Compute the PSF
-theWVF = wvfComputePSF(theWVF);
 end
