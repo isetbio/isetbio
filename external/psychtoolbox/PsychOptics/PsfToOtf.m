@@ -48,6 +48,12 @@ function [xSfGridCyclesDeg,ySfGridCyclesDeg,otf] = PsfToOtf(xGridMinutes,yGridMi
 %
 %    See also OtfToPsf, PsychOpticsTest.
 
+% History:
+%   01/26/18  dhb  We used to zero out small imaginary values.  This,
+%                  however, can cause numerical problems much worse than
+%                  having small imaginary values in the otf.  So we don't
+%                  do it anymore.
+
 %% Handle sf args and converstion
 if (~isempty(xGridMinutes) & ~isempty(yGridMinutes))
     % They can both be passed as non-empty, in which case we do a set of sanity
@@ -101,13 +107,5 @@ end
 
 %% Compute otf
 otf = fftshift(fft2(ifftshift(psf)));
-
-%% See if there is stray imaginary stuff, get rid of it if so.
-%
-% We don't require that the input psf be symmetric, so there could be
-% actual imaginary values.  Thus we do our best to make a good guess.
-if (all(abs(imag(otf(:))) < 1e-10))
-    otf = abs(otf);
-end
 
 end

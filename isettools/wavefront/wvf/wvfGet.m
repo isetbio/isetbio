@@ -676,7 +676,7 @@ switch parm
     case {'psfspatialsample'}
         % This parameter matters for the OTF and PSF quite a bit. It
         % is the number of um per degree on the retina.
-        umPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
+        mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
         unit = 'mm';
         wList = wvfGet(wvf, 'measured wavelength');
         if ~isempty(varargin), unit = varargin{1}; end
@@ -687,7 +687,7 @@ switch parm
         val = wvfGet(wvf, 'psf angular sample', 'deg', wList);
         
         % Convert to meters and then to selected spatial scale
-        val = val * umPerDeg;  
+        val = val * mPerDeg;  
         val = val * ieUnitScaleFactor(unit);
         
     case {'pupilspatialsamples'}
@@ -743,11 +743,10 @@ switch parm
         [~,~,val] = PsfToOtf([],[],psf);
         val = ifftshift(val);
         
-        % We don't require that the input psf be symmetric, so there could be
-        % actual imaginary values.  Thus we do our best to make a good guess.
-        if (all(abs(imag(val(:))) < 1e-10))
-            val = abs(val);
-        end
+        % We used to zero out small imaginary values.  This,
+        % however, can cause numerical problems much worse than
+        % having small imaginary values in the otf.  So we don't
+        % do it anymore.
         
     case {'otfsupport'}
         % wvfGet(wvf, 'otfsupport', unit, wave)
