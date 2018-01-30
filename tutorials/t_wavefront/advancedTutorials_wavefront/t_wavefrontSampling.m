@@ -31,10 +31,15 @@ function t_wavefrontSampling
 
 % History
 %   01/29/18  npc  Wrote it.
+%   01/30/18  npc  Added 2Dmap plotView option
 
+%% Wavelengths to plot
 wavelengths = [450 500 550 600];
 
-%% Effect of changing the spatial samples
+%% Type of plot to generate. Choose between {'1Dslice',  '2Dmap'}
+plotView = '1Dslice'; 
+
+%% ------- Effect of changing the spatial samples ------- 
 spatialSamplesList = [1001 201];
 % Constants
 referencePupilSize = 16.5;
@@ -48,11 +53,11 @@ for k = 1:numel(spatialSamplesList)
     spatialSamples = spatialSamplesList(k);
     legends{numel(legends)+1} = sprintf('sp. samples: %2.0f', spatialSamples);
     theWVF = createWVF(sampleDomain, spatialSamples, referencePupilSize, wavelengths);
-    plotWVFsampling(figNo, theWVF, figName, k==1, legends, k);
+    plotWVFsampling(figNo, theWVF, figName, k==1, plotView, legends, k);
 end
 
 
-%% Effect of changing the referencePupilSize
+%% ------- Effect of changing the referencePupilSize ------- 
 referencePupilSizes = [16.5 30];
 
 % Constants
@@ -68,11 +73,11 @@ for k = 1:numel(referencePupilSizes)
     referencePupilSize = referencePupilSizes(k);
     legends{numel(legends)+1} = sprintf('ref. pupil size: %2.1f', referencePupilSize);
     theWVF = createWVF(sampleDomain, spatialSamples, referencePupilSize, wavelengths);
-    plotWVFsampling(figNo, theWVF, figName, k==1, legends, k);
+    plotWVFsampling(figNo, theWVF, figName, k==1, plotView, legends, k);
 end
 
 
-%% Effect of changing the sample interval domain
+%% ------- Effect of changing the sample interval domain  -------
 sampleDomains = {'psf', 'pupil'};
 
 % Constants
@@ -88,7 +93,7 @@ for k = 1:numel(referencePupilSizes)
     sampleDomain = sampleDomains{k};
     legends{numel(legends)+1} = sprintf('sample domain: ''%s''', sampleDomain);
     theWVF = createWVF(sampleDomain, spatialSamples, referencePupilSize, wavelengths);
-    plotWVFsampling(figNo, theWVF, figName, k==1, legends, k);
+    plotWVFsampling(figNo, theWVF, figName, k==1, plotView, legends, k);
 end
 
 end
@@ -111,12 +116,20 @@ end
 
 
 %% Method to extract and plot the PSF/OTF out of the WVF
-function plotWVFsampling(figNo, theWVF, figName, resetFigure, legends, plotID)
+function plotWVFsampling(figNo, theWVF, figName, resetFigure, plotView, legends, plotID)
 
+assert(ismember(plotView, {'1Dslice', '2Dmap'}), 'Incorrect plotView: choose between ''1Dslice'' and ''2Dmap''.');
 markerSizes = [10 6];
 colors = brewermap(4,'Set2');
 
-hFig = figure(figNo); 
+if (strcmp(plotView, '2Dmap'))
+    hFig = figure(figNo+plotID*100);
+    legendsToUse = {};
+    resetFigure = true;
+else
+    hFig = figure(figNo); 
+    legendsToUse = legends;
+end
 if (resetFigure) 
     clf;
     set(hFig, 'Position', [10+100*figNo 10+100*figNo 1500 800], 'Color', [1 1 1], 'Name', figName);
@@ -133,8 +146,8 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
     'bottomMargin', 0.07, ...
     'topMargin', 0.04);
 
-psfRange = 15;
-otfRange = 400;
+psfRange = 15;   % arc min
+otfRange = 400;  % cycles/deg
 
 for iWave = 1:numel(wavelengths)
     targetWavelength = wavelengths(iWave);
@@ -145,32 +158,34 @@ for iWave = 1:numel(wavelengths)
 
     subplot('Position', subplotPosVectors(1,iWave).v);
     hold on
-    plotPSF(psf, psfSupport, psfRange, 'slice', targetWavelength, iWave, legends, squeeze(colors(plotID,:)), markerSizes(plotID));
+    plotPSF(psf, psfSupport, psfRange, plotView, targetWavelength, iWave, legendsToUse, squeeze(colors(plotID,:)), markerSizes(plotID));
 
     subplot('Position', subplotPosVectors(2,iWave).v);
     hold on
-    plotOTF(otf, otfSupport, otfRange, 'slice', targetWavelength, iWave, legends, squeeze(colors(plotID,:)), markerSizes(plotID));
+    plotOTF(otf, otfSupport, otfRange, plotView, targetWavelength, iWave, legendsToUse, squeeze(colors(plotID,:)), markerSizes(plotID));
 end
 end
 
 %% Method to plot the PSF
-function plotPSF(psf, support, range, view, targetWavelength, col, legends, markerColor, markerSize)
+function plotPSF(psf, support, range, plotView, targetWavelength, col, legends, markerColor, markerSize)
 psf = psf / max(psf(:));
 centerPos = floor(size(psf,1)/2)+1;
 if (isempty(range))
     range = max(support);
 end
-switch view
-    case 'slice'
+switch plotView
+    case '1Dslice'
         plot(support, squeeze(psf(centerPos,:)), 'ko-', 'LineWidth', 1.5, 'MarkerSize', markerSize, 'MarkerFaceColor', markerColor);
         set(gca, 'XLim', [0 range], 'YLim', [0 1]);
-    case 'map'
+    case '2Dmap'
         imagesc(support, support, psf);
         axis 'xy';
         axis 'image'
-        set(gca, 'XLim', [-range range], 'XLim', [-range range], 'CLim', [0 1]);
+        set(gca, 'XLim', [-range range], 'YLim', [-range range], 'CLim', [0 1]);
 end
-legend(legends, 'Location', 'NorthEast');
+if ~isempty(legends)
+    legend(legends, 'Location', 'NorthEast');
+end
 grid on;
 box on;
 set(gca, 'FontSize', 14);
@@ -183,23 +198,25 @@ end
 
 
 %% Method to plot the OTF
-function plotOTF(otf, support, range, view, targetWavelength, col, legends, markerColor, markerSize)
+function plotOTF(otf, support, range, plotView, targetWavelength, col, legends, markerColor, markerSize)
 otfMag = fftshift(abs(otf));
 centerPos = floor(size(otfMag,1)/2)+1;
 if (isempty(range))
     range = max(support);
 end
-switch view
-    case 'slice'
+switch plotView
+    case '1Dslice'
         plot(support, squeeze(otfMag(centerPos,:)), 'ko-', 'LineWidth', 1.5, 'MarkerSize', markerSize, 'MarkerFaceColor', markerColor);
         set(gca, 'XLim', [0.3 range], 'YLim', [0 1], 'XScale', 'log');
-    case 'map'
+    case '2Dmap'
         imagesc(support, support, otfMag);
         axis 'xy';
         axis 'image'
-        set(gca, 'XLim', [-range range], 'XLim', [-range range], 'CLim', [0 1]);
+        set(gca, 'XLim', [-range range], 'YLim', [-range range], 'CLim', [0 1]);
 end
-legend(legends, 'Location', 'SouthWest');
+if ~isempty(legends)
+    legend(legends, 'Location', 'NorthEast');
+end
 grid on;
 box on
 set(gca, 'FontSize', 14);
