@@ -20,11 +20,13 @@ function t_wavefrontSampling
 %     experiments with small spots/high frequency gratings).
 %     See figure (2).
 %
-%     (3) Shows that when the 'sample interval domain' is set to 'pupil' 
+%     (3) Shows that when the 'sample interval domain' is set to 'pupil'
 %     the PSF is sampled in manner that depends on the wavelength (sampling
 %     is finer in shorter wavelengths than in longer wavelengths. This also
-%     results in different spatial supports at different wavelengths.
-%     See figure (3).
+%     results in different spatial supports at different wavelengths. See
+%     figure (3). Generally, we use 'sample interval domain' set to 'psf',
+%     because that keeps the spatial sampling consistent in the places we
+%     generally care about.
 %
 
 % History
