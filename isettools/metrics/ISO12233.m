@@ -45,12 +45,16 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 
 % Examples:
 %{
-  % ETTBSkip
+  % ETTBSkip.  This is interactive and should not be autorun.  But some
+  % comments about what user should do would be great.
+
   % Interactive usage 
   ISO12233;
   %}
 %{
-  % ETTBSkip
+  % ETTBSkip. This also requiers user input and should not be autorun.  But
+  % some comments about what user should do would be great.
+
   deltaX = 0.006; % Six micron pixel.  deltaX Units appear to be mm.
   [results, fitme, esf] = ISO12233([],deltaX,[]);
 
