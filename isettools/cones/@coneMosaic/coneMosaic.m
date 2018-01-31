@@ -57,6 +57,7 @@ classdef coneMosaic < hiddenHandle
     %                      sec. Keep this under 25 ms (0.025) if you are
     %                      computing photocurrent for decent numerical
     %                      accuracy.
+    %    'micronsPerDegree' Microns/degree. Defaults to 300.
     %    'emPositions'     Eye movement positions. Nx2 matrix (default [0 0] is
     %                      middle of cone mosaic, 1 unit is 1 cone for rect
     %    'apertureBlur'    Blur by cone aperture? true/false (default false).
@@ -131,6 +132,11 @@ classdef coneMosaic < hiddenHandle
         %    Keep this under 25 ms (0.025) if you are computing
         %    photocurrent and want reasonable numerical accuracy.
         integrationTime;
+        
+        %MICRONSPERDEGREE How many microns/degree 
+        %    Defaults to 300 which is appropriate for the (central) 
+        %    region of the human eye.
+        micronsPerDegree;
         
         %EMPOSITIONS  Eye movement positions
         %    Spatial units are those of rectangular grid on which cones are
@@ -263,37 +269,39 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('wave', 400:10:700, @isnumeric);       
             p.addParameter('pattern', [], @isnumeric);            
             p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);  
-            p.addParameter('size', [72 88], @isnumeric);         
+            p.addParameter('size', [72 88], @isnumeric);   
+            p.addParameter('micronsPerDegree', 300, @isnumeric);
             p.addParameter('integrationTime', 0.005, @isscalar);  
             p.addParameter('emPositions', [0 0], @isnumeric);
             p.addParameter('apertureBlur', false, @islogical);
             p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
             p.parse(varargin{:});
             
-            % Construct outersgement if not passed.
-            % Using 0.3 mm/deg as conversion.
-            if (isempty(p.Results.os))
-                eccentricityMeters = norm(p.Results.center);
-                eccentricityDegs = 1e3*eccentricityMeters/0.3;
-                obj.os = osLinear('eccentricity',eccentricityDegs);
-            else
-                obj.os = p.Results.os;
-            end
+ 
             
             % Set properties
             obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
             
-            obj.center          = p.Results.center(:)';
-            obj.whichEye        = p.Results.whichEye;
-            obj.wave            = p.Results.wave;
-            obj.spatialDensity_ = p.Results.spatialDensity(:);
-            obj.integrationTime = p.Results.integrationTime;
-            
+            obj.center           = p.Results.center(:)';
+            obj.whichEye         = p.Results.whichEye;
+            obj.wave             = p.Results.wave;
+            obj.spatialDensity_  = p.Results.spatialDensity(:);
+            obj.integrationTime  = p.Results.integrationTime;
+            obj.micronsPerDegree  = p.Results.micronsPerDegree;
             obj.coneDarkNoiseRate = [0 0 0];
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
+            
+            % Construct outersgement if not passed.
+            if (isempty(p.Results.os))
+                eccentricityMeters = norm(p.Results.center);
+                eccentricityDegs = eccentricityMeters/(obj.micronsPerDegree/1e6);
+                obj.os = osLinear('eccentricity',eccentricityDegs);
+            else
+                obj.os = p.Results.os;
+            end
             
             % Set the cone spacing and aperture given its eccentricity and angle.
             %
@@ -390,7 +398,8 @@ classdef coneMosaic < hiddenHandle
         end
         
         function val = get.fov(obj)
-            val = 2 * atand([obj.width obj.height]/2/0.017);
+            focalLengthMeters = obj.micronsPerDegree/(2*1e6)/tand(0.5);
+            val = 2 * atand([obj.width obj.height]/2/focalLengthMeters);
         end
         
         function val = get.coneLocs(obj) % cone locations in meters
