@@ -53,10 +53,10 @@ function t_dynamicStimulusToPhotocurrent
 %        in parentheses are the number of cones averaged to produce the
 %        corresponding trace.
 %
-%    You may need to increase the size of your Matlab Java heap to run
+%    You may need to increase the size of your Matlab Java heap to run 
 %    this.  You do that in Preferences:Matlab:Java Heap Memory, at least in
 %    2017a under OS/X.  Set to something bigger than the default.
-      
+%
 % NPC, ISETBIO Team, 2017
 %
 % 09/01/17  npc  Wrote it.
@@ -129,7 +129,7 @@ oiModulated = oiBackground;
 % the background, which will be illustrated below.
 fprintf('Computing sequence of retinal images for background.\n');
 zeroContrastOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
-zeroContrastOIsequence.visualize('montage', 'showIlluminanceMap', true);
+zeroContrastOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
 %% Generate the eye movement path for the adapting stimulus sequence
 fprintf('Creating eye movement path\n');
@@ -192,9 +192,9 @@ for iContrast = 1:numel(testContrasts)
      eyeMovementsData = struct(...
          'show', true, ...
          'timeAxisMillisecs', cm.timeAxis*1000, ...
-         'posMicrons', squeeze(theEMpaths(trialVisualized, :,:))*cm.pigment.width*1e6 ...
+         'posMicrons', squeeze(theEMpaths(trialVisualized, :,:))*cm.patternSampleSize(1)*1e6 ...
      );
- 	stimulusOIsequence.visualize('montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
+ 	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
 end  % iContrast 
 
 %% Visualize the computed responses
