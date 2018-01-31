@@ -129,7 +129,7 @@ oiModulated = oiBackground;
 % the background, which will be illustrated below.
 fprintf('Computing sequence of retinal images for background.\n');
 zeroContrastOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.sampleTimes, temporalParams.TemporalWindow, 'composition', 'blend');
-zeroContrastOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+zeroContrastOIsequence.visualize('montage', 'showIlluminanceMap', true);
 
 %% Generate the eye movement path for the adapting stimulus sequence
 fprintf('Creating eye movement path\n');
@@ -194,7 +194,7 @@ for iContrast = 1:numel(testContrasts)
          'timeAxisMillisecs', cm.timeAxis*1000, ...
          'posMicrons', squeeze(theEMpaths(trialVisualized, :,:))*cm.patternSampleSize(1)*1e6 ...
      );
- 	stimulusOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
+ 	stimulusOIsequence.visualize('montage', 'showIlluminanceMap', true, 'eyeMovementsData', eyeMovementsData);
 end  % iContrast 
 
 %% Visualize the computed responses
