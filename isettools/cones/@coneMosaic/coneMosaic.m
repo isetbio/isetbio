@@ -134,7 +134,7 @@ classdef coneMosaic < hiddenHandle
         integrationTime;
         
         %MICRONSPERDEGREE How many microns/degree 
-        %    Defaults to 300 which is appropriate for the (central) 
+        %    Defaults to 300 which is appropriate for the central 
         %    region of the human eye.
         micronsPerDegree;
         
