@@ -101,14 +101,14 @@ end
 function hFig = analyzeAndDisplayResults(figNo, fixEMobj, configName,  velocityMeasurementIntervalSeconds)
 
     % Analyze the emPaths
-    nTrials = size(fixEMobj.emPathsArcMin,1);
+    nTrials = size(fixEMobj.emPosArcMin,1);
     timeStepSeconds = fixEMobj.timeAxis(2)-fixEMobj.timeAxis(1);
     
     emPosRange = [-35 35];
     emPosDelta = 1;
     
     for trialNo = 1:nTrials
-        emPathArcMin = squeeze(fixEMobj.emPathsArcMin(trialNo,:,:));
+        emPathArcMin = squeeze(fixEMobj.emPosArcMin(trialNo,:,:));
         xPosArcMin = squeeze(emPathArcMin(:,1));
         yPosArcMin = squeeze(emPathArcMin(:,2));
         
@@ -234,7 +234,7 @@ function hFig = analyzeAndDisplayResults(figNo, fixEMobj, configName,  velocityM
     % fixation span
     cmap = jet(1024);
     [emLikelihoodMap, emLikelihoodMapSupportX, emLikelihoodMapSupportY] = ...
-        fixEMobj.computeLikelihoodMap(fixEMobj.emPathsArcMin, emPosRange, emPosDelta);
+        fixEMobj.computeLikelihoodMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
     contourf(emLikelihoodMapSupportX, emLikelihoodMapSupportY, emLikelihoodMap, 0:0.05:1, 'LineColor', 'none'); hold on;
     plot([0 0], emPosRange, 'k-'); plot(emPosRange, [0 0], 'k-');  hold off;
     set(gca, 'YLim', emPosRange, 'XLim', emPosRange, 'XTick', [-100:10:100], 'YTick', [-100:10:100], 'FontSize', 14);

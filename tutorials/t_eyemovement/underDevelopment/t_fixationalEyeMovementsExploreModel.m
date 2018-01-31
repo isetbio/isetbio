@@ -70,11 +70,11 @@ end
 function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosRange, emPosDelta)
 
     % Analyze the emPaths
-    nTrials = size(fixEMobj.emPathsArcMin,1);
+    nTrials = size(fixEMobj.emPosArcMin,1);
     timeStepSeconds = fixEMobj.timeAxis(2)-fixEMobj.timeAxis(1);
     
     for trialNo = 1:nTrials
-        emPathArcMin = squeeze(fixEMobj.emPathsArcMin(trialNo,:,:));
+        emPathArcMin = squeeze(fixEMobj.emPosArcMin(trialNo,:,:));
         xPosArcMin = squeeze(emPathArcMin(:,1));
         yPosArcMin = squeeze(emPathArcMin(:,2));
         
@@ -155,7 +155,7 @@ function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosR
     d.timeLagsMilliseconds = timeLagsMilliseconds;
     d.emPathArcMin = emPathArcMin;
     [d.emLikelihoodMap, d.emLikelihoodMapSupportX, d.emLikelihoodMapSupportY] = ...
-        fixEMobj.computeLikelihoodMap(fixEMobj.emPathsArcMin, emPosRange, emPosDelta);
+        fixEMobj.computeLikelihoodMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
 end
 
 
