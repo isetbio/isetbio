@@ -74,8 +74,8 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %       'calc cone psf info'      - Structure with cone sensitivities and
 %                                   weight spectrum for computing cone psfs
 %    Retinal scale
-%       'um per degree'           - Conversion between um on retina and
-%                                   degree of visual angle.
+%       'um per degree'           - Conversion factor degree of visual angle
+%                                   and um on retina
 %    Stiles Crawford Effect
 %       'sce params'              - The Stiles-Crawford Effect structure
 %
