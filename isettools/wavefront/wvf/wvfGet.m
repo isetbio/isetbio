@@ -31,8 +31,8 @@ function val = wvfGet(wvf, parm, varargin)
 %      Bookkeeping
 %        'name'                   - Name of this object
 %        'type'                   - Type of this object, is always 'wvf'
-%        'um per degree'          - Conversion between um on retina and
-%                                   degree of visual angle.
+%        'um per degree'          - Conversion factor degree of visual angle
+%                                   and um on retina
 %
 %      Zernike coefficients and pupil function
 %        'zcoeffs'                - wvfGet(wvf, 'zcoeffs', [zidx])
