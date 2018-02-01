@@ -326,7 +326,7 @@ switch (parm)
             end
         else
             wList = varargin{1};
-            if length(wList > 1)
+            if (length(wList) > 1)
                 error('Can only request one wavelength here');
             end
             idx = wvfWave2idx(wvf, wList);
@@ -367,7 +367,7 @@ switch (parm)
             end
         else
             wList = varargin{1};
-            if length(wList > 1)
+            if (length(wList) > 1)
                 error('Can only request one wavelength here');
             end
             idx = wvfWave2idx(wvf, wList);
