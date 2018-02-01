@@ -56,6 +56,14 @@ for kk = 1:2:length(keyValuesCell)
             keyValuesCell{kk} = 'name';
         case {'type'}
             keyValuesCell{kk} = 'type';
+        case {'umperdegree'}
+            keyValuesCell{kk} = 'umperdegree';
+        case {'zcoeffs', 'zcoeff', 'zcoef'}
+            keyValuesCell{kk} = 'zcoeffs';
+        case {'wavefrontaberrations'}
+            keyValuesCell{kk} = 'wavefrontaberrations';
+        case {'pupilfunction', 'pupilfunc', 'pupfun'}
+            keyValuesCell{kk} = 'pupilfunction';
         case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', ...
                 'measuredpupildiameter'}
             keyValuesCell{kk} = 'measuredpupil';
@@ -99,8 +107,6 @@ for kk = 1:2:length(keyValuesCell)
             keyValuesCell{kk} = 'calcwavelengths';
         case {'calcconepsfinfo'}
             keyValuesCell{kk} = 'calcconepsfinfo';
-        case {'umperdegree'}
-            keyValuesCell{kk} = 'umperdegree';
         case {'sceparams', 'stilescrawford'}
             keyValuesCell{kk} = 'sceparams';
     end
