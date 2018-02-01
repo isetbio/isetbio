@@ -280,13 +280,12 @@ if (~isempty(overlaidEMpathMicrons))
     if (~labelConeTypes)
         color = 'r';
     end
-    plot(overlaidEMpathMicrons(:,1)*1e-6, overlaidEMpathMicrons(:,2)*1e-6, 'ks-', 'Color', color, 'LineWidth', 1.5);
+    plot(overlaidEMpathMicrons(:,1)*1e-6, overlaidEMpathMicrons(:,2)*1e-6, 'k.-', 'Color', color, 'LineWidth', 1.5);
 end
 
 %% Arrange axis and fonts
 
 hold(axesHandle, 'off')
-axis(axesHandle, 'equal'); axis(axesHandle, 'xy')
 
 if (isempty(p.Results.axesHandle))
     xTicks = [sampledHexMosaicXaxis(1) obj.center(1) sampledHexMosaicXaxis(end)];
@@ -301,5 +300,8 @@ if (isempty(p.Results.axesHandle))
     set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
     drawnow;
 end
+
+axis(axesHandle, 'xy');
+axis(axesHandle, 'equal'); 
 
 end

@@ -264,11 +264,13 @@ switch ieParamFormat(plotType)
             support = oiGet(currentOI, 'spatial support', 'microns');
             xaxis = support(1,:,1);
             yaxis = support(:,1,2);
-            row = 1+floor((oiIndex)/(colsNum+1));
-            col = 1+mod((oiIndex),(colsNum+1));
-            if (col > colsNum) || (row > rowsNum)
-                continue;
+            if (p.Results.eyeMovementsData.show)
+                spatialRange = [-1 1] * 1.05 * max([max(abs(xaxis(:))) max(abs(yaxis(:))) max(abs(p.Results.eyeMovementsData.posMicrons))]);
+            else
+                spatialRange = [-1 1] * 1.05 * max([max(abs(xaxis(:))) max(abs(yaxis(:)))]);
             end
+            row = floor(oiIndex/(colsNum+1))+1;
+            col = mod(oiIndex,colsNum+1)+1;
             subplot('Position', subplotPosVectors(row,col).v);
             if (p.Results.showIlluminanceMap)
                 illuminanceMap = (illuminanceMap-illumRange(1))/(illumRange(2)-illumRange(1));
@@ -311,8 +313,11 @@ switch ieParamFormat(plotType)
             end
             
             if (p.Results.showIlluminanceMap)
-                colormap(jet(1024));
+                colormap(bone(1024));
             end
+
+            set(gca, 'XLim', spatialRange, 'YLim', spatialRange);
+            axis 'xy'
 
             title(sprintf('mean illum: %2.4f td', meanIlluminance));
             set(gca, 'FontSize', 12);
