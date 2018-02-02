@@ -1,9 +1,9 @@
-function [sample_mean, sample_cov] = ...
+function [sample_mean, sample_cov, subject_coeffs] = ...
     wvfLoadThibosVirtualEyes(pupilDiameterMM)
 % Load Thibos mean and covariance of Zernicke coefficients for human data
 %
 % Syntax:
-%   [sample_mean, sample_cov] = ...
+%   [sample_mean, sample_cov, subject_coeffs] = ...
 %     wvfLoadThibosVirtualEyes([pupilDiameterMM])
 %
 % Description:
@@ -64,6 +64,7 @@ function [sample_mean, sample_cov] = ...
 %    xx/xx/12       Copyright Wavefront Toolbox Team, 2012
 %    11/09/17  jnm  Formatting
 %    01/11/18  jnm  Formatting update to match Wiki
+%    02/01/18  npc  Return struct with measured subject data coefficients
 
 % Examples:
 %{
@@ -104,13 +105,13 @@ if notDefined('pupilDiameterMM'), pupilDiameterMM = 6; end
 sample_mean = [];
 switch pupilDiameterMM
     case 7.5
-        load('IASstats75', 'S', 'sample_mean');
+        load('IASstats75', 'S', 'sample_mean', 'OS', 'OD', 'OU');
     case 6.0
-        load('IASstats60', 'S', 'sample_mean');
+        load('IASstats60', 'S', 'sample_mean', 'OS', 'OD', 'OU');
     case 4.5
-        load('IASstats45', 'S', 'sample_mean');
+        load('IASstats45', 'S', 'sample_mean', 'OS', 'OD', 'OU');
     case 3.0
-        load('IASstats30', 'S', 'sample_mean');      
+        load('IASstats30', 'S', 'sample_mean', 'OS', 'OD', 'OU');      
     otherwise
         error('Unknown pupil size %.1f. Options are 3, 4.5, 6, 7.5.\n', ...
             pupilDiameterMM)
@@ -118,4 +119,10 @@ end
 
 sample_cov = S;
 
+% Measured subject data
+subject_coeffs = struct(...
+    'leftEye', OS, ...
+    'rightEye', OD, ...
+    'bothEyes', OU' ...
+    );
 end

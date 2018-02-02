@@ -51,6 +51,11 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 % History:
 %   01/26/18  dhb  
 
+%% Parse input
+p = inputParser;
+p.addParameter('warningInsteadOfErrorForNegativeValuedPSF', false, @islogical);
+p.parse(varargin{:});
+
 %% Handle sf args and converstion
 if (~isempty(xSfGridCyclesDeg) & ~isempty(ySfGridCyclesDeg))
     % They can both be passed as non-empty, in which case we do a set of sanity
@@ -122,7 +127,11 @@ end
 % Check for large negative psf values, and then set any small
 % negative values to zero.
 if (min(psf(:)) < 0 && abs(min(psf(:))) > 1e-10*max(psf(:)))
-    error('Mysteriously large negative psf values');
+    if (p.Results.warningInsteadOfErrorForNegativeValuedPSF)
+        fprintf(2,'Mysteriously large negative psf values\n');
+    else
+        error('Mysteriously large negative psf values');
+    end
 end
 psf(psf < 0) = 0;
 
