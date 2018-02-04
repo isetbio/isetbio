@@ -348,7 +348,7 @@ function computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds)
     end % tStep
 
     % Compute velocity
-    obj.velocityTimeSeries = obj.computeVelocity(obj.emPosTimeSeries, obj.velocityMeasurementIntervalSeconds, obj.timeStepDurationSeconds);
+    obj.velocityTimeSeries = obj.computeVelocity(obj.timeAxis, obj.emPosTimeSeries', obj.velocityMeasurementIntervalSeconds);
     
     % Trim and recenter and resample the post-stabilization time series
     trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds);
@@ -371,7 +371,9 @@ end % Public methods
 
 methods (Static)
     
-function  velocityTimeSeries = computeVelocity(emPosTimeSeries, velocityMeasurementIntervalSeconds, timeStepDurationSeconds)
+function  velocityTimeSeries = computeVelocity(timeAxis, emPosTimeSeries, velocityMeasurementIntervalSeconds)
+    emPosTimeSeries = emPosTimeSeries';
+    timeStepDurationSeconds = timeAxis(2)-timeAxis(1);
     method = 2;
     if (method == 1)
         velocityMeasurementIntervalHalfSteps = floor(velocityMeasurementIntervalSeconds/timeStepDurationSeconds/2);
@@ -799,6 +801,7 @@ function trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds)
     keptSteps = obj.stabilizationStepsNum+1:obj.tStepsNum-1;
     obj.timeAxis = obj.timeAxis(keptSteps);
     obj.emPosTimeSeries = obj.emPosTimeSeries(:,keptSteps);
+    obj.heatMapTimeSeries = obj.heatMapTimeSeries(1:numel(keptSteps),:,:);
     obj.velocityTimeSeries = obj.velocityTimeSeries(keptSteps);
     obj.microSaccadeOnsetStepIndices = obj.microSaccadeOnsetStepIndices-obj.stabilizationStepsNum;
     obj.microSaccadeOnsetStepIndices = obj.microSaccadeOnsetStepIndices(obj.microSaccadeOnsetStepIndices>=0);
@@ -813,9 +816,42 @@ function trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds)
         % Resampled time axis
         oldTimeAxis = obj.timeAxis;
         obj.timeAxis = 0:sampleDurationSeconds:obj.timeAxis(end);
-        obj.emPosTimeSeries = (interp1(oldTimeAxis, obj.emPosTimeSeries', obj.timeAxis))';
-        obj.velocityTimeSeries = interp1(oldTimeAxis, obj.velocityTimeSeries, obj.timeAxis);
-        obj.heatMapTimeSeries = (interp1(oldTimeAxis, obj.heatMapTimeSeries', obj.timeAxis))';
+        obj.emPosTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.emPosTimeSeries, obj.timeAxis);
+        obj.velocityTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.velocityTimeSeries, obj.timeAxis);
+        obj.heatMapTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.heatMapTimeSeries, obj.timeAxis);
+        %obj.emPosTimeSeries = (interp1(oldTimeAxis, obj.emPosTimeSeries', obj.timeAxis))';
+        %obj.velocityTimeSeries = interp1(oldTimeAxis, obj.velocityTimeSeries, obj.timeAxis);
+        %[T,N,M] = size(obj.heatMapTimeSeries);
+        %tmp = reshape(obj.heatMapTimeSeries,[T N*M]);
+        %obj.heatMapTimeSeries = reshape((interp1(oldTimeAxis, tmp, obj.timeAxis)), [numel(obj.timeAxis) N M]);
+    end
+end
+
+function outMatrix = smartInterpolation(obj,inputTimeAxis, inputMatrix, outputTimeAxis)
+    if (ndims(inputMatrix) > 3)
+        error('input matrix must be 1D or 2D')
+    elseif (ndims(inputMatrix)==3)
+        if (length(inputTimeAxis) == size(inputMatrix,1))
+            [T,N,M] = size(obj.heatMapTimeSeries);
+            inputMatrix = reshape(inputMatrix,[T N*M]);
+            outMatrix = reshape((interp1(inputTimeAxis, inputMatrix, outputTimeAxis)), [numel(outputTimeAxis) N M]);
+        elseif (length(inputTimeAxis) == size(inputMatrix,3))
+            [N,M,T] = size(obj.heatMapTimeSeries);
+            inputMatrix = reshape(inputMatrix,[N*M T]);
+            outMatrix = reshape((interp1(inputTimeAxis, inputMatrix', outputTimeAxis))', [numel(outputTimeAxis) N M]);
+        else
+            error('Time dimension should be either first or last')
+        end
+    else
+        transposeOutMatrix = false;
+        if (length(inputTimeAxis) == size(inputMatrix,2))
+            inputMatrix = inputMatrix';
+            transposeOutMatrix = true;
+        end
+        outMatrix = interp1(inputTimeAxis, inputMatrix, outputTimeAxis);
+        if (transposeOutMatrix)
+           outMatrix  = outMatrix'; 
+        end
     end
 end
 

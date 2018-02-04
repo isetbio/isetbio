@@ -5,7 +5,7 @@ function t_fixationalEyeMovementsToPhotocurrents
     theOIsequence = generateImpulseOIsequence(fovDegs);
 
     % Instantiate a cone mosaic
-    integrationTime = 1/1000;
+    integrationTime = 5/1000;
     
     cm = coneMosaicGenerate(fovDegs,integrationTime);
     
@@ -18,7 +18,7 @@ function t_fixationalEyeMovementsToPhotocurrents
     % and the micronsPerDegree conversion factor)
     nTrials = 2;
     eyeMovementsPerTrial = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime);
-    fixEMobj.computeForConeMosaic(cm, eyeMovementsPerTrial, 'nTrials', nTrials);
+    fixEMobj.computeForConeMosaic(cm, eyeMovementsPerTrial, 'nTrials', nTrials, 'rSeed', 1);
     
     visualizedTrial = 1;
     eyeMovementsData = struct(...
@@ -33,9 +33,26 @@ function t_fixationalEyeMovementsToPhotocurrents
  
 
     % Visualize one trial of eye movements on top of the mosaic.
+    % Here we use the 'emPosArcMin' data, which contain the contain the eye movement paths in units of patternSampleSize
+    
+    figure(1); 
+    subplot(1,3,1);
+    hold on
+    plot(fixEMobj.timeAxis*1000, squeeze(fixEMobj.emPosArcMin(visualizedTrial,:,1)), 'r-', 'MarkerSize', 5);
+    subplot(1,3,2);
+    hold on
+    plot(fixEMobj.timeAxis*1000, squeeze(fixEMobj.emPosArcMin(visualizedTrial,:,2)), 'b-', 'MarkerSize', 5);
+    subplot(1,3,3);
+    hold on
+    velocityMeasurementIntervalSeconds = 20/1000;
+    velocity = fixEMobj.computeVelocity(fixEMobj.timeAxis, squeeze(fixEMobj.emPosArcMin(visualizedTrial,:,:)), velocityMeasurementIntervalSeconds);
+    plot(fixEMobj.timeAxis*1000, velocity, 'k-', 'MarkerSize', 5);
+    
+    % Visualize one trial of eye movements on top of the mosaic.
     % Here we use the 'emPosMicrons' data, which contain the contain the eye movement paths in units of patternSampleSize
     
-    figure(1); clf;
+    
+    figure(10);
     subplot(1,2,1)
     cm.visualizeGrid(...
         'axesHandle', gca, ...
@@ -96,7 +113,7 @@ end
 
 function theOIsequence = generateImpulseOIsequence(fovDegs)
     sparams.fov = fovDegs; sparams.luminance = 100;
-    stimWeights = zeros(1,10); 
+    stimWeights = zeros(1,50); 
     stimWeights(4) = 1;
     stimRefreshInterval = 20/1000;
     
