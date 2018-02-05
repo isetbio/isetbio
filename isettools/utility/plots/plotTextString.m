@@ -2,7 +2,7 @@ function t = plotTextString(str, position, delta, fontSize)
 % Add a text string to a 2D graph in a specific position.
 %
 % Syntax:
-%   t = plotTextString(str, [position], [delta=0.2], [fontSize=12])
+%   t = plotTextString(str, [position], [delta], [fontSize])
 %
 % Description:
 %    Place a text string on a 2D graph in one of several canonical
@@ -30,6 +30,9 @@ function t = plotTextString(str, position, delta, fontSize)
 % Outputs:
 %    t        - The text string
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %
 
@@ -37,6 +40,7 @@ function t = plotTextString(str, position, delta, fontSize)
 %    xx/xx/06       Copyright Imageval Consulting, LLC 2006
 %    12/11/17  jnm  Formatting
 %    12/26/17   BW  Added examples and responded to JNM
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 % Example:
 %{

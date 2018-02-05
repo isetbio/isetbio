@@ -20,19 +20,20 @@ function [h, pts] = ieShape(shape, varargin)
 %
 % Optional key/value pairs:
 %    'color'   - Optional colorspec (e.g. 'b', 'g') information for shapes.
-%    'center'  - Optional key for ellipses and circles
+%                Default is black (k).
+%    'center'  - Optional key for ellipses and circles. Default is [0 0].
 %    'ellipseParameters'
 %              - Optional key for ellipses, that takes the values major, 
-%                minor, and angle in an array. 
-%    'radius'  - Optional key for circles, contains radius
+%                minor, and angle in an array. Default is [1 1 0].
+%    'radius'  - Optional key for circles, contains radius. Default is 1.
 %    'nSamp'   - Optional key for circles, contains the number of sample
-%                points that are used to make up the shape. Default is 20
+%                points that are used to make up the shape. Default is 20.
 %    'rect'    - Optional key for rectangles, contains starting x and y, 
-%                and then the length for x and y
+%                and then the length for x and y. Default is  [-1 -1 2 2].
 %    'lineX'   - Optional key for lines for the starting X coordinate and
-%                the length of the line along the x-axis
+%                the length of the line along the x-axis. Default is [0 1].
 %    'lineY'   - Optional key for lines for starting Y coordinate and the
-%                length of the line along the y-axis
+%                length of the line along the y-axis. Default is [0 1].
 %
 % Notes:
 %    * [Note: BW.  We could add a fill color. Set 'MarkerFaceColor']
@@ -40,6 +41,7 @@ function [h, pts] = ieShape(shape, varargin)
 % History:
 %    xx/xx/xx  BW   ISETBIO Team
 %    11/22/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match wiki, add defaults for OKVP.
 
 % Examples:
 %{
@@ -102,7 +104,7 @@ switch shape
         % Also for multiple circles, keep hold on and make axis equal, of
         % course. Otherwise it's not a circle.
         hold on
-        for ii=1:nCircles
+        for ii = 1:nCircles
             pts = circle(center(ii, :), radius(ii), nSamp);
             h = plot(pts(:, 2), pts(:, 1), colors(ii));
         end

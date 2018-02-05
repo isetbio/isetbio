@@ -28,19 +28,18 @@ function tee = temporalEquivEcc(center, varargin)
 %    tee     - Calculated temporal equivalent eccentricity
 %
 % Optional key/value pairs:
-%    'eyeSide' - Which eye? (Default is 'left').  Not yet
-%                implemented in code.
+%    'eyeSide' - Which eye? (Default 'left'). Not yet implemented in code.
 %
 % Notes:
 %    * [Note: DHB - This routine is not really done.  No implementation of
-%       which eye yet, and what the coordinate system is, is not specified.
-%       And, the current code doesn't take the quadrant of the retina into
-%       account. Maybe the commented out code in the note from BAW  below
-%       is right.  All needs to be fixed up before we use this for anything
-%       serious. It is only called from the rgc method initSpace.  I put in
-%       an error message on execution, as this seemed really broken.]
-%    * [Note: DHB - Key 'eyeSide' is not well name, 'whichEye' would be
-%      better.
+%      which eye yet, and what the coordinate system is, is not specified.
+%      And, the current code doesn't take the quadrant of the retina into
+%      account. Maybe the commented out code in the note from BAW  below is
+%      right.  All needs to be fixed up before we use this for anything
+%      serious. It is only called from the rgc method initSpace.  I put in
+%      an error message on execution, as this seemed really broken.]
+%    * [Note: DHB - Key 'eyeSide' is not well named, 'whichEye' would be
+%      better.]
 %    * [Note: BAW - Below is the from JRG. Not sure it is all the same.
 %      In general, I am not sure we should use this for human work.]
 
@@ -66,6 +65,7 @@ function tee = temporalEquivEcc(center, varargin)
 % History:
 %    xx/xx/17   BW  ISETBIO Team, 2017
 %    11/20/17  jnm  Comments & formatting
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

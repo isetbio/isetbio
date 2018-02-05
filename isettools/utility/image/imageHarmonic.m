@@ -32,6 +32,9 @@ function [img, parms] = imageHarmonic(parms)
 %    the funciton harmonicP, and you can see them by requesting them on
 %    return as below.
 %
+%    There are examples contained in the code. To access these examples,
+%    simply type 'edit imageHarmonic.m' into the Command Window.
+%
 % Inputs:
 %    parms - (Optional) The harmonic parameters. The possible parameters
 %            are as follows:
@@ -48,27 +51,37 @@ function [img, parms] = imageHarmonic(parms)
 % Outputs:
 %    img   - The image information
 %    parms - The image parameters.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/07/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
     [img, p] = imageHarmonic;
     vcNewGraphWin;
-    imagesc(img); colormap(gray); axis image
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 %{
     parms.row = 32;
     parms.col = 32;
-    parms.contrast = 1; 
+    parms.contrast = 1;
     parms.ph = pi / 2;
     parms.freq = 2;
     parms.ang = pi / 6;
     parms.GaborFlag = 0.2;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin; imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 %{
     % Now, for a sum of two harmonics
@@ -80,12 +93,18 @@ function [img, parms] = imageHarmonic(parms)
     parms.contrast = [0.7 0.5];
     parms.ph = [ 0 0];
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;  imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 %{
     parms.GaborFlag = 0;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;   imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 
 % If no parameters sent, use the default.

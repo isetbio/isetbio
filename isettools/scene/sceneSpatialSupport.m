@@ -20,6 +20,9 @@ function sSupport = sceneSpatialSupport(scene, units)
 % Outputs:
 %    sSupport - The calculated scene spatial positions
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    oiSpatialSupport
 %
@@ -27,6 +30,7 @@ function sSupport = sceneSpatialSupport(scene, units)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/20/17  jnm  Formatting & fix example
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

@@ -26,6 +26,9 @@ function imT = imageLinearTransform(im, T)
 %    size (W x K), where K is the number of output channels.  It also
 %    works with an im in XW format, again with T in (W x K) format.
 %
+%    Examples within the code can be accessed by typing 'edit
+%    imageLinearTransform.m' into the Command Window.
+%
 % Inputs:
 %    im  - The original image, in N x M x W format or XW format.
 %    T   - The transform to act upon the image.
@@ -33,7 +36,8 @@ function imT = imageLinearTransform(im, T)
 % Outputs:
 %    imT - The transformed image
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    colorTransformMatrix, RGB2XWFormat
@@ -43,13 +47,14 @@ function imT = imageLinearTransform(im, T)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/07/17  jnm  Formatting & change example
 %    12/26/17   BW  Added XW format handling
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
     % Returns an N x M x 3 xyz Image
     XYZ = ieReadSpectra('XYZ.mat', 370:730);
     imXYZ = zeros(361, 20, 3);
-    for ii=1:3
+    for ii = 1:3
         imXYZ(:, :, ii) = repmat(XYZ(:, ii), 1, 20);
     end
     T = colorTransformMatrix('xyz2srgb');
@@ -60,7 +65,7 @@ function imT = imageLinearTransform(im, T)
     % Same operation for XW format input
     XYZ = ieReadSpectra('XYZ.mat', 370:730);
     imXYZ = zeros(361, 20, 3);
-    for ii=1:3
+    for ii = 1:3
         imXYZ(:, :, ii) = repmat(XYZ(:, ii), 1, 20);
     end
     [imXYZ,r,c] = RGB2XWFormat(imXYZ);
@@ -89,8 +94,6 @@ if size(T, 1) ~= w, error('image/T data sizes mismatch'); end
 
 %% We multiply and reformat back to RGB if necessary
 imT = im * T;
-if isequal(iFormat,'RGB')
-    imT = XW2RGBFormat(imT, r, c);
-end
+if isequal(iFormat,'RGB'), imT = XW2RGBFormat(imT, r, c); end
 
 end

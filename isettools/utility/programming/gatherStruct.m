@@ -17,6 +17,9 @@ function obj = gatherStruct(obj)
 % Outputs:
 %	 obj  - The gathered obj
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %
 % See Also:
@@ -26,6 +29,7 @@ function obj = gatherStruct(obj)
 % History:
 %    xx/xx/14  HJ   ISETBIO TEAM, 2014
 %    12/15/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

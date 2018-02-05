@@ -19,10 +19,14 @@ function cm = ieCmap(cName, num, gam)
 % Outputs:
 %    cm    - The color map to return
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010
 %    11/30/17  jnm  Formatting
+%    01/18/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -63,6 +67,6 @@ switch cName
 end
 
 % All maps can have the gamma applied
-cm = cm.^gam;
+cm = cm .^ gam;
 
 end

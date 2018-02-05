@@ -27,6 +27,9 @@ function ndef = notDefined(varString)
 %                variable was already defined. Defined meaning the variable
 %                exists and is not empty in the calling function.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/05  bw   summer 05, imported into mrVista 2.0
@@ -34,6 +37,7 @@ function ndef = notDefined(varString)
 %    01/xx/06  ras  imported back into mrVista 1.0
 %    01/xx/10  N    Nikhil, support for checking structure variables added
 %    12/14/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 [rootVarString, fieldString] = strtok(varString, '.');
 str = sprintf('''%s''', rootVarString);

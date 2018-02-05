@@ -14,17 +14,23 @@ function [oType, p] = ieParameterOtype(param)
 % Outputs:
 %    oType - The object
 %    p     - The parameter
-%    
+%
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note:  BW - Removed  ISET specific cases.  ]
 %    * [Note: JNM - rtpsfsize was listed 2x in the switch case for
 %      ieParamFormat. I left it in oi and removed it from optics (based on
 %      order of case appearance. If this is not correct, please let me know
 %      and I will change which it has been left in.]
+%    * TODO: Complete TODO listed below.
+%
 
 % History:
 %    xx/xx/13       Copyright Imageval LLC, 2013
 %    12/12/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -88,18 +94,18 @@ if ~isempty(pos)
             oType = 'optics';
         case 'lens'
             oType = 'lens';
-            %         case 'sensor'
-            %             oType = 'sensor';
-            %         case 'pixel'
-            %             oType = 'pixel';
-            %             %         case {'vci', 'ip'}
-            %             %             oType = 'ip';
+        % case 'sensor'
+            % oType = 'sensor';
+        % case 'pixel'
+            % oType = 'pixel';
+        % % case {'vci', 'ip'}
+            % % oType = 'ip';
         case {'em', 'eyemove', 'eyemovement'}
             oType = 'em';
     end
     
     % Check for success. Return the parameter, without the prepended term
-    if ~isempty(oType), p = param((pos+1):end);  return; end
+    if ~isempty(oType), p = param((pos + 1):end);  return; end
 end
 
 %% We didn't find the oType yet.

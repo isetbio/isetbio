@@ -46,11 +46,12 @@ function sFactor = ieUnitScaleFactor(unitName)
 
 % Examples:
 %{
-    nMeters = 1; nInches = 39.3701;
+    nMeters = 1;
+    nInches = 39.3701;
 
     % Get number of inches from number of meters
     % Inches is fun for an example.  But never use them.
-    nMeters*ieUnitScaleFactor('in')
+    nMeters * ieUnitScaleFactor('in')
 
     % Get number of meters from number of inches
     nInches/ieUnitScaleFactor('in')

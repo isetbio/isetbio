@@ -15,6 +15,9 @@ function imT = imageTranspose(im)
 % Outputs:
 %    imT - The translated image, with transposed color planes.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    imageFlip
 %
@@ -27,6 +30,6 @@ if notDefined('im'), error('Image required.'); end
 if ndims(im)~=3, error('Input must be 3-dimensional: row x col x w'); end
 [r, c, w] = size(im);
 imT = zeros(c, r, w);
-for ii=1:size(im, 3), imT(:, :, ii) = im(:, :, ii)'; end
+for ii = 1:size(im, 3), imT(:, :, ii) = im(:, :, ii)'; end
 
 end

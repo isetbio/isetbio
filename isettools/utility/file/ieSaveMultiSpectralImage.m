@@ -9,6 +9,9 @@ function fullName = ieSaveMultiSpectralImage(fullName, mcCOEF, basis, ...
 % Description:
 %    Write the multispectral image file. The variables are created using
 %    routines in the hypercube directory. 
+%
+%    Examples are located within the code. To access the examples, type
+%    'edit ieSaveMultiSpectralImage.m' into the Command Window.
 % 
 % Inputs:
 %    fullName   - (Optional) full file name and path. Default is looked up.
@@ -28,6 +31,9 @@ function fullName = ieSaveMultiSpectralImage(fullName, mcCOEF, basis, ...
 % Outputs:
 %    fullName - The full path to the output file is returned.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * The SPD of the data can be derived from the coefficients and basis
 %      functions using: 
@@ -42,6 +48,7 @@ function fullName = ieSaveMultiSpectralImage(fullName, mcCOEF, basis, ...
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/27/17  jnm  Formatting
 %    11/29/17  jnm  Add note & Example
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{

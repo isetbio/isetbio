@@ -22,6 +22,9 @@ function sceneWBCreate(sceneAll, workDir)
 % Outputs:
 %    None.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * TODO: Fix example. Error is:
 %           Error using sceneInterpolateW (line 69)
@@ -33,6 +36,7 @@ function sceneWBCreate(sceneAll, workDir)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/20/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -61,7 +65,7 @@ nWave = sceneGet(sceneAll, 'nwave');
 wave = sceneGet(sceneAll, 'wave');
 
 scene = sceneClearData(sceneAll);
-for ii=1:nWave
+for ii = 1:nWave
     photons = sceneGet(sceneAll, 'photons', wave(ii));
     scene = sceneSet(scene , 'wave', wave(ii));
     scene = sceneSet(scene, 'photons', photons);

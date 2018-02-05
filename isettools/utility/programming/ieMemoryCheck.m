@@ -14,15 +14,19 @@ function m = ieMemoryCheck(unit, level)
 %    unit  - (Optional) The unit in which to present the output. Options
 %            are 'mb', 'kb', and 'b'. Default is 'b' (bytes).
 %    level - (Optional) The level of memory you are querying. Options are
-%            base and caller. Default is caller.
+%            'base' and 'caller'. Default is 'caller'.
 %
 % Outputs:
 %    m     - The memory in use, in the specified units.
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % History:
 %    xx/xx/05       Copyright ImagEval, LLC, 2005
 %    12/12/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
