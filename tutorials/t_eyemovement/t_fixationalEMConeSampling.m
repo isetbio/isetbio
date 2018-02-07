@@ -1,6 +1,8 @@
 function t_fixationalEMConeSampling
-% Examine the effects of different cone mosaic resampling factors
-% on the resulting eye movement paths.
+% Fixational eye movements
+%
+% Examine the effects of different cone mosaic temporal resampling
+% factors on the resulting eye movement paths.
 %
 
 % History

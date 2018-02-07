@@ -46,7 +46,7 @@ function t_fixationalEyeMovementsExploreModel
         % Compute the random seed to get reproducible results
         fixEMobj.randomSeed = 3457;
         % Compute the emPaths
-        fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials);
+        fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, true);
 
         % Analyze the results
         velocityMeasurementIntervalSeconds = 41/1000;
@@ -89,9 +89,6 @@ function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosR
         [dispY2, ~, scrambledIntervalsDispY2, DrandomWalkY2, ~] = ...    
             fixEMobj.performDisplacementAnalysis(yPosArcMin', fixEMobj.timeAxis, 'mode', 'D2');
         
-        % Compute velocity
-        velocity = fixEMobj.computeVelocity(emPathArcMin', velocityMeasurementIntervalSeconds, timeStepSeconds);
-
         % Perform spectral analysis
         samplingRate = 1/timeStepSeconds;
         [pSDX,frequencyAxis] = periodogram(xPosArcMin,[],[], samplingRate);
@@ -108,7 +105,7 @@ function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosR
             displacementY2 = zeros(nTrials, length(dispY2));
             scrambledIntervalsDisplacementX2 = zeros(nTrials, length(scrambledIntervalsDispX2));
             scrambledIntervalsDisplacementY2 = zeros(nTrials, length(scrambledIntervalsDispY2));
-            velocityArcMinPerSecond = zeros(nTrials, length(velocity));
+            % velocityArcMinPerSecond = zeros(nTrials, length(velocity));
         end 
          
         % Accumulate over trials
@@ -125,9 +122,11 @@ function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosR
         powerSpectralDensityX(trialNo,:) = pSDX;
         powerSpectralDensityY(trialNo,:) = pSDY;
         
-        velocityArcMinPerSecond(trialNo,:) = velocity;
+        % velocityArcMinPerSecond(trialNo,:) = velocity;
     end % trialNo
     
+    velocityArcMinPerSecond = fixEMobj.velocityArcMin; % fixEMobj.computeVelocity(emPathArcMin', velocityMeasurementIntervalSeconds, timeStepSeconds);
+
     % Mean over trials
     d.velocityArcMinPerSecond = squeeze(mean(velocityArcMinPerSecond,1));
     
