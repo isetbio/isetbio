@@ -24,8 +24,8 @@ function t_fixationalEyeMovementsToIsomerizations
     close all
     
     % Cone hexagonal mosaic params. Here we are specifying that the mosaic
-    % will have a field of view of 0.25 degrees and a 1 ms integration time.
-    % The resampling factor of 15, means that the hex locations will be
+    % will have a field of view of 0.25 degrees and integration time of 1ms
+    % The resampling factor of 15  means that the hex locations will be
     % computed by sampling a rectangular grid whose pixel size is 1/15th 
     % of the pixel size of the default rectangular mosaic. The higher the 
     % resamplingFactor, the closer the cone positions wil be to the nodes
@@ -34,15 +34,13 @@ function t_fixationalEyeMovementsToIsomerizations
     integrationTime = 1/1000;
     resamplingFactor = 15;
     
-    
-    % Stimulus params for a pulse stimulus. Here we are specifying a square
-    % stimulus that is 0.05 degs in width, has a max luminance of 100 cd/m2
-    % and whose duration is 0.5 seconds. The stimulus is refreshed every 20
-    % milliseconds, and the temporal modulation has a pulse envelope with
-    % an amplitude of 1.0 between frames 5 and 20 (i.e., 100-400 msecs) and
-    % 0.1 for the remaining time.
-    stimFOVdegs = 0.05;
-    sceneParams = struct('fov', stimFOVdegs, 'luminance', 100);
+    % Stimulus params. Here we are specifying a square stimulus that is 
+    % 0.05 degs in width, has a max luminance of 100 cd/m2 and 0.5 second
+    % duration. The stimulus refresh interval is 20 milliseconds, and the 
+    % temporal modulation has a pulse envelope with an amplitude of 1.0 
+    % between frames 5 and 20 (i.e., 100-400 msecs) and 0.1 for the 
+    % remaining time.
+    sceneParams = struct('fov',  0.05, 'luminance', 100);
     stimDurationSeconds = 0.5;
     stimRefreshInterval = 20/1000;
     stimFrames = round(stimDurationSeconds/stimRefreshInterval);
@@ -50,9 +48,9 @@ function t_fixationalEyeMovementsToIsomerizations
     stim.modulation(5:20) = 1.0;
     stim.timeAxis = stimRefreshInterval*((1:length(stim.modulation))-1);
     
-    % Generate an oiSequence for the pulse stimulus. Here is generate a
-    % sequence of optical images, with a separate optical image for each of
-    % the frames of the stimulus.
+    % Generate an oiSequence for the pulse stimulus. Here we generate a
+    % sequence of optical images in which each optical image corresponds
+    % to a different frame of the stimulus sequence.
     theOIsequence = oisCreate('impulse','add', stim.modulation, ...
         'sampleTimes', stim.timeAxis, ...
         'sceneParameters', sceneParams);
@@ -61,16 +59,16 @@ function t_fixationalEyeMovementsToIsomerizations
     % fixational eye movements that include drift and microsaccades.
     fixEMobj = fixationalEM();
     
-    % Instantiate a hexagonal cone mosaic 
+    % Instantiate a hexagonal cone mosaic. 
     cm = coneMosaicHex(resamplingFactor, 'fovDegs', fovDegs);
     cm.integrationTime = integrationTime;
     
     % Compute the number of eye movements for the given oiSequence and the
     % integration time (which is also the timeSample for the eye movements) 
-    % of the cone mosaic that will be used to compute responses.
+    % of the cone mosaic which will be used to compute responses.
     eyeMovementsPerTrial = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime);
         
-    % Compute emPath for this mosaic for nTrials of the same oiSequence.
+    % Compute emPaths for this mosaic for nTrials of the same oiSequence.
     % Here we are fixing the random seed so as to reproduce identical eye
     % movements whenever this script is run.
     nTrials = 2;
@@ -79,14 +77,15 @@ function t_fixationalEyeMovementsToIsomerizations
         'rSeed', 857);
     
     % Visualize the emPath for the first trial on top of the cone mosaic
+    visualizedTrial = 1;
+    
+    hFig = vcNewGraphWin;
+    set(hFig, 'Position', [0 0 0.3 0.5]);
+    
     % The @fixationalEM class can provide the generated emPath in one of 3
     % units: arc min, microns, or units of cone mosaic pattern size.
     % Here we use the micron data ('emPosMicrons')
     % which is what the @coneMosaicHex.visualizeGrid() method expects.
-    
-    hFig = vcNewGraphWin;
-    set(hFig, 'Position', [0 0 0.3 0.5]);
-    visualizedTrial = 1;
     cm.visualizeGrid(...
         'axesHandle', gca, ...
         'overlayEMpathmicrons', squeeze(fixEMobj.emPosMicrons(visualizedTrial,:,:)), ...
@@ -105,10 +104,10 @@ function t_fixationalEyeMovementsToIsomerizations
         'XTickLabels', tickLabels, 'YTickLabels', tickLabels, 'FontSize', 16);
     xlabel('space (microns)'); xlabel('space (microns)'); box on;
     
-    
-    % Compute the mosaic response. Here we use the fixational eye movements
-    % in units of cone mosaic pattern size ('emPos'), which is what the 
-    % @coneMosaic.computeForOISequence() method expects.
+    % Compute the mosaic response for all trials. Here we use the 
+    % fixational eye movements in units of cone mosaic pattern size 
+    % ('emPos'), which is what the  @coneMosaic.computeForOISequence() 
+    % method expects.
     fprintf('Compute mosaic cone responses (isomerizations) to the background sequence, taking eye movements into account.\n');
     [isomerizations, ~,~,~] = ...
     cm.computeForOISequence(theOIsequence, ...
@@ -127,7 +126,7 @@ function t_fixationalEyeMovementsToIsomerizations
     response.isomerizationRate = squeeze(isomerizationRate(visualizedTrial, :, :));
     response.isomerizationRange = [0 max(response.isomerizationRate(:))];
 
-    % Extract the time limits for all the signals
+    % Extract the time range for all the signals
     timeLimits = [0 max([max(stim.timeAxis) max(response.timeAxis) max(fixEMobj.timeAxis)])];
     
     hFig = vcNewGraphWin;
@@ -148,6 +147,10 @@ function t_fixationalEyeMovementsToIsomerizations
 
     % Times during the response for visualizing the 2D mosaic acivation.
     sampledTimes = [75 245 365 380 455]/1000;
+    
+    % Colormap for visualizing mosaic activation
+    activationColorMap = brewermap(1024, 'YlOrBr');
+    
     % Render the mosaic activation at the selected times
     for k = 1:numel(sampledTimes)
         [~,responseFrame] = min(abs(response.timeAxis-sampledTimes(k)));
@@ -156,7 +159,7 @@ function t_fixationalEyeMovementsToIsomerizations
         cm.renderActivationMap(ax, activation, ...
             'signalRange', response.isomerizationRange, ...
             'mapType', 'modulated disks', ...
-            'colorMap', brewermap(1024, 'YlOrBr'));
+            'colorMap', activationColorMap);
         title(sprintf('time: %2.2f sec', response.timeAxis(responseFrame)));
         set(gca, 'FontSize', 12);
     end
@@ -179,7 +182,7 @@ function t_fixationalEyeMovementsToIsomerizations
     set(gca, 'CLim', response.isomerizationRange, 'FontSize', 12);
     ylabel('cone id');
     title('isomerization rates');
-    colormap(ax, colormap(ax, brewermap(1024, 'YlOrBr')));
+    colormap(ax, colormap(ax, activationColorMap));
     colorbar('Location', 'East', 'Ticks', 0:10000:35000, 'TickLabels', {'0', '10K', '20K', '30K'});
     
     % Plot the x and y eye position during the course of the trial
@@ -200,5 +203,5 @@ function t_fixationalEyeMovementsToIsomerizations
     xlabel('time (sec)'); ylabel('eye position');
     title('eye movements')
     legend({'x-eye pos', 'y-eye pos'});
-    set(gca, 'XLim', timeLimits, 'YLim', [-40 40], 'FontSize', 12);
+    set(gca, 'XLim', timeLimits, 'YLim', [-40 40], 'FontSize', 12, 'Color', squeeze(activationColorMap(1,:)));
 end
