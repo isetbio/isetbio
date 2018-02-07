@@ -155,7 +155,8 @@ function t_fixationalEyeMovementsToIsomerizations
         activation = squeeze(response.isomerizationRate(:,responseFrame));
         cm.renderActivationMap(ax, activation, ...
             'signalRange', response.isomerizationRange, ...
-            'colorMap', brewermap(1024, 'YlOrRd'));
+            'mapType', 'modulated disks', ...
+            'colorMap', brewermap(1024, 'YlOrBr'));
         title(sprintf('time: %2.2f sec', response.timeAxis(responseFrame)));
         set(gca, 'FontSize', 12);
     end
@@ -178,8 +179,8 @@ function t_fixationalEyeMovementsToIsomerizations
     set(gca, 'CLim', response.isomerizationRange, 'FontSize', 12);
     ylabel('cone id');
     title('isomerization rates');
-    colormap(ax, colormap(ax, brewermap(1024, 'YlOrRd')));
-    colorbar('Location', 'East', 'Ticks', [0:10000:35000], 'TickLabels', {'0', '10K', '20K', '30K'});
+    colormap(ax, colormap(ax, brewermap(1024, 'YlOrBr')));
+    colorbar('Location', 'East', 'Ticks', 0:10000:35000, 'TickLabels', {'0', '10K', '20K', '30K'});
     
     % Plot the x and y eye position during the course of the trial
     % Superimpose the stimulus frames and the times at which we display the
@@ -196,7 +197,7 @@ function t_fixationalEyeMovementsToIsomerizations
     for k = 1:numel(sampledTimes)
         plot(sampledTimes(k)*[1 1], [-40 40], 'k-v', 'LineWidth', 1.5);
     end
-    xlabel('time (sec)');
+    xlabel('time (sec)'); ylabel('eye position');
     title('eye movements')
     legend({'x-eye pos', 'y-eye pos'});
     set(gca, 'XLim', timeLimits, 'YLim', [-40 40], 'FontSize', 12);

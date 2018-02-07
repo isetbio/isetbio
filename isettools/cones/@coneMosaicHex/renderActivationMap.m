@@ -82,7 +82,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     faceColorsNormalizedValues(faceColorsNormalizedValues<0) = 0;
     faceColorsNormalizedValues(faceColorsNormalizedValues>1) = 1;
             
-    edgeColor = 'none';
+    edgeColor = [0 0 0];
     lineWidth = 0.1;
 
     hold(axesHandle, 'on');
