@@ -5,6 +5,8 @@
 % t_fixationalEyeMovementsTypes         - Examine eye movement paths produced by different values of the 'microSaccadeType' parameter.
 % t_fixationalEMConeSampling            - Examine the effects of different cone mosaic resampling factors on the resulting eye movement paths.   
 % t_fixationalEMTimeSampling            - Examine the effects of different time sampling (cone integration time) on the resulting eye movement paths.
-% t_fixationalEyeMovementsToIsomerizations - Shows how to integrate fixational eye movements with a cone mosaic and 
-%                                            an oiSequence, and illustrates the different time bases for the stimulus
-%                                            modulation, eye-movements and isomerizations.
+% t_fixationalEyeMovementsToIsomerizations  - Shows how to integrate fixational eye movements with a cone mosaic and 
+%                                             an oiSequence, and illustrates the different time bases for the stimulus
+%                                             modulation, eye-movements and isomerizations.
+% t_fixationalEyeMovementsCharacterize      - Computes key properties of emPaths and explores how these change for 
+%                                             as various parameters of the @fixationalEM object are changed.
