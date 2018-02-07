@@ -127,14 +127,14 @@ function t_fixationalEyeMovementsToIsomerizations
     response.isomerizationRate = squeeze(isomerizationRate(visualizedTrial, :, :));
     response.isomerizationRange = [0 max(response.isomerizationRate(:))];
 
-    % Extrac the time limits for all the signals
+    % Extract the time limits for all the signals
     timeLimits = [0 max([max(stim.timeAxis) max(response.timeAxis) max(fixEMobj.timeAxis)])];
     
     hFig = vcNewGraphWin;
     set(hFig, 'Position', [0 0 1.0 0.91]);
     
-    % Plot the stimulus modulation function and superimpose the time limits
-    % for each stimulus frame (gray lines)
+    % Plot the stimulus modulation function and superimpose the stimulus 
+    % frames (gray lines)
     subplot(3,6,1);
     hold on;
     % Superimpose stimulus frames
@@ -201,5 +201,3 @@ function t_fixationalEyeMovementsToIsomerizations
     legend({'x-eye pos', 'y-eye pos'});
     set(gca, 'XLim', timeLimits, 'YLim', [-40 40], 'FontSize', 12);
 end
-
-
