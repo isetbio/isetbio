@@ -2,6 +2,18 @@ function t_fixationalEyeMovementsToIsomerizations
 % Shows how to integrate fixational eye movements with a cone mosaic and 
 % an oiSequence, and illustrates the different time bases for the stimulus
 % modulation, eye-movements and isomerizations.
+%
+% This tutorial produces two figures. 
+% The first one shows the cone mosaic with one eye movement path 
+% superimposed on top of it.
+% The second figure is a multi-panel figure and displays the following:
+% - the stimulus modulation function (top left)
+% - 2D mosaic activations (isomerizations) at different epochs during the
+%   course of the trial
+% - Space (cone) x Time plot of the isomerizations signals showing how the
+%   mosaic response evolves during the entire trial
+% - Time plot of the x- and y- eye position during the entire trial.
+%
 
 % History
 %   02/06/18  npc  Wrote it.
