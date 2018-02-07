@@ -15,6 +15,7 @@ function t_fixationalEyeMovementsTypes
     
     % Do not compute velocity of eye movements
     computeVelocity = false;
+    useParfor = true;
     
     % Random seed to be used in all eye movement compute() calls
     randomSeed = 1;
@@ -30,22 +31,26 @@ function t_fixationalEyeMovementsTypes
     fixEMobj.setDefaultParams();
     fixEMobj.microSaccadeType = 'none';
     fixEMobj.randomSeed = randomSeed;
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
+        computeVelocity, 'useParfor', useParfor);
     plotTrials(fixEMobj, 1, visualizedSingleTrials);
     
     % Second case: 'stats based' micro-saccades
     fixEMobj.setDefaultParams();
     fixEMobj.microSaccadeType = 'stats based';
     fixEMobj.randomSeed = randomSeed;
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
+        computeVelocity, 'useParfor', useParfor);
     plotTrials(fixEMobj, 2, visualizedSingleTrials);
     
     % Third case: 'heatmap/fixation based' micro-saccades
     fixEMobj.setDefaultParams();
     fixEMobj.randomSeed = 678;
     fixEMobj.microSaccadeType = 'heatmap/fixation based';
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
+        computeVelocity, 'useParfor', useParfor);
     plotTrials(fixEMobj, 3, visualizedSingleTrials);
+
 end
 
 function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)

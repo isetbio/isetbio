@@ -72,9 +72,12 @@ function t_fixationalEyeMovementsToIsomerizations
     % Here we are fixing the random seed so as to reproduce identical eye
     % movements whenever this script is run.
     nTrials = 2;
+    tic
     fixEMobj.computeForConeMosaic(cm, eyeMovementsPerTrial, ...
         'nTrials', nTrials, ...
-        'rSeed', 857);
+        'rSeed', 857, ...
+        'useParfor', true);
+    toc
     
     % Visualize the emPath for the first trial on top of the cone mosaic
     visualizedTrial = 1;

@@ -230,12 +230,14 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     p.addParameter('nTrials',1,@isscalar);
     p.addParameter('computeVelocity', false, @islogical);
     p.addParameter('rSeed', [], @isscalar);
+    p.addParameter('useParfor', false, @islogical);
     p.parse(coneMosaic, eyeMovementsPerTrial, varargin{:});
     
     % Set optional parameters based on input
     obj.randomSeed = p.Results.rSeed;
     nTrials = p.Results.nTrials;
     computeVelocitySignal = p.Results.computeVelocity;
+    useParfor = p.Results.useParfor;
     
     % Extract sampleDuration from coneMosaic's integration time
     sampleDurationSeconds = coneMosaic.integrationTime;
@@ -244,7 +246,8 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     emDurationSeconds = eyeMovementsPerTrial * sampleDurationSeconds;
     
     % Generate fixational eye movements (obj.emPathsArcMin)
-    compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocitySignal);
+    compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, ...
+        computeVelocitySignal, 'useParfor', useParfor);
     
     % Subsample to cone positions
     conePatternSampleMicrons = coneMosaic.patternSampleSize(1)*1e6;
@@ -256,35 +259,77 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     obj.emPosArcMin = obj.emPosMicrons / coneMosaic.micronsPerDegree * 60;
     
     if (computeVelocitySignal)
-        for iTrial = 1:nTrials
-            obj.velocityArcMin(iTrial,:) = obj.computeVelocity(squeeze(obj.emPosArcMin(iTrial,:,:)));
+        iTrial = 1;
+        velocityArcMinTrial1 = obj.computeVelocity(squeeze(obj.emPosArcMin(iTrial,:,:)));
+        allTrialsVelocityArcMin = zeros(nTrials, length(velocityArcMinTrial1), 1);
+        allTrialsVelocityArcMin(iTrial,:) = velocityArcMinTrial1;
+    
+        allTrialsEMPosArcMin = obj.emPosArcMin;
+        if (useParfor)
+            parfor iTrial = 2:nTrials
+                allTrialsVelocityArcMin(iTrial,:) = fixationalEM.computeVelocity(squeeze(allTrialsEMPosArcMin(iTrial,:,:)));
+            end
+        else
+            for iTrial = 2:nTrials
+                allTrialsVelocityArcMin(iTrial,:) = obj.computeVelocity(squeeze(allTrialsEMPosArcMin(iTrial,:,:)));
+            end
         end
+        obj.velocityArcMin = allTrialsVelocityArcMin;
     end
 end
 
-function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocity)
+function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocity, varargin)
+    p = inputParser;
+    p.addParameter('useParfor', false, @islogical);
+    p.parse(varargin{:});
     
+    % Reset output arrays
     obj.initOutputs();
     
+    % Set random seed
     if (isempty(obj.randomSeed))
         rng('shuffle');
     else
         rng(obj.randomSeed);
     end
     
-    for iTrial = 1:nTrials
-        if (obj.beVerbose)
-            fprintf('Computing emModel for %2.2f seconds; sampleT = %2.4f sec, samples: %d\n', emDurationSeconds, sampleDurationSeconds, obj.tStepsNum);
-        end
-        computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
-        if (iTrial == 1)
-            obj.emPosArcMin = zeros(nTrials, length(obj.emPosTimeSeriesArcMin), 2);
+    if (obj.beVerbose)
+        fprintf('Computing emModel for %2.2f seconds; sampleT = %2.4f sec, samples: %d\n', emDurationSeconds, sampleDurationSeconds, obj.tStepsNum);
+    end
+        
+    % Compute first trial
+    iTrial = 1;
+    computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
+    allTrialsEmPosArcMin = zeros(nTrials, length(obj.emPosTimeSeriesArcMin), 2);
+    allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+    
+    if (computeVelocity)
+        allTrialsVelocityArcMin = zeros(nTrials, length(obj.velocityArcMinPerSecTimeSeries), 1);
+        allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+    end
+
+    % Compute remaining trials
+    if (p.Results.useParfor)
+        parfor iTrial = 2:nTrials
+            computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
+            allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
             if (computeVelocity)
-                obj.velocityArcMin = zeros(nTrials, length(obj.velocityArcMinPerSecTimeSeries), 1);
+                allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
             end
         end
-        obj.emPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
-        obj.velocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+    else
+        for iTrial = 2:nTrials
+            computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
+            allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+            if (computeVelocity)
+                allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+            end
+        end
+    end
+    
+    obj.emPosArcMin = allTrialsEmPosArcMin;
+    if (computeVelocity)
+        obj.velocityArcMin = allTrialsVelocityArcMin;
     end
 end
 
