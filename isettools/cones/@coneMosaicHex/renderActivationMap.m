@@ -83,7 +83,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     faceColorsNormalizedValues(faceColorsNormalizedValues>1) = 1;
             
     edgeColor = 'none';
-    lineWidth = 1.0;
+    lineWidth = 0.1;
 
     hold(axesHandle, 'on');
     x = [xRange(1) xRange(2) xRange(2) xRange(1)];
@@ -93,14 +93,11 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     xlim(axesHandle, xRange);
     ylim(axesHandle, yRange);
     hold(axesHandle, 'off');
-    set(axesHandle, 'CLim', [0 1], 'XTick', [], 'YTick', [], 'Color', [0 0 0]);
+    set(axesHandle, 'CLim', [0 1], 'XTick', [], 'YTick', [], 'Color', 'none');
     colormap(axesHandle, colorMap);     
     axis(axesHandle, 'image'); 
     axis(axesHandle, 'xy');
     box(axesHandle, 'on');
-    
-    activationRange
-   
 end
 
 function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineWidth)
