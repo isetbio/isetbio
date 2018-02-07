@@ -3,7 +3,9 @@ function t_fixationalEyeMovementsToIsomerizations
 % an oiSequence, and illustrates the different time bases for the stimulus
 % modulation, eye-movements and isomerizations.
 %
-% This tutorial produces two figures. 
+% This tutorial simulates a small uniform square stimulus (0.05 deg) whose 
+% luminance is modulated over time, and which is transported over the cone
+% mosaic due to eye movements. The tutorial produces two figures: 
 % The first one shows the cone mosaic with one eye movement path 
 % superimposed on top of it.
 % The second figure is a multi-panel figure and displays the following:
