@@ -5,6 +5,7 @@ function t_fixationalEyeMovementsToIsomerizations
 
 % History
 %   02/06/18  npc  Wrote it.
+%   02/07/18  npc  Comments.
 
     close all
     
