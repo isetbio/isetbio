@@ -24,7 +24,6 @@ properties
     positionNoiseStd; 
     
     stabilizationSeconds;                           % how long to warm up the drift model for
-    velocityMeasurementIntervalSeconds;             % interval over which to measure velocity
 
     % Microsaccade-related properties
     microSaccadeType;                               % choose between {'none', 'heatmap/fixation based', 'stats based'}
@@ -57,6 +56,7 @@ end
 % Read-only properties
 properties (SetAccess = private)   
     timeAxis = [];              % time axis of the em path
+    velocityArcMin = [];        % nTrials x emPath length     matrix of velocity in units of arc minutes/second
     emPosArcMin = [];           % nTrials x emPath length x 2 matrix of eye positions in units of arc minutes - no truncation
     emPosMicrons  = [];         % nTrials x emPath length x 2 matrix of eye positions in units of microns - truncated to cone mosaic pattern size
     emPos = [];                 % nTrials x emPath length x 2 matric of eye positions in units of the cone mosaic pattern size
@@ -131,7 +131,8 @@ end
 
 properties (Constant)
     timeStepDurationSeconds = 1/1000;
-    scalarToArcMin = 1.0;            % factor to scale positions to arc min
+    velocityMeasurementIntervalSeconds = 41/1000;  % window for measuring velocity to 41 milliseconds, as in Cherici & Rucci 2012 - Precision of sustained fixation in trained and untrained observers)
+    scalarToArcMin = 0.5;            % factor to scale positions to arc min. Adjusted to get drift speed according to Cherici et al 2012
 end
 
 methods
@@ -150,7 +151,7 @@ function setDriftParamsFromMergenthalerAndEngbert2007Paper(obj)
     obj.controlNoiseStd = ksi.sigma; 
     
     % Position noise, eta with zero MEAN and rho STD
-    eta = struct('mean', 0, 'rho', 0.35/2);
+    eta = struct('mean', 0, 'rho', 0.35);
     obj.positionNoiseMean = eta.mean;
     obj.positionNoiseStd = eta.rho;    
     
@@ -196,10 +197,6 @@ function setDefaultParams(obj)
     
     % Set microsaccade stats consistent with data in Martinez, 2009 
     obj.setMicroSaccadeStats();
-    
-    % Set the window for measuring velocity to 41 milliseconds
-    % (as in Cherici, Rucci 2012 - Precision of sustained fixation in trained and untrained observers)
-    obj.velocityMeasurementIntervalSeconds = 41/1000;
 
     % How long to 'warm' up the drift model for
     obj.stabilizationSeconds = 2.0;
@@ -212,7 +209,7 @@ function setDefaultParams(obj)
     obj.fixationMapSpaceConstantArcMin = 15;
 
     % Heat map properties
-    obj.heatMapWidthArcMin = 50;
+    obj.heatMapWidthArcMin = 40;
     obj.heatMapSpatialSampleArcMin = 2;
     obj.heatMapTemporalSampleSeconds = 10/1000;
     obj.heatMapKernelSpaceConstantArcMin = 2.0;
@@ -231,12 +228,14 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaic')));
     p.addRequired('eyeMovementsPerTrial', @isscalar);
     p.addParameter('nTrials',1,@isscalar);
+    p.addParameter('computeVelocity', false, @islogical);
     p.addParameter('rSeed', [], @isscalar);
     p.parse(coneMosaic, eyeMovementsPerTrial, varargin{:});
     
     % Set optional parameters based on input
     obj.randomSeed = p.Results.rSeed;
     nTrials = p.Results.nTrials;
+    computeVelocitySignal = p.Results.computeVelocity;
     
     % Extract sampleDuration from coneMosaic's integration time
     sampleDurationSeconds = coneMosaic.integrationTime;
@@ -244,14 +243,8 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     % Compute emDurationSeconds
     emDurationSeconds = eyeMovementsPerTrial * sampleDurationSeconds;
     
-    if (isempty(obj.randomSeed))
-        rng('shuffle');
-    else
-        rng(obj.randomSeed);
-    end
-    
     % Generate fixational eye movements (obj.emPathsArcMin)
-    compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials);
+    compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocitySignal);
     
     % Subsample to cone positions
     conePatternSampleMicrons = coneMosaic.patternSampleSize(1)*1e6;
@@ -260,9 +253,18 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
     obj.emPos = sign(emPosMicronsNotRounded) .* round(abs(emPosMicronsNotRounded)/conePatternSampleMicrons);
     % Also return the path in units of microns
     obj.emPosMicrons = obj.emPos * conePatternSampleMicrons;
+    obj.emPosArcMin = obj.emPosMicrons / coneMosaic.micronsPerDegree * 60;
+    
+    if (computeVelocitySignal)
+        for iTrial = 1:nTrials
+            obj.velocityArcMin(iTrial,:) = obj.computeVelocity(squeeze(obj.emPosArcMin(iTrial,:,:)));
+        end
+    end
 end
 
-function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials)
+function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocity)
+    
+    obj.initOutputs();
     
     if (isempty(obj.randomSeed))
         rng('shuffle');
@@ -277,8 +279,12 @@ function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials)
         computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
         if (iTrial == 1)
             obj.emPosArcMin = zeros(nTrials, length(obj.emPosTimeSeriesArcMin), 2);
+            if (computeVelocity)
+                obj.velocityArcMin = zeros(nTrials, length(obj.velocityArcMinPerSecTimeSeries), 1);
+            end
         end
         obj.emPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+        obj.velocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
     end
 end
 
@@ -348,7 +354,7 @@ function computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds)
     end % tStep
 
     % Compute velocity
-    obj.velocityTimeSeries = obj.computeVelocity(obj.timeAxis, obj.emPosTimeSeries', obj.velocityMeasurementIntervalSeconds);
+    obj.velocityTimeSeries = obj.computeVelocity(obj.emPosTimeSeries);
     
     % Trim and recenter and resample the post-stabilization time series
     trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds);
@@ -370,43 +376,6 @@ end % compute
 end % Public methods
 
 methods (Static)
-    
-function  velocityTimeSeries = computeVelocity(timeAxis, emPosTimeSeries, velocityMeasurementIntervalSeconds)
-    emPosTimeSeries = emPosTimeSeries';
-    timeStepDurationSeconds = timeAxis(2)-timeAxis(1);
-    method = 2;
-    if (method == 1)
-        velocityMeasurementIntervalHalfSteps = floor(velocityMeasurementIntervalSeconds/timeStepDurationSeconds/2);
-        sigmaSteps = velocityMeasurementIntervalHalfSteps/2.5;
-        tSteps = (-velocityMeasurementIntervalHalfSteps:velocityMeasurementIntervalHalfSteps);
-        weightKernel = exp(-0.5*(tSteps/sigmaSteps).^2);
-        weightKernel = weightKernel / sum(weightKernel(:));
-        smoothedPos = conv2(emPosTimeSeries, weightKernel, 'same');
-        diffSmoothedPos = diff(smoothedPos, 1, 2);
-        velocities = conv2(diffSmoothedPos, weightKernel, 'same')/timeStepDurationSeconds;
-        velocityTimeSeries = sqrt(squeeze(sum(velocities.^2, 1)));
-    else
-        % make smoothing kernel
-        velocityIntervalHalfSamples = max([1 floor(velocityMeasurementIntervalSeconds/timeStepDurationSeconds/2)]);
-        stepsToAverage = 2*velocityIntervalHalfSamples;
-        dd = -stepsToAverage:stepsToAverage;
-        sigmaD = stepsToAverage/3;
-        weightKernel = exp(-0.5*(dd'/sigmaD).^2);
-        weightKernel = weightKernel/sum(weightKernel);
-        weightKernel = [weightKernel(:) weightKernel(:)]';
-    
-        meanDeltas = nan(1,length(emPosTimeSeries));
-        firstTsample = 1+stepsToAverage+velocityIntervalHalfSamples;
-        lastTsample = length(emPosTimeSeries)-stepsToAverage-velocityIntervalHalfSamples;
-        
-        for t = firstTsample:lastTsample
-            deltas = abs(emPosTimeSeries(:,t+dd+velocityIntervalHalfSamples)-emPosTimeSeries(:,t+dd-velocityIntervalHalfSamples));
-            deltas = sum(deltas .* weightKernel, 2);
-            meanDeltas(t) = sqrt(sum(deltas.^2));
-        end
-        velocityTimeSeries = meanDeltas/((2*velocityIntervalHalfSamples+1)*timeStepDurationSeconds);
-    end
-end
 
 function [emLikelihoodMap, emLikelihoodMapSupportX, emLikelihoodMapSupportY] = computeLikelihoodMap(emPaths, emPosRange, emPosDelta)
     xBins = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
@@ -510,6 +479,14 @@ end
 end % Static methods
 
 methods (Access = private)
+
+function initOutputs(obj)
+    obj.velocityArcMin = []; 
+    obj.emPosArcMin = [];
+    obj.emPosMicrons  = [];
+    obj.emPos = [];        
+end
+    
 % Init the state of the object
 function initState(obj, emDurationSeconds)     
     % Compute stabilization steps
@@ -796,6 +773,32 @@ function currentPositionHeatLevel = updateHeatMap(obj, tStep)
     obj.currentPositionHeatLevelTimeSeries(1,postStabilizationStep) = currentPositionHeatLevel;
 end
 
+function  velocityTimeSeries = computeVelocity(obj, theEMpath)
+    if (size(theEMpath,1) ~= 2)
+        theEMpath = theEMpath';
+    end
+    timeStepSeconds = obj.timeAxis(2)-obj.timeAxis(1);
+    timeSamplesNum = size(theEMpath,2);
+    xPos = squeeze(theEMpath(1,:));
+    yPos = squeeze(theEMpath(2,:));
+    filterOrder = 3;
+    filterLengthSamples = round(obj.velocityMeasurementIntervalSeconds/timeStepSeconds);
+    if (mod(filterLengthSamples,2) == 0)
+        filterLengthSamples = filterLengthSamples + 1;
+    end
+    if (filterOrder<filterLengthSamples)
+        xPosFiltered = sgolayfilt(xPos, filterOrder, filterLengthSamples);
+        yPosFiltered = sgolayfilt(yPos, filterOrder, filterLengthSamples);
+    else
+        xPosFiltered = xPos;
+        yPosFiltered = yPos;
+    end
+    
+    velocityTimeSeries = zeros(1,timeSamplesNum);
+    velocityTimeSeries(2:timeSamplesNum) = sqrt(((diff(xPosFiltered))/timeStepSeconds).^2 + ...
+                                   ((diff(yPosFiltered))/timeStepSeconds).^2);
+end
+
 function trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds)
     % Trim: only keep samples after the stabilization time
     keptSteps = obj.stabilizationStepsNum+1:obj.tStepsNum-1;
@@ -819,11 +822,6 @@ function trimRecenterAndResampleTimeSeries(obj, sampleDurationSeconds)
         obj.emPosTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.emPosTimeSeries, obj.timeAxis);
         obj.velocityTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.velocityTimeSeries, obj.timeAxis);
         obj.heatMapTimeSeries = obj.smartInterpolation(oldTimeAxis, obj.heatMapTimeSeries, obj.timeAxis);
-        %obj.emPosTimeSeries = (interp1(oldTimeAxis, obj.emPosTimeSeries', obj.timeAxis))';
-        %obj.velocityTimeSeries = interp1(oldTimeAxis, obj.velocityTimeSeries, obj.timeAxis);
-        %[T,N,M] = size(obj.heatMapTimeSeries);
-        %tmp = reshape(obj.heatMapTimeSeries,[T N*M]);
-        %obj.heatMapTimeSeries = reshape((interp1(oldTimeAxis, tmp, obj.timeAxis)), [numel(obj.timeAxis) N M]);
     end
 end
 

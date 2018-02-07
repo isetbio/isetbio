@@ -1,75 +1,88 @@
 function t_fixationalEyeMovements
+% Examine eye movement paths produced by different values of the
+% 'microSaccadeType' parameter.
+%
 
-    emDurationSeconds = 2; sampleTimeSeconds = 1/1000; nTrials = 1*12;
+% History
+%   02/06/18  npc  Wrote it.
+
+    close all;
+    
+    emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 20;
     
     % Initialize object
     fixEMobj = fixationalEM();
-    fixEMobj.setDefaultParams();
-    fixEMobj.microSaccadeType = 'none';
+    computeVelocity = false;
     
-    tic
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials);
-    totalTime = toc;
-    fprintf('Total time: %2.1f seconds, %2.3f seconds/trial\n', totalTime, totalTime/size(fixEMobj.emPosArcMin,1));
+    fixEMobj.setDefaultParams();
+    fixEMobj.randomSeed = 678;
+    fixEMobj.microSaccadeType = 'none';
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
     plotAllTrials(fixEMobj, 1);
     
     fixEMobj.setDefaultParams();
+    fixEMobj.randomSeed = 678;
     fixEMobj.microSaccadeType = 'stats based';
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials);
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
     plotAllTrials(fixEMobj, 2);
     
     fixEMobj.setDefaultParams();
+    fixEMobj.randomSeed = 678;
     fixEMobj.microSaccadeType = 'heatmap/fixation based';
-    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials);
+    fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity);
     plotAllTrials(fixEMobj, 3);
-    
-    % Plot last trial
-    lastTrialEMposArcMin = squeeze(fixEMobj.emPosArcMin(end,:,:));
-    figure(100); clf; hold on
-    plot(fixEMobj.timeAxis, lastTrialEMposArcMin(:,1), 'r-'); hold on;
-    plot(fixEMobj.timeAxis, lastTrialEMposArcMin(:,2), 'b-'); hold on;
-    set(gca, 'YLim', 60*[-0.2 0.2]);
-    ylabel('position (arc min)');
-    drawnow;
 end
 
-function plotAllTrials(fixEMobj, figNo)
+function plotAllTrials(fixEMobj, rowNo)
+    
+    nTrials = size(fixEMobj.emPosArcMin,1);
+    visualizedSingleTrials = 5;
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 6, ...
-           'colsNum', 12, ...
+           'rowsNum', 3, ...
+           'colsNum', visualizedSingleTrials+1, ...
            'heightMargin',   0.02, ...
            'widthMargin',    0.02, ...
-           'leftMargin',     0.05, ...
+           'leftMargin',     0.01, ...
            'rightMargin',    0.00, ...
-           'bottomMargin',   0.04, ...
-           'topMargin',      0.04);
+           'bottomMargin',   0.01, ...
+           'topMargin',      0.01);
        
     % Plot all trials
     xyRange = [-1 1]*max(abs(fixEMobj.emPosArcMin(:)));
-    hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1400 770]);
-    for iTrial = 1:size(fixEMobj.emPosArcMin,1)
-        i = floor((iTrial-1)/12)+1;
-        j = mod(iTrial-1,12)+1;
-        subplot('Position', subplotPosVectors(i,j).v);
-        hold on
-        if (i == 6) && (j == 12)
-            plot(squeeze(fixEMobj.emPosArcMin(:,:,1)), squeeze(fixEMobj.emPosArcMin(:,:,2)), 'k.-');
-            plot(xyRange, xyRange*0, 'r-');
-            plot(xyRange*0, xyRange, 'r-');
-            tickLabel = [xyRange(1) 0 xyRange(2)];
-            set(gca, 'XLim', xyRange, 'YLim', xyRange, 'XTick', tickLabel, 'YTick', tickLabel, ...
-                'XTickLabel', sprintf('%2.1f\n', tickLabel), 'YTickLabel', sprintf('%2.1f\n', tickLabel));
-            xlabel('arc min');
-            title(sprintf('saccade type:\n''%s''',fixEMobj.microSaccadeType));
+    if (rowNo == 1)
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1600 900]);
+    else
+        figure(1);
+    end
+    
+    
+    for iTrial = 1:visualizedSingleTrials+1
+        subplot('Position', subplotPosVectors(rowNo,iTrial).v);
+        if (iTrial <= visualizedSingleTrials)
+            plot(squeeze(fixEMobj.emPosArcMin(iTrial,:,1)), squeeze(fixEMobj.emPosArcMin(iTrial,:,2)), 'k-');
+            title(sprintf('trial: %d', iTrial));
         else
-            plot(squeeze(fixEMobj.emPosArcMin(iTrial,:,1)), squeeze(fixEMobj.emPosArcMin(iTrial,:,2)), 'k.-');
-            plot(xyRange, xyRange*0, 'r-');
-            plot(xyRange*0, xyRange, 'r-');
-            set(gca, 'XLim', xyRange, 'YLim', xyRange, 'XTick', [], 'YTick', []);
+            hold on
+            for k = 1:nTrials
+                plot(squeeze(fixEMobj.emPosArcMin(k,:,1)), squeeze(fixEMobj.emPosArcMin(k,:,2)), 'k-');
+            end
+            title(sprintf('%d trials\nsaccade type:\n''%s''', nTrials,fixEMobj.microSaccadeType));
         end
+        hold on
+        plot(xyRange, xyRange*0, 'r-');
+        plot(xyRange*0, xyRange, 'r-');
+        tickLabel = [xyRange(1) 0 xyRange(2)];
+        set(gca, 'XLim', xyRange, 'YLim', xyRange, 'XTick', tickLabel, 'YTick', tickLabel, ...
+                'XTickLabel', sprintf('%2.1f\n', tickLabel), 'YTickLabel', {});
+        if (iTrial>1)
+            set(gca, 'XTickLabel', {});
+        else
+            xlabel('arc min');
+        end
+        grid on
         axis 'square';
     end
-   
+
 end
