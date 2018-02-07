@@ -422,23 +422,18 @@ end % Public methods
 
 methods (Static)
 
-function [emLikelihoodMap, emLikelihoodMapSupportX, emLikelihoodMapSupportY] = computeLikelihoodMap(emPaths, emPosRange, emPosDelta)
-    xBins = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
-    yBins = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
-    nTrials = size(emPaths,1);
-    for trialNo = 1:nTrials
-        emPath = squeeze(emPaths(trialNo,:,:));
-        [N, xEdges, yEdges] = histcounts2(squeeze(emPath(:,1)), squeeze(emPath(:,2)), xBins, yBins);
-        if (trialNo == 1)
-            emLikelihoodMap = N;
-        else
-            emLikelihoodMap = emLikelihoodMap + N;
-        end
-    end
-    % Map across all trials
-    emLikelihoodMap = emLikelihoodMap/max(emLikelihoodMap(:));
-    emLikelihoodMapSupportX = xEdges(1:end-1)+emPosDelta/2;
-    emLikelihoodMapSupportY = yEdges(1:end-1)+emPosDelta/2;
+function [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = computeFixationMap(emPaths, emPosRange, emPosDelta)
+    xEdges = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
+    yEdges = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
+    xPos = squeeze(emPaths(:,:,1)); yPos = squeeze(emPaths(:,:,2));
+    fixationMap = histcounts2(xPos(:),yPos(:),xEdges, yEdges);
+    fixationMap = fixationMap/max(fixationMap(:));
+    fixationMapSupportX = xEdges(1:end-1)+emPosDelta/2;
+    fixationMapSupportY = yEdges(1:end-1)+emPosDelta/2;
+    
+    [~,midRow] = min(abs(yEdges));
+    fixationMapXSlice = squeeze(fixationMap(midRow,:));
+    fixationMapYSlice = squeeze(fixationMap(:,midRow));        
 end
 
 function [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = ...

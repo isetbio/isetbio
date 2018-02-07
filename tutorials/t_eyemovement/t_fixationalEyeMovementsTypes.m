@@ -90,19 +90,14 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
             end
             title(sprintf('%d trials\nsaccade type:\n''%s''', nTrials,fixEMobj.microSaccadeType));
         else
-            xPos = squeeze(fixEMobj.emPosArcMin(:,:,1));
-            yPos = squeeze(fixEMobj.emPosArcMin(:,:,2));
-            fixationPos = xyRange(1):0.5:xyRange(2);
-            midRow = find(fixationPos == 0);
-            fixationMap = histcounts2(xPos(:),yPos(:),fixationPos,fixationPos);
-            fixationMap = fixationMap / max(fixationMap(:));
-            imagesc(fixationPos,fixationPos,fixationMap);
+            binWidthArcMin = 0.5;
+            [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = ...
+                fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, xyRange, binWidthArcMin);
+            
+            imagesc(fixationMapSupportX,fixationMapSupportY,fixationMap);
             hold on;
-            position = fixationPos(1:end-1);
-            slice = squeeze(fixationMap(midRow,:));
-            plot(position, xyRange(1)+slice*xyRange(2)*0.9, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
-            slice = squeeze(fixationMap(:,midRow));
-            plot(xyRange(2)-slice*xyRange(2)*0.9, position, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
+            plot(fixationMapSupportX, xyRange(1)+fixationMapXSlice*xyRange(2)*0.9, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
+            plot(xyRange(2)-fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
         end
         hold on
         plot(xyRange, xyRange*0, 'g-');
