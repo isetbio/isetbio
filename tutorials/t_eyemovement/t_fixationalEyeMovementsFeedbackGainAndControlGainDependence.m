@@ -1,19 +1,34 @@
-function t_fixationalEyeMovementsDriftModelParams
-% Explore how key properties of emPaths depend on the feedback and control
-% gain parameters of the drift component of the @fixationalEM engine.
-% The examined properties of the emPaths are:
-% -velocity 
-% -fixation span
-% -power spectal density 
-% -displacement analysis
+function t_fixationalEyeMovementsFeedbackGainAndControlGainDependence
+% Explore how the following key characteristics of emPaths 
+%   ( i) velocity 
+%   (ii) fixation span
+%  (iii) power spectal density 
+%   (iv) displacement analysis
+% depend on the following parameters of the drift component of @fixationalEM
+%  - the feedback gain parameter and
+%  - the control gain parameter
 %
-
+% The script generates eye movement paths with no micro-saccades to probe
+% the drift model in isolation. The 4 figures generated show how one of the 
+% 4 key characteristics changes as the feedback gain/control gain change.
+% The panel with the red title corresponds to the default values of 
+% feedback/control gain, (in Mergenthaler&Engbert, 2007).
+%
+% Note that there are several combinations of feedback gain and control
+% gain, which result in drift velocities and fixation spans that are well
+% within the range reported by Cherici et al. 
+%
+% If one were interested to study how performance on a task depends on eye
+% movements one could use a number of combinations of feedback gain and 
+% control gain to generate a population of subjects with slightly different 
+% eye movement patterns. This tutorial provides a good start for this.
+%  
 % History
 %   02/06/18  npc  Wrote it.
 %   02/07/18  npc  Comments.
 
     % Generate 500, emPaths for 3 seconds, with a sample time of 1 msec
-    emDurationSeconds = 5; sampleTimeSeconds = 1/1000; nTrials = 50;
+    emDurationSeconds = 5; sampleTimeSeconds = 1/1000; nTrials = 500;
     
     % Examined values of feedback and control gain
     feedbackGainValues = [0 0.10 0.125  0.15  0.175 0.20];

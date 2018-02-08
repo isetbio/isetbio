@@ -248,7 +248,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     
     fprintf('\nHex grid smoothing finished in %2.1f seconds.', toc);
     if (iteration > obj.maxGridAdjustmentIterations) 
-        fprintf('\nDid not converge, but exceeded max number of iterations (%d).', maxGridAdjustmentIterations);
+        fprintf('\nDid not converge, but exceeded max number of iterations (%d).', obj.maxGridAdjustmentIterations);
         fprintf('\nMax(movement) in last iteration: %2.6f, Tolerange: %2.6f\n', max(movementAmplitudes), dTolerance);
     else
         fprintf('Converged after %d iterations.\n', iteration);
@@ -366,7 +366,7 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(c
 end
 
 function pattern = rectSampledHexPattern(obj)
-    fprintf('\nResampling grid. Please wait ... ');
+    fprintf('\nResampling hex grid on high-res rect grid. Please wait ... ');
     % Highres grid
     xRectHiRes = (1:obj.cols) * obj.patternSampleSize(1); xRectHiRes = xRectHiRes - mean(xRectHiRes);
     yRectHiRes = (1:obj.rows) * obj.patternSampleSize(2); yRectHiRes = yRectHiRes - mean(yRectHiRes);
