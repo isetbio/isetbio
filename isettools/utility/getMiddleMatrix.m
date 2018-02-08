@@ -9,14 +9,17 @@ function middleM = getMiddleMatrix(m, sz)
 %    of extracted pixels is 1 + round(sz / 2) * 2.  This is awkward  for
 %    small numbers of sz, but OK for bigger numbers.
 %
+%    Examples are included in the code.
+%
 % Inputs:
 %    m       - The matrix to extract values from
 %    sz      - The size of the middle to extract
 %
 % Outputs:
 %    middleM - The requested middle data
-% 
-% See also:
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % History:

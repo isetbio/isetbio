@@ -39,12 +39,13 @@ function obj = bipolarSet(obj, varargin)
 %
 
 %% History 
-% 5/2016 JRG (c) isetbio team
-%
-%    10/18/17  jnm  Cpmments & Formatting
+%    05/xx/16  JRG (c) isetbio team
+%    10/18/17  jnm  Comments & Formatting
 
 % Examples:
 %{
+   cMosaic = coneMosaic; 
+   bp = bipolarMosaic(cMosaic, 'on midget');
    bp.bipolarSet('sRFcenter',[0 0 0; 0 1 0; 0 0 0]);
    bp.bipolarSet('sRFsurround',[0 0 0; 0 1 0; 0 0 0]);
 %}

@@ -7,8 +7,8 @@ function sceP = sceCreate(wave, rho_source, position_source)
 % Description:
 %    Return a structure with Stiles-Crawford Effect parameters.
 %
-%    The 'berendschot' data/model is taken from Berendschot et al., 2001,
-%    "Wavelength dependence of the Stiles-Crawford ...", JOSA A, 18,
+%    The 'berendschot' data/model is taken from Berendschot et al., 2001, 
+%    "Wavelength dependence of the Stiles-Crawford ...", JOSA A, 18, 
 %    1445-1451 and then adjusted slighlty (subtracting .0045) to give 
 %    rho = 0.041 at 550 nm in agreement with Enoch and Lakshminaranayan's
 %    average foveal data in normals (reference for this?). The model is the
@@ -16,7 +16,7 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %
 %    The 'applegate' xo, yo parameters are from Applegate &
 %    Lakshminaranayan, "Parametric representation of Stiles-Crawford
-%    functions: normal variation of peak location and directionality",
+%    functions: normal variation of peak location and directionality", 
 %    1993, JOSA A, 1611-1623.
 %
 %    If values for wavelengths outside of those over which data are
@@ -48,15 +48,19 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %    sceP.xo          - SCE x center's position in mm relative to pupil's
 %    sceP.yo          - SCE y center's position in mm relative to pupil's
 %
-% TODO:
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    TODO:
 %       i) There should also be an sceSet
 %       ii) Could allow unit specification rather than defaulting to
 %       mm-based units.
-%       iii) Understand in more detail dependence of SCE on other things,
+%       iii) Understand in more detail dependence of SCE on other things, 
 %       such as field size and position.
 %       iv) Is the additive correction of the Berendschot numbers (as
 %       opposed to, say, multiplicative) appropriate?
-%       v) Reconcile the two versions of the Berendschot data.  Perhaps
+%       v) Reconcile the two versions of the Berendschot data. Perhaps
 %       move where the data are coded and stored out of this routine to a
 %       more centralized location.
 %
@@ -70,6 +74,7 @@ function sceP = sceCreate(wave, rho_source, position_source)
 %    08/19/12  dhb  Expanded data options, better comments about the source
 %                   of data.
 %    11/10/17  jnm  Comments & formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
@@ -118,7 +123,7 @@ switch (rho_source)
             % by HH, with 0.045 subtracted to produce 0.041 at 550 nm. I
             % think they are probably preferable to the digitized version
             % above because they smooth the data. We could figure out how
-            % to smooth the psychophysical data from the digitized values,
+            % to smooth the psychophysical data from the digitized values, 
             % but not today.
             initWls = [400, 10, 31];
             rho0 = [0.0565 0.0585 0.0605 0.06 0.05875 0.05775 0.0565 ...
@@ -184,10 +189,6 @@ end
 sceP.wavelengths = wave(:);
 sceP.rho = interp1(SToWls(initWls), rho0, sceP.wavelengths, 'linear');
 index = find(sceP.wavelengths < initWls(1));
-if (~isempty(index))
-    sceP.rho(index) = rho0(1);
-end
+if (~isempty(index)), sceP.rho(index) = rho0(1); end
 index = find(sceP.wavelengths < initWls(end));
-if (~isempty(index))
-    sceP.rho(index) = rho0(end);
-end
+if (~isempty(index)), sceP.rho(index) = rho0(end); end

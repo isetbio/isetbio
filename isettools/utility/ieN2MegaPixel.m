@@ -8,6 +8,8 @@ function MP = ieN2MegaPixel(N, precision)
 %    Compute the megapixel count from N. The decimal precision defaults to
 %    1, but you can ask for more.
 %
+%    Examples are included within the code.
+%
 % Inputs:
 %    N         - The value
 %    precision - The precision point
@@ -15,7 +17,8 @@ function MP = ieN2MegaPixel(N, precision)
 % Outputs:
 %    MP        - The megapixel count
 %
-% Examples are included within the code.
+% Optional key/value pairs:
+%    None.
 %
 
 % Example:

@@ -59,6 +59,9 @@ classdef sceneEye < hiddenHandle
 
 % Examples:
 %{
+    % ETTBSkip.  Skip this example in ETTB, since it is known not to work.
+    % When the example gets fixed, remove this line and the one above.
+    %
     % [Note: JNM - Doesn't work for a number of reasons...]
     % sceneName = 'scene name';
 	% fileName = 'fileName.pbrt';

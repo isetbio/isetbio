@@ -10,6 +10,8 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 %    indices whose wavelength values bound the input wave value. These are
 %    always ordered (idx1 < idx2).
 %
+%    Examples in code.
+%
 % Inputs:
 %    waveList - Wavelength list
 %    wave     - Specified wavelength
@@ -20,6 +22,9 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 %    idx2     - (Optional) If requested, upper bound index around the input
 %               wave value
 %
+% Optional key/value pairs:
+%    None.
+%
 % See also:
 %    ieFieldHeight2Index, ieFindWaveIndex
 %
@@ -27,6 +32,7 @@ function [idx1, idx2] = ieWave2Index(waveList, wave)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

@@ -41,7 +41,7 @@ function g = biNormal(xSpread, ySpread, theta, N)
     imagesc(g), axis image; 
 %}
 %{
-    g = biNormal(5, 10, 45, 16);
+    g = biNormal(5, 10, 45, 128);
     imagesc(g), axis image; 
 %}
 

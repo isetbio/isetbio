@@ -3,7 +3,7 @@ classdef bipolarMosaic < cellMosaic
 %
 % Syntax:
 %
-%   bp = bipolarMosaic(coneMosaic, 'PARAM1', val1, 'PARAM2', val2, ...)
+%   bp = bipolarMosaic(cMosaic, cellType)
 %
 % Description:
 %    Create a bipolar mosaic object
@@ -13,14 +13,14 @@ classdef bipolarMosaic < cellMosaic
 %    bipolar cell current output. 
 %
 % Inputs:
-%    coneMosaic    - cone mosaic object including photocurrent response
+%    cMosaic       - Cone mosaic object including photocurrent response
+%    cellType      - String specifying desired cell type.
 %
 % Optional Key/Value Pairs:
 %    The bipolar object also allows for the simulation of nonlinear
 %    subunits within retinal ganglion cell spatial receptive fields.
 %
 %    cellLocation          - location of bipolar RF center
-%    cellType              - there are five different cell types
 %    patchSize             - size of retinal patch from sensor
 %    timeStep              - time step of simulation from sensor
 %    filterType            - bipolar temporal filter type
@@ -56,7 +56,9 @@ classdef bipolarMosaic < cellMosaic
 
 %% Examples:
 %{
-   bp = bipolarMosaic(cMosaic, cellType, varargin);
+   % Basic creation.
+   cMosaic = coneMosaic; 
+   bp = bipolarMosaic(cMosaic, 'on midget');
 %}
 
 %% Define object
@@ -101,16 +103,9 @@ end
 %% Public methods
 methods
     % Constructor
-    function obj = bipolarMosaic(cmosaic, cellType, varargin)     
-        % Initialize the bipolar class
-
-        % Example:
-        %   bp = bipolarMosaic(cMosaic, cellType, varargin);
-        %
-        % JRG/BW ISETBIO Team, 2016
-        p = inputParser;
-
+    function obj = bipolarMosaic(cMosaic, cellType, varargin)     
         % KeepUnmatched retains the spread, stride, and eccentricity
+        p = inputParser;
         p.KeepUnmatched = true;
         p.addRequired('cmosaic', @(x)(isa(x, 'coneMosaic')));
         p.addRequired('cellType', @(x)(ismember(ieParamFormat(x), ...
@@ -120,21 +115,21 @@ methods
         p.addParameter('rectifyType', 1, @isnumeric);
         p.addParameter('filterType',  1, @isnumeric);
 
-        p.parse(cmosaic, cellType, varargin{:});  
+        p.parse(cMosaic, cellType, varargin{:});  
 
         % The layer object that this is part of.
         obj.parent    = p.Results.parent;
         obj.input     = p.Results.cmosaic;
 
         % Store the spatial pattern of input cones
-        obj.coneType  = cmosaic.pattern;
+        obj.coneType  = cMosaic.pattern;
 
         % This might be a mistake, but we store the size and time step of
         % the cone mosaic in this mosaic for easy accessibility.  The
         % cMosaic itself is stored in the layer object that contains this
         % mosaic.  Maybe these should just be private variables?
-        obj.patchSize = cmosaic.size; 
-        obj.timeStep  = cmosaic.integrationTime;
+        obj.patchSize = cMosaic.size; 
+        obj.timeStep  = cMosaic.integrationTime;
         
         obj.cellType = ieParamFormat(cellType);
 

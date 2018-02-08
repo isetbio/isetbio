@@ -7,7 +7,7 @@ function img  = imgMackay(radialFrequency,imSize)
 % frequency from periphery to center.  This routine is called in creating
 % the Mackay scene (sceneWindw).
 %  
-% Examples
+% Examples:
 %  img =  imgMackay;  imagesc(img); colormap(gray); axis image
 %  img  = imgMackay(12,256);  imagesc(img); colormap(gray); axis image
 %

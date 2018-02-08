@@ -32,8 +32,9 @@ function [spd, XYZ] = daylight(wave, cct, units)
 %    10/30/17  jnm  Comments & formatting
 %    11/13/17  baw  Added example for computing luminance of all spds
 %    11/16/17  jnm  Formatting
+%    01/23/18  dhb  Fix broken example.
 
-% Examples
+% Examples:
 %{
    w = 400:700; 
    spd = daylight(w, 6500, 'energy');
@@ -55,7 +56,7 @@ function [spd, XYZ] = daylight(wave, cct, units)
    wave = 400:770;         % Wavelength in nanometers
    cct = 4000:1000:10000;  % Correlated color temperature
    spd = daylight(wave, cct, 'photons');
-   plot(w, spd)
+   plot(wave, spd)
 %}
 
 if notDefined('wave'), wave = 400:10:700; end

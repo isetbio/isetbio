@@ -29,10 +29,11 @@ function hdl = plot(obj, pType, varargin)
 %    xx/xx/xx jrg/bw (c) isetbio team
 %    10/17/17  jnm  Comments & Formatting
 %    12/21/17  BW   Cleared the notes by adding defaults and other
-%    comments.
+%                   comments.
 
 % Examples:
 %{
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
    s_initRetina;
    bpL.plot('help')
    bpL.plot('mosaic', 'nMosaic', 1);

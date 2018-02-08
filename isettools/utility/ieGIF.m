@@ -7,18 +7,18 @@ function gifName = ieGIF(data, varargin)
 % Description:
 %    Save the movie in data as a GIF.  Only works for gray scale.
 %
+%    Examples are included within the code.
+%
 % Inputs (required):
-%    data  - (row, col, time) (Required)
+%    data    - (row, col, time) (Required)
 %
 % Outputs:
-%    gifName
+%    gifName - The name of the GIF
 %
 % Optional key/value pairs:
 %    delay   - timing between frames in sec (default 0.05 sec)
 %    gifName - file name (extension must be .gif, 
 %              default is fullfile(isetbioRootPath,'local','test.gif'))
-%
-% Examples are included within the code.
 %
 
 % History:
@@ -26,6 +26,7 @@ function gifName = ieGIF(data, varargin)
 %    11/22/17  jnm      Formatting. Added support for Windows in call -
 %                       need to check if this is necessary?
 %    12/31/17   BW      Rewrote
+%    01/16/18  jnm      Formatting update to match Wiki.
 
 % Example:
 %{
@@ -49,7 +50,8 @@ p.addRequired('data', @isnumeric);
 p.addParameter('delay', .05, @isnumeric);
 p.KeepUnmatched = true;
 
-p.addParameter('gifName', fullfile(isetbioRootPath,'local','test.gif'), @ischar);
+p.addParameter('gifName', fullfile(isetbioRootPath,'local','test.gif'), ...
+    @ischar);
 
 p.parse(data, varargin{:});
 data    = p.Results.data;
@@ -87,4 +89,3 @@ end
 %             'DelayTime', delay);
 %     end
 % end
-

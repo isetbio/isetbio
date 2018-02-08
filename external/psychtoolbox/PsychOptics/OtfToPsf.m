@@ -26,7 +26,11 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %
 %    No normalization is performed.  The psf should be real, and we
 %    complain (throw an error) if it is not, to reasonable numerial
-%    precision.
+%    precision. If it seems OK, we make sure it is real.
+%
+%    We also make sure that the returned psf is all postive and sums to 
+%    1.  In some cases, we found that there were small negative values
+%    and after setting these to zero renormalization was needed.
 %
 %    We wrote this rather than simply relying on Matlab otf2psf/psf2otf
 %    because we want a routine that deals with the conversion of spatial
@@ -43,6 +47,14 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %    the PsfToOtf.
 %
 %    See also PsfToOtf, PsychOpticsTest.
+
+% History:
+%   01/26/18  dhb  
+
+%% Parse input
+p = inputParser;
+p.addParameter('warningInsteadOfErrorForNegativeValuedPSF', false, @islogical);
+p.parse(varargin{:});
 
 %% Handle sf args and converstion
 if (~isempty(xSfGridCyclesDeg) & ~isempty(ySfGridCyclesDeg))
@@ -104,9 +116,30 @@ psf = fftshift(ifft2(ifftshift(otf)));
 %% See if there is stray imaginary stuff, get rid of it if so.
 %
 % Throw an error if the returned psf isn't in essence real valued.
+% Then set residual imaginary parts to 0.
 if (any(abs(imag(psf(:))) > 1e-10))
     error('Computed psf is not sufficiently real');
 end
+if (any(imag(psf(:))) ~= 0)
+    psf = psf - imag(psf)*1i;
+end
+
+% Check for large negative psf values, and then set any small
+% negative values to zero.
+if (min(psf(:)) < 0 && abs(min(psf(:))) > 1e-10*max(psf(:)))
+    if (p.Results.warningInsteadOfErrorForNegativeValuedPSF)
+        fprintf(2,'Mysteriously large negative psf values\n');
+    else
+        error('Mysteriously large negative psf values');
+    end
+end
+psf(psf < 0) = 0;
+
+% Make sure return is real
 psf = abs(psf);
+
+% Make sure return sums to 1.  It might not be because of the
+% above fussing with imaginary and negative values.
+psf = psf/sum(psf(:));
 
 end

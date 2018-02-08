@@ -61,7 +61,7 @@ function val = displayGet(d, parm, varargin)
 %     {'render function'}    - function handle used to convert rgb input to
 %                              corresponding dixel image
 %
-% Examples
+% Examples:
 %   d = displayCreate;
 %   w = displayGet(d,'wave');
 %   p = displayGet(d,'spd');

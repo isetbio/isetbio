@@ -25,6 +25,11 @@ function fullName = vcSaveObject(obj, fullName)
 % Outputs:
 %    fullName - Full file name and path
 %
+% Optional key/value pairs:
+%    None.
+%
+% Examples are provided in the source code.
+%
 % See Also:
 %    vcExportObject
 %
@@ -32,16 +37,14 @@ function fullName = vcSaveObject(obj, fullName)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting
+%    01/22/18  dhb  Fix example so it runs.
 
 % Examples:
 %{
     scene = sceneCreate;
     oi = oiCreate;
-    fullName = vcSaveObject(scene);
-    fullName = vcSaveObject(oi, ['c:\Users\Admin\Documents\MATLAB\' ...
-        'toolboxes\myFileName.mat'])
-    fullName = vcSaveObject(optics, ['c:\Users\Admin\Documents\MATLAB\' ...
-        'toolboxes\myOptics.mat'])
+    fullName = vcSaveObject(scene, fullfile(tempdir,'myScene.mat'));
+    fullName = vcSaveObject(oi,fullfile(tempdir,'myOi.mat'))
 %}
 
 if notDefined('obj'), error('Object required.'); end

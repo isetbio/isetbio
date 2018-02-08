@@ -113,7 +113,6 @@ uData = oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-10 10],'ylim',[-10 10]);
 UnitTest.validationData('oi', oi);
 
-
 %% Now, compare all three
 [r,c] = size(uData.x);
 mid = ceil(r/2);
@@ -142,32 +141,61 @@ UnitTest.validationData('wvf0', wvf0);
 
 % Copy the wavefront structure
 wvf1 = wvf0;
+wvf17 = wvf0;
 
-%Let's work at this very short wavelength
+% Let's work at this very short wavelength
 wList = 400;
-wvf1 = wvfSet(wvf1,'wave',wList);
+wvf1 = wvfSet(wvf1,'calc wave',wList);
 
 % This is the chromatic aberration relative to the measured wavelength
 lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf1,'measured wl'),wList);
 
-%  We set the parameter as if the measurement has this correction
+%  We set the parameter as if the measurement has this correction.
 wvf1 = wvfSet(wvf1,'calc observer focus correction',lcaDiopters);
 wvf1 = wvfComputePSF(wvf1);
-
 w = wvfGet(wvf1,'calc wave');
 pupilSize = wvfGet(wvf1,'calc pupil size','mm');
 
+% Get diffractoin limited PSF with both measured and calc wavelength set
+% the same and to the short wavelength. This should give us the same
+% diffraction limited answer at the short wavelength as the other way of
+% computing above (and is the more naturally expressive way to get this
+% through the wavefront method, if that is all you are trying to do.)
+%
+% Fuss here with the wvf structure to up spatial sampling density on this
+% one so we get a smooth comparison with the others.  The spatial sampling
+% in the spatial domain depends on the measurement wavelength, so we don't
+% have the psf at exactly the same spatial points here as in the others.
+% By upping the density we can look in the plot and see the smooth curve
+% pass through the more coarsely computed points.
+%
+% In the plot created below, the result of this one is the thin green line, which 
+% you can examine and see passing through the sample points for the red and blue
+% curves, which are more coarser.
+wvf17Samples = 1001;
+wvf17 = wvfSet(wvf17,'measured wl',wList);
+wvf17 = wvfSet(wvf17,'calc wave',wList);
+wvf17 = wvfSet(wvf17,'number spatial samples',wvf17Samples);
+wvf17 = wvfSet(wvf17,'ref psf sample interval',wvfGet(wvf17,'ref psf sample interval')/4);
+wvf17 = wvfComputePSF(wvf17);
+
 % There should be no difference (again) because we corrected for the
-% chromatic aberration
+% chromatic aberration.  As noted above, the thin green curve is smoother
+% and deviates in between the coarser samples for the red and blue curves,
+% but you can see that the function being computed is in good agreement.
 wvfPlot(wvf1,'1d psf angle normalized','min',w,maxMIN);
 hold on
+[~,h] = wvfPlot(wvf17,'1d psf angle normalized','min',w,maxMIN,'no window');
+set(h,'Color','g','LineWidth',1);
 ptbPSF = AiryPattern(radians,pupilSize,w);
 plot(arcminutes(index),ptbPSF(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,w));
 
+% Save unit test data
 UnitTest.validationData('wvf1', wvf1);
+UnitTest.validationData('wvf17', wvf1);
 UnitTest.validationData('ptbPSF1', ptbPSF);
 
 % PSF angular sampling should be the same across wavelengths

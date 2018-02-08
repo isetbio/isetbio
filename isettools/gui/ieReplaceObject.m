@@ -10,7 +10,7 @@ function ieReplaceObject(obj,val)
 % If there are no objects in the vcSESSION variable then this one becomes
 % the first entry, replacing nothing.
 %
-% Examples
+% Examples:
 %  ieReplaceObject(oi,3);
 %  ieReplaceObject(ISA,val);
 %

@@ -10,7 +10,7 @@ function macbethChart = macbethReadReflectance(wave,patchList)
 % The upper left corner (:,1) is brown, the upper right (:,21) is cyan
 % The third row is Blue, green, red, yellow, magenta, light blue
 % 
-% Example:
+% Examples:
 %   wave = 400:10:700;
 %   macbethReflectance = macbethReadReflectance(wave);
 %   plot(wave,macbethReflectance), xlabel('Wavelength (nm)')

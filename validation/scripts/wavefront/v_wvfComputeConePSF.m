@@ -30,6 +30,7 @@ function varargout = v_wvfComputeConePSF(varargin)
 % 8/18/15  dhb  UnitTestToolbox'ize.
 % 12/20/17 dhb  Use wvfLoadThibosVirtualEyes to load, rather than directly
 %               loading the file.
+% 01/16/18 dhb  Use create/set to make conePsfInfo structure.
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
@@ -98,10 +99,11 @@ end
 UnitTest.validationData('dataSource', dataSource);
 
 % Cone sensitivities and equal energy weighting spectrum
-load('T_cones_ss2');
-conePsfInfo.S = S_cones_ss2;
-conePsfInfo.T = T_cones_ss2;
-conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
+temp = load('T_cones_ss2');
+conePsfInfo = conePsfInfoCreate;
+conePsfInfo = conePsfInfoSet(conePsfInfo,'wavelengths',SToWls(temp.S_cones_ss2));
+conePsfInfo = conePsfInfoSet(conePsfInfo,'spectralSensitivities',temp.T_cones_ss2);
+conePsfInfo = conePsfInfoSet(conePsfInfo,'spectralWeighting',ones(temp.S_cones_ss2(3),1));
 
 % Calculation wavelengths for PSF.  
 wls = SToWls([400 10 31]);

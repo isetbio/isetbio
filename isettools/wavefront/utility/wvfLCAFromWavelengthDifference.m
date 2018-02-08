@@ -1,5 +1,5 @@
-function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM, wl2NM, ...
-    whichCalc)
+function lcaDiopters = wvfLCAFromWavelengthDifference(...
+    wl1NM, wl2NM, whichCalc)
 % Longitudinal chromatic aberration (LCA), in diopters, between wavelengths
 %
 % Syntax:
@@ -117,6 +117,9 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM, wl2NM, ...
 % Outputs:
 %    lcaDiopters - Calculated longitudinal chromatic abberation in diopters
 %
+% Optional key/value pairs:
+%    None.
+%
 % References:
 %    http://en.wikipedia.org/wiki/Dispersion_(optics)
 %
@@ -130,7 +133,7 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM, wl2NM, ...
 %    07/29/12  dhb  Add optional args, make Thibos paper version default.  
 %    xx/xx/14  bw   Restructured code, eliminated COMPARE, tested again\
 %    11/10/17  jnm  Comments & formatting
-%
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
@@ -139,19 +142,21 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM, wl2NM, ...
     d1 = zeros(size(w));
     d2 = d1;
     d3 = d1;
-	for ii=1:length(w)
+	for ii = 1:length(w)
         d1(ii) = wvfLCAFromWavelengthDifference(w0, w(ii));
     end
-	for ii=1:length(w)
+	for ii = 1:length(w)
         d2(ii) = wvfLCAFromWavelengthDifference(w0, w(ii), 'thibosPaper');
     end
-	for ii=1:length(w)
+	for ii = 1:length(w)
         d3(ii) = wvfLCAFromWavelengthDifference(w0, w(ii), 'iset');
     end
-	vcNewGraphWin;
-    plot(w, d1, '-', w, d2, '--', w, d3, ':');
+	vcNewGraphWin; hold on
+    plot(w, d1, 'r-', 'LineWidth', 4);
+    plot(w, d2, '--g','LineWidth', 3);
+    plot(w, d3, ':b', 'LineWidth', 2);
     xlabel('Wave (nm)');
-    ylabel('Diopters')
+    ylabel('Diopters');
 %}
 
 %% Set which calculation to use
@@ -186,7 +191,9 @@ switch (whichCalc)
         lcaDiopters = (n1 - n2) ./ (nD * rM);
     case 'iset'
         % This formula is always with respect to a fixed wavelength
-        warning('ISET:  Always with respect to 580nm');
+        if (wl1NM ~= 580)
+            error('''iset'' method assumes that the first wavelength is 580 nm');
+        end
         lcaDiopters = humanWaveDefocus(wl2NM);
     otherwise
         error('Unknown LCA method');

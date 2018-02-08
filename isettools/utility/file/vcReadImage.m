@@ -77,6 +77,7 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %}
 %{
     thisDisplay = displayCreate('LCD-Apple.mat');
+    fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
     photons = vcReadImage(fName,'rgb',thisDisplay);
     vcNewGraphWin; imageSPD(photons,displayGet(thisDisplay,'wave'));
 %}

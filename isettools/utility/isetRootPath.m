@@ -13,6 +13,9 @@ function rootPath = isetRootPath()
 % Outputs:
 %    None.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    isetbioRootPath, isetbioDataPath.
 

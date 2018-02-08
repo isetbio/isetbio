@@ -68,7 +68,8 @@ classdef coneMosaicHex < coneMosaic
         latticeAdjustmentSteps                  % 3D array with coneLocsHexGrid at each step of the lattice adjustment
         initialLattice                          % coneLocsHexGrid at iteration 0 (perfect hex grid)
         latticeAdjustmentPositionalToleranceF   % tolerance for whether to decide that there is no move movement
-    	latticeAdjustmentDelaunayToleranceF     % tolerance for deciding whether to trigger another Delaunay triangularization
+        latticeAdjustmentDelaunayToleranceF     % tolerance for deciding whether to trigger another Delaunay triangularization
+        maxGridAdjustmentIterations             % max iterations for deciding whether the grid adjustment is done
     end
     
     % Public methods
@@ -89,6 +90,7 @@ classdef coneMosaicHex < coneMosaic
                 'customInnerSegmentDiameter', ...
                 'rotationDegs', ...
                 'saveLatticeAdjustmentProgression',...
+                'maxGridAdjustmentIterations', ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF' ...
@@ -123,6 +125,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('rotationDegs', 0, @isnumeric);
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
+            p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
             p.addParameter('marginF', 1.0, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
@@ -138,7 +141,8 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-
+            obj.maxGridAdjustmentIterations = p.Results.maxGridAdjustmentIterations;
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);

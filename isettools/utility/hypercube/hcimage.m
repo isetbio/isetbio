@@ -30,13 +30,14 @@ function figH = hcimage(hc, varargin)
 %    xx/xx/xx       (c) Imageval
 %    12/05/17  jnm  Formatting
 %    12/25/17   BW  Made movie work fixed other errors.
+%    01/18/17  dhb  Fix example
 
 % Examples:
 %{
     fname = fullfile(isetbioDataPath, 'images', 'multispectral', ...
             'StuffedAnimals_tungsten-hdrs.mat');
     photons = vcReadImage(fname,'multispectral');
-    nWave = size(hc, 3);
+    nWave = size(photons, 3);
     hcimage(photons, 'image montage',[1 3 5]);
     hcimage(photons, 'movie');
 %}

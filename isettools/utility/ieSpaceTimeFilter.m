@@ -2,12 +2,12 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 % Apply a filter kernel to the space-time signal
 %
 % Syntax:
-%   resp = ieSpaceTimeFilter(sig, kernel, varargin)
+%   resp = ieSpaceTimeFilter(sig, kernel, [varargin])
 %
 % Description:
 %    We use this to calculate either just the spatial pooling or
-%    spatial-temporal pooling for a signal.  If the kernel is 2D, say the
-%    spatial receptive field, the the calculation is space-only.  If the
+%    spatial-temporal pooling for a signal. If the kernel is 2D, say the
+%    spatial receptive field, the the calculation is space-only. If the
 %    kernel is 3D, then the calculation is space-time.
 %
 %    For example, motion analysis can be a kernel that is slanted in
@@ -22,9 +22,9 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 %    resp     - the requested filtered signal
 %
 % Optional key/value pairs
-%    pad - Pad parameter for convn call.  Options are 'full','same' or
-%    'valid'
-
+%    pad      - The pad parameter for the convolution call. Options are
+%               'full', 'same' or 'valid'
+%
 % Notes:
 %    * TODO: Think about when we can use the separable case.
 %
@@ -36,7 +36,7 @@ function resp = ieSpaceTimeFilter(sig, kernel, varargin)
 % Examples:
 %{
     sig = randn(128, 128, 64);
-	kernel = ones(3,3);
+	kernel = ones(3, 3);
 	resp = ieSpaceTimeFilter(sig, kernel, 'pad', 'same');
 	var(resp(:))
     % Should be close to 9 (numel(kernel)), except for border
@@ -48,7 +48,7 @@ p.addRequired('sig', @isnumeric);
 p.addRequired('kernel', @isnumeric);
 
 % Parameter/Value options
-vFunc = @(x)(ismember(x,{'full','same','valid'}));
+vFunc = @(x)(ismember(x, {'full', 'same', 'valid'}));
 p.addParameter('pad', 'same', vFunc);
 p.parse(sig, kernel, varargin{:});
 pad = p.Results.pad;

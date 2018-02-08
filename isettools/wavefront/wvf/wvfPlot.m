@@ -44,6 +44,9 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
 %    pData    - The handles from the plotted data
 %    fNum     - The figure number
 %
+% Optional key/value pairs:
+%    *Needs attention*
+%
 % Notes:
 %    * [Note: JNM - Reminder: Using ~isempty(strfind(... instead of
 %      contains due to backwards compatibility with MATLAB 2015B]
@@ -56,6 +59,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
 %         2. code in other plotting scales (distances or angles)
 %         3. confirm plotting: currently 90deg flipped of wikipedia
 %         4. somehow remove the 0 phase areas outside of calculated pupil]
+%    * TODO: Fill out optional key/value pairs section
 %
 % See Also:
 %    wvfComputePSF, v_wvfDiffractionPSF, vcNewGraphWin

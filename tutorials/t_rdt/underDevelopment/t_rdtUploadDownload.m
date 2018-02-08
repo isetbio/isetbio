@@ -21,25 +21,41 @@
 % Then do this 
 if rdtUploadFlag
     curDir = pwd;
+
+
     
     % We want to write a wrapper that puts, say, this script up into the
     % same artifact so we could reproduce the cone mosaic.
-    chdir(isetbioRootPath,'local');
-    % save('rings-rays2.mat','cMosaic');
+    chdir(fullfile(isetbioRootPath,'local'));
+    % scene = sceneCreate('rings rays');
+    % save('ringsrays','scene');
     
     % This should be a file that have stored in the local directory.
-    filename1 = fullfile(isetbioRootPath,'local','rings-rays2.mat');
+    filename1 = fullfile(isetbioRootPath,'local','ringsrays.mat');
     
-    rdt = Rdtrdt('isetbio');
+    rdt = RdtClient('isetbio');
     rdt.credentialsDialog();
     
     % You can change other places.
-    rdt.crp('/resources/data/cmosaics')
-    version1 = '1';
-    artifact = rdt.publishArtifact(filename1, 'version', version1);
-
-    % To remove the artifact, use 
+    rdt.crp('/resources/scenes/hdr')
+    rdt.listArtifacts('print',true);
     
+    rdt.crp('/resources/scenes/')
+    rdt.listRemotePaths
+    
+    rdt.crp('/resources/test/')
+    rdt.listArtifacts('print',true);
+
+    version1 = '1';
+    if exist(filename1,'file')
+        artifact = rdt.publishArtifact(filename1, 'version', version1);
+    else
+        error('File not found');
+    end
+    rdt.listArtifacts('print',true);
+    
+    % To remove the artifact, use 
+    rdt.removeArtifacts(artifact);
     
     % rdt.openBrowser;
     

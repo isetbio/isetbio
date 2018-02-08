@@ -15,9 +15,11 @@ function wvf = wvfPrint(wvf, varargin)
 % Outputs:
 %    wvf      - wavefront structure
 %
+% Optional key/value pairs:
+%    *Needs attention*
+%
 % Notes:
-%    * [Note: JNM - Measurement conditions and calculation parameters
-%      contain the same information, are both sections necessary?]
+%    * TODO: Fill out optional key/value pairs section
 %
 % See Also:
 %    wvfSet, wvfGet, sceCreate, sceGet
@@ -26,7 +28,7 @@ function wvf = wvfPrint(wvf, varargin)
 % History:
 %    xx/xx/11       (c) Wavefront Toolbox Team 2011, 2012
 
-% Examples
+% Examples:
 %{
     wvf0 = wvfCreate;
     wvfPrint(wvf0);

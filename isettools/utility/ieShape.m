@@ -7,6 +7,8 @@ function [h, pts] = ieShape(shape, varargin)
 % Description:
 %    This function will draw a shape on the current window.
 %
+%    Examples in the code.
+%
 % Inputs:
 %    shape     - Required input variable, with possible options of 'line', 
 %                'circle', 'rectangle', or 'ellipse' The shapes have the
@@ -117,7 +119,7 @@ switch shape
         % It is OK to send in a single ellipse parameter. The ellipse will
         % be replicated at all the center locations.
         ellipseParameters = p.Results.ellipseParameters;
-        if size(ellipseParameters, 1)==1 && nEllipses > 1
+        if size(ellipseParameters, 1) == 1 && nEllipses > 1
             ellipseParameters = repmat(ellipseParameters, nEllipses, 1);
         end
         % It is OK to send in a single color
@@ -143,7 +145,7 @@ switch shape
         % szEllMatrix = [sqrt(nEllipses) sqrt(nEllipses)];
         
         
-        for ii=1:nEllipses
+        for ii = 1:nEllipses
             % ePts = pts * eMatrix;
             % ePts = pts * diag(major / minor axis) * ...
             %     rotmat(third parameter)
@@ -156,7 +158,7 @@ switch shape
                 sind(ellipseParameters(ii, 3)) ...
                 cosd(ellipseParameters(ii, 3))];
             pts = bsxfun(@plus, ptsCircle * D * R, center(ii, :));
-            %pts = ptsCircle*D*R + repmat(center, nSamp, 1);
+            %pts = ptsCircle * D * R + repmat(center, nSamp, 1);
             if isempty(fillArray)
                 h = plot(pts(:, 2), pts(:, 1), colors(ii), ...
                     'linewidth', .2);
@@ -210,6 +212,9 @@ function pts = circle(center, r, nPts)
 %
 % Outputs:
 %    pts    - Collection of coordinates for the bounding points
+%
+% Optional key/value pairs:
+%    None.
 %
 t = linspace(0, 2 * pi, nPts)'; 
 pts = zeros(length(t), 2);

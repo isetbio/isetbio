@@ -21,10 +21,13 @@ function wvf = wvfComputePSF(wvf, showBar)
 % Inputs:
 %    wvf     - wavefront object
 %    showbar - (Optional) Boolean dictating whether or not to show the
-%              calculation wait bar
+%              calculation wait bar. Default false.
 %
 % Outputs:
 %    wvf     - The wavefront object
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    wvfGet, wvfCreate, wvfSet, wvfComputePupilFunction, 
@@ -39,7 +42,7 @@ function wvf = wvfComputePSF(wvf, showBar)
 %    06/02/12  dhb  Simplify greatly given new get/set conventions.
 %    07/01/12   bw  Adjusted for new wavelength convention
 %    11/08/17  jnm  Comments & formatting
-%
+%    01/18/18  jnm  Formatting update to match Wiki, a couple cosmetic bits
 
 % Examples:
 %{
@@ -86,24 +89,27 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
         % that arise because of numerical roundoff.
         psf{wl} = real(inten);
         
-        % We used to not use the ifftshift. Indeed, the ifftshift does not seem to
-        % matter here, but my understanding of the way fft2 works, we want
-        % it.  The reason it doesn't matter is because we don't care about the
-        % phase of the fft.  Set DOCHECKS here to true to recompute the old
-        % way and verify that we get the same answer to numerical
-        % precision. And a few other things.
+        % We used to not use the ifftshift. Indeed, the ifftshift does not
+        % seem to matter here, but my understanding of the way fft2 works, 
+        % we want it.  The reason it doesn't matter is because we don't
+        % care about the phase of the fft.  Set DOCHECKS here to true to
+        % recompute the old way and verify that we get the same answer to
+        % numerical precision. And a few other things.
         DOCHECKS = false;
         if (DOCHECKS)
             amp1 = fft2(pupilfunc{wl});
             inten1 = fftshift((amp1 .* conj(amp1)));
-            if (max(abs(inten(:)-inten1(:))) > 1e-8*mean(inten(:)))
-                fprintf('The ifftshift matters in computation of psf from pupil function\n');
+            if (max(abs(inten(:) - inten1(:))) > 1e-8 * mean(inten(:)))
+                fprintf(['The ifftshift matters in computation of psf ' ...
+                    'from pupil function\n']);
             end
-            if (max(abs(amp(:)-amp1(:))) > 1e-8*mean(amp(:)))
-                fprintf('The ifftshift matters in computation of amp from pupil function, as expected.\n');
+            if (max(abs(amp(:) - amp1(:))) > 1e-8 * mean(amp(:)))
+                fprintf(['The ifftshift matters in computation of amp ' ...
+                    'from pupil function, as expected.\n']);
             end
-            if (max(abs(imag(inten(:)))) > 1e-8*mean(inten(:)))
-                fprintf('Max absolute value of imaginary part of inten is %g\n',max(abs(imag(inten(:)))));
+            if (max(abs(imag(inten(:)))) > 1e-8 * mean(inten(:)))
+                fprintf(['Max absolute value of imaginary part of ' ...
+                    'inten is %g\n'], max(abs(imag(inten(:)))));
             end
         end
         

@@ -26,6 +26,9 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 % Outputs:
 %    ucData   - data
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    ieCompressData
 %
@@ -33,6 +36,7 @@ function ucData = ieUncompressData(cData, mn, mx, bitDepth)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
+%    01/17/18  jnm  Formatting update to match Wiki.
 
 % if notDefined('bitDepth'), error('bitDepth required'); end
 mxCompress = (2 ^ bitDepth) - 1;

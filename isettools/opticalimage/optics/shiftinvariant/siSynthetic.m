@@ -47,6 +47,7 @@ function optics = siSynthetic(psfType,oi,varargin)
 %           dhb   Take mm/[psf sample] from oi, not hard code at 0.25e-3.
 %           BW    We might just eliminate a lot of this set of SI methods.  
 %           dhb   Created working example for 'custom'
+% 01/22/18  dhb   Examples run in clean workspace.
 
 % Examples:
 %{
@@ -63,6 +64,12 @@ function optics = siSynthetic(psfType,oi,varargin)
     oiPlot(oi,'otf 550');
 %}
 %{
+    oi = oiCreate('shift invariant');
+    oi = initDefaultSpectrum(oi,'spectral');
+    wave = oiGet(oi,'wave');
+    psfType = 'gaussian'; 
+    waveSpread = wave/wave(1);
+
     % Make one with an asymmetric Gaussian
     xyRatio = 2*ones(1,length(wave));
     optics =  siSynthetic(psfType,oi,waveSpread,xyRatio);

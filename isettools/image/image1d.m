@@ -14,7 +14,7 @@ function [img, params] = image1d(pattern,varargin)
 %
 % Create a 2D image from a 1D pattern.
 %
-% Examples
+% Examples:
 %   pattern = ones(1,129)*0.5;  pattern(65) = 1;
 %   img = image1d(pattern); 
 %   vcNewGraphWin; imshow(img)

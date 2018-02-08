@@ -42,6 +42,9 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 %    vectorIndex - List of WVF Toolbox-appropriate indices
 %    jIndex      - List of OSA J Values
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    wvfOSAIndexToZernikeNM, wvfZernikeNMToOSAIndex, zernfun
 %
@@ -49,15 +52,16 @@ function [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 % History:
 %    xx/xx/12  DB, BW  (c) Wavefront Toolbox Team, 2012
 %    11/09/17  jnm  Formatting
+%    01/11/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
     wvfInd = wvfOSAIndexToVectorIndex([20:5:50])
 %}
 %{
-[vectorIndex] = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
-[vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
-    'defocus', 'vertical_astigmatism', 'primary_spherical'})
+    vectorIndex = wvfOSAIndexToVectorIndex([0 1 2 3 4 5])
+    [vectorIndex, jIndex] = wvfOSAIndexToVectorIndex({'piston', ...
+        'defocus', 'vertical_astigmatism', 'primary_spherical'})
 %}
 
 % If a single string, that's OK. We put it to a singleton cell.

@@ -14,6 +14,8 @@ function [im, mn, mx] = ieScale(im, b1, b2)
 %   between 0 and 1 and then applying b1 and b2 if they are provided.
 %   	(im - min) / (max - min), and then (b2 - b1) * im + b1;
 %
+%    Examples contained in the code.
+%
 % Inputs:
 %    im - Input data you wish to scale. If no bounds are provided, data
 %         will scale between 0 and 1
@@ -25,10 +27,14 @@ function [im, mn, mx] = ieScale(im, b1, b2)
 %    mn - The original lower bound
 %    mx - The original upper bound
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/22/17  jnm  Formatting
+%    01/16/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

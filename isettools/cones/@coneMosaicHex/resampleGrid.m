@@ -118,7 +118,7 @@ end
 function conePositions = smoothGrid(obj, conePositions, gridParams)
 
     % Convergence parameters
-    positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF* gridParams.lambdaMin;  
+    positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF * gridParams.lambdaMin;  
     deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
    
@@ -138,10 +138,14 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     notConverged = true;
     iteration = 0;
     tic
-    while (notConverged)
+    while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations)
         iteration = iteration + 1;
-        if (mod(iteration,50) == 1)
-            fprintf('\nIteration: %d', iteration-1);
+        if (obj.maxGridAdjustmentIterations < 100)
+            fprintf('\nHex grid adjustment: on iteration %d ... ', iteration-1);
+        else
+            if (mod(iteration,50) == 1)
+                fprintf('\nHex grid adjustment: on iteration %d ...', iteration-1);
+            end
         end
         
         % compute cone positional diffs
@@ -240,8 +244,15 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         if (obj.saveLatticeAdjustmentProgression)
             obj.latticeAdjustmentSteps(size(obj.latticeAdjustmentSteps,1)+1,:,:) = conePositions * 1e-6;
         end 
-    end % while (notConverged)
-    fprintf('\nDone with iterative adjustment in %2.1f seconds\n', toc);
+    end % while (notConverged) && (iteration < obj.maxGridAdjustmentIterations)
+    
+    fprintf('\nHex grid smoothing finished in %2.1f seconds.', toc);
+    if (iteration > obj.maxGridAdjustmentIterations) 
+        fprintf('\nDid not converge, but exceeded max number of iterations (%d).', obj.maxGridAdjustmentIterations);
+        fprintf('\nMax(movement) in last iteration: %2.6f, Tolerange: %2.6f\n', max(movementAmplitudes), dTolerance);
+    else
+        fprintf('Converged after %d iterations.\n', iteration);
+    end
     
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
@@ -355,7 +366,7 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(c
 end
 
 function pattern = rectSampledHexPattern(obj)
-    fprintf('\nResampling grid. Please wait ... ');
+    fprintf('\nResampling hex grid on high-res rect grid. Please wait ... ');
     % Highres grid
     xRectHiRes = (1:obj.cols) * obj.patternSampleSize(1); xRectHiRes = xRectHiRes - mean(xRectHiRes);
     yRectHiRes = (1:obj.rows) * obj.patternSampleSize(2); yRectHiRes = yRectHiRes - mean(yRectHiRes);

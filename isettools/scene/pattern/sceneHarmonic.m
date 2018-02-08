@@ -22,7 +22,7 @@ function [scene,params] = sceneHarmonic(scene, params, wave)
 %
 % Imageval Consulting, LLC Copyright 2006
 
-% Examples
+% Examples:
 %{
   params = harmonicP;
   scene = sceneInit;

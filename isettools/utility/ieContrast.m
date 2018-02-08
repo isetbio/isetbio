@@ -30,7 +30,7 @@ function contrast = ieContrast(input, varargin)
 %    xx/xx/16  JRG/BW  ISETBIO Team, 2016
 %    11/30/17  jnm  Formatting
 
-% Example
+% Examples:
 %{
     input = 1:50;
     ieContrast(input, 'maxC', 0.5)
