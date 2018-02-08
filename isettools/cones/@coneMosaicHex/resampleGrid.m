@@ -118,7 +118,7 @@ end
 function conePositions = smoothGrid(obj, conePositions, gridParams)
 
     % Convergence parameters
-    positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF* gridParams.lambdaMin;  
+    positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF * gridParams.lambdaMin;  
     deps = sqrt(eps)*gridParams.lambdaMin; 
     deltaT = 0.2;
    
@@ -138,10 +138,14 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     notConverged = true;
     iteration = 0;
     tic
-    while (notConverged)
+    while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations)
         iteration = iteration + 1;
-        if (mod(iteration,50) == 1)
-            fprintf('\nIteration: %d', iteration-1);
+        if (maxIterations < 100)
+            fprintf('\nStarting iteration: %d', iteration-1);
+        else
+            if (mod(iteration,50) == 1)
+                fprintf('\nStarting iteration: %d', iteration-1);
+            end
         end
         
         % compute cone positional diffs
@@ -240,8 +244,14 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         if (obj.saveLatticeAdjustmentProgression)
             obj.latticeAdjustmentSteps(size(obj.latticeAdjustmentSteps,1)+1,:,:) = conePositions * 1e-6;
         end 
-    end % while (notConverged)
-    fprintf('\nDone with iterative adjustment in %2.1f seconds\n', toc);
+    end % while (notConverged) && (iterations < maxIterations)
+    
+    if (iteration > obj.maxGridAdjustmentIterations)
+        fprintf('\nHex grid smoothing exceeded max number of iterations (%d) in %2.1f seconds.', maxGridAdjustmentIterations, toc);
+        fprintf('\n max(movement) in last iteration: %2.6f, Tolerange: %2.6f\n', max(movementAmplitudes), dTolerance);
+    else
+        fprintf('\nHex grid smoothing converged in %2.1f seconds\n', toc);
+    end
     
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
