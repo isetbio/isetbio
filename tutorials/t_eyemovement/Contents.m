@@ -8,7 +8,8 @@
 % t_fixationalEyeMovementsToIsomerizations  - Shows how to integrate fixational eye movements with a cone mosaic and 
 %                                             an oiSequence, and illustrates the different time bases for the stimulus
 %                                             modulation, eye-movements and isomerizations.
-% t_fixationalEyeMovementsCharacterize      - Computes key properties of emPaths and explores how these change for 
-%                                             as various parameters of the @fixationalEM object are changed.
-% t_fixationalEyeMovementsDriftModelParams  - Explore how key properties of emPaths depend on the feedback and control gain parameters 
-%                                             of the drift component of the @fixationalEM engine.
+% t_fixationalEyeMovementsCharacterize      - Computes key characteristics of emPaths and explores how these differ
+%                                             for different micro-saccade strategies the @fixationalEM object.
+% t_fixationalEyeMovementsFeedbackGainAndControlGainDependence
+%                                           - Explores how key characteristics of emPaths depend on the feedback gain
+%                                             and the control gain parameter of the drift component of the @fixationalEM engine.

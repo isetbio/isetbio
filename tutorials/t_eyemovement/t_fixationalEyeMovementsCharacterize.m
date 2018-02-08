@@ -1,6 +1,7 @@
 function t_fixationalEyeMovementsCharacterize
-% Computes key properties of emPaths and explores how these change as 
-% various parameters of the @fixationalEM object are changed.
+% Computes key characteristics of emPaths and explores how these differ
+% for different micro-saccade strategies the @fixationalEM object.
+%
 % The examined properties of the emPaths are:
 % -velocity 
 % -fixation span
