@@ -38,8 +38,6 @@ classdef sceneEye < hiddenHandle
 %      piGetRenderRecipe we should put in the default values if any of
 %      these rendering options are missing (e.g. if Renderer is missing,
 %      put in Renderer 'sampler'.)]
-%    * [Note: XXX - Actually...should we include this? This will change
-%      depending on the accommodation...- Public Get, Private Set section]
 %    * TODO - Look (Constant property wave) up and fill it in.
 %    * [Note: XXX - (from constructor) What happens if the recipe doesn't
 %      include any of the following, or any of the subfields we call?]
@@ -91,6 +89,15 @@ properties (GetAccess=public, SetAccess=public)
     %   accommodation. For example, if we set this to 5 diopters, 550
     %   nm rays from 0.2 meters will be in focus on the retina.
     accommodation;
+    
+    %ECCENTRICITY Horizontal and vertical angles on the retina 
+    %   corresponding to the center of the rendered image. Positive angles
+    %   are to the right/up (from the eye's point of view) and negative 
+    %   angles are to the left/down. For example, an image with [0 0] 
+    %   eccentricity is centered on the center of the retina. An image with 
+    %   [30 0] eccentricity is centered 30 degrees to the right of the
+    %   center of the retina.
+    eccentricity;
 
     %PUPILDIAMETER Diameter of the pupil (mm)
     pupilDiameter;
@@ -172,8 +179,6 @@ properties (Dependent)
 end
 
 properties(GetAccess=public, SetAccess=private)
-    % [Note: XXX - Actually...should we include this? This will change
-    % depending on the accommodation...]
     %LENSFILE Path to the .dat file that describes the lens system
     %   This file includes descriptions of the thickness, curvature, 
     %   and diameter of the various components in the eye.
@@ -193,10 +198,10 @@ properties(GetAccess=public, SetAccess=private)
 end
 
 properties(Access=private)
-    % Pretty much everything else we read in the PBRT file that we
-    % don't want them to see but still need in order to write out the
-    % new PBRT file. This includes things like the WorldBegin/WorldEnd
-    % block, the PixelFilter, maybe the SurfaceIntegrator?
+    % The recipe stores pretty much everything else we read in from the
+    % PBRT file that we don't want the user to access directly. This
+    % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
+    % the Integrator, etc.
 
     %RECIPE Structure that holds all instructions needed to
     %   render the PBRT file. 
@@ -368,6 +373,8 @@ methods
 
         obj.recipe = recipe;
         obj.debugMode = false;
+        
+        obj.eccentricity = [0 0];
     end
 
     %% Get methods for dependent variables
