@@ -61,7 +61,6 @@ for pIndex = 1:numel(fovExamined)
             'latticeAdjustmentDelaunayToleranceF', quality.tolerance2, ...     
             'marginF', quality.marginF ... 
         );
-        fprintf('Time to compute ''%s'' mosaic: %2.1 secods\n', mosaicFileName, toc)
 
         % Save the mosaic for later analysis
         if (saveMosaic)
