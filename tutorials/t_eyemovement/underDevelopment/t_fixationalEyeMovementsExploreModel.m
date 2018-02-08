@@ -1,6 +1,6 @@
 function t_fixationalEyeMovementsExploreModel
 
-    emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 100;
+    emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 50;
     
     % Initialize object
     fixEMobj = fixationalEM();
@@ -21,21 +21,21 @@ function t_fixationalEyeMovementsExploreModel
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                    'rowsNum', size(controlGamma,1), ...
                    'colsNum', size(controlGamma,2), ...
-                   'heightMargin',   0.04, ...
+                   'heightMargin',   0.02, ...
                    'widthMargin',    0.01, ...
                    'leftMargin',     0.03, ...
                    'rightMargin',    0.001, ...
                    'bottomMargin',   0.04, ...
-                   'topMargin',      0.03);
+                   'topMargin',      0.02);
                
-    hFig1 = figure(1); clf; set(hFig1, 'Position', [10 10 1900 1100], 'Color', [1 1 1]); 
-    hFig2 = figure(2); clf; set(hFig2, 'Position', [10 10 1900 1100], 'Color', [1 1 1]); 
-    hFig3 = figure(3); clf; set(hFig3, 'Position', [10 10 1900 1100], 'Color', [1 1 1]); 
-    hFig4 = figure(4); clf; set(hFig4, 'Position', [10 10 1900 1100], 'Color', [1 1 1]); 
-    hFig5 = figure(5); clf; set(hFig5, 'Position', [10 10 1900 1100], 'Color', [1 1 1]); 
+    hFig1 = figure(1); clf; set(hFig1, 'Position', [10 10 1400 950], 'Color', [1 1 1]); 
+    hFig2 = figure(2); clf; set(hFig2, 'Position', [100 10 1400 950], 'Color', [1 1 1]); 
+    hFig3 = figure(3); clf; set(hFig3, 'Position', [200 10 1400 950], 'Color', [1 1 1]); 
+    hFig4 = figure(4); clf; set(hFig4, 'Position', [300 10 1400 950], 'Color', [1 1 1]); 
+    %hFig5 = figure(5); clf; set(hFig5, 'Position', [400 10 1400 950], 'Color', [1 1 1]); 
     
-    emPosRange = [-20 20];
-    emPosDelta = 1;
+    emPosRange = [-30 30];
+    emPosDelta = 0.5;
     
     for iVar = 1:numel(controlGamma)
         % Set params for positional noise only
@@ -46,28 +46,28 @@ function t_fixationalEyeMovementsExploreModel
         % Compute the random seed to get reproducible results
         fixEMobj.randomSeed = 3457;
         % Compute the emPaths
-        fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, true);
+        computeVelocity = true;
+        fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity, 'useParfor', true);
 
         % Analyze the results
-        velocityMeasurementIntervalSeconds = 41/1000;
-        d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosRange, emPosDelta);
+        d = analyzeResults(fixEMobj,  emPosRange, emPosDelta);
  
-        plotEMpath(hFig1, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, fixEMobj.timeAxis, d.emPathArcMin, d.emLikelihoodMapSupportX, d.emLikelihoodMapSupportY, d.emLikelihoodMap);
+        plotEMpath(hFig1, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, fixEMobj.timeAxis, emPosRange, d.emPathArcMin, d.fixationMap, d.fixationMapSupportX, d.fixationMapSupportY, d.fixationMapXSlice, d.fixationMapYSlice);
         plotVelocity(hFig2, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, fixEMobj.timeAxis, d.velocityArcMinPerSecond);
         plotPowerSpectralDensity(hFig3, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.frequencyAxis, d.powerSpectralDensityX, d.powerSpectralDensityY);
-        plotDisplacementD1(hFig4, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacementX, d.displacementY, d.scrambledIntervalsDisplacementX);
-        plotDisplacementD2(hFig5, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacement2Degs, d.scrambledIntervalsDisplacement2Degs);
+        plotDisplacementD2(hFig4, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacement2Degs, d.scrambledIntervalsDisplacement2Degs);
+        %plotDisplacementD1(hFig5, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacementX, d.displacementY, d.scrambledIntervalsDisplacementX);
     end
     
     % Export to PDF
-    NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'emPath', feedbackSteepness), hFig1, 300);
-    NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'velocity', feedbackSteepness), hFig2, 300);
-    NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'psd', feedbackSteepness), hFig3, 300);
-    NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'd1', feedbackSteepness), hFig4, 300);
-    NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'd2', feedbackSteepness), hFig5, 300);
+    %NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'emPath', feedbackSteepness), hFig1, 300);
+    %NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'velocity', feedbackSteepness), hFig2, 300);
+    %NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'psd', feedbackSteepness), hFig3, 300);
+    %NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'd1', feedbackSteepness), hFig4, 300);
+    %NicePlot.exportFigToPDF(sprintf('%s_steepness_%2.2f.pdf', 'd2', feedbackSteepness), hFig5, 300);
 end
 
-function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosRange, emPosDelta)
+function d = analyzeResults(fixEMobj,  emPosRange, emPosDelta)
 
     % Analyze the emPaths
     nTrials = size(fixEMobj.emPosArcMin,1);
@@ -153,26 +153,31 @@ function d = analyzeResults(fixEMobj, velocityMeasurementIntervalSeconds, emPosR
     d.scrambledIntervalsDisplacement2Degs = scrambledIntervalsDisplacementX2degs + scrambledIntervalsDisplacementY2degs;
     d.timeLagsMilliseconds = timeLagsMilliseconds;
     d.emPathArcMin = emPathArcMin;
-    [d.emLikelihoodMap, d.emLikelihoodMapSupportX, d.emLikelihoodMapSupportY] = ...
-        fixEMobj.computeLikelihoodMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
+    [d.fixationMap, d.fixationMapSupportX, d.fixationMapSupportY, d.fixationMapXSlice, d.fixationMapYSlice] = ...
+        fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
 end
 
 
-function plotEMpath(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, timeAxis, emPathArcMin, emLikelihoodMapSupportX, emLikelihoodMapSupportY, emLikelihoodMap)
+function plotEMpath(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, timeAxis, emPosRange, emPathArcMin, fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice)
     [row,col] = ind2sub(size(controlGamma), iVar);
     nRows = size(controlGamma,1);
     figure(hFig);
     subplot('Position', subplotPosVectors(row,col).v);
-    emPosRange = [-10 10];
-    emPosTicks = [-100:5:100];
-    idx = find(timeAxis <= 0.2);
-    imagesc(emLikelihoodMapSupportX, emLikelihoodMapSupportY, emLikelihoodMap, [0 1]); hold on;
-    plot(emPathArcMin(idx,1), emPathArcMin(idx,2), 'r-', 'LineWidth', 1.0); 
-    plot([0 0], emPosRange, 'k-'); plot(emPosRange, [0 0], 'k-');  hold off;
-    colormap(gray(1024));
-    set(gca, 'YLim', emPosRange, 'XLim', emPosRange, 'XTick', emPosTicks, 'YTick', emPosTicks, 'FontSize', 14);
+    emPosTicks = [-100:10:100];
+    % Plot the fixation map
+    contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on;
+    plot([0 0], emPosRange, 'k-'); plot(emPosRange, [0 0], 'k-');  
+    plot(fixationMapSupportX, emPosRange(1)+fixationMapXSlice*emPosRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
+    plot(emPosRange(2)-fixationMapYSlice*emPosRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
+    
+    % Plot 1 second of a path
+    idx = find(timeAxis <= 1.0);
+    plot(emPathArcMin(idx,1), emPathArcMin(idx,2), 'g-', 'LineWidth', 1.5); 
+    hold off;
+    colormap(brewermap(1024, 'Greys'));
+    set(gca, 'YLim', emPosRange, 'XLim', emPosRange, 'XTick', emPosTicks, 'YTick', emPosTicks, 'FontSize', 12);
     grid on; box on
-    axis 'square'
+    axis 'square'; axis 'xy';
     
     if (row == size(controlGamma,1))
         xlabel('x-position (arc min)');
@@ -187,9 +192,9 @@ function plotEMpath(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, de
     end
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0]);
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)));
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
 end
 
@@ -212,7 +217,7 @@ function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, 
     timeTicks = 0:0.5:100;
     set(gca, 'XLim', [timeAxis(1) timeAxis(end)], ...
         'XTick', timeTicks, 'XTickLabel', sprintf('%2.2f\n', timeTicks), ...
-        'YLim', [0 60*10], 'YTick', [0:100:60*100], 'FontSize', 14);
+        'YLim', [0 60*10], 'YTick', [0:100:60*100], 'FontSize', 12);
     axis 'square'
     
     if (row == size(controlGamma,1))
@@ -228,9 +233,9 @@ function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, 
     end
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0]);
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)));
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
     
 end
@@ -243,7 +248,7 @@ function plotPowerSpectralDensity(hFig, subplotPosVectors, iVar, controlGamma, f
     subplot('Position', subplotPosVectors(row,col).v);
     plot(frequencyAxis,powerSpectralDensityX, 'r-', 'LineWidth', 1.5); hold on
     plot(frequencyAxis,powerSpectralDensityY, 'b-', 'LineWidth', 1.5); hold off
-    set(gca, 'XScale', 'log', 'XLim', [1 300], 'YLim', [-50 10], 'XTick', [1 3 10 30 100 300], 'YTick', [-100:10:100], 'FontSize', 14);
+    set(gca, 'XScale', 'log', 'XLim', [1 300], 'YLim', [-50 10], 'XTick', [1 3 10 30 100 300], 'YTick', [-100:10:100], 'FontSize', 12);
     grid on;
     axis 'square'
     if (row == size(controlGamma,1))
@@ -258,9 +263,9 @@ function plotPowerSpectralDensity(hFig, subplotPosVectors, iVar, controlGamma, f
     end
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0]);
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)));
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
 end
 
@@ -275,7 +280,7 @@ function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     plot(timeLagsMilliseconds, scrambledIntervalsDisplacement2Degs, 'k--', 'LineWidth', 1.5); hold off;
     grid on
     set(gca, 'XLim', [2 1000], 'YLim', [0.3*1e-4 1e-1], 'XTick', [3 10 30 100 300 1000], ...
-        'YTick', [1e-4 1e-3 1e-2 1e-1], 'XScale', 'log', 'YScale', 'log', 'FontSize', 14);
+        'YTick', [1e-4 1e-3 1e-2 1e-1], 'XScale', 'log', 'YScale', 'log', 'FontSize', 12);
     axis 'square'
     if (row == size(controlGamma,1))
         xlabel('dt (ms)');
@@ -289,9 +294,9 @@ function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     end
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0]);
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)));
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
 end
 
@@ -306,7 +311,7 @@ function plotDisplacementD1(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     plot(timeLagsMilliseconds, scrambledIntervalsDisplacementX, 'k--', 'LineWidth', 1.5); hold off;
     grid on
     set(gca, 'XLim', [0 500], 'YLim', [0 8], 'XTick', [0:100:1000], ...
-        'YTick', [0:10], 'XScale', 'linear', 'YScale', 'linear', 'FontSize', 14);
+        'YTick', [0:10], 'XScale', 'linear', 'YScale', 'linear', 'FontSize', 12);
     axis 'square'
     if (row == size(controlGamma,1))
         xlabel('dt (ms)');
@@ -320,9 +325,9 @@ function plotDisplacementD1(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     end
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0]);
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
-        title(sprintf('control:%0.2f, feedback:%0.3f', controlGamma(iVar), feedbakGain(iVar)));
+        title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
 end
 
