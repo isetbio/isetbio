@@ -128,7 +128,7 @@ end
 
 function hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
     
-    emPosRange = [-35 35];
+    emPosRange = [-25 25];
     emPosDelta = 1;
     
     nTrials = size(fixEMobj.emPosArcMin,1);
@@ -188,13 +188,15 @@ function hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
     hold on
     % fixation span
     cmap = brewermap(1024, 'Greys');
+    maxDurationSecondsForFixationSpan = 1.0;
     [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = ...
-        fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
+        fixEMobj.computeFixationMap(fixEMobj.timeAxis, fixEMobj.emPosArcMin, ...
+           emPosRange, emPosDelta, 'maxDurationSeconds', maxDurationSecondsForFixationSpan);
     
     contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on;
     plot([0 0], emPosRange, 'k-'); plot(emPosRange, [0 0], 'k-');  
     plot(fixationMapSupportX, emPosRange(1)+fixationMapXSlice*emPosRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
-    plot(emPosRange(2)-fixationMapYSlice*emPosRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
+    plot(emPosRange(1)+fixationMapYSlice*emPosRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
   
     hold off;
     set(gca, 'YLim', emPosRange, 'XLim', emPosRange, 'XTick', [-100:10:100], 'YTick', [-100:10:100], 'FontSize', 14);
@@ -204,7 +206,7 @@ function hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
     hh = colorbar('North', 'Ticks', [0:0.2:1.0], 'TickLabels', {'.0', '.2', '.4', '.6', '.8', '1.'}, 'Color', [.4 .4 .4]);
     xlabel('x-position (arc min)');
     ylabel('y-position (arc min)');
-    title(sprintf('fixation span (%d trials)', nTrials));
+    title(sprintf('fixation span during\ninitial %1.1f seconds (%d trials)', maxDurationSecondsForFixationSpan, nTrials));
     
 
     % Spectral density plots

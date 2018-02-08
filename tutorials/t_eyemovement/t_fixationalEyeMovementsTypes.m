@@ -92,11 +92,12 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
         else
             binWidthArcMin = 0.5;
             [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = ...
-                fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, xyRange, binWidthArcMin);
+                fixEMobj.computeFixationMap(fixEMobj.timeAxis, fixEMobj.emPosArcMin, ...
+                    xyRange, binWidthArcMin);
             
             contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on; 
             plot(fixationMapSupportX, xyRange(1)+fixationMapXSlice*xyRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
-            plot(xyRange(2)-fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
+            plot(xyRange(1)+fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
         end
         hold on
         plot(xyRange, xyRange*0, 'k-');

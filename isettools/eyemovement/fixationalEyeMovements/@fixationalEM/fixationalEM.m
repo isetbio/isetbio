@@ -132,7 +132,7 @@ end
 properties (Constant)
     timeStepDurationSeconds = 1/1000;
     velocityMeasurementIntervalSeconds = 41/1000;  % window for measuring velocity to 41 milliseconds, as in Cherici & Rucci 2012 - Precision of sustained fixation in trained and untrained observers)
-    scalarToArcMin = 0.5;            % factor to scale positions to arc min. Adjusted to get drift speed according to Cherici et al 2012
+    scalarToArcMin = 0.5;                          % a 0.5 scaling factor gives drift speed in the middle of the range reported byCherici et al 2012
 end
 
 methods
@@ -422,7 +422,17 @@ end % Public methods
 
 methods (Static)
 
-function [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = computeFixationMap(emPaths, emPosRange, emPosDelta)
+function [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
+        fixationMapXSlice, fixationMapYSlice] = computeFixationMap(timeAxis, emPaths, emPosRange, emPosDelta, varargin)
+    
+    p = inputParser;
+    addParameter(p, 'maxDurationSeconds', Inf, @isnumeric);
+    parse(p, varargin{:});
+    
+    % Only analyze span within the maxDurationSeconds
+    idx = find(timeAxis <= p.Results.maxDurationSeconds);
+    emPaths = emPaths(:,idx,:);
+    
     xEdges = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
     yEdges = emPosRange(1):emPosDelta:emPosRange(end)+emPosDelta;
     xPos = squeeze(emPaths(:,:,1)); yPos = squeeze(emPaths(:,:,2));

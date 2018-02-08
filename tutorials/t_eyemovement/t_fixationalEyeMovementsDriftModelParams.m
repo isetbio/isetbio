@@ -1,6 +1,6 @@
-function t_fixationalEyeMovementsExploreDriftModelParams
+function t_fixationalEyeMovementsDriftModelParams
 % Explore how key properties of emPaths depend on the feedback and control
-% gain in the drift component of the @fixationalEM engine.
+% gain parameters of the drift component of the @fixationalEM engine.
 % The examined properties of the emPaths are:
 % -velocity 
 % -fixation span
@@ -34,7 +34,7 @@ function t_fixationalEyeMovementsExploreDriftModelParams
                    'colsNum', size(controlGammaGrid,2), ...
                    'heightMargin',   0.02, ...
                    'widthMargin',    0.01, ...
-                   'leftMargin',     0.03, ...
+                   'leftMargin',     0.035, ...
                    'rightMargin',    0.001, ...
                    'bottomMargin',   0.04, ...
                    'topMargin',      0.02);
@@ -170,8 +170,11 @@ function d = analyzeResults(fixEMobj,  emPosRange, emPosDelta)
     d.scrambledIntervalsDisplacement2Degs = scrambledIntervalsDisplacementX2degs + scrambledIntervalsDisplacementY2degs;
     d.timeLagsMilliseconds = timeLagsMilliseconds;
     d.emPathArcMin = emPathArcMin;
+    
+    maxDurationSeconds = 1.0;
     [d.fixationMap, d.fixationMapSupportX, d.fixationMapSupportY, d.fixationMapXSlice, d.fixationMapYSlice] = ...
-        fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, emPosRange, emPosDelta);
+        fixEMobj.computeFixationMap(fixEMobj.timeAxis, fixEMobj.emPosArcMin, ...
+             emPosRange, emPosDelta, 'maxDurationSeconds', maxDurationSeconds);
 end
 
 
@@ -185,7 +188,7 @@ function plotEMpath(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, de
     contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on;
     plot([0 0], emPosRange, 'k-'); plot(emPosRange, [0 0], 'k-');  
     plot(fixationMapSupportX, emPosRange(1)+fixationMapXSlice*emPosRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
-    plot(emPosRange(2)-fixationMapYSlice*emPosRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
+    plot(emPosRange(1)+fixationMapYSlice*emPosRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
     
     % Plot 1 second of a path
     idx = find(timeAxis <= 1.0);
@@ -222,14 +225,14 @@ function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, 
     nRows = size(controlGamma,1);
     figure(hFig);
     subplot('Position', subplotPosVectors(row,col).v);
-    plot(timeAxis, velocityArcMinPerSecond, 'b-', 'LineWidth', 1.5);
+    plot(timeAxis, velocityArcMinPerSecond, 'k-', 'LineWidth', 1.5);
     hold on;
     subjectDR.mean = 30;
     subjectDR.std = 17;
     plot([timeAxis(1) timeAxis(end)], (subjectDR.mean-subjectDR.std)*[1 1], 'k--', 'LineWidth', 1.0);
     subjectDG.mean = 89;
     subjectDG.std = 63;
-    plot([timeAxis(1) timeAxis(end)], (subjectDG.mean+subjectDG.std)*[1 1], 'k--', 'LineWidth', 1.0);
+    plot([timeAxis(1) timeAxis(end)], (subjectDG.mean+subjectDG.std)*[1 1], 'k:', 'LineWidth', 1.0);
     hold off;
     grid on
     timeTicks = 0:0.5:100;
@@ -245,11 +248,12 @@ function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, 
     end
     
     if (col == 1)
-        ylabel('vel. (arcmin/sec)');
+        ylabel('velocity (arcmin/sec)');
     else
         set(gca, 'YTickLabel', {});
     end
     
+    legend({'model', 'Cherici et al (best subj.}', 'Cherici et al (worst subj.)'}, 'Location', 'NorthWest');
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
@@ -280,6 +284,8 @@ function plotPowerSpectralDensity(hFig, subplotPosVectors, iVar, controlGamma, f
         set(gca, 'YTickLabel', {});
     end
     
+    legend({'x-pos', 'y-pos'}, 'Location', 'SouthWest');
+    
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
     else
@@ -295,7 +301,7 @@ function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     figure(hFig);
     subplot('Position', subplotPosVectors(row,col).v);
     
-    plot(timeLagsMilliseconds, displacement2Degs, 'b-', 'LineWidth', 1.5); hold on;
+    plot(timeLagsMilliseconds, displacement2Degs, 'k-', 'LineWidth', 1.5); hold on;
     plot(timeLagsMilliseconds, scrambledIntervalsDisplacement2Degs, 'k--', 'LineWidth', 1.5); hold off;
     grid on
     set(gca, 'XLim', [2 1000], 'YLim', [0.3*1e-4 1e-1], 'XTick', [3 10 30 100 300 1000], ...
@@ -311,6 +317,7 @@ function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     else
         set(gca, 'YTickLabel', {});
     end
+    legend({'D^2', 'scrambled D^2'}, 'Location', 'SouthEast');
     
     if ((defaults.gamma == controlGamma(iVar)) && (defaults.feedback == feedbakGain(iVar)))
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'Color', [1 0 0], 'FontSize', 10);
