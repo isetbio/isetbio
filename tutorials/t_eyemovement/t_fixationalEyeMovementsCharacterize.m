@@ -2,7 +2,7 @@ function t_fixationalEyeMovementsCharacterize
 % Computes key characteristics of emPaths and explores how these differ
 % for different micro-saccade strategies the @fixationalEM object.
 %
-% The examined properties of the emPaths are:
+% The examined characteristics of the emPaths are:
 % -velocity 
 % -fixation span
 % -power spectal density 
@@ -15,10 +15,10 @@ function t_fixationalEyeMovementsCharacterize
 
     close all
     
-    % Generate 500, emPaths for 3 seconds, with a sample time of 1 msec
+    % Generate 500 3-second emPaths with a sample time of 1 msec
     emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 500;
     
-    % Here we examine different microsaccade types
+    % Examine different microsaccade types
     microSaccadeTypes = {'none', 'heatmap/fixation based', 'stats based'};
     
     for typeIndex = 1:numel(microSaccadeTypes)
@@ -29,13 +29,12 @@ function t_fixationalEyeMovementsCharacterize
         % Compute the emPaths
         computeVelocity = true;
         fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, ...
-            nTrials, computeVelocity, ...
-            'useParfor', true);
+            nTrials, computeVelocity, 'useParfor', true);
     
         % Compute displacement and spectral analysis
         [spectrum, displacement] = performAnalyses(fixEMobj);
     
-        % Visualize
+        % Visualize all aspects
         hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, ...
             sprintf('micro-saccade type: ''%s''',  microSaccadeTypes{typeIndex}));
     end

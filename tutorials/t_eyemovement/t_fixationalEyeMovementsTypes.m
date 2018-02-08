@@ -9,9 +9,9 @@ function t_fixationalEyeMovementsTypes
 
     close all;
     
-    % Generate eye movement data for 20, 1 second long trials, with a
+    % Generate eye movement data for 2048 1-second long trials, with a
     % sample time of 1 millisecond.
-    emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 256;
+    emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 2048;
     
     % Do not compute velocity of eye movements
     computeVelocity = false;
@@ -69,7 +69,7 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
        
     % Plot all trials
     xyRange = [-20 20];
-    tickLabel = [xyRange(1):10:xyRange(2)];
+    tickLabel = [xyRange(1):5:xyRange(2)];
      
     if (rowNo == 1)
         hFig = figure(1); clf;
