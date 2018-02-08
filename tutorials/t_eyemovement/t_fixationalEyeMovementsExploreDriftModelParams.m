@@ -1,26 +1,37 @@
-function t_fixationalEyeMovementsExploreModel
+function t_fixationalEyeMovementsExploreDriftModelParams
+% Explore how key properties of emPaths depend on the feedback and control
+% gain in the drift component of the @fixationalEM engine.
+% The examined properties of the emPaths are:
+% -velocity 
+% -fixation span
+% -power spectal density 
+% -displacement analysis
+%
 
-    emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 50;
+% History
+%   02/06/18  npc  Wrote it.
+%   02/07/18  npc  Comments.
+
+    % Generate 500, emPaths for 3 seconds, with a sample time of 1 msec
+    emDurationSeconds = 5; sampleTimeSeconds = 1/1000; nTrials = 50;
+    
+    % Examined values of feedback and control gain
+    feedbackGainValues = [0 0.10 0.125  0.15  0.175 0.20];
+    controlGammaValues = [0.17 0.20   0.25   0.5];
+    [feedbakGainGrid, controlGammaGrid] = meshgrid(feedbackGainValues, controlGammaValues);
     
     % Initialize object
     fixEMobj = fixationalEM();
     fixEMobj.microSaccadeType = 'none';
-    feedbackSteepness = fixEMobj.feedbackSteepness * 1.0;
     
+    % Keep the default values of control and feedback
     defaults.gamma = fixEMobj.controlGamma;
     defaults.feedback = fixEMobj.feedbackGain;
     
-    %controlGammaValues = [0.25]
-    feedbackGainValues = [0 0.10 0.125  0.15  0.175 0.20 0.225];
-    
-    controlGammaValues = [0.15 0.17 0.20   0.25   0.5];
-    %feedbackGainValues = [0.15];
-    
-    [feedbakGain, controlGamma] = meshgrid(feedbackGainValues, controlGammaValues);
-    
+    % Subplot arrangement
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-                   'rowsNum', size(controlGamma,1), ...
-                   'colsNum', size(controlGamma,2), ...
+                   'rowsNum', size(controlGammaGrid,1), ...
+                   'colsNum', size(controlGammaGrid,2), ...
                    'heightMargin',   0.02, ...
                    'widthMargin',    0.01, ...
                    'leftMargin',     0.03, ...
@@ -34,28 +45,34 @@ function t_fixationalEyeMovementsExploreModel
     hFig4 = figure(4); clf; set(hFig4, 'Position', [300 10 1400 950], 'Color', [1 1 1]); 
     %hFig5 = figure(5); clf; set(hFig5, 'Position', [400 10 1400 950], 'Color', [1 1 1]); 
     
-    emPosRange = [-30 30];
-    emPosDelta = 0.5;
-    
-    for iVar = 1:numel(controlGamma)
+    for iVar = 1:numel(controlGammaGrid)
         % Set params for positional noise only
-        fixEMobj.controlGamma = controlGamma(iVar);
-        fixEMobj.feedbackGain = feedbakGain(iVar);
-        fixEMobj.feedbackSteepness = feedbackSteepness;
-        
-        % Compute the random seed to get reproducible results
+        fixEMobj.controlGamma = controlGammaGrid(iVar);
+        fixEMobj.feedbackGain = feedbakGainGrid(iVar);
         fixEMobj.randomSeed = 3457;
+        
         % Compute the emPaths
         computeVelocity = true;
         fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, computeVelocity, 'useParfor', true);
 
-        % Analyze the results
+        % Analyze the emPaths
+        emPosRange = [-30 30]; emPosDelta = 0.5;
         d = analyzeResults(fixEMobj,  emPosRange, emPosDelta);
  
-        plotEMpath(hFig1, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, fixEMobj.timeAxis, emPosRange, d.emPathArcMin, d.fixationMap, d.fixationMapSupportX, d.fixationMapSupportY, d.fixationMapXSlice, d.fixationMapYSlice);
-        plotVelocity(hFig2, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, fixEMobj.timeAxis, d.velocityArcMinPerSecond);
-        plotPowerSpectralDensity(hFig3, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.frequencyAxis, d.powerSpectralDensityX, d.powerSpectralDensityY);
-        plotDisplacementD2(hFig4, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacement2Degs, d.scrambledIntervalsDisplacement2Degs);
+        % Plot different aspects of the emPaths
+        % The emPath and its fixation span
+        plotEMpath(hFig1, subplotPosVectors, iVar, controlGammaGrid, feedbakGainGrid, defaults, fixEMobj.timeAxis, emPosRange, d.emPathArcMin, d.fixationMap, d.fixationMapSupportX, d.fixationMapSupportY, d.fixationMapXSlice, d.fixationMapYSlice);
+        
+        % The velocity
+        plotVelocity(hFig2, subplotPosVectors, iVar, controlGammaGrid, feedbakGainGrid, defaults, fixEMobj.timeAxis, d.velocityArcMinPerSecond);
+        
+        % The power spectral density
+        plotPowerSpectralDensity(hFig3, subplotPosVectors, iVar, controlGammaGrid, feedbakGainGrid, defaults, d.frequencyAxis, d.powerSpectralDensityX, d.powerSpectralDensityY);
+        
+        % The mean squared displacement (in deg^2)
+        plotDisplacementD2(hFig4, subplotPosVectors, iVar, controlGammaGrid, feedbakGainGrid, defaults, d.timeLagsMilliseconds, d.displacement2Degs, d.scrambledIntervalsDisplacement2Degs);
+        
+        % The mean displacement (in min arc)
         %plotDisplacementD1(hFig5, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, d.timeLagsMilliseconds, d.displacementX, d.displacementY, d.scrambledIntervalsDisplacementX);
     end
     
@@ -196,6 +213,7 @@ function plotEMpath(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, de
     else
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
+    drawnow;
 end
 
 function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, timeAxis, velocityArcMinPerSecond)    
@@ -237,7 +255,7 @@ function plotVelocity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, 
     else
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
-    
+    drawnow;
 end
 
 function plotPowerSpectralDensity(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, frequencyAxis,powerSpectralDensityX,powerSpectralDensityY)   
@@ -267,6 +285,7 @@ function plotPowerSpectralDensity(hFig, subplotPosVectors, iVar, controlGamma, f
     else
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
+    drawnow;
 end
 
 function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, timeLagsMilliseconds, displacement2Degs, scrambledIntervalsDisplacement2Degs)
@@ -298,6 +317,7 @@ function plotDisplacementD2(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     else
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
+    drawnow;
 end
 
 function plotDisplacementD1(hFig, subplotPosVectors, iVar, controlGamma, feedbakGain, defaults, timeLagsMilliseconds, displacementX, displacementY, scrambledIntervalsDisplacementX)
@@ -329,5 +349,6 @@ function plotDisplacementD1(hFig, subplotPosVectors, iVar, controlGamma, feedbak
     else
         title(sprintf('control:%0.2f, feedback:%0.2f', controlGamma(iVar), feedbakGain(iVar)), 'FontSize', 10);
     end
+    drawnow;
 end
 
