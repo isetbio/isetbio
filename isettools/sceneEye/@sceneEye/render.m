@@ -22,73 +22,143 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %    ieObject       - The Optical Image object
 %    terminalOutput - Terminal output
 %
-% Notes:
-%    * TODO: Is clearing most of the default optics okay? Determine if
-%      there is a better way to accomplish this.
-%    * TODO: Is it possible to remove the need to specify the type and
-%      value for the chromaticAberrationEnabled?
-%
 
-%%  Given the scene3D object, we make adjustments to the renderecipeecipe 
-recipe = obj.recipe;
+%% Make a copy of the current object
+% We will render this copy, since we may make changes to certain parameters
+% before rendering (i.e. in th eccentricity calculations) but we don't want
+% these changes to show up original object given by the user.
+objCopy = copy(obj);
+
+%% Make some eccentricity calculations
+
+% To render an image centered at a certain eccentricity without having
+% change PBRT, we do the following:
+% 1. Change the film size and resolution so that renders a larger image
+% that encompasses the desired eccentricity (tempWidth/tempHeight)
+% 2. Insert a "crop window" PBRT parameter to only render the window
+% centered at the desired eccentricity with the desired film
+% diagonal/resolution.
+
+ecc = objCopy.eccentricity;
+
+% Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
+% the minimum FOV the rendered image needs to have in order to
+% encompass the given point?
+tempWidth = 2*obj.retinaDistance*tand(abs(ecc(1))) + obj.width;
+tempHeight = 2*obj.retinaDistance*tand(abs(ecc(2))) + obj.height;
+fovHoriz = 2*atand(tempWidth/(2*obj.retinaDistance));
+fovVert = 2*atand(tempHeight/(2*obj.retinaDistance));
+objCopy.fov = max(fovHoriz,fovVert); 
+
+% Center of image in mm, given desired ecc
+centerX = obj.retinaDistance*tand(ecc(1));
+centerY = obj.retinaDistance*tand(ecc(2));
+
+% Boundaries of crop window in mm
+% (Use original width and height!)
+left = centerX - obj.width/2;
+right = centerX + obj.width/2;
+bottom = centerY + obj.height/2;
+top = centerY - obj.height/2;
+
+% Convert (0,0) to top left corner (normalized device coordinates) instead
+% of center
+tempSize = 2*objCopy.retinaDistance*tand(objCopy.fov/2); % Side length of large FOV
+left_ndc = left + tempSize/2;
+right_ndc = right + tempSize/2;
+top_ndc = top + tempSize/2;
+bottom_ndc = bottom + tempSize/2;
+ndcWindow = [left_ndc right_ndc top_ndc bottom_ndc];
+
+% Convert to ratio
+cropWindow = ndcWindow./tempSize;
+
+% Since we'll be cropping the large image down to the desired
+% eccentricity, we have to increase the rendered resolution.
+tempResolution = objCopy.resolution/(cropWindow(2)-cropWindow(1));
+objCopy.resolution = round(tempResolution);
+
+% DEBUG
+%{
+    fprintf('*** DEBUG *** \n')
+    fprintf('Original FOV: %0.2f \n',obj.fov);
+    fprintf('New FOV: %0.2f \n',objCopy.fov);
+    fprintf('Original width: %0.2f \n', obj.width);
+    fprintf('New width: %0.2f \n',objCopy.width);
+    fprintf('Original resolution: %0.2f \n',obj.resolution);
+    fprintf('New resolution: %0.2f \n',objCopy.resolution);
+    fprintf('Crop window: [%0.2f %0.2f %0.2f %0.2f] \n',cropWindow);
+    fprintf('*** DEBUG *** \n')
+%}
+
+
+%% Given the sceneEye object, we make all other adjustments needed to the recipe
+recipe = objCopy.recipe;
 
 % Apply any accommodation changes
-if(isempty(obj.accommodation))
-    obj.accommodation = 5;
+if(isempty(objCopy.accommodation))
+    objCopy.accommodation = 5;
     warning('No accommodation! Setting to 5 diopters.');
 end
-recipe = setAccommodation(recipe, obj.accommodation, obj.workingDir);
+recipe = setAccommodation(recipe, objCopy.accommodation, objCopy.workingDir);
+
 
 % Film parameters
-recipe.film.xresolution.value = obj.resolution;
-recipe.film.yresolution.value = obj.resolution;
+recipe.film.xresolution.value = objCopy.resolution;
+recipe.film.yresolution.value = objCopy.resolution;
 
 % Camera parameters
-if(obj.debugMode)
+if(objCopy.debugMode)
     % Use a perspective camera with matching FOV instead of an eye.
-    fov = struct('value', obj.fov, 'type', 'float');
+    fov = struct('value', objCopy.fov, 'type', 'float');
     recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
         'fov', fov);
 else
-    recipe.camera.retinaDistance.value = obj.retinaDistance;
-    recipe.camera.pupilDiameter.value = obj.pupilDiameter;
-    recipe.camera.retinaDistance.value = obj.retinaDistance;
-    recipe.camera.retinaRadius.value = obj.retinaRadius;
-    recipe.camera.retinaSemiDiam.value = obj.retinaDistance ...
-        * tand(obj.fov / 2);
+    recipe.camera.retinaDistance.value = objCopy.retinaDistance;
+    recipe.camera.pupilDiameter.value = objCopy.pupilDiameter;
+    recipe.camera.retinaDistance.value = objCopy.retinaDistance;
+    recipe.camera.retinaRadius.value = objCopy.retinaRadius;
+    recipe.camera.retinaSemiDiam.value = objCopy.retinaDistance ...
+        * tand(objCopy.fov / 2);
 end
 
 % Sampler
-recipe.sampler.pixelsamples.value = obj.numRays;
+recipe.sampler.pixelsamples.value = objCopy.numRays;
 
 % Integrator
-recipe.integrator.maxdepth.value = obj.numBounces;
+recipe.integrator.maxdepth.value = objCopy.numBounces;
 
 % Renderer
-if(obj.numCABands == 0 || obj.numCABands == 1 || obj.debugMode)
+if(objCopy.numCABands == 0 || objCopy.numCABands == 1 || objCopy.debugMode)
     % No spectral rendering
     recipe.renderer = struct('type', 'Renderer', 'subtype', 'sampler');
 else
     % Spectral rendering
-    nWaveBands = struct('value', obj.numCABands, 'type', 'integer');
+    nWaveBands = struct('value', objCopy.numCABands, 'type', 'integer');
     recipe.renderer = struct('type', 'Renderer', ...
         'subtype', 'spectralrenderer', ...
         'nWaveBands', nWaveBands);
 end
 
 % Look At
-if(isempty(obj.eyePos) || isempty(obj.eyeTo) || isempty(obj.eyeUp))
+if(isempty(objCopy.eyePos) || isempty(objCopy.eyeTo) || isempty(objCopy.eyeUp))
     error('Eye location missing!');
 else
-    recipe.lookAt = struct('from', obj.eyePos, 'to', obj.eyeTo, ...
-        'up', obj.eyeUp);
+    recipe.lookAt = struct('from', objCopy.eyePos, 'to', objCopy.eyeTo, ...
+        'up', objCopy.eyeUp);
+end
+
+% Crop window
+if(exist('cropWindow','var'))
+    recipe.film.cropwindow.value = cropWindow;
+    recipe.film.cropwindow.type = 'float';
 end
 
 %% Write out the adjusted recipe into a PBRT file
-pbrtFile = fullfile(obj.workingDir, strcat(obj.name, '.pbrt'));
+pbrtFile = fullfile(objCopy.workingDir, strcat(objCopy.name, '.pbrt'));
 recipe.outputFile = pbrtFile;
-piWrite(recipe, 'overwritepbrtfile', true, 'overwriteresources', false, ...
-    'overwritelensfile', false);
+piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
+    'overwriteresources', false);
 
 %% Render the pbrt file using docker
 [ieObject, terminalOutput] = piRender(recipe);
@@ -110,7 +180,7 @@ if(~obj.debugMode)
     ieObject = oiSet(ieObject, 'fov', obj.fov);
     
     % Clear default optics that do not apply to the ray-traced optical
-    % image. We may want to add these in in the future. 
+    % image. We may want to add these in in the future.
     ieObject.optics = opticsSet(ieObject.optics, 'model', 'raytrace');
     ieObject.optics = opticsSet(ieObject.optics, 'name', ...
         'PBRT Navarro Eye');
