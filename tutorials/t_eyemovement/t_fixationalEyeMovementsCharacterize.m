@@ -15,8 +15,8 @@ function t_fixationalEyeMovementsCharacterize
 
     close all
     
-    % Generate 500 3-second emPaths with a sample time of 1 msec
-    emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 500;
+    % Generate 512 3-second emPaths with a sample time of 1 msec
+    emDurationSeconds = 3; sampleTimeSeconds = 1/1000; nTrials = 512;
     
     % Examine different microsaccade types
     microSaccadeTypes = {'none', 'heatmap/fixation based', 'stats based'};
@@ -200,12 +200,11 @@ function hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
   
     hold off;
     set(gca, 'YLim', emPosRange, 'XLim', emPosRange, 'XTick', [-100:10:100], 'YTick', [-100:10:100], 'FontSize', 14);
-    grid on; box on
-    axis 'square'
     colormap(cmap);
-    hh = colorbar('North', 'Ticks', [0:0.2:1.0], 'TickLabels', {'.0', '.2', '.4', '.6', '.8', '1.'}, 'Color', [.4 .4 .4]);
+    %hh = colorbar('North', 'Ticks', [0:0.2:1.0], 'TickLabels', {'.0', '.2', '.4', '.6', '.8', '1.'}, 'Color', [.4 .4 .4]);
     xlabel('x-position (arc min)');
     ylabel('y-position (arc min)');
+    grid on; box on; axis 'square'; axis 'xy'
     title(sprintf('fixation span during\ninitial %1.1f seconds (%d trials)', maxDurationSecondsForFixationSpan, nTrials));
     
 
