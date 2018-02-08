@@ -1,7 +1,12 @@
 function t_fixationalEyeMovementsTypes
 % Examine eye movement paths produced by different values of the
 % 'microSaccadeType' parameter.
-%
+% 
+% Note that the fixation maps are a bit different for microsaccades that
+% are generated using the 'heatmap/fixation based' strategy vs. the
+% 'stats based' strategy, with the former strategy resulting in fixation
+% maps that are a bit wider along the horizontal and vertical axes.
+% 
 
 % History
 %   02/06/18  npc  Wrote it.
@@ -98,6 +103,7 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
             contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on; 
             plot(fixationMapSupportX, xyRange(1)+fixationMapXSlice*xyRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
             plot(xyRange(1)+fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
+            title('Fixation Map');
         end
         hold on
         plot(xyRange, xyRange*0, 'k-');
