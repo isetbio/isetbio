@@ -94,14 +94,13 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
             [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = ...
                 fixEMobj.computeFixationMap(fixEMobj.emPosArcMin, xyRange, binWidthArcMin);
             
-            imagesc(fixationMapSupportX,fixationMapSupportY,fixationMap);
-            hold on;
-            plot(fixationMapSupportX, xyRange(1)+fixationMapXSlice*xyRange(2)*0.9, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
-            plot(xyRange(2)-fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [1 1 1], 'LineWidth', 1.5);
+            contourf(fixationMapSupportX, fixationMapSupportY, fixationMap, 0:0.05:1, 'LineColor', [.5 0.5 0.5]); hold on; 
+            plot(fixationMapSupportX, xyRange(1)+fixationMapXSlice*xyRange(2)*0.9, '-', 'Color', [1 0 0], 'LineWidth', 1.5);
+            plot(xyRange(2)-fixationMapYSlice*xyRange(2)*0.9, fixationMapSupportY, '-', 'Color', [0 0 1], 'LineWidth', 1.5);
         end
         hold on
-        plot(xyRange, xyRange*0, 'g-');
-        plot(xyRange*0, xyRange, 'g-');
+        plot(xyRange, xyRange*0, 'k-');
+        plot(xyRange*0, xyRange, 'k-');
         set(gca, 'XLim', xyRange, 'YLim', xyRange, 'XTick', tickLabel, 'YTick', tickLabel, ...
                 'XTickLabel', sprintf('%2.1f\n', tickLabel), 'YTickLabel', {});
         if (iTrial<visualizedSingleTrials+2)
@@ -111,5 +110,5 @@ function plotTrials(fixEMobj, rowNo, visualizedSingleTrials)
         end
         grid on; box on; axis 'square'; axis 'xy'
     end
-    colormap(jet(1024))
+    colormap(brewermap(1024, 'Greys'));
 end

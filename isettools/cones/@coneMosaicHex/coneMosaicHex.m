@@ -90,6 +90,7 @@ classdef coneMosaicHex < coneMosaic
                 'customInnerSegmentDiameter', ...
                 'rotationDegs', ...
                 'saveLatticeAdjustmentProgression',...
+                'maxGridAdjustmentIterations', ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF' ...
@@ -124,7 +125,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('rotationDegs', 0, @isnumeric);
             p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
             p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
-            p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric)
+            p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.addParameter('saveLatticeAdjustmentProgression', false, @islogical);
             p.addParameter('marginF', 1.0, @(x)((isempty(x))||(isnumeric(x)&&(x>0.0))));
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
@@ -140,7 +141,8 @@ classdef coneMosaicHex < coneMosaic
             obj.saveLatticeAdjustmentProgression = p.Results.saveLatticeAdjustmentProgression;
             obj.latticeAdjustmentDelaunayToleranceF = p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = p.Results.latticeAdjustmentPositionalToleranceF;
-
+            obj.maxGridAdjustmentIterations = p.Results.maxGridAdjustmentIterations;
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1)*[1 1]);
