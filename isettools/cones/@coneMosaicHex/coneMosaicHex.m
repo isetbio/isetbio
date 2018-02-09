@@ -224,6 +224,14 @@ classdef coneMosaicHex < coneMosaic
         % Render (in the passed axesHandle) an activation map for the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
         
+        % Method to demosaic a full response pattern for a single cone type
+        % Valid coneTypes are : {'L-cones', 'M-cones', 'S-cones', 'All-cones'}
+        % Also returns the non-demosaiced response for the specified cone
+        % type and the x/y coords of all cones of that cone type
+        [demosaicedResponseMap, demosaicedMapSpatialSupportDegs, ...
+            coneResponses, coneXlocsDegs, coneYlocsDegs] = ...
+        demosaicConeTypeActivationFromFullActivation(obj, coneType, theFullPatternResponse, demosaicingSampleSpacingMicrons);
+
         % Visualize iterative adjustment of the cone lattice 
         hFig = plotMosaicProgression(obj, varargin);
         
