@@ -170,6 +170,9 @@ methods (Static)
 
     % Method
     [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = performD2DisplacementAnalysis(emPos, timeAxisSeconds);
+    
+    % Method to generate a video of fixationalEMs together with a cone mosaic
+    generateEMandMosaicComboVideo(fixationalEMObj, coneMosaicHexObj, varargin);
 end % Static methods
 
 methods (Access = private)
