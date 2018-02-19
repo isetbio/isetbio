@@ -192,6 +192,9 @@ switch ieParamFormat(plotType)
         % Window with snapshots and possibly eye movements.
         colsNum = round(1.3*sqrt(obj.length));
         rowsNum = round(obj.length/colsNum);
+        if (rowsNum*colsNum < obj.length)
+            colsNum = colsNum + 1;
+        end
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
             'rowsNum', rowsNum, ...
             'colsNum', colsNum+1, ...

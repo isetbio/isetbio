@@ -390,8 +390,13 @@ if (~isempty(overlaidEMpathMicrons))
     if (~labelConeTypes)
         color = 'r';
     end
-    plot(overlaidEMpathMicrons(:,1)*1e-6, overlaidEMpathMicrons(:,2)*1e-6, 'k.-', 'Color', color, 'LineWidth', 1.5);
-end
+    [m,n] = size(overlaidEMpathMicrons);
+    if (m == 2) && (n==1) 
+        plot(overlaidEMpathMicrons(1,:)*1e-6, overlaidEMpathMicrons(2, :)*1e-6, 'k.-', 'Color', color, 'LineWidth', 1.5);
+    else
+        plot(overlaidEMpathMicrons(:,1)*1e-6, overlaidEMpathMicrons(:,2)*1e-6, 'k.-', 'Color', color, 'LineWidth', 1.5);
+    end
+end 
 
 %% Arrange axis and fonts
 
