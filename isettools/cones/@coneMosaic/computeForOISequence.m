@@ -75,6 +75,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.addParameter('seed',1, @isnumeric);
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('trialBlockSize', [], @isnumeric);
@@ -151,7 +152,13 @@ rounded.eyeMovementTimeAxis = rounded.oiTimeAxis(1) + (0:1:(nEyeMovements-1)) * 
 
 %% Compute OIrefresh
 if (numel(rounded.oiTimeAxis) == 1)
-    rounded.oiRefreshInterval = rounded.defaultIntegrationTime;
+    if (~isempty(p.Results.stimulusSamplingInterval))
+        rounded.oiRefreshInterval = round(p.Results.stimulusSamplingInterval/rounded.factor);
+    else
+        % No information about what the stimulus refresh interval is so
+        % arbitrarily set it to the integrationTime
+        rounded.oiRefreshInterval = rounded.defaultIntegrationTime;
+    end
 else
     rounded.oiRefreshInterval = rounded.oiTimeAxis(2)-rounded.oiTimeAxis(1);
 end
@@ -195,7 +202,6 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
         subplot('Position', [0.01 0.01 0.98 0.98]);
         hold on
     end
-    
     
     % Loop over the optical images
     for oiIndex = 1:oiSequence.length
@@ -309,6 +315,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                 % Compute absorptions for all remaining the eye movements
                 idx = indices(2:end);
                 emSubPath = reshape(emPaths(trialIndicesForBlock, idx,:), [numel(trialIndicesForBlock)*numel(idx) 2]);
+  
                 currentSeed = currentSeed + 1;
                 absorptionsAllTrials = single(obj.compute(...
                     currentOI, ...
@@ -554,7 +561,6 @@ else
         photocurrents(ii,:,:,:) = single(reshape(obj.current, [1 obj.rows obj.cols numel(rounded.eyeMovementTimeAxis)]));
     end
 end
-
 
 % Reload the absorptions from the last instance (again, since we destroyed
 % obj.absorptions in the current computation)
