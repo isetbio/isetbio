@@ -8,14 +8,18 @@ function t_conesMosaicHex6
     rng('default'); rng(219347);
 
     customLambda = 1.7; 
-    resamplingFactor = 9;
+    resamplingFactor = 7;
     spatiallyVaryingConeDensity = false;
     
-    for rotationDegs = 0:0.25:30
-        theHexMosaic = coneMosaicHex(...
-            resamplingFactor, spatiallyVaryingConeDensity, customLambda, ...
+    for rotationDegs = 0:2:30
+        theHexMosaic = coneMosaicHex(resamplingFactor, ...
+            'eccBasedConeDensity', spatiallyVaryingConeDensity, ...
+            'customLambda', customLambda, ...
             'rotationDegs', rotationDegs, ...
-            'size', [16 16]);
+            'size', [20 20] ...
+            );
+        rng(1);
+        theHexMosaic.reassignConeIdentities();
         theHexMosaic.visualizeGrid('visualizedConeAperture', 'lightCollectingArea');
     end
     

@@ -1,7 +1,23 @@
-function maxEyeMovementsNum = maxEyeMovementsNumGivenIntegrationTime(obj,integrationTime)
+function maxEyeMovementsNum = maxEyeMovementsNumGivenIntegrationTime(obj,integrationTime, varargin)
+% Method to compute the maximum number of eye movements given an oiSequence
+% and a mosaic's intergration time. The optional parameter stimulusSamplingInterval'
+% is only used when the oiSequence has a length of 1, in which case we do
+% not have information regrading the duration of that single frame.
+
+    %% Parse arguments
+    p = inputParser;
+    p.addParameter('stimulusSamplingInterval',[], @isnumeric);
+    p.parse(varargin{:});
+
     % Generate eye movement sequence for all oi's
     if (numel(obj.timeAxis) == 1)
-        stimulusSamplingInterval  = integrationTime;
+        if (~isempty(p.Results.stimulusSamplingInterval))
+            stimulusSamplingInterval = p.Results.stimulusSamplingInterval;
+        else
+            % No information about what the stimulus sampling interval is,
+            % so arbitrarily set it to the integrationTime
+            stimulusSamplingInterval = integrationTime;
+        end
     else
         stimulusSamplingInterval = obj.timeAxis(2)-obj.timeAxis(1);
     end
