@@ -44,7 +44,7 @@ classdef osLinear < outerSegment
 
 % Public, read-only properties.
 properties (GetAccess = public, SetAccess = public)
-    % linear filters for LMS cones in columns
+    %lmsConeFilter  linear filters for LMS cones in columns
     lmsConeFilter;
 end
 
@@ -52,7 +52,9 @@ properties (Access = private)
     % The properties in this part is used to store the state of the
     % outersegment so that we can do incremental computation
     % Will likely be deprecated.
-    absHistory = [];  % recent absorption history
+
+    %absHistory  recent absorption history
+    absHistory = [];
 end
 
 % Defined in separate files within the @osLinear directory
@@ -98,49 +100,11 @@ methods
 
     % set function, see osLinearSet for details
     function obj = set(obj, varargin)
-        % Call the parent set function
-        %
-        % Syntax:
-        %   obj = set(obj, [varargin])
-        %
-        % Description:
-        %    Call the parent's set function
-        %
-        % Inputs:
-        %    obj      - The outersegment object
-        %    varargin - (Optional) The additional parameters provided,
-        %               including the parameter and value to set.
-        %
-        % Outputs:
-        %    obj      - The modified outersegment object
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
         osSet(obj, varargin{:});
     end
 
     % get function, see osLinearGet for details
     function val = get(obj, varargin)
-        % Call the parent get function
-        %
-        % Syntax:
-        %   val = get(obj, [varargin])
-        %
-        % Description:
-        %    Call the parent's get function
-        %
-        % Inputs:
-        %    obj      - The outersegment object
-        %    varargin - (Optional) The additional parameters provided,
-        %               including the parameter to retrieve data on.
-        %
-        % Outputs:
-        %    val      - The value of the requested parameter
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
         val = osGet(obj, varargin{:});
     end
 
@@ -181,28 +145,6 @@ methods
     % compute (BW).
     function [current, interpFilters, meanCur] = compute(...
             obj, cMosaic, varargin)
-        % Call the parent compute function
-        %
-        % Syntax:
-        %   [current, interpFilters, meanCur] = compute(...
-        %       obj, cMosaic, [varargin])
-        %
-        % Description:
-        %    Call the parent's compute function
-        %
-        % Inputs:
-        %    obj           - The outersegment object
-        %    cMosaic       - The cone mosaic
-        %    varargin      - (Optional) The additional parameters provided.
-        %
-        % Outputs:
-        %    current       - The OS object's current
-        %    interpFilters - The interpolation filters
-        %    meanCur       - The mean current
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
         [current, interpFilters, meanCur] = osCompute(...
             obj, cMosaic, varargin{:});
     end
@@ -211,7 +153,6 @@ methods
     plot(obj, pType, varargin);
 
 end
-
 
 methods (Access = private)
 end

@@ -58,34 +58,62 @@ classdef photoPigment < hiddenHandle
 %    02/15/18  jnm  Formatting
 
 properties  % public properties
-    opticalDensity;  % photopigment optical densities for L, M, S
-    peakEfficiency;  % peak absorptance efficiency
+    %OPTICALDENSITY  photopigment optical densities for L, M, S
+    opticalDensity;
 
-    width;           % cone width (including gap) in meters
-    height;          % cone height (including gap) in meters
+    %PEAKEFFICIENCY  peak absorptance efficiency
+    peakEfficiency;
 
-    pdWidth;         % photodetector width in meters
-    pdHeight;        % photodetector height in meters
+    %WIDTH  cone width (including gap) in meters
+    width;
+
+    %HEIGHT  cone height (including gap) in meters
+    height;
+
+    %PDWIDTH  photodetector width in meters
+    pdWidth;
+
+    %PDHEIGHT  photodetector height in meters
+    pdHeight;
 end
 
 properties (SetObservable, AbortSet)
-    wave;            % wavelength samples
+    %WAVE  wavelength samples
+    wave;
 end
 
 properties (Dependent)
-    absorbance;         % spectral absorbance of the cones
-    absorptance;        % cone absorptance without ocular media
-    quantaFundamentals; % normalized cone absorptance
-    energyFundamentals; % normalized cone absorption in energy units
-    area;               % width * height
-    pdArea;             % pdWidth * pdHeight
-    gapWidth;           % width - pdWidth
-    gapHeight;          % height - pdHeight
+    %ABSORBANCE  spectral absorbance of the cones
+    absorbance;
+
+    %ABSORPTANCE  cone absorptance without ocular media
+    absorptance;
+
+    %QUANTAFUNDAMENTALS  normalized cone absorptance
+    quantaFundamentals;
+
+    %ENERGYFUNDAMENTALS  normalized cone absorption in energy units
+    energyFundamentals;
+
+    %AREA  The area of the object. Calculated by width * height
+    area;
+
+    %PDAREA  The pdArea of the object. Calculated by pdWidth * pdHeight
+    pdArea;
+
+    %GAPWIDTH  the width of the gap. Calculated by width - pdWidth
+    gapWidth;
+
+    %GAPHEIGHT  The height of the gap. Calculated by height - pdHeight
+    gapHeight;
 end
 
 properties(Access = private)  % private properties
-    wave_;        % internal wavelength samples
-    absorbance_;  % absorbance data sampled at wave_
+    %WAVE_  The internal wavelength samples
+    wave_;
+
+    %ABSORBANCE_  The absorbance data sampled at wave_
+    absorbance_;
 end
 
 methods  % public methods

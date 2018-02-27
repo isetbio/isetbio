@@ -34,6 +34,7 @@ classdef osIdentity < outerSegment
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
+        %photonRate  The photon rate
         photonRate
     end
     
@@ -67,49 +68,11 @@ classdef osIdentity < outerSegment
         
         % set function, see osIdentitySet for details
         function obj = set(obj, varargin)
-            % Call the parent set function
-            %
-            % Syntax:
-            %   obj = set(obj, [varargin])
-            %
-            % Description:
-            %    Call the parent's set function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    varargin - (Optional) The additional parameters provided,
-            %               including the parameter and value to set.
-            %
-            % Outputs:
-            %    obj      - The modified outersegment object
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
             osSet(obj, varargin{:});
         end
         
         % get function, see osIdentityGet for details
         function val = get(obj, varargin)
-            % Call the parent get function
-            %
-            % Syntax:
-            %   val = set(obj, [varargin])
-            %
-            % Description:
-            %    Call the parent's get function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    varargin - (Optional) The additional parameters provided,
-            %               including the parameter to retrieve.
-            %
-            % Outputs:
-            %    val      - The value of the requested parameter.
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
             val = osGet(obj, varargin{:});
         end
       
@@ -118,52 +81,10 @@ classdef osIdentity < outerSegment
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function obj = compute(obj, sceneRGB)
-            % Call the parent comptue function
-            %
-            % Syntax:
-            %   obj = compute(obj, sceneRGB)
-            %
-            % Description:
-            %    Call the parent's compute function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    sceneRGB - A RGB scene structure
-            %
-            % Outputs:
-            %    obj      - The modified outersegment object
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
-            % See Also:
-            %    osCompute for details
-            %
             obj = osCompute(obj, sceneRGB); 
         end
         
         function plot(obj, sensor)
-            % Call the parent plot function
-            %
-            % Syntax:
-            %   obj = compute(obj, sensor)
-            %
-            % Description:
-            %    Call the parent's plot function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    sensor   - The affiliated sensor structure
-            %
-            % Outputs:
-            %    None.
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
-            % See Also:
-            %    osPlot for details
-            %
             osPlot(obj, sensor);
         end
     end    

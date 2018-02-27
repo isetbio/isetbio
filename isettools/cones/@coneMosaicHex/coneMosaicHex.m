@@ -76,10 +76,8 @@ classdef coneMosaicHex < coneMosaic
         ['varyingDensity', true, 'customLambda', 3, ...
         'customInnerSegmentDiameter', 2.5, 'cone', cone, 'os', os]);
 %}
-  
+    %% Private properties:
     properties (SetAccess=private)
-        %% Private properties:
-
         % lambdaMin  min cone separation in the mosaic
         lambdaMin
 
@@ -136,18 +134,18 @@ classdef coneMosaicHex < coneMosaic
         %   Flag for whether saving iterative lattice adjustment steps.
         saveLatticeAdjustmentProgression
 
-        % latticeAdjustmentSteps  3D array w/ coneLocsHexGrid at ea. step.
+        %latticeAdjustmentSteps  3D array w/ coneLocsHexGrid at ea. step.
         %   Each step is a lattice adjustment with coneLocsHexGrid
         latticeAdjustmentSteps
 
-        % initialLattice  coneLocsHexGrid at iteration 0 (perfect hex grid)
+        %initialLattice  coneLocsHexGrid at iteration 0 (perfect hex grid)
         initialLattice
 
-        % latticeAdjustmentPositionalToleranceF  Movement tolerance
+        %latticeAdjustmentPositionalToleranceF  Movement tolerance
         %	Tolerance for whether to decide that there is no move movement.
         latticeAdjustmentPositionalToleranceF
 
-        % latticeAdjustmentDelaunayToleranceF  Delaunay trigger tolerance
+        %latticeAdjustmentDelaunayToleranceF  Delaunay trigger tolerance
         %   Tolerance for Delaunay triangularization trigger.
        latticeAdjustmentDelaunayToleranceF
     end

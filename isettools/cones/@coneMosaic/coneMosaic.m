@@ -94,110 +94,142 @@ classdef coneMosaic < hiddenHandle
     %    02/26/18  jnm        Formatting
 
     properties (GetAccess=public, SetAccess=public)
-        name;  % The name of the object
-        species;  % {'human', 'macaque', 'mouse'}
-        pigment;  % Cone photopigment object for the mosaic
-        macular;  % Macular pigment object for mosaic
-        os;  % Outer segment object for mosaic
+        %name  The name of the object
+        name;
 
-        absorptions;  % The spatial array of cone absorptions 
+        % Species  {'human', 'macaque', 'mouse'}
+        species;
+
+        %pigment  Cone photopigment object for the mosaic
+        pigment;
+
+        %macular  Macular pigment object for mosaic
+        macular;
+
+        %os  Outer segment object for mosaic
+        os;
+
+        %absorptions  The spatial array of cone absorptions 
         %   Absorptions must be kept consistent with the mosaic pattern.
+        absorptions;
 
-        coneDarkNoiseRate;  % Mean dark isomerizations rate per cone class.
+        %coneDarkNoiseRate  Mean dark isomerizations rate per cone class.
         %   Dark is thermal
         %   Expressed as a three-dimensional row vector, 
         %   isomerizations/sec.
         %   Default values are [0 0 0] for backwards compatibility.
         %   Reasonable values are about [300 300 300].
+        coneDarkNoiseRate;
 
-        current;  % The (x, y, t) of photocurrent
+        %current  The (x, y, t) of photocurrent
         %    There is a comment that this is actually stored in the OS.
         %    Should check and explain this more.
+        current;
 
-        center;  % Center position of patch (x, y - meters)
+        %center  Center position of patch (x, y - meters)
         %   This tells us where the mosaic is relative to the optical image
+        center;
 
-        whichEye;  % String ('left' or 'right') to indicate which eye
+        %whichEye  String ('left' or 'right') to indicate which eye
+        whichEye;
 
-        pattern;  % Pattern of KLMS cones in the mosaic
+        %pattern  Pattern of KLMS cones in the mosaic
         %   K = 1, L = 2, M = 3, S = 4
         %   (K means blank, no cone at that position)
         %   This defines the row and column dimensions of the grid on
         %   which the mosic is defined. 
+        pattern;
 
-        patternSampleSize;  % Separation between KLMS pattern samples
+        %patternSampleSize  Separation between KLMS pattern samples
         %   For rectangular grid mosaics, this is set to the width/heigh
         %   field of the PIGMENT object, i.e., the actual cone separation.
         %
         %   For hexagonal grid mosaics (instances of the coneMosaicHex
         %   class), this is the separation between the rect grid nodes on
         %   which the cone positions are sampled.
+        patternSampleSize;
 
-        integrationTime;% Cone temporal integration time (secs).
+        %integrationTime  Cone temporal integration time (secs).
         %   Keep this under 25 ms (0.025) if you are computing
         %   photocurrent and want reasonable numerical accuracy.
+        integrationTime;
 
-        micronsPerDegree;  % How many microns/degree. Default 300.
+        %micronsPerDegree  How many microns/degree. Default 300.
         %   Defaults to 300 which is appropriate for the central 
         %   region of the human eye.
+        micronsPerDegree;
 
-        emPositions;  % Eye movement positions. Spatial and numerical.
+        %emPositions  Eye movement positions. Spatial and numerical.
         %   Spatial units are those of rectangular grid on which cones are
         %   specified. The number of positions controls number of frames to
         %   be computed
+        emPositions;
 
-        noiseFlag;  % Add noise to isomerizations?
+        %noiseFlag  Add noise to isomerizations?
+        noiseFlag;
 
-        apertureBlur;  % Boolean. Blur by cone ap. when computing iso's?
+        %apertureBlur  Boolean. Blur by cone ap. when computing iso's?
         %   The boolean indicating whether or not to blur by cone aperture
         %   when computing the isomerizations?
+        apertureBlur;
 
-        hdl  % Handle of the CONEMOSAIC window
+        %hdl  Handle of the CONEMOSAIC window
+        hdl
     end
 
-    properties (Dependent)        
-        wave;  % Wavelength samples
+    properties (Dependent)
+        %wave  Wavelength samples
         %   Depends on wavelength sampling in the PHOTOPIGMENT object
         %   specified in the PIGMENT property.
+        wave;
 
-        rows;  % Number of rows in the cone mosaic
+        %rows  Number of rows in the cone mosaic
         %   Depends on size of PATTERN property.
+        rows;
 
-        cols;  % Number of cols in the cone mosaic
+        %cols  Number of cols in the cone mosaic
         %   Depends on size of PATTERN property.
+        cols;
 
-        mosaicSize;  % Vector containing [rows cols]
+        %mosaicSize  Vector containing [rows cols]
         %   Depends on size of PATTERN property via ROWS and COLS.
+        mosaicSize;
 
-        patternSupport;  % Matrix giving x, y positions of underlying grid.
+        %patternSupport  Matrix giving x, y positions of underlying grid.
         %   In form [x(:) y(:)] in units of meters.  These are positions
         %   on the retina, relative to the center of the specified mosaic.
         %   It does not take the CENTER property into account.  It is
         %   based on the PATTERN and PATTERNSAMPLESIZE properties.
+        patternSupport;
 
-        width;  % Width of cone mosaic in meters
+        %width  Width of cone mosaic in meters
         %   Depends on property patternSampleSize.
+        width;
 
-        height;  % Height of cone mosaic in meters
+        %height  Height of cone mosaic in meters
         %   Depends on property patternSampleSize.
+        height;
 
-        fov;  % Vector containing nominal [hfov vfov] FOV in degrees.
+        %fov  Vector containing nominal [hfov vfov] FOV in degrees.
         %   The field of view is computed assuming infinite scene distance
         %   and 17mm optical focal length.
         %
         %   Depends on patternSampleSize via height and width properties.
+        fov;
 
-        tSamples  % Number of temporal samples
+        %tSamples  Number of temporal samples
+        tSamples
 
-        coneLocs;  % Matrix giving x, y positions of the cone locs on grid
+        %coneLocs  Matrix giving x, y positions of the cone locs on grid
         %   In form [x(:) y(:)] in units of meters.  These are positions
         %   on the retina, relative to the center of the specified mosaic, 
         %   and these are offset by the CENTER property. It is based on
         %   the PATTERN and PIGMENT properties, as it uses the height and
         %   width specfied in the pigment rather than the mosaic to
         %   compute positions.
+        coneLocs;
 
-        qe;  % Cone quantal efficiency (absorptance)
+        %qe  Cone quantal efficiency (absorptance)
         %   The cone mosaic quantum efficiency is the product of the cone
         %   photopigment absorptance times the macular pigment
         %   transmittance times the cone photopigment peak efficientcy.
@@ -208,12 +240,14 @@ classdef coneMosaic < hiddenHandle
         %   object in the oi representation.
         %
         %   The QE depends on the PIGMENT and MACULAR properties.
+        qe;
 
-        spatialDensity;  % Spatial density of the KLMS cones
+        %spatialDensity Spatial density of the KLMS cones
+        spatialDensity;
     end
 
     properties (Access=private)
-        spatialDensity_;  % Ratio of KLMS cones used to generate pattern
+        %spatialDensity_ Ratio of KLMS cones used to generate pattern
         %
         %   There are two properties about this ratio: sptiallDensity_ and
         %   spatialDensity. spatialDensity_ is a private variable of the
@@ -228,10 +262,12 @@ classdef coneMosaic < hiddenHandle
         %   However, the current Matlab does not allow update other
         %   properties (e.g. mosaic pattern) in the set function for
         %   non-dependent properties.
+        spatialDensity_;
     end
     
     properties (Constant)
-        % Cell array of strings containing valid values for noise flags.
+        %validNoiseFlags  Cell string array containing valid values for the
+        %   noise flags. These are 'random', 'frozen', and 'none'.
         validNoiseFlags = {'none', 'frozen', 'random'};
     end
 

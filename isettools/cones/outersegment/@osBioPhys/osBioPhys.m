@@ -52,20 +52,20 @@ classdef osBioPhys < outerSegment
 %    02/14/18  jnm        Formatting
 
     properties(Access = private)
-        %state  Biophysics parameter state
+        %STATE  Biophysics parameter state
         state; 
 
-        %fovealPeripheralCutoffDegs  Eccentricity in degrees beyond which
-        % we switch from foveal to peripheral parameters.
+        %FOVEALPERIPHERALCUTOFFDEGS  Eccentricity in degrees beyond which
+        %   we switch from foveal to peripheral parameters.
         %
-        % The 10 degrees value comes from Fred Rieke. Soon we will have
-        % intermediate eccentricity dynamics (3-5 degrees) so this will
-        % change.
+        %   The 10 degrees value comes from Fred Rieke. Soon we will have
+        %   intermediate eccentricity dynamics (3-5 degrees) so this will
+        %   change.
         fovealPeripheralCutoffDegs = 10;
     end
 
     properties(SetAccess = protected, GetAccess = public)
-        %model  Structure with biophysical model parameters
+        %MODEL  Structure with biophysical model parameters
         model;
     end
 
@@ -165,52 +165,10 @@ classdef osBioPhys < outerSegment
         end
 
         function obj = set(obj, varargin)
-            % Call the parent set function
-            %
-            % Syntax:
-            %   obj = set(obj, [varargin])
-            %
-            % Description:
-            %    Call the parent's set function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    varargin - (Optional) The additional parameters provided,
-            %               including the parameter and value to set.
-            %
-            % Outputs:
-            %    obj      - The modified outersegment object
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
-            % See Also:
-            %    set function, see osBioPhysSet for details
             osSet(obj, varargin{:});
         end
 
         function val = get(obj, varargin)
-            % Call the parent get function
-            %
-            % Syntax:
-            %   val = set(obj, [varargin])
-            %
-            % Description:
-            %    Call the parent's get function
-            %
-            % Inputs:
-            %    obj      - The outersegment object
-            %    varargin - (Optional) The additional parameters provided,
-            %               including the parameter to retrieve.
-            %
-            % Outputs:
-            %    val      - The value of the requested parameter.
-            %
-            % Optional key/value pairs:
-            %    None.
-            %
-            % See Also:
-            %    get function, see osBioPhysGet for details
             val = osGet(obj, varargin{:});
         end
 
@@ -221,13 +179,13 @@ classdef osBioPhys < outerSegment
     end
 
     methods (Access=public)
+        % see osCompute for details
         function obj = compute(obj, varargin)
-            % see osCompute for details
             obj = osCompute(obj, varargin{:});
         end
 
+        % see osPlot for details
         function uData = plot(obj, sensor, varargin)
-            % see osPlot for details
             uData = osPlot(obj, sensor, varargin{:});
         end
 

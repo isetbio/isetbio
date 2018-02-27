@@ -53,20 +53,29 @@ end
 % Protected properties; Methods of the parent class and all of its
 % subclasses can set these.
 properties
-    noiseFlag;            % determines whether noise is added
-    patchSize;            % spacing between cones (width) in um
-    eccentricityDegs;     % eccentricity in degrees
+    %noiseFlag  determines whether noise is added  
+    noiseFlag;
+
+    %patchSize  spacing between cones (width) in um
+    patchSize;
+
+    %eccentricityDegs  eccentricity in degrees
+    eccentricityDegs;
 end
 
 properties (SetAccess = protected)
-    % coneCurrentSignal;    % output signal in pA
+    %coneCurrentSignal  output signal in pA
+    % coneCurrentSignal;
 end
 
 properties (SetObservable, AbortSet)
-    timeStep;             % sampling interval in sec
+    %timeStep  sampling interval in sec
+    timeStep;
 end
 
 properties (Constant)
+    %validNoiseFlags  The possible valid noise flags.
+    %   Options are 'random', 'frozen', and 'none'
     validNoiseFlags = {'random', 'none', 'frozen'};
 end
 
@@ -130,50 +139,11 @@ methods
 
     % see osSet in @osLinear and @osBioPhys for details
     function obj = set(obj, varargin)
-        % Assign values to an outer segment object
-        %
-        % Syntax:
-        %   obj = set(obj, varargin)
-        %
-        % Description:
-        %    Assign the values contained in varargin to the outer segment
-        %    object obj.
-        %
-        % Inputs:
-        %    obj       - The outer segment object
-        %    varargin  - (See optional key/value pairs section)
-        %
-        % Outputs:
-        %    obj       - The modified outer segment object
-        %
-        % Optional key/value pairs:
-        %    param/val - The parameter and it's to-be-assigned value to set
-        %                in the outer segment
-        %
         osSet(obj, varargin{:});
     end
 
     % see osGet in @osLinear and @osBioPhys for details
     function val = get(obj, varargin)
-        % Retrieve values from an outer segment object
-        %
-        % Syntax:
-        %   obj = get(obj, varargin)
-        %
-        % Description:
-        %    Retrieve the value contained in varargin from the outer
-        %    segment object obj.
-        %
-        % Inputs:
-        %    obj      - The outer segment object
-        %    varargin - The parameter to retrieve the value of.
-        %
-        % Outputs:
-        %    val      - The parameter from varargin's value
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
         val = osGet(obj, varargin{:});
     end
 
@@ -185,6 +155,7 @@ end
 methods (Abstract, Access=public)
     % see osLinearCompute, osBioPhysCompute
     compute(obj, pRate, coneType, varargin);
+
     % see osLinearPlot, osBioPhysPlot
     plot(obj, plotType);
 

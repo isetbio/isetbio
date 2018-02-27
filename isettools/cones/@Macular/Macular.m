@@ -50,24 +50,36 @@ classdef Macular < hiddenHandle
     macular = Macular();
 %}
 
-properties           % public properties
-    density;         % macular pigment density
+properties  % public properties
+    %density  macular pigment density
+    density;
 end
 
 properties (SetObservable, AbortSet)
-    wave;            % wavelength samples in nm
+    %wave  wavelength samples in nm
+    wave;
 end
 
 properties (Access=private)
-    wave_;           % internal wavelength samples
-    unitDensity_;    % unit density absorbance sampled with wave_
+    %wave_  The internal wavelength samples
+    wave_;
+
+    %unitDensity_  unit density absorbance sampled with wave_
+    unitDensity_;
 end
 
 properties (Dependent)
-    unitDensity;     % spectral absorbance with unit pigment density
-    spectralDensity; % unitDensity scaled by obj.density
-    transmittance;   % proportion of quanta transmitted
-    absorptance;     % proportion of quanta absorbed
+    %unitDensity  spectral absorbance with unit pigment density
+    unitDensity;
+
+    %spectralDesnity  unitDensity scaled by obj.density
+    spectralDensity;
+
+    %transmittance  proportion of quanta transmitted
+    transmittance;
+
+    %absorptance  proportion of quanta absorbed
+    absorptance;
 end
 
 methods  % public methods
@@ -202,6 +214,23 @@ methods  % public methods
     % set methods for dependent variables
     function set.unitDensity(obj, val)
         % interpolate for wavelength samples
+        %
+        % Syntax:
+        %   set.unitDensity(obj, val)
+        %
+        % Description:
+        %    Interpolate for the wavelength samples
+        %
+        % Inputs:
+        %    obj - The Macular object
+        %    val - The value to assign to unit density
+        %
+        % Outputs:
+        %    None.
+        %
+        % Optional key/value pairs:
+        %    None.
+        %
         obj.unitDensity_ = interp1(obj.wave, val,obj.wave_, 'pchip');
         obj.unitDensity_ = max(obj.unitDensity_, 0);
     end
