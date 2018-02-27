@@ -20,12 +20,12 @@ function oi = oiPad(oi,padSize,sDist,direction)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-if notDefined('sDist'), 
+if notDefined('sDist') 
     scene = vcGetObject('scene');
     if isempty(scene)
         warning('oiPad: No scene, assuming 1 m sDist');
         sDist = 1;
-    else  sDist = sceneGet(scene,'distance'); 
+    else,  sDist = sceneGet(scene,'distance'); 
     end
 end
 if notDefined('direction'), direction = 'both'; end
@@ -75,7 +75,7 @@ clear newPhotons;
 % width to the number of columns.  The new number of columns is the sum of
 % the current number and the horizontal pad size, which is in pad(2)
 if strcmp(direction, 'both'), padCols = padSize(2)*2;
-else padCols = padSize(2); end
+else, padCols = padSize(2); end
 newWidth = oiGet(oi,'width')* (1 + padCols/oiGet(oi, 'cols'));
 
 % Find the distance from the image to the lens
