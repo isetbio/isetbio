@@ -1,14 +1,26 @@
 function clearData(obj, varargin)
-%CLEARDATA  Clear computed data
+% Clear computed data
+%
+% Syntax:
 %   CLEARDATA(obj, varargin)
 %
-%   Clear out data from object that is computed.  Useful to prevent use of
-%   stale data.
+% Description:
+%    Clear out data from object that is computed.  Useful to prevent use of
+%    stale data.
 %
-%   Inputs:
-%   obj - a coneMosaic object
+% Inputs:
+%    obj - a coneMosaic object
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
-% HJ ISETBIO Team 2016
+% History:
+%    xx/xx/16  HJ   ISETBIO Team 2016
+%    02/22/18  jnm  Formatting
 
     obj.absorptions = [];
     obj.current = [];

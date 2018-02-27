@@ -1,52 +1,76 @@
 function obj = osCreate(type)
 % Create an outer segment object
 %
-%   os = osCreate([osType = 'linear']);
+% Syntax:
+%	os = osCreate([osType]);
 %
-% There are three osTypes (sublcasses of outer segment objects).  These are
-%    @osLinear   -  uses linear impulse response to calculate cone current.
-%    @osBioPhys  - uses biophysical model by FMR to calculate cone current.
-%    @osIdentity - stores raw RGB data, used for stimulus-referred RGC
-%    models.
-% See sublcass definitions, e.g. @osLinear/osLinear.m, for more details.
-% 
-% Inputs:  Subclass type ('linear','biophys','identity')
+% Description:
+%    There are three osTypes (sublcasses of outer segment objects). These
+%    subclasses are:
+%       @osLinear   - Use linear impulse response to calculate cone current
+%       @osBioPhys  - Use FMR's biophysical model to calculate cone current
+%       @osIdentity - Store raw RGB data, for stimulus-referred RGC models
 %
-% obj:    the outersegment object
-%         The obj defaults are set to turn off the noise except for photon
-%         noise.  
+%    See sublcass definitions, e.g. @osLinear/osLinear.m, for more details.
 %
-% See also: @osLinear, @osBioPhys and @osIdentity subclasses for more
-%           details of the specific implementations.
+%    Examples are contained in the code. To access, type 'edit osCreate.m'
+%    into the Command Window.
 %
+% Inputs
+%    type - (Optional) Subclass type ('linear', 'biophys', 'identity').
+%           Default is linear.
+%
+% Outputs:
+%    obj  - The outersegment object. The obj defaults are set to turn off
+%           the noise except for photon noise.
+%
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
+%    @osLinear, @osBioPhys and @osIdentity subclasses for more details of
+%    the specific implementations.
+%
+% Notes:
+%    * [Note: JNM - The empty call wasn't working -- parsing an empty type
+%      throws an error. Rather than removing the 'empty' option, I inserted
+%      a notDefined, which should accomplish the desired default case.]
+
+% History:
+%    xx/xx/15  JRG  ISETBIO Team, Copyright, 2015
+%    02/12/18  jnm  Formatting
+
 % Examples:
-%   os1 = osCreate();
-%   os1 = osCreate('biophys');
-%   os1 = osCreate('identity');
-%
-% JRG ISETBIO Team, Copyright, 2015
+%{
+    os1 = osCreate();
+    os1 = osCreate('biophys');
+    os1 = osCreate('identity');
+%}
+
+if notDefined('type'), type = 'linear'; end
 
 p = inputParser; 
-p.CaseSensitive = false; p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.FunctionName = mfilename;
 
 addRequired( p, 'type');
 
 % Parse and put results into structure p.
-p.parse(type); params = p.Results;
+p.parse(type);
+params = p.Results;
 
 %% Create the proper object
 switch ieParamFormat(params.type)
-    case {'linear','oslinear'}
+    case {'linear', 'oslinear'}
         obj = osLinear();
-    case {'biophys','osbiophys','rieke','osrieke'}
+    case {'biophys', 'osbiophys', 'rieke', 'osrieke'}
         obj = osBioPhys();
-    case {'identity','osidentity'}
+    case {'identity', 'osidentity'}
         obj = osIdentity();
-    case {'displayrgb','osdisplayrgb'}
+    case {'displayrgb', 'osdisplayrgb'}
         obj = osDisplayRGB();
     otherwise
         obj = osLinear();
 end
 
 end
-

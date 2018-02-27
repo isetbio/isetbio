@@ -1,31 +1,44 @@
-function a = coneAbsorptions(obj,varargin)
-%CONEABSORPTIONS  Get isomerizations from one of the cone classes
+function a = coneAbsorptions(obj, varargin)
+% Get isomerizations from one of the cone classes
 %
-%  absorptions = CONEABSORPTIONS(obj,varargin)
+% Sytntax:
+%   absorptions = coneAbsorptions(obj, [varargin])
 %
-% Optional parameter name/value pairs chosen from the following:
-%   'coneType'  - one of 'L', 'M', or 'S' (default 'L')
+% Description:
+%    Get the isomerizations from one of the cone classes.
 %
-% Return
-%   'absorptions' - column vector of absorptions in the integration
-%   time
+% Inputs:
+%    obj          - The cone mosaic object
 %
-% Example: 
-%   absorptions = CONEABSORPTIONS('coneType','L');
+% Outputs:
+%   'absorptions' - column vector of absorptions in the integration time
 %
+% Optional key/value pairs:
+%    'coneType'   - One of 'L', 'M', or 'S' cone types. Default 'L'
+%
+% Notes:
+%    * [Note: XXX - Maybe we should allow multiple cone types and return a
+%      cell array.]
+%    * [Note: JNM - Example is not working. Both coneAbsorptions return the
+%      error 'index exceeds matrix dimensions'.]
 
-% HJ ISETBIO Team 2016
-%
-% Note:  Maybe we should allow multiple cone types and return a cell
-% array.
-%
+% History:
+%    xx/xx/16  HJ   ISETBIO Team 2016
+%    02/22/18  jnm  Formatting
+
+% Examples:
+%{
+    cm = coneMosaic();
+   absorptions = coneAbsorptions(cm)
+   absorptions = coneAbsorptions(cm, 'coneType', 'L')
+%}
 
 %% Which cone types
 
 p = inputParser;
 p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
-p.addParameter('coneType','L',@ischar);
-p.parse(obj,varargin{:});
+p.addParameter('coneType', 'L', @ischar);
+p.parse(obj, varargin{:});
 
 %% Extract the cone type data
 
@@ -37,7 +50,7 @@ switch lower(p.Results.coneType)
     case 's'
         cType = 4;
     otherwise
-        error('Unknown cone type %s\n',p.Results.coneType);
+        error('Unknown cone type %s\n', p.Results.coneType);
 end
 
 % Positions of this type

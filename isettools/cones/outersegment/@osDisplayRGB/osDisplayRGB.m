@@ -1,18 +1,39 @@
 classdef osDisplayRGB < outerSegment 
 % displayRGB subclass of the outersegment object
 %
+% Syntax:
 %   os = osDisplayRGB();
 %
-% Bypasses the temporal filtering of the other outer segment subclasses and
-% passes the cone isomerizations without modification. It is intended to be
-% used for stimulus-referred retinal ganglion cell models initially.
-% 
-% displayRGBOS = osDisplayRGB(); 
-% 
-% See also subclasses:
-%       osLinear.m, osBioPhys.m
+% Description:
+%    Bypasses the temporal filtering of the other outer segment subclasses
+%    and passes the cone isomerizations without modification. It is
+%    intended to be used for stimulus-referred retinal ganglion cell models
+%    initially.
 %
-% JRG/HJ/BW, ISETBIO Team, 2016
+%    Examples are contained in the code. To access, type 'edit
+%    osDisplayRGB.m' into the Command Window.
+% 
+% Inputs:
+%    None required.
+%
+% Outputs:
+%    The created outersegment object
+%
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
+%    subclasses: osLinear.m, osBioPhys.m
+%
+
+% History:
+%    xx/xx/16  JRG/HJ/BW  ISETBIO Team, 2016
+%    02/14/18  jnm        Formatting
+
+% Examples:
+%{
+    displayRGBOS = osDisplayRGB();
+%}
 
     % Public properties.
     properties (SetAccess = public, GetAccess = public)
@@ -35,6 +56,22 @@ classdef osDisplayRGB < outerSegment
         % Constructor
         function obj = osDisplayRGB(varargin)
             % Initialize the parent class
+            %
+            % Syntax:
+            %   obj = osDisplayRGB([varargin])
+            %
+            % Description:
+            %    Initialize the parent function.
+            %
+            % Inputs:
+            %    varargin - (Optional) Any additional parameters provided.
+            %
+            % Outputs:
+            %    obj      - The created outersegment Display RGB object.
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
             obj = obj@outerSegment();
             
             % Initialize ourselves
@@ -43,11 +80,49 @@ classdef osDisplayRGB < outerSegment
         
         % set function, see osIdentitySet for details
         function obj = set(obj, varargin)
+            % Call the parent set function
+            %
+            % Syntax:
+            %   obj = set(obj, [varargin])
+            %
+            % Description:
+            %    Call the parent's set function
+            %
+            % Inputs:
+            %    obj      - The outersegment object
+            %    varargin - (Optional) The additional parameters provided,
+            %               including the parameter and value to set.
+            %
+            % Outputs:
+            %    obj      - The modified outersegment object
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
             osSet(obj, varargin{:});
         end
         
         % get function, see osIdentityGet for details
         function val = get(obj, varargin)
+            % Call the parent get function
+            %
+            % Syntax:
+            %   val = set(obj, [varargin])
+            %
+            % Description:
+            %    Call the parent's get function
+            %
+            % Inputs:
+            %    obj      - The outersegment object
+            %    varargin - (Optional) The additional parameters provided,
+            %               including the parameter to retrieve.
+            %
+            % Outputs:
+            %    val      - The value of the requested parameter.
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
            val = osGet(obj, varargin{:});
         end
       
@@ -56,12 +131,52 @@ classdef osDisplayRGB < outerSegment
     % Methods that must only be implemented (Abstract in parent class).
     methods (Access=public)
         function obj = compute(obj, sceneRGB)
-            % see osCompute for details
+            % Call the parent comptue function
+            %
+            % Syntax:
+            %   obj = compute(obj, sceneRGB)
+            %
+            % Description:
+            %    Call the parent's compute function
+            %
+            % Inputs:
+            %    obj      - The outersegment object
+            %    sceneRGB - A RGB scene structure
+            %
+            % Outputs:
+            %    obj      - The modified outersegment object
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
+            % See Also:
+            %    osCompute for details
+            %
             obj = osCompute(obj, sceneRGB); 
         end
         
         function plot(obj, sensor)
-            % see osPlot for details
+            % Call the parent plot function
+            %
+            % Syntax:
+            %   obj = compute(obj, sensor)
+            %
+            % Description:
+            %    Call the parent's plot function
+            %
+            % Inputs:
+            %    obj      - The outersegment object
+            %    sensor   - The affiliated sensor structure
+            %
+            % Outputs:
+            %    None.
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
+            % See Also:
+            %    osPlot for details
+            %
             osPlot(obj, sensor);
         end
     end    
