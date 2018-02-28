@@ -77,7 +77,7 @@ classdef coneMosaic < hiddenHandle
         %NAME  The name of the object
         name;
         
-        % SPECIES  {'human','macaque','mouse'}
+        %SPECIES  {'human','macaque','mouse'}
         species;
         
         %PIGMENT  Cone photopigment object for mosaic 
@@ -93,7 +93,7 @@ classdef coneMosaic < hiddenHandle
         %    This must be kept consistent with the mosaic pattern.
         absorptions;
         
-        %CONEDARKNOISERATE  Mean rate of dark (thermal) isomerizations for each cone class.
+        %CONEDARKNOISERATE  Mean rate of dark (thermal) isomerizations for each cone class. 
         %    Expressed as a three-dimensional row vector,
         %    isomerizations/sec.
         %    Default values are [0 0 0] for backwards compatibility.
