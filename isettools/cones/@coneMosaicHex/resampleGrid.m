@@ -249,7 +249,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     fprintf('\nHex grid smoothing finished in %2.1f seconds.', toc);
     if (iteration > obj.maxGridAdjustmentIterations) 
         fprintf('\nDid not converge, but exceeded max number of iterations (%d).', obj.maxGridAdjustmentIterations);
-        fprintf('\nMax(movement) in last iteration: %2.6f, Tolerange: %2.6f\n', max(movementAmplitudes), dTolerance);
+        fprintf('\nMax(movement) in last iteration: %2.6f, Tolerange: %2.6f\n', max(movementAmplitudes), obj.latticeAdjustmentDelaunayToleranceF);
     else
         fprintf('Converged after %d iterations.\n', iteration);
     end

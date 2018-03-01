@@ -40,7 +40,7 @@ wavelengths = [450 500 550 600];
 plotView = '1Dslice'; 
 
 %% ------- Effect of changing the spatial samples ------- 
-spatialSamplesList = [1001 201];
+spatialSamplesList = [261*2+1 201];     % 261*2 gives a sampling interval of 1.003 c/deg
 % Constants
 referencePupilSize = 16.5;
 sampleDomain = 'psf';
