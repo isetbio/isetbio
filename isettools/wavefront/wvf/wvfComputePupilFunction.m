@@ -1,4 +1,4 @@
-function wvf = wvfComputePupilFunction(wvf, showBar)
+function [wvf, pupilFunctionData] = wvfComputePupilFunction(wvf, showBar)
 % Compute the pupil fuction given the wvf object.
 %
 % Syntax:
@@ -246,6 +246,35 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         % Important to zero out before this step, because computation of A
         % doesn't know about the pupil size.
         pupilfunc{ii} = A .* pupilfuncphase;
+        
+        pupilFunctionData{ii} = struct(...
+            'wavelength', thisWave, ...
+            'pupilfunc', pupilfunc{ii}, ...
+        	'pupilPos', pupilPos ...
+        );
+        
+%         figure(ii);
+%         ax1 = subplot(1,2,1);
+%         imagesc(pupilPos, pupilPos, wrapToPi(angle(pupilfunc{ii})));
+%         
+%         colormap(ax1, hsv(1024));
+%         axis 'image'; axis 'xy';
+%         set(gca, 'CLim', [-pi pi], 'XLim', 1.5*[-1 1], 'YLim', 1.5*[-1 1], 'FontSize', 14);
+%         phaseTicks = -pi : pi/3: pi;
+%         phaseTickLabels = sprintf('%2.0f deg\n', phaseTicks/pi*180);
+%         colorbar('Ticks', phaseTicks, 'TickLabels', phaseTickLabels);
+%         xlabel('pupil plane (mm)', 'FontWeight', 'bold');
+%         box on; grid on;
+%         
+%         ax2 = subplot(1,2,2);
+%         imagesc(pupilPos, pupilPos, abs(pupilfunc{ii}));
+%         axis 'image'; axis 'xy';
+%         set(gca, 'XLim', 1.5*[-1 1], 'YLim', 1.5*[-1 1], 'FontSize', 14);
+%         xlabel('pupil plane (mm)', 'FontWeight', 'bold');
+%         box on; grid on;
+%         colormap(ax2, gray(1024));
+%         colorbar
+%         drawnow;
         
         % We think the ratio of these two quantities tells us how much
         % light is effectively lost in cone absorbtions because of the
