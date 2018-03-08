@@ -1,4 +1,4 @@
-function [wvf,pupilFunctionData] = wvfComputePSF(wvf, showBar)
+function wvf = wvfComputePSF(wvf, showBar)
 % Compute the psf for the wvf object. 
 %
 % Syntax:
@@ -64,7 +64,7 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
 
     % Make sure pupil function is computed. This function incorporates the
     % chromatic aberration of the human eye.
-    [wvf, pupilFunctionData] = wvfComputePupilFunction(wvf, showBar);
+    wvf = wvfComputePupilFunction(wvf, showBar);
     
     % wave = wvfGet(wvf, 'wave');
     psf = cell(nWave, 1);
