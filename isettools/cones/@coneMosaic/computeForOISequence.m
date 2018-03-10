@@ -46,20 +46,34 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = computeForOISequenc
 %    'random','frozen','none'
 %   When 'frozen', you can send in a 'seed'.  May not be fully implemented yet.
 %
-%   Examples:
+
+%Examples:
+%{
 %   This is an example of how to do this for 1,000 eye movement paths
 %   (trials), each consisting of 100 eye movements.
 %
-%   nTrials = 1000; nEyeMovements = 100;
-%   emPaths = zeros(instancesBlockSize, nEyeMovements, 2);
-%   for iTrial = 1:nTrials
-%     theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
-%   end
-%   [absorptions, photocurrents] = cMosaic.computeForOISequence(...
-%       theOIsequence, ...
-%       'emPaths', theEMPaths, ...
-%       'currentFlag', true);
-%
+ nTrials = 100; nEyeMovements = 50;
+ emPaths = zeros(nTrials, nEyeMovements, 2);
+ % Generate the eye movements for each trial
+ for iTrial = 1:nTrials
+   theEMPaths(iTrial , :,:) = cMosaic.emGenSequence(nEyeMovements);
+ end
+
+% Build a sequence
+ hparams(2) = harmonicP; hparams(2).freq = 6; hparams(2).GaborFlag = .2; 
+ hparams(1) = hparams(2); hparams(1).contrast = 0; 
+ sparams.fov = 1; 
+ stimWeights = ieScale(fspecial('gaussian',[1,50],15),0,1);
+ ois = oisCreate('harmonic','blend',stimWeights, ...
+        'testParameters',hparams,'sceneParameters',sparams);
+
+% See if we get the absorptions back
+ absorptions = cMosaic.computeForOISequence(...
+       ois, ...
+       'emPaths', theEMPaths, ...
+       'currentFlag', true);
+%}
+
 %   The returned absorptions has an extra dimension (the first one) so that
 %   we can calculate for multiple eye movement paths.  The absorptions from a
 %   single eye movement case would be
