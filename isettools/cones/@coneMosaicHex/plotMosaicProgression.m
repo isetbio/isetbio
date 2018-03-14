@@ -106,11 +106,12 @@ function plotMosaic(obj, subplotPosVectors, row, col, displayedXrangeMicrons, di
         edgeColor = 'none';
         faceColor = 0.7*[1 1 1];
         lineStyle = '-';
+        lineWidth = 1.0;
         iTheta = (0:60:300)/180*pi;
         coneApertureRadius = obj.lambdaMin/2;
         coneAperture.x = coneApertureRadius*cos(iTheta)*1e-6;
         coneAperture.y = coneApertureRadius*sin(iTheta)*1e-6;
-        coneMosaicHex.renderPatchArray(ax, coneAperture, squeeze(obj.coneLocsHexGrid(idx,1)), squeeze(obj.coneLocsHexGrid(idx,2)), edgeColor, faceColor, lineStyle);
+        coneMosaicHex.renderPatchArray(ax, coneAperture, squeeze(obj.coneLocsHexGrid(idx,1)), squeeze(obj.coneLocsHexGrid(idx,2)), edgeColor, faceColor, lineStyle, lineWidth);
     end
     hold on
     
