@@ -3,6 +3,7 @@ function reassignConeIdentities(obj, varargin)
     p = inputParser;
     p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
     p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
+    p.addParameter('zeroSconeDensity', false, @islogical);
     p.parse(varargin{:});
     
     
@@ -10,6 +11,15 @@ function reassignConeIdentities(obj, varargin)
     sampledHexMosaicXaxis = obj.patternSupport(1,:,1) + obj.center(1);
     sampledHexMosaicYaxis = obj.patternSupport(:,1,2) + obj.center(2);
     
+    if (p.Results.zeroSconeDensity)
+        sConeIndices = find(obj.pattern == 4);
+        sConeIndicesToBeReassinged = 1:numel(sConeIndices);
+        [addedLconesNum, addedMconesNum] = reassignSconeIdentities(obj, sConeIndices, sConeIndicesToBeReassinged);
+        sConeIndices = find(obj.pattern == 4);
+        fprintf('Scones after adjustment %d: (added Lcones:%d, added Mcones:%d)\n', numel(sConeIndices), addedLconesNum, addedMconesNum);        
+    else
+        fprintf('Will not change the S-cone density.\n');
+    end
     if (~isempty(p.Results.sConeFreeRadiusMicrons))
         sConeIndices = find(obj.pattern == 4);
         fprintf('Scones before making an S-cone free central patch: %d\n', numel(sConeIndices));
