@@ -235,6 +235,8 @@ classdef coneMosaicHex < coneMosaic
         % Visualize iterative adjustment of the cone lattice 
         hFig = plotMosaicProgression(obj, varargin);
         
+        plotMosaicAtIteration(obj, ax, iteration, radius);
+        
         % Print various infos about the cone mosaic
         displayInfo(obj);
         
