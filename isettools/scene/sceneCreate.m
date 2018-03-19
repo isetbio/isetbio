@@ -183,7 +183,7 @@ sceneName = ieParamFormat(sceneName);
 
 switch sceneName
     case {'scenelist', 'list'}
-        doc('sceneList')
+        doc('sceneCreate');  % Thinking about writing a separate doc file
         return;
     case 'default'
         % The user can make a Macbeth with different patch sizes and

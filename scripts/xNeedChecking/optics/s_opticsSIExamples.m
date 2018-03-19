@@ -40,7 +40,7 @@
 %
 
 %%
-s_initISET
+ieInit
 
 %% Create a simple test scene
 
@@ -52,7 +52,7 @@ wave  = sceneGet(scene,'wave');
 scene = sceneSet(scene,'fov',3);
 
 % Replace the optical image into your ISET window
-vcAddAndSelectObject(scene);
+ieAddObject(scene);
 sceneWindow
 
 %% Create Shift-invariant data
@@ -63,13 +63,18 @@ umPerSample = [0.25,0.25];                % Sample spacing
 
 % Point spread is a little square in the middle of the image
 h = zeros(128,128); h(48:79,48:79) = 1; h = h/sum(h(:));
+psf = zeros(size(h,1),size(h,2),length(wave));
 for ii=1:length(wave), psf(:,:,ii) = h; end     % PSF data
 
 % Save the data
-ieSaveSIDataFile(psf,wave,umPerSample,'SI-pillBox');
+fName = ieSaveSIDataFile(psf,wave,umPerSample,'SI-pillBox');
 
 %% Read the custom data and put it into an optics structure.
 oi = oiCreate;
+
+% This fails because we have 128 PSF samples but the number of OTF samples
+% in oiCreate is 60.  I don't know what the right thing to do is, so I am
+% stopping for now.
 optics = siSynthetic('custom',oi,'SI-pillBox',[]);
 
 % Make sure the program knows you want to use shift invariant
@@ -107,7 +112,7 @@ oi     = oiSet(oi,'optics',optics);
 
 oi = oiCompute(scene,oi);
 oi = oiSet(oi,'name','Sharpened');
-vcAddAndSelectObject(oi);
+ieAddObject(oi);
 oiWindow;
 
 %% Example 3: Create a wavelength-varying shift-invariant gaussian PSF
@@ -135,7 +140,7 @@ scene   = vcGetObject('scene');
 oi      = oiCompute(scene,oi);
 
 oi = oiSet(oi,'name','Chromatic Gaussian');
-vcAddAndSelectObject(oi);
+ieAddObject(oi);
 oiWindow;
 
 % We saved these shift invariant optics using:
@@ -161,7 +166,7 @@ oi       = oiSet(oi,'optics lens',lens);
 oi       = oiCompute(scene,oi);
 
 oi = oiSet(oi,'name','Asymmetric Gaussian');
-vcAddAndSelectObject(oi);
+ieAddObject(oi);
 oiWindow;
 
 %%

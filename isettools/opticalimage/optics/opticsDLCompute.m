@@ -1,23 +1,28 @@
 function oi = opticsDLCompute(scene, oi)
-%Diffraction limited optical image computation
+% Diffraction limited optical image computation
 %
 %   oi = opticsDLCompute(scene,oi)
 %
-% The diffraction limited optical image calculation uses only a few
-% parameters (f-number, focal length) to calculate the optical image.  The
-% diffraction limited OTF is calculated on the fly in dlMTF, and applied to
-% the scene image in this routine.
-%
-% See also:  oiCompute, opticsSICompute, opticsRayTrace
+% Description:
+%  The diffraction limited optical image calculation uses only a few
+%  parameters (f-number, focal length) to calculate the optical image.  The
+%  diffraction limited OTF is calculated on the fly in dlMTF, and applied
+%  to the scene image in this routine.
 %
 % Examples:
-%  We don't normally call this function directly.  We use oiCompute which
-%  then makes the appropriate call based on how the optics model is set.
+%  We normally call oiCompute which then makes the appropriate call to this
+%  or to the opticsSICompute, based on how the optics model is set.
 %
 % Copyright ImagEval Consultants, LLC, 2005
+%
+% See also:  oiCompute, opticsSICompute
 
-% TODO:  We should insert a geometric distortion function in this code,
-% rather than using it only in the ray trace methods. 
+% PROGRAMMING TODO
+%   We could insert a geometric distortion function in this code, rather
+%   than using it only in the deprecated ray trace methods.
+%
+
+%%
 if notDefined('scene'), scene = vcGetObject('scene'); end
 if notDefined('oi'),    oi = vcGetObject('oi');       end
 showWaitBar = ieSessionGet('waitbar');

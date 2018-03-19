@@ -76,8 +76,6 @@ switch parm
         optics.type = val;
         
     case {'model','opticsmodel'}
-        % Valid choices are 
-        % The case and spaces do not matter.
         % Set the optics model type
         %
         % diffractionlimited and shiftinvariant are the legitimate options.
@@ -88,14 +86,17 @@ switch parm
         %
         % TL: I put back the ray trace model for now, since if we switch to
         % shiftinvariant it will try to find the lens info in the oi.optics
-        % structure, which is non-existant for ray-tracing. Because of this
+        % structure, which is non-existent for ray-tracing. Because of this
         % it will throw errors when you try to run oiWindow. This requires
         % more thought about how to handle this...
+        %
+        % If we need a special case for sceneeye, let's make that.  ray
+        % trace is used for a different meaning in ISETCAM.  We should use
+        % a different name for the scene eye calculation.
         
-        % The case and spaces in val do not matter.
+        % Remove white space and force lower case
         val = ieParamFormat(val);
-        valid = {'diffractionlimited', 'shiftinvariant','raytrace'};
-%        if strcmp(val,'raytrace'), val = 'shiftinvariant'; end
+        valid = {'diffractionlimited', 'shiftinvariant','raytrace','sceneeye'};
         if validatestring(val, valid)
             optics.model = ieParamFormat(val);
         else

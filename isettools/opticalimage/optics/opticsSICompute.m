@@ -3,13 +3,13 @@ function oi = opticsSICompute(scene,oi)
 %
 %    oi = opticsSICompute(scene,oi)
 %
-% See also: opticsRayTrace, oiCompute, opticsOTF
-%
 % Example
 %    scene = vcGetObject('scene');
 %    oi    = vcGetObject('oi');
 %    
 % Copyright ImagEval Consultants, LLC, 2005
+%
+% See also: oiCompute, opticsOTF
 
 if notDefined('scene'), error('Scene required.'); end
 if notDefined('oi'), error('Optical image required.'); end

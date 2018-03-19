@@ -156,8 +156,8 @@ switch lower(psfType)
             % the older code, which may or may not do the same thing
             [~,~,centeredOTF] = PsfToOtf([],[],psf);
             OTF(:,:,jj) = ifftshift(centeredOTF); 
-            %psf = fftshift(psf);   
-            %OTF(:,:,jj) = fft2(psf);
+            % psf = fftshift(psf);   
+            % OTF(:,:,jj) = fft2(psf);
         end
         
     case 'custom'

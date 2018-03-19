@@ -103,13 +103,6 @@ function val = oiGet(oi,parm,varargin)
 %      {'diffuser method'}   - 'skip','blur' (gaussian),'birefringent'
 %      {'diffuser blur'}     - S.D. of Gaussian blur
 % 
-%      {'psfstruct'}        - Entire shift-variant PSF structure
-%       {'sampled rt psf'}     - Precomputed shift-variant psfs
-%       {'psf sample angles'}  - Vector of sample angle
-%       {'psf angle step'}     - Spacing between ray trace angle samples
-%       {'psf image heights'}  - Vector of sampled image heights (use optics)
-%       {'raytrace optics name'}  - Optics used to derive shift-variant psf
-%       {'rt psf size'}        - row,col dimensions of the psf
 % 
 %   Misc
 %      {'rgb image'}         - RGB rendering of OI data
@@ -119,6 +112,19 @@ function val = oiGet(oi,parm,varargin)
 %                  Copyright ImagEval Consultants, LLC, 2003-2015.
 %   12/30/17  dhb  Started to put comments into isetbio standard format.
 %   01/22/18  dhb  Example runs in clean workspace.
+
+
+% TODO
+% Deleting raytrace (shift-variant) code.
+% Delete this when we confidently remove the stuff below
+%
+%      {'psfstruct'}        - Entire shift-variant PSF structure
+%       {'sampled rt psf'}     - Precomputed shift-variant psfs
+%       {'psf sample angles'}  - Vector of sample angle
+%       {'psf angle step'}     - Spacing between ray trace angle samples
+%       {'psf image heights'}  - Vector of sampled image heights (use optics)
+%       {'raytrace optics name'}  - Optics used to derive shift-variant psf
+%       {'rt psf size'}        - row,col dimensions of the psf
 
 % Examples:
 %{
@@ -135,7 +141,7 @@ function val = oiGet(oi,parm,varargin)
     oiGet(oi,'distPerSamp','mm')
     oiGet(oi,'spatial support','microns');   % Meshgrid of zero-centered (x,y) values
     oiGet(oi,'optics off axis method')
-    oiGet(oi,'lens');   % Lens object
+    class(oiGet(oi,'lens'))   % Lens object
 %}
 
 if ~exist('parm','var') || isempty(parm)
@@ -300,16 +306,22 @@ switch parm
     case 'opticsmodel'
         if checkfields(oi,'optics','model'), val = oi.optics.model; end
         
+        
+        %{
+        % I think this was only used for the shift-variant (raytrace) model.
+        % It is not used any more here.  It is still retained in ISETCAM.
+        
         % Sometimes we precompute the psf from the optics and store it
         % here. The angle spacing of the precomputation is specified here
-    case {'psfstruct','shiftvariantstructure'}
+    case {'psfstruct'}
         % Entire svPSF structure
         if checkfields(oi,'psf'), val = oi.psf; end
-    case {'svpsf','sampledrtpsf','shiftvariantpsf'}
+        
+    case {'svpsf','shiftvariantpsf'}
         % Precomputed shift-variant psfs
         if checkfields(oi,'psf','psf'), val = oi.psf.psf; end
     case {'rtpsfsize'}
-        % Size of each PSF
+        % Number of spatial samples in each psf
         if checkfields(oi,'psf','psf'), val = size(oi.psf.psf{1,1,1}); end
     case {'psfsampleangles'}
         % Vector of sample angle
@@ -317,7 +329,7 @@ switch parm
     case {'psfanglestep'}
         % Spacing between angles
         if checkfields(oi,'psf','sampAngles')
-            val = oi.psf.sampAngles(2) - oi.psf.sampAngles(1); 
+            val = oi.psf.sampAngles(2) - oi.psf.sampAngles(1);
         end
     case {'psfimageheights'}
         % Vector of sampled image heights
@@ -330,7 +342,7 @@ switch parm
         % Wavelengths for this calculation. Should match the optics, I
         % think.  Not sure why it is duplicated.
         if checkfields(oi,'psf','wavelength'), val = oi.psf.wavelength; end
-
+        %}
         % optical diffuser properties
   case {'diffusermethod'}
       % 0 - skip, 1 - gauss blur, 2 - birefringent

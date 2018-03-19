@@ -63,12 +63,6 @@ function oi = oiSet(oi,parm,val,varargin)
 %      {'diffuser method'} - 'blur', 'birefringent' or 'skip'
 %      {'diffuser blur'}   - FWHM blur amount (meters)
 %
-%      {'psfstruct'}        - Entire PSF structure (shift-variant)
-%       {'sampled RT psf'}     - Precomputed shift-variant psfs
-%       {'psf sample angles'}  - Vector of sample angle
-%       {'psf image heights'}  - Vector of sampled image heights
-%       {'rayTrace optics name'}  - Optics used to derive shift-variant psf
-%
 %      {'depth map'}         - Distance of original scene pixel (meters)
 %
 % Auxiliary
@@ -86,6 +80,17 @@ function oi = oiSet(oi,parm,val,varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+%{
+% TODO
+% Delete this when we are sure we can delete the code, below.
+%
+%      {'psfstruct'}        - Entire PSF structure (shift-variant)
+%       {'sampled RT psf'}     - Precomputed shift-variant psfs
+%       {'psf sample angles'}  - Vector of sample angle
+%       {'psf image heights'}  - Vector of sampled image heights
+%       {'rayTrace optics name'}  - Optics used to derive shift-variant psf
+%
+%}
 if ~exist('parm','var') || isempty(parm), error('Param required'); end
 if ~exist('val','var'), error('Value field required.'); end
 
@@ -199,12 +204,6 @@ switch parm
         % Clear out derivative luminance/illuminance computations
         oi = oiSet(oi,'illuminance', []);
 
-        %     case {'datamin','dmin'}
-        %         error('datamin and datamax are not used anymore');
-        %         oi.data.dmin = val;
-        %     case {'datamax','dmax'}
-        %         error('datamin and datamax are not used anymore');
-        %         % oi.data.dmax = val;
     case 'bitdepth'
         % Only used to control space allocated to photons (single or
         % double)
@@ -292,6 +291,11 @@ switch parm
         % The value for birefringent could come from here, too.
         oi.diffuser.blur = val;
 
+        %{
+        % Should be able to delete this - and the comments at the top
+        %
+        % This was used for the shift variant calculations (ray trace). 
+        % It is not used any more here.  It is still retained in ISETCAM.
         % Precomputed shift-variant (sv) psf and related parameters          
     case {'psfstruct','shiftvariantstructure'}
         % This structure
@@ -312,7 +316,8 @@ switch parm
         % Wavelengths for this calculation. Should match the optics, I
         % think.  Not sure why it is duplicated.
         oi.psf.wavelength = val;
-
+        %}
+        
     case 'depthmap'
         % Depth map, usuaully inherited from scene, in meters
         % oiSet(oi,'depth map',dMap);

@@ -23,9 +23,9 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 % The formulae are described in dlCore.m
 %
 % Examples:
-% If you send in only one argument, it must be the optical image structure.
-% In this first example, We calculate all of the OTFs (one for each
-% wavelength). 
+%  If you send in only one argument, it must be the optical image
+%  structure. In this first example, We calculate all of the OTFs (one for
+%  each wavelength).
 %
 %   OTF2D = dlMTF(oi);
 %
@@ -45,13 +45,36 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 %  figure(1); mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
 %  colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
 %
-% But, if you want units in cycles/deg, you must sent in the optical image.
+% But, if you want units in cycles/deg, you must send in the optical image.
+%
+%
+% Copyright ImagEval Consultants, LLC, 2003.
 %
 %  See also
 %    oitCalculateOTF, dlCore.m
-%
-% Copyright ImagEval Consultants, LLC, 2003.
 
+% Examples:
+%{
+ oi = oiCreate('diffraction limited');
+ wavelength = 700; 
+ unit = 'mm';
+ fSupport = oiGet(oi,'fSupport',unit);
+ OTF2D = dlMTF(optics,fSupport,wavelength,unit);
+ vcNewGraphWin;
+ mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
+ colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
+%}
+%{
+scene = sceneCreate;
+oi = oiCreate('diffraction limited');
+oi = oiCompute(oi,scene);
+OTF2D = dlMTF(oi);
+size(OTF2D)
+vcNewGraphWin; mesh(fftshift(OTF2D(:,:,1)));
+vcNewGraphWin; mesh(fftshift(OTF2D(:,:,end)));
+%}
+
+%%
 if notDefined('oi'), error('Optics or optical image required.'); end
 
 % The user can send in the OI or OPTICS.  We only need OPTICS.
@@ -69,8 +92,8 @@ if notDefined('wave'),  wave = oiGet(oi,'wavelength'); end
 if notDefined('units'), units = 'cyclesPerDegree'; end
 if notDefined('fSupport'), fSupport = oiGet(oi, 'fSupport', units); end
 
-apertureDiameter = opticsGet(optics, 'aperturediameter');
-fpDistance = opticsGet(optics, 'focalPlaneDistance');
+apertureDiameter = opticsGet(optics, 'aperture diameter');
+fpDistance = opticsGet(optics, 'focal Plane Distance');
 
 fx = fSupport(:,:,1);
 fy = fSupport(:,:,2);

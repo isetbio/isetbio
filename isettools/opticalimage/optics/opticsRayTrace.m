@@ -13,6 +13,12 @@ function oi = opticsRayTrace(scene,oi)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+error('opticsRayTrace is deprecated.  Used in ISETCAM only.');
+
+end
+
+%{
+%%
 if notDefined('scene'), scene = vcGetObject('scene'); end
 if notDefined('oi'),    oi = vcGetObject('oi');       end
 if isempty(which('rtRootPath')), error('Ray Trace routines not found'); end
@@ -101,7 +107,6 @@ if isempty(psfStruct)
 else
     fprintf('Starting with existing PSFs ...\n');
 end
-% psfMovie(oiGet(oi,'optics'));
 
 % Apply the OTF to the irrad data.
 fprintf('Applying PSFs.\n');             % vcAddAndSelectObject(oi); oiWindow;
@@ -130,3 +135,4 @@ oi = oiSet(oi,'illuminance',illuminance);
 oi = oiSet(oi,'meanilluminance',meanIlluminance);
 
 end
+%}

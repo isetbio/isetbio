@@ -774,23 +774,12 @@ switch (pType)
         % Line spread function at all wavelengths.
         %    Peak spatial frequency can be set for the OTF (default: 3 *
         %    incoherent cutoff). Number of spatial samples to plot in the
-        %    line spread can be set (default: 40).
-        optics = oiGet(oi, 'optics');
-        opticsModel = opticsGet(optics, 'model');
-        switch lower(opticsModel)
-            case 'raytrace'
-                ieInWindowMessage(['Ray trace: ls wavelength not yet' ...
-                    ' implemented.'], handles);
-                disp('Not yet implemented')
-            otherwise
-                if ~isempty(varargin)
-                    nSamps = varargin{1};
-                else
-                    nSamps = 40;
-                end
-                udata = plotOTF(oi, 'ls wavelength', [], nSamps);
-                set(g, 'userdata', udata);
+        %    line spread can be set (default: 40).       
+        if ~isempty(varargin), nSamps = varargin{1};
+        else,                  nSamps = 40;
         end
+        udata = plotOTF(oi, 'ls wavelength', [], nSamps);
+        set(g, 'userdata', udata);
         set(g, 'name', 'LS by Wave');
         colormap(jet)
         
@@ -989,10 +978,11 @@ switch lower(pType)
                 % OTF returned by dlMTF has DC at the (1,1) upper left
                 % position.
                 %
-                % Multiply returned support by 2 just to make it big
+                % Over sample the frequency support just to make it big
+                freqOverSample = 2;
                 fSupport = opticsGet(optics, 'dl fsupport matrix', ...
                     thisWave, units, nSamp);
-                fSupport = fSupport * 2;  
+                fSupport = fSupport * freqOverSample;  
                 otf = dlMTF(oi, fSupport, thisWave, units);
                 
                 % DC is at (1, 1) in the returned OTF; we plot with DC in
@@ -1046,7 +1036,7 @@ switch lower(pType)
         % Spatial scale is microns.
         units = 'um';
         nSamp = 100;
-        oSample = 4;
+        freqOverSample = 4;
         if strfind(pType, '550')
             thisWave = 550;
         elseif length(varargin) >= 1
@@ -1062,11 +1052,11 @@ switch lower(pType)
                 % The opticsGet() for diffraction limited should be
                 % adjusted so that this code becomes shorter.
                 
-                psf = opticsGet(optics, 'diffractionlimitedpsfdata', thisWave, units, nSamp, ...
-                    oSample);
+                psf = opticsGet(optics, 'diffraction limited psf data', ...
+                    thisWave, units, nSamp, freqOverSample);
                 fSupport = opticsGet(optics, 'dlFSupport matrix', ...
                     thisWave, units, nSamp);
-                fSupport = fSupport * oSample;
+                fSupport = fSupport * freqOverSample;
                 
                 % Put samples symmetric around 0
                 % Make them spaced properly
@@ -1077,9 +1067,9 @@ switch lower(pType)
                 sSupport(:, :, 2) = Y * deltaSpace;
                 
                 % Plot a black circle at the first zero of the Airy disk.
-                % Convert the wavelength to meters. Multiply by the usual
-                % formula to determine the first zero crossing. Scale units
-                % to microns, because that is how we will plot the data.
+                % Convert the wavelength to meters. Multiply by the Airy
+                % disk formula to determine the first zero crossing. Scale
+                % units to microns, because that is how we plot the data.
                 fNumber = opticsGet(optics, 'fNumber');
                 radius = (2.44 * fNumber * thisWave * 10 ^ -9) / 2 ...
                     * ieUnitScaleFactor('um');

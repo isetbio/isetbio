@@ -1,52 +1,79 @@
-function psfMovie(optics,figNum,delay)
+function psfMovie(oi,figNum,delay)
 %Show a movie of the pointspread functions 
 %
-%   psfMovie([optics],[figNum=1],[delay = 0.2])
+%   psfMovie([oi],[figNum=1],[delay = 0.2])
 %
-% The movies differ slightly for the shift-invariant and ray trace
-% methods. The shift-invariant doesn't depend on field height; the ray
-% trace does.  So we show the full set differently.
-%
-% For the shift invariant we just show a movie over wavelength
-%
-% For the ray trace
-% The image height increase along the x-axis.  The data are displayed for
-% one wavelength first, and then the next wavelength. The horizontal axis
-% indicates the image height in microns.
-%
-% Example:
-%   oi = vcGetObject('oi'); optics = oiGet(oi,'optics');
-%   psfMovie(optics,1)
-%
-% This example loads, visualizes, rotates, and visualizes again.
-%   psfMovie;
-%
-%   vcImportObject('OPTICS');
-%   psfMovie([],1);
-%   optics = vcGetObject('optics');
-%   optics = rtPSFEdit(optics,0,1,2);
+% Show a movie of the psf as a function of wavelength
 %
 % Copyright ImagEval, LLC, 2005
 
-if notDefined('optics'), optics = vcGetObject('optics'); end
+%Examples:
+%{
+ oi = oiCreate('shift invariant');
+ psfMovie(oiGet(oi,'optics'));
+%}
+%{
+ oi = oiCreate('diffraction limited');
+ psfMovie(oiGet(oi,'optics'));
+%}
+
+%%
+if notDefined('oi'), oi = vcGetObject('oi'); end
 if notDefined('figNum'), figNum = vcSelectFigure('GRAPHWIN'); end
 if notDefined('delay'), delay = 0.2; end
 
 figure(figNum)
 set(figNum,'name','PSF Movie');
 
-opticsModel = opticsGet(optics,'model');
+%%
+optics      = oiGet(oi,'optics');
+opticsModel = oiGet(oi,'optics model');
+
 switch lower(opticsModel)
     case 'diffractionlimited'
-        disp('Not yet implemented for diffraction limited')
+        % This needs to be checked.  The psf doesn't seem to be changing
+        % correctly with wavelength. 
+        %
+        % The OTF is computed on the fly for the diffraction limited case.
+        %
+        nSamp = 16;
+        freqOverSample = 4;
+        fSupport = oiGet(oi,'fsupport','um')*freqOverSample;
+        samp = (-nSamp:(nSamp-1));
+        %         [X,Y] = meshgrid(samp,samp);
+        %         deltaSpace = 1/(2*max(fSupport(:)));
+        %         sSupport(:,:,2) = Y*deltaSpace;
+        %         sSupport(:,:,1) = X*deltaSpace;
+
+        deltaSpace = 1/(2*max(fSupport(:)));
+        x = samp*deltaSpace;
+        y = x;
+        wave = opticsGet(optics,'wave');
+
+        vcNewGraphWin;
+        for ii=1:length(wave)
+            psf = opticsGet(optics,'diffraction limited psf data',...
+                wave(ii),'um',nSamp,freqOverSample);
+            %{
+            imagesc(y,x,psf(:,:));
+            xlabel('Position (um)');
+            ylabel('Position (um)');
+            grid on; axis image
+            title(sprintf('Wave %.0f nm',wave(ii)));
+            pause(delay);
+                %}
+        end
+        
+        
     case 'shiftinvariant'
-        psf  = opticsGet(optics,'psfData');
-        support = opticsGet(optics,'psfSupport','um');
+        % We get the psf data all at once in this case
+        psf  = opticsGet(optics,'shift invariant psf data');
+        support = opticsGet(optics,'psf support','um');
         y = support{1}(:); x = support{2}(:);
         wave = opticsGet(optics,'wavelength');
         w = size(psf,3);
 
-        for ii=1:w, 
+        for ii=1:w
             imagesc(y,x,psf(:,:,ii));
             xlabel('Position (um)');
             ylabel('Position (um)');
@@ -54,6 +81,7 @@ switch lower(opticsModel)
             title(sprintf('Wave %.0f nm',wave(ii)));
             pause(delay);
         end
+        %{
     case 'raytrace'
         name = opticsGet(optics,'rtname');
         figNum = vcNewGraphWin;
@@ -79,6 +107,7 @@ switch lower(opticsModel)
                 pause(delay);
             end
         end
+        %}
     otherwise
         error('Unknown model %s\n',opticsModel);
 end
