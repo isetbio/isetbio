@@ -111,7 +111,7 @@ function val = opticsGet(optics,parm,varargin)
 %      {'otf support'}     - cell array, val{1:2}, of fy,fx samples
 %      {'otf wave'}        - wavelength samples of the otf data
 %      {'otf binwidth'}    - difference between wavelength samples
-%      {'psf data'}        - psf data, calculated from the stored otfdata
+%      {'shift invariant psf data'}     - psf data, calculated from the stored otfdata
 %      {'diffraction limited psf data'} - diffraction limited psf data
 %      {'psf spacing'}
 %      {'psf support'}
@@ -452,6 +452,7 @@ switch parm
 
     case {'otf','otfdata','opticaltransferfunction'}
         % You can ask for a particular wavelength with the syntax
+        %
         %    opticsGet(optics,'otfData',oi, spatialUnits, wave)
         %
         % OTF values can be complex. They are related to the PSF data by
@@ -509,15 +510,18 @@ switch parm
             % Returns the entire data set
             val = OTF;
         end
-
+        
+    %{
+        % This case is handled in psf data by a case statement.
+        % Not sure why it is here.
     case {'diffractionlimitedpsfdata'}
-        % psf = opticsGet(optics,'diffractionlimitedpsfdata',...
+        % psf = opticsGet(optics,'diffraction limited psf data',...
         %              thisWave,units,nSamp,freqOverSample);
         %
         % Diffraction limited pointspread function at a particular
-        % wavelength, spatial sampling in some units ('um','mm', etc.) some
-        % number of spatial samples, and some amount of oversampling on the
-        % frequency calculation to make the curve smooth.
+        % wavelength, spatial sampling in some units ('um','mm', etc.)
+        % some number of spatial samples. Some amount of oversampling
+        % on the frequency calculation to make the curve smooth.
         %
         % The frequency support for the OTF is returned by
         %
@@ -532,6 +536,29 @@ switch parm
         if length(varargin) < 3, nSamp = 100; else, nSamp = varargin{3}; end
         if length(varargin) < 4, freqOverSample = 1; else, freqOverSample = varargin{4}; end
         
+        %{
+          % From plotOTF code
+          % This could all be opticsGet(optics,'psf data',thisWave)
+                % As below for shift invariant.
+                nSamp = 25;  % We get 2*nSamp base frequency terms
+                
+                % Get the basic frequency support
+                val = opticsGet(optics,'dlFSupport',thisWave,units,nSamp);
+                [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(val{1},val{2});
+                
+                % Increase the spatial frequency range (highest
+                % spatial frequency) by a factor of 4, which yields a
+                % higher spatial resolution estimate of the psf
+                fSupport = fSupport*freqOverSample;
+                
+                % Calculate the OTF using diffraction limited MTF (dlMTF)
+                otf = dlMTF(oi,fSupport,thisWave,units);
+                sSupport = opticsGet(optics,'psf support',fSupport,nSamp);   
+                
+                % Derive the psf from the OTF
+                psf = fftshift(ifft2(otf));
+                
+        %}
         %  Oversample the frequency to get a smoother PSF image.
         %  You can specify the factor for oversampling in the
         %  calling arguments.
@@ -545,7 +572,8 @@ switch parm
         
         % Derive the psf from the OTF
         [~,~,val] = OtfToPsf([],[],fftshift(otf));
-    
+    %}
+        
     case {'degreesperdistance','degperdist'}
         % opticsGet(optics,'deg per dist','mm')
         % We use this constant to convert from the input spatial frequency units
@@ -641,20 +669,24 @@ switch parm
         else, val = 1;
         end
         
-    case {'shiftinvariantpsfdata','psfdata'}
+    case {'psfdata'}
         % To return the psf at 500 nm use
+        %
         %    psf = opticsGet(optics,'psfData',500);
         %    mesh(psf);
-        % The 
+        %
+        % The diffraction limited and shift invariant models are
+        % handled slightly differently.  The dlMTF is needed for the
+        % diffraction case, while the OTF holds the data in the
+        % shift-invariant case.
         oModel = opticsGet(optics,'model');
         switch lower(oModel)
             case 'diffractionlimited'
                 % opticsGet(optics,'psf Data',500,'um');
-                if length(varargin) < 1
-                    % Person wanted all wavelengths
-                    thisWave = opticsGet(optics,'wave');
-                else, thisWave = varargin{1};
+                if length(varargin) < 1, thisWave = opticsGet(optics,'wave');
+                else,                    thisWave = varargin{1};
                 end
+                
                 if length(varargin) < 2, units = 'um';
                 else, units = varargin{2};
                 end
@@ -662,11 +694,12 @@ switch parm
                 nSamp = 100;   % Number of frequency steps from 0 to incoherent cutoff
                 dlF = opticsGet(optics,'dlFSupport',thisWave(1),units,nSamp);
                 [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(dlF{1},dlF{2});
-                % This is a way to calculate the spatial support for the
-                % psf. Also, see 'psfsupport' below, also.  
-                % These should be integrated and coordinated with fSupport.
-                % If we would like the spatial support to be smaller
-                % and finer, we should scale fSupport*4, above.
+                
+                % Calculate the spatial support for the psf. Also, see
+                % 'psfsupport' below. These should be integrated and
+                % coordinated with fSupport. If we would like the
+                % spatial support to be smaller and finer, we should
+                % scale fSupport*4, above.
                 %{
                    samp = (-nSamp:(nSamp-1));
                    [X,Y] = meshgrid(samp,samp);
@@ -674,14 +707,15 @@ switch parm
                    sSupport(:,:,1) = X*deltaSpace;
                    sSupport(:,:,2) = Y*deltaSpace;
                 %}
+                
                 % Get diffraction limited OTF and derive PSF from it.
                 otf = dlMTF(optics,fSupport,thisWave,units);
                 if length(thisWave) == 1
                     [~,~,val] = OtfToPsf([],[],fftshift(otf));
                 else
-                    val = zeros(size(otf));
+                    val = zeros(size(otf,1),size(otf,2),length(thisWave));
                     for ii=1:length(thisWave)
-                        [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf));
+                        [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf(:,:,ii)));
                     end
                 end
 
@@ -723,6 +757,7 @@ switch parm
         % spatial frequency and spatial sampling.
         if length(varargin) >= 1, units = varargin{1}; 
         else, units = 'mm'; end
+        
         fx = opticsGet(optics,'otf fx',units); 
         if isempty(fx), error('No otffx calculated yet. Fix me.'); end
         peakF = max(fx(:));
@@ -759,6 +794,23 @@ switch parm
                 end
                 x = x*opticsGet(optics,'psf spacing',units);
             case 'diffractionlimited'
+                wave = opticsGet(optics,'wave');
+                psf  = opticsGet(optics,'psf data',wave(1));
+                sz = size(psf); % opticsGet(optics,'otf size');
+                if isempty(sz), error('No optical image data'); end
+                if (sz(1) ~= sz(2)), error('OTF support not square'); end
+                
+                % Create one-dimensional integer samples.
+                % Handle case of sz even versus sz odd.  I am more confident of the
+                % case where n is even.
+                if (rem(sz(1),2) == 0)
+                    n = sz(1)/2;
+                    x = -n:(n-1);
+                else
+                    n = floor(sz(1)/2);
+                    x = -n:n;
+                end
+                x = x*opticsGet(optics,'psf spacing',units);
             otherwise
                 error('unknown model %s\n',oModel)
         end
