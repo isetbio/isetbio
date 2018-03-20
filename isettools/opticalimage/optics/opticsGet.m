@@ -679,38 +679,27 @@ switch parm
         % handled slightly differently.  The dlMTF is needed for the
         % diffraction case, while the OTF holds the data in the
         % shift-invariant case.
+        
+        if length(varargin) < 1, thisWave = opticsGet(optics,'wave');
+        else,                    thisWave = varargin{1};
+        end
+        nWave = length(thisWave);
+        
+        if length(varargin) < 2, units = 'um'; 
+        else, units = varargin{2}; 
+        end
+        
         oModel = opticsGet(optics,'model');
         switch lower(oModel)
             case 'diffractionlimited'
                 % opticsGet(optics,'psf Data',500,'um');
-                if length(varargin) < 1, thisWave = opticsGet(optics,'wave');
-                else,                    thisWave = varargin{1};
-                end
-                
-                if length(varargin) < 2, units = 'um';
-                else, units = varargin{2};
-                end
-                
                 nSamp = 100;   % Number of frequency steps from 0 to incoherent cutoff
                 dlF = opticsGet(optics,'dlFSupport',thisWave(1),units,nSamp);
                 [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(dlF{1},dlF{2});
                 
-                % Calculate the spatial support for the psf. Also, see
-                % 'psfsupport' below. These should be integrated and
-                % coordinated with fSupport. If we would like the
-                % spatial support to be smaller and finer, we should
-                % scale fSupport*4, above.
-                %{
-                   samp = (-nSamp:(nSamp-1));
-                   [X,Y] = meshgrid(samp,samp);
-                   deltaSpace = 1/(2*max(fSupport(:)));
-                   sSupport(:,:,1) = X*deltaSpace;
-                   sSupport(:,:,2) = Y*deltaSpace;
-                %}
-                
                 % Get diffraction limited OTF and derive PSF from it.
                 otf = dlMTF(optics,fSupport,thisWave,units);
-                if length(thisWave) == 1
+                if nWave == 1
                     [~,~,val] = OtfToPsf([],[],fftshift(otf));
                 else
                     val = zeros(size(otf,1),size(otf,2),length(thisWave));
@@ -722,20 +711,25 @@ switch parm
             case 'shiftinvariant'
                 if checkfields(optics,'OTF','OTF')
                     
-                    if ~isempty(varargin)
+                    if nWave == 1
                         % Just do one specified wavelength
-                        otf = opticsGet(optics,'otfData',varargin{1});
-                        [~,~,val] = OtfToPsf([],[],fftshift(otf));
+                        otf = opticsGet(optics,'otf data',thisWave);
+                        if strcmp(optics.name,'human-MW')
+                            val = fftshift(abs(fft2(otf)));
+                        else
+                            [~,~,val] = OtfToPsf([],[],fftshift(otf));
+                        end
                     else
                         % Do all the wavelenghts
-                        %
-                        % Note that it would be cleaner to use gets to get
-                        % the OTF, not reach into the structure directly.
-                        % But, this works.
-                        otfWave = opticsGet(optics,'otfWave');
                         val = zeros(size(optics.OTF.OTF));
-                        for ii=1:length(otfWave)
-                            [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
+                        if strcmp(optics.name,'human-MW')
+                            for ii=1:length(thisWave)
+                                val(:,:,ii) = fftshift(abs(fft2(otf(:,:,ii))));
+                            end
+                        else
+                            for ii=1:length(thisWave)
+                                [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
+                            end
                         end
                     end
                     
@@ -753,25 +747,52 @@ switch parm
         % opticsGet(optics,'psf spacing',unit)
         % Sample spacing of the psf points
         %
-        % Warning:  We are assuming that fx and fy have the same peak
-        % spatial frequency and spatial sampling.
-        if length(varargin) >= 1, units = varargin{1}; 
-        else, units = 'mm'; end
+        % Warning:  We assume that fx and fy have the same peak spatial
+        % frequency and spatial sampling.
         
-        fx = opticsGet(optics,'otf fx',units); 
-        if isempty(fx), error('No otffx calculated yet. Fix me.'); end
-        peakF = max(fx(:));
-
-        % Peak frequency in cycles/meter.  1/peakF is meters.  We have two
+        if ~isempty(varargin), units = varargin{1}; else, units = 'mm'; end
+        
+        % We use these parameters for the diffraction limited case.
+        if length(varargin) > 1, thisWave = varargin{2}; end
+        if length(varargin) > 2, nSamp = varargin{3}; end
+        
+        oModel = opticsGet(optics,'model');
+        switch oModel
+            case 'shiftinvariant'
+                fx = opticsGet(optics,'otf fx',units);
+                if isempty(fx), error('No otffx calculated yet. Fix me.'); end
+            case 'diffractionlimited'
+                fx = opticsGet(optics,'dl fSupport',thisWave(1),units,nSamp);
+                fx = fx{1};
+            otherwise
+                error('Unknown optics model %s\n',oModel);
+        end
+        
+        % Peak frequency in cycles/distance (units). We have two
         % samples in that distance, so the sample spacing is half that
         % distance.
+        peakF = max(fx(:));
         val = 1/(2*peakF);
         
     case {'psfsupport'}
-        % opticsGet(optics,'psf support',unit) Returns mesh grid of X and Y
-        % values.  Used for mesh plotting often. X/Y could be mixed up in 1
-        % and 2.
+        % opticsGet(optics,'psf support',unit) 
+        % Calculate the spatial support for the psf.
         %
+        % Returns mesh grid of X and Y values in a 2-dimensional cell
+        % array. Used for mesh plotting often. X/Y could be reversed in 1
+        % and 2.
+        
+        % These should be integrated and coordinated with fSupport. If we
+        % would like the spatial support to be smaller and finer, we should
+        % scale fSupport*4.
+        %{
+           samp = (-nSamp:(nSamp-1));
+           [X,Y] = meshgrid(samp,samp);
+           deltaSpace = 1/(2*max(fSupport(:)));
+           sSupport(:,:,1) = X*deltaSpace;
+           sSupport(:,:,2) = Y*deltaSpace;
+        %}
+        
         if length(varargin) >= 1, units = varargin{1}; 
         else, units = 'mm'; end
         oModel = opticsGet(optics,'model');
@@ -795,14 +816,16 @@ switch parm
                 x = x*opticsGet(optics,'psf spacing',units);
             case 'diffractionlimited'
                 wave = opticsGet(optics,'wave');
-                psf  = opticsGet(optics,'psf data',wave(1));
-                sz = size(psf); % opticsGet(optics,'otf size');
-                if isempty(sz), error('No optical image data'); end
-                if (sz(1) ~= sz(2)), error('OTF support not square'); end
+                thisWave = wave(1);
+                psf  = opticsGet(optics,'psf data',thisWave);
+                if isempty(psf), error('No psf data'); end
+
+                sz = size(psf);
+                if (sz(1) ~= sz(2)), error('psf support not square'); end
                 
-                % Create one-dimensional integer samples.
-                % Handle case of sz even versus sz odd.  I am more confident of the
-                % case where n is even.
+                % Create one-dimensional integer samples. Handle case of sz
+                % even versus sz odd.  I am more confident of the case
+                % where n is even.
                 if (rem(sz(1),2) == 0)
                     n = sz(1)/2;
                     x = -n:(n-1);
@@ -810,7 +833,8 @@ switch parm
                     n = floor(sz(1)/2);
                     x = -n:n;
                 end
-                x = x*opticsGet(optics,'psf spacing',units);
+                nSamp = length(x);
+                x = x*opticsGet(optics,'psf spacing',units,thisWave,nSamp);
             otherwise
                 error('unknown model %s\n',oModel)
         end
@@ -841,7 +865,7 @@ switch parm
         if checkfields(optics,'cos4th','value'), val = optics.cos4th.value; end
 
     otherwise
-        error('Unknown optics parameter.');
+        error('Unknown optics parameter %s\n',parm);
 
 end
 
