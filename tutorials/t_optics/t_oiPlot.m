@@ -18,7 +18,8 @@ ieInit;
 %% Initialize the oi structure
 scene = sceneCreate; 
 scene = sceneSet(scene,'fov',4);
-oi = oiCreate; oi = oiCompute(oi,scene);
+oi = oiCreate('diffraction limited'); 
+oi = oiCompute(oi,scene);
 
 %% Irradiadiance along a vertical line
 % 
