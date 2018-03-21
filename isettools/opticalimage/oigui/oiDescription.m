@@ -12,7 +12,7 @@ function txt = oiDescription(oi)
 txt = sprintf('\nOptical image\n');
 
 if isempty(oi), txt = 'No image'; return;
-else sz = oiGet(oi,'size');
+else, sz = oiGet(oi,'size');
     if isempty(oiGet(oi,'photons')), txt = addText(txt,sprintf('  No image\n'));
     else
         str = sprintf('  Size:       [%.0f, %.0f] samples\n',sz(1),sz(2));
@@ -21,14 +21,14 @@ else sz = oiGet(oi,'size');
         u = round(log10(oiGet(oi,'height','m')));
         if (u >= 0 ),     str = sprintf('  Hgt,wdth: [%.2f, %.2f] m\n',oiGet(oi,'height','m'),oiGet(oi,'width','m'));
         elseif (u >= -3), str = sprintf('  Hgt,wdth: [%.2f, %.2f] mm\n',oiGet(oi,'height','mm'),oiGet(oi,'width','mm'));
-        else             str = sprintf('  Hgt,wdth: [%.2f, %.2f] um\n',oiGet(oi,'height','um'),oiGet(oi,'width','um'));
+        else,             str = sprintf('  Hgt,wdth: [%.2f, %.2f] um\n',oiGet(oi,'height','um'),oiGet(oi,'width','um'));
         end
         txt = addText(txt,str);
 
         u = round(log10(oiGet(oi,'sampleSize')));
         if (u >= 0 ),     str = sprintf('  Sample:  %.2f  m\n',oiGet(oi,'sampleSize','m'));
         elseif (u >= -3), str = sprintf('  Sample:  %.2f mm\n',oiGet(oi,'sampleSize','mm'));
-        else              str = sprintf('  Sample:  %.2f um\n',oiGet(oi,'sampleSize','um'));
+        else,             str = sprintf('  Sample:  %.2f um\n',oiGet(oi,'sampleSize','um'));
         end
         txt = addText(txt,str);
 
@@ -69,10 +69,15 @@ switch lower(opticsModel)
             d = oiGet(oi,'lens density');
             txt = [txt, sprintf('  Lens density:  %.2f \n',d)];
         end
-    case 'raytrace'
-        txt = [txt, sprintf('Optics (RT)\n')];
+    case 'iset3d'
+        % Like shift invariant for now
+        txt = [txt, sprintf('Optics (iset3d)\n')];
         diameter = opticsGet(optics,'aperture diameter','mm');
         txt = [txt, sprintf('  Diameter:  %.2f mm\n',diameter)];
+        if checkfields(oi,'optics','lens')
+            d = oiGet(oi,'lens density');
+            txt = [txt, sprintf('  Lens density:  %.2f \n',d)];
+        end
     otherwise
         error('Unknown optics model %s. ',opticsModel);
 end

@@ -961,8 +961,8 @@ switch lower(method)
             ieInWindowMessage('Shift-invariant OTF data not loaded.',handles,2);
             disp('Shift-invariant data not loaded')
         end
-    case 'raytrace'
-        optics = opticsSet(optics,'model','raytrace');
+    case 'iset3d'
+        optics = opticsSet(optics,'model','iset3d');
     otherwise
         error('Unknown optics method');
 end

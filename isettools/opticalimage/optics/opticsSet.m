@@ -78,11 +78,9 @@ switch parm
     case {'model','opticsmodel'}
         % Set the optics model type
         %
-        % diffractionlimited and shiftinvariant are the legitimate options.
-        % For consistency with ISET, and planning for the future of TL's
-        % EyeModeling implementation, we allow 'raytrace' but rename it to
-        % shiftinvariant.  At some point, we will allow raytrace as a
-        % legitimate name on its own.
+        % diffractionlimited and shiftinvariant are the legitimate
+        % options. We allow 'raytrace' this is mainly in service of
+        % TL's comment below.
         %
         % TL: I put back the ray trace model for now, since if we switch to
         % shiftinvariant it will try to find the lens info in the oi.optics
@@ -90,13 +88,13 @@ switch parm
         % it will throw errors when you try to run oiWindow. This requires
         % more thought about how to handle this...
         %
-        % If we need a special case for sceneeye, let's make that.  ray
-        % trace is used for a different meaning in ISETCAM.  We should use
-        % a different name for the scene eye calculation.
+        % BW: If we need a special case for sceneeye, let's make that.
+        % ray trace is used for a different meaning in ISETCAM.  We
+        % should use a different name for the scene eye calculation.
         
         % Remove white space and force lower case
         val = ieParamFormat(val);
-        valid = {'diffractionlimited', 'shiftinvariant','raytrace','sceneeye'};
+        valid = {'diffractionlimited', 'shiftinvariant','iset3d'};
         if validatestring(val, valid)
             optics.model = ieParamFormat(val);
         else

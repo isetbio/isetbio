@@ -38,7 +38,7 @@ switch lower(opticsModel)
     
     case {'diffractionlimited','dlmtf'}
         set(handles.popOpticsModel,'Value',1);
-        switchControlVisibility(handles,'on');
+        switchControlVisibility(handles,'on','diffraction');
         
         % Set the diffraction limited optics parameters
         optics = oiGet(oi,'optics');
@@ -49,14 +49,17 @@ switch lower(opticsModel)
         
         val = opticsGet(optics,'off axis method');
         if strcmpi(val,'skip'), set(handles.btnOffAxis, 'Value',0);
-        else set(handles.btnOffAxis, 'Value',1);
+        else, set(handles.btnOffAxis, 'Value',1);
         end
         
     case 'shiftinvariant'
         set(handles.popOpticsModel,'Value',2);
-        switchControlVisibility(handles,'off');
-    case 'raytrace'
-        % TL: What to do here?
+        switchControlVisibility(handles,'off','shiftinvariant');
+        
+    case 'iset3d'
+        set(handles.popOpticsModel,'Value',3);
+        switchControlVisibility(handles,'off','iset3d');
+        
     otherwise
         error('Unknown optics model')
 end
@@ -134,10 +137,12 @@ set(handles.txtOpticalImage,'String',oiDescription(oi));
 end
 
 %------------------------------------------------------
-function switchControlVisibility(handles,state)
-%Turn on/off the diffraction limited buttons and edit fields
-%On turns on the diffraction.
-%Off turns off the diffraction and puts up the custom popup menu
+function switchControlVisibility(handles,state,model)
+% Control the display of the diffraction limited buttons and edit
+% fields, fnumber and focal length.
+%
+% Also turns off the diffuser and blur buttons.
+%
 %
 
 switch state
@@ -147,10 +152,11 @@ switch state
         set(handles.editFocalLength,'visible','on')
         set(handles.editFnumber,'visible','on')
         set(handles.txtM,'visible','on')
-        % set(handles.btnOffAxis,'visible','on');
-        % set(handles.txtDiffractionLimitedOptics,'visible','on');
+        set(handles.btnOffAxis,'visible','on');
         set(handles.editDiffuserBlur,'visible','on');
         set(handles.txtBlurSD,'visible','on');
+        set(handles.popDiffuser,'visible','on');
+        set(handles.txtDiffuser,'visible','on');
         
     case 'off'
         set(handles.txtFocalLength,'visible','off')
@@ -158,11 +164,24 @@ switch state
         set(handles.editFocalLength,'visible','off')
         set(handles.editFnumber,'visible','off')
         set(handles.txtM,'visible','off')
-        % set(handles.btnOffAxis,'visible','off');
-        % set(handles.txtDiffractionLimitedOptics,'visible','off');
-        set(handles.editDiffuserBlur,'visible','off');
         set(handles.txtBlurSD,'visible','off');
         
+        % Turn stuff off a little differently from the various models
+        % Not quite sure we have the right conditions here.  For
+        % diffraction, I think it is always on.  For iset3d we have
+        % none of the options, but for shift invariant, we might have
+        % some of the other calculations (off axis, anti-alias).  Not
+        % sure. (BW).
+        switch model
+            case 'shiftinvariant'
+            case 'diffraction'
+            case 'iset3d'
+                set(handles.btnOffAxis,'visible','off');
+                set(handles.popDiffuser,'visible','off');
+                set(handles.txtDiffuser,'visible','off');
+                set(handles.editDiffuserBlur,'visible','off');
+        end
+
     otherwise
         error('Unknown state.');
         
