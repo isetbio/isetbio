@@ -5,72 +5,47 @@ function val = opticsGet(optics,parm,varargin)
 %
 % The optics parameters are organized into two different groups.
 %
-% There are two optics models implemented. The method can be
-% selected by the popup menu in the optics window or programatically via
-% oiSet(oi,'optics model',<model type>);
+% Two optics models are implemented: 'diffraction limited' and 'shift
+% invariant'.  The shift invariant models implements two types of human
+% eyes.  The Marimont-Wandell calculation 'human-MW' and an average eye
+% based on wavefront measurements, 'wvf human'. 
 %
-% (1) By default, we use a diffraction limited calculation with the
-% f-number and focal length determined from the window interface.  Other
-% parameters are derived from these two values.  In this case, the optical
-% image is computed using oiCompute. To set this method, use
-% opticsSet(optics,'model','diffractionLimited');  In this case, the
-% optical image is computed using opticsDLCompute. To set this method use
-% oi = oiSet(oi,'optics model','diffraction limited').
+% A third optics method based on ray tracing through the optics is
+% implemented in the sceneEye class. The ray tracing approach uses iset3d
+% and the Navarro model eye. The method is not managed with this struct.
 %
-% (2) We have a shift-invariant calculation based on a numerically-defined
-% OTF that is wavelength-dependent (but shift-invariant), stored in the
-% optics.OTF structure.  When using this method, the user can supply the
-% optics structure containing the OTF and other parameters (focal length,
-% aperture, and so forth).  Examples are stored in data/optics directory.
-% It is also possible to create shift invariant OTF data from wavefront
-% aberrations specified as Zernike polynomials. In this case, the optical
-% image is computed using the function opticsSICompute.  To set this method
-% use oi = oiSet(oi,'optics model','shift invariant').
+% (1) The default optics model is shift-invariant and implemented by
 %
-% N.B. The diffraction-limited model is a special case of the
-% shift-invariant model with the PSF constrained to be the ideal blur
-% function of a circular aperture.
-%
-% About the OTF and PSF
-%  We store the OTF data with DC at (1,1).  This is true throughout
-%  isetbio. To understand the implications for certain calculations see
-%  t_codeFFTinMatlab.
-%
-%  Although we use the Matlab-style representation (DC at (1,1)) for the
-%  OTF, when we make graphs and images we put the center of the image at
-%  the center -- of course -- and we also put the DC value of the OTF in
-%  the middle of the image.  Hence, when we return the frequency support or
-%  the spatial support we create values for frequencies that run from
-%  negative to positive with 0 sf in the middle. Similarly, when we compute
-%  the spatial support we create spatial samples that run below and above
-%  zero. If we've done things correctly, 0 sf should at location
-%  floor(N/2)+1, where N is the number of frequency samples.  To convert
-%  the OTF so that it matches up with this representation, apply fftshift
-%  to it.
-%
-%  To get the PSF from the OTF, we use the PTB routine OtfToPsf.  This
-%  expects the DC term in the middle, so we call
-%    [~,~,PSF] = OtfToPsf([],[],fftshift(OTF))
-%  to do the converstion.  The null args to OtfToPsf involve the support
-%  and are not needed here.
-%
-% Example:
-%  These examples illustrate calls to opticsGet via oiGet, the usual way.
-%  Notice that the parameter names start with 'optics'
 %   oi = oiCreate; 
-%   oi = oiSet(oi,'wave',400:10:700);
-%   NA  = oiGet(oi,'optics na');             % Numerical aperture
-%   psf = oiGet(oi,'optics psf data',600);  % Shift invariant data
-%   sSupport = oiGet(oi,'optics psf support');
-%   vcNewGraphWin; mesh(sSupport{1},sSupport{2},psf);
-%   otf = oiGet(oi,'optics otf data',450); 
-%   vcNewGraphWin; mesh(fftshift(abs(otf)));
-%         
-%  The direct calls using opticsGet are:
-%   optics     = oiGet(oi,'optics');
-%   otf450     = opticsGet(optics,'otf data',450);
-%   otfSupport = opticsGet(optics,'otf support');  % Cycles/mm
-%   vcNewGraphWin; mesh(otfSupport{1},otfSupport{2},fftshift(abs(otf450)))
+%   oi = oiCreate('human');  % Equivalent
+%
+% In this case, oi.optics is a shift-invariant calculation based on the
+% Marimont-Wandell model. The OTF is numerically-defined
+% wavelength-dependent OTF is created and stored in the optics.OTF
+% structure.
+%
+% (2) The shift-invariant model implemented by
+%
+%    oi = oiCreate('wvf human');
+%
+% also stores OTF data in oi.optics.OTF.  In this case, however, the data
+% are obtained from measured wavefront aberrations specified as Zernike
+% polynomials. 
+%
+% When the optics model is shift-invariant, the optical image is computed
+% using the function opticsSICompute.
+%
+% (3) A diffraction limited calculation with the f-number and focal length
+% is invoked by
+% 
+%     oi = oiCreate('diffraction');
+%
+% The diffraction-limited model is a special case of the shift-invariant
+% model with the PSF constrained to be the ideal blur function of a
+% circular aperture.
+%
+% When the optics model is diffraction limited, the optical image is
+% computed using the function opticsDLCompute.
 %
 % Optics parameters
 %
@@ -129,20 +104,86 @@ function val = opticsGet(optics,parm,varargin)
 %         {'scale'}         - Spectral radiance scale factor
 %      {'lens'}             - The lens object
 %
+% Data representation: the OTF and PSF
+%
+%  We store the OTF data with DC at (1,1).  This is true throughout
+%  isetbio. To understand the implications for certain calculations see
+%  t_codeFFTinMatlab.
+%
+%  Although we use the Matlab-style representation (DC at (1,1)) for the
+%  OTF, when we make graphs and images we put the center of the image at
+%  the center -- of course -- and we also put the DC value of the OTF in
+%  the middle of the image.  Hence, when we return the frequency support or
+%  the spatial support we create values for frequencies that run from
+%  negative to positive with 0 sf in the middle. Similarly, when we compute
+%  the spatial support we create spatial samples that run below and above
+%  zero. If we've done things correctly, 0 sf should at location
+%  floor(N/2)+1, where N is the number of frequency samples.  To convert
+%  the OTF so that it matches up with this representation, apply fftshift
+%  to it.
+%
+%  To get the PSF from the OTF, we use the PTB routine OtfToPsf.  This
+%  expects the DC term in the middle, so we call
+%
+%    [~,~,PSF] = OtfToPsf([],[],fftshift(OTF))
+%
+%  to do the conversion.  The null args to OtfToPsf involve the support
+%  and are not needed here.
+%
+% Copyright Imageval, LLC, 2005
+%
+% See also
+%    oiCreate, oiGet, opticsSet
+
 % Notes:
+%
 %   * [Note - DHB:  See notes in code below about usage for
 %   'diffractionlimitedpsfdata' and corresponding frequency support calls.
 %   These are only used in oiPlot to plot a diffraction limited function,
 %   and should be used with caution.  We may want to re-write to be more
 %   consistent in our usage across different ways of getting the dl
-%   information, but this would be fairly involved and may not be worth it.]
+%   information, but this would be fairly involved and may not be worth
+%   it.]
+%
 %   * [Note - DHB: Not all options appear to be documented in the above
 %   header comments.]
-
+%
+%   [Notes - BW: I eliminated diffractionlimitedpsfdata and re-wrote to
+%   deal with different models.  As DHB said, it was involved and may not
+%   have been worth it.  I am sure the logic could be simplified, if only
+%   my brain was big enough.  Let's leave these notes here for a while, and
+%   then delete in six months (October, 2018)].
+%   
+%
 % History:
 %                    Copyright ImagEval Consultants, LLC, 2005.
 % 12/21/17  dhb      Use OtfToPsf to do the conversion, but with backwards
 %                    compatible control.
+
+% Examples:
+%{
+  %  These examples illustrate calls to opticsGet via oiGet, the usual way.
+  %  Notice that the parameter names start with 'optics'
+  oi = oiCreate; 
+  oi = oiSet(oi,'wave',400:10:700);
+  NA  = oiGet(oi,'optics na');             % Numerical aperture
+  psf = oiGet(oi,'optics psf data',600);  % Shift invariant data
+  sSupport = oiGet(oi,'optics psf support');
+  vcNewGraphWin; mesh(sSupport{1},sSupport{2},psf);
+%}
+%{
+  oi = oiCreate; 
+  otf = oiGet(oi,'optics otf data',450); 
+  vcNewGraphWin; mesh(fftshift(abs(otf)));
+%}
+%{      
+  oi = oiCreate; 
+  %  The direct calls using opticsGet are:
+  optics     = oiGet(oi,'optics');
+  otf450     = opticsGet(optics,'otf data',450);
+  otfSupport = opticsGet(optics,'otf support');  % Cycles/mm
+  vcNewGraphWin; mesh(otfSupport{1},otfSupport{2},fftshift(abs(otf450)))
+%}
 
 %% Control some printout
 RESPECT_THE_COMMAND_WINDOW = true;

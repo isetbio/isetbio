@@ -58,11 +58,20 @@ function optics = opticsSet(optics,parm,val,varargin)
 % History:
 %                  Copyright ImagEval Consultants, LLC, 2005.
 
+% Examples:
+%{
+oi = oiCreate('diffraction limited');
+oiGet(oi,'optics fnumber')
+oi = oiSet(oi,'optics fnumber',8);
+oiGet(oi,'optics fnumber')
+%}
 
+%%
 if ~exist('optics','var') || isempty(optics),  error('No optics specified.'); end
 if ~exist('parm','var') || isempty(parm),      error('No parameter specified.'); end
 if ~exist('val','var'),                        error('No value.'); end
 
+%%
 parm = ieParamFormat(parm);
 switch parm
 
