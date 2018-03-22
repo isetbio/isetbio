@@ -35,7 +35,7 @@ function varargout = oiWindow(varargin)
 % History:
 %    xx/xx/03         Copyright ImagEval Consultants, LLC, 2003.
 %    01/25/17  GUIDE  Last Modified by GUIDE v2.5 25-Jan-2017 15:25:04
-%    03/19/18  jnm    Formatting (Fin 03/22)
+%    03/19/18  jnm    Formatting
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,31 +58,13 @@ end
 
 % --- Executes just before oiWindow is made visible.
 function oiWindow_OpeningFcn(hObject, eventdata, handles, varargin)
-% Set defaults for oiWindow
-%
-% Syntax:
-%   oiWindow_OpeningFcn(hObject, eventdata, handles)
-%
-% Description:
-%    Set up defaults for oiWindow just before it is made visible.
-%
-% Inputs:
-%    hObject   - handle to oiWindow (see GCBO)
-%    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
 
 % Choose default command line output for microLensWindow
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+
 vcSetFigureHandles('OI', hObject, eventdata, handles);
 
 %  Check the preferences for ISET and adjust the font size.
@@ -92,56 +74,21 @@ ieFontInit(hObject);
 % More important - Gamma is not working here or in scene
 % g = get(handles.editGamma, 'String');
 % set(handles.editGamma, 'String', g);
+
 oiRefresh(hObject, eventdata, handles);
 
 return
 
 % --- Outputs from this function are returned to the command line.
 function varargout = oiWindow_OutputFcn(hObject, eventdata, handles)
-% Default command line output from handles structure
-%
-% Syntax:
-%   varargout = oiWindow_OutputFcn(hObject, eventdata, handles)
-%
-% Description:
-%    Function to retrieve the default command line output contained within
-%    the handles structure.
-%
-% Inputs:
-%    hObject   - handle to oiWindow (see GCBO)
-%    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
+
+% Get default command line output from handles structure
 varargout{1} = handles.output;
 return;
 
 % --- Executes on button press in btnDeleteOptImg.
 function oiDelete(hObject, eventdata, handles)
-% (Edit | Delete Current OI) Function called by menu selection
-%
-% Syntax:
-%   oiDelete(hObject, eventdata, handles)
-%
-% Description:
-%    Delete current OI as called from within menu selection function.
-%
-% Inputs:
-%    hObject   - handle to oiDelete (see GCBO)
-%    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
+% Edit | Delete Current OI
 vcDeleteSelectedObject('OPTICALIMAGE');
 [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 if isempty(oi)
@@ -160,11 +107,10 @@ function menuEditDeleteSome_Callback(hObject, eventdata, handles)
 %   menuEditDeleteSome_Callback(hObject, eventdata, handles)
 %
 % Description:
-%    Menu option under Edit to delete some OI's (not current oi, that is a
-%    separate option).
+%    Menu 
 %
 % Inputs:
-%    hObject   - handle to menuEditDeleteSome (see GCBO)
+%    hObject   - handle to menuEditZoom (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - structure with handles and user data (see GUIDATA)
 %
@@ -174,6 +120,7 @@ function menuEditDeleteSome_Callback(hObject, eventdata, handles)
 % Optional key/value pairs:
 %    None.
 %
+
 vcDeleteSomeObjects('oi');
 oiRefresh(hObject, eventdata, handles);
 return;
@@ -246,25 +193,6 @@ oiRefresh(hObject, eventdata, handles);
 return;
 
 function oiRefresh(hObject, eventdata, handles)
-% (Refresh) Refresh function called by Menu selection
-%
-% Syntax:
-%   oiRefresh(hObject, eventdata, handles)
-%
-% Description:
-%    Refresh function called when menu option selected
-%
-% Inputs:
-%    hObject   - handle to oiRefresh (see GCBO)
-%    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
 oiSetEditsAndButtons(handles);
 return;
 
@@ -344,25 +272,6 @@ return;
 
 % --------------------------------------------------------------------
 function EditMenu_Callback(hObject, eventdata, handles)
-% (Edit) Top level menu option for Edit
-%
-% Syntax:
-%   EditMenu_Callback(hObject, eventdata, handles)
-%
-% Description:
-%    Top level menu option for Edit
-%
-% Inputs:
-%    hObject   - handle to EditMenu (see GCBO)
-%    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
 return;
 
 % --- Executes during object creation, after setting all properties.Ex
