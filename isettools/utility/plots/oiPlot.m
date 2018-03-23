@@ -10,7 +10,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %
 %    The data shown in the plot are generally returned in udata. The data
 %    can also be retrieved from the figure itself, using the call
-%    get(figHandle, 'userdata');
+%    uData = get(figHandle, 'userdata');
 %
 %    Inputs are the optical image (oi), the plot type (pType), in some
 %    cases a position or ROI locations is required (xy) and in some cases
@@ -96,7 +96,8 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %    12/11/17  jnm  Formatting
 %    12/22/17  dhb  Use opticsGet(...'diffractionlimitedpsfdata'...) to get
 %                   diffraction limited psf, not opticsGet(...'psf'...).
-%                   The latter seemed unfortunately named.
+%                   The latter seemed unfortunately named. (Reverted,
+%                   BW).
 %    12/28/17  dhb  Separated out into separate grouped switch statements.
 %    12/30/17  dhb  Went through and verified that various OTF things are
 %                   done in a manner consistent with recent changes to
@@ -454,11 +455,11 @@ switch (pType)
                         
     case {'illuminancemeshlog'}
         % Mesh plot of image log illuminance
-        udata = plotIlluminanceMesh(oi, 'log');
+        udata = oiPlotIlluminanceMesh(oi, 'log');
         
     case {'illuminancemeshlinear'}
         % Mesh plot of image illuminance
-        udata = plotIlluminanceMesh(oi, 'linear');
+        udata = oiPlotIlluminanceMesh(oi, 'linear');
         
     case {'illuminanceffthline'}
         % oiPlot(oi, 'illuminance fft hline')
@@ -728,10 +729,10 @@ switch (pType)
                 rtPlot(oi, 'otf');
             otherwise
                 if isempty(varargin)
-                    udata = plotOTF(oi, 'otf');
+                    udata = oiPlotOTF(oi, 'otf');
                 else
                     w = varargin{1};
-                    udata = plotOTF(oi, 'otf', w);
+                    udata = oiPlotOTF(oi, 'otf', w);
                 end
         end
         set(g, 'userdata', udata);
@@ -740,7 +741,7 @@ switch (pType)
         
     case {'otf550'}
         % OTF at 550 nm
-        udata = plotOTF(oi, 'otf 550');
+        udata = oiPlotOTF(oi, 'otf 550');
         set(g, 'userdata', udata);
         set(g, 'name', 'OTF 550');
         colormap(jet)
@@ -749,10 +750,10 @@ switch (pType)
         % Point spread function at selected wavelength
         % oiPlot(oi, 'psf', [], 420);
         if isempty(varargin)
-            udata = plotOTF(oi, 'psf');
+            udata = oiPlotOTF(oi, 'psf');
         else
             w = varargin{1};
-            udata = plotOTF(oi, 'psf', w);
+            udata = oiPlotOTF(oi, 'psf', w);
         end
         set(g, 'userdata', udata);
         namestr = sprintf('ISET: %s', oiGet(oi, 'name'));
@@ -761,7 +762,7 @@ switch (pType)
         
     case {'psf550'}
         % PSF at 550nm spatial units are microns
-        udata = plotOTF(oi, 'psf 550');
+        udata = oiPlotOTF(oi, 'psf 550');
         set(g, 'userdata', udata);
         namestr = sprintf('ISET: %s', oiGet(oi, 'name'));
         set(g, 'Name', namestr);
@@ -778,7 +779,7 @@ switch (pType)
         if ~isempty(varargin), nSamps = varargin{1};
         else,                  nSamps = 40;
         end
-        udata = plotOTF(oi, 'ls wavelength', [], nSamps);
+        udata = oiPlotOTF(oi, 'ls wavelength', [], nSamps);
         set(g, 'userdata', udata);
         set(g, 'name', 'LS by Wave');
         colormap(jet)
@@ -794,7 +795,7 @@ switch (pType)
                 % and make the right plot. This isn't it.
                 rtPlot(oi, 'otf');
             otherwise
-                udata = plotOTF(oi, 'otf wavelength');
+                udata = oiPlotOTF(oi, 'otf wavelength');
                 set(g, 'userdata', udata);
         end
         set(g, 'name', 'OTF by Wave');
@@ -887,11 +888,11 @@ end
 
 end
 
-function uData = plotOTF(oi, pType, varargin)
+function uData = oiPlotOTF(oi, pType, varargin)
 % Plot OTF functions associated with the optics in an optical image
 %
 % Syntax:
-%   plotOTF([oi], [pType])
+%   oiPlotOTF([oi], [pType])
 %
 % Description:
 %    Plot OTF functions associated with the optics in an optical image.
@@ -949,7 +950,7 @@ pType = ieParamFormat(pType);
 
 switch lower(pType)
     case {'otf', 'otf550'}
-        % plotOTF(oi, 'otf', thisWave, nSamp);
+        % oiPlotOTF(oi, 'otf', thisWave, nSamp);
         % OTF at a selected wavelength.
         units = 'mm';  % Units are cycles/mm
         if strfind(pType, '550') %#ok<*STRIFCND>
@@ -1293,16 +1294,16 @@ switch lower(pType)
         uData.wavelength = wavelength;
         
     otherwise
-        error('Unknown plotOTF data type.');
+        error('Unknown oiPlotOTF data type.');
 end
 
 end
 
-function uData = plotIlluminanceMesh(oi, yScale)
+function uData = oiPlotIlluminanceMesh(oi, yScale)
 % Plot optical image illuminance (lux) as a mesh
 %
 % Syntax:
-%   plotIlluminanceMesh(oi, yScale)
+%   oiPlotIlluminanceMesh(oi, yScale)
 %
 % Description:
 %    The default scaling of the lux axis is logarithmic. Set yScale to
@@ -1445,49 +1446,4 @@ set(gcf, 'Name', sprintf('ISET-OI: %s', oName));
 
 end
 
-function sz = selectPlotSupport(data, prct)
-% Used with getMiddleMatrix to pull out the 'interesting' center of a plot
-%
-% Syntax:
-%   sz = selectPlotSupport(data, prct)
-%
-% Description:
-%    Sometimes we have a large surface to plot but the interesting
-%    part is near the middle of the data set. Rather than plotting the
-%    entire surf or mesh(data) we pull out a central region. This  is
-%    the method for choosing the  size of the data we pull out. This
-%    method is used in conjunction with getMiddleMatrix.
-%
-% Inputs:
-%    data - The data set to plot
-%    prct - (Optional) What percentage of the middle you wish to display,
-%           in decimal form. Default is 0.01 (1%)
-%
-% Outputs:
-%    sz   - 
-%
-% Notes:
-%	 * [Note: XXX - What if data are a vector? Can we adjust this routine
-%	   to make it work?]
-%
-%  See Also:
-%    meshPlot, plotOTF
 
-if notDefined('prct'), prct = 0.01; end
-
-r  = size(data, 1);
-mx = max(data(:));
-centerRow = round(r / 2);
-
-% Find the locations in the center row that are less than the specified
-% percent of the maximum.
-l = (data(centerRow, :) < prct * mx);
-
-if max(l) == 0
-    sz = centerRow - 1;
-else
-    [~, idx] = max(data(centerRow, l));
-    sz = max(25, centerRow - idx);
-end
-
-end
