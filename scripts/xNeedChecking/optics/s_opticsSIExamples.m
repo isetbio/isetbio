@@ -93,6 +93,7 @@ ieAddObject(oi); oiWindow;
 % Use Analyze | Optics | XXX to plot various functions in the optics
 % (optical image) window.
 
+delete(fName);
 
 %% Example 2: Create a a slight sharpening filter. 
 h1 = fspecial('gaussian', 128, 5);
@@ -104,7 +105,7 @@ psf = zeros(128,128,length(wave));
 for ii=1:length(wave), psf(:,:,ii) = h; end     % PSF data
 
 % Save the data and all the rest, in compact form 
-ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
+fname = ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
 
 optics = siSynthetic('custom',oi,'customFile','deleteMe');
 optics = opticsSet(optics,'model','shiftInvariant');
@@ -114,6 +115,8 @@ oi = oiCompute(scene,oi);
 oi = oiSet(oi,'name','Sharpened');
 ieAddObject(oi);
 oiWindow;
+
+delete(fname);
 
 %% Example 3: Create a wavelength-varying shift-invariant gaussian PSF
 
