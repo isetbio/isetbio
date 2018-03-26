@@ -60,6 +60,16 @@ function [img, parms] = imageHarmonic(parms)
     imagesc(img); colormap(gray); axis image
 %}
 %{
+    parms = harmonicP;
+    parms.center = [15 10];
+    parms.row = 128;
+    parms.col = 128;
+    parms.GaborFlag = 0.2;
+    [img, p] = imageHarmonic(parms);
+    vcNewGraphWin; imagesc(img); colormap(gray); axis image
+    grid on
+%}
+%{
     parms.row = 32;
     parms.col = 32;
     parms.contrast = 1; 

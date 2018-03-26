@@ -13,6 +13,7 @@ function params = harmonicP(varargin)
 %  ph        - Phase (0 is center of image)
 %  row       - rows and cols
 %  col
+%  center    - position within the support
 %  GaborFlag - Gaussian window, standard deviation re: window size
 %
 % To create the sum of two gratings, set these parameters as vectors
@@ -41,6 +42,7 @@ p.addParameter('freq',1,@isnumeric);
 p.addParameter('ph',pi/2,@isnumeric);
 p.addParameter('row',64,@isscalar);
 p.addParameter('col',64,@isscalar);
+p.addParameter('center',[0 0],@isvector);
 p.addParameter('GaborFlag',0,@isscalar);
 
 p.parse(varargin{:});
@@ -53,7 +55,9 @@ params.contrast  = p.Results.contrast;
 params.freq      = p.Results.freq; 
 params.ph        = p.Results.ph;
 params.row       = p.Results.row; 
-params.col       = p.Results.col; 
+params.col       = p.Results.col;
+params.center    = p.Results.center; 
+
 params.GaborFlag = p.Results.GaborFlag;
 
 end
