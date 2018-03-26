@@ -98,6 +98,7 @@ else
     
     % Check the user structure and over-write any of the parameters with
     % the user parameters
+    if isfield(parms, 'center'), dparms.center = parms.center; else; dparms.center = [0 0]; end
     if isfield(parms, 'ang'), dparms.ang = parms.ang; end
     if isfield(parms, 'contrast'), dparms.contrast = parms.contrast; end
     if isfield(parms, 'freq'), dparms.freq = parms.freq; end
@@ -113,6 +114,8 @@ x = (0:(parms.col - 1)) / parms.col;
 y = (0:(parms.row - 1)) / parms.row;
 x = x - x(end) / 2;
 y = y - y(end) / 2;
+x = x - parms.center(1);
+y = y - parms.center(2);
 [X, Y] = meshgrid(x, y);
 
 % Calculate the gabor window, or, if the space parameter is negative, the
@@ -121,6 +124,9 @@ if parms(1).GaborFlag
     sigmaParam = parms.GaborFlag * min(parms.row, parms.col);
     if (parms(1).GaborFlag > 0)
         g = fspecial('gauss', size(X), sigmaParam);
+        if (parms.center(1) ~= 0) || (parms.center(2) ~= 0)
+            g = imtranslate(g,parms.center);
+        end
     else
         xArg = pi * parms.col * X / (-2 * sigmaParam);
         yArg = pi * parms.row * Y / (-2 * sigmaParam);
