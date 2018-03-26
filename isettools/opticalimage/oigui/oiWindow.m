@@ -22,7 +22,7 @@ function varargout = oiWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-% Last Modified by GUIDE v2.5 25-Jan-2017 15:25:04
+% Last Modified by GUIDE v2.5 26-Mar-2018 11:10:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1126,4 +1126,27 @@ return;
 function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 % Help | ISET functions
 web('https://github.com/isetbio/isetbio/wiki','-browser');
+return;
+
+
+% --- Executes on button press in btnNext.
+function btnNext_Callback(hObject, eventdata, handles)
+% Button to move to next image (->)
+thisOI = ieSessionGet('selected','oi');
+nS  = ieSessionGet('nobjects','oi');
+thisOI = min(thisOI + 1,nS);
+thisOI = max(thisOI,1);
+vcSetSelectedObject('oi',thisOI);
+oiRefresh(hObject, eventdata, handles);
+return;
+
+% --- Executes on button press in btnPrev.
+function btnPrev_Callback(hObject, eventdata, handles)
+% Button to move to previous image (<-)
+thisOI  = ieSessionGet('selected','oi');
+nS = ieSessionGet('nobjects','oi');
+thisOI = min(thisOI - 1,nS);
+thisOI = max(thisOI,1);
+vcSetSelectedObject('oi',thisOI);
+oiRefresh(hObject, eventdata, handles);
 return;

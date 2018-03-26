@@ -1,7 +1,7 @@
-function val = ieSessionGet(param)
+function val = ieSessionGet(param,varargin)
 % Get fields in vcSESSION, including figure handles and custom routines
 %
-%  val = ieSessionGet(param);
+%  val = ieSessionGet(param, ...);
 %
 %  The vcSESSION parameter is a global variable at present.  It contains
 %  information about the windows, custom processing routines, and related
@@ -91,6 +91,8 @@ val = [];
 % Eliminate spaces and make lower case
 param = ieParamFormat(param);
 
+%% Main switch statement
+
 switch param
     case {'version'}
         val = vcSESSION.VERSION;
@@ -101,7 +103,7 @@ switch param
     case {'help','inithelp'}
         % Default for help is true, if the initHelp has not been set.
         if checkfields(vcSESSION,'initHelp'), val = vcSESSION.initHelp; 
-        else vcSESSION.initHelp = 1; val = 1; 
+        else, vcSESSION.initHelp = 1; val = 1; 
         end
         
     % Matlab setpref/getpref 
@@ -132,7 +134,7 @@ switch param
             if ~checkfields(iePref,'waitbar')
                 setpref('ISET','waitbar',0);
                 val = 0;
-            else val = iePref.waitbar;
+            else, val = iePref.waitbar;
             end
             vcSESSION.GUI.waitbar = val;
         end
@@ -201,6 +203,23 @@ switch param
             val = vcSESSION.GUI.vcConeImgWindow.hObject;
         end
         
+    case {'selected'}
+        % ieSessionGet('selected',objType)
+        if isempty(varargin), error('Please specify object type'); end
+        val = vcGetSelectedObject(varargin{1});
+    case {'nobjects'}
+        % ieSessionGet('n objects',objType);
+        if isempty(varargin), error('Please specify object type'); end
+        switch vcEquivalentObjtype(varargin{1})
+            case {'SCENE'}
+                val = length(vcSESSION.SCENE);
+            case {'OPTICALIMAGE'}
+                val = length(vcSESSION.OPTICALIMAGE);
+            case {'ISA'}
+                val = length(vcSESSION.ISA);
+            case {'VCIMAGE'}
+                val = length(vcSESSION.VCIMAGE);
+        end
     otherwise
         error('Unknown parameter')
 end

@@ -20,7 +20,7 @@ function varargout = sceneWindow(varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
-% Last Modified by GUIDE v2.5 22-Oct-2015 22:02:00
+% Last Modified by GUIDE v2.5 26-Mar-2018 11:01:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1174,13 +1174,13 @@ return;
 
 % --------------------------------------------------------------------
 function menuHelp_Callback(hObject, eventdata, handles)
-return
+return;
 
 % --------------------------------------------------------------------
 function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 % Help | Documentation (web)
 web('https://github.com/isetbio/isetbio/wiki','-browser');
-return
+return;
 
 % --------------------------------------------------------------------
 function menuHelpSceneProgrammers_Callback(hObject, eventdata, handles)
@@ -1192,4 +1192,27 @@ return
 function menuHelpProgGuide_Callback(hObject, eventdata, handles)
 % Help | Iset Programmers (online)
 web('https://github.com/isetbio/isetbio/wiki','-browser');
-return
+return;
+
+
+% --- Executes on button press in bntNext.
+function bntNext_Callback(hObject, eventdata, handles)
+% Push button with the + on the right of the selection popup
+s  = ieSessionGet('selected','scene');
+nS = ieSessionGet('nobjects','scene');
+s = min(s + 1,nS);
+s = max(s,1);
+vcSetSelectedObject('scene',s);
+sceneRefresh(hObject, eventdata, handles);
+return;
+
+% --- Executes on button press in btnPrev.
+function btnPrev_Callback(hObject, eventdata, handles)
+% Push button with the - on the left of the selection popup
+s  = ieSessionGet('selected','scene');
+nS = ieSessionGet('nobjects','scene');
+s = min(s - 1,nS);
+s = max(s,1);
+vcSetSelectedObject('scene',s);
+sceneRefresh(hObject, eventdata, handles);
+return;
