@@ -36,6 +36,7 @@ function il = illuminantSet(il, param, val, varargin)
 % History:
 %    xx/xx/12       (c) ImagEval Consulting, LLC, 2012.
 %    01/29/18  jnm  Formatting, fix second example.
+%    03/26/18  dhb  Fix type (can't write *e-3, need to write *1e-3).
 
 % Examples:
 %{
@@ -102,7 +103,7 @@ switch param
                 % problems here.
             elseif length(p) == length(oldW)
                 % Adjust the sampling.
-                newP = interp1(oldW, p, newW, 'linear', min(p(:) * e-3)');
+                newP = interp1(oldW, p, newW, 'linear', min(p(:) * 1e-3)');
                 il = illuminantSet(il, 'photons', newP);
             else 
                 error(['Photons and wavelength sample points not '

@@ -156,6 +156,9 @@ function val = oiGet(oi, parm, varargin)
 %    12/30/17  dhb  Started to put comments into isetbio standard format.
 %    01/22/18  dhb  Example runs in clean workspace.
 %    03/07/18  jnm  Formatting
+%    03/26/18  dhb  Change arg to determineUnits to (..., varargin{1}).
+%                   Needs to be like that to work, otherwise a cell array
+%                   rather than a string comes back.
 
 % Examples:
 %{
@@ -614,7 +617,7 @@ switch parm
         %   opticsGet(optics, 'dist per deg', unit) 
         % which is preferable to this call.
         % if isempty(varargin), units = 'm'; else, units = varargin{1}; end
-        units = determineUnits('m', varargin);
+        units = determineUnits('m', varargin{1});
         val = oiGet(oi, 'distance per degree', units);  % meters
         val = 1 / val;
         % val = oiGet(oi, 'fov')/oiGet(oi, 'width');
@@ -682,7 +685,7 @@ switch parm
         % if isempty(varargin), units = 'cyclesPerDegree';
         % else, units = varargin{1};
         % end
-        units = determineUnits('cyclesPerDegree', varargin);
+        units = determineUnits('cyclesPerDegree', varargin{1});
         val = oiFrequencySupport(oi, units);
     case {'maxfrequencyresolution', 'maxfreqres'}
         % Default is cycles/deg. By using
@@ -692,7 +695,7 @@ switch parm
         % if isempty(varargin), units = 'cyclesPerDegree';
         % else, units = varargin{1};
         % end
-        units = determineUnits('cyclesPerDegree', varargin);
+        units = determineUnits('cyclesPerDegree', varargin{1});
         % val = oiFrequencySupport(oi, units);
         if isempty(varargin), units = []; end
         fR = oiGet(oi, 'frequencyResolution', units);
@@ -703,7 +706,7 @@ switch parm
         % if isempty(varargin), units = 'cyclesPerDegree';
         % else, units = varargin{1};
         % end
-        units = determineUnits('cyclesPerDegree', varargin);
+        units = determineUnits('cyclesPerDegree', varargin{1});
         fResolution = oiGet(oi, 'frequencyresolution', units);
         [xSupport, ySupport] = meshgrid(fResolution.fx, fResolution.fy);
         val(:, :, 1) = xSupport;
@@ -714,7 +717,7 @@ switch parm
         % if isempty(varargin), units = 'cyclesPerDegree';
         % else, units = varargin{1};
         % end
-        units = determineUnits('cyclesPerDegree', varargin);
+        units = determineUnits('cyclesPerDegree', varargin{1});
         fResolution = oiGet(oi, 'frequencyresolution', units);
         l = find(abs(fResolution.fx) == 0);
         val = fResolution.fx(l:end);
@@ -724,7 +727,7 @@ switch parm
         % if isempty(varargin), units = 'cyclesPerDegree';
         % else, units = varargin{1};
         % end
-        units = determineUnits('cyclesPerDegree', varargin);
+        units = determineUnits('cyclesPerDegree', varargin{1});
         fResolution = oiGet(oi, 'frequencyresolution', units);
         l = find(abs(fResolution.fy) == 0);
         val = fResolution.fy(l:end);
