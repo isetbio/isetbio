@@ -53,7 +53,6 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 
 % Examples:
 %{
- % This is reported as a failed example.  But I do not understand why.
  oi = oiCreate('diffraction limited');
  wavelength = 700; 
  unit = 'mm';

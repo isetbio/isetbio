@@ -112,7 +112,7 @@ function val = oiGet(oi,parm,varargin)
 %                  Copyright ImagEval Consultants, LLC, 2003-2015.
 %   12/30/17  dhb  Started to put comments into isetbio standard format.
 %   01/22/18  dhb  Example runs in clean workspace.
-
+%   03/27/18  dhb  Change call to vcGetSelectedObject to vcGetObject
 
 % TODO
 % Deleting raytrace (shift-variant) code.
@@ -257,7 +257,8 @@ switch parm
         elseif isfield(oi, 'distance') && oi.distance > 0
             sDist = oi.distance;
         else
-            scene = vcGetSelectedObject('Scene');
+            %scene = vcGetSelectedObject('Scene');
+            scene = vcGetObject('scene');
             if isempty(scene), sDist = 1e10;
             else, sDist = sceneGet(scene,'distance');
             end
