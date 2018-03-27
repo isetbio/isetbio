@@ -22,10 +22,9 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 % 
 % The formulae are described in dlCore.m
 %
-% Examples:
-%  If you send in only one argument, it must be the optical image
-%  structure. In this first example, We calculate all of the OTFs (one for
-%  each wavelength).
+% If you send in only one argument, it must be the optical image
+% structure. In this first example, We calculate all of the OTFs (one
+% for each wavelength).
 %
 %   OTF2D = dlMTF(oi);
 %
@@ -47,7 +46,6 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 %
 % But, if you want units in cycles/deg, you must send in the optical image.
 %
-%
 % Copyright ImagEval Consultants, LLC, 2003.
 %
 %  See also
@@ -55,6 +53,7 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 
 % Examples:
 %{
+ % This is reported as a failed example.  But I do not understand why.
  oi = oiCreate('diffraction limited');
  wavelength = 700; 
  unit = 'mm';
