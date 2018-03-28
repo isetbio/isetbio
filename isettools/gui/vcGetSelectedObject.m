@@ -24,11 +24,16 @@ function [val,sOBJECT] = vcGetSelectedObject(objType)
 %    obj = vcGetObject(objType)
 %    obj = vcGetObject(objType,val)
 %
-% Currently, I only use this routine if I need the val
+% Currently, I only call this routine directly if I need the val
 %
 %    val = vcGetSelectedObject('foo')
 %
 % Copyright ImagEval Consultants, LLC, 2005.
+%
+% See also:
+%    vcGetObject
+
+%%
 
 global vcSESSION
 
@@ -50,7 +55,7 @@ switch lower(objType)
         if checkfields(vcSESSION,'SELECTED','ISA'), val = vcSESSION.SELECTED.ISA;  end
     case {'display'}
         if checkfields(vcSESSION,'SELECTED', 'DISPLAY'), val = vcSESSION.SELECTED.DISPLAY; end
-    otherwise,
+    otherwise
         error('Unknown object type.');
 end
 
