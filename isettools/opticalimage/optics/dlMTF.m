@@ -53,12 +53,11 @@ function [OTF2D, fSupport,inCutoffFreq] = dlMTF(oi,fSupport,wave,units)
 
 % Examples:
 %{
- % This is reported as a failed example.  But I do not understand why.
  oi = oiCreate('diffraction limited');
  wavelength = 700; 
  unit = 'mm';
  fSupport = oiGet(oi,'fSupport',unit);
- OTF2D = dlMTF(optics,fSupport,wavelength,unit);
+ OTF2D = dlMTF(oi,fSupport,wavelength,unit);
  vcNewGraphWin;
  mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
  colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
