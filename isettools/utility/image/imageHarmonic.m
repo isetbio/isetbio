@@ -124,8 +124,8 @@ x = (0:(parms.col - 1)) / parms.col;
 y = (0:(parms.row - 1)) / parms.row;
 x = x - x(end) / 2;
 y = y - y(end) / 2;
-x = x - parms.center(1);
-y = y - parms.center(2);
+x = x - parms.center(1)/ parms.col;
+y = y - parms.center(2)/ parms.row;
 [X, Y] = meshgrid(x, y);
 
 % Calculate the gabor window, or, if the space parameter is negative, the
