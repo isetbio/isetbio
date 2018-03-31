@@ -765,7 +765,7 @@ switch parm
                         val = zeros(size(optics.OTF.OTF));
                         if strcmp(optics.name,'human-MW')
                             for ii=1:length(thisWave)
-                                val(:,:,ii) = fftshift(abs(fft2(otf(:,:,ii))));
+                                val(:,:,ii) = fftshift(abs(fft2(optics.OTF.OTF(:,:,ii))));
                             end
                         else
                             for ii=1:length(thisWave)
