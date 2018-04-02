@@ -118,8 +118,14 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     coneIndices{3} = find(nonNullConeTypes == 3);
     coneIndices{4} = find(nonNullConeTypes == 4);
 else
-    % Convert (x,y,t) to (space,t)
-    [absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);   % Per sample
+    % Convert (x,y,t) to (x*y,t)
+    if tSamples > 1  % Again, if we deal with a OIS: reshape cone matrix into one vector, leave time dimension as is (so Space x time samples)
+        r = size(cMosaic.absorptions,1);
+        c = size(cMosaic.absorptions,2);
+        absorptions = reshape(cMosaic.absorptions, [r*c, tSamples]);  
+    else            % If not, assume OI with possibly multiple wavelengths:
+        [absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);   % Per sample
+    end
     % vcNewGraphWin; plot(absorptions(100,:));
 
     % We will store the current here
