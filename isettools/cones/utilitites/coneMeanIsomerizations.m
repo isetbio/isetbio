@@ -106,7 +106,14 @@ else
     % into cones?]
     pRate = cMosaic.absorptions;             % Absorptions per sample
     if isempty(pRate), return; end           % Return 0 when no absorptions
-    pRateXW = RGB2XWFormat(pRate);
+    
+    % If we deal with a OIS: reshape cone matrix into one vector, leave time dimension as is (so Space x time samples)
+    if size(cMosaic.emPositions,1) > 1
+        pRateXW = reshape(pRate, [size(pRate,1)*size(pRate,2), cMosaic.tSamples]);
+    else % If not, assume OI with possible wavelengths:
+        pRateXW = RGB2XWFormat(pRate);
+    end
+
     lConeIndices = find(coneType == 2);
     mConeIndices = find(coneType == 3);
     sConeIndices = find(coneType == 4);
