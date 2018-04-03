@@ -24,7 +24,7 @@ p.KeepUnmatched = true;
 p.parse(varargin{:});
 bgR = p.Results.bgR;
 
-% Check that absorption time series has been computed
+% EK: Check that absorption time series has been computed
 if (isempty(obj.absorptions)  || size(obj.absorptions,3) == 1) && (isempty(p.Results.absorptionsInXWFormat))
     error('You must compute isomerizations (absorptions) time series prior to the current.');
 end
@@ -33,7 +33,7 @@ end
 % biophysical model to reach steady state faster.  It is also used by the
 % linear os model to obtain the needed filters.
 
-% if background absorption rate is already computed and defined as input
+% EK: if background absorption rate is already computed and defined as input
 % variable, use that bgR. If not, compute it on the spot..
 if isempty(bgR)
     bgR = coneMeanIsomerizations(obj, 'absorptionsInXWFormat', p.Results.absorptionsInXWFormat);
@@ -42,7 +42,7 @@ end
 if isa(obj.os,'osLinear')
     [obj.current, interpFilters, meanCur] = obj.os.osCompute(obj,'bgR',mean(bgR),varargin{:});
 elseif isa(obj.os,'osBioPhys')
-    obj.current = obj.os.osCompute(obj,'bgR',bgR); % bgR is already a mean, or just one cone class so warm up the biophys model.
+    obj.current = obj.os.osCompute(obj,'bgR',bgR); % EK: previously mean(bgR), now changed to bgR, since that is already an average, to warm up the biophys model.
     interpFilters = [];
     meanCur       = [];
 else

@@ -125,7 +125,7 @@ for meanInd = 1:length(meanRate)
     % with the impulse stimulus
     cm.absorptions  = reshape(stimulus, [1 1 nSamples]);
     
-    % Previously, cm.computeCurrent() computed the background rate again.
+    % EK: Previously, cm.computeCurrent() computed the background rate again.
     % Here, I put in the back ground as an argument, as line 116, for the
     % absorption rate calculation of impulse calculation.
     %     cm.computeCurrent();
