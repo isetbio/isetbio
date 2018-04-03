@@ -107,6 +107,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('trialBlockSize', [], @isnumeric);
@@ -185,7 +186,14 @@ rounded.eyeMovementTimeAxis = rounded.oiTimeAxis(1) + ...
 
 %% Compute OIrefresh
 if (numel(rounded.oiTimeAxis) == 1)
-    rounded.oiRefreshInterval = rounded.defaultIntegrationTime;
+    if (~isempty(p.Results.stimulusSamplingInterval))
+        rounded.oiRefreshInterval = ...
+           round(p.Results.stimulusSamplingInterval/rounded.factor);
+    else
+        % No information about what the stimulus refresh interval is,
+        % so arbitrarily set it to the integrationTime
+        rounded.oiRefreshInterval = rounded.defaultIntegrationTime;
+    end
 else
     rounded.oiRefreshInterval = rounded.oiTimeAxis(2) - ...
         rounded.oiTimeAxis(1);
