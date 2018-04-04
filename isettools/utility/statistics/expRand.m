@@ -19,11 +19,14 @@ function val = expRand(mn, S)
 % Outputs:
 %    val - The returning matrix
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/10       (c) 2010 Stanford Synapse Team 
 %    12/13/17  jnm  Formatting
-
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

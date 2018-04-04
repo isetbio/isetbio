@@ -7,6 +7,9 @@ function bool = ieVarInFile(fullname, varName)
 % Description:
 %    Check whether a variable is contained in a particular MATLAB file.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit ieVarInFile.m' into the Command Window.
+%
 % Inputs:
 %    fullname - Typically, this is the file name. But if you already have
 %               the variables loaded, say
@@ -19,7 +22,8 @@ function bool = ieVarInFile(fullname, varName)
 %    bool     - The boolean value indicating whether or not the variable is
 %               contained in the file.
 %
-% Examples are included within the code.
+% Optional key/value pairs:
+%    None.
 % 
 
 % Examples:

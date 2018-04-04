@@ -1,5 +1,5 @@
 function response = coneEmpiricalDimFlash(coef, t)
-% Return estimate of the Schnapf et al. dim flash cone photocurrent response.
+% Return estimate of Schnapf et al. dim flash cone photocurrent response.
 %
 % Syntax:
 %   response = coneEmpiricalDimFlash(coeffs, t)
@@ -31,6 +31,9 @@ function response = coneEmpiricalDimFlash(coef, t)
 % Outputs:
 %    response - The calculated flash response
 %
+% Optional key/value pairs:
+%    None.
+%
 % References:
 %    * Schnapf et al., 1990, Visual transduction in cones of the monkey
 %      Macaca Fascicularis, p. 693.  Paper available at
@@ -41,6 +44,7 @@ function response = coneEmpiricalDimFlash(coef, t)
 %    04/xx/11  Rieke     Replaced gaussian by exponential decay
 %    01/08/16  dhb       Rename, clean
 %    12/04/17  jnm       Formatting
+%    01/26/18  jnm       Formatting update to match Wiki.
 
 %% Give names to the coefficient vector entries
 ScFact = coef(1);  % Scaling Factor

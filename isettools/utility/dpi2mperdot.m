@@ -20,6 +20,9 @@ function mpd = dpi2mperdot(dpi, unit)
 % Optional key/value pairs:
 %    None.
 %
+% Notes:
+%    * [Note: JNM - mperdot2dpi doesn't exist?]
+%
 % See Also:
 %    mperdot2dpi
 %

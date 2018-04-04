@@ -32,7 +32,7 @@ function [data, vObj] = ieMovie(data, varargin)
 %    xx/xx/16   bw  ISETBIO Team 2016
 %    11/22/17  jnm  Formatting
 %    01/06/18  dhb  Suppress warning for big videos.
-%    01/16/18  jnm  Formatting update to match Wiki.
+%    01/18/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -88,7 +88,8 @@ nFrames = size(data, tDim);
 
 % If it is already within 0,1 range leave the data alone.
 % Otherwise, scale to 0,1 and apply gamma
-mind = min(data(:)); maxd = max(data(:));
+mind = min(data(:));
+maxd = max(data(:));
 if mind < 0 || maxd > 1
     data = ieScale(data, 0, 1);
     mind = 0; maxd = 1;

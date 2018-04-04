@@ -17,6 +17,9 @@ function [illScale, meanSPD] = hcIlluminantScale(hcIlluminant)
 %	 illScale     - Relative intensity of the illuminant across the image
 %    meanSPD	  - Illuminant SPD (mean)
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    s_hcHyspexToISET
 %
@@ -24,10 +27,7 @@ function [illScale, meanSPD] = hcIlluminantScale(hcIlluminant)
 % History:
 %    xx/xx/13       Copyright Imageval, LLC , 2013
 %    12/05/17  jnm  Formatting
-
-% Examples:
-%{
-%}
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 if notDefined('hcIlluminant'), error('hypercube illuminant required');end
 

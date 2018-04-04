@@ -1,6 +1,5 @@
 function info = hcReadHyspexImginfo(filename)
-% Read ENVI image header files (special purpose for hyperspectral
-% data)
+% Read ENVI image header files (special purpose for hyperspectral data)
 %
 % Syntax:
 %   info = hcReadHyspexImginfo(filename)
@@ -20,7 +19,8 @@ function info = hcReadHyspexImginfo(filename)
 % Outputs:
 %    info     - The ENVI image header information
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    hcReadHyspex
@@ -28,8 +28,8 @@ function info = hcReadHyspexImginfo(filename)
 % History:
 %    xx/xx/xx  th   Created. Author: trym.haavardsholm@ffi.no
 %    12/06/17  jnm  Formatting
-%    12/27/17   BW  This is not of general utility, but left in
-%    anyway.
+%    12/27/17   BW  This is not of general utility, but left in anyway.
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 [pathstr, name, ext] = fileparts(filename);
 
@@ -74,11 +74,7 @@ while ~feof(fid)
         field = strrep(strtrim(match.var), ' ', '_');
         
         % Read all values.
-        if isempty(match.vals)
-            vals = {};
-        else
-            vals = {match.vals};
-        end
+        if isempty(match.vals), vals = {}; else, vals = {match.vals}; end
         
         while isempty(strfind(curr_line, '}'))
             curr_line = fgetl(fid);
@@ -98,7 +94,7 @@ while ~feof(fid)
             
             num_vals = cell(size(vals));
             all_nums = 1;
-            for j=1:length(vals)
+            for j = 1:length(vals)
                 num_vals{j} = str2double(vals{j});
                 
                 if isempty(num_vals{j})

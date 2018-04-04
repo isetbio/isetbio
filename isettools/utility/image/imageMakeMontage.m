@@ -7,6 +7,9 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
 % Description:
 %    Create an image comprising a montage of the slices in hc
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit imageMakeMontage.m' into the Command Window.
+%
 % Inputs:
 %    hc        - x by y by sliceNum
 %    sliceList - The number of slices to include. Default is all.
@@ -17,9 +20,10 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
 %    img       - The image data
 %    coords    - Image coordinate data
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
-% See also:
+% See Also:
 %   imageMontage
 %
 
@@ -33,7 +37,9 @@ function  [img, coords] = imageMakeMontage(hc, sliceList, nCols, backVal)
     [img, coords] = imageMakeMontage(hc.data);
 	vcNewGraphWin;
     imagesc(img);
-    colormap(gray); axis equal; axis off;
+    colormap(gray);
+    axis equal;
+    axis off;
 %}
 
 %%
@@ -55,7 +61,7 @@ if(isempty(nCols)), nCols = ceil(sqrt(nImages) * sqrt((r / c))); end
 nRows = ceil(nImages / nCols);
 
 % Allocate for the image. Can we put the class(hc) in here?
-img = ones(r*nRows, c*nCols, class(hc))*backVal;
+img = ones(r * nRows, c * nCols, class(hc)) * backVal;
 
 count = 0;
 nSlices = length(sliceList);

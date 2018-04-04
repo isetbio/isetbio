@@ -15,6 +15,9 @@ function [h, rgbim] = imagescRGB(rgbim, varargin)
 %        In XW format use:  imagescRGB(img, row, col, [gamma])
 %        In RGB format use: imagescRGB(img, [gamma])
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit imagescRGB.m' into the Command Window.
+%
 % Inputs:
 %    rgbim - The RGB Image
 %    varargin - The other potential variables, depending on the format of
@@ -30,6 +33,9 @@ function [h, rgbim] = imagescRGB(rgbim, varargin)
 %    h        - The image handle
 %    rgbim    - The image data
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * TODO: I am concerned about the ordering of the ^ gamma and the scale
 %      operations. Perhaps scaling should be first, and then the gamma. As
@@ -40,12 +46,13 @@ function [h, rgbim] = imagescRGB(rgbim, varargin)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/08/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
     foo = load('trees');
     [r, c] = size(foo.X);
-    for ii=1:3, rgb(:, :, ii) = reshape(foo.map(foo.X, ii), r, c); end
+    for ii = 1:3, rgb(:, :, ii) = reshape(foo.map(foo.X, ii), r, c); end
 
     rgbScaled = imagescRGB(rgb);
     rgbScaled = imagescRGB(rgb, 0.3);

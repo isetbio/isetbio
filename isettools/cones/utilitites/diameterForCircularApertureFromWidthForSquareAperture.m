@@ -1,8 +1,7 @@
 function circularApertureDiameter = ...
     diameterForCircularApertureFromWidthForSquareAperture(...
     squareApertureWidth)
-% Calculate diameter of circular aperture of identical area given width for
-% square aperture
+% Calculate circular diameter of equal area given square aperture's width
 %
 % Syntax:
 %    circularApertureDiameter = ...
@@ -15,11 +14,18 @@ function circularApertureDiameter = ...
 %    we specify photoreceptor diameter by height and width of a square
 %    collecting aperature that are then multiplied to give us the area.
 %
+%    Examples are contained in the code. To access, type 'edit
+%    diameterForCircularApertureFromWidthForSquareAperture.m' in the
+%    Command Window.
+%
 % Input:
 %    squareApertureWidth      - Width of square aperture
 %
 % Output: 
 %    circularApertureDiameter - Diameter of circular aperture
+%
+% Optional key/value pairs:
+%    None
 %
 % See Also:
 %    sizeForSquareApertureFromDiameterForCircularAperture
@@ -31,6 +37,6 @@ function circularApertureDiameter = ...
         diameterForCircularApertureFromWidthForSquareAperture(...
         squareApertureWidth)
 %}
-    area = squareApertureWidth^2;
-    circularApertureDiameter = 2.0*sqrt(area/pi);
+    area = squareApertureWidth ^ 2;
+    circularApertureDiameter = 2.0 * sqrt(area / pi);
 end

@@ -18,6 +18,10 @@ function val = sceneGet(scene, parm, varargin)
 %    [col, row, height, width] If a vector, the number of points is
 %    (height + 1)  *  (width + 1) So, [col, row, 0, 0] returns 1 point and
 %    [col, row, 1, 1] returns 4 points.
+%
+%    There are examples in the code. Type 'edit sceneGet' into the Command
+%    Window to access.
+%
 % Inputs:
 %    scene    - The scene structure
 %    parm     - The parameter name. There are a large number of options,

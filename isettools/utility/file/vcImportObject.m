@@ -19,6 +19,9 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 %    image. The default for optics is to preserve the data. The default for
 %    other objects is to clear the data.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit vcImportObject.m' into the Command Window.
+%
 % Inputs:
 %    objType          - (Optional) Object type to import. Default is scene.
 %    fullName         - (Optional) Full path and file name. Default is []
@@ -29,6 +32,9 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 % Outputs:
 %    newVal           - The new value for the variable
 %    fullName         - the full file name and path.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: JNM - TODO: unify vcLoad (below) and vcLoadObject, as per
@@ -44,8 +50,8 @@ function [newVal, fullName] = vcImportObject(objType, fullName, ...
 %{
     scene = sceneCreate;
     fname = tempname;
-    save(fname,'scene');
-    newVal = vcImportObject('SCENE',fname);
+    save(fname, 'scene');
+    newVal = vcImportObject('SCENE', fname);
 %}
 
 if notDefined('objType'), objType = 'SCENE'; end
@@ -72,15 +78,12 @@ switch lower(objType)
         [optics, fullName] = vcLoadOptics(objType, fullName);
         if ~isempty(optics)
             oi = oiSet(oi, 'optics', optics);
-            if ~preserveDataFlag
-                oi = oiClearData(oi);
-            end
+            if ~preserveDataFlag, oi = oiClearData(oi); end
             ieReplaceObject(oi, newVal);
         end
     otherwise
         error('Unknown object type.');
 end
-
 
 end
 
@@ -89,7 +92,7 @@ function [obj, fullName] = vcLoadOptics(objType, fullName)
 % Function to handle loading pixels, optics, and (in the future) displays.
 %
 % Syntax:
-%   [obj, fullName] = vcLoadOptics(objType, fullName)
+%   [obj, fullName] = vcLoadOptics(objType, [fullName])
 %
 % Description:
 %    This routine will handle loading pixels, optics, and in the future, it
@@ -97,11 +100,15 @@ function [obj, fullName] = vcLoadOptics(objType, fullName)
 %
 % Inputs:
 %    objType  - The required object type
-%    fullName - the full file name and path
+%    fullName - (Optional) the full file name and path. Default is to
+%               query the user to select a file.
 %
 % Outputs:
 %    obj      - The object in question
 %    fullName - The object path and filename
+%
+% Optional key/value pairs:
+%    None.
 %
 
 obj = [];
@@ -126,36 +133,55 @@ end
 % To be deprecated or at least heavily changed. Loads an ISET object
 % from a file into the vcSESSION structure. Rather like a read and
 % ieAddObject() call.
-function [newVal,fullName] = vcLoadObject(objType,fullName,val)
+function [newVal, fullName] = vcLoadObject(objType, fullName, val)
+% Use vcImportObject, which will call this one as necessary.
 %
-%     [newVal,fullName] = vcLoadObject(objType,[fullName], [val])
+% Syntax:
+%   [newVal, fullName] = vcLoadObject([objType], [fullName], [val])
 %
-% Use vcImportObject instead.  That routine calls this one when
-% appropriate, but handles more types of objects and a more general
-% case.
+% Description:
+%    Use vcImportObject instead. vcImportObject will call this one when it
+%    is appropriate, but will handle more types of objects and a more
+%    general case.
 %
-% Description
+%    ISETBIO objects can be saved as Matlab (.mat) files and then loaded.
+%    This routine imports the data from an ISET object.
 %
-%   ISETBIO objects can be saved as Matlab (.mat) files and then
-%   loaded. This routine imports the data from an ISET object.
-%
-%    The data are loaded and stored in the vcSESSION data structure. You can
-%    assign it a particular slot in the cell array of objects using VAL, or if
-%    no VAL is passed to this routine the object will be given a new value.
-%    The file name used to import the data is also assigned to the object
-%    name.  
+%    The data are loaded and stored in the vcSESSION data structure. You
+%    can assign it a particular slot in the cell array of objects using
+%    VAL, or if no VAL is passed to this routine the object will be given a
+%    new value. The file name used to import the data is also assigned to
+%    the object name.
 %
 %    The object types that can be loaded are SCENE, OPTICALIMAGE, ISA, or
 %    VCIMAGE
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit vcLoadObject.m' into the Command Window.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Inputs:
+%    objType  - (Optional) The object type. Default is scene.
+%    fullname - (Optional) The full file name. Default is to query user.
+%    val      - (Optional) The object value(s). Default is to create a new
+%               value for the object.
+%
+% Outputs:
+%    newVal   - The newly created value.
+%    fullName - The full file name.
+%
+% Optional key/value pairs:
+%    None.
+%
+
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    01/29/18  jnm  Formatting
 
 % Examples:
 %{
-    % * [Note: DHB - This does not seem to actually work
-    %    in that selecting any of the available files in the dialog
-    %    produces a warning that "Variable 'scene' not found."
+    % [Note: DHB - This does not seem to actually work in that selecting
+    % any of the available files in the dialog produces a warning that
+    % "Variable 'scene' not found."]
     scene = sceneCreate;
     ieAddObject(scene);
     vc
@@ -171,7 +197,7 @@ objType  = vcEquivalentObjtype(objType);
 
 % Set up the full file name
 if notDefined('fullName')
-    fullName = vcSelectDataFile('stayput','r','mat');
+    fullName = vcSelectDataFile('stayput', 'r', 'mat');
     if isempty(fullName), newVal = []; return; end
 end
 [~, objName] = fileparts(fullName);
@@ -179,35 +205,35 @@ end
 %%
 switch(lower(objType))
     case 'scene'
-        data = load(fullName,'scene');
+        data = load(fullName, 'scene');
         data.scene.name = objName;
-        vcAddAndSelectObject('scene',data.scene);
+        vcAddAndSelectObject('scene', data.scene);
         
     case 'opticalimage'
-        data = load(fullName,'opticalimage');
+        data = load(fullName, 'opticalimage');
         data.opticalimage.name = objName;
-        vcAddAndSelectObject('opticalimage',data.opticalimage);
+        vcAddAndSelectObject('opticalimage', data.opticalimage);
         
     case 'isa'
         % We have problems with the variable name isa in 7.04. 
         % We will have to make many changes to fix this.
         % In  Matlab 7.04 the load of isa generates a warning, and the
-        % Mathworks kindly changes my variable name.  We trap this
-        % condition here and handle it.  But if we have to do it lots of
-        % places, we are in trouble.
+        % Mathworks kindly changes my variable name. We trap this condition
+        % here and handle it. But if we have to do it lots of places, we
+        % are in trouble.
         % warning('off');
-        data = load(fullName,'isa');
+        data = load(fullName, 'isa');
         % warning('on');
 
         % This is what they rename the variable in Matlab 7.04
-        if checkfields(data,'isa_'), data.isa = data.isa_; end
+        if checkfields(data, 'isa_'), data.isa = data.isa_; end
         data.isa.name = objName;
-        vcAddAndSelectObject('isa',data.isa);
+        vcAddAndSelectObject('isa', data.isa);
         
     case 'vcimage'
-        data = load(fullName,'vcimage');
+        data = load(fullName, 'vcimage');
         data.vcimage.name = objName;
-        vcAddAndSelectObject('vcimage',data.display);
+        vcAddAndSelectObject('vcimage', data.display);
         
     otherwise
         error('Unknown object type');

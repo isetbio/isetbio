@@ -19,11 +19,11 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %    image with grid).
 %
 % Inputs:
-%    oi      - (Optional) The optical Image structure. Default is to
-%              retrieve an oi object using vcGetObject.
-%    pType   - (Optional). The plot type. Default is 'illuminance hline'.
-%              There are a vast number available, listed below, sorted by
-%              category:
+%    oi       - (Optional) The optical Image structure. Default is to
+%               retrieve an oi object using vcGetObject.
+%    pType    - (Optional). The plot type. Default is 'illuminance hline'.
+%               There are a vast number of types available, listed below,
+%               sorted by category:
 %           Irradiance (Irr)
 %               {'irradiance photons roi'} - Irr within an ROI of the image
 %               {'irradiance energy roi'} - Irr within an ROI of the image
@@ -33,7 +33,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                                      (photons) - (space x wavelength)
 %               {'irradiance fft'} - 2D FFT of radiance at some wavelength
 %               {'irradiance image grid'} - Show spatial grid on irr image
-%               {'irradiance image no grid'} - Show irr image without a grid
+%               {'irradiance image no grid'} - Show irr image without grid
 %               {'irradiance waveband image'} - Irr image within a band
 %           Illuminance (Ill)
 %               {'illuminance mesh log'} - Mesh plot of image log ill
@@ -65,15 +65,18 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   plot in the line spread can be set (default: 40).
 %               {'lens transmittance'} - Spectral lens transmittance. 
 %                   Computed from the lens density in the human case. 
-%    roiLocs - (Optional) Region of Interest Locations. Default depends on
-%              the plot type in order select the region of interest, which
-%              is sometimes a line and sometimes a rectangle.
-%    wave/gSpacing - Additional arguments passed through varargin specify
-%              wavelength and/or grid spacing.
+%    roiLocs  - (Optional) Region of Interest Locations. Default depends on
+%               the plot type in order select the region of interest, which
+%               is sometimes a line and sometimes a rectangle.
+%    varargin - Additional arguments passed in, such as:
+%           {wave, gSpacing} - Specify wavelength and/or grid spacing.
 %
 % Outputs:
 %    udata   - User data structure
 %    g       - Figure/Graph Handle
+%
+% Optional key/value pairs:
+%    Needs to be populated.
 %
 % Notes:
 %    * [Note: JNM - roiLocs are listed as optional, however a number of the
@@ -107,6 +110,7 @@ function [udata, g] = oiPlot(oi, pType, roiLocs, varargin)
 %                   image with zero in the center.  Doesn't matter because 
 %                   only the amplitude is being plotted, but seemed like
 %                   good coding practice.
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -689,7 +693,6 @@ switch (pType)
     case {'lenstransmittance'}
         % oiPlot(oi, 'lens transmittance')
         % If human, uses the lens object attached to oi.
-        
         w = oiGet(oi, 'wavelength');
         set(g, 'Name', 'ISETBIO:  Lens');
 
@@ -837,11 +840,15 @@ function udata = oiPlotIrradiance(oi, dataType, roiLocs)
 % Outputs:
 %    udata    - User Data structure.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/12/17  jnm  Formatting
 %    12/25/17   BW  Fixed by adding roiLocs test.
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 if notDefined('dataType'), dataType = 'photons'; end
 if notDefined('roiLocs'), error('roi locs required'); end
@@ -915,14 +922,17 @@ function uData = oiPlotOTF(oi, pType, varargin)
 % Outputs:
 %    uData - The user data structure.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %	 * [Note: JNM - When 2015b cycles out, replace strfind with contains]
 %    * [Note: XXX - TODO: Implement raytrace
 %    * [Note: JNM - TODO: Someone needs to check over the "Note: XXX - "
 %      notes below, so we can determine which are safe to remove. There are
 %      several such notes.]
-%    * [Note: XXX: Determine how to better select the number of samples for the
-%      spatial frequency. Currently 100 samples, the number of which is
+%    * [Note: XXX: Determine how to better select the number of samples for
+%      the spatial frequency. Currently 100 samples, the number of which is
 %      arbitrarily chosen.] 
 %
 
@@ -930,6 +940,7 @@ function uData = oiPlotOTF(oi, pType, varargin)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    xx/xx/12       Moved into oiPlot June, 2012.
 %    12/12/17  jnm  Formatting
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 if notDefined('oi'), oi = vcGetObject('oi'); end
 if notDefined('pType'), pType = 'otf550'; end
@@ -983,6 +994,7 @@ switch lower(pType)
                 freqOverSample = 2;
                 fSupport = opticsGet(optics, 'dl fsupport matrix', ...
                     thisWave, units, nSamp);
+
                 fSupport = fSupport * freqOverSample;  
                 otf = dlMTF(oi, fSupport, thisWave, units);
                 
@@ -1055,6 +1067,7 @@ switch lower(pType)
                 
                 psf = opticsGet(optics, 'psf data', ...
                     thisWave, units, nSamp, freqOverSample);
+
                 fSupport = opticsGet(optics, 'dlFSupport matrix', ...
                     thisWave, units, nSamp);
                 fSupport = fSupport * freqOverSample;
@@ -1231,7 +1244,7 @@ switch lower(pType)
         opticsModel = opticsGet(optics, 'opticsModel');
         units = 'um';
         
-        % * [Note: BW - We get the OTF slightly differently for the different
+        % [Note: BW - We get the OTF slightly differently for the different
         % models. If we rewrote opticsGet to check for the optics model, we
         % could do things a little more simply here. Maybe we should put
         % this code into opticsGet.]
@@ -1243,7 +1256,7 @@ switch lower(pType)
                 % choose this better. Should be using unitFrequencyList()
                 % here.
                 %
-                % * [Note: BW - Determine how to better select the number of
+                % [Note: BW - Determine how to better select the number of
                 % samples for the spatial frequency.]
                 if length(varargin) >= 1
                     peakF = varargin{1};
@@ -1322,6 +1335,9 @@ function uData = oiPlotIlluminanceMesh(oi, yScale)
 % Outputs:
 %    uData  - The user data structure
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note: JNM - the variable roiFlag is not included in the header, but
 %      there is a query for whether or not it was defined at the beginning
@@ -1384,6 +1400,9 @@ function uData = oiPlotCIE(oi, dataType, roiLocs)
 % Outputs:
 %    uData    - The user data structure
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note: JNM - There are no default options for any of the arguments,
 %      or checks that they are populated.]
@@ -1445,5 +1464,39 @@ oName = oiGet(oi, 'name');
 set(gcf, 'Name', sprintf('ISET-OI: %s', oName));
 
 end
+
+
+function sz = selectPlotSupport(data, prct)
+% Used with getMiddleMatrix to pull out the 'interesting' center of a plot
+%
+% Syntax:
+%   sz = selectPlotSupport(data, prct)
+%
+% Description:
+%    Sometimes we have a large surface to plot but the interesting
+%    part is near the middle of the data set. Rather than plotting the
+%    entire surf or mesh(data) we pull out a central region. This  is
+%    the method for choosing the  size of the data we pull out. This
+%    method is used in conjunction with getMiddleMatrix.
+%
+% Inputs:
+%    data - The data set to plot
+%    prct - (Optional) What percentage of the middle you wish to display,
+%           in decimal form. Default is 0.01 (1%)
+%
+% Outputs:
+%    sz   - The center value(s) of data of size prct
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%	 * [Note: XXX - What if data are a vector? Can we adjust this routine
+%	   to make it work?]
+%
+%  See Also:
+%    meshPlot, plotOTF
+
+if notDefined('prct'), prct = 0.01; end
 
 

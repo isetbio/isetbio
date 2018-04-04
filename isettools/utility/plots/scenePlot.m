@@ -10,8 +10,8 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %    in order to plot scene radiance properties. 
 %
 % Inputs:
-%    scene    - The scene in which to add the plot.
-%    pType    - The plot type. There are a multitude of options, listed
+%    scene   - The scene in which to add the plot.
+%    pType   - The plot type. There are a multitude of options, listed
 %               under their categories below:
 %        Radiance
 %          {'radiance hline'}          - Photons, Horizontal line radiance
@@ -61,13 +61,14 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %        Depth - all in Meters
 %          {'depth map'}               - Depth map
 %          {'depth map contour'}       - Depth map with contour overlaid
-%    roiLocs  - Region of Interest locations
+%    roiLocs - Region of Interest locations
 %
 % Outputs:
-%    udata    - The user data structure
-%    g        - The figure handle information
+%    udata   - The user data structure
+%    g       - The figure handle information
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    t_scenePlot, oiPlot, scenePlotRadiance
@@ -77,13 +78,15 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/11/17  jnm  Formatting, fix examples section, some edits.
 %    12/25/17   BW  Addressed JNM comments. Added example info
+%    01/24/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
-    % ETTBSkip.  Requires user input.
+    % ETTB - Skip. Requires user input.
     % Also see t_scenePlot for additional examples
     s = sceneCreate;
-    ieAddObject(s); sceneWindow;
+    ieAddObject(s);
+    sceneWindow;
     scenePlot(s,'radiance v line spectrum');
     scenePlot(s,'radiance h line spectrum');
 %}
@@ -244,7 +247,8 @@ switch lower(pType)
             grid on;
             set(gca, 'xtick', ieChooseTickMarks(pos.y, nTicks))
         end
-        colormap(mp); colorbar;
+        colormap(mp);
+        colorbar;
         
         udata.wave = wave;
         udata.pos = pos.y;
@@ -268,7 +272,8 @@ switch lower(pType)
         imagesc(x, wave, data');
         ylabel('Wavelength (nm)')
         xlabel('Horizontal position (mm)');
-        colormap(hot); colorbar;
+        colormap(hot);
+        colorbar;
         
         udata.wave = wave;
         udata.pos = x;
@@ -511,7 +516,7 @@ switch lower(pType)
         rad = sum(rad, 3);
 
         % Make a new window and show the image
-        % figure(vcSelectFigure('GRAPHWIN'));   clf
+        % figure(vcSelectFigure('GRAPHWIN')); clf
         imagesc(rad);
         colormap(gray(256));
         axis image;
@@ -531,7 +536,7 @@ switch lower(pType)
         lum = data(roiLocs(2), :);
         pos = sceneSpatialSupport(scene, 'mm');
         
-        % figure(vcSelectFigure('GRAPHWIN'));   clf
+        % figure(vcSelectFigure('GRAPHWIN')); clf
         plot(pos.x, lum);
         xlabel('Position (mm)');
         ylabel('luminance (cd/m^2)');
@@ -558,7 +563,7 @@ switch lower(pType)
         normalize = 1;
         [freq, fftlum] = ieSpace2Amp(pos.x, lum, normalize);
 
-        % figure(vcSelectFigure('GRAPHWIN'));   clf
+        % figure(vcSelectFigure('GRAPHWIN')); clf
         plot(freq, fftlum, 'r-');
         xlabel('Cycles/mm');
         ylabel('Normalized amplitude');
@@ -577,7 +582,7 @@ switch lower(pType)
         lum = data(:, roiLocs(1));
         pos = sceneSpatialSupport(scene, 'mm');
 
-        % figure(vcSelectFigure('GRAPHWIN'));   clf
+        % figure(vcSelectFigure('GRAPHWIN')); clf
         plot(pos.y, lum);
         xlabel('Position (mm)');
         ylabel('luminance (cd/m^2)');
@@ -657,7 +662,8 @@ switch lower(pType)
         tmp = sprintf('x= %0.02f\ny= %0.02f\n', valxy(1), valxy(2));
         txt = addText(txt, tmp);
         text(0.8, 0.55, txt);
-        axis equal, hold off
+        axis equal
+        hold off
 
         % Contrast - scenePlotContrast?  CoOuld go there.
     case {'contrasthline', 'hlinecontrast'}
@@ -680,7 +686,7 @@ switch lower(pType)
         data = 100 * (data - mn) / mn;
         pos = sceneSpatialSupport(scene, 'microns');
 
-        % figure(vcSelectFigure('GRAPHWIN'));   clf
+        % figure(vcSelectFigure('GRAPHWIN')); clf
         wave = sceneGet(scene, 'wave');
 
         mesh(pos.x, wave, data');
@@ -814,7 +820,8 @@ switch lower(pType)
         plot(wave(:), energy, '-')
         xlabel('Wavelength (nm)');
         ylabel('Energy (watts/sr/nm/m^2)');
-        grid on, title('Illuminant data')
+        grid on
+        title('Illuminant data')
         udata.wave = wave;
         udata.energy = energy;
         udata.comment = sceneGet(scene, 'illuminant comment');
@@ -843,7 +850,8 @@ switch lower(pType)
         plot(wave(:), photons, '-')
         xlabel('Wavelength (nm)');
         ylabel('Radiance (q/sec/sr/nm/m^2)');
-        grid on, title('Illuminant data')
+        grid on
+        title('Illuminant data')
         udata.wave = wave;
         udata.photons = photons;
         udata.comment = sceneGet(scene, 'illuminant comment');

@@ -12,22 +12,26 @@ function [fullName, imageType] = vcSelectImage(imageType, ext)
 % Inputs:
 %    imageType - (Optional) The image color type. Options are monochrome,
 %                multispectral, rgb, and hyperspectral. Default is ''
-%    ext       - The file extension type. Default is '*'
+%    ext       - (Optional) The file extension type. Default is '*'
 %
 % Outputs:
 %    fullName  - The full path and file name. imageType - The image
 %       color type. Options are the subdirectory names of
 %       isetbioDataPath/images, 
-%          'targets','multispectral', 'rgb', 'unispectral'.
+%          'targets', 'multispectral', 'rgb', 'unispectral'.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
-%    * We should dir() the directory and verify that the string is one
-%    of these.
+%    * TODO: We should dir() the directory and verify that the string is
+%      one of these.
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    11/29/17  jnm  Formatting, added note
 %    01/17/18  dhb  Don't autorun the example
+%    01/29/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

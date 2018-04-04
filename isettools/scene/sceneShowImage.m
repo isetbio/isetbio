@@ -18,6 +18,9 @@ function rgb = sceneShowImage(scene, displayFlag, gam)
 %  Outputs:
 %    rgb         - The scene data image
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * TODO: Shouldn't we select the axes for rendering here?  There is
 %      only one axis in the scene and oi window. But if we ever go to more,
@@ -29,6 +32,7 @@ function rgb = sceneShowImage(scene, displayFlag, gam)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting & fix examples
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

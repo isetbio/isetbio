@@ -10,6 +10,9 @@ function y = ieNormpdf(x, mu, sigma)
 %    input arguments. A scalar input functions as a constant matrix of the
 %    same size as the other inputs.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit ieNormpdf.m' into the Command Window.
+%
 % Inputs:
 %    x     - The data to analyze
 %    mu    - (Optional) The mean. Default value 0.
@@ -32,6 +35,7 @@ function y = ieNormpdf(x, mu, sigma)
 % History:
 %    xx/xx/xx  JRG/BW ISETBIO Team
 %    12/15/17  jnm    Formatting
+%    01/29/18  jnm    Formatting update to match Wiki
 
 % Examples:
 %{

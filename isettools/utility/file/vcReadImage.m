@@ -4,7 +4,7 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %
 % Syntax:
 %   [photons, illuminant, basis, comment, mcCOEF ] = ...
-%             vcReadImage(fullname, imageType, varargin)
+%             vcReadImage([fullname], [imageType], [varargin])
 %
 % Description:
 %    The image data in fullname are converted into photons. The other
@@ -15,9 +15,12 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %    determine the type from the file name. If the function is unable to
 %    determine the filetype from the name, the user will be queried.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit vcReadImage.m' into the Command Window.
+%
 % Inputs:
 %    fullname   - (Optional) Either a file name or possible RGB data read
-%                 from a file. An empty input filename produces a return,
+%                 from a file. An empty input filename produces a return, 
 %                 with no error message, to work smoothly with canceling
 %                 vcSelectImage. Default is to select an image based on
 %                 imageType using vcSelectImage.
@@ -59,7 +62,8 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %    comment    - A comment string
 %    mcCOEF     - Coefficients for basis functions for multispectral SPD
 %
-% Notes:
+% Optional key/value pairs:
+%    Needs to be populated.
 %
 % See Also:
 %    displayCompute, v_displayLUT, vcSelectImage, sceneFromFile
@@ -68,18 +72,21 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting & notes
+%    01/29/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
-    fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
-    photons = vcReadImage(fName,'rgb');
-    vcNewGraphWin; imageSPD(photons,400:10:700);
+    fName = fullfile(isetbioDataPath, 'images', 'rgb', 'eagle.jpg');
+    photons = vcReadImage(fName, 'rgb');
+    vcNewGraphWin;
+    imageSPD(photons, 400:10:700);
 %}
 %{
     thisDisplay = displayCreate('LCD-Apple.mat');
-    fName = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
-    photons = vcReadImage(fName,'rgb',thisDisplay);
-    vcNewGraphWin; imageSPD(photons,displayGet(thisDisplay,'wave'));
+    fName = fullfile(isetbioDataPath, 'images', 'rgb', 'eagle.jpg');
+    photons = vcReadImage(fName, 'rgb', thisDisplay);
+    vcNewGraphWin;
+    imageSPD(photons, displayGet(thisDisplay, 'wave'));
 %}
 
 if notDefined('imageType'), imageType = 'rgb'; end
@@ -213,7 +220,7 @@ switch lower(imageType)
             
             [xwImg, r, c] = RGB2XWFormat(inImg);
             
-            % Convert energy units to quanta. This step could be slow,
+            % Convert energy units to quanta. This step could be slow, 
             % especially when we use sub-pixel sampling
             if numel(xwImg) < ieSessionGet('image size threshold') ...
                     || ~ieSessionGet('waitBar') % small image
@@ -261,7 +268,7 @@ switch lower(imageType)
                 nBases = size(basis.basis, 2);
                 extrapVal = 0;
                 newBases = zeros(length(newWave), nBases);
-                for ii=1:nBases
+                for ii = 1:nBases
                     newBases(:, ii) = interp1(oldWave(:), ...
                         basis.basis(:, ii), newWave(:), 'linear', ...
                         extrapVal);
