@@ -147,7 +147,12 @@ classdef coneMosaicHex < coneMosaic
 
         %latticeAdjustmentDelaunayToleranceF  Delaunay trigger tolerance
         %   Tolerance for Delaunay triangularization trigger.
-       latticeAdjustmentDelaunayToleranceF
+        latticeAdjustmentDelaunayToleranceF
+        
+        %maxGridAdjustmentIterations   Max number of iterations
+        %   Max iterations for deciding whether the grid adjustment is done
+        maxGridAdjustmentIterations             
+
     end
     
     % Public methods
@@ -183,6 +188,7 @@ classdef coneMosaicHex < coneMosaic
                 'customInnerSegmentDiameter', ...
                 'rotationDegs', ...
                 'saveLatticeAdjustmentProgression', ...
+                'maxGridAdjustmentIterations'...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
@@ -229,6 +235,7 @@ classdef coneMosaicHex < coneMosaic
                 false, @islogical);
             p.addParameter('marginF', 1.0, @(x)((isempty(x)) || ...
                 (isnumeric(x) && (x > 0.0))));
+            p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
             
             % Set input params
@@ -246,7 +253,9 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.latticeAdjustmentDelaunayToleranceF;
             obj.latticeAdjustmentPositionalToleranceF = ...
                 p.Results.latticeAdjustmentPositionalToleranceF;
-
+            obj.maxGridAdjustmentIterations = ...
+                p.Results.maxGridAdjustmentIterations;
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1) * [1 1]);
