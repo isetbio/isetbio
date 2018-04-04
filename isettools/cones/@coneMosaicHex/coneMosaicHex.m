@@ -392,7 +392,7 @@ classdef coneMosaicHex < coneMosaic
 
     methods (Static)
         renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
-            edgeColor, faceColor, lineStyle);
+            edgeColor, faceColor, lineStyle, lineWidth);
         renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end % Static methods

@@ -562,7 +562,7 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
 end
 
 function distances = circularDomainFunction(conePositions, center, ...
-    radius)
+    radius, nullVar)
 % Calculate distances for a ciruclar domain function
 %
 % Syntax:

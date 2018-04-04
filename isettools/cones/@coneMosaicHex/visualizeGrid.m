@@ -35,9 +35,9 @@ function hFig = visualizeGrid(obj, varargin)
 %                                'none'} Default is 'none'.
 %    coneDensityContourLevels  - Array. Contour levels of cone density.
 %                                Default is [100:20:250] * 1000.
-%    overlaycontourlabels      - Whether to label the contrours. Default: false
-%    backgroundcolor           - Background color. Default: [0.75 0.75 0.75]
-%    foregroundcolor           - Foreground (axes) color. Default; [0 0 0]
+%    overlayContourLabels      - Whether to label the contrours. Default: false
+%    backgroundColor           - Background color. Default: [0.75 0.75 0.75]
+%    foregroundColor           - Foreground (axes) color. Default; [0 0 0]
 %
 
 % History:
@@ -82,10 +82,13 @@ coneDensityContourLevels = p.Results.coneDensityContourLevels;
 visualizedConeAperture = p.Results.visualizedConeAperture;
 apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
-if (p.Results.overlaycontourlabels)
-    overlaycontourlabels = 'on';
+backgroundColor = p.Results.backgroundColor;
+foregroundColor = p.Results.foregroundColor;
+
+if (p.Results.overlayContourLabels)
+    overlayContourLabels = 'on';
 else
-    overlaycontourlabels = 'off';
+    overlayContourLabels = 'off';
 end
 
 
@@ -149,7 +152,7 @@ rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
 
 %% Set up figure
-axesHandle = p.Results.axeshandle;
+axesHandle = p.Results.axesHandle;
 if (isempty(axesHandle))
     if (generateNewFigure)
         hFig = figure(round(rand() * 100000));
@@ -347,7 +350,7 @@ switch overlayConeDensityContour
         end
         [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
             densityMapMeasured, contourLevels, 'LineColor', 'r', 'LineWidth', 2.0, ...
-            'ShowText', overlaycontourlabels, 'LabelSpacing', contourLabelSpacing);
+            'ShowText', overlayContourLabels, 'LabelSpacing', contourLabelSpacing);
         clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
             'Color', [1 0 0], 'BackgroundColor', [1 1 1]);
         set(gca, 'CLim', [10000 250000]);
@@ -361,10 +364,10 @@ switch overlayConeDensityContour
             densityMapTheoretical(idx) = NaN;
         end
 
-        if (p.Results.overlaycontourlabels)
+        if (p.Results.overlayContourLabels)
             [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
                 densityMapTheoretical, contourLevels, 'LineColor', [0.0 1.0 0.3], ...
-                'LineWidth', 3.0, 'ShowText', overlaycontourlabels, ...
+                'LineWidth', 3.0, 'ShowText', overlayContourLabels, ...
                 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
                 'Color', [0 0 1], 'BackgroundColor', [1 1 1]);
@@ -387,10 +390,10 @@ switch overlayConeDensityContour
             densityMapMeasured(idx) = NaN;
         end
  
-        if (p.Results.overlaycontourlabels)
+        if (p.Results.overlayContourLabels)
             [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
                 densityMapMeasured, contourLevels, 'LineColor', [1 0.0 0.0], ...
-                'LineWidth', 3.0, 'ShowText', overlaycontourlabels, ...
+                'LineWidth', 3.0, 'ShowText', overlayContourLabels, ...
                 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [1 0 0], ...
                 'BackgroundColor', 'none');
@@ -426,7 +429,7 @@ end
 hold(axesHandle, 'off')
 axis(axesHandle, 'xy'); axis(axesHandle, 'equal'); 
 
-if (isempty(p.Results.axeshandle))
+if (isempty(p.Results.axesHandle))
     if (max(obj.fov) < 1.0)
         tickInc = 0.1;
     elseif (max(obj.fov) < 4.0)

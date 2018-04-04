@@ -1,12 +1,10 @@
 function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
 	edgeColor, faceColor, lineStyle, lineWidth)
-
-
 % Render the patch array
 %
 % Syntax:
 %   renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
-%       edgeColor, faceColor, lineStyle)
+%       edgeColor, faceColor, lineStyle, lineWidth)
 %
 % Description:
 %    Render the patch array
@@ -19,6 +17,7 @@ function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
 %    edgeColor    - The color of the edge of the shape (line)
 %    faceColor    - The color of the face of the shape (fill)
 %    lineStyle    - The style of the lines (dash, solid, etc...)
+%    lineWidth    - The width of the lines
 %
 % Outputs:
 %    None.
@@ -38,7 +37,7 @@ end
 
 
 patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceAlpha', 1.0, ...
-    'FaceColor', faceColor, 'LineWidth', lineWith, ...
+    'FaceColor', faceColor, 'LineWidth', lineWidth, ...
     'LineStyle', lineStyle, ...
     'Parent', axesHandle);
 
