@@ -35,9 +35,9 @@ function hFig = visualizeGrid(obj, varargin)
 %                                'none'} Default is 'none'.
 %    coneDensityContourLevels  - Array. Contour levels of cone density.
 %                                Default is [100:20:250] * 1000.
-%   overlaycontourlabels       - Whether to label the contrours. Default: false
-%   backgroundcolor            - Background color. Default: [0.75 0.75 0.75]
-%   foregroundcolor            - Foreground (axes) color. Default; [0 0 0]
+%    overlaycontourlabels      - Whether to label the contrours. Default: false
+%    backgroundcolor           - Background color. Default: [0.75 0.75 0.75]
+%    foregroundcolor           - Foreground (axes) color. Default; [0 0 0]
 %
 
 % History:
@@ -74,16 +74,14 @@ showCorrespondingRectangularMosaicInstead = ...
     p.Results.showCorrespondingRectangularMosaicInstead;
 showNullSensors = p.Results.overlayNullSensors;
 overlaidEMpathMicrons = p.Results.overlayEMpathMicrons;
-showHexMesh = p.Results.overlayHexMesh;
-showConeDensityContour = p.Results.overlayConeDensityContour;
+overlayHexMesh = p.Results.overlayHexMesh;
+overlayConeDensityContour = p.Results.overlayConeDensityContour;
 generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevels = p.Results.coneDensityContourLevels;
 visualizedConeAperture = p.Results.visualizedConeAperture;
 apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
-overlayConeDensityContour = p.Results.overlayconedensitycontour;
-coneDensityContourLevels  = p.Results.conedensitycontourlevels;
 if (p.Results.overlaycontourlabels)
     overlaycontourlabels = 'on';
 else
@@ -216,7 +214,7 @@ end
 
 if (~showCorrespondingRectangularMosaicInstead)
     lineStyle = '-';
-
+    lineWidth = 0.2;
     if (showNullSensors)
         idx = find(obj.pattern == 1);
         [iRows, iCols] = ind2sub(size(obj.pattern), idx);
@@ -228,7 +226,6 @@ if (~showCorrespondingRectangularMosaicInstead)
     end
 
     % L-cones
-    lineWidth = 0.2;
     idx = find(obj.pattern == 2);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = 'none'; % [1 0 0];
@@ -334,23 +331,6 @@ else
         faceColor, lineStyle, lineWidth);
 end
 
-    idx = find(obj.patternOriginatingRectGrid == 3);
-    %[iRows, iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
-    edgeColor = [0.3 0.3 0.3];
-    faceColor = [0.7 1.0 0.7];
-    coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, ...
-        rectCoords(idx, 1), rectCoords(idx, 2), edgeColor, faceColor, ...
-        lineStyle);
-
-    idx = find(obj.patternOriginatingRectGrid == 4);
-    %[iRows, iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
-    edgeColor = [0.3 0.3 0.3];
-    faceColor = [0.7 0.7 1.0];
-    coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, ...
-        rectCoords(idx, 1), rectCoords(idx, 2), edgeColor, faceColor, ...
-        lineStyle);
-end
-
 contourLevels = coneDensityContourLevels;
 contourLabelSpacing = 4000;
 
@@ -390,8 +370,8 @@ switch overlayConeDensityContour
                 'Color', [0 0 1], 'BackgroundColor', [1 1 1]);
         else
             contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
-                densityMapTheoretical, contourLevels, 'LineColor', [0.0 1.0 0.3], '...
-                LineWidth', 3.0);
+                densityMapTheoretical, contourLevels, 'LineColor', [0.0 1.0 0.3], ...
+                'LineWidth', 3.0);
             %clabel(cH,hH,'FontWeight','bold', 'FontSize', 1, 'Color', 'none', 'BackgroundColor', 'none');
         end
         set(gca, 'CLim', [10000 250000]);

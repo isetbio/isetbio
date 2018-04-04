@@ -38,7 +38,7 @@ function oi = oiPad(oi, padSize, sDist, direction)
 %    * TODO: Assign someone to fix the example. Error is currently "Struct
 %    contents reference from a non-struct array object."
 %
-
+%
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/07/18  jnm  Formatting
