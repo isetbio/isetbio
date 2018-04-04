@@ -1498,5 +1498,4 @@ function sz = selectPlotSupport(data, prct)
 %    meshPlot, plotOTF
 
 if notDefined('prct'), prct = 0.01; end
-
-
+end
