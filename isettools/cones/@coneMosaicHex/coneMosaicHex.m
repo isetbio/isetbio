@@ -44,7 +44,7 @@ classdef coneMosaicHex < coneMosaic
 %{
     resamplingFactor = 8;
     eccBasedConeDensity = true;
-   customLambda = 3.0;
+    customLambda = 3.0;
     % If not passed (or set to []) @coneMosaiHex chooses the cone spacing
     % based on the eccentricity of the mosaic as determined by the
     % coneSizeReadData function. If set to a value (specified in microns), 
@@ -61,21 +61,15 @@ classdef coneMosaicHex < coneMosaic
     % customInnerSegmentDiameter).
 
     cMosaicHex = coneMosaicHex(resamplingFactor, ...
-   'name', 'the hex mosaic', ...
-   'fovDegs', 0.35, ...
-   'eccBasedConeDensity', eccBasedConeDensity, ...   
-   'noiseFlag', 0, ...
-    'customLambda', customLambda, ...
-   'spatialDensity', [0 0.6 0.3 0.1]);
+    'name', 'the hex mosaic', ...
+    'fovDegs', 0.35, ...
+    'eccBasedConeDensity', eccBasedConeDensity, ...   
+    'noiseFlag', 'none', ...
+    'spatialDensity', [0 0.6 0.3 0.1]);
 
     cMosaicHex.window;
 %}
-%{
-   cone = 
-    cMosaic = coneMosaicHex(resamplingFactor, 
-        ['varyingDensity', true, 'customLambda', 3, ...
-        'customInnerSegmentDiameter', 2.5, 'cone', cone, 'os', os]);
-%}
+
     %% Private properties:
     properties (SetAccess=private)
         % lambdaMin  min cone separation in the mosaic
