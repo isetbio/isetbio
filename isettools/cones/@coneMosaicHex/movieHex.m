@@ -57,11 +57,11 @@ p.parse(conemosaicH, varargin{:});
 conemosaicH = p.Results.conemosaicH;
 plotType = p.Results.type;
 
+%% Select type of data to plot
 if (~isempty(p.Results.activationTimeSeries))
     trialToVisualize = 1;
     dataHex = squeeze(p.Results.activationTimeSeries(trialToVisualize,:,:));
 else
-    %% Select type of data to plot
     switch plotType
         case 'absorptions'
             dataHex = conemosaicH.absorptions;
