@@ -15,7 +15,7 @@ function uData = movieHex(conemosaicH, varargin)
 % Inputs:
 %    conemosaicH - The cone mosaic hex to make a movie from.
 %    varargin    - (Optional) Additional information for building the movie
-%
+%e
 % Outputs:
 %    uData       - The user data containing the movie.
 %
@@ -32,39 +32,59 @@ function uData = movieHex(conemosaicH, varargin)
 
 % Examples:
 %{
-    % TODO: Get someone to fix example. Is currently returning the error
-    % 'Index exceeds matrix dimensions'
-    cmosaicH = coneMosaicHex(2);
-    movieHex(cmosaicH, 'type', 'current')
+    hparams(2) = harmonicP;
+    hparams(2).freq = 8;
+    hparams(2).GaborFlag = .2;
+    hparams(1) = hparams(2);
+    hparams(1).contrast = 0;
+    sparams.fov = 0.5;
+    stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
+    ois = oisCreate('harmonic', 'blend', stimWeights, ...
+        'testParameters', hparams, 'sceneParameters', sparams);
+    cm = coneMosaicHex(7, 'fovDegs', sparams.fov);
+    nTrials = 1;
+    nEyeMovements = ois.maxEyeMovementsNumGivenIntegrationTime(cm.integrationTime)
+    emPaths = zeros(nTrials, nEyeMovements, 2);
+    isomerizations = cm.computeForOISequence(ois, 'emPaths', emPaths);
+    movieHex(cm, 'activationTimeSeries', isomerizations);
 %}
 %% Parse input data
 p = inputParser;
 addRequired(p, 'conemosaicH', @(x) isa(x, 'coneMosaicHex'));
+addParameter(p, 'activationTimeSeries', [], @isnumeric);
 addParameter(p, 'type', 'absorptions', @ischar);
 p.parse(conemosaicH, varargin{:});
 conemosaicH = p.Results.conemosaicH;
 plotType = p.Results.type;
 
-%% Select type of data to plot
-switch plotType
-    case 'absorptions'
-        dataHex = conemosaicH.absorptions;
-    otherwise
-        dataHex = conemosaicH.current;
+if (~isempty(p.Results.activationTimeSeries))
+    trialToVisualize = 1;
+    dataHex = squeeze(p.Results.activationTimeSeries(trialToVisualize,:,:));
+else
+    %% Select type of data to plot
+    switch plotType
+        case 'absorptions'
+            dataHex = conemosaicH.absorptions;
+        otherwise
+            dataHex = conemosaicH.current;
+    end
 end
+conesNum = size(dataHex,1);
+timeBins = size(dataHex,2);
 
 %% Get the nice coneMosaicHex image for average mosaic response over time
 % Render activation images for the hex mosaic
 tic
 disp('Calculating activation density map for hex data.');
+timeBin = 1;
 [activationsHexImage, ~] = ...
-    conemosaicH.computeActivationDensityMap(dataHex);
-toc
+    conemosaicH.computeActivationDensityMap(squeeze(dataHex(:,timeBin)));
 
-activationsHexMovie = zeros([size(activationsHexImage), size(dataHex, 3)]);
-for frameIndex = 1:size(dataHex, 3)
+activationsHexMovie = zeros([size(activationsHexImage), timeBins]);
+for frameIndex = 1:timeBins
+    dataHexFrame = squeeze(dataHex(:, frameIndex));
     [activationsHexImage, ~] = ...
-        conemosaicH.computeActivationDensityMap(dataHex(:, :, frameIndex));
+        conemosaicH.computeActivationDensityMap(dataHexFrame);
     activationsHexMovie(:, :, frameIndex) = activationsHexImage;
 end
 
