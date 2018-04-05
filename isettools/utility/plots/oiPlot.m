@@ -1497,5 +1497,36 @@ function sz = selectPlotSupport(data, prct)
 %  See Also:
 %    meshPlot, plotOTF
 
+% Examples:
+%{
+ g = fspecial('gaussian',256,30);
+ g = ieScale(g,0,1);
+ r = selectPlotSupport(g,0.1);
+ vcNewGraphWin; imagesc(g); axis image
+ ieShape('circle','center',[128,128],'radius',r,'color','white');
+ colorbar;
+%}
+
+%%
+
 if notDefined('prct'), prct = 0.01; end
+minRadius = 25;
+
+r  = size(data, 1);
+mx = max(data(:));
+centerRow = round(r / 2);
+
+%% Find the location in the center row at the edge of the prct max
+l = (data(centerRow, :) < prct * mx);
+
+if max(l) == 0, radius = centerRow - 1;
+else
+    % The returned value is at least 25.
+    [~, idx] = max(data(centerRow, l));
+    radius = centerRow - idx;
+    if radius < 25
+        warning('Selected radius is very small. Increasing to %d',minRadius);
+    end
+end
+sz = radius;
 end
