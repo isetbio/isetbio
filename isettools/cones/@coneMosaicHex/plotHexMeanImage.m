@@ -67,6 +67,8 @@ plotType = p.Results.type;
 if (~isempty(p.Results.activationTimeSeries))
     trialToVisualize = 1;
     dataHex = squeeze(p.Results.activationTimeSeries(trialToVisualize,:,:));
+    conesNum = size(dataHex,1)
+    timeBins = size(dataHex,2)
 else
     switch plotType
         case 'absorptions'
@@ -74,9 +76,13 @@ else
         otherwise
             dataHex = conemosaicH.current;
     end
+    activeConeIndices = find(conemosaicH.pattern>1);
+    dataHex = dataHex(:);
+    dataHex = dataHex(activeConeIndices);
+    conesNum = size(dataHex,1);
+    timeBins = 1;
 end
-conesNum = size(dataHex,1);
-timeBins = size(dataHex,2);
+
 
 for frameIndex = 1:timeBins
     dataHexFrame = squeeze(dataHex(:, frameIndex));
@@ -92,7 +98,6 @@ end
 activationsHexImage = squeeze(mean(activationsHexMovie,3));
 
 %% Display results
-figure()
 imagesc(supX, supY, activationsHexImage);
 axis 'image';
 axis 'xy';

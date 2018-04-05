@@ -62,6 +62,8 @@ plotType = p.Results.type;
 if (~isempty(p.Results.activationTimeSeries))
     trialToVisualize = 1;
     dataHex = squeeze(p.Results.activationTimeSeries(trialToVisualize,:,:));
+    conesNum = size(dataHex,1);
+    timeBins = size(dataHex,2);
 else
     switch plotType
         case 'absorptions'
@@ -69,9 +71,13 @@ else
         otherwise
             dataHex = conemosaicH.current;
     end
+    activeConeIndices = find(conemosaicH.pattern>1);
+    dataHex = dataHex(:);
+    dataHex = dataHex(activeConeIndices);
+    conesNum = size(dataHex,1);
+    timeBins = 1;
 end
-conesNum = size(dataHex,1);
-timeBins = size(dataHex,2);
+
 
 %% Get the nice coneMosaicHex image for average mosaic response over time
 % Render activation images for the hex mosaic

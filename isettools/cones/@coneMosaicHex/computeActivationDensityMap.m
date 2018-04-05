@@ -48,9 +48,9 @@ function [activationImage, activationImageLMScone, ...
     interpolationF = 4;
     dx = dxOriginal / interpolationF;
     sampledHexMosaicXaxis = ...
-        sampledHexMosaicXaxis(1):dx:(sampledHexMosaicXaxis(end)+dxOriginal);
+        sampledHexMosaicXaxis(1):dx:(sampledHexMosaicXaxis(end)+dxOriginal+dx);
     sampledHexMosaicYaxis = ...
-        sampledHexMosaicYaxis(1):dx:(sampledHexMosaicYaxis(end)+dxOriginal);
+        sampledHexMosaicYaxis(1):dx:(sampledHexMosaicYaxis(end)+dxOriginal+dx);
 
     % Generate cone aperture kernel - flat top Gaussian
     nSamples = ceil(0.5 * obj.pigment.width / dx);
