@@ -31,6 +31,7 @@ function plotHexMeanImage(conemosaicH, varargin)
 % History:
 %    10/xx/16  JRG/BW/NPC  (c) isetbio team
 %    02/16/18  jnm         Formatting
+%    04/05/18  NPC  Fixed broken example
 
 % Examples:
 %{

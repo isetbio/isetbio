@@ -42,16 +42,14 @@ function model = osAdaptSteadyState(obj, bgR, varargin)
 %    xx/xx/14  HJ   ISETBIO Team, 2014
 %    08/xx/16  JRG  ISETBIO Team, updated 8/2016
 %    02/14/18  jnm  Formatting
+%    04/05/18  NPC  Fixed broken example
 
 % Examples:
 %{
-    % EXAMPLE DOES NOT WORK
-    %
-   % From @osBioPhys/osCompute.m, line 60:
-   obj = osCreate;
+    os1 = osCreate('biophys');
     bgR = 10;
     pRate = .1;
-   obj.model.state = osAdaptSteadyState(obj, bgR, ...
+    osAdaptSteadyState(os1, bgR, ...
         [size(pRate, 1) size(pRate, 2)]);
 %}
 

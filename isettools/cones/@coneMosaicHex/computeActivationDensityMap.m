@@ -37,7 +37,7 @@ function [activationImage, activationImageLMScone, ...
 % History:
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/16/18  jnm  Formatting
-%    4/5/18    npc  Sped up algorithm
+%    4/5/18    NPC  Sped up algorithm
 
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1, :, 1)) + ...
         obj.center(1);
