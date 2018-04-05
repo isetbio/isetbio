@@ -26,7 +26,6 @@ function t_fixationalEyeMovementsAndConeMosaicVideo
     theConeMosaic.integrationTime = integrationTime;
     
     
-    
     % Instantiate a fixational eye movement object for generating
     % fixational eye movements that include drift and microsaccades.
     fixEMobj = fixationalEM();
@@ -38,7 +37,7 @@ function t_fixationalEyeMovementsAndConeMosaicVideo
     % Compute nTrials of emPaths for this mosaic
     % Here we are fixing the random seed so as to reproduce identical eye
     % movements whenever this script is run.
-    nTrials = 2; trialLengthSecs = 0.5;
+    nTrials = 2; trialLengthSecs = 0.15;
     eyeMovementsPerTrial = trialLengthSecs/theConeMosaic.integrationTime;
     fixEMobj.computeForConeMosaic(theConeMosaic, eyeMovementsPerTrial, ...
         'nTrials', nTrials, ...
@@ -46,10 +45,13 @@ function t_fixationalEyeMovementsAndConeMosaicVideo
         );
     
     % Render the video
-    fixationalEM.generateEMandMosaicComboVideo(fixEMobj, theConeMosaic, ...
-        'visualizedFOVdegs', 0.5, ...
-        'showMovingMosaicOnSeparateSubFig', true, ...
-        'displaycrosshairs', true, ...
-        'videoFileName', 'video.mp4');
-    
+    renderAndSaveVideo = ~true;
+    if (renderAndSaveVideo)
+        videoExportDir = uigetdir('~/', 'VIDEO EXPORT DIRECTORY');
+        fixationalEM.generateEMandMosaicComboVideo(fixEMobj, theConeMosaic, ...
+            'visualizedFOVdegs', 0.5, ...
+            'showMovingMosaicOnSeparateSubFig', true, ...
+            'displaycrosshairs', true, ...
+            'videoFileName', fullfile(videoExportDir,'video.mp4'));
+    end
 end
