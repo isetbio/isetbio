@@ -11,7 +11,7 @@ function figH = hcimage(hc, varargin)
 %    hc       - The hypercube data
 %    varargin - (Optional) Array of arguments representing the display type
 %               and various other related information. Possibe options are:
-%               dType -  The Display type, with the options of 'mean gray',
+%               dType -  The Display type, with the options of 'mean gray', 
 %                        'image montage', and 'movie'. The corresponding
 %                        default is 'mean gray'.
 %               slices - For the 'image montage' option, a number of slices
@@ -19,6 +19,9 @@ function figH = hcimage(hc, varargin)
 %
 % Outputs:
 %    figH     - The resulting figure
+%
+% Optional key/value pairs:
+%    Needs to be filled out.
 %
 % Notes:
 %
@@ -31,14 +34,15 @@ function figH = hcimage(hc, varargin)
 %    12/05/17  jnm  Formatting
 %    12/25/17   BW  Made movie work fixed other errors.
 %    01/18/17  dhb  Fix example
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
     fname = fullfile(isetbioDataPath, 'images', 'multispectral', ...
             'StuffedAnimals_tungsten-hdrs.mat');
-    photons = vcReadImage(fname,'multispectral');
+    photons = vcReadImage(fname, 'multispectral');
     nWave = size(photons, 3);
-    hcimage(photons, 'image montage',[1 3 5]);
+    hcimage(photons, 'image montage', [1 3 5]);
     hcimage(photons, 'movie');
 %}
 
@@ -74,7 +78,7 @@ switch dType
 
     case 'movie'
         % Show the hypercube data as a movie
-        if exist('implay','file')
+        if exist('implay', 'file')
             % Maybe we should be using a different player?
             hc = double(hc / max(hc(:)));
             implay(hc);
@@ -83,7 +87,8 @@ switch dType
             hc = 256 * double(hc / max(hc(:)));
             mp = mplay(hc);
             mFig = mp.hfig;
-            set(mFig, 'name', sprintf('Hypercube wavebands: %d', size(hc, 3)));
+            set(mFig, 'name', ...
+                sprintf('Hypercube wavebands: %d', size(hc, 3)));
         end
     otherwise
         error('Unknown hc image display type: %s', dType);

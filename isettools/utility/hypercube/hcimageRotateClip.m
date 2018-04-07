@@ -8,6 +8,9 @@ function [cImg, cPixels] = hcimageRotateClip(hc, clipPrctile, nRot)
 %    Clip and rotate the hypercube data. This is used for visualization
 %    with specularities.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit hcimageRotateClip.m' into the Command Window.
+%
 % Inputs:
 %    hc          - Hypercube image data, uint16 usually
 %    clipPrctile - (Optional) 0-100, percentile for clipping. Default 99.9.
@@ -18,13 +21,16 @@ function [cImg, cPixels] = hcimageRotateClip(hc, clipPrctile, nRot)
 %    cImg        - The hypercube image data
 %    cPixels     - The hypercube pixel data
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
-% See also: hcimage, hcImageCrop
+% See Also:
+%    hcimage, hcImageCrop
 
 % History:
 %    xx/xx/12       (c) Imageval, 2012
 %    12/06/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
@@ -32,8 +38,10 @@ function [cImg, cPixels] = hcimageRotateClip(hc, clipPrctile, nRot)
     clipPrctile = 99.9;
     nRot = 1;
     [hc, cPixels] = hcimageRotateClip(img.data, clipPrctile, nRot);
-    vcNewGraphWin; imageSPD(img.data);
-    vcNewGraphWin;  imageSPD(hc);
+    vcNewGraphWin;
+    imageSPD(img.data);
+    vcNewGraphWin;
+    imageSPD(hc);
 %}
 
 if notDefined('hc'); error('hyper cube image required'); end

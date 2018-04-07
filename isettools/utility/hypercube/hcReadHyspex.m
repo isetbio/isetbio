@@ -29,6 +29,9 @@ function [img, info] = hcReadHyspex(filename, lines, samples, bands)
 %    img      - The hypercube image
 %    info     - Associated image header information
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * TODO: The uint16 values from the hyspex are not in meaningful energy
 %      units (though they are in energy, not photons). Let's see if we can
@@ -41,7 +44,8 @@ function [img, info] = hcReadHyspex(filename, lines, samples, bands)
 
 % History:
 %    xx/xx/xx  th   Created. Author: trym.haavardsholm@ffi.no
-%    12/06/17  jnm  Formatting 
+%    12/06/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 if nargin == 1
     lines = [];

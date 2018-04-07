@@ -13,6 +13,9 @@ function y = weberFechner(coef, x)
 %
 %    They refer to this equation as a Weber-Fechner function, hence the
 %    name of this function.
+%
+%    Examples are located within the code. To access the examples, type
+%    'edit weberFechner.m' into the Command Window.
 %    
 % Inputs
 %    coef - Coefficient of the equation, their I0.  This is the background
@@ -27,26 +30,30 @@ function y = weberFechner(coef, x)
 %           photocurrent and R* is the number of isomerizations in the
 %           flash.
 % 
-% Examples are included within the code.
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    Angueyra, Juan M., and Fred Rieke. "Origin and effect of
 %    phototransduction noise in primate cone photoreceptors." Nature
 %    neuroscience 16.11 (2013): 1692-1700.
 %
-% See also: v_osStepFlash
+% See Also:
+%    v_osStepFlash
+%
 
 % History:
 %    01/08/16  dhb  Added comment.
 %    12/05/17  jnm  Formatting
 %    01/06/18  dhb  Added comments that express our current lack of
 %                   understanding.
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
-   x = logspace(-1,2,50);
-   y = weberFechner(1,x);
-   vcNewGraphWin; loglog(x,y);
+   x = logspace(-1, 2, 50);
+   y = weberFechner(1, x);
+   vcNewGraphWin; loglog(x, y);
 %}
 
 % Do it.

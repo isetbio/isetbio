@@ -8,6 +8,9 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 %    This routine lets the user compare the images side by side, rather
 %    than flipping through them in the GUI window.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit imageMultiview.m' into the Command Window.
+%
 % Inputs:
 %    objType      - Which window (scene, oi, or vcimage)
 %    selectedObjs - (Optional) List of the selected object numbers, e.g., 
@@ -19,7 +22,8 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 % Outputs:
 %    selectedObjs - The selected objects
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    imageMontage
@@ -28,12 +32,14 @@ function selectedObjs = imageMultiview(objType, selectedObjs, singlewindow)
 % History:
 %    xx/xx/13       Copyright Imageval Consultants, LLC, 2013
 %    12/07/17  jnm  Formatting
-%    12/26/17   BW  Removed vcimage/imageGet.  Fixed examples.
+%    12/26/17   BW  Removed vcimage/imageGet. Fixed examples.
+%    01/26/18  jnm  Formatting update to match Wiki.
 %
 % Examples:
 %{
     scene = sceneCreate; ieAddObject(scene); 
-    scene = sceneCreate('macbeth tungsten'); ieAddObject(scene); 
+    scene = sceneCreate('macbeth tungsten');
+    ieAddObject(scene); 
     objType = 'scene';
     imageMultiview(objType,[1 2],true);
     imageMultiview(objType,[1 2]);
@@ -55,7 +61,7 @@ end
 % Show a subset or all
 if notDefined('selectedObjs')
     lst = cell(1, nObj);
-    for ii=1:nObj, lst{ii} = objList{ii}.name; end
+    for ii = 1:nObj, lst{ii} = objList{ii}.name; end
     selectedObjs = listdlg('ListString', lst);
 end
 
@@ -78,7 +84,7 @@ gam = 1;  % Figure out a rationale for this.
 subCount = 1;  % Which subplot are we in
 
 %% This is the display loop
-for ii=selectedObjs
+for ii = selectedObjs
     if (~singlewindow || subCount == 1), f = vcNewGraphWin([], fType); end
     if singlewindow
         subplot(rWin, cWin, subCount);
@@ -99,11 +105,7 @@ for ii=selectedObjs
     end
 
     % Label the image or window
-    if singlewindow
-        title(t)
-    else
-        set(gcf, 'name', t);
-    end
+    if singlewindow, title(t); else, set(gcf, 'name', t); end
 
 end
 

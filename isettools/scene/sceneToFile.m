@@ -39,11 +39,14 @@ function varExplained = sceneToFile(fname, scene, bType, mType)
 %
 % Notes:
 %    * [NOTE: XXX - Add depth image as potential output, not just dist.]
+%    * N.B. The source contains executable examples of usage, accessible by
+%      typing 'edit sceneToFile.m' in the command window.
 %
 
 % History:
 %    xx/xx/13       (c) Imageval Consulting, LLC 2013
 %    12/20/17  jnm  Formatting & fix default assignments
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

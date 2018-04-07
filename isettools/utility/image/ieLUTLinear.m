@@ -100,7 +100,7 @@ else
 
     % Convert through the gamma table.
     DAC = zeros(size(RGB));
-    for ii=1:size(RGB, 3)
+    for ii = 1:size(RGB, 3)
         thisTable = invGammaTable(:, ii);
         DAC(:, :, ii) = thisTable(RGB(:, :, ii));
     end 

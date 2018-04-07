@@ -17,10 +17,14 @@ function scene = sceneInitGeometry(scene)
 % Outputs:
 %    scene - The modified scene structure
 %
+% Optional key/value pairs:
+%    None.
+%
 
 %  History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 % Set scene distance in meters
 if notDefined('scene.distance')

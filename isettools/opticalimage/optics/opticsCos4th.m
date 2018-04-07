@@ -1,16 +1,40 @@
 function oi = opticsCos4th(oi)
 % Compute relative illumination for cos4th model
 %
-%    oi = opticsCos4th(oi)
+% Syntax:
+%   oi = opticsCos4th(oi)
 %
-% This routine is used for shift-invariant optics, when full ray trace
-% information is unavailable.
+% Description:
+%    This routine is used for shift-invariant optics, when full ray trace
+%    information is unavailable.
 %
-% Example:
-%   scene = sceneCreate; oi = oiCreate; 
-%   tic, oi = oiCompute(oi,scene); toc
+%    There are examples contained in the code. To access, type 'edit
+%    opticsCos4th.m' into the Command Window.
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Inputs:
+%    oi - Struct. The optical image structure.
+%
+% Outputs:
+%    oi - Struct. The modified optical image structure.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    03/08/18  jnm  Formatting
+%    04/07/18  dhb  Fixed example.
+
+% Examples:
+%{
+    scene = sceneCreate;
+    oi = oiCreate('human');
+    oi = oiCompute(oi,scene); 
+    oi = opticsCos4th(oi)
+%}
 
 optics = oiGet(oi, 'optics');
 
@@ -21,8 +45,9 @@ if isempty(method)
 end
 
 % Calculating the cos4th scaling factors
-% We might check whether it exists already and only do this if
-% the cos4th slot is empty.
+%
+% We might check whether it exists already and only do this if the cos4th
+% slot is empty.
 optics = feval(method, optics, oi);
 % figure; mesh(optics.cos4th.value)
 oi = oiSet(oi, 'optics', optics);

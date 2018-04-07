@@ -1,21 +1,43 @@
 function val = osGet(obj, param)
 % Get base class outer segment parameters
 % 
-% Parameters:
-%  'noise flag' - 'random','frozen','none'
-%  'timestep'   -  delta t
-%  'cone current signal' - cone current as a function of time
-%  'patch size'          - diameter of the cone mosaic patch
-%  'array size'          - number of cone samples (row,col)
+% Syntax:
+%    val = osGet(obj, param)
 %
-% 7/2015 JRG NC DHB
+% Description:
+%    Retrieve the base class outer segment parameters
+%
+% Inputs:
+%	 obj   - The outer segment object
+%    param - The parameter you wish to retrieve the value of. Options
+%            include the following:
+%         'noise flag'          - Cone noise settings. Options are:
+%                                 'random', 'frozen', 'none'
+%         'timestep'            - Temporal step size. The delta t
+%         'cone current signal' - Cone current as a function of time
+%         'patch size'          - Diameter of the cone mosaic patch
+%         'array size'          - Number of cone samples (row, col)
+%
+% Outputs:
+%    val   - The value of the requested parameter
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * [Note: JNM - Cone current signal does not appear to be supported any
+%      longer? Should we remove this option?]
 
-if ~exist('param','var'), error('Parameter required'); end
+% History:
+%    07/xx/15  JRG NC DHB  Created
+%    02/12/18  jnm         Formatting
 
-switch ieParamFormat(param);  % Lower case and remove spaces
+if ~exist('param', 'var'), error('Parameter required'); end
+
+switch ieParamFormat(param)  % Lower case and remove spaces
     case {'noiseflag'}
         % The turn on or off the cone noise
-        val = obj.noiseFlag;    
+        val = obj.noiseFlag;
     case{'patchsize'}
         % Diameter of the cone mosaic patch
         val = obj.patchSize;
@@ -30,5 +52,5 @@ switch ieParamFormat(param);  % Lower case and remove spaces
         sz = size(obj.coneCurrentSignal);
         val = sz(1:2);
     otherwise
-        error('Unknown parameter %s\n',param);    
+        error('Unknown parameter %s\n', param);
 end

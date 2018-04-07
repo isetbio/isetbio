@@ -20,10 +20,14 @@ function scene1 = sceneAdd(scene1, scene2, addFlag)
 % Outputs:
 %    scene1  - The combined scene.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/12       Copyright Imageval 2012
 %    12/28/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 
 %% We should do more parameter checking, I suppose

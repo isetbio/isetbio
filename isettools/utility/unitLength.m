@@ -45,7 +45,7 @@ reshapeFlag = 0;
 
 % Make sure vector is a row vector.
 [r, c] = size(v); 
-if c==1
+if c == 1
     v = v(:)';
     reshapeFlag = 1;
 end
@@ -130,7 +130,7 @@ end
 %     else
 %       temp = sqrt(sum(~isnan(m), dim));
 %     end
-%     sc = len./temp;
+%     sc = len ./ temp;
 %   else
 %     sc = len;
 %   end

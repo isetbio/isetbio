@@ -1,29 +1,38 @@
 function absorptions = applyEMPath(obj, LMS, varargin)
-%APPLYEMPATH  Apply eye movement path and return absorptoins absorptions.
-%   absorptions = APPLYEMPATH(obj, LMS, emPath, varargin)
+% Apply eye movement path and return the absorptions.
 %
-%   Inputs:
-%   obj     - cone mosaic object
-%   LMS     - full LMS noise free absorptions
+% Syntax:
+%   absorptions = applyEMPath(obj, LMS, emPath, [varargin])
 %
-%   Outputs:
-%   absorptions - cone absorptions with eye movements
+% Description:
+%    Apply the eye movement path and return the absorptions.
 %
-%   Optional parameter name/value pairs chosen from the following:
+% Inputs:
+%    obj         - A cone mosaic object
+%    LMS         - The full LMS noise free absorptions
 %
-%   'name'            Mosaic name
-%   'padRows'         Rows padded
-%   'padCols'         Columns padded
-%   'emPath'          Eye movement path
+% Outputs:
+%    absorptions - The cone absorptions with eye movements
 %
-%   [DHB NOTE: SOME COMMENTS ABOUT HOW THIS EM STUFF WORKS, SOMEWHERE, WITH
-%   A POINTER HERE WOULD BE VERY HELPFUL.  WHAT ARE THE UNITS OF EM
-%   POSITIONS, WHO IS IN CHARGE OF MAKING SURE THE MOSAIC IS BIG ENOUGH,
-%   ETC.]
+% Optional key/value pairs:
+%    'name'      - Mosaic name
+%    'padRows'   - Rows padded
+%    'padCols'   - Columns padded
+%    'emPath'    - Eye movement path
 %
-%   See also CONEMOSAIC.
+% Notes:
+%    * [Note: DHB - SOME COMMENTS ABOUT HOW THIS EM STUFF WORKS, SOMEWHERE,
+%      WITH A POINTER HERE WOULD BE VERY HELPFUL. WHAT ARE THE UNITS OF EM
+%      POSITIONS, WHO IS IN CHARGE OF MAKING SURE THE MOSAIC IS BIG ENOUGH,
+%      ETC.?]
+%
+%   See Also:
+%    coneMosaic
+%
 
-% HJ ISETBIO Team 2016
+% History:
+%    xx/xx/16  HJ   ISETBIO Team 2016
+%    02/22/18  jnm  Formatting
 
 % parse inputs
 p = inputParser;
@@ -35,25 +44,26 @@ p.addParameter('emPath', obj.emPositions, @isnumeric);
 
 p.parse(obj, LMS, varargin{:});
 emPath = p.Results.emPath;
-padRows = p.Results.padRows; padCols = p.Results.padCols;
+padRows = p.Results.padRows;
+padCols = p.Results.padCols;
 
-xpos = emPath(:, 1); ypos = emPath(:, 2);
+xpos = emPath(:, 1);
+ypos = emPath(:, 2);
 if isempty(padRows), padRows = max(abs(ypos)); end
 if isempty(padCols), padCols = max(abs(xpos)); end
 
 % prepare parameters for cone type mask
 mask = zeros(obj.rows, obj.cols, 3); % locations for cones
-for ii = 2 : 4 % L, M, S
-    mask(:,:,ii-1) = double(obj.pattern == ii);
-end
+% L, M, S cones
+for ii = 2 : 4, mask(:,:,ii - 1) = double(obj.pattern == ii); end
 
 % select out the subframe given the eye position and cone type
 absorptions = zeros(obj.rows, obj.cols, size(emPath, 1));
 for ii = 1 : size(emPath, 1)
     % sample by position
-    cropLMS = LMS((1+padRows+ypos(ii)):(end-padRows+ypos(ii)), ...
-        (1+padCols-xpos(ii)):(end-padCols-xpos(ii)), :);
-    
+    cropLMS = LMS((1 + padRows + ypos(ii)):(end - padRows + ypos(ii)), ...
+        (1 + padCols - xpos(ii)):(end - padCols - xpos(ii)), :);
+
     % sample by conetype
     absorptions(:, :, ii) = sum(cropLMS .* mask, 3);
 end

@@ -8,6 +8,9 @@ function scene = sceneInterpolateW(scene, newWave, pLum)
 %    Interpolate the wavelength dimension of a scene. By default, the
 %    resampled scene has the same mean luminance as the original scene.
 %
+%    There are examples in the code. Type 'edit sceneInterpolateW' into
+%    the Command Window to access.
+%
 % Inputs:
 %    scene   - (Optional) Input scene structure. Default is to retrieve an
 %              existing scene structure.
@@ -33,6 +36,7 @@ function scene = sceneInterpolateW(scene, newWave, pLum)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki
 
 % Examples:
 %{

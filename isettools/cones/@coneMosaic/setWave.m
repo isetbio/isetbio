@@ -1,14 +1,34 @@
-function setWave(obj, src, ~)
-%SETWAVE  Keep photopigment and macular pigment wavelength sampling consistent.
+function setWave(obj, src)
+% Keep photopigment and macular pigment wavelength sampling consistent.
 %
-%   When you set the photpigment wavelength sampling, it sets the macular pigment wavelength sampling
-%   and vice versa.
+% Syntax:
+%   setWave(obj, src)
 %
-%   [DHB COMMENT: THIS MAKES ME NERVOUS.  NEED A FULLER EXPLANATION AND TO CHECK THROUGH THE LOGIC.  
-%   THIS RELATES TO THE BROAD QUESTION OF WHO IS IN CHARGE OF KEEPING WAVELENGTH SAMPLING CONSISTENT.]
-%   [DHB COMMENT: I DON'T UNDERSTAND THE PURPOSE OF THE ~ AS THE LAST INPUT ARGUMENT.]
+% Description:
+%    When you set the photpigment wavelength sampling, it sets the macular
+%    pigment wavelength sampling and vice versa.
+%
+% Inputs:
+%    obj - The cone mosaic object
+%    src - The light source? 
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * [Note: DHB - THIS MAKES ME NERVOUS.  NEED A FULLER EXPLANATION AND
+%      TO CHECK THROUGH THE LOGIC. THIS RELATES TO THE BROAD QUESTION OF
+%      WHO IS IN CHARGE OF KEEPING WAVELENGTH SAMPLING CONSISTENT.]
+%    * [Note: DHB - I DON'T UNDERSTAND THE PURPOSE OF THE ~ AS THE LAST
+%      INPUT ARGUMENT.]
+%
 
-% HJ ISETBIO Team 2016
+% History:
+%    xx/xx/16  HJ   ISETBIO Team 2016
+%    02/23/18  jnm  Formatting
 
 switch src.DefiningClass.Name
     case 'photoPigment'

@@ -1,11 +1,63 @@
 function psfMovie(oi,figNum,delay)
-%Show a movie of the pointspread functions 
+% Show a movie of the pointspread functions 
 %
+% Syntax:
 %   psfMovie([oi],[figNum=1],[delay = 0.2])
 %
-% Show a movie of the psf as a function of wavelength
+% Description:
+%    The movies differ slightly for the shift-invariant and ray trace
+%    methods. The shift-invariant doesn't depend on field height; the ray
+%    trace does. So we show the full set differently.
 %
-% Copyright ImagEval, LLC, 2005
+%    For the shift invariant we just show a movie over wavelength
+%
+%    For the ray trace
+%    The image height increase along the x-axis. The data are displayed for
+%    one wavelength first, and then the next wavelength. The horizontal
+%    axis indicates the image height in microns.
+%
+% Inputs:
+%    oi - (Optional) Struct. An optical image structure. Default uses
+%             vcGetObject to retrieve an existing instance.
+%    figNum - (Optional) Numeric. Figure number. Default 1.
+%    delay  - (Optional) Numeric. Delay in seconds. Default 0.2.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+
+% History:
+%    xx/xx/05       Copyright ImagEval, LLC, 2005
+%    03/13/18  jnm  Formatting
+%    04/07/18  dhb  Add ETTBSkip for broken examples.
+
+% Examples:
+%{
+    % ETTBSkip.  Example broken.
+    %
+    % Returns message correctly! "Not yet implemented..."
+    oi = vcGetObject('oi');
+    optics = oiGet(oi, 'optics');
+    psfMovie(optics, 1)
+%}
+%{
+    % ETTBSkip.  Example broken.
+    %
+    % This example loads, visualizes, rotates, and visualizes again.
+    % psfMovie;
+
+    vcImportObject('OPTICS');
+    psfMovie([], 1);
+    optics = vcGetObject('optics');
+    optics = rtPSFEdit(optics, 0, 1, 2);
+
+    % Returns error: "Error using chdir
+    % Cannot CD to session (Name is nonexistent or not a directory)."
+    % [Note: JNM - rtPSFEdit does not exist?]
+%}
 
 %Examples:
 %{
@@ -23,9 +75,8 @@ if notDefined('figNum'), figNum = vcSelectFigure('GRAPHWIN'); end
 if notDefined('delay'), delay = 0.2; end
 
 figure(figNum)
-set(figNum,'name','PSF Movie');
+set(figNum, 'name', 'PSF Movie');
 
-%%
 optics      = oiGet(oi,'optics');
 opticsModel = oiGet(oi,'optics model');
 
@@ -66,6 +117,7 @@ switch lower(opticsModel)
         
         
     case 'shiftinvariant'
+
         % We get the psf data all at once in this case
         psf  = opticsGet(optics,'shift invariant psf data');
         support = opticsGet(optics,'psf support','um');
@@ -77,39 +129,44 @@ switch lower(opticsModel)
             imagesc(y,x,psf(:,:,ii));
             xlabel('Position (um)');
             ylabel('Position (um)');
-            grid on; axis image
-            title(sprintf('Wave %.0f nm',wave(ii)));
+            grid on;
+            axis image
+            title(sprintf('Wave %.0f nm', wave(ii)));
             pause(delay);
         end
         %{
     case 'raytrace'
-        name = opticsGet(optics,'rtname');
+        name = opticsGet(optics, 'rtname');
         figNum = vcNewGraphWin;
-        set(figNum,'name',sprintf('%s: PSF movie',name));
+        set(figNum, 'name', sprintf('%s: PSF movie', name));
         colormap(gray(256));
 
-        wave   = opticsGet(optics,'rt psf wavelength');
-        imgHgt = opticsGet(optics,'rt psf field height','um');
-        psf    = opticsGet(optics,'rt psf data');
-        c = opticsGet(optics,'rt psf support col','um');
-        r = opticsGet(optics,'rt psf support col','um');
+        wave = opticsGet(optics, 'rt psf wavelength');
+        imgHgt = opticsGet(optics, 'rt psf field height', 'um');
+        psf = opticsGet(optics, 'rt psf data');
+        c = opticsGet(optics, 'rt psf support col', 'um');
+        r = opticsGet(optics, 'rt psf support col', 'um');
 
         % Should we plot them on a single image and move them, or centered
         % like this?
         gColor = [.5 .5 0];
-        for jj=1:length(wave)
-            for ii=1:length(imgHgt)
-                imagesc(r + imgHgt(ii),c + imgHgt(ii),squeeze(psf(:,:,ii,jj)));
-                set(gca,'yticklabel',[]); xlabel('Position (um)');
-                set(gca,'xcolor',gColor,'ycolor',gColor);
-                grid on; axis image
-                title(sprintf('Wave %.0f nm\nField height %.2f um',wave(jj),imgHgt(ii)));
+        for jj = 1:length(wave)
+            for ii = 1:length(imgHgt)
+                imagesc(r + imgHgt(ii), c + imgHgt(ii), ...
+                    squeeze(psf(:, :, ii, jj)));
+                set(gca, 'yticklabel', []);
+                xlabel('Position (um)');
+                set(gca, 'xcolor', gColor, 'ycolor', gColor);
+                grid on;
+                axis image
+                title(sprintf('Wave %.0f nm\nField height %.2f um', ...
+                    wave(jj), imgHgt(ii)));
                 pause(delay);
             end
         end
         %}
     otherwise
-        error('Unknown model %s\n',opticsModel);
+        error('Unknown model %s\n', opticsModel);
 end
 
 end

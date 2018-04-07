@@ -1,8 +1,15 @@
 function window(obj, varargin)
-%WINDOW  Opens a cone mosaic window GUI.
+% Opens a cone mosaic window GUI.
 %
-%   Inputs:
-%   None.
+% Syntax:
+%   window(obj, [varargin])
+%
+% Description:
+%    This function opens a cone mosaic window GUI via calling the
+%    coneMosaicWindow function.
+%
+% Inputs:
+%    obj - The cone mosaic object.
 %
 %   Outputs:
 %   None.
@@ -10,9 +17,12 @@ function window(obj, varargin)
 %   Optional key/value pairs:
 %   None.
 %
-%   See also: CONEMOSAICWINDOW.
+%   See Also:
+%    coneMosaicWindow
 
-% HJ ISETBIO Team 2016
+% History:
+%    xx/xx/16  HJ   ISETBIO Team 2016
+%    02/19/18  jnm  Formatting
 
     coneMosaicWindow(obj);
 end

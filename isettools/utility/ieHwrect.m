@@ -40,7 +40,6 @@ signal = p.Results.signal;
 effectiveZero = p.Results.effectiveZero;
 
 %% Do it
-
 hwr = max(signal, effectiveZero);
 
 end

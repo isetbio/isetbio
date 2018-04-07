@@ -1,38 +1,59 @@
 function varargout = microLens(varargin)
-% MICROLENS M-file for microLens.fig
-%      MICROLENS, by itself, creates a new MICROLENS or raises the existing
-%      singleton*.
+% M-file for microLens.fig
 %
-%      H = MICROLENS returns the handle to a new MICROLENS or the handle to
-%      the existing singleton*.
+% Syntax:
+%   varargout = microLens([varargin])
 %
-%      MICROLENS('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MICROLENS.M with the given input arguments.
+% Description:
+%    MICROLENS, by itself, creates a new MICROLENS or raises the existing
+%    singleton*.
 %
-%      MICROLENS('Property','Value',...) creates a new MICROLENS or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before microLens_OpeningFunction gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to microLens_OpeningFcn via varargin.
+%    H = MICROLENS returns the handle to a new MICROLENS or the handle to
+%    the existing singleton*.
 %
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
+%    MICROLENS('CALLBACK', hObject, eventData, handles, ...) will call the
+%    local function with the name CALLBACK in MICROLENS.M with the given
+%    input arguments.
 %
-% See also: GUIDE, GUIDATA, GUIHANDLES
+%    MICROLENS('Property', 'Value', ...) creates a new MICROLENS or raises
+%    the existing singleton*. Starting from the left, property value pairs
+%    are applied to the GUI before microLens_OpeningFunction gets called.
+%    An unrecognized property name or invalid value makes property
+%    application stop. All inputs are passed to microLens_OpeningFcn via
+%    varargin.
+%
+%    *See GUI Options on GUIDE's Tools menu. Choose "GUI allows only one
+%    instance to run (singleton)".
+%
+% Inputs:
+%    None required.
+%
+% Outputs:
+%    None required.
+%
+% Optional key/value pairs:
+%    **NEEDS TO BE FILLED IN**
+%
+% Notes:
+%    * Edit the above text to modify the response to help microLens
+%
+% See Also:
+%    GUIDE, GUIDATA, GUIHANDLES
+%
 
-% Edit the above text to modify the response to help microLens
-
-% Last Modified by GUIDE v2.5 22-Mar-2004 17:59:57
+% History:
+%    03/22/04       Last Modified by GUIDE v2.5 22-Mar-2004 17:59:57
+%    03/08/18  jnm  Formatting
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
-gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @microLens_OpeningFcn, ...
-                   'gui_OutputFcn',  @microLens_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
-if nargin & isstr(varargin{1})
+gui_State = struct('gui_Name', mfilename, ...
+    'gui_Singleton', gui_Singleton, ...
+    'gui_OpeningFcn', @microLens_OpeningFcn, ...
+    'gui_OutputFcn', @microLens_OutputFcn, ...
+    'gui_LayoutFcn', [] , ...
+    'gui_Callback', []);
+if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -43,14 +64,30 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
 % --- Executes just before microLens is made visible.
 function microLens_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to microLens (see VARARGIN)
+% (microLens | Open) Opening function for microLens executes before visible
+%
+% Syntax:
+%   microLens_OpeningFcn(hObject, eventdata, handles, [varargin])
+%
+% Description:
+%    Function call to open the microLens object. Executes before the
+%    microLens object is visible.
+%
+% Inputs:
+%    hObject   - handle to microLens
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%    varargin  - (Optional) Optional Command Line arguments to microLens.
+%                See VARARGIN.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % Choose default command line output for microLens
 handles.output = hObject;
@@ -61,232 +98,588 @@ guidata(hObject, handles);
 % UIWAIT makes microLens wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = microLens_OutputFcn(hObject, eventdata, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% (microLens | Output) Command Line Output for the microLens
+%
+% Syntax:
+%   varargout = microLens_OutputFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Function to output from the microLens to the Command Line.
+%
+% Inputs:
+%    hObject   - handle to microLens
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    varargout - (Optional) Cell Array for returning optional output
+%                arguments. See VARARGOUT.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
 % --- Executes on button press in btnCompute.
 function btnCompute_Callback(hObject, eventdata, handles)
-% hObject    handle to btnCompute (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% (btnCompute) Object call to the Compute Button
+%
+% Syntax:
+%   btnCompute_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Compute Button call
+%
+% Inputs:
+%    hObject   - handle to btnCompute (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit1 | Create) Object call to Create edit1
+%
+% Syntax:
+%   edit1_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit1
+%
+% Inputs:
+%    hObject   - handle to edit1 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit1_Callback(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
-
+% (edit1) Object call to edit1
+%
+% Syntax:
+%   edit1_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit1 call
+%
+% Inputs:
+%    hObject   - handle to edit1 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit1 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit1 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit2 | Create) Object call to Create edit2
+%
+% Syntax:
+%   edit2_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit2
+%
+% Inputs:
+%    hObject   - handle to edit2 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit2_Callback(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit2 as text
-%        str2double(get(hObject,'String')) returns contents of edit2 as a double
-
+% (edit2) Object call to edit2
+%
+% Syntax:
+%   edit2_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit2 call
+%
+% Inputs:
+%    hObject   - handle to edit2 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit2 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit2 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit3 | Create) Object call to Create edit3
+%
+% Syntax:
+%   edit3_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit3
+%
+% Inputs:
+%    hObject   - handle to edit3 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
-
+% (edit3) Object call to edit3
+%
+% Syntax:
+%   edit3_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit3 call
+%
+% Inputs:
+%    hObject   - handle to edit3 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit3 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit3 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit4 | Create) Object call to Create edit4
+%
+% Syntax:
+%   edit4_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit4
+%
+% Inputs:
+%    hObject   - handle to edit4 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit4_Callback(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit4 as text
-%        str2double(get(hObject,'String')) returns contents of edit4 as a double
-
+% (edit4) Object call to edit4
+%
+% Syntax:
+%   edit4_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit4 call
+%
+% Inputs:
+%    hObject   - handle to edit4 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit4 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit4 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit5 | Create) Object call to Create edit5
+%
+% Syntax:
+%   edit5_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit5
+%
+% Inputs:
+%    hObject   - handle to edit5 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit5_Callback(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double
-
+% (edit5) Object call to edit5
+%
+% Syntax:
+%   edit5_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit5 call
+%
+% Inputs:
+%    hObject   - handle to edit5 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit5 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit5 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit6_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+% (edit6 | Create) Object call to Create edit6
+%
+% Syntax:
+%   edit6_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit6
+%
+% Inputs:
+%    hObject   - handle to edit6 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit6_Callback(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit6 as text
-%        str2double(get(hObject,'String')) returns contents of edit6 as a double
-
+% (edit6) Object call to edit6
+%
+% Syntax:
+%   edit6_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit6 call
+%
+% Inputs:
+%    hObject   - handle to edit6 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit6 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit6 as double
+%
 
 % --- Executes during object creation, after setting all properties.
 function edit7_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
+% (edit7 | Create) Object call to Create edit7
+%
+% Syntax:
+%   edit7_CreateFcn(hObject, eventdata, handles)
+%
+% Description:
+%    Create function for edit7
+%
+% Inputs:
+%    hObject   - handle to edit7 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - empty - handles are not created until after all of the
+%                CreateFcns have been called
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hint: edit controls usually have a white background on Windows.
+%    * See ISPC and COMPUTER.
+%
 if ispc
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+    set(hObject, 'BackgroundColor', ...
+        get(0, 'defaultUicontrolBackgroundColor'));
 end
 
-
-
 function edit7_Callback(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit7 as text
-%        str2double(get(hObject,'String')) returns contents of edit7 as a double
-
+% (edit7) Object call to edit7
+%
+% Syntax:
+%   edit7_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Edit7 call
+%
+% Inputs:
+%    hObject   - handle to edit7 (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * Hints:
+%       get(hObject, 'String')
+%           returns contents of edit7 as text
+%       str2double(get(hObject, 'String'))
+%           returns contents of edit7 as double
+%
 
 % --------------------------------------------------------------------
 function menuFile_Callback(hObject, eventdata, handles)
-% hObject    handle to menuFile (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% (Menu | File) Object call to the File menu option
+%
+% Syntax:
+%   menuFile_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Top level of File menu
+%
+% Inputs:
+%    hObject   - handle to menuFile (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % --------------------------------------------------------------------
 function menuEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to menuEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% (Menu | Edit) Object call to the Edit menu option
+%
+% Syntax:
+%   menuEdit_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Top level of Edit menu
+%
+% Inputs:
+%    hObject   - handle to menuEdit (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % --------------------------------------------------------------------
 function menuPlot_Callback(hObject, eventdata, handles)
-% hObject    handle to menuPlot (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% (Menu | Plot) Object call to the Plot menu option
+%
+% Syntax:
+%   menuPlot_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Top level of Plot menu
+%
+% Inputs:
+%    hObject   - handle to menuPlot (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % --------------------------------------------------------------------
 function menuAnalyze_Callback(hObject, eventdata, handles)
-% hObject    handle to menuAnalyze (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% (Menu | Analyze) Object call to the Analyze menu option
+%
+% Syntax:
+%   menuAnalyze_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Top level of Analyze menu
+%
+% Inputs:
+%    hObject   - handle to menuAnalyze (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % --------------------------------------------------------------------
 function menuHelp_Callback(hObject, eventdata, handles)
-% hObject    handle to menuHelp (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
+% (Menu | Help) Object call to the Help menu option
+%
+% Syntax:
+%   menuHelp_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    Top level of Help menu
+%
+% Inputs:
+%    hObject   - handle to menuHelp (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%

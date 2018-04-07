@@ -21,11 +21,15 @@ function sformatted = ieParamFormat(s)
 % Outputs:
 %    sFormatted - The modified s (string or array).
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010
 %	 12/05/17  dhb  Handle cell arrays.
 %    12/12/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -47,7 +51,7 @@ end
 if (ischar(s))
     % To lower and remove spaces
     sformatted = lower(s);
-    sformatted = strrep(sformatted,' ','');
+    sformatted = strrep(sformatted, ' ', '');
 else
     if (iscell(s))
         sformatted = s;

@@ -1,3 +1,4 @@
+
 function scene = sceneSet(scene, parm, val, varargin)
 % Set ISET scene parameter values
 %
@@ -73,7 +74,6 @@ function scene = sceneSet(scene, parm, val, varargin)
 %
 % Optional key/value pairs:
 %    Needs to be filled out.
-%
 %
 % Notes:
 %    * N.B. After writing to the 'photons' field we clear the luminance

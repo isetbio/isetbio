@@ -7,6 +7,9 @@ function [figH, m, cbH] = imageMontage(hc, slices, numCols, figNum)
 % Description:
 %    Create a window with a montage of the slices in the hypercube data
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit imageMontage.m' into the Command Window.
+%
 % Inputs:
 %    hc      - Hypercube data
 %    slices  - (Optional) Slices to create a montage with. Default is [].
@@ -15,14 +18,15 @@ function [figH, m, cbH] = imageMontage(hc, slices, numCols, figNum)
 %
 % Outputs:
 %    figH    - The hypercube figure
-%    m       - 
-%    cbH     - 
+%    m       - The image montage
+%    cbH     - The colorbar for the hypercube
+%
+% Optional key/value pairs:
+%    None
 %
 % Notes:
 %    * [Note: JNM - removed listed input variables that were not actually
 %      in the header. Variables removed: wavebands, cmap, crop, flip.]
-%    * [Note: JNM - Example is not working since the hypercube is not
-%      correctly instantiated.]
 %
 % See Also:
 %    imageMakeMontage
@@ -31,21 +35,19 @@ function [figH, m, cbH] = imageMontage(hc, slices, numCols, figNum)
 % History:
 %    xx/xx/12       (c) Imageval, 2012
 %    12/07/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
     hc = macbethChartCreate;
     imageMontage(hc.data);
-    colormap(gray); axis image
+    colormap(gray);
+    axis image
 %}
 
 if notDefined('slices'), slices = []; end
 if ~exist('numCols', 'var'), numCols = []; end
-if ~exist('figNum', 'var')
-    figH = figure;
-else
-    figH = figure(figNum);
-end
+if ~exist('figNum', 'var'), figH = figure; else, figH = figure(figNum); end
 
 %% 
 m = imageMakeMontage(hc, slices, [], numCols);

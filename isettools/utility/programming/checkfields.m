@@ -23,6 +23,9 @@ function bool = checkfields(s, varargin)
 %               present in the provided structure. 1 Is True (field
 %               sequence is present), and 0 is False (absent). 
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note: JNM - This requires the sequence to be in order, and from the
 %      beginning. See Example below for clarification.][BW:  We could
@@ -32,6 +35,7 @@ function bool = checkfields(s, varargin)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/12/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

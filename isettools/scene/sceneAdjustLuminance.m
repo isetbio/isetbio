@@ -9,12 +9,18 @@ function scene = sceneAdjustLuminance(scene, meanL)
 %    mean luminance level is meanL, rather than the current level. The
 %    illuminant is also scaled to preserve the reflectance.
 %
+%    There are examples in the code. Type 'edit sceneAdjustLuminance' into
+%    the Command Window to access.
+%
 % Inputs:
 %    scene - A scene structure
 %    meanL - The meanLuminance to scale the scene structure to.
 %
 % Outputs:
 %    scene - The modified scene strucuture
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * TODO - Some scenes go to very long wavelengths. That slows the
@@ -27,6 +33,7 @@ function scene = sceneAdjustLuminance(scene, meanL)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    01/02/18  jnm  Formatting & add checks for input variables
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

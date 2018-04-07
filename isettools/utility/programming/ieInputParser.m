@@ -14,6 +14,9 @@ function parser = ieInputParser()
 % Outputs:
 %    parser - The input parser object
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    inputParser
 %
@@ -21,6 +24,7 @@ function parser = ieInputParser()
 % History:
 %    xx/xx/15       Copyright (c) 2015 ISETBIO Team
 %    12/15/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

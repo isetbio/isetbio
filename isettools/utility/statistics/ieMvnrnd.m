@@ -2,7 +2,7 @@ function s = ieMvnrnd(mu, Sigma, K)
 % Multivariate normal random number generator
 %
 % Syntax:
-%   s = ieMvnrnd(mu, Sigma, K)
+%   s = ieMvnrnd([mu], [Sigma], [K])
 %
 % Description:
 %    This is a multivariate normal random number generator.
@@ -19,9 +19,9 @@ function s = ieMvnrnd(mu, Sigma, K)
 %            dimensions. Default is the scalar value 0.
 %    Sigma - (Optional) A covariance matrix of d x d. Default is the scalar
 %            value 1.
-%    K     - (Optional) The number of samples per row of mu. Typically used when mu
-%            contains one row, at which point there is a repmat which
-%            rewrites mu to K rows for K samples.  Matlab calls K the
+%    K     - (Optional) The number of samples per row of mu. Typically used
+%            when mu contains one row, at which point there is a repmat
+%            which rewrites mu to K rows for K samples.  Matlab calls K the
 %            number of 'cases'. If not passed, this defaults to 1.
 %
 % Outputs:
@@ -39,6 +39,7 @@ function s = ieMvnrnd(mu, Sigma, K)
 %    05/xx/04  XXX?   Add Third arg.
 %    xx/xx/14  HJ/BW  ISETBIO TEAM, 2014
 %    12/13/17  JNM    Formatting
+%    01/19/18  JNM    Formatting update to match Wiki.
 
 % Examples:
 %{

@@ -2,7 +2,7 @@ function [val, seed] = iePoisson(lambda, varargin)
 % Create a matrix of Poisson samples using rate parameters in lambda
 %
 % Syntax:
-%   [val, seed] = iePoisson(lambda, 'nSamp', N, 'noiseFlag', ..., 'seed', ...)
+%   [val, seed] = iePoisson(lambda, [varargin])
 %
 % Description:
 %    Create a matrix of Poisson samples using rate parameters in lambda
@@ -17,17 +17,19 @@ function [val, seed] = iePoisson(lambda, varargin)
 % Inputs:
 %    lambda   - The rate parameter. A matrix or a scalar. 
 %    varargin - (Optional) An array of variable length containing possible
-%               key/value pairs of arguments. Some possible options are:
-%               nSamp     - The number of samples
-%               noiseFlag - Used to determine whether or not to generate a
-%                           new noise seed (or set to a fixed value.) The
-%                           options are 'frozen' or 'random.
-%               seed      - The noise seed number. Default is 1.
+%               key/value pairs of arguments. For some of the options, see
+%               the key/values section below.
 %
 % Outputs:
 %    val      - The returning matrix.
 %    seed     - The noise seed number.
 %
+% Optional key/value pairs:
+%	 nSamp     - The number of samples
+%    noiseFlag - Used to determine whether or not to generate a new noise
+%                seed (or set to a fixed value.) The options are 'frozen'
+%                or 'random. Default is 'random'.
+%    seed      - The noise seed number. Default is 1.
 % References:
 %    Knuth routine - found on a web-page reference and also at
 %       http://en.wikipedia.org/wiki/Poisson_distribution
@@ -43,6 +45,7 @@ function [val, seed] = iePoisson(lambda, varargin)
 %                   equivalent, iePoissrnd
 %    01/25/17  npc  Now only using poissrnd from the Statistics Toolbox.
 %    12/13/17  jnm  Formatting
+%    01/24/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{
@@ -52,7 +55,8 @@ function [val, seed] = iePoisson(lambda, varargin)
 	tic, val = iePoisson(lambda); toc
 	vcNewGraphWin;
 	subplot(2, 1, 1), imagesc(lambda);
-    colormap(gray);colorbar;
+    colormap(gray);
+    colorbar;
     axis image
 	subplot(2, 1, 2), imagesc(val); 
     colormap(gray);

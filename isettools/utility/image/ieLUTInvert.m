@@ -18,6 +18,9 @@ function lut = ieLUTInvert(inLUT, nSteps)
 % Outputs:
 %    lut    - The returned lookup table.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %   ieLUTDigital, ieLUTLinear
 %
@@ -29,6 +32,7 @@ function lut = ieLUTInvert(inLUT, nSteps)
 %    04/02/15  dhb  Pull clipping out of loop (cleaner) and clip at the
 %                   correct level (which was wrong).
 %    12/06/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

@@ -21,6 +21,9 @@ function fSupport = sceneFrequencySupport(scene, units)
 % Outputs:
 %    fSupport - The calculated frequency support.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    unitFrequencyList
 %
@@ -28,6 +31,7 @@ function fSupport = sceneFrequencySupport(scene, units)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/22/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{

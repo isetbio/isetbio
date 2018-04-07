@@ -19,10 +19,14 @@ function [luminance, meanLuminance] = sceneCalculateLuminance(scene)
 %    luminance     - The luminance at each point in the scene
 %    meanLuminance - The mean scene luminance
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/29/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 if notDefined('scene'), error('Scene variable required.'); end
 
