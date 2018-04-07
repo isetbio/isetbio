@@ -32,7 +32,7 @@ function im = ieCheckerboard(checkPeriod, nCheckPairs)
     im = checkerboard(16, 8); 
     imshow(im);
     colormap(gray);
-    imwrite(im, 'checkerboard.jpg', 'jpeg');
+    imwrite(im, fullfile(tempdir,'checkerboard.jpg'), 'jpeg');
 %}
 
 
