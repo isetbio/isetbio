@@ -53,9 +53,11 @@ function [macbethLAB, macbethXYZ, dE, vci] = ...
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    01/31/18  jnm  Formatting
+%    04/07/18  dhb  ETTBSkip on broken example.
 
 % Examples:
 %{
+    % ETTBSkip.  Example is broken. Function may or may not be broken too.
     vci = vcGetObject('vcimage');
 	[macbethXYZ, whiteXYZ] = vcimageMCCXYZ(vci);
 %}

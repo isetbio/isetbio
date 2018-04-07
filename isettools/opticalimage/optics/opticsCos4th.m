@@ -21,19 +21,18 @@ function oi = opticsCos4th(oi)
 %    None.
 %
 % Notes:
-%    * TODO: Assign someone to fix example (error "Struct contents
-%      reference from a non-struct array object.")
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/08/18  jnm  Formatting
+%    04/07/18  dhb  Fixed example.
 
 % Examples:
 %{
     scene = sceneCreate;
-    oi = oiCreate;
-   % tic, oi = oiCompute(oi,scene); toc
+    oi = oiCreate('human');
+    oi = oiCompute(oi,scene); 
     oi = opticsCos4th(oi)
 %}
 

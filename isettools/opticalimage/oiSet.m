@@ -102,6 +102,7 @@ function oi = oiSet(oi, parm, val, varargin)
     oi = oiSet(oi, 'optics fnumber', 2.8);
     oiGet(oi, 'optics fnumber')
 %}
+
 if ~exist('parm', 'var') || isempty(parm), error('Param required'); end
 if ~exist('val', 'var'), error('Value field required.'); end
 

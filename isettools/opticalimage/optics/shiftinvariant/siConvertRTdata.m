@@ -42,12 +42,21 @@ function [optics, inName, outName] = ...
 %                   in isetbio, I don't have a good way to test. But the
 %                   change matches the change I implemented and tested in
 %                   siSynthetic.
-%    03/16/18  jnm  Formatting
+%    03/16/18  jnm  Formatting.
+%    04/07.18  dhb  Comment re broken example and what might be done about
+%                   it.
 
 % Examples:
 %{
+   % ETTBSkip.  Example is broken.  And it requires user input.
+   % Should try to fix so it runs, then leave in the ETTBSkip because
+   % it requires user input. I think the problem is files it wants
+   % to read are not where the example expects them, and that it isn't
+   % clear in the case where it prompts for input what file we need to
+   % navigate to and select.
+
    baseDir = fullfile(isetbioDataPath, 'optics');
-    inName = fullfile(baseDir, 'rtZemaxExample.mat');
+   inName = fullfile(baseDir, 'rtZemaxExample.mat');
 
    siConvertRTdata;
 

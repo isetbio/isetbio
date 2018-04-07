@@ -19,16 +19,22 @@ function a = coneAbsorptions(obj, varargin)
 % Notes:
 %    * [Note: XXX - Maybe we should allow multiple cone types and return a
 %      cell array.]
-%    * [Note: JNM - Example is not working. Both coneAbsorptions return the
-%      error 'index exceeds matrix dimensions'.]
+%
+% See also:
+% 
 
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/22/18  jnm  Formatting
+%    04/07/18  dhb  Fix example.
 
 % Examples:
 %{
-    cm = coneMosaic();
+   scene = sceneCreate;
+   oi = oiCreate('human');
+   oi = oiCompute(oi,scene);
+   cm = coneMosaic();
+   cm.compute(oi);
    absorptions = coneAbsorptions(cm)
    absorptions = coneAbsorptions(cm, 'coneType', 'L')
 %}

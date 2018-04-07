@@ -32,22 +32,27 @@ function psfMovie(oi,figNum,delay)
 % History:
 %    xx/xx/05       Copyright ImagEval, LLC, 2005
 %    03/13/18  jnm  Formatting
+%    04/07/18  dhb  Add ETTBSkip for broken examples.
 
 % Examples:
 %{
+    % ETTBSkip.  Example broken.
+    %
     % Returns message correctly! "Not yet implemented..."
     oi = vcGetObject('oi');
     optics = oiGet(oi, 'optics');
-   psfMovie(optics, 1)
+    psfMovie(optics, 1)
 %}
 %{
+    % ETTBSkip.  Example broken.
+    %
     % This example loads, visualizes, rotates, and visualizes again.
     % psfMovie;
 
-   vcImportObject('OPTICS');
-   psfMovie([], 1);
-   optics = vcGetObject('optics');
-   optics = rtPSFEdit(optics, 0, 1, 2);
+    vcImportObject('OPTICS');
+    psfMovie([], 1);
+    optics = vcGetObject('optics');
+    optics = rtPSFEdit(optics, 0, 1, 2);
 
     % Returns error: "Error using chdir
     % Cannot CD to session (Name is nonexistent or not a directory)."

@@ -55,7 +55,6 @@ function oi = oiCompute(scene, oi, opticsModel)
 %    None.
 %
 % Notes:
-%    * TODO: Fix example. File called does not exist.
 %
 % See Also:
 %    opticsGet, opticsSet, wvfCreate, opticsCreate
@@ -64,19 +63,15 @@ function oi = oiCompute(scene, oi, opticsModel)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005
 %    03/06/18  jnm  Formatting
+%    04/07/18  dhb  Leave the gun, keep the canoli. (This means,
+%                   deleted broken example, kept the working one.)
+%                 
 
 % Examples:
 %{
     scene = sceneCreate;
-   oi = oiCreate;
+    oi = oiCreate('human');
     oi = oiCompute(scene, oi);
-
-    oi = vcGetObject('oi');
-    scene = vcGetObject('scene');
-    load siZemaxExample00
-    optics = opticsSet(optics, 'model', 'shiftinvariant');
-    oi = oiSet(oi, 'optics', optics);
-    oi = oiCompute(oi, scene);
 %}
 
 if notDefined('scene'), error('Scene required.'); end

@@ -47,11 +47,15 @@ function oi = opticsOTF(oi, scene)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/09/18  jnm  Formatting
+%    04/07/18  dhb  Fixe opticsOTF example so it runs.
+%                   Remove examples from helper functions in this file.
+%                   They can't work because you can't call those helper
+%                   functions from outside of the top level function.
 
 % Examples:
 %{
-   oi = opticsOTF(oi);       % Not saved
-    % oi = opticsOTF(oi, 1);  % OTF data are saved -- NOT YET IMPLEMENTED
+   oi = oiCreate('human');
+   oi = opticsOTF(oi);      
 %}
 
 if notDefined('oi'), error('Optical image required.'); end
@@ -101,11 +105,6 @@ function oi = oiApplyOTF(oi, scene, unit)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/09/18  jnm  Formatting
-
-% Examples:
-%{
-   oi = oiApplyOTF(oi);
-%}
 
 if notDefined('unit'), unit = 'cyclesPerDegree'; end
 wave = oiGet(oi, 'wave');

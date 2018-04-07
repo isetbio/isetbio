@@ -20,11 +20,12 @@ function txt = opticsDescription(optics)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/09/18  jnm  Formatting
+%    04/07/18  dhb  Make example run.
 
 % Examples:
 %{
+   optics = opticsCreate;
    descriptionText = opticsDescription(optics)
-   descriptionText = opticsDescription([])
 %}
 
 if notDefined('optics'), [~, optics] = vcGetSelectedObject('OPTICS'); end

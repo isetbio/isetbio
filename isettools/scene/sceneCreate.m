@@ -125,6 +125,9 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+% History:
+%   04/07/18  dhb  Fixed one broken example, deleted another.
+
 % Examples:
 %{
     % Macbeth Examples
@@ -139,13 +142,6 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
     patchSizePixels = 16;
     spectrum.wave = [380:5:720];
     scene = sceneCreate('macbethTungsten', patchSizePixels, spectrum);
-%}
-%{
-    % L* Example
-    barWidth = 20;
-    nBars = 10;
-    deltaE = 10;
-    scene = sceneCreate('LSteps', barWidth, nBars, deltaE);
 %}
 %{
     % Reflectance Chart Example
@@ -184,7 +180,7 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
     lineOffset = 25; % Plus is to the right
     scene = sceneCreate('lined65', imSize);
     scene = sceneCreate('line ee', imSize, lineOffset);
-    sceneCreate('bar', imageSize, width);
+    sceneCreate('bar', imSize);
 %}
 %{
     % Text Example

@@ -44,7 +44,8 @@ function varargout = coneMosaicWindow(varargin)
 % History:
 %    xx/xx/05         Copyright ImagEval Consultants, LLC, 2005.
 %    06/08/17  GUIDE  Last Modified by GUIDE v2.5 08-Jun-2017 21:21:47
-%    02/05/18  JNM    Formatting
+%    02/05/18  jnm    Formatting
+%    04/07/17  dhb    Get rid of examples in subfunctions, they can't work.
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -713,14 +714,6 @@ function c = contextMenuInit(handles)
 %    None.
 %
 
-% Examples:
-%{
-    % Typical sequence is 
-    % Set up enable.XXX
-	c = contextMenuInit(handles, enable)
-    contextMenuEnable(enable)
-%}
-
 c = uicontextmenu;
 if ~isempty(handles.axes2.Children)
     for ichild = 1:size(handles.axes2.Children, 1)
@@ -757,12 +750,6 @@ function contextMenuEnable(handles, enable)
 %    None.
 %
 
-% Examples:
-%{
-    c = contextMenuInit(handles, enable)
-	% Set up enable.XXX
-	contextMenuEnable(enable)
-%}
 % enable is a structure of 'on' and 'off' values
 set(handles.menuPlotHLine, 'Enable', enable.hLine);
 set(handles.menuPlotVLine, 'Enable', enable.vLine);

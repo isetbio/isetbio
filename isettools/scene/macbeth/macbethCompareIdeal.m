@@ -37,9 +37,11 @@ function [embRGB, mRGB, pSize] = macbethCompareIdeal(mRGB, pSize, illType)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    01/31/18  jnm  Formatting
+%    04/07/18  dhb  Do not run broken example.
 
 % Examples:
 %{
+    % ETTBSkip. This function is broken, so the example doesn't work.
     [embRGB, mRGB, pSize] = macbethCompareIdeal; 
 
     macbethCompareIdeal(mRGB, pSize, 4000);

@@ -47,19 +47,19 @@ function [scene, sSamples, reflectance, rcSize] = sceneReflectanceChart(...
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010.
 %    02/01/18  jnm  Formatting
+%    04/07/18  dhb  Got example to run by removing reference to a file of 
+%                   skin reflectances that wasn't being found.
 
 % Examples:
 %{
-    sFiles = cell(1, 4);
+    sFiles = cell(1, 3);
     sFiles{1} = fullfile(isetbioDataPath, 'surfaces', ...
         'reflectances', 'MunsellSamples_Vhrel.mat');
     sFiles{2} = fullfile(isetbioDataPath, 'surfaces', ...
         'reflectances', 'Food_Vhrel.mat');
     sFiles{3} = fullfile(isetbioDataPath, 'surfaces', ...
         'reflectances', 'DupontPaintChip_Vhrel.mat');
-    sFiles{4} = fullfile(isetbioDataPath, 'surfaces', ...
-        'reflectances', 'Skin_Vhrel.mat');
-    sSamples = [12, 12, 25, 25]*5; nSamples = sum(sSamples);
+    sSamples = [12, 12, 25]*5; nSamples = sum(sSamples);
     pSize = 24; 
 
     [scene, samples] = sceneReflectanceChart(sFiles, sSamples, pSize);

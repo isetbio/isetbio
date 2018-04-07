@@ -28,7 +28,6 @@ function [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
 %    None.
 %
 % Notes:
-%    * TODO: Rewrite example as per note in example. (It doesn't work)
 %
 % See Also:
 %    humanCore (this routine derived from that), opticsDefocusedMTF, 
@@ -38,14 +37,16 @@ function [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/09/18  jnm  Formatting
+%    04/07/18  dhb  Got example to run.  Might even do something sensible.
 
 % Examples:
 %{
-    % REWRITE:
+    optics = opticsCreate;
     sampleSF = 1:60;
+    wave = 400:10:700;
     D = zeros(size(wave));  % No wavelength dependent defocus
     D = 0.1 * [1:length(wave)] / length(wave);  % A little.
-    otf = opticsDefocusCore(XXX);
+    otf = opticsDefocusCore(optics, sampleSF, D);
     vcNewGraphWin;
     mesh(sampleSF, wave, otf)
 %}
