@@ -44,10 +44,8 @@ function obj = osSet(obj, varargin)
 %{
     adaptedOS = osCreate;
 	osGet(adaptedOS, 'noiseFlag')
-
-    adaptedOS = osSet(adaptedOS, 'noiseFlag', 'frozen') % works
-
-    adaptedOS = adaptedOS.osSet('noiseFlag', 'none') % also works
+    adaptedOS = osSet(adaptedOS, 'noiseFlag', 'frozen')
+    adaptedOS = adaptedOS.osSet('noiseFlag', 'none')
 %}
 
 %%

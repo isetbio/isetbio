@@ -159,6 +159,8 @@ function val = oiGet(oi, parm, varargin)
 %    03/26/18  dhb  Change arg to determineUnits to (..., varargin{1}).
 %                   Needs to be like that to work, otherwise a cell array
 %                   rather than a string comes back.
+%   04/07/18  dhb   Change call to vcGetSelectedObject to vcGetObject.  I
+%                   did this once before, but somehow it was lost.
 
 
 % Examples:

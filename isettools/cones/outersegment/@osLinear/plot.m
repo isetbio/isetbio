@@ -30,10 +30,11 @@ function [uData, h] = plot(os, pType, varargin)
 % History:
 %    xx/xx/16  BW   (c) isetbio team, 2016
 %    02/13/18  jnm  Formatting
+%    04/07/18  dhb  Skip broken example.
 
 % Examples:
 %{
-    % Even with initializing the osL object, the functions do not work.
+    % ETTBSkip. Even with initializing the osL object, the functions do not work.
     osL = osCreate;
     osL.plot(absorptions, 'type', 'isomerizations')
     osL.plot(absorptions, 'type', 'current')

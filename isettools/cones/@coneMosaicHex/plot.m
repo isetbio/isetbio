@@ -26,9 +26,11 @@ function [uData, hf] = plot(obj, type, varargin)
 % History:
 %    xx/xx/16  HJ/BW  ISETBIO TEAM, 2016
 %    02/20/18  jnm    Formatting
+%    04/07/18  dhb    Skip broken example.
 
 % Examples:
 %{
+    % ETTBSkip. This needs a mosaic defined before it could possibly work.
     rgc.mosaic{1}.plot(type)
 %}
 

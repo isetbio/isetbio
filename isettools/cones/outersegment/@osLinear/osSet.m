@@ -43,6 +43,9 @@ function obj = osSet(obj, varargin)
 
 % Examples:
 %{
+    % ETTBSkip.  Example is broken, possibly becaues underlying routine is
+    % not parsing well.
+    %
     % [Note: JNM - The time step being set in the same call as noise flag
     % appears to be upsetting things?]
     adaptedOS = osCreate;

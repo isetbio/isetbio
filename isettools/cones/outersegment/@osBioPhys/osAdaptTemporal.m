@@ -54,9 +54,13 @@
 %    xx/xx/14  HJ   ISETBIO Team, 2014
 %    08/xx/16  JRG  ISETBIO Team, updated 8/2016
 %    02/14/18  jnm  Formatting
+%    04/07/18  dhb  Skip broken example.
 
 % Examples:
 %{
+    % ETTBSkip.  To work, this example will need some inputs defined before
+    % the funtion is called.
+    %
     % From @osBioPhys/osCompute.m, line 64:
     [current, model.state] = osAdaptTemporal(pRate, model.state);
 %}

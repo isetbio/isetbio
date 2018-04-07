@@ -32,60 +32,27 @@ function [OTF2D, fSupport, inCutoffFreq] = dlMTF(oi, fSupport, wave, units)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/08/18  jnm  Formatting
+%    04/07/18  dhb  Deep six broken examples.
 
 % Examples:
 %{
-    % If you send in only one argument, it must be the optical image
-    % structure. In this first example, We calculate all of the OTFs (one
-    % for each wavelength).
-    oi = oiCreate;
-	OTF2D = dlMTF(oi);
-
-    % To plot the result, we center DC using fftshift
-	figure(1);
-	mesh(fSupport(1, :, 1), fSupport(:, 1, 2), fftshift(OTF2D(:, :, 1)));
-	colorbar;
-    xlabel('cyc/mm');
-    ylabel('cyc/mm');
+     oi = oiCreate('diffraction limited');
+     wavelength = 700; 
+     unit = 'mm';
+     fSupport = oiGet(oi,'fSupport',unit);
+     OTF2D = dlMTF(oi,fSupport,wavelength,unit);
+     vcNewGraphWin;
+     mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
+     colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
 %}
 %{
-    % If you have pre-computed the arguments, then you can use the
-    % optics structure, as in this example
-	oi = vcGetObject('oi');
-    wavelength = 400;
-    unit = 'mm';
-	fSupport = oiGet(oi, 'fSupport', unit);
-	OTF2D = dlMTF(optics, fSupport, wavelength, unit);
-
-	figure(1);
-    mesh(fSupport(1, :, 1), fSupport(:, 1, 2), fftshift(OTF2D));
-	colorbar;
-    xlabel('cyc/mm');
-    ylabel('cyc/mm');
-
-    % If you want units in cycles/deg, you must sent in the optical image.
-%}
-
-
-% Examples:
-%{
- oi = oiCreate('diffraction limited');
- wavelength = 700; 
- unit = 'mm';
- fSupport = oiGet(oi,'fSupport',unit);
- OTF2D = dlMTF(oi,fSupport,wavelength,unit);
- vcNewGraphWin;
- mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
- colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
-%}
-%{
-scene = sceneCreate;
-oi = oiCreate('diffraction limited');
-oi = oiCompute(oi,scene);
-OTF2D = dlMTF(oi);
-size(OTF2D)
-vcNewGraphWin; mesh(fftshift(OTF2D(:,:,1)));
-vcNewGraphWin; mesh(fftshift(OTF2D(:,:,end)));
+    scene = sceneCreate;
+    oi = oiCreate('diffraction limited');
+    oi = oiCompute(oi,scene);
+    OTF2D = dlMTF(oi);
+    size(OTF2D)
+    vcNewGraphWin; mesh(fftshift(OTF2D(:,:,1)));
+    vcNewGraphWin; mesh(fftshift(OTF2D(:,:,end)));
 %}
 
 %%

@@ -71,9 +71,11 @@ function val = osGet(obj, varargin)
 % History:
 %    08/xx/15  JRG NC DHB  Created
 %    02/15/18  jnm         Formatting
+%    04/07/18  dhb         Fix example.
 
 % Examples:
 %{
+    adaptedOS = osCreate;
     osGet(adaptedOS, 'noiseFlag')
 %}
 
