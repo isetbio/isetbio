@@ -39,9 +39,11 @@ function ieFormatFigure(fig, fontName, fontSize, figSize, border)
 
 % Examples:
 %{
-    theFig = figure; plot(1:10,1:10,'ro'); xlabel('x axis');
-    ieFormatFigure([],[],[20 16]);
-    ieFormatFigure(theFig,'Times');
+    theFig = figure;
+    plot(1:10, 1:10, 'ro');
+    xlabel('x axis');
+    ieFormatFigure([], [], [20 16]);
+    ieFormatFigure(theFig, 'Times');
 %}
 
 % Format the input parameters.

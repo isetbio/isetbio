@@ -21,10 +21,14 @@ function scene = sceneInitSpatial(scene)
 % Outputs:
 %    scene - The modified scene structure
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 % Degrees
 if notDefined('scene.wAngular'), scene = sceneSet(scene,'fov', 10); end

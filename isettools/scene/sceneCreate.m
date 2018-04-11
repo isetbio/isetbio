@@ -2,7 +2,7 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 % Create a scene structure.
 %
 % Syntax:
-%   [scene, parms] = sceneCreate(sceneName, varargin)
+%   [scene, parms] = sceneCreate(sceneName, [varargin])
 %
 % Description:
 %    A scene describes the photons emitted from each visible point in the
@@ -21,9 +21,18 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %
 %         sceneCreate('scene list')
 %
+%    Additional parameters are available for several of the patterns. For
+%    example, the harmonic call can set the frequency, contrast, phase, 
+%    angle, row and col size of the harmonic. The frequency unit in this
+%    case is cycles/image. To obtain cycles per degree, divide by the field
+%    of view.
+%
+%    There are a large number of examples contained in the code. Enter
+%    'edit sceneCreate.m' into the Command Window to examine them.
+%
 % Inputs:
 %    sceneName - (Optional) The name of the scene to create. Default is a
-%                Macbeth color checker with a D65 light source abd a mean
+%                Macbeth color checker with a D65 light source and a mean
 %                luminance of 100 cd/m2. Due to the large number of
 %                options, they are listed categorically below:
 %       MACBETH COLOR AND LUMINANCE CHART
@@ -38,133 +47,182 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %         {'macbethtungsten'}    - Tungsten illuminant
 %         {'macbethEE_IR'}       - Equal energy extends out to the IR
 %
+%         {L*-steps}             - Vertical bars spaced in equal L* steps,
+%                                  following the scale from dark to light.
+%       REFLECTANCE SAMPLE CHART
+%         {'reflectance chart'}  - Specify random reflectance samples from
+%                                  database. There is always a gray strip
+%                                  at the right. Uses sceneReflectanceChart
+%       NARROWBAND COLOR PATCHES
+%         {'uniform monochromatic'}
+%                                - Specify the wavelengths and size of band
+%       SPATIAL TEST PATTERNS:
+%         {'rings rays'}         - Resolution pattern
+%         {'harmonic'}           - Harmonics (can be sums of harmonics)
+%         {'sweep frequency'}    - Increasing frequency to the right, 
+%                                  increasing contrast upward
+%         {'line d65'}           - Line with D65 energy spectrum
+%         {'line ee'}            - Line with equal energy spectrum
+%         {'bar ee'}             - Vertical bar, equal energy
+%         {'point array'}        - Point array
+%         {'gridlines'}          - Grid lines
+%         {'checkerboard'}       - Checkerboard with equal photon spectrum
+%         {'frequency orientation'}
+%                                - De-mosaicing test pattern, on the equal
+%                                  photon spectrum
+%         {'slanted edge'}       - Used for ISO spatial resolution, one the
+%                                  equal photon spectrum
+%         {'moire orient'}       - A Circular Moire pattern
+%         {'zone plate'}         - A Circular zone plot, on the equal
+%                                  photon spectrum
+%         {'radial lines'}       - Radial lines, which are used to test
+%                                  printers and displays
+%       TEXT
+%         {'letter'}             - Scene of a display character
+%       NOISE ANALYSIS TEST PATTERNS
+%             Many of the patterns can have an arbitrary image (row, col)
+%             size. This is possible for patterns such as: whitenoise,
+%             impulse1dee, lined65...
+%         {'linearIntensityRamp'}
+%                                - Linear intensity ramp pattern.
+%         {'uniformEqualEnergy'} - Equal energy
+%         {'uniformEqualPhoton'} - Equal photon density
+%         {'uniform bb'}         - Blackbody, uniform
+%         {'whitenoise'}         - Noise pattern for testing
 %
+%       SCENES FROM IMAGE DATA
+%             We also create scenes using data in image files. It is also
+%             possible to simply read a tiff or jpeg file and create a
+%             scene structure. These image-based scenes created by
+%             sceneFromFile. See the comments there for more information.
 %    varargin  - (Optional) Variable length array containing additional
 %                parameters required based on scene type. Some examples
 %                and their defaults include the following:
 %          'patchSize' - Patch size. Default 16 pixels e.g. patchSize = 8;
-%          'spectrum' - wavelength samples. 
+%          'spectrum'  - Wavelength samples. eg. spectrum = 400:10:700;
+%          'imSize'    - Image size. eg. imSize = 256;
+%          'edgeSlope' - The slope of the edge. eg. edgeSlope = 4/3;
+%          'parms'     - Structured parameter containing a number of
+%                        key/value pairs, such as:
+%                   freq:      Frequency(ies).
+%                   ang:       Angle.
+%                   contrast:  Contrast.
+%                   row:       The number of rows.
+%                   col:       The number of columns.
+%                   ph:        Ph.
+%                   GaborFlag: Gabor flag.
 %
-%   The size of the individual patches and the wavelength sampling are both
-%   parameters. They can be set using the calling procedure
+% Outputs:
+%    scene     - The created scene structure
+%    parms     - The scene parameters
 %
-%         patchSizePixels = 16;
-%         spectrum.wave = [380:5:720];
-%         scene = sceneCreate('macbethTungsten', patchSizePixels, spectrum);
+% Optional key/value pairs:
+%    Depends on the type of scene being created.
+%    *Section needs to be expanded*
 %
-%     {L*-steps} - Vertical bars spaced in equal L* steps (dark -> light)
-%     scene = sceneCreate('LSteps', barWidth = 20, nBars = 10, deltaE = 10);
-%
-% REFLECTANCE SAMPLE CHART
-%
-%   {'reflectance chart'}       - Specify random reflectance samples from
-%                                 database. There is always a gray strip at
-%                                 the right. Uses sceneReflectanceChart
-%
-%       pSize = 24;   % Patch size in pixels
-%       sSamples = [64 64]; % Surface samples from the files
-%       sFiles{1} = fullfile(isetbioDataPath, 'surfaces', 'reflectances', 'MunsellSamples_Vhrel.mat');
-%       sFiles{2} = fullfile(isetbioDataPath, 'surfaces', 'reflectances', 'Food_Vhrel.mat');
-%       sceneCreate('reflectance chart', pSize, sSamples, sFiles);
-%
-% NARROWBAND COLOR PATCHES
-%    wave = [600, 610]; sz = 64;
-%    scene = sceneCreate('uniform monochromatic', wave, sz);
-%
-% SPATIAL TEST PATTERNS:
-%
-%      {'rings rays'}            - Resolution pattern
-%      {'harmonic'}              - Harmonics (can be sums of harmonics)
-%      {'sweep frequency'}       - Increasing frequency to the right, 
-%               increasing contrast upward
-%      {'line d65'}              - Line with D65 energy spectrum
-%      {'line ee'}               - Line with equal energy spectrum
-%      {'bar ee'}                - Vertical bar, equal energy
-%      {'point array'}           - Point array
-%      {'gridlines'}             - Grid lines
-%      {'checkerboard'}          - Checkerboard with equal photon spectrum
-%      {'frequency orientation'} - Demosaicking test pattern, equal photon spectrum
-%      {'slanted edge'} - Used for ISO spatial resolution, equal photon spectrum
-%      {'moire orient'} - Circular Moire pattern
-%      {'zone plate'}   - Circular zone plot, equal photon spectrum
-%      {'radial lines'} - Radial lines used to test printers and displays
-%
-%  Additional parameters are available for several of the patterns. For
-%  example, the harmonic call can set the frequency, contrast, phase, 
-%  angle, row and col size of the harmonic. The frequency unit in this
-%  case is cycles/image. To obtain cycles per degree, divide by the field
-%  of view.
-%
-%        parms.freq = 1; parms.contrast = 1; parms.ph = 0;
-%        parms.ang = 0; parms.row = 128; parms.col = 128;
-%        parms.GaborFlag = 0;
-%        [scene, parms] = sceneCreate('harmonic', parms);
-%
-%  See the script s_sceneHarmonics for more examples. In this example, the
-%  illuminant is set so that the mean of the harmonic has a 20%
-%  reflectance, like a typical gray card.
-%
-%  Many of the patterns can have an arbitrary image (row, col) size. This
-%  is possible for whitenoise, impulse1dee, lined65, 
-%
-%         imSize = 128; lineOffset = 25;    % Plus is to the right
-%         scene = sceneCreate('lined65', imSize);
-%         scene = sceneCreate('line ee', imSize, lineOffset);
-%         sceneCreate('bar', imageSize, width);
-%
-%  Other patterns have different parameters:
-%
-%         sceneCreate('slanted edge', imageSize, edgeSlope);
-%         sceneCreate('checkerboard', pixelsPerCheck, numberOfChecks)
-%         sceneCreate('grid lines', imageSize, pixelsBetweenLines);
-%         sceneCreate('point array', imageSize, pixelsBetweenPoints);
-%         sceneCreate('moire orient', imageSize, edgeSlope);
-%         sceneCreate('radial lines', imageSize);
-%
-%         clear p; p.display = 'LCD-Apple';
-%         p.sceneSz = [64, 65]; p.barWidth = 2; p.offset = 1; p.meanLum = 10;
-%         p.lineSpace = 2; p.barColor = [1 0.5 0.5]; p.bgColor = .5;
-%         s = sceneCreate('vernier', 'display', p);
-%
-% TEXT
-%      {'letter'}- Scene of a display character
-%        font = fontCreate; display = 'LCD-Apple';
-%        scene = sceneCreate('letter', font, display);
-%
-% NOISE ANALYSIS TEST PATTERNS
-%
-%      {'linearIntensityRamp'}  -
-%      {'uniformEqualEnergy'}   - Equal energy
-%      {'uniformEqualPhoton'}   - Equal photon density
-%      {'uniform bb'}           - Blackbody, uniform
-%      {'whitenoise'}           - Noise pattern for testing
-%
-%    The uniform patterns are small by default (32, 32). If you would like
-%    them at a higher density (not much point), you can use
-%
-%        sceneCreate('uniform D65', 256)
-%        sceneCreate('uniform bb', 128, 6500)    - 6500 deg
-%
-%    where 256 is the image size in pixels.
-%
-% SCENES FROM IMAGE DATA
-%   We also create scenes using data in image files. It is also possible
-%   to simply read a tiff or jpeg file and create a scene structure. These
-%   image-based scenes created by sceneFromFile. See the comments there
-%   for more information.
-%
-% See also:  sceneFromFile
+% See Also:
+%    sceneFromFile
 %
 % Copyright ImagEval Consultants, LLC, 2003.
 
+% History:
+%   04/07/18  dhb  Fixed one broken example, deleted another.
+
 % Examples:
 %{
-    % Macbeth Example
+    % Macbeth Examples
     scene = sceneCreate('macbeth', 32);
 
     patchSize = 8;
     spectrum.wave = (380:4:1068)';
     scene = sceneCreate('macbethEE_IR', patchSize, spectrum);
+    
+    % The size of the individual patches and the wavelength sampling are
+    % both parameters. They can be set using the calling procedure.
+    patchSizePixels = 16;
+    spectrum.wave = [380:5:720];
+    scene = sceneCreate('macbethTungsten', patchSizePixels, spectrum);
+%}
+%{
+    % Reflectance Chart Example
+    pSize = 24;   % Patch size in pixels
+    sSamples = [64 64]; % Surface samples from the files
+    sFiles{1} = fullfile(isetbioDataPath, 'surfaces', 'reflectances', ...
+        'MunsellSamples_Vhrel.mat');
+    sFiles{2} = fullfile(isetbioDataPath, 'surfaces', 'reflectances', ...
+        'Food_Vhrel.mat');
+    sceneCreate('reflectance chart', pSize, sSamples, sFiles);
+%}
+%{
+    % Narrowband Color Patches Example
+    wave = [600, 610];
+    sz = 64;
+    scene = sceneCreate('uniform monochromatic', wave, sz);
+%}
+%{
+    % Harmonic Example
+    %
+    % See the script s_sceneHarmonics for more examples. In this example,
+    % the illuminant is set so that the mean of the harmonic has a 20%
+    % reflectance, like a typical gray card.
+    parms.freq = 1;
+    parms.contrast = 1;
+    parms.ph = 0;
+    parms.ang = 0;
+    parms.row = 128;
+    parms.col = 128;
+    parms.GaborFlag = 0;
+    [scene, parms] = sceneCreate('harmonic', parms);
+%}
+%{
+    % Arbitrary image size Examples
+    imSize = 128;
+    lineOffset = 25; % Plus is to the right
+    scene = sceneCreate('lined65', imSize);
+    scene = sceneCreate('line ee', imSize, lineOffset);
+    sceneCreate('bar', imSize);
+%}
+%{
+    % Text Example
+    font = fontCreate;
+    display = 'LCD-Apple';
+    scene = sceneCreate('letter', font, display);
+
+%}
+%{
+    % Other Examples
+    imageSize = 128;
+    edgeSlope = 4/3;
+    pixelsPerCheck = 16;
+    numberOfChecks = 8;
+    pixelsBetweenLines = 10;
+    pixelsBetweenPoints = 10;
+    sceneCreate('slanted edge', imageSize, edgeSlope);
+    sceneCreate('checkerboard', pixelsPerCheck, numberOfChecks)
+    sceneCreate('grid lines', imageSize, pixelsBetweenLines);
+    sceneCreate('point array', imageSize, pixelsBetweenPoints);
+    % Moire orient option freaks out 
+    % sceneCreate('moire orient', imageSize, edgeSlope);
+    sceneCreate('radial lines', imageSize);
+
+    clear p;
+    p.display = 'LCD-Apple';
+    p.sceneSz = [64, 65];
+    p.barWidth = 2;
+    p.offset = 1;
+    p.meanLum = 10;
+    p.lineSpace = 2;
+    p.barColor = [1 0.5 0.5];
+    p.bgColor = .5;
+    s = sceneCreate('vernier', 'display', p);
+    
+    % The uniform patterns are small by default (32, 32). If you would like
+    % them at a higher density (not much point), you can use the following:
+
+    imageSize = 256;
+    angleInDeg =  6500;
+    sceneCreate('uniform D65', imageSize)
+    sceneCreate('uniform bb', 128, angleInDeg)
 %}
 
 if notDefined('sceneName'), sceneName = 'default'; end
@@ -174,7 +232,7 @@ parms = []; % Returned in some cases, not many.
 scene.type = 'scene';
 scene = sceneSet(scene, 'bit depth', 32); % Single precision
 if length(varargin) > 1 && ischar(varargin{end-1})
-    str = ieParamFormat(varargin{end-1});
+    str = ieParamFormat(varargin{end - 1});
     if isequal(str, 'bitdepth')
         scene = sceneSet(scene, 'bit depth', varargin{end});
     end
@@ -229,8 +287,7 @@ switch sceneName
         % Surface samples from the files
         sSamples = [64 64];
         
-        if isempty(varargin)
-        else
+        if ~isempty(varargin)
             pSize = varargin{1};
             if length(varargin) > 1, sSamples = varargin{2}; end
             if length(varargin) > 2, sFiles = varargin{3}; end
@@ -247,7 +304,8 @@ switch sceneName
         end
         scene = sceneLstarSteps(scene, bWidth, nBars, deltaE);
         
-        % Monochrome, RGB and multispectral add only a little. Mostly created in sceneFromFile
+        % Monochrome, RGB and multispectral add only a little. Mostly
+        % created in sceneFromFile
     case {'monochrome', 'unispectral'}
         % Used for images with only one spectral band.
         scene = sceneSet(scene, 'name', 'monochrome');
@@ -255,8 +313,11 @@ switch sceneName
     case {'multispectral', 'hyperspectral'}
         scene = sceneMultispectral(scene);
     case 'rgb'
-        if isempty(varargin), scene = sceneRGB(scene);
-        else, scene = sceneRGB(varargin{1});end
+        if isempty(varargin)
+            scene = sceneRGB(scene);
+        else
+            scene = sceneRGB(varargin{1});
+        end
         
     case {'mackay', 'rayimage', 'ringsrays'}
         % Also called the Siemens star pattern
@@ -293,18 +354,10 @@ switch sceneName
         if length(varargin) >= 2, maxFreq = varargin{2}; end
         scene = sceneSweep(scene, sz, maxFreq);
     case {'ramp', 'linearintensityramp', 'rampequalphoton'}
-        if isempty(varargin)
-            sz = 32;
-        else
-            sz = varargin{1};
-        end
+        if isempty(varargin), sz = 32; else, sz = varargin{1}; end
         scene = sceneRamp(scene, sz);
     case {'uniform', 'uniformee', 'uniformequalenergy'}  % Equal energy
-        if isempty(varargin)
-            sz = 32;
-        else
-            sz = varargin{1};
-        end
+        if isempty(varargin), sz = 32; else, sz = varargin{1}; end
         scene = sceneUniform(scene, 'equalenergy', sz);
         
     case {'uniformeespecify'}   % Equal energy, specify waveband
@@ -332,11 +385,7 @@ switch sceneName
         % sceneCreate('uniformEqualPhoton', 64);
         % We should include an option for wavelength so that we extend into
         % the IR
-        if isempty(varargin)
-            sz = 32;
-        else
-            sz = varargin{1};
-        end
+        if isempty(varargin), sz = 32; else, sz = varargin{1}; end
         scene = sceneUniform(scene, 'D65', sz);
     case {'uniformbb'}
         % scene = sceneCreate('uniform bb', 64, 5000, 400:700);
@@ -363,11 +412,7 @@ switch sceneName
         scene = sceneSet(scene, 'name', 'narrow band');
         
     case {'lined65', 'impulse1dd65'}
-        if isempty(varargin)
-            sz = 64;
-        else
-            sz = varargin{1};
-        end
+        if isempty(varargin), sz = 64; else, sz = varargin{1}; end
         scene = sceneLine(scene, 'D65', sz);
     case {'lineee', 'impulse1dee'}
         % scene = sceneCreate('line ee', size, offset, wave);
@@ -646,7 +691,6 @@ scene = sceneSet(scene, 'photons', photons);
 scene = sceneSet(scene, 'fov', 1);
 
 end
-
 
 %----------------------------------
 function scene = sceneDefault(scene, illuminantType, args)
@@ -1183,7 +1227,7 @@ for ii = 1:nLines
     if ~isequal(u, x)
         slope = (y - v) / (u - x);
         for jj = x:0.2:u
-            kk = round(jj*slope);
+            kk = round(jj * slope);
             img(round(kk + (imSize / 2)) + 1, ...
                 round(jj + (imSize / 2)) + 1) = 1;
         end
@@ -1276,32 +1320,51 @@ scene = sceneSet(scene, 'photons', img);
 end
 
 %-----------------------
-% function scene = sceneMOTarget(scene, parms)
-% %% Moire/Orientation target
+%{
+function scene = sceneMOTarget(scene, parms)
+% Moire/Orientation target
+%
+% Syntax:
+%   scene = sceneMOTarget(scene, [parms])
+%
+% Description:
+%    Moire/Orientation Target
+%
+% Inputs:
+%    scene - A scene structure
+%    parms - (Optional) Additional parameters. Default is none.
+%
+% Outputs:
+%    scene - The modified scene structure
+%
+% Optional key/value pairs:
+%    None.
 % 
-% if notDefined('parms'), parms = []; end
-% 
-% scene = sceneSet(scene, 'name', 'MOTarget');
-% scene = initDefaultSpectrum(scene, 'hyperspectral');
-% nWave = sceneGet(scene, 'nwave');
-% 
-% % Select one among sinusoidalim, squareim, sinusoidalim_line, 
-% % squareim_line, flat img = MOTarget('squareim', parms);
-% img = MOTarget('sinusoidalim', parms);
-% 
-% % Prevent dynamic range problem with ieCompressData
-% img = ieClip(img, 1e-4, 1);
-% 
-% % This routine returns an RGB image. We take the green channel and expand
-% % it
-% scene = sceneSet(scene, 'photons', repmat(img(:, :, 2), [1, 1, nWave]));
-% 
-% %
-% wave = sceneGet(scene, 'wave');
-% illPhotons = ones(size(wave))*sceneGet(scene, 'data max');
-% scene = sceneSet(scene, 'illuminantPhotons', illPhotons);
-% 
-% end
+ 
+if notDefined('parms'), parms = []; end
+ 
+scene = sceneSet(scene, 'name', 'MOTarget');
+scene = initDefaultSpectrum(scene, 'hyperspectral');
+nWave = sceneGet(scene, 'nwave');
+
+% Select one among sinusoidalim, squareim, sinusoidalim_line, 
+% squareim_line, flat img = MOTarget('squareim', parms);
+img = MOTarget('sinusoidalim', parms);
+
+% Prevent dynamic range problem with ieCompressData
+img = ieClip(img, 1e-4, 1);
+
+% This routine returns an RGB image. We take the green channel and expand
+% it
+scene = sceneSet(scene, 'photons', repmat(img(:, :, 2), [1, 1, nWave]));
+
+%
+wave = sceneGet(scene, 'wave');
+illPhotons = ones(size(wave))*sceneGet(scene, 'data max');
+scene = sceneSet(scene, 'illuminantPhotons', illPhotons);
+
+end
+%}
 
 %-------------------
 function scene = sceneCheckerboard(...

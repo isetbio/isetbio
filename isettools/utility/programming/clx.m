@@ -15,10 +15,14 @@ function clx
 % Outputs:
 %    None.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    06/19/03  ARW  Created
 %    12/12/17  JNM  Formatted
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 clear mex
 clear all

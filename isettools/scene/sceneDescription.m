@@ -13,10 +13,14 @@ function txt = sceneDescription(scene)
 % Outputs:
 %    txt   - A text description of the scene properties (in the window)
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/22/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 if isempty(scene)
     txt = 'No scene';
@@ -29,9 +33,9 @@ else
     txt = addText(txt, str);
     
     u = round(log10(sceneGet(scene, 'height', 'm')));
-    if (u >= 0 )
+    if u >= 0 
         units = 'm';
-    elseif (u >= -3)
+    elseif u >= -3
         units = 'mm'; 
     else
         units = 'um';
@@ -42,9 +46,9 @@ else
     txt = addText(txt, str);
 
     u = round(log10(sceneGet(scene, 'sampleSize', 'm')));
-    if (u >= 0)
+    if u >= 0
         units = 'm';
-    elseif (u >= -3)
+    elseif u >= -3
         units = 'mm';
     else
         units = 'um';

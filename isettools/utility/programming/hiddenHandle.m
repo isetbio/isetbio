@@ -15,10 +15,14 @@ classdef hiddenHandle < matlab.mixin.Copyable & handle
 % Outputs:
 %    None.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/15  HJ/BW  Stanford VISTA Team, 2015
 %    12/18/17  jnm    Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 methods (Hidden)
     % Hidden methods

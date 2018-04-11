@@ -15,8 +15,11 @@ function fullName = vcSaveObject(obj, fullName)
 %    If you wish to save only the parameters, without the data, then use
 %    vcExportObject and set the clearDataFlag. 
 %
-%    The ISET objects that can be saved are: scene, opticalImage, optics,
+%    The ISET objects that can be saved are: scene, opticalImage, optics, 
 %        isa, pixel, or vcImage.
+%
+%    Examples are located within the code. To access the examples, type
+%    'edit vcSaveObject.m' into the Command Window.
 %
 % Inputs:
 %    obj      - The object you wish to save.
@@ -28,8 +31,6 @@ function fullName = vcSaveObject(obj, fullName)
 % Optional key/value pairs:
 %    None.
 %
-% Examples are provided in the source code.
-%
 % See Also:
 %    vcExportObject
 %
@@ -38,13 +39,14 @@ function fullName = vcSaveObject(obj, fullName)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting
 %    01/22/18  dhb  Fix example so it runs.
+%    01/29/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
     scene = sceneCreate;
     oi = oiCreate;
-    fullName = vcSaveObject(scene, fullfile(tempdir,'myScene.mat'));
-    fullName = vcSaveObject(oi,fullfile(tempdir,'myOi.mat'))
+    fullName = vcSaveObject(scene, fullfile(tempdir, 'myScene.mat'));
+    fullName = vcSaveObject(oi, fullfile(tempdir, 'myOi.mat'))
 %}
 
 if notDefined('obj'), error('Object required.'); end

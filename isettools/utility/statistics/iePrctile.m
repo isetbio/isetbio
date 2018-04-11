@@ -2,7 +2,7 @@ function y = iePrctile(x, p)
 % Measures the percentiles of the sample in X.
 %
 % Syntax:
-%   Y = prctile(X, P)
+%   y = prctile(x, p)
 %
 % Description:
 %    Returns the value in the vector X that is greater than P percent
@@ -22,6 +22,9 @@ function y = iePrctile(x, p)
 %    y - The value(s) matching the provided percentile(s). See description
 %        for additional clarification.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 if checkToolbox('Statistics Toolbox')
     % Matlab toolbox version is present. Use it.
@@ -30,9 +33,7 @@ if checkToolbox('Statistics Toolbox')
 end
 
 [prows, pcols] = size(p);
-if prows ~= 1 && pcols ~= 1
-    error('P must be a scalar or a vector.');
-end
+if prows ~= 1 && pcols ~= 1, error('P must be a scalar or a vector.'); end
 
 if any(p > 100) || any(p < 0)
     error('P must take values between 0 and 100');
@@ -41,7 +42,7 @@ end
 xx = sort(x);
 [m, n] = size(x);
 
-if m==1 || n==1
+if m == 1 || n == 1
     m = max(m, n);
 	if m == 1
 	   y = x * ones(length(p), 1);

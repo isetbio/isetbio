@@ -39,9 +39,8 @@ function [resp, defs] = twoGammaResp(t, param)
 %               (resp = resp / norm(resp) * normF)
 %
 % Outputs:
-%    resp  - 
-%    defs  - 
-%    The structure param defines key properties.
+%    resp  - The temporal gamma response.
+%    defs  - The function defaults, as designated by param.
 %
 % Notes:
 %    * [Note: XXX - The sum of the returned response is not necessarily 1.
@@ -57,6 +56,7 @@ function [resp, defs] = twoGammaResp(t, param)
 % History:
 %    xx/xx/09       (c) 2009 Stanford Vista Group
 %    12/13/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki. Fix outputs section.
 
 
 %% Set defaults - time units are probably ms at this point

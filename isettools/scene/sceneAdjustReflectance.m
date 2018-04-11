@@ -19,6 +19,9 @@ function [scene, peakReflectance] = sceneAdjustReflectance(scene, prct)
 %    accessed by typing 'edit sceneAdjustReflectance.m' into MATLAB's
 %    command window.
 %
+%    There are examples in the code. Type 'edit sceneAdjustReflectance'
+%    into the Command Window to access.
+%
 % Inputs:
 %    scene           - A scene structure.
 %    prct            - (Optional) The percentile which we scale the
@@ -28,6 +31,9 @@ function [scene, peakReflectance] = sceneAdjustReflectance(scene, prct)
 %    scene           - The modified scene structure.
 %    peakReflectance - The peak reflectance of the scene structure.
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    sceneAdjustIlluminant, sceneAdjustLuminance
 %
@@ -35,6 +41,7 @@ function [scene, peakReflectance] = sceneAdjustReflectance(scene, prct)
 % History:
 %    xx/xx/12       (c) Imageval, 2012
 %    12/29/18  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

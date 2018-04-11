@@ -25,6 +25,9 @@ function [imgMean, basis, coef, varExplained] = hcBasis(hc, bType, mType)
 %    coef         - RGB format (row, col, nBases)
 %    varExplained - The hc variance explained by nbases
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    hcimage, and hc<TAB>
 %
@@ -32,6 +35,7 @@ function [imgMean, basis, coef, varExplained] = hcBasis(hc, bType, mType)
 % History:
 %    xx/xx/12       Copyright ImagEval Consultants, LLC, 2012.
 %    12/05/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 %% Check arguments
 if notDefined('hc'), error('Hypercube data required'); end

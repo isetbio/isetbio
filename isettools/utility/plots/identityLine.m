@@ -13,10 +13,14 @@ function p = identityLine(ax)
 % Outputs:
 %    p  - The line to be drawn
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/xx       (c) Stanford VISTA Team
 %    12/15/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

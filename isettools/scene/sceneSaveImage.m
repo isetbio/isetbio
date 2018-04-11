@@ -23,10 +23,14 @@ function fName = sceneSaveImage(scene, fName, gam)
 % Outputs:
 %    fName - The filename containing the saved scene
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/21/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 
 if notDefined('scene'), scene = vcGetObject('scene'); end

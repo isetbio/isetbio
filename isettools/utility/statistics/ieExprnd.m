@@ -34,8 +34,7 @@ function r = ieExprnd(mu, varargin)
 %}
 
 if nargin < 1
-    error('stats:exprnd:TooFewInputs', ...
-        'Requires at least one input argument.');
+    error('stats:exprnd:TooFewInputs Requires 1+ input arguments.');
 end
 
 % [err, sizeOut] = statsizechk(1, mu, varargin{:});

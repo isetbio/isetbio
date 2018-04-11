@@ -15,6 +15,9 @@ function [p, l] = plotSpectrumLocus(fig)
 %    p   - The plot
 %    l   - The line
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    chromaticityPlot
 %
@@ -22,7 +25,7 @@ function [p, l] = plotSpectrumLocus(fig)
 % History:
 %    xx/xx/03       Copyright Imageval 2003
 %    12/11/17  jnm  Formatting
-%
+%    01/24/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

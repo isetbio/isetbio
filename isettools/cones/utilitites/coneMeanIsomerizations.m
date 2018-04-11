@@ -1,4 +1,4 @@
-function meanRate = coneMeanIsomerizations(cMosaic,varargin)
+function meanRate = coneMeanIsomerizations(cMosaic, varargin)
 % Calculate spatial mean photon rate(R*/sec) for the 3 cone types in mosaic
 % 
 % Syntax:
@@ -7,13 +7,16 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 % Description:
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
 %    cone types in a mosaic.
-%    
+%
+%    Examples are contained in the code. To access, type 'edit
+%    coneMeanIsomerizations.m' into the Command Window.
+%
 % Inputs:
-%    cMosaic  - coneMosaic object
+%    cMosaic                  - coneMosaic object
 %
 % Outputs:
-%    meanRate - Three vector absorption rates for the L, M, and S cones in
-%               R*/sec.
+%    meanRate                 - Three vector absorption rates for the L, M, 
+%                               and S cones in R*/sec.
 %
 % Optional key/value pairs:
 %    'perSample'              - Boolean. Normally the returned rate is mean
@@ -29,24 +32,25 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %                               for a description of XW format.
 %
 % Notes:
-% * [NOTE: DHB - I can't figure out just from the code here whether this
-%    can act on a time sequence or works just one frame at at time. There
-%    is a key comment that says "Reshape from 3D (x,y,t) to space x nCones"
-%    that is very confusing, because by the description time on the left
-%    has turned into cones on the right. This comment needs to be expanded/ 
-%    fixed and then this description needs to make clear whether or not a
-%    time sequence is involved in the input and output, both for the normal
-%    case and for when the absorptions are passed in as a parameter via the
-%    keyword absorptionsInXWFormat.]
+%    * [NOTE: DHB - I can't figure out just from the code here whether this
+%      can act on a time sequence or works just one frame at at time. There
+%      is a key comment that says "Reshape from 3D (x, y, t) to space x
+%      nCones" that is very confusing, because by the description time on
+%      the left has turned into cones on the right. This comment needs to
+%      be expanded/ fixed and then this description needs to make clear
+%      whether or not a time sequence is involved in the input and output,
+%      both for the normal case and for when the absorptions are passed in
+%      as a parameter via the keyword absorptionsInXWFormat.]
 %
-% * [NOTE: DHB - There is a comment, "Compute means for given integration
-%    time", in the code below.  I am not sure what this means. I think it
-%    means, that we are computing the spatial mean for the numbers in the
-%    mosaic, which in turn correspond to a particular integration time.
-%    But the comment as written is confusing to me, because I am tempted
-%    to interpret it as meaning that an integration time could be passed
-%    to this routine, which I don't think it can. Not changing comment
-%    because I'm not sure I fully understand what the code is doing.]
+%    * [NOTE: DHB - There is a comment, "Compute means for given
+%      integration time", in the code below. I am not sure what this means.
+%      I think it means, that we are computing the spatial mean for the
+%      numbers in the mosaic, which in turn correspond to a particular
+%      integration time. But the comment as written is confusing to me,
+%      because I am tempted to interpret it as meaning that an integration
+%      time could be passed to this routine, which I don't think it can.
+%      Not changing comment because I'm not sure I fully understand what
+%      the code is doing.]
 %
 % See Also:
 %   RGB2XWFormat
@@ -57,11 +61,12 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %    08/06/17  dhb  Comment cleaning pass.
 %                   Added notes where I could not figure it out.
 %    10/26/17  dhb  Reviewed jm changes, added new note, formatted if then
-%                   else statements in a way I like better.  Accepted some
+%                   else statements in a way I like better. Accepted some
 %                   suggestions from Code Analyzer to remove obsolete
 %                   warning supression (I'm running 2017a), and removed
 %                   some stray semi-colons after some "end" statements.
 %    10/26/17  dhb  Make example work, and add comment to example.
+%    02/09/18  jnm  Formatting
 
 % Examples:
 %{
@@ -69,7 +74,7 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
    % from the mosaic.
    scene = sceneCreate;
    oi = oiCreate;
-   oi = oiCompute(oi,scene);
+   oi = oiCompute(oi, scene);
    cMosaic = coneMosaic;
    cMosaic.compute(oi);
    tmp = coneMeanIsomerizations(cMosaic);
@@ -78,14 +83,16 @@ function meanRate = coneMeanIsomerizations(cMosaic,varargin)
 %% Validate and parse input parameters
 p = inputParser; 
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
-p.addParameter('perSample',false,@islogical);
+p.addParameter('perSample', false, @islogical);
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
-p.parse(cMosaic,varargin{:});
-cMosaic    = p.Results.cMosaic;
-perSample  = p.Results.perSample;
+p.parse(cMosaic, varargin{:});
+cMosaic = p.Results.cMosaic;
+perSample = p.Results.perSample;
 
 %% Default values to return for null case, namely 0 all the way.
-lMean = 0; mMean = 0; sMean = 0;
+lMean = 0;
+mMean = 0;
+sMean = 0;
 meanRate = [lMean, mMean, sMean];
 
 %% Locations of each cone type
@@ -101,9 +108,10 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     mConeIndices = find(nonNullConeTypes == 3);
     sConeIndices = find(nonNullConeTypes == 4);
 else
-    % Reshape from 3D (x,y,t) to space x nCones
+    % Reshape from 3D (x, y, t) to space x nCones
     % [NOTE: DHB - This comment does not parse for me - how does time turn
     % into cones?]
+<<<<<<< HEAD
     pRate = cMosaic.absorptions;             % Absorptions per sample
     if isempty(pRate), return; end           % Return 0 when no absorptions
     
@@ -114,15 +122,20 @@ else
         pRateXW = RGB2XWFormat(pRate);
     end
 
+=======
+    pRate = cMosaic.absorptions;     % Absorptions per sample
+    if isempty(pRate), return; end   % Return 0 when no absorptions
+    pRateXW = RGB2XWFormat(pRate);
+>>>>>>> 24af784f75526c07d43761aa0613a2984fc579f7
     lConeIndices = find(coneType == 2);
     mConeIndices = find(coneType == 3);
     sConeIndices = find(coneType == 4);
 end
 
 %% Get the individual cones
-lConeAbsorptions = pRateXW(lConeIndices,:); 
-mConeAbsorptions = pRateXW(mConeIndices,:); 
-sConeAbsorptions = pRateXW(sConeIndices,:); 
+lConeAbsorptions = pRateXW(lConeIndices, :); 
+mConeAbsorptions = pRateXW(mConeIndices, :); 
+sConeAbsorptions = pRateXW(sConeIndices, :); 
 
 %% Compute means for the given integration time
 if ~isempty(lConeAbsorptions)
@@ -146,8 +159,8 @@ if (perSample)
     % Return mean number of absorptions per temporal sample
     meanRate = [lMean, mMean, sMean];    
 else
-    % Convert to R*/sec.  This is the default
-    meanRate = [lMean, mMean, sMean]/cMosaic.integrationTime;
+    % Convert to R*/sec. This is the default
+    meanRate = [lMean, mMean, sMean] / cMosaic.integrationTime;
 end
 
 end

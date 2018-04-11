@@ -81,7 +81,7 @@ end
 % Convert through the table
 RGB = zeros(size(DAC));
 gTable = repmat(gTable, 1, size(DAC, 3));
-for ii=1:size(DAC, 3)
+for ii = 1:size(DAC, 3)
     thisTable = gTable(:, ii);
     % DAC values are usually 0 to 255. We need them to be 1, 256
     RGB(:, :, ii) = thisTable(DAC(:, :, ii) + 1);
