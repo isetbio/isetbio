@@ -6,7 +6,7 @@ function [optics, inName, outName] = ...
 %   optics = siConvertRTdata([inName], [fieldHeight], [outName])
 %
 % Description:
-%    fieldHeight specified in meters 
+%    fieldHeight specified in meters
 %
 %    The RT data are a good source of examples for single PSFs from real
 %    lenses.  This routine creates an optic structure used for
@@ -43,29 +43,28 @@ function [optics, inName, outName] = ...
 %                   change matches the change I implemented and tested in
 %                   siSynthetic.
 %    03/16/18  jnm  Formatting.
-%    04/07.18  dhb  Comment re broken example and what might be done about
-%                   it.
+%    04/07/18  dhb  Comment wrt broken example and what to do about it.
 
 % Examples:
 %{
-   % ETTBSkip.  Example is broken.  And it requires user input.
-   % Should try to fix so it runs, then leave in the ETTBSkip because
-   % it requires user input. I think the problem is files it wants
-   % to read are not where the example expects them, and that it isn't
-   % clear in the case where it prompts for input what file we need to
-   % navigate to and select.
+    % ETTBSkip.  Example is broken.  And it requires user input.
+    % Should try to fix so it runs, then leave in the ETTBSkip because
+    % it requires user input. I think the problem is files it wants
+    % to read are not where the example expects them, and that it isn't
+    % clear in the case where it prompts for input what file we need to
+    % navigate to and select.
 
-   baseDir = fullfile(isetbioDataPath, 'optics');
-   inName = fullfile(baseDir, 'rtZemaxExample.mat');
+    baseDir = fullfile(isetbioDataPath, 'optics');
+    inName = fullfile(baseDir, 'rtZemaxExample.mat');
 
-   siConvertRTdata;
+    siConvertRTdata;
 
-   fieldHeight = 0.5;
-   siConvertRTdata(inName, fieldHeight, ...
+    fieldHeight = 0.5;
+    siConvertRTdata(inName, fieldHeight, ...
         fullfile(baseDir, 'siZemaxExample05.mat'));
 
-   fieldHeight = 1.0;
-   siConvertRTdata(inName, fieldHeight, ...
+    fieldHeight = 1.0;
+    siConvertRTdata(inName, fieldHeight, ...
         fullfile(baseDir, 'siZemaxExample10.mat'));
 %}
 
@@ -91,7 +90,7 @@ nyquistF = 1 ./ (2 * dx);  % Line pairs (cycles) per meter
 OTF = zeros(nSamples, nSamples, length(rtWave));
 for ii = 1:length(rtWave)
     psf = opticsGet(rtOptics, 'rtpsfdata', fieldHeight, rtWave(ii));
-    psf = psf / sum(psf(:)); 
+    psf = psf / sum(psf(:));
 
     % Use PsfToOtf to make the change, and then put center in upper right
     % to match isetbio conventions.  Commented out below is the older code,

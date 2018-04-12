@@ -41,7 +41,7 @@ classdef osDisplayRGB < outerSegment
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        %rgbData  stored RGB data
+        %rgbData - stored RGB data
         rgbData
     end
 

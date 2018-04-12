@@ -15,10 +15,10 @@ function [fullName, imageType] = vcSelectImage(imageType, ext)
 %    ext       - (Optional) The file extension type. Default is '*'
 %
 % Outputs:
-%    fullName  - The full path and file name. imageType - The image
-%       color type. Options are the subdirectory names of
-%       isetbioDataPath/images, 
-%          'targets', 'multispectral', 'rgb', 'unispectral'.
+%    fullName  - The full path and file name.
+%    imageType - The image color type. Options are the subdirectory names
+%                of isetbioDataPath/images, 'targets', 'multispectral',
+%                'rgb', 'unispectral'.
 %
 % Optional key/value pairs:
 %    None.

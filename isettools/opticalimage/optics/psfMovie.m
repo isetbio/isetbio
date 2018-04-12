@@ -1,5 +1,5 @@
 function psfMovie(oi,figNum,delay)
-% Show a movie of the pointspread functions 
+% Show a movie of the pointspread functions
 %
 % Syntax:
 %   psfMovie([oi],[figNum=1],[delay = 0.2])
@@ -58,15 +58,13 @@ function psfMovie(oi,figNum,delay)
     % Cannot CD to session (Name is nonexistent or not a directory)."
     % [Note: JNM - rtPSFEdit does not exist?]
 %}
-
-%Examples:
 %{
- oi = oiCreate('shift invariant');
- psfMovie(oiGet(oi,'optics'));
+    oi = oiCreate('shift invariant');
+    psfMovie(oiGet(oi,'optics'));
 %}
 %{
- oi = oiCreate('diffraction limited');
- psfMovie(oiGet(oi,'optics'));
+    oi = oiCreate('diffraction limited');
+    psfMovie(oiGet(oi,'optics'));
 %}
 
 %%
@@ -83,7 +81,7 @@ opticsModel = oiGet(oi,'optics model');
 switch lower(opticsModel)
     case 'diffractionlimited'
         % This needs to be checked.  The psf doesn't seem to be changing
-        % correctly with wavelength. 
+        % correctly with wavelength.
         %
         % The OTF is computed on the fly for the diffraction limited case.
         %
@@ -114,8 +112,8 @@ switch lower(opticsModel)
             pause(delay);
                 %}
         end
-        
-        
+
+
     case 'shiftinvariant'
 
         % We get the psf data all at once in this case

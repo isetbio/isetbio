@@ -50,7 +50,7 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 %
 % Outputs:
 %    fullName    - The full file and path name of the data file. If the
-%                  operation is canceled, will be []. 
+%                  operation is canceled, will be [].
 %
 % Optional key/value pairs:
 %    None.
@@ -96,9 +96,9 @@ switch lower(dataType)
     case {'bipolar', 'color', 'fonts', 'lights', 'images', 'optics', ...
             'pbrtscenes', 'surfaces'}
         fullPath = fullfile(isetbioDataPath, dataType);
-        
+  
     otherwise
-        if exist(dataType, 'dir'), fullPath = dataType; 
+        if exist(dataType, 'dir'), fullPath = dataType;
         else
             error('Could not find directory %s\n', dataType);
         end

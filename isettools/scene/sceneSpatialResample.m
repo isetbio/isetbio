@@ -43,7 +43,7 @@ function scene = sceneSpatialResample(scene, dx, units, method, promptUser)
     sceneWindow;
 %}
 %{
-    % ETTBSkip.  This example provides user input.  Skip on autorun.
+    % ETTBSkip. This example provides user input. Skip on autorun.
     scene = sceneCreate;
     scene = sceneSpatialResample(scene, 100, 'um');
     ieAddObject(scene);

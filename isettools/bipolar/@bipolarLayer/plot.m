@@ -3,7 +3,7 @@ function hdl = plot(obj, pType, varargin)
 %
 % Syntax:
 %   hdl = obj.plot(pType, ...)
-% 
+%
 % Description:
 %    An interface to layer and mosaic plotting.  At some point, we
 %    will have plots that span multiple layers.  For now, this routine
@@ -16,7 +16,7 @@ function hdl = plot(obj, pType, varargin)
 %
 % Outputs:
 %    hdl       - bipolar mosaic plot according to the provided parameters
-%  
+%
 % Optional Key/Value Pairs:
 %    nMosaic   - Mosaic number to plot   (0.  Throws an error)
 %    gamma     - controls image display  (1)
@@ -33,7 +33,8 @@ function hdl = plot(obj, pType, varargin)
 
 % Examples:
 %{
-   % ETTBSkip - Example is broken. Variables undefined. Remove this line when fixed.
+   % ETTBSkip - Example is broken. Variables undefined. Remove this line
+   % when fixed.
    s_initRetina;
    bpL.plot('help')
    bpL.plot('mosaic', 'nMosaic', 1);
@@ -41,8 +42,8 @@ function hdl = plot(obj, pType, varargin)
 %}
 
 %% Parse inputs
-p = inputParser; 
-p.CaseSensitive = false; 
+p = inputParser;
+p.CaseSensitive = false;
 p.FunctionName  = mfilename;
 p.KeepUnmatched = true;   % Sent on to mosaic plot
 
@@ -57,7 +58,7 @@ p.addParameter('newWindow', false, @islogical);
 p.addParameter('nMosaic', 0, @(x)(isscalar(x) && (x >= 0)));
 
 % Parse pType
-p.parse(pType, varargin{:}); 
+p.parse(pType, varargin{:});
 
 nMosaic = p.Results.nMosaic;
 if nMosaic > length(obj.mosaic)

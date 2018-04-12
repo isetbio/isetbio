@@ -51,34 +51,34 @@ classdef Macular < hiddenHandle
 %}
 
 properties  % public properties
-    %density  macular pigment density
+    %density - macular pigment density
     density;
 end
 
 properties (SetObservable, AbortSet)
-    %wave  wavelength samples in nm
+    %wave - wavelength samples in nm
     wave;
 end
 
 properties (Access=private)
-    %wave_  The internal wavelength samples
+    %wave_ - The internal wavelength samples
     wave_;
 
-    %unitDensity_  unit density absorbance sampled with wave_
+    %unitDensity_ - unit density absorbance sampled with wave_
     unitDensity_;
 end
 
 properties (Dependent)
-    %unitDensity  spectral absorbance with unit pigment density
+    %unitDensity - spectral absorbance with unit pigment density
     unitDensity;
 
-    %spectralDesnity  unitDensity scaled by obj.density
+    %spectralDesnity - unitDensity scaled by obj.density
     spectralDensity;
 
-    %transmittance  proportion of quanta transmitted
+    %transmittance - proportion of quanta transmitted
     transmittance;
 
-    %absorptance  proportion of quanta absorbed
+    %absorptance - proportion of quanta absorbed
     absorptance;
 end
 

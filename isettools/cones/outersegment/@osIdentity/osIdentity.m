@@ -34,7 +34,7 @@ classdef osIdentity < outerSegment
 
     % Public, read-only properties.
     properties (SetAccess = private, GetAccess = public)
-        %photonRate  The photon rate
+        %photonRate - The photon rate
         photonRate
     end
     
