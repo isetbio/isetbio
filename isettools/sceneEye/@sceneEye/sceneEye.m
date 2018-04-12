@@ -197,6 +197,11 @@ properties(GetAccess=public, SetAccess=private)
     %   then output new PBRT files into this directory. We also save
     %   the raw rendered data (xxx.dat) in this folder.
     workingDir;
+    
+    %SCENEUNITS Some scenes are in units of meters, some in units of millimeters.
+    %   We keep of track of this here so we can pass the correct parameter
+    %   to PBRT.
+    sceneUnits;
 
 end
 
@@ -238,11 +243,13 @@ methods
         % planar surface (e.g. a slanted bar). We will move the plane to
         % the given distance (in mm) and, if applicable, attach the
         % provided texture. 
-        p.addParameter('planeDistance', 1000, @isnumeric);
+        p.addParameter('planeDistance', 1, @isnumeric);
         p.addParameter('planeTexture', ...
             fullfile(piRootPath, 'data', 'imageTextures', ...
             'squareResolutionChart.exr'), @ischar);
-        p.addParameter('planeSize', [1000 1000], @isnumeric);
+        p.addParameter('planeSize', [1 1], @isnumeric);
+        p.addParameter('pointDiameter',0.001);
+        p.addParameter('pointDistance',1);
         p.parse(pbrtFile, varargin{:});
 
         % Read in PBRT file
@@ -254,17 +261,24 @@ methods
             switch name
                 case('numbersAtDepth')
                     scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'NumbersAtDepth', 'numbersAtDepth.pbrt');
+                        'NumbersAtDepth', 'numbersAtDepth_v3.pbrt');
+                    obj.sceneUnits = 'mm';
                 case('slantedBar')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'SlantedBar', 'slantedBar.pbrt');
+                    scenePath = fullfile(piRootPath, 'data', ...
+                        'V3','SlantedBar', 'slantedBar.pbrt');
+                    obj.sceneUnits = 'm';
                 case('chessSet')
                     scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
                         'ChessSet', 'chessSet.pbrt');
+                    obj.sceneUnits = 'mm';
                 case('texturedPlane')
-                    % Textured plane scene is located in pbrt2ISET. 
                     scenePath = fullfile(piRootPath, 'data', ...
-                        'texturedPlane', 'texturedPlane.pbrt');
+                        'V3','texturedPlane', 'texturedPlane.pbrt');
+                    obj.sceneUnits = 'm';
+                case('pointSource')
+                    scenePath = fullfile(piRootPath,'data',...
+                        'SimplePoint','simplePointV3.pbrt');
+                    obj.sceneUnits = 'm';
                 otherwise
                     error('Did not recognize scene type.');
             end
@@ -287,23 +301,32 @@ methods
             scenePath, 'workingDir', obj.workingDir);
 
         % Parse PBRT file
-        recipe = piRead(obj.pbrtFile);
+        recipe = piRead(obj.pbrtFile,'version',3);
         % recipe.outputFile = obj.pbrtFile;
         recipe.inputFile = scenePath;
 
         % Apply optional parameters to unique scenes
         if(strcmp(name, 'slantedBar'))
-            recipe = piMoveObject(recipe, '1_WhiteCube', ...
-                'Translate', [0 p.Results.planeDistance 0]);
-            recipe = piMoveObject(recipe, '2_BlackCube', ...
-                'Translate', [0 p.Results.planeDistance 0]);
+            recipe = piObjectTransform(recipe, 'SlantedBar', ...
+                'Translate', [0 0 p.Results.planeDistance]);
+        elseif(strcmp(name,'pointSource'))
+            % Clear previous transforms
+            piClearObjectTransforms(recipe,'Point');
+            piClearObjectTransforms(recipe,'Plane');
+            % Add given transforms
+            piObjectTransform(recipe,'Point','Scale',[p.Results.pointDiameter p.Results.pointDiameter 1]);
+            piObjectTransform(recipe,'Point','Translate',[0 0 p.Results.pointDistance]);
+            % Make it large!
+            piObjectTransform(recipe,'Plane','Scale',[p.Results.pointDistance*10 p.Results.pointDistance*10 1]);
+            % Move it slightly beyond the point
+            piObjectTransform(recipe,'Plane','Translate',[0 0 p.Results.pointDistance+0.5]); 
         elseif(strcmp(name, 'texturedPlane'))
             % Scale and translate
             planeSize = p.Results.planeSize;
-            scaling = [planeSize(1) 1000 planeSize(2)] ./ [1000 1000 1000]; 
-            recipe = piMoveObject(recipe, 'Plane', 'Scale', scaling); 
-            recipe = piMoveObject(recipe, 'Plane', ...
-                'Translate', [0 p.Results.planeDistance 0]); 
+            scaling = [planeSize(1) planeSize(2) 1] ./ [1 1 1]; 
+            recipe = piObjectTransform(recipe, 'Plane', 'Scale', scaling); 
+            recipe = piObjectTransform(recipe, 'Plane', ...
+                'Translate', [0 0 p.Results.planeDistance]); 
             % Texture
             [pathTex, nameTex, extTex] = fileparts(p.Results.planeTexture);
             copyfile(p.Results.planeTexture, obj.workingDir);

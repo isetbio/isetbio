@@ -120,6 +120,10 @@ else
     recipe.camera.retinaRadius.value = objCopy.retinaRadius;
     recipe.camera.retinaSemiDiam.value = objCopy.retinaDistance ...
         * tand(objCopy.fov / 2);
+    if(strcmp(objCopy.sceneUnits,'m'))
+        recipe.camera.mmUnits.value = 'false';
+        recipe.camera.mmUnits.type = 'bool';
+    end
 end
 
 % Sampler
@@ -131,13 +135,13 @@ recipe.integrator.maxdepth.value = objCopy.numBounces;
 % Renderer
 if(objCopy.numCABands == 0 || objCopy.numCABands == 1 || objCopy.debugMode)
     % No spectral rendering
-    recipe.renderer = struct('type', 'Renderer', 'subtype', 'sampler');
+    recipe.integrator.subtype = 'path';
 else
     % Spectral rendering
-    nWaveBands = struct('value', objCopy.numCABands, 'type', 'integer');
-    recipe.renderer = struct('type', 'Renderer', ...
-        'subtype', 'spectralrenderer', ...
-        'nWaveBands', nWaveBands);
+    numCABands = struct('value', objCopy.numCABands, 'type', 'integer');
+    recipe.integrator = struct('type', 'Integrator', ...
+        'subtype', 'spectralpath', ...
+        'numCABands', numCABands);
 end
 
 % Look At
@@ -161,7 +165,7 @@ piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
     'overwriteresources', false);
 
 %% Render the pbrt file using docker
-[ieObject, terminalOutput] = piRender(recipe);
+[ieObject, terminalOutput] = piRender(recipe,'version',3);
 
 %% Set OI parameters correctly:
 if(~obj.debugMode)
@@ -199,8 +203,8 @@ if(~obj.debugMode)
     
     % Shouldn't we adjust the mean illuminance to some reasonable
     % level here?
-    disp('myScene.render: Using oiAdjustIlluminance to set mean illuminance to 5 lux.');
-    ieObject = oiAdjustIlluminance(ieObject,5);  % 5 lux
+    % disp('myScene.render: Using oiAdjustIlluminance to set mean illuminance to 5 lux.');
+    % ieObject = oiAdjustIlluminance(ieObject,5);  % 5 lux
 end
 
 end
