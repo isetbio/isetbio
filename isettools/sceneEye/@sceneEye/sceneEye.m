@@ -157,7 +157,12 @@ properties (GetAccess=public, SetAccess=public)
     %   if the eye is looking down the z-axis (eyePos = [0 0 0], eyeTo
     %   = [0 0 1]) then the up vector cannot be [0 0 1].
     eyeUp;
-
+    
+    %DIFFRACTIONENABLED Toggle diffraction. When it diffraction simulation
+    %   is enabled, PBRT will use HURB to simulate the effect of
+    %   diffraction. May cause slow-downs. 
+    diffractionEnabled;
+    
     %DEBUGMODE Toggle debug mode.
     %   For debug mode we switch to a perspective camera with the same
     %   FOV as the eye. This can be potentially faster and easier to
@@ -398,9 +403,12 @@ methods
         end
 
         obj.recipe = recipe;
-        obj.debugMode = false;
         
+        % Default settings.
+        obj.debugMode = false;
+        obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
+        
     end
 
     %% Get methods for dependent variables
@@ -437,6 +445,11 @@ end
 
 methods (Access=public)
     [oi, terminalOutput, outputFile] = render(obj, varargin);
+    
+    % Should these be public?
+    [obj] = setOI(obj, ieObject,varargin)
+    
 end
+
 
 end
