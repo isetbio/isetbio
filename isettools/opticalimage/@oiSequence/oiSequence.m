@@ -1,4 +1,4 @@
-classdef oiSequence
+classdef oiSequence < handle
     % Class for generating a temporal sequence of optical images
     %
     % Syntax:

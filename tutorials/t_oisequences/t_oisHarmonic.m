@@ -20,6 +20,8 @@ vDist = 0.3;  % viewing distance (meter)
 %% The stimulus
 params.freq = 10;       % spatial frequencies of 10
 params.contrast = 0.6;  % 60% contrast
+params.row = 256;       % 256x256 pixels
+params.col = 256;
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', sprintf('F %d', params.freq));
 scene = sceneSet(scene, 'h fov', imgFov);
@@ -28,8 +30,7 @@ oiModulated =  oiCompute(oi, scene);
 ieAddObject(scene);
 
 
-%% The background
-clear params   
+%% The background  
 params.contrast = 0;  % zero contrast
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', 'Background');
@@ -47,15 +48,18 @@ stimWeights = ieScale(stimWeights, 0, 1);
 weights = [zeros(1, zTime), stimWeights, zeros(1, zTime)];
 
 %% Temporal samples.  Typically 1 ms, which is set by the parameter in the
-% cone mosasic integration time.  That time is locked to the eye movements.
+%% cone mosasic integration time.  That time is locked to the eye movements.
 tSamples = length(weights);
 sampleTimes = 0.002 * (1:tSamples);  % Time in sec
-
 % vcNewGraphWin;  plot(1:tSamples, weights, 'o');
 % xlabel('Time (ms)');
 
-% The weights define some amount of the constant background and some amount
-% of the line on the same constant background
+%% Generate oiSequence
 oiHarmonicSeq = oiSequence(oiBackground, oiModulated, ...
     sampleTimes, weights, 'composition', 'blend');
+
+%% Visualize as a movie
 oiHarmonicSeq.visualize('movie illuminance');
+
+%% Visualize all frames in a montage
+oiHarmonicSeq.visualize('montage');
