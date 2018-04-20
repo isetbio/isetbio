@@ -1,52 +1,47 @@
-% s_oisHarmonic
+%% t_oisHarmonic
+% Demonstrates how to use the oiSequence class to generate an oiSequence of
+% a sinusoid whose contrast is ramped on and off using a Gaussian temporal 
+% modulation function.
 %
-% Create an oiSequence of a harmonic
+% See also: oisCreate
 %
+% ISETBIO TEAM, 2017
 
 %% 
 ieInit
-clear params
-clear scene
 
-%%
-scene = cell(1, 2);
+%% Create the default oi
+oi = oiCreate('wvf human');
 
+%% Spatial parameters
+imgFov = .5;  % image field of view
+vDist = 0.3;  % viewing distance (meter)
+
+%% The stimulus
 params.freq = 10;       % spatial frequencies of 1 and 5
 params.contrast = 0.6;  % contrast of the two frequencies
 params.ang = [0, 0];    % orientations
 params.ph = [0 0];      % phase
-scene{1} = sceneCreate('harmonic', params);
-scene{1} = sceneSet(scene{1}, 'name', sprintf('F %d', params.freq));
-ieAddObject(scene{1});
+scene = sceneCreate('harmonic', params);
+scene = sceneSet(scene, 'name', sprintf('F %d', params.freq));
+scene = sceneSet(scene, 'h fov', imgFov);
+scene = sceneSet(scene, 'distance', vDist);
+oiModulated =  oiCompute(oi, scene);
+ieAddObject(scene);
 
-% Create scene: background field only, no harmonic
+
+%% The background
 clear params
 params.freq = 0;      % spatial frequencies of 1 and 5
 params.contrast = 0;  % contrast of the two frequencies
 params.ang = [0, 0];  % orientations
 params.ph = [0 0];    % phase
-scene{2} = sceneCreate('harmonic', params);
-scene{2} = sceneSet(scene{2}, 'name', 'Uniform');
-ieAddObject(scene{2});
-
-%%
-imgFov = .5;  % image field of view
-vDist = 0.3;  % viewing distance (meter)
-
-% set scene fov
-for ii = 1 : length(scene)
-    scene{ii} = sceneSet(scene{ii}, 'h fov', imgFov);
-    scene{ii} = sceneSet(scene{ii}, 'distance', vDist);
-end
-% sceneWindow
-
-%%
-% These are the default.
-oi = oiCreate('wvf human');
-
-% Compute optical images from the scene
-OIs = cell(length(scene), 1);
-for ii = 1 : length(OIs), OIs{ii} = oiCompute(oi, scene{ii}); end
+scene = sceneCreate('harmonic', params);
+scene = sceneSet(scene, 'name', 'Background');
+scene = sceneSet(scene, 'h fov', imgFov);
+scene = sceneSet(scene, 'distance', vDist);
+oiBackground =  oiCompute(oi, scene);
+ieAddObject(scene);
 
 %% Build the oiSequence
 % We build the stimulus using a time series of weights. We have the mean
@@ -56,7 +51,7 @@ stimWeights = fspecial('gaussian', [1, 50], 15);
 stimWeights = ieScale(stimWeights, 0, 1);
 weights = [zeros(1, zTime), stimWeights, zeros(1, zTime)];
 
-% Temporal samples.  Typically 1 ms, which is set by the parameter in the
+%% Temporal samples.  Typically 1 ms, which is set by the parameter in the
 % cone mosasic integration time.  That time is locked to the eye movements.
 tSamples = length(weights);
 sampleTimes = 0.002 * (1:tSamples);  % Time in sec
@@ -66,8 +61,6 @@ sampleTimes = 0.002 * (1:tSamples);  % Time in sec
 
 % The weights define some amount of the constant background and some amount
 % of the line on the same constant background
-oiHarmonicSeq = oiSequence(OIs{2}, OIs{1}, ...
+oiHarmonicSeq = oiSequence(oiBackground, oiModulated, ...
     sampleTimes, weights, 'composition', 'blend');
-oiHarmonicSeq.visualize('format', 'movie');
-
-%%
+oiHarmonicSeq.visualize('movie illuminance');
