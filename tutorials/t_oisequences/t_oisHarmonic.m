@@ -18,10 +18,8 @@ imgFov = .5;  % image field of view
 vDist = 0.3;  % viewing distance (meter)
 
 %% The stimulus
-params.freq = 10;       % spatial frequencies of 1 and 5
-params.contrast = 0.6;  % contrast of the two frequencies
-params.ang = [0, 0];    % orientations
-params.ph = [0 0];      % phase
+params.freq = 10;       % spatial frequencies of 10
+params.contrast = 0.6;  % 60% contrast
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', sprintf('F %d', params.freq));
 scene = sceneSet(scene, 'h fov', imgFov);
@@ -31,11 +29,8 @@ ieAddObject(scene);
 
 
 %% The background
-clear params
-params.freq = 0;      % spatial frequencies of 1 and 5
-params.contrast = 0;  % contrast of the two frequencies
-params.ang = [0, 0];  % orientations
-params.ph = [0 0];    % phase
+clear params   
+params.contrast = 0;  % zero contrast
 scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', 'Background');
 scene = sceneSet(scene, 'h fov', imgFov);
@@ -47,7 +42,7 @@ ieAddObject(scene);
 % We build the stimulus using a time series of weights. We have the mean
 % field on for a while, then rise/fall, then mean field.
 zTime = 50;  % Mean field beginning and end (ms)
-stimWeights = fspecial('gaussian', [1, 50], 15);
+stimWeights = fspecial('gaussian', [1, zTime], 15);
 stimWeights = ieScale(stimWeights, 0, 1);
 weights = [zeros(1, zTime), stimWeights, zeros(1, zTime)];
 
