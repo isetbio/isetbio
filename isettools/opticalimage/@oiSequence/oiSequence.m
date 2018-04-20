@@ -47,8 +47,6 @@ classdef oiSequence < handle
     %        oiSequence.get('oiFixed mumble') and
     %        oiSequence.get('oiModulated mumble')?
     %        Maybe oiSequence.get('frame', val)?
-    %    * TODO: Assign someone to fix example. Currently not working since
-    %      none of the variables are initiated/defined.
     %
     % See Also:
     %    oisCreate, t_oiSequence
