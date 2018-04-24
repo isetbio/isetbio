@@ -11,11 +11,17 @@ function scene = sceneFromBasis(sceneS)
 %    This function is used with the remote data toolbox, which returns a
 %    Matlab scene formatted as a set of basis functions and coefficients.
 %
+%    There are examples contained in the code. To access, simply type 'edit
+%    sceneFromBasis.m' into the Command Window.
+%
 % Inputs:
 %   sceneS - a structure that has mcCOEF, basis, and illuminant
 %
 % Output:
 %   scene  - A scene structure
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: JNM - Unsure if example is functioning as desired.]
@@ -26,14 +32,17 @@ function scene = sceneFromBasis(sceneS)
 % History:
 %    xx/xx/xx  BW   ISETBIO Team
 %    12/22/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
+    % ETTBSkip - Error with gradleFetchArtifact?
     rd = RdtClient('isetbio');
     rd.crp('/resources/scenes/multiband/scien/2004');
     data = rd.readArtifact('AsianFemale_2', 'type', 'mat');
     scene = sceneFromBasis(data);
-    ieAddObject(scene); sceneWindow;
+    ieAddObject(scene);
+    sceneWindow;
 %}
 
 %%
@@ -58,9 +67,9 @@ end
 photons = max(photons, 0);
 % vcNewGraphWin; imageSPD(photons, basis.wave);
 
-% These lines are left in because there must be different file
-% types out there somewhere. Sometimes we stored the mean, and
-% sometimes we didn't. But apparently it is rare.
+% These lines are left in because there must be different file types out
+% there somewhere. Sometimes we stored the mean, and sometimes we didn't.
+% But apparently it is rare.
 
 scene = sceneCreate('multispectral');
 scene = sceneSet(scene, 'wavelength', sceneS.basis.wave);

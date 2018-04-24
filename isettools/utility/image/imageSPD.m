@@ -21,9 +21,12 @@ function RGB = imageSPD(SPD, wList, gam, row, col, displayFlag, ...
 %    The image can be displayed with a spatial sampling grid overlaid to
 %    indicate the position on the optical image or sensor surface.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit imageSPD.m' into the Command Window.
+%
 % Inputs:
 %    SPD         - The image in SPD format
-%    wList       - (Optional) The sample wavelengths of the SPD. The default
+%    wList       - (Optional) The sample wavelengths of the SPD. Default
 %                  depends on the number of wavelength samples.
 %    gam         - (Optional) The display gamma. Default is 1.
 %    row         - (Optional) The image row size (needed for when data in
@@ -42,6 +45,9 @@ function RGB = imageSPD(SPD, wList, gam, row, col, displayFlag, ...
 % Outputs:
 %    RGB         - The Resulting RGB image
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * [Note: JNM - The value 0 for displayFlag is clearly called out
 %      above, yet the value was not present in the if statements for
@@ -53,6 +59,7 @@ function RGB = imageSPD(SPD, wList, gam, row, col, displayFlag, ...
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/08/17  jnm  Formatting & fix example
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

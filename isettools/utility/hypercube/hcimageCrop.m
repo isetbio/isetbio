@@ -7,25 +7,31 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 % Description:
 %    Select region to crop from a hypercube image
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit hcimageCrop.m' into the Command Window.
+%
 % Inputs:
 %    img    - Hypercube input (required)
 %    rect   - (Optional) If you know the rect, send it in. Default is to
-%             show a compressed image in a window created by Matlab's imcrop
-% .           function, and get that to return the rect.
+%             show a compressed image in a window created by Matlab's
+%             imcrop function, and get that to return the rect.
 %    cPlane - (Optional) Which plane to use for cropping. Default 1
 %
 % Outputs:
 %    hc     - Cropped hc image
 %    rect   - rectangle used for cropping
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
-% See also:  hcimage, hcimageRotateClip
+% See Also:
+%    hcimage, hcimageRotateClip
 
 
 % History:
 %    xx/xx/xx       (c) Imageval
 %    12/06/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -64,7 +70,7 @@ end
 
 % Crop each plane
 h = waitbar(0, 'Cropping');
-for ii=1:w
+for ii = 1:w
     waitbar(ii / w, h);
     hc(:, :, ii) = imcrop(img(:, :, ii), rect);
 end

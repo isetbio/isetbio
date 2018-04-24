@@ -100,29 +100,3 @@ theHexMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
 % Print some grid info and visualize it
 theHexMosaic.displayInfo();
 theHexMosaic.visualizeGrid();
-
-%% Unit test 4: change the field of view to 0.4 x 0.4 deg
-newFOV = [0.4 0.4];
-if (interactiveMode)
-    commandwindow
-    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
-    pause
-end
-theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
-
-% Print some grid info and visualize it
-theHexMosaic.displayInfo();
-theHexMosaic.visualizeGrid();
-
-%% Unit test 5: change the field of view to 0.2 x 0.4 deg
-newFOV = [0.2 0.4];
-if (interactiveMode)
-    commandwindow
-    fprintf('\n<strong>Hit enter to change FOV to [%2.2f, %2.2f]\n</strong>', newFOV(1), newFOV(2));
-    pause
-end
-theHexMosaic.setSizeToFOVForHexMosaic(newFOV);
-
-% Print some grid info and visualize it
-theHexMosaic.displayInfo();
-theHexMosaic.visualizeGrid();

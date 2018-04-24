@@ -21,17 +21,24 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 %    You may also pass in an extension to use for filtering file names.
 %    Returns fullName = [] on Cancel.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit vcSelectDataFile.m' into the Command Window.
+%
 % Inputs:
-%    dataType    - Suggestions of a starting directory
-%                  Options are:
-%                      {'','stayput'} - The last selected directory,
-%                        stored in the persistent directory variable.
-%                      {'data'} - isetbioDataPath
-%                      {'sub-directory of data'} - A string that is one
-%                      of the sub-directories of isetbioDataPath
-%                       'bipolar','color','fonts','lights','images',
-%                       'optics','pbrtscenes','surfaces'
-%                      {directory-string} - Name of an existing directory
+%    dataType    - (Optional) Suggestions of a starting directory. Default
+%                  is ''. Options are:
+%                      {'', 'stayput'} - Default. The last selected
+%                                        directory, stored in the
+%                                        persistent directory variable.
+%                      {'data'}        - isetbioDataPath
+%                      {'sub-directory of data'}
+%                                      - A string that is one of the
+%                                        sub-directories of isetbioDataPath
+%                                        'bipolar', 'color', 'fonts',
+%                                        'lights', 'images', 'optics',
+%                                        'pbrtscenes', 'surfaces'
+%                      {directory-string}
+%                                      - Name of an existing directory
 %    rw          - (Optional) Read/Write determination of the file. Default
 %                  is 'r'. Options are 'r' for read, and 'w' for write.
 %    ext         - (Optional) A file extension used to filter filenames.
@@ -43,14 +50,16 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
 %
 % Outputs:
 %    fullName    - The full file and path name of the data file. If the
-%                  operation is canceled, will be []. 
+%                  operation is canceled, will be [].
 %
-% Notes:
+% Optional key/value pairs:
+%    None.
 %
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting
+%    01/29/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -73,7 +82,7 @@ curDir = pwd;
 persistent pDir;
 
 switch lower(dataType)
-    case {'stayput',''}
+    case {'stayput', ''}
         % Use the persistent directory name we have stored
         if isempty(pDir)
             fullPath = pwd;
@@ -84,13 +93,14 @@ switch lower(dataType)
         % Go to the isetbio data directory
         fullPath = fullfile(isetbioDataPath);
 
-    case {'bipolar','color','fonts','lights','images','optics','pbrtscenes','surfaces'}
-        fullPath = fullfile(isetbioDataPath,dataType);
-        
+    case {'bipolar', 'color', 'fonts', 'lights', 'images', 'optics', ...
+            'pbrtscenes', 'surfaces'}
+        fullPath = fullfile(isetbioDataPath, dataType);
+  
     otherwise
-        if exist(dataType,'dir'), fullPath = dataType; 
+        if exist(dataType, 'dir'), fullPath = dataType;
         else
-            error('Could not find directory %s\n',dataType);
+            error('Could not find directory %s\n', dataType);
         end
 end
 

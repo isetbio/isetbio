@@ -21,15 +21,18 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 % Inputs:
 %    pos       - Positions in spatial units (e.g., microns)
 %    data      - vector of data values for each spatial position
-%    scaleData - Whether or not to scale the results. If this is true
-%                (default is false), then the amplitude is normalized to a
-%                peak of 1.
+%    scaleData - (Optional) Whether or not to scale the result values. If
+%                this is true, the amplitude is normalized to a peak of 1.
+%                Default is false.
 %
 % Outputs:
 %    freq      - Frequency
 %    fData     - Frequency data
 %
-% See also:
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
 %    scenePlot, oiPlot, sensorPlotLine
 %
 
@@ -37,6 +40,7 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/21/17  jnm  Formatting
 %    12/30/17  dhb  Add in ifftshift.
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -45,8 +49,11 @@ function [freq, fData] = ieSpace2Amp(pos, data, scaleData)
     lum = data(5, :);
     pos = sceneSpatialSupport(scene, 'mm');
     [freq, fftlum] = ieSpace2Amp(pos.x, lum, 1);
-    vcNewGraphWin; plot(freq,fftlum); grid on
-    xlabel('Frequency (cy/mm)'); ylabel('Amp');
+    vcNewGraphWin;
+    plot(freq,fftlum);
+    grid on
+    xlabel('Frequency (cy/mm)');
+    ylabel('Amp');
 %}
 
 if notDefined('pos'), errordlg('You must define positions'); end
@@ -59,7 +66,7 @@ fData = abs(fft(ifftshift(data)));
 % Uncomment this code to persuade yourself that the ifftshift has no
 % effect.
 % tData = abs(fft(data));
-% if (max(abs(tData(:)-fData(:))) > 1e-10)
+% if (max(abs(tData(:) - fData(:))) > 1e-10)
 %     error('Adding in ifftshift has unexpected effect');
 % end
 
@@ -71,9 +78,9 @@ if scaleData, fData = fData / max(fData(:)); end
 unitPerImage = (max(pos) - min(pos));
 
 % The frequency values are scaled into units. Without scaling the frequency
-% representation is cycles / image (or cycle / data set). With this
+% representation is cycles/image (or cycle/data set). With this
 % correction we have
-%    cycle / image / (unit / image) = cycle / unit
+%    cycle/image/(unit/image) = cycle/unit
 % In addition, the true frequency numbers range from 0 (mean) on up, and
 % there are only half as many (Nyquist) as there are samples.
 freq = ((1:nSamp) - 1) / unitPerImage;

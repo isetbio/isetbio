@@ -19,10 +19,14 @@ function val = lorentzSum(params, x)
 %  Outputs:
 %    val    - The sum of output of Lorentzian components, same size as x
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/14  HJ   ISETBIO TEAM, 2014
 %    12/14/17  jnm  Formatting
+%    01/19/18  jnm  Formatting update to match Wiki.
 
 %% Check inputs
 if ~exist('params', 'var'), error('parameters required'); end

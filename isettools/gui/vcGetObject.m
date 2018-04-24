@@ -1,36 +1,35 @@
 function [sOBJECT,val] = vcGetObject(objType,val)
-%Retrieve an object from vcSESSION structure
+% Retrieve an object from vcSESSION structure
 %
 %   [sOBJECT,val] = vcGetObject(objType,[val])
 %
-% Find the currently selected object of the various possible types:
+% Description:
+%   Return an ISETBIO object from the database.
 %
-%  SCENE, PIXEL, OPTICS, {OPTICALIMAGE,OI}, {IMGPROC,VCIMAGE,VCI},
-%  GRAPHWIN, 
+% Inputs:
+%  objType - {SCENE, PIXEL, OPTICS, OI, SENSOR, IP, GRAPHWIN}
+%  val     - Which object in the list.  If not passed in, the
+%            currently 'selected' object is returned.
 %
 % This routine replaces: [val,sOBJECT] = vcGetSelectedObject('SCENE');
 %
-% The new call is shorter as in:
-%
-%  obj   = vcGetObject('SCENE');
-%  pixel = vcGetObject('PIXEL')
-%  vci   = vcGetObject('VCIMAGE')
-%  vci   = vcGetObject('IMGPROC')
-%  oi    = vcGetObject('OI')
-%  optics = vcGetObject('optics');
-%
-%  If you need the val, you can still use
+% If you need the val of the currently selected object, you can use
 %
 %    [obj,val] = vcGetObject('SCENE');
 %
 % Copyright ImagEval Consultants, LLC, 2003.
+%
+% See also:
+%  vcGetObjects, vcGetROIData
 
+%%
 global vcSESSION
 
 % For speed
 if ~exist('objType','var') || isempty(objType), error('objType must be defined'); end
 if ~exist('val','var') || isempty(val), val = vcGetSelectedObject(objType); end
 
+% Translates the common names (e.g., sensor or ip) into the official name.
 objType = vcEquivalentObjtype(objType);
 
 %%
@@ -48,4 +47,4 @@ else
     sOBJECT = [];
 end
 
-return
+end

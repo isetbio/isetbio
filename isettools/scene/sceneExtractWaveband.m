@@ -14,6 +14,9 @@ function sceneW = sceneExtractWaveband(scene, waveList)
 %    Otherwise it is set to the difference in the (evenly spaced!)
 %    wavelength list.
 %
+%    There are examples in the code. Type 'edit sceneExtractWaveband' into
+%    the Command Window to access.
+%
 % Inputs:
 %    scene - (Optional) The scene structure. Default is to select an
 %            existing scene.
@@ -37,6 +40,7 @@ function sceneW = sceneExtractWaveband(scene, waveList)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    12/22/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{

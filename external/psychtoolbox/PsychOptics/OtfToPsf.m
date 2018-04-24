@@ -46,14 +46,35 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %    error, for example in how position is converted to sf or back again in
 %    the PsfToOtf.
 %
-%    See also PsfToOtf, PsychOpticsTest.
+% Optional key/value pairs:
+%    'warningInsteadOfErrorForNegativeValuedPSF'  - Set to 1 (default
+%                                                   0) to get a warning
+%                                                   not an error if the psf
+%                                                   values are too negative
+%                                                   before they are forced
+%                                                   to zero. Set to 2 for
+%                                                   no warning msg or
+%                                                   error.
+%    'negativeFractionalTolerance'                - The error/warning is
+%                                                   thrown if the magnitude
+%                                                   of the most negative
+%                                                   value is more than this
+%                                                   fraction of the maximum
+%                                                   (positve) value.
+%                                                   (Default 1e-3).
+%
+% See also: PsfToOtf, PsychOpticsTest.
 
 % History:
-%   01/26/18  dhb  
+%   01/26/18  dhb 
+%   03/31/18  dhb   Document key/value pair added by someone else.
+%             dhb   Add key/value pair for negative value tolerance.
+%                   This is now 1e-3 rather than 1e-10
 
 %% Parse input
 p = inputParser;
-p.addParameter('warningInsteadOfErrorForNegativeValuedPSF', false, @islogical);
+p.addParameter('warningInsteadOfErrorForNegativeValuedPSF', 0, @isnumeric);
+p.addParameter('negativeFractionalTolerance', 1e-3, @isnumeric);
 p.parse(varargin{:});
 
 %% Handle sf args and converstion
@@ -125,11 +146,18 @@ if (any(imag(psf(:))) ~= 0)
 end
 
 % Check for large negative psf values, and then set any small
-% negative values to zero.
-if (min(psf(:)) < 0 && abs(min(psf(:))) > 1e-10*max(psf(:)))
-    if (p.Results.warningInsteadOfErrorForNegativeValuedPSF)
-        fprintf(2,'Mysteriously large negative psf values\n');
-    else
+% negative values to zero.  For some cases (e.g. Marimont-Wandell
+% OTF, we do get negative values because the way that was constructed
+% is an approximation to measurements that does not absolutely guarantee an
+% all positive OTF.
+if (max(psf(:)) <= 0)
+    error('Computed PSF has no positive values.  This is not good.');
+end
+if (min(psf(:)) < 0 && abs(min(psf(:))) > p.Results.negativeFractionalTolerance*max(psf(:)))
+    if (p.Results.warningInsteadOfErrorForNegativeValuedPSF == 1)
+        fprintf(2,'Mysteriously large negative psf values, min value is %g, relative to max of %g, fraction %g\n',min(psf(:)),max(psf(:)),abs(min(psf(:)))/max(psf(:)));
+    elseif (p.Results.warningInsteadOfErrorForNegativeValuedPSF == 0)
+        fprintf(2,'Mysteriously large negative psf values: min value is %g, relative to max of %g, fraction %g\n',min(psf(:)),max(psf(:)),abs(min(psf(:)))/max(psf(:)));
         error('Mysteriously large negative psf values');
     end
 end

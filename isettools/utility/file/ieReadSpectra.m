@@ -3,7 +3,7 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 % Read in spectral data and interpolate to the specified wavelengths
 %
 % Syntax:
-%   [res, wave, comment, fName] = ieReadSpectra(fname, [wave], extrapVal)
+%   [res, wave, comment, fName] = ieReadSpectra([fname], [wave], extrapVal)
 %
 % Description:
 %    Spectral data are stored in files that include both the sampled data
@@ -29,10 +29,14 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 %    wave is not specified, the data are returned at native resolution of
 %    the data file and the values of wavelength can be returned.
 %
+%    Examples are located within the code. To access the examples, type
+%    'edit ieReadSpectra.m' into the Command Window.
+%
 % Inputs:
-%    fname       - Filename containing spectral data
-%    wave        - Wavelengths to interpolate
-%    extrapVal   - Whether to interpolate or extrapolate the values
+%    fname       - (Optional) Filename containing spectral data. Default ''
+%    wave        - (Optional) Wavelengths to interpolate. Default [].
+%    extrapVal   - (Optional) Whether to interpolate or extrapolate the
+%                  values. Default 0.
 %
 % Outputs:
 %    res         - Return variable of the filename
@@ -40,22 +44,25 @@ function [res, wave, comment, partialName] = ieReadSpectra(fname, wave, ...
 %                  interpolate or extrapolate with
 %    comment     - Comment
 %    partialName - Partial filename
-% 
-% Notes:
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %    ieReadColorFilter, ieSaveSpectralFile
+%
 
 % History:
 %    11/23/17  jnm  Formatting
 %    11/29/17  jnm  Fix the if/else from one liner, adjust example, add see
 %                   also section.
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
     wave = 400:10:700;
     data = ieReadSpectra('D65', wave)
-    [data, wave] = ieReadSpectra('D50',400:5:660)
+    [data, wave] = ieReadSpectra('D50', 400:5:660)
 %}
 
 if notDefined('fname'), fname = ''; end
@@ -74,7 +81,8 @@ test = exist(partialName, 'file');
 if ~test || test == 7
     partialName = sprintf('%s.mat', partialName);
     if ~exist(partialName, 'file')
-        res = []; comment    = [];
+        res = [];
+        comment = [];
         warning('%s: file %s not found. Empty returned', ...
                     mfilename, partialName);
         return;
@@ -87,11 +95,7 @@ end
 % approach in case the file is missing a comment. Then we should return an
 % empty comment.
 tmp = load(partialName);
-if isfield(tmp, 'data')
-    data = tmp.data;
-else
-    data = [];
-end
+if isfield(tmp, 'data'), data = tmp.data; else, data = []; end
 if isfield(tmp, 'wavelength')
     wavelength = tmp.wavelength; 
 else

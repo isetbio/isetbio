@@ -23,6 +23,9 @@ function scene = sceneSpatialResample(scene, dx, units, method, promptUser)
 % Outputs:
 %    scene      - The ISET scene after modification
 %
+% Optional key/value pairs:
+%    None.
+%
 % See Also:
 %    sceneSpatialSupport, oiSpatialResample
 %
@@ -30,6 +33,7 @@ function scene = sceneSpatialResample(scene, dx, units, method, promptUser)
 % History:
 %    xx/xx/16  BW   Copyright ISETBIO Team, 2016
 %    12/20/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
@@ -39,7 +43,7 @@ function scene = sceneSpatialResample(scene, dx, units, method, promptUser)
     sceneWindow;
 %}
 %{
-    % ETTBSkip.  This example provides user input.  Skip on autorun.
+    % ETTBSkip. This example provides user input. Skip on autorun.
     scene = sceneCreate;
     scene = sceneSpatialResample(scene, 100, 'um');
     ieAddObject(scene);
@@ -89,7 +93,7 @@ wave = sceneGet(scene, 'wave');
 [Xq, Yq] = meshgrid(xN, yN);
 
 photonsN = zeros(length(yN), length(xN), nWave);
-for ii=1:nWave
+for ii = 1:nWave
     photons = sceneGet(scene, 'photons', wave(ii));
     photonsN(:, :, ii) = interp2(X, Y, photons, Xq, Yq, method);
 end

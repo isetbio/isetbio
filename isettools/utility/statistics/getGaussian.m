@@ -2,7 +2,7 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 % Create a 2D Gaussian distribution pdf
 %
 % Syntax:
-%	gaussianDistribution =  getGaussian(rfSupport, rfCov)
+%	gaussianDistribution = getGaussian(rfSupport, rfCov)
 %
 % Description:
 %    Create a 2D Gaussian distribution pdf.
@@ -12,6 +12,8 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 %
 %    You could also use mvnpdf, if you are willing to assume the presence
 %    of the statistics toolbox.
+%
+%    *Examples are included within the code.*
 %
 % Inputs:
 %    rfSupport            - The support structure, containing fields X and
@@ -24,9 +26,8 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
 % Optional key/value pairs:
 %    None.
 %
-% Examples are included within the code.
-%
-% See also: mvnpdf
+% See Also:
+%    mvnpdf
 
 % History:
 %    xx/xx/09       (c) Stanford Synapse Team 2009
@@ -40,21 +41,25 @@ function gaussianDistribution =  getGaussian(rfSupport, rfCov)
     [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
     rfCcov = [5 0; 0 9]; 
     g = getGaussian(rfS, rfCcov);
-    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
+    vcNewGraphWin;
+    mesh(rfS.X, rfS.Y, g);
 %}
 %{
     % Orientation set in the quadratic form
     [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
     rfCcov = [5 -2.5; -2.5 5]; 
     g = getGaussian(rfS, rfCcov);
-    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
+    vcNewGraphWin;
+    mesh(rfS.X, rfS.Y, g);
 %}
 %{
     % Build the quadratic form
     [rfS.X rfS.Y] = meshgrid(-10:10, -10:10);
-    A = [1 0; 1 1]; rfCov = A*A';
+    A = [1 0; 1 1];
+    rfCov = A * A';
     g = getGaussian(rfS, rfCov);
-    vcNewGraphWin; mesh(rfS.X, rfS.Y, g);
+    vcNewGraphWin;
+    mesh(rfS.X, rfS.Y, g);
 %}
 
 %% N-dimensional Gaussian

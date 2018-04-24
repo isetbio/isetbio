@@ -18,6 +18,9 @@ function [scene, rect] = sceneCrop(scene, rect)
 %    N.B. The source contains executable examples of usage, which can be
 %    accessed by typing 'edit sceneCrop.m' in the command window.
 %
+%    There are examples in the code. Type 'edit sceneCrop' into the Command
+%    Window to access.
+%
 % Inputs:
 %    scene - The scene structure
 %    rect  - (Optional) The rectangle to crop the data/image within
@@ -26,10 +29,14 @@ function [scene, rect] = sceneCrop(scene, rect)
 %    scene - The modified scene structure
 %    rect  - The rectangle's information
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/22/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
@@ -41,11 +48,11 @@ function [scene, rect] = sceneCrop(scene, rect)
 if notDefined('scene'), error('You must define a scene.'); end
 
 if notDefined('rect')
-    [roiLocs, rect] = vcROISelect(scene); 
+    [roiLocs, rect] = vcROISelect(scene);
 else
     cmin = rect(1);
     cmax = rect(1) + rect(3);
-    rmin = rect(2); 
+    rmin = rect(2);
     rmax = rect(2) + rect(4);
     [c, r] = meshgrid(cmin:cmax, rmin:rmax);
     roiLocs = [r(:), c(:)];
@@ -63,7 +70,7 @@ photons = XW2RGBFormat(photons, r, c);
 % Now build up the new object.
 scene = sceneClearData(scene);
 scene = sceneSet(scene, 'photons', photons);
-[luminance, meanL] = sceneCalculateLuminance(scene); 
+[luminance, meanL] = sceneCalculateLuminance(scene);
 scene = sceneSet(scene, 'luminance', luminance);
 scene = sceneSet(scene, 'meanLuminance', meanL);
 

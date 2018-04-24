@@ -33,10 +33,10 @@ psf = zeros(128,128,length(wave));
 for ii=1:length(wave), psf(:,:,ii) = h; end     % PSF data
 
 %% Save the data
-ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
+fname = ieSaveSIDataFile(psf,wave,umPerSample,'customFile');
 
 % Read the custom data and put it into an optics structure.
-oi = oiCreate('diffraction');
+oi = oiCreate('shift invariant');
 optics = siSynthetic('custom',oi,'customFile','deleteMe');
 
 %% Make sure the program knows you want to use shift invariant
@@ -51,5 +51,7 @@ oi = oiCompute(scene,oi);
 % Show the OI window
 ieReplaceObject(oi);
 oiWindow;
+
+delete(fname);
 
 %% End

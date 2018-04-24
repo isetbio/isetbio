@@ -1,46 +1,50 @@
-function [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
-%PHOTONNOISE  Add photon noise to the absorptions 
-%   [noisyImage, theNoise, seed] = photonNoise(absorptions,varargin)
+function [noisyImage, theNoise, seed] = photonNoise(absorptions, varargin)
+% Add photon noise to the absorptions
 %
-%   Photon noise is Poisson.  The Poisson variance is equal to the mean. We trap
-%   the cases when the value is small (less than 25) and use
-%   real Poisson random value, which is slower to compute. At
-%   levels above lambda = 25, we approximate the noise as Gaussian.
+% Syntax:
+%   [noisyImage, theNoise, seed] = photonNoise(absorptions, varargin)
 %
-%   The decision to add noise is set in the coneMosaic.noiseFlag.  We are
-%   only here if noiseFlag is 'random' or 'frozen'
+% Description:
+%    Photon noise is Poisson. The Poisson variance is equal to the mean. We
+%    trap the cases when the value is small (less than 25) and use real
+%    Poisson random value, which is slower to compute. At levels above
+%    lambda = 25, we approximate the noise as Gaussian.
 %
-%   Inputs:  
-%   absorptions - typically coneMosaic.absorptions
+%    The decision to add noise is set in the coneMosaic.noiseFlag. We are
+%    only here if noiseFlag is 'random' or 'frozen'
 %
-%   Outputs:
-%   noiseImage - absorptions plus noise
-%   theNoise   - the noise that was added to the absorptions
-%   seed       - The rng(seed) we used
+% Inputs:  
+%    absorptions - typically coneMosaic.absorptions
 %
-%   Optional parameter name/value pairs chosen from the following:
+% Outputs:
+%    noiseImage  - absorptions plus noise
+%    theNoise    - the noise that was added to the absorptions
+%    seed        - The rng(seed) we used
 %
-%   'noiseFlag'       Specify frozen noise ('frozen') or not ('random', default)
-%   'seed'            When using frozen noise, you can set a seed (default 1)
+% Optional key/value pairs:
+%    'noiseFlag' - Specify the noise type. Options are 'frozen' and
+%                  'random'. Default is 'random'.
+%    'seed'      - When using frozen noise, you can set a seed (default 1)
+%
 
-% HJ/BW ISETBIO Team 2016
+% History:
+%    xx/xx/16  HJ/BW  ISETBIO Team 2016
+%    02/23/18  jnm    Formatting
 
 %%
 p = inputParser;
-p.addRequired('absorptions',@isnumeric); 
+p.addRequired('absorptions', @isnumeric);
 
-vFunc = @(x)(ismember(x,{'random','frozen'}));
-p.addParameter('noiseFlag','random',vFunc);
-p.addParameter('seed',1,@isnumeric);      % Seed for frozen noise
+vFunc = @(x)(ismember(x, {'random', 'frozen'}));
+p.addParameter('noiseFlag', 'random', vFunc);
+p.addParameter('seed', 1, @isnumeric);  % Seed for frozen noise
 
-p.parse(absorptions,varargin{:});
-
-% absorptions  = p.Results.absorptions;
-seed         = p.Results.seed;
-noiseFlag    = p.Results.noiseFlag;
+p.parse(absorptions, varargin{:});
+% absorptions = p.Results.absorptions;
+seed = p.Results.seed;
+noiseFlag = p.Results.noiseFlag;
 
 %% Set up RNG depending on noiseFlag
-
 switch noiseFlag
     case 'frozen'
         rng(seed);
@@ -48,7 +52,7 @@ switch noiseFlag
         rng('shuffle');
 end
 
-%% This is std * N(0,1)
+%% This is std * N(0, 1)
 theNoise = sqrt(absorptions) .* randn(size(absorptions));
 
 % We add the mean electron and noise electrons together.
@@ -64,25 +68,21 @@ poissonCriterion = 25;
 idx = find(absorptions(:) < poissonCriterion);
 v = absorptions(absorptions < poissonCriterion);
 if ~isempty(v)
+    % Poisson samples
+    vn = iePoisson(v, 'noiseFlag', noiseFlag, 'seed', seed);
     % If noiseFlag is 'random', this routine ignores the seed.
-    vn = iePoisson(v,'noiseFlag',noiseFlag,'seed',seed);  % Poisson samples
     noisyImage(idx) = vn;
-    if nargout > 1
-        % Saves time
-        theNoise(idx) = vn - absorptions(idx);
-    end
+    if nargout > 1, theNoise(idx) = vn - absorptions(idx); end % Saves time
 end
 
 % Find the highly unusual case in which the sum of the mean and noise are
 % less than zero. This only happens if the mean is 25 or greater and the
-% noise is less than -25.  Very unusual, but it can happen given how many
-% times we run this random number generate.  So this little clipping is an
+% noise is less than -25. Very unusual, but it can happen given how many
+% times we run this random number generate. So this little clipping is an
 % imperfection but it isn't the worst thing we do.
 idx = (noisyImage < 0);
-noisyImage(idx)  = 0;
-if nargout > 1
-    % Saves time
-    theNoise(idx)    = noisyImage(idx) - absorptions(idx);
-end
+noisyImage(idx) = 0;
+% Saves time
+if nargout > 1, theNoise(idx) = noisyImage(idx) - absorptions(idx); end
 
 end

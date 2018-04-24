@@ -32,6 +32,9 @@ function [img, parms] = imageHarmonic(parms)
 %    the funciton harmonicP, and you can see them by requesting them on
 %    return as below.
 %
+%    There are examples contained in the code. To access these examples,
+%    simply type 'edit imageHarmonic.m' into the Command Window.
+%
 % Inputs:
 %    parms - (Optional) The harmonic parameters. The possible parameters
 %            are as follows:
@@ -48,27 +51,47 @@ function [img, parms] = imageHarmonic(parms)
 % Outputs:
 %    img   - The image information
 %    parms - The image parameters.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/07/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{
     [img, p] = imageHarmonic;
     vcNewGraphWin;
-    imagesc(img); colormap(gray); axis image
+    imagesc(img);
+    colormap(gray);
+    axis image
+%}
+%{
+    parms = harmonicP;
+    parms.center = [15 10];
+    parms.row = 128;
+    parms.col = 128;
+    parms.GaborFlag = 0.2;
+    [img, p] = imageHarmonic(parms);
+    vcNewGraphWin; imagesc(img); colormap(gray); axis image
+    grid on
 %}
 %{
     parms.row = 32;
     parms.col = 32;
-    parms.contrast = 1; 
+    parms.contrast = 1;
     parms.ph = pi / 2;
     parms.freq = 2;
     parms.ang = pi / 6;
     parms.GaborFlag = 0.2;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin; imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 %{
     % Now, for a sum of two harmonics
@@ -80,12 +103,18 @@ function [img, parms] = imageHarmonic(parms)
     parms.contrast = [0.7 0.5];
     parms.ph = [ 0 0];
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;  imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 %{
     parms.GaborFlag = 0;
     [img, p] = imageHarmonic(parms);
-    vcNewGraphWin;   imagesc(img); colormap(gray); axis image
+    vcNewGraphWin;
+    imagesc(img);
+    colormap(gray);
+    axis image
 %}
 
 % If no parameters sent, use the default.
@@ -98,6 +127,7 @@ else
     
     % Check the user structure and over-write any of the parameters with
     % the user parameters
+    if isfield(parms, 'center'), dparms.center = parms.center; else; dparms.center = [0 0]; end
     if isfield(parms, 'ang'), dparms.ang = parms.ang; end
     if isfield(parms, 'contrast'), dparms.contrast = parms.contrast; end
     if isfield(parms, 'freq'), dparms.freq = parms.freq; end
@@ -113,6 +143,8 @@ x = (0:(parms.col - 1)) / parms.col;
 y = (0:(parms.row - 1)) / parms.row;
 x = x - x(end) / 2;
 y = y - y(end) / 2;
+x = x - parms.center(1)/ parms.col;
+y = y - parms.center(2)/ parms.row;
 [X, Y] = meshgrid(x, y);
 
 % Calculate the gabor window, or, if the space parameter is negative, the
@@ -121,6 +153,9 @@ if parms(1).GaborFlag
     sigmaParam = parms.GaborFlag * min(parms.row, parms.col);
     if (parms(1).GaborFlag > 0)
         g = fspecial('gauss', size(X), sigmaParam);
+        if (parms.center(1) ~= 0) || (parms.center(2) ~= 0)
+            g = imtranslate(g,parms.center);
+        end
     else
         xArg = pi * parms.col * X / (-2 * sigmaParam);
         yArg = pi * parms.row * Y / (-2 * sigmaParam);

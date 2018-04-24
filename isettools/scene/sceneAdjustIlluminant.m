@@ -10,6 +10,8 @@ function scene = sceneAdjustIlluminant(scene, illEnergy, preserveMean)
 %    current scene has no defined illuminant, we assume that it has a D65
 %    illumination. The scene luminance is preserved by this transformation.
 %
+%    There are examples in the code. Type 'edit sceneAdjustIlluminant' into
+%    the Command Window to access.
 % Inputs:
 %    scene        - (Optional) A scene structure. Default is current scene.
 %    illEnergy    - (Optional) A spectral data filename, or a vector
@@ -21,6 +23,9 @@ function scene = sceneAdjustIlluminant(scene, illEnergy, preserveMean)
 %
 % Outputs:
 %    scene        - The modified scene structure.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: JNM - Why do we have both warning and warndlg in the same
@@ -34,6 +39,7 @@ function scene = sceneAdjustIlluminant(scene, illEnergy, preserveMean)
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010.
 %    12/28/17  jnm  Formatting
+%    01/25/18  jnm  Formatting update to match Wiki.
 
 % Examples:
 %{

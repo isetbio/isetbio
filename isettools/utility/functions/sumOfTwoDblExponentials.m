@@ -22,11 +22,15 @@ function y = sumOfTwoDblExponentials(coef, x)
 % Outputs:
 %    y    - The calculated sum of the double exponential functions.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    01/08/16  dhb  Added commments
 %              dhb  Changed name and what is computed to be more standard
 %    12/04/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki.
 
 % Do it
 y = coef(1) .* exp(-coef(2) * abs(x)) + coef(3) .* exp(-coef(4) * abs(x));

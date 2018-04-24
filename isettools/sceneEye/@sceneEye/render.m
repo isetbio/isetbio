@@ -165,29 +165,42 @@ piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
 
 %% Set OI parameters correctly:
 if(~obj.debugMode)
-    % Scene distance. We set it to infinity, since it doesn't technically
-    % apply to the raytracing.
+    [~,fname,~] = fileparts(recipe.inputFile);
+    ieObject = oiSet(ieObject,'name',sprintf('%s-%s-iset3d',fname,datestr(now,'mmm-dd,HH:MM')));
+    
+    % Scene distance. We set it to infinity, since it doesn't apply to
+    % the raytracing.
     ieObject = oiSet(ieObject, 'distance', Inf);
     
     % For the optics focal length, we use the distance between the back of
     % the lens and the retina. Although it is not exactly the same as the
     % focal length for the eye (which also changes with accommodation), it
-    % should be close enough for our purposes.
-    ieObject = oiSet(ieObject, 'optics focallength', ...
+    % is a good approximation for the oiWindow.
+    ieObject = oiSet(ieObject, 'optics focal length', ...
         obj.retinaDistance * 1e-3);
     ieObject = oiSet(ieObject, 'optics fnumber', ...
         obj.retinaDistance / obj.pupilDiameter);
     ieObject = oiSet(ieObject, 'fov', obj.fov);
-    
-    % Clear default optics that do not apply to the ray-traced optical
+
+    % Clear default optics that do not apply to the iset3d optical
     % image. We may want to add these in in the future.
-    ieObject.optics = opticsSet(ieObject.optics, 'model', 'raytrace');
+    ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');
     ieObject.optics = opticsSet(ieObject.optics, 'name', ...
         'PBRT Navarro Eye');
     ieObject.optics.OTF = [];
-    ieObject.optics.lens = [];
+    
+    % BW:  We should set the lens density to the value used in
+    % sceneEye, not just remove it.  Ask TL whether she does anything
+    % with the lens at all ... if she doesn't, we might apply it here.
+    % ieObject.optics.lens = [];
+    ieObject.optics.lens.name = recipe.get('lens file');
     ieObject.optics.offaxis = '';
     ieObject.optics.vignetting = [];
+    
+    % Shouldn't we adjust the mean illuminance to some reasonable
+    % level here?
+    disp('myScene.render: Using oiAdjustIlluminance to set mean illuminance to 5 lux.');
+    ieObject = oiAdjustIlluminance(ieObject,5);  % 5 lux
 end
 
 end

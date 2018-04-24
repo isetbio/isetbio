@@ -18,7 +18,11 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %    dFormat      - (Optional) Data format. Default is double. Options are
 %                   double, single
 %
-% Notes:
+% Outputs:
+%    fullpathname - The full path name of the output file
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %   ieSaveColorFilter, ieReadColorFilter
@@ -29,14 +33,15 @@ function fullpathname = ieSaveSpectralFile(wavelength, data, comment, ...
 %    11/27/17  jnm  Formatting
 %    11/29/17  jnm  Added Note about example
 %    12/24/17   BW  Fixed problems noted by JNM
+%    01/26/18  jnm  Formatting update to match the Wiki.
 
 % Examples:
 %{
     comment = 'foo';
     wavelength = [400, 500, 600]';
     variable = [1, 1, 1]';
-    fname = fullfile(tempdir,'sifile.mat');
-    fullpathname = ieSaveSpectralFile(wavelength, variable, comment,fname)
+    fname = fullfile(tempdir, 'sifile.mat');
+    fullpathname = ieSaveSpectralFile(wavelength, variable, comment, fname)
     data = ieReadSpectra(fullpathname, [400:50:600])
     delete(fullpathname)
 %}
@@ -83,6 +88,6 @@ switch dFormat
         error('Unknown data format %s\n', dFormat);
 end
 
-save(fullpathname,'wavelength','data','comment','dFormat');
+save(fullpathname, 'wavelength', 'data', 'comment', 'dFormat');
 
 end

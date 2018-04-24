@@ -1,17 +1,19 @@
+%% t_opticsGetAndSetPSF
+%
 % Show how to set and get PSFs in isetbio optics related structures
 %
 % Description:
-%   First, show how to get and set psf's in units of minutes of arc, or from otfs
-%   specified over frequencies in cycles/deg. This ability is useful when
-%   we want to build isetbio optics using various estimates of optical quality
-%   in the literature.
+%   First, show how to get and set psf's in units of minutes of arc,
+%   or from otfs specified over frequencies in cycles/deg. This
+%   ability is useful when we want to build isetbio optics using
+%   various estimates of optical quality in the literature.
 %
 %   Then show how to do this using the wavefront optics, in several
 %   different ways.
 %
-%   This tutorial also serves some validation purposes, as the plots allow
-%   one to check that various ways of doing the same thing give the same
-%   answer.
+%   This tutorial also serves some validation purposes, as the plots
+%   allow one to check that various ways of doing the same thing give
+%   the same answer.
 %
 % See also:
 %
@@ -25,15 +27,15 @@
 clear; ieInit;
 
 %% Create the oi structure and pull out the optics
-%
-% Snag the wavelengths while we're at it.
+
+% Snag the wavelengths
 theWl = 550;
 oi = oiCreate('wvf human');
 optics = oiGet(oi,'optics');
 wls = opticsGet(optics,'wave');
 
 %% Check that support is square
-% 
+
 % Almost surely true, and haven't thought through all the implications if
 % it is not.
 sfValuesCyclesMm = opticsGet(optics,'otf support','mm');
@@ -81,7 +83,7 @@ if (CHANGE_SUPPORTDIM)
 end
 
 %% Get the gridded spatial frequency support of the otf in cycles/deg.
-%
+
 % We'll also keep it around in cycles/mm.
 %
 % And convert to support in cycles per degree using 300 um per degree,
@@ -105,7 +107,7 @@ position1DMinutes = xGridMinutes(centerPosition,:);
 wvfHuman1DPsf = psf(centerPosition,:);
 
 %% Show otf and psf in 2D
-figure; clf;
+vcNewGraphWin; clf;
 subplot(1,2,1); hold on;
 mesh(xSfGridCyclesDegree,ySfGridCyclesDegree,fftshift(abs(otf)));
 xlim([-100 100]); ylim([-100 100]);
@@ -124,7 +126,7 @@ title('PSF');
 %% Get Davila-Geisler PSF and add to plot.
 DavilaGeislerLsf = DavilaGeislerLSFMinutes(position1DMinutes);
 DavilaGeislerPsf = LsfToPsf(DavilaGeislerLsf);
-psfFig = figure; clf; hold on
+psfFig = vcNewGraphWin; clf; hold on
 plot(position1DMinutes,wvfHuman1DPsf/max(wvfHuman1DPsf),'r','LineWidth',4);
 plot(position1DMinutes, ...
     DavilaGeislerPsf(centerPosition,:)/max(DavilaGeislerPsf(centerPosition,:)), ...
@@ -209,10 +211,10 @@ wvfPOdd = wvfSet(wvfPOdd,'ref psf sample interval',psfMinPerSampleOdd);
 wvfPOdd = wvfSet(wvfPOdd,'zcoeffs',defocusAmount,'defocus');
 wvfPOdd = wvfComputePSF(wvfPOdd);
 
-% Get and plot the psf obtained directly from the wvf structure.
+%% Get and plot the psf obtained directly from the wvf structure.
 % This is what we ought to get back from an oi/optics structure,
 % if we put it in correctly.
-psfFig3 = figure; hold on
+psfFig3 = vcNewGraphWin; hold on
 psf3FromWvfOdd = wvfGet(wvfPOdd,'1d psf',theWl);
 psf3FromWvfSpatialSamples1DOdd = wvfGet(wvfPOdd,'psf angular samples','min',theWl);
 plot(psf3FromWvfSpatialSamples1DOdd, ...
@@ -236,9 +238,9 @@ wvfPEven = wvfComputePSF(wvfPEven);
 psf3FromWvfEven = wvfGet(wvfPEven,'1d psf',theWl);
 psf3FromWvfSpatialSamples1DEven = wvfGet(wvfPEven,'psf angular samples','min',theWl);
 
-% Plot comparing odd and even support psfs obtained with wvf code. This
+%% Plot comparing odd and even support psfs obtained with wvf code. This
 % agreement gets very good when the support is finely sampled.
-psfFigOddEven = figure; hold on
+psfFigOddEven = vcNewGraphWin; hold on
 plot(psf3FromWvfSpatialSamples1DOdd,psf3FromWvfOdd,...
     'c','LineWidth',8);
 plot(psf3FromWvfSpatialSamples1DEven,psf3FromWvfEven,...
@@ -254,8 +256,10 @@ if (max(abs(psf3FromWvfOdd(:)-checkPSF(:))) > 1e-7)
     error('Even and odd support PSFs not close enough to each other');
 end
 
-% Convert wvf structure to oi using wvf2oi. When we get the psf data using
-% oiPlot, the support is in microns.  Convert to minutes and plot.
+%% Convert wvf structure to oi using wvf2oi. 
+
+% When we get the psf data using oiPlot, the support is in microns.
+% Convert to minutes and plot.
 oi3 = wvf2oi(wvfPOdd);
 [udata3,oiPlotFig] = oiPlot(oi3,'psf',[],theWl); close(oiPlotFig)
 supportRowSize = size(udata3.x,1);
@@ -264,8 +268,8 @@ figure(psfFig3);
 plot(60*udata3.x(centerPosition,:)/uMPerDegree, ...
     udata3.psf(centerPosition,:)/max(udata3.psf(centerPosition,:)),...
     'b','LineWidth',7);
-if (max(abs(psf3FromWvfOdd-udata3.psf(floor(psfSpatialSamplesOdd/2)+1,:))) > 1e-10)
-    error('Inserting wvf PSF via wvf2oi does not work right');
+if (max(abs(psf3FromWvfOdd - udata3.psf(floor(psfSpatialSamplesOdd/2)+1,:))) > 1e-10)
+    warning('Inserting wvf PSF via wvf2oi does not work right');
 end
 
 % Get isetbio format OTF back out of the oi struct, at the specified
@@ -273,9 +277,11 @@ end
 optics3 = oiGet(oi3,'optics');
 otf3 = opticsGet(optics3,'otf data',theWl);
 
-% Derive the psf back from the otf using the PTB routine OtfToPsf.  As
-% often happens, we have independently done the same things in isetbio and
-% PTB, and here we want to make sure that we get the same answer.
+%% Derive the psf back from the otf using the PTB routine OtfToPsf.  
+
+% As often happens, we have independently done the same things in
+% isetbio and PTB, and here we want to make sure that we get the same
+% answer.
 %
 % Before calling the PTB routine OtfToPsf on the otf, we have to convert to
 % the zero sf at center representation. This is done using fftshift.
@@ -298,9 +304,10 @@ end
     'umPerSample',psfUmPerSampleOdd, ...
     'showBar',false);
 
-% Convert to optics and then to oi using siSynthetic.  This is probably to
-% be avoided in preference to the other methods above, but should work if
-% you get all the arguments right.
+%% Convert to optics and then to oi using siSynthetic. 
+
+% This is probably to be avoided in preference to the other methods
+% above, but should work if you get all the arguments right.
 oi4 = oiCreate('human');
 optics4 = oiGet(oi4,'optics');
 
@@ -334,6 +341,6 @@ xlabel('Postion (arcmin)');
 ylabel('Normalized PSF');
 title('Multiple PSF Comparison, These Should Match');
 
-
+%%
 
 

@@ -23,12 +23,12 @@ function hdl = plot(obj, pType, varargin)
 %    * Need to address the other notes throughout the function
 %    * Note: BW fix response center plot.
 
-%% History: 
+%% History:
 % 5/2016 JRG, BW (c) isetbio team
 %
 %    10/18/17  jnm  Comments & Formatting
 %    12/21/17  baw  Changed example.  Tested 'help'.  Added otherwise
-%    case.  
+%    case.
 
 %% Examples:
 %{
@@ -37,15 +37,15 @@ function hdl = plot(obj, pType, varargin)
    bpMosaic = bpL.mosaic{1};
    bpMosaic.plot('spatial rf')
    bpMosaic.plot('mosaic');
-   bpMosaic.plot('response center');   
+   bpMosaic.plot('response center');
    bpMosaic.plot('response time series', 'pos', [5 5]);
    bpMosaic.plot('response image', 'gamma', 0.3);
    bpMosaic.plot('response movie');
 %}
 
 %% Parse inputs
-p = inputParser; 
-p.CaseSensitive = false; 
+p = inputParser;
+p.CaseSensitive = false;
 p.FunctionName  = mfilename;
 p.KeepUnmatched = true;
 %%%
@@ -63,7 +63,7 @@ p.addParameter('gamma', 1, @isscalar);
 p.addParameter('pos', [], @ismatrix);
 
 % Additional parameters are read in the case statements, below.
-p.parse(pType, varargin{:}); 
+p.parse(pType, varargin{:});
 
 %% Set the window.
 
@@ -85,17 +85,17 @@ switch ieParamFormat(pType)
         %% Case: Spatial RF
         %   @bipolarMosaic.plot('spatial rf')
         srf = obj.sRFcenter - obj.sRFsurround;
-        sz = size(srf); 
+        sz = size(srf);
         if isequal(sz, [1, 1])
             disp('spatial rf is an impulse');
             return;
         end
-        
-        x = (1:sz(2)) - mean(1:sz(2));    
-        y = (1:sz(1)) - mean(1:sz(1)); 
+
+        x = (1:sz(2)) - mean(1:sz(2));
+        y = (1:sz(1)) - mean(1:sz(1));
         surf(x, y, srf); colormap(parula);
         xlabel('Cone samples'); zlabel('Responsivity')
-        
+
     case 'surroundrf'
         %% Case: Surround RF
         %   @bipolarMosaic.plot('surround rf')
@@ -105,27 +105,27 @@ switch ieParamFormat(pType)
             disp('spatial rf is an impulse');
             return;
         end
-        
+
         x = (1:sz(2)) - mean(1:sz(2));
         y = (1:sz(1)) - mean(1:sz(1));
         surf(x, y, srf);
         colormap(parula);
         xlabel('Cone samples');
         zlabel('Responsivity')
-        
+
     case {'mosaic'}
         %% Case: Mosaic
         %   @bipolarMosaic.plot('mosaic')
-        % 
+        %
         % Shows the RF Array, gets contour lines for mosaic RFs
         % The cell locations are specified with respect to the cone mosaic
         % input layer.  We would like to present them in terms of microns
         % on the cone mosaic surface.  So, we transform the cell locations
         % to microns.
 
-        %%%  
+        %%%
         % These are sampled w.r.t. the input mosaic.  We convert to microns
-        center = obj.cellLocation;  
+        center = obj.cellLocation;
         %%%
         % List the (x, y) positions on the grid and count how many
         center = reshape(center, [size(obj.cellLocation, 1) ...
@@ -146,7 +146,7 @@ switch ieParamFormat(pType)
         center = 1e6 * center * diag(metersPerBipolar(:));
         % Centers in microns
         metersPerInput   = obj.input.patternSampleSize(1);
-        radius = (1e6 * metersPerInput * size(obj.sRFcenter, 1)) / 2;  
+        radius = (1e6 * metersPerInput * size(obj.sRFcenter, 1)) / 2;
         %%%
         % At this point we should have centers and radius in terms of
         % microns.  If life is goo
@@ -166,7 +166,7 @@ switch ieParamFormat(pType)
         %%%
         % The whole ellipse thing isn't handled really, is it?  I mean, the
         % parameter is fixed here, and not set.
-        ellipseMatrix = [1 1 0];        
+        ellipseMatrix = [1 1 0];
         ieShape('ellipse', ...
             'center', center, ...
             'radius', radius, ...
@@ -178,7 +178,7 @@ switch ieParamFormat(pType)
         xlabel(sprintf('Distance (\\mum)'), 'fontsize', 14);
         ylabel(sprintf('Distance (\\mum)'), 'fontsize', 14);
         title(titleS);
-            
+
     case{'responsecenter'}
         %% Case: Response Center
         %   @bipolarMosaic.plot('response center')
@@ -205,7 +205,7 @@ switch ieParamFormat(pType)
         plot(obj.timeStep * (1:sz(3)), responseRS');
         xlabel('Time (sec)'); ylabel('Response (AU)');
         title('Center response(s)'); grid on
-        
+
     case{'responsesurround'}
         %% Case: Response Surround
         %   @bipolarMosaic.plot('response surround')
@@ -223,13 +223,13 @@ switch ieParamFormat(pType)
                     pos(ii, 2), :);
             end
         end
-        
+
         vcNewGraphWin;
         plot(obj.timeStep * (1:sz(3)), responseRS);
         xlabel('Time (sec)');
         ylabel('Response (AU)');
         title('Bipolar surround response'); grid on
-        
+
     case{'responsetimeseries'}
         %% Case: Response Time Series
         %   @bipolarMosaic.plot('response time series', 'pos', ...)
@@ -241,7 +241,7 @@ switch ieParamFormat(pType)
         pos = p.Results.pos;
         if isempty(pos)
             responseRS = RGB2XWFormat(obj.responseCenter ...
-                - obj.responseSurround);  
+                - obj.responseSurround);
             nCells = size(responseRS, 1);
         else
             nPos = size(pos, 1);
@@ -250,10 +250,10 @@ switch ieParamFormat(pType)
                 responseRS(ii, :) = obj.responseCenter(pos(ii, 1), ...
                     pos(ii, 2), :) - obj.responseSurround(pos(ii, 1), ...
                     pos(ii, 2), :);
-            end            
+            end
         end
         tSamples = obj.timeStep * (1:size(obj.responseCenter, 3));
-        
+
         vcNewGraphWin;
         if isempty(pos) &&  nCells > 100
             %%%
@@ -271,12 +271,12 @@ switch ieParamFormat(pType)
             plot(tSamples, responseRS)
             title(sprintf('Selected positions'));
         end
-        
+
         xlabel(sprintf('Time (sec, \\Deltat %.0f ms)', ...
             obj.timeStep * 1e3));
         ylabel('Current (a.u.)');
         grid on
-        
+
     case{'responseimage'}
         %% Case: Response Image
         %
@@ -285,7 +285,7 @@ switch ieParamFormat(pType)
         response = (obj.get('response'));
         patchSizeUM = obj.patchSize * 1e6;
         dx = patchSizeUM / size(response, 1);  % Step in microns
-        rowSamples = dx(1) * (1:size(response, 1)); 
+        rowSamples = dx(1) * (1:size(response, 1));
         rowSamples = rowSamples - mean(rowSamples);
         colSamples = dx(2) * (1:size(response, 2));
         colSamples = colSamples - mean(colSamples);
@@ -298,11 +298,11 @@ switch ieParamFormat(pType)
         else
             img = mean(response, 3);
         end
-        
+
         imagesc(rowSamples, colSamples, img);
         axis image; colormap(gray(256)); title('Current (a.u.)');
         xlabel(sprintf('Cell position (\\mum)'));
-        
+
     case{'responsemovie'}
         %% Case: Response Movie
         % Pass the varargin along

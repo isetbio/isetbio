@@ -14,6 +14,9 @@ function figNum = plotSetUpWindow(figNum)
 % Outputs:
 %    figNum - The figure that has just been displayed.
 %
+% Optional key/value pairs:
+%    None.
+%
 % Notes:
 %    * TODO: The management of the graphics windows is very poor right now
 %      and needs to be corrected. We should allow multiple graph windows
@@ -24,7 +27,7 @@ function figNum = plotSetUpWindow(figNum)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/11/17  jnm  Formatting
-%
+%    01/24/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

@@ -10,7 +10,10 @@ function t = imageIncreaseImageRGBSize(im, s)
 %
 %    The parameter s is the scale factor. If the input image is [1, 1, w],
 %    the output image is [s, s, w].
-% 
+%
+%    Examples located within the code can be accessed by typing 'edit
+%    imageIncreaseImageRGBSize.m' into the Command Window.
+%
 % Inputs:
 %    im - The original image
 %    s  - The scale factor
@@ -18,10 +21,14 @@ function t = imageIncreaseImageRGBSize(im, s)
 % Outputs:
 %    t  - The modified image.
 %
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    12/07/17  jnm  Formatting
+%    01/26/18  jnm  Formatting update to match Wiki
 
 % Examples:
 %{

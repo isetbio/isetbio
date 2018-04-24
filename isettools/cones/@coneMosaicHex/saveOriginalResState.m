@@ -1,4 +1,21 @@
 function saveOriginalResState(obj)
+    % Save the original Rectangular Grid State
+    %
+    % Syntax:
+    %   saveOriginalResState(obj, fov)
+    %
+    % Description:
+    %    Save the original rectangular grid state
+    %
+    % Inputs:
+    %    obj - The cone mosaic hex object
+    %
+    % Outputs:
+    %    None.
+    %
+    % Optional key/value pairs:
+    %    None.
+    %
     obj.fovOriginatingRectGrid = obj.fov;
     obj.coneLocsOriginatingRectGrid = obj.coneLocs;
     obj.patternOriginatingRectGrid = obj.pattern;
