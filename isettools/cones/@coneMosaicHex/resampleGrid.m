@@ -164,7 +164,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
-    fudgeFactor = 0.89;
+    fudgeFactor = 0.76;
     densityP = fudgeFactor * (1 ./ normalizedConeSeparations) .^ 2;
     
     % Remove cones accordingly
@@ -543,9 +543,9 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
         Y2(:, iCol) = Y2(:, iCol) - mod(iCol - 1, 2) * 0.5;
     end
 
-    % Scale back to get correct density
-    X2 = X2 * lambda / sqrt(scaleF);
-    Y2 = Y2 * lambda / sqrt(scaleF);
+    % Scale to get correct density
+    X2 = X2 * lambda;
+    Y2 = Y2 * lambda;
     marginInConePositions = 0.1;
     indicesToKeep = (X2 >= -marginInConePositions) & ...
                     (X2 <= cols+marginInConePositions) &...

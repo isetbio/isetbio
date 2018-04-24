@@ -667,7 +667,7 @@ classdef coneMosaic < hiddenHandle
             %
             mosaicAreaInMeters = prod(obj.size);
             conesNum = numel(find(obj.pattern>1));
-            coneAreaInMeters = obj.pigment.pdArea; 
+            coneAreaInMeters = obj.pigment.pdArea;
             val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
         end
         
