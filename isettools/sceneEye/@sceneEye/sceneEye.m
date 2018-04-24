@@ -210,7 +210,7 @@ properties(GetAccess=public, SetAccess=private)
 
 end
 
-properties(Access=private)
+properties(GetAccess=public, SetAccess=private, Hidden=true)
     % The recipe stores pretty much everything else we read in from the
     % PBRT file that we don't want the user to access directly. This
     % includes things like the WorldBegin/WorldEnd block, the PixelFilter,

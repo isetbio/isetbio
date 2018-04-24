@@ -167,5 +167,6 @@ pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
 recipe.outputFile = pbrtFile;
 piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
     'overwriteresources', false);
+obj.recipe = recipe; % Update the recipe.
 
 end
