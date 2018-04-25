@@ -44,7 +44,7 @@ seNew = se.write();
 
 % Upload the recipe 
 if(uploadZip)
-    [cloudFolder, zipFileName] = gcp.uploadPBRT(seNew.recipe);
+    [cloudFolder, zipFileName] = gcp.uploadPBRT(seNew.recipe,'overwrite zip',true);
 else
     gcp.uploadPBRT(seNew.recipe,'upload zip',false,'overwrite zip',false);
 end
