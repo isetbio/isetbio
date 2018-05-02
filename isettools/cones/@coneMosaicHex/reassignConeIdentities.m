@@ -167,21 +167,29 @@ function [newLcones, newMcones] = reassignSconeIdentities(obj, ...
     % Optional key/value pairs:
     %    None.
     %
+
+    LconesNum = numel(find(obj.pattern == 2));
+    MconesNum = numel(find(obj.pattern == 3));
+    LconesFraction = LconesNum/(LconesNum+MconesNum);
     newLcones = 0;
     newMcones = 0;
-    theRandomNumbers = rand(1, numel(sConeIndicesToBeReassinged));
-    MconeFraction = obj.spatialDensity(3) / (obj.spatialDensity(2) + ...
-        obj.spatialDensity(3));
-        
+    
+    randomizedIndices = randperm(numel(sConeIndicesToBeReassinged));
+    
     for sIndex = 1:numel(sConeIndicesToBeReassinged) 
-        if (theRandomNumbers(sIndex) < MconeFraction)
-            reassignedConeIdentity = 3;
-            newMcones = newMcones + 1;
-        else
+        
+        if LconesFraction < obj.spatialDensity(2)/(obj.spatialDensity(2)+obj.spatialDensity(3))
             reassignedConeIdentity = 2;
+            LconesNum = LconesNum+1;
             newLcones = newLcones + 1;
+        else
+            reassignedConeIdentity = 3;
+            MconesNum = MconesNum+1;
+            newMcones = newMcones + 1;
         end
-        obj.pattern(sConeIndices(sConeIndicesToBeReassinged)) = ...
+        LconesFraction = LconesNum/(LconesNum+MconesNum);
+        
+        obj.pattern(sConeIndices(sConeIndicesToBeReassinged(randomizedIndices(sIndex)))) = ...
             reassignedConeIdentity;
     end
 end
