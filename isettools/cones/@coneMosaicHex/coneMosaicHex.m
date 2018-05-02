@@ -372,6 +372,9 @@ classdef coneMosaicHex < coneMosaic
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
+        
+        % Regenerate the LMS pattern using passed LMS density and sConeMinDistanceFactor
+        regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor);
     end % Public methods
 
     methods (Access = private)

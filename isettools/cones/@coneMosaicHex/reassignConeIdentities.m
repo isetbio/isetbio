@@ -18,7 +18,7 @@ function reassignConeIdentities(obj, varargin)
     %    ***Needs to be filled out!***
     %
     p = inputParser;
-    p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
+    p.addParameter('sConeMinDistanceFactor', 2.5, @isnumeric);
     p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
     p.addParameter('zeroSconeDensity', false, @islogical);
     p.parse(varargin{:});
