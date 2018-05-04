@@ -330,8 +330,8 @@ classdef coneMosaicHex < coneMosaic
                     (~isempty(obj.sConeFreeRadiusMicrons)))
                 % Make s-cone lattice semi-regular, and/or add an s-cone
                 % free region.
-                obj.reassignConeIdentities('sConeMinDistanceFactor', ...
-                    obj.sConeMinDistanceFactor, ...
+                obj.regenerateLMSPattern(obj.spatialDensity(2:4), ...
+                    'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...
                     'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);
             end
         end
@@ -373,8 +373,8 @@ classdef coneMosaicHex < coneMosaic
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
         
-        % Regenerate the LMS pattern using passed LMS density and sConeMinDistanceFactor
-        regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor);
+        % Regenerate the LMS pattern using passed LMS density
+        regenerateLMSPattern(obj, LMSdensity, varargin);
     end % Public methods
 
     methods (Access = private)

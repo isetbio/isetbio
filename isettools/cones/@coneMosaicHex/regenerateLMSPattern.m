@@ -1,8 +1,8 @@
-function regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor)
-    % Reassign the cone identities of the cone mosaic hex object
+function regenerateLMSPattern(obj, LMSdensity, varargin)
+    % Regenerate the cone identities of the cone mosaic hex object 
     %
     % Syntax:
-    %   regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor)
+    %   regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor, sConeFreeRadiusMicrons)
     %
     % Description:
     %    Regenerate the LMS pattern for the provided cone mosaic hex using
@@ -13,13 +13,23 @@ function regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor)
     %    LMSdensity             - An 1x3 vector with desited L:M:S cone densities
     %    sConeMinDistanceFactor - Min distance factor for S-cones (usually
     %                             2.5, which results in 7% S-cones)
-    %
+    %    sConeFreeRadiusMicrons - The foveola radius in microns which
+    %                             contains no S-cones. Default: 45
     % Outputs:
     %    None.
     %
     % Optional key/value pairs:
     %    None.
     %
+    
+    p = inputParser;
+    p.addParameter('sConeMinDistanceFactor', 2.5, @isnumeric);
+    p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
+    p.addParameter('zeroSconeDensity', false, @islogical);
+    p.parse(varargin{:});
+    
+    sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
+    sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
     
     LMSdensity = LMSdensity / sum(LMSdensity);
     
@@ -34,7 +44,9 @@ function regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor)
     obj.pattern(randomIndices(1:newLconesNum)) = 2;
     obj.pattern(randomIndices(newLconesNum+(1:newMconesNum))) = 3;
     obj.pattern(randomIndices(newLconesNum+newMconesNum+(1:newSconesNum))) = 4;
-    obj.reassignConeIdentities('sConeMinDistanceFactor', sConeMinDistanceFactor);
+    obj.reassignConeIdentities(...
+                    'sConeMinDistanceFactor', sConeMinDistanceFactor, ...
+                    'sConeFreeRadiusMicrons', sConeFreeRadiusMicrons);
     obj.visualizeGrid();
 end
 
