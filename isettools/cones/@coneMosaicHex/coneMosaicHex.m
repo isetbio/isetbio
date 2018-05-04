@@ -305,6 +305,8 @@ classdef coneMosaicHex < coneMosaic
             end
 
             % Set the pigment geometric dimensions
+            obj.pigment.width = squareSizeFromCircularAperture(obj.pigment.width);
+            obj.pigment.height = obj.pigment.width;
             if (~isempty(obj.customLambda)) 
                 maxSpacing = 1e6 * circleSizeFromSquareAperture(...
                     obj.pigment.width);
@@ -317,7 +319,7 @@ classdef coneMosaicHex < coneMosaic
                         'decrease ''customLambda''.'], ...
                         obj.customLambda, maxSpacing);
                 end
-                obj.pigment.width = 1e-6 * obj.customLambda;
+                obj.pigment.width = 1e-6 * squareSizeFromCircularAperture(obj.customLambda);
                 obj.pigment.height = obj.pigment.width;
             end
 
@@ -370,6 +372,9 @@ classdef coneMosaicHex < coneMosaic
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
+        
+        % Regenerate the LMS pattern using passed LMS density and sConeMinDistanceFactor
+        regenerateLMSPattern(obj, LMSdensity, sConeMinDistanceFactor);
     end % Public methods
 
     methods (Access = private)

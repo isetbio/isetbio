@@ -23,6 +23,13 @@ function hFig = visualizeGrid(obj, varargin)
 %                              - Boolean, Whether or not to show the
 %                                rectangular mosaic in place of the hex.
 %                                Default is False.
+%    visualizedConeAperture    - Char. Which element to visualize.
+%                                Choose b/n: {'lightCollectingArea', 
+%                                             'geometricArea', 'both'} 
+%                                Default is 'lightCollectingArea'
+%    apertureShape             - Char. What shape to use for cones
+%                                Choose b/n: {'hexagons', 'disks'}
+%                                Default is 'hexagons'
 %    overlayNullSensors        - Boolean. Whether or not to overlay the
 %                                null sensors. Default is False.
 %    overlayEMpathMicrons      - 2 x 1. a single EM path (specified in
@@ -30,7 +37,7 @@ function hFig = visualizeGrid(obj, varargin)
 %                                the mosaic. Default is Empty.
 %    overlayHexMesh            - Boolean. Whether or not to overlay the
 %                                hex mesh. Default is False.
-%    overlayConeDensityContour - String. Options are {'theoretical',
+%    overlayConeDensityContour - Char. Options are {'theoretical',
 %                                'measured', 'theoretical_and_measured',
 %                                'none'} Default is 'none'.
 %    coneDensityContourLevels  - Array. Contour levels of cone density.
@@ -43,6 +50,7 @@ function hFig = visualizeGrid(obj, varargin)
 % History:
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/21/18  jnm  Formatting
+%    04/23/18  npc  Added coverage, innerSegmentCoverage properties
 
 %% parse input
 p = inputParser;
@@ -131,7 +139,7 @@ pixelOutline.x = [0 0 1 1 0] * obj.patternSampleSize(1);
 pixelOutline.y = [0 1 1 0 0] * obj.patternSampleSize(1);
 
 if strcmp(apertureShape, 'hexagons')
-    iTheta = ((0:60:360)+30)/180*pi;
+    iTheta = ((0:60:360)+obj.rotationDegs)/180*pi;
 else
     iTheta = (0:10:360) / 180 * pi;
 end
@@ -396,7 +404,7 @@ switch overlayConeDensityContour
                 'LineWidth', 3.0, 'ShowText', overlayContourLabels, ...
                 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [1 0 0], ...
-                'BackgroundColor', 'none');
+                'BackgroundColor', [1 1 1]);
         else
             contour(axesHandle, densityMapSupportX, densityMapSupportY, densityMapMeasured, ...
                 contourLevels, 'LineColor', [1 0.0 0.0], 'LineWidth', 3.0);

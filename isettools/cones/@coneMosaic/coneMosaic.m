@@ -217,6 +217,20 @@ classdef coneMosaic < hiddenHandle
         %   Depends on patternSampleSize via height and width properties.
         fov;
 
+        %innerSegmentCoverage - The mosaic's inner segment coverage factor
+        %   The retinal coverage factor of the mosaic computed as 
+        %   (number of cones) x (inner segment area) / (mosaic area)
+        %
+        %   Depends on the inner segment area and the mosaic area.
+        innerSegmentCoverage;
+        
+        %coverage - The  mosaic's coverage factor
+        %   The retinal coverage factor of the mosaic computed as 
+        %   (number of cones) x (cone area) / (mosaic area)
+        %
+        %   Depends on the cone area and the mosaic area.
+        coverage;
+        
         %tSamples  Number of temporal samples
         tSamples
 
@@ -608,6 +622,55 @@ classdef coneMosaic < hiddenHandle
                 atand([obj.width obj.height] / 2 / focalLengthMeters);
         end
 
+        function val = get.coverage(obj)
+            % Retrieve the cone mosaic object's coverage factor
+            %
+            % Syntax:
+            %   val = get.coverage(obj)
+            %
+            % Description:
+            %    Compute the cone mosaic's cone coverage factor
+            %
+            % Inputs:
+            %    obj - The cone mosaic object
+            %
+            % Outputs:
+            %    val - The mosaic's coverage factor.
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
+            mosaicAreaInMeters = prod(obj.size);
+            conesNum = numel(find(obj.pattern>1));
+            coneAreaInMeters = obj.pigment.area;
+            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            
+        end
+        
+        function val = get.innerSegmentCoverage(obj)
+            % Retrieve the cone mosaic object's coverage factor
+            %
+            % Syntax:
+            %   val = get.innerSegmentCoverage(obj)
+            %
+            % Description:
+            %    Compute the cone mosaic's inner segment coverage factor
+            %
+            % Inputs:
+            %    obj - The cone mosaic object
+            %
+            % Outputs:
+            %    val - The mosaic's inner segment coverage factor.
+            %
+            % Optional key/value pairs:
+            %    None.
+            %
+            mosaicAreaInMeters = prod(obj.size);
+            conesNum = numel(find(obj.pattern>1));
+            coneAreaInMeters = obj.pigment.pdArea;
+            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+        end
+        
         function val = get.coneLocs(obj)
             % Retrieve the cone mosaic object's cone locations (in meters)
             %
