@@ -36,19 +36,20 @@ eccen       = 4;       % degrees
 whichGroup  = 'emmetropes';
 
 %% Get wavefront and optics from Artal data with the requested parameters:
-% The function wvfLoadJaekenArtal2012Data, loads the wavefront zernike
-% aberration data is reconstructed as one PSF per subjct, then converted to
-% an OTF per subject, then average OTF's across the selected subjects from
-% the dataset. Lastly, the aveage OTF will get converted back to an average
-% PSF. The PSF is constructed under the measured wavelength, but then
-% calculated for a more sensible (i.e. in the range of human sensitivity)
-% wavelength (550 nm).
+% The function wvfLoadJaekenArtal2012Data loads the wavefront zernike
+% aberration data, and reconstructs one PSF per subject, then converted to
+% an OTF per subject, then we average the subject's OTFs. Lastly, the
+% average OTF will get converted back to an average PSF. The individual
+% PSFs are constructed under the measured wavelength (780 nm), but then
+% calculated and plotted for a more sensible (i.e. in the range of human
+% sensitivity) wavelength (550 nm).
+
 [wvf, oi] = wvfLoadJaekenArtal2012Data('jIndex', zIndices, 'whichEye', whichEye, 'eccentricity', eccen, 'whichGroup', whichGroup);
 
 
 %% Visualize
 
-% Get support for plotting OTF
+% Get [x,y] support for plotting OTF
 otfSupport = wvfGet(wvf, 'otfSupport', 'mm');
 
 % Plot OTF
@@ -58,7 +59,7 @@ set(gca, 'XLim', [-100 100], 'YLim', [-100 100])
 xlabel('Freq (lines/mm)'); ylabel('Freq (lines/mm)');
 title(sprintf('%s: OTF 550 nm, pupil 4 mm, eccen %d deg, %s eye', whichGroup, eccen, whichEye))
 
-% Get support for plotting PSF
+% Get [x,y] support for plotting PSF
 psfSupport  = wvfGet(wvf, 'spatial Support', 'um');
 centeredPSF = [wvf.psf{1}(101:end,:); wvf.psf{1}(1:100,:)];
 centeredPSFNormalized = centeredPSF./sum(centeredPSF);

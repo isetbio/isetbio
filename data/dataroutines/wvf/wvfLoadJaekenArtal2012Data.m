@@ -134,7 +134,7 @@ opticDisk.LE = ismember(-40:40, 10:18);
 data(:,:,1, opticDisk.RE) = NaN;
 data(:,:,2, opticDisk.LE) = NaN;
 
-% Report requested eccentricities and eye side
+% Report requested eccentricities and retinal side
 switch params.whichEye
     case 'right' % -40:40 corresponds to nasal to temporal retina
         % Check eccentricities for optic disk
