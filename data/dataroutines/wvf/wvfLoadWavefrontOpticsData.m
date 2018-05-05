@@ -85,8 +85,9 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 
 % Examples:
 %{
-    [wvf, oi] = wvfLoadJaekenArtal2012Data('jIndex', 0:14, ...
-                'whichEye', 'left', 'eccentricity', 4, 'whichGroup', 'emmetropes');
+    [wvf, oi] = wvfLoadWavefrontOpticsData('source', 'JaekenArtal2012', 'jIndex', 0:14, ...
+                'whichEye', 'left', 'eccentricity', 4, 'whichGroup', 'emmetropes', ...
+                'verbose', true);
 %}
 
 % History:

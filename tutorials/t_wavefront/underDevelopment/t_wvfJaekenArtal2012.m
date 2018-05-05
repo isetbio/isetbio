@@ -18,11 +18,11 @@
 %    central refractions. This division is visualized by the function
 %    sortPatientDataJaekenArtal2012 (inside wvfLoadJaekenArtal2012Data).
 %
-% Reference:
-%    Jaeken, B. & Artal, P. (2012) Optical Quality of Emmetropic and Myopic
-%    Eyes in the Periphery Measured with High-Angular Resolution. Investigative
-%    Ophthalmology & Visual Science, June 2012, Vol. 53, No. 7
-%    Link: https://www.ncbi.nlm.nih.gov/pubmed/22511633
+%    Reference:
+%       Jaeken, B. & Artal, P. (2012) Optical Quality of Emmetropic and Myopic
+%       Eyes in the Periphery Measured with High-Angular Resolution. Investigative
+%       Ophthalmology & Visual Science, June 2012, Vol. 53, No. 7
+%       Link: https://www.ncbi.nlm.nih.gov/pubmed/22511633
 %
 % See also: wvfLoadJaekenArtal2012Data and wvfSortSubjectDataJaekenArtal2012
 %
@@ -45,7 +45,8 @@ whichGroup  = 'emmetropes';
 % PSFs are constructed under the measured wavelength (780 nm), but then
 % calculated and plotted for a more sensible (i.e. in the range of human
 % sensitivity) wavelength (550 nm).
-[wvf, oi] = wvfLoadJaekenArtal2012Data('jIndex', zIndices, 'whichEye', whichEye, 'eccentricity', eccen, 'whichGroup', whichGroup);
+[wvf, oi] = wvfLoadWavefrontOpticsData('source', 'JaekenArtal2012', 'jIndex', zIndices, 'whichEye', whichEye, ...
+    'eccentricity', eccen, 'whichGroup', whichGroup, 'verbose', true);
 
 %% Visualize
 
