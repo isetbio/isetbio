@@ -1,5 +1,6 @@
 function [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012()
-
+% Sort subjects of Jaeken/Artal report into emmotropes and myopes
+%
 % Syntax:
 %    [centralRefraction, emmetropes, myopes] = sortSubjectDataJaekenArtal2012()
 %
@@ -54,16 +55,24 @@ function [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal
 %                             diopters)
 %    emmetropes             - struct with 2 fields, corresponding to indexing vectors (130 Subjects, RE;LE]), with a 1 for emmetropes
 %    myopes                 - struct with 2 fields, corresponding to indexing vectors (130 Subjects, RE;LE]), with a 1 for myopes
-
+%
 % Optional key/value pairs:
 %    None.
-
-% Example:
-% [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012;
-
+%
+% Example as are provided in the source code.
+%
 % See also wvfLoadJaekenArtal2012Data
 
-% First version of function: 05/03/2018 by EK (NYU)
+% History:
+%  05/03/2018 EK (NYU)   First version.
+%  05/05/18   dhb        Cosmetic.
+
+
+% Examples:
+%{
+    [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012;
+%}
+
 
 %% 1. Load data from ISETBIO database
 data = rawDataReadData('zCoefsJaekenArtal2012','datatype','isetbiomatfileonpath');
