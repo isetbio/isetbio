@@ -1,8 +1,9 @@
-function [wvf, oi] = wvfLoadJaekenArtal2012Data(varargin)
+function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 
 %
 % Syntax:
-%    [wvf, oi] = wvfLoadJaekenArtal2012Data(['jIndex'],[0:14], ['whichEye'], 'left', ['eccentricity'], 0, ['whichGroup'], 'emmetropes')
+%    [wvf, oi] = wvfLoadWavefrontOpticsData('jIndex',[0:14], 'whichEye', ...
+%                'left', 'eccentricity', 0, 'whichGroup', 'emmetropes');
 %
 % Description:
 %    Convert a dataset of individual subject Zernike coefficients
@@ -42,54 +43,80 @@ function [wvf, oi] = wvfLoadJaekenArtal2012Data(varargin)
 %      14 'vertical_quadrafoil'
 %
 % Inputs:
-%    jIndex       - List of OSA J values
-%    whichEye     - string defining whether to use right (1) or left (2) eye
-%    eccentricity - integer between -40 and 40, indicating for which
-%                   eccentricity to compute the mean Zernike coefficient.
-%                   for right eye -40 = nasal, 40 = temporal
-%                   for left eye  -40 = temporal, 40 = nasal
-%    whichGroup   - string defining which subset of subjects to analyze,
-%                   choose between 'emmetropes' (default) or 'myopes'
-
+%      None.
+%
 % Outputs:
 %    wvf          - Wavefront aberrations structure based on mean across
 %                    subjects in Jaeken & Artal 2012 data
 %    oi           - Optical image of off mean across
 %                    subjects in Jaeken & Artal 2012 data
-%                   
+%
+% Optional key/value pairs:
+%    'species'     - Species to estimate for (default 'human')
+%                    Options:
+%                      'human' - Human.
+%    'wvfZcoefsSource' - Data source for coefficients (default
+%                    'JaekenArtal2012').
+%                    Options:
+%                      'JaekenArtal2012' - Jaeken and Artal, 2012. 
+%    'jIndex'      - List of OSA J values (default 0:14)
+%    'whichEye'    - String defining whether to use right (1) or left (2) eye
+%                    (default 'right').
+%    'eccentricity' - Integer between -40 and 40 (deg), indicating for which
+%                    eccentricity to compute the mean Zernike coefficients for.
+%                    (default, 0).
+%                      For right eye -40 = nasal, 40 = temporal
+%                      For left eye  -40 = temporal, 40 = nasal
+%    'eccentricityUnits' - Units in which eccentricity is specified
+%                    (default 'deg')
+%                    Options:
+%                      'deg' - Degrees of visual angle.
+%    'whichGroup'  - String defining which subset of subjects to analyze
+%                    (default 'emmetropes').
+%                    Options:
+%                      'emmetropes' - Emmetropes
+%                      'myopes'     - Myopes
+%    'verbose'     - Boolean (default false). Print things out.
+%
+% Examples are included in the source code.
+%
+% See also coneDensityReadData
 %
 
-% Optional key/value pairs:
-%    None.
-
-% Example:
-% [wvf, oi] = wvfLoadJaekenArtal2012Data('jIndex', 0:14, 'whichEye','left', 'eccentricity',4, 'whichGroup', 'emmetropes')
-
-% See also coneDensityReadData
+% Examples:
+%{
+    [wvf, oi] = wvfLoadJaekenArtal2012Data('jIndex', 0:14, ...
+                'whichEye', 'left', 'eccentricity', 4, 'whichGroup', 'emmetropes');
+%}
 
 % History:
-
-% 04/06/18    ek (NYU) First version of function
-
- 
-
+%   04/06/18    ek (NYU) First version of function
+%   05/05/18    dhb      Cosmetic.
+%
 %% 0. Parse inputs
-
 p = inputParser;
 p.KeepUnmatched = true;
-p.addParameter('species','human', @ischar);
-p.addParameter('wvfZcoefsSource','JaekenArtal2012',@(x) (ischar(x)));
+p.addParameter('species','human',@ischar);
+p.addParameter('wvfZcoefsSource','JaekenArtal2012',@ischar);
 p.addParameter('jIndex', 0:14, @isnumeric);
 p.addParameter('whichEye','right',@(x)(ismember(x,{'right','left'})));
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('eccentricityUnits','deg',@ischar);
 p.addParameter('whichGroup','emmetropes',@ischar);
+p.addParameter('verbose',false,@islogical);
 p.parse(varargin{:});
 
 % Set up params return.
 params = p.Results;
 
 %% 1. Load data
+%
+% Set units
+switch (params.eccentricityUnits)
+    case 'deg'
+    otherwise
+        error('Unsupported units specified');
+end
 
 % Set species
 switch (params.species)
@@ -113,7 +140,6 @@ switch (params.species)
 end
 
 %% 2. Set parameters to reshape dataset
-
 totalZCoefs         = length(0:14);
 totalSubjects       = 130;
 totalEyes           = length({'right','left'});
@@ -141,27 +167,34 @@ switch params.whichEye
         if ismember(-18:-10, round(params.eccentricity)); warning('Some requested eccentricities fall within optic disk\n'); end
         nas = round(params.eccentricity) <=0;
         temp  = round(params.eccentricity) >=0;
-        fprintf('\nData are given for right eye, nasal retina, eccen: %d \t temporal retina, eccen: %d\n', params.eccentricity(nas), params.eccentricity(temp))
+        if (params.verbose)
+            fprintf('\nData are given for right eye, nasal retina, eccen: %d \t temporal retina, eccen: %d\n', params.eccentricity(nas), params.eccentricity(temp));
+        end
             
     case 'left' % -40:40 corresponds to temporal to nasal retina
         % Check eccentricities for optic disk
         if ismember(10:18, round(params.eccentricity)); warning('Some requested eccentricities fall within optic disk'); end
         temp = round(params.eccentricity) <=0;
         nas  = round(params.eccentricity) >=0;
-        fprintf('\nData are given for left eye, temporal retina, eccen: %d \t nasal retina, eccen: %d\n', params.eccentricity(temp), params.eccentricity(nas))
+        if (params.verbose)
+            fprintf('\nData are given for left eye, temporal retina, eccen: %d \t nasal retina, eccen: %d\n', params.eccentricity(temp), params.eccentricity(nas));
+        end
+        
+    otherwise
+        error('Unknown eye specified.  Use ''right'' or ''left''');
 end
 
-
 % Select subject group
-[~, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012;
+[~, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012('verbose',params.verbose);
 switch params.whichGroup
     case 'emmetropes'
         if eyeIdx == 1; subjectIdx = getfield(emmetropes, 'RE');
         else subjectIdx = getfield(emmetropes, 'LE'); end
-    
     case 'myopes'
         if eyeIdx == 1; subjectIdx = getfield(myopes, 'RE');
         else subjectIdx = getfield(myopes, 'LE'); end
+    otherwise
+        error('Unknown group specified');
 end
 
 % Truncate data to speed up process
@@ -174,7 +207,6 @@ psf = zeros(otfSupportLength, otfSupportLength, totalSubjects);
 otf = zeros(otfSupportLength, otfSupportLength, totalSubjects);
 
 %% 3. For each requested eccentricity (in degrees) (max 81)
-
 for p = 1:length(subjectIdx)
     
     % Create human default wvf
@@ -257,13 +289,15 @@ optics = oiGet(oi,'optics');
 oi.optics = opticsSet(optics,'otf data',otfMeanAbs);
 oi.optics.model = 'custom';
 
-% Plot OTF mean requested eye
-% wvfPlot(wvf,'2d otf','um',550); xlim([-0.6 0.6]), ylim([-0.6 0.6])
+% Plot OTF and PSF
+%{
+if (params.verbose)
+    wvfPlot(wvf,'2d otf','um',550); xlim([-0.6 0.6]), ylim([-0.6 0.6])
 
-% Plot PSF based off the OTF mean requested eye
-% wvfPlot(wvf,'2d psf space','deg',550);
-
-
+    % Plot PSF based off the OTF mean requested eye
+    wvfPlot(wvf,'2d psf space','deg',550);
+end
+%}
 
 return
 
