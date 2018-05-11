@@ -1,17 +1,32 @@
 function nRemaining = vcDeleteSelectedObject(objType)
 % Delete the current selected object of some type
 %
-%     nRemaining = vcDeleteSelectedObject(objType)
+% Syntax:
+%   nRemaining = vcDeleteSelectedObject(objType)
 %
-%  The basic ISET object types deleted by this call are: SCENE,
-%  OPTICS, VCIMAGE, ISA.
+% Description:
+%    The basic ISET object types deleted by this call are: SCENE,
+%    OPTICS, VCIMAGE, ISA.
 %
-%  The number of remaining objects of that type is returned. 
+%    The number of remaining objects of that type is returned.
 %
-% Example:
-%   vcDeleteSelectedObject('SCENE')
+%    There are examples of usage contained in the function. To access, type
+%    'edit vcDeleteSelectedObject.m' into the Command Window.
 %
-% Copyright ImagEval Consultants, LLC, 2005.
+% Inputs:
+%    objType    - String. A string describing the object type.
+%
+% Outputs:
+%    nRemaining - The remaining items
+
+% History:
+%    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
+%    05/02/18  jnm  Formatting
+
+% Examples:
+%{
+    vcDeleteSelectedObject('SCENE')
+%}
 
 % Get the selected object data structure and its position (val) in the list
 objType = vcEquivalentObjtype(objType);
@@ -30,13 +45,13 @@ if nObj == 1
 else
     % Copy all but the selected object
     jj = 0;
-    for ii=1:nObj
+    for ii = 1:nObj
         if (ii ~= val)
             jj = jj + 1;
             newObj{jj} = obj{ii};
         end
     end
-    val = max(1,val-1);
+    val = max(1,val - 1);
 end
 
 % Reset the new list of objects
@@ -49,4 +64,3 @@ nRemaining = length(newObj);
 % fprintf('%.0f remaining objects\n',nRemaining);
 
 return;
-
