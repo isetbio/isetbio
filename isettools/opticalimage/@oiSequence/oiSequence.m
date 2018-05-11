@@ -1,4 +1,4 @@
-classdef oiSequence
+classdef oiSequence < handle
     % Class for generating a temporal sequence of optical images
     %
     % Syntax:
@@ -47,8 +47,6 @@ classdef oiSequence
     %        oiSequence.get('oiFixed mumble') and
     %        oiSequence.get('oiModulated mumble')?
     %        Maybe oiSequence.get('frame', val)?
-    %    * TODO: Assign someone to fix example. Currently not working since
-    %      none of the variables are initiated/defined.
     %
     % See Also:
     %    oisCreate, t_oiSequence
@@ -60,15 +58,21 @@ classdef oiSequence
 
     % Examples:
     %{
-        % ETTBSkip. None of the parameters required for this example have
-        % been defined.
-        oiSequence = oiSequence(oiBackground, oiModulated, ...
-            modulationFunctionTimeAxis, modulationFunction)
-
-        modulationRegion.radiusInMicrons = 300;
-        oiSequence = oiSequence(oiBackground, oiModulated, ...
-                       modulationFunctionTimeAxis, modulationFunction, ...
-                       'modulationRegion', modulationRegion);
+        % Harmonic
+        oi = oiCreate('wvf human');
+        params.freq = 6;       
+        params.contrast = 0.6;  
+        scene = sceneCreate('harmonic', params);
+        oiModulated =  oiCompute(oi, scene);
+    
+        params.contrast = 0;  % contrast of the two frequencies
+        scene = sceneCreate('harmonic', params);
+        oiBackground =  oiCompute(oi, scene);
+        stimWeights = fspecial('gaussian', [1, 50], 15);
+        sampleTimes = 0.002 * (1:length(stimWeights));
+        oiHarmonicSeq = oiSequence(oiBackground, oiModulated, ...
+              sampleTimes, stimWeights/max(stimWeights), 'composition', 'blend');
+        oiHarmonicSeq.visualize('movie illuminance');
      %}
 
     properties
@@ -192,7 +196,7 @@ classdef oiSequence
         % Method to compute the maximum number of eye movement for current
         % sequence and a given integrationTime
         maxEyeMovementsNum = maxEyeMovementsNumGivenIntegrationTime(...
-            obj, integrationTime);
+            obj, integrationTime, varargin);
 
         % Method for on-the-fly computation of the oi at desired index
         oiFrame = frameAtIndex(obj, index);

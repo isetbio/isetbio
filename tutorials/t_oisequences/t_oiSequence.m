@@ -105,9 +105,8 @@ theOIsequence(5) = oiSequence(oiBackground, oiModulatedGabor, oiTimeAxis, modula
 theOIsequence(5).visualize('movie illuminance');
 
 %%
-% Plot the oisequences
-for k = 1:numel(theOIsequence)
-    theOIsequence(k).visualize('montage');
-end
+% Render a montage of the 5th oisequence
+theOIsequence(5).visualize('montage');
+
 
 %%

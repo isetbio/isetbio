@@ -17,12 +17,6 @@ function oiFrame = frameAtIndex(obj, index)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%    * [Note: XXX - We should store the photons as doubles separately. I
-%      asked not to duplicate, but in fact the double(oi.data.photons) call
-%      is very slow, and we shouldn't keep doing it with the get in this
-%      routine.]
-%
 
 % History:
 %    xx/xx/16  NP/BW  ISETBIO Team, 2016
