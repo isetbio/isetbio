@@ -76,6 +76,8 @@ function ValidationFunction(runTimeParams)
     sceneRoiLocs = ieRoi2Locs(rect);
     
     %% Get wavelength and spectral radiance spd data (averaged within the scene ROI) 
+    %
+    % Radiance units in isetbio are per nm, not per wavelength band.
     wave  = sceneGet(scene,'wave');
     radiancePhotons = sceneGet(scene,'roi mean photons', sceneRoiLocs);
     radianceEnergy  = sceneGet(scene,'roi mean energy',  sceneRoiLocs); 
@@ -283,6 +285,39 @@ function ValidationFunction(runTimeParams)
     isomerizationDifference = ptbCorrectedIsomerizations-isetbioIsomerizations;
     quantityOfInterest = isomerizationDifference./ptbCorrectedIsomerizations;
     UnitTest.assertIsZero(quantityOfInterest,'Difference between PTB and isetbio isomerizations',isomerizationTolerance);
+    
+    %% Comparison with Geisler/Wyszecki-Stiles back of the envelope calculation
+    %
+    % The agreement is right at an order of magnitude comparison with default
+    % parameters. The back of the envelope calc gives ~1200 isomerizations,
+    % while the calc we do here gives ~346 for average of L and M cones.
+    %
+    % This bit of code also shows that PTB and isetbio agree about scene luminance.
+    % For PTB calculation of luminance, remember to multiply explicitly by
+    % wavelength sampling delta since radiance units convention matches
+    % that of isetbio.
+    luminanceIsetbioCdM2 = sceneGet(scene,'mean luminance');
+    xyzCmfs = load('T_xyz1931');
+    T_xyz = SplineCmf(xyzCmfs.S_xyz1931,683*xyzCmfs.T_xyz1931,wave(:));
+    xyzValues = T_xyz*radianceEnergy(:);
+    luminancePTBCdM2 = xyzValues(2)*(wave(2)-wave(1)); 
+    if (abs((luminanceIsetbioCdM2-luminancePTBCdM2)/luminanceIsetbioCdM2) > 1e-4)
+        error('Isetbio and PTB do not agree about luminance');
+    end
+    isomerizationsEstimateGeisler = IsomerizationsFromLuminanceGeisler(luminanceIsetbioCdM2,integrationTimeSec,pupilDiameterMm);
+    
+    % We can match parameters a little better. By default, the coneMosaic in isetbio
+    % uses a small cone aperture estimate. So compute the area of that and pass to the
+    % Geisler calc.  This then gives ~328 isomerizations, which is pretty
+    % well matched to the ~346 average L and M from isetbio.
+    coneAreaIsetbioMicrons2 = isetbioConeArea;
+    coneSizeIsetbioDeg = sqrt(coneAreaIsetbioMicrons2)/300;
+    coneSizeIsetbioMin = coneSizeIsetbioDeg*60;
+    coneAreaIsetbioMin2 = coneSizeIsetbioMin^2;
+    coneDiameterIsetbioMin = 2*sqrt(coneAreaIsetbioMin2/pi);
+    isomerizationsEstimateGeislerMatch = ...
+        IsomerizationsFromLuminanceGeisler(luminanceIsetbioCdM2,integrationTimeSec,pupilDiameterMm, ...
+        'coneApertureDiameterMinutes',coneDiameterIsetbioMin);
     
     % Add validation data
     UnitTest.extraData('isomerizationTolerance',isomerizationTolerance);
