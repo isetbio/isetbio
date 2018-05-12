@@ -1,21 +1,20 @@
 function isomerizations = IsomerizationsFromLuminanceGeisler(luminanceCdM2,durationInSeconds,pupilDiameterMm,varargin)
-% Estimate cone isomerizations from luminance
+% Estimate cone isomerizations from luminance level
 %
 % Syntax:
-%    isomerizations = IsomerizationsFromLuminanceGeisler(luminanceCdM2,durationInSeconds,pupilDiameterMm)
+%    isomerizations = ...
+%     IsomerizationsFromLuminanceGeisler(luminanceCdM2, ...
+%                 durationInSeconds,pupilDiameterMm)
 %
 % Description:
-%    Geisler 1(984) gives a formula for isomerizations from luminance (his
-%    equation 2, p. 776), which he obtained from Wyszecki and Stiles.
+%    Geisler 1(984) gives a formula for isomerizations from luminance
+%    (Equation 2, p. 776), obtained from Wyszecki and Stiles.
 % 
 %    These estimates are reasonable for L and M cones, but not for S
 %    cones.
 %
-%    This function computes this with the 1984 parameters, ignoring
-%    convolution by the optical point spread function but including lens
-%    transmittance.
-%
-%    Key/value pairs allow adjustment of parameters not passed directly.
+%    This function computes using the 1984 parameters, ignoring convolution
+%    by the optical point spread function but including lens transmittance.
 %
 % References:
 %    Geisler, W.S. 1984 Physical limits of acuity and hyperacuity. Journal
@@ -45,17 +44,20 @@ function isomerizations = IsomerizationsFromLuminanceGeisler(luminanceCdM2,durat
 % Examples:
 %{
    % 5 cd/m2 -> 1000 isomerizations/sec seems ballpark right.
-   isomerizations = IsomerizationsFromLuminanceGeisler(5,1,3)
+   lum = 5;  % cd/m2
+   dur = 1;  % sec
+   pupilDiameter = 3; % mm
+   isomerizations = IsomerizationsFromLuminanceGeisler(lum,dur,pupilDiameter)
 %}
 
-% Parse input
+%% Parse input
 p = inputParser;
 p.addParameter('coneApertureDiameterMinutes',0.6,@isnumeric);
 p.addParameter('coneQuantalEfficiency555',0.5,@isnumeric);
 p.addParameter('occularTransmittance',0.68,@isnumeric);
 p.parse(varargin{:});
 
-% Geisler's choice of occular transimttance parameter
+%% Geisler's choice of occular transimttance parameter
 occularTransmittance = p.Results.occularTransmittance;
 
 % Geisler's choice of quantum efficiency at 555 nm parameter
@@ -72,4 +74,8 @@ pupilAreaMm2 = pi*((pupilDiameterMm/2)^2);
 magicUnitConstant = 347.8;
 
 % Apply the formula
-isomerizations = coneAreaMinutes2*durationInSeconds*pupilAreaMm2*occularTransmittance*quantumEfficiency555*magicUnitConstant*luminanceCdM2;
+isomerizations = coneAreaMinutes2*durationInSeconds* ...
+    pupilAreaMm2*occularTransmittance* ...
+    quantumEfficiency555*magicUnitConstant*luminanceCdM2;
+
+end
