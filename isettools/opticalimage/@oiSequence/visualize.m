@@ -42,28 +42,30 @@ function [uData, vObj] = visualize(obj, plotType, varargin)
 
 %% Interpret parameter values
 p = inputParser;
+plotType = ieParamFormat(plotType);
+varargin = ieParamFormat(varargin);
 
 p.addRequired('obj');
-p.addRequired('plotType', @ischar);
+validTypes = {'movieilluminance','moviergb','weights','montage'};
+p.addRequired('plottype', @(x)(ismember(x,validTypes)));
 
 % For video case ...
 p.addParameter('vname', '', @ischar);
-p.addParameter('FrameRate', 20, @isnumeric);
+p.addParameter('framerate', 20, @isnumeric);
 
 % Must ask NP more about this
-p.addParameter('showIlluminanceMap', false, @islogical);
-p.addParameter('eyeMovementsData', struct('show', false), ...
+p.addParameter('showilluminancemap', false, @islogical);
+p.addParameter('eyemovementsdata', struct('show', false), ...
     @(x)(isstruct(x)&&(isfield(x, 'show'))));
 
 % Whether to use vcGraphWin or matlab's figure for rendering
-p.addParameter('backendRenderer', 'vcGraphWin', ...
+p.addParameter('backendrenderer', 'vcGraphWin', ...
     @(x)(ischar(x)&&(ismember(x, {'vcGraphWin', 'figure'}))));
 
-varargin = ieParamFormat(varargin);
 p.parse(obj, plotType, varargin{:});
 
-vname = p.Results.vname;
-FrameRate = p.Results.FrameRate;
+vname     = p.Results.vname;
+FrameRate = p.Results.framerate;
 
 save = false;
 if ~isempty(vname), save = true; end
@@ -225,7 +227,7 @@ switch ieParamFormat(plotType)
             'bottomMargin', 0.03, ...
             'topMargin', 0.03);
 
-        if (p.Results.showIlluminanceMap)
+        if (p.Results.showilluminancemap)
             minIllum = Inf;
             maxIllum = -Inf;
             for oiIndex = 1:obj.length
@@ -254,7 +256,7 @@ switch ieParamFormat(plotType)
             XYZmax = 2 * XYZmax;
         end
 
-        if strcmp(p.Results.backendRenderer, 'vcGraphWin')
+        if strcmp(p.Results.backendrenderer, 'vcGraphWin')
             h = vcNewGraphWin;
         else
             h = figure();
@@ -289,10 +291,10 @@ switch ieParamFormat(plotType)
             support = oiGet(currentOI, 'spatial support', 'microns');
             xaxis = support(1, :, 1);
             yaxis = support(:, 1, 2);
-            if (p.Results.eyeMovementsData.show)
+            if (p.Results.eyemovementsdata.show)
                 spatialRange = [-1 1] * 1.05 * ...
                     max([max(abs(xaxis(:))), max(abs(yaxis(:))), ...
-                    max(abs(p.Results.eyeMovementsData.posMicrons))]);
+                    max(abs(p.Results.eyemovementsdata.posMicrons))]);
             else
                 spatialRange = [-1 1] * 1.05 * ...
                     max([max(abs(xaxis(:))) max(abs(yaxis(:)))]);
@@ -300,7 +302,7 @@ switch ieParamFormat(plotType)
             row = floor(oiIndex / (colsNum + 1)) + 1;
             col = mod(oiIndex, colsNum + 1) + 1;
             subplot('Position', subplotPosVectors(row, col).v);
-            if (p.Results.showIlluminanceMap)
+            if (p.Results.showilluminancemap)
                 illuminanceMap = (illuminanceMap - illumRange(1)) / ...
                     (illumRange(2) - illumRange(1));
                 imagesc(xaxis, yaxis, illuminanceMap);
@@ -324,7 +326,7 @@ switch ieParamFormat(plotType)
                     currentOIonsetTimeMillisecs));
             end
 
-            if (p.Results.eyeMovementsData.show)
+            if (p.Results.eyemovementsdata.show)
                 hold on
                 if (oiIndex < obj.length )
                     nextOIonsetTimeMillisecs = ...
@@ -336,22 +338,22 @@ switch ieParamFormat(plotType)
                 end
 
                 % plot eye movements during previous OIs in black
-                idx = find(p.Results.eyeMovementsData.timeAxisMillisecs ...
+                idx = find(p.Results.eyemovementsdata.timeAxisMillisecs ...
                     < currentOIonsetTimeMillisecs);
-                plot(p.Results.eyeMovementsData.posMicrons(idx, 1), ...
-                    p.Results.eyeMovementsData.posMicrons(idx, 2), 'k.-');
+                plot(p.Results.eyemovementsdata.posMicrons(idx, 1), ...
+                    p.Results.eyemovementsdata.posMicrons(idx, 2), 'k.-');
                  % plot eye movements during current OI in red
                 idx = find(...
-                    p.Results.eyeMovementsData.timeAxisMillisecs >= ...
+                    p.Results.eyemovementsdata.timeAxisMillisecs >= ...
                     currentOIonsetTimeMillisecs & ...
-                    p.Results.eyeMovementsData.timeAxisMillisecs < ...
+                    p.Results.eyemovementsdata.timeAxisMillisecs < ...
                     nextOIonsetTimeMillisecs);
-                plot(p.Results.eyeMovementsData.posMicrons(idx, 1), ...
-                    p.Results.eyeMovementsData.posMicrons(idx, 2), 'r.-');
+                plot(p.Results.eyemovementsdata.posMicrons(idx, 1), ...
+                    p.Results.eyemovementsdata.posMicrons(idx, 2), 'r.-');
                 hold off;
             end
 
-            if (p.Results.showIlluminanceMap), colormap(bone(1024)); end
+            if (p.Results.showilluminancemap), colormap(bone(1024)); end
 
             set(gca, 'XLim', spatialRange, 'YLim', spatialRange);
             axis 'xy'

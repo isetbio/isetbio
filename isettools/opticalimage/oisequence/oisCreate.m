@@ -123,8 +123,10 @@ if isempty(oi), oi = oiCreate('wvf human'); end
 
 oisType = ieParamFormat(oisType);
 
-sampleTimes = p.Results.sampleTimes;
+sampleTimes = p.Results.sampleTimes;  % User defined sample times
 if isempty(sampleTimes)
+    % By default, the sample times are spaced 1ms apart and last for
+    % the whole temporal modulation.
     sampleTimes = 0.001 * ((1:length(modulation)) - 1);
 end
 
