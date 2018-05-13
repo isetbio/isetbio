@@ -17,20 +17,22 @@ function t_fixationalEyeMovementsTypes(varargin)
     
     p.addParameter('ntrials',2048,@isscalar);
     p.addParameter('sampletimeseconds',0.001,@isscalar)
-    p.addParameter('emdurationsections',1,@isscalar);
+    p.addParameter('emdurationseconds',1,@isscalar);
+    p.addParameter('useparfor',true,@islogical);
+
     p.parse(varargin{:});
     
-    emDurationSeconds = p.Results.emdurationsections;
+    emDurationSeconds = p.Results.emdurationseconds;
     sampleTimeSeconds = p.Results.sampletimeseconds;
     nTrials           = p.Results.ntrials;
-
+    useParfor         = p.Results.useparfor;
+    
     % Generate eye movement data for 2048 1-second long trials, with a
     % sample time of 1 millisecond.
     % emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 2048;
     
     % Do not compute velocity of eye movements
     computeVelocity = false;
-    useParfor = true;
     
     % Random seed to be used in all eye movement compute() calls
     randomSeed = 1;
