@@ -1,4 +1,4 @@
-function t_fixationalEyeMovementsTypes
+function t_fixationalEyeMovementsTypes(varargin)
 % Examine eye movement paths produced by different values of the
 % 'microSaccadeType' parameter.
 % 
@@ -12,11 +12,21 @@ function t_fixationalEyeMovementsTypes
 %   02/06/18  npc  Wrote it.
 %   02/07/18  npc  Comments.
 
-    close all;
+    p = inputParser;
+    varargin = ieParamFormat(varargin);
     
+    p.addParameter('ntrials',2048,@isscalar);
+    p.addParameter('sampletimeseconds',0.001,@isscalar)
+    p.addParameter('emdurationsections',1,@isscalar);
+    p.parse(varargin{:});
+    
+    emDurationSeconds = p.Results.emdurationsections;
+    sampleTimeSeconds = p.Results.sampletimeseconds;
+    nTrials           = p.Results.ntrials;
+
     % Generate eye movement data for 2048 1-second long trials, with a
     % sample time of 1 millisecond.
-    emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 2048;
+    % emDurationSeconds = 1.0; sampleTimeSeconds = 1/1000; nTrials = 2048;
     
     % Do not compute velocity of eye movements
     computeVelocity = false;
