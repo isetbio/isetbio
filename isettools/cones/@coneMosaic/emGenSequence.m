@@ -1,6 +1,5 @@
-function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, ...
-    nEyeMovements, varargin)
-% Generate sequence of eye movements
+function fixEMobj = emGenSequence(obj, nEyeMovements, varargin)
+% Generate sequence of fixational eye movements for a rect cone mosaic
 %
 % Syntax:
 %	[nTrialsPos, nTrialsPosMicrons] = emGenSequence(...
@@ -11,54 +10,27 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, ...
 %    as the cone integration time. We only update the position at the
 %    beginning of each integration time.
 %
-%    This has some consequences for how we store and retrieve the eye
-%    movement parameters. Consider the case of tremor. We need to store the
-%    amplitudes of the tremor in a way that permits us to do the
-%    calculation correctly no matter what the cone integration time is. The
-%    literature specifies that the maximum frequency of tremor is 100 Hz.
-%    In that case, the typical sample time between each tremor is 10 ms.
-%    The amplitude of the tremor at  100 Hz is about 1 cone width (17e-3
-%    radians/sample).
-%
-%    Our calculations make a best estimate of the eye position at the start
-%    of every cone integration period. We assume the eye is fixed
-%    throughout the integration period. This approximation makes sense for
-%    calculations done at a shorter cone integration time than 10 ms, which
-%    is the tremor rate.
-%
-%    For an example, suppose the update time is 10 ms. We store the
-%    amplitude in terms of radians per second, which is (17e-3)/(10 ms) =
-%    (17e-1/sec). Thus, when you  look at the amplitude value, it may
-%    appear frighteningly large - 17e-1 radians is about 100 cones. But
-%    remember this is the amplitude per second. When we calculate the
-%    tremor amplitude at the proper update rate, which is 10 ms, the
-%    amplitude is 100 times smaller (about 1 cone).
-%
-%    In normal programming use, such as in this routine, dealing with the
-%    units is simplified for you because you can ask for the amplitude in
-%    units of cones/sample. This takes into account the tremor parameters
-%    as well as the cone integration time. See the code below.
-%
-%    Reminder! The eye movement model combines the following: tremor,
-%    drift, and microsaccades.
 %
 % Inputs:
-%     obj               - cone mosaic object
+%     obj               - rect cone mosaic object
 %     nEyeMovements     - number of eye movements to generate
 %
 % Ouputs:
-%     nTrialsPos        - nTrials x nEyeMovements x 2 matrix of eye
-%                         positions in units of cone positions.
-%     nTrialsPosMicrons - nTrials x nEyeMovements x 2 matrix of eye
-%                         positions in units of microns.
+%     nTrialsPos        - eye positions in a tensor of size 
+%                            nTrials x nEyeMovements x 2 matrix.  
+%                         Units are cone positions
+%     nTrialsPosMicrons - eye positions in a tensor of size
+%                            nTrials x nEyeMovements x 2 matrix
+%                         Units are microns.
 %
 % Optional key/value pairs:
-%    'em'               - Eye movement structure, see emCreate for details
+%    'em'               - Fixational eye movement structure, see
+%                           fixationalEM for details
 %    'rSeed'            - Random seed to be used
 %    'nTrials'          - Multiple trial case, default = 1
 %
 % See Also:
-%    emCreate, emSet, emGet
+%     fixationalEM
 %
 
 % History:
@@ -68,49 +40,64 @@ function [nTrialsPos, nTrialsPosMicrons] = emGenSequence(obj, ...
 %    11/06/17  dhb/npc  Added comments on microsaccade algorithm.
 %    11/07/17  dhb      More cleaning and robustness.
 %    02/26/18  jnm      Formatting, fix example
+%    05/13/18  baw      Re-wrote for fixationalEM class.
 
 % Examples:
 %{
-    % To control the eye movement parameters, set the eye movement
-    % parameters structure, say ...
-    emParameters = emCreate;
-    % Make any changes you want to emParameters here...
-    nEyeMoves = 10;
-    cM = coneMosaic;
-    [nTrialPos, nTrialPosMicrons] = cM.emGenSequence(nEyeMoves, ...
-        'nTrials', 1, 'em', emParameters);
-    [nTrialPos, nTrialPosMicrons] = emGenSequence(cM, nEyeMoves, ...
-        'nTrials', 1, 'em', emParameters);
+    nEyeMoves = 50;
+    cm = coneMosaic;
+    em = cm.emGenSequence(nEyeMoves, 'nTrials', 1);
+
+    em = cm.emGenSequence(nEyeMoves, 'nTrials', 1, 'microsaccade type','heatmap/fixation based');
+
+    em = emGenSequence(cm, nEyeMoves, 'nTrials', 1);
 %}
 
-%% parse input
+%% parse inputs
 p = inputParser;
+varargin = ieParamFormat(varargin);
+
+p.addRequired('obj', @(x)(isa(x,'coneMosaic')));
 p.addRequired('nEyeMovements', @isscalar);
-p.addParameter('nTrials', 1, @isscalar);
-p.addParameter('em', emCreate, @isstruct);
-p.addParameter('rSeed', [], @isscalar);
+
+% Either create the default, or the user creates it with special parameters
+% and provides it
+p.addParameter('em', fixationalEM, @(x)(isa(x,'fixationalEM')));
+
+% User can set the microSaccadeType, but nothing else, about the
+% fixationalEM.
+validTypes = {'none','stats based','heatmap/fixation based'};
+p.addParameter('microsaccadetype', 'none', @(x)(ismember(x,validTypes)));
+p.addParameter('ntrials', 1, @isscalar);
+p.addParameter('randomseed', 1, @isscalar);
+p.addParameter('computevelocity', [], @islogical);
+p.addParameter('useparfor', false, @islogical);
 
 % set parameters
-sampTime = obj.integrationTime;
+p.parse(obj, nEyeMovements, varargin{:});
 
-p.parse(nEyeMovements, varargin{:});
-em = p.Results.em;
-em = emSet(em, 'sample time', sampTime);
-nTrials = p.Results.nTrials;
+fixEMobj   = p.Results.em;
+nTrials    = p.Results.ntrials;
+randomSeed = p.Results.randomseed;
+if ~isempty(p.Results.randomseed), rng(p.Results.randomseed); end
 
-if ~isempty(p.Results.rSeed), rng(p.Results.rSeed); end
-emFlag = emGet(em, 'em flag');
-pos = zeros(nEyeMovements, 2);
+microSaccadeType = p.Results.microsaccadetype;
 
-nTrialsPos = zeros(nTrials, nEyeMovements, 2);
+%% Start the calculation
 
-% define cone parameters needed to convert units of mm or deg to cones, and
-% vice versa pattern sample size in meters - for rect mosaics this is the
-% same as the cone size, but not so for hex-mosaics
-params.w = obj.patternSampleSize(1);
+fixEMobj.microSaccadeType = microSaccadeType;
+fixEMobj.randomSeed = randomSeed;
+fixEMobj.computeForConeMosaic(obj,nEyeMovements, ...
+    'nTrials',nTrials, ...
+    'rSeed', randomSeed);
 
-% Are we only doing micro-saccades?
-microSaccadesOnlyFlag = (emFlag(3) && (~emFlag(1)) && (~emFlag(2)));
+%% Set the cone eye movement positions variable
+
+obj.emPositions = fixEMobj.emPos;
+
+end
+%{
+% Deprecated calculation from HJ days.
 
 for nn=1:nTrials
     %% generate eye movement for tremor
@@ -310,12 +297,10 @@ end
 
 %% Adjustments for the return
 % Round to discrete cone steps
-nTrialsPos = round(nTrialsPos);
-
-% Return in microns as well
-nTrialsPosMicrons = nTrialsPos * obj.patternSampleSize(1) * 1e6;
+% nTrialsPos = round(nTrialsPos);
+% 
+% % Return in microns as well
+% nTrialsPosMicrons = nTrialsPos * obj.patternSampleSize(1) * 1e6;
 
 % The positions in the mosaic is always just 1 sequence of eye movements
-obj.emPositions = squeeze(nTrialsPos(1, :, :));
-
-end
+%}
