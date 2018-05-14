@@ -15,9 +15,9 @@ function t_fixationalEyeMovementsTypes(varargin)
     p = inputParser;
     varargin = ieParamFormat(varargin);
     
-    p.addParameter('ntrials',2048,@isscalar);
+    p.addParameter('ntrials',100,@isscalar);
     p.addParameter('sampletimeseconds',0.001,@isscalar)
-    p.addParameter('emdurationseconds',1,@isscalar);
+    p.addParameter('emdurationseconds',0.050,@isscalar);
     p.addParameter('useparfor',true,@islogical);
 
     p.parse(varargin{:});
@@ -38,7 +38,7 @@ function t_fixationalEyeMovementsTypes(varargin)
     randomSeed = 1;
     
     % Visualize the 5 first trials
-    visualizedSingleTrials = 5;
+    visualizedSingleTrials = 3;
     
     % Initialize object
     fixEMobj = fixationalEM();
