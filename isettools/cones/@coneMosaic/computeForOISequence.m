@@ -107,28 +107,29 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
-p.addParameter('stimulusSamplingInterval', [], @isnumeric);
-p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPaths', [], @isnumeric);
-p.addParameter('trialBlockSize', [], @isnumeric);
+p.addParameter('seed', 1, @isnumeric);
 p.addParameter('interpFilters', [], @isnumeric);
 p.addParameter('meanCur', [], @isnumeric);
+p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
-p.addParameter('theExpandedMosaic', []);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
+p.addParameter('theExpandedMosaic', []);
+p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.parse(oiSequence, varargin{:});
 
-currentSeed = p.Results.seed;
 oiSequence  = p.Results.oiSequence;
+
+currentSeed = p.Results.seed;
 emPaths     = p.Results.emPaths;
-trialBlockSize = p.Results.trialBlockSize;
-currentFlag    = p.Results.currentFlag;
-workerID       = p.Results.workerID;
+LMSfilters  = p.Results.interpFilters;
+meanCur     = p.Results.meanCur;
+trialBlockSize    = p.Results.trialBlockSize;
+currentFlag       = p.Results.currentFlag;
+workerID          = p.Results.workerID;
 workDescription   = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
-LMSfilters = p.Results.interpFilters;
-meanCur    = p.Results.meanCur;
 
 % Set debugTiming to true to examine the timing between oiFrames and
 % partial/full absorptions. In this mode, the computation stops and waits
@@ -142,7 +143,13 @@ if (oiSequence.length ~= nTimes)
 end
 
 if (isempty(emPaths))
-    emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
+    if ndims(obj.emPositions) == 3
+        emPaths = obj.emPositions;
+    elseif ismatrix(obj.emPositions)
+        emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
+    else 
+        error('Bad shape for emPositions data %d\n',size(obj.emPositions));
+    end
 end
 
 if (isempty(emPaths))
