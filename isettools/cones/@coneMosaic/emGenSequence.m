@@ -44,13 +44,17 @@ function fixEMobj = emGenSequence(obj, nEyeMovements, varargin)
 
 % Examples:
 %{
-    nEyeMoves = 50;
-    cm = coneMosaic;
-    em = cm.emGenSequence(nEyeMoves, 'nTrials', 1);
+ scene = sceneCreate('mackay'); scene = sceneSet(scene,'fov',1);
+ oi = oiCreate; oi = oiCompute(oi,scene);
+ cm = coneMosaic; 
 
-    em = cm.emGenSequence(nEyeMoves, 'nTrials', 1, 'microsaccade type','heatmap/fixation based');
+ nEyeMoves = 50;
+ cm.emGenSequence(nEyeMoves, 'nTrials', 1);
+ cm.compute(oi);  cm.window;
 
-    em = emGenSequence(cm, nEyeMoves, 'nTrials', 1);
+ cm.emGenSequence(nEyeMoves, 'nTrials', 1, 'microsaccade type','heatmap/fixation based');
+ cm.compute(oi);  cm.window;
+
 %}
 
 %% parse inputs

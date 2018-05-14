@@ -7,7 +7,7 @@ function emPlot(fixEM,plotType,varargin)
 %
 % Inputs:
 %   fixEM:
-%   plotType:
+%   plotType: 'emMosaic'
 %   
 % Returns:
 %
