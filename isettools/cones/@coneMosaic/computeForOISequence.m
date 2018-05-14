@@ -120,15 +120,15 @@ p.addParameter('workDescription', '', @ischar);
 p.parse(oiSequence, varargin{:});
 
 currentSeed = p.Results.seed;
-oiSequence = p.Results.oiSequence;
-emPaths = p.Results.emPaths;
+oiSequence  = p.Results.oiSequence;
+emPaths     = p.Results.emPaths;
 trialBlockSize = p.Results.trialBlockSize;
-currentFlag = p.Results.currentFlag;
-workerID = p.Results.workerID;
-workDescription = p.Results.workDescription;
+currentFlag    = p.Results.currentFlag;
+workerID       = p.Results.workerID;
+workDescription   = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
 LMSfilters = p.Results.interpFilters;
-meanCur   = p.Results.meanCur;
+meanCur    = p.Results.meanCur;
 
 % Set debugTiming to true to examine the timing between oiFrames and
 % partial/full absorptions. In this mode, the computation stops and waits

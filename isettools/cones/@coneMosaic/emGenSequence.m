@@ -73,7 +73,7 @@ p.addParameter('em', fixationalEM, @(x)(isa(x,'fixationalEM')));
 validTypes = {'none','stats based','heatmap/fixation based'};
 p.addParameter('microsaccadetype', 'none', @(x)(ismember(x,validTypes)));
 p.addParameter('ntrials', 1, @isscalar);
-p.addParameter('randomseed', 1, @isscalar);
+p.addParameter('rseed', 1, @isscalar);
 p.addParameter('computevelocity', [], @islogical);
 p.addParameter('useparfor', false, @islogical);
 
@@ -82,8 +82,8 @@ p.parse(obj, nEyeMovements, varargin{:});
 
 fixEMobj   = p.Results.em;
 nTrials    = p.Results.ntrials;
-randomSeed = p.Results.randomseed;
-if ~isempty(p.Results.randomseed), rng(p.Results.randomseed); end
+randomSeed = p.Results.rseed;
+if ~isempty(p.Results.rseed), rng(p.Results.rseed); end
 
 microSaccadeType = p.Results.microsaccadetype;
 
