@@ -78,7 +78,8 @@ switch(p.Results.plotType)
         
         set(gca, 'XLim', xyRangeMeters*[-1 1], 'YLim', xyRangeMeters*[-1 1], ...
             'XTick', ticks, 'YTick', ticks, ...
-            'XTickLabels', tickLabels, 'YTickLabels', tickLabels, 'FontSize', 16);
+            'XTickLabels', tickLabels, 'YTickLabels', tickLabels, ...
+            'FontSize', 16);
         
         xlabel('space (microns)'); xlabel('space (microns)'); box on;
         
