@@ -15,12 +15,11 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %     nEyeMovements     - number of eye movements to generate
 %
 % Ouputs:
-%     nTrialsPos        - eye positions in a tensor of size 
+%     emPath            - eye positions in a tensor of size 
 %                            nTrials x nEyeMovements x 2 matrix.  
 %                         Units are cone positions
-%     nTrialsPosMicrons - eye positions in a tensor of size
-%                            nTrials x nEyeMovements x 2 matrix
-%                         Units are microns.
+%     fixEMobj          - fixational eye movement object containing all the
+%                         parameters
 %
 % Optional key/value pairs:
 %    'em'               - Fixational eye movement structure, see
