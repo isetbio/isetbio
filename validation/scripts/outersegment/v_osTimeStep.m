@@ -136,15 +136,15 @@ function [theConeMosaic, theOIsequence, ...
     allInstancesIsomerizationRateSequence, ...
     allInstancesPhotoCurrents] = runSimulation(condData, instancesNum, runtimeParams)
 
-    mosaicSize = condData.mosaicSize;
-    meanLuminance = condData.meanLuminance;
-    modulationGain = condData.modulationGain;
+    mosaicSize       = condData.mosaicSize;
+    meanLuminance    = condData.meanLuminance;
+    modulationGain   = condData.modulationGain;
     modulationRegion = condData.modulationRegion;
     stimulusSamplingInterval = condData.stimulusSamplingInterval;
-    integrationTime = condData.integrationTime;
-    osTimeStep = condData.osTimeStep;
-    photonNoise = condData.photonNoise; 
-    osNoise = condData.osNoise;
+    integrationTime          = condData.integrationTime;
+    osTimeStep   = condData.osTimeStep;
+    photonNoise  = condData.photonNoise; 
+    osNoise      = condData.osNoise;
     
     % Define the time axis for the simulation
     oiTimeAxis = 0:stimulusSamplingInterval:0.4;
@@ -182,7 +182,8 @@ function [theConeMosaic, theOIsequence, ...
     eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
     emPaths = zeros(instancesNum, eyeMovementsNum,2);
     for instanceIndex = 1:instancesNum
-        emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
+        fixEM = theConeMosaic.emGenSequence(eyeMovementsNum);
+        emPaths(instanceIndex, :, :) = zeros(size(fixEM.emPos));
     end 
     
     % Compute all instances 
