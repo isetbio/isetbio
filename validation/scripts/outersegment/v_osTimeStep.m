@@ -182,8 +182,7 @@ function [theConeMosaic, theOIsequence, ...
     eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
     emPaths = zeros(instancesNum, eyeMovementsNum,2);
     for instanceIndex = 1:instancesNum
-        fixEM = theConeMosaic.emGenSequence(eyeMovementsNum);
-        emPaths(instanceIndex, :, :) = zeros(size(fixEM.emPos));
+         emPaths(instanceIndex, :, :) = theConeMosaic.emGenSequence(eyeMovementsNum)*0;
     end 
     
     % Compute all instances 
