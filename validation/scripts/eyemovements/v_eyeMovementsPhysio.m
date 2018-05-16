@@ -1,33 +1,43 @@
 function varargout = v_eyeMovementsPhysio(varargin)
+% Deprecated
+%
+% This tests the HJ eye movement model, not the new fixational eye movement
+% model.
 
-    % Parameters to examine.
-    params = struct(...
-        'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
-        'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
-        'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
-        'trialLengthSeconds', 10.0, ...          % Duration of each trial
-        'nTrials', 10, ...                     % How many trials to compute
-        'exportToPDF', false ...                 
+disp('*** v_eyeMovementsPhysio needs to be re-written for fixational EM ***');
+return;
+end
+%{
+% Parameters to examine.
+params = struct(...
+    'mosaicType', 'hexRegDefault', ...      % mosaicType: choose from {'rect' 'hexRegDefault'  'hexRegCustomLambda' 'hexEccBased'}
+    'emType', 'microsaccade', ...           % eye movement type: choose from {'tremor', 'drift', 'microsaccade'}
+    'integrationTimeSeconds', 1/1000, ...   % Integration time (also eye movement sample time)
+    'trialLengthSeconds', 10.0, ...          % Duration of each trial
+    'nTrials', 10, ...                     % How many trials to compute
+    'exportToPDF', false ...
     );
 
-    % Generate our cone mosaic
-    cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
-    
-    % Go !
-    params.integrationTimeSeconds = 1/1000;
-    figNo = 1;
-    runSimulation(figNo, params, cm);
-    
-    % Go !
-    %params.integrationTimeSeconds = 2/1000;
-    figNo = 2;
-    %runSimulation(figNo, params, cm);
+% Generate our cone mosaic
+cm = generateMosaic(params.mosaicType, params.integrationTimeSeconds);
+
+% Go !
+params.integrationTimeSeconds = 1/1000;
+figNo = 1;
+runSimulation(figNo, params, cm);
+
+% Go !
+%params.integrationTimeSeconds = 2/1000;
+figNo = 2;
+%runSimulation(figNo, params, cm);
 end
+%}
 
 %
 % Function that runs the simulation
 %
 function emData = runSimulation(figNo, params, cm)
+
 %% Reproduce identical random numbers
 rng('default'); rng(3);
 

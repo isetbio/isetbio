@@ -2,11 +2,16 @@ function t_fixationalEyeMovementsCharacterize
 % Computes key characteristics of emPaths and explores how these differ
 % for different micro-saccade strategies the @fixationalEM object.
 %
+% This function can take a while to run.  You can change the useparfor to
+% true and speed up the calculation - if your machine is set up to run in
+% that mode. To do that, your startup must execute without a response!
+%
 % The examined characteristics of the emPaths are:
 % -velocity 
 % -fixation span
 % -power spectal density 
 % -displacement analysis
+%
 %
 
 % History
@@ -29,7 +34,7 @@ function t_fixationalEyeMovementsCharacterize
         % Compute the emPaths
         computeVelocity = true;
         fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, ...
-            nTrials, computeVelocity, 'useParfor', true);
+            nTrials, computeVelocity, 'useParfor', false);
     
         % Compute displacement and spectral analysis
         [spectrum, displacement] = performAnalyses(fixEMobj);

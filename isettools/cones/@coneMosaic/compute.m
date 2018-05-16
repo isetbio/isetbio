@@ -96,8 +96,8 @@ p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaic')));
 p.parse(oi, varargin{:});
 
 currentFlag = p.Results.currentFlag;
-seed = p.Results.seed;
-emPath = p.Results.emPath;
+seed        = p.Results.seed;
+emPath      = p.Results.emPath;
 theExpandedMosaic = p.Results.theExpandedMosaic;
 
 obj.absorptions = [];
@@ -126,7 +126,7 @@ if length(size(emPath)) > 2
     for ii = 1:nTrials
         thisPath = squeeze(emPath(ii, :, :));
         [absorptions(ii, :, :, :), c, interpFilters, meanCur] = ...
-            obj.compute(oi, 'emPaths', thisPath, ...
+            obj.compute(oi, 'emPath', thisPath, ...
             'currentFlag', currentFlag);
         if currentFlag, current(ii, :, :, :) = c; end
     end
