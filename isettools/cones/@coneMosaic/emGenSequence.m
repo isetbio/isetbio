@@ -5,10 +5,9 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %	[emPath, fixEMojb] = emGenSequence(obj, nEyeMovements, [varargin])
 %
 % Description:
-%    The eye movement samples are created at the same temporal sample rate
-%    as the cone integration time. We only update the position at the
-%    beginning of each integration time.
-%
+%  The eye movement samples are created at the same temporal sample
+%  rate as the cone integration time. We only update the position at
+%  the beginning of each integration time.
 %
 % Inputs:
 %     obj               - rect cone mosaic object
@@ -23,9 +22,15 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %
 % Optional key/value pairs:
 %    'em'               - Fixational eye movement structure, see
-%                           fixationalEM for details
+%                         fixationalEM for details; if not passed in
+%                         the default fixationalEM is used.
+%    'microsaccadetype' - One of these types of microsaccdade models
+%        'none'  -  (default)
+%        'stats based'
+%        'heatmap/fixation based'
 %    'rSeed'            - Random seed to be used
 %    'nTrials'          - Multiple trial case, default = 1
+%
 %
 % See Also:
 %     fixationalEM
@@ -42,18 +47,32 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 
 % Examples:
 %{
+ cm = coneMosaic;
+ cm.emGenSequence('help');
+%}
+%{
  scene = sceneCreate('mackay'); scene = sceneSet(scene,'fov',1);
  oi = oiCreate; oi = oiCompute(oi,scene);
  cm = coneMosaic; 
-
- nEyeMoves = 50;
- cm.emGenSequence(nEyeMoves, 'nTrials', 1);
+ cm.emGenSequence(50, 'nTrials', 1);
  cm.compute(oi);  cm.window;
-
- cm.emGenSequence(nEyeMoves, 'nTrials', 1, 'microsaccade type','heatmap/fixation based');
- cm.compute(oi);  cm.window;
-
 %}
+%{
+ scene = sceneCreate('mackay'); scene = sceneSet(scene,'fov',1);
+ oi = oiCreate; oi = oiCompute(oi,scene);
+ cm = coneMosaic; 
+ cm.emGenSequence(50, ...
+        'nTrials', 1, ...
+        'microsaccade type',...
+        'heatmap/fixation based');
+ cm.compute(oi);  cm.window;
+%}
+
+%% Help
+if strcmp(nEyeMovements,'help')
+ doc('coneMosaic.emGenSequence');
+ return;
+end
 
 %% parse inputs
 p = inputParser;

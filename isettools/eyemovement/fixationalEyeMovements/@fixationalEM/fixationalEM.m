@@ -1,16 +1,24 @@
 classdef fixationalEM < handle
-%FIXATIONALEM Class for generating fixational eye movements using realistic drift
-% and saccade models
-%
-% Syntax:
-%   emOBJ = fixationalEM();
-%   emOBJ.compute(durationSeconds, sampleTimeSeconds);
+%FIXATIONALEM Class - generates fixational eye movements and saccades
 %
 % Description:
 %   The drift EM component is generated using the model described in: 
 %   Mergenthaler and Engbert (2007) Modeling the control of fixational eye movements with
 %   neurophysiological delays", Physical Review Letters, 98 (13)
-
+%
+% Syntax:
+%   em = fixationalEM();
+%
+% Inputs:
+%   None
+% Returns:
+%   em = Fixational EM object
+%
+% Optional key/value pairs
+%    
+% See also
+%   emOBJ.compute(durationSeconds, sampleTimeSeconds);
+%
 % Public properties (user-settable)
 properties    
     controlNoiseMean;
@@ -163,13 +171,16 @@ end % Public methods
 
 methods (Static)
     % Method
-    [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = computeFixationMap(timeAxis, emPaths, emPosRange, emPosDelta, varargin);
+    [fixationMap, fixationMapSupportX, fixationMapSupportY, fixationMapXSlice, fixationMapYSlice] = ...
+        computeFixationMap(timeAxis, emPaths, emPosRange, emPosDelta, varargin);
 
     % Method
-    [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = performDisplacementAnalysis(emPos, timeAxisSeconds, varargin);
+    [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = ...
+        performDisplacementAnalysis(emPos, timeAxisSeconds, varargin);
 
     % Method
-    [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = performD2DisplacementAnalysis(emPos, timeAxisSeconds);
+    [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = ...
+        performD2DisplacementAnalysis(emPos, timeAxisSeconds);
     
     % Method to generate a video of fixationalEMs together with a cone mosaic
     generateEMandMosaicComboVideo(fixationalEMObj, coneMosaicHexObj, varargin);
