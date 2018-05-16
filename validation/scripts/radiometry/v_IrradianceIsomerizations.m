@@ -307,17 +307,17 @@ function ValidationFunction(runTimeParams)
     isomerizationsEstimateGeisler = IsomerizationsFromLuminanceGeisler(luminanceIsetbioCdM2,integrationTimeSec,pupilDiameterMm);
     
     % We can match parameters a little better. By default, the coneMosaic in isetbio
-    % uses a small cone aperture estimate. So compute the area of that and pass to the
-    % Geisler calc.  This then gives ~328 isomerizations, which is pretty
+    % uses a small cone aperture area estimate, based on closely packed rectangular
+    % cones.  So compute the area of that and pass the equivalent diameter
+    % to the Geisler calc.  This then gives ~328 isomerizations, which is pretty
     % well matched to the ~346 average L and M from isetbio.
     coneAreaIsetbioMicrons2 = isetbioConeArea;
-    coneSizeIsetbioDeg = sqrt(coneAreaIsetbioMicrons2)/300;
-    coneSizeIsetbioMin = coneSizeIsetbioDeg*60;
-    coneAreaIsetbioMin2 = coneSizeIsetbioMin^2;
-    coneDiameterIsetbioMin = 2*sqrt(coneAreaIsetbioMin2/pi);
+    coneWidthIsetbioDeg = sqrt(coneAreaIsetbioMicrons2)/300;
+    coneWidthIsetbioMin = coneWidthIsetbioDeg*60;
+    coneDiameterIsetbioMinutes = diameterForCircularApertureFromWidthForSquareAperture(coneWidthIsetbioMin);
     isomerizationsEstimateGeislerMatch = ...
         IsomerizationsFromLuminanceGeisler(luminanceIsetbioCdM2,integrationTimeSec,pupilDiameterMm, ...
-        'coneApertureDiameterMinutes',coneDiameterIsetbioMin);
+        'coneApertureDiameterMinutes',coneDiameterIsetbioMinutes);
     
     % Add validation data
     UnitTest.extraData('isomerizationTolerance',isomerizationTolerance);
