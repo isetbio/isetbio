@@ -11,6 +11,7 @@ classdef fixationalEM < handle
 %
 % Inputs:
 %   None
+%
 % Returns:
 %   em = Fixational EM object
 %
