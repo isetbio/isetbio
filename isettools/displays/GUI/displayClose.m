@@ -1,9 +1,26 @@
 function displayClose(varargin)
-%% function displayClose 
-%     This is GUI callback function which is invoked when the display
-%     window is to be closed.
+% GUI callback invoked when display window closes.
 %
-%  (HJ) May, 2014
+% Syntax:
+%   displayClose([varargin])
+%
+% Description:
+%    This is GUI callback function which is invoked when the display window
+%    is to be closed.
+%
+% Inputs:
+%    None required.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    **NEEDS TO BE FILLED OUT**
+%
+
+% History:
+%    05/xx/14  HJ   Created May, 2014
+%    05/18/18  jnm  Formatting
 
 % Close figure
 global vcSESSION;
