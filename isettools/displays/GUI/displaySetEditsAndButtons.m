@@ -1,9 +1,26 @@
 function displaySetEditsAndButtons(handles)
 % Fill scene window fields based on the current display information
 %
-%    displaySetEditsAndButtons(handles)
+% Syntax:
+%   displaySetEditsAndButtons(handles)
 %
-%  (HJ) May, 2014, Copyright ISETBIO Team
+% Description:
+%    Fill the scene window fields based on the current display structure's
+%    existing information.
+%
+% Inputs:
+%    handles - Handle. Handle for display structure.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+
+% History:
+%    05/xx/14  HJ   May, 2014, Copyright ISETBIO Team
+%    05/18/18  jnm  Formatting
 
 %% Set values to boxes in display window
 d = vcGetObject('DISPLAY');
@@ -14,35 +31,33 @@ if isempty(d)
     set(handles.editMaxLum, 'String', str);
     set(handles.editVar, 'String', 'N/A');
     set(handles.editPPI, 'String', str);
-    
+
     % Select scene popup contents
-    set(handles.popupSelectDisplay,...
-        'String', 'No Display',...
-        'Value', 1);
+    set(handles.popupSelectDisplay, 'String', 'No Display', 'Value', 1);
 else
     % Text boxes on right: we should reduce the fields in SCENE.
     xyz = displayGet(d, 'white xyz');
     set(handles.editMaxLum, 'String', num2str(xyz(2)));
     set(handles.editVar, 'String', 'N/A');
     set(handles.editPPI, 'String', num2str(displayGet(d, 'dpi')));
-    
+
     % Select scene popup contents
-    set(handles.popupSelectDisplay,...
-        'String',vcGetObjectNames('DISPLAY'),...
-        'Value',vcGetSelectedObject('DISPLAY'));
+    set(handles.popupSelectDisplay, ...
+        'String', vcGetObjectNames('DISPLAY'), ...
+        'Value', vcGetSelectedObject('DISPLAY'));
 end
 
 %% Description box on upper right
-set(handles.txtSummary,'String', displayDescription(d));
+set(handles.txtSummary, 'String', displayDescription(d));
 
-%% Redraw the main image 
+%% Redraw the main image
 displayShowImage(d, [], handles.axes1);
 set(handles.txtMessage, 'String', 'Original Image');
 
 %% Set subpixel figure
 dixel_image = displayGet(d, 'dixel image');
 if ~isempty(dixel_image)
-    if size(dixel_image,3) == 3
+    if size(dixel_image, 3) == 3
         imshow(dixel_image / max(dixel_image(:)), 'Parent', handles.axes4);
     else
         gam = 1;
@@ -54,5 +69,4 @@ if ~isempty(dixel_image)
     end
 end
 
-%% END
 end

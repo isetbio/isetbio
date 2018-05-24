@@ -1,28 +1,49 @@
 function val = ieAddObject(obj)
-%Add and select an object to the vcSESSION data
+% Add and select an object to the vcSESSION data
 %
-%    val = ieAddObject(obj)          
+% Syntax:
+%   val = ieAddObject(obj)
 %
-% The object is added to the vcSESSION global variable. The object type
-% can be one of the ISET object types, 
+% Description:
+%    The object is added to the vcSESSION global variable. The object type
+%    can be one of the ISET object types,
+%       - SCENE, OPTICALIMAGE, OPTICS, ISA/SENSOR, PIXEL, IP/VCI
+%       - Or their aliased names in vcEquivalentObjtype
 %
-%   SCENE, OPTICALIMAGE, OPTICS, ISA/SENSOR, PIXEL, IP/VCI 
+%    The new object value is assigned the next available (new) value. To
+%    see the object in the appropriate window, you call the window itself.
 %
-% or their aliased names in vcEquivalentObjtype
+%    There are examples contained in the code. To access the examples, type
+%    'edit ieAddObject.m' into the Command Window.
 %
-% The new object value is assigned the next available (new) value. 
-% To see the object in the appropriate window, you call the window
-% itself.
+% Inputs:
+%    obj - Object. The object to add to the session data
 %
-% Example:
-%  scene = sceneCreate; 
-%  newObjVal = ieAddObject(scene);
-%  sceneWindow;
+% Outputs:
+%    val - The value within the session that the aforementioned object has
+%          been assigned to.
 %
-% See also:  vcAddAndSelectObject.m
-%  
-% Copyright ImagEval Consultants, LLC, 2013
+% Optional key/value pairs:
+%    None.
+%
+% Notes:
+%    * TODO: Determine if "should be ieSessionSet, not this." changes need
+%      to be implemented.
+%
+% See Also:
+%    vcAddAndSelectObject.m
+%
 
+% History:
+%    xx/xx/13       Copyright ImagEval Consultants, LLC, 2013
+%    02/28/18  jnm  Formatting
+
+% Examples:
+%{
+    scene = sceneCreate;
+    newObjVal = ieAddObject(scene);
+    sceneWindow;
+%}
 %%
 global vcSESSION;
 
@@ -37,7 +58,7 @@ obj = gatherStruct(obj);
 %% Assign object to the vcSESSION global.
 
 % Should be ieSessionSet, not this.
-if exist('obj','var')
+if exist('obj', 'var')
     switch lower(objType)
         case {'scene'}
             lum = sceneGet(obj, 'luminance');
@@ -47,7 +68,7 @@ if exist('obj','var')
             vcSESSION.OPTICALIMAGE{val} = obj;
         case {'optics'}
             oi = vcSESSION.OPTICALIMAGE{val};
-            oi = oiSet(oi,'optics',obj);
+            oi = oiSet(oi, 'optics', obj);
             vcSESSION.OPTICALIMAGE{val} = oi;
         case {'vcimage'}
             vcSESSION.VCIMAGE{val} = obj;
@@ -58,7 +79,6 @@ if exist('obj','var')
     end
 end
 
-vcSetSelectedObject(objType,val);
-
+vcSetSelectedObject(objType, val);
 
 return;
