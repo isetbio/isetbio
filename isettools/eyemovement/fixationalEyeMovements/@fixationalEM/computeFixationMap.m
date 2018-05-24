@@ -1,7 +1,7 @@
 function [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
         fixationMapXSlice, fixationMapYSlice] = computeFixationMap(...
         timeAxis, emPaths, emPosRange, emPosDelta, varargin)
-% Compute the fixation map
+% Compute a density map of the area spanned by an eye movement path
 %
 % Syntax:
 %   [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
@@ -39,9 +39,15 @@ function [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
 %                           is a emPosRange * emPosDelta x 1 vector.
 %
 % Optional key/value pairs:
-%    'maxDurationSeconds' - Numeric. The maximum duration, in seconds.
-%                           Default is infinite.
+%    'maxDurationSeconds' - Numeric. The duration for which the fixation
+%                           map is computed, in seconds.
+%                           Default is infinite, which will use the entire
+%                           emPath.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 % Examples:
 %{
@@ -56,9 +62,15 @@ function [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
         fixEMobj.computeFixationMap(fixEMobj.timeAxis, ...
         fixEMobj.emPosArcMin, [-20 20], 0.5);
 %}
+
+% Parse inputs
 p = inputParser;
+p.addRequired('timeAxis', @isnumeric);
+p.addRequired('emPaths', @isnumeric);
+p.addRequired('emPosRange', @isnumeric);
+p.addRequired('emPosDelta', @isnumeric);
 addParameter(p, 'maxDurationSeconds', Inf, @isnumeric);
-parse(p, varargin{:});
+p.parse(timeAxis, emPaths, emPosRange, emPosDelta, varargin{:});
 
 % Only analyze span within the maxDurationSeconds
 idx = find(timeAxis <= p.Results.maxDurationSeconds);

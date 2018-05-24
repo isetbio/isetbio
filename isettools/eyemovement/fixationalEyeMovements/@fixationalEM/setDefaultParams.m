@@ -18,6 +18,10 @@ function setDefaultParams(obj)
 % Optional key/value pairs:
 %    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 
 % Set the drift params from the Mergenthaler&Engbert, 2007 paper

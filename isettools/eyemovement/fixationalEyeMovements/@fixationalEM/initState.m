@@ -19,6 +19,10 @@ function initState(obj, emDurationSeconds)
 %    None.
 %
 
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+
 % Compute stabilization steps
 obj.stabilizationStepsNum = round(obj.stabilizationSeconds / ...
     obj.timeStepDurationSeconds);

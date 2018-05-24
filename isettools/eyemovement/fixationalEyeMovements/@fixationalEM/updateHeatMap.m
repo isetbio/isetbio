@@ -18,6 +18,10 @@ function currentPositionHeatLevel = updateHeatMap(obj, tStep)
 % Optional key/value pairs:
 %    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+
 
 % Re-center and scale to ArcMins
 postStabilizationStep = 1 + tStep - obj.stabilizationStepsNum;

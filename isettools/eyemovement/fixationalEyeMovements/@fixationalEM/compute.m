@@ -1,6 +1,6 @@
 function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
     nTrials, computeVelocity, varargin)
-% Compute the fixational eye movements.
+% Compute nTrials of fixational eye movements.
 %
 % Syntax:
 %   compute(obj, emDurationSeconds, sampleDurationSeconds, ...
@@ -24,12 +24,29 @@ function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
 %    None.
 %
 % Optional key/value pairs:
-%    'useParFor'           - Boolean. <Unknown?> Default false.
+%    'useParFor'           - Boolean. Whether to compute using a parfor 
+%                            loop (to take advantage of multiple processors)
+%                            of to use a single processor. Default false,
+%                            i.e., use a single processor.
 %
+% For usage see:
+%  t_fixationalEyeMovementsTypes
+%
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  BW, NPC  Comments
 
+
+% Parse inputs
 p = inputParser;
+p.addRequired('emDurationSeconds', @isnumeric);
+p.addRequired('sampleDurationSeconds', @isnumeric);
+p.addRequired('nTrials', @isnumeric);
+p.addRequired('computeVelocity', @islogical);
 p.addParameter('useParfor', false, @islogical);
-p.parse(varargin{:});
+p.parse(emDurationSeconds, sampleDurationSeconds, ...
+    nTrials, computeVelocity, varargin{:});
 
 % Reset output arrays
 obj.initOutputs();

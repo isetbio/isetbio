@@ -5,7 +5,11 @@ classdef visualizableFixationalEM < fixationalEM
 %   visFixEM = visualizableFixationalEM();
 %
 % Description:
-%    Create an instance of a visualizable fixational eye movement object.
+%    Create an instance of a visualizable fixational eye movement object
+%    which is a subclass of @fixationalEM. The only purpose of this class
+%    is to gain access to protected properties of @fixationalEM which are
+%    used to by the fixationalEMdemo.mlapp to visualize the internals of 
+%    the em generation algorithm.
 %
 % Inputs:
 %    None required.
@@ -14,11 +18,15 @@ classdef visualizableFixationalEM < fixationalEM
 %    The created visualizable fixational eye movement object.
 %
 % Optional key/value pairs:
-%    **Needs to be filled out**
+%    None at the moment.
 %
 % See Also:
 %    fixationalEM
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
     methods
         % Constructor
@@ -39,7 +47,7 @@ classdef visualizableFixationalEM < fixationalEM
             %    obj - The visualizableFixationalEM object.
             %
             % Optional key/value pairs:
-            %    See pairs in header above.
+            %    None at the moment.
             %
 
             obj = obj@fixationalEM(varargin);
@@ -61,7 +69,7 @@ classdef visualizableFixationalEM < fixationalEM
             %    propertyName - String. The property name
             %
             % Outputs:
-            %    v            - VARIES. The property value.
+            %    v            - The property value.
             %
             % Optional key/value pairs:
             %    None.

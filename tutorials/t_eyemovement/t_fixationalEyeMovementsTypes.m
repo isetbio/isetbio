@@ -91,7 +91,7 @@ tickLabel = [xyRange(1):5:xyRange(2)];
 
 if (rowNo == 1)
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1600 900]);
+    set(hFig, 'Position', [10 10 1600 1100]);
 else
     figure(1);
 end

@@ -11,7 +11,10 @@ classdef fixationalEM < handle
 %    For this class, The drift EM component is generated using the model
 %    described in: Mergenthaler and Engbert (2007) Modeling the control of
 %    fixational eye movements with neurophysiological delays", Physical
-%    Review Letters, 98 (13).
+%    Review Letters, 98 (13). The microsaccde component is generated 
+%    using statistical properties for the inter-saccade interval, and 
+%    either a recent path avoidance strategy or a stats-based approach for
+%    the micro-saccade jump.
 %
 % Inputs:
 %    None required.
@@ -20,7 +23,7 @@ classdef fixationalEM < handle
 %    The created fixationalEM object.
 %
 % Optional key/value pairs:
-%    **Needs to be filled out**
+%    None at the moment.
 %
 % See also
 %   emOBJ.compute(durationSeconds, sampleTimeSeconds);
@@ -28,6 +31,10 @@ classdef fixationalEM < handle
 % References:
 %    Physical Review Letters, Mergenthaler and Engbert (2007). P98.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  BW, NPC  Comments
 
 % Public properties (user-settable)
 properties
@@ -252,16 +259,19 @@ properties (Access = private)
     % Specifically, the feedback delay for the y-pos in the time steps.
     feedbackYposDelayTimeSteps;
 
-    % heatMapTimeSeriesIntermediate - <FILL OUT>
+    % heatMapTimeSeriesIntermediate - Numeric. Temporary storage for the 
+    % spatially-smoothed accumulated heat map of eye positions
     heatMapTimeSeriesIntermediate = [];
 
-    % emAccumMap - <FILL OUY>
+    % emAccumMap - Numeric. Accumulated heat map of eye positions
     emAccumMap = [];
 
-    % heatMapUpdateIntervalStepsNum - <FILL OUT>
+    % heatMapUpdateIntervalStepsNum - Update interval for heat map in units
+    % of time steps
     heatMapUpdateIntervalStepsNum = [];
 
-    % lastMicroSaccadeTimeStep - <FILL OUT>
+    % lastMicroSaccadeTimeStep - Time step at which the last microsaccade 
+    % occurred
     lastMicroSaccadeTimeStep = [];
 
     % emPosTimeSeries - The time series of emPositions
