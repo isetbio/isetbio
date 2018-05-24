@@ -1,27 +1,52 @@
-function compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, computeVelocity, varargin)
-% Compute the eye movement paths for nTrials
+function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
+    nTrials, computeVelocity, varargin)
+% Compute nTrials of fixational eye movements.
 %
-% Inputs
-%   emDurationSeconds - duration of the eye movement
-%   sampleDurationSeconds - spacing between eye movement samples
-%   nTrials -  integer
-%   computeVelocity - boolean
-%   
-% Return
-%    em.emPosArcMin - The paths are stored in the object
-%    em.velocityArcMin  - If computeVelocity is true
+% Syntax:
+%   compute(obj, emDurationSeconds, sampleDurationSeconds, ...
+%       nTrials, computeVelocity, [varargin])
 %
-% Optional key/value pair
-%   useParfor - Use parallel computation (default is false)
+% Description:
+%    Compute the fixational eye movements for a fixationalEM object.
 %
-% NC ISETBIO Team, 2018
+% Inputs:
+%    obj                   - Object. The fixationalEM object.
+%    emDurationSeconds     - Numeric. Eye movement duration, in seconds.
+%    sampleDurationSeconds - Numeric. The duration of the sample period,
+%                            also in seconds.
+%    nTrials               - Numeric. The number of trials.
+%    computeVelocity       - Boolean. A boolean indicating whether or not
+%                            to also compute the velocity.
+%    varargin              - (Optional) Additional parameter(s) that may be
+%                            required to execute the function.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    'useParFor'           - Boolean. Whether to compute using a parfor 
+%                            loop (to take advantage of multiple processors)
+%                            of to use a single processor. Default false,
+%                            i.e., use a single processor.
+%
+% For usage see:
+%  t_fixationalEyeMovementsTypes
+%
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  BW, NPC  Comments
 
-% BW, May 2018.  Header comments added
 
-%%
+% Parse inputs
 p = inputParser;
+p.addRequired('emDurationSeconds', @isnumeric);
+p.addRequired('sampleDurationSeconds', @isnumeric);
+p.addRequired('nTrials', @isnumeric);
+p.addRequired('computeVelocity', @islogical);
 p.addParameter('useParfor', false, @islogical);
-p.parse(varargin{:});
+p.parse(emDurationSeconds, sampleDurationSeconds, ...
+    nTrials, computeVelocity, varargin{:});
 
 % Reset output arrays
 obj.initOutputs();
@@ -34,43 +59,55 @@ else
 end
 
 if (obj.beVerbose)
-    fprintf('Computing emModel for %2.2f seconds; sampleT = %2.4f sec, samples: %d\n', emDurationSeconds, sampleDurationSeconds, obj.tStepsNum);
+    fprintf(['Computing emModel for %2.2f seconds; sampleT = ' ...
+        '%2.4f sec, samples: %d\n'], emDurationSeconds, ...
+        sampleDurationSeconds, obj.tStepsNum);
 end
 
-%% Compute first trial
+% Compute first trial
 iTrial = 1;
 computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
-allTrialsEmPosArcMin = zeros(nTrials, length(obj.emPosTimeSeriesArcMin), 2);
-allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+allTrialsEmPosArcMin = zeros(nTrials, ...
+    length(obj.emPosTimeSeriesArcMin), 2);
+allTrialsEmPosArcMin(iTrial, :, :) = ...
+    reshape(obj.emPosTimeSeriesArcMin', ...
+    [1 length(obj.emPosTimeSeriesArcMin) 2]);
 
 if (computeVelocity)
-    allTrialsVelocityArcMin = zeros(nTrials, length(obj.velocityArcMinPerSecTimeSeries), 1);
-    allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+    allTrialsVelocityArcMin = zeros(nTrials, ...
+        length(obj.velocityArcMinPerSecTimeSeries), 1);
+    allTrialsVelocityArcMin(iTrial, :) = ...
+        obj.velocityArcMinPerSecTimeSeries;
 end
 
-%% Compute remaining trials
+% Compute remaining trials
 if (p.Results.useParfor)
     parfor iTrial = 2:nTrials
-        computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
-        allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+        computeSingleTrial(...
+            obj, emDurationSeconds, sampleDurationSeconds);
+        allTrialsEmPosArcMin(iTrial, :, :) = ...
+            reshape(obj.emPosTimeSeriesArcMin', ...
+            [1 length(obj.emPosTimeSeriesArcMin) 2]);
         if (computeVelocity)
-            allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+            allTrialsVelocityArcMin(iTrial, :) = ...
+                obj.velocityArcMinPerSecTimeSeries;
         end
     end
 else
     for iTrial = 2:nTrials
-        computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
-        allTrialsEmPosArcMin(iTrial,:,:) = reshape(obj.emPosTimeSeriesArcMin', [1 length(obj.emPosTimeSeriesArcMin) 2]);
+        computeSingleTrial(...
+            obj, emDurationSeconds, sampleDurationSeconds);
+        allTrialsEmPosArcMin(iTrial, :, :) = ...
+            reshape(obj.emPosTimeSeriesArcMin', ...
+            [1 length(obj.emPosTimeSeriesArcMin) 2]);
         if (computeVelocity)
-            allTrialsVelocityArcMin(iTrial,:) = obj.velocityArcMinPerSecTimeSeries;
+            allTrialsVelocityArcMin(iTrial, :) = ...
+                obj.velocityArcMinPerSecTimeSeries;
         end
     end
 end
 
-%% Stash the results in the object
-
 obj.emPosArcMin = allTrialsEmPosArcMin;
-if (computeVelocity)
-    obj.velocityArcMin = allTrialsVelocityArcMin;
-end
+if (computeVelocity), obj.velocityArcMin = allTrialsVelocityArcMin; end
+
 end

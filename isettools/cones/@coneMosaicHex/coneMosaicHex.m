@@ -17,21 +17,25 @@ classdef coneMosaicHex < coneMosaic
 %    may be set to set the spacing for regularly spaced hexagonal mosaics.
 %    The units of customLambda are microns
 %
+%    The code below contains examples of class usage. To access these
+%    examples, type 'edit coneMosaicHex.m' into the Command Window.
+%
 % Inputs:
-%    None required.
+%    resamplingFactor      - Integer. The grid resampling factor.
 %
 % Outputs:
 %    The created cone mosaic hex object.
 %
 % Optional key/value pairs:
 %    Some of the possible key/value pairs are listed below:
-%    resamplingFactor    - Grid resampling factor
-%    eccBasedConeDensity - Boolean denoting whether or not to use the
-%                          eccentricity-based cone density. Default False.
-%    customLambda        - Custom cone spacing distance in microns
-%    customInnerSegmentDiameter
-%                        - Customer diameter for inner segment. Default is
-%                          the pigment.pdWidth from the super class.
+%    'eccBasedConeDensity' - Boolean. Variable indicating whether or not to
+%                            use the eccentricity-based cone density.
+%                            Default False.
+%    'customLambda'        - Double. Custom micron cone spacing distance.
+%                            Default is [].
+%    'customInnerSegmentDiameter'
+%                          - Double. Custom diameter for the inner segment.
+%                            Default is pigment.pdWidth from super class.
 %
 % See Also:
 %    CONEMOSAIC, t_coneMosaicHex, t_coneMosaicHexReg
@@ -40,6 +44,9 @@ classdef coneMosaicHex < coneMosaic
 % History:
 %    xx/xx/16  NPC  ISETBIO Team, 2016
 %    02/21/18  jnm  Formatting
+%    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
+%                   required, and not optional based on response when
+%                   attempting to instantiate a coneMosaicHex.
 
 % Examples:
 %{
@@ -91,7 +98,7 @@ classdef coneMosaicHex < coneMosaic
         % eccBasedConeDensity - Bool. Ecc.-based spatially-varying density?
         eccBasedConeDensity
 
-        % resamplingFactor - resamplingFactor
+        % resamplingFactor - The resampling factor.
         resamplingFactor
 
         % marginF - Factor determining how much more mosaic to compute.
