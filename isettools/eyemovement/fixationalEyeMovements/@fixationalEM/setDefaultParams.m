@@ -1,18 +1,24 @@
 function setDefaultParams(obj)
-% Fixational eye movement default parameters
+% A function to set the default parameters for a fixationalEM object.
 %
-% Description
-%   This function is called by the constructor, functionalEM.
+% Syntax:
+%   obj.setDefaultParams()
+%   setDefaultParams(obj)
 %
-% Inputs
-%   obj:  fixationalEM object
+% Description:
+%    A function designed to set the default parameters for a fixational eye
+%    movement object. This function is called by the constructor, functionalEM.
 %
-% Returns
-%  
-% Optional Key/val pairs
+% Inputs:
+%    obj - Object. A fixationalEM object.
 %
+% Outputs:
+%    None.
 %
-% NC
+% Optional key/value pairs:
+%    None.
+%
+
 
 % Set the drift params from the Mergenthaler&Engbert, 2007 paper
 obj.setDriftParamsFromMergenthalerAndEngbert2007Paper();
