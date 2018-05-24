@@ -1,16 +1,18 @@
 function checkForMicroSaccadeEpoch(obj, tStep)
-% <SHORT DESCR>
+% Generate a microsaccade depending on the interval since the last one.
 %
 % Syntax:
 %   obj.checkForMicroSaccadeEpoch(tStep)
 %   checkForMicroSaccadeEpoch(obj, tStep)
 %
 % Description:
-%    <LONG DESCR>
+%    Check whether a microsaccade should be generated based on the inter-
+%    saccade interval and statistics, and if so generate one according to
+%    the strategy defined obj.microSaccadeType.
 %
 % Inputs:
 %    obj   - Object. The fixationalEM object.
-%    tStep - Numeric. The number of time steps.
+%    tStep - Numeric. The current time step
 %
 % Outputs:
 %    None.
@@ -18,6 +20,10 @@ function checkForMicroSaccadeEpoch(obj, tStep)
 % Optional key/value pairs:
 %    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 % Compute probablility of generating a saccade base on interval since
 % last saccade

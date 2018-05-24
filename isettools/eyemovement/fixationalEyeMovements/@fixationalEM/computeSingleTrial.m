@@ -1,13 +1,17 @@
 function computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds)
-% Compute an emPath of of specified length and temporal resolution.
+% Compute a single trial emPath of specified length and temporal resolution.
 %
 % Syntax:
 %   obj.computeSingleTrial(emDurationSeconds, sampleDurationSeconds)
 %   computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds)
 %
 % Description:
-%    This is a method to compute an emPath with duration emDurationSeconds
-%    sampled with a temporal resolution of sampleDurationSeconds.
+%    This is a method to compute a single trial of a fixational emPath.
+%    The fixational emPath consists of a drift component, which is an 
+%    implementation of Mergenthaler and Engbert's delayed feedbak algorithm, 
+%    and a microsaccade component, which is generated using statistical 
+%    properties for the inter-saccade interval, and either a recent path 
+%    avoidance strategy or a stats-based approach for the micro-saccade jump.
 %
 % Inputs:
 %    obj                   - Object. The fixationalEM object
@@ -20,6 +24,10 @@ function computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds)
 % Optional key/value pairs:
 %    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 % Init the state
 initState(obj, emDurationSeconds);

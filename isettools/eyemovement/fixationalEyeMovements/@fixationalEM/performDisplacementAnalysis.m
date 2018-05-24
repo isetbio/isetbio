@@ -1,36 +1,46 @@
 function [meanD, maxD, meanDscrambled, DrandomWalk, ...
     timeLagsMilliseconds] = performDisplacementAnalysis(emPos, ...
     timeAxisSeconds, varargin)
-% Run the displacement analysis
+% Run the displacement analysis for passed emPos component (x or y)
 %
 % Syntax:
 %   [meanD, maxD, meanDscrambled, DrandomWalk, timeLagMilliseconds] = ...
 %       performDisplacementAnalysis(emPos, timeAxisSeconds, [varargin])
 %
 % Description:
-%    Perform the displacement analysis using the provided information.
+%    Perform the D1 or the D2 displacement analysis using the provided 
+%    information.
 %
 %    This code contains examples. To access, type 'edit
 %    performDisplacementAnalysis.m' into the Command Window.
 %
 % Inputs:
 %    emPos               - Vector. Eye movement positions.
-%    timeAxisSeconds     - Vector. The time axis vector.
+%    timeAxisSeconds     - Vector. The time axis of the em positions
 %    varargin            - (Optional) Additional argument(s) as needed, to
 %                          perform the analysis. Usually contained in
 %                          key/value pairs (see section below).
 %
 % Outputs:
-%    meanD               - Vector. The mean displacements.
-%    maxD                - Vector. The maximum displacements.
-%    meanDscrambled      - Vector. The scrambled mean displacements.
-%    DrandomWalk         - Vector. Random walk of displacements.
-%    timeLagMilliseconds - Vector. The time lag for displacements in ms.
+%    meanD               - Vector. Mean displacement function for the
+%                          passed emPath.
+%    maxD                - Vector. Max displacement function for the 
+%                          passed emPath.
+%    meanDscrambled      - Vector. Mean displacement function for the 
+%                          path constructed by scrambling the intervals.
+%    DrandomWalk         - Vector. Mean isplacement function for a 
+%                          random walk emPath.
+%    timeLagMilliseconds - Vector. The support of the displacement function
 %
 % Optional key/value pairs:
 %    'mode'              - String. A string describing the mode. Options
 %                          are 'D1', and 'D2'. Default 'D1'.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
+
 
 % Examples:
 %{
@@ -40,19 +50,29 @@ function [meanD, maxD, meanDscrambled, DrandomWalk, ...
 
     fixEMobj = fixationalEM();
     fixEMobj.randomSeed = 1;
-    fixEMobj.microSaccadeType = 'stats based';
+    fixEMobj.microSaccadeType = 'none';
 
     % Compute the emPaths
     computeVelocity = true;
     fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, ...
         nTrials, computeVelocity, 'useParfor', true);
 
-    emPathArcMin = squeeze(fixEMobj.emPosArcMin(1,:,:));
-    xPosArcMin = squeeze(emPathArcMin(:,1));
+    for trialNo = 1:nTrials
+        xPosArcMin = squeeze(fixEMobj.emPosArcMin(trialNo,:,1));
+        [meanD2(trialNo,:), ~, meanD2scrambled(trialNo,:), ...
+         D2randomWalk, timeLagsMilliseconds] = ...
+            fixEMobj.performDisplacementAnalysis(xPosArcMin, ...
+        fixEMobj.timeAxis, 'mode', 'D2');
+    end
 
-    [meanD, maxD, meanDscrambled, DrandomWalk, timeLagsMilliseconds] = ...
-        fixEMobj.performDisplacementAnalysis(xPosArcMin', ...
-        fixEMobj.timeAxis, 'mode', 'D1');
+    meanD2 = mean(meanD2,1);
+    meanD2scrambled = mean(meanD2scrambled,1);
+
+    figure();
+    plot(timeLagsMilliseconds, meanD2, 'k-'); hold on;
+    plot(timeLagsMilliseconds, meanD2scrambled, 'k--'); hold off
+    set(gca, 'XScale', 'log', 'Yscale', 'log'); axis 'square';
+    xlabel('interval (ms)'); ylabel('mean D2 displacement (arc min^2)');
 %}
 p = inputParser;
 addParameter(p, 'mode', 'D1', ...

@@ -9,8 +9,12 @@ function microSaccadeTargetLikelihoodSpatialMap = ...
 %       heatMapXYsupportArcMin)
 %
 % Description:
-%    This method compute the microsaccade target likelihood map, which is a
-%    two dimensional Gaussian.
+%    This method computes the microsaccade target likelihood map, which is a
+%    two dimensional Gaussian. The map computed, 
+%    obj.microSaccadeTargetLikelihoodSpatialMap, is combined with the 
+%    constantly updated (by the recent history of the eye movement path), 
+%    heatmap, obj.heatMapWeight, to find the next micro-saccade target.
+%        
 %
 % Inputs:
 %    obj                                    - Object. A fixationalEM object
@@ -25,6 +29,10 @@ function microSaccadeTargetLikelihoodSpatialMap = ...
 % Optional key/value pairs:
 %    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 % Gaussian with sigma obj.microaccadeTargetSigma
 [x, y] = meshgrid(heatMapXYsupportArcMin, heatMapXYsupportArcMin);
