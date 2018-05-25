@@ -15,7 +15,7 @@ function setMicroSaccadeStats(obj)
 %       MicroSaccade direction jitter degrees (assigned value: 15)
 %
 %    The following are known values:
-%       Inter-saccde interval distribution(s)
+%       Inter-saccade interval distribution(s)
 %
 %    The following are based off of references:
 %       MicroSaccade amplitude distribution(s) - (Martinez 2009)
@@ -31,9 +31,12 @@ function setMicroSaccadeStats(obj)
 %    None.
 %
 % Notes:
-%    * [Note: JNM - The 30 deg/sec line wrt Martinez 2008 doesn't match the
-%      values provided (listed as 39). Is this a typo?]
+%    None.
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 
 % Set the inter-saccde interval distribution
 obj.microSaccadeMeanIntervalSeconds = 0.45;
@@ -44,7 +47,7 @@ obj.microSaccadeIntervalGammaShapeParameter = 5;
 obj.microSaccadeMeanAmplitudeArcMin = 8;
 obj.microSaccadeAmplitudeGammaShapeParameter = 4;
 
-% 30 deg/second (See Martinez 2008, Table in Fig 3D)
+% 39 deg/second (See Martinez 2008, Table in Fig 3D)
 obj.microSaccadeMeanSpeedDegsPerSecond = 39;
 obj.microSaccadeStDevSpeedDegsPerSecond = 2;
 
