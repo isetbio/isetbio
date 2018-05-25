@@ -7,7 +7,8 @@ function [kernel, kernelSupport] = ...
 %   [kernel, kernelSupport] = obj.temporalKernelForHeatMap(gridNodesNum)
 %
 % Description:
-%    Method to compute the temporal kernel for the heat map
+%    Method to compute the temporal kernel for the heat map. This is just 
+%    an exponential decay function. 
 %
 % Inputs:
 %    obj           - Object. A fixationalEM object.
@@ -19,6 +20,11 @@ function [kernel, kernelSupport] = ...
 %
 % Optional key/value pairs:
 %    None.
+%
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 %
 
 kernelLength = round(obj.heatMapKernelTimeConstantSeconds / ...

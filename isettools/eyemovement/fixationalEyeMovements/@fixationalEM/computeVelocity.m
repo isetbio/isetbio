@@ -1,12 +1,16 @@
 function  velocityTimeSeries = computeVelocity(obj, theEMpath)
-% Compute the velocity for the fixationalEM
+% Compute the velocity for the passed emPath
 %
 % Syntax:
 %   velocityTimeSeries = computeVelocity(obj, theEMpath)
 %   velocityTimeSeries = obj.computeVelocity(theEMpath)
 %
 % Description:
-%    Compute the velocity for the fixationalEM using the provided emPath.
+%    Compute the velocity for the fixationalEM using the provided emPath
+%    using a 3rd order Savitzky-Golay temporal smoothing filter defined 
+%    over obj.velocityMeasurementIntervalSeconds. Note that the velocity
+%    will be highly dependent on this time window as the emPath is a
+%    modified Brownian motion process.
 %
 % Inputs:
 %    obj                - Object. The fixationalEM object.
@@ -18,6 +22,11 @@ function  velocityTimeSeries = computeVelocity(obj, theEMpath)
 %
 % Optional key/value pairs:
 %    None.
+%
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 %
 
 if (size(theEMpath, 1) ~= 2), theEMpath = theEMpath'; end

@@ -1,16 +1,17 @@
 function currentPositionHeatLevel = updateHeatMap(obj, tStep)
-% Update the heat map
+% Update the heat map based on the eye movement position at tStep.
 %
 % Syntax:
 %   currentPositionHeatLevel = updateHeatMap(obj, tStep)
 %   currentPositionHeatLevel = obj.updateHeatMap(tStep)
 %
 % Description:
-%    Update the heat map.
+%    Update the heat map based on the eye movement position at the current
+%    time step.
 %
 % Inputs:
 %    obj                      - Object. A fixationalEM object.
-%    tStep                    - Numeric. The time step, in seconds.
+%    tStep                    - Numeric. The current time step, in seconds.
 %
 % Outputs:
 %    currentPositionHeatLevel - The heat level for the current position.
@@ -21,7 +22,8 @@ function currentPositionHeatLevel = updateHeatMap(obj, tStep)
 % History:
 %    01/03/18  NPC  ISETBIO Team, 2018
 %    05/15/18  jnm  Formatting
-
+%    05/24/18  NPC  Comments
+%
 
 % Re-center and scale to ArcMins
 postStabilizationStep = 1 + tStep - obj.stabilizationStepsNum;
